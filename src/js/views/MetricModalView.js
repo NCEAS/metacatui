@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metricModalTemplate.html', 'collections/Citations', 'views/CitationListView'],
-    function($, _, Backbone, MetricsChart, MetricModalTemplate, Citations, CitationList) {
+define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metricModalTemplate.html', 'collections/Citations', 'views/CitationListView', "views/SignInView"],
+    function($, _, Backbone, MetricsChart, MetricModalTemplate, Citations, CitationList, SignInView) {
     'use strict';
 
     /**
@@ -28,7 +28,8 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
           'hidden': 'teardown',
           'click .left-modal-footer'  : 'showPreviousMetricModal',
           'click .right-modal-footer' : 'showNextMetricModal',
-          'click .register-citation'  : 'showCitationForm'
+          'click .register-citation'  : 'showCitationForm',
+          "click .login"              : "showSignInViewPopUp"
         },
 
         initialize: function(options) {
@@ -167,15 +168,46 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
          * Display the Citation registration form
          */
         showCitationForm: function(){
+
+            var viewRef = this;
+
+            // if the user is not currently signed in
+            if(!MetacatUI.appUserModel.get("loggedIn")){
+                this.showSignIn();
+            }
+            else {          
+                // close the current modal
+                this.teardown();
+                
+                require(['views/RegisterCitationView'], function(RegisterCitationView){
+                    // display a register citation modal
+                    var registerCitationView = new RegisterCitationView({pid: viewRef.pid});
+                    registerCitationView.render();
+                    registerCitationView.show();
+                });
+            }
+        },
+
+        /**
+        * Show Sign In buttons
+        */
+        showSignIn: function(){
+            var container = $(document.createElement("div")).addClass("container center");
+            this.$el.html(container);
+            var signInButtons = new SignInView().render().el;
+            this.signInButtons = signInButtons;
+            $(container).append('<h1>Sign in to register citations</h1>', signInButtons);
+        },
+
+        /**
+         * Handle the sign in click event
+         */
+        showSignInViewPopUp: function(){
             // close the current modal
             this.teardown();
-            var viewRef = this;
-            require(['views/RegisterCitationView'], function(RegisterCitationView){
-                // display a register citation modal
-                var registerCitationView = new RegisterCitationView({pid: viewRef.pid});
-                registerCitationView.render();
-                registerCitationView.show();
-            });
+
+            // display the pop up
+            this.signInButtons.showSignInViewPopUp();
         },
 
         showNextMetricModal: function() {

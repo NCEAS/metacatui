@@ -35,8 +35,8 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
     className: "image-uploader",
 
     /**
-    * The DataONEObject that is being edited
-    * @type {DataONEObject}
+    * The DataONEObject or PortalImage that is being edited
+    * @type {DataONEObject|PortalImage}
     */
     model: undefined,
 
@@ -155,6 +155,10 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
           this.maxHeight          = options.maxHeight;
           this.maxWidth           = options.maxWidth;
 
+          if( !this.model ){
+            this.model = new DataONEObject({ synced: true });
+          }
+
           if (!this.url && this.model) {
             this.url = this.model.url();
           }
@@ -213,7 +217,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
         // For config details, see: https://www.dropzonejs.com/#configuration
         var $dropZone = view.$(".dropzone").dropzone({
 
-          url: MetacatUI.appModel.get("objectServiceUrl"),
+          url: view.model.get("imageURL") || view.model.url(),
           acceptedFiles: "image/*",
           addRemoveLinks: false,
           maxFiles: 1,
@@ -380,28 +384,28 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
     prepareD1Model: function(object, filename, filetype, callback){
 
       try{
-        // Reference to the view
-        var view = this;
 
-        this.model = new DataONEObject({
+        var modelAttributes = {
           synced: true,
           type: "image",
           fileName: filename,
           mediaType: filetype,
           size: object.size,
           uploadFile: object
-        });
+        }
 
+        // Each file upload must be a new DataONE object
+        this.model = new DataONEObject(modelAttributes);
         this.model.updateID();
         this.model.set("obsoletes", null);
         this.model.get("accessPolicy").makePublic();
 
         // Start checksum, and call the callback function when it's complete
-        view.model.stopListening(view.model, "checksumCalculated");
-        view.model.listenToOnce(view.model, "checksumCalculated", function(){
+        this.model.stopListening(this.model, "checksumCalculated");
+        this.model.listenToOnce(this.model, "checksumCalculated", function(){
             callback(object);
         });
-        view.model.calculateChecksum();
+        this.model.calculateChecksum();
 
       } catch (exception) {
         console.log("there was a problem calculating the checksum, exception: " + exception);
@@ -493,8 +497,9 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
 
       try{
 
-        if(!this.url){
-          return
+        //If there is no URL or the model hasn't been saved yet, then don't show the image
+        if( !this.url || this.model.isNew() ){
+          return;
         }
 
         // A mock image file to identify the image provided to this view

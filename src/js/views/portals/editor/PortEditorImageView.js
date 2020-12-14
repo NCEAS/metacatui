@@ -231,6 +231,7 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
         // Create an ImageUploaderView and insert into this view. Allow it to be
         // accessed from parent views.
         this.uploader = new ImageUploaderView({
+          model:              this.model,
           url:                this.model.get("imageURL"),
           uploadInstructions: this.imageUploadInstructions,
           imageTagName:       this.imageTagName,

@@ -18,7 +18,6 @@ function ($, _, Backbone) {
 			'data(/mode=:mode)(/query=:query)(/page/:page)(/)' : 'renderData',    // data search page
 			'profile(/*username)(/s=:section)(/s=:subsection)(/)' : 'renderProfile',
 			'my-profile(/s=:section)(/s=:subsection)(/)' : 'renderMyProfile',
-			'external(/*url)(/)'           : 'renderExternal', // renders the content of the given url in our UI
 			'signout(/)'					: 'logout',
 			'signin(/)'					: 'renderSignIn',
 			"signinsuccess(/)"             : "renderSignInSuccess",
@@ -454,23 +453,6 @@ function ($, _, Backbone) {
       this.routeHistory.push("signin-help");
       this.renderText({ pageName: "signInHelp" });
     },
-
-		renderExternal: function(url) {
-			// use this for rendering "external" content pulled in dynamically
-			this.routeHistory.push("external");
-
-			if(!MetacatUI.appView.externalView){
-				require(['views/ExternalView'], function(ExternalView){
-					MetacatUI.appView.externalView = new ExternalView();
-					MetacatUI.appView.externalView.url = url;
-					MetacatUI.appView.showView(MetacatUI.appView.externalView);
-				});
-			}
-			else{
-				MetacatUI.appView.externalView.url = url;
-				MetacatUI.appView.showView(MetacatUI.appView.externalView);
-			}
-		},
 
 		/**
 		 * renderPortal - Render the portal view based on the given name or id, as

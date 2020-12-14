@@ -8,7 +8,9 @@ define(["jquery",
         "models/Search",
         "models/Stats",
         "models/MetricsModel",
+        "models/Utilities",
         "views/SearchResultView",
+        "views/searchSelect/AnnotationFilterView",
         "text!templates/search.html",
         "text!templates/statCounts.html",
         "text!templates/pager.html",
@@ -16,11 +18,14 @@ define(["jquery",
         "text!templates/currentFilter.html",
         "text!templates/loading.html",
         "gmaps",
-        "nGeohash"
+        "nGeohash",
     ],
-    function($, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel,
-        MetricsModel, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate,
-        MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
+    function(
+      $, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel,
+      MetricsModel, Utilities, SearchResultView, AnnotationFilter, CatalogTemplate,
+      CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate,
+      LoadingTemplate, gmaps, nGeohash
+    ) {
         "use strict";
 
         /**
@@ -107,12 +112,9 @@ define(["jquery",
                 "click .remove-filter": "removeFilter",
                 "click input[type='checkbox'].filter": "updateBooleanFilters",
                 "click #clear-all": "resetFilters",
-                "click a.keyword-search-link": "additionalCriteria",
                 "click .remove-addtl-criteria": "removeAdditionalCriteria",
                 "click .collapse-me": "collapse",
                 "click .filter-contain .expand-collapse-control": "toggleFilterCollapse",
-                "click #jumpUp": "jumpUp",
-                "click #resetTree": "resetTree",
                 "click #toggle-map": "toggleMapMode",
                 "click .toggle-map": "toggleMapMode",
                 "click .toggle-list": "toggleList",
@@ -292,9 +294,6 @@ define(["jquery",
                     view.showFilter("dataSource", source);
                 });
 
-                // the additional fields
-                this.showAdditionalCriteria();
-
                 // Add the custom query under the "Anything" filter
                 if (this.searchModel.get("customQuery")) {
                     this.showFilter("all", this.searchModel.get("customQuery"));
@@ -330,13 +329,35 @@ define(["jquery",
                     $(".auto-height-member").resize(this.setAutoHeight);
                 }
 
-                if (MetacatUI.appModel.get("bioportalAPIKey")) {
-                    this.setUpTree();
-                }
+                this.addAnnotationFilter();
 
                 return this;
             },
 
+            /**
+             * addAnnotationFilter - Add the annotation filter to the view
+             */
+            addAnnotationFilter: function(){
+              if (MetacatUI.appModel.get("bioportalAPIKey")) {
+                var view = this;
+                var popoverTriggerSelector = "[data-category='annotation'] .expand-collapse-control";
+                if(!this.$el.find(popoverTriggerSelector)){
+                  return
+                }
+                var annotationFilter = new AnnotationFilter({
+                  popoverTriggerSelector: popoverTriggerSelector
+                });
+                this.$el
+                  .find(popoverTriggerSelector)
+                  .append(annotationFilter.el);
+                annotationFilter.render();
+                annotationFilter.off("annotationSelected");
+                annotationFilter.on("annotationSelected", function(event, item){
+                  $("#annotation_input").val(item.value);
+                  view.updateTextFilters(event, item)
+                });
+              }
+            },
 
             // Linked Data Object for appending the jsonld into the browser DOM
             getLinkedData: function() {
@@ -382,172 +403,6 @@ define(["jquery",
                     script.text = JSON.stringify(elJSON);
                 }
                 return;
-            },
-
-            setUpTree: function() {
-                this.$el.data("data-catalog-view", this);
-
-                var tree = $("#bioportal-tree").NCBOTree({
-                    apikey: MetacatUI.appModel.get("bioportalAPIKey"),
-                    ontology: "ECSO",
-                    width: "400",
-                    startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"
-                });
-
-                // make a container for the tree and nav buttons
-                var contentPlus = $("<div></div>");
-                $(contentPlus).append("<button class='icon icon-level-up tooltip-this' id='jumpUp' data-trigger='hover' data-title='Go up to parent' data-placement='top'></button>");
-                $(contentPlus).append("<button class='icon icon-undo tooltip-this' id='resetTree' data-trigger='hover' data-title='Reset tree' data-placement='top'></button>");
-                $(contentPlus).append(tree);
-
-                $("[data-category='annotation'] .expand-collapse-control").popover({
-                    html: true,
-                    placement: "bottom",
-                    trigger: "manual",
-                    content: contentPlus,
-                    container: "#bioportal-popover"
-                }).on("click", function() {
-                    if ($($(this).data().popover.options.content).is(":visible")) {
-                        // Detach the tree from the popover so it doesn't get removed by Bootstrap
-                        $(this).data().popover.options.content.detach();
-                        // Hide the popover
-                        $(this).popover("hide");
-                    } else {
-                        // Get the popover content
-                        var content = $(this).data().popoverContent ||
-                            $(this).data().popover.options.content.detach();
-                        // Cache it
-                        $(this).data({
-                            popoverContent: content
-                        });
-                        // Show the popover
-                        $(this).popover("show");
-                        // Insert the tree into the popover content
-                        $(this).data().popover.options.content = content;
-
-                        // ensure tooltips are activated
-                        $(".tooltip-this").tooltip();
-
-                    }
-                });
-
-                // set up the listener to jump to search results
-                tree.on("afterSelect", this.selectConcept);
-                tree.on("afterJumpToClass", this.afterJumpToClass);
-                tree.on("afterExpand", this.afterExpand);
-
-            },
-
-            selectConcept: function(event, classId, prefLabel, selectedNode) {
-
-                // Get the concept info
-                var uri = classId;
-                var label = prefLabel;
-                var description = "";
-
-                var item = {};
-                item.value = uri;
-                item.label = label;
-                item.filterLabel = label;
-                item.desc = "";
-
-                // set the text field
-                $("#annotation_input").val(item.value);
-
-                // add to the filter immediately
-                var view = $("#Content").data("data-catalog-view");
-                view.updateTextFilters(event, item);
-
-                // hide the hover
-                $(selectedNode).trigger("mouseout");
-
-                // hide the popover
-                var annotationFilterEl = $("[data-category='annotation'] .expand-collapse-control");
-                annotationFilterEl.trigger("click");
-
-                // reset the tree for next search
-                var tree = annotationFilterEl.data().popoverContent.find("#bioportal-tree").data("NCBOTree");
-                var options = tree.options();
-                $.extend(options, {
-                    startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"
-                });
-                tree.changeOntology("ECSO");
-
-                // prevent default action
-                return false;
-
-            },
-
-            afterExpand: function() {
-                // ensure tooltips are activated
-                $(".tooltip-this").tooltip();
-            },
-
-            afterJumpToClass: function(event, classId) {
-
-                // re-root the tree at this concept
-                var tree = $("[data-category='annotation'] .expand-collapse-control").data().popoverContent.find("#bioportal-tree").data("NCBOTree");
-                var options = tree.options();
-                $.extend(options, {
-                    startingRoot: classId
-                });
-
-                // force a re-render
-                tree.init();
-
-                // ensure the tooltips are activated
-                $(".tooltip-this").tooltip();
-
-            },
-
-            jumpUp: function() {
-
-                // re-root the tree at the parent concept of the root
-                var tree = $("[data-category='annotation'] .expand-collapse-control").data().popoverContent.find("#bioportal-tree").data("NCBOTree");
-                var options = tree.options();
-                var startingRoot = options.startingRoot;
-
-                if (startingRoot == "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType") {
-                    return false;
-                }
-
-                var parentId = $("a[data-id='" + encodeURIComponent(startingRoot) + "'").attr("data-subclassof");
-
-                // re-root
-                $.extend(options, {
-                    startingRoot: parentId
-                });
-
-                // force a re-render
-                tree.init();
-
-                // ensure the tooltips are activated
-                $(".tooltip-this").tooltip();
-
-                return false;
-
-            },
-
-            resetTree: function() {
-
-                // re-root the tree at the original concept
-                var tree = $("[data-category='annotation'] .expand-collapse-control").data().popoverContent.find("#bioportal-tree").data("NCBOTree");
-                var options = tree.options();
-                var startingRoot = "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType";
-
-                // re-root
-                $.extend(options, {
-                    startingRoot: startingRoot
-                });
-
-                // force a re-render
-                tree.init();
-
-                // ensure the tooltips are activated
-                $(".tooltip-this").tooltip();
-
-                return false;
-
             },
 
             /*
@@ -1347,9 +1202,6 @@ define(["jquery",
                 this.resetMap();
                 this.renderMap();
 
-                // reset any filter links
-                this.showAdditionalCriteria();
-
                 // Route to page 1
                 this.updatePageNumber(0);
 
@@ -1454,10 +1306,10 @@ define(["jquery",
 
                 // Add a filter node to the DOM
                 var filterEl = viewRef.currentFilterTemplate({
-                    category: categoryLabel,
-                    value: value,
-                    label: label,
-                    description: desc
+                    category: Utilities.encodeHTML(categoryLabel),
+                    value: Utilities.encodeHTML(value),
+                    label: Utilities.encodeHTML(label),
+                    description: Utilities.encodeHTML(desc)
                 });
 
                 // Add the filter to the page - either replace or tack on
@@ -1632,31 +1484,6 @@ define(["jquery",
                 controls.toggleClass("hidden");
             },
 
-            // highlights anything additional that has been selected
-            showAdditionalCriteria: function() {
-                var model = this.searchModel;
-
-                // style the selection
-                $(".keyword-search-link").each(function(index, targetNode) {
-                    // Neutralize all keyword search links by 'deactivating'
-                    $(targetNode).removeClass("active");
-                    // Do this for the parent node as well for template flexibility
-                    $(targetNode).parent().removeClass("active");
-
-                    var dataCategory = $(targetNode).attr("data-category");
-                    var dataTerm = $(targetNode).attr("data-term");
-                    var terms = model.get(dataCategory);
-                    if (_.contains(terms, dataTerm)) {
-                        // Add the active class for styling
-                        $(targetNode).addClass("active");
-
-                        // Add the class to the parent node as well for template flexibility
-                        $(targetNode).parent().addClass("active");
-                    }
-
-                });
-
-            },
 
             // add additional criteria to the search model based on link click
             additionalCriteria: function(e) {

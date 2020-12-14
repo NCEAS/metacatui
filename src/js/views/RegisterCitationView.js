@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.html'],
-    function($, _, Backbone, RegisterCitationTemplate) {
+define(['jquery', 'underscore', 'backbone', "models/Utilities", 'text!templates/registerCitation.html'],
+    function($, _, Backbone, Utilities, RegisterCitationTemplate) {
     'use strict';
 
     /**
@@ -43,8 +43,9 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.htm
                       'again or try emailing us the citation.',
 
         events: {
-          'hidden'                        : 'teardown',
-          'click .btn-register-citation'  : 'registerCitation'
+          'hidden'                              : 'teardown',
+          'click .btn-register-citation'        : 'registerCitation',
+          "focusout #publication-identifier"    : "validateDOI"
         },
 
         initialize: function(options) {
@@ -83,10 +84,17 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.htm
           return this;
         },
 
+        
+
         /**
          * Get inputs from the modal and sends it to the DataONE Metrics Service
          */
         registerCitation: function() {
+
+          // check if the register button has been disabled
+          if (this.$(".btn-register-citation").find(".disabled")) {
+            return false;
+          }
 
           // get the input values
           var publicationIdentifier = this.$("#publication-identifier").val();
@@ -146,6 +154,29 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.htm
 
           $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 
+        },
+
+        /* 
+        * Validates if the given input is a valid DOI string or not
+        */
+        validateDOI: function(){
+          var identifierInput = this.$("#publication-identifier").val();
+
+          if(!(Utilities.isValidDOI(identifierInput))){
+            //Show a warning that the user was trying to edit old content
+            MetacatUI.appView.showAlert("Please enter a valid DOI.",
+            "alert-error", this.$el, 6000, { remove: true });
+            this.$("#publication-identifier").css({"border": "1px solid red"});
+            this.$(".btn-register-citation").addClass("disabled")
+          }
+          else {
+            this.$("#publication-identifier").css({"border": "none"});
+
+            // If the Disabled class is active
+            if (this.$(".btn-register-citation").find(".disabled")) {
+              this.$(".btn-register-citation").removeClass("disabled");
+            }
+          }
         }
 
     });

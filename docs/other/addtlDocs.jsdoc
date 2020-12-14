@@ -15,3 +15,17 @@
 * @type {string}
 * @description The version of this installation of MetacatUI.
 */
+
+
+// ----- Deprecated classes -----
+
+/**
+* @class ExternalView
+* @deprecated
+* @classcategory Deprecated
+* @classdesc This view was deprecated in MetacatUI 2.14.0. It would display an external web page
+* in the MetacatUI main content area. This was primarily used for displaying the EML schema documentation,
+* but was deprecated for security reasons and because EML has its own doc website at http://eml.ecoinformatics.org.
+* If your instance of MetacatUI was using this view, you should instead link directly to external content or display
+* HTML pages using a MetacatUI template and the {@link TextView}.
+*/

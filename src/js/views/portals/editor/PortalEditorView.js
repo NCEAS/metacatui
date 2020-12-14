@@ -10,11 +10,12 @@ define(['underscore',
         "views/portals/editor/PortEditorImageView",
         "text!templates/loading.html",
         "text!templates/portals/editor/portalEditor.html",
-        "text!templates/portals/editor/portalEditorSubmitMessage.html"
+        "text!templates/portals/editor/portalEditorSubmitMessage.html",
+        "text!templates/portals/editor/portalLoginPage.html"
       ],
 function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
   PortEditorSectionsView, ImageEdit, LoadingTemplate, Template,
-  portalEditorSubmitMessageTemplate){
+  portalEditorSubmitMessageTemplate, LoginTemplate){
 
   /**
   * @class PortalEditorView
@@ -55,13 +56,14 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * When a new portal is being created, this is the label of the section that will be active when the editor first renders
     * @type {string}
     */
-    newPortalDefaultSectionLabel: "Settings",
+    newPortalActiveSectionLabel: (MetacatUI.appModel.get("portalDefaults") ? MetacatUI.appModel.get("portalDefaults").newPortalActiveSectionLabel : "") || "Settings",
 
     /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
     loadingTemplate: _.template(LoadingTemplate),
+    loginTemplate: _.template(LoginTemplate),
     // Over-ride the default editor submit message template (which is currently
     // used by the metadata editor) with the portal editor version
     editorSubmitMessageTemplate: _.template(portalEditorSubmitMessageTemplate),
@@ -126,6 +128,8 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
+
+      EditorView.prototype.initialize.call(this, options);
 
       //Reset arrays and objects set on this View, otherwise they will be shared across intances, causing errors
       this.subviews = new Array();
@@ -212,7 +216,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
             if( MetacatUI.appUserModel.get("isAuthorizedCreatePortal") ){
               // Start new portals on the settings tab
-              this.activeSectionLabel = this.newPortalDefaultSectionLabel;
+              this.activeSectionLabel = this.newPortalActiveSectionLabel;
 
               // Render the default model if the portal is new
               this.renderPortalEditor();
@@ -242,7 +246,14 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
           //If the user authentication hasn't been checked yet, then wait for it
           if ( !MetacatUI.appUserModel.get("tokenChecked") ) {
             this.listenTo(MetacatUI.appUserModel, "change:tokenChecked", function(){
-              MetacatUI.appUserModel.isAuthorizedCreatePortal();
+              if( MetacatUI.appUserModel.get("loggedIn") ){
+                //Check if this user is authorized to create a new portal
+                MetacatUI.appUserModel.isAuthorizedCreatePortal();
+              }
+              //If the user is not logged in, show the sign in buttons
+              else if( !MetacatUI.appUserModel.get("loggedIn") ){
+                this.showSignIn();
+              }
             });
             return;
           }
@@ -267,6 +278,57 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * Renders the portal editor view once the portal view is created
     */
     renderPortalEditor: function() {
+
+      //Check if this is a plus portal
+      if( MetacatUI.appModel.get("dataonePlusPreviewMode")){
+        var sourceMN = this.model.get("datasource");
+
+        //Check if the portal source node is from the active alt repo OR is
+        // configured as a Plus portal.
+        if( !this.model.isNew() &&
+            (typeof sourceMN != "string" ||
+            (sourceMN != MetacatUI.appModel.get("defaultAlternateRepositoryId") &&
+            !_.findWhere(MetacatUI.appModel.get("dataonePlusPreviewPortals"),
+                         { datasource: sourceMN, seriesId: this.model.get("seriesId") }))) ){
+
+            //Get the name of the source member node
+            var sourceMNName = "original data repository",
+                mnURL        = "";
+            if( typeof sourceMN == "string" ){
+              var sourceMNObject = MetacatUI.nodeModel.getMember(sourceMN);
+              if( sourceMNObject ){
+                sourceMNName = sourceMNObject.name;
+
+                //If there is a baseURL string
+                if( sourceMNObject.baseURL ){
+                  //Parse out the origin of the baseURL string. We want to crop out the /metacat/d1/mn parts.
+                  mnURL = sourceMNObject.baseURL.substring(0, sourceMNObject.baseURL.lastIndexOf(".")) +
+                          sourceMNObject.baseURL.substring(sourceMNObject.baseURL.lastIndexOf("."),
+                                                           sourceMNObject.baseURL.indexOf("/", sourceMNObject.baseURL.lastIndexOf(".")));
+                }
+              }
+            }
+
+            //Show a message that the portal can be found on the repository website.
+            var message = $(document.createElement("h3")).addClass("center stripe");
+            message.text("The " + this.model.get("name") + " " + MetacatUI.appModel.get("portalTermSingular") +
+                      " can be edited in the ");
+
+            if(mnURL){
+              message.append( $(document.createElement("a"))
+                                .attr("href", mnURL)
+                                .attr("target", "_blank")
+                                .text(sourceMNName) );
+            }
+            else{
+              message.append(sourceMNName);
+            }
+
+            this.$el.html(message);
+
+            return;
+        }
+      }
 
       // Add the template to the view and give the body the "Editor" class
       this.$el.html(this.template({
@@ -328,11 +390,17 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       //Render the sections view
       this.sectionsView.render();
 
+      //If this portal is a free trial DataONE Plus portal, then display some messaging
+      this.renderSubscriptionInfo();
+
       //Show the required fields for this editor
       this.renderRequiredIcons(MetacatUI.appModel.get("portalEditorRequiredFields"));
 
       // Insert the logo editor
       this.renderLogoEditor();
+
+      //When the collection definition is changed, show the Save button
+      this.listenTo(this.model.get("definitionFilters"), "remove change", this.showControls);
 
       // On mobile, hide section tabs a moment after page loads so
       // users notice where they are
@@ -386,7 +454,10 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         this.model = new Portal({
           //Set the isNew attribute so the model will execute certain functions when a Portal is new
           isNew: true,
-          rightsHolder: MetacatUI.appUserModel.get("username")
+          rightsHolder: MetacatUI.appUserModel.get("username"),
+          isAuthorized_read: true,
+          isAuthorized_write: true,
+          isAuthorized_changePermission: true
         });
 
       }
@@ -433,7 +504,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
            this.listenToOnce(this.model, "notFound", this.showNotFound);
 
            //Get the seriesId or latest pid
-           this.model.getSeriesIdByName();
+           this.model.getSeriesIdByLabel();
            return;
          }
          else{
@@ -500,7 +571,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         // Add the image view (incl. uploader) for the portal logo
         this.logoEdit = new ImageEdit({
           model: this.model.get("logo"),
-          imageUploadInstructions: "Drag & drop a logo here or click to upload",
+          imageUploadInstructions: "Drag & drop a logo or click to upload",
           imageWidth: 100,
           imageHeight: 100,
           minWidth: 64,
@@ -671,7 +742,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       }, this);
 
       if(errors){
-        MetacatUI.appView.showAlert("Fix the errors flagged below before submitting.",
+        MetacatUI.appView.showAlert("Provide the content flagged below before submitting.",
             "alert-error",
             this.$el,
             null,
@@ -716,18 +787,95 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * Show Sign In buttons
     */
     showSignIn: function(){
-      var container = $(document.createElement("div")).addClass("container center");
-      this.$el.html(container);
-      var signInButtons = new SignInView().render().el;
 
+      // Messsage if the user is trying to edit an existing portal
+      var title = "Sign in with your ORCID to edit this portal"
       // Message to create a portal if the portal is new
       if (this.model.get("isNew")) {
-        $(container).append('<h1>Sign in to create a portal</h1>', signInButtons);
-      }
-      else {
-        $(container).append('<h1>Sign in to edit a portal</h1>', signInButtons);
+        title = "<strong>You're one step away from the portal builder</strong><br>Start by signing in with your ORCID"
       }
 
+      this.$el.html(this.loginTemplate({
+        title: title,
+        portalInfoLink: MetacatUI.appModel.get("portalInfoURL"),
+        portalImageSrc: MetacatUI.root + "/img/portals/portal-data-page-example.png",
+        altText: "Screen shot of a portal data page for a climate research lab. The page shows a search bar, customized filters, and a map of the the geographic area the data covers."
+      }));
+
+    },
+
+    /**
+    * The DataONE Plus Subscription if fetched from Bookkeeper and the status of the
+    * Subscription is rendered on the page.
+    * Subviews in this view should have their own renderSubscriptionInfo() function
+    * that inserts subscription details into the subview.
+    */
+    renderSubscriptionInfo: function(){
+      if( MetacatUI.appModel.get("enableBookkeeperServices") ){
+
+        if( MetacatUI.appUserModel.get("loggedIn") && MetacatUI.appUserModel.get("dataoneSubscription") ){
+          //Show the free trial message for this portal, if the subscription is in a free trial
+          var subscription = MetacatUI.appUserModel.get("dataoneSubscription"),
+              isFreeTrial  = false;
+
+          //If the Subscription is in free trial mode
+          if( subscription && subscription.isTrialing() ){
+
+            if( MetacatUI.appModel.get("dataonePlusPreviewMode") ){
+              //If this portal is not in the configured list of Plus portals
+              var trialExceptions = MetacatUI.appModel.get("dataonePlusPreviewPortals");
+              isFreeTrial = !_.findWhere(trialExceptions, { seriesId: this.model.get("seriesId") });
+            }
+            else{
+              isFreeTrial = true;
+            }
+
+            if( isFreeTrial ){
+              //Show a free trial message in the editor footer
+              var freeTrialMessage = "This " + MetacatUI.appModel.get("portalTermSingular") + " is a free preview of " + MetacatUI.appModel.get("dataonePlusName");
+              var messageEl = $(document.createElement("span"))
+                                .addClass("free-trial-message")
+                                .text(freeTrialMessage)
+                                .prepend( $(document.createElement("i")).addClass("dataone-plus-icon-container") );
+              this.$("#editor-footer").prepend(messageEl);
+
+              // Update the label element to randomly generated label
+              // And disable the input
+              var labelEL = $('.label-input-text');
+              labelEL.val(this.model.get("label"));
+
+              //When the Portal Model label is changed, update the input
+              this.listenTo(this.model, "change:label", function(){
+                $('.label-input-text').val(this.model.get("label"));
+              });
+
+              labelEL.attr("disabled", "disabled");
+              //Remove the "Change URL" button that toggles the label input
+              this.$(".btn.change-label").remove();
+
+              // Show edit label message if the edit button is disabled
+              var editLabelMessage = "Create a custom " + MetacatUI.appModel.get("portalTermSingular") + " name for the URL when your free preview of " +
+                                      "<i class='dataone-plus-icon-container'></i>" + MetacatUI.appModel.get("dataonePlusName") + " ends.";
+              var messageContainer = this.$(".label-container .notification").html(editLabelMessage).addClass("free-trial");
+
+              if( !messageContainer.is(":visible") ){
+                messageContainer.detach().appendTo( this.$(".change-label-container") );
+              }
+
+              //Insert the DataONE Plus icon
+              var viewRef = this;
+              require(["text!templates/dataonePlusIcon.html"], function(iconTemplate){
+                viewRef.$(".dataone-plus-icon-container").html(iconTemplate);
+              });
+
+            }
+          }
+        }
+        else{
+            this.listenTo( MetacatUI.appUserModel, "change:dataoneSubscription", this.renderSubscriptionInfo );
+        }
+
+      }
     },
 
     /**
@@ -737,8 +885,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
       this.hideLoading();
 
-      var notFoundMessage = "The portal \"" + (this.model.get("label") || this.portalIdentifier) +
-                            "\" doesn't exist.";
+      var notFoundMessage = $(document.createElement("p")).text("The " + MetacatUI.appModel.get("portalTermSingular") + " ");
+      notFoundMessage.append( $(document.createElement("span")).text(this.model.get("label") || this.portalIdentifier) )
+                     .append( $(document.createElement("span")).text(" doesn't exist.") );
 
       MetacatUI.appView.showAlert(notFoundMessage, "alert-error non-fixed", this.$el, undefined, { remove: true });
     },

@@ -2,10 +2,9 @@
 <html lang="en" data-framework="backbonejs">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
   <script type="text/javascript">
     // The path to your configuration file for MetacatUI. This can be any web-accessible location.
-    var appConfigPath = "/config/config.js";;
+    var appConfigPath = "/config/config.js";
   </script>
 
   <style>#loading-app{width:100%; height: 100%; left: 0px; top: 0px; margin-left:auto; margin-right:auto; position:absolute; background-color:#FFF;}.loading-icon{position:relative; margin-top:100px; margin-bottom:20px; margin-left: 40%; width:90px;height:90px}.loading-icon .wBall{position:absolute;width:86px;height:86px;opacity:0;-moz-transform:rotate(225deg);-moz-animation:orbit 4.4s infinite;-webkit-transform:rotate(225deg);-webkit-animation:orbit 4.4s infinite;-ms-transform:rotate(225deg);-ms-animation:orbit 4.4s infinite;-o-transform:rotate(225deg);-o-animation:orbit 4.4s infinite;transform:rotate(225deg);animation:orbit 4.4s infinite}.loading-icon .wBall .wInnerBall{position:absolute;width:11px;height:11px;background:#999;left:0;top:0;-moz-border-radius:11px;-webkit-border-radius:11px;-ms-border-radius:11px;-o-border-radius:11px;border-radius:11px}.loading-icon #wBall_1{-moz-animation-delay:.96s;-webkit-animation-delay:.96s;-ms-animation-delay:.96s;-o-animation-delay:.96s;animation-delay:.96s}.loading-icon #wBall_2{-moz-animation-delay:.19s;-webkit-animation-delay:.19s;-ms-animation-delay:.19s;-o-animation-delay:.19s;animation-delay:.19s}.loading-icon #wBall_3{-moz-animation-delay:.38s;-webkit-animation-delay:.38s;-ms-animation-delay:.38s;-o-animation-delay:.38s;animation-delay:.38s}.loading-icon #wBall_4{-moz-animation-delay:.58s;-webkit-animation-delay:.58s;-ms-animation-delay:.58s;-o-animation-delay:.58s;animation-delay:.58s}.loading-icon #wBall_5{-moz-animation-delay:.77s;-webkit-animation-delay:.77s;-ms-animation-delay:.77s;-o-animation-delay:.77s;animation-delay:.77s}@-moz-keyframes orbit {0% {opacity: 1;z-index:99;-moz-transform: rotate(180deg);-moz-animation-timing-function: ease-out;}7% {opacity: 1;-moz-transform: rotate(300deg);-moz-animation-timing-function: linear;-moz-origin:0%;}30% {opacity: 1;-moz-transform:rotate(410deg);-moz-animation-timing-function: ease-in-out;-moz-origin:7%;}39% {opacity: 1;-moz-transform: rotate(645deg);-moz-animation-timing-function: linear;-moz-origin:30%;}70% {opacity: 1;-moz-transform: rotate(770deg);-moz-animation-timing-function: ease-out;-moz-origin:39%;}	75% {opacity: 1;-moz-transform: rotate(900deg);-moz-animation-timing-function: ease-out;-moz-origin:70%;}	76% {opacity: 0;-moz-transform:rotate(900deg);}100% {opacity: 0;-moz-transform: rotate(900deg);}	}@-webkit-keyframes orbit {0% {opacity: 1;z-index:99;-webkit-transform: rotate(180deg);-webkit-animation-timing-function: ease-out;}7% {opacity: 1;-webkit-transform: rotate(300deg);-webkit-animation-timing-function: linear;-webkit-origin:0%;}30% {opacity: 1;-webkit-transform:rotate(410deg);-webkit-animation-timing-function: ease-in-out;-webkit-origin:7%;}39% {opacity: 1;-webkit-transform: rotate(645deg);-webkit-animation-timing-function: linear;-webkit-origin:30%;}70% {opacity: 1;webkit-transform: rotate(770deg);-webkit-animation-timing-function: ease-out;-webkit-origin:39%;}75% {opacity: 1;-webkit-transform: rotate(900deg);-webkit-animation-timing-function: ease-out;-webkit-origin:70%;}76% {opacity: 0;-webkit-transform:rotate(900deg);}100% {opacity: 0;-webkit-transform: rotate(900deg);}}@-ms-keyframes orbit {0% {opacity: 1;z-index:99;-ms-transform: rotate(180deg);-ms-animation-timing-function: ease-out;}7% {opacity: 1;-ms-transform: rotate(300deg);-ms-animation-timing-function: linear;-ms-origin:0%;}	30% {opacity: 1;-ms-transform:rotate(410deg);-ms-animation-timing-function: ease-in-out;-ms-origin:7%;}39% {opacity: 1;-ms-transform: rotate(645deg);-ms-animation-timing-function: linear;-ms-origin:30%;}70% {opacity: 1;-ms-transform: rotate(770deg);-ms-animation-timing-function: ease-out;-ms-origin:39%;}75% {opacity: 1;-ms-transform: rotate(900deg);-ms-animation-timing-function: ease-out;-ms-origin:70%;}76% {opacity: 0;-ms-transform:rotate(900deg);}	100% {opacity: 0;-ms-transform: rotate(900deg);}}@-o-keyframes orbit {0% {opacity: 1;z-index:99;-o-transform: rotate(180deg);-o-animation-timing-function: ease-out;}7% {opacity: 1;-o-transform: rotate(300deg);-o-animation-timing-function: linear;-o-origin:0%;}30%{opacity:1;-o-transform:rotate(410deg);-o-animation-timing-function:ease-in-out;-o-origin:7%;}39%{opacity:1;-o-transform:rotate(645deg);-o-animation-timing-function:linear;-o-origin:30%;}70% {opacity: 1;-o-transform: rotate(770deg);-o-animation-timing-function: ease-out;-o-origin:39%;}75% {opacity: 1;-o-transform: rotate(900deg);-o-animation-timing-function: ease-out;-o-origin:70%;}76% {opacity: 0;-o-transform:rotate(900deg);}100% {opacity: 0;-o-transform: rotate(900deg);}}@keyframes orbit {0% {opacity: 1;z-index:99;transform: rotate(180deg);animation-timing-function: ease-out;}7% {opacity: 1;transform: rotate(300deg);animation-timing-function: linear;}30% {opacity: 1;transform:rotate(410deg);animation-timing-function: ease-in-out;}39% {opacity: 1;transform: rotate(645deg);animation-timing-function: linear;}70% {opacity: 1;transform: rotate(770deg);animation-timing-function: ease-out;}75% {opacity: 1;transform: rotate(900deg);animation-timing-function: ease-out;}76% {opacity: 0;transform:rotate(900deg);}100% {opacity: 0;transform: rotate(900deg);}}#loading-app span{margin-left: 40%; margin-top: 30px; color:#666666; font-weight: 400; font-family: Helvetica, Arial; font-size: 25px; line-height: 50px;}#loading-app img{margin-bottom: 30px; display: block;}</style>
@@ -15,22 +14,52 @@
     <div class="loading-icon"><div class="wBall" id="wBall_1"><div class="wInnerBall"></div></div><div class="wBall" id="wBall_2"><div class="wInnerBall"></div></div><div class="wBall" id="wBall_3"><div class="wInnerBall"></div></div><div class="wBall" id="wBall_4"><div class="wInnerBall"></div></div><div class="wBall" id="wBall_5"><div class="wInnerBall"></div></div></div>
     <span>Loading...</span>
   </div>
-
   <script type="text/javascript">
+    // Load Polyfills if required. This file is loaded before even the config file loads,
+    // since even common functions are missing, such as console.log and Object.assign
+
+    // Check for at least one required polyfill.
+    // These checks are identical to those used at the start of each polyfill.
+    if(
+      !window.console ||
+      typeof String.prototype.trim !== 'function'       ||
+      !String.prototype.startsWith                      ||
+      !String.prototype.endsWith                        ||
+      !Array.isArray                                    ||
+      !Array.prototype.map                              ||
+      !Array.prototype.forEach                          ||
+      !Object.keys                                      ||
+      !Array.prototype.indexOf                          ||
+      (window.NodeList && !NodeList.prototype.forEach)  ||
+      typeof Object.assign != 'function'                ||
+      !Array.prototype.includes                         ||
+      !Math.log2                                        ||
+      (!(new Date('2011-06-02T09:34:29+02:00')) || +(new Date('2011-06-02T09:34:29+02:00')) !== 1307000069000)
+    ){
+      // use document.write to load the file synchronously
+      document.write('<script src="/js/polyfill.js"><\/script>');
+    }
+  </script>
+  <script type="text/javascript">
+
     //Create the MetacatUI object
     var MetacatUI = {};
-    MetacatUI.metacatUIVersion = "2.13.4";
+    MetacatUI.metacatUIVersion = "2.14.0";
 
     //Catch errors when the config or loader file fails to load.
     // These are mainly helpful for developers/operators installing MetacatUI
     MetacatUI.onStartConfigError = function(){
-      console.error("The config file or loader.js file failed to load. Check the appConfigPath in index.html and the 'root' attribute in AppConfig.");
+      var message = "The config file or loader.js file failed to load. Check the appConfigPath in index.html and the 'root' attribute in AppConfig.";
+      document.getElementById("metacatui-app").innerHTML = message;
+      console.error(message);
     }
     MetacatUI.onStartLoaderError = function(){
       //Check for one of the functions created in the loader.js file. If it doesn't exist, then the script wasn't retrieved.
       // (the 'onerror' event isn't triggered if there is a FallbackResource set on the web server)
       if( typeof MetacatUI.initApp == "undefined" ){
-        console.error("The loader.js file failed to load. The MetacatUI `root` setting is probably incorrect. Set a `root` path for MetacatUI in the AppConfig.")
+        var message = "The loader.js file failed to load. The MetacatUI `root` setting is probably incorrect. Set a `root` path for MetacatUI in the AppConfig.";
+        document.getElementById("metacatui-app").innerHTML = message;
+        console.error(message);
       }
     }
 
@@ -48,7 +77,7 @@
       loaderPath = loaderPath + "/loader.js?v=" + ((MetacatUI.AppConfig && MetacatUI.AppConfig.cachebuster)? MetacatUI.AppConfig.cachebuster : MetacatUI.metacatUIVersion);
       script.src = loaderPath;
       script.onerror = MetacatUI.onStartLoaderError;
-      script.onload  = MetacatUI.onStartLoaderError;
+      script.onload = MetacatUI.onStartLoaderError;
 
       //Add the loader.js script tag to the page, which will load and execute the script
       document.getElementsByTagName("body")[0].appendChild(script);

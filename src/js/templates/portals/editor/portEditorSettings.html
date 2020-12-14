@@ -24,7 +24,7 @@
     <div class="label-container hide">
         <div class="control-group">
           <span class="muted"><%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/</span>
-          <input type="text" value="<%=label%>" data-category="label" class="basic-text"></input>
+          <input type="text" value="<%=label%>" data-category="label" class="basic-text label-input-text"></input>
           <span class="notification help-inline" data-category="label"></span>
         </div>
         <div>
@@ -44,7 +44,8 @@
     Description
     <i class="required-icon hidden" data-category="description"></i>
   </h4>
-  <p class="subtle">Describe your <%=portalTermSingular%> in one brief paragraph. This description will appear in search summaries.</p>
+  <p class="subtle">Describe your <%=portalTermSingular%> in one brief paragraph.
+  This description will appear in the <%=portalTermSingular%> header and in search summaries.</p>
   <p class="notification" data-category="description"></p>
   <textarea type="text" data-category="description" class="basic-text medium text"
     placeholder="Answer who, where, what, when, and why about your <%=portalTermSingular%>." rows="3"><%=description%></textarea>
@@ -65,3 +66,9 @@
   <p class="notification" data-category="acknowledgmentsLogos"></p>
   <div class="logos-container" data-category="acknowledgmentsLogosImages"></div>
 </div>
+
+<% if(MetacatUI.appModel.get("theme") == "dataone"){ %>
+<div class="row-fluid subtle">
+  Enjoying DataONE portals or experiencing issues? <a href="mailto:support@dataone.org">Email us</a> or <a href="https://forms.gle/iuRhZePv4bitnXrBA" target="_blank">leave us feedback</a>. 
+</div>
+<% } %>
