@@ -44,10 +44,7 @@ define(['jquery', 'underscore'],
     */
     isValidDOI: function(identifier) {
       // generate doi regex 
-      var doiRGEX = new RegExp(/^(http:\/\/|https:\/\/)?(doi.org\/|dx.doi.org\/)?(doi:|DOI:)?(10[.][0-9]{4,}(?:[.][0-9]+)*(?:(?!["&\'<>])\S)+)$/i)
-
-      // remove white space characters
-      identifier = identifier.replace(/\s+/g, '');
+      var doiRGEX = new RegExp(/^\s*(http:\/\/|https:\/\/)?(doi.org\/|dx.doi.org\/)?(doi: ?|DOI: ?)?(10\.\d{4,}(\.\d)*)\/(\w+).*$/ig)
 
       return doiRGEX.test(identifier);
     }
