@@ -94,11 +94,19 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
         },
 
         renderView: function() {
+          try{
             this.metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
 
             if ( this.metricName === "Citations") {
-                var resultDetails = this.metricsModel.get("resultDetails");
-                var citationCollection = new Citations(resultDetails["citations"], {parse:true});
+                var resultDetails = this.metricsModel.get("resultDetails"),
+                    citationCollection;
+
+                if( resultDetails ){
+                  citationCollection = new Citations(resultDetails["citations"], {parse:true});
+                }
+                else{
+                  citationCollection = new Citations();
+                }
 
                 this.citationCollection = citationCollection;
 
@@ -125,7 +133,21 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
             }
 
+          }
+          catch(e){
+            console.error("Failed to render the MetricModelView: ", e);
+
+            let errorMessage = MetacatUI.appView.showAlert({
+              message: "Something went wrong while displaying the " + this.metricNameLemma + "s for this dataset.",
+              classes: "alert-info",
+              container: this.$el,
+              replaceContents: true,
+              includeEmail: true
+            });
+          }
+          finally{
             this.$el.modal({show:false}); // dont show modal on instantiation
+          }
 
         },
 
