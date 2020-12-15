@@ -84,6 +84,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
           this.$el.on('shown', function(){
             thisView.renderView();
             thisView.drawMetricsChart();
+            thisView.trigger("renderComplete");
           });
 
           this.$el.modal('show');
@@ -175,10 +176,10 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
             if(!MetacatUI.appUserModel.get("loggedIn")){
                 this.showSignIn();
             }
-            else {          
+            else {
                 // close the current modal
                 this.teardown();
-                
+
                 require(['views/RegisterCitationView'], function(RegisterCitationView){
                     // display a register citation modal
                     var registerCitationView = new RegisterCitationView({pid: viewRef.pid});
@@ -194,8 +195,16 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
         showSignIn: function(){
             var container = $(document.createElement("div")).addClass("container center");
             this.$el.html(container);
-            var signInButtons = new SignInView().render().el;
+
+            //Create a SignInView
+            let signInView = new SignInView();
+            signInView.redirectQueryString = "registerCitation=true";
+
+            //Get the Sign In buttons elements
+            var signInButtons = signInView.render().el;
             this.signInButtons = signInButtons;
+
+            //Add the elements to the page
             $(container).append('<h1>Sign in to register citations</h1>', signInButtons);
         },
 

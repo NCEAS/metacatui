@@ -79,6 +79,7 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
             if (MetacatUI.appModel.get("displayMetricModals") ) {
                 var modalView = new MetricModalView({metricName: this.metricName, metricsModel: this.model, pid: this.pid});
                 modalView.render();
+                this.modalView = modalView;
 
                 if( Array.isArray(this.subviews) ){
                   this.subviews.push(modalView);

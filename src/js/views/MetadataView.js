@@ -541,6 +541,22 @@ define(['jquery',
         return;
       }
 
+      try{
+        //Check if a query string was in the URL and if so, try removing it in the identifier
+        if( this.model.get("id").match(/\?\S+\=\S+/g) && !this.findTries ){
+           let newID = this.model.get("id").replace(/\?\S+\=\S+/g, "");
+           this.onClose();
+           this.model.set("id", newID);
+           this.pid = newID;
+           this.findTries=1;
+           this.render();
+           return;
+        }
+      }
+      catch(e){
+        console.warn("Caught error while determining query string", e);
+      }
+
       //Construct a message that shows this object doesn't exist
       var msg = "<h4>Nothing was found.</h4>" +
             "<p id='metadata-view-not-found-message'>The dataset identifier '" + Utilities.encodeHTML(this.model.get("id")) + "' " +
@@ -1351,6 +1367,25 @@ define(['jquery',
           var citationsMetricView = new MetricView({metricName: 'Citations', model: metricsModel, pid: this.pid});
           buttonToolbar.append(citationsMetricView.render().el);
           this.subviews.push(citationsMetricView);
+
+          try{
+            //Check if the registerCitation=true query string is set
+            if(window.location.search){
+              if( window.location.search.indexOf("registerCitation=true") > -1 ){
+
+                //Open the modal for the citations
+                citationsMetricView.showMetricModal();
+
+                //Show the register citation form
+                if( citationsMetricView.modalView ){
+                  citationsMetricView.modalView.on("renderComplete", citationsMetricView.modalView.showCitationForm);
+                }
+              }
+            }
+          }
+          catch(e){
+            console.warn("Not able to show the register citation form ", e);
+          }
         }
 
         if (MetacatUI.appModel.get("displayDatasetDownloadMetric")) {

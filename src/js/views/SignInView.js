@@ -28,6 +28,20 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 		/* Set to true if this SignInView is in a modal window */
 		inPlace: false,
 
+    /**
+    * Set a query string that will be added to the redirect URL
+    * when the user has logged-in and is returned back to MetacatUI.
+    * This can be useful to return back to MetacatUI with additional information
+    * about the state of the app when the user left to sign in.
+    * @type {string}
+    * @example
+    * // This example may tell the view that the register citation modal was open when Sign In was clicked
+    * "registerCitation=true"
+    * @default ""
+    * @since 2.14.1
+    */
+    redirectQueryString: "",
+
 		/*A message to display at the top of the view */
 		topMessage: "",
 
@@ -192,10 +206,35 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 
 					}
 					else{
-						this.$el.append(this.buttonsTemplate());
-					}
+            let signInUrl = MetacatUI.appModel.get('signInUrlOrcid') + window.location.href;
 
-				}
+            if( this.redirectQueryString && this.redirectQueryString.length ){
+              let currentQueryString = window.location.search;
+
+              //If there is a current query string in the window.location, concatenate the
+              // new query string properly
+              if( currentQueryString.length ){
+
+                //Exclude the "?" character from the query string, if it is there already
+                if( this.redirectQueryString.charAt(0) == "?" ){
+                  this.redirectQueryString = this.redirectQueryString.substring(1)
+                }
+
+                //Add the new query string parameters
+                signInUrl += "&" + this.redirectQueryString;
+
+              }
+              else{
+                signInUrl += "?" + this.redirectQueryString;
+              }
+            }
+
+            this.$el.append(this.buttonsTemplate({
+              signInUrl: signInUrl
+            }));
+          }
+
+        }
 
 				//Insert the sign in popup screen once
 				if(!$("#signinPopup").length){
