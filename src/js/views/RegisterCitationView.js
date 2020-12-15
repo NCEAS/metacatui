@@ -92,7 +92,7 @@ define(['jquery', 'underscore', 'backbone', "models/Utilities", 'text!templates/
         registerCitation: function() {
 
           // check if the register button has been disabled
-          if (this.$(".btn-register-citation").find(".disabled")) {
+          if (this.$(".btn-register-citation").is(".disabled")) {
             return false;
           }
 
