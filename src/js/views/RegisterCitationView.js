@@ -156,20 +156,29 @@ define(['jquery', 'underscore', 'backbone', "models/Utilities", 'text!templates/
 
         },
 
-        /* 
+        /*
         * Validates if the given input is a valid DOI string or not
         */
         validateDOI: function(){
           var identifierInput = this.$("#publication-identifier").val();
 
           if(!(Utilities.isValidDOI(identifierInput))){
+
             //Show a warning that the user was trying to edit old content
-            MetacatUI.appView.showAlert("Please enter a valid DOI.",
-            "alert-error", this.$el, 6000, { remove: true });
+            MetacatUI.appView.showAlert({
+              message: "Please enter a valid DOI.",
+              classes: "alert-error",
+              container: this.$("#publication-identifier").parent(),
+              remove: true
+            });
+
             this.$("#publication-identifier").css({"border": "1px solid red"});
             this.$(".btn-register-citation").addClass("disabled")
           }
           else {
+            //Remove the validation error
+            this.$(".alert-container").remove();
+
             this.$("#publication-identifier").css({"border": "none"});
 
             // If the Disabled class is active
