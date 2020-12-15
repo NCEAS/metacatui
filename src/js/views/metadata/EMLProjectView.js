@@ -46,7 +46,8 @@ define([
 
         if (this.edit) {
           this.$el.html(this.editTemplate({
-            award: this.model.get('award')
+            award: this.model.get('award'),
+            awardFields: this.model.get('awardFields'),
           }));
         }
 

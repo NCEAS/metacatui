@@ -23,7 +23,8 @@ define([
         "studyAreaDescription",
         "designDescription",
         "relatedProject"
-      ]
+      ],
+      awardFields: null,
     },
 
     initialize: function(options) {
@@ -48,6 +49,14 @@ define([
         awardurl: "awardUrl",
         title: "title"
       };
+    },
+
+    awardFields: {
+      title: "Title",
+      fundername: "Funder Name",
+      funderidentifier: "Funder Identifier",
+      awardnumber: "Award Number",
+      awardurl: "Award URL",
     },
 
     //TODO: This only supports the funding and title elements right now
@@ -80,13 +89,6 @@ define([
       );
 
       //Parse the award info
-      var awardFields  = {
-        fundername: "Funder Name",
-        funderidentifier: "Funder Identifier",
-        awardnumber: "Award Number",
-        awardurl: "Award URL",
-        title: "Title"
-      }
 
       modelJSON.award = [];
       var awardEl = $(objectDOM).children("award"),
@@ -100,8 +102,8 @@ define([
         function(node) {
           var nodeEl = $(node)
           var awardItem = []
-          Object.keys(awardFields).forEach(field => {
-            awardItem.push({ label: awardFields[field], value: nodeEl.children(field).text()})
+          Object.keys(this.awardFields).forEach(field => {
+            awardItem.push({ label: this.awardFields[field], value: nodeEl.children(field).text()})
           })
 
           modelJSON.award.push(awardItem);
@@ -115,7 +117,9 @@ define([
 			for(var i=0; i<personnelNode.length; i++){
 				modelJSON.personnel.push( new EMLParty({ objectDOM: personnelNode[i], parentModel: this }));
 			}
-			*/
+      */
+
+      modelJSON.awardFields = this.awardFields
 
       return modelJSON;
     },

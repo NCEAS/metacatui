@@ -10,3 +10,11 @@
   </div>
   <hr>
 <% }) %>
+
+<h4>Award <%= award.length + 1 %></h4>
+<div class="basic-text-row">
+  <% _(awardFields).each(function(value, label) { %>
+    <label><%= value %></label>
+    <input type="text" data-category="<%= value.replaceAll(' ', '') %>" class="basic-text"/>
+  <% }) %>
+</div>
