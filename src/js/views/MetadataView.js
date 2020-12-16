@@ -625,10 +625,14 @@ define(['jquery',
             //When all packages are fully retrieved
             completePackages++;
             if(completePackages >= packageIDs.length){
+
               var latestPackages = _.filter(this.packageModels, function(m){
                 return !_.contains(packageIDs, m.get("obsoletedBy"));
               });
+
+              //Set those packages as the most recent package
               this.packageModels = latestPackages;
+
               this.insertPackageDetails(latestPackages);
             }
           });
@@ -778,8 +782,26 @@ define(['jquery',
       //Insert the data details sections
       this.insertDataDetails();
 
-      // Get DataPackge info in order to render prov extraced from the resmap.
-      if(packages.length) this.getDataPackage(packages[0].get("id"));
+      try{
+        // Get the most recent package to display the provenance graphs
+        if(packages.length){
+          //Find the most recent Package model and fetch it
+          let mostRecentPackage = _.find(packages, p => !p.get("obsoletedBy"));
+
+          //If all of the packages are obsoleted, then use the last package in the array,
+          // which is most likely the most recent.
+          /** @todo Use the DataONE version API to find the most recent package in the version chain */
+          if( !mostRecentPackage ){
+            mostRecentPackage = packages[packages.length-1];
+          }
+
+          //Get the data package
+          this.getDataPackage(mostRecentPackage.get("id"));
+        }
+      }
+      catch(e){
+        console.error("Could not get the data package (prov will not be displayed, possibly other info as well).", e);
+      }
 
       //Initialize tooltips in the package table(s)
       this.$(".tooltip-this").tooltip();
