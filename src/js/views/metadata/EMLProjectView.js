@@ -33,7 +33,11 @@ define([
         this.$el.data({ model: this.model });
       },
 
-      events: {},
+      events: {
+        "click .remove": "removeAward",
+        "mouseover .remove": "previewRemove",
+        "mouseout .remove": "previewRemove"
+      },
 
       render: function() {
         //Save the view and model on the element
@@ -45,13 +49,42 @@ define([
           .attr("data-category", "project");
 
         if (this.edit) {
-          this.$el.html(this.editTemplate({
-            award: this.model.get('award'),
-            awardFields: this.model.get('awardFields'),
-          }));
+          this.$el.html(
+            this.editTemplate({
+              award: this.model.get("award"),
+              awardFields: this.model.get("awardFields")
+            })
+          );
         }
 
         return this;
+      },
+
+      /*
+       * Remove this award
+       */
+      removeAward: function(e) {
+        //Get the index of this award
+        var awardEl = $(e.target).parent(".award-container"),
+          index = this.$(".award-container").index(awardEl),
+          view = this;
+
+
+        //Remove the award elements from the page
+        awardEl.slideUp("fast", function() {
+          this.remove();
+
+          //Bump down all the award numbers
+          var awardNums = view.$(".award-num");
+
+          for (var i = index; i < awardNums.length; i++) {
+            $(awardNums[i]).text(i + 1);
+          }
+        });
+      },
+
+      previewRemove: function(e){
+        $(e.target).parents(".award-container").toggleClass("remove-preview");
       }
     }
   );
