@@ -188,7 +188,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 //Get the AccessPolicy for this object
                 var accessPolicy = this.model.get("accessPolicy"),
+                    publicPrivateToggle = this.$(".publicprivatetoggle"),
                     checkbox = this.$(".publicprivatetoggle input"),
+                    shareButtonContainer = this.$(".sharing > div"),
                     shareButton = this.$(".sharing button");
 
                 //Check the public/private toggle if this object is private
@@ -202,47 +204,43 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 	this.$el.addClass("folder");
                 }
                 else{
-                	this.$el.addClass("data");
-
-                  //If the user is not authorized to change the permissions of
-                  // this object, then disable the checkbox
-                  if( !accessPolicy.isAuthorized("changePermission") ){
-                    checkbox.prop("disabled", "disabled")
-                            .addClass("disabled");
-
-                    this.$(".publicprivatetoggle").tooltip({
-                      title: "You are not authorized to edit the privacy of this data file",
-                      placement: "top",
-                      container: this.el,
-                      trigger: "hover",
-                      delay: { show: 800 }
-                    });
-
-                    this.$(".sharing").tooltip({
-                        title: "You are not authorized to edit the privacy of this item",
-                        placement: "top",
-                        container: this.el,
-                        trigger: "hover",
-                        delay: { show: 800 }
-                      });
-                  }
-                  else{
-                    checkbox.tooltip({
-                      title: "Check to make this data file private",
-                      placement: "top",
-                      trigger: "hover",
-                      delay: { show: 800 }
-                    });
-
-                    shareButton.tooltip({
-                        title: "Share this item",
-                        placement: "top",
-                        trigger: "hover",
-                        delay: { show: 800 }
-                      });
-                  }
-
+                    this.$el.addClass("data");
                 }
+
+                // Set up tooltips for the public private toggle and share
+                // button
+                var publicPrivateToggleTitle,
+                    sharebuttonTitle;
+
+                  // If the user is not authorized to change the permissions of
+                  // this object, then disable the checkbox
+                  if (!accessPolicy.isAuthorized("changePermission")) {
+                    publicPrivateToggle.addClass("disabled");
+                    checkbox.prop("disabled", true);
+                    shareButton.addClass("disabled");
+
+                    publicPrivateToggleTitle = "You are not authorized to edit the privacy of this item.";
+                    sharebuttonTitle = "You are not authorized to share this item."
+                  } else {
+                    publicPrivateToggleTitle = "Toggle whether this item is publicly viewable",
+                    sharebuttonTitle = "Share this item with others";
+                  }
+
+                  publicPrivateToggle.tooltip({
+                    title: publicPrivateToggleTitle,
+                    placement: "top",
+                    container: this.el,
+                    trigger: "hover",
+                    delay: { show: 400 }
+                  });
+
+                  shareButtonContainer.tooltip({
+                    title: sharebuttonTitle,
+                    placement: "top",
+                    container: this.el,
+                    trigger: "hover",
+                    delay: { show: 400 }
+                  });
 
                 // Add tooltip to a disabled Replace link
                 $(this.$el).find(".replace.disabled").tooltip({
@@ -989,12 +987,12 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
               if( typeof e === "undefined" || !e )
                 return;
 
+              var accessPolicy = this.model.get("accessPolicy");
+
               var makePublic = $(e.target).prop("checked");
 
               //If the user has chosen to make this object private
               if(!makePublic){
-                //Get the existing access policy
-                var accessPolicy = this.model.get("accessPolicy");
                 if( accessPolicy ){
                   //Make the access policy private
                   accessPolicy.makePrivate();
@@ -1008,8 +1006,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
               }
               else{
-                //Get the existing access policy
-                var accessPolicy = this.model.get("accessPolicy");
                 if( accessPolicy ){
                   //Make the access policy public
                   accessPolicy.makePublic();
@@ -1046,7 +1042,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
              * Show the data item as saving
              */
             showSaving: function(){
-            	this.$("button").prop("disabled", true);
+            	this.$(".controls button").prop("disabled", true);
 
             	if(this.model.get("type") != "Metadata")
             		this.$(".controls").prepend($(document.createElement("div")).addClass("disable-layer"));
@@ -1055,7 +1051,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             },
 
             hideSaving: function(){
-            	this.$("button").prop("disabled", false);
+            	this.$(".controls button").prop("disabled", false);
             	this.$(".disable-layer").remove();
 
             	//Make the name cell editable again

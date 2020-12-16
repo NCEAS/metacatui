@@ -227,8 +227,11 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     showAccessPolicyModal: function(e, model){
       try{
 
-        //If the AccessPolicy editor is disabled in this app, then exit now
-        if( !MetacatUI.appModel.get("allowAccessPolicyChanges") || this.$(".access-policy-control").attr("disabled") == "disabled" ){
+        // If the AccessPolicy editor is disabled in this app, or the specific
+        // .access-policy-control has theh class diasbled, then exit now
+        if (!MetacatUI.appModel.get("allowAccessPolicyChanges") ||
+          this.$(".access-policy-control").attr("disabled") == "disabled" ||
+          (e.currentTarget && $(e.currentTarget).hasClass("disabled"))) {
           return;
         }
 
