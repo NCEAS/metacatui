@@ -145,28 +145,6 @@ define(['jquery',
             this.scrollToFragment();
           });
 
-          // Once the model is synced, get the resource map.
-          this.listenToOnce(this, "modelFound", function () {
-            // Get the identifier for the resource map
-            var resMapPID = this.model.get("resourceMap");
-            // Not every metadata model will have a resource map
-            if (resMapPID) {
-              // We need to wait for the resource map to sync before we render the
-              // owner control buttons, because we need to check for authorization
-              // to edit both the EML and the resource map
-              this.listenToOnce(this, "packageModelSynced", function () {
-                this.insertEditorControls();
-              });
-              this.getDataPackage();
-              // When there is no resource map, and we're just rendering the EML,
-              // We do not need to wait for the resource map to sync before inserting
-              // the owner control buttons.
-            } else {
-              this.insertEditorControls();
-            }
-
-          });
-
           this.getModel();
 
           return this;
@@ -174,20 +152,11 @@ define(['jquery',
 
         /**
          * Retrieve the resource map given its PID, and when it's fetched,
-         * parse for provenance info, then check for private members in the package
+         * check for write permissions, then check for private members in the package
          * table view, if there is one.
+         * @param {string} pid - The PID of the resource map
          */
-        getDataPackage: function () {
-
-          var pid = this.model.get("resourceMap");
-          if(pid.length){
-            pid = pid[0]
-          }
-
-          // Get the metadata model that is associated with this DataPackage collection
-          //var metadataModel = new ScienceMetadata({ id: this.pid });
-          // Once the ScienceMetadata is populated, populate the associated package
-          //this.metadataModel = metadataModel;
+        getDataPackage: function (pid) {
 
           //Create a DataONEObject model to use in the DataPackage collection.
           var dataOneObject = new ScienceMetadata({ id: this.model.get("id") });
@@ -197,27 +166,32 @@ define(['jquery',
 
           this.dataPackage.mergeModels([this.model]);
 
+          // If there is no resource map
+          if(!pid){
+            this.checkWritePermissions();
+            return
+          }
+
           this.listenToOnce(this.dataPackage, "complete", function () {
-
-            // parseProv triggers "queryComplete"
-            this.dataPackage.parseProv();
-            this.checkForProv();
-
             var packageTableView = _.findWhere(this.subviews, { type: "PackageTable" });
             if (packageTableView) {
               packageTableView.dataPackageCollection = this.dataPackage;
               packageTableView.checkForPrivateMembers();
             }
+            
           });
-
-          this.listenToOnce(this.dataPackage.packageModel, "sync", function () {
-            this.trigger("packageModelSynced");
-          });
-
-          //Fetch the data package. DataPackage.parse() triggers 'complete'
+          if(this.dataPackage.packageModel && this.dataPackage.packageModel.get("synced")===true){
+            this.checkWritePermissions();
+          } else {
+            this.listenToOnce(this.dataPackage.packageModel, "sync", function(){
+              this.checkWritePermissions();
+            });
+          }
+          // Fetch the data package. DataPackage.parse() triggers 'complete'
           this.dataPackage.fetch({
             fetchModels: false
           });
+
         },
 
         /*
@@ -238,7 +212,6 @@ define(['jquery',
             if (this.model.get("formatType") == "METADATA" || !this.model.get("formatType")) {
               this.model = model;
               this.renderMetadata();
-              this.trigger("modelFound");
             }
             else if (this.model.get("formatType") == "DATA") {
 
@@ -334,7 +307,6 @@ define(['jquery',
                   this.model = metadata;
                   this.pid = this.model.get("id");
                   this.renderMetadata();
-                  this.trigger("modelFound");
                   if (this.model.get("resourceMap"))
                     this.getPackageDetails(this.model.get("resourceMap"));
                 }
@@ -809,6 +781,14 @@ define(['jquery',
           //Insert the data details sections
           this.insertDataDetails();
 
+          // Get data package, if there is one, before checking write permissions
+          if (packages.length){
+            this.getDataPackage(packages[0].get("id"));
+          } else {
+            // Otherwise go ahead and check write permissions on metadata only
+            this.checkWritePermissions();
+          }
+
           //Initialize tooltips in the package table(s)
           this.$(".tooltip-this").tooltip();
 
@@ -1093,23 +1073,13 @@ define(['jquery',
 
           }
         },
-
-        /*
-         * Checks the authority for the logged in user for this dataset
-         * and inserts control elements onto the page for the user to interact with the dataset - edit, publish, etc.
-         * If there is one, the data package must be fetched before this function is run.
+        
+        /**
+         * Check whether the user has write permissions on the resource map and the EML.
+         * Once the permission checks have finished, continue with the functions that
+         * depend on them.
          */
-        insertEditorControls: function (string) {
-
-          if (
-            // Do not insert the editor controls twice
-            (this.$(this.editorControlsContainer).find("a").length > 0) ||
-            // Do not show editor controls for older versions of data sets
-            (this.model.get("obsoletedBy") && (this.model.get("obsoletedBy").length > 0)) ||
-            this.model.get("archived")
-          ) {
-            return false;
-          }
+        checkWritePermissions: function () {
 
           var view = this,
             authorization = [],
@@ -1126,25 +1096,74 @@ define(['jquery',
             } else if (model.get("isAuthorized_write") === true) {
               authorization[index] = true
               // If we already checked, and the user is not authorized,
-              // do not insert any owner controls.
+              // record that information in the authorzation array.
             } else if (model.get("isAuthorized_write") === false) {
-              return
+              authorization[index] = false
               // If we haven't checked for authorization yet, do that now.
               // Return to this function once we've finished checking.
             } else {
+              view.stopListening(model, "change:isAuthorized_write");
               view.listenToOnce(model, "change:isAuthorized_write", function () {
-                view.insertEditorControls();
+                view.checkWritePermissions();
+              });
+              view.stopListening(model, "change:notFound");
+              view.listenToOnce(model, "change:notFound", function () {
+                view.checkWritePermissions();
               });
               model.checkAuthority("write");
               return
             }
           });
 
-          // Check that all the models were tested for authorization.
-          // If not authorized, don't continue to render the owner controls.
-          var allTrue = _.every(authorization, function (test) { return test });
-          if (!allTrue || authorization.length !== modelsToCheck.length) {
+          // Check that all the models were tested for authorization
+
+              // Every value in the auth array must be true for the user to have full permissions
+          var allTrue = _.every(authorization, function (test) { return test }),
+              // When we have completed checking each of the models that we need to check for
+              // permissions, every value in the authorization array should be "true" or "false",
+              // and the array should have the same length as the modelsToCheck array.
+              allBoolean = _.every(authorization, function (test) { return typeof test === "boolean" }),
+              allChecked = allBoolean && authorization.length === modelsToCheck.length;
+
+          // Check for and render prov diagrams now that we know whether or not the user has editor permissions
+          // (There is a different version of the chart for users who can edit the resource map and users who cannot)
+          if (allChecked) {
+            this.checkForProv();
+          } else {
             return
+          }
+          // Only render the editor controls if we have completed the checks AND the user has full editor permissions
+          if(allTrue){
+            this.insertEditorControls();
+          }
+
+        },
+
+        /*
+         * Inserts control elements onto the page for the user to interact with the dataset - edit, publish, etc.
+         * Editor permissions should already have been checked before running this function.
+         */
+        insertEditorControls: function () {
+
+          var view = this,
+              resourceMap = this.dataPackage ? this.dataPackage.packageModel : null,
+              modelsToCheck = [this.model, resourceMap],
+              authorized = _.every(modelsToCheck, function (model) {
+                // If there is no EML or no resource map, the user doesn't need permission to edit it.
+                return (!model || model.get("notFound") == true) ? true : model.get("isAuthorized_write") === true;
+              });
+
+          // Only run this function when the user has full editor permissions
+          // (i.e. write permission on the EML, and write permission on the resource map if there is one.)
+          if(!authorized){
+            return
+          }
+
+          if (
+            (this.model.get("obsoletedBy") && (this.model.get("obsoletedBy").length > 0)) ||
+            this.model.get("archived")
+          ) { 
+            return false;
           }
 
           // Save the element that will contain the owner control buttons
@@ -1420,26 +1439,29 @@ define(['jquery',
 
         },
 
-
-        // Check if the DataPackage provenance parsing has completed.
+        /**
+         * Check if the DataPackage provenance parsing has completed. If it has,
+         * draw provenance charts. If it hasn't start the parseProv function.
+         * The view must have the DataPackage collection set as view.dataPackage
+         * for this function to run.
+         */
         checkForProv: function () {
 
-          // Show the provenance trace for this package
+          if(!this.dataPackage){
+            return
+          }
+          // Render the provenance trace using the redrawProvCharts function instead of the drawProvCharts function
+          // just in case the prov charts have already been inserted. Redraw will make sure they are removed
+          // before being re-inserted.
           var model = this.model;
           if (this.dataPackage.provenanceFlag == "complete") {
-            this.drawProvCharts(this.dataPackage);
-            // Check each prov chart to see if it has been marked for re-rendering and
-            // redraw it if it has been.
-            this.listenToOnce(this.dataPackage, "redrawProvCharts", this.redrawProvCharts);
-            this.model.once("change:isAuthorized", this.redrawProvCharts, this);
+            this.redrawProvCharts(this.dataPackage);
           } else {
             this.listenToOnce(this.dataPackage, "queryComplete", function () {
-              this.drawProvCharts(this.dataPackage);
-              // Check each prov chart to see if it has been marked for re-rendering and
-              // redraw it if it has been.
-              this.listenToOnce(this.dataPackage, "redrawProvCharts", this.redrawProvCharts);
-              model.once("change:isAuthorized", this.redrawProvCharts, this);
+              this.redrawProvCharts(this.dataPackage);
             });
+            // parseProv triggers "queryComplete"
+            this.dataPackage.parseProv();
           }
         },
 
@@ -1448,16 +1470,18 @@ define(['jquery',
          * This function looks at four sources for the provenance - the package sources, the package derivations, member sources, and member derivations
          */
         drawProvCharts: function (dataPackage) {
-          //Provenance has to be retrieved from the Package Model (getProvTrace()) before the charts can be drawn
+
+          // Set a listener to re-draw the prov charts when needed
+          this.stopListening(this.dataPackage, "redrawProvCharts");
+          this.listenToOnce(this.dataPackage, "redrawProvCharts", this.redrawProvCharts);
+
+          // Provenance has to be retrieved from the Package Model (getProvTrace()) before the charts can be drawn
           if (dataPackage.provenanceFlag != "complete") return false;
 
           // If the user is authorized to edit the provenance for this package
-          // then turn on editing, so that // edit icons are displayed.
-          //var isAuthorized = true;
-          var editModeOn = false;
+          // then turn on editing, so that edit icons are displayed.
+          var editModeOn = this.dataPackage.packageModel.get("isAuthorized_write");
 
-          //If the user is authorized to edit this metadata doc, then turn edit mode on
-          this.model.get("isAuthorized") ? editModeOn = true : editModeOn = false;
           //If this content is archived, then turn edit mode off
           if (this.model.get("archived")) {
             editModeOn = false;
@@ -1673,7 +1697,6 @@ define(['jquery',
           });
 
           view.drawProvCharts(this.dataPackage);
-          view.listenToOnce(this.dataPackage, "redrawProvCharts", view.redrawProvCharts);
 
         },
 
@@ -1711,7 +1734,7 @@ define(['jquery',
           var metadataId = this.packageModels[0].getMetadata().get("id")
           _.each(this.subviews, function (thisView, i) {
             // Check if this is a ProvChartView
-            if (thisView.type.indexOf("PackageTable") !== -1) {
+            if (thisView.type && thisView.type.indexOf("PackageTable") !== -1) {
               if (thisView.currentlyViewing == metadataId) {
                 var packageId = view.dataPackage.packageModel.get("id");
                 var title = packageId ? '<span class="subtle">Package: ' + packageId + '</span>' : "";
