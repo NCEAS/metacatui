@@ -6498,6 +6498,10 @@ body.mapMode{
   transform: translateX(16px);
 }
 
+.simple-toggle.disabled span {
+  cursor: not-allowed;
+}
+
 /** Autocompletes **/
 .ui-autocomplete{
   width: 246px;
