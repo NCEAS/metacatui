@@ -7120,6 +7120,10 @@ ul.side-nav-items {
     width: 100px;
 }
 
+.data-package-item td.public {
+  width: 60px;
+}
+
 /* Editor package table sharing column */
 .data-package-item td.sharing {
     width: 60px;
