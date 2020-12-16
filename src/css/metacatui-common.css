@@ -6460,6 +6460,7 @@ body.mapMode{
   width: 30px;
   height: 15px;
   border-radius: 50%;
+  vertical-align: middle;
 }
 
 .simple-toggle input {
