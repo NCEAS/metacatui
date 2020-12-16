@@ -962,7 +962,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               currentMember = this.find(function(model) { return model.get('id') === currentPid});
 
               if(typeof currentMember === 'undefined') {
-                console.log("Package member undefined for pid: " + currentPid);
                 return;
               }
               // Search for a provenenace field value (i.e. 'prov_wasDerivedFrom') that was
