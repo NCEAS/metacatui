@@ -2841,7 +2841,7 @@ define(['jquery',
     insertCitationMetaTags: function() {
       // Generate template data to use for all templates
       var title = this.model.get("title"),
-        authors = this.getAuthorText(),
+        authors = this.model.get("origin"),
         publisher = this.getPublisherText(),
         date = new Date(this.getDatePublishedText()).getUTCFullYear().toString();
 
@@ -2856,6 +2856,7 @@ define(['jquery',
       // Clear any that are already in the document.
       $("meta[name='citation_title']").remove();
       $("meta[name='citation_authors']").remove();
+      $("meta[name='citation_author']").remove();
       $("meta[name='citation_publisher']").remove();
       $("meta[name='citation_date']").remove();
 
