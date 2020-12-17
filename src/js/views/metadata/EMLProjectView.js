@@ -69,10 +69,24 @@ define([
           index = this.$(".award-container").index(awardEl),
           view = this;
 
+        //Remove this award from the model
+        this.model.set(
+          "award",
+          _.without(
+            this.model.get("award"),
+            this.model.get("award")[index]
+          )
+        );
+
+
 
         //Remove the award elements from the page
         awardEl.slideUp("fast", function() {
           this.remove();
+
+          // Trigger a change on the entire package
+          MetacatUI.rootDataPackage.packageModel.set("changed", true);
+
 
           //Bump down all the award numbers
           var awardNums = view.$(".award-num");
