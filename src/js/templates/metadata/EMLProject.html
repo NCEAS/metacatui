@@ -1,0 +1,27 @@
+<h2>Project</h2>
+
+<div>
+  <% _(award).each(function(awardItem, i) { %>
+    <div class="award-container">
+      <i class="remove icon-remove"></i>
+      <h4>Award <span class="award-num"><%= i + 1 %></span></h4>
+
+      <div class="basic-text-row">
+        <% _(awardItem).each(function(field) { %>
+          <label><%= field.label %></label>
+          <input type="text" data-category="<%= field.label.replaceAll(' ', '') %>" value="<%= field.value %>" class="basic-text"/>
+        <% }) %>
+      </div>
+    </div>
+  <% }) %>
+
+  <div class="award-container">
+    <h4>Award <span class="award-num"><%= award.length + 1 %></span></h4>
+    <div class="basic-text-row">
+      <% _(awardFields).each(function(value, label) { %>
+        <label><%= value %></label>
+        <input type="text" data-category="<%= value.replaceAll(' ', '') %>" class="basic-text"/>
+      <% }) %>
+    </div>
+  </div>
+</div>

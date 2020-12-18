@@ -7705,6 +7705,12 @@ textarea.medium{
 	margin-top: 20px;
 }
 
+/* ---- Projects ---- */
+.metadata-container .award-container .remove{
+	position: relative;
+	float: right;
+}
+
 /* ---- Remove icons in the Editor ---- */
 .metadata-container .remove{
 	color: #cecece;

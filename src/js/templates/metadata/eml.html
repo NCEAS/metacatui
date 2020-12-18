@@ -15,6 +15,13 @@
 				<i class="required-icon hidden" data-section="people"></i>
 			</a>
 		</li>
+		<li class="project side-nav-item" data-category="project">
+			<a href="#" data-section="project" class="<% if(activeSection == 'project') { %> active <% } %>">
+				<i class="icon error icon-exclamation-sign hidden"></i>
+				Project
+				<i class="required-icon hidden" data-section="project"></i>
+			</a>
+		</li>
 		<li class="dates side-nav-item" data-category="temporalCoverage">
 			<a href="#" data-section="dates" class="<% if(activeSection == 'dates') { %> active <% } %>">
 				<i class="icon error icon-exclamation-sign hidden"></i>
@@ -43,10 +50,7 @@
 				<i class="required-icon hidden" data-section="methods"></i>
 			</a>
 		</li>
-		<!-- <li class="project side-nav-item">
-			<a href="#" data-section="project">Project</a>
-		</li>
-		<li class="sharing side-nav-item">
+		<!--<li class="sharing side-nav-item">
 			<a href="#" data-section="sharing">Sharing</a>
 		</li> -->
 	</ul>
@@ -54,28 +58,28 @@
 	<section class="span10 metadata-container edit">
 		<section data-section="overview" class="section overview <% if(visibleSection != 'overview' && visibleSection != 'all') { %> hidden <% } %>">
 		</section>
-		
+
 		<section data-section="people" class="section people <% if(visibleSection != 'people' && visibleSection != 'all') { %> hidden <% } %>">
 		</section>
-		
+
+		<section data-section="project" class="section project <% if(visibleSection != 'project' && visibleSection != 'all') { %> hidden <% } %>">
+		</section>
+
 		<section data-section="dates" class="section dates <% if(visibleSection != 'dates' && visibleSection != 'all') { %> hidden <% } %>"
 				data-category="temporalCoverage">
 		</section>
-		
+
 		<section data-section="locations" class="section locations <% if(visibleSection != 'locations' && visibleSection != 'all') { %> hidden <% } %>"
 				data-category="geoCoverage">
 		</section>
-		
+
 		<section data-section="taxa" class="section taxa <% if(visibleSection != 'taxa' && visibleSection != 'all') { %> hidden <% } %>"
 				data-category="taxonCoverage">
 		</section>
-		
+
 		<section data-section="methods" class="section methods <% if(visibleSection != 'methods' && visibleSection != 'all') { %> hidden <% } %>">
 		</section>
-		<!-- 
-		<section class="section project">
-		</section>
-		
+		<!--
 		<section class="section sharing">
 		</section>
 		 -->
