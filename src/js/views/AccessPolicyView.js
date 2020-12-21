@@ -621,7 +621,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
 
       }
       //When the status is "error"
-      else if( status == "e" || status == "w" ){
+      else if( status == "e" ){
         var msgContainer = this.$(".modal-body").length? this.$(".modal-body") : this.$el;
 
         MetacatUI.appView.showAlert(

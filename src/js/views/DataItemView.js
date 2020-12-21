@@ -272,7 +272,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 }
 
                 // When there's an error or a warninig
-                if((uploadStatus == "e" || uploadStatus == "w") && errorMessage){
+                if(uploadStatus == "e" && errorMessage){
 
                     var tooltipClass = uploadStatus == "e" ? "error" : "";
 
@@ -1098,9 +1098,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
             	if(this.model.get("uploadStatus") == "e")
                     this.$el.addClass("error-saving");
-
-                if(this.model.get("uploadStatus") == "w")
-            		this.$el.addClass("warning-saving");
             },
 
             showUploadProgress: function(){

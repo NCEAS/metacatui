@@ -175,7 +175,7 @@ define([
                         this.trigger("addOne");
 
                     } else {
-                        console.log("Couldn't render " + item.id + ". Delayed until parent is rendered.");
+                        console.warn("Couldn't render " + item.id + ". Delayed until parent is rendered.");
                         // Postpone the data row until the parent is rendered
                         delayed_models = this.delayedModels[scimetaParent];
 
