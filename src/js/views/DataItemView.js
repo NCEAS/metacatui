@@ -211,7 +211,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                             .addClass("disabled");
 
                     this.$(".sharing").tooltip({
-                      title: "You are not authorized to edit the privacy of this data file",
+                      title: "You are not authorized to edit the " + MetacatUI.appModel.get("accessPolicyName") + " of this data file",
                       placement: "top",
                       container: this.el,
                       trigger: "hover",
@@ -227,27 +227,14 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     });
                   }
 
-                    if( !accessPolicy.isAuthorized("write") ){
-
-                        this.$(".name > div").tooltip({
-                        placement: "top",
-                        container: this.el,
-                        trigger: "hover",
-                        delay: { show: 800 }
-                        });
-                    }
-                    else{
-                        this.$(".name > div").tooltip({
-                            placement: "top",
-                            container: this.el,
-                            trigger: "hover",
-                            delay: { show: 800 }
-                        });
-                    }
+                  this.$(".name > div").tooltip({
+                    placement: "top",
+                    container: this.el,
+                    trigger: "hover",
+                    delay: { show: 800 }
+                  });
 
                 }
-
-                
 
                 // Add tooltip to a disabled Replace link
                 $(this.$el).find(".replace.disabled").tooltip({
@@ -268,20 +255,20 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 // Use a friendlier message for 401 errors (the one returned is a little hard to understand)
                 if(this.model.get("sysMetaErrorCode") == 401){
                     var accessPolicy = this.model.get("accessPolicy");
-                    
-                    // If the user at least has edit permission, assume the error was related to changing the access rules
-                    if(accessPolicy && accessPolicy.isAuthorized("edit")){
-                        errorMessage = "You don't have permission to change access rules, so we updated the object but did not change the access rules."
+
+                    // If the user at least has write permission, they cannot update the system metadata only, so show this message
+                    /** @todo Do an object update when someone has write permission but not changePermission and is trying to change the system metadata (but not the access policy)  */
+                    if(accessPolicy && accessPolicy.isAuthorized("write")){
+                        errorMessage = "The owner of this data file has not given you permission to Rename or change the " + MetacatUI.appModel.get("accessPolicyName") + "."
                     // Otherwise, assume they only have read access
                     } else {
-                        errorMessage = "We updated the object but could not update the access rules, or re-name or replace this file, because you're not authorized to make these changes."
+                        errorMessage = "The owner of this data file has not given you permission to edit this data file or change the " + MetacatUI.appModel.get("accessPolicyName") + ".";
                     }
-                    
                 }
 
                 // When there's an error or a warninig
                 if((uploadStatus == "e" || uploadStatus == "w") && errorMessage){
-                    
+
                     var tooltipClass = uploadStatus == "e" ? "error" : "";
 
                 	this.$(".status .icon").tooltip({
@@ -992,7 +979,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             emptyName: function(e){
 
                 var editableCell = this.$(".canRename [contenteditable]");
-                
+
                 editableCell.tooltip('hide');
 
             	if(editableCell.text().indexOf("Untitled") > -1){
@@ -1104,7 +1091,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
             	if(this.model.get("uploadStatus") == "e")
                     this.$el.addClass("error-saving");
-                    
+
                 if(this.model.get("uploadStatus") == "w")
             		this.$el.addClass("warning-saving");
             },
