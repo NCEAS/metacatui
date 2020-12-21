@@ -703,11 +703,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                   //Fetch the system metadata from the server so we have a fresh copy of the newest sys meta.
                   model.fetch({ systemMetadataOnly: true });
 
+                  model.set("sysMetaErrorCode", null);
+
                   //Update the upload status to "c" for "complete"
                   model.set("uploadStatus", "c");
                   model.set("sysMetaUploadStatus", "c");
-
-                  model.set("sysMetaErrorCode", null);
 
                   //Trigger a custom event that the sys meta was updated
                   model.trigger("sysMetaUpdated");
@@ -738,11 +738,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
                         model.set("sysMetaErrorCode", statusCode);
 
-                        if(statusCode == "401"){
-                          model.set("uploadStatus", "w");
-                        } else {
-                          model.set("uploadStatus", "e");
-                        }
+                        model.set("uploadStatus", "e");
                         model.set("sysMetaUploadStatus", "e");
 
                         //Send this exception to Google Analytics

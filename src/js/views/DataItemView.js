@@ -81,15 +81,22 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 attributes.entityIsValid = true;
                 attributes.hasInvalidAttribute = false;
 
-                // Restrict item replacement depending on access
+                // Restrict item replacement and renaming depending on access policy
                 //
                 // Note: .canWrite is set here (at render) instead of at init
                 // because render will get called a few times during page load
                 // as the app updates what it knows about the object
-                this.canWrite = this.model.get("accessPolicy") &&
-                    this.model.get("accessPolicy").isAuthorized("write");
-
-                attributes.canWrite = this.canWrite; // Copy to template
+                let accessPolicy = this.model.get("accessPolicy");
+                if( accessPolicy ){
+                  attributes.canWrite  = accessPolicy.isAuthorized("write");
+                  this.canWrite        = attributes.canWrite;
+                  attributes.canRename = accessPolicy.isAuthorizedUpdateSysMeta();
+                }
+                else{
+                  attributes.canWrite  = false;
+                  this.canWrite        = false;
+                  attributes.canRename = false;
+                }
 
                 //Get the number of attributes for this item
                 if(this.model.type != "EML"){
@@ -196,8 +203,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 	this.$el.addClass("data");
 
                   //Get the AccessPolicy for this object
-                  var accessPolicy = this.model.get("accessPolicy"),
-                      checkbox = this.$(".sharing input");
+                  let checkbox = this.$(".sharing input");
 
                   //Check the public/private toggle if this object is private
                   if( accessPolicy && !accessPolicy.isPublic() ){
@@ -254,12 +260,11 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 // Use a friendlier message for 401 errors (the one returned is a little hard to understand)
                 if(this.model.get("sysMetaErrorCode") == 401){
-                    var accessPolicy = this.model.get("accessPolicy");
 
                     // If the user at least has write permission, they cannot update the system metadata only, so show this message
                     /** @todo Do an object update when someone has write permission but not changePermission and is trying to change the system metadata (but not the access policy)  */
                     if(accessPolicy && accessPolicy.isAuthorized("write")){
-                        errorMessage = "The owner of this data file has not given you permission to Rename or change the " + MetacatUI.appModel.get("accessPolicyName") + "."
+                        errorMessage = "The owner of this data file has not given you permission to rename it or change the " + MetacatUI.appModel.get("accessPolicyName") + "."
                     // Otherwise, assume they only have read access
                     } else {
                         errorMessage = "The owner of this data file has not given you permission to edit this data file or change the " + MetacatUI.appModel.get("accessPolicyName") + ".";
@@ -414,6 +419,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
              * @param e The event triggering this method
              */
             updateName: function(e) {
+
+
 
                 var enteredText = this.cleanInput($(e.target).text().trim());
 
