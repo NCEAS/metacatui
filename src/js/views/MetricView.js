@@ -10,7 +10,8 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
     * @screenshot MetricView.png
     * @extends Backbone.View
     */
-    var MetricView = Backbone.View.extend({
+    var MetricView = Backbone.View.extend(
+      /** @lends MetricView.prototype */{
 
         tagName: 'a',
         // id: 'metrics-button',

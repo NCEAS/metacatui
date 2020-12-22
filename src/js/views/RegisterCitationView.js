@@ -84,7 +84,7 @@ define(['jquery', 'underscore', 'backbone', "models/Utilities", 'text!templates/
           return this;
         },
 
-        
+
 
         /**
          * Get inputs from the modal and sends it to the DataONE Metrics Service
@@ -156,7 +156,7 @@ define(['jquery', 'underscore', 'backbone', "models/Utilities", 'text!templates/
 
         },
 
-        /*
+        /**
         * Validates if the given input is a valid DOI string or not
         * @since 2.14.1
         * @return {undefined}

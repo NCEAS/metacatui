@@ -6,7 +6,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 	function($, _, Backbone, LoginTemplate, AlertTemplate, LoginButtonsTemplate, LoginOptionsTemplate, LdapLoginTemplate) {
 	'use strict';
 
-	var SignInView = Backbone.View.extend({
+  /**
+  * @class SignInView
+  * @classcategory Views
+  * @extends Backbone.View
+  */
+	var SignInView = Backbone.View.extend(
+    /** @lends SignInView.prototype */{
 
 		template: _.template(LoginTemplate),
 		alertTemplate: _.template(AlertTemplate),
