@@ -2272,12 +2272,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               //Get a list of the model pids that should be aggregated by this package
               var idsFromModel = [];
               this.each(function(packageMember){
-                //If this object failed to save, but it has an older version, aggregate the older version
-                if( packageMember.get("uploadStatus") == "e" && packageMember.get("obsoletes") ){
-                  idsFromModel.push( packageMember.get("obsoletes") );
-                }
-                //Otherwise, if this object is done uploading, aggregate it
-                else if( packageMember.get("uploadStatus") !== "p" ){
+                //If this object isn't done uploading, don't aggregate it.
+                //Or if it failed to upload, don't aggregate it.
+                //But if the system metadata failed to update, it can still be aggregated.
+                if( packageMember.get("uploadStatus") !== "p" ||
+                    packageMember.get("uploadStatus") !== "e" ||
+                    packageMember.get("sysMetaUploadStatus") == "e" ){
                   idsFromModel.push(packageMember.get("id"));
                 }
               });
