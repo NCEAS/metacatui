@@ -158,6 +158,8 @@ define(['jquery', 'underscore', 'backbone', "models/Utilities", 'text!templates/
 
         /*
         * Validates if the given input is a valid DOI string or not
+        * @since 2.14.1
+        * @return {undefined}
         */
         validateDOI: function(){
           var identifierInput = this.$("#publication-identifier").val();
@@ -172,14 +174,14 @@ define(['jquery', 'underscore', 'backbone', "models/Utilities", 'text!templates/
               remove: true
             });
 
-            this.$("#publication-identifier").css({"border": "1px solid red"});
+            this.$("#publication-identifier").addClass("register-citation-doi-validation");
             this.$(".btn-register-citation").addClass("disabled")
           }
           else {
             //Remove the validation error
             this.$(".alert-container").remove();
 
-            this.$("#publication-identifier").css({"border": "none"});
+            this.$("#publication-identifier").removeClass("register-citation-doi-validation");
 
             // If the Disabled class is active
             if (this.$(".btn-register-citation").find(".disabled")) {

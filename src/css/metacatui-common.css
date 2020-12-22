@@ -2031,7 +2031,9 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 .register-citation-element .btn{
   justify-self: center;
 }
-
+#publication-identifier.register-citation-doi-validation {
+	border: 1px solid red;
+}
 /******************************************
 * Search Page / Data Catalog Page Metrics
 ******************************************/

@@ -3,6 +3,13 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
     function($, _, Backbone, MetricModalView) {
     'use strict';
 
+    /**
+    * @class MetricView
+    * @classdesc the display of the dataset citation and usage metrics on the dataset landing page
+    * @classcategory Views
+    * @screenshot MetricView.png
+    * @extends Backbone.View
+    */
     var MetricView = Backbone.View.extend({
 
         tagName: 'a',
