@@ -66,7 +66,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     documents: [],
                     resourceMap: [],
                     nodeLevel: 0, // Indicates hierarchy level in the view for indentation
-                    sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
+                    sortOrder: 2, // Metadata: 1, Data: 2, DataPackage: 3
                     synced: false, // True if the full model has been synced
                     uploadStatus: null, //c=complete, p=in progress, q=queued, e=error, w=warning, no upload status=not in queue
                     uploadProgress: null,
