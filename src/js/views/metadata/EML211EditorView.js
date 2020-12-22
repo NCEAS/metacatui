@@ -168,7 +168,7 @@ define(['underscore',
               });
               // No need to check authorization for a new resource map
               if (resourceMap.isNew()) {
-                resourceMap.set("isAuthorized_write", true)
+                resourceMap.set("isAuthorized_write", true);
               } else {
                 resourceMap.checkAuthority("write");
                 this.updateLoadingText("Loading metadata...");
@@ -248,10 +248,9 @@ define(['underscore',
 
           if (resMapPermission === true && metadataPermission === true) {
             var view = this;
-            // Render the Data Package table
+            // Render the Data Package table.
+            // This function will also render metadata.
             view.renderDataPackage();
-            // Render the metadata
-            view.renderMetadata();
           } else if (resMapPermission === false || metadataPermission === false) {
             this.notAuthorized();
           }
@@ -327,7 +326,7 @@ define(['underscore',
 
               // Remove the cached system metadata XML so we retrieve it again
               MetacatUI.rootDataPackage.packageModel.set("sysMetaXML", null);
-              this.getLatestResouceMap();
+              this.getLatestResourceMap();
 
             }
 
@@ -355,7 +354,7 @@ define(['underscore',
 
             // 2A. If there is more than one resource map, we need to make sure we fetch the most recent one
             if (resourceMapIds.length > 1) {
-              this.getLatestResouceMap();
+              this.getLatestResourceMap();
 
               // 2B. Just one resource map found
             } else {
@@ -376,7 +375,7 @@ define(['underscore',
          * Get the latest version of the resource map model stored in MetacatUI.rootDataPackage.packageModel.
          * When the newest resource map is synced, the "dataPackageFound" event will be triggered.
          */
-        getLatestResouceMap: function () {
+        getLatestResourceMap: function () {
 
           try {
 
@@ -441,6 +440,10 @@ define(['underscore',
         renderDataPackage: function () {
 
           var view = this;
+
+          if(MetacatUI.rootDataPackage.packageModel.isNew()){
+            view.renderMember(this.model);
+          };
 
           // As the root collection is updated with models, render the UI
           this.listenTo(MetacatUI.rootDataPackage, "add", function (model) {
