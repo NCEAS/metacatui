@@ -104,6 +104,12 @@
   color: #333;
 }
 
+.ui.multiple.search.dropdown>input.search {
+  min-height: 1.2rem;
+  font-size: 12px;
+  line-height: 14px;
+}
+
 .ui.dropdown .menu .header {
   margin: 1rem 0 .75rem;
   padding: 0 1.14285714rem;
