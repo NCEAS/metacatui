@@ -58,6 +58,10 @@ pre {
   margin: 20px auto;
 }
 
+.subtle {
+  color: var(--c-neutral-5);
+}
+
 .pointer {
   cursor: pointer;
 }
@@ -201,15 +205,21 @@ svg.icon {
 input[type=datetime], input[type=datetime-local], input[type=date],
 input[type=month], input[type=time], input[type=week], input[type=number],
 input[type=email], input[type=url], input[type=tel], input[type=color],
-input[type=search], textarea {
-  border: none;
+input[type=search], select, textarea {
   outline: none;
   border-radius: var(--br-default, 0.25rem);
   color: var(--c-neutral-6);
-  /* background-color: var(--c-neutral-1); */
-  box-shadow: 0 .03rem .5rem -0.2rem var(--c-shadow-2-on-default);
-  /* width: 100%; */
-  border-bottom: 1.5px solid transparent;
+  background-color: var(--c-neutral-1);
+  border: 1px solid var(--c-neutral-3);
+  padding-left: 10px;
+  box-shadow: 0 0.03rem 0.5rem -0.2rem var(--c-shadow-3-on-default,var(--c-shadow-2-on-default,rgba(1,1,1,0.08)));
+}
+*::placeholder {
+  color: var(--c-neutral-4) !important;
+}
+.input-append .add-on:last-child, .input-append .btn-group:last-child>.dropdown-toggle, .input-append .btn:last-child {
+  margin-left: -4px;
+  border-radius: 0 var(--br-default, 0.25rem) var(--br-default, 0.25rem) 0;
 }
 
 /** Ellipsis Styles - both single line and multi-line, which needs particular markup structure to work. See http://codepen.io/romanrudenko/pen/ymHFh **/
@@ -303,6 +313,23 @@ input[type=search], textarea {
   background-color: var(--c-minor-accent-5) !important;
 }
 
+/* markdown editor */
+.wk-container textarea.markdown {
+  background-color: wh;
+  color: var(--c-neutral-8);
+}
+.wk-commands {
+  background: var(--c-neutral-1);
+}
+
+.wk-container, .wk-commands {
+  border-color: var(--c-neutral-2);
+}
+
+.wk-commands-divider {
+  background-color: var(--c-neutral-2);
+}
+
 /* PORTALS
 -------------------------------------------------- */
 
@@ -313,7 +340,7 @@ input[type=search], textarea {
 .Portal .d1_nav,
 .PortalView .d1_nav{
   height: auto;
-  background-color: #efefef;
+  background-color: var(--c-neutral-2);
   box-shadow: none;
 }
 .PortalView .d1_nav__inner,
@@ -336,12 +363,12 @@ input[type=search], textarea {
     fill: #429ca8;
     margin-top: 5px;
     grid-area: unset;
-    fill: var(--c-foreground-subtle-on-default);
+    fill: var(--c-neutral-5);
     transform: scale(80%);
 }
 .PortalView .d1_nav__minimal-nav .d1_menu-item__top-item-name,
 .Portal .d1_nav__minimal-nav .d1_menu-item__top-item-name{
-  color: #666;
+  color: var(--c-neutral-6);
   font-size: 1em;
 }
 .Portal .d1_nav__minmal-items,
@@ -358,8 +385,8 @@ input[type=search], textarea {
 .Portal .d1_menu-item__icon,
 .PortalView .d1_menu-item__dropdown-icon,
 .Portal .d1_menu-item__dropdown-icon {
-    fill: #555;
-    stroke: #555;
+  fill: var(--c-neutral-5);
+  stroke: var(--c-neutral-5);
 }
 .Portal .d1_menu-item:hover .d1_menu-item__top-item-name,
 .PortalView .d1_menu-item:hover .d1_menu-item__top-item-name{
@@ -422,6 +449,36 @@ width: 100%;
   left: 35%;
 }
 
+/* Portal data page - filters */
+
+.filter-groups .filter .btn {
+  color: var(--c-neutral-6);
+  border-color: #ccc;
+  border: 1px solid var(--c-neutral-3);
+  background-color: var(--c-neutral-2);
+}
+
+/* Portal filter group tabs */
+.filter-group-link a, .nav-tabs .filter-group-link a, .nav-tabs .filter-group-link.active a {
+  background-color: var(--c-neutral-1);
+  border-bottom: 1px solid;
+  border-color: var(--c-neutral-3);
+}
+.nav-tabs .filter-group-link.active a {
+  background-color: white;
+  border-bottom: 0px solid white;
+}
+.nav-tabs {
+  border-bottom: 0;
+}
+.nav>li>a:focus, .nav>li>a:hover {
+  background-color: white;
+}
+
+.portal-view, .portal-view .portal-section-content, .portal-view h2, .portal-view h3, .portal-view h4, .portal-view h5, .portal-view h6 {
+  color: var(--c-neutral-8);
+}
+
 /* FORM/INPUT CUSTOMIZATIONS
 -------------------------------------------------- */
 .depth {
@@ -441,7 +498,7 @@ width: 100%;
 
 .controls-well {
   padding: 4px;
-  backgorund-color: #FFFFFF;
+  background-color: #FFFFFF;
   /*IE 8 fallback */
   background: rgba(255, 255, 255, 0.3);
   border: 1px solid #EEE;
@@ -449,7 +506,6 @@ width: 100%;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   word-wrap: break-word;
-}
 }
 
 .control-label {
@@ -465,7 +521,7 @@ input[type="text"][disabled="disabled"] {
     background-color: #d4dee1;
 }
 
-/* CUSTOMIZE THE ACCORDIAN
+/* CUSTOMIZE THE ACCORDION
 -------------------------------------------------- */
 .accordion-heading a.accordion-toggle {
   display: inline-block;
@@ -496,6 +552,7 @@ input[type="text"][disabled="disabled"] {
   background-color: white;
   box-shadow: none;
   transition: background-color .7s;
+  text-shadow: none;
 }
 
 .btn:hover,
@@ -539,13 +596,14 @@ input[type="text"][disabled="disabled"] {
 
 .btn.subtle,
 .filter.btn {
-  color: #666;
-  border-color: #AAA;
+  color: var(--c-neutral-5);
+  border-color: var(--c-neutral-2);
+  box-shadow: 0 0.03rem 0.5rem -0.2rem var(--c-shadow-3-on-default,var(--c-shadow-2-on-default,rgba(1,1,1,0.08)));
 }
 .btn.disabled,
 .btn.disabled:hover{
   cursor: default;
-  background-color: #aaa;
+  background-color: var(--c-neutral-2);
   color: #fff;
 }
 
@@ -569,11 +627,8 @@ input[type="text"][disabled="disabled"] {
 }
 
 .btn-group>.dropdown-toggle {
-  -webkit-border-top-right-radius: 4px;
-  -moz-border-top-right-radius: 4px;
-  border-top-right-radius: 4px;
-  -webkit-border-bottom-right-radius: 4px;
-  -moz-border-bottom-right-radius: 4px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
   border-radius: 4px;
 }
 
@@ -970,6 +1025,7 @@ label.control-label {
   max-height: 65%;
   overflow-x: visible;
   overflow-y: overlay;
+  transform: translate3d(0, 0, 0);
   -webkit-transform: translate3d(0, 0, 0);
 }
 
@@ -1093,6 +1149,30 @@ label.inline {
 
 /* SIDEBAR CSS
   -------------------------------------------------- */
+
+/* The search button in the data catalog view */
+#sidebar > .input-append .btn {
+  background-color: var(--c-major-accent-6);
+  color: white;
+  text-shadow: none;
+  border: none;
+  box-shadow: 0 0.03rem 0.5rem -0.2rem var(--c-shadow-3-on-default,var(--c-shadow-2-on-default,rgba(1,1,1,0.08)));
+  /* border: 1px solid var(--c-major-accent-6); */
+  padding: unset;
+  height: 29px;
+  width: 35px;
+}
+#sidebar > .input-append .btn .icon-search {
+  margin-left: 2px;
+}
+#all_input {
+  border: 1px solid var(--c-neutral-2);
+  background-color: white;
+}
+#all_input::placeholder {
+  color: var(--c-neutral-4);
+}
+
 /***Filters ***/
 .filter-contain{
   color: #555;
@@ -1102,22 +1182,27 @@ label.inline {
   border-radius: 0px;
   -moz-border-radius: 0px;
   -webkit-border-radius: 0px;
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
-  -webkit-border-top-right-radius: 4px;
-  -webkit-border-bottom-right-radius: 4px;
-  -moz-border-top-right-radius: 4px;
-  -moz-border-bottom-right-radius: 4px;
-  height: 29px;
-  padding: 0px 7px;
+  border-top-right-radius:  var(--br-default, 0.25rem);;
+  border-bottom-right-radius:  var(--br-default, 0.25rem);;
+  -webkit-border-top-right-radius:  var(--br-default, 0.25rem);;
+  -webkit-border-bottom-right-radius:  var(--br-default, 0.25rem);;
+  -moz-border-top-right-radius:  var(--br-default, 0.25rem);;
+  -moz-border-bottom-right-radius:  var(--br-default, 0.25rem);;
+  height: 30px;
+  padding: 0;
+  width: 35px;
   display: inline-block;
+}
+
+.filter.btn .icon-search{
+  margin-left: 2px;
 }
 
 /*-- Inputs for search filters --*/
 input.filter {
-  border-radius: 4px;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
+  border-radius: var(--br-default, 0.25rem);;
+  -webkit-border-radius: var(--br-default, 0.25rem);;
+  -moz-border-radius: var(--br-default, 0.25rem);;
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;
   -webkit-border-top-right-radius: 0px;
@@ -1128,8 +1213,15 @@ input.filter {
   color: #555;
   color: var(--c-neutral-7);
 }
-.filter-input-contain input.filter{
+.filter-input-contain input.filter {
   width: 70%;
+  outline: none;
+  border-top-left-radius: var(--br-default, 0.25rem);
+  border-bottom-left-radius: var(--br-default, 0.25rem);
+  color: var(--c-neutral-6);
+  background-color: white;
+  border: 1px solid var(--c-neutral-2);
+  padding-left: 10px;
 }
 
 .filter-contain.no-border {
@@ -1174,16 +1266,17 @@ input.filter:-ms-input-placeholder {
 }
 
 /*-- The 'Year' filter elements --*/
+
+#filter-year {
+  width: 100%;
+}
+
 #filter-year .filter-input-contain {
-  margin-top: 35px;
+  margin-top: 0px;
 }
 
 #filter-year input[type="number"] {
-  background: #FFF;
-  border: 1px solid #CCC;
-  border-radius: 4px;
-  -moz-border-radius: 4px;
-  -webkit-border-radius: 4px;
+  background-color: white;
   text-align: right;
   min-height: 23px;
   -webkit-appearance: none;
@@ -1192,17 +1285,22 @@ input.filter:-ms-input-placeholder {
   margin-bottom: 0px;
   width: 56px;
   margin-top: 10px;
-  -moz-box-shadow: inset 0 0 10px -1px #CCC;
-  -webkit-box-shadow: inset 0 0 10px -1px #CCC;
-  box-shadow: inset 0 0 10px -1px #CCC;
   font-size: 14px;
-  color: #888;
   line-height: 14px;
   padding: 2px;
 }
 
 #filter-year input[type="number"]:focus {
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+}
+
+#filter-year label {
+  margin-top: 0px;
+  margin-bottom: 10px;
+  display: block;
+  margin-right: 0;
+  font-size: 13px;
+  padding-left: 0px;
 }
 
 #max_year {
@@ -1215,9 +1313,9 @@ input.filter:-ms-input-placeholder {
 
 #year-range {
   min-height: 6px;
-  border-radius: 4px;
+  border-radius: var(--br-default, 0.25rem);;
   border: 0px;
-  background: #AAAAAA;
+  background: var(--c-neutral-3);
   position: relative;
   margin-bottom: 5px;
   width: 89%;
@@ -1242,9 +1340,9 @@ input.filter:-ms-input-placeholder {
 }
 
 .ui-slider-handle {
-  border: 1px solid #999999;
-  background-color: #EFEFEF;
-  top: -0.4em;
+  border: none;
+  background-color: var(--c-major-accent-6);
+  top: -0.3em;
   position: absolute;
   z-index: 2;
   width: 1em;
@@ -1275,16 +1373,6 @@ input.filter:-ms-input-placeholder {
   background-color: #1C6E84;
   background-color: var(--c-major-accent-6);
   color: #FFF;
-}
-
-#filter-year label {
-  margin-top: 0px;
-  margin-bottom: 10px;
-  display: inline-block;
-  float: left;
-  margin-right: 10px;
-  font-size: 13px;
-  padding-left: 0px;
 }
 
 .current-filters>li>i {
@@ -1384,6 +1472,7 @@ ul.ui-autocomplete {
   padding: 10px;
   list-style: none;
   overflow-y: scroll;
+  transform: translate3d(0, 0, 0);
   -webkit-transform: translate3d(0, 0, 0);
   max-height: 150px;
 }
@@ -1449,6 +1538,7 @@ body.mapMode{
   width: calc((100% - 216px) / 2);
   overflow-x: hidden;
   overflow-y: scroll;
+  transform: translate3d(0, 0, 1);
   -webkit-transform: translate3d(0, 0, 1);
   height: 700px;
   margin-left: 0px;
@@ -1646,9 +1736,9 @@ h5.result-header-count {
   border-color: #e6e6e6 #e6e6e6 #bfbfbf;
   border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
   border-bottom-color: #b3b3b3;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  border-radius: 4px;
+  -webkit-border-radius: var(--br-default, 0.25rem);;
+  -moz-border-radius: var(--br-default, 0.25rem);;
+  border-radius: var(--br-default, 0.25rem);;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff', endColorstr='#ffe6e6e6', GradientType=0);
   filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
   -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -2106,6 +2196,7 @@ svg .no-activity,
 .gmaps-infowindow {
   max-height: 400px;
   overflow-y: scroll;
+  transform: translate3d(0, 0, 0);
   -webkit-transform: translate3d(0, 0, 0);
 }
 
