@@ -7,7 +7,7 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
     * @class MetricView
     * @classdesc the display of the dataset citation and usage metrics on the dataset landing page
     * @classcategory Views
-    * @screenshot MetricView.png
+    * @screenshot views/MetricView.png
     * @extends Backbone.View
     */
     var MetricView = Backbone.View.extend(
