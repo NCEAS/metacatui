@@ -2657,6 +2657,11 @@ section#user-citations {
 .popover-title {
     text-transform: capitalize;
 }
+.popover-title code {
+	text-transform: none;
+	margin-left: 20px;
+	margin-top: -3px;
+}
 
 /* Don't force capitalization on annotation popover titles */
 .annotation > .popover-title {
@@ -6845,6 +6850,7 @@ Query builder & query rule view
 .query-rule .filter.date .max {
   margin-left: 0;
 }
+
 /* ---- Icons for the operator options not included in font-awesome ---- */
 .icon-equal, .icon-not-equal, .icon-less-than, .icon-greater-than,
 .icon-less-than-or-eq, .icon-greater-than-or-eq {

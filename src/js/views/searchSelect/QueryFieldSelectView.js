@@ -59,12 +59,20 @@ define([
         /**
          * A list of query fields names to display at the top of the menu, above
          * all other category headers
+         * @type {string[]}
          */
         commonFields: ["text"],
 
         /**
+         * The names of categories that should have items sorted alphabetically. Names
+         * must exactly match those in the Query Field model - {@link QueryField#categoriesMap}
+         * @type {string[]}
+         */
+        categoriesToAlphabetize: ["General"],
+
+        /**
          * Whether or not to exclude fields which are not searchable. Set to
-         * false to keep query fields that are not seachable in the returned list
+         * false to keep query fields that are not searchable in the returned list
          * @type {boolean}
          */
         excludeNonSearchable: true,
@@ -156,6 +164,23 @@ define([
               delete processedFields[key];
             }
 
+            // Sort items alphabetically for the specified categories
+            if(this.categoriesToAlphabetize && this.categoriesToAlphabetize.length){
+              this.categoriesToAlphabetize.forEach(function(categoryName){
+                // Sort by category label
+                processedFields[categoryName].sort(function(a, b) {
+                  // Ignore upper and lowercase
+                  var nameA = a.label.toUpperCase();
+                  var nameB = b.label.toUpperCase();
+                  if (nameA < nameB)
+                    return -1;
+                  if (nameA > nameB)
+                    return 1;
+                  return 0;
+                });
+              })
+            }
+
             // Set the formatted fields on the view
             this.options = processedFields;
 
@@ -174,7 +199,7 @@ define([
          * @return {object}       An object in the format specified by SearchableSelectView.options
          */
         fieldToOption: function(field) {
-           return {
+          return {
             label: field.label ? field.label : field.name,
             value: field.name,
             description: field.friendlyDescription ? field.friendlyDescription : field.description,
@@ -213,15 +238,11 @@ define([
                           })
                           .value()
 
-          if(!opt){
-            return
-          }
-
           var contentEl = $(document.createElement("div")),
               titleEl = $("<div>" + opt.label + "</div>"),
               valueEl = $("<code class='pull-right'>" + opt.value + "</code>"),
               typeEl = $("<span class='muted pull-right'><b>Type: " + opt.type + "</b></span>"),
-              descriptionEl = $("<p>" + opt.description + "</p>");
+              descriptionEl = $("<p>" + (opt.description ? opt.description : "") + "</p>");
 
             titleEl.append(valueEl);
             contentEl.append(descriptionEl, typeEl)

@@ -1321,23 +1321,26 @@ define(['jquery', 'underscore', 'backbone'],
       collectionQueryExcludeFields: [
         "sem_annotated_by", "sem_annotates", "sem_comment", "pubDate",
         "namedLocation", "contactOrganization", "investigator", "originator",
-        "originatorText", "prov_generated", "prov_generatedByExecution",
-        "prov_generatedByProgram", "prov_generatedByUser", "prov_hasDerivations",
-        "prov_hasSources", "prov_instanceOfClass", "prov_used",
-        "prov_usedByExecution", "prov_usedByProgram", "prov_usedByUser",
-        "prov_wasDerivedFrom", "prov_wasExecutedByExecution",
-        "prov_wasExecutedByUser", "prov_wasInformedBy", "serviceInput",
+        "originatorText", "serviceInput",
         "authorGivenName", "authorSurName", "topic", "webUrl", "_root_",
         "collectionQuery", "geohash_1", "geohash_2", "geohash_3", "geohash_4",
         "geohash_5", "geohash_6", "geohash_7", "geohash_8", "geohash_9", "label",
-        "LTERSite", "_version_", "checksum", "checksumAlgorithm", "keywords",
+        "LTERSite", "_version_", "checksumAlgorithm", "keywords",
         "parameterText", "project", "topicText", "dataUrl", "fileID",
         "isDocumentedBy", "logo", "obsoletes", "origin", "funding", "formatType",
         "obsoletedBy", "presentationCat", "mediaType", "mediaTypeProperty",
         "relatedOrganizations", "noBoundingBox", "decade", "hasPart", "sensorText",
         "sourceText", "termText", "titlestr", "site", "id", "updateDate",
         "edition", "gcmdKeyword", "isSpatial", "keyConcept", "ogcUrl", "parameter",
-        "sensor", "source", "term", "investigatorText"
+        "sensor", "source", "term", "investigatorText", "sku", "_text_"
+
+        // Prov fields:
+        // "prov_generated", "prov_generatedByExecution",
+        // "prov_generatedByProgram", "prov_generatedByUser", "prov_hasDerivations",
+        // "prov_hasSources", "prov_instanceOfClass", "prov_used",
+        // "prov_usedByExecution", "prov_usedByProgram", "prov_usedByUser",
+        // "prov_wasDerivedFrom", "prov_wasExecutedByExecution",
+        // "prov_wasExecutedByUser", "prov_wasInformedBy"
       ],
 
 

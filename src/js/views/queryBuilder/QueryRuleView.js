@@ -288,6 +288,7 @@ define([
          * @property {function} uiFunction - A function that returns the UI view to use with all appropriate options set. The function will be called with this view as the context.
          */
         valueSelectUImap: [
+          // serviceCoupling field
           {
             queryFields: ["serviceCoupling"],
             uiFunction: function(){
@@ -310,9 +311,18 @@ define([
               })
             }
           },
+          // Metadata format IDs
           {
             queryFields: ["formatId"],
             uiFunction: function(){
+              // If there is an issue retrieving the object formats,
+              // just use a regular UI
+              if(!MetacatUI.objectFormats || MetacatUI.objectFormats.length == 0){
+                // The last function in this list is the default value selection UI.
+                // "this" context should always be the view
+                var defaultFunction = this.valueSelectUImap[this.valueSelectUImap.length - 1].uiFunction;
+                return defaultFunction.call(this);
+              }
               var formatIds = MetacatUI.objectFormats.toJSON();
               var options = _.chain(formatIds)
                 // Since the query rules automatically include a rule for
@@ -338,6 +348,7 @@ define([
               })
             }
           },
+          // Semantic annotation picker
           {
             queryFields: ["sem_annotation"],
             uiFunction: function(){
@@ -353,15 +364,17 @@ define([
               }
             }
           },
+          // Repository picker for fields that need a member node ID
           {
             filterTypes: ["filter"],
-            categories: ["Repository information"],
+            queryFields: ["blockedReplicationMN", "preferredReplicationMN", "replicaMN", "authoritativeMN", "datasource"],
             uiFunction: function(){
               return new NodeSelect({
                 selected: this.model.get("values")
               })
             }
           },
+          // Any numeric fields don't fit one of the above options
           {
             filterTypes: ["numericFilter"],
             label: "Choose a value",
@@ -372,6 +385,7 @@ define([
               })
             }
           },
+          // Any date fields that don't fit one of the above options
           {
             filterTypes: ["dateFilter"],
             label: "Choose a year",

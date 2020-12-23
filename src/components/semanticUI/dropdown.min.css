@@ -10,6 +10,12 @@
  
  /* Customizations by RTB */
 
+@media only screen and (min-width: 768px) {
+  .ui.search.dropdown .menu {
+    max-height: 20rem;
+  }
+}
+
  /* Warning */
 
 .ui.dropdown.warning,
