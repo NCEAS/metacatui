@@ -444,6 +444,7 @@ define(['jquery', 'underscore', 'backbone'],
         term = term.replace(/%3F/g, "\\%3F");
         term = term.replace(/\"/g, '\\"');
         term = term.replace(/\'/g, "\\'");
+        term = term.replace(/\#/g, "\\%23");
 
         return term;
     },
