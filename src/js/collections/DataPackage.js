@@ -209,7 +209,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
           /*
            * The DataPackage collection stores DataPackages and
-           * DataONEObjects, including Metadata nad Data objects.
+           * DataONEObjects, including Metadata and Data objects.
            * Return the correct model based on the type
            */
           model: function (attrs, options) {
@@ -1115,12 +1115,18 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         m.get("uploadStatus") != "e" &&
                         m.get("uploadStatus") !== null))
                 });
-              //Get an array of data objects whose system metaata should be updated.
+              //Get an array of data objects whose system metadata should be updated.
               var sysMetaToUpdate = _.reject(dataModels, function(m){
-                //Find models that don't have any content changes to save,
+                // Find models that don't have any content changes to save,
                 // and whose system metadata is not already saving
-                return (m.get("hasContentChanges") || m.get("sysMetaUploadStatus") == "p" ||
-                        m.get("sysMetaUploadStatus") == "c" || m.get("sysMetaUploadStatus") == "e");
+                return (
+                  ( !m.hasUpdates() ||
+                    m.get("hasContentChanges") ||
+                    m.get("sysMetaUploadStatus") == "p" ||
+                    m.get("sysMetaUploadStatus") == "c" ||
+                    m.get("sysMetaUploadStatus") == "e"
+                  )
+                );
               });
 
               //First quickly validate all the models before attempting to save any
@@ -1197,7 +1203,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               //Save the system metadata of all the Data objects
               _.each(sysMetaToUpdate, function(dataModel){
                 //When the sytem metadata has been saved, save this resource map
-                this.listenTo(dataModel, "sysMetaUpdated", this.save);
+                this.listenTo(dataModel, "change:sysMetaUploadStatus", this.save);
                 //Update the system metadata
                 dataModel.updateSysMeta();
                 //Add it to the list of models in progress
@@ -2262,12 +2268,18 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                   oldPid = this.packageModel.get("oldPid"),
                   cnResolveUrl = this.getCnURI();
 
-              //Get a list of the models that are not in progress or failed uploading
-              var modelsToAggregate = this.reject(function(packageMember){
-                    return (packageMember.get("uploadStatus") == "p" || packageMember.get("uploadStatus") == "e")
-                  }),
-                  //Get all the ids of all those models
-                  idsFromModel = _.pluck(modelsToAggregate, "id");
+              //Get a list of the model pids that should be aggregated by this package
+              var idsFromModel = [];
+              this.each(function(packageMember){
+                //If this object isn't done uploading, don't aggregate it.
+                //Or if it failed to upload, don't aggregate it.
+                //But if the system metadata failed to update, it can still be aggregated.
+                if( packageMember.get("uploadStatus") !== "p" ||
+                    packageMember.get("uploadStatus") !== "e" ||
+                    packageMember.get("sysMetaUploadStatus") == "e" ){
+                  idsFromModel.push(packageMember.get("id"));
+                }
+              });
 
               this.idsToAggregate = idsFromModel;
 

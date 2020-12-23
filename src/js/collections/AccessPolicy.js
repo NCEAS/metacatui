@@ -267,6 +267,32 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
           },
 
           /**
+          * Checks if the user is authorized to update the system metadata.
+          * Updates to system metadata will fail if the user doesn't have changePermission permission,
+          * *unless* the user is performing an update() at the same time and has `write` permission
+          * @returns {boolean}
+          */
+          isAuthorizedUpdateSysMeta: function(){
+            try{
+              //Yes, if the user has changePermission
+              if( this.isAuthorized("changePermission")  ){
+                return true;
+              }
+              //Yes, if the user just uploaded this object and is saving it for the first time
+              else if( this.isAuthorized("write") && this.dataONEObject.isNew() ){
+                return true;
+              }
+              else{
+                return false;
+              }
+            }
+            catch(e){
+              console.error("Failed to determing authorization: " , e);
+              return false;
+            }
+          },
+
+          /**
           * Gets the subject info for all of the subjects in this access policy.
           * Sets the subject info on each corresponding model.
           */

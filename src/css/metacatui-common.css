@@ -7041,8 +7041,14 @@ ul.side-nav-items {
 }
 
 .data-package-item td.name div {
-	padding: 8px 0 8px 0;
+	padding: 8px;
+	width: fit-content;
+	cursor: not-allowed;
 }
+.data-package-item td.canRename div {
+	cursor: text;
+}
+
 .data-package-item td.error > [contenteditable]{
 	border: 2px solid red;
 }
