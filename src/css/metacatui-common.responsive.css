@@ -357,11 +357,10 @@
 		transition: bottom 0.3s;
 	}
 
+	/* Default position of portal pages nav on mobile. */
+	/* This will be changed by PortalEditorView */
+	.PortalView .section-links-container,
 	.Editor.Portal .section-links-toggle-container {
-		bottom: 73px;
-	}
-
-	.PortalView .section-links-container {
 		bottom: 0;
 	}
 

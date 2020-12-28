@@ -896,17 +896,30 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * This function is called whenever the window is scrolled.
     */
     handleScroll: function() {
-      var menu = $(".section-links-toggle-container")[0],
-          menuHeight = $(menu).height(),
-          editorFooterHeight = 73,
-          hiddenHeight = (menuHeight * -1) + 73;
-      var currentScrollPos = window.pageYOffset;
-      if(MetacatUI.appView.prevScrollpos > currentScrollPos) {
-        menu.style.bottom = "73px";
-      } else {
-        menu.style.bottom = hiddenHeight +"px";
+      try {
+
+        var menu = $(".section-links-toggle-container")[0],
+          editorFooter = this.$("#editor-footer")[0],
+          editorFooterHeight = editorFooter ? editorFooter.offsetHeight : 0;
+          menuHeight = menu ? menu.offsetHeight : 0,
+          hiddenHeight = (menuHeight * -1) + editorFooterHeight,
+          currentScrollPos = window.pageYOffset;
+
+        if(!menu){
+          return
+        }
+        if(MetacatUI.prevScrollpos >= currentScrollPos) {
+          // when scrolling upward
+          menu.style.bottom = editorFooterHeight + "px";
+        } else {
+          // when scrolling downward
+          menu.style.bottom = hiddenHeight + "px";
+        }
+        MetacatUI.prevScrollpos = currentScrollPos;
+
+      } catch (error) {
+        console.log("There was an error adjusting menu position on scroll. Error details: " + error);
       }
-      MetacatUI.appView.prevScrollpos = currentScrollPos;
     },
 
     /**

@@ -294,16 +294,26 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     * Show the editor footer controls (Save bar)
     */
     showControls: function(){
-      this.$(".editor-controls").removeClass("hidden").slideDown();
+      var view = this;
+      this.$(".editor-controls").removeClass("hidden").slideDown(300, function(){
+        if(typeof view.handleScroll === "function"){
+          view.handleScroll()
+        }
+      });
+      
     },
 
     /**
     * Hide the editor footer controls (Save bar)
     */
     hideControls: function(){
-        this.hideSaving();
-
-      this.$(".editor-controls").slideUp();
+      var view = this;
+      this.hideSaving();
+      this.$(".editor-controls").slideUp(300, function(){
+        if(typeof view.handleScroll === "function"){
+          view.handleScroll()
+        }
+      });
     },
 
     /**
