@@ -755,7 +755,24 @@
     margin: auto;
   }
 
-
+  /************ Editor footer (portal editor, metadata editor) *************/
+  #editor-footer{
+	grid-template-rows: auto auto;
+	grid-template-columns: 100%;
+	grid-template-areas: "save-controls" "trial-message";
+	gap: 0.4rem;
+	padding: 0.5rem;
+  }
+  #editor-footer .free-trial-message{
+	justify-self: center;
+	font-size: 0.87rem;
+  }
+  .editor-save-controls{
+	justify-self: center;
+  }
+  .editor-save-controls > a{
+    font-size: 1em;
+  }
 }
 
 @media only screen and (max-width : 1000px){

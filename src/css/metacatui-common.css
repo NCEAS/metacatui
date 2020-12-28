@@ -6993,35 +6993,59 @@ ul.side-nav-items {
 	width: 100%;
 }
 #editor-footer{
-	background-color: #333;
   position: fixed;
-  width: 100%;
+  display: grid;
   box-sizing: border-box;
+  width: 100%;
   bottom: 0px;
-  padding: 20px 40px;
+  padding: 0.8rem;
   z-index: 13;
-	height: 74px;
-	box-sizing: border-box;
-  display: flex;
-  justify-content: flex-end;
-  align-items: baseline;
+  height: 74px;
+  background-color: #333;
+  align-items: center;
+  grid-template-rows: auto;
+  grid-template-columns: auto auto;
+  grid-template-areas: "trial-message save-controls";
+  gap: 0.5rem;
 }
 #editor-footer .free-trial-message{
   color: #FFF;
-  flex-grow: 2;
+  grid-area: trial-message;
 }
 #editor-footer .free-trial-message .icon{
   height: 1.1em;
   fill: #FFF;
 }
 .metadata-view #editor-footer{
-    display: none;
-    left: 0px;
+  display: none;
+  left: 0px;
 }
 #editor-footer a:not(.btn){
-    color: #FFF;
-    font-weight: bold;
-    line-height: 40px;
+  color: #FFF;
+  font-weight: bold;
+}
+/* The "view last saved version" and "save" button */
+.editor-save-controls{
+	justify-self: right;
+	display: grid;
+	grid-template-columns: auto auto;
+	gap: 1rem;
+	grid-area: save-controls;
+}
+.editor-save-controls > a{
+    line-height: 1.5em;
+    font-size: 1.1em;
+	font-weight: bold;
+	margin: 0;
+	height: 1.5em;
+	align-self: center;
+}
+.editor-save-controls > a:not(.btn){
+  color: #FFF;
+}
+.editor-save-controls .metadata-container textarea{
+	width: 100%;
+	margin-bottom: 20px;
 }
 #cancel-metadata-prov{
     margin-left: 30px;
@@ -7256,24 +7280,8 @@ ul.side-nav-items {
 	cursor:ns-resize;
 }
 
-.editor-save-controls{
-	float: right;
-}
-.editor-save-controls > a{
-	margin-left: 10px;
-    height: 1.5em;
-    line-height: 1.5em;
-    font-size: 1.1em;
-    font-weight: bold;
-}
-.editor-save-controls > a:not(.btn){
-  color: #FFF;
-}
-.editor-save-controls
-.metadata-container textarea{
-	width: 100%;
-	margin-bottom: 20px;
-}
+
+
 textarea.xlarge{
 	min-height: 200px;
 }
