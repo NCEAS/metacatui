@@ -362,6 +362,7 @@
 	.PortalView .section-links-container,
 	.Editor.Portal .section-links-toggle-container {
 		bottom: 0;
+		padding-left: 0;
 	}
 
 	.PortalView #portal-section-tabs,
@@ -391,12 +392,13 @@
 	}
 
 	.Editor.Portal #portal-section-tabs a.portal-section-link {
-		width: calc(100% - 60px);
+		width: calc(100% - 65px);
 		text-align: left;
 	}
 
 	.Editor.Portal #portal-section-tabs .portal-section-link,
-	.Editor.Portal #portal-section-tabs .section-menu-link {
+	.Editor.Portal #portal-section-tabs .section-menu-link,
+	.port-editor-sections .section-link-container .handle {
 		color: #555;
 	}
 
@@ -410,9 +412,13 @@
 	}
 
 	.section-link-container .popover.fade.right.in{
-		left: 0px !important;
-		margin-left: 6px;
+		left: 0 !important; 
+		right: 0 !important; 
+		margin-left: auto !important; 
+		margin-right: auto !important; 
+		top: -100% !important;
 		box-sizing: content-box;
+		
 	}
 	.section-link-container .popover.fade.right.in > .arrow {
 		display: none;
