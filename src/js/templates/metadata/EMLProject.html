@@ -1,27 +1,28 @@
 <h2>Project</h2>
 
-<div>
-  <% _(award).each(function(awardItem, i) { %>
+<section class="project">
+  <% _(award).each(function(awardItem) { %>
     <div class="award-container">
       <i class="remove icon-remove"></i>
-      <h4>Award <span class="award-num"><%= i + 1 %></span></h4>
-
       <div class="basic-text-row">
-        <% _(awardFields).each(function(label, value) { %>
-          <label><%= label %></label>
-          <input type="text" data-category="<%= value %>" value="<%= awardItem.attributes[value] %>" class="basic-text"/>
-        <% }) %>
+        <form class = "award">
+          <% _(awardFields).each(function(label, value) { %>
+            <label><%= label %></label>
+            <input type="text" data-category="<%= value %>" value="<%= awardItem.attributes[value] %>"/>
+          <% }) %>
+        </form>
       </div>
     </div>
   <% }) %>
 
-  <div class="award-container">
-    <h4>Award <span class="award-num"><%= award.length + 1 %></span></h4>
+  <div class="award-container new">
     <div class="basic-text-row">
-      <% _(awardFields).each(function(label, value) { %>
-        <label><%= label %></label>
-        <input type="text" data-category="<%= value %>" class="basic-text"/>
-      <% }) %>
+      <form class = "award">
+        <% _(awardFields).each(function(label, value) { %>
+          <label><%= label %></label>
+          <input type="text" data-category="<%= value %>"/>
+        <% }) %>
+      </form>
     </div>
   </div>
-</div>
+</section>

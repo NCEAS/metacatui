@@ -34,6 +34,7 @@ define([
       },
 
       events: {
+        "keyup .award-container.new" : "addNewAward",
         "click .remove": "removeAward",
         "mouseover .remove": "previewRemove",
         "mouseout .remove": "previewRemove"
@@ -84,6 +85,18 @@ define([
             $(awardNums[i]).text(i + 1);
           }
         });
+      },
+
+      addNewAward: function(e) {
+          var container = this.$("section.project");
+          var awardEl = this.$(".award-container.new");
+
+          var newAward = awardEl[0].cloneNode(true)
+          newAward.children[0].children[0].reset()
+
+          container.append(newAward);
+          awardEl.removeClass("new");
+          awardEl.prepend('<i class="remove icon-remove"></i>')
       },
 
       previewRemove: function(e){
