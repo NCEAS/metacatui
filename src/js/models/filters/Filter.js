@@ -32,7 +32,7 @@ define(['jquery', 'underscore', 'backbone'],
     * @property {string} operator - The operator to use between values set on this model. "AND" or "OR"
     * @property {string} queryGroup - The name of the group this Filter is a part of, which is
     * primarily used when creating a query string from multiple Filter models. Filters
-    * in the same group will be wrapped in paranthesis in the query.
+    * in the same group will be wrapped in parenthesis in the query.
     * @property {boolean} exclude - If true, search index docs matching this filter will be excluded from the search results
     * @property {boolean} matchSubstring - If true, the search values will be wrapped in wildcard characters to match substrings
     * @property {string} label - A human-readable short label for this Filter
@@ -70,7 +70,7 @@ define(['jquery', 'underscore', 'backbone'],
         this.set( this.parse(this.get("objectDOM")) );
       }
 
-      //Assign a random query group to Filters that are specifing very specific datasets,
+      // Assign a random query group to Filters that are specifying very specific datasets,
       // such as by id, seriesId, or the isPartOf relationship. This is done so that
       // the query string is constructed with these filters "OR"ed into the query.
       // For example, a query might be to look for datasets by a certain scientist OR

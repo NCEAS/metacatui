@@ -556,7 +556,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
     /**
     * Returns true if there are unsaved changes in this Editor
-    * This function should be exended by each subclass of EditorView to check for unsaved changes for that model type
+    * This function should be extended by each subclass of EditorView to check for unsaved changes for that model type
     * @returns {boolean}
     */
     hasUnsavedChanges: function(){
