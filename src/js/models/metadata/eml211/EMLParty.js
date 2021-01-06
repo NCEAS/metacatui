@@ -838,7 +838,21 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         });
       }
       return modelValues;
-    },
+	},
+	
+	/**
+	 * getName - For an individual, returns the first and last name as a string. Otherwise,
+	 * returns the organization or position name.
+	 * 
+	 * @return {string} Returns the name of the party or an empty string if one cannot be found
+	 * 
+	 * @since 2.15.0
+	 */
+	getName: function(){
+		return this.get("individualName") ?
+			this.get("individualName").givenName + " " + this.get("individualName").surName :
+			this.get("organizationName") || this.get("positionName") || "";
+	},
 
     /*
     * function nameIsEmpty - Returns true if the individualName set on this model contains

@@ -112,6 +112,65 @@ define(['underscore', 'jquery', 'backbone',
         copyPersonMenuTemplate: _.template(EMLPartyCopyMenuTemplate),
         peopleTemplate: _.template(PeopleTemplate),
 
+        /**
+         * @type {object[]}
+         * @property {string} label - The name of the party category to display to the user
+         * @property {string} dataCategory - The string that is used to represent this party. This value
+         *  should exactly match one of the strings listed in EMLParty typeOptions or EMLParty roleOptions.
+         * @property {string} description - An optional description to display below the label to help the user
+         *  with this category.
+         * @property {boolean} createFromUser - If set to true, the information from the logged-in user will be
+         *  used to create an EML party for this category if none exist already when the view loads.
+         * @property {number} limit - If the number of parties allowed for this category is not unlimited,
+         *  then limit should be set to the maximum allowable number.
+         * @since 2.15.0
+         */
+        partyTypes: [
+          {
+            label: "Dataset Creators (Authors/Owners/Originators)",
+            dataCategory: "creator",
+            description: "Each person or organization listed as a Creator will be listed in the data" +
+              " citation. At least one person, organization, or position with a 'Creator'" +
+              " role is required.",
+            createFromUser: true
+          },
+          {
+            label: "Contact",
+            dataCategory: "contact",
+            createFromUser: true
+          },
+          {
+            label: "Principal Investigators",
+            dataCategory: "principalInvestigator"
+          },
+          {
+            label: "Co-Principal Investigators",
+            dataCategory: "coPrincipalInvestigator"
+          },
+          {
+            label: "Collaborating-Principal Investigators",
+            dataCategory: "collaboratingPrincipalInvestigator"
+          },
+          {
+            label: "Metadata Provider",
+            dataCategory: "metadataProvider"
+          },
+          {
+            label: "Custodians/Stewards",
+            dataCategory: "custodianSteward"
+          },
+          {
+            label: "Publisher",
+            dataCategory: "publisher",
+            description: "Only one publisher can be specified.",
+            limit: 1
+          },
+          {
+            label: "Users",
+            dataCategory: "user"
+          }
+        ],
+
         initialize: function (options) {
 
           //Set up all the options
@@ -147,7 +206,10 @@ define(['underscore', 'jquery', 'backbone',
           _.each(this.model.get("collections"), function (dataPackage) {
             if (dataPackage.type != "DataPackage") return;
 
-            //When the data package has been saved, render the EML again
+            // When the data package has been saved, render the EML again.
+            // This is needed because the EML model validate & serialize functions may
+            // automatically make changes, such as adding a contact and creator
+            // if none is supplied by the user.
             this.listenTo(dataPackage, "successSaving", this.renderAllSections);
           }, this);
 
@@ -254,199 +316,65 @@ define(['underscore', 'jquery', 'backbone',
          * Renders the People section of the page
          */
         renderPeople: function () {
-          this.$(".section.people").empty().append("<h2>People</h2>");
 
-          var PIs = _.filter(this.model.get("associatedParty"), function (party) { return party.get("roles").includes("principalInvestigator") }),
-            coPIs = _.filter(this.model.get("associatedParty"), function (party) { return party.get("roles").includes("coPrincipalInvestigator") }),
-            collbalPIs = _.filter(this.model.get("associatedParty"), function (party) { return party.get("roles").includes("collaboratingPrincipalInvestigator") }),
-            custodian = _.filter(this.model.get("associatedParty"), function (party) { return party.get("roles").includes("custodianSteward") }),
-            user = _.filter(this.model.get("associatedParty"), function (party) { return party.get("roles").includes("user") });
+          var view = this,
+            model = view.model;
 
-          var emptyTypes = [];
+          this.peopleSection = this.$(".section[data-section='people']");
 
-          this.partyTypeMap = {
-            "collaboratingPrincipalInvestigator": "Collaborating-Principal Investigators",
-            "coPrincipalInvestigator": "Co-Principal Investigators",
-            "principalInvestigator": "Principal Investigators",
-            "creator": "Dataset Creators (Authors/Owners/Originators)",
-            "contact": "Contacts",
-            "metadataProvider": "Metadata Provider",
-            "custodianSteward": "Custodians/Stewards",
-            "publisher": "Publisher",
-            "user": "Users"
-          }
+          // Empty the people section in case we are re-rendering people
+          // Insert the people template
+          this.peopleSection.html(this.peopleTemplate());
 
-          //Insert the people template
-          this.$(".section[data-section='people']").html(this.peopleTemplate());
+          // Create a dropdown menu for adding new person types
+          this.renderPeopleDropdown();
 
-          if (this.model.get("creator").length) {
-            //Creators
-            _.each(this.model.get("creator"), function (creator) {
-              this.renderPerson(creator, "creator")
-            }, this);
-            this.renderPerson(null, "creator");
-          }
-          else {
-            var creator = new EMLParty({ type: "creator", parentModel: this.model });
-            this.model.get("creator").push(creator);
-            creator.createFromUser();
-            this.renderPerson(creator);
-            this.renderPerson(null, "creator");
-          }
+          this.partyTypes.forEach(function (partyType) {
 
-          if (this.model.get("contact").length) {
-            //Contacts
-            _.each(this.model.get("contact"), function (contact) {
-              this.renderPerson(contact, "contact")
-            }, this);
-            this.renderPerson(null, "contact");
-          }
-          else {
-            var contact = new EMLParty({ type: "contact", parentModel: this.model });
-            this.model.get("contact").push(contact);
-            contact.createFromUser();
-            this.renderPerson(contact);
-            this.renderPerson(null, "contact");
-          }
+            // Make sure that there is no container elements saved
+            // since this could be a re-render
+            partyType.containerEl = null;
 
-          //Principal Investigators
-          if (PIs.length) {
-            this.$(".section.people").append("<h4>" + this.partyTypeMap["principalInvestigator"] + "<i class='required-icon hidden' data-category='principalInvestigator'></i></h4>",
-              '<div class="row-striped" data-attribute="principalInvestigator"></div>');
+            // Any party type that is listed as a role in EMLParty "roleOptions" is saved
+            // in the EML model as an associated party. The isAssociatedParty property
+            // is used for other parts of the EML211View.
+            if (new EMLParty().get("roleOptions").includes(partyType.dataCategory)) {
+              partyType.isAssociatedParty = true;
+            } else {
+              partyType.isAssociatedParty = false;
+            }
 
-            _.each(PIs, function (PI) {
-              this.renderPerson(PI, "principalInvestigator")
-            }, this);
+            // Get the array of party members for the given partyType from the EML model
+            var parties = this.model.getPartiesByType(partyType.dataCategory);
 
-            this.renderPerson(null, "principalInvestigator");
-          }
-          else {
-            emptyTypes.push("principalInvestigator");
-          }
+            // If no parties exist for the given party type, but one is required,
+            // (e.g. for contact and creator), then create one from the user's information.
+            if ((!parties || !parties.length) && partyType.createFromUser) {
+              var newParty = new EMLParty({
+                type: partyType.isAssociatedParty ? "associatedParty" : partyType.dataCategory,
+                roles: partyType.isAssociatedParty ? [partyType.dataCategory] : [],
+                parentModel: model
+              });
+              newParty.createFromUser();
+              model.addParty(newParty);
+              parties = [newParty]
+            }
 
-          //Co-PIs
-          if (coPIs.length) {
-            this.$(".section.people").append("<h4>" + this.partyTypeMap["coPrincipalInvestigator"] + "<i class='required-icon hidden' data-category='coPrincipalInvestigator'></i></h4>",
-              '<div class="row-striped" data-attribute="coPrincipalInvestigator"></div>');
-            _.each(coPIs, function (coPI) {
-              this.renderPerson(coPI, "coPrincipalInvestigator")
-            }, this);
+            // Render each party
+            if (parties.length) {
+              parties.forEach(function (party) {
+                this.renderPerson(party, partyType.dataCategory);
+              }, this);
+            }
 
-            this.renderPerson(null, "coPrincipalInvestigator");
-          }
-          else
-            emptyTypes.push("coPrincipalInvestigator");
+          }, this);
 
-          //Collab PIs
-          if (collbalPIs.length) {
-            this.$(".section.people").append("<h4>" + this.partyTypeMap["collaboratingPrincipalInvestigator"] + "<i class='required-icon hidden' data-category='collaboratingPrincipalInvestigator'></i></h4>",
-              '<div class="row-striped" data-attribute="collaboratingPrincipalInvestigator"></div>');
-            _.each(collbalPIs, function (collbalPI) {
-              this.renderPerson(collbalPI, "collaboratingPrincipalInvestigator")
-            }, this);
+          // Render a new blank party form at the very bottom of the people section.
+          // This allows the user to start entering details for a person before they've
+          // selected the party type.
+          this.renderPerson(null, "new");
 
-            this.renderPerson(null, "collaboratingPrincipalInvestigator");
-          }
-          else
-            emptyTypes.push("collaboratingPrincipalInvestigator");
-
-          //Metadata Provider
-          if (this.model.get("metadataProvider").length) {
-            this.$(".section.people").append("<h4>" + this.partyTypeMap["metadataProvider"] + "<i class='required-icon hidden' data-category='metadataProvider'></i></h4>",
-              '<div class="row-striped" data-attribute="metadataProvider"></div>');
-            _.each(this.model.get("metadataProvider"), function (provider) {
-              this.renderPerson(provider, "metadataProvider")
-            }, this);
-
-            this.renderPerson(null, "metadataProvider");
-          }
-          else
-            emptyTypes.push("metadataProvider");
-
-          //Custodian/Steward
-          if (custodian.length) {
-            this.$(".section.people").append("<h4>" + this.partyTypeMap["custodianSteward"] + "<i class='required-icon hidden' data-category='custodianSteward'></i></h4>",
-              '<div class="row-striped" data-attribute="custodianSteward"></div>');
-
-            _.each(custodian, function (custodianInd) {
-              this.renderPerson(custodianInd, "custodianSteward")
-            }, this);
-
-            this.renderPerson(null, "custodianSteward");
-          }
-          else
-            emptyTypes.push("custodianSteward");
-
-          //Publisher
-          if (this.model.get("publisher").length) {
-            this.$(".section.people").append("<h4>" + this.partyTypeMap["publisher"] + "<i class='required-icon hidden' data-category='publisher'></i></h4>",
-              '<p class="subtle">Only one publisher can be specified.</p>',
-              '<div class="row-striped" data-attribute="publisher"></div>');
-
-            _.each(this.model.get("publisher"), function (publisher) {
-              this.renderPerson(publisher, "publisher")
-            }, this);
-          }
-          else
-            emptyTypes.push("publisher");
-
-          //User
-          if (user.length) {
-            this.$(".section.people").append("<h4>" + this.partyTypeMap["user"] + "<i class='required-icon hidden' data-category='user'></i></h4>",
-              '<div class="row-striped" data-attribute="user"></div>');
-
-            _.each(user, function (userInd) {
-              this.renderPerson(userInd, "user")
-            }, this);
-
-            this.renderPerson(null, "user");
-          }
-          else
-            emptyTypes.push("user");
-
-          //Display a drop-down menu for all the empty party types
-          if (emptyTypes.length) {
-
-            //Create a dropdown menu for adding new person types
-            var menu = $(document.createElement("select")).attr("id", "new-party-menu").addClass("header-dropdown");
-
-            //Add the first option to the menu, which works as a label
-            menu.append($(document.createElement("option")).text("Choose new person or organization role ..."));
-
-            //Add some help text for the menu
-            var helpText = "Optionally add other contributors, collaborators, and maintainers of this dataset.";
-            menu.attr("title", helpText);
-
-            //Add a container element for the new party
-            var newPartyContainer = $(document.createElement("div"))
-              .attr("data-attribute", "new")
-              .addClass("row-striped");
-
-            //For each party type that is empty, add it to the menu as an option
-            _.each(emptyTypes, function (type) {
-
-              $(menu).append($(document.createElement("option"))
-                .val(type)
-                .text(this.partyTypeMap[type]));
-
-            }, this);
-
-            //Add the menu and new party element to the page
-            this.$(".section.people").append(menu, newPartyContainer);
-
-            //Render a new blank party form
-            this.renderPerson(null, "new");
-          }
-
-          // When the EML model has been saved, re-render the people section.
-          // This is needed because the EML model will automatically create a creator and contact
-          //   if none is supplied by the user. This will render them when they are added.
-          var view = this;
-          this.listenTo(this.model, "successSaving", function () {
-            this.renderPeople();
-          });
-
-          //Initialize the tooltips
+          // Initialize the tooltips
           this.$("input.tooltip-this").tooltip({
             placement: "top",
             title: function () {
@@ -457,33 +385,95 @@ define(['underscore', 'jquery', 'backbone',
 
         },
 
+        /**
+         * Creates and renders the dropdown at the bottom of the people section
+         * that allows the user to create a new party type category. The dropdown
+         * menu is saved to the view as view.partyMenu.
+         * @since 2.15.0
+         */
+        renderPeopleDropdown: function () {
+
+          try {
+
+            var helpText = "Optionally add other contributors, collaborators, and maintainers of this dataset.",
+              placeholderText = "Choose new person or organization role ...";
+
+            this.partyMenu = $(document.createElement("select"))
+              .attr("id", "new-party-menu")
+              .addClass("header-dropdown");
+
+            //Add the first option to the menu, which works as a label
+            this.partyMenu.append($(document.createElement("option")).text(placeholderText));
+
+            //Add some help text for the menu
+            this.partyMenu.attr("title", helpText);
+
+            //Add a container element for the new party
+            this.newPartyContainer = $(document.createElement("div"))
+              .attr("data-attribute", "new")
+              .addClass("row-striped");
+
+            //For each party type, add it to the menu as an option
+            this.partyTypes.forEach(function (partyType) {
+              $(this.partyMenu).append($(document.createElement("option"))
+                .val(partyType.dataCategory)
+                .text(partyType.label))
+            }, this);
+
+            // Add the menu and new party element to the page
+            this.peopleSection.append(this.partyMenu, this.newPartyContainer);
+
+          } catch (error) {
+            console.log("Error creating the menu for adding new party categories, error message: " + error);
+          }
+
+        },
+
+        /**
+         * Render the information provided for a given EML party in the party section.
+         * 
+         * @param  {EMLParty} emlParty - the EMLParty model to render. If set to null, a new EML party will be created for the given party type.
+         * @param  {string} partyType - The party type for which to render a new EML party. E.g. "creator", "coPrincipalInvestigator", etc.
+         */
         renderPerson: function (emlParty, partyType) {
+
+          // Whether or not this is a new emlParty model
+          var isNew = false;
 
           //If no model is given, create a new model
           if (!emlParty) {
+
             var emlParty = new EMLParty({
               parentModel: this.model
             });
 
             //Mark this model as new
-            var isNew = true;
+            isNew = true;
 
-            //Find the party type or role based on the type given
+            // Find the party type or role based on the type given.
+            // Update the model.
             if (partyType) {
-              if (_.includes(emlParty.get("roleOptions"), partyType)) {
-                emlParty.get("roles").push(partyType);
-              } else if (_.includes(emlParty.get("typeOptions"), partyType)) {
-                emlParty.set("type", partyType);
+              var partyTypeProperties = _.findWhere(this.partyTypes, { dataCategory: partyType });
+              if (partyTypeProperties) {
+                if (partyTypeProperties.isAssociatedParty) {
+                  var newRoles = _.clone(emlParty.get("roles"));
+                  newRoles.push(partyType);
+                  emlParty.set("roles", newRoles);
+                } else {
+                  emlParty.set("type", partyType);
+                }
               }
             }
 
           }
           else {
-            var isNew = false;
 
             //Get the party type, if it was not sent as a parameter
             if (!partyType || !partyType.length) {
-              var partyType = emlParty.get("type") || emlParty.get("roles");
+              var partyType = emlParty.get("type");
+              if (partyType == "associatedParty" || !partyType || !partyType.length) {
+                partyType = emlParty.get("roles");
+              }
             }
 
           }
@@ -496,15 +486,23 @@ define(['underscore', 'jquery', 'backbone',
 
           _.each(partyType, function (partyType) {
 
-            //Find the container section for this party type
-            var container = this.$(".section.people").find('[data-attribute="' + partyType + '"]');
+            // The container for this specific party type
+            var container = null;
+
+            if (partyType === "new") {
+              container = this.newPartyContainer;
+            } else {
+              var partyTypeProperties = _.findWhere(this.partyTypes, { dataCategory: partyType });
+              if (partyTypeProperties) {
+                container = partyTypeProperties.containerEl;
+              }
+            }
 
             //See if this view already exists
-            if (!isNew && container.length && emlParty) {
+            if (!isNew && container && container.length && emlParty) {
               var partyView;
 
               _.each(container.find(".eml-party"), function (singlePartyEl) {
-
                 //If this EMLPartyView element is for the current model, then get the View
                 if ($(singlePartyEl).data("model") == emlParty)
                   partyView = $(singlePartyEl).data("view");
@@ -517,19 +515,18 @@ define(['underscore', 'jquery', 'backbone',
               }
             }
 
+            // If this person type is not on the page yet, add it.
+            // For now, this only adds the first role if person has multiple roles.
+            if (!container || !container.length) {
+              container = this.addNewPersonType(partyType);
+            }
+
             //If there still is no partyView found, create a new one
             var partyView = new EMLPartyView({
               model: emlParty,
               edit: this.edit,
               isNew: isNew
             });
-
-            //If this person type is not on the page yet, add it
-            // For now, this only adds the first role if person has multiple roles
-            if (!container.length) {
-              this.addNewPersonType(emlParty.get("type") || emlParty.get("roles")[0]);
-              container = this.$(".section.people").find('[data-attribute="' + partyType + '"]');
-            }
 
             if (isNew) {
               container.append(partyView.render().el);
@@ -549,100 +546,130 @@ define(['underscore', 'jquery', 'backbone',
          * This function reacts to the user typing a new person in the person section (an EMLPartyView)
          */
         handlePersonTyping: function (e) {
+
           var container = $(e.target).parents(".eml-party"),
             emlParty = container.length ? container.data("model") : null,
             partyType = container.length && emlParty ? emlParty.get("roles")[0] || emlParty.get("type") : null;
+          partyTypeProperties = _.findWhere(this.partyTypes, { dataCategory: partyType }),
+            numPartyForms = this.$("[data-attribute='" + partyType + "'] .eml-party").length,
+            numNewPartyForms = this.$("[data-attribute='" + partyType + "'] .eml-party.new").length;
 
-          if (this.$("[data-attribute='" + partyType + "'] .eml-party.new").length > 1) return;
+          // If there is already a form to enter a new party for this party type, don't add another one
+          if (numNewPartyForms > 1) return;
 
-          //Render a new person
-          if (partyType != "publisher")
-            this.renderPerson(null, partyType);
+          // If there is a limit to how many party types can be added for this type,
+          // don't add more forms than is allowed
+          if (partyTypeProperties && partyTypeProperties.limit) {
+            return
+          }
+
+          // Render a form to enter information for a new person
+          this.renderPerson(null, partyType);
+
         },
 
         /*
          * This function is called when someone chooses a new person type from the dropdown list
          */
         chooseNewPersonType: function (e) {
+
           var partyType = $(e.target).val();
 
           if (!partyType) return;
 
           //Get the form and model
-          var partyForm = this.$(".section.people").find('[data-attribute="new"]'),
-            partyModel = partyForm.find(".eml-party").data("model");
+          var partyForm = this.newPartyContainer,
+            partyModel = partyForm.find(".eml-party").data("model").clone(),
+            partyTypeProperties = _.findWhere(this.partyTypes, { dataCategory: partyType });
 
-          //Set the type on this person form
-          partyForm.attr("data-attribute", partyType);
 
-          //Get the party type dropdown menu
-          var partyMenu = this.$("#new-party-menu");
+          // Remove this type from the dropdown menu
+          this.partyMenu.find("[value='" + partyType + "']").remove();
 
-          //Add a new header
-          partyMenu.before("<h4>" + this.partyTypeMap[partyType] + "</h4>");
-
-          if (partyType == "publisher")
-            partyMenu.before('<p class="subtle">Only one publisher can be specified.</p>');
-
-          //Remove this type from the dropdown menu
-          partyMenu.find("[value='" + partyType + "']").remove();
-
-          //Remove the menu from the page temporarily
-          partyMenu.detach();
-
-          //Add the new party type form
-          var newPartyContainer = $(document.createElement("div"))
-            .attr("data-attribute", "new")
-            .addClass("row-striped");
-          this.$(".section.people").append(newPartyContainer);
-          this.renderPerson(null, "new");
-          $(newPartyContainer).before(partyMenu);
-
-          //Update the model
-          if (_.includes(partyModel.get("roleOptions"), partyType)) {
-            partyModel.get("roles").push(partyType);
+          if (!partyModel.isEmpty()) {
+            //Update the model
+            if (partyTypeProperties.isAssociatedParty) {
+              var newRoles = _.clone(partyModel.get("roles"));
+              newRoles.push(partyType);
+              partyModel.set("roles", newRoles);
+            } else {
+              partyModel.set("type", partyType);
+            }
+            if (partyModel.isValid()) {
+              partyModel.mergeIntoParent();
+              // Add the person of that type (a section will be added if required)
+              this.renderPerson(partyModel, partyType);
+              // Clear and re-render the new person form
+              partyForm.empty();
+              this.renderPerson(null, "new");
+            }
+            else {
+              partyForm.find(".eml-party").data("view").showValidation();
+            }
           } else {
-            partyModel.set("type", partyType);
+            this.addNewPersonType(partyType);
           }
 
-          if (partyModel.isValid()) {
-            partyModel.mergeIntoParent();
-
-            //Add a new person of that type
-            this.renderPerson(null, partyType);
-          }
-          else {
-            partyForm.find(".eml-party").data("view").showValidation();
-          }
         },
 
         /*
          * addNewPersonType - Adds a header and container to the People section for the given party type/role,
+         * @return {JQuery} Returns the HTML element that contains each rendered EML Party for the given party type.
          */
         addNewPersonType: function (partyType) {
+
           if (!partyType) return;
 
-          // Container element to hold all parties of this type
-          var partyTypeContainer = $(document.createElement("div")).addClass("party-type-container");
+          var partyTypeProperties = _.findWhere(this.partyTypes, { dataCategory: partyType });
 
-          // Add a new header for the party type
-          var header = $(document.createElement("h4")).text(this.partyTypeMap[partyType]);
-          $(partyTypeContainer).append(header);
+          if (!partyTypeProperties) {
+            return
+          }
+
+          // If there is already a view for this person type, don't re-add it.
+          if (partyTypeProperties.containerEl) {
+            return
+          }
+
+          // Container element to hold all parties of this type
+          var outerContainer = $(document.createElement("div")).addClass("party-type-container");
+
+          // Add a new header for the party type, 
+          // plus an icon and spot for validation messages
+          var header = $(document.createElement("h4"))
+            .text(partyTypeProperties.label)
+            .append("<i class='required-icon hidden' data-category='" + partyType + "'></i>");
+
+          outerContainer.append(header);
+
+          // If there is a description, add that to the container as well
+          if (partyTypeProperties.description) {
+            outerContainer.append('<p class="subtle">' + partyTypeProperties.description + '</p>');
+          }
 
           //Remove this type from the dropdown menu
-          this.$("#new-party-menu").find("[value='" + partyType + "']").remove();
+          this.partyMenu.find("[value='" + partyType + "']").remove();
 
           //Add the new party container
-          var partyRow = $(document.createElement("div"))
+          partyTypeProperties.containerEl = $(document.createElement("div"))
             .attr("data-attribute", partyType)
             .addClass("row-striped");
-          partyTypeContainer.append(partyRow);
+          outerContainer.append(partyTypeProperties.containerEl);
 
           // Add in the new party type container just before the dropdown
-          this.$("#new-party-menu").before(partyTypeContainer);
+          this.partyMenu.before(outerContainer);
 
-          //Add a blank form to the new person type section
-          this.renderPerson(null, partyType);
+          // Add a blank form to the new person type section, unless the max number
+          // for this party type has already been reached (e.g. when a new person type
+          // is added after copying from another type)
+          if (
+            typeof partyTypeProperties.limit !== "number" ||
+            (this.model.getPartiesByType(partyType).length < partyTypeProperties.limit)
+          ) {
+            this.renderPerson(null, partyType);
+          }
+
+          return partyTypeProperties.containerEl
         },
 
         /*
@@ -678,37 +705,69 @@ define(['underscore', 'jquery', 'backbone',
           }
 
           //Disable the roles this person is already in
-          var currentRoles = partyToCopy.get("roles") || partyToCopy.get("type") || "";
+          var currentRoles = partyToCopy.get("roles");
+          if (!currentRoles || !currentRoles.length) {
+            currentRoles = partyToCopy.get("type");
+          }
           // "type" is a string and "roles" is an array.
           // so that we can use _.each() on both, convert "type" to an array
-          if (typeof currentRoles == "string") {
+          if (typeof currentRoles === "string") {
             currentRoles = [currentRoles];
           }
+
           _.each(currentRoles, function (currentRole) {
+
+            var partyTypeProperties = _.findWhere(this.partyTypes, { dataCategory: currentRole }),
+              label = partyTypeProperties ? partyTypeProperties.label : "";
+
             menu.find("input[value='" + currentRole + "']")
               .prop("disabled", "disabled")
               .addClass("disabled")
               .parent(".checkbox")
-              .attr("title", "This person is already in the " + this.partyTypeMap[currentRole] + " list.");
+              .attr("title", "This person is already in the " + label + " list.");
 
           }, this);
 
-          //If there is already one publisher, disable that option
-          if (this.model.get("publisher").length) {
-            var publisherName = this.model.get("publisher")[0].get("individualName") ?
-              this.model.get("publisher")[0].get("individualName").givenName + " " +
-              this.model.get("publisher")[0].get("individualName").surName :
-              this.model.get("publisher")[0].get("organizationName") ||
-              this.model.get("publisher")[0].get("positionName") ||
-              "Someone";
+          // If the maximum number of parties has already been for this party type,
+          // then don't allow adding more.
 
-            menu.find("input[value='publisher']")
-              .prop("disabled", "disabled")
-              .addClass("disabled")
-              .parent(".checkbox")
-              .attr("title", publisherName + " is already listed as the publisher. (There can be only one).");
+          var partiesWithLimits = _.filter(this.partyTypes, function (partyType) {
+            return typeof partyType.limit === "number"
+          });
 
-          }
+          partiesWithLimits.forEach(function (partyType) {
+
+            // See how many parties already exist for this type
+            var existingParties = this.model.getPartiesByType(partyType.dataCategory);
+
+            if (
+              existingParties &&
+              existingParties.length &&
+              existingParties.length >= partyType.limit
+            ) {
+              var names = _.map(existingParties, function (partyModel) {
+                var name = partyModel.getName();
+                if (name) {
+                  return name
+                } else {
+                  return "Someone"
+                }
+              });
+              var sep = names.length === 2 ? " and " : ", ",
+                beVerbNames = names.length > 1 ? "are" : "is",
+                beVerbLimit = partyType.limit > 1 ? "are" : "is",
+                title = names.join(sep) + " " + beVerbNames + " already listed as " +
+                  partyType.dataCategory + ". (Only " + partyType.limit + " " +
+                  beVerbLimit + " is allowed.)";
+
+              menu.find("input[value='" + partyType.dataCategory + "']")
+                .prop("disabled", "disabled")
+                .addClass("disabled")
+                .parent(".checkbox")
+                .attr("title", title);
+
+            }
+          }, this);
 
           //Attach the EMLParty to the menu DOMs
           menu.data({
@@ -735,57 +794,30 @@ define(['underscore', 'jquery', 'backbone',
 
             //Get the roles
             var role = $(checkedBox).val(),
-              isAssocParty = _.contains(partyToCopy.get("roleOptions"), role);
+              partyTypeProperties = _.findWhere(this.partyTypes, { dataCategory: role });
+
+            //Create a new EMLParty model
+            var newPerson = new EMLParty();
+            // Copy the attributes from the original person
+            // and set it on the new person
+            newPerson.set(partyToCopy.copyValues());
 
             //If the new role is an associated party ...
-            if (isAssocParty) {
-
-              //If there are no parties in this role yet,
-              // then add this person type to the view
-              if (!this.model.get("associatedParty").length)
-                this.addNewPersonType(role);
-              else if (!_.find(this.model.get("associatedParty"), function (p) {
-                return p.get("role") == role;
-              })) {
-                this.addNewPersonType(role);
-              }
-
-              //Create a new EMLParty model
-              var newPerson = new EMLParty();
-
-              //Create all the attributes for the new person. We're only changing the role
-              newPerson.set(partyToCopy.copyValues());
+            if (partyTypeProperties.isAssociatedParty) {
               newPerson.set("type", "associatedParty");
               newPerson.set("roles", [role]);
-
-              //Add this new EMLParty to the EML model
-              this.model.addParty(newPerson);
-
-              //Render this new person
-              this.renderPerson(newPerson, role);
             }
             //If the new role is not an associated party...
             else {
-              //If there are no parties in this role yet,
-              // then add this person type to the view
-              if (!this.model.get(role).length)
-                this.addNewPersonType(role);
-
-              //Create a new EMLParty model
-              var newPerson = new EMLParty();
-
-              // Copy the attributes from the original person
-              // and set it on the new person
-              newPerson.set(partyToCopy.copyValues());
               newPerson.set("type", role);
               newPerson.set("roles", newPerson.defaults().role);
-
-              //Add this new EMLParty to the EML model
-              this.model.addParty(newPerson);
-
-              //Render this new person
-              this.renderPerson(newPerson, role);
             }
+
+            //Add this new EMLParty to the EML model
+            this.model.addParty(newPerson);
+
+            // Add a view for the copied person
+            this.renderPerson(newPerson);
 
           }, this);
 
@@ -793,6 +825,7 @@ define(['underscore', 'jquery', 'backbone',
           if (checkedBoxes.length) {
             this.model.trickleUpChange();
           }
+
         },
 
         removePerson: function (e) {
@@ -1299,7 +1332,7 @@ define(['underscore', 'jquery', 'backbone',
 
         },
 
-        //TODO: Comma and semi-colon seperate keywords
+        //TODO: Comma and semi-colon separate keywords
         updateKeywords: function (e) {
 
           var keywordSets = this.model.get("keywordSets"),
