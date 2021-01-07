@@ -1194,12 +1194,18 @@ define(['underscore',
 
           try {
             var title = this.model.get("title") || "No title";
+            // Create a clone of the model that we will use for serialization.
+            // Don't serialize the model that is currently being edited,
+            // since serialize may make changes to the model that should not
+            // happen until the user is ready to save
+            // (e.g. - create a contact if there is not one)
+            var draftModel = this.model.clone();
 
             LocalForage.setItem(this.model.get("id"), {
               id: this.model.get("id"),
               datetime: (new Date()).toISOString(),
               title: Array.isArray(title) ? title[0] : title,
-              draft: this.model.serialize()
+              draft: draftModel.serialize()
             }).then(function () {
               view.clearOldDrafts();
             });

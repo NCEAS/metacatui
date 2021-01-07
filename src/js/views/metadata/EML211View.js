@@ -331,8 +331,9 @@ define(['underscore', 'jquery', 'backbone',
 
           this.partyTypes.forEach(function (partyType) {
 
-            // Make sure that there is no container elements saved
-            // since this could be a re-render
+            // Make sure that there are no container elements saved
+            // in the partyType array, since we may need to re-create the
+            // containers the hold the rendered EMLParty information.
             partyType.containerEl = null;
 
             // Any party type that is listed as a role in EMLParty "roleOptions" is saved

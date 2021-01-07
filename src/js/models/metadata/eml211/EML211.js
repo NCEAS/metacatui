@@ -1951,7 +1951,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
       },
       
       /**
-       * getPartiesByType - Gets an array of EMLParty members for this that have a particular party type or role.
+       * getPartiesByType - Gets an array of EMLParty members that have a particular party type or role.
        * @param {string} partyType - A string that represents either the role or the party type. For example, "contact", "creator", "principalInvestigator", etc.
        * @since 2.15.0
        */
