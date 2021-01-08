@@ -9,9 +9,9 @@ define(["jquery",
   function($, _, Backbone, Filters, QueryFields, QueryRule, Template) {
 
     /**
-     * @class QueryBuilder
-     * @classdesc A view that provides a UI for users to construct a complex
-     * search through the DataONE Solr index
+     * @class QueryBuilderView
+     * @classdesc A view that provides a UI for users to construct a complex search
+     * through the DataONE Solr index
      * @classcategory Views/QueryBuilder
      * @screenshot views/QueryBuilderView.png
      * @extends Backbone.View
@@ -35,8 +35,8 @@ define(["jquery",
         className: "query-builder",
 
         /**
-         * A jquery selector for the element in the template that will contain
-         * the query rules
+         * A jquery selector for the element in the template that will contain the query
+         * rules
          * @type {string}
          */
         rulesContainerSelector: ".rules-container",
@@ -52,10 +52,13 @@ define(["jquery",
          * An array of hex color codes used to help distinguish between different rules
          * @type {string[]}
          */
-        ruleColorPalette: ["#44AA99", "#137733", "#c9a538", "#CC6677", "#882355", "#AA4499","#332288"],
+        ruleColorPalette: ["#44AA99", "#137733", "#c9a538", "#CC6677", "#882355",
+          "#AA4499","#332288"
+        ],
 
         /**
-         * Search index fields to exclude in the metadata field selector of each query rule
+         * Search index fields to exclude in the metadata field selector of each query
+         * rule
          * @type {string[]}
          */
         excludeFields: [],
@@ -73,9 +76,9 @@ define(["jquery",
         template: _.template(Template),
 
         /**
-         * events - A function that specifies a set of DOM events that will be
-         * bound to methods on your View through Backbone.delegateEvents.
-         * See: https://backbonejs.org/#View-events
+         * events - A function that specifies a set of DOM events that will be bound to
+         * methods on your View through Backbone.delegateEvents.
+         * @see {@link https://backbonejs.org/#View-events}
          *
          * @return {Object}  The events hash
          */
@@ -86,7 +89,8 @@ define(["jquery",
             events[addRuleAction] = "addQueryRule"
             return events
           } catch (e) {
-            console.error("Failed to specify events for  the Query Builder View, error message: " + e);
+            console.error("Failed to specify events for  the Query Builder View," +
+              " error message: " + e);
           }
         },
 
@@ -112,15 +116,17 @@ define(["jquery",
               }, this);
             }
 
-            // If no filters collection is provided in the options, then set a
-            // new Filters collection
+            // If no filters collection is provided in the options, then set a new Filters
+            // collection
             if(!this.collection || typeof this.collection === 'undefined'){
               // TODO: Which properties to set?
               this.collection = new Filters()
             }
 
           } catch (e) {
-            console.error("Failed to initialize the query builder view, error message:", e);
+            console.error(
+              "Failed to initialize the query builder view, error message:", e
+            );
           }
         },
 
@@ -133,9 +139,12 @@ define(["jquery",
 
           try {
 
-            // Ensure the query fields are cached for the Query Field Select
-            // View and the Query Rule View
-            if ( typeof MetacatUI.queryFields === "undefined" || MetacatUI.queryFields.length === 0) {
+            // Ensure the query fields are cached for the Query Field Select View and the
+            // Query Rule View
+            if (
+              typeof MetacatUI.queryFields === "undefined" ||
+              MetacatUI.queryFields.length === 0
+            ) {
               MetacatUI.queryFields = new QueryFields();
               this.listenToOnce(MetacatUI.queryFields, "sync", this.render)
               MetacatUI.queryFields.fetch();
@@ -146,7 +155,10 @@ define(["jquery",
             this.$el.html(this.template());
 
             // Add a row for each rule that exists already in the model
-            if(this.collection && this.collection.models && this.collection.models.length){
+            if(
+              this.collection && this.collection.models &&
+              this.collection.models.length
+            ){
               this.collection.models.forEach(function(model){
                 this.addQueryRule(model)
               }, this);
@@ -172,9 +184,9 @@ define(["jquery",
 
             var view = this;
 
-            // Ensure that the object passed to this function is a filter.
-            // When the "add rule" button is clicked, the Event object is passed
-            // to this function instead.
+            // Ensure that the object passed to this function is a filter. When the "add
+            // rule" button is clicked, the Event object is passed to this function
+            // instead. If no filter model is provided, assume that this is a new rule
             if(!filterModel || (filterModel && !/filter/i.test(filterModel.type))){
               filterModel = this.collection.add({
                 nodeName: "filter",
@@ -186,8 +198,7 @@ define(["jquery",
             if(filterModel.get("isInvisible")){
               return
             }
-
-            // If no filter model is provided, assume that this is a new rule
+            
             // insert QueryRuleView
             var rule = new QueryRule({
               model: filterModel,
@@ -206,22 +217,6 @@ define(["jquery",
             console.error("Error adding a query rule, error message:", e);
           }
         },
-
-        /**
-         * Removes a query rule from the list of rules
-         *
-         * @param  {QueryRule} rule The query rule to remove
-         */
-        removeQueryRule: function(rule){
-          try {
-            // TODO
-            // Remove rule from the view
-            // Remove rule collection
-          } catch (e) {
-            console.error("Error removing a query rule, error message:", e);
-          }
-        },
-
 
       });
   });
