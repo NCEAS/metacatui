@@ -1332,8 +1332,9 @@ define(['jquery', 'underscore', 'backbone'],
         "relatedOrganizations", "noBoundingBox", "decade", "hasPart", "sensorText",
         "sourceText", "termText", "titlestr", "site", "id", "updateDate",
         "edition", "gcmdKeyword", "isSpatial", "keyConcept", "ogcUrl", "parameter",
-        "sensor", "source", "term", "investigatorText", "sku", "_text_"
-
+        "sensor", "source", "term", "investigatorText", "sku", "_text_",
+        // Fields that have been made into a combo-field:
+        "beginDate", "endDate",
         // Prov fields:
         // "prov_generated", "prov_generatedByExecution",
         // "prov_generatedByProgram", "prov_generatedByUser", "prov_hasDerivations",
@@ -1343,6 +1344,62 @@ define(['jquery', 'underscore', 'backbone'],
         // "prov_wasExecutedByUser", "prov_wasInformedBy"
       ],
 
+      /**
+       * A special field is one that does not exist in the query service index (i.e.
+       * Solr). It can be a combination of fields that are presented to the user as a
+       * single field, but which are added to the model as multiple fields. It can also be
+       * a duplicate of a field that does exist, but presented with a different label (and
+       * even with different {@link operatorOptions operator options} or
+       * {@link valueSelectUImap value input} if needed).
+       *
+       * @typedef {Object} SpecialField
+       * @property {string} name - A unique ID to represent this field. It must not match
+       * the name of any other query fields.
+       * @property {string[]} fields - The list of real query fields that this abstracted
+       * field should represent. The query fields listed must exactly match the names of
+       * the query fields that are retrieved from the query service.
+       * @property {string} label - A user-facing label to display.
+       * @property {string} description - A description for this field.
+       * @property {string} category - The name of the category under which to place this
+       * field. It must match one of the category names for an existing query field set in
+       * {@link QueryField#categoriesMap}.
+       * @property {string[]} [values] - An optional list of filter values. If set, this
+       * is used to determine whether a pre-existing query rule should be displayed as one
+       * of these special fields, or as a field from the query API. Setting values means
+       * that the values set on the query rule model must exactly match the values set.
+       *
+       * @since 2.15.0
+       */
+
+      /**
+       * A list of additional fields which are not retrieved from the query API (i.e. are
+       * not Solr fields), but which should be added to the list of options the user can
+       * select from when building a query in the EditCollectionView. This can be used to
+       * add abstracted fields which are a combination of multiple query fields, or to add
+       * a duplicate field that has a different label.
+       *
+       * @type {SpecialField[]}
+       *
+       * @since 2.15.0
+       */
+      collectionQuerySpecialFields: [
+        {
+          name: "documents-special-field",
+          fields: ["documents"],
+          label: "Contains Data Files",
+          description: "Limit results to packages that include data files. Without" +
+            " this rule, results may include packages with metadata but no data.",
+          category: "General",
+          values: ["*"]
+        },
+        {
+          name: "year-data-collection",
+          fields: ["beginDate", "endDate"],
+          label: "Year of Data Collection",
+          description: "The temporal range of content described by the metadata",
+          category: "Dates"
+        }
+      ],
 
       /**
        * The isPartOf filter is added to all new portals built in the Portal

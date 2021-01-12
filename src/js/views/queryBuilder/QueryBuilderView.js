@@ -57,11 +57,22 @@ define(["jquery",
         ],
 
         /**
-         * Search index fields to exclude in the metadata field selector of each query
-         * rule
+         * Query fields to exclude in the metadata field selector of each query rule. This
+         * is a list of field names that exist in the query service index (i.e. Solr), but
+         * which should be hidden in the Query Builder
          * @type {string[]}
          */
         excludeFields: [],
+
+        /**
+         * Query fields that do not exist in the query service index, but which we would
+         * like to show as options in the Query Builder field input.
+         * 
+         * @type {SpecialField[]}
+         *
+         * @since 2.15.0
+         */
+        specialFields: [],
 
         /**
         * A Filters collection that stores definition filters for a collection (or portal)
@@ -198,20 +209,21 @@ define(["jquery",
             if(filterModel.get("isInvisible")){
               return
             }
-            
+
             // insert QueryRuleView
             var rule = new QueryRule({
               model: filterModel,
               ruleColorPalette: this.ruleColorPalette,
-              excludeFields: this.excludeFields
+              excludeFields: this.excludeFields,
+              specialFields: this.specialFields
             });
 
             // Insert and render the rule
             this.$(this.rulesContainerSelector).append(rule.el);
             rule.render();
             // Add the rule to the list of rule sub-views
+            // TODO: is this really needed? are they removed when rule remeoved?
             this.rules.push(rule);
-
 
           } catch (e) {
             console.error("Error adding a query rule, error message:", e);

@@ -111,18 +111,21 @@ define([
         imageHeight: 30,
 
         /**
-         * The list of options that a user can select from in the dropdown menu.
-         * For uncategorized options, provide an array of objects, where each
-         * object is a single option. To create category headings, provide an
-         * object containing named objects, where the key for each object is
-         * the category title to display, and the value of each object comprises
-         * the option properties.
+         * The list of options that a user can select from in the dropdown menu. For
+         * un-categorized options, provide an array of objects, where each object is a
+         * single option. To create category headings, provide an object containing named
+         * objects, where the key for each object is the category title to display, and
+         * the value of each object comprises the option properties.
          * @type {Object[]|Object}
-         * @property {string} icon - The name of a Font Awesome 3.2.1 icon to display to the left of the label (e.g. "lemon", "heart")
-         * @property {string} image - The complete path to an image to use instead of an icon. If both icon and image are provided, the icon will be used.
+         * @property {string} icon - The name of a Font Awesome 3.2.1 icon to display to
+         * the left of the label (e.g. "lemon", "heart")
+         * @property {string} image - The complete path to an image to use instead of an
+         * icon. If both icon and image are provided, the icon will be used.
          * @property {string} label - The label to show for the option
-         * @property {string} description - A description of the option, displayed as a tooltip when the user hovers over the label
-         * @property {string} value - If the value differs from the label, the value to return when this option is selected (otherwise label is returned)
+         * @property {string} description - A description of the option, displayed as a
+         * tooltip when the user hovers over the label
+         * @property {string} value - If the value differs from the label, the value to
+         * return when this option is selected (otherwise label is returned)
          * @example
          * [
          *   {
@@ -201,7 +204,7 @@ define([
             // and add it if not. Prevents adding the CSS file multiple
             // times if the view is loaded more than once. The first time each
             // CSS path is added, we need to save a record of the event. It
-            // doesn't work to just search the document head for the style elemnt to
+            // doesn't work to just search the document head for the style element to
             // determine if the CSS has already been added, because each instance
             // of this view is initialized too quickly, before the previous
             // instance has had a chance to add the stylesheet element.
@@ -229,7 +232,8 @@ define([
             }
 
           } catch (e) {
-            console.log("Failed to initialize a Searchable Select view, error message:", e);
+            console.log("Failed to initialize a Searchable Select view, error message:",
+            e);
           }
         },
 
@@ -411,7 +415,8 @@ define([
          * isValidOption - Checks if a value is one of the values given in view.options
          *
          * @param  {string} value The value to check
-         * @return {boolean}      returns true if the value is one of the values given in view.options
+         * @return {boolean}      returns true if the value is one of the values given in
+         * view.options
          */
         isValidOption: function(value){
 
@@ -450,11 +455,12 @@ define([
         },
 
         /**
-         * addTooltip - Add a tooltip to a given element using the description
-         * in the options object that's set on the view.
+         * addTooltip - Add a tooltip to a given element using the description in the
+         * options object that's set on the view.
          *
          * @param  {HTMLElement} element The HTML element a tooltip should be added
-         * @param  {string} position how to position the tooltip - top | bottom | left | right
+         * @param  {string} position how to position the tooltip - top | bottom | left |
+         * right
          * @return {jQuery} The element with a tooltip wrapped by jQuery
          */
         addTooltip: function(element, position = "bottom"){
@@ -718,12 +724,14 @@ define([
         },
 
         /**
-         * showMessage - Show an error, warning, or informational message, and
-         * highlight the select interface in an appropriate colour.
+         * showMessage - Show an error, warning, or informational message, and highlight
+         * the select interface in an appropriate colour.
          *
-         * @param  {string} message The message to display. Use an empty string to only highlight the select interface without showing a messsage.
-         * @param  {string} type    one of "error", "warning", or "info"
-         * @param  {boolean} removeOnChange set to true to remove the message as soon as the user changes the selection
+         * @param  {string} message The message to display. Use an empty string to only
+         * highlight the select interface without showing any message text.
+         * @param  {string} type one of "error", "warning", or "info"
+         * @param  {boolean} removeOnChange set to true to remove the message as soon as
+         * the user changes the selection
          *
          */
         showMessage: function(message, type = "info", removeOnChange = true){

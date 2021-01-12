@@ -117,12 +117,46 @@ define([
         },
 
         /**
-         * Defined the user-friendly operators that will be available in the dropdown list
-         * to connect the query fields to the query values. Each operator must be unique.
-         * This definition is used to pre-select the correct operator based on attributes
-         * in the associated filter model, as well as to update the filter model when a
-         * user selects a new operator.
-         * @type {object[]}
+         * A list of additional fields which are not retrieved from the query API, but
+         * which should be added to the list of options. This can be used to add
+         * abstracted fields which are a combination of multiple query fields, or to add a
+         * duplicate field that has a different label. These special fields are passed on
+         * to {@link QueryFieldSelectView#addFields}.
+         *
+         * @type {SpecialField[]}
+         *
+         * @since 2.15.0
+         */
+        specialFields: [
+          {
+            name: "documents-special-field",
+            fields: ["documents"],
+            label: "Contains Data Files",
+            description: "Limit results to packages that include data files. Without" +
+              " this rule, results may include packages with metadata but no data.",
+            category: "General",
+            values: ["*"]
+          },
+          {
+            name: "year-data-collection",
+            fields: ["beginDate", "endDate"],
+            label: "Year of Data Collection",
+            description: "The temporal range of content described by the metadata",
+            category: "Dates"
+          }
+        ],
+
+        /**
+         * An operator option is an object that lists the properties of one of the
+         * operators that will be displayed to the user in the Query Rule "operator"
+         * dropdown list. The operator properties are used to pre-select the correct
+         * operator based on attributes in the associated
+         * {@link Filter#defaults Filter model}, as well as to update the Filter model
+         * when a user selects a new operator. Operators can set the exclude and
+         * matchSubstring properties of the model, and sometimes the values as well.
+         * Either the types property OR the fields property must be set, not both.
+         *
+         * @typedef {Object} OperatorOption
          * @property {string} label - The label to display to the user
          * @property {string} icon - An icon that represents the operator
          * @property {boolean} matchSubstring - Whether the matchSubstring attribute is
@@ -135,10 +169,41 @@ define([
          * operator must have a min attribute
          * @property {string[]} values - For this operator to work as desired, the values
          * that should be set in the filter (e.g. ["true"] for the operator "is true")
-         * @property {string[]} types - The node names of the filters that this operator
+         * @property {string[]} [types] - The node names of the filters that this operator
          * is used for (e.g. "filter", "booleanFilter")
+         * @property {string[]} [fields] - The query field names of the filters that this
+         * operator is used for. If this is used for a
+         * {@link QueryRuleView#specialFields special field}, then list the special field
+         * name (id), and not the real query field names. If this fields property is set,
+         * then the types property will be ignored. (i.e. fields is more specific than
+         * types.)
+         */
+
+        /**
+         * The list of operators that will be available in the dropdown list that connects
+         * the query fields to the values. Each operator must be unique.
+         *
+         * @type {OperatorOption[]}
          */
         operatorOptions: [
+          {
+            label: "is true",
+            description: "The data package includes data files (and not only metadata)",
+            icon: "ok-circle",
+            matchSubstring: false,
+            exclude: false,
+            values: ["*"],
+            fields: ["documents-special-field"]
+          },
+          {
+            label: "is false",
+            description: "The data package only contains metadata; it contains no data files.",
+            icon: "ban-circle",
+            matchSubstring: false,
+            exclude: true,
+            values: ["*"],
+            fields: ["documents-special-field"]
+          },
           {
             label: "equals",
             description: "The text in the metadata field is an exact match to the" +
@@ -267,16 +332,15 @@ define([
           // }
         ],
 
+
         /**
          * The third input in each query rule is where the user enters a value, minimum,
          * or maximum for the filter model. Different types of values are appropriate for
          * different solr query fields, and so we display different interfaces depending
-         * on the type and category of the selected query fields. This object defines
-         * which type of interface to show depending on type and category. The list of
-         * interface requirements is ordered from *most* specific to *least*, since the
-         * first match will be selected. The query (metadata) fields must match both the
-         * filterTypes AND the categories for a UI to be selected.
-         * @type {object[]}
+         * on the type and category of the selected query fields. A Value Input Option
+         * object defines a of interface to show for a given type and category.
+         *
+         * @typedef {Object} ValueInputOption
          * @property {string[]} filterTypes - An array of one or more filter types that
          * are allowed for this interface.  If none are provided then any filter type is
          * allowed.
@@ -286,12 +350,23 @@ define([
          * is allowed.
          * @property {string[]} queryFields - Specific names of fields that are allowed in
          * this interface. If none are provided, then any query fields are allowed that
-         * match the other properties.
+         * match the other properties. If this value select should be used for a
+         * {@link QueryRuleView#specialFields special field}, then use the name (id) of
+         * the special field, not the actual query fields that it represents.
          * @property {string} label - If the interface does not include a label (e.g.
          * number filter), include a string to display here.
          * @property {function} uiFunction - A function that returns the UI view to use
          * with all appropriate options set. The function will be called with this view as
          * the context.
+         */
+
+        /**
+         * This list defines which type of value input to show depending on filter type,
+         * category, and query fields. The value input options are ordered from *most*
+         * specific to *least*, since the first match will be selected. The filter model
+         * must match either the queryFields, or both the filterTypes AND the categories
+         * for a UI to be selected.
+         * @type {ValueInputOption[]}
          */
         valueSelectUImap: [
           // serviceCoupling field
@@ -458,7 +533,7 @@ define([
             });
 
           } catch (e) {
-            console.error("Failed to initialize a Query Builder View, error message:", e);
+            console.log("Failed to initialize a Query Builder View, error message:", e);
           }
         },
 
@@ -474,8 +549,10 @@ define([
             // TODO: How to indicate whether multiple fields/values are AND'ed or OR'ed
             // together?
 
-            // Add the Rule number, and the number of datasets related to rule (TODO)
+            // Add the Rule number.
+            // TODO: Also add the number of datasets related to rule
             this.addRuleInfo();
+            this.stopListening(this.model.collection, "remove");
             this.listenTo(this.model.collection, "remove", this.updateRuleInfo);
 
             // Metadata Selector field Add a metadata selector field whether the rule is
@@ -492,7 +569,6 @@ define([
               this.addOperatorSelect();
               this.addValueSelect();
             }
-
             this.addRemoveButton();
 
             return this;
@@ -522,11 +598,11 @@ define([
         },
 
         /**
-         * Selects a color from the rule colour palette array {@link ruleColorPalette},
-         * given an index. If the index is greater than the length of the palette, then
-         * the palette is effectively repeated until long enough (i.e. colours will be
-         * recycled). If no index in provided, the first colour in the palette will be
-         * selected.
+         * Selects a color from the
+         * {@link QueryRuleView#ruleColorPalette rule colour palette array}, given an
+         * index. If the index is greater than the length of the palette, then the palette
+         * is effectively repeated until long enough (i.e. colours will be recycled). If
+         * no index in provided, the first colour in the palette will be selected.
          *
          * @param  {number} [index=0] - The position of the rule within the Filters
          * collection.
@@ -594,6 +670,179 @@ define([
             console.error("Failed to , error message: " + e);
           }
         },
+        
+        /**
+         * Determines whether the filter model that this rule renders matches one of the
+         * {@link QueryRuleView#specialFields special fields} set on this view. If it
+         * does, returns the first special field object that matches. For a filter model
+         * to match to one of the special fields, it must contain all of the fields listed
+         * in the special field's "fields" property. If the special field has an array set
+         * for "values", then the model's values must also exactly match the special
+         * field's values.
+         *
+         * @param  {string[]} [fields] - Optionally set a list of query fields to search
+         * with. If not set, then the fields that are set on the view's filter model are
+         * used.
+         * @returns {SpecialField|null} - The matching special field, or null if no match
+         * was found.
+         *
+         * @since 2.15.0
+         */
+        getSpecialField: function(fields){
+
+            // Get information about the filter model (or used the fields passed to this
+            // function)
+            var selectedFields = fields || this.model.get("fields");
+            var selectedFields = _.clone(selectedFields);
+            var selectedValues = this.model.get("values");
+
+            if(!this.specialFields || !Array.isArray(this.specialFields)){
+              return null
+            }
+            
+            var matchingSpecialField = _.find(this.specialFields, function(specialField){
+              
+              var fieldsMatch = false,
+                  mustMatchValues = false,
+                  valuesMatch = false;
+
+              // If *all* the fields in the fields array are present in the list
+              // of fields that the special field represents, then count this as a match.
+              var commonFields = _.intersection(specialField.fields, selectedFields);
+              if(commonFields.length === specialField.fields.length){
+                fieldsMatch = true
+              }
+              
+              // The selected value must *exactly match* if one is set in the special
+              // field
+              if(specialField.values){
+                mustMatchValues = true;
+                valuesMatch = _.isEqual(specialField.values, selectedValues)
+              }
+
+              return fieldsMatch && (
+                !mustMatchValues || (mustMatchValues && valuesMatch)
+              )
+              
+            }, this);
+
+            // If this model matches one of the special fields, render it differently
+            return matchingSpecialField || null
+        },
+
+        /**
+         * Takes a list of query field names, checks if the model matches any of the
+         * special fields, and if it does, returns the list of fields with the actual
+         * field names replaced with the
+         * {@link QueryRuleView#specialFields special field name}. This function is the
+         * opposite of {@link QueryRuleView#convertFromSpecialFields}
+         * @param  {string[]} fields - The list of field names to convert
+         * @returns {string[]} - The converted list of field names. If there were no
+         * special fields detected, or if there's an error, then then the field names are
+         * returned unchanged.
+         *
+         * @param {string[]} fields - The list of fields to convert to special fields, if
+         * the model matches any of the special field objects
+         * @returns {string[]} - Returns the list of fields with actual query field names
+         * replaced with special field names, if any match
+         *
+         * @since 2.15.0
+         */
+        convertToSpecialFields: function(fields){
+
+          try {
+
+            var fields = _.clone(fields);
+
+            // Insert the special field name at the same position as the associated
+            // query fields that we will remove
+            var replaceWithSpecialField = function(fields, specialField){
+              if(specialField){
+                position = _.findIndex(fields, function(selectedField){
+                  return specialField.fields.includes(selectedField);
+                }, this);
+                fields.splice(position, 0, specialField.name);
+                fields = _.difference(fields, specialField.fields);
+              }
+              return fields
+            }
+            
+
+            // If the user selected a special field, make sure we convert those first
+            if( this.selectedSpecialFields && this.selectedSpecialFields.length ){
+              this.selectedSpecialFields.forEach(function(specialFiend){
+                fields = replaceWithSpecialField(fields, specialFiend)
+              }, this);
+            }
+
+            // Search for remaining special fields given the fields and model values
+            var matchingSpecialField = this.getSpecialField(fields);
+
+            // There may be more than one special field in the list of fields...
+            while(matchingSpecialField !== null){
+              fields = replaceWithSpecialField(fields, matchingSpecialField)
+              // Check if there are more special fields remaining
+              matchingSpecialField = this.getSpecialField(fields);
+
+            }
+
+            return fields;
+
+          } catch (error) {
+            console.log(
+              "Error converting query field names to special field names in" +
+              " a Query Rule View. Returning the list of fields unchanged." +
+              " Error details : " + error
+            );
+            return fields
+          }
+          
+        },
+
+        /**
+         * Takes a list of query field names and checks if it contains any of the
+         * {@link QueryRuleView#specialFields special field names}. Returns the list with
+         * the special field names replaced with the actual field names that those special
+         * fields represent. Stores the name of each special field name removed in an
+         * array set on the view's selectedSpecialFields property. selectedSpecialFields
+         * is cleared each time this function runs. This function is the opposite of
+         * {@link QueryRuleView#convertToSpecialFields}
+         * @param  {string[]} fields] - The list of field names to convert
+         * @returns {string[]} - The converted list of field names. If there were no
+         * special fields detected, or if there's an error, then then the field names are
+         * returned unchanged.
+         *
+         * @param {string[]} fields - The list of fields to convert to actual query
+         * service index fields
+         * @returns {string[]} - Returns the list of fields with any special field
+         * replaced with real fields from the query service index
+         *
+         * @since 2.15.0
+         */
+        convertFromSpecialFields: function(fields){
+          try {
+            this.selectedSpecialFields = [];
+            if(this.specialFields){
+              this.specialFields.forEach(function(specialField){
+                var index = fields.indexOf(specialField.name);
+                if(index >= 0){
+                  // Keep a record that the user selected a special field (useful in the
+                  // case that the special field is just a duplicate of another field)
+                  this.selectedSpecialFields.push(specialField);
+                  fields.splice.apply(fields, [index, 1].concat(specialField.fields));
+                }
+              }, this);
+            }
+            return fields
+          } catch (error) {
+            console.log(
+              "Error converting special query fields to query fields that" +
+              " exist in the index in a Query Rule View. Returning the fields" +
+              " unchanged. Error details: " + error
+            );
+            return fields
+          }
+        },
 
         /**
          * Create and insert an input that allows the user to select a metadata field to
@@ -602,9 +851,18 @@ define([
         addFieldSelect: function () {
 
           try {
+
+            // Check whether the filter model set on this view contains query fields
+            // and values that match one of the special rules. If it does,
+            // convert the list of field names to special field to pass on to the
+            // Query Field Select View.
+            var selectedFields = _.clone(this.model.get("fields"));
+            var selectedFields = this.convertToSpecialFields(selectedFields);
+
             this.fieldSelect = new QueryFieldSelect({
-              selected: this.model.get("fields"),
+              selected: selectedFields,
               excludeFields: this.excludeFields,
+              addFields: this.specialFields,
             });
             this.fieldSelect.$el.addClass(this.fieldsClass);
             this.el.append(this.fieldSelect.el);
@@ -613,8 +871,7 @@ define([
             // Update model when the values change
             this.stopListening(
               this.fieldSelect,
-              'changeSelection',
-              this.handleFieldChange
+              'changeSelection'
             );
             this.listenTo(
               this.fieldSelect,
@@ -650,11 +907,20 @@ define([
             //   return
             // }
 
-            // Get the current type of filter
-            var typeBefore = this.model.get("nodeName");
-            var typeAfter = this.getRequiredFilterType(newFields);
+            // Get the selected operator before the field changed
+            var opBefore = this.getSelectedOperator();
+
+            // If any of the new fields are special fields, replace them with the
+            // actual query fields before setting them in the model...
+            newFields = this.convertFromSpecialFields(newFields);
+
+            // Get the current type of filter and required type given the newly selected
+            // fields
+            var typeBefore = this.model.get("nodeName"),
+                typeAfter = this.getRequiredFilterType(newFields);
+
             // If the type has changed, then replace the model with one of the correct
-            // type
+            // type, update the value and operator inputs, and do nothing else
             if (typeBefore != typeAfter) {
               this.model = this.model.collection.replaceModel(
                 this.model,
@@ -665,13 +931,28 @@ define([
               this.addOperatorSelect("");
               return
             }
+
+            // If the filter model type is the same, and the operator options are the same
+            // for the selected fields, then update the model
             this.model.set("fields", newFields);
+
+            // Get the selected operator now that we've updated the model with new fields
+            var opAfter = this.getSelectedOperator();
+
             // Add an empty operator input field, if there isn't one
             if (!this.operatorSelect) {
               this.addOperatorSelect("");
+            // If the operator options have changed, refresh the operator input
+            } else if (opAfter !== opBefore){
+              this.removeInput("operator");
+              // Make sure that we overwrite any values that don't apply to the new options.
+              this.handleOperatorChange([""]);
+              this.addOperatorSelect("");
+              return
             }
-            // Refresh the value select in case the filter type or filter category has
-            // changed
+
+            // Refresh the value select in case a different value input is required for
+            // the new fields
             if (this.valueSelect) {
               this.removeInput("value");
               this.addValueSelect();
@@ -704,10 +985,8 @@ define([
             }
 
             fields.forEach((newField, i) => {
-              // Get the type of the field from the matching filter model in the Query
-              // Fields Collection
               var fieldModel = MetacatUI.queryFields.findWhere({ name: newField });
-              types.push(fieldModel.get("filterType"))
+                types.push(fieldModel.get("filterType"));
             });
 
             // Test of all the fields are of the same type
@@ -720,7 +999,7 @@ define([
             }
 
           } catch (e) {
-            console.error("Failed to detect the required filter type in the Query Rule" +
+            console.log("Failed to detect the required filter type in the Query Rule" +
               " View, error message: " + e);
           }
         },
@@ -736,16 +1015,9 @@ define([
           try {
 
             var view = this;
-
-            // Check which type of rule this is (boolean, numeric, text, date)
-            var type = this.model.get("nodeName");
-
             var operatorError = false;
 
-            // Get the list of options for a user to select from based on type
-            var options = _.filter(this.operatorOptions, function (option) {
-              return option.types.includes(type)
-            });
+            var options = this.getOperatorOptions();
 
             // Identify the selected operator for existing models
             if (typeof selectedOperator !== "string") {
@@ -789,8 +1061,7 @@ define([
             // Update model when the values change
             this.stopListening(
               this.operatorSelect,
-              'changeSelection',
-              this.handleOperatorChange
+              'changeSelection'
             );
             this.listenTo(
               this.operatorSelect,
@@ -812,6 +1083,7 @@ define([
          * e.g. ["is greater than"]
          */
         handleOperatorChange: function (newOperatorLabel) {
+
           try {
 
             var view = this;
@@ -861,7 +1133,7 @@ define([
             // Some operator options include a specific value to be set on the model. For
             // example, "is not empty", should set the model value to the "*" wildcard.
             // For operators with these specific value requirements, update the filter
-            // model value and remove the value select field.
+            // model value and remove the value select input.
             if (operator.values && operator.values.length) {
               this.removeInput("value");
               this.model.set("values", operator.values);
@@ -953,6 +1225,55 @@ define([
         },
 
         /**
+         * Get a list of {@link QueryRuleView#operatorOptions operatorOptions} that are
+         * allowed for this view's filter model
+         *
+         * @param  {string[]} [fields] - Optional list of fields to use instead of the
+         * fields set on this view's Filter model
+         *
+         * @since 2.15.0
+         */
+        getOperatorOptions: function(fields){
+
+          try {
+            // Check which type of rule this is (boolean, numeric, text, date)
+            var type = this.model.get("nodeName");
+
+            // If this rule contains a special field, replace the real query field names
+            // with the special field names for the purpose of selecting operator options
+            var fields = fields || this.model.get("fields");
+            var fields = _.clone(fields);
+            var fields = this.convertToSpecialFields(fields);
+
+            // Get the list of options for a user to select from based on field name.
+            // All of the rule's fields must be contained within the operator option's
+            // list of allowed fields for it to be a match.
+            var options = _.filter(this.operatorOptions, function (option) {
+              if(option.fields){
+                return _.every(fields, function(fieldName){
+                  return option.fields.includes(fieldName)
+                })
+              }
+            });
+
+            // Get the list of options for a user to select from based on type, if there
+            // were none that matched based on field names
+            if(!options || !options.length){
+              options = _.filter(this.operatorOptions, function (option) {
+                if(option.types){
+                  return option.types.includes(type)
+                }
+              }, this);
+            }
+
+            return options
+          } catch (error) {
+            console.log("Error getting operator options in a Query Rule View, " +
+            "Error details: " + error);
+          }
+        },
+
+        /**
          * getSelectedOperator - Based on values set on the model, get the label to show
          * in the "operator" filed of the Query Rule
          *
@@ -973,9 +1294,7 @@ define([
 
             // Reduce list of options to only  those that apply to the current filter type
             var type = view.model.get("nodeName");
-            var options = _.filter(options, function (option) {
-              return option.types.includes(type)
-            });
+            var options = this.getOperatorOptions();
 
             // --- Filter 2 - filter by 'matchSubstring', 'exclude', 'min', 'max' --- //
 
@@ -1080,7 +1399,7 @@ define([
             }
 
           } catch (e) {
-            console.error("Failed to detect the category for a group of filters in the" +
+            console.log("Failed to detect the category for a group of filters in the" +
               " Query Rule View, error message: " + e);
           }
 
@@ -1093,7 +1412,7 @@ define([
           try {
 
             var view = this
-            fields = this.model.get("fields"),
+              fields = this.model.get("fields"),
               filterType = this.getRequiredFilterType(fields),
               category = this.getCategory(fields),
               interfaces = this.valueSelectUImap,
@@ -1158,8 +1477,7 @@ define([
             // on a SearchSelect View) but update the models directly
             this.stopListening(
               view.valueSelect,
-              'changeSelection',
-              this.handleValueChange
+              'changeSelection'
             );
             this.listenTo(
               view.valueSelect,
@@ -1213,7 +1531,7 @@ define([
          */
         removeInput: function (inputType) {
           try {
-            // TODO - what model updates should happen here?
+            // TODO - what, if any, model updates should happen here?
             switch (inputType) {
               case "value":
                 if (this.valueSelect) {

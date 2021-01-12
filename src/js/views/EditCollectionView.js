@@ -77,10 +77,19 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
      ruleColorPalette: ["#44AA99", "#137733", "#c9a538", "#CC6677", "#882355", "#AA4499","#332288"],
     
     /**        
-     * Search index fields to exclude in the metadata field selector of each query rule        
+     * Query fields to exclude in the metadata field selector of each query rule. This
+     * is a list of field names that exist in the query service index (i.e. Solr), but
+     * which should be hidden in the Query Builder
      * @type {string[]}
      */         
     queryBuilderExcludeFields: MetacatUI.appModel.get("collectionQueryExcludeFields"),
+
+    /**
+     * Query fields that do not exist in the query service index, but which we would
+     * like to show as options in the Query Builder field input.
+     * @type {SpecialField[]}
+     */
+    queryBuilderSpecialFields: MetacatUI.appModel.get("collectionQuerySpecialFields"),
 
     /**
     * The events this view will listen to and the associated function to call.
@@ -159,7 +168,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       var view = this;
       
       // If the isPartOf filter is hidden, then don't allow users to build
-      // a query rule usinig the isPartOf field. If they do, that rule will
+      // a query rule using the isPartOf field. If they do, that rule will
       // be hidden the next time they open the portal in the editor. Also,
       // the filter they create will overwrite the isPartOf filter created by
       // default.
@@ -171,6 +180,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         collection: this.model.get("definitionFilters"),
         ruleColorPalette: this.ruleColorPalette,
         excludeFields: this.queryBuilderExcludeFields,
+        specialFields: this.queryBuilderSpecialFields,
       });
       
       // Render the query builder and insert it into this view

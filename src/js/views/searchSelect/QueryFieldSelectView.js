@@ -57,15 +57,48 @@ define([
         excludeFields: [],
 
         /**
+         * An additional field object contains the properties an additional query field to
+         * add that are required to render it correctly. An additional query field is one
+         * that does not actually exist in the query service index.
+         *
+         * @typedef {Object} AdditionalField
+         *
+         * @property {string} name - A unique ID to represent this field. It must not
+         * match the name of any other query fields.
+         * @property {string[]} fields - The list of real query fields that this
+         * abstracted field will represent. It must exactly match the names of the query
+         * fields that actually exist.
+         * @property {string} label - A user-facing label to display.
+         * @property {string} description - A description for this field.
+         * @property {string} category - The name of the category under which to place
+         * this field. It must match one of the category names for an existing query
+         * field.
+         * 
+         * @since 2.15.0
+         */
+
+        /**
+         * A list of additional fields which are not retrieved from the query service
+         * index, but which should be added to the list of options. This can be used to
+         * add abstracted fields which are a combination of multiple query fields, or to
+         * add a duplicate field that has a different label.
+         *
+         * @type {AdditionalField[]}
+         * @since 2.15.0
+         */
+        addFields: [],
+
+        /**
          * A list of query fields names to display at the top of the menu, above
          * all other category headers
          * @type {string[]}
          */
-        commonFields: ["text"],
+        commonFields: ["text", "documents-special-field"],
 
         /**
          * The names of categories that should have items sorted alphabetically. Names
-         * must exactly match those in the Query Field model - {@link QueryField#categoriesMap}
+         * must exactly match those in the
+         * {@link QueryField#categoriesMap Query Field model}
          * @type {string[]}
          */
         categoriesToAlphabetize: ["General"],
@@ -97,7 +130,7 @@ define([
         /**
          * Render the view
          *
-         * @return {SeachableSelect}  Returns the view
+         * @return {SearchableSelect}  Returns the view
          */
         render: function(){
 
@@ -118,9 +151,30 @@ define([
             // SearchableSelect view.
             var fieldsJSON = MetacatUI.queryFields.toJSON();
 
+            // Process & add additional fields set on this view (these are fields not
+            // retrieved from the query service API)
+            if(this.addFields && Array.isArray(this.addFields)){
+              // For each added field, find the icon and category order from the already
+              // existing fields with the same category.
+              this.addFields = _.map(this.addFields, function(field){
+                if(field.category){
+                  var categoryInfo = _.findWhere(fieldsJSON, {category: field.category});
+                  ["icon", "categoryOrder"].forEach(function(prop){
+                    if(!field[prop]){
+                      field[prop] = categoryInfo[prop]
+                    }
+                  })
+                }
+                return field
+              }, this);
+              // Add the additional fields to the array of fields fetched from the
+              // query service API
+              fieldsJSON = fieldsJSON.concat(this.addFields);
+            }
+
             // Move common fields to the top of the menu, outside of any
             // category headers, so that they are easy to find
-            if(this.commonFields.length){
+            if(this.commonFields && Array.isArray(this.commonFields)){
               this.commonFields.forEach(function(commonFieldName){
                 var i = _.findIndex(fieldsJSON, { name: commonFieldName});
                 if(i>0){
@@ -142,7 +196,7 @@ define([
               .filter(
                 function(filter){
                   if(this.excludeNonSearchable){
-                    if(filter.searchable !== "true"){
+                    if(["false", false].includes(filter.searchable)){
                       return false
                     }
                   }
@@ -236,13 +290,40 @@ define([
                           .find(function(option){
                             return option.label == valueOrLabel || option.value == valueOrLabel
                           })
-                          .value()
+                          .value();
+
+          var label = opt.label,
+              value = opt.value,
+              type = opt.type,
+              description = (opt.description ? opt.description : "");
+
+          // For added fields, the value set on the options.value element is just a
+          // unique identifier. The values that should be used to build a query are saved
+          // in the addFields array set on this view.
+          if(this.addFields && Array.isArray(this.addFields)){
+            var specialField = _.findWhere(this.addFields, { name: valueOrLabel });
+            if(specialField){
+              value = specialField.fields;
+              type = [];
+              specialField.fields.forEach(function(fieldName){
+                var realField = MetacatUI.queryFields.findWhere({
+                  name: fieldName
+                });
+                if(realField){
+                  type.push(realField.get("type"))
+                } else {
+                  type.push("special field")
+                }
+              }, this);
+              type = type.join(", ");
+            }
+          }
 
           var contentEl = $(document.createElement("div")),
-              titleEl = $("<div>" + opt.label + "</div>"),
-              valueEl = $("<code class='pull-right'>" + opt.value + "</code>"),
-              typeEl = $("<span class='muted pull-right'><b>Type: " + opt.type + "</b></span>"),
-              descriptionEl = $("<p>" + (opt.description ? opt.description : "") + "</p>");
+              titleEl = $("<div>" + label + "</div>"),
+              valueEl = $("<code class='pull-right'>" + value + "</code>"),
+              typeEl = $("<span class='muted pull-right'><b>Type: " + type + "</b></span>"),
+              descriptionEl = $("<p>" + description + "</p>");
 
             titleEl.append(valueEl);
             contentEl.append(descriptionEl, typeEl)
@@ -303,6 +384,10 @@ define([
               view.updateMenu();
               // Make sure the new menu is attached before updating the selections
               setTimeout(function () {
+                // If the selected value has been removed, re-add it.
+                if(!view.selected.includes(value)){
+                  view.selected.push(value)
+                }
                 view.changeSelection(view.selected, silent = true);
               }, 25);
               return true
