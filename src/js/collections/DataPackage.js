@@ -2599,10 +2599,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               // If this object is documented by any metadata...
               if(isDocBy && isDocBy.length){
                 // Get the ids of all the metadata objects in this package
-                var  metadataInPackage = _.compact(_.map(this.models, function(m){ if(m.get("formatType") == "METADATA") return m.get("id"); }));
+                var metadataInPackage = _.compact(_.map(this.models, function(m){ if(m.get("formatType") == "METADATA") return m; })),
+                    metadataInPackageIDs = _.each(metadataInPackage, function(m){ return m.get("id") });
 
                 // Find the metadata IDs that are in this package that also documents this data object
-                var metadataIds = Array.isArray(isDocBy)? _.intersection(metadataInPackage, isDocBy) : _.intersection(metadataInPackage, [isDocBy]);
+                var metadataIds = Array.isArray(isDocBy)? _.intersection(metadataInPackageIDs, isDocBy) : _.intersection(metadataInPackageIDs, [isDocBy]);
 
                 // If this data object is not documented by one of these metadata docs,
                 // then we should check if it's documented by an obsoleted pid. If so,
