@@ -1333,15 +1333,15 @@ define(['jquery', 'underscore', 'backbone'],
         "sourceText", "termText", "titlestr", "site", "id", "updateDate",
         "edition", "gcmdKeyword", "isSpatial", "keyConcept", "ogcUrl", "parameter",
         "sensor", "source", "term", "investigatorText", "sku", "_text_",
-        // Fields that have been made into a combo-field:
+        // Fields that have been made into a special combination field
         "beginDate", "endDate",
-        // Prov fields:
-        // "prov_generated", "prov_generatedByExecution",
-        // "prov_generatedByProgram", "prov_generatedByUser", "prov_hasDerivations",
-        // "prov_hasSources", "prov_instanceOfClass", "prov_used",
-        // "prov_usedByExecution", "prov_usedByProgram", "prov_usedByUser",
-        // "prov_wasDerivedFrom", "prov_wasExecutedByExecution",
-        // "prov_wasExecutedByUser", "prov_wasInformedBy"
+        // Provenance fields (keep only "prov_hasSources" and "prov_hasDerivations"),
+        // since they are the only ones indexed on metadata objects
+        "prov_wasGeneratedBy", "prov_generated", "prov_generatedByExecution",
+        "prov_generatedByProgram", "prov_generatedByUser", "prov_instanceOfClass",
+        "prov_used", "prov_usedByExecution", "prov_usedByProgram", "prov_usedByUser",
+        "prov_wasDerivedFrom", "prov_wasExecutedByExecution", "prov_wasExecutedByUser",
+        "prov_wasInformedBy"
       ],
 
       /**
