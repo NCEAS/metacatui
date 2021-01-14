@@ -4,8 +4,9 @@ define([
   "underscore",
   "backbone",
   "models/DataONEObject",
-  "models/metadata/eml211/EMLParty"
-], function($, _, Backbone, DataONEObject, EMLParty) {
+  "models/metadata/eml211/EMLParty",
+  "models/metadata/eml211/EMLAward",
+], function($, _, Backbone, DataONEObject, EMLParty, EMLAward) {
   var EMLProject = Backbone.Model.extend({
     defaults: {
       objectDOM: null,
@@ -43,21 +44,10 @@ define([
         studyareadescription: "studyAreaDescription",
         relatedproject: "relatedProject",
         researchproject: "researchProject",
-        fundername: "funderName",
-        funderidentifier: "funderIdentifier",
-        awardnumber: "awardNumber",
-        awardurl: "awardUrl",
         title: "title"
       };
     },
 
-    awardFields: {
-      title: "Title",
-      fundername: "Funder Name",
-      funderidentifier: "Funder Identifier",
-      awardnumber: "Award Number",
-      awardurl: "Award URL",
-    },
 
     //TODO: This only supports the funding and title elements right now
     parse: function(objectDOM) {
@@ -89,27 +79,14 @@ define([
       );
 
       //Parse the award info
-
+      var awardNodes = $(objectDOM).children("award");
       modelJSON.award = [];
-      var awardEl = $(objectDOM).children("award"),
-        awardNodes = awardEl[0] && awardEl[0].localName  === 'award'
-          ? awardEl
-          : [];
+      for(var i = 0; i < awardNodes.length; i++){
+        modelJSON.award.push( new EMLAward({ objectDOM: awardNodes[i], parentModel: this }));
+      }
 
-      //Iterate over each award node and put the text into the award array
-      _.each(
-        awardNodes,
-        function(node) {
-          var nodeEl = $(node)
-          var awardItem = []
-          Object.keys(this.awardFields).forEach(field => {
-            awardItem.push({ label: this.awardFields[field], value: nodeEl.children(field).text()})
-          })
+      modelJSON.awardFields = new EMLAward().emlEditorAwardFieldLabels
 
-          modelJSON.award.push(awardItem);
-        },
-        this
-      );
 
       /*
 			var personnelNode = $(objectDOM).find("personnel");
@@ -118,8 +95,6 @@ define([
 				modelJSON.personnel.push( new EMLParty({ objectDOM: personnelNode[i], parentModel: this }));
 			}
       */
-
-      modelJSON.awardFields = this.awardFields
 
       return modelJSON;
     },
@@ -284,6 +259,17 @@ define([
 
     formatXML: function(xmlString) {
       return DataONEObject.prototype.formatXML.call(this, xmlString);
+    },
+
+    removeAward: function(index) {
+      //Remove this award from the model
+      this.set(
+        "award",
+        _.without(
+          this.get("award"),
+          this.get("award")[index]
+        )
+      );
     }
   });
 

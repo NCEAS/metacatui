@@ -13,12 +13,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/eml211/EMLOtherEntity',
         'models/metadata/eml211/EMLParty',
         'models/metadata/eml211/EMLProject',
+        'models/metadata/eml211/EMLAward',
         'models/metadata/eml211/EMLText',
     'models/metadata/eml211/EMLMethods'],
     function($, _, Backbone, uuid, Units, ScienceMetadata, DataONEObject,
         EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage,
         EMLDistribution, EMLEntity, EMLDataTable, EMLOtherEntity, EMLParty,
-            EMLProject, EMLText, EMLMethods) {
+        EMLProject, EMLAward, EMLText, EMLMethods) {
 
       /**
       * @class EML211
@@ -148,6 +149,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               EMLTaxonCoverage.prototype.nodeNameMap(),
               EMLTemporalCoverage.prototype.nodeNameMap(),
               EMLMethods.prototype.nodeNameMap(),
+              EMLAward.prototype.nodeNameMap(),
               {
                 "accuracyreport" : "accuracyReport",
                 "actionlist" : "actionList",
@@ -397,6 +399,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "textdomain" : "textDomain",
                 "textfixed" : "textFixed",
                 "textformat" : "textFormat",
+                "title" : "title",
                 "topologylevel" : "topologyLevel",
                 "tonegradation" : "toneGradation",
                 "totaldigits" : "totalDigits",
