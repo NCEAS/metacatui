@@ -87,7 +87,6 @@ define([
 
       modelJSON.awardFields = new EMLAward().emlEditorAwardFieldLabels
 
-
       /*
 			var personnelNode = $(objectDOM).find("personnel");
 			modelJSON.personnel = [];
@@ -169,7 +168,6 @@ define([
 
       // Serialize funding (if needed)
       var fundingNode = $(objectDOM).children("funding");
-
       if (this.get("funding") && this.get("funding").length > 0) {
         // Create the funding element if needed
         if (fundingNode.length == 0) {
@@ -196,6 +194,30 @@ define([
         // Remove all funding elements
         $(fundingNode).remove();
       }
+
+      var awardNode = $(objectDOM).children("award");
+
+      if (this.get("award")) {
+        $(awardNode).remove();
+
+        if(Array.isArray(this.get("award"))) {
+          _.each(this.get("award"), function(award) {
+            $(objectDOM).append(award.updateDOM());
+          });
+        } else {
+          $(objectDOM).append(this.get("award").updateDOM())
+        }
+
+
+      } else if (
+        (!this.get("award") || !this.get("award").length) &&
+        awardNode.length > 0
+      ) {
+        // Remove all award elements
+        $(awardNode).remove();
+      }
+
+
 
       // Remove empty (zero-length or whitespace-only) nodes
       $(objectDOM)
@@ -270,7 +292,50 @@ define([
           this.get("award")[index]
         )
       );
+    },
+
+    updateAward: function(e, position) {
+      var element = $(e.target);
+      var award;
+
+      //Get the attribute that was changed
+      var attribute = element.attr("data-attribute");
+      if(!attribute) return false;
+
+      var newValue = element.val();
+
+      // if there are existing award models
+      if (Array.isArray(this.get("award"))) {
+        // if updating existing award model
+        if (this.get("award")[position]) {
+          award = this.get("award")[position];
+        // if add new award model to exist awards
+        } else {
+          award = new EMLAward({ parentModel: this.model });
+          this.set("award", [...this.get("award"), award]);
+        }
+      // else there are no award models
+      } else {
+        award = new EMLAward({ parentModel: this.model });
+        this.set("award",  award);
+      }
+
+      var emlModel = this.getParentEML();
+      if(emlModel){
+        newValue = emlModel.cleanXMLText(newValue);
+      }
+
+
+      //Update the model
+      if (newValue == "") {
+        award.set(attribute, null);
+      } else {
+        award.set(attribute, newValue);
+      }
+
+
     }
+
   });
 
   return EMLProject;

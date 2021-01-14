@@ -8,7 +8,7 @@
         <form class = "award">
           <% _(awardFields).each(function(label, value) { %>
             <label><%= label %></label>
-            <input type="text" data-category="<%= value %>" value="<%= awardItem.attributes[value] %>"/>
+            <input type="text" data-attribute="<%= value %>" value="<%= awardItem.attributes[value] %>"/>
           <% }) %>
         </form>
       </div>
@@ -20,7 +20,7 @@
       <form class = "award">
         <% _(awardFields).each(function(label, value) { %>
           <label><%= label %></label>
-          <input type="text" data-category="<%= value %>"/>
+          <input type="text" data-attribute="<%= value %>"/>
         <% }) %>
       </form>
     </div>

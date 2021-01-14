@@ -5,8 +5,9 @@ define([
   "backbone",
   "models/metadata/eml211/EMLProject",
   "models/metadata/eml211/EMLText",
+  "models/metadata/eml211/EMLAward",
   "text!templates/metadata/EMLProject.html"
-], function(_, $, Backbone, EMLProject, EMLText, EMLProjectTemplate) {
+], function(_, $, Backbone, EMLProject, EMLText, EMLAward, EMLProjectTemplate) {
   /**
    * @class EMLProjectView
    * @classdesc The EMLProject renders the content of an EMLProject model
@@ -34,7 +35,8 @@ define([
       },
 
       events: {
-        "keyup .award-container.new" : "addNewAward",
+        "change": "updateModel",
+        "keyup .award-container.new": "addNewAward",
         "click .remove": "removeAward",
         "mouseover .remove": "previewRemove",
         "mouseout .remove": "previewRemove"
@@ -61,6 +63,23 @@ define([
         return this;
       },
 
+      updateModel: function(e) {
+        if (!e) return false;
+
+        var updatedInput = $(e.target);
+
+        //Get the attribute that was changed
+        var changedAttr = updatedInput.attr("data-attribute");
+        if (!changedAttr) return false;
+
+        if (Object.keys(this.model.get("awardFields")).includes(changedAttr)) {
+          var position = this.$(`[data-attribute='${changedAttr}']`).index(
+            e.target
+          );
+          this.model.updateAward(e, position);
+        }
+      },
+
       /*
        * Remove this award
        */
@@ -71,8 +90,8 @@ define([
           view = this;
 
         //Remove this award from the model
-        this.model.removeAward(index)
-        this.model.trickleUpChange()
+        this.model.removeAward(index);
+        this.model.trickleUpChange();
 
         //Remove the award elements from the page
         awardEl.slideUp("fast", function() {
@@ -88,19 +107,21 @@ define([
       },
 
       addNewAward: function(e) {
-          var container = this.$("section.project");
-          var awardEl = this.$(".award-container.new");
+        var container = this.$("section.project");
+        var awardEl = this.$(".award-container.new");
 
-          var newAward = awardEl[0].cloneNode(true)
-          newAward.children[0].children[0].reset()
+        var newAward = awardEl[0].cloneNode(true);
+        newAward.children[0].children[0].reset();
 
-          container.append(newAward);
-          awardEl.removeClass("new");
-          awardEl.prepend('<i class="remove icon-remove"></i>')
+        container.append(newAward);
+        awardEl.removeClass("new");
+        awardEl.prepend('<i class="remove icon-remove"></i>');
       },
 
-      previewRemove: function(e){
-        $(e.target).parents(".award-container").toggleClass("remove-preview");
+      previewRemove: function(e) {
+        $(e.target)
+          .parents(".award-container")
+          .toggleClass("remove-preview");
       }
     }
   );
