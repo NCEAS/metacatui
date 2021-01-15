@@ -3447,6 +3447,10 @@ add font awesome close icon */
   margin-left: -40%;
 }
 
+.access-policy-view-container .modal .modal-body {
+  max-height: 800px;
+}
+
 .access-policy-view:not(.modal) .modal-header{
   border-bottom-width: 0px;
   padding: 0px;
