@@ -23,10 +23,10 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function(
 
     nodeNameMap: function() {
       return {
-        title: "title",
         fundername: "funderName",
         funderidentifier: "funderIdentifier",
         awardnumber: "awardNumber",
+        title: "title",
         awardurl: "awardUrl"
       };
     },
@@ -37,12 +37,6 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function(
       funderIdentifier: "Funder Identifier",
       awardNumber: "Award Number",
       awardUrl: "Award URL"
-    },
-
-    emlEditorAwardFields: {
-      funderIdentifier: true,
-      awardNumber: true,
-      awardUrl: true
     },
 
     parse: function(objectDOM) {

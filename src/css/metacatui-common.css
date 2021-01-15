@@ -7706,6 +7706,14 @@ textarea.medium{
 }
 
 /* ---- Projects ---- */
+.metadata-container .eml-award:nth-child(even) {
+	background-color: #EFEFEF;
+}
+
+.metadata-container .award-container {
+	padding: 20px;
+}
+
 .metadata-container .award-container .remove{
 	position: relative;
 	float: right;
