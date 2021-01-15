@@ -188,15 +188,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 //Get the AccessPolicy for this object
                 var accessPolicy = this.model.get("accessPolicy"),
-                    publicPrivateToggle = this.$(".publicprivatetoggle"),
-                    checkbox = this.$(".publicprivatetoggle input"),
-                    shareButtonContainer = this.$(".sharing > div"),
                     shareButton = this.$(".sharing button");
-
-                //Check the public/private toggle if this object is private
-                if( accessPolicy && accessPolicy.isPublic() ){
-                  checkbox.prop("checked", true);
-                }
 
                 if(this.model.get("type") == "Metadata"){
                   //Add the title data-attribute attribute to the name cell
@@ -209,38 +201,24 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 // Set up tooltips for the public private toggle and share
                 // button
-                var publicPrivateToggleTitle,
-                    sharebuttonTitle;
+                var sharebuttonTitle;
 
-                  // If the user is not authorized to change the permissions of
-                  // this object, then disable the checkbox
-                  if (!accessPolicy.isAuthorized("changePermission")) {
-                    publicPrivateToggle.addClass("disabled");
-                    checkbox.prop("disabled", true);
-                    shareButton.addClass("disabled");
+                // If the user is not authorized to change the permissions of
+                // this object, then disable the checkbox
+                if (!accessPolicy.isAuthorized("changePermission")) {
+                  shareButton.addClass("disabled");
+                  sharebuttonTitle = "You are not authorized to share this item."
+                } else {
+                  sharebuttonTitle = "Share this item with others";
+                }
 
-                    publicPrivateToggleTitle = "You are not authorized to edit the privacy of this item.";
-                    sharebuttonTitle = "You are not authorized to share this item."
-                  } else {
-                    publicPrivateToggleTitle = "Toggle whether this item is publicly viewable",
-                    sharebuttonTitle = "Share this item with others";
-                  }
-
-                  publicPrivateToggle.tooltip({
-                    title: publicPrivateToggleTitle,
-                    placement: "top",
-                    container: this.el,
-                    trigger: "hover",
-                    delay: { show: 400 }
-                  });
-
-                  shareButtonContainer.tooltip({
-                    title: sharebuttonTitle,
-                    placement: "top",
-                    container: this.el,
-                    trigger: "hover",
-                    delay: { show: 400 }
-                  });
+                shareButton.tooltip({
+                  title: sharebuttonTitle,
+                  placement: "top",
+                  container: this.el,
+                  trigger: "hover",
+                  delay: { show: 400 }
+                });
 
                 // Add tooltip to a disabled Replace link
                 $(this.$el).find(".replace.disabled").tooltip({
@@ -1017,10 +995,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                   this.model.get("accessPolicy").makePublic();
                 }
               }
-
-              //Close the tooltips
-              this.$(".publicprivatetoggle").tooltip("hide");
-
             },
 
             showValidation: function(attr, errorMsg){
