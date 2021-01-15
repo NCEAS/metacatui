@@ -6453,55 +6453,6 @@ body.mapMode{
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
 }
 
-/** Simple toggle component **/
-.simple-toggle {
-  position: relative;
-  display: inline-block;
-  width: 30px;
-  height: 15px;
-  border-radius: 50%;
-  vertical-align: middle;
-  margin-bottom: 0;
-}
-
-.simple-toggle input {
-  display: none;
-}
-
-.simple-toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  transition: .3s;
-	border-radius: 15px;
-	background-color: #ccc;
-}
-
-.simple-toggle-slider:before {
-  position: absolute;
-  content: "";
-  height: 15px;
-  width: 15px;
-  background-color: white;
-  transition: .3s;
-  border-radius: 50%;
-}
-
-.simple-toggle input:checked + .simple-toggle-slider {
-	background-color: #00689d;
-}
-
-.simple-toggle input:checked + .simple-toggle-slider:before {
-  transform: translateX(16px);
-}
-
-.simple-toggle.disabled span {
-  cursor: not-allowed;
-}
-
 /** Autocompletes **/
 .ui-autocomplete{
   width: 246px;
