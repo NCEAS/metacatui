@@ -629,6 +629,9 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
         setTimeout(function(){ saveBtn.empty().text("Save") }, 2000);
 
         this.cachedModels = _.clone(this.collection.models);
+
+        // Hide the modal only on a successful save
+        $(this.$el).modal("hide");
       }
       //When the status is "error"
       else if( status == "e" ){
