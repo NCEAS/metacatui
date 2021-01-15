@@ -614,6 +614,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
       if( status == "p" ){
         //Disable the Save button and change the text to say, "Saving..."
         this.$(".save.btn").text("Saving...").attr("disabled", "disabled");
+        this.$(".cancel.btn").attr("disabled", "disabled");
 
         return;
       }
@@ -621,9 +622,11 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
       else if( status == "c" ){
         //Create a checkmark icon
         var icon = $(document.createElement("i")).addClass("icon icon-ok icon-on-left"),
+            cancelBtn = this.$(".cancel.btn");
             saveBtn = this.$(".save.btn");
 
         //Disable the Save button and change the text to say, "Saving..."
+        cancelBtn.text("Saved").removeAttr("disabled");
         saveBtn.text("Saved").prepend(icon).removeAttr("disabled");
 
         setTimeout(function(){ saveBtn.empty().text("Save") }, 2000);
