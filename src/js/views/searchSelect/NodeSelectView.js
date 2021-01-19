@@ -55,8 +55,9 @@ define([
          * are not listed in this.options. This can work with either single
          * or multiple search select dropdowns
          * @type {boolean}
+         * @default true
          */
-        allowAdditions: false,
+        allowAdditions: true,
 
         /**
          * Creates a new NodeSelectView
