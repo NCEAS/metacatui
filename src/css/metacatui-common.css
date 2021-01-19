@@ -7538,9 +7538,7 @@ textarea.medium{
 .metadata-container .funding-container{
 	padding-left: 0px;
 }
-.Editor input.funding{
-	padding-left: 35px;
-}
+
 .metadata-container .funding-row{
 	position: relative;
 }
@@ -7559,13 +7557,32 @@ textarea.medium{
 }
 .Editor .funding-container .icon-spinner{
 	top: 5px;
-	left: 45px;
+	right: 10px;
     position: absolute;
     font-size: 1.5em;
     display: none;
 }
 .metadata-container #funding-visible{
 	padding-left: 30px;
+}
+
+/* ---- Award Search ---- */
+.metadata-container .award-search-container{
+	padding-bottom: 1.5em;
+	border-bottom: 1px solid #cecece;
+	margin: 2em 0;
+}
+
+.Editor .award-search-container .ui-autocomplete .ui-menu-item {
+    font-size: .7em;
+}
+
+.Editor .award-search-container .icon-spinner{
+	/* top: 35px; */
+	right: 25px;
+    position: relative;
+    font-size: 1.5em;
+    display: none;
 }
 
 /* ---- People / Parties ---- */

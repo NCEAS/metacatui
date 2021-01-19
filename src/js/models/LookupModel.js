@@ -358,7 +358,8 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 			});
 		},
 
-		getGrantAutocomplete: function(request, response){
+		getGrantAutocomplete: function(request, response, beforeRequest, afterRequest){
+
             var term = $.ui.autocomplete.escapeRegex(request.term),
             	filterBy = "";
 
@@ -368,6 +369,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
             else filterBy = "keyword";
 
             var url = MetacatUI.appModel.get("grantsUrl") + "?"  + filterBy + "=" + term + "&printFields=title,id";
+						beforeRequest();
 
 						// Send the AJAX request as a JSONP data type since it will be cross-origin
 						var requestSettings = {
@@ -401,6 +403,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 									});
 
 								response(startsWith.concat(contains));
+								afterRequest();
 							}
 						}
 

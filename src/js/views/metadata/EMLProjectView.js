@@ -35,7 +35,7 @@ define([
       },
 
       events: {
-        "change": "updateModel",
+        change: "updateModel",
         "keyup .award-container.new": "addNewAward",
         "click .remove": "removeAward",
         "mouseover .remove": "previewRemove",
@@ -58,6 +58,11 @@ define([
               awardFields: this.model.get("awardFields")
             })
           );
+
+          var containers = this.$(".award-search-container");
+          for (let index = 0; index < containers.length; index++) {
+            containers[index].append(this.createAwardSearch());
+          }
         }
 
         return this;
@@ -111,11 +116,97 @@ define([
         var awardEl = this.$(".award-container.new");
 
         var newAward = awardEl[0].cloneNode(true);
-        newAward.children[0].children[0].reset();
+        // remove award search because cloning doesn't work on the event listeners
+        newAward.querySelector(".award-search-row").remove();
+        // clear out all input values in form
+        $(newAward)
+          .find("form")[0]
+          .reset();
+        // add award search
+        $(newAward)
+          .find(".award-search-container")[0]
+          .append(this.createAwardSearch());
 
         container.append(newAward);
+
         awardEl.removeClass("new");
         awardEl.prepend('<i class="remove icon-remove"></i>');
+
+      },
+
+      createAwardSearch: function() {
+        var awardSearchInput = $(document.createElement("input"))
+            .attr("type", "text")
+            .attr("data-category", "award-search")
+            .addClass("span12 award-search hover-autocomplete-target")
+            .attr("placeholder", "Search for NSF awards by keyword"),
+          loadingSpinner = $(document.createElement("i")).addClass(
+            "icon icon-spinner input-icon icon-spin subtle "
+          );
+
+        //Append all the elements to a container
+        var containerEl = $(document.createElement("div"))
+          .addClass("ui-autocomplete-container award-search-row")
+          .append(awardSearchInput, loadingSpinner);
+
+        //Setup the autocomplete widget for the awardSearch input
+        awardSearchInput.autocomplete({
+          source: function(request, response) {
+            var beforeRequest = function() {
+              loadingSpinner.show();
+            };
+
+            var afterRequest = function() {
+              loadingSpinner.hide();
+            };
+
+            return MetacatUI.appLookupModel.getGrantAutocomplete(
+              request,
+              response,
+              beforeRequest,
+              afterRequest
+            );
+          },
+          select: function(e, ui) {
+            e.preventDefault();
+
+            var value = `NSF Award ${ui.item.value} (${ui.item.label})`;
+            awardSearchInput.val(value);
+
+            var formEl = $(e.target)
+              .parents(".award-container")
+              .find("form")[0];
+
+            // set the form values based on the selected autosuggestion
+            formEl.querySelector("[data-attribute='title']").value =
+              ui.item.label;
+            formEl.querySelector(
+              "[data-attribute='funderName']"
+            ).value = MetacatUI.appModel.get("awardFunderName");
+            formEl.querySelector(
+              "[data-attribute='funderIdentifier']"
+            ).value = MetacatUI.appModel.get("awardFunderIdentifier");
+            formEl.querySelector("[data-attribute='awardNumber']").value =
+              ui.item.value;
+            formEl.querySelector(
+              "[data-attribute='awardUrl']"
+            ).value = `${MetacatUI.appModel.get("awardAwardUrl")}${
+              ui.item.value
+            }`;
+
+            this.model.trickleUpChange();
+          }.bind(this),
+          position: {
+            my: "left top",
+            at: "left bottom",
+            of: awardSearchInput,
+            collision: "fit"
+          },
+          appendTo: containerEl,
+          minLength: 3
+        });
+
+        return containerEl[0];
       },
 
       previewRemove: function(e) {

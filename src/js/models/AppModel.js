@@ -536,7 +536,24 @@ define(['jquery', 'underscore', 'backbone'],
       * @default "https://api.nsf.gov/services/v1/awards.json"
       */
       grantsUrl: "https://api.nsf.gov/services/v1/awards.json",
-
+      /**
+      * The funding agency name for an award.
+      * @type {string}
+      * @default "National Science Foundation"
+      */
+      awardFunderName: "National Science Foundation",
+      /**
+      * The funding agency unique identifier(s) for an award.
+      * @type {string[]}
+      * @default "https://doi.org/10.13039/100000001"
+      */
+      awardFunderIdentifier: "https://doi.org/10.13039/100000001",
+      /**
+      * The URL for an award.
+      * @type {string}
+      * @default "https://www.nsf.gov/awardsearch/showAward?AWD_ID="
+      */
+      awardAwardUrl: "https://www.nsf.gov/awardsearch/showAward?AWD_ID=",
       /**
       * The base URL for the ORCID REST services
       * @type {string}
