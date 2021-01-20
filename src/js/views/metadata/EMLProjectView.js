@@ -177,24 +177,41 @@ define([
               .parents(".award-container")
               .find("form")[0];
 
-            // set the form values based on the selected autosuggestion
-            formEl.querySelector("[data-attribute='title']").value =
-              ui.item.label;
-            formEl.querySelector(
+            // set the form values based on the selected autosuggestion;
+            // fire change event to trigger updateModel
+            var event = new Event("change", { bubbles: true });
+
+            var titleEl = formEl.querySelector("[data-attribute='title']");
+            titleEl.value = ui.item.label;
+            titleEl.dispatchEvent(event);
+
+            var funderNameEl = formEl.querySelector(
               "[data-attribute='funderName']"
-            ).value = MetacatUI.appModel.get("awardFunderName");
-            formEl.querySelector(
+            );
+            funderNameEl.value = MetacatUI.appModel.get("awardFunderName");
+            funderNameEl.dispatchEvent(event);
+
+            var funderIdentifierEl = formEl.querySelector(
               "[data-attribute='funderIdentifier']"
-            ).value = MetacatUI.appModel.get("awardFunderIdentifier");
-            formEl.querySelector("[data-attribute='awardNumber']").value =
-              ui.item.value;
-            formEl.querySelector(
+            );
+            funderIdentifierEl.value = MetacatUI.appModel.get(
+              "awardFunderIdentifier"
+            );
+            funderIdentifierEl.dispatchEvent(event);
+
+            var awardNumberEl = formEl.querySelector(
+              "[data-attribute='awardNumber']"
+            );
+            awardNumberEl.value = ui.item.value;
+            awardNumberEl.dispatchEvent(event);
+
+            var awardUrlEl = formEl.querySelector(
               "[data-attribute='awardUrl']"
-            ).value = `${MetacatUI.appModel.get("awardAwardUrl")}${
+            );
+            awardUrlEl.value = `${MetacatUI.appModel.get("awardAwardUrl")}${
               ui.item.value
             }`;
-
-            this.model.trickleUpChange();
+            awardUrlEl.dispatchEvent(event);
           }.bind(this),
           position: {
             my: "left top",
