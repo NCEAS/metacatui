@@ -1402,12 +1402,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
             // Compare the new system metadata XML to the old system metadata XML
             
-            var newSysMetaCloned = this.clone();
-                oldSysMetaAttrs = newSysMetaCloned.parse(newSysMetaCloned.get("sysMetaXML"));
+            var D1ObjectClone = this.clone(),
+                // Make sure we are using the parse function in the DataONEObject model.
+                // Sometimes hasUpdates is called from extensions of the D1Object model,
+                // (e.g. from the portal model), and the parse function is overwritten
+                oldSysMetaAttrs = new DataONEObject().parse(D1ObjectClone.get("sysMetaXML"));
 
-            newSysMetaCloned.set(oldSysMetaAttrs);
+            D1ObjectClone.set(oldSysMetaAttrs);
             
-            var oldSysMeta = newSysMetaCloned.serializeSysMeta();
+            var oldSysMeta = D1ObjectClone.serializeSysMeta();
             var newSysMeta = this.serializeSysMeta();
 
             if ( oldSysMeta === "" ) return false;
