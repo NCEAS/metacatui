@@ -3,8 +3,8 @@ define([
   "underscore",
   "jquery",
   "backbone",
+  "views/metadata/EMLAwardView",
   "models/metadata/eml211/EMLProject",
-  "models/metadata/eml211/EMLText",
   "models/metadata/eml211/EMLAward",
   "text!templates/metadata/EMLProject.html",
   "text!templates/metadata/EMLAward.html"
@@ -12,8 +12,8 @@ define([
   _,
   $,
   Backbone,
+  EMLAwardView,
   EMLProject,
-  EMLText,
   EMLAward,
   EMLProjectTemplate,
   EMLAwardTemplate
@@ -46,11 +46,10 @@ define([
       },
 
       events: {
-        change: "updateModel",
         "keyup .award-container.new": "addNewAward",
         "click .remove": "removeAward",
         "mouseover .remove": "previewRemove",
-        "mouseout .remove": "previewRemove"
+        "mouseout .remove": "previewRemove",
       },
 
       render: function() {
@@ -68,42 +67,20 @@ define([
         _.each(
           this.model.get("award"),
           function(award) {
-            awardRowEl.append(
-              this.editAwardTemplate({
-                award: award,
-                awardFields: this.model.get("awardFields"),
-                isNew: false
-              })
-            );
+            var awardView = new EMLAwardView({
+              model: award,
+              edit: this.edit,
+              isNew: false
+            });
+
+            awardRowEl.append(awardView.render().el);
           },
           this
         );
 
-        var containers = this.$(".award-search-container");
-        for (let index = 0; index < containers.length; index++) {
-          containers[index].append(this.createAwardSearch());
-        }
-
         this.addNewAward();
 
         return this;
-      },
-
-      updateModel: function(e) {
-        if (!e) return false;
-
-        var updatedInput = $(e.target);
-
-        //Get the attribute that was changed
-        var changedAttr = updatedInput.attr("data-attribute");
-        if (!changedAttr) return false;
-
-        if (Object.keys(this.model.get("awardFields")).includes(changedAttr)) {
-          var position = this.$(`[data-attribute='${changedAttr}']`).index(
-            e.target
-          );
-          this.model.updateAward(e, position);
-        }
       },
 
       /*
@@ -111,8 +88,8 @@ define([
        */
       removeAward: function(e) {
         //Get the index of this award
-        var awardEl = $(e.target).parent(".award-container"),
-          index = this.$(".award-container").index(awardEl),
+        var awardEl = $(e.target).parents(".eml-award"),
+          index = this.$(".eml-award").index(awardEl),
           view = this;
 
         //Remove this award from the model
@@ -122,13 +99,6 @@ define([
         //Remove the award elements from the page
         awardEl.slideUp("fast", function() {
           this.remove();
-
-          //Bump down all the award numbers
-          var awardNums = view.$(".award-num");
-
-          for (var i = index; i < awardNums.length; i++) {
-            $(awardNums[i]).text(i + 1);
-          }
         });
       },
 
@@ -139,108 +109,16 @@ define([
           .prepend('<i class="remove icon-remove"></i>');
 
         // add new award to DOM
-        this.$(".award-row").append(
-          this.editAwardTemplate({
-            award: new EMLAward({ parentModel: this.model }),
-            awardFields: this.model.get("awardFields"),
-            isNew: true
-          })
-        );
-        this.$(".award-search-container")
-          .last()
-          .append(this.createAwardSearch());
-      },
-
-      createAwardSearch: function() {
-        var awardSearchInput = $(document.createElement("input"))
-            .attr("type", "text")
-            .attr("data-category", "award-search")
-            .addClass("span12 award-search hover-autocomplete-target")
-            .attr("placeholder", "Search for NSF awards by keyword"),
-          loadingSpinner = $(document.createElement("i")).addClass(
-            "icon icon-spinner input-icon icon-spin subtle "
-          );
-
-        //Append all the elements to a container
-        var containerEl = $(document.createElement("div"))
-          .addClass("ui-autocomplete-container award-search-row")
-          .append(awardSearchInput, loadingSpinner);
-
-        //Setup the autocomplete widget for the awardSearch input
-        awardSearchInput.autocomplete({
-          source: function(request, response) {
-            var beforeRequest = function() {
-              loadingSpinner.show();
-            };
-
-            var afterRequest = function() {
-              loadingSpinner.hide();
-            };
-
-            return MetacatUI.appLookupModel.getGrantAutocomplete(
-              request,
-              response,
-              beforeRequest,
-              afterRequest
-            );
-          },
-          select: function(e, ui) {
-            e.preventDefault();
-
-            var value = `NSF Award ${ui.item.value} (${ui.item.label})`;
-            awardSearchInput.val(value);
-
-            var formEl = $(e.target)
-              .parents(".award-container")
-              .find("form")[0];
-
-            // set the form values based on the selected autosuggestion;
-            // fire change event to trigger updateModel
-            var event = new Event("change", { bubbles: true });
-
-            var titleEl = formEl.querySelector("[data-attribute='title']");
-            titleEl.value = ui.item.label;
-            titleEl.dispatchEvent(event);
-
-            var funderNameEl = formEl.querySelector(
-              "[data-attribute='funderName']"
-            );
-            funderNameEl.value = MetacatUI.appModel.get("awardFunderName");
-            funderNameEl.dispatchEvent(event);
-
-            var funderIdentifierEl = formEl.querySelector(
-              "[data-attribute='funderIdentifier']"
-            );
-            funderIdentifierEl.value = MetacatUI.appModel.get(
-              "awardFunderIdentifier"
-            );
-            funderIdentifierEl.dispatchEvent(event);
-
-            var awardNumberEl = formEl.querySelector(
-              "[data-attribute='awardNumber']"
-            );
-            awardNumberEl.value = ui.item.value;
-            awardNumberEl.dispatchEvent(event);
-
-            var awardUrlEl = formEl.querySelector(
-              "[data-attribute='awardUrl']"
-            );
-            awardUrlEl.value = `${MetacatUI.appModel.get("awardAwardUrl")}${
-              ui.item.value
-            }`;
-            awardUrlEl.dispatchEvent(event);
-          }.bind(this),
-          position: {
-            my: "left top",
-            at: "left bottom",
-            of: awardSearchInput,
-            collision: "fit"
-          },
-          appendTo: containerEl,
-          minLength: 3
+        var awardView = new EMLAwardView({
+          model: new EMLAward({ parentModel: this.model }),
+          edit: this.edit,
+          isNew: true
         });
 
-        return containerEl[0];
+        this.$(".award-row").append(awardView.render().el);
+      },
+
+
       },
 
       previewRemove: function(e) {

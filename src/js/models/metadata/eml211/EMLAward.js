@@ -90,10 +90,13 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function(
             return;
           }
 
+          var element = document.createElement(domName);
+          element.innerText = modelValue;
+
           if (domNameEl[0]) {
-            domNameEl.replaceWith(`<${domName}>${modelValue}</${domName}>`);
+            domNameEl.replaceWith(element);
           } else {
-            objectDomEl.append(`<${domName}>${modelValue}</${domName}>`);
+            objectDomEl.append(element);
           }
 
           this.trickleUpChange();
@@ -102,6 +105,24 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function(
       );
 
       return objectDOM;
+    },
+
+    /*
+     * Climbs up the model heirarchy until it finds the EML model
+     *
+     * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+     */
+    getParentEML: function() {
+      var emlModel = this.get("parentModel"),
+        tries = 0;
+
+      while (emlModel.type !== "EML" && tries < 6) {
+        emlModel = emlModel.get("parentModel");
+        tries++;
+      }
+
+      if (emlModel && emlModel.type == "EML") return emlModel;
+      else return false;
     },
 
     trickleUpChange: function() {

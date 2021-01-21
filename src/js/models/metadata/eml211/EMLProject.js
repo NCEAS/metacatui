@@ -294,47 +294,10 @@ define([
       );
     },
 
-    updateAward: function(e, position) {
-      var element = $(e.target);
-      var award;
-
-      //Get the attribute that was changed
-      var attribute = element.attr("data-attribute");
-      if(!attribute) return false;
-
-      var newValue = element.val();
-
-      // if there are existing award models
-      if (Array.isArray(this.get("award"))) {
-        // if updating existing award model
-        if (this.get("award")[position]) {
-          award = this.get("award")[position];
-        // if add new award model to exist awards
-        } else {
-          award = new EMLAward({ parentModel: this.model });
-          this.set("award", [...this.get("award"), award]);
-        }
-      // else there are no award models
-      } else {
-        award = new EMLAward({ parentModel: this.model });
-        this.set("award",  award);
-      }
-
-      var emlModel = this.getParentEML();
-      if(emlModel){
-        newValue = emlModel.cleanXMLText(newValue);
-      }
-
-
-      //Update the model
-      if (newValue == "") {
-        award.set(attribute, null);
-      } else {
-        award.set(attribute, newValue);
-      }
-
-
+    addAward: function(award) {
+      this.set('award', [...this.get('award'), award])
     }
+
 
   });
 
