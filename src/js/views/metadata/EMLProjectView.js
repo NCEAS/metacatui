@@ -6,8 +6,18 @@ define([
   "models/metadata/eml211/EMLProject",
   "models/metadata/eml211/EMLText",
   "models/metadata/eml211/EMLAward",
-  "text!templates/metadata/EMLProject.html"
-], function(_, $, Backbone, EMLProject, EMLText, EMLAward, EMLProjectTemplate) {
+  "text!templates/metadata/EMLProject.html",
+  "text!templates/metadata/EMLAward.html"
+], function(
+  _,
+  $,
+  Backbone,
+  EMLProject,
+  EMLText,
+  EMLAward,
+  EMLProjectTemplate,
+  EMLAwardTemplate
+) {
   /**
    * @class EMLProjectView
    * @classdesc The EMLProject renders the content of an EMLProject model
@@ -23,6 +33,7 @@ define([
       className: "row-fluid eml-project",
 
       editTemplate: _.template(EMLProjectTemplate),
+      editAwardTemplate: _.template(EMLAwardTemplate),
 
       initialize: function(options) {
         options = options || {};
@@ -51,19 +62,29 @@ define([
           })
           .attr("data-category", "project");
 
-        if (this.edit) {
-          this.$el.html(
-            this.editTemplate({
-              award: this.model.get("award"),
-              awardFields: this.model.get("awardFields")
-            })
-          );
+        this.$el.html(this.editTemplate());
 
-          var containers = this.$(".award-search-container");
-          for (let index = 0; index < containers.length; index++) {
-            containers[index].append(this.createAwardSearch());
-          }
+        var awardRowEl = this.$(".award-row");
+        _.each(
+          this.model.get("award"),
+          function(award) {
+            awardRowEl.append(
+              this.editAwardTemplate({
+                award: award,
+                awardFields: this.model.get("awardFields"),
+                isNew: false
+              })
+            );
+          },
+          this
+        );
+
+        var containers = this.$(".award-search-container");
+        for (let index = 0; index < containers.length; index++) {
+          containers[index].append(this.createAwardSearch());
         }
+
+        this.addNewAward();
 
         return this;
       },
@@ -111,27 +132,23 @@ define([
         });
       },
 
-      addNewAward: function(e) {
-        var container = this.$("section.project");
-        var awardEl = this.$(".award-container.new");
+      addNewAward: function() {
+        // update DOM for last award
+        this.$(".award-container.new")
+          .removeClass("new")
+          .prepend('<i class="remove icon-remove"></i>');
 
-        var newAward = awardEl[0].cloneNode(true);
-        // remove award search because cloning doesn't work on the event listeners
-        newAward.querySelector(".award-search-row").remove();
-        // clear out all input values in form
-        $(newAward)
-          .find("form")[0]
-          .reset();
-        // add award search
-        $(newAward)
-          .find(".award-search-container")[0]
+        // add new award to DOM
+        this.$(".award-row").append(
+          this.editAwardTemplate({
+            award: new EMLAward({ parentModel: this.model }),
+            awardFields: this.model.get("awardFields"),
+            isNew: true
+          })
+        );
+        this.$(".award-search-container")
+          .last()
           .append(this.createAwardSearch());
-
-        container.append(newAward);
-
-        awardEl.removeClass("new");
-        awardEl.prepend('<i class="remove icon-remove"></i>');
-
       },
 
       createAwardSearch: function() {

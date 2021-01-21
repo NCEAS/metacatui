@@ -1,0 +1,12 @@
+<div class="award-container <%= isNew ? 'new' : '' %>">
+  <% if(!isNew){ %> <i class="remove icon-remove"></i> <% } %>
+  <div class="basic-text-row">
+    <div class="award-search-container"></div>
+    <form class = "award">
+      <% _(awardFields).each(function(label, value) { %>
+        <label><%= label %></label>
+        <input type="text" data-attribute="<%= value %>" value="<%= award.attributes[value] %>"/>
+      <% }) %>
+    </form>
+  </div>
+</div>
