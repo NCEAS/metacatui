@@ -11,6 +11,14 @@ define(['jquery', 'underscore', 'backbone'],
      * @constructor
      */
     var Metrics = Backbone.Model.extend({
+
+        /**
+        * The name of this Model
+        * @name MetricsModel
+        * @type {string}
+        */
+        type: "MetricsModel",
+
         defaults: {
             metricRequest: null,
             startDate: null,
