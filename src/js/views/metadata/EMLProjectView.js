@@ -6,8 +6,7 @@ define([
   "views/metadata/EMLAwardView",
   "models/metadata/eml211/EMLProject",
   "models/metadata/eml211/EMLAward",
-  "text!templates/metadata/EMLProject.html",
-  "text!templates/metadata/EMLAward.html"
+  "text!templates/metadata/EMLProject.html"
 ], function(
   _,
   $,
@@ -15,8 +14,7 @@ define([
   EMLAwardView,
   EMLProject,
   EMLAward,
-  EMLProjectTemplate,
-  EMLAwardTemplate
+  EMLProjectTemplate
 ) {
   /**
    * @class EMLProjectView
@@ -33,7 +31,6 @@ define([
       className: "row-fluid eml-project",
 
       editTemplate: _.template(EMLProjectTemplate),
-      editAwardTemplate: _.template(EMLAwardTemplate),
 
       initialize: function(options) {
         options = options || {};
@@ -83,6 +80,10 @@ define([
         return this;
       },
 
+      /**
+       * Remove award from DOM and awards model.
+       * @param {e} - The event
+       */
       removeAward: function(e) {
         //Get the index of this award
         var awardEl = $(e.target).parents(".eml-award"),
@@ -97,6 +98,9 @@ define([
         });
       },
 
+      /**
+       * Add empty awards form to DOM.
+       */
       addNewAward: function() {
         // update DOM for last award
         this.$(".award-container.new")

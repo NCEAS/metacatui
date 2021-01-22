@@ -20,6 +20,12 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function(
       if (options && options.objectDOM) this.set(this.parse(options.objectDOM));
     },
 
+    /**
+     * Maps the lower-case EML node names (valid in HTML DOM) to the camel-cased
+     * EML node names (valid in EML).
+     *
+     * @return {object} - An object of node names,
+     */
     nodeNameMap: function() {
       return {
         fundername: "funderName",
@@ -30,6 +36,13 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function(
       };
     },
 
+    /**
+     * Overrides the default Backbone.Model.parse() function to parse the custom
+     * collection XML document
+     *
+     * @param {XMLDocument} response - The XMLDocument returned from the fetch() AJAX call
+     * @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
+     */
     parse: function(objectDOM) {
       if (!objectDOM) var objectDOM = this.get("objectDOM");
 
@@ -39,10 +52,12 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function(
         $(objectDOM)
           .children("title")
           .text() || null;
+
       modelJSON.funderName =
         $(objectDOM)
           .children("fundername, funderName")
           .text() || null;
+
       modelJSON.funderIdentifier = [];
       var funderidentifier = $(objectDOM).children(
         "funderidentifier, funderIdentifier"
@@ -50,10 +65,12 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function(
       _.each(funderidentifier, function(item) {
         modelJSON.funderIdentifier.push(item.innerText);
       });
+
       modelJSON.awardNumber =
         $(objectDOM)
           .children("awardnumber, awardNumber")
           .text() || null;
+
       modelJSON.awardUrl =
         $(objectDOM)
           .children("awardurl, awardUrl")
@@ -62,6 +79,11 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function(
       return modelJSON;
     },
 
+    /**
+     * Create XML DOM with the new values from the model.
+     *
+     * @return {XMLDocument} - An XML DOM for the model.
+     */
     updateDOM: function() {
       var objectDOM = $(document.createElement("award"));
 
@@ -93,7 +115,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function(
       return objectDOM;
     },
 
-    /*
+    /**
      * Climbs up the model heirarchy until it finds the EML model
      *
      * @return {EML211 or false} - Returns the EML 211 Model or false if not found
@@ -111,6 +133,11 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function(
       else return false;
     },
 
+    /**
+     * Checks the values of the model to determine if it is EML-valid
+     *
+     * @return {object} - An object with errors from invalid values of the model.
+     */
     validate: function() {
       var errors = {};
 

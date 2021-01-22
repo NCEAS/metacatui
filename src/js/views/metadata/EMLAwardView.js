@@ -41,6 +41,11 @@ define([
         focusout: "showValidation"
       },
 
+      /**
+       * Creates an array of objects that is used to render the award input fields.
+       *
+       * @return {array} - An array with field info.
+       */
       awardFields: function() {
         return MetacatUI.appModel
           .get("emlEditorAwardFields")
@@ -63,6 +68,7 @@ define([
           })
         );
 
+        // Append award search if needed
         if (MetacatUI.appModel.get("useNSFAwardAPI")) {
           this.$(".award-search-container")
             .first()
@@ -72,6 +78,12 @@ define([
         return this;
       },
 
+      /**
+       * Creates an autocomplete input field that returns awards from the NSF
+       * awards API.
+       *
+       * @return {object} - An input element.
+       */
       createAwardSearch: function() {
         var searchLabel = $(document.createElement("label")).text("Search NSF");
 
@@ -134,8 +146,8 @@ define([
               .parents(".award-container")
               .find("form")[0];
 
-            // set the form values based on the selected autosuggestion;
-            // fire change event to trigger updateModel
+            // Set the form input values based on the selected auto-suggestion.
+            // Fire change event to trigger updateModel.
             var event = new Event("change", { bubbles: true });
 
             var titleEl = formEl.querySelector("[data-attribute='title']");
@@ -183,6 +195,11 @@ define([
         return containerEl[0];
       },
 
+      /**
+       * Updates the model.
+       *
+       * @param {e} - The event
+       */
       updateModel: function(e) {
         if (!e) return false;
 
@@ -221,6 +238,9 @@ define([
         }
       },
 
+      /**
+       * Show validation error messages and highlights invalid input fields.
+       */
       showValidation: function() {
         this.$el.find(".notification").empty();
         this.$el.find(".error").removeClass("error");

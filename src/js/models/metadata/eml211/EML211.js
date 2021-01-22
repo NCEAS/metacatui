@@ -1546,8 +1546,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               }
               else if(key == "funding"){
                 if(!this.get("project") ||
-                  !this.get("project").get("funding").length)
+                  !this.get("project").get("funding").length) {
                   errors.funding = "Provide at least one project funding number or name.";
+                }
               }
               else if(key == "project"){
                 if(!this.get("project") ||

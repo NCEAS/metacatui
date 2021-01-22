@@ -36,6 +36,12 @@ define([
       );
     },
 
+    /**
+     * Maps the lower-case EML node names (valid in HTML DOM) to the camel-cased
+     * EML node names (valid in EML).
+     *
+     * @return {object} - An object of node names,
+     */
     nodeNameMap: function() {
       return {
         descriptorvalue: "descriptorValue",
@@ -47,7 +53,15 @@ define([
       };
     },
 
-    //TODO: This only supports the funding and title elements right now
+    /**
+     * Overrides the default Backbone.Model.parse() function to parse the custom
+     * collection XML document
+     *
+     * TODO: This only supports the award, funding and title elements right now
+     *
+     * @param {XMLDocument} response - The XMLDocument returned from the fetch() AJAX call
+     * @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
+     */
     parse: function(objectDOM) {
       if (!objectDOM) var objectDOM = this.get("objectDOM");
 
@@ -96,6 +110,11 @@ define([
       return modelJSON;
     },
 
+    /**
+     * Create XML DOM with the new values from the model.
+     *
+     * @return {XMLDocument} - An XML DOM for the model.
+     */
     updateDOM: function() {
       var objectDOM = this.get("objectDOM")
         ? this.get("objectDOM").cloneNode(true)
@@ -183,11 +202,14 @@ define([
         $(fundingNode).remove();
       }
 
+      //Create project award
       var awardNode = $(objectDOM).children("award");
 
       if (this.get("award")) {
+        // Remove all award elements
         $(awardNode).remove();
 
+        // Create award elements and append to objectDOM
         if (Array.isArray(this.get("award"))) {
           _.each(this.get("award"), function(award) {
             $(objectDOM).append(award.updateDOM());
@@ -218,12 +240,21 @@ define([
       MetacatUI.rootDataPackage.packageModel.set("changed", true);
     },
 
+    /**
+     * Remove one award from the award model
+     *
+     * @param {number} - The index of the item to remove from the awards array
+     */
     removeAward: function(index) {
-      //Remove this award from the model
       this.set("award", _.without(this.get("award"), this.get("award")[index]));
       this.trickleUpChange();
     },
 
+    /**
+     * Add one award to the award model
+     *
+     * @param {object} - The award that witll be added to the awards array
+     */
     addAward: function(award) {
       this.set("award", [...this.get("award"), award]);
       this.trickleUpChange();

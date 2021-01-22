@@ -547,8 +547,8 @@ define(['jquery', 'underscore', 'backbone'],
       */
       awardFunderName: "National Science Foundation",
       /**
-      * The funding agency unique identifier(s) for an award.
-      * @type {string[]}
+      * The funding agency unique identifier for an award.
+      * @type {string}
       * @default "https://doi.org/10.13039/100000001"
       */
       awardFunderIdentifier: "https://doi.org/10.13039/100000001",
@@ -1588,14 +1588,14 @@ define(['jquery', 'underscore', 'backbone'],
       dataoneHostedRepos: ["urn:node:KNB", "urn:node:ARCTIC", "urn:node:CA_OPC", "urn:node:TNC_DANGERMOND", "urn:node:ESS_DIVE"],
       /**
       * The input fields that are displayed in the project awards editor. The
-      * order of the objects in the array determine the order the fields
-      * are displayed in the editor.
+      * order of the objects in the array determine the order of the fields
+      * in the editor.
       *
       * value: value for the field; can be used for data attributes
       * label: label for the field
-      * help text: help text for the field
       * display: if field is displayed in the editor
       * required: if field is required by EML specifications
+      * help text: help text for the field
       * @type {object[]}
       */
       emlEditorAwardFields: [

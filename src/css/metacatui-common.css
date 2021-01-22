@@ -7574,15 +7574,15 @@ textarea.medium{
 }
 
 .Editor .award-search-container .ui-autocomplete .ui-menu-item {
-    font-size: .7em;
+	font-size: .7em;
 }
 
 .Editor .award-search-container .icon-spinner{
 	/* top: 35px; */
 	right: 25px;
-    position: relative;
-    font-size: 1.5em;
-    display: none;
+	position: relative;
+	font-size: 1.5em;
+	display: none;
 }
 
 /* ---- People / Parties ---- */
