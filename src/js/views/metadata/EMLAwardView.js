@@ -59,17 +59,28 @@ define([
             award: this.model,
             awardFields: this.awardFields(),
             isNew: this.isNew,
+            showAwardSearch: MetacatUI.appModel.get("useNSFAwardAPI")
           })
         );
 
-        this.$(".award-search-container")
-          .first()
-          .append(this.createAwardSearch());
+        if (MetacatUI.appModel.get("useNSFAwardAPI")) {
+          this.$(".award-search-container")
+            .first()
+            .append(this.createAwardSearch());
+        }
 
         return this;
       },
 
       createAwardSearch: function() {
+        var searchLabel = $(document.createElement("label")).text("Search NSF");
+
+        var searchHelpText = $(document.createElement("p"))
+          .text(
+            "To search for an NSF award, start typing and choose your award from the search result list."
+          )
+          .addClass("subtle");
+
         var awardSearchInput = $(document.createElement("input"))
             .attr("type", "text")
             .attr("data-category", "award-search")
@@ -82,7 +93,12 @@ define([
         //Append all the elements to a container
         var containerEl = $(document.createElement("div"))
           .addClass("ui-autocomplete-container award-search-row")
-          .append(awardSearchInput, loadingSpinner);
+          .append(
+            searchLabel,
+            searchHelpText,
+            awardSearchInput,
+            loadingSpinner
+          );
 
         //Setup the autocomplete widget for the awardSearch input
         awardSearchInput.autocomplete({
@@ -168,7 +184,7 @@ define([
         var attribute = $(e.target).attr("data-attribute");
         if (!attribute) return false;
 
-        var fields = this.awardFields().map(field => (field.value))
+        var fields = this.awardFields().map(field => field.value);
         if (fields.includes(attribute)) {
           //Get the new value
           var newValue = e.target.value;

@@ -1,7 +1,9 @@
 <div class="award-container <%= isNew ? 'new' : '' %>">
   <% if(!isNew){ %> <i class="remove icon-remove" title="Remove this award"></i> <% } %>
   <div class="basic-text-row">
-    <div class="award-search-container"></div>
+    <% if(showAwardSearch) { %>
+      <div class="award-search-container"></div>
+    <% } %>
     <div class="notification" data-category="award"></div>
     <form class = "award">
       <% _(awardFields).each(function(field) { %>
