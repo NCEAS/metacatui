@@ -52,10 +52,13 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function(
         $(objectDOM)
           .children("fundername, funderName")
           .text() || null;
-      modelJSON.funderIdentifier =
-        $(objectDOM)
-          .children("funderidentifier, funderIdentifier")
-          .text() || null;
+      modelJSON.funderIdentifier = [];
+      var funderidentifier = $(objectDOM).children(
+        "funderidentifier, funderIdentifier"
+      );
+      _.each(funderidentifier, function(item) {
+        modelJSON.funderIdentifier.push(item.innerText);
+      });
       modelJSON.awardNumber =
         $(objectDOM)
           .children("awardnumber, awardNumber")
@@ -69,41 +72,33 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function(
     },
 
     updateDOM: function() {
-      var objectDOM;
-      if (this.get("objectDOM")) {
-        objectDOM = this.get("objectDOM").cloneNode(true);
-      } else {
-        objectDOM = $(document.createElement("award"));
-      }
+      var objectDOM = $(document.createElement("award"));
 
       _.each(
         this.nodeNameMap(),
         function(modelName, domName) {
           var modelValue = this.get(modelName);
-          var objectDomEl = $(objectDOM);
-          var domNameEl = objectDomEl.find(domName);
 
           if (!modelValue) {
             return;
           }
-          if (domNameEl.text() === modelValue) {
-            return;
-          }
 
-          var element = document.createElement(domName);
-          element.innerText = modelValue;
-
-          if (domNameEl[0]) {
-            domNameEl.replaceWith(element);
+          if (Array.isArray(modelValue)) {
+            modelValue.forEach(function(value) {
+              var element = document.createElement(domName);
+              element.innerText = value;
+              objectDOM.append(element);
+            });
           } else {
-            objectDomEl.append(element);
+            var element = document.createElement(domName);
+            element.innerText = modelValue;
+            objectDOM.append(element);
           }
 
           this.trickleUpChange();
         },
         this
       );
-
       return objectDOM;
     },
 
