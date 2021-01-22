@@ -18,6 +18,7 @@ MetacatUI.AppConfig = Object.assign({
     abstract: true,
     alternateIdentifier: false,
     funding: false,
+    project: false,
     generalTaxonomicCoverage: false,
     geoCoverage: true,
     intellectualRights: true,

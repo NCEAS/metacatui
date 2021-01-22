@@ -20,6 +20,10 @@ define([
 
       className: "row-fluid eml-award",
 
+      attributes: {
+        "data-category": "award"
+      },
+
       editTemplate: _.template(EMLAwardTemplate),
 
       initialize: function(options) {
@@ -33,7 +37,8 @@ define([
       },
 
       events: {
-        change: "updateModel"
+        change: "updateModel",
+        focusout: "showValidation"
       },
 
       render: function() {
@@ -183,6 +188,29 @@ define([
               this.model.get("parentModel").addAward(this.model);
             }
           }
+        }
+      },
+
+      showValidation: function() {
+        this.$el.find(".notification").empty();
+        this.$el.find(".error").removeClass("error");
+
+        if (!this.model.isValid()) {
+          var errors = this.model.validationError;
+
+          _.mapObject(
+            errors,
+            function(errorMsg, attribute) {
+              this.$el
+                .find(".notification")
+                .addClass("error")
+                .append(errorMsg + " ");
+              this.$el
+                .find("[data-attribute='" + attribute + "']")
+                .addClass("error");
+            },
+            this
+          );
         }
       }
     }

@@ -2,6 +2,7 @@
   <% if(!isNew){ %> <i class="remove icon-remove"></i> <% } %>
   <div class="basic-text-row">
     <div class="award-search-container"></div>
+    <div class="notification" data-category="award"></div>
     <form class = "award">
       <% _(awardFields).each(function(label, value) { %>
         <label><%= label %></label>

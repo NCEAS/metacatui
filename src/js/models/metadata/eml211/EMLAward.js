@@ -125,6 +125,22 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function(
       else return false;
     },
 
+    validate: function() {
+      var errors = {};
+
+      if (!this.get("funderName")) {
+        errors.funderName = "Provide a funder name.";
+      }
+
+      if (!this.get("title")) {
+        errors.title = "Provide an award title.";
+      }
+
+      if (Object.keys(errors).length) {
+        return errors;
+      }
+    },
+
     trickleUpChange: function() {
       MetacatUI.rootDataPackage.packageModel.set("changed", true);
     }

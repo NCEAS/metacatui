@@ -44,7 +44,8 @@ MetacatUI.AppConfig = Object.assign({
   emlEditorRequiredFields: {
     abstract: true,
     alternateIdentifier: false,
-    funding: true,
+    funding: false,
+    project: true,
     generalTaxonomicCoverage: false,
     geoCoverage: true,
     intellectualRights: true,

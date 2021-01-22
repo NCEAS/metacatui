@@ -5,7 +5,7 @@ define([
   "backbone",
   "models/DataONEObject",
   "models/metadata/eml211/EMLParty",
-  "models/metadata/eml211/EMLAward",
+  "models/metadata/eml211/EMLAward"
 ], function($, _, Backbone, DataONEObject, EMLParty, EMLAward) {
   var EMLProject = Backbone.Model.extend({
     defaults: {
@@ -25,7 +25,7 @@ define([
         "designDescription",
         "relatedProject"
       ],
-      awardFields: null,
+      awardFields: null
     },
 
     initialize: function(options) {
@@ -47,7 +47,6 @@ define([
         title: "title"
       };
     },
-
 
     //TODO: This only supports the funding and title elements right now
     parse: function(objectDOM) {
@@ -81,11 +80,13 @@ define([
       //Parse the award info
       var awardNodes = $(objectDOM).children("award");
       modelJSON.award = [];
-      for(var i = 0; i < awardNodes.length; i++){
-        modelJSON.award.push( new EMLAward({ objectDOM: awardNodes[i], parentModel: this }));
+      for (var i = 0; i < awardNodes.length; i++) {
+        modelJSON.award.push(
+          new EMLAward({ objectDOM: awardNodes[i], parentModel: this })
+        );
       }
 
-      modelJSON.awardFields = new EMLAward().emlEditorAwardFieldLabels
+      modelJSON.awardFields = new EMLAward().emlEditorAwardFieldLabels;
 
       /*
 			var personnelNode = $(objectDOM).find("personnel");
@@ -96,16 +97,6 @@ define([
       */
 
       return modelJSON;
-    },
-
-    serialize: function() {
-      var objectDOM = this.updateDOM(),
-        xmlString = objectDOM.outerHTML;
-
-      //Camel-case the XML
-      xmlString = this.formatXML(xmlString);
-
-      return xmlString;
     },
 
     updateDOM: function() {
@@ -200,15 +191,13 @@ define([
       if (this.get("award")) {
         $(awardNode).remove();
 
-        if(Array.isArray(this.get("award"))) {
+        if (Array.isArray(this.get("award"))) {
           _.each(this.get("award"), function(award) {
             $(objectDOM).append(award.updateDOM());
           });
         } else {
-          $(objectDOM).append(this.get("award").updateDOM())
+          $(objectDOM).append(this.get("award").updateDOM());
         }
-
-
       } else if (
         (!this.get("award") || !this.get("award").length) &&
         awardNode.length > 0
@@ -216,8 +205,6 @@ define([
         // Remove all award elements
         $(awardNode).remove();
       }
-
-
 
       // Remove empty (zero-length or whitespace-only) nodes
       $(objectDOM)
@@ -230,57 +217,8 @@ define([
       return objectDOM;
     },
 
-    getEMLPosition: function(objectDOM, nodeName) {
-      var nodeOrder = this.get("nodeOrder");
-      var position = _.indexOf(nodeOrder, nodeName);
-
-      // Append to the bottom if not found
-      if (position == -1) {
-        return $(objectDOM)
-          .children()
-          .last()[0];
-      }
-
-      // Otherwise, go through each node in the node list and find the
-      // position where this node will be inserted after
-      for (var i = position - 1; i >= 0; i--) {
-        if ($(objectDOM).find(nodeOrder[i].toLowerCase()).length) {
-          return $(objectDOM)
-            .find(nodeOrder[i].toLowerCase())
-            .last()[0];
-        }
-      }
-
-      // Always return something so calling code can be cleaner
-      return $(objectDOM)
-        .children()
-        .last()[0];
-    },
-
-    /*
-     * Climbs up the model heirarchy until it finds the EML model
-     *
-     * @return {EML211 or false} - Returns the EML 211 Model or false if not found
-     */
-    getParentEML: function() {
-      var emlModel = this.get("parentModel"),
-        tries = 0;
-
-      while (emlModel.type !== "EML" && tries < 6) {
-        emlModel = emlModel.get("parentModel");
-        tries++;
-      }
-
-      if (emlModel && emlModel.type == "EML") return emlModel;
-      else return false;
-    },
-
     trickleUpChange: function() {
       MetacatUI.rootDataPackage.packageModel.set("changed", true);
-    },
-
-    formatXML: function(xmlString) {
-      return DataONEObject.prototype.formatXML.call(this, xmlString);
     },
 
     removeAward: function(index) {
