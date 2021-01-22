@@ -41,6 +41,12 @@ define([
         focusout: "showValidation"
       },
 
+      awardFields: function() {
+        return MetacatUI.appModel
+          .get("emlEditorAwardFields")
+          .filter(field => field.display);
+      },
+
       render: function() {
         //Save the view and model on the element
         this.$el.data({
@@ -51,8 +57,8 @@ define([
         this.$el.html(
           this.editTemplate({
             award: this.model,
-            awardFields: new EMLAward().emlEditorAwardFieldLabels,
-            isNew: this.isNew
+            awardFields: this.awardFields(),
+            isNew: this.isNew,
           })
         );
 
@@ -162,7 +168,9 @@ define([
         var attribute = $(e.target).attr("data-attribute");
         if (!attribute) return false;
 
-        if (this.model.emlEditorAwardFieldLabels[attribute]) {
+        var fields = this.awardFields().map(field => (field.value))
+        if (fields.includes(attribute)) {
+          //Get the new value
           var newValue = e.target.value;
 
           var emlModel = this.model.getParentEML();

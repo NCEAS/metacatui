@@ -13,8 +13,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function(
       funderIdentifier: null,
       awardNumber: null,
       title: null,
-      awardUrl: null,
-      awardFields: null
+      awardUrl: null
     },
 
     initialize: function(options) {
@@ -29,14 +28,6 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function(
         title: "title",
         awardurl: "awardUrl"
       };
-    },
-
-    emlEditorAwardFieldLabels: {
-      title: "Award Title",
-      funderName: "Funder Name",
-      funderIdentifier: "Funder Identifier",
-      awardNumber: "Award Number",
-      awardUrl: "Award URL"
     },
 
     parse: function(objectDOM) {

@@ -7723,12 +7723,16 @@ textarea.medium{
 }
 
 /* ---- Projects ---- */
-.metadata-container .eml-award:nth-child(even) {
+.metadata-container .eml-award:nth-child(odd) {
 	background-color: #EFEFEF;
 }
 
 .metadata-container .award-container {
 	padding: 20px;
+}
+
+.metadata-container .award-container label {
+	font-weight: bold;
 }
 
 .metadata-container .award-container .remove{

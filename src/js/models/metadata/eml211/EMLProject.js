@@ -24,8 +24,7 @@ define([
         "studyAreaDescription",
         "designDescription",
         "relatedProject"
-      ],
-      awardFields: null
+      ]
     },
 
     initialize: function(options) {
@@ -85,8 +84,6 @@ define([
           new EMLAward({ objectDOM: awardNodes[i], parentModel: this })
         );
       }
-
-      modelJSON.awardFields = new EMLAward().emlEditorAwardFieldLabels;
 
       /*
 			var personnelNode = $(objectDOM).find("personnel");

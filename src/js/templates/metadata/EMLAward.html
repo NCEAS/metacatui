@@ -4,9 +4,12 @@
     <div class="award-search-container"></div>
     <div class="notification" data-category="award"></div>
     <form class = "award">
-      <% _(awardFields).each(function(label, value) { %>
-        <label><%= label %></label>
-        <input type="text" data-attribute="<%= value %>" value="<%= award.attributes[value] %>"/>
+      <% _(awardFields).each(function(field) { %>
+        <label><%= field.label %>
+          <% if(field.required) { %><i class="required-icon"></i><% } %>
+        </label>
+        <p class="subtle"><%= field.helpText %></p>
+        <input type="text" data-attribute="<%= field.value %>" value="<%= award.attributes[field.value] %>"/>
       <% }) %>
     </form>
   </div>

@@ -1585,7 +1585,58 @@ define(['jquery', 'underscore', 'backbone'],
       * with the DataONE Bookkeeper service, eventually.
       */
       dataoneHostedRepos: ["urn:node:KNB", "urn:node:ARCTIC", "urn:node:CA_OPC", "urn:node:TNC_DANGERMOND", "urn:node:ESS_DIVE"],
-
+      /**
+      * The input fields that are displayed in the project awards editor. The
+      * order of the objects in the array determine the order the fields
+      * are displayed in the editor.
+      *
+      * value: value for the field; can be used for data attributes
+      * label: label for the field
+      * help text: help text for the field
+      * display: if field is displayed in the editor
+      * required: if field is required by EML specifications
+      * @type {object[]}
+      */
+      emlEditorAwardFields: [
+        {
+          value: 'title',
+          label: "Award title",
+          display: true,
+          required: true,
+          helpText: "The title of the award."
+        },
+        {
+          value: 'awardNumber',
+          label: "Award number",
+          display: true,
+          required: false,
+          helpText: "The unique identifier used by the funder to identify an award.",
+        },
+        {
+          value: 'awardUrl',
+          label: "Award URL",
+          display: true,
+          required: false,
+          helpText: "The URL to find out more information about the award."
+        },
+        {
+          value: 'funderName',
+          label: "Funder name",
+          display: true,
+          required: true,
+          helpText: "The name of the funding agency."
+        },
+        {
+          value: 'funderIdentifier',
+          label: "Funder identifier",
+          display: true,
+          required: false,
+          helpText: `The identifier of the funding agency. A common
+          form for the identifier is the DOI of an institution or program
+          from the CrossRef Open Funder Registry
+          (https://github.com/Crossref/open-funder-registry).`,
+        },
+      ],
       /**
       * The length of random portal label generated during preview/trial mode of DataONE Plus
       * @readonly
