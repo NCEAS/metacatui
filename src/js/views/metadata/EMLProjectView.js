@@ -49,7 +49,7 @@ define([
         "keyup .award-container.new": "addNewAward",
         "click .remove": "removeAward",
         "mouseover .remove": "previewRemove",
-        "mouseout .remove": "previewRemove",
+        "mouseout .remove": "previewRemove"
       },
 
       render: function() {
@@ -83,18 +83,13 @@ define([
         return this;
       },
 
-      /*
-       * Remove this award
-       */
       removeAward: function(e) {
         //Get the index of this award
         var awardEl = $(e.target).parents(".eml-award"),
-          index = this.$(".eml-award").index(awardEl),
-          view = this;
+          index = this.$(".eml-award").index(awardEl);
 
         //Remove this award from the model
         this.model.removeAward(index);
-        this.model.trickleUpChange();
 
         //Remove the award elements from the page
         awardEl.slideUp("fast", function() {
@@ -116,9 +111,6 @@ define([
         });
 
         this.$(".award-row").append(awardView.render().el);
-      },
-
-
       },
 
       previewRemove: function(e) {

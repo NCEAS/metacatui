@@ -181,7 +181,6 @@ define([
             var existingAwards = this.model.get("parentModel").get("award");
             if (!existingAwards[position]) {
               this.model.get("parentModel").addAward(this.model);
-              this.model.trickleUpChange()
             }
           }
         }

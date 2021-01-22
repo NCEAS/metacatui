@@ -285,20 +285,14 @@ define([
 
     removeAward: function(index) {
       //Remove this award from the model
-      this.set(
-        "award",
-        _.without(
-          this.get("award"),
-          this.get("award")[index]
-        )
-      );
+      this.set("award", _.without(this.get("award"), this.get("award")[index]));
+      this.trickleUpChange();
     },
 
     addAward: function(award) {
-      this.set('award', [...this.get('award'), award])
+      this.set("award", [...this.get("award"), award]);
+      this.trickleUpChange();
     }
-
-
   });
 
   return EMLProject;
