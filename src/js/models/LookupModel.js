@@ -359,56 +359,65 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 		},
 
 		getGrantAutocomplete: function(request, response, beforeRequest, afterRequest){
+			var term = $.ui.autocomplete.escapeRegex(request.term),
+				baseUrl = MetacatUI.appModel.get("grantsUrl"),
+				url = "",
+				isAwardNumber = Boolean(term.match(/^\d+$/));
 
-            var term = $.ui.autocomplete.escapeRegex(request.term),
-            	filterBy = "";
+			//Only search after 3 characters or more
+			if(term.length < 3) {
+				return
+			} else if(isAwardNumber) {
+				url = `${baseUrl}awards/${term}.json`;
+			} else {
+				url = `${baseUrl}awards.json?keyword=${term}&printFields=title,id`;
+			}
 
-            //Only search after 3 characters or more
-            if(term.length < 3) return;
-            else if(term.match(/\d/)) return; //Don't search for digit only since it's most likely a user just entering the grant number directy
-            else filterBy = "keyword";
+			beforeRequest();
 
-            var url = MetacatUI.appModel.get("grantsUrl") + "?"  + filterBy + "=" + term + "&printFields=title,id";
-						beforeRequest();
+			// Send the AJAX request as a JSONP data type since it will be cross-origin
+			var requestSettings = {
+				url: url,
+				dataType: "jsonp",
+				success: function(data, textStatus, xhr) {
 
-						// Send the AJAX request as a JSONP data type since it will be cross-origin
-						var requestSettings = {
-							url: url,
-							dataType: "jsonp",
-							success: function(data, textStatus, xhr) {
+					// Handle the response from the NSF Award Search API and
+					//transform each award query result into a jQueryUI autocomplete item
 
-								// Handle the response from the NSF Award Search API and
-								//transform each award query result into a jQueryUI autocomplete item
+					if(!data || !data.response || !data.response.award) return [];
 
-								if(!data || !data.response || !data.response.award) return [];
+					var list = [];
 
-								var list = [];
+					_.each(data.response.award, function(award, i){
+						list.push({
+							value: award.id,
+							label: award.title
+						});
+					});
 
-								_.each(data.response.award, function(award, i){
-									list.push({
-										value: award.id,
-										label: award.title
-									});
-								});
+					if(isAwardNumber) {
+						response(list);
+					} else {
+						var term = $.ui.autocomplete.escapeRegex(request.term)
+							, startsWithMatcher = new RegExp("^" + term, "i")
+							, startsWith = $.grep(list, function(value) {
+									return startsWithMatcher.test(value.label || value.value || value);
+							})
+							, containsMatcher = new RegExp(term, "i")
+							, contains = $.grep(list, function (value) {
+									return $.inArray(value, startsWith) < 0 &&
+											containsMatcher.test(value.label || value.value || value);
+							});
 
-								var term = $.ui.autocomplete.escapeRegex(request.term)
-									, startsWithMatcher = new RegExp("^" + term, "i")
-									, startsWith = $.grep(list, function(value) {
-											return startsWithMatcher.test(value.label || value.value || value);
-									})
-									, containsMatcher = new RegExp(term, "i")
-									, contains = $.grep(list, function (value) {
-											return $.inArray(value, startsWith) < 0 &&
-													containsMatcher.test(value.label || value.value || value);
-									});
+						response(startsWith.concat(contains));
+					}
 
-								response(startsWith.concat(contains));
-								afterRequest();
-							}
-						}
+					afterRequest();
+				}
+			}
 
-						//Send the query
-						$.ajax(requestSettings);
+			//Send the query
+			$.ajax(requestSettings);
 		},
 
 		getGrant: function(id, onSuccess, onError){

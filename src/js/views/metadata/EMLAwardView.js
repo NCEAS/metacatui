@@ -85,7 +85,10 @@ define([
             .attr("type", "text")
             .attr("data-category", "award-search")
             .addClass("span12 award-search hover-autocomplete-target")
-            .attr("placeholder", "Search for NSF awards by keyword"),
+            .attr(
+              "placeholder",
+              "Search for NSF awards by keyword or award number"
+            ),
           loadingSpinner = $(document.createElement("i")).addClass(
             "icon icon-spinner input-icon icon-spin subtle "
           );
@@ -120,6 +123,9 @@ define([
           },
           select: function(e, ui) {
             e.preventDefault();
+
+            this.$el.find(".notification").empty();
+            this.$el.find(".error").removeClass("error");
 
             var value = `NSF Award ${ui.item.value} (${ui.item.label})`;
             awardSearchInput.val(value);
