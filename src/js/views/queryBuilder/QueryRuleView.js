@@ -424,7 +424,7 @@ define([
           },
           // User/Organization account ID lookup
           {
-            queryFields: ["writePermission", "readPermission", "changePermission", "rightsHolder"],
+            queryFields: ["writePermission", "readPermission", "changePermission", "rightsHolder", "submitter"],
             uiFunction: function () {
               return new AccountSelect({
                 selected: this.model.get("values")
