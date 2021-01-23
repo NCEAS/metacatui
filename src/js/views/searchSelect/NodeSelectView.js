@@ -53,7 +53,7 @@ define([
         /**
          * Setting to true gives users the ability to add their own options that
          * are not listed in this.options. This can work with either single
-         * or multiple search select dropdowns
+         * or multiple search select dropxdowns
          * @type {boolean}
          * @default true
          */
@@ -65,6 +65,7 @@ define([
          */
         initialize: function(options){
           try {
+            
             // Ensure the query fields are cached
             if ( typeof MetacatUI.nodeModel === "undefined" ) {
               MetacatUI.nodeModel = new NodeModel();

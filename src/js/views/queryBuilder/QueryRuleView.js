@@ -5,20 +5,20 @@ define([
   "views/searchSelect/SearchableSelectView",
   "views/searchSelect/QueryFieldSelectView",
   "views/searchSelect/NodeSelectView",
+  "views/searchSelect/AccountSelectView",
   "views/filters/NumericFilterView",
   "views/filters/DateFilterView",
+  "views/searchSelect/ObjectFormatSelectView",
   "views/searchSelect/AnnotationFilterView",
-  "collections/queryFields/QueryFields",
   "models/filters/Filter",
   "models/filters/BooleanFilter",
   "models/filters/NumericFilter",
-  "models/filters/DateFilter",
-  "collections/ObjectFormats"
+  "models/filters/DateFilter"
 ],
   function (
-    $, _, Backbone, SearchableSelect, QueryFieldSelect, NodeSelect, NumericFilterView,
-    DateFilterView, AnnotationFilter, QueryFields, Filter, BooleanFilter, NumericFilter,
-    DateFilter, ObjectFormats
+    $, _, Backbone, SearchableSelect, QueryFieldSelect, NodeSelect, AccountSelect,
+    NumericFilterView, DateFilterView, ObjectFormatSelect, AnnotationFilter, Filter, BooleanFilter,
+    NumericFilter, DateFilter
   ) {
 
     /**
@@ -401,34 +401,7 @@ define([
           {
             queryFields: ["formatId"],
             uiFunction: function () {
-              // If there is an issue retrieving the object formats, just use a regular UI
-              if (!MetacatUI.objectFormats || MetacatUI.objectFormats.length == 0) {
-                // The last function in this list is the default value selection UI.
-                // "this" context should always be the view
-                var defaultMap = this.valueSelectUImap[this.valueSelectUImap.length - 1],
-                  defaultFunction = defaultMap.uiFunction;
-                return defaultFunction.call(this);
-              }
-              var formatIds = MetacatUI.objectFormats.toJSON();
-              var options = _.chain(formatIds)
-                // Since the query rules automatically include a rule for formatType =
-                // "METADATA", only allow filtering datasets by specific metadata type.
-                .where({ formatType: "METADATA" })
-                .map(
-                  function (format) {
-                    return {
-                      label: format.formatName,
-                      value: format.formatId,
-                      description: format.formatId
-                    }
-                  }
-                )
-                .value();
-              return new SearchableSelect({
-                options: options,
-                allowMulti: true,
-                allowAdditions: false,
-                inputLabel: "Select one or more metadata type",
+              return new ObjectFormatSelect({
                 selected: this.model.get("values")
               })
             }
@@ -448,6 +421,15 @@ define([
                 return this.valueSelectUImap.slice(-1)[0].uiFunction.call(this);
               }
             }
+          },
+          // User/Organization account ID lookup
+          {
+            queryFields: ["writePermission", "readPermission", "changePermission", "rightsHolder"],
+            uiFunction: function () {
+              return new AccountSelect({
+                selected: this.model.get("values")
+              });
+            },
           },
           // Repository picker for fields that need a member node ID
           {
@@ -516,13 +498,6 @@ define([
               console.error("error: A Filter model that's part of a Filters collection"
                 + " is required to initialize a Query Rule view.")
               return
-            }
-
-            // Ensure the object formats are cached, for the special data format filter
-            // ID.
-            if (!MetacatUI.objectFormats) {
-              MetacatUI.objectFormats = new ObjectFormats();
-              MetacatUI.objectFormats.fetch();
             }
 
             // The model may be removed during the save process if it's empty. Remove this

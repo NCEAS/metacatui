@@ -6,10 +6,11 @@ define([
     "text!" + MetacatUI.root + "/components/semanticUI/transition.min.css",
     "semanticUIdropdown",
     "text!" + MetacatUI.root + "/components/semanticUI/dropdown.min.css",
+    MetacatUI.root + "/components/semanticUI/api.min.js",
     "text!templates/selectUI/searchableSelect.html",
     
   ],
-  function($, _, Backbone, Transition, TransitionCSS, Dropdown, DropdownCSS, Template) {
+  function($, _, Backbone, Transition, TransitionCSS, Dropdown, DropdownCSS, SemanticAPI, Template) {
 
     /**
      * @class SearchableSelectView
@@ -182,6 +183,19 @@ define([
         selected: [],
 
         /**
+         * Can be set to an object to specify API settings for retrieving remote selection
+         * menu content from an API endpoint. Details of what can be set here are
+         * specified by the Semantic-UI / Fomantic-UI package. Set to false if not
+         * retrieving remote content.
+         * @type {Object|booealn}
+         * @default false
+         * @since 2.15.0
+         * @see {@link https://fomantic-ui.com/modules/dropdown.html#remote-settings}
+         * @see {@link https://fomantic-ui.com/behaviors/api.html#/settings}
+         */
+        apiSettings: false,
+
+        /**
          * The primary HTML template for this view. The template follows the
          * structure specified for the semanticUI dropdown module, see:
          * https://semantic-ui.com/modules/dropdown.html#/definition
@@ -240,7 +254,7 @@ define([
         /**
          * Render the view
          *
-         * @return {SeachableSelect}  Returns the view
+         * @return {SearchableSelect}  Returns the view
          */
         render: function() {
 
@@ -262,41 +276,81 @@ define([
             // https://semantic-ui.com/modules/dropdown.html#/settings
             this.$selectUI = this.$el.find('.ui.dropdown')
               .dropdown({
+                keys : {
+                  // So that a user may enter search text using a comma
+                  delimiter  : false
+                },
+                apiSettings: this.apiSettings,
                 fullTextSearch: true,
                 duration: 90,
+                forceSelection: false,
+                ignoreDiacritics: true,
                 clearable: view.clearable,
                 allowAdditions: view.allowAdditions,
                 hideAdditions: false,
                 allowReselection: true,
-                onLabelCreate: function(value, text){
-                  // Add tooltips to the selected label elements
-                  view.addTooltip.call(view, this, "top");
-                  return this
+                onAdd: function(addedValue){
+                  // Callback when a value is added *for multi-select inputs only*
+                  // Add the value to the selected array (but don't add twice)
+                  if(!view.selected.includes(addedValue)){
+                    view.selected.push(addedValue)
+                  }
                 },
-                onLabelRemove: function(){
+                onRemove: function(removedValue){
+                  // Callback when a value is removed *for multi-select inputs only*
+                  // Remove the value from the selected array
+                  view.selected = view.selected.filter(function(value){
+                    return value !== removedValue
+                  })
+                },
+                onChange: function(values, text, $choice){
+
+                  // Callback when values change for any type of input.
+
+                  // NOTE: The "values" argument is a string that contains all the
+                  // selected values separated by commas. We updated the view.selected
+                  // array with the onAdd and onRemove callbacks instead of using the
+                  // values argument passed to this function in order to allow commas
+                  // within individual values. For example, if the user selected the value
+                  // "x" and the value "y,z", the values string would be "x,y,z" and it
+                  // would be difficult to see that two values were selected instead of
+                  // three.
+
+                  // Update values for single-select inputs (multi-select are updated
+                  // using the onAdd and onRemove callbacks)
+                  if(!view.allowMulti){
+                    view.selected = [values]
+                  }
+
+                  // Trigger an event if items are selected after the UI has been rendered
+                  // (It is set as disabled until fully rendered). 
+                  if(!$(this).hasClass("disabled")){
+                    var newValues = _.clone(view.selected);
+                    view.trigger('changeSelection', newValues);
+                  }
+
+                  // Refresh the tooltips on the labels/text
+
                   // Ensure tooltips for labels are removed
                   $(".search-select-tooltip").remove();
-                },
-                onChange: function(value, text, $choice){
-
-                  // Add tooltips to the selected fields that are not labels
-                  // (i.e. that are not in multi-select UIs).
-                  var textEl = view.$selectUI.find(".text")
-                  if(textEl){
-                    if(text == textEl.html()){
-                      view.addTooltip.call(view, textEl, "top");
+                  
+                  // Add a tooltip for single select elements (.text) or multi-select
+                  // elements (.label). Delay so that to give time for DOM elements to be
+                  // added or removed.
+                  setTimeout(function(params) {
+                    var textEl = view.$selectUI.find(".text:not(.default),.label");
+                    if(textEl){
+                      textEl.each(function(i, el){
+                        view.addTooltip.call(view, el, "top");
+                      })
                     }
-                  }
-
-                  // Trigger an event if items are selected after the UI
-                  // has been rendered (It is set as disabled until fully rendered)
-                  if(!$(this).hasClass("disabled")){
-                    var newValues = value.split(",");
-                    view.trigger('changeSelection', newValues);
-                    view.selected = newValues;
-                  }
+                  }, 50);
+                 
+                  
                 },
               });
+
+            view.$selectUI.data("view", view);
 
             view.postRender();
 
