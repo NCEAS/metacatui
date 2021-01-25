@@ -15,6 +15,7 @@ define([
      * @extends SearchableSelect
      * @constructor
      * @since 2.14.0
+     * @screenshot views/searchSelect/NodeSelectView.png
      */
     var NodeSelect = SearchableSelect.extend(
       /** @lends NodeSelectView.prototype */

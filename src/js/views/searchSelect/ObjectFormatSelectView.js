@@ -15,6 +15,7 @@ define([
      * @extends SearchableSelect
      * @constructor
      * @since 2.15.0
+     * @screenshot views/searchSelect/ObjectFormatSelectView.png
      */
     var ObjectFormatSelect = SearchableSelect.extend(
       /** @lends ObjectFormatSelectView.prototype */

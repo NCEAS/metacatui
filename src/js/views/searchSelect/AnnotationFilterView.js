@@ -17,6 +17,7 @@ define(
      * @extends Backbone.View
      * @constructor
      * @since 2.14.0
+     * @screenshot views/searchSelect/AnnotationFilterView.png
      */
     return Backbone.View.extend(
       /** @lends AnnotationFilterView.prototype */

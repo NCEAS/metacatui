@@ -13,12 +13,13 @@ define([
      * the options, and optionally select multiple items. Also allows the items
      * to be grouped, and to display an icon or image for each item.
      * @classcategory Views/SearchSelect
-     * @extends Backbone.View
+     * @extends SearchableSelect
      * @constructor
      * @since 2.15.0
+     * @screenshot views/searchSelect/AccountSelectViewView.png
      */
     var AccountSelectView = SearchableSelect.extend(
-      /** @lends SearchableSelectView.prototype */
+      /** @lends AccountSelectViewView.prototype */
       {
         /**
          * The type of View this is
