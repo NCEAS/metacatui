@@ -302,7 +302,7 @@ define(['jquery', 'underscore', 'backbone'],
       //If this filter should be excluding matches from the results,
       // then add a hyphen in front
       if( this.get("exclude") ){
-        queryString = "-" + queryString;
+        queryString = "-" + queryString + "%20AND%20*:*";
       }
 
       return queryString;
