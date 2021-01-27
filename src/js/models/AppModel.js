@@ -1643,6 +1643,22 @@ define(['jquery', 'underscore', 'backbone'],
       randomLabelNumericLength: 7,
 
       /**
+      * If enabled (by setting to true), Cesium maps will be used in the interface.
+      * If a {@link AppConfig#cesiumToken} is not provided, Cesium features will be disabled.
+      * @type {boolean}
+      * @default false
+      * @since 2.X.X
+      */
+      enableCesium: false,
+      /**
+      * Your Access Token for the Cesium API, which can be retrieved from https://cesium.com/ion/tokens.
+      * @type {string}
+      * @since 2.X.X
+      * @example eyJhbGciOiJIUzI1R5cCI6IkpXVCJ9.eyJqdGkiOiJmYzUwYjI0ZC0yN2Y4LTRiZjItOdCI6MTYwODIyNDg5MH0.KwCI2-4cHjFYXrR6-mUrwkhh1UdNARK7NxFLpFftjeg
+      */
+      cesiumToken: "",
+
+      /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users
       */
       /**

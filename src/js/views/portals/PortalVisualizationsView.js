@@ -14,10 +14,16 @@ define(["jquery",
      var PortalVisualizationsView = PortalSectionView.extend(
        /** @lends PortalVisualizationsView.prototype */{
 
-        /* The class names to add to this view */
+       /**
+       * The HTML classes to use for this view's element
+       * @type {string}
+       */
         className: "portal-viz-section-view tab-pane portal-section-view",
 
-        /* TODO: Decide if we need this */
+        /**
+        * The type of View this is
+        * @type {string}
+        */
         type: "PortalVisualizations",
 
         /**
@@ -29,15 +35,16 @@ define(["jquery",
         /* The list of subview instances contained in this view*/
         subviews: [], // Could be a literal object {}
 
-        /* Renders the compiled template into HTML */
+        /**
+        * Renders the compiled template into HTML
+        * @type {Underscore.Template}
+        */
         template: _.template(PortalVisualizationsTemplate),
 
-        /* The events that this view listens to*/
-        events: {
-
-        },
-
-        /* Construct a new instance of PortalVisualizationsView */
+        /**
+        * Construct a new instance of PortalVisualizationsView
+        * @param {Object} options - A literal object with options to pass to the view
+        */
         initialize: function(options) {
           // Get all the options and apply them to this view
           if( typeof options == "object" ) {
@@ -48,24 +55,59 @@ define(["jquery",
           }
         },
 
-        /* Render the view */
+        /**
+        * Renders the view
+        */
         render: function() {
 
           //Attach this view to the DOM element
           this.$el.data("view", this);
 
-          if( this.model.get("visualizationType") == "fever" && MetacatUI.appModel.get("enableFeverVisualizations") ){
+          if( this.model.get("visualizationType") == "fever" ){
             this.renderFEVer();
+          }
+          else if( this.model.get("visualizationType") == "cesium" ){
+            this.renderCesium();
           }
 
         },
 
+        /**
+        * Renders a FEVer visualizattion in this view
+        */
         renderFEVer: function(){
+
+          //Exit if FEVer is disabled
+          if( !MetacatUI.appModel.get("enableFeverVisualizations") ){
+            return;
+          }
+
           //Insert the FEVer visualization into the page
           var iframe = $(document.createElement("iframe"))
                         .attr("src", MetacatUI.appModel.get("feverUrl"))
                         .css("width", "100%");
           this.$el.html(iframe);
+
+        },
+
+        /**
+        * Renders a {@link CesiumView} and inserts into this view
+        */
+        renderCesium: function(){
+
+          //Exit if Cesium is disabled
+          if( !MetacatUI.appModel.get("enableCesium") ){
+            return;
+          }
+
+          let thisView = this;
+
+          //Create a CesiumView and render it in this view
+          require(["views/maps/CesiumView"], function(CesiumView){
+            let cesiumView = new CesiumView();
+            thisView.$el.html(cesiumView.el);
+            cesiumView.render();
+          });
 
         },
 

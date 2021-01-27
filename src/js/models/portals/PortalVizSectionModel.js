@@ -21,7 +21,8 @@ define(["jquery",
         defaults: function(){
           return _.extend(PortalSectionModel.prototype.defaults(), {
             sectionType: "visualization",
-            visualizationType: ""
+            visualizationType: "",
+            supportedVisualizationTypes: ["fever", "cesium"]
           });
         },
 
@@ -52,8 +53,14 @@ define(["jquery",
 
             //Right now, only support "fever" as a visualization type, until this feature is expanded.
             if(vizType == "fever"){
-              modelJSON.visualizationType = "fever";
+            //  modelJSON.visualizationType = "fever";
             }
+
+            var vizTypes = this.get("supportedVisualizationTypes");
+            if( Array.isArray(vizTypes) && vizTypes.includes(vizType) ){
+              modelJSON.visualizationType = vizType;
+            }
+
           }
 
           return modelJSON;
