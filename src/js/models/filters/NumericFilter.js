@@ -123,8 +123,15 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       //Start the query string
       var queryString = "";
 
-      //Only construct the query if the min or max is different than the default
-      if( this.get("min") != this.get("rangeMin") || this.get("max") != this.get("rangeMax") ){
+      if(
+        // For numeric filters that are ranges, only construct the query if the min or max
+        // is different than the default
+        this.get("min") != this.get("rangeMin") ||
+        this.get("max") != this.get("rangeMax") ||
+        // Otherwise, a numeric filter could search for an exact value
+        (this.get("values") && this.get("values").length)
+        
+      ){
 
         //Iterate over each filter field and add to the query string
         _.each(this.get("fields"), function(field, i, allFields){
@@ -171,7 +178,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           }
           //If there is a value set, construct an exact numeric match query
           else if( this.get("values")[0] || this.get("values")[0] === 0 ){
-            console.debug( "~~~If there is a value set, construct an exact numeric match query~~~" );
+            // If there is a value set, construct an exact numeric match query
             queryString += field + ":" + this.get("values")[0];
           }
 

@@ -488,7 +488,7 @@ define(['jquery', 'underscore', 'backbone'],
 
         var xmlDocument = $objectDOM[0].ownerDocument;
 
-        // Get new values
+        // Get new values. Set the key as the DOM element name (i.e. "field" instead of "fields")
         var filterData = {
           // The following values are common to all FilterType elements
           label: this.get("label"),
@@ -502,17 +502,17 @@ define(['jquery', 'underscore', 'backbone'],
         // Make new sub nodes using the new model data
         _.map(filterData, function(values, nodeName){
 
-          // Serialize the nodes with multiple occurences
+          // Serialize the nodes with multiple occurrences
           if( Array.isArray(values) ){
               _.each(values, function(value){
-                // Don't serialize falsey or default values
-                if((value || value === false) && value != this.defaults()[nodeName]){
+                // Don't serialize empty, null, or undefined values
+                if( value || value === false || value === 0 ){
                   var nodeSerialized = xmlDocument.createElement(nodeName);
                   $(nodeSerialized).text(value);
                   $objectDOM.append(nodeSerialized);
                 }
               }, this);
-          // Serialize the single occurence nodes
+          // Serialize the single occurrence nodes
           }
           // Don't serialize falsey or default values
           else if((values || values === false) && values != this.defaults()[nodeName]) {
