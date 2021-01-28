@@ -236,6 +236,34 @@ define([
       return objectDOM;
     },
 
+    getEMLPosition: function(objectDOM, nodeName) {
+      var nodeOrder = this.get("nodeOrder");
+      var position = _.indexOf(nodeOrder, nodeName);
+
+      // Append to the bottom if not found
+      if (position == -1) {
+        return $(objectDOM)
+          .children()
+          .last()[0];
+      }
+
+      // Otherwise, go through each node in the node list and find the
+      // position where this node will be inserted after
+      for (var i = position - 1; i >= 0; i--) {
+        if ($(objectDOM).find(nodeOrder[i].toLowerCase()).length) {
+          return $(objectDOM)
+            .find(nodeOrder[i].toLowerCase())
+            .last()[0];
+        }
+      }
+
+      // Always return something so calling code can be cleaner
+      return $(objectDOM)
+        .children()
+        .last()[0];
+    },
+
+
     trickleUpChange: function() {
       MetacatUI.rootDataPackage.packageModel.set("changed", true);
     },
