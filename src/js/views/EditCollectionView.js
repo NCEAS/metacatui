@@ -207,6 +207,9 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         isSubView: true,
         mode: "map",
         filters: false,
+        solrError500Message: "There may be a problem with one of the rules you created." +
+          " Try undoing the last change you made.",
+        solrErrorTitle: "Something went wrong searching for datasets that match your query",
         // Override the function that creates filter groups on the left of the
         // data catalog view. With the query builder view, they are not needed.
         // Otherwise, the defaultFilterGroups will be added to the query builder
