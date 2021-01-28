@@ -88,14 +88,17 @@ define([
       removeAward: function(e) {
         //Get the index of this award
         var awardEl = $(e.target).parents(".eml-award"),
-          index = this.$(".eml-award").index(awardEl);
+          index = this.$(".eml-award").index(awardEl)
+          ctx = this;
 
         //Remove this award from the model
         this.model.removeAward(index);
 
+
         //Remove the award elements from the page
         awardEl.slideUp("fast", function() {
           this.remove();
+          ctx.renderAwardCount();
         });
       },
 
