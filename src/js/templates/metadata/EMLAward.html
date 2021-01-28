@@ -1,6 +1,7 @@
 <div class="award-container <%= isNew ? 'new' : '' %>">
   <% if(!isNew){ %> <i class="remove icon-remove" title="Remove this award"></i> <% } %>
   <div class="basic-text-row">
+    <h4>Award <span class="award-index"></span></h4>
     <% if(showAwardSearch) { %>
       <div class="award-search-container"></div>
     <% } %>

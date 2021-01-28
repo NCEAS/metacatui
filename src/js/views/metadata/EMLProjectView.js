@@ -116,12 +116,21 @@ define([
         });
 
         this.$(".award-row").append(awardView.render().el);
+
+        this.renderAwardCount();
       },
 
       updateModel: function(e){
         //Add this model to the parent EML model when it is valid
         if(this.model.isValid() && !this.model.get("parentModel").get('project')){
           this.model.get("parentModel").set("project", this.model);
+        }
+      },
+
+      renderAwardCount: function() {
+        var awardsNums = this.$(".eml-award .award-index");
+        for (var i = 0; i < awardsNums.length; i++) {
+            $(awardsNums[i]).text(i + 1);
         }
       },
 
