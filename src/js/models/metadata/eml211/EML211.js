@@ -1473,16 +1473,18 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         }
 
-        //Validate the EMLProject model
-        _.each(this.get('project').get('award'), function(award){
-          if(!award.isValid()) {
-            if(errors.award) {
-              errors.award.push(award.validationError)
-            } else {
-              errors.award = [award.validationError]
+        // Validate the EMLProject model
+        if(this.get('project')) {
+          _.each(this.get('project').get('award'), function(award){
+            if(!award.isValid()) {
+              if(errors.award) {
+                errors.award.push(award.validationError)
+              } else {
+                errors.award = [award.validationError]
+              }
             }
-          }
-        })
+          })
+        }
 
         //Validate each EMLEntity model
         _.each( this.get("entities"), function(entityModel){

@@ -226,14 +226,12 @@ define([
 
           //Add new award model to the parent EML model
           if (this.isNew) {
-            var position = $(
-              `.eml-award [data-attribute='${attribute}']`
-            ).index(e.target);
-
             var existingAwards = this.model.get("parentModel").get("award");
-            if (!existingAwards[position]) {
+            if (!existingAwards.includes(this.model)) {
               this.model.get("parentModel").addAward(this.model);
             }
+
+            this.isNew = false
           }
         }
       },

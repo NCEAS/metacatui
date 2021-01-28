@@ -43,6 +43,7 @@ define([
       },
 
       events: {
+        "change": "updateModel",
         "keyup .award-container.new": "addNewAward",
         "click .remove": "removeAward",
         "mouseover .remove": "previewRemove",
@@ -115,6 +116,13 @@ define([
         });
 
         this.$(".award-row").append(awardView.render().el);
+      },
+
+      updateModel: function(e){
+        //Add this model to the parent EML model when it is valid
+        if(this.model.isValid() && !this.model.get("parentModel").get('project')){
+          this.model.get("parentModel").set("project", this.model);
+        }
       },
 
       previewRemove: function(e) {
