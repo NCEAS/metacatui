@@ -13,12 +13,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/eml211/EMLOtherEntity',
         'models/metadata/eml211/EMLParty',
         'models/metadata/eml211/EMLProject',
+        'models/metadata/eml211/EMLAward',
         'models/metadata/eml211/EMLText',
     'models/metadata/eml211/EMLMethods'],
     function($, _, Backbone, uuid, Units, ScienceMetadata, DataONEObject,
         EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage,
         EMLDistribution, EMLEntity, EMLDataTable, EMLOtherEntity, EMLParty,
-            EMLProject, EMLText, EMLMethods) {
+        EMLProject, EMLAward, EMLText, EMLMethods) {
 
       /**
       * @class EML211
@@ -148,6 +149,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               EMLTaxonCoverage.prototype.nodeNameMap(),
               EMLTemporalCoverage.prototype.nodeNameMap(),
               EMLMethods.prototype.nodeNameMap(),
+              EMLAward.prototype.nodeNameMap(),
               {
                 "accuracyreport" : "accuracyReport",
                 "actionlist" : "actionList",
@@ -397,6 +399,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "textdomain" : "textDomain",
                 "textfixed" : "textFixed",
                 "textformat" : "textFormat",
+                "title" : "title",
                 "topologylevel" : "topologyLevel",
                 "tonegradation" : "toneGradation",
                 "totaldigits" : "totalDigits",
@@ -1470,6 +1473,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         }
 
+        // Validate the EMLProject model
+        if(this.get('project')) {
+          _.each(this.get('project').get('award'), function(award){
+            if(!award.isValid()) {
+              if(errors.award) {
+                errors.award.push(award.validationError)
+              } else {
+                errors.award = [award.validationError]
+              }
+            }
+          })
+        }
+
         //Validate each EMLEntity model
         _.each( this.get("entities"), function(entityModel){
 
@@ -1531,15 +1547,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                   errors.methods = "At least one method step is required.";
               }
               else if(key == "funding"){
-                // Note: Checks for either the funding or award element. award
-                // element is checked by the project's objectDOM for now until
-                // EMLProject fully supports the award element
                 if(!this.get("project") ||
-                   !(this.get("project").get("funding").length ||
-                     (this.get("project").get("objectDOM") &&
-                      this.get("project").get("objectDOM").querySelectorAll &&
-                      this.get("project").get("objectDOM").querySelectorAll("award").length > 0)))
+                  !this.get("project").get("funding").length) {
                   errors.funding = "Provide at least one project funding number or name.";
+                }
+              }
+              else if(key == "project"){
+                if(!this.get("project") ||
+                  !this.get("project").get("award").length) {
+                    errors.project = "Provide at least one project award.";
+                  }
               }
               else if(key == "abstract"){
                 if(!this.get("abstract").length)

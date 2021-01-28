@@ -254,6 +254,7 @@ define(['jquery', 'underscore', 'backbone'],
        * @property {boolean} abstract - Default: true
        * @property {boolean} alternateIdentifier - Default: false
        * @property {boolean} funding - Default: false
+     * * @property {boolean} project - Default: false
        * @property {boolean} generalTaxonomicCoverage - Default: false
        * @property {boolean} taxonCoverage - Default: false. If true, at least one taxonomic rank and value will be required.
        * @property {boolean} geoCoverage - Default: false. If true, at least one geographic coverage description and point/bounding box will be required.
@@ -268,6 +269,7 @@ define(['jquery', 'underscore', 'backbone'],
                      abstract: true,
                      alternateIdentifier: false,
                      funding: false,
+                     project: false,
                      generalTaxonomicCoverage: false,
                      taxonCoverage: false,
                      geoCoverage: false,
@@ -284,6 +286,7 @@ define(['jquery', 'underscore', 'backbone'],
         *    abstract: true,
         *    alternateIdentifier: false,
         *    funding: false,
+        *    project: false,
         *    generalTaxonomicCoverage: false,
         *    taxonCoverage: false,
         *    geoCoverage: false,
@@ -533,10 +536,28 @@ define(['jquery', 'underscore', 'backbone'],
       * The URL for the NSF Award API, which can be used by the {@link LookupModel}
       * to look up award information for the dataset editor or other views
       * @type {string}
-      * @default "https://api.nsf.gov/services/v1/awards.json"
+      * @default "https://api.nsf.gov/services/v1/"
       */
-      grantsUrl: "https://api.nsf.gov/services/v1/awards.json",
+      grantsUrl: "https://api.nsf.gov/services/v1/",
 
+      /**
+      * The funding agency name for an award.
+      * @type {string}
+      * @default "National Science Foundation"
+      */
+      awardFunderName: "National Science Foundation",
+      /**
+      * The funding agency unique identifier for an award.
+      * @type {string}
+      * @default "https://doi.org/10.13039/100000001"
+      */
+      awardFunderIdentifier: "https://doi.org/10.13039/100000001",
+      /**
+      * The URL for an award.
+      * @type {string}
+      * @default "https://www.nsf.gov/awardsearch/showAward?AWD_ID="
+      */
+      awardAwardUrl: "https://www.nsf.gov/awardsearch/showAward?AWD_ID=",
       /**
       * The base URL for the ORCID REST services
       * @type {string}
@@ -1565,7 +1586,58 @@ define(['jquery', 'underscore', 'backbone'],
       * with the DataONE Bookkeeper service, eventually.
       */
       dataoneHostedRepos: ["urn:node:KNB", "urn:node:ARCTIC", "urn:node:CA_OPC", "urn:node:TNC_DANGERMOND", "urn:node:ESS_DIVE"],
-
+      /**
+      * The input fields that are displayed in the project awards editor. The
+      * order of the objects in the array determine the order of the fields
+      * in the editor.
+      *
+      * value: value for the field; can be used for data attributes
+      * label: label for the field
+      * display: if field is displayed in the editor
+      * required: if field is required by EML specifications
+      * help text: help text for the field
+      * @type {object[]}
+      */
+      emlEditorAwardFields: [
+        {
+          value: 'title',
+          label: "Award title",
+          display: true,
+          required: true,
+          helpText: "The title of the award."
+        },
+        {
+          value: 'awardNumber',
+          label: "Award number",
+          display: true,
+          required: false,
+          helpText: "The unique identifier used by the funder to identify an award.",
+        },
+        {
+          value: 'awardUrl',
+          label: "Award URL",
+          display: true,
+          required: false,
+          helpText: "The URL to find out more information about the award."
+        },
+        {
+          value: 'funderName',
+          label: "Funder name",
+          display: true,
+          required: true,
+          helpText: "The name of the funding agency."
+        },
+        {
+          value: 'funderIdentifier',
+          label: "Funder identifier",
+          display: true,
+          required: false,
+          helpText: `The identifier of the funding agency. A common
+          form for the identifier is the DOI of an institution or program
+          from the CrossRef Open Funder Registry
+          (https://github.com/Crossref/open-funder-registry).`,
+        },
+      ],
       /**
       * The length of random portal label generated during preview/trial mode of DataONE Plus
       * @readonly

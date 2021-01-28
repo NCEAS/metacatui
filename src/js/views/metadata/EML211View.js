@@ -1296,7 +1296,7 @@ define(['underscore', 'jquery', 'backbone',
 
         //If the new value is an empty string, then remove that index in the array
         if( typeof newValue == "string" && newValue.trim().length == 0 ){
-          currentFundingValues = currentFundingValues.splice(rowNum, 1);
+          currentFundingValues = currentValues.splice(rowNum, 1);
         }
         else{
 	    	  currentFundingValues[rowNum] = newValue;

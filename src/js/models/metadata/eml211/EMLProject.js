@@ -4,8 +4,9 @@ define([
   "underscore",
   "backbone",
   "models/DataONEObject",
-  "models/metadata/eml211/EMLParty"
-], function($, _, Backbone, DataONEObject, EMLParty) {
+  "models/metadata/eml211/EMLParty",
+  "models/metadata/eml211/EMLAward"
+], function($, _, Backbone, DataONEObject, EMLParty, EMLAward) {
   var EMLProject = Backbone.Model.extend({
     defaults: {
       objectDOM: null,
@@ -23,8 +24,7 @@ define([
         "studyAreaDescription",
         "designDescription",
         "relatedProject"
-      ],
-      awardFields: null,
+      ]
     },
 
     initialize: function(options) {
@@ -36,6 +36,12 @@ define([
       );
     },
 
+    /**
+     * Maps the lower-case EML node names (valid in HTML DOM) to the camel-cased
+     * EML node names (valid in EML).
+     *
+     * @return {object} - An object of node names,
+     */
     nodeNameMap: function() {
       return {
         descriptorvalue: "descriptorValue",
@@ -43,23 +49,19 @@ define([
         studyareadescription: "studyAreaDescription",
         relatedproject: "relatedProject",
         researchproject: "researchProject",
-        fundername: "funderName",
-        funderidentifier: "funderIdentifier",
-        awardnumber: "awardNumber",
-        awardurl: "awardUrl",
         title: "title"
       };
     },
 
-    awardFields: {
-      title: "Title",
-      fundername: "Funder Name",
-      funderidentifier: "Funder Identifier",
-      awardnumber: "Award Number",
-      awardurl: "Award URL",
-    },
-
-    //TODO: This only supports the funding and title elements right now
+    /**
+     * Overrides the default Backbone.Model.parse() function to parse the custom
+     * collection XML document
+     *
+     * TODO: This only supports the award, funding and title elements right now
+     *
+     * @param {XMLDocument} response - The XMLDocument returned from the fetch() AJAX call
+     * @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
+     */
     parse: function(objectDOM) {
       if (!objectDOM) var objectDOM = this.get("objectDOM");
 
@@ -89,27 +91,13 @@ define([
       );
 
       //Parse the award info
-
+      var awardNodes = $(objectDOM).children("award");
       modelJSON.award = [];
-      var awardEl = $(objectDOM).children("award"),
-        awardNodes = awardEl[0] && awardEl[0].localName  === 'award'
-          ? awardEl
-          : [];
-
-      //Iterate over each award node and put the text into the award array
-      _.each(
-        awardNodes,
-        function(node) {
-          var nodeEl = $(node)
-          var awardItem = []
-          Object.keys(this.awardFields).forEach(field => {
-            awardItem.push({ label: this.awardFields[field], value: nodeEl.children(field).text()})
-          })
-
-          modelJSON.award.push(awardItem);
-        },
-        this
-      );
+      for (var i = 0; i < awardNodes.length; i++) {
+        modelJSON.award.push(
+          new EMLAward({ objectDOM: awardNodes[i], parentModel: this })
+        );
+      }
 
       /*
 			var personnelNode = $(objectDOM).find("personnel");
@@ -119,21 +107,14 @@ define([
 			}
       */
 
-      modelJSON.awardFields = this.awardFields
-
       return modelJSON;
     },
 
-    serialize: function() {
-      var objectDOM = this.updateDOM(),
-        xmlString = objectDOM.outerHTML;
-
-      //Camel-case the XML
-      xmlString = this.formatXML(xmlString);
-
-      return xmlString;
-    },
-
+    /**
+     * Create XML DOM with the new values from the model.
+     *
+     * @return {XMLDocument} - An XML DOM for the model.
+     */
     updateDOM: function() {
       var objectDOM = this.get("objectDOM")
         ? this.get("objectDOM").cloneNode(true)
@@ -194,7 +175,6 @@ define([
 
       // Serialize funding (if needed)
       var fundingNode = $(objectDOM).children("funding");
-
       if (this.get("funding") && this.get("funding").length > 0) {
         // Create the funding element if needed
         if (fundingNode.length == 0) {
@@ -220,6 +200,29 @@ define([
       ) {
         // Remove all funding elements
         $(fundingNode).remove();
+      }
+
+      //Create project award
+      var awardNode = $(objectDOM).children("award");
+
+      if (this.get("award")) {
+        // Remove all award elements
+        $(awardNode).remove();
+
+        // Create award elements and append to objectDOM
+        if (Array.isArray(this.get("award"))) {
+          _.each(this.get("award"), function(award) {
+            $(objectDOM).append(award.updateDOM());
+          });
+        } else {
+          $(objectDOM).append(this.get("award").updateDOM());
+        }
+      } else if (
+        (!this.get("award") || !this.get("award").length) &&
+        awardNode.length > 0
+      ) {
+        // Remove all award elements
+        $(awardNode).remove();
       }
 
       // Remove empty (zero-length or whitespace-only) nodes
@@ -260,30 +263,29 @@ define([
         .last()[0];
     },
 
-    /*
-     * Climbs up the model heirarchy until it finds the EML model
-     *
-     * @return {EML211 or false} - Returns the EML 211 Model or false if not found
-     */
-    getParentEML: function() {
-      var emlModel = this.get("parentModel"),
-        tries = 0;
-
-      while (emlModel.type !== "EML" && tries < 6) {
-        emlModel = emlModel.get("parentModel");
-        tries++;
-      }
-
-      if (emlModel && emlModel.type == "EML") return emlModel;
-      else return false;
-    },
 
     trickleUpChange: function() {
       MetacatUI.rootDataPackage.packageModel.set("changed", true);
     },
 
-    formatXML: function(xmlString) {
-      return DataONEObject.prototype.formatXML.call(this, xmlString);
+    /**
+     * Remove one award from the award model
+     *
+     * @param {number} - The index of the item to remove from the awards array
+     */
+    removeAward: function(index) {
+      this.set("award", _.without(this.get("award"), this.get("award")[index]));
+      this.trickleUpChange();
+    },
+
+    /**
+     * Add one award to the award model
+     *
+     * @param {object} - The award that witll be added to the awards array
+     */
+    addAward: function(award) {
+      this.set("award", [...this.get("award"), award]);
+      this.trickleUpChange();
     }
   });
 

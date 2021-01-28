@@ -3,10 +3,19 @@ define([
   "underscore",
   "jquery",
   "backbone",
+  "views/metadata/EMLAwardView",
   "models/metadata/eml211/EMLProject",
-  "models/metadata/eml211/EMLText",
+  "models/metadata/eml211/EMLAward",
   "text!templates/metadata/EMLProject.html"
-], function(_, $, Backbone, EMLProject, EMLText, EMLProjectTemplate) {
+], function(
+  _,
+  $,
+  Backbone,
+  EMLAwardView,
+  EMLProject,
+  EMLAward,
+  EMLProjectTemplate
+) {
   /**
    * @class EMLProjectView
    * @classdesc The EMLProject renders the content of an EMLProject model
@@ -34,6 +43,8 @@ define([
       },
 
       events: {
+        "change": "updateModel",
+        "keyup .award-container.new": "addNewAward",
         "click .remove": "removeAward",
         "mouseover .remove": "previewRemove",
         "mouseout .remove": "previewRemove"
@@ -48,57 +59,88 @@ define([
           })
           .attr("data-category", "project");
 
-        if (this.edit) {
-          this.$el.html(
-            this.editTemplate({
-              award: this.model.get("award"),
-              awardFields: this.model.get("awardFields")
-            })
-          );
-        }
+        this.$el.html(this.editTemplate());
+
+        var awardRowEl = this.$(".award-row");
+        _.each(
+          this.model.get("award"),
+          function(award) {
+            var awardView = new EMLAwardView({
+              model: award,
+              edit: this.edit,
+              isNew: false
+            });
+
+            awardRowEl.append(awardView.render().el);
+          },
+          this
+        );
+
+        this.addNewAward();
 
         return this;
       },
 
-      /*
-       * Remove this award
+      /**
+       * Remove award from DOM and awards model.
+       * @param {e} - The event
        */
       removeAward: function(e) {
         //Get the index of this award
-        var awardEl = $(e.target).parent(".award-container"),
-          index = this.$(".award-container").index(awardEl),
-          view = this;
+        var awardEl = $(e.target).parents(".eml-award"),
+          index = this.$(".eml-award").index(awardEl)
+          ctx = this;
 
         //Remove this award from the model
-        this.model.set(
-          "award",
-          _.without(
-            this.model.get("award"),
-            this.model.get("award")[index]
-          )
-        );
-
+        this.model.removeAward(index);
 
 
         //Remove the award elements from the page
         awardEl.slideUp("fast", function() {
           this.remove();
-
-          // Trigger a change on the entire package
-          MetacatUI.rootDataPackage.packageModel.set("changed", true);
-
-
-          //Bump down all the award numbers
-          var awardNums = view.$(".award-num");
-
-          for (var i = index; i < awardNums.length; i++) {
-            $(awardNums[i]).text(i + 1);
-          }
+          ctx.renderAwardCount();
         });
       },
 
-      previewRemove: function(e){
-        $(e.target).parents(".award-container").toggleClass("remove-preview");
+      /**
+       * Add empty awards form to DOM.
+       */
+      addNewAward: function() {
+        // update DOM for last award
+        this.$(".award-container.new")
+          .removeClass("new")
+          .prepend('<i class="remove icon-remove"></i>');
+
+        // add new award to DOM
+        var awardView = new EMLAwardView({
+          model: new EMLAward({ parentModel: this.model }),
+          edit: this.edit,
+          isNew: true
+        });
+
+        this.$(".award-row").append(awardView.render().el);
+
+        this.renderAwardCount();
+      },
+
+      updateModel: function(e){
+        //Add this model to the parent EML model when it is valid
+        if(this.model.isValid() && !this.model.get("parentModel").get('project')){
+          this.model.get("parentModel").set("project", this.model);
+        }
+      },
+
+      renderAwardCount: function() {
+        var awardsNums = this.$(".eml-award .award-index");
+        for (var i = 0; i < awardsNums.length; i++) {
+            $(awardsNums[i]).text(i + 1);
+        }
+      },
+
+      previewRemove: function(e) {
+        $(e.target)
+          .parents(".award-container")
+          .toggleClass("remove-preview");
       }
     }
   );
