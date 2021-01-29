@@ -6,11 +6,10 @@ define([
     "text!" + MetacatUI.root + "/components/semanticUI/transition.min.css",
     "semanticUIdropdown",
     "text!" + MetacatUI.root + "/components/semanticUI/dropdown.min.css",
-    MetacatUI.root + "/components/semanticUI/api.min.js",
     "text!templates/selectUI/searchableSelect.html",
     
   ],
-  function($, _, Backbone, Transition, TransitionCSS, Dropdown, DropdownCSS, SemanticAPI, Template) {
+  function($, _, Backbone, Transition, TransitionCSS, Dropdown, DropdownCSS, Template) {
 
     /**
      * @class SearchableSelectView

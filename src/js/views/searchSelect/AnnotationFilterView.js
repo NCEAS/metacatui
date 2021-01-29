@@ -180,11 +180,6 @@ define(
           try {
             var view = this;
 
-            if(!view.multiSelectView.ready){
-              view.listenToOnce(view.multiSelectView, "postRender", view.updateMultiselect);
-              return
-            }
-
             // Check if this is the first time we are updating this multiselect.
             // If it is, then don't trigger the event that updates the model,
             // because nothing has changed.
