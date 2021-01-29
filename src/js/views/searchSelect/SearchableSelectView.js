@@ -113,6 +113,22 @@ define([
         imageHeight: 30,
 
         /**
+         * For select inputs where multiple values are allowed
+         * ({@link SearchableSelectView#allowMulti} is true), optional text to insert
+         * between labels
+         * @type {string}
+         * @since {2.15.0}
+         */
+        separatorText: "",
+
+        /** The HTML class name to add to the separator elements that are created for this
+         * view.
+         * @type {string}
+         * @since 2.15.0
+         */
+        separatorClass: "separator",
+
+        /**
          * The list of options that a user can select from in the dropdown menu. For
          * un-categorized options, provide an array of objects, where each object is a
          * single option. To create category headings, provide an object containing named
@@ -299,13 +315,6 @@ define([
                 allowAdditions: view.allowAdditions,
                 hideAdditions: false,
                 allowReselection: true,
-                onAdd: function(addedValue){
-                  // Callback when a value is added *for multi-select inputs only*
-                  // Add the value to the selected array (but don't add twice)
-                  if(!view.selected.includes(addedValue)){
-                    view.selected.push(addedValue)
-                  }
-                },
                 onRemove: function(removedValue){
                   // Callback when a value is removed *for multi-select inputs only*
                   // Remove the value from the selected array
@@ -313,21 +322,65 @@ define([
                     return value !== removedValue
                   })
                 },
+                onLabelCreate: function(value, text){
+                   // Callback when a label is created *for multi-select inputs only*
+
+                  // Add the value to the selected array (but don't add twice). Do this in
+                  // the onLabelCreate callback instead of in the onAdd callback because
+                  // we would like to update the selected array before we create the
+                  // separator element (below).
+                  if(!view.selected.includes(value)){
+                    view.selected.push(value)
+                  }
+                  // Add a separator between labels if required.
+                  var label = this;
+                  if(view.separatorRequired.call(view)){
+                    // Create the separator element.
+                    var separator = view.createSeparator.call(view);
+                    if(separator){
+                      // Attach the separator to the label so that we can easily remove it
+                      // when the label is removed.
+                      label.data("separator", separator);
+                      // Add it before the label element.
+                      label = separator.add(label);
+                    }
+                  }
+                  return label
+                },
+                onLabelRemove(value){
+                  // Call back when a user deletes a label *for multi-select inputs only*
+                  var label = this;
+                  // Remove the separator before this label if there is one.
+                  var sep = label.data("separator")
+                  if(sep){
+                    sep.remove()
+                  }
+                  // If this is the first label in an input of at least two, then delete
+                  // the separator directly *after* this label - The label that's second
+                  // will become first, and should not have an separator before it.
+                  var allLabels = view.$selectUI.find(".label");
+                  if(allLabels.index(label) === 0){
+                    var separatorAfter = label.next("." + view.separatorClass);
+                    if(separatorAfter){
+                      separatorAfter.remove();
+                    }
+                  }
+                },
                 onChange: function(values, text, $choice){
 
                   // Callback when values change for any type of input.
 
                   // NOTE: The "values" argument is a string that contains all the
                   // selected values separated by commas. We updated the view.selected
-                  // array with the onAdd and onRemove callbacks instead of using the
-                  // values argument passed to this function in order to allow commas
+                  // array with the onLabelCreate and onRemove callbacks instead of using
+                  // the values argument passed to this function in order to allow commas
                   // within individual values. For example, if the user selected the value
                   // "x" and the value "y,z", the values string would be "x,y,z" and it
                   // would be difficult to see that two values were selected instead of
                   // three.
 
                   // Update values for single-select inputs (multi-select are updated
-                  // using the onAdd and onRemove callbacks)
+                  // using the onLabelCreate and onRemove callbacks)
                   if(!view.allowMulti){
                     view.selected = [values]
                   }
@@ -355,8 +408,6 @@ define([
                       })
                     }
                   }, 50);
-                 
-                  
                 },
               });
 
@@ -368,6 +419,61 @@ define([
 
           } catch (e) {
             console.log("Error rendering the search select, error message: ", e);
+          }
+        },
+
+        /**
+         * Checks whether a separator should be created for the label that was just
+         * created, but not yet attached to the DOM
+         * @return {boolean} - Returns true if a separator should be created, false
+         * otherwise.
+         * @since 2.15.0
+         */
+        separatorRequired: function(){
+          try {
+            if(
+              // Separators not required if only one selection is allowed
+              !this.allowMulti ||
+              // Need separator text to create a separator element
+              !this.separatorText ||
+              // Need the list of selected values to determine the value's position
+              !this.selected || 
+              // Separator is only required between two or more values
+              this.selected.length <= 1 ||
+              // Separator is only required after the first element has been added
+              this.$selectUI.find(".label").length === 0
+            ){
+              return false
+            } else {
+              return true
+            }
+          } catch (error) {
+            console.log("Error checking if a label in a searchable select input " +
+            "requires a separator. Assuming that it does not need one. Error details: " +
+            error);
+            return false
+          }
+        },
+
+        /**
+         * Create the HTML for a separator element to insert between two labels. The
+         * view.separatorClass is added to the separator element.
+         * @return {JQuery} Returns the separator as a jQuery element
+         * @since 2.15.0
+         */
+        createSeparator: function(){
+          try {
+            var separatorText = this.separatorText;
+            // Text is required to create a separator.
+            if(!separatorText){
+              return null
+            }
+            var separator = $("<span>" + separatorText + "</span>");
+            separator.addClass(this.separatorClass);
+            return separator
+          } catch (error) {
+            console.log("There was an error creating a separator element in a " +
+              "Searchable Select View. Error details: " + error);
           }
         },
 

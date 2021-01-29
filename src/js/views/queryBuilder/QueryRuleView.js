@@ -393,7 +393,8 @@ define([
                 allowMulti: true,
                 allowAdditions: false,
                 inputLabel: "Select a coupling",
-                selected: this.model.get("values")
+                selected: this.model.get("values"),
+                separatorText: this.model.get("operator")
               })
             }
           },
@@ -402,7 +403,8 @@ define([
             queryFields: ["formatId"],
             uiFunction: function () {
               return new ObjectFormatSelect({
-                selected: this.model.get("values")
+                selected: this.model.get("values"),
+                separatorText: this.model.get("operator")
               })
             }
           },
@@ -414,6 +416,7 @@ define([
               if (MetacatUI.appModel.get("bioportalAPIKey")) {
                 return new AnnotationFilter({
                   selected: this.model.get("values"),
+                  separatorText: this.model.get("operator"),
                   multiselect: true
                 });
                 // If there's no API key, render the default UI (the last in this list)
@@ -427,7 +430,8 @@ define([
             queryFields: ["writePermission", "readPermission", "changePermission", "rightsHolder", "submitter"],
             uiFunction: function () {
               return new AccountSelect({
-                selected: this.model.get("values")
+                selected: this.model.get("values"),
+                separatorText: this.model.get("operator")
               });
             },
           },
@@ -438,7 +442,8 @@ define([
               "authoritativeMN", "datasource"],
             uiFunction: function () {
               return new NodeSelect({
-                selected: this.model.get("values")
+                selected: this.model.get("values"),
+                separatorText: this.model.get("operator")
               })
             }
           },
@@ -449,7 +454,8 @@ define([
             uiFunction: function () {
               return new NumericFilterView({
                 model: this.model,
-                showButton: false
+                showButton: false,
+                separatorText: this.model.get("operator")
               })
             }
           },
@@ -459,7 +465,8 @@ define([
             label: "Choose a year",
             uiFunction: function () {
               return new DateFilterView({
-                model: this.model
+                model: this.model,
+                separatorText: this.model.get("operator")
               })
             }
           },
@@ -471,7 +478,8 @@ define([
                 allowMulti: true,
                 allowAdditions: true,
                 inputLabel: "Type a value",
-                selected: this.model.get("values")
+                selected: this.model.get("values"),
+                separatorText: this.model.get("operator")
               })
             }
           }
@@ -838,6 +846,7 @@ define([
               selected: selectedFields,
               excludeFields: this.excludeFields,
               addFields: this.specialFields,
+              separatorText: this.model.get("operator")
             });
             this.fieldSelect.$el.addClass(this.fieldsClass);
             this.el.append(this.fieldSelect.el);

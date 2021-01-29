@@ -180,7 +180,6 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           }
           //If there is a value set, construct an exact numeric match query
           else if( value || value === 0 ){
-            console.log();
             // If there is a value set, construct an exact numeric match query
             queryString += field + ":" + escapeMinus(value);
           }

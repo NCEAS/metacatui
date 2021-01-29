@@ -191,6 +191,16 @@
   font-size: 0.7rem;
 }
 
+/* separator elements */
+.searchable-select .separator {
+  font-size: 0.72rem;
+  margin: 0 0.2rem 0 0;
+  padding: 0.2rem;
+  color: #9c9c9c;
+  font-weight: 600;
+}
+
+
 @media only screen and (max-width: 767px) {
   /* Overwrite dropdown rule for accordion-mode */
   .ui.search.dropdown.accordion-mode .menu {
@@ -207,3 +217,4 @@
     margin: .1em 0 .4em .6em;
   }
 }
+

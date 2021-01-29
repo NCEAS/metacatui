@@ -151,6 +151,7 @@ define(
                 allowMulti: true,
                 allowAdditions: false,
                 inputLabel: "Add one or more concepts",
+                separatorText: view.separatorText,
               })
               view.$el.append(view.multiSelectView.el);
               view.multiSelectView.render();
