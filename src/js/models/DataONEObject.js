@@ -1224,7 +1224,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             accessPolicy.dataONEObject = this;
 
             //If there is no access policy XML sent,
-            if( !accessPolicyXML ){
+            if( this.isNew() && !accessPolicyXML ){
               //Set the default access policy using the AppModel configuration
               accessPolicy.createDefaultPolicy();
             }
