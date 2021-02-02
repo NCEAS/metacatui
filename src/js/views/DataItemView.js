@@ -55,6 +55,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 this.model = options.model || new DataONEObject();
                 this.id = this.model.get("id");
                 this.canReplace = false; // Default. Updated in render()
+                this.canShare = false; // Default. Updated in render()
             },
 
             /* Render the template into the DOM */
@@ -89,6 +90,25 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 this.canReplace = this.model.get("accessPolicy") &&
                     this.model.get("accessPolicy").isAuthorized("write");
                 attributes.canReplace = this.canReplace; // Copy to template
+
+                // Restrict item sharing depending on access
+                if (MetacatUI.appModel.get("allowAccessPolicyChanges")) {
+                  // Whether we can share an EML object depends also on the
+                  // permissions set on the data package since we always want
+                  // those permissions to stay in sync
+                  if (this.model.type === "EML") {
+                      var canShareMetadata = MetacatUI.rootDataPackage.packageModel.get("accessPolicy") &&
+                          MetacatUI.rootDataPackage.packageModel.get("accessPolicy").isAuthorized("changePermission");
+                      var canShareResourceMap = this.model.get("accessPolicy") &&
+                          this.model.get("accessPolicy").isAuthorized("changePermission");
+
+                      this.canShare = canShareMetadata && canShareResourceMap;
+                  } else {
+                      this.canShare = this.model.get("accessPolicy") && this.model.get("accessPolicy").isAuthorized("changePermission");
+                  }
+                }
+
+                attributes.canShare = this.canShare;
 
                 //Get the number of attributes for this item
                 if(this.model.type != "EML"){
@@ -187,8 +207,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 this.$el.find(".dropdown-toggle").dropdown();
 
                 //Get the AccessPolicy for this object
-                var accessPolicy = this.model.get("accessPolicy"),
-                    shareButton = this.$(".sharing button");
+                var shareButton = this.$(".sharing button");
 
                 if(this.model.get("type") == "Metadata"){
                   //Add the title data-attribute attribute to the name cell
@@ -199,17 +218,17 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     this.$el.addClass("data");
                 }
 
-                // Set up tooltips for the public private toggle and share
-                // button
+                // Set up tooltips for share button
                 var sharebuttonTitle;
 
                 // If the user is not authorized to change the permissions of
-                // this object, then disable the checkbox
-                if (!accessPolicy.isAuthorized("changePermission")) {
+                // this object, then disable the share button
+                if (this.canShare) {
+                  shareButton.removeClass("disabled");
+                  sharebuttonTitle = "Share this item with others";
+                } else {
                   shareButton.addClass("disabled");
                   sharebuttonTitle = "You are not authorized to share this item."
-                } else {
-                  sharebuttonTitle = "Share this item with others";
                 }
 
                 shareButton.tooltip({

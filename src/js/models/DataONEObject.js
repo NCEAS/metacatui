@@ -815,6 +815,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                         model.set("uploadStatus", "e");
                         model.set("sysMetaUploadStatus", "e");
 
+                        // Trigger a custom event for the sysmeta update that
+                        // errored
+                        model.trigger("sysMetaUpdateError");
+
                         //Send this exception to Google Analytics
                         if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
                             ga("send", "exception", {

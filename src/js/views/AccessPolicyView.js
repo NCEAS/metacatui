@@ -59,6 +59,16 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
     cachedModels: null,
 
     /**
+     * Whether or not changes to the accessPolicy managed by this view will be
+     * broadcasted to the accessPolicy of the editor's rootDataPackage's
+     * packageModle.
+     *
+     * This implementation is very likely to change in the future as we iron out
+     * how to handle bulk accessPolicy (and other) changes.
+     */
+    broadcast: false,
+
+    /**
     * The events this view will listen to and the associated function to call.
     * @type {Object}
     */
@@ -100,7 +110,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
               this.resourceType = "dataset";
               break;
             case ("EML" || "ScienceMetadata"):
-              this.resourceType = "science metadata";
+              this.resourceType = "metadata record";
               break;
             case "DataONEObject":
               this.resourceType = "data file";
@@ -593,6 +603,10 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
 
       //Show the save progress as it is in progress, complete, in error, etc.
       this.listenTo(dataONEObject, "change:uploadStatus", this.showSaveProgress);
+
+      if (this.broadcast) {
+        MetacatUI.rootDataPackage.broadcastAccessPolicy(this.collection);
+      }
 
       //Update the SystemMetadata for this object
       dataONEObject.updateSysMeta();

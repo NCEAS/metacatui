@@ -275,6 +275,11 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
               collection: model.get("accessPolicy")
             });
 
+            // Turn on accessPolicy broadcasting for metadata models
+            if (model.get("type") === "Metadata") {
+              accessPolicyView.broadcast = true;
+            }
+
             //Store a reference to the AccessPolicyView on this view
             thisView.accessPolicyView = accessPolicyView;
 
