@@ -1,0 +1,273 @@
+<por:portal xmlns:por="https://purl.dataone.org/portals-1.0.0">
+  <label>robyns-test-portal-6</label>
+  <name>My Portal</name>
+  <definition>
+    <description>DEFINITION</description>
+    <filter>
+      <label>Datasets about soil</label>
+      <field>text</field>
+      <exclude>false</exclude>
+      <matchSubstring>true</matchSubstring>
+      <value>soil</value>
+    </filter>
+    <filter>
+      <field>keyword</field>
+      <field>attribute</field>
+      <value>soil layer</value>
+      <fieldsOperator>AND</fieldsOperator>
+    </filter>
+    <dateFilter>
+      <field>dateUploaded</field>
+      <field>beginDate</field>
+      <min>1800-01-01T00:00:00Z</min>
+      <max>2009-01-01T00:00:00Z</max>
+      <fieldsOperator>AND</fieldsOperator>
+    </dateFilter>
+    <booleanFilter>
+      <field>isPublic</field>
+      <value>true</value>
+    </booleanFilter>
+    <numericFilter>
+      <field>numberReplicas</field>
+      <min>1</min>
+    </numericFilter>
+    <filterGroup>
+      <description>FIRST LEVEL</description>
+      <filter>
+        <field>datasource</field>
+        <value>urn:node:KNB</value>
+      </filter>
+      <filterGroup>
+        <description>SECOND LEVEL</description>
+        <filterGroup>
+          <description>THIRD LEVEL</description>
+          <filter>
+            <field>fake</field>
+            <value>10</value>
+          </filter>
+          <filterGroup>
+            <description>FOURTH LEVEL</description>
+            <filter>
+              <field>fake</field>
+              <value>99</value>
+            </filter>
+            <filterGroup>
+              <description>FIFTH LEVEL</description>
+              <filter>
+                <field>fake</field>
+                <value>100</value>
+              </filter>
+            </filterGroup>
+          </filterGroup>
+        </filterGroup>
+        <filter>
+          <field>keyword</field>
+          <field>attribute</field>
+          <value>soil layer</value>
+          <fieldsOperator>AND</fieldsOperator>
+        </filter>
+        <dateFilter>
+          <field>dateUploaded</field>
+          <field>beginDate</field>
+          <min>1800-01-01T00:00:00Z</min>
+          <max>2009-01-01T00:00:00Z</max>
+          <fieldsOperator>AND</fieldsOperator>
+        </dateFilter>
+        <booleanFilter>
+          <field>isPublic</field>
+          <value>true</value>
+        </booleanFilter>
+        <operator>OR</operator>
+        <exclude>true</exclude>
+      </filterGroup>
+      <operator>OR</operator>
+      <exclude>true</exclude>
+    </filterGroup>
+    <operator>AND</operator>
+  </definition>
+
+  <filterGroup>
+
+    <label>Species</label>
+    <description>Species of salmon, common names</description>
+    <icon>sitemap</icon>
+
+    <choiceFilter>
+      <label>Salmon species</label>
+      <field>species</field>
+      <operator>OR</operator>
+      <fieldsOperator>OR</fieldsOperator>
+      <exclude>false</exclude>
+      <filterOptions>
+        <description>Salmon species, by common name</description>
+      </filterOptions>
+      <choice>
+        <label>Sockeye</label>
+        <value>Oncorhynchus nerka</value>
+        <image>
+          <identifier>urn:uuid:735dddde-d0a9-4db7-980b-491ca22a5f06</identifier>
+        </image>
+      </choice>
+      <choice>
+        <label>Chinook</label>
+        <value>Oncorhynchus tshawytscha</value>
+        <image>
+          <identifier>urn:uuid:11b12b9a-5d21-4402-9d9e-42a515a38559</identifier>
+        </image>
+      </choice>
+      <choice>
+        <label>Coho</label>
+        <value>Oncorhynchus kisutch</value>
+        <image>
+          <identifier>urn:uuid:1dbd6fcb-7768-4c76-8479-002cee08cd34</identifier>
+        </image>
+      </choice>
+      <choice>
+        <label>Chum</label>
+        <value>Oncorhynchus keta</value>
+        <image>
+          <identifier>urn:uuid:c463f608-6f72-404c-9796-f994411b89dd</identifier>
+        </image>
+      </choice>
+      <choice>
+        <label>Pink</label>
+        <value>Oncorhynchus gorbuscha</value>
+        <image>
+          <identifier>urn:uuid:a7401fee-b9de-4c87-9e81-0b01f6f7985f</identifier>
+        </image>
+      </choice>
+      <chooseMultiple>true</chooseMultiple>
+    </choiceFilter>
+  </filterGroup>
+
+  <!-- ====== Geography Filter Group ====== -->
+  <filterGroup>
+
+    <label>Geography</label>
+    <description>The specific site that the data relate to</description>
+    <icon>globe</icon>
+
+    <!-- === waterbody sub-filter === -->
+    <choiceFilter>
+      <label>Waterbody</label>
+      <field>site</field>
+      <operator>AND</operator>
+      <fieldsOperator>AND</fieldsOperator>
+      <exclude>false</exclude>
+      <filterOptions>
+        <placeholder>Choose a waterbody</placeholder>
+        <icon>water</icon>
+        <description>Rivers, river systems, or other waterbodies</description>
+      </filterOptions>
+      <choice>
+        <label>Copper River</label>
+        <value>copper river</value>
+      </choice>
+      <choice>
+        <label>Tanana River</label>
+        <value>tanana river</value>
+      </choice>
+      <choice>
+        <label>Porcupine River</label>
+        <value>porcupine river</value>
+      </choice>
+      <choice>
+        <label>Koyukuk River</label>
+        <value>koyukuk river</value>
+      </choice>
+      <choice>
+        <label>Colville River</label>
+        <value>colville river</value>
+      </choice>
+
+      <chooseMultiple>true</chooseMultiple>
+
+    </choiceFilter>
+
+    <numericFilter>
+      <label>Numeric with range</label>
+      <field>southBoundCoord</field>
+      <operator>AND</operator>
+      <fieldsOperator>AND</fieldsOperator>
+      <min>1.03</min>
+      <max>141.78</max>
+      <rangeMin>0</rangeMin>
+      <rangeMax>150</rangeMax>
+      <step>.01</step>
+      <filterOptions>
+        <description>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis
+          aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</description>
+        <option>
+          <optionName>custom-color-option</optionName>
+          <optionValue>#999999</optionValue>
+        </option>
+      </filterOptions>
+    </numericFilter>
+
+    <numericFilter>
+      <label>Numeric with range</label>
+      <field>northBoundCoord</field>
+      <operator>AND</operator>
+      <fieldsOperator>AND</fieldsOperator>
+      <value>5</value>
+      <rangeMin>0</rangeMin>
+      <rangeMax>150</rangeMax>
+      <step>.01</step>
+      <filterOptions>
+        <description>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis
+          aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</description>
+        <option>
+          <optionName>custom-color-option</optionName>
+          <optionValue>#999999</optionValue>
+        </option>
+      </filterOptions>
+    </numericFilter>
+
+  </filterGroup>
+  <filterGroup>
+    <label>Theme</label>
+    <description>Topic covered by the data</description>
+    <icon>book</icon>
+    <toggleFilter>
+      <label>Male or female</label>
+      <field>text</field>
+      <operator>AND</operator>
+      <fieldsOperator>AND</fieldsOperator>
+      <filterOptions>
+        <description>Limit to datasets that mention male or female</description>
+      </filterOptions>
+      <trueValue>male</trueValue>
+      <trueLabel>Male</trueLabel>
+      <falseValue>female</falseValue>
+      <falseLabel>Female</falseLabel>
+    </toggleFilter>
+  </filterGroup>
+  <filterGroup>
+    <label>Other</label>
+    <filter>
+      <field>origin</field>
+      <operator>AND</operator>
+      <fieldsOperator>AND</fieldsOperator>
+    </filter>
+    <dateFilter>
+      <label>Year of publication</label>
+      <field>datePublished</field>
+      <operator>AND</operator>
+      <fieldsOperator>AND</fieldsOperator>
+      <rangeMin>2015-01-01T00:00:00</rangeMin>
+      <rangeMax>2018-01-01T00:00:00</rangeMax>
+    </dateFilter>
+  </filterGroup>
+  <option>
+    <optionName>primaryColor</optionName>
+    <optionValue>#282182</optionValue>
+  </option>
+  <option>
+    <optionName>secondaryColor</optionName>
+    <optionValue>#465cd0</optionValue>
+  </option>
+  <option>
+    <optionName>accentColor</optionName>
+    <optionValue>#e88024</optionValue>
+  </option>
+</por:portal>

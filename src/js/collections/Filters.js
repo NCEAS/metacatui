@@ -1,7 +1,13 @@
-define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/filters/BooleanFilter",
-    "models/filters/ChoiceFilter", "models/filters/DateFilter", "models/filters/NumericFilter",
-    "models/filters/ToggleFilter"],
-    function($, _, Backbone, Filter, BooleanFilter, ChoiceFilter, DateFilter, NumericFilter, ToggleFilter) {
+define([
+    "jquery", "underscore", "backbone",
+    "models/filters/Filter", "models/filters/BooleanFilter", "models/filters/ChoiceFilter",
+    "models/filters/DateFilter", "models/filters/NumericFilter", "models/filters/ToggleFilter",
+  ],
+    function(
+      $, _, Backbone,
+      Filter, BooleanFilter, ChoiceFilter,
+      DateFilter, NumericFilter, ToggleFilter,
+      ) {
         "use strict";
 
         /**
@@ -26,72 +32,102 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
             * Is executed when a new Filters collection is created
             */
             initialize: function(models, options) {
+
                 if (typeof options === "undefined") {
                     var options = {};
                 }
 
+                if (options && options.objectDOM) {
+                  // Models are automatically added to the collection by the parse function.
+                  this.parse(options.objectDOM);
+                }
+
                 if (options.catalogSearch) {
-                    this.createCatalogFilters();
+                  this.createCatalogFilters();
                 }
             },
 
             /**
-            *  Creates the type of Filter Model based on the given filter type. This
+            * Creates the type of Filter Model based on the given filter type. This
             * function is typically not called directly. It is used by Backbone.js when adding
             * a new model to the collection.
             * @param {object} attrs - A literal object that contains the attributes to pass to the model
             * @property {string} attrs.filterType - The type of Filter to create
+            * @property {string} attrs.objectDOM - The Filter XML
             * @param {object} options - A literal object of additional options to pass to the model
-            * @returns {Filter|BooleanFilter|ChoiceFilter|DateFilter|NumericFilter|ToggleFilter}
+            * @returns {Filter|BooleanFilter|ChoiceFilter|DateFilter|NumericFilter|ToggleFilter|FilterGroup}
             */
             model: function(attrs, options){
-              
-              //If no filterType was specified, but an objectDOM exists (from parsing a Collection
-              // or Portal document), get the filter type from the objectDOM node name
-              if( !attrs.filterType && attrs.objectDOM ){
-                switch( attrs.objectDOM.nodeName ){
-                  case "booleanFilter":
-                    return new BooleanFilter(attrs, options);
 
-                  case "dateFilter":
-                    return new DateFilter(attrs, options);
-
-                  case "numericFilter":
-                    return new NumericFilter(attrs, options);
-
-                  default:
-                    return new Filter(attrs, options);
-                }
+              // Get the model type
+              var type = ""
+              // If no filterType was specified, but an objectDOM exists (from parsing a
+              // Collection or Portal document), get the filter type from the objectDOM
+              // node name
+              if(!attrs.filterType && attrs.objectDOM){
+                type = attrs.objectDOM.nodeName;
+              } else if( attrs.filterType ) {
+                type = attrs.filterType;
               }
-              
-              if(!attrs.filterType){
-                attrs.filterType = ""
-              }
-              
               // Ignoring the case of the type allows using either the
               // filter type (e.g. BooleanFilter) or the nodeName value
               // (e.g. "booleanFilter")
-              switch ( attrs.filterType.toLowerCase() ) {
+              type = type.toLowerCase();
 
+              switch( type ){
                 case "booleanfilter":
-                    return new BooleanFilter(attrs, options);
-
-                case "choicefilter":
-                    return new ChoiceFilter(attrs, options);
+                  return new BooleanFilter(attrs, options);
 
                 case "datefilter":
-                    return new DateFilter(attrs, options);
+                  return new DateFilter(attrs, options);
 
                 case "numericfilter":
-                    return new NumericFilter(attrs, options);
+                  return new NumericFilter(attrs, options);
 
+                case "filtergroup":
+                  // We must initialize a Filter Group using the inline require syntax to
+                  // avoid the problem of circular dependencies. Filters requires Filter
+                  // Groups, and Filter Groups require Filters. For more info, see
+                  // https://requirejs.org/docs/api.html#circular
+                  var FilterGroup = require('models/filters/FilterGroup');
+                  var x = new FilterGroup(attrs, options)
+                  return x;
+
+                case "choicefilter":
+                  return new ChoiceFilter(attrs, options);
+                
                 case "togglefilter":
-                    return new ToggleFilter(attrs, options);
+                  return new ToggleFilter(attrs, options);
 
                 default:
                   return new Filter(attrs, options);
               }
 
+            },
+
+            /**
+             * Parses a <filterGroup> or <definition> element from a collection or portal
+             * document
+             *
+             *  @param {XMLElement} objectDOM - A FilterGroupType or UIFilterGroupType XML
+             *  element from a portal or collection document
+             *  @return {JSON} The result of the parsed XML, in JSON. To be set directly
+             *  on the model.
+            */
+            parse: function(objectDOM){
+
+              var filters = this;
+
+              // TODO
+              // inFilterGroup: true
+
+              $(objectDOM).children().each(function(i, filterNode){
+                filters.add({
+                  objectDOM: filterNode
+                })
+              });
+
+              return filters.toJSON();
             },
 
             /**

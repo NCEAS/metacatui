@@ -7,9 +7,12 @@ define(["jquery",
         "collections/SolrResults",
         "models/DataONEObject",
         "models/filters/Filter",
-        "models/filters/DateFilter",
-        "models/Search"],
-    function($, _, Backbone, uuid, Filters, SolrResults, DataONEObject, Filter, DateFilter, Search) {
+        "models/filters/FilterGroup",
+        "models/Search",
+        // Portal XML for testing purposes only! WIP
+        "text!" + MetacatUI.root + "/components/test-portal.xml"
+      ],
+    function($, _, Backbone, uuid, Filters, SolrResults, DataONEObject, Filter, FilterGroup, Search, TestPortalXML) {
 
   /**
   * @class CollectionModel
@@ -251,6 +254,10 @@ define(["jquery",
      * @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
     */
     parseCollectionXML: function( rootNode ){
+
+      // Portal for testing WIP
+      rootNode = TestPortalXML
+
       var modelJSON = {};
 
       //Parse the simple text nodes
@@ -259,22 +266,14 @@ define(["jquery",
       modelJSON.description = this.parseTextNode(rootNode, "description");
 
       //Create a Filters collection to contain the collection definition Filters
-      modelJSON.definitionFilters = new Filters();
-
-      // Parse the collection definition
-      _.each( $(rootNode).children("definition").children(), function(filterNode){
-
-        //Add this filter to the Filters collection
-        modelJSON.definitionFilters.add({
-          objectDOM: filterNode
-        });
-
+      modelJSON.definitionFilters = new FilterGroup({
+        objectDOM: $(rootNode).children("definition")[0]
       });
 
       //Create a Search model for this collection's filters
       modelJSON.searchModel = this.createSearchModel();
       //Add all the filters from the Collection definition to the search model
-      modelJSON.searchModel.get("filters").add(modelJSON.definitionFilters.models);
+      modelJSON.searchModel.get("filters").add(modelJSON.definitionFilters.get("filters").models);
 
       return modelJSON;
 
