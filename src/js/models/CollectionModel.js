@@ -9,10 +9,8 @@ define(["jquery",
         "models/filters/Filter",
         "models/filters/FilterGroup",
         "models/Search",
-        // Portal XML for testing purposes only! WIP
-        "text!" + MetacatUI.root + "/components/test-portal.xml"
       ],
-    function($, _, Backbone, uuid, Filters, SolrResults, DataONEObject, Filter, FilterGroup, Search, TestPortalXML) {
+    function($, _, Backbone, uuid, Filters, SolrResults, DataONEObject, Filter, FilterGroup, Search) {
 
   /**
   * @class CollectionModel
@@ -36,7 +34,8 @@ define(["jquery",
     * Default attributes for CollectionModels
     * @type {Object}
     * @property {string[]} ignoreQueryGroups - The Filter query groups to not serialize to the collection definition part of the XML document
-    * @property {Filters} definitionFilters - A Filters collection that stores filters that have been serialized to the Collection.
+    * @property {FilterGroup} definition - The parent-level Filter Group model that represents the collection definition.
+    * @property {Filters} definitionFilters - A Filters collection that stores definition filters that have been serialized to the Collection. The same filters that are stored in the definition.
     * @property {Search} searchModel - A Search model with a Filters collection that contains the filters associated with this collection
     * @property {SolrResults} searchResults - A SolrResults collection that contains the filtered search results of datasets in this collection
     * @property {SolrResults} allSearchResults - A SolrResults collection that contains the unfiltered search results of all datasets in this collection
@@ -52,6 +51,7 @@ define(["jquery",
         formatType: "METADATA",
         type: "collection",
         ignoreQueryGroups: ["catalog"],
+        definition: null,
         definitionFilters: null,
         searchModel: null,
         searchResults: new SolrResults(),
@@ -92,7 +92,8 @@ define(["jquery",
       this.set("searchModel", this.createSearchModel());
 
       //Create a Filters collection to store the definition filters
-      this.set("definitionFilters", new Filters());
+      this.set("definition", new FilterGroup());
+      this.set("definitionFilters", this.get("definition").get("filters"));
 
       // Update the blocklist with the node/repository labels
       var nodeBlockList = MetacatUI.appModel.get("portalLabelBlockList");
@@ -255,27 +256,24 @@ define(["jquery",
     */
     parseCollectionXML: function( rootNode ){
 
-      // Portal for testing WIP
-      rootNode = TestPortalXML
-
       var modelJSON = {};
 
       //Parse the simple text nodes
       modelJSON.name = this.parseTextNode(rootNode, "name");
       modelJSON.label = this.parseTextNode(rootNode, "label");
       modelJSON.description = this.parseTextNode(rootNode, "description");
-
+      
       //Create a Filters collection to contain the collection definition Filters
-      modelJSON.definitionFilters = new FilterGroup({
-        objectDOM: $(rootNode).children("definition")[0]
-      });
+      var definitionXML = rootNode.getElementsByTagName("definition")[0]
+      modelJSON.definition = new FilterGroup({ objectDOM: definitionXML });
+      modelJSON.definitionFilters = modelJSON.definition.get("filters")
 
       //Create a Search model for this collection's filters
       modelJSON.searchModel = this.createSearchModel();
       //Add all the filters from the Collection definition to the search model
-      modelJSON.searchModel.get("filters").add(modelJSON.definitionFilters.get("filters").models);
+      modelJSON.searchModel.get("filters").add(modelJSON.definitionFilters.models);
 
-      return modelJSON;
+      return modelJSON
 
     },
 
@@ -378,8 +376,8 @@ define(["jquery",
       
         // NOTE:
         // 1. Changes to the definition filters will automatically update the
-        // Search Model filters becuase of the listener set in initialize().
-        // 2. Add the new Filter model by passsing a list of attributes to the
+        // Search Model filters because of the listener set in initialize().
+        // 2. Add the new Filter model by passing a list of attributes to the
         // Filters collection, instead of by passing a new Filter, in order
         // to trigger 'update' and 'change' events for other models and views.
         
@@ -460,9 +458,7 @@ define(["jquery",
       filtersToSerialize.each(function(filterModel){
 
         // updateDOM of portal definition filters, then append to <definition>
-        var filterSerialized = filterModel.updateDOM({
-          forCollection: true
-        });
+        var filterSerialized = filterModel.updateDOM();
 
         //Add the filter node to the XMLDocument
         objectDOM.ownerDocument.adoptNode(filterSerialized);
@@ -585,33 +581,32 @@ define(["jquery",
 
         var errors = {};
 
-        // ---- Validate label----
+        // Validate label
         var labelError = this.validateLabel(this.get("label"));
         if( labelError ){
           errors.label = labelError;
         }
 
-        // ---- Validate the definition filters ----
-        
-        if( this.get("definitionFilters").length == 0 ){
-          errors.definition = "Your dataset collection hasn't been created. Add at least one query " +
-                              "rule below to find datasets for this " +
-                              this.type.toLowerCase() + ". For example, to create a " + this.type.toLowerCase() +
-                              " for datasets from a specific research project, try using the project name field.";
-        }
-        else{
-          this.get("definitionFilters").each(function(filter){
+        // Validate the definition
+        var definitionError = this.get("definition").validate(attrs, options);
 
-            if( !filter.isValid() ){
-              errors.definition = "At least one filter is invalid.";
-            }
-
-          });
+        if(definitionError){
+          if(definitionError.noFilters){
+            type = this.type.toLowerCase();
+            errors.definition = "Your dataset collection hasn't been created. Add at " +
+              "least one query rule below to find datasets for this " + type +
+              ". For example, to create a " + type + " for datasets from a specific " +
+              "research project, try using the project name field.";
+          } else {
+            // Just show the first error for now.
+            errors.definition = Object.values(definitionError)[0]
+          }
         }
 
-        if( Object.keys(errors).length )
+        if( Object.keys(errors).length ) {
+          console.log(errors);
           return errors;
-        else{
+        } else {
           return;
         }
 
@@ -659,7 +654,7 @@ define(["jquery",
           }
         }
 
-        // If the label includes illegal characers
+        // If the label includes illegal characters
         // (Only allow letters, numbers, underscores and dashes)
         if(label.match(/[^A-Za-z0-9_-]/g)){
           return "URLs may only contain letters, numbers, underscores (_), and dashes (-).";

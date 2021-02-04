@@ -29,19 +29,29 @@ define(['jquery', 'underscore', 'backbone'],
     * @property {string} nodeName - The XML node name for this filter's XML DOM
     * @property {string[]} fields - The search index fields to search
     * @property {string[]} values - The values to search for in the given search fields
-    * @property {string} operator - The operator to use between values set on this model. "AND" or "OR"
-    * @property {string} queryGroup - The name of the group this Filter is a part of, which is
-    * primarily used when creating a query string from multiple Filter models. Filters
-    * in the same group will be wrapped in parenthesis in the query.
-    * @property {boolean} exclude - If true, search index docs matching this filter will be excluded from the search results
-    * @property {boolean} matchSubstring - If true, the search values will be wrapped in wildcard characters to match substrings
+    * @property {string} operator - The operator to use between values set on this model.
+    * "AND" or "OR"
+    * @property {string} fieldsOperator - The operator to use between fields set on this
+    * model. "AND" or "OR"
+    * @property {string} queryGroup - The name of the group this Filter is a part of,
+    * which is primarily used when creating a query string from multiple Filter models.
+    * Filters in the same group will be wrapped in parenthesis in the query.
+    * @property {boolean} exclude - If true, search index docs matching this filter will
+    * be excluded from the search results
+    * @property {boolean} matchSubstring - If true, the search values will be wrapped in
+    * wildcard characters to match substrings
     * @property {string} label - A human-readable short label for this Filter
     * @property {string} placeholder - A short example or description of this Filter
-    * @property {string} icon - A term that identifies a single icon in a supported icon library
+    * @property {string} icon - A term that identifies a single icon in a supported icon
+    * library
     * @property {string} description - A longer description of this Filter's function
-    * @property {boolean} isInvisible - If true, this filter will be added to the query but will
-    * act in the "background", like a default filter
-    * @property {boolean} inFilterGroup - If true, this filter belongs to a FilterGroup model
+    * @property {boolean} isInvisible - If true, this filter will be added to the query
+    * but will act in the "background", like a default filter
+    * @property {boolean} inFilterGroup - Deprecated: use isUIFilterType instead. 
+    * @property {boolean} isUIFilterType - If true, this filter is one of the
+    * UIFilterTypes, belongs to a UIFilterGroupType model, and is used to create a custom
+    * Portal search filters. This changes how the XML is parsed and how the model is
+    * serialized.
     */
     defaults: function(){
       return{
@@ -50,6 +60,7 @@ define(['jquery', 'underscore', 'backbone'],
         fields: [],
         values: [],
         operator: "AND",
+        fieldsOperator: "AND",
         queryGroup: null,
         exclude: false,
         matchSubstring: false,
@@ -58,7 +69,7 @@ define(['jquery', 'underscore', 'backbone'],
         icon: null,
         description: null,
         isInvisible: false,
-        inFilterGroup: false
+        isUIFilterType: false
       }
     },
 
@@ -89,6 +100,14 @@ define(['jquery', 'underscore', 'backbone'],
           isInvisible: MetacatUI.appModel.get("hideIsPartOfFilter") === true ? true : false,
         });
       }
+
+      // Operator must be AND or OR
+      ["fieldsOperator", "operator"].forEach(function(op){
+        if( !["AND", "OR"].includes(this.get(op)) ){
+          // Set the value to the default
+          this.set(op, this.defaults()[op])
+        }
+      }, this);
     
     },
 
@@ -121,14 +140,17 @@ define(['jquery', 'underscore', 'backbone'],
         modelJSON.label = this.parseTextNode(xml, "label");
       }
 
-      //Parse the operator, if it exists
+      //Parse the operators, if they exist
       if( $(xml).find("operator").length ){
         modelJSON.operator = this.parseTextNode(xml, "operator");
       }
       else{
-        if( modelJSON.fields.includes('id') ){
+        if( modelJSON.fields && modelJSON.fields.includes('id') ){
           modelJSON.operator = "OR";
         }
+      }
+      if( $(xml).find("fieldsOperator").length ){
+        modelJSON.fieldsOperator = this.parseTextNode(xml, "fieldsOperator");
       }
 
       //Parse the exclude, if it exists
@@ -148,7 +170,7 @@ define(['jquery', 'underscore', 'backbone'],
       }
 
       //If this Filter is in a filter group, don't parse the values
-      if( !this.get("inFilterGroup") ){
+      if( !this.get("isUIFilterType") ){
         if( $(xml).children("value").length ){
           //Parse the value(s)
           modelJSON.values = this.parseTextNode(xml, "value", true);
@@ -289,7 +311,7 @@ define(['jquery', 'underscore', 'backbone'],
 
         //Add the OR operator between field names
         if( fields.length > i+1 && queryString.length ){
-          queryString += "%20" + this.get("operator") + "%20";
+          queryString += "%20" + this.get("fieldsOperator") + "%20";
         }
 
       }, this);
@@ -454,7 +476,6 @@ define(['jquery', 'underscore', 'backbone'],
      * Updates XML DOM with the new values from the model
      *
      *  @param {object} [options] A literal object with options for this serialization
-     *  @property {boolean} [options.forCollection] - If true, will create an XML DOM for Collection definitions, not FilterGroups
      *  @return {Element} A new XML element with the updated values
     */
     updateDOM: function(options){
@@ -488,33 +509,55 @@ define(['jquery', 'underscore', 'backbone'],
 
         var xmlDocument = $objectDOM[0].ownerDocument;
 
-        // Get new values. Set the key as the DOM element name (i.e. "field" instead of "fields")
-        var filterData = {
-          // The following values are common to all FilterType elements
-          label: this.get("label"),
-          field: this.get("fields"),
-          operator: this.get("operator"),
-          exclude: this.get("exclude"),
-          matchSubstring: this.get("matchSubstring"),
-          value: this.get("values")
-        };
+        // Get new values. Must store in an array because the order that we add each
+        // element to the DOM matters
+        var filterData = [
+          {
+            nodeName: "label",
+            value: this.get("label"),
+          },
+          {
+            nodeName: "field",
+            value: this.get("fields"),
+          },
+          {
+            nodeName: "operator",
+            value: this.get("operator"),
+          },
+          {
+            nodeName: "exclude",
+            value: this.get("exclude"),
+          },
+          {
+            nodeName: "matchSubstring",
+            value: this.get("matchSubstring"),
+          },
+          {
+            nodeName: "value",
+            value: this.get("values"),
+          },
+          {
+            nodeName: "fieldsOperator",
+            value: this.get("fieldsOperator"),
+          }
+        ]
 
-        // Make new sub nodes using the new model data
-        _.map(filterData, function(values, nodeName){
+        filterData.forEach(function(element){
+          var values = element.value;
+          var nodeName = element.nodeName;
 
           // Serialize the nodes with multiple occurrences
           if( Array.isArray(values) ){
-              _.each(values, function(value){
-                // Don't serialize empty, null, or undefined values
-                if( value || value === false || value === 0 ){
-                  var nodeSerialized = xmlDocument.createElement(nodeName);
-                  $(nodeSerialized).text(value);
-                  $objectDOM.append(nodeSerialized);
-                }
-              }, this);
-          // Serialize the single occurrence nodes
+            _.each(values, function(value){
+              // Don't serialize empty, null, or undefined values
+              if( value || value === false || value === 0 ){
+                var nodeSerialized = xmlDocument.createElement(nodeName);
+                $(nodeSerialized).text(value);
+                $objectDOM.append(nodeSerialized);
+              }
+            }, this);
           }
-          // Don't serialize falsey or default values
+          // Serialize the single occurrence nodes. Don't serialize falsey or default values
           else if((values || values === false) && values != this.defaults()[nodeName]) {
             var nodeSerialized = xmlDocument.createElement(nodeName);
             $(nodeSerialized).text(values);
@@ -523,9 +566,9 @@ define(['jquery', 'underscore', 'backbone'],
 
         }, this);
 
-        //If this is a UIFilterType that won't be serialized into a Collection definition,
+        // If this is a UIFilterType that won't be serialized into a Collection definition,
         // then add extra XML nodes
-        if( !options.forCollection ){
+        if( this.get("isUIFilterType") ){
 
           //Update the filterOptions XML DOM
           filterOptionsNode = this.updateFilterOptionsDOM(filterOptionsNode);
@@ -690,12 +733,15 @@ define(['jquery', 'underscore', 'backbone'],
           errors.values = "Filters should include at least one search term.";
         }
 
-        //---Validate operator----
+        //---Validate operators ----
         //The operator must be either AND or OR
-        if( this.get("operator") !== "AND" && this.get("operator") !== "OR" ){
-          //Reset the value to the default rather than return an error
-          this.set("operator", this.defaults().operator);
-        }
+        ["operator", "fieldsOperator"].forEach(function(op){
+          if( !["AND", "OR"].includes(this.get(op)) ){
+            //Reset the value to the default rather than return an error
+            this.set(op, this.defaults()[op]);
+          }
+        }, this);
+        
 
         //---Validate exclude and matchSubstring----
         //Exclude should always be a boolean

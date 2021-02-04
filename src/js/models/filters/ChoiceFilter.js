@@ -87,7 +87,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           var options = {};
         }
 
-        if( !options.forCollection ){
+        if( this.get("isUIFilterType") ){
           // Serialize <choice> elements
           var choices = this.get("choices");
 

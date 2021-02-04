@@ -77,7 +77,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       try{
         var objectDOM = Filter.prototype.updateDOM.call(this, options);
 
-        if( (typeof options == "undefined") || (typeof options == "object" && !options.forCollection) ){
+        if( (typeof options == "undefined") || (typeof options == "object" && this.get("isUIFilterType")) ){
 
           var toggleData = {
             trueValue: this.get("trueValue"),

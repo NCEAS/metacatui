@@ -18,10 +18,14 @@ define(["jquery",
         "models/CollectionModel",
         "models/Search",
         "models/filters/FilterGroup",
-        "models/Map"
+        "models/Map",
+        // TODO: remove this:
+        // Portal XML for testing purposes only! WIP
+        "text!" + MetacatUI.root + "/components/test-portal.xml"
+        
     ],
     function($, _, Backbone, gmaps, uuid, Filters, SolrResults, FilterModel, PortalSectionModel, PortalVizSectionModel, PortalImage,
-        EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
+        EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel, TestPortalXML) {
         /**
          * @classdesc A PortalModel is a specialized collection that represents a portal,
          * including the associated data, people, portal descriptions, results and
@@ -515,6 +519,9 @@ define(["jquery",
             */
             parse: function(response) {
 
+              // TODO: remove this dev code
+              response = new DOMParser().parseFromString(TestPortalXML, "text/xml");
+
                 //Start the empty JSON object
                 var modelJSON = {},
                     modelRef = this,
@@ -707,14 +714,15 @@ define(["jquery",
                     }
                 }
 
-                // Parse the FilterGroups
+                // Parse the UIFilterGroups
                 modelJSON.filterGroups = [];
                 var allFilters = modelJSON.searchModel.get("filters");
-                $(portalNode).find("filterGroup").each(function(i, filterGroup) {
+                $(portalNode).children("filterGroup").each(function(i, filterGroup) {
 
                   // Create a FilterGroup model
                   var filterGroupModel = new FilterGroup({
-                      objectDOM: filterGroup
+                      objectDOM: filterGroup,
+                      isUIFilterType: true
                   });
                   modelJSON.filterGroups.push(filterGroupModel);
 
@@ -722,6 +730,7 @@ define(["jquery",
                   allFilters.add(filterGroupModel.get("filters").models);
 
                 });
+
                 return modelJSON;
             },
 
@@ -1260,13 +1269,15 @@ define(["jquery",
                   console.error(e);
                 }
 
-                /* ====  Serialize FilterGroups ==== */
+                /* ====  Serialize UI FilterGroups (aka custom search filters) ==== */
 
                 // Get new filter group values
                 var filterGroups = this.get("filterGroups");
 
-                // Remove any filter groups in the current objectDOM
-                $(xmlDoc).find("filterGroup").remove();
+                // Remove filter groups in the current objectDOM that are at the portal
+                // level. (don't use .find("filterGroup") as that would remove
+                // filterGroups that are nested in the definition
+                $portalNode.children("filterGroup").remove();
 
                 // Make a new node for each filter group in the model
                 _.each(filterGroups, function(filterGroup){
@@ -1888,6 +1899,8 @@ define(["jquery",
                 return;
               }
 
+              // TODO: restore saving ability
+              return
               this.constructor.__super__.save.call(this);
             },
 

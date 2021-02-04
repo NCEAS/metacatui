@@ -63,7 +63,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         }
 
         //If this Filter is in a filter group, don't parse the values
-        if( !this.get("inFilterGroup") ){
+        if( !this.get("isUIFilterType") ){
           //Get the min, max, and value nodes
           var minNode = $(xml).find("min"),
               maxNode = $(xml).find("max"),
@@ -231,7 +231,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           max: this.get("max")
         };
 
-        if( !options.forCollection ){
+        if( this.get("isUIFilterType") ){
           numericData = _.extend(numericData, {
             rangeMin: this.get("rangeMin"),
             rangeMax: this.get("rangeMax"),
@@ -259,7 +259,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         }, this);
 
         //Remove filterOptions for collection definition filters
-        if( options.forCollection ){
+        if( !this.get("isUIFilterType") ){
           $(objectDOM).children("filterOptions").remove();
         }
         else{
