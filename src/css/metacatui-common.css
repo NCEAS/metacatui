@@ -2693,7 +2693,7 @@ section#user-citations {
 }
 
 .annotation {
-  display: flex;
+  display: inline-flex;
   margin: 0 6px 6px 0;
 }
 
@@ -2732,7 +2732,7 @@ section#user-citations {
 	font-size: 0.65em;
 }
 /** Annotation pills **/
-.annotation .annotation-property,
+.annotation > div,
 .annotation .annotation-value,
 .annotation .annotation-findmore {
   padding: 3px 6px;
@@ -2754,18 +2754,25 @@ section#user-citations {
   color: white;
 }
 
-.annotation .annotation-findmore {
+.annotation .annotation-findmore,
+.annotation .annotation-remove {
   background-color: #EEE;
   border-width: 1px 1px 1px 0px;
   border-style: solid;
   border-color: #CCC;
   border-radius: 0px 3px 3px 0px;
-	padding: 0 10px;
+  padding: 0 10px;
+  vertical-align: middle;
+  text-align: center;
 }
 
 .annotation .annotation-findmore div {
 	transform: rotate(45deg);
 	margin: 2px;
+}
+
+.annotation .annotation-remove {
+	padding: 3px 10px;
 }
 
  .annotation-popover-definition {
@@ -2776,6 +2783,20 @@ section#user-citations {
 .annotation-popover-definition {
 	border-top: 1px solid #CCC;
 }
+
+/* MeasurementTypeView */
+.measurement-type-browse {
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 0.5rem;
+}
+
+.measurement-type-browse input.ncboAutocomplete {
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
 /** Hide the search when in the dropdown menu **/
 .dropdown-menu .ncboAutocomplete {
 	display: none;
@@ -6470,7 +6491,7 @@ body.mapMode{
   overflow-y: scroll;
   -webkit-transform: translate3d(0,0,0);
   max-height: 150px;
-  z-index: 100;
+  z-index: 99999;
   overflow-x: hidden;
 }
 .ui-autocomplete .ui-menu-item{
@@ -7860,25 +7881,25 @@ textarea.medium{
 	padding: 0px;
 	overflow-y: hidden;
 }
-.eml-entity .nav-tabs{
+.eml-entity .entity-container > .nav-tabs{
 	position: fixed;
     width: 100%;
     background-color: white;
     min-height: 30px;
     margin-bottom: 0px;
 }
-.eml-entity .nav-tabs li {
+.eml-entity .entity-container > .nav-tabs li {
     width: 50%;
 }
-.eml-entity .nav-tabs li.active{
+.eml-entity .entity-container > .nav-tabs li.active{
 	border-top: 0px;
 }
-.eml-entity .nav-tabs li a{
+.eml-entity .entity-container > .nav-tabs li a{
 	border-radius: 0px;
     border-top: 0px;
     text-align: center;
 }
-.eml-entity .tab-content{
+.eml-entity > .entity-container > .tab-content{
 	width: 100%;
 	box-sizing: border-box;
 	margin-top: 40px;
