@@ -85,10 +85,7 @@ define(['underscore', 'jquery', 'backbone',
           "click .eml-party .move-up": "movePersonUp",
           "click .eml-party .move-down": "movePersonDown",
 
-          "click  .remove": "handleRemove",
-
-          "click .remove-annotation": "removeAnnotation",
-					"change .eml-annotation input": "updateAnnotations"
+			    "click  .remove" : "handleRemove"
         },
 
         /* A list of the subviews */

@@ -6,9 +6,10 @@ define(['underscore', 'jquery', 'backbone',
         'models/metadata/eml211/EMLMeasurementScale',
         'views/metadata/EMLAnnotationView',
         'views/metadata/EMLMeasurementScaleView',
+        'views/metadata/EMLMeasurementTypeView',
         'text!templates/metadata/eml-attribute.html'],
 		function(_, $, Backbone, DataONEObject, EMLAttribute, EMLAnnotation,
-			EMLMeasurementScale, EMLAnnotationView, EMLMeasurementScaleView, EMLAttributeTemplate){
+			EMLMeasurementScale, EMLAnnotationView, EMLMeasurementScaleView, EMLMeasurementTypeView, EMLAttributeTemplate){
 
         /**
         * @class EMLAttributeView
@@ -72,22 +73,12 @@ define(['underscore', 'jquery', 'backbone',
             	//Save a reference to this EMLAttribute model
             	measurementScaleModel.set("parentModel", this.model);
 
-              // Create EMLAnnotation views as needed
-              var annotations = this.model.get("annotation");
-              this.annotationViews = [];
-
-              _.each(annotations, function (anno) {
-                var view = new EMLAnnotationView({
-                  model: anno
-                });
-                this.annotationViews.push(view);
-
-                view.render();
-                this.$(".attribute-annotation-list").append(view.el);
-              }, this);
-
-              // Add a new blank annotation
-              this.addAnnotation();
+              // Measurement Type
+              var emlMeasurementTypeView = new EMLMeasurementTypeView({
+                model: this.model
+              });
+              emlMeasurementTypeView.render();
+              this.$(".measurement-type-container").append(emlMeasurementTypeView.el);
 
             	//Create an EMLMeasurementScaleView for this attribute's measurement scale
             	var measurementScaleView = new EMLMeasurementScaleView({

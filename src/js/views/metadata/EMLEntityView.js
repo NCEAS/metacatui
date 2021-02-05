@@ -48,7 +48,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
               "change" : "saveDraft",
               "change input" : "updateModel",
               "change textarea" : "updateModel",
-              "click .nav-tabs a" : "showTab",
+              "click .entity-container > .nav-tabs a" : "showTab",
               "click .attribute-menu-item" : "showAttribute",
               "mouseover .attribute-menu-item .remove" : "previewAttrRemove",
               "mouseout .attribute-menu-item .remove"  : "previewAttrRemove",
@@ -333,7 +333,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
             },
 
             adjustHeight: function(e){
-              var contentAreaHeight = this.$(".modal-body").height() - this.$(".nav-tabs").height();
+              var contentAreaHeight = this.$(".modal-body").height() - this.$(".entity-container .nav-tabs").height();
 
               this.$(".attribute-menu, .attribute-list").css("height", contentAreaHeight + "px");
             },
@@ -522,11 +522,11 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
                var link = $(e.target);
 
                //Remove the active class from all links and add it to the new active link
-               this.$(".nav-tabs li").removeClass("active");
+               this.$(".entity-container > .nav-tabs li").removeClass("active");
                link.parent("li").addClass("active");
 
                //Hide all the panes and show the correct one
-               this.$(".tab-pane").hide();
+               this.$(".entity-container > .tab-content > .tab-pane").hide();
                this.$(link.attr("href")).show();
 
             },

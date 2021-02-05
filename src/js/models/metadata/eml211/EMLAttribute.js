@@ -83,7 +83,8 @@ define(["jquery", "underscore", "backbone", "uuid",
                     "change:accuracy " +
                     "change:coverage " +
                     "change:methods " +
-                    "change:references",
+                    "change:references " +
+                    "change:annotation",
                     this.trickleUpChange);
             },
 
