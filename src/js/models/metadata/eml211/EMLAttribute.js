@@ -439,25 +439,26 @@ define(["jquery", "underscore", "backbone", "uuid",
             	if( !measurementScaleModel ){
             		errors.measurementScale = "Choose a category.";
             	}
-            	else if( !measurementScaleModel.isValid() ){
-                    errors.measurementScale = "More information is needed.";
-                  }
+            	else{
+            		var measurementScaleIsValid = measurementScaleModel.isValid();
 
+            		// If there is a measurement scale model and it is valid and there are no other
+            		// errors, then trigger this model as valid and exit.
+                	if( measurementScaleIsValid && !Object.keys(errors).length ){
 
-                // Validate annotations
-                var annotationErrors = this.validateAnnotations();
+            			this.trigger("valid", this);
+            			return;
 
-                if (annotationErrors.length) {
-                    errors.annotation = annotationErrors;
-                }
+                	}
+                	else if( !measurementScaleIsValid ){
+                		errors.measurementScale = "More information is needed.";
+                	}
+            	}
 
             	//If there is at least one error, then return the errors object
-            	if(Object.keys(errors).length) {
-                    console.log("Attribute is invalid", errors);
-                    return errors;
-                }
+            	if(Object.keys(errors).length)
+            		return errors;
 
-                this.trigger("valid", this);
             },
 
             /*
