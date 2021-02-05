@@ -388,6 +388,7 @@ define([
               fields: ["rightsHolder", "changePermission"],
               values: MetacatUI.appUserModel.get("allIdentitiesAndGroups"),
               operator: "OR",
+              fieldsOperator: "OR",
               matchSubstring: false,
               exclude: false
             });
@@ -407,6 +408,7 @@ define([
               fields: ["rightsHolder", "writePermission", "changePermission"],
               values: MetacatUI.appUserModel.get("allIdentitiesAndGroups"),
               operator: "OR",
+              fieldsOperator: "OR",
               matchSubstring: false,
               exclude: false
             });

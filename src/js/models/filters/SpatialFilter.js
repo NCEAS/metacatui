@@ -41,6 +41,7 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
                     label: "Limit search to the map area",
                     icon: "globe",
                     operator: "OR",
+                    fieldsOperator: "OR",
                     matchSubstring: false
                 });
             },

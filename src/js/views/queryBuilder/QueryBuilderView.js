@@ -201,7 +201,8 @@ define(["jquery",
             if(!filterModel || (filterModel && !/filter/i.test(filterModel.type))){
               filterModel = this.collection.add({
                 nodeName: "filter",
-                operator: "OR"
+                operator: "OR",
+                fieldsOperator: "OR"
               });
             }
 

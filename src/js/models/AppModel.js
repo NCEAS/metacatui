@@ -1468,7 +1468,8 @@ define(['jquery', 'underscore', 'backbone'],
               placeholder: "DOI or ID",
               icon: "bullseye",
               description: "Find datasets if you have all or part of its DOI or ID",
-              operator: "OR"
+              operator: "OR",
+              fieldsOperator: "OR"
             },
             {
               fields: ["kingdom", "phylum", "class", "order", "family", "genus", "species"],
