@@ -53,7 +53,7 @@ define([
               this.parse(options.objectDOM, isUIFilterType);
             }
             if (options.catalogSearch) {
-              this.createCatalogFilters();
+              this.createCatalogSearchQuery();
             }
           } catch (error) {
             console.log("Error initializing a Filters collection. Error details: " + error);
@@ -103,8 +103,8 @@ define([
               // Groups, and Filter Groups require Filters. For more info, see
               // https://requirejs.org/docs/api.html#circular
               var FilterGroup = require('models/filters/FilterGroup');
-              var x = new FilterGroup(attrs, options)
-              return x;
+              var newFilterGroup = new FilterGroup(attrs, options)
+              return newFilterGroup;
 
             case "choicefilter":
               return new ChoiceFilter(attrs, options);
@@ -147,127 +147,158 @@ define([
         /**
          * Builds the query string to send to the query engine. Iterates over each filter
          * in the collection and adds to the query string.
-         *
+         * 
+         * @param {string} [operator=AND] The operator to use to combine multiple filters in this filter group. Must be AND or OR.
          * @return {string} The query string to send to Solr
          */
-        getQuery: function () {
+        getQuery: function (operator = "AND") {
 
-          //Create an array to store all the query pieces
-          var allGroupsQueryFragments = [],
-            //The complete query string that eventually gets returned
-            completeQuery = "",
-            // Get the list of filters that use the 'id', 'seriesId', or
-            // 'identifier' field, since these are used differently
-            idFilters = this.filter(function (filter) {
-              return (
-                filter.get("fields").includes("id") ||
-                filter.get("fields").includes("identifier") ||
-                filter.get("fields").includes("seriesId")
-              );
-            }),
-            otherFilters = this.difference(idFilters),
-            //Separate the filter models in this collection by their query group.
-            groupedFilters = _.groupBy(otherFilters, function (m) {
-              return m.get("queryGroup");
-            });
+          // The complete query string that eventually gets returned
+          var completeQuery = ""
 
-          //Filters that are used in the data catalog are treated specially
-          var catalogFilters = groupedFilters.catalog;
-          delete groupedFilters.catalog;
-
-          //Create a query string for each group of filters
-          _.mapObject(groupedFilters, function (filterModels, groupName) {
-
-            //Get a query string for this group of Filters
-            var groupQuery = this.getGroupQuery(filterModels);
-
-            //If there is a query string, add it to the array
-            if (groupQuery) {
-              allGroupsQueryFragments.push(groupQuery);
-            }
-
-          }, this);
-
-          //Join the query fragments with an OR. By default, Filter model groups are ORed together
-          if (allGroupsQueryFragments.length) {
-            completeQuery += "(" + allGroupsQueryFragments.join("%20OR%20") + ")";
+          // Ensure that the operator is AND or OR so that the query string will be valid.
+          // Default to AND.
+          if (typeof operator !== "string") {
+            var operator = "AND";
+          }
+          operator = operator.toUpperCase();
+          if(!["AND", "OR"].includes(operator)){
+            operator = "AND"
           }
 
-          //Add the Data Catalog filters, if there are any
-          if (Array.isArray(catalogFilters) && catalogFilters.length) {
+          // Adds URI encoded spaces to either side of a string
+          var padString = function(string){ return "%20" + string + "%20" }
 
-            //If there are other filters besides the catalog filters, AND them
-            if (completeQuery.trim().length) {
-              completeQuery += "%20AND%20";
-            }
+          // Get the list of filters that use id fields since these are used differently.
+          
+          var idFilters = this.getIdFilters();
+          // Get the remaining filters that don't contain any ID fields
+          var mainFilters = this.getNonIdFilters();
 
-            //Get the query string for the catalog filters
-            completeQuery += this.getGroupQuery(catalogFilters);
-          }
-
-          //Create the grouped query for the id filters
+          // Create the grouped query for the id filters
           var idFilterQuery = this.getGroupQuery(idFilters, "OR");
+          // Make a query for all of the filters that do not contain ID fields
+          var mainQuery = this.getGroupQuery(mainFilters, operator);
 
-          //Add the grouped query for the id filters
-          if (completeQuery.length && idFilterQuery.length) {
+          // First add the query string built from the non-ID filters
+          completeQuery += mainQuery;
 
-            //If the search results must always match one of the ids in the id filters,
-            // then add the id filters to the query with the AND operator. This flag
-            // is set on this Collection.
-            if (this.mustMatchIds) {
-              completeQuery = "(" + completeQuery + ")%20AND%20" + idFilterQuery;
+          // Then add the Data Catalog filters if Filters was initialized with the
+          // catalogSearch = true option. Filters that are used in the data catalog are
+          // treated specially
+          if(this.catalogSearchQuery && this.catalogSearchQuery.length){
+            // If there are other filters besides the catalog filters, AND the catalog
+            // filters to the end of the query for the other filters, regardless of which
+            // operator this function uses to combine other filters.
+            if (completeQuery && completeQuery.trim().length) {
+              completeQuery += padString("AND");
             }
-            //Otherwise, use the OR operator
-            else {
-              completeQuery = "(" + completeQuery + ")%20OR%20" + idFilterQuery;
+            completeQuery += this.catalogSearchQuery
+          }
+
+          // Finally, add the ID filters to the very end of the query. This is done so
+          // that the query string is constructed with these filters "OR"ed into the
+          // query. For example, a query might be to look for datasets by a certain
+          // scientist OR with the given id. If those filters were ANDed together, the
+          // search would essentially ignore the creator filter and only return the
+          // dataset with the matching id.
+          if(idFilterQuery && idFilterQuery.length){
+            if (completeQuery && completeQuery.trim().length) {
+              // If the search results must always match one of the ids in the id filters,
+              // then add the id filters to the query with the AND operator. This flag
+              // is set on this Collection. Otherwise, use the OR operator
+              var idOperator = this.mustMatchIds ? padString("AND") : padString("OR");
+              completeQuery = "(" + completeQuery + ")" + idOperator + idFilterQuery;
+            } else {
+              // If the query is ONLY made of id filters, then the id filter query is the
+              // complete query
+              completeQuery += idFilterQuery
             }
           }
-          //If the query is ONLY made of id filters, then the id filter query is the complete query
-          else if (!completeQuery.length && idFilterQuery.length) {
-            completeQuery = idFilterQuery;
-          }
+          // TODO: Remove dev code
+          console.log(decodeURIComponent(completeQuery));
 
-          //Return the completed query
+          // Return the completed query
           return completeQuery;
 
+        },
+        
+        /**
+         * Searches the Filter models in this collection and returns any that have at
+         * least one field that matches any of the ID query fields, such as by id, seriesId, or the isPartOf relationship.
+         * @returns {Filter|BooleanFilter|ChoiceFilter|DateFilter|NumericFilter|ToggleFilter|FilterGroup[]}
+         * Returns an array of filter models that include at least one ID field
+         */
+        getIdFilters: function(){
+          try {
+            var idFields = ["id", "identifier", "seriesId", "isPartOf"]
+            var idFilters = this.filter(function (filter) {
+              var fields = filter.get("fields")
+              // FilterGroup will not return anything for fields
+              if( !fields ) { return false }
+              // Match if any of the filter fields are one of the ID fields
+              return ( _.some( idFields, function(idField) {
+                return fields.includes(idField)
+              }));
+            });
+            return idFilters
+          } catch (error) {
+            console.log("Error trying to find ID Filters, error details: " + error);
+          }
+        },
+
+        /**
+         * Searches the Filter models in this collection and returns all have no fields
+         * matching any of the ID query fields.
+         * @returns {Filter|BooleanFilter|ChoiceFilter|DateFilter|NumericFilter|ToggleFilter|FilterGroup[]}
+         * Returns an array of filter models that do not include any ID fields
+         */
+        getNonIdFilters: function(){
+          try {
+            return this.difference(this.getIdFilters());
+          } catch (error) {
+            console.log("Error trying to find non-ID Filters, error details: " + error);
+          }
         },
 
         /**
         * Get a query string for a group of Filters.
         * The Filters will be ANDed together, unless a different operator is given.
-        * @param {Filter[]} filterModels - The Filters to turn into a query string
-        * @param {string} [operator] - The oeprator to use between filter models
+        * @param {Filter|BooleanFilter|ChoiceFilter|DateFilter|NumericFilter|ToggleFilter|FilterGroup[]} filterModels - The Filters to turn into a query string
+        * @param {string} [operator="AND"] - The operator to use between filter models
         * @return {string} The query string
         */
-        getGroupQuery: function (filterModels, operator) {
+        getGroupQuery: function (filterModels, operator="AND") {
 
-          //Default to the AND operator
-          if (typeof operator != "string") {
-            var operator = "AND";
-          }
-
-          //Start an array to contian the query fragments
-          var groupQueryFragments = [];
-
-          //For each Filter in this group, get the query string
-          _.each(filterModels, function (filterModel) {
-
-            //Get the Solr query string from this model
-            var filterQuery = filterModel.getQuery();
-
-            //Add the filter query string to the overall array
-            if (filterQuery && filterQuery.length > 0) {
-              groupQueryFragments.push(filterQuery);
+          try {
+            if(!filterModels || !filterModels.length || !this.getNonEmptyFilters(filterModels)){
+              return ""
             }
-          }, this);
-
-          //Join this group's query fragments with an OR operator
-          if (groupQueryFragments.length) {
-            return "(" + groupQueryFragments.join("%20" + operator + "%20") + ")"
-          }
-          //Otherwise, return an empty string
-          else {
-            return "";
+            //Start an array to contain the query fragments
+            var groupQueryFragments = [];
+  
+            //For each Filter in this group, get the query string
+            _.each(filterModels, function (filterModel) {
+              //Get the Solr query string from this model
+              var filterQuery = filterModel.getQuery();
+              //Add the filter query string to the overall array
+              if (filterQuery && filterQuery.length > 0) {
+                groupQueryFragments.push(filterQuery);
+              }
+            }, this);
+            
+            //Join this group's query fragments with an OR operator
+            if (groupQueryFragments.length) {
+              return "(" + groupQueryFragments.join("%20" + operator + "%20") + ")"
+            }
+            //Otherwise, return an empty string
+            else {
+              return "";
+            }
+          } catch (error) {
+            console.log("Error creating a group query, returning a blank string. " +
+              " Error details: " + error);
+            return ""
           }
 
         },
@@ -276,6 +307,7 @@ define([
          * Given a Solr field name, determines if that field is set as a filter option
          */
         filterIsAvailable: function (field) {
+
           var matchingFilter = this.find(function (filterModel) {
             return _.contains(filterModel.fields, field);
           });
@@ -324,29 +356,24 @@ define([
           });
         },
 
-        /*
-         * Creates and adds FilterModels to this collection that are standard filters
-         * to be sent with every Data Catalog query.
+        /**
+         * Create a partial query string that's required for catalog searches and save it
+         * to the Filters collection, to be used when building a full query
          */
-        createCatalogFilters: function () {
-
-          //Exclude obsoleted objects from the search
-          this.add(new Filter({
-            fields: ["obsoletedBy"],
-            values: ["*"],
-            exclude: true,
-            isInvisible: true,
-            queryGroup: "catalog"
-          }));
-
-          //Only search for metadata objects
-          this.add(new Filter({
-            fields: ["formatType"],
-            values: ["METADATA"],
-            matchSubstring: false,
-            isInvisible: true,
-            queryGroup: "catalog"
-          }));
+        createCatalogSearchQuery: function(){
+          var catalogFilters = new Filters([
+            {
+              fields: ["obsoletedBy"],
+              values: ["*"],
+              exclude: true
+            },
+            {
+              fields: ["formatType"],
+              values: ["METADATA"],
+              matchSubstring: false
+            }]);
+          var query = catalogFilters.getGroupQuery(catalogFilters.models, "AND");
+          this.catalogSearchQuery = query;
         },
 
         /**
@@ -411,28 +438,29 @@ define([
          * a min and max value.        
          */
         removeEmptyFilters: function () {
-
           try {
-            var toRemove = [];
-
-            var noneEmpty = this.every(function (filter) { return !filter.isEmpty() });
-            if (noneEmpty) {
-              return
-            }
-
-            this.each(function (filter) {
-              if (filter) {
-                if (filter.isEmpty()) {
-                  toRemove.push(filter);
-                }
-              }
-            });
-
+            var toRemove = this.difference(this.getNonEmptyFilters());
             this.remove(toRemove);
+          } catch (error) {
+            console.log("Error removing empty Filter models from a Filters collection. " +
+              "Error details: " + error
+            );
+          }
+        },
+
+        /**            
+         * getNonEmptyFilters - Returns the array of filters that are not empty
+         * @return {Filter|BooleanFilter|ChoiceFilter|DateFilter|NumericFilter|ToggleFilter|FilterGroup[]}
+         * returns an array of Filter or FilterGroup models that are not empty
+         */
+        getNonEmptyFilters: function(){
+          try {
+            return this.filter(function(filterModel){
+              return !filterModel.isEmpty();
+            });
           } catch (e) {
             console.log("Failed to remove empty Filter models from the Filters collection, error message: " + e);
           }
-
         },
 
         /**            

@@ -1,6 +1,6 @@
 /* global define */
-define(["jquery", "underscore", "backbone", "collections/Filters" ],
-  function ($, _, Backbone, Filters) {
+define(["jquery", "underscore", "backbone", "collections/Filters", "models/filters/Filter" ],
+  function ($, _, Backbone, Filters, Filter) {
 
     /**
     * @class FilterGroup
@@ -32,7 +32,7 @@ define(["jquery", "underscore", "backbone", "collections/Filters" ],
          * identifies a single icon in a supported icon library.
          * @property {Filters} filters - A collection of Filter models that represent a
          * full or partial query
-         * @property {XMLElement} objectDOM - The XML DOM for this filter
+         * @property {XMLElement} objectDOM - FilterGroup XML
          * @property {string} operator - The operator to use between filters (including
          * filter groups) set on this model. Must be set to "AND" or "OR".
          * @property {boolean} exclude - If true, search index docs matching the filters
@@ -40,7 +40,12 @@ define(["jquery", "underscore", "backbone", "collections/Filters" ],
          * @property {boolean} isUIFilterType - Set to true if this group is
          * UIFilterGroupType (aka custom Portal search filter). Otherwise, it's assumed
          * that this model is FilterGroupType (e.g. a Collection FilterGroupType)
-         * @property {string} nodeName -
+         * @property {string} nodeName - the XML node name to use when serializing this
+         * model. For example, may be "filterGroup" or "definition".
+         * @property {boolean} isInvisible - If true, this filter will be added to the
+         * query but will act in the "background", like a default filter. It will not
+         * appear in the Query Builder or other UIs. If this is invisible, then the
+         * "isInvisible" property on sub-filters will be ignored.
         */
         defaults: function () {
           return {
@@ -52,14 +57,17 @@ define(["jquery", "underscore", "backbone", "collections/Filters" ],
             operator: "AND",
             exclude: false,
             isUIFilterType: false,
-            nodeName: "filterGroup"
+            nodeName: "filterGroup",
+            isInvisible: false,
             // TODO: support options for UIFilterGroupType 1.1.0 
             // options: [],
           }
         },
 
         /**
-        * This function is executed whenever a new FilterGroup model is created.
+        * This function is executed whenever a new FilterGroup model is created. Model
+        * attributes are set either by parsing attributes.objectDOM or ny extracting the
+        * properties from attributes (e.g. attributes.nodeName, attributes.operator, etc)
         */
         initialize: function (attributes) {
 
@@ -78,7 +86,7 @@ define(["jquery", "underscore", "backbone", "collections/Filters" ],
             this.set(groupAttrs);
           } else{
             ["label", "description", "icon", "operator",
-             "exclude", "isUIFilterType", "nodeName"].forEach(function(modelAttribute){
+             "exclude", "nodeName", "isInvisible"].forEach(function(modelAttribute){
               if(attributes[modelAttribute] || attributes[modelAttribute] === false){
                 this.set(modelAttribute, attributes[modelAttribute])
               }
@@ -196,6 +204,38 @@ define(["jquery", "underscore", "backbone", "collections/Filters" ],
         },
 
         /**
+         * Builds the query string to send to the query engine. Iterates over each filter
+         * in the filter group and adds to the query string.
+         *
+         * @return {string} The query string to send to Solr
+         */
+        getQuery: function(operator = "AND"){
+
+          try {
+            var queryString = ""
+            if(this.isEmpty()){
+              return queryString
+            }
+            var queryString = this.get("filters").getQuery(operator = this.get("operator"))
+            //If this filter should be excluding matches from the results,
+            // then add a minus sign in front
+
+            if( queryString && this.get("exclude") ){
+              queryString = "-" + queryString;
+              var needsClause = new Filter().requiresPositiveClause.call(this);
+              if(needsClause){
+                queryString = queryString + "%20AND%20*:*";
+              }
+            }
+            return queryString
+          } catch (error) {
+            console.log("Error creating a query for a Filter Group, error details:" +
+              error
+            );
+          }
+        },
+
+        /**
          * Overrides the default Backbone.Model.validate.function() to check if this
          * FilterGroup model has all the required values.
          *
@@ -257,6 +297,32 @@ define(["jquery", "underscore", "backbone", "collections/Filters" ],
             console.log("Error validating a FilterGroup. Error details: " + error);
           }
         
+        },
+
+        /**    
+         * isEmpty - Checks whether this Filter Group has any filter models that are not
+         * empty.
+         *
+         * @return {boolean} returns true if the Filter Group has Filter models that are
+         * not empty
+         */  
+        isEmpty: function(){
+          try {
+            var filters = this.get("filters");
+            if(!filters || !filters.length){
+              return true
+            }
+            var subFilters = filters.getNonEmptyFilters();
+            if(!subFilters || !subFilters.length){
+              return true
+            } else {
+              return false
+            }
+          } catch (error) {
+            console.log("Error checking if a Filter Group is empty. Assuming it is not." +
+            " Error details: " + error);
+            return false
+          }
         },
 
         /**

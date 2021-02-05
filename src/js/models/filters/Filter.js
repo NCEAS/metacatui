@@ -33,9 +33,11 @@ define(['jquery', 'underscore', 'backbone'],
     * "AND" or "OR"
     * @property {string} fieldsOperator - The operator to use between fields set on this
     * model. "AND" or "OR"
-    * @property {string} queryGroup - The name of the group this Filter is a part of,
-    * which is primarily used when creating a query string from multiple Filter models.
-    * Filters in the same group will be wrapped in parenthesis in the query.
+    * @property {string} queryGroup - Deprecated: Add this filter along with other the
+    * other associated query group filters to a FilterGroup model instead. Old definition:
+    * The name of the group this Filter is a part of, which is primarily used when
+    * creating a query string from multiple Filter models. Filters in the same group will
+    * be wrapped in parenthesis in the query.
     * @property {boolean} exclude - If true, search index docs matching this filter will
     * be excluded from the search results
     * @property {boolean} matchSubstring - If true, the search values will be wrapped in
@@ -61,7 +63,6 @@ define(['jquery', 'underscore', 'backbone'],
         values: [],
         operator: "AND",
         fieldsOperator: "AND",
-        queryGroup: null,
         exclude: false,
         matchSubstring: false,
         label: null,
@@ -80,19 +81,9 @@ define(['jquery', 'underscore', 'backbone'],
       if( this.get("objectDOM") ){
         this.set( this.parse(this.get("objectDOM")) );
       }
-
-      // Assign a random query group to Filters that are specifying very specific datasets,
-      // such as by id, seriesId, or the isPartOf relationship. This is done so that
-      // the query string is constructed with these filters "OR"ed into the query.
-      // For example, a query might be to look for datasets by a certain scientist OR
-      // with the given id. If those filters were ANDed together, the search would essentially
-      // ignore the creator filter and only return the dataset with the matching id.
-      if( this.get("fields").includes("isPartOf") || this.get("fields").includes("id") ||
-          this.get("fields").includes("seriesId") ){
-        this.set("queryGroup", Math.floor(Math.random() * Math.floor(10000)).toString());
-      }
       
-      //If this is an isPartOf filter, then add a label and description
+      //If this is an isPartOf filter, then add a label and description. Make it invisible
+      //depending on how MetacatUI is configured.
       if( this.get("fields").length == 1 && this.get("fields").includes("isPartOf") ){
         this.set({
           label: "Datasets added manually",
@@ -323,12 +314,87 @@ define(['jquery', 'underscore', 'backbone'],
 
       //If this filter should be excluding matches from the results,
       // then add a hyphen in front
-      if( this.get("exclude") ){
-        queryString = "-" + queryString + "%20AND%20*:*";
+      if( queryString && this.get("exclude") ){
+        queryString = "-" + queryString;
+        if(this.requiresPositiveClause()){
+          queryString = queryString + "%20AND%20*:*";
+        }
       }
 
       return queryString;
 
+    },
+
+    /**
+     * For "negative" Filters (filter models where exclude is set to true), detects
+     * whether the query requires an additional "positive" query phrase in order to avoid
+     * the problem of pure negative queries returning zero results. If this Filter is not
+     * part of a collection of Filters, assume it needs the positive clause. If this
+     * Filter is part of a collection of Filters, detect whether there are other,
+     * "positive" filters in the same query (i.e. filter models where exclude is set to
+     * false). If there are other positive queries, then an additional clause is not
+     * required. If the Filter is part of a pure negative query, but it is not the last
+     * filter, then don't add a clause since it will be added to the last, and only one
+     * is required. When looking for other positive and negative filters, exclude empty
+     * filters and filters that use any of the identifier fields, as these are appended to
+     * the end of the query.
+     * @see {@link https://github.com/NCEAS/metacatui/issues/1600}
+     * @see {@link https://cwiki.apache.org/confluence/display/SOLR/NegativeQueryProblems}
+     * @return {boolean} returns true of this Filter needs a positive clause, false
+     * otherwise
+     */
+    requiresPositiveClause: function(){
+
+      try {
+
+        // Only negative queries require the additional clause
+        if(this.get("exclude") == false ){
+          return false
+        }
+        // If this Filter is not part of a collection of Filters, assume it needs the
+        // positive clause.
+        if(!this.collection){
+          return true
+        }
+        // If this Filter is the only one in the group, assume it needs a positive clause
+        if(this.collection.length === 1){
+          return true
+        }
+        // Get all of the other filters in the same collection that are not ID filters.
+        // These filters are always appended to the end of the query as a separated group.
+        var nonIDFilters = this.collection.getNonIdFilters();
+        // Exclude filters that would give an empty query string (e.g. because value is
+        // missing)
+        var filters = _.reject(nonIDFilters, function(filterModel){
+          if(filterModel === this){
+            return false
+          }
+          return !filterModel.isValid()
+        })
+
+        // If at least one filter in the collection is positive (exclude = false), then we
+        // don't need to add anything
+        var positiveFilters = _.find(filters, function(filterModel){
+          return filterModel.get("exclude") != true;
+        });
+        if(positiveFilters){
+          return false
+        }
+        // Assuming that all the non-ID filters are negative, check if this is the first
+        // last the list. Since we only need one additional positive query phrase to avoid
+        // the pure negative query problem, by convention, only add the positive phrase at
+        // the end of the filter group
+        if(this === _.last(filters)){
+          return true
+        } else {
+          return false
+        }
+      } catch (error) {
+        console.log("There was a problem detecting whether a Filter required a positive" +
+        " clause. Assuming that it needs one. Error details: " + error
+        );
+        return true
+      }
     },
 
     /**
@@ -430,9 +496,9 @@ define(['jquery', 'underscore', 'backbone'],
       try {
         var fields      =   this.get("fields"),
             values      =   this.get("values"),
-            noFields    =   fields.length == 0;
+            noFields    =   !fields || fields.length == 0;
             fieldsEmpty =   _.every(fields, function(item) { return item == "" }),
-            noValues    =   values.length == 0;
+            noValues    =   !values || values.length == 0;
             valuesEmpty =   _.every(values, function(item) { return item == "" });
             
         var noMinNoMax = _.every(

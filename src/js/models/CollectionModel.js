@@ -50,6 +50,7 @@ define(["jquery",
         formatId: "https://purl.dataone.org/collections-1.0.0",
         formatType: "METADATA",
         type: "collection",
+        // TODO: is this deprecated?
         ignoreQueryGroups: ["catalog"],
         definition: null,
         definitionFilters: null,
@@ -270,8 +271,9 @@ define(["jquery",
 
       //Create a Search model for this collection's filters
       modelJSON.searchModel = this.createSearchModel();
-      //Add all the filters from the Collection definition to the search model
-      modelJSON.searchModel.get("filters").add(modelJSON.definitionFilters.models);
+      // Add all the filters from the Collection definition to the search model as a single
+      // Filter Group model.
+      modelJSON.searchModel.get("filters").add(modelJSON.definition);
 
       return modelJSON
 

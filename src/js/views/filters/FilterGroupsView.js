@@ -227,12 +227,14 @@ define(['jquery', 'underscore', 'backbone',
       appliedFiltersContainer.append(headerText, appliedFiltersEl);
       this.$(".filters-header").append(appliedFiltersContainer);
 
-      //Get all the nonNumeric filter models
+      //Get all the nonNumeric filter models. Reject nested filterGroups for now.
+      // TODO: support nested filterGroups in this view.
       var nonNumericFilters = this.filters.reject(function(filterModel){
-        return (filterModel.type == "NumericFilter" || filterModel.type == "DateFilter");
+        return (["FilterGroup", "NumericFilter", "DateFilter"].includes(filterModel.type));
       });
       //Listen to changes on the "values" attribute for nonNumeric filters
       _.each(nonNumericFilters, function(nonNumericFilter){
+
         this.listenTo(nonNumericFilter, "change:values", this.updateAppliedFilters);
 
         if( nonNumericFilter.get("values").length ){
@@ -336,7 +338,8 @@ define(['jquery', 'underscore', 'backbone',
     *
     * @param {Filter} filterModel - The FilterModel to display
     * @param {object} options - Additional options for this function
-    * @property {boolean} options.displayWithoutChanges - If true, this filter will display even if the value hasn't been changed
+    * @property {boolean} options.displayWithoutChanges - If true, this filter will
+    * display even if the value hasn't been changed
     */
     updateAppliedFilters: function(filterModel, options){
       
