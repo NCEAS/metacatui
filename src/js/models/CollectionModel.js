@@ -79,21 +79,22 @@ define(["jquery",
       // Definition filters may be updated by the user in the Query Builder,
       // or they may be updated automatically by this model (e.g. when adding
       // an isPartOf filter).
-      this.off("change:definitionFilters");
-      this.on("change:definitionFilters", function(){
-        this.stopListening(this.get("definitionFilters"), "update change");
+      this.off("change:definition");
+      this.on("change:definition", function(){
+        this.stopListening(this.get("definition"), "update change");
         this.listenTo(
-          this.get("definitionFilters"),
+          this.get("definition"),
           "update change",
           this.updateSearchModel
         );
-      });
+      }, this);
 
       //Create a search model
       this.set("searchModel", this.createSearchModel());
 
-      //Create a Filters collection to store the definition filters
-      this.set("definition", new FilterGroup());
+      // Create a Filters collection to store the definition filters. Add the catalog
+      // search query fragment to the definition Filter Group model.
+      this.set("definition", new FilterGroup({ catalogSearch: true }));
       this.set("definitionFilters", this.get("definition").get("filters"));
 
       // Update the blocklist with the node/repository labels
@@ -121,27 +122,12 @@ define(["jquery",
       try {
         var model = this;
         
-        if(typeof record == "undefined" || !record){
-          record = {}
-        }
-        
-        // Remove models from the Search Model collection if models have been
-        // removed from the Definition Filters collection.
-        if(
-          record.changes &&
-          record.changes.removed &&
-          record.changes.removed.length
-        ){
-          this.get("searchModel").get("filters").remove(
-            record.changes.removed
-          )
-        }
-        
-        // Add or merge the definition filters with the Search Model collection.
+        // Merge the updated definition Filter Group model with the Search Model collection.
         this.get("searchModel").get("filters").add(
-          model.get("definitionFilters").models,
+          model.get("definition"),
           { merge: true }
         );
+
       } catch (e) {
         console.log("Failed to update the Search Model collection when the " +
         "Definition Model collection changed, error message: " + e);
@@ -257,6 +243,18 @@ define(["jquery",
     */
     parseCollectionXML: function( rootNode ){
 
+      // Get and save the namespace version number. It should be 1.0.0 or 1.1.0. Version
+      // 1.0.0 portals will be updated to 1.1.0 on save. We need to know which version
+      // while parsing to keep rendering of the old versions of collections/portals
+      // consistent with how they were rendered before MetacatUI was updated to handle
+      // 1.1.0 collections/portals - e.g. the fieldsOperator attribute in filters.
+      var namespace = rootNode.namespaceURI,
+          versionRegex = /\d\.\d\.\d$/g,
+          version = namespace.match(versionRegex);
+      if(version && version.length && version[0] != ""){
+        this.set("originalVersion", version[0])
+      }
+
       var modelJSON = {};
 
       //Parse the simple text nodes
@@ -266,7 +264,8 @@ define(["jquery",
       
       //Create a Filters collection to contain the collection definition Filters
       var definitionXML = rootNode.getElementsByTagName("definition")[0]
-      modelJSON.definition = new FilterGroup({ objectDOM: definitionXML });
+      // Add the catalog search query fragment to the definition Filter Group model
+      modelJSON.definition = new FilterGroup({ objectDOM: definitionXML, catalogSearch: true });
       modelJSON.definitionFilters = modelJSON.definition.get("filters")
 
       //Create a Search model for this collection's filters
@@ -275,8 +274,41 @@ define(["jquery",
       // Filter Group model.
       modelJSON.searchModel.get("filters").add(modelJSON.definition);
 
+      // If we are parsing the first version of a collection or portal
+      if(this.get("originalVersion") === "1.0.0"){
+        modelJSON = this.updateTo110(modelJSON);
+      }
+
+
       return modelJSON
 
+    },
+    
+    /**
+     * Takes parsed Collections 1.0.0 XML in JSON format and makes any changes required so
+     * that collections are still represented in MetacatUI as they were before MetacatUI
+     * was updated to support 1.1.0 Collections.
+     * @param {JSON} modelJSON Parsed 1.0.0 Collections XML, in JSON
+     * @return {JSON} The updated JSON, compatible with 1.1.0 changes
+     */
+    updateTo110: function(modelJSON){
+      try {
+        // For version 1.0.0 filters, MetacatUI used the "operator" attribute to set the
+        // operator between both fields and values. In 1.1.0, we now have the
+        // "fieldsOperator" attribute. (Since "AND" was the default, only the "OR"
+        // operator is ever serialized). Therefore, if a version 1.0.0 filter has "OR" as
+        // the operator, we should also set the "fieldOperator" to "OR".
+        modelJSON.definitionFilters.each(function(filterModel){
+          if(filterModel.get("operator") === "OR"){
+            filterModel.set("fieldsOperator", "OR")
+          }
+        }, this);
+        return modelJSON
+      } catch (error) {
+        console.log("Error trying to update a 1.0.0 Collection to 1.1.0 " + 
+        "returning the JSON unchanged. Error details: " + error );
+        return modelJSON
+      }
     },
 
     /**
@@ -533,7 +565,11 @@ define(["jquery",
     */
     createSearchModel: function(){
       var search = new Search();
-      search.set("filters", new Filters(null, { catalogSearch: true }));
+      // Do not set "catalogSearch" to true, even though the search model is specifically
+      // created in order to do a catalog search. Instead, we set the definition
+      // filterGroup model catalogSearch = true. This allows us to append the query
+      // fragment with ID fields AFTER the catalog query fragment.
+      search.set("filters", new Filters());
       return search;
     },
 

@@ -31,7 +31,7 @@ define([
         /**
         * Function executed whenever a new Filters collection is created.
         * @param {Filter|BooleanFilter|ChoiceFilter|DateFilter|NumericFilter|ToggleFilter|FilterGroup[]} models -
-        *  Array of filter or filter group models to add to this creation
+        * Array of filter or filter group models to add to this creation
         * @param {Object} [options] - 
         * @property {boolean} isUIFilterType - Set to true to indicate that these filters
         * or filterGroups are part of a UIFilterGroup (aka custom Portal search filter).
@@ -39,8 +39,9 @@ define([
         * @property {XMLElement} objectDOM -  A FilterGroupType or UIFilterGroupType XML
         * element from a portal or collection document. If provided, the XML will be
         * parsed and the Filters models extracted
-        * @property {boolean} catalogSearch  - If set to true catalog filters will be
-        * added.
+        * @property {boolean} catalogSearch  - If set to true, a catalog search phrase
+        * will be appended to the search query that limits the results to un-obsoleted
+        * metadata.
         */
         initialize: function (models, options) {
           try {
@@ -170,7 +171,6 @@ define([
           var padString = function(string){ return "%20" + string + "%20" }
 
           // Get the list of filters that use id fields since these are used differently.
-          
           var idFilters = this.getIdFilters();
           // Get the remaining filters that don't contain any ID fields
           var mainFilters = this.getNonIdFilters();
@@ -215,8 +215,6 @@ define([
               completeQuery += idFilterQuery
             }
           }
-          // TODO: Remove dev code
-          console.log(decodeURIComponent(completeQuery));
 
           // Return the completed query
           return completeQuery;

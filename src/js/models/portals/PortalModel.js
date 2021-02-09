@@ -520,7 +520,7 @@ define(["jquery",
             parse: function(response) {
 
               // TODO: remove this dev code
-              response = new DOMParser().parseFromString(TestPortalXML, "text/xml");
+              // response = new DOMParser().parseFromString(TestPortalXML, "text/xml");
 
                 //Start the empty JSON object
                 var modelJSON = {},

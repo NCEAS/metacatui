@@ -79,10 +79,35 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
             this.set("isUIFilterType", true);
           }
 
+          // When a Filter model within this Filter group changes, or when the Filters
+          // collection is updated, trigger a change event in this filterGroup model.
+          // Updates and Changes in the Filters collection won't trigger an event from
+          // this model otherwise. This helps when other models, collections, views are
+          // listening to this filterGroup, e.g. when the collections model updates the
+          // searchModel whenever the definition changes.
+          this.off("change:filters");
+          this.on("change:filters", function(){
+            this.stopListening(this.get("filters"), "update change");
+            this.listenTo(
+              this.get("filters"),
+              "update change",
+              function(model, record){
+                this.trigger("update", model, record)
+              }
+            );
+          }, this);
+
+          var newFiltersOptions = {};
+          var catalogSearch = false;
+          if(attributes.catalogSearch){
+            newFiltersOptions = { catalogSearch:true }
+            catalogSearch = true
+          }
+
           // Set the attributes on this model by parsing XML if some was provided,
           // or by using any attributes provided to this model
           if (attributes.objectDOM) {
-            var groupAttrs = this.parse(attributes.objectDOM);
+            var groupAttrs = this.parse(attributes.objectDOM, catalogSearch);
             this.set(groupAttrs);
           } else{
             ["label", "description", "icon", "operator",
@@ -94,14 +119,14 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
           }
 
           if (attributes.filters) {
-            var filtersCollection = new Filters();
+            var filtersCollection = new Filters(null, newFiltersOptions);
             filtersCollection.add(attributes.filters);
             this.set("filters", filtersCollection);
           }
 
           // Start a new Filters collection if no filters were provided
           if(!this.get("filters")){
-            this.set("filters", new Filters())
+            this.set("filters", new Filters(null, newFiltersOptions))
           }
 
           // The operator must be AND or OR
@@ -117,9 +142,12 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
         * XML snippet
         *
         * @param {Element} xml - The XML Element that contains all the FilterGroup elements
+        * @param {boolean} catalogSearch [false] - Set to true to append a catalog search phrase
+        * to the search query created from Filters that limits the results to un-obsoleted
+        * metadata.
         * @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
         */
-        parse: function (xml) {
+        parse: function (xml, catalogSearch = false) {
 
           var modelJSON = {}
 
@@ -163,6 +191,11 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
             objectDOM: filterXML,
             isUIFilterType: this.get("isUIFilterType"),
           }
+
+          if(catalogSearch){
+            filtersOptions.catalogSearch = true
+          }
+
           modelJSON.filters = new Filters(null, filtersOptions);
 
           return modelJSON;

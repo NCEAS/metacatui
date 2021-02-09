@@ -416,11 +416,6 @@ function(_, $, Backbone, Sortable, Portal, PortalSection,
 
       try{
 
-        // TODO: WIP
-        // While ensuring that the 1.1.0 definitionFilters can be parsed and serialized
-        // correctly, don't render the data section
-        return
-
         this.updateSectionLabelsList("Data");
 
         // Render a PortEditorDataView and corresponding tab

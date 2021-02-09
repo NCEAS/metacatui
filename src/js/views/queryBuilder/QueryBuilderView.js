@@ -193,8 +193,6 @@ define(["jquery",
 
           try {
 
-            var view = this;
-
             // Ensure that the object passed to this function is a filter. When the "add
             // rule" button is clicked, the Event object is passed to this function
             // instead. If no filter model is provided, assume that this is a new rule

@@ -846,7 +846,7 @@ define([
               selected: selectedFields,
               excludeFields: this.excludeFields,
               addFields: this.specialFields,
-              separatorText: this.model.get("operator")
+              separatorText: this.model.get("fieldsOperator")
             });
             this.fieldSelect.$el.addClass(this.fieldsClass);
             this.el.append(this.fieldSelect.el);

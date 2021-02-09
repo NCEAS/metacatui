@@ -186,12 +186,12 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
           //If there is another field, add an operator
           if( allFields[i+1] && queryString.length ){
-            queryString += "%20" + this.get("operator") + "%20";
+            queryString += "%20" + this.get("fieldsOperator") + "%20";
           }
 
         }, this);
 
-        //If there is more than one field, wrap the query in paranthesis
+        //If there is more than one field, wrap the query in parentheses
         if( this.get("fields").length > 1 && queryString.length ){
           queryString = "(" + queryString + ")";
         }
