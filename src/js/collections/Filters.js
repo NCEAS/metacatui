@@ -229,7 +229,7 @@ define([
          */
         getIdFilters: function(){
           try {
-            var idFields = ["id", "identifier", "seriesId", "isPartOf"]
+            var idFields = MetacatUI.appModel.get("queryIdentifierFields");
             var idFilters = this.filter(function (filter) {
               var fields = filter.get("fields")
               // FilterGroup will not return anything for fields

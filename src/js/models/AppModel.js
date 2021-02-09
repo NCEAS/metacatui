@@ -1402,6 +1402,17 @@ define(['jquery', 'underscore', 'backbone'],
       ],
 
       /**
+       * The names of the query fields that use an object identifier as a value. Filter
+       * models that use one of these fields are handled specially when building query
+       * strings - they are OR'ed at the end of queries. They are also given an "OR"
+       * operator and fieldsOperator attribute when parsed.
+       * @type {string[]}
+       * 
+       * @since 2.15.0
+       */
+      queryIdentifierFields: ["id", "identifier", "seriesId", "isPartOf"],
+
+      /**
        * The isPartOf filter is added to all new portals built in the Portal
        * Builder automatically. It is required for dataset owners to include
        * their dataset in a specific portal collection. By default, this filter

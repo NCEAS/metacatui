@@ -131,17 +131,33 @@ define(['jquery', 'underscore', 'backbone'],
         modelJSON.label = this.parseTextNode(xml, "label");
       }
 
+      // Check if this filter contains one of the Id fields - we use OR by default for the
+      // operator for these fields.
+      var idFields = MetacatUI.appModel.get("queryIdentifierFields");
+      var isIdFilter = false;
+      if(modelJSON.fields){
+        isIdFilter = _.some( idFields, function(idField) {
+          return modelJSON.fields.includes(idField)
+        });
+      }
+
       //Parse the operators, if they exist
       if( $(xml).find("operator").length ){
         modelJSON.operator = this.parseTextNode(xml, "operator");
       }
       else{
-        if( modelJSON.fields && modelJSON.fields.includes('id') ){
+        if( isIdFilter ){
           modelJSON.operator = "OR";
         }
       }
+
       if( $(xml).find("fieldsOperator").length ){
         modelJSON.fieldsOperator = this.parseTextNode(xml, "fieldsOperator");
+      }
+      else{
+        if( isIdFilter ){
+          modelJSON.fieldsOperator = "OR";
+        }
       }
 
       //Parse the exclude, if it exists
