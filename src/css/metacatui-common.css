@@ -1897,10 +1897,10 @@ a.btn.metrics {
     float: right;
 }
 i.icon.icon-cloud-download {
-    font-size: 1.2em; !important;
+	font-size: 1.2em !important;
 }
 i.icon.icon-eye-open {
-    font-size: 1.2em; !important;
+	font-size: 1.2em !important;
 }
 .btn-group+.btn-group, .btn-toolbar>.btn+.btn,
 .btn-toolbar>.btn+.btn-group, .btn-toolbar>.btn-group+.btn {
@@ -4109,8 +4109,7 @@ add font awesome close icon */
 }
 .port-editor-section svg .theme-accent-fill{
 	fill: #05ab8f
-},
-
+}
 .port-editor-section svg .skintone-fill{
 	fill: #72351c
 }
@@ -6738,10 +6737,12 @@ Query builder & query rule view
 	padding: 1.4rem 2rem 1.2rem;
 	box-sizing: border-box;
 }
-.query-builder-title .operator {
-	padding: 0 .3rem;
-	border-bottom: 2px solid #adadad;
+
+.query-builder .exclude-input,
+.query-builder .operator-input {
+	display: inline-block;
 }
+
 .btn.add-rule {
 	margin-left: 2rem;
 	padding: 0.3rem 0.9rem 0.3rem 0.5rem;

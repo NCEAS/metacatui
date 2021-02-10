@@ -3,10 +3,11 @@ define(["jquery",
     "backbone",
     "collections/Filters",
     "collections/queryFields/QueryFields",
+    "views/searchSelect/SearchableSelectView",
     "views/queryBuilder/QueryRuleView",
     "text!templates/queryBuilder/queryBuilder.html"
   ],
-  function($, _, Backbone, Filters, QueryFields, QueryRule, Template) {
+  function($, _, Backbone, Filters, QueryFields, SearchableSelect, QueryRule, Template) {
 
     /**
      * @class QueryBuilderView
@@ -35,18 +36,37 @@ define(["jquery",
         className: "query-builder",
 
         /**
-         * A jquery selector for the element in the template that will contain the query
+         * A JQuery selector for the element in the template that will contain the query
          * rules
          * @type {string}
          */
         rulesContainerSelector: ".rules-container",
 
         /**
-         * A jquery selector for the element in the template that a user should click to
+         * A JQuery selector for the element in the template that a user should click to
          * add a new rule
          * @type {string}
          */
         addRuleButtonSelector: ".add-rule",
+
+        /**
+         * A JQuery selector for the element in the template that will contain the input
+         * allowing a user to switch the exclude attribute from "include" to "exclude"
+         * (i.e. to switch between exclude:false and exclude:true in the filterGroup
+         * model.)
+         * @type {string}
+         * @since 2.15.0
+         */
+        excludeInputSelector: ".exclude-input",
+
+        /**
+         * A JQuery selector for the element in the template that will contain the input
+         * allowing a user to switch the operator from "all" to "any" (i.e. to switch
+         * between operator:"AND" and exclude:"OR" in the filterGroup model.)
+         * @type {string}
+         * @since 2.15.0
+         */
+        operatorInputSelector: ".operator-input",
 
         /**
          * An array of hex color codes used to help distinguish between different rules
@@ -75,10 +95,24 @@ define(["jquery",
         specialFields: [],
 
         /**
-        * A Filters collection that stores definition filters for a collection (or portal)
+        * A Filters collection that stores filters to be edited with this Query Builder,
+        * e.g. the definitionFilters in a Collection or Portal model. If a filterGroup is
+        * set, then collection doesn't necessarily need to be set, as the Filters
+        * collection from within the FilterGroup model will automatically be set on view.
         * @type {Filters}
         */
-        collection: undefined,
+        collection: null,
+
+        /**
+        * The FilterGroup model that stores the filters, the exclude attribute, and the
+        * group operator to be edited with this Query Builder. This does not need to be
+        * set; just a Filters collection can be set on the view instead, but then there
+        * will be no input to switch between the include & exclude and any & all, since
+        * these are the exclude and operator attributes on the filterGroup model.
+        * @type {FilterGroup}
+        * @since 2.15.0
+        */
+        filterGroup: null,
 
         /**
          * The primary HTML template for this view
@@ -127,11 +161,17 @@ define(["jquery",
               }, this);
             }
 
-            // If no filters collection is provided in the options, then set a new Filters
-            // collection
-            if(!this.collection || typeof this.collection === 'undefined'){
-              // TODO: Which properties to set?
-              this.collection = new Filters()
+            // If neither a Filters collection nor a FilterGroup model is provided in the
+            // options for this view, then create a new FilterGroup model and set it on
+            // the view.
+            if(!this.collection && !this.filterGroup){
+              this.filterGroup = new FilterGroup()
+            }
+
+            // If there is a FilterGroup model set, but no Filters collection, then use
+            // the Filters from within the FilterGroup model as the Filters collection.
+            if(!this.collection && this.filterGroup){
+              this.collection = this.filterGroup.get("filters")
             }
 
           } catch (e) {
@@ -165,6 +205,12 @@ define(["jquery",
             // Insert the template into the view
             this.$el.html(this.template());
 
+            // If there is a FilterGroup set on this view, then render the inputs that
+            // allow a user to edit the "exclude" and "operator" attributes
+            if(this.filterGroup){
+              this.renderExcludeOperatorInputs();
+            }
+
             // Add a row for each rule that exists already in the model
             if(
               this.collection && this.collection.models &&
@@ -181,6 +227,91 @@ define(["jquery",
 
           } catch (e) {
             console.error("Failed to render a Query Builder view, error message: ", e);
+          }
+        },
+        
+        /**
+         * Insert two inputs: one that allows the user to edit the "exclude" attribute in
+         * the FilterGroup model by selecting either "include" or "exclude"; and a second
+         * that allows the user to edit the "operator" attribute in the FilterGroup model
+         * by selecting between "all" and "any".
+         * @since 2.15.0
+         */
+        renderExcludeOperatorInputs: function(){
+
+          try {
+
+            if(!this.filterGroup){
+              console.log("A filterGroup model is required to edit the exclude and " +
+                "operator attributes in a Query Builder View.");
+              return
+            }
+
+            // Select the elements in the template where the two inputs should be inserted
+            var excludeContainer = this.$el.find(this.excludeInputSelector);
+            var operatorContainer = this.$el.find(this.operatorInputSelector);
+            // Create the exclude input
+            var excludeInput = new SearchableSelect({
+              options: [
+                { label: "Include",
+                  value: "false",
+                  description: "Include all datasets with metadata that matches the rules" +
+                    " that are set below."
+                },
+                { label: "Exclude",
+                  value: "true",
+                  description: "Match any dataset except those with metadata that match" +
+                    " the rules that are set below"
+                }
+              ],
+              allowMulti: false,
+              allowAdditions: false,
+              inputLabel: "",
+              selected: [this.filterGroup.get("exclude").toString()],
+              clearable: false,
+            });
+            // Create the operator input
+            var operatorInput = new SearchableSelect({
+              options: [
+                { label: "all",
+                  value: "AND",
+                  description: "For a dataset to match, it must have metadata that " +
+                    "matches every rule set below."
+                },
+                { label: "any",
+                  value: "OR",
+                  description: "For a dataset to match, its metadata only needs to " +
+                  "match one of the rules set below."
+                }
+              ],
+              allowMulti: false,
+              allowAdditions: false,
+              inputLabel: "",
+              selected: [this.filterGroup.get("operator")],
+              clearable: false,
+            })
+            // Update the FilterGroup model when the user changes the operator or exclude
+            // options. newValues will always be an Array, but since these inputs don't
+            // allow multiple selections (allowMulti: false), then there will only ever be
+            // one value.
+            this.stopListening(excludeInput)
+            this.listenTo(excludeInput, "changeSelection", function(newValues){
+              // Convert the string (necessary to be used as a value in SearchableSelect)
+              // to a boolean. It should be "true" or "false".
+              var newExclude = newValues[0] == "true";
+              this.filterGroup.set("exclude", newExclude);
+            });
+            this.stopListening(operatorInput)
+            this.listenTo(operatorInput, "changeSelection", function(newValues){
+              this.filterGroup.set("operator", newValues[0]);
+            });
+            // Render the inputs and insert them into the view. Replace the default text
+            // within the containers otherwise.
+            excludeContainer.html(excludeInput.render().el);
+            operatorContainer.html(operatorInput.render().el);
+          } catch (error) {
+            console.log("There was a problem rendering the exclude and operator " +
+            "inputs in a QueryBuilderView, error details: " + error);
           }
         },
 

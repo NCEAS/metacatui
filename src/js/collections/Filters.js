@@ -54,7 +54,7 @@ define([
               this.parse(options.objectDOM, isUIFilterType);
             }
             if (options.catalogSearch) {
-              this.createCatalogSearchQuery();
+              this.catalogSearchQuery = this.createCatalogSearchQuery();
             }
           } catch (error) {
             console.log("Error initializing a Filters collection. Error details: " + error);
@@ -202,7 +202,7 @@ define([
           // scientist OR with the given id. If those filters were ANDed together, the
           // search would essentially ignore the creator filter and only return the
           // dataset with the matching id.
-          if(idFilterQuery && idFilterQuery.length){
+          if(idFilterQuery && idFilterQuery.trim().length){
             if (completeQuery && completeQuery.trim().length) {
               // If the search results must always match one of the ids in the id filters,
               // then add the id filters to the query with the AND operator. This flag
@@ -355,8 +355,8 @@ define([
         },
 
         /**
-         * Create a partial query string that's required for catalog searches and save it
-         * to the Filters collection, to be used when building a full query
+         * Create a partial query string that's required for catalog searches
+         * @returns {string} - Returns the query string fragment for a catalog search
          */
         createCatalogSearchQuery: function(){
           var catalogFilters = new Filters([
@@ -371,7 +371,7 @@ define([
               matchSubstring: false
             }]);
           var query = catalogFilters.getGroupQuery(catalogFilters.models, "AND");
-          this.catalogSearchQuery = query;
+          return query
         },
 
         /**

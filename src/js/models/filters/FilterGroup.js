@@ -99,10 +99,16 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
 
           var newFiltersOptions = {};
           var catalogSearch = false;
+
           if(attributes.catalogSearch){
-            newFiltersOptions = { catalogSearch:true }
-            catalogSearch = true
+            this.set("catalogSearch", true)
           }
+
+          // TODO: support mustMatchIds for queries built from filter groups, see Filters
+          // collection
+          // if(attributes.mustMatchIds){
+          //   this.set("mustMatchIds", true)
+          // }
 
           // Set the attributes on this model by parsing XML if some was provided,
           // or by using any attributes provided to this model
@@ -242,25 +248,120 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
          *
          * @return {string} The query string to send to Solr
          */
-        getQuery: function(operator = "AND"){
+        getQuery: function(){
 
           try {
+
+            // Although the logic used in this function is very similar to the getQuery()
+            // function in the Filters collection, we can't just use
+            // this.get("filters").getQuery(operator), because there are some subtle
+            // differences with how queries are built using the information from
+            // filterGroups, especially when the exclude attribute is set to true.
+
             var queryString = ""
             if(this.isEmpty()){
               return queryString
             }
-            var queryString = this.get("filters").getQuery(operator = this.get("operator"))
-            //If this filter should be excluding matches from the results,
-            // then add a minus sign in front
 
-            if( queryString && this.get("exclude") ){
-              queryString = "-" + queryString;
-              var needsClause = new Filter().requiresPositiveClause.call(this);
-              if(needsClause){
-                queryString = queryString + "%20AND%20*:*";
+            // The operator to use between queries from filters/sub-filterGroups
+            var operator = this.get("operator")
+
+            // Helper function that adds URI encoded spaces to either side of a string
+            var padString = function(string){ return "%20" + string + "%20" };
+            // Helper function that appends a new part to a query fragment, using an
+            // operator if the initial fragment is not empty. Returns the string as-is if
+            // the newFragment is empty.
+            var addQueryFragment = function(string, newFragment, operator){
+              if(!newFragment || (newFragment && newFragment.trim().length == 0) ){
+                return string
               }
+              if(string && string.trim().length){
+                string += padString(operator)
+              }
+              string += newFragment
+              return string
             }
+
+            // Get the list of filters that use id fields since these are used differently.
+            var idFilters = this.get("filters").getIdFilters();
+            // Get the remaining filters that don't contain any ID fields
+            var mainFilters = this.get("filters").getNonIdFilters();
+
+            // If the filterGroup should be excluded from the results, then don't include
+            // the isPartOf filter in the part of the query that gets excluded. The
+            // isPartOf filter is only meant to *include* additional results, never
+            // exclude any.
+            if(this.get("exclude")){
+              var isPartOfFilter = null;
+              idFilters.forEach(function(filterModel, index){
+                if(filterModel.get("fields")[0] == "isPartOf"){
+                  idFilters.splice(index, 1);
+                  isPartOfFilter = filterModel
+                }
+              }, this)
+            }
+
+            // Create the grouped query for the id filters (this will have the isPartOf
+            // filter query if exclude is false, and will not have it if exclude is true)
+            var idFilterQuery = this.get("filters").getGroupQuery(idFilters, "OR");
+            // Make the query fragment for all of the filters that do not contain ID fields
+            var mainQuery = this.get("filters").getGroupQuery(mainFilters, operator);
+            // Make the query string that should be added to all catalog searches
+            var categoryQuery = ""
+            if(this.get("catalogSearch")){
+              categoryQuery = this.get("filters").createCatalogSearchQuery()
+            }
+            // Make the query string for the isPartOf filter when the filter group should
+            // be excluded
+            var isPartOfQuery = ""
+            if(isPartOfFilter){
+              isPartOfQuery = isPartOfFilter.getQuery();
+            }
+
+            if(this.get("exclude")){
+
+              // The query is constructed like so for filter groups with exclude set to true:
+              // -( mainQuery OR idFilterQuery ) AND categoryQuery OR isPartOfQuery
+              // Build the query string piece by piece:
+
+              // 1. mainQuery
+              queryString += mainQuery;
+              // 2. mainQuery OR idFilterQuery
+              queryString = addQueryFragment(queryString, idFilterQuery, "OR")
+              // 3. -( mainQuery OR idFilterQuery )
+              if(queryString.trim().length){
+                queryString = "-(" + queryString + ")"
+              }
+              // 4a. -( mainQuery OR idFilterQuery ) AND categoryQuery
+              //      or, if a positive clause is required (see Filter model requiresPositiveClause for details)
+              // 4b. -( mainQuery OR idFilterQuery ) AND *:*
+              queryString = addQueryFragment(queryString, categoryQuery, "AND")
+              if(!this.get("catalogSearch") && queryString.trim().length){
+                queryString = addQueryFragment(queryString, "*:*", "AND")
+              }
+              // 5. -( mainQuery OR idFilterQuery ) AND categoryQuery OR isPartOfQuery
+              queryString = addQueryFragment(queryString, isPartOfQuery, "OR")
+
+            } else {
+
+              // The query is constructed like so for filter groups with exclude set to false:
+              // ( mainQuery AND catalogQuery ) OR idFilterQuery
+              // where idFilterQuery includes the isPartOfQuery
+
+              // 1. mainQuery
+              queryString += mainQuery;
+              // 2. mainQuery AND catalogQuery
+              queryString = addQueryFragment(queryString, categoryQuery, "AND");
+              // 3. ( mainQuery AND catalogQuery )
+              if(queryString.trim().length){
+                queryString = "(" + queryString + ")"
+              }
+              // 4. ( mainQuery AND catalogQuery ) OR idFilterQuery
+              queryString = addQueryFragment(queryString, idFilterQuery, "OR")
+            }
+
             return queryString
+
           } catch (error) {
             console.log("Error creating a query for a Filter Group, error details:" +
               error

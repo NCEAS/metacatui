@@ -165,8 +165,6 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
      */     
     renderQueryBuilder: function(){
       
-      var view = this;
-      
       // If the isPartOf filter is hidden, then don't allow users to build
       // a query rule using the isPartOf field. If they do, that rule will
       // be hidden the next time they open the portal in the editor. Also,
@@ -177,7 +175,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       }
       
       var queryBuilder = new QueryBuilder({
-        collection: this.model.get("definitionFilters"),
+        filterGroup: this.model.get("definition"),
         ruleColorPalette: this.ruleColorPalette,
         excludeFields: this.queryBuilderExcludeFields,
         specialFields: this.queryBuilderSpecialFields,

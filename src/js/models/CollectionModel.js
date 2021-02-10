@@ -71,6 +71,7 @@ define(["jquery",
       this.listenToOnce(this.get("searchResults"), "sync", this.cacheSearchResults);
 
       //If the searchResults collection is replaced at any time, reset the listener
+      this.off("change:searchResults")
       this.on("change:searchResults", function(searchResults){
         this.listenToOnce(this.get("searchResults"), "sync", this.cacheSearchResults);
       });
