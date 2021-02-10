@@ -2667,6 +2667,7 @@ define(['jquery',
             "@id": "https://dataone.org/datasets/" +
               encodeURIComponent(model.get("id")),
             "datePublished": this.getDatePublishedText(),
+            "dateModified": model.get("dateModified"),
             "publisher": {
               "@type": "Organization",
               "name": this.getPublisherText()
