@@ -2671,7 +2671,7 @@ define(['jquery',
               "@type": "Organization",
               "name": this.getPublisherText()
             },
-            "identifier": model.get("id"),
+            "identifier": this.generateSchemaOrgIdentifier(model.get("id")),
             "version": model.get("version"),
             "url": "https://dataone.org/datasets/" +
               encodeURIComponent(model.get("id")),
@@ -2790,7 +2790,34 @@ define(['jquery',
             script.text = JSON.stringify(json);
           }
         },
-
+        
+        /**
+         * Generate a Schema.org/identifier from the model's id
+         * 
+         * Tries to use the PropertyValue pattern when the identifier is a DOI
+         * and falls back to a Text value otherwise
+         * 
+         * @param {string} identifier - The raw identifier 
+         */
+        generateSchemaOrgIdentifier: function (identifier) {
+          if (!this.model.isDOI()) {
+            return identifier;
+          }
+          
+          var doi = this.getCanonicalDOIIRI(identifier);
+          
+          if (!doi) {
+            return identifier;
+          }
+          
+          return {
+            "@type": "PropertyValue",
+            "propertyID": "https://registry.identifiers.org/registry/doi",
+            "value": doi.replace("https://doi.org/", "doi:"),
+            "url": doi
+          }
+        },
+          
         /**
          * Generate a Schema.org/Place/geo from bounding coordinates
          *
