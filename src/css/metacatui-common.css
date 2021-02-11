@@ -6727,6 +6727,11 @@ Query builder & query rule view
 	border-radius: 3px;
 	box-sizing: border-box;
 }
+/* For query builders that are within a query rule row */
+.query-builder.nested{
+	box-shadow: none;
+	margin: 0 0 0.3rem 0;
+}
 
 .query-builder-title {
 	font-weight: 500;
@@ -6737,14 +6742,24 @@ Query builder & query rule view
 	padding: 1.4rem 2rem 1.2rem;
 	box-sizing: border-box;
 }
+.query-builder.nested .query-builder-title{
+	padding: 1rem 1rem 1rem 0.1rem;
+}
 
 .query-builder .exclude-input,
 .query-builder .operator-input {
 	display: inline-block;
 }
 
-.btn.add-rule {
+.query-builder .buttons-container {
 	margin-left: 2rem;
+}
+
+.query-builder.nested .buttons-container {
+	margin-left: 0.1rem;
+}
+
+.query-builder .btn.add-rule {
 	padding: 0.3rem 0.9rem 0.3rem 0.5rem;
 }
 
@@ -6755,14 +6770,22 @@ Query builder & query rule view
 	grid-gap: 1.5rem;
 	padding: 1.9rem 2rem;
 }
+.query-builder.nested .rules-container{
+	padding: 1.9rem 0 0.9rem 0.3rem;
+}
 
 .query-rule {
 	display: grid;
-	grid-template-columns: minmax(2.5rem, 4rem) 0.9fr 0.6fr 0.9fr 1.5rem;
+	grid-template-columns: 3.9rem 0.9fr 0.6fr 0.9fr 1.5rem;
 	grid-template-rows: 1fr;
 	grid-template-areas: "info field operator value remove";
 	grid-gap: 1.5rem;
 	align-items: top;
+}
+/* For query rules that contain a query builder */
+.query-rule.rule-group {
+	grid-template-columns: 3.9rem auto 1.5rem;
+	grid-template-areas: "info query-builder remove";
 }
 
 .query-rule .rule-info {
@@ -6771,6 +6794,8 @@ Query builder & query rule view
 	font-size: 0.9rem;
 	color: #00689d;
 	color: var(--rule-color);
+	display: flex;
+	justify-content: space-between;
 }
 
 .query-rule .rule-info:after {
@@ -6779,7 +6804,7 @@ Query builder & query rule view
   background: #00689d;
 	background: var(--rule-color);
   width:3px;
-  height: calc(100% + 0.5rem);
+  height: calc(100% + 0.2rem);
   border-radius: 1.5px;
 }
 
@@ -6804,21 +6829,10 @@ Query builder & query rule view
 	justify-self: flex-end;
 }
 
-.query-rule .rule-info,
-.query-rule .field,
-.query-rule .value,
-.query-rule .operator,
-.query-rule .remove-rule {
-	transition: opacity 0.2s ease-out;
-}
-.query-rule.remove-rule-preview .rule-info,
-.query-rule.remove-rule-preview .field,
-.query-rule.remove-rule-preview .value,
-.query-rule.remove-rule-preview .operator {
-	opacity: 0.5;
-}
-.query-rule.remove-rule-preview .remove-rule{
-	opacity: 1;
+.query-rule.rule-group > .remove-rule {
+	align-content: top;
+	height: fit-content;
+	margin-top: 4.1rem;
 }
 
 .searchable-select-label {

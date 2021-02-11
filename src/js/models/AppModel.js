@@ -1309,12 +1309,11 @@ define(['jquery', 'underscore', 'backbone'],
       archivedContentIsIndexed: true,
 
       /**
-       * The metadata fields to hide when a user is creating a collection
-       * definition using the query builder displayed in the portal builder on
-       * the data page, or anywhere else the EditCollectionView is displayed.
-       * Strings listed here should exactly match the 'name' for
-       * each field provided by the DataONE search index API (i.e. should match
-       * the Solr field).
+       * The metadata fields to hide when a user is creating a collection definition using
+       * the Query Builder View displayed in the portal builder on the data page, or
+       * anywhere else the EditCollectionView is displayed. Strings listed here should
+       * exactly match the 'name' for each field provided by the DataONE search index API
+       * (i.e. should match the Solr field).
        * @example ["sem_annotated_by", "mediaType"]
        * @type {string[]}
        */
@@ -1364,9 +1363,9 @@ define(['jquery', 'underscore', 'backbone'],
        * field. It must match one of the category names for an existing query field set in
        * {@link QueryField#categoriesMap}.
        * @property {string[]} [values] - An optional list of filter values. If set, this
-       * is used to determine whether a pre-existing query rule should be displayed as one
+       * is used to determine whether a pre-existing Query Rule should be displayed as one
        * of these special fields, or as a field from the query API. Setting values means
-       * that the values set on the query rule model must exactly match the values set.
+       * that the values set on the Query Rule model must exactly match the values set.
        *
        * @since 2.15.0
        */

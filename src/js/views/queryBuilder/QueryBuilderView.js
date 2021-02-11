@@ -19,7 +19,7 @@ define(["jquery",
      * @constructor
      * @since 2.14.0
      */
-    return Backbone.View.extend(
+    var QueryBuilderView = Backbone.View.extend(
       /** @lends QueryBuilderView.prototype */
       {
 
@@ -43,11 +43,22 @@ define(["jquery",
         rulesContainerSelector: ".rules-container",
 
         /**
-         * A JQuery selector for the element in the template that a user should click to
-         * add a new rule
+         * An ID for the element in the template that a user should click to add a new
+         * rule. A unique ID will be appended to this ID, and the ID will be added to the
+         * template.
          * @type {string}
+         * @since 2.15.0
          */
-        addRuleButtonSelector: ".add-rule",
+        addRuleButtonID: "add-rule-",
+
+        /**
+         * An ID for the element in the template that a user should click to add a new
+         * rule group. A unique ID will be appended to this ID, and the ID will be added
+         * to the template.
+         * @type {string}
+         * @since 2.15.0
+         */
+        addRuleGroupButtonID: "add-rule-group-",
 
         /**
          * A JQuery selector for the element in the template that will contain the input
@@ -69,6 +80,17 @@ define(["jquery",
         operatorInputSelector: ".operator-input",
 
         /**
+         * The maximum number of levels nested Rule Groups (i.e. nested FilterGroup
+         * models) that a user is permitted to *build* in the Query Builder. If a
+         * Portal/Collection document is loaded into the Query Builder that has more than
+         * the maximum allowable nested levels, those levels will still be displayed. This
+         * only prevents the "Add Rule Group" button from being shown.
+         * @type {number}
+         * @since 2.15.0
+         */
+        nestedLevelsAllowed: 1,
+
+        /**
          * An array of hex color codes used to help distinguish between different rules
          * @type {string[]}
          */
@@ -77,12 +99,21 @@ define(["jquery",
         ],
 
         /**
-         * Query fields to exclude in the metadata field selector of each query rule. This
+         * Query fields to exclude in the metadata field selector of each Query Rule. This
          * is a list of field names that exist in the query service index (i.e. Solr), but
          * which should be hidden in the Query Builder
          * @type {string[]}
          */
         excludeFields: [],
+
+        /**        
+         * Query fields to exclude in the metadata field selector for any Query Rules that
+         * are in nested Query Builders (i.e. in nested Filter Groups). This is a list of
+         * field names that exist in the query service index (i.e. Solr), but which should
+         * be hidden in nested Query Builders
+         * @type {string[]}
+         */
+        nestedExcludeFields: [],
 
         /**
          * Query fields that do not exist in the query service index, but which we would
@@ -130,8 +161,10 @@ define(["jquery",
         events: function(){
           try {
             var events = {};
-            var addRuleAction = "click " + this.addRuleButtonSelector;
+            var addRuleAction = "click #" + this.addRuleButtonID + this.cid;
             events[addRuleAction] = "addQueryRule"
+            var addRuleGroupAction = "click #" + this.addRuleGroupButtonID + this.cid;
+            events[addRuleGroupAction] = "addQueryRuleGroup"
             return events
           } catch (e) {
             console.error("Failed to specify events for  the Query Builder View," +
@@ -176,7 +209,7 @@ define(["jquery",
 
           } catch (e) {
             console.error(
-              "Failed to initialize the query builder view, error message:", e
+              "Failed to initialize the Query Builder view, error message:", e
             );
           }
         },
@@ -203,10 +236,34 @@ define(["jquery",
             }
 
             // Insert the template into the view
-            this.$el.html(this.template());
+            this.$el.html(this.template({
+              addRuleButtonID: this.addRuleButtonID + this.cid,
+              addRuleGroupButtonID: this.addRuleGroupButtonID + this.cid,
+            }));
 
-            // If there is a FilterGroup set on this view, then render the inputs that
-            // allow a user to edit the "exclude" and "operator" attributes
+            // Nested Query Builders are used to display nested filterGroup models.
+            // They need to be styled slightly different from the parent Query Builder.
+            if(this.parentRule){
+              this.$el.addClass("nested")
+            }
+
+            // Remove the rule group button ID if no more nested Query Builders are
+            // allowed.
+            if(
+              typeof this.nestedLevelsAllowed == "number" &&
+              this.nestedLevelsAllowed < 1
+            ){
+              this.$el.find("#" + this.addRuleGroupButtonID + this.cid).remove()
+            };
+
+            // Save the rules container element to the view before we add any nested
+            // QueryBuilders (nested FilterGroups), since their rules container uses the
+            // same selector.
+            this.rulesContainer = this.$el.find(this.rulesContainerSelector);
+
+            // If there is a FilterGroup model set on this view (not just a Filters
+            // collection) then render the inputs that allow a user to edit the "exclude"
+            // and "operator" attributes
             if(this.filterGroup){
               this.renderExcludeOperatorInputs();
             }
@@ -220,7 +277,7 @@ define(["jquery",
                 this.addQueryRule(model)
               }, this);
             }
-            // Render a new query rule at the end
+            // Render a new Query Rule at the end
             this.addQueryRule();
 
             return this;
@@ -316,12 +373,13 @@ define(["jquery",
         },
 
         /**
-         * Appends a new row (query rule view) to the end of the query builder
+         * Appends a new row (Query Rule View) to the end of the Query Builder
          *
-         * @param {Filter} filterModel The filter model for which to create a rule for
+         * @param {Filter|FilterGroup} filterModel The Filter model or FilterGroup model
+         * for which to create a rule. If none is provided, then a Filter group model
+         * will be created and added to the collection.
          */
         addQueryRule: function(filterModel){
-
           try {
 
             // Ensure that the object passed to this function is a filter. When the "add
@@ -345,20 +403,47 @@ define(["jquery",
               model: filterModel,
               ruleColorPalette: this.ruleColorPalette,
               excludeFields: this.excludeFields,
-              specialFields: this.specialFields
+              nestedExcludeFields: this.nestedExcludeFields,
+              specialFields: this.specialFields,
+              parentRule: this.parentRule,
+              nestedLevelsAllowed: this.nestedLevelsAllowed,
             });
 
             // Insert and render the rule
-            this.$(this.rulesContainerSelector).append(rule.el);
+            this.rulesContainer.append(rule.el);
             rule.render();
             // Add the rule to the list of rule sub-views
-            // TODO: is this really needed? are they removed when rule remeoved?
+            // TODO: is this really needed? are they removed when rule removed?
             this.rules.push(rule);
 
           } catch (e) {
-            console.error("Error adding a query rule, error message:", e);
+            console.error("Error adding a Query Rule, error message:", e);
+          }
+        },
+
+        /**
+         * Exactly the same as {@link QueryBuilderView#addQueryRule}, except that if no
+         * model is provided to this function, then a FilterGroup model will be created
+         * instead of a Filter model.
+         * @param  {FilterGroup} filterGroupModel
+         */
+        addQueryRuleGroup: function(filterGroupModel){
+          try {
+            // Ensure that the object passed to this function is a filter. When the "add
+            // rule" button is clicked, the Event object is passed to this function
+            // instead. If no filter model is provided, assume that this is a new rule
+            if(!filterGroupModel || (filterGroupModel && filterGroupModel.type != "FilterGroup")){
+              filterGroupModel = this.collection.add({
+                filterType: "FilterGroup",
+              });
+            };
+            this.addQueryRule(filterGroupModel)
+          } catch (error) {
+            console.log("Error adding a Query Rule Group in a Query Builder View. " +
+            "Error details: " + error);
           }
         },
 
       });
+      return QueryBuilderView;
   });

@@ -82,6 +82,8 @@ define([
             type = attrs.objectDOM.nodeName;
           } else if (attrs.filterType) {
             type = attrs.filterType;
+          } else if (attrs.nodeName){
+            type = attrs.nodeName
           }
           // Ignoring the case of the type allows using either the
           // filter type (e.g. BooleanFilter) or the nodeName value

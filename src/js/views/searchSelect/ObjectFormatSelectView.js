@@ -87,7 +87,7 @@ define([
 
             var formatIds = MetacatUI.objectFormats.toJSON();
             var options = _.chain(formatIds)
-              // Since the query rules automatically include a rule for formatType =
+              // Since the Query Rules automatically include a rule for formatType =
               // "METADATA", only allow filtering datasets by specific metadata type.
               .where({ formatType: "METADATA" })
               .map(
