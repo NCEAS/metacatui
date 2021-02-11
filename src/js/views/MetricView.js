@@ -3,7 +3,15 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
     function($, _, Backbone, MetricModalView) {
     'use strict';
 
-    var MetricView = Backbone.View.extend({
+    /**
+    * @class MetricView
+    * @classdesc the display of the dataset citation and usage metrics on the dataset landing page
+    * @classcategory Views
+    * @screenshot views/MetricView.png
+    * @extends Backbone.View
+    */
+    var MetricView = Backbone.View.extend(
+      /** @lends MetricView.prototype */{
 
         tagName: 'a',
         // id: 'metrics-button',
@@ -79,6 +87,7 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
             if (MetacatUI.appModel.get("displayMetricModals") ) {
                 var modalView = new MetricModalView({metricName: this.metricName, metricsModel: this.model, pid: this.pid});
                 modalView.render();
+                this.modalView = modalView;
 
                 if( Array.isArray(this.subviews) ){
                   this.subviews.push(modalView);

@@ -307,8 +307,13 @@ define(["jquery",
 
               //If the seriesId has not been found yet, get it from Solr
               if( !this.get("id") && !this.get("seriesId") && this.get("label") ){
-                this.once("change:seriesId", this.fetch);
-                this.once("latestVersionFound", this.fetch);
+
+                this.once("change:seriesId", function(){
+                  this.fetch(options)
+                });
+                this.once("latestVersionFound", function(){
+                  this.fetch(options)
+                });
 
                 //Get the series ID of this object
                 this.getSeriesIdByLabel();
@@ -350,7 +355,8 @@ define(["jquery",
               var requestSettings = {
                   dataType: "xml",
                   error: function(model, response) {
-                      model.trigger("error");
+
+                      model.trigger("error", model, response);
 
                       if( response && response.status == 404 ){
                         model.trigger("notFound");

@@ -279,6 +279,8 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     */
     renderPortalEditor: function() {
 
+      var view = this;
+
       //Check if this is a plus portal
       if( MetacatUI.appModel.get("dataonePlusPreviewMode")){
         var sourceMN = this.model.get("datasource");
@@ -351,11 +353,25 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       //Remove the rendering class from the body element
       $("body").removeClass("rendering");
 
+      // On mobile where the section-links-toggle-container is set to fixed,
+      // hide the portal navigation element when user scrolls down,
+      // show again when the user scrolls up.
+      MetacatUI.appView.prevScrollpos = window.pageYOffset;
+      $(window).off("scroll");
+      $(window).scroll(_.throttle(view.handleScroll, 400));
+
+      // Functions to perform when the window is resized
+      var onResize = function(){
+        // Auto-resize the portal title
+        $("textarea.portal-title").trigger("windowResize");
+        // Ensure that the menu is always shown when switching from mobile to full width
+        view.toggleSectionLinks();
+      }
+      $(window).off("resize");
+      $( window ).resize(_.throttle(onResize, 400));
+
       // Auto-resize the height of the portal title field on user-input and on
       // window resize events.
-      $( window ).resize(function() {
-        $("textarea.portal-title").trigger("windowResize");
-      });
       this.$("textarea.portal-title").each(function () {
         this.style.height = '0px'; // note: textfield MUST have a min-height set
         this.style.height = (this.scrollHeight) + 'px';
@@ -404,16 +420,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
       // On mobile, hide section tabs a moment after page loads so
       // users notice where they are
-      var view= this;
       setTimeout(function () {
         view.toggleSectionLinks();
       }, 700);
-
-      // On mobile where the section-links-toggle-container is set to fixed,
-      // hide the portal navigation element when user scrolls down,
-      // show again when the user scrolls up.
-      MetacatUI.appView.prevScrollpos = window.pageYOffset;
-      $(window).on("scroll", "", undefined, this.handleScroll);
 
       //Show a link to view the portal, if it is not a new portal
       if( !this.model.isNew() ){
@@ -536,16 +545,29 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
      */
     toggleSectionLinks: function(e){
       try{
-        // Don't close the menu if the user clicked the dropdown for the rename/delete menu.
+        // Don't close the menu if the user clicked the dropdown for the rename/delete menu,
+        // or something within that menu. Also do not close when the user clicked to update
+        // the tab name in a content editable element.
         if(e && e.target){
-          if( $(e.target).closest(".section-menu-link") || $(e.target).closest(".dropdown-menu")){
+          if(
+            $(e.target).closest(".section-menu-link").length ||
+            $(e.target).closest(".dropdown-menu").length ||
+            $(e.target).attr("contentEditable") == "true"
+          ){
             return
           }
+        }
+        var tabs = this.$("#portal-section-tabs");
+        if(!tabs){
+          return
         }
         // Only toggle the section links on mobile. On mobile, the
         // ".show-sections-toggle" is visible.
         if(this.$(".show-sections-toggle").is(":visible")){
-          this.$("#portal-section-tabs").slideToggle();
+          tabs.slideToggle();
+        // If not on mobile, the section tabs should always be visible
+        } else {
+          tabs.show();
         }
       } catch(e){
         console.error("Failed to toggle section links, error message: " + e);
@@ -896,18 +918,34 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * This function is called whenever the window is scrolled.
     */
     handleScroll: function() {
-      var menu = $(".section-links-toggle-container")[0],
-          menuHeight = $(menu).height(),
-          editorFooterHeight = 73,
-          hiddenHeight = (menuHeight * -1) + 73;
-      var currentScrollPos = window.pageYOffset;
-      if(MetacatUI.appView.prevScrollpos > currentScrollPos) {
-        menu.style.bottom = "73px";
-      } else {
-        menu.style.bottom = hiddenHeight +"px";
-      }
-      MetacatUI.appView.prevScrollpos = currentScrollPos;
+
+        try {
+
+          var menu = $(".section-links-toggle-container")[0],
+            editorFooter = this.$("#editor-footer")[0],
+            editorFooterHeight = editorFooter ? editorFooter.offsetHeight : 0,
+            menuHeight = menu ? menu.offsetHeight : 0,
+            hiddenHeight = (menuHeight * -1) + editorFooterHeight,
+            currentScrollPos = window.pageYOffset;
+  
+          if(!menu){
+            return
+          }
+          if(MetacatUI.appView.prevScrollpos >= currentScrollPos) {
+            // when scrolling upward
+            menu.style.bottom = editorFooterHeight + "px";
+          } else {
+            // when scrolling downward
+            menu.style.bottom = hiddenHeight + "px";
+          }
+          MetacatUI.appView.prevScrollpos = currentScrollPos;
+  
+        } catch (error) {
+          console.log("There was an error adjusting menu position on scroll. Error details: " + error);
+        }
+      
     },
+
 
     /**
      * @inheritdoc
@@ -920,8 +958,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       //Remove the Portal class from the body element
       $("body").removeClass("Portal");
 
-      //Remove the scroll listener
-      $(window).off("scroll", "", this.handleScroll);
+      //Remove the scroll and resize listener
+      $(window).off("scroll");
+      $(window).off("resize");
 
       //Close and remove all of the subviews
       _.invoke(this.subviews, "onClose");

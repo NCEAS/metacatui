@@ -25,6 +25,7 @@ MetacatUI.AppConfig = Object.assign({
   hideSummaryMetadataAssessment: false,
   enableFeverVisualizations: true,
   portalInfoURL: "https://arcticdata.io/data-portals/",
+  portalLimit: 999,
 
   //Editor
   useNSFAwardAPI: true,

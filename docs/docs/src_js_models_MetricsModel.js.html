@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: src/js/models/MetricsModel.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/js/models/MetricsModel.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*global define */
+define(['jquery', 'underscore', 'backbone'],
+    function($, _, Backbone) {
+    'use strict';
+
+    /**
+     * @class MetricsModel
+     * @classdesc A single result from the DataONE Metrics Service
+     * @classcategory Models
+     * @extends Backbone.Model
+     * @constructor
+     */
+    var Metrics = Backbone.Model.extend({
+        defaults: {
+            metricRequest: null,
+            startDate: null,
+            endDate: null,
+            results: null,
+            resultDetails: null,
+            pid_list: null,
+            url: null,
+            filterType: null,
+
+            // metrics and metric Facets returned as response from the user
+            // datatype: array
+            citations: null,
+            views: null,
+            downloads: null,
+            months: null,
+            country: null,
+            years: null,
+            repository: null,
+            award: null,
+            datasets: null,
+
+
+            // Total counts for metrics
+            totalCitations: null,
+            totalViews: null,
+            totalDownloads: null,
+
+            // flag to send POST request to the metrics service
+            useMetricsPost: false,
+
+            // colelctionQuery for Portal Objects
+            filterQueryObject: null,
+            forwardCollectionQuery: false,
+
+            metricsRequiredFields: {
+                metricName: true,
+                pid_list: true
+            }
+
+        },
+
+        metricRequest: {
+            "metricsPage": {
+                "total": 0,
+                "start": 0,
+                "count": 0
+            },
+            "metrics": [
+                "citations",
+                "downloads",
+                "views"
+            ],
+            "filterBy": [
+                {
+                    "filterType": "",
+                    "values": [],
+                    "interpretAs": "list"
+                },
+                {
+                    "filterType": "month",
+                    "values": [],
+                    "interpretAs": "range"
+                }
+            ],
+            "groupBy": [
+                "month"
+            ]
+        },
+
+        // Initializing the Model objects pid and the metricName variables.
+        initialize: function(options) {
+            if((options) &amp;&amp; options.pid_list !== 'undefined') {
+                this.set("pid_list", options.pid_list);
+                this.set("filterType", options.type);
+            }
+            this.set("startDate", "01/01/2012");
+
+            // overwrite forwardCollectionQuery flag
+            this.set("forwardCollectionQuery", MetacatUI.appModel.get("metricsForwardCollectionQuery"));
+
+            // url for the model that is used to for the fetch() call
+            this.url = MetacatUI.appModel.get("metricsUrl");
+        },
+
+        // Overriding the Model's fetch function.
+        fetch: function(){
+          var fetchOptions = {};
+          this.metricRequest.filterBy[0].filterType = this.get("filterType");
+          this.metricRequest.filterBy[0].values = this.get("pid_list");
+
+          // TODO: Set the startDate and endDate based on the datePublished and current date
+          // respctively.
+          this.metricRequest.filterBy[1].values = [];
+          this.metricRequest.filterBy[1].values.push(this.get("startDate"));
+          this.metricRequest.filterBy[1].values.push(this.getCurrentDate());
+
+          // set custom request settings if we're forwarding a CollectionQuery for a portal
+          if ( this.get("forwardCollectionQuery") &amp;&amp; this.get("filterType") === "portal"
+                                        &amp;&amp;  this.get("filterQueryObject") != undefined
+                                        &amp;&amp; typeof this.get("filterQueryObject") === "object") {
+            var filterQueryObject = this.get("filterQueryObject");
+            if (filterQueryObject.filterType != undefined
+                                        &amp;&amp; filterQueryObject.filterType == "query") {
+                if (Array.isArray(filterQueryObject.values)
+                                        &amp;&amp; filterQueryObject.values.length > 0 ) {
+
+                    // check if query object exists
+                    var queryInserted = this.metricRequest.filterBy.indexOf(filterQueryObject);
+
+                    // Performing HTTP POST?
+                    if(this.get("useMetricsPost")) {
+                        // insert query object
+                        if (queryInserted &lt; 0) {
+                            this.metricRequest.filterBy.push(filterQueryObject);
+                        }
+
+                        fetchOptions = _.extend({
+                            data:JSON.stringify(this.metricRequest),
+                            type:"POST",
+                            timeout:300000
+                        });
+                    }
+                    else {
+                        // insert query object
+                        var collectionQuery = filterQueryObject.values[0];
+                        if (collectionQuery.length &lt; 1000 &amp;&amp; queryInserted &lt; 0) {
+                            this.metricRequest.filterBy.push(filterQueryObject);
+                        }
+
+                        // set the fetch options for
+                        var model = this;
+                        fetchOptions = _.extend({
+                            data:"metricsRequest="+JSON.stringify(this.metricRequest),
+                            timeout:300000,
+                            // on error recursively call fetch, but this time use POST
+                            error: function(response){
+                                model.set("useMetricsPost", "true");
+                                model.fetch();
+                            }
+                        });
+                    }
+                }
+            }
+          }
+
+          // check if we need to set fetchOptions
+          if (Object.keys(fetchOptions).length === 0) {
+            if ( this.get("useMetricsPost") ) {
+                fetchOptions = _.extend({
+                    data:JSON.stringify(this.metricRequest),
+                    type:"POST",
+                    timeout:300000
+                });
+            }
+            else {
+                fetchOptions = _.extend({
+                    data:"metricsRequest="+JSON.stringify(this.metricRequest),
+                    timeout:300000,
+                });
+            }
+          }
+
+          //This calls the Backbone fetch() function but with our custom fetch options.
+          return Backbone.Model.prototype.fetch.call(this, fetchOptions);
+        },
+
+        getCurrentDate: function() {
+            var today = new Date();
+            var dd = today.getDate();
+            var mm = today.getMonth()+1; //January is 0!
+
+            var yyyy = today.getFullYear();
+            if(dd&lt;10){
+                dd='0'+dd;
+            }
+            if(mm&lt;10){
+                mm='0'+mm;
+            }
+            var today = mm+'/'+dd+'/'+yyyy;
+            return today;
+        },
+
+        // Parsing the response for setting the Model's member variables.
+        parse: function(response){
+            var metricsObject = {
+                "metricRequest": response.metricsRequest,
+                "citations": response.results.citations,
+                "views": response.results.views,
+                "downloads": response.results.downloads,
+                "months": response.results.months,
+                "country": response.results.country,
+                "resultDetails": response.resultDetails,
+                "datasets": response.results.datasets
+            }
+
+            if (response.results.citations != null) {
+                metricsObject["totalCitations"] =  response.results.citations.reduce(function(acc, val) { return acc + val; }, 0)
+            }
+            else {
+                metricsObject["totalCitations"] =  0
+            }
+
+            if (response.results.downloads != null) {
+                metricsObject["totalDownloads"] =  response.results.downloads.reduce(function(acc, val) { return acc + val; }, 0)
+            }
+            else {
+                metricsObject["totalDownloads"] =  0
+            }
+
+            if (response.results.views != null) {
+                metricsObject["totalViews"] =  response.results.views.reduce(function(acc, val) { return acc + val; }, 0)
+            }
+            else {
+                metricsObject["totalViews"] =  0
+            }
+
+            //trim off the leading zeros and their corresponding months
+            if (response.results.months != null) {
+
+                // iterate all the metrics objects and remove the entry if the counts are 0
+                for (var i = 0 ; i &lt; metricsObject["months"].length; i++) {
+
+                    if ( metricsObject["citations"] != null &amp;&amp;
+                        metricsObject["views"]     != null &amp;&amp;
+                        metricsObject["downloads"] != null ) {
+
+                        if (( metricsObject["citations"][i] == 0 ) &amp;&amp;
+                            ( metricsObject["views"][i]     == 0 ) &amp;&amp;
+                            ( metricsObject["downloads"][i] == 0 )) {
+
+                            metricsObject["months"].splice(i,1);
+                            metricsObject["citations"].splice(i,1);
+                            metricsObject["views"].splice(i,1);
+                            metricsObject["downloads"].splice(i,1);
+
+                            // if country facet was part of the request; update object;
+                            if ( metricsObject["country"] != null) {
+                                metricsObject["country"].splice(i,1)
+                            }
+
+                            // modified array size; decrement the counter;
+                            i--;
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return metricsObject;
+        },
+
+    });
+    return Metrics;
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="Utilities.html">Utilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="Citation.html">Citation</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="MetricsModel.html">MetricsModel</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="MetricView.html">MetricView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="SignInView.html">SignInView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="UserView.html">UserView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilder.html">QueryBuilder</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchableSelectView.html">SearchableSelectView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Dec 22 2020 13:37:30 GMT-0600 (Central Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

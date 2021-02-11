@@ -3,8 +3,13 @@ define(['jquery', 'underscore', 'backbone'],
     function($, _, Backbone) {
     'use strict';
 
-    // Metric Model
-    // -------------
+    /**
+     * @class MetricsModel
+     * @classdesc A single result from the DataONE Metrics Service
+     * @classcategory Models
+     * @extends Backbone.Model
+     * @constructor
+     */
     var Metrics = Backbone.Model.extend({
         defaults: {
             metricRequest: null,

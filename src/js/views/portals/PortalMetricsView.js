@@ -264,6 +264,15 @@ define(["jquery",
                 "\" portal at this time.</p>"
           }
 
+          //Send this exception to Google Analytics
+          if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+            var gaMetricsErrorMessage = "Failed to render the Metrics view for the portal: " + (this.model.get("label") || this.model.get("portalId")) + " | v. " + MetacatUI.metacatUIVersion;
+            ga("send", "exception", {
+              "exDescription": gaMetricsErrorMessage,
+              "exFatal": false
+            });
+          }
+
           //Show a warning message about the metrics error
           MetacatUI.appView.showAlert(
             errorDisplayMessage,
