@@ -415,8 +415,20 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       // Insert the logo editor
       this.renderLogoEditor();
 
-      //When the collection definition is changed, show the Save button
-      this.listenTo(this.model.get("definitionFilters"), "remove change", this.showControls);
+      // When the collection definition is changed, show the Save button
+      var definition = this.model.get("definition"),
+          definitionEvents = "update change";
+      this.stopListening(definition, definitionEvents);
+      this.listenTo(definition, definitionEvents, function(model, record){
+        // Don't show the controls for the addition of an empty filter model, or the
+        // controls will show right away when we add a new blank query rule
+        if(record && record.changes && record.changes.added && record.changes.added.length){
+          if(record.changes.added[0].isEmpty && record.changes.added[0].isEmpty()){
+            return
+          }
+        }
+        this.showControls()
+      });
 
       // On mobile, hide section tabs a moment after page loads so
       // users notice where they are

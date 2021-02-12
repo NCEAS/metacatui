@@ -6759,8 +6759,10 @@ Query builder & query rule view
 	margin-left: 0.1rem;
 }
 
-.query-builder .btn.add-rule {
-	padding: 0.3rem 0.9rem 0.3rem 0.5rem;
+.query-builder .btn.add-rule,
+.query-builder .btn.add-rule-group {
+	padding: 0.25rem 0.55rem 0.25rem 0.25rem;
+	margin-right: 0.5rem;
 }
 
 .rules-container {
@@ -6776,7 +6778,7 @@ Query builder & query rule view
 
 .query-rule {
 	display: grid;
-	grid-template-columns: 3.9rem 0.9fr 0.6fr 0.9fr 1.5rem;
+	grid-template-columns: 3.9rem 0.9fr 0.65fr 0.9fr 1.5rem;
 	grid-template-rows: 1fr;
 	grid-template-areas: "info field operator value remove";
 	grid-gap: 1.5rem;

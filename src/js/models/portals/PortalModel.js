@@ -58,7 +58,7 @@ define(["jquery",
                 return _.extend(CollectionModel.prototype.defaults(), {
                     id: null,
                     objectXML: null,
-                    formatId: "https://purl.dataone.org/portals-1.0.0",
+                    formatId: "https://purl.dataone.org/portals-1.1.0",
                     formatType: "METADATA",
                     type: "portal",
                     //Is true if the last fetch was sent with user credentials. False if not.
@@ -1416,9 +1416,8 @@ define(["jquery",
             createXML: function() {
 
               // TODO: which attributes should a new XML portal doc should have?
-              var xmlString = "<por:portal xmlns:por=\"https://purl.dataone.org/portals-1.0.0\"></por:portal>",
-                  xmlNew = $.parseXML(xmlString),
-                  portalNode = xmlNew.getElementsByTagName("por:portal")[0];
+              var xmlString = "<por:portal xmlns:por=\"https://purl.dataone.org/portals-1.1.0\"></por:portal>",
+                  xmlNew = $.parseXML(xmlString);
 
               return(xmlNew);
             },
@@ -1899,8 +1898,6 @@ define(["jquery",
                 return;
               }
 
-              // TODO: restore saving ability
-              return
               this.constructor.__super__.save.call(this);
             },
 

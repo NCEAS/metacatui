@@ -23,7 +23,7 @@ define(['jquery',
 
         // Stores a reference to the child .annotation el which is handy but
         // I'm no sure it's needed
-        // TODO: Rename to popoverReference or something or remove entirley
+        // TODO: Rename to popoverReference or something or remove entirely
         popoverSource: null,
 
         // Helps track visibility of the popover so we know when it's safe to

@@ -33,7 +33,7 @@ define(["jquery",
     /**
     * Default attributes for CollectionModels
     * @type {Object}
-    * @property {string[]} ignoreQueryGroups - The Filter query groups to not serialize to the collection definition part of the XML document
+    * @property {string[]} ignoreQueryGroups - Deprecated
     * @property {FilterGroup} definition - The parent-level Filter Group model that represents the collection definition.
     * @property {Filters} definitionFilters - A Filters collection that stores definition filters that have been serialized to the Collection. The same filters that are stored in the definition.
     * @property {Search} searchModel - A Search model with a Filters collection that contains the filters associated with this collection
@@ -47,11 +47,9 @@ define(["jquery",
         originalLabel: null,
         labelBlockList: ["new"],
         description: null,
-        formatId: "https://purl.dataone.org/collections-1.0.0",
+        formatId: "https://purl.dataone.org/collections-1.1.0",
         formatType: "METADATA",
         type: "collection",
-        // TODO: is this deprecated?
-        ignoreQueryGroups: ["catalog"],
         definition: null,
         definitionFilters: null,
         searchModel: null,
@@ -280,9 +278,7 @@ define(["jquery",
         modelJSON = this.updateTo110(modelJSON);
       }
 
-
       return modelJSON
-
     },
     
     /**
@@ -480,6 +476,21 @@ define(["jquery",
         }
       }
 
+
+      // Set schema version. May need to be updated from 1.0.0 to 1.1.0.
+
+      // Get the attribute name, could be xmlns:por or xmlns:col. Default to xmlns:por
+      attrName = "xmlns:por"
+      objectDOM.attributes.forEach(function(attr){
+        if(attr.name.match(/^xmlns/)){
+          attrName = attr.name
+        }
+      });
+      // The formatId is the same as the namespace URI
+      var newNamespace = this.defaults().formatId;
+      $(objectDOM).removeAttr(attrName);
+      $(objectDOM).attr(attrName, newNamespace);
+
       // Remove definition node if it exists in XML already
       $(objectDOM).find("definition").remove();
 
@@ -544,13 +555,13 @@ define(["jquery",
     createXML: function() {
 
       // TODO: which attributes should a new XML portal doc should have?
-      var xmlString = "<col:collection xmlns:col=\"https://purl.dataone.org/collections-1.0.0\"></col:collection>",
+      var xmlString = "<col:collection xmlns:col=\"https://purl.dataone.org/collections-1.1.0\"></col:collection>",
           xmlNew = $.parseXML(xmlString),
           colNode = xmlNew.getElementsByTagName("col:collections")[0];
 
       // set attributes
       colNode.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-      colNode.setAttribute("xsi:schemaLocation", "https://purl.dataone.org/collections-1.0.0");
+      colNode.setAttribute("xsi:schemaLocation", "https://purl.dataone.org/collections-1.1.0");
 
       this.set("ownerDocument", colNode.ownerDocument);
 

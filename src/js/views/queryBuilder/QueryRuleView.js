@@ -1590,9 +1590,7 @@ define([
         handleValueChange: function (newValues) {
 
           try {
-            // TODO:
-            //  - validate values first?
-            //  - how to update the model when values is empty?
+            // TODO: validate values
 
             // Don't add empty values to the model
             newValues = _.reject(newValues, function (val) { return val === "" });

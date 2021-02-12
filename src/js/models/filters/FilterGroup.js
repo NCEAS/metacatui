@@ -472,93 +472,100 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
         */
         updateDOM: function(options){
 
-          // Clone the DOM if it exists
-          var objectDOM = this.get("objectDOM");
-          if(objectDOM){
-            objectDOM = objectDOM.cloneNode(true);
-          } else {
-            // Create an XML filterGroup or definition element from scratch
-            if(!objectDOM){
-              var name = this.get("nodeName");
-              objectDOM = new DOMParser().parseFromString(
-                "<" + name + "></" + name + ">",
-                "text/xml"
-              );
-              objectDOM = objectDOM[0]
+          try {
+            // Clone the DOM if it exists
+            var objectDOM = this.get("objectDOM");
+
+            if(objectDOM){
+              objectDOM = objectDOM.cloneNode(true);
+            } else {
+              // Create an XML filterGroup or definition element from scratch
+              if(!objectDOM){
+                var name = this.get("nodeName");
+                console.log(name);
+                objectDOM = new DOMParser().parseFromString(
+                  "<" + name + "></" + name + ">",
+                  "text/xml"
+                );
+                objectDOM = $(objectDOM).find(name)[0];
+              }
             }
-          }
 
-          $(objectDOM).empty();
+            $(objectDOM).empty();
 
-          // label, description, and icon are elements that are used in Portal
-          // UIFilterGroupType filterGroups only. Collection FilterGroupType filterGroups
-          // do not use these elements.
-          if(this.get("isUIFilterType")){
+            // label, description, and icon are elements that are used in Portal
+            // UIFilterGroupType filterGroups only. Collection FilterGroupType filterGroups
+            // do not use these elements.
+            if(this.get("isUIFilterType")){
 
-            // Get the new values for the simple text elements
-            var filterGroupData = {
-              label: this.get("label"),
-              description: this.get("description"),
-              icon: this.get("icon")
+              // Get the new values for the simple text elements
+              var filterGroupData = {
+                label: this.get("label"),
+                description: this.get("description"),
+                icon: this.get("icon")
+              }
+              // Serialize the simple text elements
+              _.map(filterGroupData, function (value, nodeName) {
+                // Don't serialize falsey values
+                if (value) {
+                  // Make new sub-node
+                  var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+                  $(nodeSerialized).text(value);
+                  // Append new sub-node to objectDOM
+                  $(objectDOM).append(nodeSerialized);
+                }
+              });
             }
-            // Serialize the simple text elements
-            _.map(filterGroupData, function (value, nodeName) {
-              // Don't serialize falsey values
-              if (value) {
-                // Make new sub-node
-                var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
-                $(nodeSerialized).text(value);
-                // Append new sub-node to objectDOM
-                $(objectDOM).append(nodeSerialized);
-              }
-            });
+
+            // Serialize the filters
+            var filterModels = this.get("filters").models;
+
+            // TODO: Remove filter types depending on isUIFilterType attribute?
+            // toggleFilter and choiceFilter are only allowed in Portal UIFilterGroupType.
+            // nested filterGroups are only allowed in Collection FilterGroupType.
+
+            // Don't serialize falsey values
+            if (filterModels && filterModels.length) {
+              // Update each filter and append it to the DOM
+              _.each(filterModels, function (filterModel) {
+                if (filterModel) {
+                  var filterModelSerialized = filterModel.updateDOM({
+
+                  });
+                }
+                $(objectDOM).append(filterModelSerialized);
+              });
+            }
+
+            // exclude and operator are elements used only in Collection FilterGroupType
+            // filterGroups. Portal UIFilterGroupType filterGroups do not use either of
+            // these elements.
+            if(!this.get("isUIFilterType")){
+              // The nodeName and model attribute are the same in these cases.
+              ["operator", "exclude"].forEach(function(nodeName){
+                // Don't serialize empty, null, undefined, or default values
+                var value = this.get(nodeName);
+                if( (value || value === false) && value !== this.defaults()[nodeName] ){
+                  // Make new sub-node
+                  var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+                  $(nodeSerialized).text(value);
+                  // Append new sub-node to objectDOM
+                  $(objectDOM).append(nodeSerialized);
+                }
+              }, this);
+            }
+
+            // TODO: serialize the new <option> elements supported for Portal
+            // UIFilterGroupType 1.1.0
+            // if(this.get("isUIFilterType")){
+            //  ... serialize options ...
+            // }
+
+            return objectDOM
+          } catch (error) {
+            console.error("Unable to serialize a Filter Group.", error);
+            return this.get("objectDOM") || "";
           }
-
-          // Serialize the filters
-          var filterModels = this.get("filters").models;
-
-          // TODO: Remove filter types depending on isUIFilterType attribute?
-          // toggleFilter and choiceFilter are only allowed in Portal UIFilterGroupType.
-          // nested filterGroups are only allowed in Collection FilterGroupType.
-
-          // Don't serialize falsey values
-          if (filterModels && filterModels.length) {
-            // Update each filter and append it to the DOM
-            _.each(filterModels, function (filterModel) {
-              if (filterModel) {
-                var filterModelSerialized = filterModel.updateDOM({
-
-                });
-              }
-              $(objectDOM).append(filterModelSerialized);
-            });
-          }
-
-          // exclude and operator are elements used only in Collection FilterGroupType
-          // filterGroups. Portal UIFilterGroupType filterGroups do not use either of
-          // these elements.
-          if(!this.get("isUIFilterType")){
-            // The nodeName and model attribute are the same in these cases.
-            ["operator", "exclude"].forEach(function(nodeName){
-              // Don't serialize empty, null, undefined, or default values
-              var value = this.get(nodeName);
-              if( (value || value === false) && value !== this.defaults()[nodeName] ){
-                // Make new sub-node
-                var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
-                $(nodeSerialized).text(value);
-                // Append new sub-node to objectDOM
-                $(objectDOM).append(nodeSerialized);
-              }
-            }, this);
-          }
-
-          // TODO: serialize the new <option> elements supported for Portal
-          // UIFilterGroupType 1.1.0
-          // if(this.get("isUIFilterType")){
-          //  ... serialize options ...
-          // }
-
-          return objectDOM
 
         }
 

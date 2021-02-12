@@ -92,7 +92,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
      * @type {string[]}
      */
     queryBuilderNestedExcludeFields: _.union(
-      this.queryBuilderExcludeFields,
+      MetacatUI.appModel.get("collectionQueryExcludeFields"),
       MetacatUI.appModel.get("queryIdentifierFields")
     ),
 
