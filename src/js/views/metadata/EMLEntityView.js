@@ -4,12 +4,14 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
         'views/DataPreviewView',
         'views/metadata/EMLAttributeView',
         'text!templates/metadata/eml-entity.html',
-        'text!templates/metadata/eml-attribute-menu-item.html'],
+        'text!templates/metadata/eml-attribute-menu-item.html',
+        'common/header_tools'],
     function(_, $, Backbone, LocalForage, DataONEObject, EMLAttribute, EMLEntity,
         DataPreviewView,
         EMLAttributeView,
         EMLEntityTemplate,
-        EMLAttributeMenuItemTemplate){
+        EMLAttributeMenuItemTemplate,
+        HeaderTools){
 
         /**
         * @class EMLEntityView
@@ -210,7 +212,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
                 return;
               }
 
-              var btn = $('<button class="btn btn-primary fill">Fill from File</button>');
+              var btn = $('<button class="btn btn-primary fill"><i class="icon-magic"></i> Fill from file</button>');
               $(target).html(btn);
             },
 
@@ -603,7 +605,9 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
             },
 
             /**
-             * TODO
+             * Handle the click event on the fill button
+             *
+             * @param {Event} e - The click event
              */
             handleFill: function(e) {
               var d1Object = this.model.get("dataONEObject");
@@ -618,91 +622,87 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
                 return;
               }
 
-              this.readSlice(file, this.onLoadEndCallback);
+              var view = this;
+
+              try {
+                HeaderTools.readSlice(file, this, function (event) {
+                  if (event.target.readyState !== FileReader.DONE) {
+                    return;
+                  }
+
+                  var names = HeaderTools.tryParseCSVHeader(
+                    event.target.result
+                  );
+
+                  if (names.length === 0) {
+                    view.updateFillButton('<i class="icon-warning-sign"></i> Couldn\'t fill');
+                  } else {
+                    view.updateFillButton('<i class="icon-ok"></i> Filled!');
+                  }
+
+                  view.updateAttributeNames(names);
+                });
+              } catch (e) {
+                console.log(e);
+              }
             },
 
             /**
-             * TODO
+             * Update attribute names from an array
+             *
+             * This will update existing attributes' names or create new
+             * attributes as needed. This also performs a full re-render.
+             *
+             * @param {Array} names - A list of names to apply
              */
-            readSlice: function(file, callback, bytes = 1024) {
-              if (typeof callback !== "function") {
-                return
-              }
-
-              var reader = new FileReader(),
-                  blob = file.slice(0, bytes);
-
-              reader.onloadend = callback.bind(this);
-              reader.readAsBinaryString(blob);
-            },
-
-            /**
-             * TODO
-             */
-            onLoadEndCallback: function(e) {
-              if (e.target.readyState !== FileReader.DONE) {
-                return;
-              }
-
-              var names = this.tryParseHeader(e.target.result);
-
+            updateAttributeNames: function(names) {
               if (!names) {
                 return;
               }
 
-              // Either update existing attribute names or add new attributes
               var attributes = this.model.get("attributeList");
 
               for (var i = 0; i < names.length; i++) {
-                if (attributes.length - 1>= i) {
-                  console.log("updating name for", attributes[i].get("attributeName"));
+                if (attributes.length - 1 >= i) {
                   attributes[i].set("attributeName", names[i]);
                 } else {
-                  console.log("creating new attribute for ", names[i]);
-                  attributes.push(new EMLAttribute({
-                    parentModel: this.model,
-                    xmlID: DataONEObject.generateId(),
-                    attributeName: names[i]
-                  }));
+                  attributes.push(
+                    new EMLAttribute({
+                      parentModel: this.model,
+                      xmlID: DataONEObject.generateId(),
+                      attributeName: names[i],
+                    })
+                  );
                 }
               }
 
               this.model.set("attributeList", attributes);
+
+              // Reset first
               this.$(".attribute-menu.side-nav-items").empty();
-              this.$(".attribute-list .eml-attribute.new").removeClass("new");
+              this.$(".eml-attribute").remove();
+
+              // Then re-render
               this.renderAttributes();
+
+              // Validate each attribute
+              _.forEach(attributes, function(attribute) {
+                this.showAttributeValidation(attribute);
+              }, this);
             },
 
-            /**
-             *
-             */
-            tryParseHeader: function(text) {
-              var strategies = [
-                "\r\n",
-                "\n",
-                "\r"
-              ];
+            updateFillButton: function(messageHTML) {
+              var oldHTML = this.$(".fill").html();
 
-              var index = -1;
+              this.$(".fill").html(messageHTML);
+              this.$(".fill").removeClass("btn-primary");
+              this.$(".fill").addClass("btn-error");
 
-              for (var i = 1; i < strategies.length; i++) {
-                var result = text.indexOf(strategies[i]);
-
-                if (result >= 0) {
-                  index = result;
-
-                  break;
-                }
-              }
-
-              if (index === -1) {
-                return;
-              }
-
-              var header_line = text.slice(0, index);
-              var names = header_line.split(",");
-
-              return names;
+              window.setTimeout(function () {
+                this.$(".fill").html(oldHTML);
+                this.$(".fill").addClass("btn-primary");
+                this.$(".fill").removeClass("btn-error");
+              }, 3000);
             }
           });
 
