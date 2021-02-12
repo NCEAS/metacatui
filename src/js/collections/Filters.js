@@ -231,17 +231,12 @@ define([
          */
         getIdFilters: function(){
           try {
-            var idFields = MetacatUI.appModel.get("queryIdentifierFields");
-            var idFilters = this.filter(function (filter) {
-              var fields = filter.get("fields")
-              // FilterGroup will not return anything for fields
-              if( !fields ) { return false }
-              // Match if any of the filter fields are one of the ID fields
-              return ( _.some( idFields, function(idField) {
-                return fields.includes(idField)
-              }));
+            return this.filter(function (filterModel) {
+              if(typeof filterModel.isIdFilter == "undefined"){
+                return false
+              }
+              return filterModel.isIdFilter()
             });
-            return idFilters
           } catch (error) {
             console.log("Error trying to find ID Filters, error details: " + error);
           }
@@ -289,7 +284,11 @@ define([
             
             //Join this group's query fragments with an OR operator
             if (groupQueryFragments.length) {
-              return "(" + groupQueryFragments.join("%20" + operator + "%20") + ")"
+              var queryString = groupQueryFragments.join("%20" + operator + "%20");
+              if(groupQueryFragments.length > 1){
+                queryString = "(" + queryString + ")"
+              }
+              return queryString
             }
             //Otherwise, return an empty string
             else {

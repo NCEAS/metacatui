@@ -303,25 +303,27 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
 
             // Create the grouped query for the id filters (this will have the isPartOf
             // filter query if exclude is false, and will not have it if exclude is true)
-            var idFilterQuery = this.get("filters").getGroupQuery(idFilters, "OR");
+            var idFilterQuery = this.get("filters").getGroupQuery(idFilters, "OR").trim();
             // Make the query fragment for all of the filters that do not contain ID fields
-            var mainQuery = this.get("filters").getGroupQuery(mainFilters, operator);
+            var mainQuery = this.get("filters").getGroupQuery(mainFilters, operator).trim();
             // Make the query string that should be added to all catalog searches
             var categoryQuery = ""
             if(this.get("catalogSearch")){
-              categoryQuery = this.get("filters").createCatalogSearchQuery()
+              categoryQuery = this.get("filters").createCatalogSearchQuery().trim()
             }
             // Make the query string for the isPartOf filter when the filter group should
             // be excluded
             var isPartOfQuery = ""
             if(isPartOfFilter){
-              isPartOfQuery = isPartOfFilter.getQuery();
+              isPartOfQuery = isPartOfFilter.getQuery().trim();
             }
+            // If we are appending ID filters, then the query string will need extra parentheses
+            var idFiltersPresent = idFilterQuery.length || isPartOfQuery.length
 
             if(this.get("exclude")){
 
               // The query is constructed like so for filter groups with exclude set to true:
-              // -( mainQuery OR idFilterQuery ) AND categoryQuery OR isPartOfQuery
+              // -( mainQuery OR idFilterQuery ) OR isPartOfQuery AND categoryQuery
               // Build the query string piece by piece:
 
               // 1. mainQuery
@@ -330,34 +332,38 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
               queryString = addQueryFragment(queryString, idFilterQuery, "OR")
               // 3. -( mainQuery OR idFilterQuery )
               if(queryString.trim().length){
-                queryString = "-(" + queryString + ")"
+                if(idFiltersPresent){
+                  queryString = "(" + queryString + ")"
+                }
+                queryString = "-" + queryString
               }
-              // 4a. -( mainQuery OR idFilterQuery ) AND categoryQuery
+              // 4. -( mainQuery OR idFilterQuery ) OR isPartOfQuery
+              queryString = addQueryFragment(queryString, isPartOfQuery, "OR")
+              // 5a. -( mainQuery OR idFilterQuery ) OR isPartOfQuery AND categoryQuery
               //      or, if a positive clause is required (see Filter model requiresPositiveClause for details)
-              // 4b. -( mainQuery OR idFilterQuery ) AND *:*
+              // 5b. -( mainQuery OR idFilterQuery ) OR isPartOfQuery AND *:*
               queryString = addQueryFragment(queryString, categoryQuery, "AND")
               if(!this.get("catalogSearch") && queryString.trim().length){
                 queryString = addQueryFragment(queryString, "*:*", "AND")
               }
-              // 5. -( mainQuery OR idFilterQuery ) AND categoryQuery OR isPartOfQuery
-              queryString = addQueryFragment(queryString, isPartOfQuery, "OR")
-
+              
             } else {
 
               // The query is constructed like so for filter groups with exclude set to false:
-              // ( mainQuery AND catalogQuery ) OR idFilterQuery
+              // ( mainQuery OR idFilterQuery ) AND catalogQuery
               // where idFilterQuery includes the isPartOfQuery
 
               // 1. mainQuery
               queryString += mainQuery;
-              // 2. mainQuery AND catalogQuery
-              queryString = addQueryFragment(queryString, categoryQuery, "AND");
-              // 3. ( mainQuery AND catalogQuery )
-              if(queryString.trim().length){
+              // 2. mainQuery OR idFilterQuery
+              queryString = addQueryFragment(queryString, idFilterQuery, "OR")
+              // 3. ( mainQuery OR idFilterQuery )
+              if(queryString.trim().length && idFiltersPresent){
                 queryString = "(" + queryString + ")"
               }
-              // 4. ( mainQuery AND catalogQuery ) OR idFilterQuery
-              queryString = addQueryFragment(queryString, idFilterQuery, "OR")
+              // 4. mainQuery OR idFilterQuery AND catalogQuery
+              queryString = addQueryFragment(queryString, categoryQuery, "AND")
+              
             }
 
             return queryString

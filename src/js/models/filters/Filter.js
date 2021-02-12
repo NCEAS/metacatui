@@ -425,6 +425,7 @@ define(['jquery', 'underscore', 'backbone'],
     * @return {string} The query substring
     */
     getValueQuerySubstring: function(values){
+
       //Start a query string for this field and get the values
       var valuesQueryString = "",
           values = values || this.get("values");
@@ -446,31 +447,29 @@ define(['jquery', 'underscore', 'backbone'],
         value = value.trim();
 
         var dateRangeRegEx = /^\[((\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d*Z)|\*)( |%20)TO( |%20)((\d{4}-[01]\d-[0-3]\dT[0-2]\d(:|\\:)[0-5]\d(:|\\:)[0-5]\d\.\d*Z)|\*)\]/,
-            isDateRange = dateRangeRegEx.test(value);
+            isDateRange = dateRangeRegEx.test(value),
+            isSearchPhrase = value.indexOf(" ") > -1,
+            isIdFilter = this.isIdFilter();
 
-        //Escape special characters
+        // Escape special characters
         value = this.escapeSpecialChar(value);
 
-        //If the value is a search phrase (more than one word), and not a date range string, wrap in quotes
-        if( value.indexOf(" ") > -1 && !isDateRange ){
-          valuesQueryString += "\"" + value + "\"";
+        // If the value is a search phrase (more than one word), is part of an ID filter,
+        // and not a date range string, wrap in quotes
+        if( (isSearchPhrase || isIdFilter) && !isDateRange ){
+          value = "\"" + value + "\"";
         }
-        else if( this.get("matchSubstring") && !isDateRange ){
 
-          //Look for existing wildcard characters at the end of the value string
-          if( value.match( /^\*|\*$/ ) ){
-            valuesQueryString += value;
+        if( this.get("matchSubstring") && !isDateRange ){
+          // Look for existing wildcard characters at the end of the value string, wrap
+          // the value string in wildcard characters if there aren't any yet.
+          if(! value.match( /^\*|\*$/ ) ){
+            value = "*" + value + "*"
           }
-          //Wrap the value string in wildcard characters
-          else{
-            valuesQueryString += "*" + value + "*";
-          }
+        }
 
-        }
-        else{
-          //Add the value to the query string
-          valuesQueryString += value;
-        }
+        // Add the value to the query string
+        valuesQueryString += value;
 
         //Add the operator between values
         if( values.length > i+1 && valuesQueryString.length ){
@@ -484,6 +483,28 @@ define(['jquery', 'underscore', 'backbone'],
       }
 
       return valuesQueryString;
+    },
+
+    /**
+     * Checks if any of the fields in this Filter match one of the
+     * {@link AppConfig#queryIdentifierFields}
+     * @since 2.15.0
+     */
+    isIdFilter: function(){
+      try {
+        var fields = this.get("fields");
+        if(!fields){
+          return false
+        }
+        var idFields = MetacatUI.appModel.get("queryIdentifierFields");
+        return _.some( idFields, function(idField) {
+          return fields.includes(idField)
+        })
+      } catch (error) {
+        console.log("Error checking if a Filter model is an ID filter. " +
+          "Assuming it is not. Error details:" + error );
+        return false
+      }
     },
 
     /**
