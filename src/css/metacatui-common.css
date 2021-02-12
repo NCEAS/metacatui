@@ -7476,6 +7476,16 @@ textarea.medium{
   padding: 0px 20px;
 	overflow: scroll;
 }
+
+.attribute-menu-container .button-container {
+  padding: 5px;
+  background-color:  #EEE;
+}
+
+.attribute-menu-container .button-container button {
+  width: 100%;
+}
+
 .eml-attribute .title{
 	margin-bottom: 20px;
 }

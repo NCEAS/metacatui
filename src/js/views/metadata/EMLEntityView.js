@@ -30,6 +30,13 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
             template: _.template(EMLEntityTemplate),
             attributeMenuItemTemplate: _.template(EMLAttributeMenuItemTemplate),
 
+            /**
+             *
+             */
+            fillableFormats: [
+              "text/csv"
+            ],
+
             /* Events this view listens to */
             events: {
               "change" : "saveDraft",
@@ -39,7 +46,8 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
               "click .attribute-menu-item" : "showAttribute",
               "mouseover .attribute-menu-item .remove" : "previewAttrRemove",
               "mouseout .attribute-menu-item .remove"  : "previewAttrRemove",
-              "click .attribute-menu-item .remove" : "removeAttribute"
+              "click .attribute-menu-item .remove" : "removeAttribute",
+              "click .fill": "handleFill"
             },
 
             initialize: function(options){
@@ -57,6 +65,8 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
               this.renderPreview();
 
               this.renderAttributes();
+
+              this.renderFillButton();
 
               this.listenTo(this.model, "invalid", this.showValidation);
               this.listenTo(this.model, "valid", this.showValidation);
@@ -187,6 +197,21 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
 
             firstAttr.data("attributeView").postRender();
 
+            },
+
+            renderFillButton: function() {
+              if (!_.contains(this.fillableFormats, this.model.get("entityType"))) {
+                return;
+              }
+
+              var target = this.$(".button-container");
+
+              if (!target.length === 1) {
+                return;
+              }
+
+              var btn = $('<button class="btn btn-primary fill">Fill from File</button>');
+              $(target).html(btn);
             },
 
             updateModel: function(e){
@@ -575,6 +600,109 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
               catch (ex) {
                 console.log("Failed to clear old drafts: ", ex);
               }
+            },
+
+            /**
+             * TODO
+             */
+            handleFill: function(e) {
+              var d1Object = this.model.get("dataONEObject");
+
+              if (!d1Object) {
+                return;
+              }
+
+              var file = d1Object.get("uploadFile");
+
+              if (!file) {
+                return;
+              }
+
+              this.readSlice(file, this.onLoadEndCallback);
+            },
+
+            /**
+             * TODO
+             */
+            readSlice: function(file, callback, bytes = 1024) {
+              if (typeof callback !== "function") {
+                return
+              }
+
+              var reader = new FileReader(),
+                  blob = file.slice(0, bytes);
+
+              reader.onloadend = callback.bind(this);
+              reader.readAsBinaryString(blob);
+            },
+
+            /**
+             * TODO
+             */
+            onLoadEndCallback: function(e) {
+              if (e.target.readyState !== FileReader.DONE) {
+                return;
+              }
+
+              var names = this.tryParseHeader(e.target.result);
+
+              if (!names) {
+                return;
+              }
+
+              // Either update existing attribute names or add new attributes
+              var attributes = this.model.get("attributeList");
+
+              for (var i = 0; i < names.length; i++) {
+                if (attributes.length - 1>= i) {
+                  console.log("updating name for", attributes[i].get("attributeName"));
+                  attributes[i].set("attributeName", names[i]);
+                } else {
+                  console.log("creating new attribute for ", names[i]);
+                  attributes.push(new EMLAttribute({
+                    parentModel: this.model,
+                    xmlID: DataONEObject.generateId(),
+                    attributeName: names[i]
+                  }));
+                }
+              }
+
+              this.model.set("attributeList", attributes);
+              this.$(".attribute-menu.side-nav-items").empty();
+              this.$(".attribute-list .eml-attribute.new").removeClass("new");
+              this.renderAttributes();
+            },
+
+            /**
+             *
+             */
+            tryParseHeader: function(text) {
+              var strategies = [
+                "\r\n",
+                "\n",
+                "\r"
+              ];
+
+              var index = -1;
+
+              for (var i = 1; i < strategies.length; i++) {
+                var result = text.indexOf(strategies[i]);
+
+                if (result >= 0) {
+                  index = result;
+
+                  break;
+                }
+              }
+
+              if (index === -1) {
+                return;
+              }
+
+              var header_line = text.slice(0, index);
+              var names = header_line.split(",");
+
+              return names;
             }
           });
 
