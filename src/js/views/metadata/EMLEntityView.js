@@ -5,13 +5,13 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
         'views/metadata/EMLAttributeView',
         'text!templates/metadata/eml-entity.html',
         'text!templates/metadata/eml-attribute-menu-item.html',
-        'common/header_tools'],
+        'common/EntityUtils'],
     function(_, $, Backbone, LocalForage, DataONEObject, EMLAttribute, EMLEntity,
         DataPreviewView,
         EMLAttributeView,
         EMLEntityTemplate,
         EMLAttributeMenuItemTemplate,
-        HeaderTools){
+        EntityUtils){
 
         /**
         * @class EMLEntityView
@@ -626,12 +626,12 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
               var view = this;
 
               try {
-                HeaderTools.readSlice(file, this, function (event) {
+                EntityUtils.readSlice(file, this, function (event) {
                   if (event.target.readyState !== FileReader.DONE) {
                     return;
                   }
 
-                  var names = HeaderTools.tryParseCSVHeader(
+                  var names = EntityUtils.tryParseCSVHeader(
                     event.target.result
                   );
 

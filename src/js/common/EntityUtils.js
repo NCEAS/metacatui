@@ -27,8 +27,6 @@ define(["jquery"], function ($) {
      * Doesn't handle:
      * - UTF BOM (garbles first col name)
      * - Commas inside quoted headers
-     * winallquoted "station_id","bikes_available","docks_available","time"
-
      *
      * @param {string} text - A chunk of a file
      * @return {Array} A list of names
