@@ -7477,13 +7477,13 @@ textarea.medium{
 	overflow: scroll;
 }
 
-.attribute-menu-container .button-container {
+.attribute-menu-container .fill-button-container {
   background-color:  #EEE;
 	border-right: 1px solid #DDD;
 	width: 100%;
 }
 
-.attribute-menu-container .button-container button {
+.attribute-menu-container .fill-button-container button {
   width: calc(100% - 10px);
 	margin: 5px;
 }

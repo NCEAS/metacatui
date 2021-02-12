@@ -31,6 +31,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
             /* The HTML template for an entity */
             template: _.template(EMLEntityTemplate),
             attributeMenuItemTemplate: _.template(EMLAttributeMenuItemTemplate),
+            fillButtonTemplateString: '<button class="btn btn-primary fill-button"><i class="icon-magic"></i> Fill from file</button>',
 
             /**
              *
@@ -49,7 +50,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
               "mouseover .attribute-menu-item .remove" : "previewAttrRemove",
               "mouseout .attribute-menu-item .remove"  : "previewAttrRemove",
               "click .attribute-menu-item .remove" : "removeAttribute",
-              "click .fill": "handleFill"
+              "click .fill-button": "handleFill"
             },
 
             initialize: function(options){
@@ -206,13 +207,13 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
                 return;
               }
 
-              var target = this.$(".button-container");
+              var target = this.$(".fill-button-container");
 
               if (!target.length === 1) {
                 return;
               }
 
-              var btn = $('<button class="btn btn-primary fill"><i class="icon-magic"></i> Fill from file</button>');
+              var btn = $(this.fillButtonTemplateString);
               $(target).html(btn);
             },
 
@@ -691,17 +692,22 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
               }, this);
             },
 
+            /**
+             * Update the Fill button temporarily and set it back to the default
+             *
+             * Used to show success or failure of the filling operation
+             *
+             * @param {string} messageHTML - HTML template string to set
+             *   temporarily
+             */
             updateFillButton: function(messageHTML) {
-              var oldHTML = this.$(".fill").html();
+              var view = this,
+                oldHTML = this.$(".fill-button").html();
 
-              this.$(".fill").html(messageHTML);
-              this.$(".fill").removeClass("btn-primary");
-              this.$(".fill").addClass("btn-error");
+              this.$(".fill-button").html(messageHTML);
 
               window.setTimeout(function () {
-                this.$(".fill").html(oldHTML);
-                this.$(".fill").addClass("btn-primary");
-                this.$(".fill").removeClass("btn-error");
+                view.$(".fill-button-container").html(view.fillButtonTemplateString);
               }, 3000);
             }
           });
