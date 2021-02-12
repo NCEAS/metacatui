@@ -7478,12 +7478,14 @@ textarea.medium{
 }
 
 .attribute-menu-container .button-container {
-  padding: 5px;
   background-color:  #EEE;
+	border-right: 1px solid #DDD;
+	width: 100%;
 }
 
 .attribute-menu-container .button-container button {
-  width: 100%;
+  width: calc(100% - 10px);
+	margin: 5px;
 }
 
 .eml-attribute .title{
