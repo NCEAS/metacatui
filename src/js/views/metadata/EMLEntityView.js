@@ -619,33 +619,73 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
 
               var file = d1Object.get("uploadFile");
 
-              if (!file) {
-                return;
+              try {
+                if (!file) {
+                  this.handleFillViaFetch();
+                } else {
+                  this.handleFillViaFile(file);
+                }
+              } catch (error) {
+                console.log("Error while attempting to fill", error);
+                view.updateFillButton(
+                  '<i class="icon-warning-sign"></i> Couldn\'t fill'
+                );
               }
+            },
 
+            /**
+             * Handle the fill event using a File object
+             *
+             * @param {File} file - A File object to fill from
+             */
+            handleFillViaFile: function(file) {
               var view = this;
 
-              try {
-                EntityUtils.readSlice(file, this, function (event) {
-                  if (event.target.readyState !== FileReader.DONE) {
-                    return;
-                  }
+              EntityUtils.readSlice(file, this, function (event) {
+                if (event.target.readyState !== FileReader.DONE) {
+                  return;
+                }
 
-                  var names = EntityUtils.tryParseCSVHeader(
-                    event.target.result
-                  );
+                view.tryParseAndFillAttributeNames.bind(view)(event.target.result);
+              });
+            },
 
-                  if (names.length === 0) {
-                    view.updateFillButton('<i class="icon-warning-sign"></i> Couldn\'t fill');
-                  } else {
-                    view.updateFillButton('<i class="icon-ok"></i> Filled!');
-                  }
+            /**
+             * Handle the fill event by fetching the object
+             */
+            handleFillViaFetch: function() {
+              var view = this;
 
-                  view.updateAttributeNames(names);
-                });
-              } catch (e) {
-                console.log(e);
+              var requestSettings = {
+                url:  MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(this.model.get("dataONEObject").get("id")),
+                method: "get",
+                success: view.tryParseAndFillAttributeNames.bind(this),
+                error: function(error) {
+                  console.log("Error fetching DataObject to parse out headers", error);
+                }
               }
+
+              this.updateFillButton('<i class="icon-time"></i> Please wait...');
+
+              requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+              $.ajax(requestSettings);
+            },
+
+            /**
+             * Attempt to parse header and fill attributes names
+             *
+             * @param {string} content - Part of a file to attempt to parse
+             */
+            tryParseAndFillAttributeNames: function(content) {
+              var names = EntityUtils.tryParseCSVHeader(content);
+
+              if (names.length === 0) {
+                this.updateFillButton('<i class="icon-warning-sign"></i> Couldn\'t fill');
+              } else {
+                this.updateFillButton('<i class="icon-ok"></i> Filled!');
+              }
+
+              this.updateAttributeNames(names);
             },
 
             /**
@@ -701,8 +741,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
              *   temporarily
              */
             updateFillButton: function(messageHTML) {
-              var view = this,
-                oldHTML = this.$(".fill-button").html();
+              var view = this;
 
               this.$(".fill-button").html(messageHTML);
 
