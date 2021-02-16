@@ -580,6 +580,15 @@ define([
               });
             }
 
+            // Trigger an event when the user focuses in searchable inputs
+            var inputEl = this.$el.find("input.search")
+            if(inputEl){
+              inputEl.off("focus");
+              inputEl.on("focus", function(event){
+                view.trigger("inputFocus", event)
+              })
+            }
+
           } catch (e) {
             console.log("The searchable select post-render function failed, error message: " + e);
           }
