@@ -401,6 +401,11 @@ define([
                   // added or removed.
                   setTimeout(function(params) {
                     var textEl = view.$selectUI.find(".text:not(.default),.label");
+                    // Single select text element will not have the value attribute, add
+                    // it so that we can find the matching description for the tooltip
+                    if(!textEl.data("value") && !view.allowMulti){
+                      textEl.data("value", values)
+                    }
                     if(textEl){
                       textEl.each(function(i, el){
                         view.addTooltip.call(view, el, "top");
@@ -642,8 +647,12 @@ define([
             // Find the description in the options object, using the data-value
             // attribute set in the template. The data-value attribute is either
             // the label, or the value, depending on if a value is provided.
-            var valueOrLabel = $(element).data("value"),
-                opt = _.chain(this.options)
+            var valueOrLabel = $(element).data("value");
+
+            if(!valueOrLabel){
+              return
+            }
+            var opt = _.chain(this.options)
                             .values()
                             .flatten()
                             .find(function(option){
@@ -680,7 +689,7 @@ define([
 
             return $(element)
           } catch (e) {
-            console.log("Failed to add tooltips in a searchable select view, error message: " + e);
+            console.log("Failed to add tooltip in a searchable select view, error message: " + e);
           }
 
         },
