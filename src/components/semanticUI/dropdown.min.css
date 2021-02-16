@@ -44,7 +44,10 @@
 .ui.multiple.selection.error.dropdown > .label {
  background-color: white;
 }
-
+/* Make sure the text element is at the top of the dropdown so that tooltips work */
+.ui.search.dropdown>.text {
+  z-index: 22;
+}
 /* Loading */
 .ui.loading.selection.dropdown>i.icon {
   padding: 1.17em 1.29em!important;
