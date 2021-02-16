@@ -25,9 +25,15 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
       model: null,
 
       /**
+       * Whether to allow (true) the user to pick more than one value
+       */
+      multiSelect: false,
+
+      /**
        * The ontology (on BioPortal) to show a tree for
        */
       ontology: "ECSO",
+
       /**
        * Which term within this.ontology to root the tree at
        */
@@ -127,7 +133,21 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
           this.model.set("annotation", []);
         }
 
-        this.model.get("annotation").push(anno);
+        var annotations = this.model.get("annotation");
+
+        // Replace if multiselect is false and we can find another
+        // MeasurementType annotation. Pushes otherwise.
+        if (!this.multiSelect) {
+          var findResult = _.findIndex(this.model.get("annotation"), function(annotation) {
+            return annotation.get("propertyURI") === this.filterURI
+          }, this);
+
+          if (findResult >= 0) {
+            annotations.splice(findResult, 1);
+          }
+        }
+        annotations.push(anno);
+        this.model.set("annotation", annotations);
         this.model.trickleUpChange();
 
         // Force a re-render of the annotations
@@ -160,12 +180,40 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
           return;
         }
 
-        // Now scan over all annotations for a match
-        var index = -1;
-        var existing = this.model.get("annotation");
+        var index = this.findAnnotationIndex(valueLabel, valueURI);
 
-        for (var i = 0; i < existing.length; i++) {
-          var anno = existing[i];
+        if (index < 0) {
+          return;
+        }
+
+        // Remove by index now that we've found the right one
+        var existing = this.model.get("annotation");
+        existing.splice(index, 1);
+        this.model.set("annotation", existing);
+        this.model.trickleUpChange();
+
+        // Force a re-render
+        this.renderAnnotations();
+      },
+
+      /**
+       * Find the index of the first annotation that matches the given values
+       *
+       * @param {string} valueLabel - The valueLabel to look for
+       * @param {string} valueURI - The valueURI to look for
+       *
+       * @return {number} -1 if not found, or the index otherwise
+       */
+      findAnnotationIndex: function(valueLabel, valueURI) {
+        var index = -1;
+        var annotations = this.model.get("annotation");
+
+        if (!annotations) {
+          return;
+        }
+
+        for (var i = 0; i < annotations.length; i++) {
+          var anno = annotations[i];
 
           if (
             anno.get("propertyLabel") == this.filterLabel &&
@@ -179,17 +227,7 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
           }
         }
 
-        if (index < 0) {
-          return;
-        }
-
-        // Remove by index now that we've found the right one
-        existing.splice(i, 1);
-        this.model.set("annotation", existing);
-        this.model.trickleUpChange();
-
-        // Force a re-render
-        this.renderAnnotations();
+        return index;
       }
     });
 
