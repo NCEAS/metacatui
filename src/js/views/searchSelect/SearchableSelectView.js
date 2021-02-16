@@ -648,9 +648,11 @@ define([
             // attribute set in the template. The data-value attribute is either
             // the label, or the value, depending on if a value is provided.
             var valueOrLabel = $(element).data("value");
-
-            if(!valueOrLabel){
+            if(typeof valueOrLabel === "undefined"){
               return
+            }
+            if(typeof valueOrLabel === "boolean"){
+              valueOrLabel = valueOrLabel.toString()
             }
             var opt = _.chain(this.options)
                             .values()
