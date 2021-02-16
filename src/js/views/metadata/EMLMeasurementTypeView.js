@@ -95,7 +95,7 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
               propertyURI: annotation.get("propertyURI"),
               valueLabel: annotation.get("valueLabel"),
               valueURI: annotation.get("valueURI"),
-              contextString: "This is my context string, which needs work."
+              contextString: "This attribute"
             }
           })
         };
