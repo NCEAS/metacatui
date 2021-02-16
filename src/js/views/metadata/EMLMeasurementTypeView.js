@@ -15,7 +15,8 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
       events: {
         "click .nav-tabs a" : "showTab",
         "change input" : "updateModel",
-        "click .remove": "handleRemove"
+        "click .remove": "handleRemove",
+        "click .notfound" : "handleMeasurementTypeNotFound"
       },
 
       /**
@@ -89,6 +90,7 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
         });
 
         var templateData = {
+          startingRoot: this.startingRoot,
           annotations: _.map(filtered, function(annotation) {
             return {
               propertyLabel: annotation.get("propertyLabel"),
@@ -228,6 +230,20 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
         }
 
         return index;
+      },
+
+      /**
+       * Handle when the user can't find a class for their attribute
+       *
+       * This method isn't fantastic. We need a way to signify that the user
+       * couldn't find a good match for their attribute. EML doesn't have a way
+       * to specify this scenario so we use a sentinel value here in the hopes
+       * that moderation workflows will pick it up.
+       *
+       * @param {Event} e - The click event
+       */
+      handleMeasurementTypeNotFound: function(e) {
+        this.selectConcept(null, this.startingRoot, "Measurement Type", null);
       }
     });
 
