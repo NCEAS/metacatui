@@ -725,11 +725,6 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
 
               // Then re-render
               this.renderAttributes();
-
-              // Validate each attribute
-              _.forEach(attributes, function(attribute) {
-                this.showAttributeValidation(attribute);
-              }, this);
             },
 
             /**
