@@ -1354,7 +1354,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                   //Send this exception to Google Analytics
                   if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
                     ga("send", "exception", {
-                      "exDescription": "DataPackage save error: " + errorMsg +
+                      "exDescription": "DataPackage save error: " + data.responseText +
                         " | Id: " + collection.packageModel.get("id") + " | v. " + MetacatUI.metacatUIVersion,
                       "exFatal": true
                     });
