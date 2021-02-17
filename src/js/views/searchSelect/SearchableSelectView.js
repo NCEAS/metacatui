@@ -7,7 +7,6 @@ define([
     "semanticUIdropdown",
     "text!" + MetacatUI.root + "/components/semanticUI/dropdown.min.css",
     "text!templates/selectUI/searchableSelect.html",
-    
   ],
   function($, _, Backbone, Transition, TransitionCSS, Dropdown, DropdownCSS, Template) {
 
@@ -286,6 +285,14 @@ define([
           try {
 
             var view = this;
+
+            if(view.apiSettings && !view.semanticAPILoaded){
+              require([MetacatUI.root + "/components/semanticUI/api.min.js"], function(SemanticAPI){
+                view.semanticAPILoaded = true
+                view.render();
+              })
+              return;
+            }
 
             // Render the template using the view attributes
             this.$el.html(this.template(this));
