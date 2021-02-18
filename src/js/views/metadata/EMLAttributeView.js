@@ -70,11 +70,14 @@ define(['underscore', 'jquery', 'backbone',
             	measurementScaleModel.set("parentModel", this.model);
 
               // Measurement Type
-              var emlMeasurementTypeView = new EMLMeasurementTypeView({
-                model: this.model
-              });
-              emlMeasurementTypeView.render();
-              this.$(".measurement-type-container").append(emlMeasurementTypeView.el);
+              // Only shown when we have a BioPortal API key
+              if (MetacatUI.appModel.get("bioportalAPIKey")) {
+                var emlMeasurementTypeView = new EMLMeasurementTypeView({
+                  model: this.model
+                });
+                emlMeasurementTypeView.render();
+                this.$(".measurement-type-container").append(emlMeasurementTypeView.el);
+              }
 
             	//Create an EMLMeasurementScaleView for this attribute's measurement scale
             	var measurementScaleView = new EMLMeasurementScaleView({
