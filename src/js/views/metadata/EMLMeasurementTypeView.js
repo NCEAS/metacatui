@@ -16,7 +16,8 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
         "click .nav-tabs a" : "showTab",
         "change input" : "updateModel",
         "click .remove": "handleRemove",
-        "click .notfound" : "handleMeasurementTypeNotFound"
+        "click .notfound" : "handleMeasurementTypeNotFound",
+        "click .notspecific" : "handleMeasurementTypeNotSpecific"
       },
 
       /**
@@ -47,6 +48,24 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
       filterLabel: "contains measurements of type",
       filterURI: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#containsMeasurementsOfType",
 
+      /**
+       * Class to apply when the user indicates they couldn't find a suitable
+       * term
+       */
+      notFoundClass: {
+        label: "Asbent",
+        uri: "http://purl.obolibrary.org/obo/NCIT_C48190"
+      },
+
+      /**
+       * Class to apply when the user indicates the best term they found wasn't
+       * specific enough
+       */
+      notSpecificClass: {
+        label: "Nonspecific",
+        uri: "http://purl.obolibrary.org/obo/NCIT_C50404"
+      },
+
       initialize: function (options) {
         this.model = options.model;
       },
@@ -59,7 +78,7 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
         this.renderAnnotations();
 
         // Set up tree widget
-        var tree = this.$(".measurement-type-browse").NCBOTree({
+        var tree = this.$(".measurement-type-browse-tree").NCBOTree({
           apikey: MetacatUI.appModel.get("bioportalAPIKey"),
           ontology: this.ontology,
           width: "400",
@@ -90,7 +109,8 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
         });
 
         var templateData = {
-          startingRoot: this.startingRoot,
+          notSpecificURI: this.notSpecificClass.uri,
+          notFoundURI: this.notFoundClass.uri,
           annotations: _.map(filtered, function(annotation) {
             return {
               propertyLabel: annotation.get("propertyLabel"),
@@ -243,7 +263,22 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
        * @param {Event} e - The click event
        */
       handleMeasurementTypeNotFound: function(e) {
-        this.selectConcept(null, this.startingRoot, "Measurement Type", null);
+        this.selectConcept(null, this.notFoundClass.uri, this.notFoundClass.label, null);
+      },
+
+      /**
+       * Handle when the user can't find a specific enough class for their
+       * attribute
+       *
+       * This method isn't fantastic. We need a way to signify that the user
+       * couldn't find a good match for their attribute. EML doesn't have a way
+       * to specify this scenario so we use a sentinel value here in the hopes
+       * that moderation workflows will pick it up.
+       *
+       * @param {Event} e - The click event
+       */
+      handleMeasurementTypeNotSpecific: function(e) {
+        this.selectConcept(null, this.notSpecificClass.uri, this.notSpecificClass.label, null);
       }
     });
 
