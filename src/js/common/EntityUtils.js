@@ -53,8 +53,15 @@ define(["jquery"], function ($) {
 
       var header_line = text.slice(0, index);
       var names = header_line.split(",");
+
+      // Remove surrounding parens and double-quotes
       names = names.map(function(name) {
         return name.replaceAll(/^["']|["']$/gm, "");
+      });
+
+      // Filter out zero-length values (headers like a,b,c,,,,,)
+      names = names.filter(function(name) {
+        return name.length > 0;
       });
 
       return names;
