@@ -32,7 +32,8 @@ define(["jquery"], function ($) {
      * @return {Array} A list of names
      */
     tryParseCSVHeader: function (text) {
-      var strategies = ["\r\n", "\n", "\r"];
+      // The order is important here
+      var strategies = ["\r\\n", "\r", "\n"];
 
       var index = -1;
 
