@@ -2786,16 +2786,37 @@ section#user-citations {
 
 /* MeasurementTypeView */
 .measurement-type-browse {
-  display: inline-block;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  padding: 0.5rem;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
 }
 
-.measurement-type-browse input.ncboAutocomplete {
+.measurement-type-browse-tree {
+  border: 1px solid #ccc;
+  border-radius: 5px 0px 5px 5px;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+.measurement-type-browse-tree > ul {
+  list-style-type: none;
+}
+
+.measurement-type-browse-tree input.ncboAutocomplete {
   border: 1px solid #ccc;
   border-radius: 3px;
+  width: 100%;
 }
+
+.measurement-type-browse-side {
+  border-collapse: collapse;
+}
+
+.measurement-type-browse-side button {
+  border-radius: 0px 5px 5px 0px;
+  border-left: none;
+  margin-bottom: 0.25rem;
+}
+
 
 /** Hide the search when in the dropdown menu **/
 .dropdown-menu .ncboAutocomplete {
