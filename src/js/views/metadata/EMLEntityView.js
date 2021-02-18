@@ -203,7 +203,11 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
             },
 
             renderFillButton: function() {
-              if (!_.contains(this.fillableFormats, this.model.get("entityType"))) {
+              var formatGuess = this.model.get("dataONEObject")
+                ? this.model.get("dataONEObject").get("formatId")
+                : this.model.get("entityType");
+
+              if (!_.contains(this.fillableFormats, formatGuess)) {
                 return;
               }
 
