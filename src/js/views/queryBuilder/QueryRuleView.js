@@ -382,12 +382,12 @@ define([
                   },
                   {
                     label: "mixed",
-                    description: "Loose coupling means service works on any data."
+                    description: "Mixed coupling means service works on data described" +
+                    " by this metadata document but may work on other data."
                   },
                   {
                     label: "loose",
-                    description: "Mixed coupling means service works on data described" +
-                      " by this metadata document but may work on other data."
+                    description: "Loose coupling means service works on any data."
                   }
                 ],
                 allowMulti: true,
