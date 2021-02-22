@@ -1561,18 +1561,45 @@ define([
               view.valueSelect.$el.prepend(label)
             }
 
+            // Make sure the listeners set below are not set multiple times
+            this.stopListening( view.valueSelect, 'changeSelection inputFocus' );
+
             // Update model when the values change - note that the date & numeric filter
             // views do not trigger a 'changeSelection' event, (because they are not based
             // on a SearchSelect View) but update the models directly
-            this.stopListening(
-              view.valueSelect,
-              'changeSelection'
-            );
             this.listenTo(
               view.valueSelect,
               'changeSelection',
               this.handleValueChange
             );
+
+            // Show a message that reminds the user that capitalization matters when they
+            // are typing a value for a field that is case-sensitive.
+            this.listenTo(
+              view.valueSelect,
+              'inputFocus',
+              function(event){
+                var fields = this.model.get("fields");
+                var isCaseSensitive = _.some(fields, function(field){
+                  return MetacatUI.queryFields.findWhere({
+                    name: field,
+                    caseSensitive: true
+                  });
+                })
+                if(isCaseSensitive){
+                  var fieldsText = "The field"
+                  if(fields.length > 1){
+                    fieldsText = "At least one of the fields"
+                  }
+                  var message = "<i class='icon-lightbulb icon-on-left'></i> <b>Hint:</b> " +
+                        fieldsText +
+                        " you selected is case-sensitive. Capitalization matters here."
+                  view.valueSelect.showMessage(message, type = "info", removeOnChange = false)
+                } else {
+                  view.valueSelect.removeMessages()
+                }
+              }
+            )
 
             // Set the value to the value provided if there was one. Then validateValue()
           } catch (e) {
@@ -1622,7 +1649,7 @@ define([
             switch (inputType) {
               case "value":
                 if (this.valueSelect) {
-                  this.stopListening(this.valueSelect, 'changeSelection');
+                  this.stopListening( this.valueSelect, 'changeSelection inputFocus' );
                   this.valueSelect.remove();
                   this.valueSelect = null;
                 }
