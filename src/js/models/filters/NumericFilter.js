@@ -123,32 +123,41 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       //Start the query string
       var queryString = "";
 
-      //Only construct the query if the min or max is different than the default
-      if( this.get("min") != this.get("rangeMin") || this.get("max") != this.get("rangeMax") ){
+      if(
+        // For numeric filters that are ranges, only construct the query if the min or max
+        // is different than the default
+        this.get("min") != this.get("rangeMin") ||
+        this.get("max") != this.get("rangeMax") ||
+        // Otherwise, a numeric filter could search for an exact value
+        (this.get("values") && this.get("values").length)
+        
+      ){
 
         //Iterate over each filter field and add to the query string
         _.each(this.get("fields"), function(field, i, allFields){
 
+          //Get the minimum, maximum, and value.
+          var max = this.get("max"),
+              min = this.get("min"),
+              value = this.get("values") ? this.get("values")[0] : null,
+              escapeMinus = function(val){ return val.toString().replace("-", "\\%2D") };
+
           //Construct a query string for ranges, min, or max
           if(
             this.get("range") ||
-            (this.get("max") || this.get("max") === 0) ||
-            (this.get("min") || this.get("min") === 0)
+            ( max || max === 0) ||
+            ( min || min === 0)
           ){
 
-            //Get the minimum and maximum values
-            var max = this.get("max"),
-                min = this.get("min");
-
             //If no min or max was set, but there is a value, construct an exact value match query
-            if( !min && min !== 0 && !max && max !== 0 &&
-                     (this.get("values")[0] || this.get("values")[0] === 0) ){
-              queryString += field + ":" + this.get("values")[0];
+            if( !min && min !== 0 && !max && max !== 0 && ( value || value === 0) ){
+              // Escape the minus sign if needed
+              queryString += field + ":" + escapeMinus(value);
             }
             //If there is no min or max or value, set an empty query string
             else if( !min && min !== 0 && !max && max !== 0 &&
-                     ( !this.get("values")[0] && this.get("values")[0] !== 0) ){
-              queryString = "";
+                     ( !value && value !== 0) ){
+                queryString = "";
             }
             //If there is at least a min or max
             else{
@@ -166,13 +175,13 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
               }
 
               //Add the range for this field to the query string
-              queryString += field + ":[" + min + "%20TO%20" + max + "]";
+              queryString += field + ":[" + escapeMinus(min) + "%20TO%20" + escapeMinus(max) + "]";
             }
           }
           //If there is a value set, construct an exact numeric match query
-          else if( this.get("values")[0] || this.get("values")[0] === 0 ){
-            console.debug( "~~~If there is a value set, construct an exact numeric match query~~~" );
-            queryString += field + ":" + this.get("values")[0];
+          else if( value || value === 0 ){
+            // If there is a value set, construct an exact numeric match query
+            queryString += field + ":" + escapeMinus(value);
           }
 
           //If there is another field, add an operator

@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metricModalTemplate.html', 'collections/Citations', 'views/CitationListView'],
-    function($, _, Backbone, MetricsChart, MetricModalTemplate, Citations, CitationList) {
+define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metricModalTemplate.html', 'collections/Citations', 'views/CitationListView', "views/SignInView"],
+    function($, _, Backbone, MetricsChart, MetricModalTemplate, Citations, CitationList, SignInView) {
     'use strict';
 
     /**
@@ -28,7 +28,8 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
           'hidden': 'teardown',
           'click .left-modal-footer'  : 'showPreviousMetricModal',
           'click .right-modal-footer' : 'showNextMetricModal',
-          'click .register-citation'  : 'showCitationForm'
+          'click .register-citation'  : 'showCitationForm',
+          "click .login"              : "showSignInViewPopUp"
         },
 
         initialize: function(options) {
@@ -83,6 +84,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
           this.$el.on('shown', function(){
             thisView.renderView();
             thisView.drawMetricsChart();
+            thisView.trigger("renderComplete");
           });
 
           this.$el.modal('show');
@@ -92,11 +94,19 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
         },
 
         renderView: function() {
+          try{
             this.metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
 
             if ( this.metricName === "Citations") {
-                var resultDetails = this.metricsModel.get("resultDetails");
-                var citationCollection = new Citations(resultDetails["citations"], {parse:true});
+                var resultDetails = this.metricsModel.get("resultDetails"),
+                    citationCollection;
+
+                if( resultDetails ){
+                  citationCollection = new Citations(resultDetails["citations"], {parse:true});
+                }
+                else{
+                  citationCollection = new Citations();
+                }
 
                 this.citationCollection = citationCollection;
 
@@ -123,7 +133,21 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
             }
 
+          }
+          catch(e){
+            console.error("Failed to render the MetricModelView: ", e);
+
+            let errorMessage = MetacatUI.appView.showAlert({
+              message: "Something went wrong while displaying the " + this.metricNameLemma + "s for this dataset.",
+              classes: "alert-info",
+              container: this.$el,
+              replaceContents: true,
+              includeEmail: true
+            });
+          }
+          finally{
             this.$el.modal({show:false}); // dont show modal on instantiation
+          }
 
         },
 
@@ -167,15 +191,54 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
          * Display the Citation registration form
          */
         showCitationForm: function(){
+
+            var viewRef = this;
+
+            // if the user is not currently signed in
+            if(!MetacatUI.appUserModel.get("loggedIn")){
+                this.showSignIn();
+            }
+            else {
+                // close the current modal
+                this.teardown();
+
+                require(['views/RegisterCitationView'], function(RegisterCitationView){
+                    // display a register citation modal
+                    var registerCitationView = new RegisterCitationView({pid: viewRef.pid});
+                    registerCitationView.render();
+                    registerCitationView.show();
+                });
+            }
+        },
+
+        /**
+        * Show Sign In buttons
+        */
+        showSignIn: function(){
+            var container = $(document.createElement("div")).addClass("container center");
+            this.$el.html(container);
+
+            //Create a SignInView
+            let signInView = new SignInView();
+            signInView.redirectQueryString = "registerCitation=true";
+
+            //Get the Sign In buttons elements
+            var signInButtons = signInView.render().el;
+            this.signInButtons = signInButtons;
+
+            //Add the elements to the page
+            $(container).append('<h1>Sign in to register citations</h1>', signInButtons);
+        },
+
+        /**
+         * Handle the sign in click event
+         */
+        showSignInViewPopUp: function(){
             // close the current modal
             this.teardown();
-            var viewRef = this;
-            require(['views/RegisterCitationView'], function(RegisterCitationView){
-                // display a register citation modal
-                var registerCitationView = new RegisterCitationView({pid: viewRef.pid});
-                registerCitationView.render();
-                registerCitationView.show();
-            });
+
+            // display the pop up
+            this.signInButtons.showSignInViewPopUp();
         },
 
         showNextMetricModal: function() {

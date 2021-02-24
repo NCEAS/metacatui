@@ -28,8 +28,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
             /* Events this view listens to */
             events: {
-                "focusout .name"       : "updateName",
-                "click    .name"       : "emptyName",
+                "focusout .name.canRename"       : "updateName",
+                "click    .name.canRename"       : "emptyName",
                 "click .duplicate"     : "duplicate",         // Edit dropdown, duplicate scimeta/rdf
                 "click .addFolder"     : "handleAddFolder",   // Edit dropdown, add nested scimeta/rdf
                 "click .addFiles"      : "handleAddFiles",    // Edit dropdown, open file picker dialog
@@ -54,15 +54,15 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 this.model = options.model || new DataONEObject();
                 this.id = this.model.get("id");
-                this.canReplace = false; // Default. Updated in render()
+                this.canWrite = false; // Default. Updated in render()
                 this.canShare = false; // Default. Updated in render()
             },
 
             /* Render the template into the DOM */
             render: function(model) {
 
-            	//Prevent duplicate listeners
-            	this.stopListening();
+                //Prevent duplicate listeners
+                this.stopListening();
 
               // Set the data-id for identifying events to model ids
               this.$el.attr("data-id", this.model.get("id"));
@@ -82,14 +82,22 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 attributes.entityIsValid = true;
                 attributes.hasInvalidAttribute = false;
 
-                // Restrict item replacement depending on access
+                // Restrict item replacement and renaming depending on access policy
                 //
-                // Note: .canReplace is set here (at render) instead of at init
+                // Note: .canWrite is set here (at render) instead of at init
                 // because render will get called a few times during page load
                 // as the app updates what it knows about the object
-                this.canReplace = this.model.get("accessPolicy") &&
-                    this.model.get("accessPolicy").isAuthorized("write");
-                attributes.canReplace = this.canReplace; // Copy to template
+                let accessPolicy = this.model.get("accessPolicy");
+                if( accessPolicy ){
+                  attributes.canWrite  = accessPolicy.isAuthorized("write");
+                  this.canWrite        = attributes.canWrite;
+                  attributes.canRename = accessPolicy.isAuthorizedUpdateSysMeta();
+                }
+                else{
+                  attributes.canWrite  = false;
+                  this.canWrite        = false;
+                  attributes.canRename = false;
+                }
 
                 // Restrict item sharing depending on access
                 if (MetacatUI.appModel.get("allowAccessPolicyChanges")) {
@@ -252,20 +260,38 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 this.toggleSaving();
 
                 //Create tooltips based on the upload status
-                if(this.model.get("uploadStatus") == "e" && this.model.get("errorMessage")){
-                	var errorMsg = this.model.get("errorMessage");
+                var uploadStatus = this.model.get("uploadStatus"),
+                    errorMessage = this.model.get("errorMessage");
+
+                // Use a friendlier message for 401 errors (the one returned is a little hard to understand)
+                if(this.model.get("sysMetaErrorCode") == 401){
+
+                    // If the user at least has write permission, they cannot update the system metadata only, so show this message
+                    /** @todo Do an object update when someone has write permission but not changePermission and is trying to change the system metadata (but not the access policy)  */
+                    if(accessPolicy && accessPolicy.isAuthorized("write")){
+                        errorMessage = "The owner of this data file has not given you permission to rename it or change the " + MetacatUI.appModel.get("accessPolicyName") + "."
+                    // Otherwise, assume they only have read access
+                    } else {
+                        errorMessage = "The owner of this data file has not given you permission to edit this data file or change the " + MetacatUI.appModel.get("accessPolicyName") + ".";
+                    }
+                }
+
+                // When there's an error or a warninig
+                if(uploadStatus == "e" && errorMessage){
+
+                    var tooltipClass = uploadStatus == "e" ? "error" : "";
 
                 	this.$(".status .icon").tooltip({
                 		placement: "top",
                 		trigger: "hover",
                 		html: true,
-                		title: "<div class='status-tooltip error'><h6>Error saving:</h6><div>" + errorMsg + "</div></div>",
+                		title: "<div class='status-tooltip " + tooltipClass + "'><h6>Issue saving:</h6><div>" + errorMessage + "</div></div>",
                 		container: "body"
                 	});
 
                 	this.$el.removeClass("loading");
                 }
-                else if (( !this.model.get("uploadStatus") || this.model.get("uploadStatus") == "c" || this.model.get("uploadStatus") == "q") && attributes.numAttributes == 0){
+                else if (( !uploadStatus || uploadStatus == "c" || uploadStatus == "q") && attributes.numAttributes == 0){
 
                 	this.$(".status .icon").tooltip({
                 		placement: "top",
@@ -291,7 +317,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 	this.$el.removeClass("loading");
 
                 }
-                else if(this.model.get("uploadStatus") == "c"){
+                else if(uploadStatus == "c"){
 
             		this.$(".status .icon").tooltip({
                 		placement: "top",
@@ -303,7 +329,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 	this.$el.removeClass("loading");
                 }
-                else if(this.model.get("uploadStatus") == "l"){
+                else if(uploadStatus == "l"){
                 	this.$(".status .icon").tooltip({
                 		placement: "top",
                 		trigger: "hover",
@@ -314,7 +340,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 	this.$el.addClass("loading");
                 }
-                else if(this.model.get("uploadStatus") == "p"){
+                else if(uploadStatus == "p"){
                 	var model = this.model;
 
                 	this.$(".status .progress").tooltip({
@@ -398,6 +424,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
              * @param e The event triggering this method
              */
             updateName: function(e) {
+
+
 
                 var enteredText = this.cleanInput($(e.target).text().trim());
 
@@ -573,7 +601,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 event.stopPropagation();
 
                 // Stop immediately if we know the user doesn't have privs
-                if (!this.canReplace) {
+                if (!this.canWrite) {
                     event.preventDefault();
                     return;
                 }
@@ -614,7 +642,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 event.stopPropagation();
                 event.preventDefault();
 
-                if (!this.canReplace) {
+                if (!this.canWrite) {
                     return;
                 }
 
@@ -954,6 +982,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             previewRemove: function(){
             	this.$el.toggleClass("remove-preview");
             },
+
             /**
              * Clears the text in the cell if the text was the default. We add
              * an 'empty' class, and remove it when the user focuses back out.
@@ -961,7 +990,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
              */
             emptyName: function(e){
 
-            	var editableCell = this.$(".name [contenteditable]");
+                var editableCell = this.$(".canRename [contenteditable]");
+
+                editableCell.tooltip('hide');
 
             	if(editableCell.text().indexOf("Untitled") > -1){
             		editableCell.attr("data-original-text", editableCell.text().trim())
@@ -1040,7 +1071,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             	if(this.model.get("type") != "Metadata")
             		this.$(".controls").prepend($(document.createElement("div")).addClass("disable-layer"));
 
-            	this.$(".name > div").prop("contenteditable", false);
+            	this.$(".canRename > div").prop("contenteditable", false);
             },
 
             hideSaving: function(){
@@ -1048,7 +1079,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             	this.$(".disable-layer").remove();
 
             	//Make the name cell editable again
-            	this.$(".name > div").prop("contenteditable", true);
+            	this.$(".canRename > div").prop("contenteditable", true);
 
             	this.$el.removeClass("error-saving");
             },
@@ -1063,7 +1094,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             		this.hideSaving();
 
             	if(this.model.get("uploadStatus") == "e")
-            		this.$el.addClass("error-saving");
+                    this.$el.addClass("error-saving");
             },
 
             showUploadProgress: function(){

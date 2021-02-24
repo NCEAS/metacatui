@@ -17,6 +17,7 @@ define(
      * @extends Backbone.View
      * @constructor
      * @since 2.14.0
+     * @screenshot views/searchSelect/AnnotationFilterView.png
      */
     return Backbone.View.extend(
       /** @lends AnnotationFilterView.prototype */
@@ -150,6 +151,7 @@ define(
                 allowMulti: true,
                 allowAdditions: false,
                 inputLabel: "Add one or more concepts",
+                separatorText: view.separatorText,
               })
               view.$el.append(view.multiSelectView.el);
               view.multiSelectView.render();
@@ -177,11 +179,6 @@ define(
 
           try {
             var view = this;
-
-            if(!view.multiSelectView.ready){
-              view.listenToOnce(view.multiSelectView, "postRender", view.updateMultiselect);
-              return
-            }
 
             // Check if this is the first time we are updating this multiselect.
             // If it is, then don't trigger the event that updates the model,

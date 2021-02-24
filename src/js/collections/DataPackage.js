@@ -209,7 +209,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
           /*
            * The DataPackage collection stores DataPackages and
-           * DataONEObjects, including Metadata nad Data objects.
+           * DataONEObjects, including Metadata and Data objects.
            * Return the correct model based on the type
            */
           model: function (attrs, options) {
@@ -962,7 +962,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               currentMember = this.find(function(model) { return model.get('id') === currentPid});
 
               if(typeof currentMember === 'undefined') {
-                console.log("Package member undefined for pid: " + currentPid);
                 return;
               }
               // Search for a provenenace field value (i.e. 'prov_wasDerivedFrom') that was
@@ -1116,12 +1115,18 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         m.get("uploadStatus") != "e" &&
                         m.get("uploadStatus") !== null))
                 });
-              //Get an array of data objects whose system metaata should be updated.
+              //Get an array of data objects whose system metadata should be updated.
               var sysMetaToUpdate = _.reject(dataModels, function(m){
-                //Find models that don't have any content changes to save,
+                // Find models that don't have any content changes to save,
                 // and whose system metadata is not already saving
-                return (m.get("hasContentChanges") || m.get("sysMetaUploadStatus") == "p" ||
-                        m.get("sysMetaUploadStatus") == "c" || m.get("sysMetaUploadStatus") == "e");
+                return (
+                  ( !m.hasUpdates() ||
+                    m.get("hasContentChanges") ||
+                    m.get("sysMetaUploadStatus") == "p" ||
+                    m.get("sysMetaUploadStatus") == "c" ||
+                    m.get("sysMetaUploadStatus") == "e"
+                  )
+                );
               });
 
               //First quickly validate all the models before attempting to save any
@@ -1198,7 +1203,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               //Save the system metadata of all the Data objects
               _.each(sysMetaToUpdate, function(dataModel){
                 //When the sytem metadata has been saved, save this resource map
-                this.listenTo(dataModel, "sysMetaUpdated", this.save);
+                this.listenTo(dataModel, "change:sysMetaUploadStatus", this.save);
                 //Update the system metadata
                 dataModel.updateSysMeta();
                 //Add it to the list of models in progress
@@ -1349,7 +1354,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                   //Send this exception to Google Analytics
                   if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
                     ga("send", "exception", {
-                      "exDescription": "DataPackage save error: " + errorMsg +
+                      "exDescription": "DataPackage save error: " + data.responseText +
                         " | Id: " + collection.packageModel.get("id") + " | v. " + MetacatUI.metacatUIVersion,
                       "exFatal": true
                     });
@@ -2263,12 +2268,18 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                   oldPid = this.packageModel.get("oldPid"),
                   cnResolveUrl = this.getCnURI();
 
-              //Get a list of the models that are not in progress or failed uploading
-              var modelsToAggregate = this.reject(function(packageMember){
-                    return (packageMember.get("uploadStatus") == "p" || packageMember.get("uploadStatus") == "e")
-                  }),
-                  //Get all the ids of all those models
-                  idsFromModel = _.pluck(modelsToAggregate, "id");
+              //Get a list of the model pids that should be aggregated by this package
+              var idsFromModel = [];
+              this.each(function(packageMember){
+                //If this object isn't done uploading, don't aggregate it.
+                //Or if it failed to upload, don't aggregate it.
+                //But if the system metadata failed to update, it can still be aggregated.
+                if( packageMember.get("uploadStatus") !== "p" ||
+                    packageMember.get("uploadStatus") !== "e" ||
+                    packageMember.get("sysMetaUploadStatus") == "e" ){
+                  idsFromModel.push(packageMember.get("id"));
+                }
+              });
 
               this.idsToAggregate = idsFromModel;
 
@@ -2588,10 +2599,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               // If this object is documented by any metadata...
               if(isDocBy && isDocBy.length){
                 // Get the ids of all the metadata objects in this package
-                var  metadataInPackage = _.compact(_.map(this.models, function(m){ if(m.get("formatType") == "METADATA") return m.get("id"); }));
+                var metadataInPackage = _.compact(_.map(this.models, function(m){ if(m.get("formatType") == "METADATA") return m; })),
+                    metadataInPackageIDs = _.each(metadataInPackage, function(m){ return m.get("id") });
 
                 // Find the metadata IDs that are in this package that also documents this data object
-                var metadataIds = Array.isArray(isDocBy)? _.intersection(metadataInPackage, isDocBy) : _.intersection(metadataInPackage, [isDocBy]);
+                var metadataIds = Array.isArray(isDocBy)? _.intersection(metadataInPackageIDs, isDocBy) : _.intersection(metadataInPackageIDs, [isDocBy]);
 
                 // If this data object is not documented by one of these metadata docs,
                 // then we should check if it's documented by an obsoleted pid. If so,

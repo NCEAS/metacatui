@@ -67,14 +67,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     documents: [],
                     resourceMap: [],
                     nodeLevel: 0, // Indicates hierarchy level in the view for indentation
-                    sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
+                    sortOrder: 2, // Metadata: 1, Data: 2, DataPackage: 3
                     synced: false, // True if the full model has been synced
-                    uploadStatus: null, //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
+                    uploadStatus: null, //c=complete, p=in progress, q=queued, e=error, w=warning, no upload status=not in queue
                     uploadProgress: null,
                     sysMetaUploadStatus: null, //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
                     percentLoaded: 0, // Percent the file is read before caclculating the md5 sum
                     uploadFile: null, // The file reference to be uploaded (JS object: File)
                     errorMessage: null,
+                    sysMetaErrorCode: null, // The status code given when there is an error updating the system metadata
                     numSaveAttempts: 0,
                     notFound: false, //Whether or not this object was found in the system
                     originalAttrs: [], // An array of original attributes in a DataONEObject
@@ -782,6 +783,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                   //Fetch the system metadata from the server so we have a fresh copy of the newest sys meta.
                   model.fetch({ systemMetadataOnly: true });
 
+                  model.set("sysMetaErrorCode", null);
+
                   //Update the upload status to "c" for "complete"
                   model.set("uploadStatus", "c");
                   model.set("sysMetaUploadStatus", "c");
@@ -812,6 +815,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                                 "Make sure you are connected to a reliable internet connection.";
 
                         model.set("errorMessage", parsedResponse);
+
+                        model.set("sysMetaErrorCode", statusCode);
+
                         model.set("uploadStatus", "e");
                         model.set("sysMetaUploadStatus", "e");
 
@@ -839,15 +845,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           },
 
           /**
-           * Check if the current user is authorized to perform an action on this object
-           * @param {string} action - The action (read, write, or changePermission) to check
-           * if the current user has authorization to perform. This function doesn't return
+           * Check if the current user is authorized to perform an action on this object. This function doesn't return
            * the result of the check, but it sends an XHR, updates this model, and triggers a change event.
+           * @param {string} [action=changePermission] - The action (read, write, or changePermission) to check
+           * if the current user has authorization to perform. By default checks for the highest level of permission.
            * @param {object} [options] Additional options for this function. See the properties below.
            * @property {function} options.onSuccess - A function to execute when the checkAuthority API is successfully completed
-           * @property {function} options.onError - A function to execute when the checkAuthority API returns an error
+           * @property {function} options.onError - A function to execute when the checkAuthority API returns an error, or when no PID or SID can be found for this object.
+           * @return {boolean}
            */
-          checkAuthority: function(action, options){
+          checkAuthority: function(action = "changePermission", options){
 
             try{
               // return false - if neither PID nor SID is present to check the authority
@@ -859,13 +866,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 var options = {};
               }
 
+              // If onError or onSuccess options were provided by the user,
+              // check that they are functions first, so we don't try to use
+              // some other type of variable as a function later on.
+              ["onError", "onSuccess"].forEach(function(userFunction){
+                if(typeof options[userFunction] !== "function"){
+                  options[userFunction] = null;
+                }
+              });
+
               // If PID is not present - check authority with seriesId
               var identifier = this.get("id");
               if ( (identifier == null) ) {
                 identifier = this.get("seriesId");
               }
-
-              if(!action) var action = "changePermission";
 
               //If there are alt repositories configured, find the possible authoritative
               // Member Node for this DataONEObject.
@@ -1384,17 +1398,26 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           },
 
           /**
-           * Checks if this model has updates that need to be synced with the server.
+           * Checks if this system metadata XML has updates that need to be synced with the server.
            * @returns {boolean}
            */
           hasUpdates: function(){
             if(this.isNew()) return true;
 
-            //Compare the new system metadata XML to the old system metadata XML
-            var newSysMeta = this.serializeSysMeta(),
-              oldSysMeta = $(document.createElement("div")).append($(this.get("sysMetaXML"))).html();
+            // Compare the new system metadata XML to the old system metadata XML
+            
+            var D1ObjectClone = this.clone(),
+                // Make sure we are using the parse function in the DataONEObject model.
+                // Sometimes hasUpdates is called from extensions of the D1Object model,
+                // (e.g. from the portal model), and the parse function is overwritten
+                oldSysMetaAttrs = new DataONEObject().parse(D1ObjectClone.get("sysMetaXML"));
 
-                if ( oldSysMeta === "" ) return false;
+            D1ObjectClone.set(oldSysMetaAttrs);
+            
+            var oldSysMeta = D1ObjectClone.serializeSysMeta();
+            var newSysMeta = this.serializeSysMeta();
+
+            if ( oldSysMeta === "" ) return false;
 
             return !(newSysMeta == oldSysMeta);
           },

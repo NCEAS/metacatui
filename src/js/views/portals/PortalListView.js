@@ -214,6 +214,14 @@ define(["jquery",
               row.html("<td colspan='4' class='center'>You haven't created or have access to any " +
                         MetacatUI.appModel.get("portalTermPlural") + " yet.</td>");
               listContainer.html(row);
+
+              //TODO: Unwrap the call to renderCreateButton() from this if condition,
+              // because the ListView will only ever be used when Usages/Bookkeeper is enabled
+              if( !MetacatUI.appModel.get("dataonePlusPreviewMode") ){
+                //Add a "Create" button to create a new portal
+                this.renderCreateButton();
+              }
+
               return;
             }
 

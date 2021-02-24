@@ -519,6 +519,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
 
               try {
                 var model = this.model.getParentEML();
+                var draftModel = model.clone();
                 var title = model.get("title") || "No title";
 
                 LocalForage.setItem(model.get("id"),
@@ -526,7 +527,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
                   id: model.get("id"),
                   datetime: (new Date()).toISOString(),
                   title: Array.isArray(title) ? title[0] : title,
-                  draft: model.serialize()
+                  draft: draftModel.serialize()
                 }).then(function() {
                   view.clearOldDrafts();
                 });
