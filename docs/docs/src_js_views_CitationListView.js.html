@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>MetacatUI Dev Docs: Source: src/js/models/filters/SpatialFilter.js</title>
+    <title>MetacatUI Dev Docs: Source: src/js/views/CitationListView.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -18,7 +18,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: src/js/models/filters/SpatialFilter.js</h1>
+    <h1 class="page-title">Source: src/js/views/CitationListView.js</h1>
 
     
 
@@ -27,193 +27,175 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>define(["underscore", "jquery", "backbone", "models/filters/Filter"],
-    function(_, $, Backbone, Filter) {
+            <pre class="prettyprint source linenums"><code>/*global define */
+define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/CitationView'],
+    function($, _, Backbone, Citations, CitationView) {
+    'use strict';
+
+    /**
+    * @class CitationListView
+    * @classdesc The CitationListView displays a list of Citation models
+    * @classcategory Views
+    * @extends Backbone.View
+    * @constructor
+    */
+    var CitationListView = Backbone.View.extend(
+      /** @lends CitationListView.prototype */{
+
+        id: 'table',
+        className: 'table',
+        citationsCollection: null,
+        emptyCitations: null,
+        citationsForDataCatalogView: null,
 
         /**
-        * @classdesc A SpatialFilter represents a spatial constraint on the query to be executed,
-        * and stores the geohash strings for all of the geohash tiles that coincide with the
-        * search bounding box at the given zoom level.
-        * @class SpatialFilter
-        * @classcategory Models/Filters
-        * @name SpatialFilter
-        * @constructs
-        * @extends Filter
+        * If true, the "register a citation" tool will display. This can be turned off/on
+        * with the {@link AppConfig#displayRegisterCitationTool} app configuration.
+        * @type {boolean}
+        * @since 2.15.0
         */
-        var SpatialFilter = Filter.extend(
-          /** @lends SpatialFilter.prototype */{
+        displayRegisterCitationTool: MetacatUI.appModel.get("displayRegisterCitationTool"),
 
-            /**
-             @inheritdoc
-            */
-            type: "SpatialFilter",
+        events: {
 
-            /**
-            * Inherits all default properties of {@link Filter}
-            * @property {string[]} geohashes - The array of geohashes used to spatially constrain the search
-            * @property {object} groupedGeohashes -The same geohash values, grouped by geohash level (e.g. 1,2,3...). Complete geohash groups (of 32) are consolidated to the level above.
-            * @property {number} east The easternmost longitude of the represented bounding box
-            * @property {number} west The westernmost longitude of the represented bounding box
-            * @property {number} north The northernmost latitude of the represented bounding box
-            * @property {number} south The southernmost latitude of the represented bounding box
-            * @property {number} geohashLvel The default precision level of the geohash-based search
-            */
-            defaults: function() {
-                return _.extend(Filter.prototype.defaults(), {
-                    geohashes: [],
-                    east: null,
-                    west: null,
-                    north: null,
-                    south: null,
-                    geohashLevel: null,
-                    groupedGeohashes: {},
-                    label: "Limit search to the map area",
-                    icon: "globe",
-                    operator: "OR",
-                    matchSubstring: false
-                });
-            },
+        },
 
-            /**
-             * Initialize the model, calling super
-             */
-            initialize: function(attributes, options) {
-                this.on("change:geohashes", this.groupGeohashes);
-            },
+        registerCitationTemplate:  _.template("&lt;a class='btn register-citation' >" +
+                                                "&lt;i class='icon icon-plus'>" +
+                                                "&lt;/i> Register Citation&lt;/a>"),
 
-            /**
-             * Builds a query string that represents this spatial filter
-             * @return queryFragment - the query string representing the geohash constraints
-             */
-            getQuery: function() {
-                var queryFragment = "";
-                var geohashes = this.get("geohashes");
-                var groups = this.get("geohashGroups");
-                var geohashList;
+        initialize: function(options) {
+            if((typeof options == "undefined")){
+                var options = {};
+                this.emptyCitations = true;
+                this.citationsForDataCatalogView = false;
+            }
 
-                // Only return geohash query fragments when they are enabled in the filter
-                if ( (typeof geohashes !== "undefined") &amp;&amp; geohashes.length > 0 ) {
-                    if ( (typeof groups !== "undefined") &amp;&amp;
-                        Object.keys(groups).length > 0
-                    ) {
-                        // Group the Solr query fragment
-                        queryFragment += "+(";
+            if(typeof options.citations === "undefined") {
+                this.emptyCitations = true;
+            }
 
-                        // Append geohashes at each level up to a fixed query string length
-                        _.each(Object.keys(groups), function(level) {
-                            geohashList = groups[level];
-                            queryFragment += "geohash_" + level + ":(";
-                            _.each(geohashList, function(geohash) {
-                                if ( queryFragment.length &lt; 7900 ) {
-                                    queryFragment += geohash + "%20OR%20";
-                                }
-                            });
-                            // Remove the last OR
-                            queryFragment =
-                                queryFragment.substring(0, (queryFragment.length - 8));
-                            queryFragment += ")%20OR%20";
-                        });
-                        // Remove the last OR
-                        queryFragment = queryFragment.substring(0, (queryFragment.length - 8));
-                        // Ungroup the Solr query fragment
-                        queryFragment += ")";
+            if( options.citationsForDataCatalogView !== "undefined" ) {
+                this.citationsForDataCatalogView = options.citationsForDataCatalogView;
+            }
+            else {
+                this.citationsForDataCatalogView = false;
+            }
 
-                    }
+            // Initializing the Citation collection
+            this.citationsCollection = options.citations;
+
+        },
+
+
+        // retrun the DOM object to the calling view.
+        render: function() {
+            this.renderView();
+            return this;
+        },
+
+
+        // The renderView funciton creates a Citation table and appends every
+        // citation found in the citations collection object.
+        renderView: function() {
+            var self = this;
+
+            // Get node display name for the message
+            var nodeId = MetacatUI.appModel.get("nodeId");
+            // get the node Info
+            var nodeInfo =  _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
+                return nodeModel.identifier.toLowerCase() == nodeId.toLowerCase();
+            });
+            var nodeName = "DataONE"
+            if (nodeInfo !== undefined)
+                var nodeName = nodeInfo.name;
+
+            if (this.emptyCitations) {
+                var $emptyList = $(document.createElement("div"))
+                                            .addClass("empty-citation-list");
+
+                // Dataset landing page - metadataview
+                if ( self.citationsForDataCatalogView ) {
+                    var emptyString = "We couldn't find any citations for this dataset.";
+
+                    if (self.displayRegisterCitationTool)
+                        emptyString += " If this dataset has been cited, you can register the citation to " + nodeName + ".";
+
+                    var $emptyDataElement = $(document.createElement("p"))
+                        .text(emptyString)
+                        .addClass("empty-citation-list-text");
+
+                    if (self.displayRegisterCitationTool)
+                        $emptyList.append(this.registerCitationTemplate());
+
+                    $emptyList.append($emptyDataElement);
+
                 }
-                return queryFragment;
-            },
+                else {
+                    var emptyString = "We couldn't find any citations for these datasets. " +
+                        "To report a citation of one of these datasets, " +
+                        "send the citation information to our support team at " ;
 
-            /**
-            * @inheritdoc
-            */
-            updateDOM: function(options){
+                    var $emptyDataElement = $(document.createElement("p"))
+                        .text(emptyString)
+                        .addClass("empty-citation-list-text");
 
-              try{
-                var updatedDOM = Filter.prototype.updateDOM.call(this, options),
-                    $updatedDOM = $(updatedDOM);
+                    // Adding Email link
+                    var $emailLink = $('&lt;a>', {
+                        href: 'mailto:' + MetacatUI.appModel.get("emailContact"),
+                        text: MetacatUI.appModel.get("emailContact")
+                    });
+                    $emptyDataElement.append($emailLink);
 
-                //Force the serialization of the "operator" node for SpatialFilters,
-                // since the Filter model will skip default values
-                var operatorNode = updatedDOM.ownerDocument.createElement("operator");
-                operatorNode.textContent = this.get("operator");
+                    $emptyList.append($emptyDataElement);
+                }
 
-                var matchSubstringNode = updatedDOM.ownerDocument.createElement("matchSubstring");
-                matchSubstringNode.textContent = this.get("matchSubstring");
+                this.$el.append($emptyList);
+            }
+            else {
 
-                //Insert the operator node
-                $updatedDOM.children("field").last().after(operatorNode);
+                var $table = $(document.createElement("table"))
+                                            .addClass("metric-table table table-striped table-condensed");
 
-                //Insert the matchSubstring node
-                $(matchSubstringNode).insertBefore($updatedDOM.children("value").first());
+                var $tableBody = $(document.createElement("tbody"));
 
-                //Return the updated DOM
-                return updatedDOM;
-              }
-              catch(e){
-                console.error("Unable to serialize a SpatialFilter.", e);
-                return this.get("objectDOM") || "";
-              }
-            },
-
-            /**
-             *  Consolidates geohashes into groups based on their geohash level
-             *  and updates the model with those groups. The fields and values attributes
-             *  on this model are also updated with the geohashes.
-             */
-            groupGeohashes: function() {
-                var geohashGroups = {};
-                var sortedGeohashes = this.get("geohashes").sort();
-                var groupedGeohashes = _.groupBy(sortedGeohashes, function(geohash) {
-                    return geohash.substring(0, geohash.length - 1);
-                });
-                //Find groups of geohashes that makeup a complete geohash tile (32)
-                // so we can shorten the query
-                var completeGroups = _.filter(Object.keys(groupedGeohashes), function(group) {
-                    return groupedGeohashes[group].length == 32;
-                });
-
-                // Find groups that fall short of 32 tiles
-                var incompleteGroups = [];
-                _.each(
-                    _.filter(Object.keys(groupedGeohashes), function(group) {
-                        return (groupedGeohashes[group].length &lt; 32)
-                    }), function(incomplete) {
-                        incompleteGroups.push(groupedGeohashes[incomplete]);
+                this.citationsCollection.each(
+                    function(model) {
+                        var citationView = new CitationView({model:model});
+                        citationView.createLink = true;
+                        var $tableRow = $(document.createElement("tr"));
+                        var $tableCell = $(document.createElement("td"));
+                        $tableCell.append(citationView.render().$el);
+                        $tableRow.append($tableCell);
+                        $tableBody.append($tableRow);
                     }
                 );
-                incompleteGroups = _.flatten(incompleteGroups);
 
-                // Add both complete and incomplete groups to the instance property
-                if((typeof incompleteGroups !== "undefined") &amp;&amp; (incompleteGroups.length > 0)) {
-                    geohashGroups[incompleteGroups[0].length.toString()] = incompleteGroups;
+                $table.append($tableBody);
+                this.$el.append($table);
+
+                // Dataset landing page - metadataview
+                if ( self.citationsForDataCatalogView ) {
+                    var $emptyList = $(document.createElement("div"))
+                                        .addClass("register-citation-element");
+
+                    var registerCitationString = "If this dataset has additional citations, you can now register that citation to " + nodeName + ".";
+
+                    var $registerCitationElement = $(document.createElement("p"))
+                        .text(registerCitationString)
+                        .addClass("register-citation-text");
+
+                    $emptyList.append($registerCitationElement);
+                    $emptyList.append(this.registerCitationTemplate());
                 }
-                if((typeof completeGroups !== "undefined") &amp;&amp; (completeGroups.length > 0)) {
-                    geohashGroups[completeGroups[0].length.toString()] = completeGroups;
-                }
-                this.set("geohashGroups", geohashGroups); // Triggers a change event
-
-                //Determine the field and value attributes
-                var fields = [],
-                    values = [];
-                _.each( Object.keys(geohashGroups), function(geohashLevel){
-                  fields.push( "geohash_" + geohashLevel );
-                  values = values.concat( geohashGroups[geohashLevel].slice() );
-                }, this);
-
-                this.set("fields", fields);
-                this.set("values", values);
-            },
-
-            /**
-            * @inheritdoc
-            */
-            resetValue: function(){
-              this.set("fields", this.defaults().fields);
-              this.set("values", this.defaults().values);
+                this.$el.append($emptyList);
             }
-        });
-        return SpatialFilter;
-});
+
+        }
+    });
+
+     return CitationListView;
+  });
 </code></pre>
         </article>
     </section>

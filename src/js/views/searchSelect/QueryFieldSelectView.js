@@ -101,6 +101,7 @@ define([
          * must exactly match those in the
          * {@link QueryField#categoriesMap Query Field model}
          * @type {string[]}
+         * @since 2.15.0
          */
         categoriesToAlphabetize: ["General"],
 

@@ -119,7 +119,7 @@ define(['jquery', 'underscore', 'backbone', "models/Utilities", 'text!templates/
           formData["request_type"] = "dataset";
           formData["submitter"] = MetacatUI.appUserModel.get("username");
           formData["citations"] = new Array();
-          
+
           // form the citation object
           citationObject["related_identifiers"] = new Array();
           citationObject["source_id"] = publicationIdentifier;
@@ -128,7 +128,7 @@ define(['jquery', 'underscore', 'backbone', "models/Utilities", 'text!templates/
           citaitonRelatedIdentifiersObject["identifier"] = this.pid;
           citaitonRelatedIdentifiersObject["relation_type"] = relation_type;
 
-          // include all the required data 
+          // include all the required data
           citationObject["related_identifiers"].push(citaitonRelatedIdentifiersObject);
           formData["citations"].push(citationObject);
 
@@ -169,7 +169,7 @@ define(['jquery', 'underscore', 'backbone', "models/Utilities", 'text!templates/
 
         /**
         * Validates if the given input is a valid DOI string or not
-        * @since 2.14.1
+        * @since 2.15.0
         * @return {undefined}
         */
         validateDOI: function(){

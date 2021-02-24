@@ -115,7 +115,7 @@ define([
          * ({@link SearchableSelectView#allowMulti} is true), optional text to insert
          * between labels
          * @type {string}
-         * @since {2.15.0}
+         * @since 2.15.0
          */
         separatorText: "",
 
@@ -260,7 +260,7 @@ define([
             if(options.selected){
               options.selected = _.clone(options.selected);
             }
-            
+
             // Get all the options and apply them to this view
             if (typeof options == "object") {
               var optionKeys = Object.keys(options);
@@ -392,7 +392,7 @@ define([
                   }
 
                   // Trigger an event if items are selected after the UI has been rendered
-                  // (It is set as disabled until fully rendered). 
+                  // (It is set as disabled until fully rendered).
                   if(!$(this).hasClass("disabled")){
                     var newValues = _.clone(view.selected);
                     view.trigger('changeSelection', newValues);
@@ -402,7 +402,7 @@ define([
 
                   // Ensure tooltips for labels are removed
                   $(".search-select-tooltip").remove();
-                  
+
                   // Add a tooltip for single select elements (.text) or multi-select
                   // elements (.label). Delay so that to give time for DOM elements to be
                   // added or removed.
@@ -448,7 +448,7 @@ define([
               // Need separator text to create a separator element
               !this.separatorText ||
               // Need the list of selected values to determine the value's position
-              !this.selected || 
+              !this.selected ||
               // Separator is only required between two or more values
               this.selected.length <= 1 ||
               // Separator is only required after the first element has been added

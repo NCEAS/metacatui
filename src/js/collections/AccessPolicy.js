@@ -271,6 +271,7 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
           * Updates to system metadata will fail if the user doesn't have changePermission permission,
           * *unless* the user is performing an update() at the same time and has `write` permission
           * @returns {boolean}
+          * @since 2.15.0
           */
           isAuthorizedUpdateSysMeta: function(){
             try{

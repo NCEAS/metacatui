@@ -41,9 +41,10 @@ define(['jquery', 'underscore'],
     * Validates that the given string is a valid DOI
     * @param {string} identifier
     * @returns {boolean}
+    * @since 2.15.0
     */
     isValidDOI: function(identifier) {
-      // generate doi regex 
+      // generate doi regex
       var doiRGEX = new RegExp(/^\s*(http:\/\/|https:\/\/)?(doi.org\/|dx.doi.org\/)?(doi: ?|DOI: ?)?(10\.\d{4,}(\.\d)*)\/(\w+).*$/ig)
 
       return doiRGEX.test(identifier);
