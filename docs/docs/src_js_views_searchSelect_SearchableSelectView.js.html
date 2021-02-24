@@ -36,7 +36,6 @@
     "semanticUIdropdown",
     "text!" + MetacatUI.root + "/components/semanticUI/dropdown.min.css",
     "text!templates/selectUI/searchableSelect.html",
-    
   ],
   function($, _, Backbone, Transition, TransitionCSS, Dropdown, DropdownCSS, Template) {
 
@@ -49,6 +48,7 @@
      * @extends Backbone.View
      * @constructor
      * @since 2.14.0
+     * @screenshot views/searchSelect/SearchableSelectView.png
      */
     return Backbone.View.extend(
       /** @lends SearchableSelectView.prototype */
@@ -140,18 +140,37 @@
         imageHeight: 30,
 
         /**
-         * The list of options that a user can select from in the dropdown menu.
-         * For uncategorized options, provide an array of objects, where each
-         * object is a single option. To create category headings, provide an
-         * object containing named objects, where the key for each object is
-         * the category title to display, and the value of each object comprises
-         * the option properties.
+         * For select inputs where multiple values are allowed
+         * ({@link SearchableSelectView#allowMulti} is true), optional text to insert
+         * between labels
+         * @type {string}
+         * @since {2.15.0}
+         */
+        separatorText: "",
+
+        /** The HTML class name to add to the separator elements that are created for this
+         * view.
+         * @type {string}
+         * @since 2.15.0
+         */
+        separatorClass: "separator",
+
+        /**
+         * The list of options that a user can select from in the dropdown menu. For
+         * un-categorized options, provide an array of objects, where each object is a
+         * single option. To create category headings, provide an object containing named
+         * objects, where the key for each object is the category title to display, and
+         * the value of each object comprises the option properties.
          * @type {Object[]|Object}
-         * @property {string} icon - The name of a Font Awesome 3.2.1 icon to display to the left of the label (e.g. "lemon", "heart")
-         * @property {string} image - The complete path to an image to use instead of an icon. If both icon and image are provided, the icon will be used.
+         * @property {string} icon - The name of a Font Awesome 3.2.1 icon to display to
+         * the left of the label (e.g. "lemon", "heart")
+         * @property {string} image - The complete path to an image to use instead of an
+         * icon. If both icon and image are provided, the icon will be used.
          * @property {string} label - The label to show for the option
-         * @property {string} description - A description of the option, displayed as a tooltip when the user hovers over the label
-         * @property {string} value - If the value differs from the label, the value to return when this option is selected (otherwise label is returned)
+         * @property {string} description - A description of the option, displayed as a
+         * tooltip when the user hovers over the label
+         * @property {string} value - If the value differs from the label, the value to
+         * return when this option is selected (otherwise label is returned)
          * @example
          * [
          *   {
@@ -208,6 +227,19 @@
         selected: [],
 
         /**
+         * Can be set to an object to specify API settings for retrieving remote selection
+         * menu content from an API endpoint. Details of what can be set here are
+         * specified by the Semantic-UI / Fomantic-UI package. Set to false if not
+         * retrieving remote content.
+         * @type {Object|booealn}
+         * @default false
+         * @since 2.15.0
+         * @see {@link https://fomantic-ui.com/modules/dropdown.html#remote-settings}
+         * @see {@link https://fomantic-ui.com/behaviors/api.html#/settings}
+         */
+        apiSettings: false,
+
+        /**
          * The primary HTML template for this view. The template follows the
          * structure specified for the semanticUI dropdown module, see:
          * https://semantic-ui.com/modules/dropdown.html#/definition
@@ -230,7 +262,7 @@
             // and add it if not. Prevents adding the CSS file multiple
             // times if the view is loaded more than once. The first time each
             // CSS path is added, we need to save a record of the event. It
-            // doesn't work to just search the document head for the style elemnt to
+            // doesn't work to just search the document head for the style element to
             // determine if the CSS has already been added, because each instance
             // of this view is initialized too quickly, before the previous
             // instance has had a chance to add the stylesheet element.
@@ -249,6 +281,15 @@
             addCSS(TransitionCSS, "semanticUItransition");
             addCSS(DropdownCSS, "semanticUIdropdown");
 
+            // If pre-selected values that are passed to this view are also attached to a
+            // model (e.g. when they were passed to this view as {selected:
+            // parentView.model.get("values")}), then it's important that we use a clone
+            // instead. Otherwise this view may silently update the model, and important
+            // events may not be triggered.
+            if(options.selected){
+              options.selected = _.clone(options.selected);
+            }
+            
             // Get all the options and apply them to this view
             if (typeof options == "object") {
               var optionKeys = Object.keys(options);
@@ -258,20 +299,29 @@
             }
 
           } catch (e) {
-            console.log("Failed to initialize a Searchable Select view, error message:", e);
+            console.log("Failed to initialize a Searchable Select view, error message:",
+            e);
           }
         },
 
         /**
          * Render the view
          *
-         * @return {SeachableSelect}  Returns the view
+         * @return {SearchableSelect}  Returns the view
          */
         render: function() {
 
           try {
 
             var view = this;
+
+            if(view.apiSettings &amp;&amp; !view.semanticAPILoaded){
+              require([MetacatUI.root + "/components/semanticUI/api.min.js"], function(SemanticAPI){
+                view.semanticAPILoaded = true
+                view.render();
+              })
+              return;
+            }
 
             // Render the template using the view attributes
             this.$el.html(this.template(this));
@@ -287,41 +337,121 @@
             // https://semantic-ui.com/modules/dropdown.html#/settings
             this.$selectUI = this.$el.find('.ui.dropdown')
               .dropdown({
+                keys : {
+                  // So that a user may enter search text using a comma
+                  delimiter  : false
+                },
+                apiSettings: this.apiSettings,
                 fullTextSearch: true,
                 duration: 90,
+                forceSelection: false,
+                ignoreDiacritics: true,
                 clearable: view.clearable,
                 allowAdditions: view.allowAdditions,
                 hideAdditions: false,
                 allowReselection: true,
+                onRemove: function(removedValue){
+                  // Callback when a value is removed *for multi-select inputs only*
+                  // Remove the value from the selected array
+                  view.selected = view.selected.filter(function(value){
+                    return value !== removedValue
+                  })
+                },
                 onLabelCreate: function(value, text){
-                  // Add tooltips to the selected label elements
-                  view.addTooltip.call(view, this, "top");
-                  return this
-                },
-                onLabelRemove: function(){
-                  // Ensure tooltips for labels are removed
-                  $(".search-select-tooltip").remove();
-                },
-                onChange: function(value, text, $choice){
+                   // Callback when a label is created *for multi-select inputs only*
 
-                  // Add tooltips to the selected fields that are not labels
-                  // (i.e. that are not in multi-select UIs).
-                  var textEl = view.$selectUI.find(".text")
-                  if(textEl){
-                    if(text == textEl.html()){
-                      view.addTooltip.call(view, textEl, "top");
+                  // Add the value to the selected array (but don't add twice). Do this in
+                  // the onLabelCreate callback instead of in the onAdd callback because
+                  // we would like to update the selected array before we create the
+                  // separator element (below).
+                  if(!view.selected.includes(value)){
+                    view.selected.push(value)
+                  }
+                  // Add a separator between labels if required.
+                  var label = this;
+                  if(view.separatorRequired.call(view)){
+                    // Create the separator element.
+                    var separator = view.createSeparator.call(view);
+                    if(separator){
+                      // Attach the separator to the label so that we can easily remove it
+                      // when the label is removed.
+                      label.data("separator", separator);
+                      // Add it before the label element.
+                      label = separator.add(label);
                     }
                   }
-
-                  // Trigger an event if items are selected after the UI
-                  // has been rendered (It is set as disabled until fully rendered)
-                  if(!$(this).hasClass("disabled")){
-                    var newValues = value.split(",");
-                    view.trigger('changeSelection', newValues);
-                    view.selected = newValues;
+                  return label
+                },
+                onLabelRemove(value){
+                  // Call back when a user deletes a label *for multi-select inputs only*
+                  var label = this;
+                  // Remove the separator before this label if there is one.
+                  var sep = label.data("separator")
+                  if(sep){
+                    sep.remove()
+                  }
+                  // If this is the first label in an input of at least two, then delete
+                  // the separator directly *after* this label - The label that's second
+                  // will become first, and should not have an separator before it.
+                  var allLabels = view.$selectUI.find(".label");
+                  if(allLabels.index(label) === 0){
+                    var separatorAfter = label.next("." + view.separatorClass);
+                    if(separatorAfter){
+                      separatorAfter.remove();
+                    }
                   }
                 },
+                onChange: function(values, text, $choice){
+
+                  // Callback when values change for any type of input.
+
+                  // NOTE: The "values" argument is a string that contains all the
+                  // selected values separated by commas. We updated the view.selected
+                  // array with the onLabelCreate and onRemove callbacks instead of using
+                  // the values argument passed to this function in order to allow commas
+                  // within individual values. For example, if the user selected the value
+                  // "x" and the value "y,z", the values string would be "x,y,z" and it
+                  // would be difficult to see that two values were selected instead of
+                  // three.
+
+                  // Update values for single-select inputs (multi-select are updated
+                  // using the onLabelCreate and onRemove callbacks)
+                  if(!view.allowMulti){
+                    view.selected = [values]
+                  }
+
+                  // Trigger an event if items are selected after the UI has been rendered
+                  // (It is set as disabled until fully rendered). 
+                  if(!$(this).hasClass("disabled")){
+                    var newValues = _.clone(view.selected);
+                    view.trigger('changeSelection', newValues);
+                  }
+
+                  // Refresh the tooltips on the labels/text
+
+                  // Ensure tooltips for labels are removed
+                  $(".search-select-tooltip").remove();
+                  
+                  // Add a tooltip for single select elements (.text) or multi-select
+                  // elements (.label). Delay so that to give time for DOM elements to be
+                  // added or removed.
+                  setTimeout(function(params) {
+                    var textEl = view.$selectUI.find(".text:not(.default),.label");
+                    // Single select text element will not have the value attribute, add
+                    // it so that we can find the matching description for the tooltip
+                    if(!textEl.data("value") &amp;&amp; !view.allowMulti){
+                      textEl.data("value", values)
+                    }
+                    if(textEl){
+                      textEl.each(function(i, el){
+                        view.addTooltip.call(view, el, "top");
+                      })
+                    }
+                  }, 50);
+                },
               });
+
+            view.$selectUI.data("view", view);
 
             view.postRender();
 
@@ -329,6 +459,61 @@
 
           } catch (e) {
             console.log("Error rendering the search select, error message: ", e);
+          }
+        },
+
+        /**
+         * Checks whether a separator should be created for the label that was just
+         * created, but not yet attached to the DOM
+         * @return {boolean} - Returns true if a separator should be created, false
+         * otherwise.
+         * @since 2.15.0
+         */
+        separatorRequired: function(){
+          try {
+            if(
+              // Separators not required if only one selection is allowed
+              !this.allowMulti ||
+              // Need separator text to create a separator element
+              !this.separatorText ||
+              // Need the list of selected values to determine the value's position
+              !this.selected || 
+              // Separator is only required between two or more values
+              this.selected.length &lt;= 1 ||
+              // Separator is only required after the first element has been added
+              this.$selectUI.find(".label").length === 0
+            ){
+              return false
+            } else {
+              return true
+            }
+          } catch (error) {
+            console.log("Error checking if a label in a searchable select input " +
+            "requires a separator. Assuming that it does not need one. Error details: " +
+            error);
+            return false
+          }
+        },
+
+        /**
+         * Create the HTML for a separator element to insert between two labels. The
+         * view.separatorClass is added to the separator element.
+         * @return {JQuery} Returns the separator as a jQuery element
+         * @since 2.15.0
+         */
+        createSeparator: function(){
+          try {
+            var separatorText = this.separatorText;
+            // Text is required to create a separator.
+            if(!separatorText){
+              return null
+            }
+            var separator = $("&lt;span>" + separatorText + "&lt;/span>");
+            separator.addClass(this.separatorClass);
+            return separator
+          } catch (error) {
+            console.log("There was an error creating a separator element in a " +
+              "Searchable Select View. Error details: " + error);
           }
         },
 
@@ -431,6 +616,15 @@
               });
             }
 
+            // Trigger an event when the user focuses in searchable inputs
+            var inputEl = this.$el.find("input.search")
+            if(inputEl){
+              inputEl.off("focus");
+              inputEl.on("focus", function(event){
+                view.trigger("inputFocus", event)
+              })
+            }
+
           } catch (e) {
             console.log("The searchable select post-render function failed, error message: " + e);
           }
@@ -440,7 +634,8 @@
          * isValidOption - Checks if a value is one of the values given in view.options
          *
          * @param  {string} value The value to check
-         * @return {boolean}      returns true if the value is one of the values given in view.options
+         * @return {boolean}      returns true if the value is one of the values given in
+         * view.options
          */
         isValidOption: function(value){
 
@@ -479,11 +674,12 @@
         },
 
         /**
-         * addTooltip - Add a tooltip to a given element using the description
-         * in the options object that's set on the view.
+         * addTooltip - Add a tooltip to a given element using the description in the
+         * options object that's set on the view.
          *
          * @param  {HTMLElement} element The HTML element a tooltip should be added
-         * @param  {string} position how to position the tooltip - top | bottom | left | right
+         * @param  {string} position how to position the tooltip - top | bottom | left |
+         * right
          * @return {jQuery} The element with a tooltip wrapped by jQuery
          */
         addTooltip: function(element, position = "bottom"){
@@ -496,8 +692,14 @@
             // Find the description in the options object, using the data-value
             // attribute set in the template. The data-value attribute is either
             // the label, or the value, depending on if a value is provided.
-            var valueOrLabel = $(element).data("value"),
-                opt = _.chain(this.options)
+            var valueOrLabel = $(element).data("value");
+            if(typeof valueOrLabel === "undefined"){
+              return
+            }
+            if(typeof valueOrLabel === "boolean"){
+              valueOrLabel = valueOrLabel.toString()
+            }
+            var opt = _.chain(this.options)
                             .values()
                             .flatten()
                             .find(function(option){
@@ -534,7 +736,7 @@
 
             return $(element)
           } catch (e) {
-            console.log("Failed to add tooltips in a searchable select view, error message: " + e);
+            console.log("Failed to add tooltip in a searchable select view, error message: " + e);
           }
 
         },
@@ -747,12 +949,14 @@
         },
 
         /**
-         * showMessage - Show an error, warning, or informational message, and
-         * highlight the select interface in an appropriate colour.
+         * showMessage - Show an error, warning, or informational message, and highlight
+         * the select interface in an appropriate colour.
          *
-         * @param  {string} message The message to display. Use an empty string to only highlight the select interface without showing a messsage.
-         * @param  {string} type    one of "error", "warning", or "info"
-         * @param  {boolean} removeOnChange set to true to remove the message as soon as the user changes the selection
+         * @param  {string} message The message to display. Use an empty string to only
+         * highlight the select interface without showing any message text.
+         * @param  {string} type one of "error", "warning", or "info"
+         * @param  {boolean} removeOnChange set to true to remove the message as soon as
+         * the user changes the selection
          *
          */
         showMessage: function(message, type = "info", removeOnChange = true){
@@ -862,13 +1066,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="Utilities.html">Utilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="Citation.html">Citation</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="MetricsModel.html">MetricsModel</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="MetricView.html">MetricView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="SignInView.html">SignInView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="UserView.html">UserView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilder.html">QueryBuilder</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchableSelectView.html">SearchableSelectView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="Utilities.html">Utilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="Citation.html">Citation</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="Metrics.html">Metrics</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLParty.html">EMLParty</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="MetricView.html">MetricView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="SignInView.html">SignInView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="UserView.html">UserView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilderView.html">QueryBuilderView</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AccountSelectView.html">AccountSelectView</a></li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="ObjectFormatSelect.html">ObjectFormatSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchableSelectView.html">SearchableSelectView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Dec 22 2020 13:37:30 GMT-0600 (Central Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Feb 24 2021 15:06:55 GMT-0600 (Central Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

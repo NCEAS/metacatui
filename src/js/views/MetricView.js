@@ -16,16 +16,16 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
         tagName: 'a',
         // id: 'metrics-button',
 
-        /*
-		* Class name to be applied to the metric buttons
-		* @type {string}
-		*/
+        /**
+        * Class name to be applied to the metric buttons
+        * @type {string}
+        */
         className: 'btn metrics',
 
-        /*
-		* Attribute to indicate the type of metric
-		* @type {string}
-		*/
+        /**
+        * Attribute to indicate the type of metric
+        * @type {string}
+        */
         metricName: null,
 
         /**

@@ -4,20 +4,20 @@ define(['jquery', 'underscore', 'backbone'],
     'use strict';
 
     /**
-     * @class MetricsModel
+     * @class Metrics
      * @classdesc A single result from the DataONE Metrics Service
      * @classcategory Models
      * @extends Backbone.Model
      * @constructor
      */
-    var Metrics = Backbone.Model.extend({
+    var Metrics = Backbone.Model.extend(
+      /** @lends Metrics.prototype */{
 
         /**
         * The name of this Model
-        * @name MetricsModel
         * @type {string}
         */
-        type: "MetricsModel",
+        type: "Metrics",
 
         defaults: {
             metricRequest: null,
@@ -89,7 +89,10 @@ define(['jquery', 'underscore', 'backbone'],
             ]
         },
 
-        // Initializing the Model objects pid and the metricName variables.
+        /**
+        * Initializing the Model objects pid and the metricName variables.
+        * @param {object} options
+        */
         initialize: function(options) {
             if((options) && options.pid_list !== 'undefined') {
                 this.set("pid_list", options.pid_list);
@@ -104,7 +107,9 @@ define(['jquery', 'underscore', 'backbone'],
             this.url = MetacatUI.appModel.get("metricsUrl");
         },
 
-        // Overriding the Model's fetch function.
+        /**
+        * Overriding the Model's fetch function.
+        */
         fetch: function(){
           var fetchOptions = {};
           this.metricRequest.filterBy[0].filterType = this.get("filterType");
@@ -186,6 +191,10 @@ define(['jquery', 'underscore', 'backbone'],
           return Backbone.Model.prototype.fetch.call(this, fetchOptions);
         },
 
+        /**
+        * Get's a string version of today's date
+        * @return {string}
+        */
         getCurrentDate: function() {
             var today = new Date();
             var dd = today.getDate();
@@ -202,7 +211,9 @@ define(['jquery', 'underscore', 'backbone'],
             return today;
         },
 
-        // Parsing the response for setting the Model's member variables.
+        /**
+        * Parsing the response for setting the Model's member variables.
+        */
         parse: function(response){
             var metricsObject = {
                 "metricRequest": response.metricsRequest,
