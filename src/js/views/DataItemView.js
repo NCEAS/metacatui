@@ -1005,7 +1005,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             	}
             },
 
-            /*
+            /**
             * Changes the access policy of a data object based on user input.
             *
             * @param {HTML DOM Event} e - The event that triggered this function as a callback

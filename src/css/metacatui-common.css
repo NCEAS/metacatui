@@ -326,6 +326,7 @@ header .citation {
 	margin-left: 43%;
 	margin-left: calc(50% - 23px);
 	margin-top: 40px;
+  color: #333;
 }
 .notification.loading.page .icon{
 	margin-top: 10px;
@@ -342,6 +343,7 @@ header .citation {
 	width: 100%;
 	margin: 20px auto;
 	display: block;
+  color: #333;
 }
 .filter-contain .notification.loading i{
   	color: #999;
@@ -3452,10 +3454,13 @@ add font awesome close icon */
 .access-policy-view-container .modal {
   width: 80%;
   margin-left: -40%;
+  display: grid;
+  grid-template-rows: 60px 1fr 60px;
+  max-height: 80%;
 }
 
 .access-policy-view-container .modal .modal-body {
-  max-height: 800px;
+  max-height: 1000px;
 }
 
 .access-policy-view:not(.modal) .modal-header{
@@ -7066,6 +7071,11 @@ ul.side-nav-items {
 	margin-bottom: 0px;
 	width: calc(100% - 2px);
 }
+/* Editor package table headers */
+#data-package-table-share,
+#data-package-table-guide-status {
+    text-align: center;
+}
 
 /* Editor package table row */
 .data-package-item td {
@@ -7139,11 +7149,10 @@ ul.side-nav-items {
 }
 
 
-/* Editor package table last column buttons */
+/* Editor package table buttons */
 .data-package-item td button {
     text-align: center;
     vertical-align: middle;
-    width: 8em;
 }
 .data-package-item td button .icon{
 	margin-left: 0px;

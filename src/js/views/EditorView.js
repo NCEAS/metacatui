@@ -241,6 +241,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
         this.on("accessPolicyViewRendered", function(){
           //Add modal classes to the access policy view
           this.$(".access-policy-view").addClass("access-policy-view-modal modal")
+                                      .css("height", window.outerHeight * .7)
                                       .modal()
                                       .modal("show");
         });
@@ -309,7 +310,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
           view.handleScroll()
         }
       });
-      
+
     },
 
     /**
