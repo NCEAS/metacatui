@@ -23,10 +23,16 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
             id: null,
 
-            /* The HTML template for a data item */
+            /** The HTML template for a data item */
             template: _.template(DataItemTemplate),
 
-            /* Events this view listens to */
+            /**
+            * The DataONEObject model to display in this view
+            * @type {DataONEObject}
+            */
+            model: null,
+
+            /** Events this view listens to */
             events: {
                 "focusout .name.canRename"       : "updateName",
                 "click    .name.canRename"       : "emptyName",
@@ -48,9 +54,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 "change .public"       : "changeAccessPolicy"
             },
 
-            /* Initialize the object - post constructor */
+            /** Initialize the object - post constructor */
             initialize: function(options) {
-            	if(typeof options == "undefined") var options = {};
+              if(typeof options == "undefined") var options = {};
 
                 this.model = options.model || new DataONEObject();
                 this.id = this.model.get("id");
@@ -58,7 +64,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 this.canShare = false; // Default. Updated in render()
             },
 
-            /* Render the template into the DOM */
+            /** Renders a DataItemView for the given DataONEObject
+             * @param {DataONEObject} model
+             */
             render: function(model) {
 
                 //Prevent duplicate listeners
@@ -75,7 +83,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 //Format the title
                 if(Array.isArray(attributes.title))
-                	attributes.title  = attributes.title[0];
+                  attributes.title  = attributes.title[0];
 
                 //Set some defaults
                 attributes.numAttributes = 0;
@@ -121,92 +129,92 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 //Get the number of attributes for this item
                 if(this.model.type != "EML"){
 
-	                //Get the parent EML model
-                	if( this.parentEML ){
-                		var parentEML = this.parentEML;
-                	}
-                	else{
-                		var parentEML = MetacatUI.rootDataPackage.where({
-	                    	id: Array.isArray(this.model.get("isDocumentedBy")) ?
-	                    			this.model.get("isDocumentedBy")[0] : null
-	                	});
-                	}
+                  //Get the parent EML model
+                  if( this.parentEML ){
+                    var parentEML = this.parentEML;
+                  }
+                  else{
+                    var parentEML = MetacatUI.rootDataPackage.where({
+                        id: Array.isArray(this.model.get("isDocumentedBy")) ?
+                            this.model.get("isDocumentedBy")[0] : null
+                    });
+                  }
 
-	                if( Array.isArray(parentEML) )
-	                	parentEML = parentEML[0];
+                  if( Array.isArray(parentEML) )
+                    parentEML = parentEML[0];
 
-	                //If we found a parent EML model
-	                if(parentEML && parentEML.type == "EML"){
+                  //If we found a parent EML model
+                  if(parentEML && parentEML.type == "EML"){
 
-	                	this.parentEML = parentEML;
+                    this.parentEML = parentEML;
 
-	                	//Find the EMLEntity model for this data item
-	                	var entity = this.model.get("metadataEntity") || parentEML.getEntity(this.model);
+                    //Find the EMLEntity model for this data item
+                    var entity = this.model.get("metadataEntity") || parentEML.getEntity(this.model);
 
-	                	//If we found an EMLEntity model
-	                	if(entity){
+                    //If we found an EMLEntity model
+                    if(entity){
 
-	                		this.entity = entity;
+                      this.entity = entity;
 
-	                		//Get the file name from the metadata if it is not in the model
-	                		if( !this.model.get("fileName") ){
+                      //Get the file name from the metadata if it is not in the model
+                      if( !this.model.get("fileName") ){
 
-	                			var fileName = "";
+                        var fileName = "";
 
-	                			if( entity.get("physicalObjectName") )
-	                				fileName = entity.get("physicalObjectName");
-	                			else if( entity.get("entityName") )
-	                				fileName = entity.get("entityName");
+                        if( entity.get("physicalObjectName") )
+                          fileName = entity.get("physicalObjectName");
+                        else if( entity.get("entityName") )
+                          fileName = entity.get("entityName");
 
-	                			if( fileName )
-	                				attributes.fileName = fileName;
-	                				this.model.set("fileName", fileName);
-	                		}
+                        if( fileName )
+                          attributes.fileName = fileName;
+                          this.model.set("fileName", fileName);
+                      }
 
-	                		//Get the number of attributes for this entity
-	                		attributes.numAttributes = entity.get("attributeList").length;
-	                		//Determine if the entity model is valid
-	                		attributes.entityIsValid = entity.isValid();
+                      //Get the number of attributes for this entity
+                      attributes.numAttributes = entity.get("attributeList").length;
+                      //Determine if the entity model is valid
+                      attributes.entityIsValid = entity.isValid();
 
                       //Listen to changes to certain attributes of this EMLEntity model
                       // to re-render this view
                       this.stopListening(entity);
                       this.listenTo(entity, "change:entityType, change:entityName", this.render);
 
-	                		//Check if there are any invalid attribute models
-	                		//Also listen to each attribute model
-                			_.each( entity.get("attributeList"), function(attr){
+                      //Check if there are any invalid attribute models
+                      //Also listen to each attribute model
+                      _.each( entity.get("attributeList"), function(attr){
 
-                				var isValid = attr.isValid();
+                        var isValid = attr.isValid();
 
-                				//Mark that this entity has at least one invalid attribute
-	                			if( !attributes.hasInvalidAttribute && !isValid )
-	                				attributes.hasInvalidAttribute = true;
+                        //Mark that this entity has at least one invalid attribute
+                        if( !attributes.hasInvalidAttribute && !isValid )
+                          attributes.hasInvalidAttribute = true;
 
-	                			this.stopListening(attr);
+                        this.stopListening(attr);
 
-	                			//Listen to when the validation status changes and rerender
-	                			if(isValid)
-	                				this.listenTo( attr, "invalid", this.render);
-	                			else
-	                				this.listenTo( attr, "valid",   this.render);
+                        //Listen to when the validation status changes and rerender
+                        if(isValid)
+                          this.listenTo( attr, "invalid", this.render);
+                        else
+                          this.listenTo( attr, "valid",   this.render);
 
 
-	                		}, this);
+                      }, this);
 
-	                		//If there are no attributes now, rerender when one is added
-	                		this.listenTo(entity, "change:attributeList", this.render);
+                      //If there are no attributes now, rerender when one is added
+                      this.listenTo(entity, "change:attributeList", this.render);
 
-	                	}
-	                	else{
-	                		//Rerender when an entity is added
-	                		this.listenTo(this.model, "change:entities", this.render);
-	                	}
-	                }
-	                else{
-	                	//When the package is complete, rerender
-	                	this.listenTo(MetacatUI.rootDataPackage, "add:EML", this.render);
-	                }
+                    }
+                    else{
+                      //Rerender when an entity is added
+                      this.listenTo(this.model, "change:entities", this.render);
+                    }
+                  }
+                  else{
+                    //When the package is complete, rerender
+                    this.listenTo(MetacatUI.rootDataPackage, "add:EML", this.render);
+                  }
                 }
 
                 this.$el.html( this.template(attributes) );
@@ -219,8 +227,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 if(this.model.get("type") == "Metadata"){
                   //Add the title data-attribute attribute to the name cell
-                	this.$el.find(".name").attr("data-attribute", "title");
-                	this.$el.addClass("folder");
+                  this.$el.find(".name").attr("data-attribute", "title");
+                  this.$el.addClass("folder");
                 }
                 else{
                     this.$el.addClass("data");
@@ -281,93 +289,93 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                     var tooltipClass = uploadStatus == "e" ? "error" : "";
 
-                	this.$(".status .icon").tooltip({
-                		placement: "top",
-                		trigger: "hover",
-                		html: true,
-                		title: "<div class='status-tooltip " + tooltipClass + "'><h6>Issue saving:</h6><div>" + errorMessage + "</div></div>",
-                		container: "body"
-                	});
+                  this.$(".status .icon").tooltip({
+                    placement: "top",
+                    trigger: "hover",
+                    html: true,
+                    title: "<div class='status-tooltip " + tooltipClass + "'><h6>Issue saving:</h6><div>" + errorMessage + "</div></div>",
+                    container: "body"
+                  });
 
-                	this.$el.removeClass("loading");
+                  this.$el.removeClass("loading");
                 }
                 else if (( !uploadStatus || uploadStatus == "c" || uploadStatus == "q") && attributes.numAttributes == 0){
 
-                	this.$(".status .icon").tooltip({
-                		placement: "top",
-                		trigger: "hover",
-                		html: true,
-                		title: "<div class='status-tooltip'>This file needs to be described - Click 'Describe'</div>",
-                		container: "body"
-                	});
+                  this.$(".status .icon").tooltip({
+                    placement: "top",
+                    trigger: "hover",
+                    html: true,
+                    title: "<div class='status-tooltip'>This file needs to be described - Click 'Describe'</div>",
+                    container: "body"
+                  });
 
-            		this.$el.removeClass("loading");
+                this.$el.removeClass("loading");
 
-            	}
+              }
                 else if( attributes.hasInvalidAttribute || !attributes.entityIsValid ){
 
-                	this.$(".status .icon").tooltip({
-                		placement: "top",
-                		trigger: "hover",
-                		html: true,
-                		title: "<div class='status-tooltip'>There is missing information about this file. Click 'Describe'</div>",
-                		container: "body"
-                	});
+                  this.$(".status .icon").tooltip({
+                    placement: "top",
+                    trigger: "hover",
+                    html: true,
+                    title: "<div class='status-tooltip'>There is missing information about this file. Click 'Describe'</div>",
+                    container: "body"
+                  });
 
-                	this.$el.removeClass("loading");
+                  this.$el.removeClass("loading");
 
                 }
                 else if(uploadStatus == "c"){
 
-            		this.$(".status .icon").tooltip({
-                		placement: "top",
-                		trigger: "hover",
-                		html: true,
-                		title: "<div class='status-tooltip'>Complete</div>",
-                		container: "body"
-                	});
+                this.$(".status .icon").tooltip({
+                    placement: "top",
+                    trigger: "hover",
+                    html: true,
+                    title: "<div class='status-tooltip'>Complete</div>",
+                    container: "body"
+                  });
 
-                	this.$el.removeClass("loading");
+                  this.$el.removeClass("loading");
                 }
                 else if(uploadStatus == "l"){
-                	this.$(".status .icon").tooltip({
-                		placement: "top",
-                		trigger: "hover",
-                		html: true,
-                		title: "<div class='status-tooltip'>Reading file...</div>",
-                		container: "body"
-                	});
+                  this.$(".status .icon").tooltip({
+                    placement: "top",
+                    trigger: "hover",
+                    html: true,
+                    title: "<div class='status-tooltip'>Reading file...</div>",
+                    container: "body"
+                  });
 
-                	this.$el.addClass("loading");
+                  this.$el.addClass("loading");
                 }
                 else if(uploadStatus == "p"){
-                	var model = this.model;
+                  var model = this.model;
 
-                	this.$(".status .progress").tooltip({
-                		placement: "top",
-                		trigger: "hover",
-                		html: true,
-                		title: function(){
-                			if(model.get("numSaveAttempts") > 0){
-                				return "<div class='status-tooltip'>Something went wrong during upload. <br/> Trying again... (attempt " + (model.get("numSaveAttempts") + 1) + " of 3)</div>";
-                			}
-                			else if(model.get("uploadProgress")){
-                				var percentDone = model.get("uploadProgress").toString();
-                				if(percentDone.indexOf(".") > -1)
-                					percentDone = percentDone.substring(0, percentDone.indexOf("."));
-                			}
-                			else
-                				var percentDone = "0";
+                  this.$(".status .progress").tooltip({
+                    placement: "top",
+                    trigger: "hover",
+                    html: true,
+                    title: function(){
+                      if(model.get("numSaveAttempts") > 0){
+                        return "<div class='status-tooltip'>Something went wrong during upload. <br/> Trying again... (attempt " + (model.get("numSaveAttempts") + 1) + " of 3)</div>";
+                      }
+                      else if(model.get("uploadProgress")){
+                        var percentDone = model.get("uploadProgress").toString();
+                        if(percentDone.indexOf(".") > -1)
+                          percentDone = percentDone.substring(0, percentDone.indexOf("."));
+                      }
+                      else
+                        var percentDone = "0";
 
-                			return "<div class='status-tooltip'>Uploading: " + percentDone + "%</div>";
-                		},
-                		container: "body"
-                	});
+                      return "<div class='status-tooltip'>Uploading: " + percentDone + "%</div>";
+                    },
+                    container: "body"
+                  });
 
-                	this.$el.addClass("loading");
+                  this.$el.addClass("loading");
                 }
                 else{
-                	this.$el.removeClass("loading");
+                  this.$el.removeClass("loading");
                 }
 
                 //Listen to changes to the upload progress of this object
@@ -378,31 +386,31 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 //listen for changes to rerender the view
                 this.listenTo(this.model, "change:fileName change:title change:id change:formatType " +
-                		"change:formatId change:type change:resourceMap change:documents change:isDocumentedBy " +
-                		"change:size change:nodeLevel change:uploadStatus", this.render); // render changes to the item
+                    "change:formatId change:type change:resourceMap change:documents change:isDocumentedBy " +
+                    "change:size change:nodeLevel change:uploadStatus", this.render); // render changes to the item
 
                 var view = this;
                 this.listenTo(this.model, "replace", function(newModel){
-                	view.model = newModel;
-                	view.render();
+                  view.model = newModel;
+                  view.render();
                 });
 
                 this.$el.data({
-                	view: this,
-                	model: this.model
-                	});
+                  view: this,
+                  model: this.model
+                  });
 
                 return this;
             },
 
-            /* Close the view and remove it from the DOM */
+            /** Close the view and remove it from the DOM */
             onClose: function(){
                 this.remove(); // remove for the DOM, stop listening
                 this.off();    // remove callbacks, prevent zombies
 
             },
 
-            /*
+            /**
               Generate a unique id for each data item in the table
               TODO: This could be replaced with the DataONE identifier
             */
@@ -431,8 +439,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 // Set the title if this item is metadata or set the file name
                 // if its not
-            	if(this.model.get("type") == "Metadata") {
-            		var title = this.model.get("title");
+              if(this.model.get("type") == "Metadata") {
+                var title = this.model.get("title");
 
                     // Get the current title which is either an array of titles
                     // or a single string. When it's an array of strings, we
@@ -464,19 +472,10 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 }
             },
 
-            /* Duplicate a file or folder */
-            duplicate: function(event) {
-
-            },
-
-            /* Add a sub folder */
-            addFolder: function(event) {
-
-            },
-
-            /*
+            /**
                 Handle the add file event, showing the file picker dialog
                 Multiple files are allowed using the shift and or option/alt key
+                @param {Event} event
             */
             handleAddFiles: function(event) {
 
@@ -492,9 +491,10 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
             },
 
-            /*
+            /**
                 With a file list from the file picker or drag and drop,
                 add the files to the collection
+                @param {Event} event
             */
             addFiles: function(event) {
 
@@ -567,21 +567,14 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
             },
 
-            /* During file reading, update the progress bar */
-            updateLoadProgress: function(event) {
-
-                // TODO: Update the progress bar
-
-            },
-
-            /* Show the drop zone for this row in the table */
+            /** Show the drop zone for this row in the table */
             showDropzone: function() {
                 if ( this.model.get("type") !== "Metadata" ) return;
                 this.$el.addClass("droppable");
 
             },
 
-            /* Hide the drop zone for this row in the table */
+            /** Hide the drop zone for this row in the table */
             hideDropzone: function(event) {
                 if ( this.model.get("type") !== "Metadata" ) return;
                 this.$el.removeClass("droppable");
@@ -595,7 +588,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
              * Called indirectly via the "click" event on elements with the
              * class .replaceFile. See this View's events map.
              *
-             * @param {MouseEvent} event: Browser Click event
+             * @param {MouseEvent} event Browser Click event
              */
             handleReplace: function(event) {
                 event.stopPropagation();
@@ -636,7 +629,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
              * On error, we attempt to return the editor back to its pre-replace
              * state.
              *
-             * @param {Event}
+             * @param {Event} event
              */
             replaceFile: function(event) {
                 event.stopPropagation();
@@ -671,11 +664,10 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     errorMessage = "This is an empty file. It won't be included in the dataset.";
                 }
 
-				if (!this.model) {
+                if (!this.model) {
                     console.log("Couldn't find model we're supposed to be replacing. Stopping.");
-
-					return;
-				}
+                    return;
+                }
 
                 // Copy model attributes aside for reverting on error
                 var newAttributes = {
@@ -776,7 +768,10 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 return;
             },
 
-            /* Handle remove events for this row in the data package table */
+            /**
+             Handle remove events for this row in the data package table
+              @param {Event} event
+             */
             handleRemove: function(event) {
                 var eventId,         // The id of the row of this event
                     removalIds = [], // The list of target ids to remove
@@ -795,9 +790,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 this.parentSciMeta = this.getParentScienceMetadata(event);
 
                 if(!this.parentSciMeta){
-                	this.$(".status .icon, .status .progress").tooltip("hide").tooltip("destroy");
+                  this.$(".status .icon, .status .progress").tooltip("hide").tooltip("destroy");
 
-                	// Remove the row
+                  // Remove the row
                     this.remove();
                     return;
                 }
@@ -822,10 +817,10 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 //Data objects may need to be removed from the EML model entities list
                 else if(dataONEObject && this.parentSciMeta.type == "EML"){
 
-                	var matchingEntity = this.parentSciMeta.getEntity(dataONEObject);
+                  var matchingEntity = this.parentSciMeta.getEntity(dataONEObject);
 
-                	if(matchingEntity)
-                		this.parentSciMeta.removeEntity(matchingEntity);
+                  if(matchingEntity)
+                    this.parentSciMeta.removeEntity(matchingEntity);
 
                 }
 
@@ -851,9 +846,10 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
             },
 
-            /*
+            /**
              * Return the parent science metadata model associated with the
              * data or metadata row of the UI event
+             *   @param {Event} event
              */
             getParentScienceMetadata: function(event) {
                 var parentMetadata,  // The parent metadata array in the collection
@@ -888,22 +884,23 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                             return parentSciMeta;
 
                         } else {
-                        	//If there is only one metadata model in the root data package, then use that metadata model
-                        	var metadataModels = MetacatUI.rootDataPackage.where({
+                          //If there is only one metadata model in the root data package, then use that metadata model
+                          var metadataModels = MetacatUI.rootDataPackage.where({
                                 type: "Metadata"
                             });
 
-                        	if(metadataModels.length == 1)
-                        		return metadataModels[0];
+                          if(metadataModels.length == 1)
+                            return metadataModels[0];
 
                         }
                     }
                 }
             },
 
-            /*
+            /**
              * Return the parent data package collection associated with the
              * data or metadata row of the UI event
+             *  @param {Event} event
              */
             getParentDataPackage: function(event) {
                 var parentSciMeta,
@@ -943,50 +940,55 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 }
             },
 
+            /**
+            * Removes invalid characters and formatting from the given input string
+            * @param {string} input The string to clean
+            * @return {string}
+            */
             cleanInput: function(input){
-            	// 1. remove line breaks / Mso classes
-      				var stringStripper = /(\n|\r| class=(")?Mso[a-zA-Z]+(")?)/g;
-      				var output = input.replace(stringStripper, ' ');
+              // 1. remove line breaks / Mso classes
+              var stringStripper = /(\n|\r| class=(")?Mso[a-zA-Z]+(")?)/g;
+              var output = input.replace(stringStripper, ' ');
 
-      				// 2. strip Word generated HTML comments
-      				var commentSripper = new RegExp('<!--(.*?)-->','g');
-      				output = output.replace(commentSripper, '');
-      				var tagStripper = new RegExp('<(/)*(meta|link|span|\\?xml:|st1:|o:|font)(.*?)>','gi');
+              // 2. strip Word generated HTML comments
+              var commentSripper = new RegExp('<!--(.*?)-->','g');
+              output = output.replace(commentSripper, '');
+              var tagStripper = new RegExp('<(/)*(meta|link|span|\\?xml:|st1:|o:|font)(.*?)>','gi');
 
-      				// 3. remove tags leave content if any
-      				output = output.replace(tagStripper, '');
+              // 3. remove tags leave content if any
+              output = output.replace(tagStripper, '');
 
-      				// 4. Remove everything in between and including tags '<style(.)style(.)>'
-      				var badTags = ['style', 'script','applet','embed','noframes','noscript'];
+              // 4. Remove everything in between and including tags '<style(.)style(.)>'
+              var badTags = ['style', 'script','applet','embed','noframes','noscript'];
 
-      				for (var i=0; i< badTags.length; i++) {
-      				  tagStripper = new RegExp('<'+badTags[i]+'.*?'+badTags[i]+'(.*?)>', 'gi');
-      				  output = output.replace(tagStripper, '');
-      				}
+              for (var i=0; i< badTags.length; i++) {
+                tagStripper = new RegExp('<'+badTags[i]+'.*?'+badTags[i]+'(.*?)>', 'gi');
+                output = output.replace(tagStripper, '');
+              }
 
-      				// 5. remove attributes ' style="..."'
-      				var badAttributes = ['style', 'start'];
-      				for (var i=0; i< badAttributes.length; i++) {
-      				  var attributeStripper = new RegExp(' ' + badAttributes[i] + '="(.*?)"','gi');
-      				  output = output.replace(attributeStripper, '');
-      				}
+              // 5. remove attributes ' style="..."'
+              var badAttributes = ['style', 'start'];
+              for (var i=0; i< badAttributes.length; i++) {
+                var attributeStripper = new RegExp(' ' + badAttributes[i] + '="(.*?)"','gi');
+                output = output.replace(attributeStripper, '');
+              }
 
               output = EML.prototype.cleanXMLText(output);
 
-      				return output;
+              return output;
             },
 
-            /*
+            /**
              * Style this table row to indicate it will be removed
              */
             previewRemove: function(){
-            	this.$el.toggleClass("remove-preview");
+              this.$el.toggleClass("remove-preview");
             },
 
             /**
              * Clears the text in the cell if the text was the default. We add
              * an 'empty' class, and remove it when the user focuses back out.
-             *
+             * @param {Event} e
              */
             emptyName: function(e){
 
@@ -994,21 +996,21 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 editableCell.tooltip('hide');
 
-            	if(editableCell.text().indexOf("Untitled") > -1){
-            		editableCell.attr("data-original-text", editableCell.text().trim())
-            					.text("")
-            					.addClass("empty")
-            					.on("focusout", function(){
-            						if(!editableCell.text())
-            							editableCell.text(editableCell.attr("data-original-text")).removeClass("empty");
-            					});
-            	}
+              if(editableCell.text().indexOf("Untitled") > -1){
+                editableCell.attr("data-original-text", editableCell.text().trim())
+                      .text("")
+                      .addClass("empty")
+                      .on("focusout", function(){
+                        if(!editableCell.text())
+                          editableCell.text(editableCell.attr("data-original-text")).removeClass("empty");
+                      });
+              }
             },
 
             /**
             * Changes the access policy of a data object based on user input.
             *
-            * @param {HTML DOM Event} e - The event that triggered this function as a callback
+            * @param {Event} e - The event that triggered this function as a callback
             */
             changeAccessPolicy: function(e){
 
@@ -1047,64 +1049,78 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
               }
             },
 
+            /**
+            * Shows form validation for this data item
+            * @param {string} attr The modal attribute that has been validated
+            * @param {string} errorMsg The validation error message to display
+            */
             showValidation: function(attr, errorMsg){
 
-            	//Find the element that is required
-            	var requiredEl = this.$("[data-category='" + attr + "']").addClass("error");
+              //Find the element that is required
+              var requiredEl = this.$("[data-category='" + attr + "']").addClass("error");
 
-            	//When it is updated, remove the error styling
-				this.listenToOnce(this.model, "change:" + attr, this.hideRequired);
+              //When it is updated, remove the error styling
+              this.listenToOnce(this.model, "change:" + attr, this.hideRequired);
             },
 
+            /**
+            * Hides the 'required' styling from this view
+            */
             hideRequired: function(){
 
-            	//Remove the error styling
-				this.$("[contenteditable].error").removeClass("error");
+              //Remove the error styling
+              this.$("[contenteditable].error").removeClass("error");
             },
 
-            /*
+            /**
              * Show the data item as saving
              */
             showSaving: function(){
-            	this.$(".controls button").prop("disabled", true);
+              this.$(".controls button").prop("disabled", true);
 
-            	if(this.model.get("type") != "Metadata")
-            		this.$(".controls").prepend($(document.createElement("div")).addClass("disable-layer"));
+              if(this.model.get("type") != "Metadata")
+                this.$(".controls").prepend($(document.createElement("div")).addClass("disable-layer"));
 
-            	this.$(".canRename > div").prop("contenteditable", false);
+              this.$(".canRename > div").prop("contenteditable", false);
             },
 
+            /**
+             * Hides the styles applied in {@link DataItemView#showSaving}
+             */
             hideSaving: function(){
-            	this.$(".controls button").prop("disabled", false);
-            	this.$(".disable-layer").remove();
+              this.$(".controls button").prop("disabled", false);
+              this.$(".disable-layer").remove();
 
-            	//Make the name cell editable again
-            	this.$(".canRename > div").prop("contenteditable", true);
+              //Make the name cell editable again
+              this.$(".canRename > div").prop("contenteditable", true);
 
-            	this.$el.removeClass("error-saving");
+              this.$el.removeClass("error-saving");
             },
 
             toggleSaving: function(){
-            	if(this.model.get("uploadStatus") == "p" ||
-            			this.model.get("uploadStatus") == "l" ||
-            			( this.model.get("uploadStatus") == "e" && this.model.get("type") != "Metadata") ||
-            			MetacatUI.rootDataPackage.packageModel.get("uploadStatus") == "p")
-            		this.showSaving();
-            	else
-            		this.hideSaving();
+              if(this.model.get("uploadStatus") == "p" ||
+                  this.model.get("uploadStatus") == "l" ||
+                  ( this.model.get("uploadStatus") == "e" && this.model.get("type") != "Metadata") ||
+                  MetacatUI.rootDataPackage.packageModel.get("uploadStatus") == "p")
+                this.showSaving();
+              else
+                this.hideSaving();
 
-            	if(this.model.get("uploadStatus") == "e")
+              if(this.model.get("uploadStatus") == "e")
                     this.$el.addClass("error-saving");
             },
 
+            /**
+            * Shows the current progress of the file upload
+            */
             showUploadProgress: function(){
 
-            	if(this.model.get("numSaveAttempts") > 0){
-            		this.$(".progress .bar").css("width", "100%");
-            	}
-            	else{
-                	this.$(".progress .bar").css("width", this.model.get("uploadProgress") + "%");
-            	}
+              if(this.model.get("numSaveAttempts") > 0){
+                this.$(".progress .bar").css("width", "100%");
+              }
+              else{
+                  this.$(".progress .bar").css("width", this.model.get("uploadProgress") + "%");
+              }
             }
         });
 
