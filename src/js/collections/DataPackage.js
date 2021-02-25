@@ -157,7 +157,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 formatId: "http://www.openarchives.org/ore/terms",
                 childPackages: {},
                 id: this.id,
-                latestVersion: this.id
+                latestVersion: this.id,
+                isNew: true
             });
 
             if ( typeof options.packageModel !== "undefined" ) {
@@ -188,7 +189,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
           // Build the DataPackage URL based on the MetacatUI.appModel.objectServiceUrl
           // and id or seriesid
           url: function(options) {
-
             if(options && options.update){
               return MetacatUI.appModel.get("objectServiceUrl") +
                   (encodeURIComponent(this.packageModel.get("oldPid")) || encodeURIComponent(this.packageModel.get("seriesid")));
@@ -3043,6 +3043,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
               var policy = _.clone(accessPolicy);
               this.packageModel.set("accessPolicy", policy);
+
+              // Stop now if the package is new because we don't want force
+              // a save just yet
+              if (this.packageModel.isNew()) {
+                return;
+              }
 
               this.packageModel.on("sysMetaUpdateError", function(e) {
                 // Show a generic error. Any errors at this point are things the

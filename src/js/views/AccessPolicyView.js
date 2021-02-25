@@ -601,12 +601,20 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
         return;
       }
 
-      //Show the save progress as it is in progress, complete, in error, etc.
-      this.listenTo(dataONEObject, "change:uploadStatus", this.showSaveProgress);
-
+      // Broadcast the change across the package if appropriate
       if (this.broadcast) {
         MetacatUI.rootDataPackage.broadcastAccessPolicy(this.collection);
       }
+
+      // Don't trigger a save if the item is new and just close the modal
+      if (dataONEObject.isNew()) {
+        $(this.$el).modal("hide");
+
+        return;
+      }
+
+      //Show the save progress as it is in progress, complete, in error, etc.
+      this.listenTo(dataONEObject, "change:uploadStatus", this.showSaveProgress);
 
       //Update the SystemMetadata for this object
       dataONEObject.updateSysMeta();

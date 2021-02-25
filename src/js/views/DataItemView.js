@@ -108,23 +108,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 }
 
                 // Restrict item sharing depending on access
-                if (MetacatUI.appModel.get("allowAccessPolicyChanges")) {
-                  // Whether we can share an EML object depends also on the
-                  // permissions set on the data package since we always want
-                  // those permissions to stay in sync
-                  if (this.model.type === "EML") {
-                      var canShareMetadata = MetacatUI.rootDataPackage.packageModel.get("accessPolicy") &&
-                          MetacatUI.rootDataPackage.packageModel.get("accessPolicy").isAuthorized("changePermission");
-                      var canShareResourceMap = this.model.get("accessPolicy") &&
-                          this.model.get("accessPolicy").isAuthorized("changePermission");
-
-                      this.canShare = canShareMetadata && canShareResourceMap;
-                  } else {
-                      this.canShare = this.model.get("accessPolicy") && this.model.get("accessPolicy").isAuthorized("changePermission");
-                  }
-                }
-
-                attributes.canShare = this.canShare;
+                attributes.canShare = this.canShareItem();
 
                 //Get the number of attributes for this item
                 if(this.model.type != "EML"){
@@ -1120,6 +1104,42 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
               }
               else{
                   this.$(".progress .bar").css("width", this.model.get("uploadProgress") + "%");
+              }
+            },
+
+            /**
+             * Determine whether this item can be shared
+             *
+             * Used to control whether the Share button in the template
+             * is enabled or not.
+             *
+             * Has special behavior depending on whether the item is metadata or
+             * not. If metadata (ie type is EML), also checks that the resource
+             * map can be shared. Otherwise, only checks if the data item can be
+             * shared.
+             *
+             * @return {boolean} Whether the item can be shared
+             */
+            canShareItem: function() {
+              if (!MetacatUI.appModel.get("allowAccessPolicyChanges")) {
+                return false;
+              }
+
+              if (this.model.type === "EML") {
+                // Check whether we can share the resource map
+                var pkgModel = MetacatUI.rootDataPackage.packageModel,
+                    pkgAccessPolicy = pkgModel.get("accessPolicy");
+
+                var canShareResourceMap = pkgModel.get("isNew") || (pkgAccessPolicy && pkgAccessPolicy.isAuthorized("changePermission"));
+
+                // Check whether we can share the metadata
+                var modelAccessPolicy = this.model.get("accessPolicy");
+                var canShareMetadata = modelAccessPolicy && modelAccessPolicy.isAuthorized("changePermission");
+
+                // Only return true if we can share both
+                this.canShare = canShareMetadata && canShareResourceMap;
+              } else {
+                this.canShare = this.model.get("accessPolicy") && this.model.get("accessPolicy").isAuthorized("changePermission");
               }
             }
         });
