@@ -1,16 +1,17 @@
+<% var uiBuilder = typeof mode !== 'undefined' ? mode === "uiBuilder" : false %>
+<% var disableIfBuildMode = "" %>
+<% if(uiBuilder){ disableIfBuildMode = 'disabled="true"' } %>
 <div class="can-toggle can-toggle-small">
-  <input id="toggle-filter-view-<%=id%>" type="checkbox" />
-  <span>
-    <% if(typeof icon == "string"){
-         print('<i class="icon icon-on-left icon-' + icon + '"></i>');
-       } %>
-       <%=label%>
-  </span>
+  <input id="toggle-filter-view-<%=id%>" type="checkbox" <%= disableIfBuildMode %> />
   <label for="toggle-filter-view-<%=id%>">
     <span class="true-label hidden"><%=trueLabel%></span>
     <span class="false-label hidden"><%=falseLabel%></span>
     <div class="can-toggle-switch" data-checked="<%=trueLabel%>" data-unchecked="<%=falseLabel%>"></div>
   </label>
+  <% if(uiBuilder){ 
+    print('<span class="ui-build-input true-label" data-category="trueLabel" contenteditable="true">' + ( trueLabel ? trueLabel : '' ) + '</span>');
+    print('<span class="ui-build-input false-label" data-category="falseLabel" contenteditable="true">' + ( falseLabel ? falseLabel : '' ) + '</span>');
+  } %>
   <div class="clear clearfix"></div>
 </div>
 <div class="clear clearfix"></div>

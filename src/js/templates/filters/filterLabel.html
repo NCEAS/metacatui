@@ -1,0 +1,11 @@
+<% var uiBuilder = mode === "uiBuilder" %>
+<label>
+  <% if(icon){
+    print('<i class="icon icon-on-left icon-' + icon + '"></i>');
+  } %>
+  <% if(uiBuilder){ 
+    print('<span class="ui-build-input label" data-category="label" contenteditable="true">' + ( label ? label : '' ) + '</i>');
+  } else { 
+    print(label)
+  } %>
+</label>

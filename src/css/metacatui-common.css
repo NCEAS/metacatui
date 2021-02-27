@@ -3843,7 +3843,7 @@ add font awesome close icon */
   font-size: 1.5em;
   display: block;
 }
-/* hide the remove message for logo images since we can reemove the entire logo instead */
+/* hide the remove message for logo images since we can remove the entire logo instead */
 .port-editor-settings .logos-container .edit-image .dropzone .remove-message,
 .port-editor-settings .logos-container .edit-image .dropzone .remove {
     display: none;
@@ -3871,6 +3871,215 @@ add font awesome close icon */
   padding-right: 0px;
   box-sizing: border-box;
   width: 100%;
+}
+
+/* Filter Editor */
+/* custom portal search filter editor modal */
+
+/* the list of filter UI types to choose from */
+.filter-options {
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+	text-align: center;
+}
+.filter-option {
+	margin: 0 .6em;
+	display: inline-block;
+	cursor: pointer;
+}
+
+/* the icon representing the interface type */
+.filter-option svg {
+	width: 3rem;
+	height: 100%;
+	max-height: 3.5rem;
+	vertical-align: middle;
+	fill: #b5c4ca;
+}
+.filter-option-label {
+	color: #b5c4ca;
+	text-transform: uppercase;
+	font-weight: 500;
+	font-size: 0.6rem;
+	margin: 0;
+}
+.filter-option:hover svg {
+	fill: #419ecc;
+}
+.filter-option:hover .filter-option-label{
+	color: #419ecc;
+}
+.filter-option.selected svg {
+	fill: #2c6f90;
+}
+.filter-option.selected .filter-option-label{
+	color: #2c6f90;
+}
+.filter-option.disabled {
+	cursor: not-allowed;
+}
+.filter-option.disabled svg {
+	fill: #EEF3F8;
+}
+.filter-option.disabled .filter-option-label{
+	color: #EEF3F8;
+}
+
+/* value input in filter editor, where user can select icon, label, placeholder, etc */
+.ui-build .ui-build-input {
+	display: block;
+	font-size: 0.95rem;
+	box-sizing: border-box;
+	border: 2px dashed #419ecc;
+	border-radius: 4px;
+	line-height: 1;
+	padding: 0.35rem 0.5rem;
+	min-height: 1rem;
+	min-width: 1rem;
+	width: 100%;
+	min-width: 280px;
+	max-width: 320px;
+	/* width: 100%; */
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-weight: var(--fw-bold,500);
+	text-shadow: none;
+	box-shadow: 0 3px 5px #77797a17,0 1px 3px #77797a17;
+	transition: background-color .2s ease, box-shadow .2s ease;
+}
+.ui-build .ui-build-input:focus{
+	background-color: #d1e8f3;
+	outline: none;
+	box-shadow: 0 6px 13px #77797a24,0 2px 5px #77797a24;
+}
+.ui-build .ui-build-input:hover{
+	/* background-color: #d1e8f3; */
+	/* outline: none; */
+	box-shadow: 0 6px 13px #77797a24,0 2px 5px #77797a24;
+}
+.ui-build input[disabled],
+.ui-build button[disabled],
+.ui-build select[disabled]{
+	cursor: default;
+}
+.ui-options-editor-label {
+	font-size: 0.8rem;
+	margin: 0 0 3px 2px;
+}
+/* Position the placeholder element over the input */
+.ui-build .ui-build-input.placeholder {
+	position: absolute;
+	left: .5rem;
+	top: 5px;
+}
+
+/* Choice editor is where use selects a value and label for <choice> elements */
+.choice-editor {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1.2rem;
+	grid-gap: 0.5rem;
+	margin-bottom: 0.3rem;
+}
+.choice-editor .ui-options-editor-label {
+	width: 234px;
+	margin-left: 3px;
+	margin-bottom: 0;
+}
+.choice-editor input {
+	border-radius: 3px;
+	color: rgba(0,0,0,.87);
+	border: 1px solid rgba(34,36,38,.15);
+	line-height: 1em;
+	padding: .4rem .8rem;
+}
+.choice-editor input.choice-label {
+	font-weight: 560;
+}
+.choice-editor input.choice-value {
+	font-weight: 400;
+}
+.choice-editor input:focus {
+	border-color: #96c8da;
+	outline: none;
+}
+.choice-editor .remove-choice {
+	font-size: 1.2rem;
+	cursor: pointer;
+	opacity: 0.2;
+	display: grid;
+	align-content: center;
+	justify-self: flex-end;
+}
+
+/* In a date filter where a user selects a minRange and maxRange */
+
+.filter-group .ui-build.filter.date {
+	max-width: unset;
+  min-width: unset;
+	padding-right: 0;
+	margin: 2rem;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.ui-build .slider-container {
+	display: grid;
+	grid-template-columns: 2.5rem minmax(300px, 400px) 2.5rem;
+	grid-template-rows: min-content min-content;
+	justify-items: center;
+	grid-gap: 1rem;
+}
+.ui-build .slider-arrow {
+	margin-top: 20px;
+	fill: #419ecc;
+	/* margin-left: 2rem; */
+}
+.ui-build .year-slider{
+	margin-right: 4px;
+}
+.ui-build .range-inputs {
+	width: 100%;
+	grid-column: 1 / span 3;
+	display: flex;
+	justify-content: space-between;
+}
+
+.ui-build .range-input {
+	width: 60px
+}
+
+.ui-build .range-inputs > * {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+/* toggle builder in UI build mode */
+
+.filter-editor .can-toggle-switch:before {
+	opacity: 0
+}
+.filter-editor .can-toggle label .can-toggle-switch:after {
+	color: white;
+}
+.ui-build .ui-build-input.true-label,
+.ui-build .ui-build-input.false-label{
+	box-sizing: border-box;
+	position: absolute;
+	top: 0;
+	text-align: center;
+	line-height: 1.9em;
+	margin: 0.3em;
+	width: calc(100px - 0.6em);
+	padding: 0 12px;
+	min-width: unset;
+	max-width: unset;
+}
+.ui-build .ui-build-input.true-label {
+	left: 100px;
 }
 
 /* Portal Editor markdown section
@@ -5774,6 +5983,7 @@ body.mapMode{
   	overflow: hidden;
 }
 .filter-input-contain{
+	position: relative;
 	width: 100%;
 }
 .filter.btn{

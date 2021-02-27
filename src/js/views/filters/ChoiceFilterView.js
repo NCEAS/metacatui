@@ -20,67 +20,284 @@ define(['jquery', 'underscore', 'backbone',
     * @type {ChoiceFilter} */
     model: null,
 
+    /**
+     * @inheritdoc
+     */
+    modelClass: ChoiceFilter,
+
     className: "filter choice",
 
     template: _.template(Template),
 
-    events: {
-      "change" : "handleChange"
-    },
+    /**
+     * The class to add to the element that a user should click to remove a choice
+     * value and label when this view is in "uiEditor" mode
+     * @since 2.15.0
+     * @type {string}
+     */
+    removeChoiceClass: "remove-choice",
 
-    initialize: function (options) {
-
-      if( !options || typeof options != "object" ){
-        var options = {};
-      }
-
-      this.model = options.model || new ChoiceFilter();
-
+    /**
+     * A function that creates and returns the Backbone events object.
+     * @return {Object} Returns a Backbone events object
+     */
+    events: function () {
+      var events = {
+        "change" : "handleChange"
+      };
+      var removeClass = "." + this.removeChoiceClass;
+      events["click " + removeClass] = "removeChoice";
+      events["mouseover " + removeClass] = "previewRemoveChoice";
+      events["mouseout " + removeClass] = "previewRemoveChoice";
+      return events
     },
 
     render: function () {
-      this.$el.html( this.template( this.model.toJSON() ) );
 
+      var view = this;
+      
+      // Renders the template and inserts the FilterEditorView if the mode is uiBuilder
+      FilterView.prototype.render.call(this)
+
+      var placeHolderText = this.model.get("placeholder");
       var select = this.$("select");
+      
+      if(this.mode === "uiBuilder"){
 
-      //Create the placeholder text for the dropdown menu
-      var placeHolderText;
+        // If this is the filter view where the user can edit the filter UI options,
+        // like the label, placeholder text, and choices, then render the inputs
+        // for these options.
 
-      //If placeholder text is already provided in the model, use it
-      if( this.model.get("placeholder") ){
-        placeHolderText = this.model.get("placeholder");
-      }
-      //If not, create placeholder text using the model label
-      else{
+        var placeholderInput = $('<span class="ui-build-input placeholder" data-category="placeholder" contenteditable="true">' +
+          ( placeHolderText ? placeHolderText : '' ) +
+          '</span>'
+        );
+        // Replace the select element with the placeholder text element
+        placeholderInput.insertAfter(select);
 
-        //If the label starts with a vowel, use "an"
-        var vowels = ["a", "e", "i", "o", "u"];
-        if( _.contains(vowels, this.model.get("label").toLowerCase().charAt(0)) ){
-          placeHolderText = "Choose an " + this.model.get("label");
+        // Create the interface for a user to edit the value-label choice options
+        var choicesEditor = this.createChoicesEditor();
+        view.$el.append(choicesEditor);
+        
+
+      } else {
+        // For regular search filter views, or the edit filter view, render the dropdown
+        // interface
+
+        //Create the placeholder text for the dropdown menu
+        
+        //If placeholder text is already provided in the model, use it
+        if( placeHolderText ){
+          placeHolderText = this.model.get("placeholder");
         }
-        //Otherwise use "a"
+        //If not, create placeholder text using the model label
         else{
-          placeHolderText = "Choose a " + this.model.get("label");
+
+          //If the label starts with a vowel, use "an"
+          var vowels = ["a", "e", "i", "o", "u"];
+          if( _.contains(vowels, this.model.get("label").toLowerCase().charAt(0)) ){
+            placeHolderText = "Choose an " + this.model.get("label");
+          }
+          //Otherwise use "a"
+          else{
+            placeHolderText = "Choose a " + this.model.get("label");
+          }
         }
+
+        select.append(defaultOption);
+
+        //Create the default option
+        var defaultOption = $(document.createElement("option"))
+                              .attr("value", "")
+                              .text( placeHolderText );
+
+        //Create an option element for each choice listen in the model
+        _.each( this.model.get("choices"), function(choice){
+          select.append( $(document.createElement("option"))
+                          .attr("value", choice.value)
+                          .text(choice.label) );
+        }, this );
+
+        this.listenTo(this.model, "change:values", this.updateChoices);
       }
+      
 
-      //Create the default option
-      var defaultOption = $(document.createElement("option"))
-                            .attr("value", "")
-                            .text( placeHolderText );
-      select.append(defaultOption);
+    },
 
-      //Create an option element for each choice listen in the model
-      _.each( this.model.get("choices"), function(choice){
+    /**
+     * Create the set of inputs where a use can select label-value pairs for the regular
+     * choice filter view
+     * @since 2.15.0
+     */
+    createChoicesEditor: function(){
 
-        select.append( $(document.createElement("option"))
-                         .attr("value", choice.value)
-                         .text(choice.label) );
+      try {
+        this.choicesEditor = $("<div class='choices-editor'></div>");
+        var choicesEditorText = $("<p class='subtle'>Allow people to select from the following search terms</p>");
+        var labelContainer = $("<div class='choice-editor'></div>");
 
-      }, this );
+        this.choicesEditor.append(choicesEditorText, labelContainer)
 
-      this.listenTo(this.model, "change:values", this.updateChoices);
+        labelContainer.append("<p class='subtle ui-options-editor-label'>Enter the text to display</p>")
+        labelContainer.append("<p class='subtle ui-options-editor-label'>Enter the text to search for</p>")
 
+
+        _.each(this.model.get("choices"), function (choice) {
+          var choiceEditorEl = this.createChoiceEditor(choice);
+          this.choicesEditor.append(choiceEditorEl)
+        }, this);
+
+        // Create a blank choice at the end
+        this.addEmptyChoiceEditor();
+
+        return this.choicesEditor
+      }
+      catch (error) {
+        console.log( 'There was an error creating choices editor in a ChoiceFilterView' +
+          ' Error details: ' + error );
+      }
+      
+
+    },
+
+    /**
+     * Create a row where a use can input a value and label for a single choice.
+     */
+    createChoiceEditor: function(choice){
+      try {
+        if (!choice) {
+          return
+        }
+
+        // Create the choice container
+        var choiceContainer = $("<div class='choice-editor'></div>");
+        // Create inputs for "value" and "label", insert them in the container
+        for (const [attrName, attrValue] of Object.entries(choice)) {
+          var inputEl = $('<input>').attr({
+            class: 'choice-input choice-' + attrName,
+            value: attrValue
+          })
+          choiceContainer.append(inputEl);
+        }
+
+        // Create the remove "X" button. Save references to the parent choice container and
+        // the choice element in the model, so that we can remove from the view and model
+        // when the button is clicked
+        var removeButton = $(
+          "<i class='icon icon-remove " +
+          this.removeChoiceClass +
+          "' title='Remove this choice'></i>"
+        ).data({
+          choiceEl: choiceContainer,
+          choiceObj: choice
+        });
+
+        // Insert the remove button into the choice container
+        choiceContainer.append(removeButton);
+        return choiceContainer
+      }
+      catch (error) {
+        console.log( 'There was an error  ChoiceFilterView' +
+          ' Error details: ' + error );
+      }
+      
+    },
+
+    /**
+     * Create an empty choice editor row
+     * @since 2.15.0
+     */
+    addEmptyChoiceEditor: function () {
+      try {
+        var view = this;
+        var choice = {
+          label: "",
+          value: ""
+        }
+        this.model.get("choices").push(choice)
+        var choiceEditorEl = this.createChoiceEditor(choice);
+        this.choicesEditor.append(choiceEditorEl)
+
+        // Don't let users remove the new choice entry fields until some text has been entered
+        var removeButton = choiceEditorEl.find("." + this.removeChoiceClass);
+        // The inputs for value and label
+        var inputs = choiceEditorEl.find("input");
+        removeButton.hide();
+        var onInputChange = function () {
+          removeButton.show();
+          view.addEmptyChoiceEditor();
+          inputs.off("input", onInputChange);
+        }
+        inputs.on("input", onInputChange);
+      }
+      catch (error) {
+        console.log('There was an error creating a choice editor in a ChoiceFilterView' +
+          ' Error details: ' + error);
+      }
+    },
+
+    /**
+     * Indicate to the user that the choice value and label inputs will be removed when
+     * they hover over the remove button.
+     * @since 2.15.0
+     */
+    previewRemoveChoice: function (e) {
+      try {
+
+        var normalOpacity = 1.0,
+            previewOpacity = 0.2,
+            speed = 120;
+
+        var removeEl = $(e.target);
+        var subElements = removeEl.data("choiceEl").children().not(removeEl);
+
+        if(e.type === "mouseover"){
+          subElements.fadeTo(speed, previewOpacity)
+          $(removeEl).fadeTo(speed, normalOpacity)
+        }
+        if(e.type === "mouseout"){
+          subElements.fadeTo(speed, normalOpacity)
+          $(removeEl).fadeTo(speed, previewOpacity)
+        }
+
+      } catch (error) {
+        console.log("Error showing a preview of the removal of a Choice editor in a " +
+          "Choice Filter View, details: " + error);
+      }
+    },
+
+    /**
+     * Remove a choice editor row and the corresponding label-value pair from the choice
+     * Filter Model (TODO)
+     * @since 2.15.0
+     * @param {Object} e The click event object
+     */
+    removeChoice: function(e){
+      try {
+        var choice = $(e.target).data("choiceEl");
+
+        // See how many choice elements there are (subtract one because the label elements
+        // are within a choice-editor element)
+        var numChoices = this.$el.find(".choice-editor").length - 1
+
+        // Don't allow removing the last choice element. Empty the last element and hide the
+        // remove button instead.
+        if (numChoices <= 1) {
+          // TODO: update the model as well
+          choice.find("input").val('')
+          return
+        }
+
+        // Remove the choice editor element from the view
+        choice.remove()
+        // TODO: remove the choice from the model
+        // this.model....
+      }
+      catch (error) {
+        console.log( 'There was an error removing a choice editor in the ChoiceFilterView' +
+          ' Error details: ' + error );
+      }
+      
     },
 
     /**

@@ -31,6 +31,14 @@ define(['jquery', 'underscore', 'backbone',
 
     className: "filter-group tab-pane",
 
+    /**
+     * Set to true to render this view as a FilterGroup editor; allow the user to add,
+     * delete, and edit filters within this group.
+     * @type {boolean}
+     * @since 2.15.0
+     */
+    edit: false,
+
     initialize: function (options) {
 
       if( !options || typeof options != "object" ){
@@ -38,8 +46,12 @@ define(['jquery', 'underscore', 'backbone',
       }
 
       this.model = options.model || new FilterGroup();
-
+      
       this.subviews = new Array();
+
+      if(options.edit === true){
+        this.edit = true
+      }
 
     },
 
@@ -51,14 +63,24 @@ define(['jquery', 'underscore', 'backbone',
       //Attach a reference to this view to the element
       this.$el.data("view", this);
 
-      //Get the collection of filters
+      // Get the collection of filters from the FilterGroup model
       var filters = this.model.get("filters");
 
       var filtersRow = $(document.createElement("div")).addClass("filters-container");
       this.$el.append(filtersRow);
 
+      // If this is a FilterGroup editor, pass the "edit" status on to the Filter Views
+      // so that a user can make changes to filters in this group.
+      var filterMode = this.edit ? "edit" : "regular"
+
       //Render each filter model in the FilterGroup model
       filters.each(function(filter, i){
+
+        // The options to pass on to every FilterView
+        var viewOptions = {
+          model: filter,
+          mode: filterMode
+        }
 
         //Some filters are handled specially
         //The isPartOf filter should be rendered as a ToggleFilter
@@ -70,31 +92,34 @@ define(['jquery', 'underscore', 'backbone',
           }
 
           //Create a ToggleView
-          var filterView = new ToggleFilterView({ model: filter });
+          var filterView = new ToggleFilterView(viewOptions);
         }
         else{
+          
           //Depending on the filter type, create a filter view
           switch( filter.type ){
             case "Filter":
-              var filterView = new FilterView({ model: filter });
+              var filterView = new FilterView(viewOptions);
               break;
             case "BooleanFilter":
+              // TODO: Set up "edit" and "uiBuilder" mode for BooleanFilters
               var filterView = new BooleanFilterView({ model: filter });
               break;
             case "ChoiceFilter":
-              var filterView = new ChoiceFilterView({ model: filter });
+              var filterView = new ChoiceFilterView(viewOptions);
               break;
             case "DateFilter":
-              var filterView = new DateFilterView({ model: filter });
+              var filterView = new DateFilterView(viewOptions);
               break;
             case "NumericFilter":
+              // TODO: Set up "edit" and "uiBuilder" mode for numeric filters
               var filterView = new NumericFilterView({ model: filter });
               break;
             case "ToggleFilter":
-              var filterView = new ToggleFilterView({ model: filter });
+              var filterView = new ToggleFilterView(viewOptions);
               break;
             default:
-              var filterView = new FilterView({ model: filter });
+              var filterView = new FilterView(viewOptions);
           }
         }
 

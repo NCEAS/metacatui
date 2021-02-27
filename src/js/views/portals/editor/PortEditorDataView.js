@@ -3,8 +3,11 @@ define(['underscore',
         'backbone',
         "views/portals/editor/PortEditorSectionView",
         "views/EditCollectionView",
-        "text!templates/portals/editor/portEditorData.html"],
-function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
+        "views/filters/FilterGroupsView",
+        "text!templates/portals/editor/portEditorData.html",
+      ],
+function(_, $, Backbone, PortEditorSectionView, EditCollectionView, FilterGroupsView,
+  Template){
 
   /**
   * @class PortEditorDataView
@@ -56,6 +59,14 @@ function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
     editCollectionViewContainer: ".edit-collection-container",
 
     /**
+    * A jQuery selector for the element that the EditFilterGroupsView should be inserted
+    * into
+    * @type {string}
+    * @since 2.15.0
+    */
+    editFilterGroupsViewContainer: ".edit-filter-groups-container",
+
+    /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
@@ -94,6 +105,21 @@ function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
       });
       this.$(this.editCollectionViewContainer).html(editCollectionView.el);
       editCollectionView.render();
+
+      // render the view the edit the custom portal search filters
+
+      // TODO: only render the filterGroupsView if there is a data collection already?
+
+      // TODO: The edit collection view and filter groups view title, description
+      // need to be in the port editor data view template.
+      
+      var filterGroupsView = new FilterGroupsView({
+        filterGroups: this.model.get("filterGroups"),
+        edit: true
+        // filters: this.model.get("searchModel").get("filters")
+      });
+      this.$(this.editFilterGroupsViewContainer).html(filterGroupsView.el);
+      filterGroupsView.render();
 
       //Save a reference to this view
       this.$el.data("view", this);

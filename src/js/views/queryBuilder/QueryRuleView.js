@@ -755,7 +755,7 @@ define([
             );
             this.el.append(removeButton[0]);
           } catch (e) {
-            console.error("Failed to , error message: " + e);
+            console.error("Failed to create a remove button for a Query Rule, error details: " + e);
           }
         },
         

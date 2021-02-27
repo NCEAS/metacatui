@@ -1088,6 +1088,15 @@ define(['jquery', 'underscore', 'backbone'],
       */
       portalInfoURL: null,
       /**
+      * The URL for a webpage where people can learn more about custom portal search
+      * filters. If no URL is provided, links to more info about portals will be omitted.
+      * @since 2.15.0
+      * @type {string}
+      * @example "https://dataone.org/custom-search"
+      * @default null
+      */
+      portalSearchFiltersInfoURL: null,
+      /**
       * Set to false to prevent ANYONE from creating a new portal.
       * @type {boolean}
       * @default true

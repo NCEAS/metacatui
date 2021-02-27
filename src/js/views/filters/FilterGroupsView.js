@@ -49,6 +49,14 @@ define(['jquery', 'underscore', 'backbone',
     vertical: false,
 
     /**
+     * Set to true to render this view as a FilterGroups editor; allow the user add, edit,
+     * and remove FilterGroups (TODO), and to add, delete, and edit filters within groups.
+     * @type {boolean}
+     * @since 2.15.0
+     */
+    edit: false,
+
+    /**
     * @inheritdoc
     */
     events: {
@@ -73,6 +81,10 @@ define(['jquery', 'underscore', 'backbone',
       }
 
       this.parentView = options.parentView || null;
+
+      if(options.edit === true){
+        this.edit = true
+      }
 
     },
 
@@ -140,9 +152,11 @@ define(['jquery', 'underscore', 'backbone',
           groupTab.css("width", (100 / this.filterGroups.length) + "%");
         }
 
-        //Create a FilterGroupView
+        // Create a FilterGroupView. Ensure the FilterGroup is in edit mode if the parent
+        // FilterGroups is.
         var filterGroupView = new FilterGroupView({
-          model: filterGroup
+          model: filterGroup,
+          edit: this.edit
         });
 
         //Render the FilterGroupView
@@ -189,14 +203,22 @@ define(['jquery', 'underscore', 'backbone',
         activeFilterGroup.postRender();
       }
 
-      //Add a header element above the filter groups
-      this.$el.prepend( $(document.createElement("div")).addClass("filters-header") );
+      // Applied filters and the general search input are not needed when this view is
+      // in editing mode
+      if(!this.edit){
+        //Add a header element above the filter groups
+        this.$el.prepend( $(document.createElement("div")).addClass("filters-header") );
 
-      //Render the applied filters
-      this.renderAppliedFiltersSection();
+        //Render the applied filters
+        this.renderAppliedFiltersSection();
 
-      //Render an "All" filter
-      this.renderAllFilter();
+        //Render an "All" filter
+        this.renderAllFilter();
+      }
+
+      if(this.edit){
+        this.$el.addClass("edit-mode");
+      }
 
       if( this.vertical ){
         this.$el.addClass("vertical");
