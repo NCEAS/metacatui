@@ -161,7 +161,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       //Create the model
       this.createModel();
 
-      // An exisiting portal should have a portalIdentifier already set
+      // An existing portal should have a portalIdentifier already set
       // from the router, that does not equal the newPortalTempName ("new"),
       // plus a seriesId or label set during createModel()
       if (
@@ -459,7 +459,8 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
         // Create a new portal model with the identifier
         this.model = new Portal({
-          label: this.portalIdentifier
+          label: this.portalIdentifier,
+          edit: true
         });
 
         // Save the original label in case a user changes it. During URL
@@ -478,7 +479,8 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
           rightsHolder: MetacatUI.appUserModel.get("username"),
           isAuthorized_read: true,
           isAuthorized_write: true,
-          isAuthorized_changePermission: true
+          isAuthorized_changePermission: true,
+          edit: true
         });
 
       }

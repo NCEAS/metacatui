@@ -29,8 +29,20 @@ define(['jquery', 'underscore', 'backbone',
 
     template: _.template(Template),
 
-    events: {
-      "change input" : "updateYearRange"
+    /**
+     * @inheritdoc
+     */
+    events: function(){
+      try {
+        var events = FilterView.prototype.events.call(this);
+        events["change input.max"] = "updateYearRange";
+        events["change input.min"] = "updateYearRange"
+        return events
+      }
+      catch (error) {
+        console.log( 'There was an error creating the events object for a DateFilterView' +
+          ' Error details: ' + error );
+      }
     },
 
     render: function () {

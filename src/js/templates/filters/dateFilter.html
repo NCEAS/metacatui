@@ -17,11 +17,11 @@
       <div class="range-inputs">
         <div>
           <label>Earliest year</label>
-          <input class="range-input" data-category="rangeMin" type="number" value="<%=rangeMin%>">
+          <input class="range-input ui-build-input" data-category="rangeMin" type="number" value="<%=rangeMin%>">
         </div>
         <div>
           <label>Latest year</label>
-          <input class="range-input" data-category="rangeMax" type="number" value="<%=rangeMax%>">
+          <input class="range-input ui-build-input" data-category="rangeMax" type="number" value="<%=rangeMax%>">
         </div>
       </div>
     <% } %>
@@ -33,7 +33,6 @@
       <div class="clear"></div>
     <% } %>
     
-
   <% } else { %>
     <input type="date" value="" <%= disableIfBuildMode %> />
     <button class="btn" <%= disableIfBuildMode %> >

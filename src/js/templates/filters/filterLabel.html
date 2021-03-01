@@ -4,7 +4,7 @@
     print('<i class="icon icon-on-left icon-' + icon + '"></i>');
   } %>
   <% if(uiBuilder){ 
-    print('<span class="ui-build-input label" data-category="label" contenteditable="true">' + ( label ? label : '' ) + '</i>');
+    print('<input class="ui-build-input label" data-category="label" value="' + ( label ? label : '' ) + '"/>');
   } else { 
     print(label)
   } %>

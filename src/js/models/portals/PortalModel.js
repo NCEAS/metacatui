@@ -75,6 +75,7 @@ define(["jquery",
                     filterGroups: [],
                     createSeriesId: true, //If true, a seriesId will be created when this object is saved.
                     // The portal document options may specify section to hide
+                    edit: false, // Set to true if this model is being used in a portal editor view
                     hideMetrics: null,
                     hideData: null,
                     hideMembers: null,
@@ -726,8 +727,13 @@ define(["jquery",
                   });
                   modelJSON.filterGroups.push(filterGroupModel);
 
-                  // Add the Filters from this FilterGroup to the portal's Search model
+                  // Add the Filters from this FilterGroup to the portal's Search model,
+                  // unless this portal model is being edited. Then we only want the
+                  // definition filters to be included in the search model.
+                  if (!modelRef.get("edit")){
                   allFilters.add(filterGroupModel.get("filters").models);
+                  }
+                  
 
                 });
 

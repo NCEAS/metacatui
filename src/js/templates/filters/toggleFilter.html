@@ -2,15 +2,21 @@
 <% var disableIfBuildMode = "" %>
 <% if(uiBuilder){ disableIfBuildMode = 'disabled="true"' } %>
 <div class="can-toggle can-toggle-small">
-  <input id="toggle-filter-view-<%=id%>" type="checkbox" <%= disableIfBuildMode %> />
+  <input class="toggle-checkbox" id="toggle-filter-view-<%=id%>" type="checkbox" <%= disableIfBuildMode %> />
   <label for="toggle-filter-view-<%=id%>">
     <span class="true-label hidden"><%=trueLabel%></span>
     <span class="false-label hidden"><%=falseLabel%></span>
     <div class="can-toggle-switch" data-checked="<%=trueLabel%>" data-unchecked="<%=falseLabel%>"></div>
   </label>
   <% if(uiBuilder){ 
-    print('<span class="ui-build-input true-label" data-category="trueLabel" contenteditable="true">' + ( trueLabel ? trueLabel : '' ) + '</span>');
-    print('<span class="ui-build-input false-label" data-category="falseLabel" contenteditable="true">' + ( falseLabel ? falseLabel : '' ) + '</span>');
+    print('<input class="ui-build-input true-label" data-category="trueLabel" value="' + ( trueLabel ? trueLabel : '' ) + '"/>');
+    print('<input class="ui-build-input false-label" data-category="falseLabel" value="' + ( falseLabel ? falseLabel : '' ) + '"/>');
+    print('<label>When the toggle is on, search for</label>');
+    print('<input class="ui-build-input" data-category="trueValue" value="' + ( trueValue ? trueValue : "" ) + '">');
+    if(falseValue){
+      print('<label>When the toggle is off, search for</label>');
+      print('<input class="ui-build-input" data-category="falseValue" value="' + ( falseValue ? falseValue : "" ) + '">');
+    }
   } %>
   <div class="clear clearfix"></div>
 </div>

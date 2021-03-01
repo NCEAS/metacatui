@@ -66,9 +66,33 @@ define(['jquery', 'underscore', 'backbone',
      */
     uiBuilderClass: "ui-build",
 
-    events: {
-      "click .btn"     : "handleChange",
-      "keypress input" : "handleTyping"
+    /**
+     * The class used for input elements where the user can change UI attributes when this
+     * view is in "uiBuilder" mode. For example, the input for the placeholder text should
+     * have this class. Elements with this class also need to have a data-category
+     * attribute with the name of the model attribute they correspond to.
+     * @type {string}
+     * @since 2.15.0
+     */
+    uiInputClass: "ui-build-input",
+
+    /**
+     * A function that creates and returns the Backbone events object.
+     * @return {Object} Returns a Backbone events object
+     */
+    events: function(){
+      try {
+        var events = {
+          "click .btn": "handleChange",
+          "keypress input": "handleTyping"
+        }
+        events["change ." + this.uiInputClass] = "updateUIAttribute"
+        return events
+      }
+      catch (error) {
+        console.log( 'There was an error setting the events object in a FilterView' +
+          ' Error details: ' + error );
+      }
     },
 
     /**
@@ -207,6 +231,37 @@ define(['jquery', 'underscore', 'backbone',
       //Trigger the change event manually since it is an array
       this.model.set("values", newValuesArray);
 
+    },
+
+    /**
+     * Updates the corresponding model attribute when an input for one of the UI options
+     * changes (in "uiBuilder" mode).
+     * @param {Object} e The change event
+     * @since 2.15.0
+     */
+    updateUIAttribute: function(e){
+      try {
+        var inputEl = e.target;
+        if (!inputEl) {
+          return
+        }
+        if (!inputEl.dataset || !inputEl.dataset.category) {
+          return
+        }
+        var modelAttribute = inputEl.dataset.category,
+          newValue = inputEl.value;
+        if (inputEl.nodeName === "INPUT") {
+
+        }
+        if (inputEl.type === "number") {
+          newValue = parseInt(newValue)
+        }
+        this.model.set(modelAttribute, newValue)
+      }
+      catch (error) {
+        console.log( 'There was an error updating a UI attribute in a FilterView' +
+          ' Error details: ' + error );
+      }
     }
 
   });

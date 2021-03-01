@@ -31,8 +31,19 @@ define(['jquery', 'underscore', 'backbone',
     template: _.template(Template),
     booleanTemplate: _.template(BooleanTemplate),
 
-    events: {
-      "change input" : "updateModel"
+    /**
+     * @inheritdoc
+     */
+    events: function () {
+      try {
+        var events = FilterView.prototype.events.call(this);
+        events["change input.toggle-checkbox"] = "updateModel";
+        return events
+      }
+      catch (error) {
+        console.log('There was an error creating the events object for a ToggleFilterView' +
+          ' Error details: ' + error);
+      }
     },
 
     /**

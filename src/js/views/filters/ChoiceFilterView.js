@@ -42,14 +42,19 @@ define(['jquery', 'underscore', 'backbone',
      * @return {Object} Returns a Backbone events object
      */
     events: function () {
-      var events = {
-        "change" : "handleChange"
-      };
-      var removeClass = "." + this.removeChoiceClass;
-      events["click " + removeClass] = "removeChoice";
-      events["mouseover " + removeClass] = "previewRemoveChoice";
-      events["mouseout " + removeClass] = "previewRemoveChoice";
-      return events
+      try {
+        var events = FilterView.prototype.events.call(this);
+        events["change select"] = "handleChange";
+        var removeClass = "." + this.removeChoiceClass;
+        events["click " + removeClass] = "removeChoice";
+        events["mouseover " + removeClass] = "previewRemoveChoice";
+        events["mouseout " + removeClass] = "previewRemoveChoice";
+        return events
+      }
+      catch (error) {
+        console.log( 'There was an error creating the events object for a ChoiceFilterView' +
+          ' Error details: ' + error );
+      }
     },
 
     render: function () {
@@ -68,10 +73,9 @@ define(['jquery', 'underscore', 'backbone',
         // like the label, placeholder text, and choices, then render the inputs
         // for these options.
 
-        var placeholderInput = $('<span class="ui-build-input placeholder" data-category="placeholder" contenteditable="true">' +
-          ( placeHolderText ? placeHolderText : '' ) +
-          '</span>'
-        );
+        var placeholderInput = $('<input class="' + this.uiInputClass +
+          ' placeholder" data-category="placeholder" value="' +
+          (placeHolderText ? placeHolderText : '') +'" />');
         // Replace the select element with the placeholder text element
         placeholderInput.insertAfter(select);
 
@@ -87,11 +91,8 @@ define(['jquery', 'underscore', 'backbone',
         //Create the placeholder text for the dropdown menu
         
         //If placeholder text is already provided in the model, use it
-        if( placeHolderText ){
-          placeHolderText = this.model.get("placeholder");
-        }
         //If not, create placeholder text using the model label
-        else{
+        if (!placeHolderText){
 
           //If the label starts with a vowel, use "an"
           var vowels = ["a", "e", "i", "o", "u"];
@@ -104,12 +105,11 @@ define(['jquery', 'underscore', 'backbone',
           }
         }
 
-        select.append(defaultOption);
-
         //Create the default option
         var defaultOption = $(document.createElement("option"))
                               .attr("value", "")
                               .text( placeHolderText );
+        select.append(defaultOption);
 
         //Create an option element for each choice listen in the model
         _.each( this.model.get("choices"), function(choice){

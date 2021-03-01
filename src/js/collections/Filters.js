@@ -465,25 +465,27 @@ define([
         },
 
         /**            
-         * replaceModel - Remove a Filter from the Filters collection
-         * silently, and replace it with a new model.
-         *              
+         * replaceModel - Remove a Filter from the Filters collection silently, and
+         * replace it with a new model.
+         *
          * @param  {Filter} model    The model to replace
-         * @param  {object} newAttrs Attributes for the replacement model. Use the filterType attribute to replace with a different type of Filter.
-         * @return {Filter}          Returns the replacement Filter model, which is already part of the Filters collection.
+         * @param  {object} newAttrs Attributes for the replacement model. Use the
+         * filterType attribute to replace with a different type of Filter.
+         * @return {Filter}          Returns the replacement Filter model, which is
+         * already part of the Filters collection.
          */
         replaceModel: function (model, newAttrs) {
           try {
             var index = this.indexOf(model),
               oldModelId = model.cid;
+            this.remove(oldModelId, { silent: true });
             var newModel = this.add(
               newAttrs,
               { at: index }
             );
-            this.remove(oldModelId, { silent: true });
             return newModel;
           } catch (e) {
-            console.log("Failed to replace a Filter model in a Filters collection, error message: " + e);
+            console.log("Failed to replace a Filter model in a Filters collection, " + e);
           }
         },
 
