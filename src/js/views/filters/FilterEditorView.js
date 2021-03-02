@@ -151,38 +151,72 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
             var filterId = "filter-editor-" + this.cid
 
             // Create and insert an EDIT button for the filter.
-            var editButton = $("<a class='edit-filter-button'>EDIT</a>")
-              .attr('href', "#" + filterId)
-              .attr('data-toggle', 'modal');
+            var editButton = $("<a class='edit-filter-button'>EDIT</a>");
             this.$el.prepend(editButton);
 
-            // TODO: create modal on the fly when button is clicked. Creating all at once
-            // really slows down rendering!
+            // Render the editor modal on-the-fly to make the application load faster.
+            // No need to create editing modals for filters that a user doesn't edit.
+            editButton.on("click", function(){
+             view.renderEditorModal.call(view);
+            })
+
+            // Save a reference to this view
+            this.$el.data("view", this);
+
+            return this
+          } catch (error) {
+            console.log("Error rendering an EditFilterView. Error details: " + error);
+          }
+        },
+
+        /**
+         * Render and show the modal window that has all the components for editing a
+         * filter. This is created on-the-fly because creating these modals all at once in
+         * a FilterGroupsView in edit mode takes too much time.
+         */
+        renderEditorModal : function(){
+          try {
+            
+            // Generate an ID for the modal, used as the href for the button.
+            // var filterId = "filter-editor-" + this.cid;
+            var view = this;
 
             // Create and insert the editing modal interface.
-            var modalHTML = this.template({
-              id: filterId
-            });
+            var modalHTML = this.template();
             this.modalEl = $(modalHTML)
             this.$el.append(this.modalEl);
 
-            // Create and add the field selection input. Save it to the view so that 
-            // we can get the selected fields when the user clicks the save button.
-            var selectedFields = _.clone(this.model.get("fields"));
-            this.fieldInput = new QueryFieldSelect({
-              selected: selectedFields,
-              inputLabel: "Select one or more metadata fields"
-              // TODO
-              // excludeFields: this.excludeFields,
-              // addFields: this.specialFields,
-              // separatorText: this.model.get("fieldsOperator")
+            // Start rendering the metadata field input only after the modal is shown.
+            // Otherwise this step slows the rendering down, leaves too much of a delay
+            // before the modal appears.
+            view.modalEl.off();
+            view.modalEl.on("shown", function(){
+              view.renderFieldInput()
+            });
+            view.modalEl.modal("show");
+
+            var saveButton = this.modalEl.find(".save-button");
+            var cancelButton = this.modalEl.find(".cancel-button");
+
+            saveButton.off('click')
+            saveButton.on('click', function (event) {
+              view.modalEl.off("hidden");
+              view.modalEl.on("hidden", function () { view.destroyEditorModal() });
+              view.modalEl.modal("hide");
+              view.addChanges();
             })
-            // TODO make selectors and classes below configurable in this view
-            this.modalEl.find(this.fieldsContainerSelector).append(this.fieldInput.el)
-            this.fieldInput.render();
+
+            cancelButton.off('click')
+            cancelButton.on('click', function (event) {
+              view.modalEl.off("hidden");
+              view.modalEl.on("hidden", function () { view.destroyEditorModal() })
+              view.modalEl.modal("hide");
+              // view.cancelChanges();
+            })
+        
 
             // Add the UI selection interface
-            var filterTypeSelect = $("<div class='filter-options'></div>");
+            var filterTypeSelect = this.modalEl.find(".filter-options");
 
             // Create a filter option for each filter type configured in this view
             this.uiOptions.forEach(function (filterChoice) {
@@ -201,44 +235,58 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
               })
               filterTypeSelect.append(filterOption)
             }, this);
-            
+
             // TODO: make configurable
             this.modalEl.find(".interface-selector").append(filterTypeSelect)
 
             this.renderFilterOptionsEditor()
+            
+          }
+          catch (error) {
+            console.log( 'There was an error rendering the modal in a FilterEditorView' +
+              ' Error details: ' + error );
+          }
+        },
 
-            // TODO: pass a clone of the model to use as a draft for each filter type.
-            // update the filterGroup with the replacement model when user clicks "SAVE"
-
-            var saveButton = this.modalEl.find("#save-" + filterId);
-            var cancelButton = this.modalEl.find("#cancel-" + filterId);
-
-            saveButton.off('click')
-            saveButton.on('click', function (event) {
-              view.modalEl.modal("hide");
-              view.addChanges();
-              // view.remove();
+        /**
+         * Create and insert the component that is used to edit the fields attribute of a
+         * Filter Model. Save it to the view so that the selected fields can be accessed
+         * on save.
+         */
+        renderFieldInput: function(){
+          try {
+            var view = this;
+            var selectedFields = _.clone(view.model.get("fields"));
+            view.fieldInput = new QueryFieldSelect({
+              selected: selectedFields,
+              inputLabel: "Select one or more metadata fields"
               // TODO
-              // view.modalEl.off("hidden", function(){ view.updateModel() }, this);
-              // view.modalEl.on("hidden", function(){ iew.updateModel() }, this);
-              
+              // excludeFields: view.excludeFields,
+              // addFields: view.specialFields,
+              // separatorText: view.model.get("fieldsOperator")
             })
+            // TODO make selectors and classes below configurable in this view
+            view.modalEl.find(view.fieldsContainerSelector).append(view.fieldInput.el)
+            view.fieldInput.render();
+          }
+          catch (error) {
+            console.log( 'There was an error rendering a fields input in a FilterEditorView' +
+              ' Error details: ' + error );
+          }
+        },
 
-            cancelButton.off('click')
-            cancelButton.on('click', function (event) {
-              // TODO
-              view.cancelChanges();
-              // view.modalEl.off("hidden", function(){ view.render() })
-              // view.modalEl.on("hidden", function(){ view.render() })
-              view.modalEl.modal("hide")
-            })
-
-            // Save a reference to this view
-            this.$el.data("view", this);
-
-            return this
-          } catch (error) {
-            console.log("Error rendering an EditFilterView. Error details: " + error);
+        /**
+         * Remove the editing modal window and all associated listeners and data.
+         */
+        destroyEditorModal : function(){
+          try {
+            var view = this;
+            view.modalEl.off();
+            view.modalEl.remove();
+          }
+          catch (error) {
+            console.log( 'There was an error removing a modal in a FilterEditorView' +
+              ' Error details: ' + error );
           }
         },
 
@@ -251,9 +299,9 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
         addChanges: function(event){
           try {
             var selectedUI = _.findWhere(this.uiEditors, { state: "selected" }),
-              newModelAttrs = selectedUI.draftModel.toJSON(),
-              oldModel = this.model,
-              filtersCollection = this.model.collection;
+                newModelAttrs = selectedUI.draftModel.toJSON(),
+                oldModel = this.model,
+                filtersCollection = this.model.collection;
 
             // Set the new fields
             newModelAttrs.fields = _.clone(this.fieldInput.selected);
@@ -269,24 +317,14 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
           }
         },
 
-        /**
-         * Functions to run when a user clicks the "cancel" button in the editing modal window.
-         * Removes all of the draft models that have been saved to this view.. [WIP]
-         * @param {Object} event The click event
-         */
-        cancelChanges: function(event){
-
-          this.uiEditors.forEach(function(uiEditor){
-            delete uiEditor.draftModel
-          })
-
-          // TODO, re-render editing views...
-
-          // Reset the selected fields in the input back to the model values
-          this.fieldInput.changeSelection(this.model.get("fields"), true);
-
-          // WIP...
-        },
+        // /**
+        //  * Functions to run when a user clicks the "cancel" button in the editing modal window.
+        //  * Removes all of the draft models that have been saved to this view.. [WIP]
+        //  * @param {Object} event The click event
+        //  */
+        // cancelChanges: function(event){
+          
+        // },
 
         /**
          * Given a filter type, render a view that allows the user to edit the UI

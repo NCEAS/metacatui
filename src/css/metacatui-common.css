@@ -8281,6 +8281,15 @@ CSS library fixes
 	-webkit-transform: translate3d(0,0,0);
 	-moz-transform: translate3d(0,0,0);
 }
+/* make the modal appear a little faster */
+.modal.fade {
+	--speed: 0.13s;
+	top: -8%;
+  -webkit-transition: opacity var(--speed) linear, top var(--speed) ease-out;
+     -moz-transition: opacity var(--speed) linear, top var(--speed) ease-out;
+       -o-transition: opacity var(--speed) linear, top var(--speed) ease-out;
+          transition: opacity var(--speed) linear, top var(--speed) ease-out;
+}
 
 /** Progress Bars from Bootstrap 3.3.6 **/
 @-webkit-keyframes progress-bar-stripes {
