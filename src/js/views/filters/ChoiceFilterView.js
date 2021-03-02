@@ -30,6 +30,13 @@ define(['jquery', 'underscore', 'backbone',
     template: _.template(Template),
 
     /**
+    * When this view is in "uiBuilder" mode, the class name for the handles on each choice
+    * row that the user can click and drag to re-order
+    * @type {string}
+    */
+    choiceHandleClass: "handle",
+
+    /**
      * The class to add to the element that a user should click to remove a choice
      * value and label when this view is in "uiEditor" mode
      * @since 2.15.0
@@ -132,15 +139,16 @@ define(['jquery', 'underscore', 'backbone',
     createChoicesEditor: function(){
 
       try {
+
+        var view = this;
         this.choicesEditor = $("<div class='choices-editor'></div>");
         var choicesEditorText = $("<p class='subtle'>Allow people to select from the following search terms</p>");
-        var labelContainer = $("<div class='choice-editor'></div>");
+        var labelContainer = $("<div class='choice-editor unsortable'></div>");
 
         this.choicesEditor.append(choicesEditorText, labelContainer)
 
-        labelContainer.append("<p class='subtle ui-options-editor-label'>Enter the text to display</p>")
-        labelContainer.append("<p class='subtle ui-options-editor-label'>Enter the text to search for</p>")
-
+        labelContainer.append("<p class='subtle ui-options-editor-text choice-label'>Enter the text to display</p>")
+        labelContainer.append("<p class='subtle ui-options-editor-text choice-value'>Enter the text to search for</p>")
 
         _.each(this.model.get("choices"), function (choice) {
           var choiceEditorEl = this.createChoiceEditor(choice);
@@ -150,18 +158,33 @@ define(['jquery', 'underscore', 'backbone',
         // Create a blank choice at the end
         this.addEmptyChoiceEditor();
 
+        // Initialize choice drag and drop to re-order functionality
+        require(['sortable'], function(Sortable){
+          Sortable.create(view.choicesEditor[0], {
+            direction: 'vertical',
+            easing: "cubic-bezier(1, 0, 0, 1)",
+            animation: 200,
+            handle: "." + view.choiceHandleClass,
+            draggable: ".choice-editor:not(.unsortable)",
+            onUpdate: function (evt) {
+              // When the choice order is changed, update the filter model
+              view.updateModelChoices()
+            },
+          })
+        })
+        
         return this.choicesEditor
       }
       catch (error) {
         console.log( 'There was an error creating choices editor in a ChoiceFilterView' +
           ' Error details: ' + error );
       }
-      
 
     },
 
     /**
-     * Create a row where a use can input a value and label for a single choice.
+     * Create a row where a user can input a value and label for a single choice.
+     * @since 2.15.0
      */
     createChoiceEditor: function(choice){
       try {
@@ -169,27 +192,41 @@ define(['jquery', 'underscore', 'backbone',
           return
         }
 
+        var view = this;
+
         // Create the choice container
         var choiceContainer = $("<div class='choice-editor'></div>");
+
+        // Create the click and drag handle
+        var handle = $('<span class="' + view.choiceHandleClass + '">' +
+            '<i class= "icon icon-ellipsis-vertical" ></i>' +
+            '<i class="icon icon-ellipsis-vertical"></i>' +
+          '</span >'
+        );
+        choiceContainer.append(handle);
+
         // Create inputs for "value" and "label", insert them in the container
         for (const [attrName, attrValue] of Object.entries(choice)) {
           var inputEl = $('<input>').attr({
             class: 'choice-input choice-' + attrName,
-            value: attrValue
+            value: attrValue,
+            "data-category": attrName
+          })
+          // Update the values in the model when the user focuses out of an input
+          inputEl.on("blur", function(){
+            view.updateModelChoices.call(view)
           })
           choiceContainer.append(inputEl);
         }
 
-        // Create the remove "X" button. Save references to the parent choice container and
-        // the choice element in the model, so that we can remove from the view and model
-        // when the button is clicked
+        // Create the remove "X" button. Save references to the parent choice container so
+        // that we can remove it from the view when the button is clicked
         var removeButton = $(
           "<i class='icon icon-remove " +
           this.removeChoiceClass +
           "' title='Remove this choice'></i>"
         ).data({
-          choiceEl: choiceContainer,
-          choiceObj: choice
+          choiceEl: choiceContainer
         });
 
         // Insert the remove button into the choice container
@@ -218,13 +255,20 @@ define(['jquery', 'underscore', 'backbone',
         var choiceEditorEl = this.createChoiceEditor(choice);
         this.choicesEditor.append(choiceEditorEl)
 
-        // Don't let users remove the new choice entry fields until some text has been entered
+        // Don't let users remove or sort the new choice entry fields until some text has
+        // been entered
         var removeButton = choiceEditorEl.find("." + this.removeChoiceClass);
+        var handle = choiceEditorEl.find("." + this.choiceHandleClass);
+        removeButton.hide();
+        handle.hide();
+        choiceEditorEl.addClass("unsortable");
         // The inputs for value and label
         var inputs = choiceEditorEl.find("input");
-        removeButton.hide();
+
         var onInputChange = function () {
+          choiceEditorEl.removeClass("unsortable")
           removeButton.show();
+          handle.show();
           view.addEmptyChoiceEditor();
           inputs.off("input", onInputChange);
         }
@@ -274,7 +318,7 @@ define(['jquery', 'underscore', 'backbone',
      */
     removeChoice: function(e){
       try {
-        var choice = $(e.target).data("choiceEl");
+        var choiceEl = $(e.target).data("choiceEl");
 
         // See how many choice elements there are (subtract one because the label elements
         // are within a choice-editor element)
@@ -283,15 +327,14 @@ define(['jquery', 'underscore', 'backbone',
         // Don't allow removing the last choice element. Empty the last element and hide the
         // remove button instead.
         if (numChoices <= 1) {
-          // TODO: update the model as well
-          choice.find("input").val('')
-          return
+          choiceEl.find("input").val('')
+        } else {
+          // Remove the choice editor element from the view, plus any listeners
+          choiceEl.off();
+          choiceEl.remove();
         }
-
-        // Remove the choice editor element from the view
-        choice.remove()
-        // TODO: remove the choice from the model
-        // this.model....
+        // Update the choices in the model
+        this.updateModelChoices();
       }
       catch (error) {
         console.log( 'There was an error removing a choice editor in the ChoiceFilterView' +
@@ -301,9 +344,51 @@ define(['jquery', 'underscore', 'backbone',
     },
 
     /**
+     * Update the choices attribute in the choiceFilter model based on the values in the
+     * choices editor
+     * @since 2.15.0
+     */
+    updateModelChoices: function(){
+      try {
+
+        // The array of label-value pairs that will be set on the choiceFilter model.
+        var newChoices = [];
+
+        // Find each choice editor container, and find the values from the two inputs
+        // within.
+        this.$el.find(".choice-editor").each(function(){
+          var choiceEditor = $(this)
+          var valueEl = choiceEditor.find("[data-category='value']")
+          var labelEl = choiceEditor.find("[data-category='label']")
+          if (valueEl.length && labelEl.length ){
+            var newValue = valueEl[0].value
+            var newLabel = labelEl[0].value
+            // TODO: validate the label/value here and show error if choice is not
+            // complete.
+            if(!newValue && !newLabel){
+              // Don't add empty choices to the model
+              return
+            } else {
+              newChoices.push({
+                label: newLabel,
+                value: newValue
+              })
+            }
+          }
+        });
+        // Replace the choices in the model with the new array with new values
+        this.model.set("choices", newChoices);
+      }
+      catch (error) {
+        console.log( 'There was an error updating the choices in a ChoiceFilterView' +
+          ' Error details: ' + error );
+      }
+    },
+
+    /**
     * Updates the view when the filter input is updated
     *
-    * @param {Event} - The DOM Event that occured on the filter view input element
+    * @param {Event} - The DOM Event that occurred on the filter view input element
     */
     handleChange: function(){
 

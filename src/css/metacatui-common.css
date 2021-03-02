@@ -2214,8 +2214,8 @@ i.catalog-metric-icon {
 .views-metrics .metric-chart .resize .handle-mini,
 .downloads-metrics .metric-chart .resize .handle-mini {
 	fill: white;
-    stroke-width: 1px;
-    stroke: #555;
+	stroke-width: 1px;
+	stroke: #555;
 }
 
 /*
@@ -3977,15 +3977,44 @@ add font awesome close icon */
 /* Choice editor is where use selects a value and label for <choice> elements */
 .choice-editor {
 	display: grid;
-	grid-template-columns: 1fr 1fr 1.2rem;
-	grid-gap: 0.5rem;
+	grid-template-columns: [handle] 0.8rem [label] 1fr [value] 1fr [remove] 1.2rem;
+	grid-gap: 0.4rem;
 	margin-bottom: 0.3rem;
 }
-.choice-editor .ui-options-editor-label {
+
+.choice-editor .handle {
+	grid-area: handle;
+	height: 100%;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	cursor: grab;
+}
+
+.choice-editor.sortable-chosen,
+.choice-editor.sortable-chosen .handle {
+	cursor: grabbing;
+}
+.choice-editor .handle {
+	color: #b5c4ca;
+}
+
+.choice-editor .handle i:nth-of-type(2) {
+	margin-left: 2px;
+}
+
+.choice-editor .ui-options-editor-text {
 	width: 234px;
 	margin-left: 3px;
 	margin-bottom: 0;
 }
+.choice-editor .choice-label {
+	grid-area: label;
+}
+.choice-editor .choice-value {
+	grid-area: value;
+}
+
 .choice-editor input {
 	border-radius: 3px;
 	color: rgba(0,0,0,.87);
@@ -3999,11 +4028,13 @@ add font awesome close icon */
 .choice-editor input.choice-value {
 	font-weight: 400;
 }
+
 .choice-editor input:focus {
 	border-color: #96c8da;
 	outline: none;
 }
 .choice-editor .remove-choice {
+	grid-area: remove;
 	font-size: 1.2rem;
 	cursor: pointer;
 	opacity: 0.2;
