@@ -3876,11 +3876,55 @@ add font awesome close icon */
 /* Filter Editor */
 /* custom portal search filter editor modal */
 
+.filter-editor .modal {
+	width: 100%;
+	max-width: 800px;
+	margin: auto;
+	left: 0;
+	right: 0;
+}
+
+.filter-editor .save-button,
+.filter-editor .cancel-button {
+	margin: 0;
+}
+
+.filter-editor .modal-body {
+	padding: 2rem;
+	max-height: 600px;
+}
+
+.filter-editor .modal-instructions {
+	font-weight: 500;
+	font-size: 1.1rem;
+	margin: 0;
+	text-align: left;
+}
+
+.filter-editor .fields-container {
+	display: grid;
+	grid-template-columns: max-content auto;
+	gap: 2rem;
+	align-items: center;
+	margin-bottom: 4rem;
+}
+.filter-editor .fields-container .modal-instructions {
+	margin-top: 1rem;
+}
+
 /* the list of filter UI types to choose from */
-.ui-builder-select {
+
+.ui-builder-choices-container {
+	display: grid;
+	grid-template-columns: max-content auto;
+	gap: 2rem;
+	align-items: center;
+	margin-bottom: 2rem;
+}
+
+.ui-builder-choices {
 	margin-top: 1rem;
 	margin-bottom: 1rem;
-	text-align: center;
 }
 .ui-builder-choice {
 	margin: 0 .6em;
@@ -3896,6 +3940,7 @@ add font awesome close icon */
 	vertical-align: middle;
 	fill: #b5c4ca;
 }
+/* the label for the interface type */
 .ui-builder-choice-label {
 	color: #b5c4ca;
 	text-transform: uppercase;
@@ -3925,15 +3970,54 @@ add font awesome close icon */
 	color: #EEF3F8;
 }
 
+
+/* Modify the filter styles for editing */
+
+.filter-group .filter.ui-build {
+	margin: auto;
+	padding-right: 0;
+}
+
+.filter.ui-build input[type='text'],
+.filter.ui-build select {
+	height: 44px;
+	box-sizing: border-box;
+}
+
+.filter.ui-build select {
+	/* max-width: 350px;
+	min-width: 300px; */
+}
+
+.filter.ui-build .filter-input-contain {
+	/* width: unset; */
+	max-width: 350px;
+	min-width: 300px;
+}
+
+.ui-build.choice .ui-build-input.placeholder {
+	max-width: 91%;
+}
+
+.choices-editor .modal-instructions {
+	margin: 2rem 0;
+}
+
+.filter.ui-build .btn {
+	height: 44px;
+	width: 44px;
+}
+
 /* value input in filter editor, where user can select icon, label, placeholder, etc */
 .ui-build .ui-build-input {
 	display: block;
 	font-size: 0.95rem;
 	box-sizing: border-box;
-	border: 2px dashed #419ecc;
+	border: 1px dashed #419ecc;
 	border-radius: 4px;
 	line-height: 1;
-	padding: 0.35rem 0.5rem;
+	padding: 0.42rem;
+	padding-left: 0.6rem;
 	min-height: 1rem;
 	min-width: 1rem;
 	width: 100%;
@@ -3972,6 +4056,8 @@ add font awesome close icon */
 	position: absolute;
 	left: .5rem;
 	top: 5px;
+	min-width: 100px;
+	max-width: 265px
 }
 
 /* Choice editor is where use selects a value and label for <choice> elements */
@@ -4007,6 +4093,7 @@ add font awesome close icon */
 	width: 234px;
 	margin-left: 3px;
 	margin-bottom: 0;
+	font-size: 0.8rem;
 }
 .choice-editor .choice-label {
 	grid-area: label;
@@ -4045,11 +4132,11 @@ add font awesome close icon */
 
 /* In a date filter where a user selects a minRange and maxRange */
 
-.filter-group .ui-build.filter.date {
+.filter-group .ui-build.filter.date,
+.filter-group .ui-build.filter.choice {
 	max-width: unset;
   min-width: unset;
 	padding-right: 0;
-	margin: 2rem;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
@@ -4079,7 +4166,9 @@ add font awesome close icon */
 }
 
 .ui-build .range-input {
-	width: 60px
+	min-width: unset;
+	width: 90px;
+	min-height: 2.2rem;
 }
 
 .ui-build .range-inputs > * {
@@ -4089,6 +4178,11 @@ add font awesome close icon */
 }
 
 /* toggle builder in UI build mode */
+
+
+.toggle.ui-build .modal-instructions {
+	margin: 2rem 0 1rem;
+}
 
 .filter-editor .can-toggle-switch:before {
 	opacity: 0
@@ -6265,7 +6359,7 @@ body.mapMode{
   max-width: 100%;
   margin-bottom: 10px;
 }
-.filter-groups .filter .btn{
+.filter-groups .filter .btn:not(.save-button):not(.cancel-button){
 	box-shadow: none;
 	border-color: #ccc;
   color: #999;
@@ -6284,6 +6378,7 @@ body.mapMode{
 }
 .filter-groups .filter label{
 	cursor: default;
+	margin-bottom: 13px;
 }
 .filter-group-links{
   border-top: 1px solid #DDD;

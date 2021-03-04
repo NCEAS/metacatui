@@ -62,7 +62,9 @@ define(['jquery', 'underscore', 'backbone',
          * @property {string} classes.saveButton - the element in the template that a user
          * clicks to add their filter changes to the parent Filters collection and close
          * the editing modal.
-         * @property {string} classes.uiBuilderSelect - The container for each "button" a
+         * @property {string} classes.uiBuilderChoicesContainer - The container for the
+         * uiBuilderChoices and the associated instruction text
+         * @property {string} classes.uiBuilderChoices - The container for each "button" a
          * user can click to switch the filter type
          * @property {string} classes.uiBuilderChoice - The element that acts like a
          * button that switches the filter type
@@ -81,7 +83,8 @@ define(['jquery', 'underscore', 'backbone',
           editButton: "edit-button",
           cancelButton: "cancel-button",
           saveButton: "save-button",
-          uiBuilderSelect: "ui-builder-select",
+          uiBuilderChoicesContainer: "ui-builder-choices-container",
+          uiBuilderChoices: "ui-builder-choices",
           uiBuilderChoice: "ui-builder-choice",
           uiBuilderChoiceActive: "selected",
           uiBuilderLabel: "ui-builder-choice-label",
@@ -402,8 +405,15 @@ define(['jquery', 'underscore', 'backbone',
         renderUIBuilders: function () {
           try {
             var view = this;
-            // The list of filter icons that allows users to switch between filter types
-            var uiBuilderSelect = this.modalEl.find("." + this.classes.uiBuilderSelect);
+            
+            // The container for the list of filter icons that allows users to switch
+            // between filter types, plus the associated instruction paragraph
+            var uiBuilderChoicesContainer = this.modalEl.find("." + this.classes.uiBuilderChoicesContainer);
+
+            // The container for just the icons/buttons
+            var uiBuilderChoices = $("<div></div>").addClass(this.classes.uiBuilderChoices);
+            uiBuilderChoicesContainer.append(uiBuilderChoices);
+
             // uiBuilderCarousel will contain all of the UIBuilder views as slides
             this.uiBuilderCarousel = this.modalEl.find("." + this.classes.uiBuilderContainer);
 
@@ -439,7 +449,7 @@ define(['jquery', 'underscore', 'backbone',
                 }
               })
               // Insert the button into the list of uiBuilder choices
-              uiBuilderSelect.append(button);
+              uiBuilderChoices.append(button);
               // Create and insert the container / carousel slide. The carousel plugin
               // requires slides to have the class 'item'. Save the container to the
               // list of uiBuilder options.

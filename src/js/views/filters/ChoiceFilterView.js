@@ -81,7 +81,7 @@ define(['jquery', 'underscore', 'backbone',
         // for these options.
 
         var placeholderInput = $(
-          '<input class="' + this.uiInputClass +
+          '<input placeholder="placeholder" class="' + this.uiInputClass +
           ' placeholder" data-category="placeholder" value="' +
           (placeHolderText ? placeHolderText : '') +'" />'
         );
@@ -143,13 +143,13 @@ define(['jquery', 'underscore', 'backbone',
 
         var view = this;
         this.choicesEditor = $("<div class='choices-editor'></div>");
-        var choicesEditorText = $("<p class='subtle'>Allow people to select from the following search terms</p>");
+        var choicesEditorText = $("<p class='modal-instructions'>Allow people to select from the following search terms</p>");
         var labelContainer = $("<div class='choice-editor unsortable'></div>");
 
         this.choicesEditor.append(choicesEditorText, labelContainer)
 
-        labelContainer.append("<p class='ui-builder-container-text choice-label'>Enter the text to display</p>")
-        labelContainer.append("<p class='ui-builder-container-text choice-value'>Enter the text to search for</p>")
+        labelContainer.append("<p class='ui-builder-container-text choice-label subtle'>Enter the text to display</p>")
+        labelContainer.append("<p class='ui-builder-container-text choice-value subtle'>Enter the text to search for</p>")
 
         _.each(this.model.get("choices"), function (choice) {
           var choiceEditorEl = this.createChoiceEditor(choice);
