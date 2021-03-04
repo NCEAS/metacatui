@@ -80,16 +80,17 @@ define(['jquery', 'underscore', 'backbone',
         // like the label, placeholder text, and choices, then render the inputs
         // for these options.
 
-        var placeholderInput = $('<input class="' + this.uiInputClass +
+        var placeholderInput = $(
+          '<input class="' + this.uiInputClass +
           ' placeholder" data-category="placeholder" value="' +
-          (placeHolderText ? placeHolderText : '') +'" />');
+          (placeHolderText ? placeHolderText : '') +'" />'
+        );
         // Replace the select element with the placeholder text element
         placeholderInput.insertAfter(select);
 
         // Create the interface for a user to edit the value-label choice options
         var choicesEditor = this.createChoicesEditor();
         view.$el.append(choicesEditor);
-        
 
       } else {
         // For regular search filter views, or the edit filter view, render the dropdown
@@ -147,8 +148,8 @@ define(['jquery', 'underscore', 'backbone',
 
         this.choicesEditor.append(choicesEditorText, labelContainer)
 
-        labelContainer.append("<p class='subtle ui-options-editor-text choice-label'>Enter the text to display</p>")
-        labelContainer.append("<p class='subtle ui-options-editor-text choice-value'>Enter the text to search for</p>")
+        labelContainer.append("<p class='ui-builder-container-text choice-label'>Enter the text to display</p>")
+        labelContainer.append("<p class='ui-builder-container-text choice-value'>Enter the text to search for</p>")
 
         _.each(this.model.get("choices"), function (choice) {
           var choiceEditorEl = this.createChoiceEditor(choice);
@@ -251,7 +252,6 @@ define(['jquery', 'underscore', 'backbone',
           label: "",
           value: ""
         }
-        this.model.get("choices").push(choice)
         var choiceEditorEl = this.createChoiceEditor(choice);
         this.choicesEditor.append(choiceEditorEl)
 

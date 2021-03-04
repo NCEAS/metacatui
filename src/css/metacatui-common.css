@@ -3877,51 +3877,51 @@ add font awesome close icon */
 /* custom portal search filter editor modal */
 
 /* the list of filter UI types to choose from */
-.filter-options {
+.ui-builder-select {
 	margin-top: 1rem;
 	margin-bottom: 1rem;
 	text-align: center;
 }
-.filter-option {
+.ui-builder-choice {
 	margin: 0 .6em;
 	display: inline-block;
 	cursor: pointer;
 }
 
 /* the icon representing the interface type */
-.filter-option svg {
+.ui-builder-choice svg {
 	width: 3rem;
 	height: 100%;
 	max-height: 3.5rem;
 	vertical-align: middle;
 	fill: #b5c4ca;
 }
-.filter-option-label {
+.ui-builder-choice-label {
 	color: #b5c4ca;
 	text-transform: uppercase;
 	font-weight: 500;
 	font-size: 0.6rem;
 	margin: 0;
 }
-.filter-option:hover svg {
+.ui-builder-choice:hover svg {
 	fill: #419ecc;
 }
-.filter-option:hover .filter-option-label{
+.ui-builder-choice:hover .ui-builder-choice-label{
 	color: #419ecc;
 }
-.filter-option.selected svg {
+.ui-builder-choice.selected svg {
 	fill: #2c6f90;
 }
-.filter-option.selected .filter-option-label{
+.ui-builder-choice.selected .ui-builder-choice-label{
 	color: #2c6f90;
 }
-.filter-option.disabled {
+.ui-builder-choice.disabled {
 	cursor: not-allowed;
 }
-.filter-option.disabled svg {
+.ui-builder-choice.disabled svg {
 	fill: #EEF3F8;
 }
-.filter-option.disabled .filter-option-label{
+.ui-builder-choice.disabled .ui-builder-choice-label{
 	color: #EEF3F8;
 }
 
@@ -3963,7 +3963,7 @@ add font awesome close icon */
 .ui-build select[disabled]{
 	cursor: default;
 }
-.ui-options-editor-label {
+.ui-builder-container-label {
 	font-size: 0.8rem;
 	margin: 0 0 3px 2px;
 }
@@ -4003,7 +4003,7 @@ add font awesome close icon */
 	margin-left: 2px;
 }
 
-.choice-editor .ui-options-editor-text {
+.choice-editor .ui-builder-container-text {
 	width: 234px;
 	margin-left: 3px;
 	margin-bottom: 0;

@@ -1,24 +1,19 @@
-<div class="modal fade show" tabindex="-1" role="dialog" aria-hidden="false" data-backdrop="static" data-keyboard="false">
-  <!-- <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="myModalLabel">Modal header</h3>
-  </div> -->
+<div class="modal fade show" data-backdrop="static" data-keyboard="false">
   <div class="modal-body">
-    <div class="fields-editor">
-      <p class="subtle">Let people filter your data by</p>
+    <div class="<%= classes.fieldsContainer %>">
+      <p class="<%= classes.modalInstructions %>"><%= text.step1 %></p>
     </div>
-    <div class="interface-selector">
-      <p class="subtle">...using the following interface</p>
+    <div class="<%= classes.uiBuilderSelect %>">
+      <p class="<%= classes.modalInstructions %>"><%= text.step2 %></p>
     </div>
-    <div class='filter-options'></div>
-    <div class="ui-options-editor"></div>
+    <div class="<%= classes.uiBuilderContainer %>"></div>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-secondary cancel-button">
-      <i class="icon icon-undo icon-on-left"></i> Cancel
+    <button class="btn btn-secondary <%= classes.cancelButton %>">
+      <i class="icon icon-undo icon-on-left"></i> <%= text.cancelButton %>
     </button>
-    <button class="btn btn-primary save-button">
-      <i class="icon icon-check icon-on-left"></i> Use these filter settings
+    <button class="btn btn-primary <%= classes.saveButton %>">
+      <i class="icon icon-check icon-on-left"></i> <%= text.saveButton %>
     </button>
   </div>
 </div>

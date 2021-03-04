@@ -1,12 +1,18 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
+define(['jquery', 'underscore', 'backbone',
+  'models/filters/Filter',
+  'models/filters/ChoiceFilter',
+  'models/filters/DateFilter',
+  'models/filters/ToggleFilter',
   'views/searchSelect/QueryFieldSelectView',
   'views/filters/FilterView',
   'views/filters/ChoiceFilterView',
   'views/filters/DateFilterView',
   'views/filters/ToggleFilterView',
   'text!templates/filters/filterEditor.html'],
-  function ($, _, Backbone, Filter, QueryFieldSelect, FilterView, ChoiceFilterView, DateFilterView, ToggleFilterView, Template) {
+  function ($, _, Backbone, Filter, ChoiceFilter, DateFilter, ToggleFilter,
+    QueryFieldSelect, FilterView, ChoiceFilterView, DateFilterView, ToggleFilterView,
+    Template) {
     'use strict';
 
     // TODO: add screenshot
@@ -23,8 +29,10 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
     /** @lends EditFilterView.prototype */{
 
         /**
-         * A Filter model to be rendered and edited in this view
-         * @type {Filter}
+         * A Filter model to be rendered and edited in this view. The Filter model must be
+         * part of a Filters collection.
+         //  TODO: Add support for boolean and number filters
+         * @type {Filter|ChoiceFilter|DateFilter|ToggleFilter}
          */
         model: null,
 
@@ -35,13 +43,6 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
         className: "filter-editor",
 
         /**
-         * A selector for the element in the template that will contain the input where a 
-         * user can select metadata fields for the custom search filter.
-         * @type {string}
-         */
-        fieldsContainerSelector: ".fields-editor",
-
-        /**
          * References to the template for this view. HTML files are converted to
          * Underscore.js templates
          * @type {Underscore.Template}
@@ -49,32 +50,157 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
         template: _.template(Template),
 
         /**
+         * The classes to use for various elements in this view
+         * @type {Object}
+         * @property {string} classes.fieldsContainer - the element in the template that
+         * will contain the input where a user can select metadata fields for the custom
+         * search filter.
+         * @property {string} classes.editButton - The button a user clicks to start
+         * editing a search filter
+         * @property {string} classes.cancelButton - the element in the template that a
+         * user clicks to undo any changes made to the filter and close the editing modal.
+         * @property {string} classes.saveButton - the element in the template that a user
+         * clicks to add their filter changes to the parent Filters collection and close
+         * the editing modal.
+         * @property {string} classes.uiBuilderSelect - The container for each "button" a
+         * user can click to switch the filter type
+         * @property {string} classes.uiBuilderChoice - The element that acts like a
+         * button that switches the filter type
+         * @property {string} classes.uiBuilderChoiceActive - The class to add to a
+         * uiBuilderChoice buttons when that option is active/selected
+         * @property {string} classes.uiBuilderLabel - The label that goes along with the
+         * uiBuilderChoice element
+         * @property {string} classes.uiBuilderContainer - The element that will be turned
+         * into a carousel that switches between each UI Builder view when a user switches
+         * the filter type
+         * @property {string} classes.modalInstructions - The class to add to the
+         * instruction text in the editing modal window
+         */
+        classes: {
+          fieldsContainer: "fields-container",
+          editButton: "edit-button",
+          cancelButton: "cancel-button",
+          saveButton: "save-button",
+          uiBuilderSelect: "ui-builder-select",
+          uiBuilderChoice: "ui-builder-choice",
+          uiBuilderChoiceActive: "selected",
+          uiBuilderLabel: "ui-builder-choice-label",
+          uiBuilderContainer: "ui-builder-container",
+          modalInstructions: "modal-instructions",
+        },
+
+        /**
+         * Strings to use to display various messages to the user in this view
+         * @property {string} text.step1 - The instructions placed just before the fields
+         * input
+         * @property {string} text.step2 - The instructions placed after the fields input
+         * and before the uiBuilder select
+         * @property {string} text.filterNotAllowed - The message to show when a filter
+         * type doesn't work with the selected metadata fields
+         * @property {string} text.saveButton - Text for the button at the bottom of the
+         * editing modal that adds the filter model changes to the parent Filters
+         * collection and closes the modal
+         * @property {string} text.cancelButton - Text for the button at the bottom of the
+         * editing modal that closes the modal window without making any changes.
+         */
+        text: {
+          step1: "Let people filter your data by",
+          step2: "...using the following interface",
+          filterNotAllowed: "This interface doesn't work with the metadata fields you" +
+            " selected. Change the 'filter data by' option to use this interface.",
+          saveButton: "Use these filter settings",
+          cancelButton: "Cancel",
+        },
+
+        /**
+         * A function that returns a Backbone events object
+         * @return {object} A Backbone events object - an object with the events this view
+         * will listen to and the associated function to call.
+         */
+        events: function () {
+          var events = {}
+          events["click ." + this.classes.uiBuilderChoice] = "handleFilterIconClick"
+          return events
+        },
+
+        /**
+         * A list of query fields names to exclude from the list of options in the
+         * QueryFieldSelectView
+         * @type {string[]}
+         */
+        excludeFields: MetacatUI.appModel.get("collectionQueryExcludeFields"),
+
+        /**
+         * An additional field object contains the properties for an additional query
+         * field to add to the QueryFieldSelectView that are required to render it
+         * correctly. An additional query field is one that does not actually exist in the
+         * query service index.
+         *
+         * @typedef {Object} AdditionalField
+         *
+         * @property {string} name - A unique ID to represent this field. It must not
+         * match the name of any other query fields.
+         * @property {string[]} fields - The list of real query fields that this
+         * abstracted field will represent. It must exactly match the names of the query
+         * fields that actually exist.
+         * @property {string} label - A user-facing label to display.
+         * @property {string} description - A description for this field.
+         * @property {string} category - The name of the category under which to place
+         * this field. It must match one of the category names for an existing query
+         * field.
+         */
+
+        /**
+         * A list of additional fields which are not retrieved from the query service
+         * index, but which should be added to the list of options in the
+         * QueryFieldSelectView. This can be used to add abstracted fields which are a
+         * combination of multiple query fields, or to add a duplicate field that has a
+         * different label.
+         *
+         * @type {AdditionalField[]}
+         */
+        specialFields: [],
+
+        /**
          * The path to the directory that contains the SVG files which are used like an
          * icon to represent each UI type
          * @type {string}
          */
-        svgDir: "templates/filters/filterIcons/",
+        iconDir: "templates/filters/filterIcons/",
 
         /**
-         * The message to show when a filter type doesn't work with the selected metadata
-         * fields
-         * @type {string}
-         */
-        filterOptionNotAllowedMessage: "This interface doesn't work with the metadata" +
-         "fields you selected. Change the 'filter data by' option to use this interface.",
+        * A single type of custom search filter that a user can select. An option
+        * represents a specific Filter model type and uses that associated Filter View.
+        * @typedef {Object} UIBuilderOption
+        * @property {string} label - The user-facing label to show for this option
+        * @property {string} modelType - The name of the filter model type that that this
+        * UI builder uses
+        * @property {string} iconFileName - The file name, including extension, of the
+        * SVG icon used to represent this option
+        * @property {string} description - A very brief, user-facing description of how
+        * this filter works
+        * @property {function} modelFunction - A function that takes an optional object
+        * with model properties and returns an instance of a model to use for this UI
+        * builder
+        * @property {function} uiFunction - A function that takes the model as an argument
+        * and returns the filter UI builder view for this option
+        */
 
         /**
-         * The list of UI types that a user can select from
-         * TODO: Document the Object properties
-         * @type {Object[]}
+         * The list of UI types that a user can select from. They will appear in the
+         * carousel in the order they are listed here.
+         * @type {UIBuilderOption[]}
          */
-        uiOptions: [
+        uiBuilderOptions: [
           {
             label: "Free text",
             modelType: "Filter",
-            svgFile: "filter.svg",
+            iconFileName: "filter.svg",
             description: "Allow people to search using any text they enter",
-            uiFunction: function(model){
+            modelFunction: function (attrs) {
+              return new Filter(attrs)
+            },
+            uiFunction: function (model) {
               return new FilterView({
                 model: model,
                 mode: "uiBuilder"
@@ -84,9 +210,12 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
           {
             label: "Dropdown",
             modelType: "ChoiceFilter",
-            svgFile: "choice.svg",
+            iconFileName: "choice.svg",
             description: "Allow people to select a search term from a list of options",
-            uiFunction: function(model){
+            modelFunction: function (attrs) {
+              return new ChoiceFilter(attrs)
+            },
+            uiFunction: function (model) {
               return new ChoiceFilterView({
                 model: model,
                 mode: "uiBuilder"
@@ -96,9 +225,12 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
           {
             label: "Year slider",
             modelType: "DateFilter",
-            svgFile: "number.svg",
+            iconFileName: "number.svg",
             description: "Let people search for a range of years",
-            uiFunction: function(model){
+            modelFunction: function (attrs) {
+              return new DateFilter(attrs)
+            },
+            uiFunction: function (model) {
               return new DateFilterView({
                 model: model,
                 mode: "uiBuilder"
@@ -108,9 +240,12 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
           {
             label: "Toggle",
             modelType: "ToggleFilter",
-            svgFile: "toggle.svg",
+            iconFileName: "toggle.svg",
             description: "Let people add or remove a single, specific search term",
-            uiFunction: function(model){
+            modelFunction: function (attrs) {
+              return new ToggleFilter(attrs)
+            },
+            uiFunction: function (model) {
               return new ToggleFilterView({
                 model: model,
                 mode: "uiBuilder"
@@ -121,21 +256,28 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
 
         /**
          * Executed when this view is created
-         * @param  {} options
+         * @param {object} options - A literal object of options to pass to this view
+         * @property {Filter|ChoiceFilter|DateFilter|ToggleFilter} options.model - The
+         * filter model to render an editor for. It must be part of a Filters collection.
          */
         initialize: function (options) {
-
           try {
+
             if (!options || typeof options != "object") {
               var options = {};
             }
+            if (!options.model) {
+              console.log("A Filter model is required to render a Filter Editor View");
+              return
+            }
+            if (!options.model.collection) {
+              console.log("The Filter model for a FilterEditorView must be part of a Filters collection");
+              return
+            }
 
-            this.model = options.model || new Filter({ isUIFilterType: true });
-            
           } catch (error) {
             console.log("Error creating an EditFilterView. Error details: " + error);
           }
-          
         },
 
         /**
@@ -147,22 +289,18 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
             // Save a reference to this view
             var view = this;
 
-            // Generate an ID for the modal, used as the href for the button.
-            var filterId = "filter-editor-" + this.cid
-
             // Create and insert an EDIT button for the filter.
-            var editButton = $("<a class='edit-filter-button'>EDIT</a>");
+            var editButton = $("<a class='" + this.classes.editButton + "'>EDIT</a>");
             this.$el.prepend(editButton);
 
             // Render the editor modal on-the-fly to make the application load faster.
             // No need to create editing modals for filters that a user doesn't edit.
-            editButton.on("click", function(){
-             view.renderEditorModal.call(view);
-            })
+            editButton.on("click", function () {
+              view.renderEditorModal.call(view);
+            });
 
             // Save a reference to this view
             this.$el.data("view", this);
-
             return this
           } catch (error) {
             console.log("Error rendering an EditFilterView. Error details: " + error);
@@ -174,77 +312,161 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
          * filter. This is created on-the-fly because creating these modals all at once in
          * a FilterGroupsView in edit mode takes too much time.
          */
-        renderEditorModal : function(){
+        renderEditorModal: function () {
           try {
-            
-            // Generate an ID for the modal, used as the href for the button.
-            // var filterId = "filter-editor-" + this.cid;
+
+            // Save a reference to this view
             var view = this;
 
-            // Create and insert the editing modal interface.
-            var modalHTML = this.template();
-            this.modalEl = $(modalHTML)
+            // The list of UI Filter Editor options needs to be mutable. We will save the
+            // draft filter models, and the associated editor views to this list. Rewrite
+            // this.uiBuilders every time the editor modal is re-rendered.
+            this.uiBuilders = [];
+            this.uiBuilderOptions.forEach(function (opt) {
+              this.uiBuilders.push(_.clone(opt))
+            }, this);
+
+            // Create and insert the modal window that will contain the editing interface
+            var modalHTML = this.template({
+              classes: view.classes,
+              text: view.text
+            });
+            this.modalEl = $(modalHTML);
             this.$el.append(this.modalEl);
 
             // Start rendering the metadata field input only after the modal is shown.
             // Otherwise this step slows the rendering down, leaves too much of a delay
             // before the modal appears.
-            view.modalEl.off();
-            view.modalEl.on("shown", function(){
-              view.renderFieldInput()
+            this.modalEl.off();
+            this.modalEl.on("shown", function (event) {
+              view.modalEl.off("shown");
+              view.renderFieldInput();
             });
-            view.modalEl.modal("show");
+            this.modalEl.modal("show");
 
-            var saveButton = this.modalEl.find(".save-button");
-            var cancelButton = this.modalEl.find(".cancel-button");
+            // Add listeners to the modal buttons save or cancel changes
+            this.activateModalButtons();
 
-            saveButton.off('click')
+            // Create and insert the "buttons" to switch filter type, and the elements
+            // that will contain the UI building interfaces for each filter type.
+            this.renderUIBuilders();
+
+            // Select and render the UI Filter Editor for the filter model set on this
+            // view.
+            this.switchFilterType();
+
+          }
+          catch (error) {
+            console.log('There was an error rendering the modal in a FilterEditorView' +
+              ' Error details: ' + error);
+          }
+        },
+
+        /**
+         * Find the save and cancel buttons in the editing modal window, and add listeners
+         * that close the modal and update the Filters collection on save
+         */
+        activateModalButtons: function () {
+          try {
+            var view = this;
+            // The buttons at the bottom of the modal
+            var saveButton = this.modalEl.find("." + this.classes.saveButton);
+            var cancelButton = this.modalEl.find("." + this.classes.cancelButton);
+            // Add listeners to the modal's "save" and "cancel" buttons
             saveButton.on('click', function (event) {
+              saveButton.off('click');
               view.modalEl.off("hidden");
               view.modalEl.on("hidden", function () { view.destroyEditorModal() });
               view.modalEl.modal("hide");
               view.addChanges();
-            })
-
-            cancelButton.off('click')
+            });
             cancelButton.on('click', function (event) {
+              cancelButton.off('click');
               view.modalEl.off("hidden");
               view.modalEl.on("hidden", function () { view.destroyEditorModal() })
               view.modalEl.modal("hide");
-              // view.cancelChanges();
             })
-        
+          }
+          catch (error) {
+            console.log(
+              "There was an error activating the modal buttons in a FilterEditorView" +
+              ". Error details: " + error
+            );
+          }
+        },
 
-            // Add the UI selection interface
-            var filterTypeSelect = this.modalEl.find(".filter-options");
+        /**
+         * Create and insert the "buttons" to switch filter type and the elements
+         * that will contain the UI building interfaces for each filter type.
+         */
+        renderUIBuilders: function () {
+          try {
+            var view = this;
+            // The list of filter icons that allows users to switch between filter types
+            var uiBuilderSelect = this.modalEl.find("." + this.classes.uiBuilderSelect);
+            // uiBuilderCarousel will contain all of the UIBuilder views as slides
+            this.uiBuilderCarousel = this.modalEl.find("." + this.classes.uiBuilderContainer);
 
-            // Create a filter option for each filter type configured in this view
-            this.uiOptions.forEach(function (filterChoice) {
-              var filterOption = $("<div class='filter-option'></div>")
-                .attr("data-filter-type", filterChoice.filterType)
-                .append("<h5 class='filter-option-label'>" + filterChoice.label + "</h5>");
-              var svgPath = 'text!' + this.svgDir + filterChoice.svgFile;
+            // The bootstrap carousel plugin requires the carousel slide times to be
+            // contained within an inner div with the class 'carousel-inner'
+            var carouselInner = $('<div class="carousel-inner"></div>');
+            this.uiBuilderCarousel.append(carouselInner);
+
+            // Create a container and button for each uiBuilder option
+            this.uiBuilders.forEach(function (uiBuilder) {
+
+              // Create a label button that allows the user to select the given UI
+
+              // Create the button label
+              var labelEl = $("<h5>" + uiBuilder.label + "</h5>")
+                .addClass(view.classes.uiBuilderLabel);
+              // Create the button
+              var button = $("<div></div>")
+                .addClass(view.classes.uiBuilderChoice)
+                .attr("data-filter-type", uiBuilder.modelType)
+                .append(labelEl);
+              // Insert the uiBuilder icon SVG into the button
+              var svgPath = 'text!' + this.iconDir + uiBuilder.iconFileName;
               require([svgPath], function (svgString) {
-                filterOption.append(svgString)
+                button.append(svgString)
               });
-              filterOption.tooltip({
-                title: filterChoice.description, delay: {
+              // Add a tooltip with description to the button
+              button.tooltip({
+                title: uiBuilder.description,
+                delay: {
                   show: 900,
                   hide: 50
                 }
               })
-              filterTypeSelect.append(filterOption)
+              // Insert the button into the list of uiBuilder choices
+              uiBuilderSelect.append(button);
+              // Create and insert the container / carousel slide. The carousel plugin
+              // requires slides to have the class 'item'. Save the container to the
+              // list of uiBuilder options.
+              var uiBuilderContainer = $('<div class="item"></div>');
+              carouselInner.append(uiBuilderContainer);
+
+              // Add the button and container to the list of uiBuilders to make it
+              // easy to switch between filter types
+              uiBuilder.container = uiBuilderContainer;
+              uiBuilder.button = button;
+
             }, this);
 
-            // TODO: make configurable
-            this.modalEl.find(".interface-selector").append(filterTypeSelect)
-
-            this.renderFilterOptionsEditor()
-            
+            // Initialize the carousel
+            this.uiBuilderCarousel.addClass("slide");
+            this.uiBuilderCarousel.addClass("carousel");
+            this.uiBuilderCarousel.carousel({
+              interval: false
+            });
+            // Need active class on at least one item for carousel to work properly
+            this.uiBuilderCarousel.find(".item").first().addClass("active");
           }
           catch (error) {
-            console.log( 'There was an error rendering the modal in a FilterEditorView' +
-              ' Error details: ' + error );
+            console.log(
+              'There was an error rendering the UI filter builders in a FilterEditorView' +
+              '. Error details: ' + error
+            );
           }
         },
 
@@ -253,40 +475,38 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
          * Filter Model. Save it to the view so that the selected fields can be accessed
          * on save.
          */
-        renderFieldInput: function(){
+        renderFieldInput: function () {
           try {
             var view = this;
             var selectedFields = _.clone(view.model.get("fields"));
             view.fieldInput = new QueryFieldSelect({
               selected: selectedFields,
-              inputLabel: "Select one or more metadata fields"
-              // TODO
-              // excludeFields: view.excludeFields,
-              // addFields: view.specialFields,
-              // separatorText: view.model.get("fieldsOperator")
+              inputLabel: "Select one or more metadata fields",
+              excludeFields: view.excludeFields,
+              addFields: view.specialFields,
+              separatorText: view.model.get("fieldsOperator"),
             })
-            // TODO make selectors and classes below configurable in this view
-            view.modalEl.find(view.fieldsContainerSelector).append(view.fieldInput.el)
+            view.modalEl.find("." + view.classes.fieldsContainer).append(view.fieldInput.el)
             view.fieldInput.render();
           }
           catch (error) {
-            console.log( 'There was an error rendering a fields input in a FilterEditorView' +
-              ' Error details: ' + error );
+            console.log('There was an error rendering a fields input in a FilterEditorView' +
+              ' Error details: ' + error);
           }
         },
 
         /**
          * Remove the editing modal window and all associated listeners and data.
          */
-        destroyEditorModal : function(){
+        destroyEditorModal: function () {
           try {
             var view = this;
             view.modalEl.off();
             view.modalEl.remove();
           }
           catch (error) {
-            console.log( 'There was an error removing a modal in a FilterEditorView' +
-              ' Error details: ' + error );
+            console.log('There was an error removing a modal in a FilterEditorView' +
+              ' Error details: ' + error);
           }
         },
 
@@ -296,12 +516,12 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
          * the new attributes that the user has selected.
          * @param {Object} event The click event
          */
-        addChanges: function(event){
+        addChanges: function (event) {
           try {
-            var selectedUI = _.findWhere(this.uiEditors, { state: "selected" }),
-                newModelAttrs = selectedUI.draftModel.toJSON(),
-                oldModel = this.model,
-                filtersCollection = this.model.collection;
+            var selectedUI = this.currentUIBuilder,
+              newModelAttrs = selectedUI.draftModel.toJSON(),
+              oldModel = this.model,
+              filtersCollection = this.model.collection;
 
             // Set the new fields
             newModelAttrs.fields = _.clone(this.fieldInput.selected);
@@ -312,68 +532,165 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter',
             this.model = filtersCollection.replaceModel(oldModel, newModelAttrs);
           }
           catch (error) {
-            console.log( 'There was an error updating a Filter model in a FilterEditorView' +
-              ' Error details: ' + error );
+            console.log('There was an error updating a Filter model in a FilterEditorView' +
+              ' Error details: ' + error);
           }
         },
 
-        // /**
-        //  * Functions to run when a user clicks the "cancel" button in the editing modal window.
-        //  * Removes all of the draft models that have been saved to this view.. [WIP]
-        //  * @param {Object} event The click event
-        //  */
-        // cancelChanges: function(event){
-          
-        // },
-
         /**
-         * Given a filter type, render a view that allows the user to edit the UI
-         * properties of the filter model, like placeholder, label, icon, etc
-         * @param {string} filterType The name of the filter model type for which this
-         * function should render a filterView in UI build mode
+         * Function that takes the event when a user clicks on one of the filter type
+         * options, gets the name of the desired filter type, and passes it to the switch
+         * filter function.
+         * @param {object} event The click event
          */
-        renderFilterOptionsEditor: function(filterType){
+        handleFilterIconClick: function (event) {
           try {
-            // TODO: make configurable
-            var uiEditorContainer = this.modalEl.find(".ui-options-editor");
 
-            if (!filterType) {
-              filterType = this.model.type
-            }
+            // Get the new Filter Type from the click event. The name of the new Filter
+            // Type is stored as a data attribute in the clicked Filter icon.
+            // var filterTypeIcon = 
+            var newFilterType = event.currentTarget.dataset.filterType;
 
-            // Find the interface for the given filter type
-            var interfaceOption = _.findWhere(
-              this.uiOptions, { modelType: filterType }
-            );
-
-            if (!interfaceOption){
-              return
-            }
-
-            var uiEditor = _.clone(interfaceOption)
-
-            if (!this.uiEditors) {
-              this.uiEditors = []
-            }
-
-            this.uiEditors.forEach(function (uiEditor) {
-              uiEditor.state = ""
-            })
-            // TODO - check if this interface is already in the list of interfaces
-
-            this.uiEditors.push(uiEditor);
-
-            // Save a clone of the current model in the list of UI editors
-            uiEditor.state = "selected"
-            uiEditor.draftModel = this.model.clone();
-            uiEditor.view = uiEditor.uiFunction(uiEditor.draftModel);
-
-            uiEditorContainer.html(uiEditor.view.el)
-            uiEditor.view.render();
+            // Pass the Filter Type to the switch filter function
+            this.switchFilterType(newFilterType)
           }
           catch (error) {
-            console.log( 'There was an error rendering a UI editor for a Filter in a FilterEditorView' +
-              ' Error details: ' + error );
+            console.log('There was an error handling a click event in a FilterEditorView' +
+              ' Error details: ' + error);
+          }
+        },
+
+        /**
+         * Switches the current draft Filter model to a different Filter model type.
+         * Carries over any common attributes from the previously selected filter type.
+         * If no filter type is provided, defaults to type of the view's model
+         * @param {string} newFilterType The name of the filter type to switch to
+         */
+        switchFilterType: function (newFilterType) {
+          try {
+
+            var view = this;
+
+            // Use the filter type of the model if none is provided.
+            if (!newFilterType) {
+              newFilterType = this.model.type
+            }
+
+            // Get the properties of the Filter UI Editor for the new filter type.
+            var uiBuilder = _.findWhere(this.uiBuilders, { modelType: newFilterType });
+            var index = this.uiBuilders.indexOf(uiBuilder);
+
+            // Treat the first Filter in the list of filter UI editor options as the default
+            if (!uiBuilder) {
+              uiBuilder = this.uiBuilders[0];
+              filterType = uiBuilder.modelType
+            }
+
+            // Create an object with the properties to pass on to the new draft model
+            var newModelAttrs = {}
+
+            // If there is a currently selected UI editor, then find the common model
+            // attributes that we should pass on to the new UI editor type
+            if (this.currentUIBuilder) {
+              newModelAttrs = this.getCommonAttributes(
+                this.currentUIBuilder.draftModel,
+                newFilterType
+              )
+            }
+
+            // If a UI editor has already been created for this Filter Type, then just
+            // update the pre-existing draft model. This way, if a user has already
+            // selected content that is specific to a filter type (e.g. choices for a
+            // choiceFilter), that content will still be there when they switch back to
+            // it. Otherwise, use a clone of the model set on this view. We will update
+            // the actual model in the Filters collection only when the user clicks save.
+            if (!uiBuilder.draftModel) {
+              if (this.model.type == newFilterType) {
+                uiBuilder.draftModel = this.model.clone()
+              } else {
+                uiBuilder.draftModel = uiBuilder.modelFunction();
+              }
+            }
+            if (Object.keys(newModelAttrs).length) {
+              uiBuilder.draftModel.set(newModelAttrs)
+            }
+            // Save the new selection to the view
+            this.currentUIBuilder = uiBuilder;
+
+            // Find the container for this filter type
+            var uiBuilderContainer = uiBuilder.container;
+
+            // Create or update view
+            this.currentUIBuilder.view = this.currentUIBuilder.uiFunction(uiBuilder.draftModel);
+            uiBuilderContainer.html(this.currentUIBuilder.view.el)
+            this.currentUIBuilder.view.render();
+
+            // Add the selected/active class to the clicked FilterTypeIcon, remove it from
+            // the other icons.
+            this.uiBuilders.forEach(function (uiBuilder) {
+              uiBuilder.button.removeClass(view.classes.uiBuilderChoiceActive)
+            })
+            this.currentUIBuilder.button.addClass(view.classes.uiBuilderChoiceActive);
+
+            // Have the carousel slide to the selected uiBuilder container.
+            this.uiBuilderCarousel.carousel(index)
+
+          }
+          catch (error) {
+            console.log(
+              'There was an error switching filter types in a FilterEditorView.' +
+              ' Error details: ' + error);
+          }
+        },
+
+        /**
+         * Checks for attribute keys that are the same between a given Filter model, and a
+         * new Filter model type. Returns an object of model attributes that are relevant
+         * to the new Filter model type. The values for this object will be pulled from
+         * the given model. objectDOM, cid, and nodeName attributes are always excluded.
+         *
+         * @param {Filter} filterModel A filter model
+         * @param {string} newFilterType The name of the new filter model type
+         *
+         * @returns {Object} returns the model attributes from the given filterModel that
+         * are also relevant to the new Filter model type.
+         */
+        getCommonAttributes: function (filterModel, newFilterType) {
+          try {
+
+            // The filter model attributes that are common to both the current Filter Model
+            // and the new Filter Type that we want to create.
+            var commonAttributes = {};
+
+            // Given the newFilterType string, get the default attribute names for a new
+            // model of that type. 
+            var uiBuilder = _.findWhere(this.uiBuilders, { modelType: newFilterType });
+            var defaultAttrs = uiBuilder.modelFunction().defaults();
+            var defaultAttrNames = Object.keys(defaultAttrs);
+
+            // Check if any of those attribute types exist in the current filter model.
+            // If they do, include them in the common attributes object.
+            var currentAttrs = filterModel.toJSON();
+            defaultAttrNames.forEach(function (attrName) {
+              var valueInDraftModel = currentAttrs[attrName];
+              if (valueInDraftModel || valueInDraftModel === 0 | valueInDraftModel === false) {
+                commonAttributes[attrName] = valueInDraftModel
+              }
+            }, this);
+
+            // Exclude attributes that shouldn't be passed to a new model, like the
+            // objectDOM and the model ID.
+            delete commonAttributes.objectDOM
+            delete commonAttributes.cid
+            delete commonAttributes.nodeName
+
+            // Return the common attributes
+            return commonAttributes
+          }
+          catch (error) {
+            console.log(
+              'There was an error getting common model attributes in a FilterEditorView' +
+              '. Error details: ' + error);
           }
         },
 
