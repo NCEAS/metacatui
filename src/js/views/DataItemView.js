@@ -108,7 +108,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 }
 
                 // Restrict item sharing depending on access
-                attributes.canShare = this.canShareItem();
+                this.canShare = this.canShareItem();
+                attributes.canShare = this.canShare;
 
                 //Get the number of attributes for this item
                 if(this.model.type != "EML"){
@@ -1137,9 +1138,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 var canShareMetadata = this.model.isNew() || (modelAccessPolicy && modelAccessPolicy.isAuthorized("changePermission"));
 
                 // Only return true if we can share both
-                this.canShare = canShareMetadata && canShareResourceMap;
+                return canShareMetadata && canShareResourceMap;
               } else {
-                this.canShare = this.model.get("accessPolicy") && this.model.get("accessPolicy").isAuthorized("changePermission");
+                return this.model.get("accessPolicy") && this.model.get("accessPolicy").isAuthorized("changePermission");
               }
             }
         });
