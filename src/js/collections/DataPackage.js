@@ -157,8 +157,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 formatId: "http://www.openarchives.org/ore/terms",
                 childPackages: {},
                 id: this.id,
-                latestVersion: this.id,
-                isNew: true
+                latestVersion: this.id
             });
 
             if ( typeof options.packageModel !== "undefined" ) {

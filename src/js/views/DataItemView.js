@@ -1130,11 +1130,11 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 var pkgModel = MetacatUI.rootDataPackage.packageModel,
                     pkgAccessPolicy = pkgModel.get("accessPolicy");
 
-                var canShareResourceMap = pkgModel.get("isNew") || (pkgAccessPolicy && pkgAccessPolicy.isAuthorized("changePermission"));
+                var canShareResourceMap = pkgModel.isNew() || (pkgAccessPolicy && pkgAccessPolicy.isAuthorized("changePermission"));
 
                 // Check whether we can share the metadata
                 var modelAccessPolicy = this.model.get("accessPolicy");
-                var canShareMetadata = modelAccessPolicy && modelAccessPolicy.isAuthorized("changePermission");
+                var canShareMetadata = this.model.isNew() || (modelAccessPolicy && modelAccessPolicy.isAuthorized("changePermission"));
 
                 // Only return true if we can share both
                 this.canShare = canShareMetadata && canShareResourceMap;
