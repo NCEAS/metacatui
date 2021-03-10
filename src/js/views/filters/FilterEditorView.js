@@ -37,6 +37,21 @@ define(['jquery', 'underscore', 'backbone',
         model: null,
 
         /**
+         * If rendering an editor for a brand new Filter model, provide the Filters
+         * collection instead of the Filter model. A new model will be created and, if the
+         * user clicks save, it will be added to this Filters collection.
+         * @type {Filters}
+         */
+        collection: null,
+
+        /**
+         * Set to true if rendering an editor for a brand new Filter model that is not yet
+         * part of a Filters collection. If isNew is set to true, then the view requires a
+         * Filters model set to the view's collection property. A model will be created.
+         */
+        isNew: false,
+
+        /**
          * The HTML classes to use for this view's element
          * @type {string}
          */
@@ -97,6 +112,10 @@ define(['jquery', 'underscore', 'backbone',
 
         /**
          * Strings to use to display various messages to the user in this view
+         * @property {string} text.editButton - The text to show in the button a user
+         * clicks to open the editing modal window.
+         * @property {string} text.addFilterButton - The text to show in the button a user
+         * clicks to add a new search filter and open an editing modal window.
          * @property {string} text.step1 - The instructions placed just before the fields
          * input
          * @property {string} text.step2 - The instructions placed after the fields input
@@ -112,6 +131,8 @@ define(['jquery', 'underscore', 'backbone',
          * editing modal that removes the Filter model from the Filters collection.
          */
         text: {
+          editButton: "EDIT",
+          addFilterButton: "Add a search filter",
           step1: "Let people filter your data by",
           step2: "...using the following interface",
           filterNotAllowed: "This interface doesn't work with the metadata fields you" +
@@ -275,14 +296,35 @@ define(['jquery', 'underscore', 'backbone',
             if (!options || typeof options != "object") {
               var options = {};
             }
-            if (!options.model) {
-              console.log("A Filter model is required to render a Filter Editor View");
-              return
+            
+            if (!options.isNew){
+              // If this view is an editor for an existing Filter model, check that the model
+              // and the Filters collection is provided.
+              if (!options.model) {
+                console.log("A Filter model is required to render a Filter Editor View");
+                return
+              }
+              if (!options.model.collection) {
+                console.log("The Filter model for a FilterEditorView must be part of a" + 
+                  " Filters collection");
+                return
+              }
+              // Set the model and collection on the view
+              this.model = options.model
+              this.collection = options.model.collection
+            } else {
+              // If this is an editor for a new Filter model, create a default model and
+              // make sure there is a Filters collection to add it to
+              if (!options.collection) {
+                console.log("A Filters collection is required to render a " + 
+                  "FilterEditorView for a new Filters model.");
+                return
+              }
+              this.model = new Filter()
+              this.collection = options.collection
+              this.isNew = true
             }
-            if (!options.model.collection) {
-              console.log("The Filter model for a FilterEditorView must be part of a Filters collection");
-              return
-            }
+            
 
           } catch (error) {
             console.log("Error creating an EditFilterView. Error details: " + error);
@@ -298,8 +340,21 @@ define(['jquery', 'underscore', 'backbone',
             // Save a reference to this view
             var view = this;
 
-            // Create and insert an EDIT button for the filter.
-            var editButton = $("<a class='" + this.classes.editButton + "'>EDIT</a>");
+            // Create and insert an "edit" or a "add filter" button for the filter.
+            var buttonText = this.text.editButton,
+                buttonClasses = this.classes.editButton,
+                buttonIcon = "pencil";
+            
+            // Text & styling is different for the "add a new filter" button
+            if(this.isNew){
+              buttonText = this.text.addFilterButton;
+              buttonIcon = "plus";
+              buttonClasses = buttonClasses + " btn";
+              this.$el.addClass("new");
+            }
+            var editButton = $("<a class='" + buttonClasses + "'>" +
+              "<i class='icon icon-" + buttonIcon + " icon-on-left'></i> " +
+              buttonText + "</a>");
             this.$el.prepend(editButton);
 
             // Render the editor modal on-the-fly to make the application load faster.
@@ -388,7 +443,7 @@ define(['jquery', 'underscore', 'backbone',
               view.modalEl.on("hidden", function () { view.destroyEditorModal() });
               view.modalEl.modal("hide");
             }
-            // Add listeners to the modal's "save" and "cancel" buttons
+            // Add listeners to the modal's "delete", "save", and "cancel" buttons
             saveButton.on('click', function (event) {
               saveButton.off('click');
               hideModal();
@@ -401,8 +456,9 @@ define(['jquery', 'underscore', 'backbone',
             deleteButton.on('click', function (event) {
               deleteButton.off('click');
               hideModal();
-              // TODO: if a filter model is new it wouldn't be added to the collection yet
-              view.model.collection.remove(view.model)
+              if(!view.isNew){
+                view.collection.remove(view.model)
+              }
             })
           }
           catch (error) {
@@ -544,9 +600,9 @@ define(['jquery', 'underscore', 'backbone',
         addChanges: function (event) {
           try {
             var selectedUI = this.currentUIBuilder,
-              newModelAttrs = selectedUI.draftModel.toJSON(),
-              oldModel = this.model,
-              filtersCollection = this.model.collection;
+                newModelAttrs = selectedUI.draftModel.toJSON(),
+                oldModel = this.model,
+                filtersCollection = this.collection;
 
             // Set the new fields
             newModelAttrs.fields = _.clone(this.fieldInput.selected);

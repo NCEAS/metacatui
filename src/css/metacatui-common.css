@@ -3876,6 +3876,12 @@ add font awesome close icon */
 /* Filter Editor */
 /* custom portal search filter editor modal */
 
+.filter-editor.new {
+	display: flex;
+	align-self: center;
+	padding: 3rem 4rem;
+}
+
 .filter-editor .modal {
 	width: 100%;
 	max-width: 800px;
@@ -3884,9 +3890,16 @@ add font awesome close icon */
 	right: 0;
 }
 
-.filter-editor .save-button,
-.filter-editor .cancel-button {
+.filter-editor .btn-filter-editor {
 	margin: 0;
+}
+
+.filter-editor .delete-button {
+	float: left;
+}
+/* hide the delete button for new filters */
+.filter-editor.new .delete-button {
+	display: none;
 }
 
 .filter-editor .modal-body {
@@ -6359,7 +6372,7 @@ body.mapMode{
   max-width: 100%;
   margin-bottom: 10px;
 }
-.filter-groups .filter .btn:not(.save-button):not(.cancel-button){
+.filter-groups .filter .btn:not(.btn-filter-editor){
 	box-shadow: none;
 	border-color: #ccc;
   color: #999;

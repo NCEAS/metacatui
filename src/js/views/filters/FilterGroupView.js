@@ -57,6 +57,8 @@ define(['jquery', 'underscore', 'backbone',
 
     render: function () {
 
+      var view = this;
+
       //Add the id attribute from the filter group label
       this.$el.attr("id", this.model.get("label").replace( /([^a-zA-Z0-9])/g, "") );
 
@@ -133,6 +135,23 @@ define(['jquery', 'underscore', 'backbone',
         this.subviews.push(filterView);
 
       }, this);
+
+      // Insert a button to add a new Filter model if this view is in edit mode
+      if(this.edit){
+        require(['views/filters/FilterEditorView'], function (FilterEditor) {
+          var addFilterButton = new FilterEditor({
+            collection: view.model.get("filters"),
+            mode: "edit",
+            isNew: true
+          });
+          // Render the view and append it's element to this view
+          addFilterButton.render();
+          // Append the filter view element to the view el
+          filtersRow.append(addFilterButton.el);
+          // Save a reference to this subview
+          view.subviews.push(addFilterButton);
+        })
+      }
 
     },
 
