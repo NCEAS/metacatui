@@ -1849,7 +1849,7 @@ MDQ items
 
 /* Filter views
 -------------------------------------------------- */
-.filter-groups .filter .btn:not(.save-button):not(.cancel-button):hover {
+.filter-groups .filter .btn:not(.btn-filter-editor):hover {
     background-color: #e6e6e6;
     color: #333;
 }

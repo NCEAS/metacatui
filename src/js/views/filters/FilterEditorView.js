@@ -62,6 +62,8 @@ define(['jquery', 'underscore', 'backbone',
          * @property {string} classes.saveButton - the element in the template that a user
          * clicks to add their filter changes to the parent Filters collection and close
          * the editing modal.
+         * @property {string} classes.deleteButton - the element in the template that a
+         * user clicks to remove the Filter model from the Filters collection
          * @property {string} classes.uiBuilderChoicesContainer - The container for the
          * uiBuilderChoices and the associated instruction text
          * @property {string} classes.uiBuilderChoices - The container for each "button" a
@@ -83,6 +85,7 @@ define(['jquery', 'underscore', 'backbone',
           editButton: "edit-button",
           cancelButton: "cancel-button",
           saveButton: "save-button",
+          deleteButton: "delete-button",
           uiBuilderChoicesContainer: "ui-builder-choices-container",
           uiBuilderChoices: "ui-builder-choices",
           uiBuilderChoice: "ui-builder-choice",
@@ -105,6 +108,8 @@ define(['jquery', 'underscore', 'backbone',
          * collection and closes the modal
          * @property {string} text.cancelButton - Text for the button at the bottom of the
          * editing modal that closes the modal window without making any changes.
+         * @property {string} text.deleteButton - Text for the button at the bottom of the
+         * editing modal that removes the Filter model from the Filters collection.
          */
         text: {
           step1: "Let people filter your data by",
@@ -113,6 +118,7 @@ define(['jquery', 'underscore', 'backbone',
             " selected. Change the 'filter data by' option to use this interface.",
           saveButton: "Use these filter settings",
           cancelButton: "Cancel",
+          deleteButton: "Remove filter"
         },
 
         /**
@@ -373,21 +379,30 @@ define(['jquery', 'underscore', 'backbone',
           try {
             var view = this;
             // The buttons at the bottom of the modal
-            var saveButton = this.modalEl.find("." + this.classes.saveButton);
-            var cancelButton = this.modalEl.find("." + this.classes.cancelButton);
-            // Add listeners to the modal's "save" and "cancel" buttons
-            saveButton.on('click', function (event) {
-              saveButton.off('click');
+            var saveButton = this.modalEl.find("." + this.classes.saveButton),
+                cancelButton = this.modalEl.find("." + this.classes.cancelButton),
+                deleteButton = this.modalEl.find("." + this.classes.deleteButton);
+            // All buttons should hide the modal window
+            var hideModal = function(){
               view.modalEl.off("hidden");
               view.modalEl.on("hidden", function () { view.destroyEditorModal() });
               view.modalEl.modal("hide");
+            }
+            // Add listeners to the modal's "save" and "cancel" buttons
+            saveButton.on('click', function (event) {
+              saveButton.off('click');
+              hideModal();
               view.addChanges();
             });
             cancelButton.on('click', function (event) {
               cancelButton.off('click');
-              view.modalEl.off("hidden");
-              view.modalEl.on("hidden", function () { view.destroyEditorModal() })
-              view.modalEl.modal("hide");
+              hideModal();
+            })
+            deleteButton.on('click', function (event) {
+              deleteButton.off('click');
+              hideModal();
+              // TODO: if a filter model is new it wouldn't be added to the collection yet
+              view.model.collection.remove(view.model)
             })
           }
           catch (error) {
