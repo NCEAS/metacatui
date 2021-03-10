@@ -1,13 +1,14 @@
 define(['underscore',
         'jquery',
         'backbone',
+        "models/filters/FilterGroup",
         "views/portals/editor/PortEditorSectionView",
         "views/EditCollectionView",
         "views/filters/FilterGroupsView",
         "text!templates/portals/editor/portEditorData.html",
       ],
-function(_, $, Backbone, PortEditorSectionView, EditCollectionView, FilterGroupsView,
-  Template){
+function( _, $, Backbone, FilterGroup, PortEditorSectionView, EditCollectionView,
+  FilterGroupsView, Template ){
 
   /**
   * @class PortEditorDataView
@@ -107,16 +108,19 @@ function(_, $, Backbone, PortEditorSectionView, EditCollectionView, FilterGroups
       editCollectionView.render();
 
       // render the view the edit the custom portal search filters
-
       // TODO: only render the filterGroupsView if there is a data collection already?
 
-      // TODO: The edit collection view and filter groups view title, description
-      // need to be in the port editor data view template.
+      // Make sure there is at least one empty filter group view to render
+      if (!this.model.get("filterGroups") || this.model.get("filterGroups").length == 0){
+        this.model.set("filterGroups", [new FilterGroup({
+          label: "",
+          isUIFilterType: true
+        })])
+      }
       
       var filterGroupsView = new FilterGroupsView({
         filterGroups: this.model.get("filterGroups"),
         edit: true
-        // filters: this.model.get("searchModel").get("filters")
       });
       this.$(this.editFilterGroupsViewContainer).html(filterGroupsView.el);
       filterGroupsView.render();

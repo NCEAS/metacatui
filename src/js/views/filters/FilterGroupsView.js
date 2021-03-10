@@ -3,8 +3,9 @@ define(['jquery', 'underscore', 'backbone',
         'models/filters/Filter',
         'models/filters/FilterGroup',
         'views/filters/FilterGroupView',
-      'views/filters/FilterView'],
-  function($, _, Backbone, Filter, FilterGroup, FilterGroupView, FilterView) {
+        'views/filters/FilterView',
+        'text!templates/filters/filterGroups.html'],
+  function($, _, Backbone, Filter, FilterGroup, FilterGroupView, FilterView, Template) {
   'use strict';
 
   /**
@@ -41,6 +42,12 @@ define(['jquery', 'underscore', 'backbone',
     * @inheritdoc
     */
     className: "filter-groups tabbable",
+
+    /**
+     * The template for this view. An HTML file is converted to an Underscore.js template
+     * @since 2.15.0
+     */
+    template: _.template(Template),
 
     /**
     * If true, displays the FilterGroups in a vertical list
@@ -97,8 +104,47 @@ define(['jquery', 'underscore', 'backbone',
       this.$el.empty();
       this.stopListening();
 
+      // Add information about editing the filter groups if this view is in edit mode
+      if(this.edit){
+        var title = "Change how people can search for data within your collection"
+        var isNew = this.filterGroups.length === 0;
+        if (this.filterGroups.length === 1 && this.filterGroups[0].isEmpty()) {
+          var isNew = true;
+        }
+
+        if (isNew) {
+          title = "Add filters to help people find data within your collection"
+        }
+
+        var description = "Search filters allow people to filter your data by specific " +
+          "metadata fields.",
+          learnMoreUrl = MetacatUI.appModel.get("portalSearchFiltersInfoURL");
+
+        if (learnMoreUrl) {
+          description = description + ' <a href="' + learnMoreUrl + '">Learn more</a>'
+        }
+
+        this.$el.html(this.template({
+          title: title,
+          description: description,
+          helpText: ""
+        }));
+
+        // Remove this when the custom search filter builder is no longer new:
+        this.$el
+          .find(".port-editor-subtitle")
+          .append($('<span class="new-icon" style="margin-left:10px; font-size:1rem; line-height: 25px;"><i class="icon icon-star icon-on-right"></i> NEW </span>'));
+      }
+
+        
       //Create an unordered list for all the filter tabs
       var groupTabs = $(document.createElement("ul")).addClass("nav nav-tabs filter-group-links");
+
+      // Until we allow adding/editing filter groups in the portal data page, hide the group tabs
+      // element if the portal does not already have groups in the editor.
+      if (this.filterGroups.length === 1 && !this.filterGroups[0].get("label") && !this.filterGroups[0].get("icon")){
+        groupTabs.hide()
+      }
 
       //Create a container div for the filter groups
       var filterGroupContainer = $(document.createElement("div")).addClass("tab-content");

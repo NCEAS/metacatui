@@ -1086,15 +1086,15 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       z-index: 110;
     }
 
-    /* Carousel base class */
-    .carousel {
+    /* Hero carousel - the sliding images in the header on the KNB homepage */
+    .hero.carousel {
       width: 100%;
       margin-bottom: 0px;
       max-height: 400px;
 
     }
 
-    .carousel-control {
+    .hero.carousel .carousel-control {
       height: 80px;
       margin-top: 0;
       font-size: 50px;
@@ -1116,20 +1116,20 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
 
 	/* Fallback colors for the carousel while images are loading */
-	.carousel .item:nth-child(2n){
+	.hero.carousel .item:nth-child(2n){
 		background-color: #6C78A4;
 	}
 
-	.carousel .item:nth-child(2n+1){
+	.hero.carousel .item:nth-child(2n+1){
 		background-color: #6C94A4;
 	}
 
-	.carousel .item:nth-child(3n){
+	.hero.carousel .item:nth-child(3n){
 		background-color: #6C8AA4;
 	}
 	/************/
 
-    .carousel .item {
+    .hero.carousel .item {
     	height: 400px;
       z-index: 170;
       /*
@@ -1148,7 +1148,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       overflow: hidden;
     }
 
-    .carousel-caption {
+    .hero.carousel .carousel-caption {
       background-color: #555555; /*IE 8 fallback */
       background: rgba(0,0,0,0.3);
       position: absolute;
@@ -1165,7 +1165,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
     }
 
-    .carousel-caption h1 {
+    .hero.carousel .carousel-caption h1 {
       margin: 0px;
       line-height: 1.25;
       font-weight: 400;
@@ -1173,14 +1173,14 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       color: #FDFDFD;
     }
 
-    .carousel-caption .lead {
+    .hero.carousel .carousel-caption .lead {
       margin: 0;
       line-height: 1;
       font-weight: 300;
       font-size: 24px;
       color: #FDFDFD;
     }
-    .carousel-caption .btn-primary {
+    .hero.carousel .carousel-caption .btn-primary {
       position: absolute;
       bottom: 20px;
       right: 20px;

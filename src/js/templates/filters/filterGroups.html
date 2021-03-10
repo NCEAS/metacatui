@@ -1,0 +1,14 @@
+<% if (title) { %>
+  <h3 class="port-editor-subtitle"><i class="icon icon-on-left icon-filter"></i><%= title %></h3>
+<% } %>
+<% if (description) { %>
+<p class="port-editor-description subtle">
+  <%= description %>
+</p>
+<% } %>
+<% if (helpText) { %>
+<p class="port-editor-description subtle">
+  <%= helpText %>
+</p>
+<% } %>
+<p class="error notification alert alert-danger" data-category="filterGroups"></p>

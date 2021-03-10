@@ -3704,7 +3704,14 @@ add font awesome close icon */
 .port-editor-section.port-editor-md{
   padding: 0px;
 }
-
+.port-editor-description {
+	max-width: 1400px;
+	margin-left: 1rem;
+}
+.port-editor-subtitle {
+	margin-top: 0;
+	margin-left: 1rem;
+}
 /* Portal Editor notifications */
 .portal-editor .alert:empty {
     display: none;
@@ -3858,9 +3865,15 @@ add font awesome close icon */
 .port-editor-settings .description-container textarea{
   width: 100%;
 }
-.port-editor-section.port-editor-data{
-  padding: 20px 40px;
+.port-editor-section .editable-subsection {
+	box-shadow: 0 1px 6px rgb(0 0 0 / 16%), 0 1px 8px -3px rgb(0 0 0 / 23%);
+	padding: 2rem 1.5rem;
+	border-radius: 3px;
+	border: 2px dashed #419ecc;
+	margin-top: 1rem;
+	margin-bottom: 2rem;
 }
+
 .port-editor-section.port-editor-data #sidebar > *{
   padding-left: 0px;
   padding-right: 0px;
@@ -3879,9 +3892,11 @@ add font awesome close icon */
 .filter-editor.new {
 	display: flex;
 	align-self: center;
-	padding: 3rem 4rem;
+	padding: 3rem 2rem 1rem 2rem;
 }
-
+.filter-editor:not(.new){
+	margin-bottom: 1rem;
+}
 .filter-editor .modal {
 	width: 100%;
 	max-width: 800px;
@@ -3892,6 +3907,7 @@ add font awesome close icon */
 
 .filter-editor .btn-filter-editor {
 	margin: 0;
+	padding: 4px 12px;
 }
 
 .filter-editor .delete-button {
@@ -3919,7 +3935,7 @@ add font awesome close icon */
 	grid-template-columns: max-content auto;
 	gap: 2rem;
 	align-items: center;
-	margin-bottom: 4rem;
+	margin-bottom: 2rem;
 }
 .filter-editor .fields-container .modal-instructions {
 	margin-top: 1rem;
@@ -3988,7 +4004,13 @@ add font awesome close icon */
 
 .filter-group .filter.ui-build {
 	margin: auto;
-	padding-right: 0;
+}
+
+.filter-group .filter.ui-build label {
+	padding-right: 30px;
+}
+.filter.ui-build .icon-on-left {
+	margin: 8px;
 }
 
 .filter.ui-build input[type='text'],
@@ -4027,6 +4049,7 @@ add font awesome close icon */
 	font-size: 0.95rem;
 	box-sizing: border-box;
 	border: 1px dashed #419ecc;
+	color: #555555;
 	border-radius: 4px;
 	line-height: 1;
 	padding: 0.42rem;
@@ -4036,6 +4059,7 @@ add font awesome close icon */
 	width: 100%;
 	min-width: 280px;
 	max-width: 320px;
+	background-color: transparent;
 	/* width: 100%; */
 	white-space: nowrap;
 	overflow: hidden;
@@ -4044,6 +4068,9 @@ add font awesome close icon */
 	text-shadow: none;
 	box-shadow: 0 3px 5px #77797a17,0 1px 3px #77797a17;
 	transition: background-color .2s ease, box-shadow .2s ease;
+}
+.ui-build .ui-build-input::placeholder{
+	text-shadow: none;
 }
 .ui-build .ui-build-input:focus{
 	background-color: #d1e8f3;
@@ -4205,6 +4232,7 @@ add font awesome close icon */
 }
 .ui-build .ui-build-input.true-label,
 .ui-build .ui-build-input.false-label{
+	font-size: 0.95em;
 	box-sizing: border-box;
 	position: absolute;
 	top: 0;
@@ -6392,10 +6420,20 @@ body.mapMode{
 .filter-groups .filter label{
 	cursor: default;
 	margin-bottom: 13px;
+	display: flex;
+	align-items: center;
 }
 .filter-group-links{
   border-top: 1px solid #DDD;
   clear: both;
+}
+.edit-mode .filter-group-links {
+	margin-top: 2rem;
+	margin-left: 1rem;
+}
+.edit-mode .filters-container {
+	margin-top: 1rem;
+	margin-left: 1.5rem;
 }
 .filter-groups.vertical .filter-group-links {
   border: 0px;
@@ -6851,6 +6889,7 @@ body.mapMode{
   width: 100%;
 	overflow-y: auto !important;
 	overflow-x: hidden !important;
+	margin-left: 0;
 }
 .edit-collection .result-header-count {
 	font-size: 1rem;
@@ -6864,14 +6903,6 @@ body.mapMode{
 	width: 49%;
 }
 
-.edit-collection-description {
-	max-width: 1400px;
-	margin-left: 1rem;
-}
-.edit-collection-title {
-	margin-top: 1.5rem;
-	margin-left: 1rem;
-}
 /* The Save and Cancel buttons */
 .collection-controls{
   margin-top: 20px;

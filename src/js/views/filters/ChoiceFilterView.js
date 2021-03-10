@@ -101,16 +101,18 @@ define(['jquery', 'underscore', 'backbone',
         //If placeholder text is already provided in the model, use it
         //If not, create placeholder text using the model label
         if (!placeHolderText){
-
-          //If the label starts with a vowel, use "an"
-          var vowels = ["a", "e", "i", "o", "u"];
-          if( _.contains(vowels, this.model.get("label").toLowerCase().charAt(0)) ){
-            placeHolderText = "Choose an " + this.model.get("label");
+          if (this.model.get("label")){
+            //If the label starts with a vowel, use "an"
+            var vowels = ["a", "e", "i", "o", "u"];
+            if (_.contains(vowels, this.model.get("label").toLowerCase().charAt(0))) {
+              placeHolderText = "Choose an " + this.model.get("label");
+            }
+            //Otherwise use "a"
+            else {
+              placeHolderText = "Choose a " + this.model.get("label");
+            }
           }
-          //Otherwise use "a"
-          else{
-            placeHolderText = "Choose a " + this.model.get("label");
-          }
+          
         }
 
         //Create the default option
