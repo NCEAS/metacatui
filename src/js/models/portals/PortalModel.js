@@ -19,13 +19,10 @@ define(["jquery",
         "models/Search",
         "models/filters/FilterGroup",
         "models/Map",
-        // TODO: remove this:
-        // Portal XML for testing purposes only! WIP
-        "text!" + MetacatUI.root + "/components/test-portal.xml"
-        
     ],
-    function($, _, Backbone, gmaps, uuid, Filters, SolrResults, FilterModel, PortalSectionModel, PortalVizSectionModel, PortalImage,
-        EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel, TestPortalXML) {
+    function($, _, Backbone, gmaps, uuid, Filters, SolrResults, FilterModel,
+        PortalSectionModel, PortalVizSectionModel, PortalImage,
+        EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel ) {
         /**
          * @classdesc A PortalModel is a specialized collection that represents a portal,
          * including the associated data, people, portal descriptions, results and
@@ -520,9 +517,6 @@ define(["jquery",
             */
             parse: function(response) {
 
-              // TODO: remove this dev code
-              // response = new DOMParser().parseFromString(TestPortalXML, "text/xml");
-
                 //Start the empty JSON object
                 var modelJSON = {},
                     modelRef = this,
@@ -731,7 +725,7 @@ define(["jquery",
                   // unless this portal model is being edited. Then we only want the
                   // definition filters to be included in the search model.
                   if (!modelRef.get("edit")){
-                  allFilters.add(filterGroupModel.get("filters").models);
+                    allFilters.add(filterGroupModel.get("filters").models);
                   }
                   
 

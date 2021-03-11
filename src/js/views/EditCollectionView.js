@@ -27,6 +27,12 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     type: "EditCollection",
 
     /**
+     * A reference to the parent editor view, if there is one
+     * @type {PortalEditorView}
+     */
+    editorView: undefined,
+
+    /**
     * The HTML tag name to use for this view's element
     * @type {string}
     */
@@ -219,7 +225,8 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         // data catalog view. With the Query Builder view, they are not needed.
         // Otherwise, the defaultFilterGroups will be added to the Query Builder
         createFilterGroups: function(){ return },
-        addAnnotationFilter: function(){ return }
+        addAnnotationFilter: function(){ return },
+        editorView: this.editorView
       });
 
       //Render the view and insert it into the page

@@ -106,6 +106,8 @@ define(['jquery', 'underscore', 'backbone',
           var options = {};
         }
 
+        this.editorView = options.editorView || null;
+
         if (options.mode && ["edit", "uiBuilder", "normal"].includes(options.mode)) {
           this.mode = options.mode
         }
@@ -129,7 +131,9 @@ define(['jquery', 'underscore', 'backbone',
         }
 
         this.model = options.model || new this.modelClass();
+
       }
+
       catch (error) {
         console.log( 'There was an error initializing a FilterView' +
           ' Error details: ' + error );
@@ -165,7 +169,8 @@ define(['jquery', 'underscore', 'backbone',
         if(this.mode === "edit"){
           require(['views/filters/FilterEditorView'], function(FilterEditor){
             var filterEditor = new FilterEditor({
-              model: view.model
+              model: view.model,
+              editorView: view.editorView
             });
             filterEditor.render();
             view.$el.prepend(filterEditor.el);
@@ -174,6 +179,12 @@ define(['jquery', 'underscore', 'backbone',
         if(this.mode === "uiBuilder"){
           this.$el.addClass(this.uiBuilderClass);
         }
+        // Don't show the editor footer with save button when a user types text into
+        // a filter in edit or build mode.
+        if(["edit", "uiBuilder"].includes(this.mode)){
+          this.$el.find("input").addClass("ignore-changes")
+        }
+        
       }
       catch (error) {
         console.log( 'There was an error rendering a FilterView' +

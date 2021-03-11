@@ -15,18 +15,18 @@ define(['jquery', 'underscore', 'backbone',
     Template) {
     'use strict';
 
-    // TODO: add screenshot
     /**
-    * @class EditFilterView
+    * @class FilterEditorView
     * @classdesc Creates a view of an editor for a custom search filter
     * @classcategory Views/Filters
+    * @screenshot views/filters/FilterEditorView.png
     * @since 2.15.0
-    * @name EditFilterView
+    * @name FilterEditorView
     * @extends Backbone.View
     * @constructor
     */
-    var EditFilterView = Backbone.View.extend(
-    /** @lends EditFilterView.prototype */{
+    var FilterEditorView = Backbone.View.extend(
+    /** @lends FilterEditorView.prototype */{
 
         /**
          * A Filter model to be rendered and edited in this view. The Filter model must be
@@ -43,6 +43,12 @@ define(['jquery', 'underscore', 'backbone',
          * @type {Filters}
          */
         collection: null,
+
+        /**
+         * A reference to the PortalEditorView
+         * @type {PortalEditorView}
+         */
+        editorView: undefined,
 
         /**
          * Set to true if rendering an editor for a brand new Filter model that is not yet
@@ -67,32 +73,32 @@ define(['jquery', 'underscore', 'backbone',
         /**
          * The classes to use for various elements in this view
          * @type {Object}
-         * @property {string} classes.fieldsContainer - the element in the template that
+         * @property {string} fieldsContainer - the element in the template that
          * will contain the input where a user can select metadata fields for the custom
          * search filter.
-         * @property {string} classes.editButton - The button a user clicks to start
+         * @property {string} editButton - The button a user clicks to start
          * editing a search filter
-         * @property {string} classes.cancelButton - the element in the template that a
+         * @property {string} cancelButton - the element in the template that a
          * user clicks to undo any changes made to the filter and close the editing modal.
-         * @property {string} classes.saveButton - the element in the template that a user
+         * @property {string} saveButton - the element in the template that a user
          * clicks to add their filter changes to the parent Filters collection and close
          * the editing modal.
-         * @property {string} classes.deleteButton - the element in the template that a
+         * @property {string} deleteButton - the element in the template that a
          * user clicks to remove the Filter model from the Filters collection
-         * @property {string} classes.uiBuilderChoicesContainer - The container for the
+         * @property {string} uiBuilderChoicesContainer - The container for the
          * uiBuilderChoices and the associated instruction text
-         * @property {string} classes.uiBuilderChoices - The container for each "button" a
+         * @property {string} uiBuilderChoices - The container for each "button" a
          * user can click to switch the filter type
-         * @property {string} classes.uiBuilderChoice - The element that acts like a
+         * @property {string} uiBuilderChoice - The element that acts like a
          * button that switches the filter type
-         * @property {string} classes.uiBuilderChoiceActive - The class to add to a
+         * @property {string} uiBuilderChoiceActive - The class to add to a
          * uiBuilderChoice buttons when that option is active/selected
-         * @property {string} classes.uiBuilderLabel - The label that goes along with the
+         * @property {string} uiBuilderLabel - The label that goes along with the
          * uiBuilderChoice element
-         * @property {string} classes.uiBuilderContainer - The element that will be turned
+         * @property {string} uiBuilderContainer - The element that will be turned
          * into a carousel that switches between each UI Builder view when a user switches
          * the filter type
-         * @property {string} classes.modalInstructions - The class to add to the
+         * @property {string} modalInstructions - The class to add to the
          * instruction text in the editing modal window
          */
         classes: {
@@ -112,22 +118,22 @@ define(['jquery', 'underscore', 'backbone',
 
         /**
          * Strings to use to display various messages to the user in this view
-         * @property {string} text.editButton - The text to show in the button a user
+         * @property {string} editButton - The text to show in the button a user
          * clicks to open the editing modal window.
-         * @property {string} text.addFilterButton - The text to show in the button a user
+         * @property {string} addFilterButton - The text to show in the button a user
          * clicks to add a new search filter and open an editing modal window.
-         * @property {string} text.step1 - The instructions placed just before the fields
+         * @property {string} step1 - The instructions placed just before the fields
          * input
-         * @property {string} text.step2 - The instructions placed after the fields input
+         * @property {string} step2 - The instructions placed after the fields input
          * and before the uiBuilder select
-         * @property {string} text.filterNotAllowed - The message to show when a filter
+         * @property {string} filterNotAllowed - The message to show when a filter
          * type doesn't work with the selected metadata fields
-         * @property {string} text.saveButton - Text for the button at the bottom of the
+         * @property {string} saveButton - Text for the button at the bottom of the
          * editing modal that adds the filter model changes to the parent Filters
          * collection and closes the modal
-         * @property {string} text.cancelButton - Text for the button at the bottom of the
+         * @property {string} cancelButton - Text for the button at the bottom of the
          * editing modal that closes the modal window without making any changes.
-         * @property {string} text.deleteButton - Text for the button at the bottom of the
+         * @property {string} deleteButton - Text for the button at the bottom of the
          * editing modal that removes the Filter model from the Filters collection.
          */
         text: {
@@ -296,6 +302,8 @@ define(['jquery', 'underscore', 'backbone',
             if (!options || typeof options != "object") {
               var options = {};
             }
+
+            this.editorView = options.editorView || null;
             
             if (!options.isNew){
               // If this view is an editor for an existing Filter model, check that the model
@@ -327,7 +335,7 @@ define(['jquery', 'underscore', 'backbone',
             
 
           } catch (error) {
-            console.log("Error creating an EditFilterView. Error details: " + error);
+            console.log("Error creating an FilterEditorView. Error details: " + error);
           }
         },
 
@@ -367,7 +375,7 @@ define(['jquery', 'underscore', 'backbone',
             this.$el.data("view", this);
             return this
           } catch (error) {
-            console.log("Error rendering an EditFilterView. Error details: " + error);
+            console.log("Error rendering an FilterEditorView. Error details: " + error);
           }
         },
 
@@ -448,6 +456,10 @@ define(['jquery', 'underscore', 'backbone',
               saveButton.off('click');
               hideModal();
               view.addChanges();
+              console.log(view.editorView);
+              if (view.editorView){
+                view.editorView.showControls();
+              }
             });
             cancelButton.on('click', function (event) {
               cancelButton.off('click');
@@ -458,6 +470,9 @@ define(['jquery', 'underscore', 'backbone',
               hideModal();
               if(!view.isNew){
                 view.collection.remove(view.model)
+              }
+              if (view.editorView) {
+                view.editorView.showControls();
               }
             })
           }
@@ -776,5 +791,5 @@ define(['jquery', 'underscore', 'backbone',
         },
 
       })
-    return EditFilterView
+    return FilterEditorView
   });

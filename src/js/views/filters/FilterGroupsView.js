@@ -32,6 +32,12 @@ define(['jquery', 'underscore', 'backbone',
     * @type {Filters}
     */
     filters: null,
+    
+    /**
+     * A reference to the PortalEditorView
+     * @type {PortalEditorView}
+    */
+    editorView: undefined,
 
     /**
     * @inheritdoc
@@ -88,6 +94,7 @@ define(['jquery', 'underscore', 'backbone',
       }
 
       this.parentView = options.parentView || null;
+      this.editorView = options.editorView || null;
 
       if(options.edit === true){
         this.edit = true
@@ -202,7 +209,8 @@ define(['jquery', 'underscore', 'backbone',
         // FilterGroups is.
         var filterGroupView = new FilterGroupView({
           model: filterGroup,
-          edit: this.edit
+          edit: this.edit,
+          editorView: this.editorView
         });
 
         //Render the FilterGroupView

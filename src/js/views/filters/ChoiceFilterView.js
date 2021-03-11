@@ -80,9 +80,10 @@ define(['jquery', 'underscore', 'backbone',
         // like the label, placeholder text, and choices, then render the inputs
         // for these options.
 
+        // The ignore-changes class prevents the editor footer from showing on keypress
         var placeholderInput = $(
           '<input placeholder="placeholder" class="' + this.uiInputClass +
-          ' placeholder" data-category="placeholder" value="' +
+          ' placeholder ignore-changes" data-category="placeholder" value="' +
           (placeHolderText ? placeHolderText : '') +'" />'
         );
         // Replace the select element with the placeholder text element
@@ -211,7 +212,8 @@ define(['jquery', 'underscore', 'backbone',
         // Create inputs for "value" and "label", insert them in the container
         for (const [attrName, attrValue] of Object.entries(choice)) {
           var inputEl = $('<input>').attr({
-            class: 'choice-input choice-' + attrName,
+            // The ignore-changes class prevents the editor footer from showing on keypress
+            class: 'ignore-changes choice-input choice-' + attrName,
             value: attrValue,
             "data-category": attrName
           })

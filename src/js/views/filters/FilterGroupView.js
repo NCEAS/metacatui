@@ -25,6 +25,12 @@ define(['jquery', 'underscore', 'backbone',
     * @type {FilterGroup} */
     model: null,
 
+    /**
+     * A reference to the PortalEditorView
+     * @type {PortalEditorView}
+     */
+    editorView: undefined,
+
     subviews: new Array(),
 
     tagName: "div",
@@ -46,6 +52,8 @@ define(['jquery', 'underscore', 'backbone',
       }
 
       this.model = options.model || new FilterGroup();
+
+      this.editorView = options.editorView || null;
       
       this.subviews = new Array();
 
@@ -81,7 +89,8 @@ define(['jquery', 'underscore', 'backbone',
         // The options to pass on to every FilterView
         var viewOptions = {
           model: filter,
-          mode: filterMode
+          mode: filterMode,
+          editorView: view.editorView
         }
 
         //Some filters are handled specially
@@ -142,7 +151,8 @@ define(['jquery', 'underscore', 'backbone',
           var addFilterButton = new FilterEditor({
             collection: view.model.get("filters"),
             mode: "edit",
-            isNew: true
+            isNew: true,
+            editorView: view.editorView
           });
           // Render the view and append it's element to this view
           addFilterButton.render();

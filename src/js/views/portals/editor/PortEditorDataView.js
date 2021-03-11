@@ -36,6 +36,12 @@ function( _, $, Backbone, FilterGroup, PortEditorSectionView, EditCollectionView
     className: PortEditorSectionView.prototype.className + " port-editor-data",
 
     /**
+     * A reference to the parent editor view
+     * @type {PortalEditorView}
+     */
+    editorView: undefined,
+
+    /**
     * The id attribute of the view element
     * @param {string}
     */
@@ -60,8 +66,8 @@ function( _, $, Backbone, FilterGroup, PortEditorSectionView, EditCollectionView
     editCollectionViewContainer: ".edit-collection-container",
 
     /**
-    * A jQuery selector for the element that the EditFilterGroupsView should be inserted
-    * into
+    * A jQuery selector for the element that the FilterGroupsView editor should be
+    * inserted into
     * @type {string}
     * @since 2.15.0
     */
@@ -86,10 +92,8 @@ function( _, $, Backbone, FilterGroup, PortEditorSectionView, EditCollectionView
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
-
       //Call the superclass initialize() function
-      PortEditorSectionView.prototype.initialize();
-
+      PortEditorSectionView.prototype.initialize.call(this, options);
     },
 
     /**
@@ -102,7 +106,7 @@ function( _, $, Backbone, FilterGroup, PortEditorSectionView, EditCollectionView
 
       // render EditCollectionView
       var editCollectionView = new EditCollectionView({
-        model: this.model
+        model: this.model,
       });
       this.$(this.editCollectionViewContainer).html(editCollectionView.el);
       editCollectionView.render();
@@ -120,7 +124,8 @@ function( _, $, Backbone, FilterGroup, PortEditorSectionView, EditCollectionView
       
       var filterGroupsView = new FilterGroupsView({
         filterGroups: this.model.get("filterGroups"),
-        edit: true
+        edit: true,
+        editorView: this.editorView
       });
       this.$(this.editFilterGroupsViewContainer).html(filterGroupsView.el);
       filterGroupsView.render();

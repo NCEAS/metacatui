@@ -4006,7 +4006,7 @@ add font awesome close icon */
 	margin: auto;
 }
 
-.filter-group .filter.ui-build label {
+.filter-group .filter.ui-build:not(.date) label {
 	padding-right: 30px;
 }
 .filter.ui-build .icon-on-left {
@@ -4193,7 +4193,7 @@ add font awesome close icon */
 .ui-build .slider-arrow {
 	margin-top: 20px;
 	fill: #419ecc;
-	/* margin-left: 2rem; */
+	max-width: 40px;
 }
 .ui-build .year-slider{
 	margin-right: 4px;
@@ -7220,6 +7220,11 @@ Query builder & query rule view
 .searchable-select-label {
   margin: 0 0 3px 2px;
   font-size: 0.8rem;
+}
+
+.search-select-tooltip {
+	/* one greater than the .modal z-index */
+	z-index: 1051
 }
 
 /* make the number & date filter inputs match the operator and field inputs */
