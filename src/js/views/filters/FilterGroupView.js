@@ -6,9 +6,11 @@ define(['jquery', 'underscore', 'backbone',
         'views/filters/ChoiceFilterView',
         'views/filters/DateFilterView',
         'views/filters/NumericFilterView',
-        'views/filters/ToggleFilterView'],
+        'views/filters/ToggleFilterView',
+        'views/searchSelect/AnnotationFilterView'
+      ],
   function($, _, Backbone, FilterGroup, FilterView, BooleanFilterView, ChoiceFilterView,
-    DateFilterView, NumericFilterView, ToggleFilterView) {
+    DateFilterView, NumericFilterView, ToggleFilterView, AnnotationFilterView) {
   'use strict';
 
   /**
@@ -71,6 +73,10 @@ define(['jquery', 'underscore', 'backbone',
 
           //Create a ToggleView
           var filterView = new ToggleFilterView({ model: filter });
+        }
+        else if (filter.type == "sem_annotation") {
+          console.log("Semantic Annotation");
+          var filterView = new AnnotationFilterView();
         }
         else{
           //Depending on the filter type, create a filter view

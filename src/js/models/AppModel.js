@@ -1483,7 +1483,14 @@ define(['jquery', 'underscore', 'backbone'],
               placeholder: "Geographic region",
               icon: "globe",
               description: "The geographic region or study site, as described by the submitter"
-            }
+            },
+            {
+              filterType: "AnnotationFilter",
+              fields: ["sem_annotation"],
+              label: "Annotation",
+              icon: "tag",
+              description: "Only show results with filtered semantic annotation"
+            },
           ]
         }
       ],
