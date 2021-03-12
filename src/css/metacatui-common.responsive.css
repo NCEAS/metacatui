@@ -673,6 +673,24 @@
     margin-right: 0px;
   }
 
+	/************** Custom search filter editor ****************/
+
+	.filter-editor .modal-body {
+		padding: 1rem;
+	}
+	.filter-editor .fields-container,
+	.ui-builder-choices-container {
+		grid-template-columns: 100%;
+		gap: 1rem;
+		justify-items: center;
+	}
+
+	.choice-input,
+	.choice-editor .ui-builder-container-text {
+		width: unset;
+		max-width: 206px;
+	}
+
 	/************** Search page ****************/
 	#sidebar{
 		width: 90%;

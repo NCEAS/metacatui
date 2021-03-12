@@ -4019,11 +4019,6 @@ add font awesome close icon */
 	box-sizing: border-box;
 }
 
-.filter.ui-build select {
-	/* max-width: 350px;
-	min-width: 300px; */
-}
-
 .filter.ui-build .filter-input-contain {
 	/* width: unset; */
 	max-width: 350px;

@@ -456,7 +456,6 @@ define(['jquery', 'underscore', 'backbone',
               saveButton.off('click');
               hideModal();
               view.addChanges();
-              console.log(view.editorView);
               if (view.editorView){
                 view.editorView.showControls();
               }
