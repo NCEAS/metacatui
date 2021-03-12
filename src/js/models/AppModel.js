@@ -1034,6 +1034,15 @@ define(['jquery', 'underscore', 'backbone'],
       hiddenSubjectsInAccessPolicy: [],
 
       /**
+      * The format ID the portal editor serializes a new portal document as
+      * @type {string}
+      * @default "https://purl.dataone.org/portals-1.1.0"
+      * @readonly
+      * @since 2.15.0
+      */
+      portalEditorSerializationFormat: "https://purl.dataone.org/portals-1.1.0",
+
+      /**
       * If true, the public/private toggle will be displayed in the Sharing Options for portals.
       * @type {boolean}
       * @default true

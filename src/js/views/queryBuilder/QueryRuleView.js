@@ -1189,11 +1189,11 @@ define([
             }
 
             // Get the properties of the newly selected operator. The newOperatorLabel
-            // will be an array with one value.
-            var operator = _.findWhere(
-              this.operatorOptions,
-              { label: newOperatorLabel[0] }
-            );
+            // will be an array with one value. Select only from the available options,
+            // since there may be multiple options with the same label in
+            // this.operatorOptions.
+            var options = this.getOperatorOptions();
+            var operator = _.findWhere( options, { label: newOperatorLabel[0] });
 
             // Gather  information about which values are currently set on the model, and
             // which are required

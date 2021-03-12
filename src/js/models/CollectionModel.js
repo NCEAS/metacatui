@@ -476,20 +476,22 @@ define(["jquery",
         }
       }
 
-
       // Set schema version. May need to be updated from 1.0.0 to 1.1.0.
-
-      // Get the attribute name, could be xmlns:por or xmlns:col. Default to xmlns:por
-      attrName = "xmlns:por"
+      // The formatId is the same as the namespace URI.
+      var currentNamespace = this.defaults().formatId;
+    
+      // The NS attribute name could be xmlns:por or xmlns:col
       objectDOM.attributes.forEach(function(attr){
         if(attr.name.match(/^xmlns/)){
-          attrName = attr.name
+          if(attr.value !== currentNamespace){
+            var newObjectDOM = this.createXML().documentElement;
+            while (objectDOM.firstChild) {
+              newObjectDOM.appendChild(objectDOM.firstChild);
+            }
+            objectDOM = newObjectDOM
+          }
         }
-      });
-      // The formatId is the same as the namespace URI
-      var newNamespace = this.defaults().formatId;
-      $(objectDOM).removeAttr(attrName);
-      $(objectDOM).attr(attrName, newNamespace);
+      }, this);
 
       // Remove definition node if it exists in XML already
       $(objectDOM).find("definition").remove();
@@ -554,7 +556,6 @@ define(["jquery",
     */
     createXML: function() {
 
-      // TODO: which attributes should a new XML portal doc should have?
       var xmlString = "<col:collection xmlns:col=\"https://purl.dataone.org/collections-1.1.0\"></col:collection>",
           xmlNew = $.parseXML(xmlString),
           colNode = xmlNew.getElementsByTagName("col:collections")[0];

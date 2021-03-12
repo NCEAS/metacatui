@@ -433,15 +433,27 @@ define([
 
         },
 
-        /**            
+        /**
          * removeEmptyFilters - Remove filters from the collection that are
          * lacking fields, values, and in the case of a numeric filter,
-         * a min and max value.        
+         * a min and max value.
+         * @param {boolean} [recursive=false] - Set to true to also remove empty filters
+         * from within any and all nested filterGroups.
          */
-        removeEmptyFilters: function () {
+        removeEmptyFilters: function (recursive = false) {
           try {
             var toRemove = this.difference(this.getNonEmptyFilters());
             this.remove(toRemove);
+            if (recursive){
+              var nestedGroups = this.filter(function (filterModel) {
+                return filterModel.type == "FilterGroup" }
+              );
+              if(nestedGroups){
+                nestedGroups.forEach(function(filterGroupModel){
+                  filterGroupModel.get("filters").removeEmptyFilters(true)
+                })
+              }
+            }
           } catch (error) {
             console.log("Error removing empty Filter models from a Filters collection. " +
               "Error details: " + error

@@ -529,9 +529,7 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
               // Update each filter and append it to the DOM
               _.each(filterModels, function (filterModel) {
                 if (filterModel) {
-                  var filterModelSerialized = filterModel.updateDOM({
-
-                  });
+                  var filterModelSerialized = filterModel.updateDOM();
                 }
                 $(objectDOM).append(filterModelSerialized);
               });

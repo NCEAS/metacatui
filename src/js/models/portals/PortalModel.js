@@ -19,13 +19,9 @@ define(["jquery",
         "models/Search",
         "models/filters/FilterGroup",
         "models/Map",
-        // TODO: remove this:
-        // Portal XML for testing purposes only! WIP
-        "text!" + MetacatUI.root + "/components/test-portal.xml"
-        
     ],
     function($, _, Backbone, gmaps, uuid, Filters, SolrResults, FilterModel, PortalSectionModel, PortalVizSectionModel, PortalImage,
-        EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel, TestPortalXML) {
+        EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
         /**
          * @classdesc A PortalModel is a specialized collection that represents a portal,
          * including the associated data, people, portal descriptions, results and
@@ -58,7 +54,7 @@ define(["jquery",
                 return _.extend(CollectionModel.prototype.defaults(), {
                     id: null,
                     objectXML: null,
-                    formatId: "https://purl.dataone.org/portals-1.1.0",
+                    formatId: MetacatUI.appModel.get("portalEditorSerializationFormat"),
                     formatType: "METADATA",
                     type: "portal",
                     //Is true if the last fetch was sent with user credentials. False if not.
@@ -519,9 +515,6 @@ define(["jquery",
             */
             parse: function(response) {
 
-              // TODO: remove this dev code
-              // response = new DOMParser().parseFromString(TestPortalXML, "text/xml");
-
                 //Start the empty JSON object
                 var modelJSON = {},
                     modelRef = this,
@@ -895,7 +888,13 @@ define(["jquery",
                 // Serialize the collection elements
                 // ("name", "label", "description", "definition")
                 portalNode = this.updateCollectionDOM(portalNode);
+                xmlDoc = portalNode.getRootNode();
                 var $portalNode = $(portalNode);
+
+                // Set formatID
+                this.set("formatId",
+                  MetacatUI.appModel.get("portalEditorSerializationFormat") ||
+                  "https://purl.dataone.org/portals-1.1.0");
 
                 /* ==== Serialize portal logo ==== */
 
@@ -1414,11 +1413,13 @@ define(["jquery",
              *
             */
             createXML: function() {
+              var format = MetacatUI.appModel.get("portalEditorSerializationFormat") ||
+                "https://purl.dataone.org/portals-1.1.0";
+              var xmlString = "<por:portal xmlns:por=\"" + format + "\"></por:portal>";
+              var xmlNew = $.parseXML(xmlString);
+              var portalNode = xmlNew.getElementsByTagName("por:portal")[0];
 
-              // TODO: which attributes should a new XML portal doc should have?
-              var xmlString = "<por:portal xmlns:por=\"https://purl.dataone.org/portals-1.1.0\"></por:portal>",
-                  xmlNew = $.parseXML(xmlString);
-
+              this.set("ownerDocument", portalNode.ownerDocument);
               return(xmlNew);
             },
 
@@ -1795,8 +1796,9 @@ define(["jquery",
 
               var model = this;
 
-              // Ensure empty filters (rule groups) are removed
-              this.get("definitionFilters").removeEmptyFilters();
+              // Ensure empty filters (rule groups) are removed, including from
+              // within any nested filter groups
+              this.get("definitionFilters").removeEmptyFilters(true);
 
               // Validate before we try anything else
               if(!this.isValid()){
@@ -1813,7 +1815,7 @@ define(["jquery",
                   //If the label is taken
                   this.once("labelTaken", function(){
 
-                    //Stop listening to the label availablity
+                    //Stop listening to the label availability
                     this.stopListening("labelAvailable");
 
                     //Set that the label has been double-checked

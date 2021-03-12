@@ -632,6 +632,10 @@ define(['jquery', 'underscore', 'backbone'],
             value: this.get("exclude"),
           },
           {
+            nodeName: "fieldsOperator",
+            value: this.get("fieldsOperator"),
+          },
+          {
             nodeName: "matchSubstring",
             value: this.get("matchSubstring"),
           },
@@ -639,10 +643,6 @@ define(['jquery', 'underscore', 'backbone'],
             nodeName: "value",
             value: this.get("values"),
           },
-          {
-            nodeName: "fieldsOperator",
-            value: this.get("fieldsOperator"),
-          }
         ]
 
         filterData.forEach(function(element){
