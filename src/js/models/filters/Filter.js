@@ -277,8 +277,12 @@ define(['jquery', 'underscore', 'backbone'],
      * Builds a query string that represents this filter.
      *
      * @return {string} The query string to send to Solr
+     * @param {string} [groupLevelOperator] - "AND" or "OR". The operator used in the
+     * parent Filters collection to combine the filter query fragments together. If the
+     * group level operator is "OR" and this filter has exclude set to TRUE, then a
+     * positive clause is added.
      */
-    getQuery: function(){
+    getQuery: function(groupLevelOperator){
 
       //Get the values of this filter in Array format
       var values = this.get("values");
@@ -332,8 +336,11 @@ define(['jquery', 'underscore', 'backbone'],
       // then add a hyphen in front
       if( queryString && this.get("exclude") ){
         queryString = "-" + queryString;
-        if(this.requiresPositiveClause()){
+        if (this.requiresPositiveClause(groupLevelOperator)){
           queryString = queryString + "%20AND%20*:*";
+          if (groupLevelOperator && groupLevelOperator === "OR"){
+            queryString = "(" + queryString + ")"
+          }
         }
       }
 
@@ -356,10 +363,14 @@ define(['jquery', 'underscore', 'backbone'],
      * the end of the query.
      * @see {@link https://github.com/NCEAS/metacatui/issues/1600}
      * @see {@link https://cwiki.apache.org/confluence/display/SOLR/NegativeQueryProblems}
+     * @param {string} [groupLevelOperator] - "AND" or "OR". The operator used in the
+     * parent Filters collection to combine the filter query fragments together. If the
+     * group level operator is "OR" and this filter has exclude set to TRUE, then a
+     * positive clause is required.
      * @return {boolean} returns true of this Filter needs a positive clause, false
      * otherwise
      */
-    requiresPositiveClause: function(){
+    requiresPositiveClause: function (groupLevelOperator){
 
       try {
 
@@ -374,6 +385,11 @@ define(['jquery', 'underscore', 'backbone'],
         }
         // If this Filter is the only one in the group, assume it needs a positive clause
         if(this.collection.length === 1){
+          return true
+        }
+        // If this filter is being "OR"'ed together with other filters, then assume it
+        // needs the additional clause.
+        if (groupLevelOperator && groupLevelOperator === "OR"){
           return true
         }
         // Get all of the other filters in the same collection that are not ID filters.

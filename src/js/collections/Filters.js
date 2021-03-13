@@ -274,8 +274,10 @@ define([
   
             //For each Filter in this group, get the query string
             _.each(filterModels, function (filterModel) {
-              //Get the Solr query string from this model
-              var filterQuery = filterModel.getQuery();
+              // Get the Solr query string from this model. Pass on the group operator so
+              // that we can detect whether this filter query needs a positive clause in
+              // case it has exclude set to true.
+              var filterQuery = filterModel.getQuery(operator);
               //Add the filter query string to the overall array
               if (filterQuery && filterQuery.length > 0) {
                 groupQueryFragments.push(filterQuery);
@@ -477,12 +479,14 @@ define([
         },
 
         /**            
-         * replaceModel - Remove a Filter from the Filters collection
-         * silently, and replace it with a new model.
-         *              
+         * replaceModel - Remove a Filter from the Filters collection silently, and
+         * replace it with a new model.
+         *
          * @param  {Filter} model    The model to replace
-         * @param  {object} newAttrs Attributes for the replacement model. Use the filterType attribute to replace with a different type of Filter.
-         * @return {Filter}          Returns the replacement Filter model, which is already part of the Filters collection.
+         * @param  {object} newAttrs Attributes for the replacement model. Use the
+         * filterType attribute to replace with a different type of Filter.
+         * @return {Filter}          Returns the replacement Filter model, which is
+         * already part of the Filters collection.
          */
         replaceModel: function (model, newAttrs) {
           try {
@@ -500,11 +504,13 @@ define([
         },
 
         /**            
-         * visibleIndexOf - Get the index of a given model, excluding any
-         * filters that are marked as invisible.
-         *              
-         * @param  {Filter|BooleanFilter|NumericFilter|DateFilter} model The filter model for which to get the visible index
-         * @return {number} An integer representing the filter model's position in the list of visible filters.
+         * visibleIndexOf - Get the index of a given model, excluding any filters that are
+         * marked as invisible.
+         *
+         * @param  {Filter|BooleanFilter|NumericFilter|DateFilter} model The filter model
+         * for which to get the visible index
+         * @return {number} An integer representing the filter model's position in the
+         * list of visible filters.
          */
         visibleIndexOf: function (model) {
           try {
