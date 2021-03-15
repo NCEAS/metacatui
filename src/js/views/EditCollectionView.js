@@ -27,6 +27,12 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     type: "EditCollection",
 
     /**
+     * A reference to the parent editor view, if there is one
+     * @type {PortalEditorView}
+     */
+    editorView: undefined,
+
+    /**
     * The HTML tag name to use for this view's element
     * @type {string}
     */
@@ -149,12 +155,6 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         helpText: helpText
       }));
       
-      // Remove this when the Query Builder is no longer new:
-      this.$el
-        .find(".edit-collection-title")
-        .append($('<span class="new-icon" style="margin-left:10px; font-size:1rem; line-height: 25px;"><i class="icon icon-star icon-on-right"></i> NEW </span>'));
-        // .append($('<span class="badge badge-info d1_pill d1_pill--primary" style="margin-left:10px">NEW!</span>'));
-
       // Make sure that we have a series ID before we render the Data Catalog
       // View With Filters. For new portals, we generate and reserve a series ID
       // and use it to add an isPartOf filter to the portal model. This takes time,
@@ -225,7 +225,8 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         // data catalog view. With the Query Builder view, they are not needed.
         // Otherwise, the defaultFilterGroups will be added to the Query Builder
         createFilterGroups: function(){ return },
-        addAnnotationFilter: function(){ return }
+        addAnnotationFilter: function(){ return },
+        editorView: this.editorView
       });
 
       //Render the view and insert it into the page

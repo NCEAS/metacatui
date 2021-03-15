@@ -1,10 +1,14 @@
 define(['underscore',
         'jquery',
         'backbone',
+        "models/filters/FilterGroup",
         "views/portals/editor/PortEditorSectionView",
         "views/EditCollectionView",
-        "text!templates/portals/editor/portEditorData.html"],
-function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
+        "views/filters/FilterGroupsView",
+        "text!templates/portals/editor/portEditorData.html",
+      ],
+function( _, $, Backbone, FilterGroup, PortEditorSectionView, EditCollectionView,
+  FilterGroupsView, Template ){
 
   /**
   * @class PortEditorDataView
@@ -32,6 +36,12 @@ function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
     className: PortEditorSectionView.prototype.className + " port-editor-data",
 
     /**
+     * A reference to the parent editor view
+     * @type {PortalEditorView}
+     */
+    editorView: undefined,
+
+    /**
     * The id attribute of the view element
     * @param {string}
     */
@@ -56,6 +66,14 @@ function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
     editCollectionViewContainer: ".edit-collection-container",
 
     /**
+    * A jQuery selector for the element that the FilterGroupsView editor should be
+    * inserted into
+    * @type {string}
+    * @since 2.15.0
+    */
+    editFilterGroupsViewContainer: ".edit-filter-groups-container",
+
+    /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
@@ -74,10 +92,8 @@ function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
-
       //Call the superclass initialize() function
-      PortEditorSectionView.prototype.initialize();
-
+      PortEditorSectionView.prototype.initialize.call(this, options);
     },
 
     /**
@@ -90,10 +106,29 @@ function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
 
       // render EditCollectionView
       var editCollectionView = new EditCollectionView({
-        model: this.model
+        model: this.model,
       });
       this.$(this.editCollectionViewContainer).html(editCollectionView.el);
       editCollectionView.render();
+
+      // render the view the edit the custom portal search filters
+      // TODO: only render the filterGroupsView if there is a data collection already?
+
+      // Make sure there is at least one empty filter group view to render
+      if (!this.model.get("filterGroups") || this.model.get("filterGroups").length == 0){
+        this.model.set("filterGroups", [new FilterGroup({
+          label: "",
+          isUIFilterType: true
+        })])
+      }
+      
+      var filterGroupsView = new FilterGroupsView({
+        filterGroups: this.model.get("filterGroups"),
+        edit: true,
+        editorView: this.editorView
+      });
+      this.$(this.editFilterGroupsViewContainer).html(filterGroupsView.el);
+      filterGroupsView.render();
 
       //Save a reference to this view
       this.$el.data("view", this);

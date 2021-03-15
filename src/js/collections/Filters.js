@@ -492,14 +492,14 @@ define([
           try {
             var index = this.indexOf(model),
               oldModelId = model.cid;
+            this.remove(oldModelId, { silent: true });
             var newModel = this.add(
               newAttrs,
               { at: index }
             );
-            this.remove(oldModelId, { silent: true });
             return newModel;
           } catch (e) {
-            console.log("Failed to replace a Filter model in a Filters collection, error message: " + e);
+            console.log("Failed to replace a Filter model in a Filters collection, " + e);
           }
         },
 

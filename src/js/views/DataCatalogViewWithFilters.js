@@ -49,6 +49,12 @@ define(["jquery",
             template: _.template(template),
 
             /**
+             * A reference to the PortalEditorView
+             * @type {PortalEditorView}
+             */
+            editorView: undefined,
+
+            /**
             * The sort order for the Solr query
             * @type {string}
             */
@@ -244,7 +250,8 @@ define(["jquery",
                 filterGroups: filterGroups,
                 filters: this.searchModel.get("filters"),
                 vertical: true,
-                parentView: this
+                parentView: this,
+                editorView: this.editorView
               });
 
               //Add the FilterGroupsView element to this view

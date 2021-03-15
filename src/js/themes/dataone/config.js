@@ -54,6 +54,7 @@ MetacatUI.AppConfig = Object.assign({
   dataonePlusPreviewMode: true,
   portalLimit: 5,
   portalInfoURL: "https://dataone.org/plus",
+  portalSearchFiltersInfoURL: "https://dataone.org/custom-search",
   portalDefaults: {
     sections: [
       { label: "About",

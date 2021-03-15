@@ -133,7 +133,7 @@ function(_, $, Backbone, Sortable, Portal, PortalSection,
     sortableLinksSelector: ">li:not(.unsortable)",
 
     /**
-    * A classs name for the handles on tabs that the user can drag to re-order
+    * A class name for the handles on tabs that the user can drag to re-order
     * @type {string}
     */
     handleClass: "handle",
@@ -241,7 +241,7 @@ function(_, $, Backbone, Sortable, Portal, PortalSection,
             if(aIndex === -1){
               return -1
             }
-            // Sort backwards because we use preprend
+            // Sort backwards because we use prepend
             return bIndex - aIndex;
           })
           // Rearrange the links in the DOM
@@ -254,7 +254,7 @@ function(_, $, Backbone, Sortable, Portal, PortalSection,
         console.log("Error re-arranging tabs according to the pageOrder option. Error message: " + error)
       }
 
-      // Initialize usser-controlled tab re-ordering
+      // Initialize user-controlled tab re-ordering
       var sortable = Sortable.create(linksContainer, {
         direction: 'horizontal',
         easing: "cubic-bezier(1, 0, 0, 1)",
@@ -421,7 +421,8 @@ function(_, $, Backbone, Sortable, Portal, PortalSection,
         // Render a PortEditorDataView and corresponding tab
         var dataView = new PortEditorDataView({
           model: this.model,
-          uniqueSectionLabel: "Data"
+          uniqueSectionLabel: "Data",
+          editorView: this.editorView
         });
 
         //Save a reference to this view

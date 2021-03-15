@@ -581,8 +581,8 @@ footer .logos a:hover, a:focus{
   line-height: 1.3em;
 }
 
-.Portal.Editor #Navbar .#main-nav nav,
-.PortalView #Navbar .#main-nav nav{
+.Portal.Editor #Navbar #main-nav nav,
+.PortalView #Navbar #main-nav nav{
   margin-bottom: 0px;
 }
 
@@ -620,7 +620,7 @@ footer .logos a:hover, a:focus{
 }
 .port-editor-section svg .theme-accent-fill{
 	fill: #3ad29f
-},
+}
 
 /* EDITOR
 ----------------------- */
@@ -1849,7 +1849,7 @@ MDQ items
 
 /* Filter views
 -------------------------------------------------- */
-.filter-groups .filter .btn:hover {
+.filter-groups .filter .btn:not(.btn-filter-editor):hover {
     background-color: #e6e6e6;
     color: #333;
 }
@@ -2434,8 +2434,7 @@ MDQ items
 
 
 /* -----  CSS FOR emlparser -----
------------------------------------------------- */
-
+------------------------------------------------
  *	  Color Scheme:
  *    dark blue:                  #003366
  *    aqua blue:                  #0066CC
@@ -2926,7 +2925,7 @@ iframe classes
 /********************** GRID *******************************/
 
 .grid {
-  margin: 0 0 $40px 0;
+  margin: 0 0 40px 0;
 }
 .grid:after {
     content: "";
@@ -2936,10 +2935,10 @@ iframe classes
 
 [class*='col-'] {
   float: left;
-  padding-right: $40px;
+  padding-right: 40px;
   display: block;
 }
-.grid &:last-child {
+.grid :last-child {
   padding-right: 0;
 }
 .col-2-3 {

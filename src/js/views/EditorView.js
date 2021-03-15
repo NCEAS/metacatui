@@ -63,9 +63,9 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     events: {
       "click #save-editor" : "save",
       "click .access-policy-control" : "showAccessPolicyModal",
-      "keypress input" : "showControls",
-      "keypress textarea" : "showControls",
-      "keypress [contenteditable]" : "showControls",
+      "keypress input:not(.ignore-changes)" : "showControls",
+      "keypress textarea:not(.ignore-changes)" : "showControls",
+      "keypress [contenteditable]:not(.ignore-changes)" : "showControls",
       "click .image-uploader" : "showControls",
       "change .access-policy-view" : "showControls",
       "click .access-policy-view .remove" : "showControls"

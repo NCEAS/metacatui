@@ -20,8 +20,9 @@ define(["jquery",
         "models/filters/FilterGroup",
         "models/Map",
     ],
-    function($, _, Backbone, gmaps, uuid, Filters, SolrResults, FilterModel, PortalSectionModel, PortalVizSectionModel, PortalImage,
-        EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
+    function($, _, Backbone, gmaps, uuid, Filters, SolrResults, FilterModel,
+        PortalSectionModel, PortalVizSectionModel, PortalImage,
+        EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel ) {
         /**
          * @classdesc A PortalModel is a specialized collection that represents a portal,
          * including the associated data, people, portal descriptions, results and
@@ -71,6 +72,7 @@ define(["jquery",
                     filterGroups: [],
                     createSeriesId: true, //If true, a seriesId will be created when this object is saved.
                     // The portal document options may specify section to hide
+                    edit: false, // Set to true if this model is being used in a portal editor view
                     hideMetrics: null,
                     hideData: null,
                     hideMembers: null,
@@ -719,8 +721,13 @@ define(["jquery",
                   });
                   modelJSON.filterGroups.push(filterGroupModel);
 
-                  // Add the Filters from this FilterGroup to the portal's Search model
-                  allFilters.add(filterGroupModel.get("filters").models);
+                  // Add the Filters from this FilterGroup to the portal's Search model,
+                  // unless this portal model is being edited. Then we only want the
+                  // definition filters to be included in the search model.
+                  if (!modelRef.get("edit")){
+                    allFilters.add(filterGroupModel.get("filters").models);
+                  }
+                  
 
                 });
 
