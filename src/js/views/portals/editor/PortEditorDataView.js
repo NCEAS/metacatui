@@ -117,7 +117,7 @@ function( _, $, Backbone, FilterGroup, PortEditorSectionView, EditCollectionView
       // Make sure there is at least one empty filter group view to render
       if (!this.model.get("filterGroups") || this.model.get("filterGroups").length == 0){
         this.model.set("filterGroups", [new FilterGroup({
-          label: "",
+          label: "Search",
           isUIFilterType: true
         })])
       }

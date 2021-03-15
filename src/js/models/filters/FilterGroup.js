@@ -434,6 +434,12 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
                   this.set(attr, this.defaults()[attr]);
                 }
               }, this);
+              // If this filter group is not empty, and it's a UI Filter Group, then
+              // the group needs a label to be valid.
+              if(!this.isEmpty() && !this.get("label")){
+                // Set a generic label instead of returning an error
+                this.set("label", "Search")
+              }
             }
             
             // There must be at least one filter or filter group within each group,
@@ -495,6 +501,12 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
         updateDOM: function(options){
 
           try {
+
+            // Don't serialize an empty filter group
+            if(this.isEmpty()){
+              return null
+            }
+
             // Clone the DOM if it exists
             var objectDOM = this.get("objectDOM");
 
@@ -504,7 +516,6 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
               // Create an XML filterGroup or definition element from scratch
               if(!objectDOM){
                 var name = this.get("nodeName");
-                console.log(name);
                 objectDOM = new DOMParser().parseFromString(
                   "<" + name + "></" + name + ">",
                   "text/xml"

@@ -1290,18 +1290,22 @@ define(["jquery",
 
                   filterGroupSerialized = filterGroup.updateDOM();
 
-                  //Add the new element to the XMLDocument
-                  xmlDoc.adoptNode(filterGroupSerialized);
+                  if (filterGroupSerialized){
+                    //Add the new element to the XMLDocument
+                    xmlDoc.adoptNode(filterGroupSerialized);
 
-                  // Insert new node at correct position
-                  var insertAfter = model.getXMLPosition(portalNode, "filterGroup");
+                    // Insert new node at correct position
+                    var insertAfter = model.getXMLPosition(portalNode, "filterGroup");
 
-                  if(insertAfter){
-                    insertAfter.after(filterGroupSerialized);
+                    if (insertAfter) {
+                      insertAfter.after(filterGroupSerialized);
+                    }
+                    else {
+                      portalNode.appendChild(filterGroupSerialized);
+                    }
                   }
-                  else{
-                    portalNode.appendChild(filterGroupSerialized);
-                  }
+
+                  
                 });
 
                 /* ====  Remove duplicates ==== */
@@ -1803,6 +1807,11 @@ define(["jquery",
 
               var model = this;
 
+              // Remove empty filters from the custom portal search filters.
+              this.get("filterGroups").forEach(function(filterGroupModel){
+                filterGroupModel.get("filters").removeEmptyFilters();
+              }, this);
+
               // Ensure empty filters (rule groups) are removed, including from
               // within any nested filter groups
               this.get("definitionFilters").removeEmptyFilters(true);
@@ -1816,7 +1825,6 @@ define(["jquery",
                 return false;
               }
               else{
-
                 //Double-check that the label is available, if it was changed
                 if( (this.isNew() || this.get("originalLabel") != this.get("label")) && !this.get("labelDoubleChecked") ){
                   //If the label is taken

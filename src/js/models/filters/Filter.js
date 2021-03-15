@@ -560,8 +560,22 @@ define(['jquery', 'underscore', 'backbone'],
             return (typeof num === "undefined") || (!num && num !== 0);
           }
         );
-            
+
+        // Values aren't required for UI filter types. Labels, icons, and descriptions are
+        // available.
+        if(this.get("isUIFilterType")){
+          noUIVals = _.every(["label", "icon", "description"], function(attrName){
+            var setValue = this.get(attrName);
+            var defaultValue = this.defaults()[attrName];
+            return !setValue || (setValue === defaultValue)
+          }, this)
+          return noUIVals && noFields && fieldsEmpty && noMinNoMax
+        }
+        
+        // For regular search filters, just a field and some sort of search term/value is
+        // required
         return noFields && fieldsEmpty && noValues && valuesEmpty && noMinNoMax
+
       } catch (e) {
         console.log("Failed to check if a Filter is empty, error message: " + e);
       }
