@@ -496,28 +496,12 @@ define(["jquery",
       // Remove definition node if it exists in XML already
       $(objectDOM).find("definition").remove();
 
-      // Create new definition element
-      var definitionSerialized = objectDOM.ownerDocument.createElement("definition");
-
       // Get the filters that are currently applied to the search.
-      var filtersToSerialize = this.get("definitionFilters");
-
-      // Iterate through the filter models
-      filtersToSerialize.each(function(filterModel){
-
-        // updateDOM of portal definition filters, then append to <definition>
-        var filterSerialized = filterModel.updateDOM();
-
-        //Add the filter node to the XMLDocument
-        objectDOM.ownerDocument.adoptNode(filterSerialized);
-
-        //Append the filter node to the definition node
-        definitionSerialized.appendChild(filterSerialized);
-
-      });
+      var definitionSerialized = this.get("definition").updateDOM();
+      objectDOM.ownerDocument.adoptNode(definitionSerialized);
 
       //If at least one filter was serialized, add the <definition> node
-      if( definitionSerialized.childNodes.length ){
+      if (definitionSerialized.childNodes.length) {
         $(objectDOM).prepend(definitionSerialized);
       }
 
