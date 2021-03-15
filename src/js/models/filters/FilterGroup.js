@@ -281,8 +281,7 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
               string += newFragment
               return string
             }
-            // Helper function that wraps a string in parentheses if it doesn't already
-            // have them, and only if the string has length.
+            // Helper function that wraps a string in parentheses
             var wrapInParentheses = function(string){
               if (!string || (string && string.trim().length == 0)) {
                 return string
@@ -294,7 +293,7 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
               // if (alreadyWrapped) {
               //   return string
               // }
-              
+
               return "(" + string + ")"
             }
 

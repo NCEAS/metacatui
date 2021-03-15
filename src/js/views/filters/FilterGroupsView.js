@@ -227,8 +227,7 @@ define(['jquery', 'underscore', 'backbone',
       appliedFiltersContainer.append(headerText, appliedFiltersEl);
       this.$(".filters-header").append(appliedFiltersContainer);
 
-      //Get all the nonNumeric filter models. Reject nested filterGroups for now.
-      // TODO: support nested filterGroups in this view.
+      //Get all the nonNumeric filter models. Reject nested filterGroups.
       var nonNumericFilters = this.filters.reject(function(filterModel){
         return (["FilterGroup", "NumericFilter", "DateFilter"].includes(filterModel.type));
       });
