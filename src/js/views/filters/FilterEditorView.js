@@ -620,6 +620,8 @@ define(['jquery', 'underscore', 'backbone',
 
             // Set the new fields
             newModelAttrs.fields = _.clone(this.fieldInput.selected);
+            // set the new fieldsOperator
+            newModelAttrs.fieldsOperator = this.fieldInput.separatorText;
 
             delete newModelAttrs.objectDOM
             delete newModelAttrs.cid

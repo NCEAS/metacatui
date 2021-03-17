@@ -951,13 +951,25 @@ define([
               selected: selectedFields,
               excludeFields: this.excludeFields,
               addFields: this.specialFields,
-              separatorText: this.model.get("fieldsOperator")
+              separatorText: this.model.get("fieldsOperator"),
             });
             this.fieldSelect.$el.addClass(this.fieldsClass);
             this.el.append(this.fieldSelect.el);
             this.fieldSelect.render();
 
-            // Update model when the values change
+            // Update the model when the fieldsOperator changes
+            this.stopListening(
+              this.fieldSelect,
+              'separatorChanged'
+            );
+            this.listenTo(
+              this.fieldSelect,
+              'separatorChanged',
+              function(newOperator){
+                this.model.set("fieldsOperator", newOperator)
+              }
+            );
+            // Update model when the selected fields change
             this.stopListening(
               this.fieldSelect,
               'changeSelection'
@@ -1562,7 +1574,7 @@ define([
             }
 
             // Make sure the listeners set below are not set multiple times
-            this.stopListening( view.valueSelect, 'changeSelection inputFocus' );
+            this.stopListening(view.valueSelect, 'changeSelection inputFocus separatorChanged');
 
             // Update model when the values change - note that the date & numeric filter
             // views do not trigger a 'changeSelection' event, (because they are not based
@@ -1571,6 +1583,15 @@ define([
               view.valueSelect,
               'changeSelection',
               this.handleValueChange
+            );
+
+            // Update the model when the operator changes
+            this.listenTo(
+              view.valueSelect,
+              'separatorChanged',
+              function (newOperator) {
+                this.model.set("operator", newOperator)
+              }
             );
 
             // Show a message that reminds the user that capitalization matters when they
