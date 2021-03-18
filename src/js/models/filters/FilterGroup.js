@@ -46,6 +46,9 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
          * query but will act in the "background", like a default filter. It will not
          * appear in the Query Builder or other UIs. If this is invisible, then the
          * "isInvisible" property on sub-filters will be ignored.
+         * @property {boolean} mustMatchIds - If the search results must always match one
+         * of the ids in the id filters, then the id filters will be added to the query
+         * with an AND operator.
         */
         defaults: function () {
           return {
@@ -59,6 +62,7 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
             isUIFilterType: false,
             nodeName: "filterGroup",
             isInvisible: false,
+            mustMatchIds: false
             // TODO: support options for UIFilterGroupType 1.1.0 
             // options: [],
           }
@@ -104,12 +108,6 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
             this.set("catalogSearch", true)
           }
 
-          // TODO: support mustMatchIds for queries built from filter groups, see Filters
-          // collection
-          // if(attributes.mustMatchIds){
-          //   this.set("mustMatchIds", true)
-          // }
-
           // Set the attributes on this model by parsing XML if some was provided,
           // or by using any attributes provided to this model
           if (attributes.objectDOM) {
@@ -133,6 +131,11 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
           // Start a new Filters collection if no filters were provided
           if(!this.get("filters")){
             this.set("filters", new Filters(null, newFiltersOptions))
+          }
+
+          if (attributes.mustMatchIds) {
+            this.set("mustMatchIds", true);
+            this.get("filters").mustMatchIds = true;
           }
 
           // The operator must be AND or OR
@@ -344,7 +347,8 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
               queryString = wrapInParentheses(queryString)
               // 2. ( mainQuery OR idFilterQuery )
               if (idFilterQuery.trim().length){
-                queryString = addQueryFragment(queryString, idFilterQuery, "OR")
+                idOperator = this.get("mustMatchIds") ? "AND" : "OR"
+                queryString = addQueryFragment(queryString, idFilterQuery, idOperator)
                 queryString = wrapInParentheses(queryString)
               }
               // 3. -( mainQuery OR idFilterQuery )

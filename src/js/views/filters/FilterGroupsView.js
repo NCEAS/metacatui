@@ -89,6 +89,12 @@ define(['jquery', 'underscore', 'backbone',
       this.filterGroups = options.filterGroups || new Array();
       this.filters = options.filters || null;
 
+      // For portal search filters, ID filters should be added to the query with an AND
+      // operator, so that ID searches search *within* the definition collection.
+      if(this.filters){
+        this.filters.mustMatchIds = true
+      }
+
       if( options.vertical == true ){
         this.vertical = true;
       }
