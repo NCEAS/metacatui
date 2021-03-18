@@ -2064,6 +2064,7 @@ i.catalog-metric-icon {
     box-sizing: border-box;
     position: relative;
     max-height: 390px;
+		justify-content: center;
 }
 .metric-chart-loading .message{
 	text-align: center;
@@ -5355,6 +5356,9 @@ address.email-container:before{
     width: auto;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+.quality-report-view .metric-chart-loading {
+	margin: 50px auto;
 }
 .new-icon{
   color: #d2a908;
