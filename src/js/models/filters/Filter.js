@@ -77,9 +77,14 @@ define(['jquery', 'underscore', 'backbone'],
     /**
     * Creates a new Filter model
     */
-    initialize: function(){
+    initialize: function(attributes){
+
       if( this.get("objectDOM") ){
         this.set( this.parse(this.get("objectDOM")) );
+      }
+
+      if (attributes && attributes.isUIFilterType){
+        this.set("isUIFilterType", true)
       }
       
       //If this is an isPartOf filter, then add a label and description. Make it invisible
@@ -623,10 +628,14 @@ define(['jquery', 'underscore', 'backbone'],
             filterOptionsNode;
 
         if( typeof objectDOM == "undefined" || !objectDOM || !$(objectDOM).length ){
+          // Node name differs for different filters, all of which use this function
+          var nodeName = this.get("nodeName") || "filter";
           // Create an XML filter element from scratch
-          var objectDOM = new DOMParser().parseFromString("<" + this.get("nodeName") +
-                          "></" + this.get("nodeName") + ">", "text/xml");
-          var $objectDOM = $(objectDOM).find(this.get("nodeName"));
+          var objectDOM = new DOMParser().parseFromString(
+            "<" + nodeName + "></" + nodeName + ">",
+            "text/xml"
+            );
+          var $objectDOM = $(objectDOM).find(nodeName);
         }
         else{
           objectDOM = objectDOM.cloneNode(true);
@@ -730,44 +739,37 @@ define(['jquery', 'underscore', 'backbone'],
 
       try{
 
-        //If a filterOptions XML node was not given, create one
-        if( typeof filterOptionsNode == "undefined" || !filterOptionsNode.length ){
+        if (typeof filterOptionsNode == "undefined" || !filterOptionsNode.length) {
           var filterOptionsNode = new DOMParser().parseFromString("<filterOptions></filterOptions>", "text/xml");
-          var $filterOptionsNode = $(filterOptionsNode).find("filterOptions");
+          var filterOptionsNode = $(filterOptionsNode).find("filterOptions")[0];
         }
-        else{
-          //Convert the XML node into a jQuery object
-          var $filterOptionsNode = $(filterOptionsNode);
-        }
+        //Convert the XML node into a jQuery object
+        var $filterOptionsNode = $(filterOptionsNode);
 
         //Get the first option element
         var firstOptionNode = $filterOptionsNode.children("option").first();
 
-        // The following values are for UIFilterOptionsType
-        var optionsData = {};
-        optionsData.placeholder = this.get("placeholder");
-        optionsData.icon = this.get("icon");
-        optionsData.description = this.get("description");
-
         var xmlDocument;
-
-        if( filterOptionsNode.length ){
+        if (filterOptionsNode.length && filterOptionsNode[0]) {
           xmlDocument = filterOptionsNode[0].ownerDocument;
         }
-        if(!xmlDocument){
+        if (!xmlDocument) {
           xmlDocument = filterOptionsNode.ownerDocument;
         }
-        if(!xmlDocument){
+        if (!xmlDocument) {
           xmlDocument = filterOptionsNode;
         }
 
-        //Update the text value of existing
-        _.map(optionsData, function(value, nodeName){
+        // Update the text value of UI nodes. The following values are for
+        // UIFilterOptionsType
+        ["placeholder", "icon", "description"].forEach(function(nodeName){
+
           //Remove the existing node, if it exists
           $filterOptionsNode.children(nodeName).remove();
 
-          //If there is a value set on the model for this attribute, then create an XML
+          // If there is a value set on the model for this attribute, then create an XML
           // node for this attribute and set the text value
+          var value = this.get(nodeName);
           if( value ){
             var newNode = $(xmlDocument.createElement(nodeName)).text(value);
 
@@ -776,7 +778,7 @@ define(['jquery', 'underscore', 'backbone'],
             else
               $filterOptionsNode.append(newNode);
           }
-        });
+        }, this);
 
         //If no options were serialized, then return an empty string
         if( !$filterOptionsNode.children().length ){
@@ -787,6 +789,8 @@ define(['jquery', 'underscore', 'backbone'],
         }
       }
       catch(e){
+        console.log("Error updating the FilterOptions DOM in a Filter model, "+
+        "error details: ", e);
         return "";
       }
 

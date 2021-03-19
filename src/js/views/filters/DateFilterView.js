@@ -129,7 +129,6 @@ define(['jquery', 'underscore', 'backbone',
       this.model.set('max', maxVal);
 
       //Update the UI slider to match the new min and max
-      // Setter
       this.$( ".slider" ).slider( "option", "values", [ minVal, maxVal ] );
 
       //Send this event to Google Analytics

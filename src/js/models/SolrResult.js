@@ -114,8 +114,10 @@ define(['jquery', 'underscore', 'backbone'],
 			//The list of formatIds that are images
 			var pdfIds = ["application/pdf"];
 			var annotationIds = ["http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html"];
-      var collectionIds = ["https://purl.dataone.org/collections-1.0.0"];
-      var portalIds = ["https://purl.dataone.org/portals-1.0.0"];
+			var collectionIds = ["https://purl.dataone.org/collections-1.0.0",
+				"https://purl.dataone.org/collections-1.1.0"];
+			var portalIds = ["https://purl.dataone.org/portals-1.0.0",
+				"https://purl.dataone.org/portals-1.1.0"];
 
 			//Determine the type via provONE
 			var instanceOfClass = this.get("prov_instanceOfClass");

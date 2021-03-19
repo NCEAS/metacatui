@@ -261,9 +261,6 @@ define(['jquery', 'underscore', 'backbone',
         }
         var modelAttribute = inputEl.dataset.category,
           newValue = inputEl.value;
-        if (inputEl.nodeName === "INPUT") {
-
-        }
         if (inputEl.type === "number") {
           newValue = parseInt(newValue)
         }

@@ -694,6 +694,8 @@ define(['jquery', 'underscore', 'backbone',
                 newFilterType
               )
             }
+            // All search filter models are UI Filter Type
+            newModelAttrs.isUIFilterType = true
 
             // If a UI editor has already been created for this Filter Type, then just
             // update the pre-existing draft model. This way, if a user has already
@@ -705,9 +707,10 @@ define(['jquery', 'underscore', 'backbone',
               if (this.model.type == newFilterType) {
                 uiBuilder.draftModel = this.model.clone()
               } else {
-                uiBuilder.draftModel = uiBuilder.modelFunction();
+                uiBuilder.draftModel = uiBuilder.modelFunction({ isUIFilterType: true });
               }
             }
+            
             if (Object.keys(newModelAttrs).length) {
               uiBuilder.draftModel.set(newModelAttrs)
             }

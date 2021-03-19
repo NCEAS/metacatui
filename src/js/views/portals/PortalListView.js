@@ -307,7 +307,7 @@ define(["jquery",
                           .attr("alt", searchResult.get("title") + " logo");
               }
 
-              //Create an Edit buttton
+              //Create an Edit button
               var buttons = "";
               if(Object.values(MetacatUI.uiRouter.routes).includes("renderPortalEditor")){
 
