@@ -578,7 +578,7 @@ define(["jquery",
     */
     getQuery: function(){
 
-      return this.get("searchModel").get("filters").getQuery();
+      return this.get("definition").getQuery();
 
     },
 
