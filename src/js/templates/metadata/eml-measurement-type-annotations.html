@@ -1,9 +1,6 @@
 <% _.each(annotations, function(annotation) { %>
-  <% if (annotation.valueURI === notFoundURI) { %>
-    <span class="label label-info"><i class="icon-exclamation-sign"></i> I couldn't find the term I needed</span>
-  <% } else if (annotation.valueURI === notSpecificURI) { %>
-    <span class="label label-info"><i class="icon-meh"></i> I couldn't find a specific enough term</span>
-  <% } else { %>
+  <% if (annotation.valueURI !== notSpecificURI || annotation.valueURI !== notFoundURI) { %>
+    <div style="<%= annotation.shouldHide ? 'opacity: 0.5' : '' %>">
       <div class="annotation" data-html="true" title="" data-placement="bottom" data-content="<%= annotation.propertyLabel %>" data-context="<%= annotation.contextString %>" data-property-label="<%= annotation.propertyLabel %>" data-property-uri="<%= annotation.propertyURI %>" data-value-label="<%= annotation.valueLabel %>" data-value-uri="<%= annotation.valueURI %>" data-original-title="<%= annotation.valueLabel %>">
       <div class="annotation-property"><%= annotation.propertyLabel %></div>
       <div class="annotation-value"><%= annotation.valueLabel %></div>
@@ -11,5 +8,12 @@
         <i class="icon-remove-sign"></i>
       </div>
     </div>
-  <% } %>
+</div>
 <% }, this); %>
+
+<% if (nMeasurementTypes.length > 0) { %>
+  <label>
+    <input type="checkbox" class="notspecific" <%= isNonSpecific ? "checked" : "" %> />
+    The term I chose could have been more specific
+  </label>
+<% } %>

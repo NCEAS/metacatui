@@ -13,11 +13,9 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
       annotationsTemplate: _.template(EMLMeasurementTypeAnnotationsTemplate),
 
       events: {
-        "click .nav-tabs a" : "showTab",
-        "change input" : "updateModel",
         "click .remove": "handleRemove",
-        "click .notfound" : "handleMeasurementTypeNotFound",
-        "click .notspecific" : "handleMeasurementTypeNotSpecific"
+        "change .notfound" : "handleMeasurementTypeNotFound",
+        "change .notspecific" : "handleMeasurementTypeNotSpecific"
       },
 
       /**
@@ -111,15 +109,18 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
         var templateData = {
           notSpecificURI: this.notSpecificClass.uri,
           notFoundURI: this.notFoundClass.uri,
+          nMeasurementTypes: _.filter(filtered, function(anno) { return anno.get("propertyURI") === this.filterURI && !(anno.get("valueURI") === this.notFoundClass.uri || anno.get("valueURI") === this.notSpecificClass.uri)}, this),
+          isNonSpecific: _.filter(filtered, function(anno) { return anno.get("valueURI") === this.notSpecificClass.uri}, this).length >= 1,
           annotations: _.map(filtered, function(annotation) {
             return {
               propertyLabel: annotation.get("propertyLabel"),
               propertyURI: annotation.get("propertyURI"),
               valueLabel: annotation.get("valueLabel"),
               valueURI: annotation.get("valueURI"),
-              contextString: "This attribute"
+              contextString: "This attribute",
+              shouldHide: annotation.get("valueURI") === this.notSpecificClass.uri || annotation.get("valueURI") === this.notFoundClass.uri
             }
-          })
+          }, this)
         };
 
         this.$(".measurement-type-annotations").html(
@@ -157,18 +158,30 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
 
         var annotations = this.model.get("annotation");
 
-        // Replace if multiselect is false and we can find another
-        // MeasurementType annotation. Pushes otherwise.
-        if (!this.multiSelect) {
+        // Append if we're in multi-select or we're adding an annotation
+        // stating that the selected term is not specific enough
+        if (this.multiSelect || 
+            classId === this.notSpecificClass.uri) {
+          annotations.push(anno);
+        } else {
+          /**
+           * Remove first annotation matching `this.filterURI`
+           * 
+           * This is complicated because we don't want to remove non
+           * MeasurementType annotations. Otherwise, this would just be
+           * annotations = [anno]
+           */ 
           var findResult = _.findIndex(this.model.get("annotation"), function(annotation) {
-            return annotation.get("propertyURI") === this.filterURI
+            return annotation.get("propertyURI") === this.filterURI;
           }, this);
 
           if (findResult >= 0) {
             annotations.splice(findResult, 1);
-          }
+          }        
+
+          annotations.push(anno);
         }
-        annotations.push(anno);
+
         this.model.set("annotation", annotations);
         this.model.trickleUpChange();
 
@@ -202,54 +215,37 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
           return;
         }
 
-        var index = this.findAnnotationIndex(valueLabel, valueURI);
+        this.removeAnnotations(valueLabel, valueURI);
+      },
 
-        if (index < 0) {
-          return;
-        }
-
+      /**
+       * Remove a annotations by value
+       * 
+       * Removes all matching annotations with a matching valueLabel and
+       * valueURI
+       * 
+       * @param {string} valueLabel - The valueLabel of the annotation to remove
+       * @param {string} valueURI - The valueURI of the annotation to remove
+       */
+      removeAnnotations: function(valueLabel, valueURI) {
         // Remove by index now that we've found the right one
         var existing = this.model.get("annotation");
-        existing.splice(index, 1);
-        this.model.set("annotation", existing);
+
+        // Remove annotations matching the input
+        var filtered = _.reject(existing, function(anno) {
+          return anno.get("valueLabel") === valueLabel && anno.get("valueURI") === valueURI;
+        }, this);
+
+        // Remove notspecific / notfound 
+        filtered = _.reject(filtered, function(anno) {
+          return anno.get("propertyURI") === this.notFoundClass.uri || anno.get("propertyURI") === this.notSpecificClass.uri;
+        }, this);  
+
+        this.model.set("annotation", filtered);
         this.model.trickleUpChange();
 
         // Force a re-render
         this.renderAnnotations();
-      },
-
-      /**
-       * Find the index of the first annotation that matches the given values
-       *
-       * @param {string} valueLabel - The valueLabel to look for
-       * @param {string} valueURI - The valueURI to look for
-       *
-       * @return {number} -1 if not found, or the index otherwise
-       */
-      findAnnotationIndex: function(valueLabel, valueURI) {
-        var index = -1;
-        var annotations = this.model.get("annotation");
-
-        if (!annotations) {
-          return;
-        }
-
-        for (var i = 0; i < annotations.length; i++) {
-          var anno = annotations[i];
-
-          if (
-            anno.get("propertyLabel") == this.filterLabel &&
-            anno.get("propertyURI") == this.filterURI &&
-            anno.get("valueLabel") == valueLabel &&
-            anno.get("valueURI") == valueURI
-          ) {
-            index = i;
-
-            break;
-          }
-        }
-
-        return index;
       },
 
       /**
@@ -263,7 +259,13 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
        * @param {Event} e - The click event
        */
       handleMeasurementTypeNotFound: function(e) {
-        this.selectConcept(null, this.notFoundClass.uri, this.notFoundClass.label, null);
+        if (e.target.checked) {
+          this.selectConcept(null, this.notFoundClass.uri, this.notFoundClass.label, null);
+          this.$el.find(".measurement-type-browse").hide();
+        } else {
+          this.$el.find(".measurement-type-browse").show();
+          this.removeAnnotations(this.notFoundClass.label, this.notFoundClass.uri);
+        }
       },
 
       /**
@@ -278,7 +280,11 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
        * @param {Event} e - The click event
        */
       handleMeasurementTypeNotSpecific: function(e) {
-        this.selectConcept(null, this.notSpecificClass.uri, this.notSpecificClass.label, null);
+        if (e.target.checked) {
+          this.selectConcept(null, this.notSpecificClass.uri, this.notSpecificClass.label, null);
+        } else {
+          this.removeAnnotations(this.notSpecificClass.label, this.notSpecificClass.uri);
+        }
       }
     });
 
