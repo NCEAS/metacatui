@@ -2792,7 +2792,7 @@ section#user-citations {
 
 .measurement-type-browse-tree {
   border: 1px solid #ccc;
-  border-radius: 5px 0px 5px 5px;
+  border-radius: 5px;
   padding: 0.5rem;
   box-sizing: border-box;
 }
