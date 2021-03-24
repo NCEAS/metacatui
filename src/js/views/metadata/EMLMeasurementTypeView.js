@@ -144,7 +144,7 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
        * @param {string} prefLabel - The selected term's prefLabel
        * @param {Element} selectedNode - The clicked element
        */
-      selectConcept: function(event, classId, prefLabel, selectedNode) {
+      selectConcept: function(event, classId, prefLabel, selectedNode) {        
         var anno = new EMLAnnotation({
           propertyLabel: this.filterLabel,
           propertyURI: this.filterURI,
@@ -164,21 +164,8 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
             classId === this.notSpecificClass.uri) {
           annotations.push(anno);
         } else {
-          /**
-           * Remove first annotation matching `this.filterURI`
-           * 
-           * This is complicated because we don't want to remove non
-           * MeasurementType annotations. Otherwise, this would just be
-           * annotations = [anno]
-           */ 
-          var findResult = _.findIndex(this.model.get("annotation"), function(annotation) {
-            return annotation.get("propertyURI") === this.filterURI;
-          }, this);
-
-          if (findResult >= 0) {
-            annotations.splice(findResult, 1);
-          }        
-
+          // Remove any existing filtered annotations before pushing the new
+          this.removeAllFilteredAnnotations();
           annotations.push(anno);
         }
 
@@ -249,6 +236,26 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
       },
 
       /**
+       * Removes all filtered annotations
+       * 
+       * This is more convoluted than it needs to be but it works
+       * 
+       */
+      removeAllFilteredAnnotations: function() {
+        var existing = this.model.get("annotation");
+
+        filtered = _.reject(existing, function(anno) {
+          return anno.get("propertyURI") === this.filterURI
+        }, this);
+
+        this.model.set("annotation", filtered);
+        this.model.trickleUpChange();
+
+        // Force a re-render
+        this.renderAnnotations();
+      },
+
+      /**
        * Handle when the user can't find a class for their attribute
        *
        * This method isn't fantastic. We need a way to signify that the user
@@ -260,6 +267,7 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
        */
       handleMeasurementTypeNotFound: function(e) {
         if (e.target.checked) {
+          this.removeAllFilteredAnnotations();
           this.selectConcept(null, this.notFoundClass.uri, this.notFoundClass.label, null);
           this.$el.find(".measurement-type-browse").hide();
         } else {
