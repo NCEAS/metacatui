@@ -1,20 +1,11 @@
 <% _.each(annotations, function(annotation) { %>
-  <% if (!annotation.shouldHide) { %>
-    <div>
-      <div class="annotation" data-html="true" title="" data-placement="bottom" data-content="<%= annotation.propertyLabel %>" data-context="<%= annotation.contextString %>" data-property-label="<%= annotation.propertyLabel %>" data-property-uri="<%= annotation.propertyURI %>" data-value-label="<%= annotation.valueLabel %>" data-value-uri="<%= annotation.valueURI %>" data-original-title="<%= annotation.valueLabel %>">
-      <div class="annotation-property"><%= annotation.propertyLabel %></div>
-      <div class="annotation-value"><%= annotation.valueLabel %></div>
-      <div class="annotation-remove tooltip-this remove" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Remove this Measurement Type">
-        <i class="icon-remove-sign"></i>
-      </div>
+  <div>
+    <div class="annotation" data-html="true" title="" data-placement="bottom" data-content="<%= annotation.propertyLabel %>" data-context="<%= annotation.contextString %>" data-property-label="<%= annotation.propertyLabel %>" data-property-uri="<%= annotation.propertyURI %>" data-value-label="<%= annotation.valueLabel %>" data-value-uri="<%= annotation.valueURI %>" data-original-title="<%= annotation.valueLabel %>">
+    <div class="annotation-property"><%= annotation.propertyLabel %></div>
+    <div class="annotation-value"><%= annotation.valueLabel %></div>
+    <div class="annotation-remove tooltip-this remove" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Remove this Measurement Type">
+      <i class="icon-remove-sign"></i>
     </div>
-  <% } %>
+  </div>
 </div>
 <% }, this); %>
-
-<% if (nMeasurementTypes.length > 0) { %>
-  <label class="checkbox">
-    <input type="checkbox" class="notspecific" <%= isNonSpecific ? "checked" : "" %> />
-    The term I chose could have been more specific
-  </label>
-<% } %>
