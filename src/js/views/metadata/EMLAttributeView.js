@@ -4,10 +4,9 @@ define(['underscore', 'jquery', 'backbone',
         'models/metadata/eml211/EMLAttribute',
         'models/metadata/eml211/EMLMeasurementScale',
         'views/metadata/EMLMeasurementScaleView',
-        'views/metadata/EMLMeasurementTypeView',
         'text!templates/metadata/eml-attribute.html'],
 		function(_, $, Backbone, DataONEObject, EMLAttribute,
-			EMLMeasurementScale, EMLMeasurementScaleView, EMLMeasurementTypeView, EMLAttributeTemplate){
+			EMLMeasurementScale, EMLMeasurementScaleView, EMLAttributeTemplate){
 
         /**
         * @class EMLAttributeView
@@ -46,6 +45,7 @@ define(['underscore', 'jquery', 'backbone',
             },
 
             render: function(){
+              var viewRef = this;
 
             	var templateInfo = {
             			title: this.model.get("attributeName")? this.model.get("attributeName") : "Add New Attribute"
@@ -71,12 +71,16 @@ define(['underscore', 'jquery', 'backbone',
 
               // Measurement Type
               // Only shown when we have a BioPortal API key
-              if (MetacatUI.appModel.get("bioportalAPIKey")) {
-                var emlMeasurementTypeView = new EMLMeasurementTypeView({
-                  model: this.model
+              if (MetacatUI.appModel.get("enableMeasurementTypeView") && MetacatUI.appModel.get("bioportalAPIKey")) {
+                // Dynamically require since this view is feature-flagged off by
+                // default and requires an API key
+                require(["views/metadata/EMLMeasurementTypeView"], function(EMLMeasurementTypeView){
+                  var view = new EMLMeasurementTypeView({
+                    model: viewRef.model
+                  });
+                  view.render();
+                  viewRef.$(".measurement-type-container").append(view.el);
                 });
-                emlMeasurementTypeView.render();
-                this.$(".measurement-type-container").append(emlMeasurementTypeView.el);
               }
 
             	//Create an EMLMeasurementScaleView for this attribute's measurement scale
