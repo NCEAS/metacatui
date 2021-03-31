@@ -78,7 +78,16 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
           width: "400",
           startingRoot: this.startingRoot || "roots",
           jumpAfterSelect: true,
-          selectFromAutocomplete: true
+          selectFromAutocomplete: true,
+          afterJumpToClass: function(cls) {
+            var foundClass = viewRef.$("ul.ncboTree").find("a[data-id='" + encodeURIComponent(cls) + "']");
+
+            if (foundClass.length <= 1) {
+              return;
+            }
+            
+            foundClass[0].scrollIntoView(false)
+          }
         });
 
         tree.on("afterSelect", function(event, classId, prefLabel, selectedNode) {
