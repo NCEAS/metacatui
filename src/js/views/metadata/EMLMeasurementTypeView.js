@@ -4,8 +4,16 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
   'views/AnnotationView',
   'text!templates/metadata/eml-measurement-type.html',
   'text!templates/metadata/eml-measurement-type-annotations.html'],
+
+  /**
+   * @class EMLMeasurementTypeView
+   * @classdec The EMLMeasurementTypeView is a view to render 
+   * @classcategory Views/Metadata
+   * @extends Backbone.View
+   */
   function (_, $, Backbone, BioPortal, EMLAnnotation, AnnotationView, EMLMeasurementTypeTemplate, EMLMeasurementTypeAnnotationsTemplate) {
-    var EMLMeasurementTypeView = Backbone.View.extend({
+    var EMLMeasurementTypeView = Backbone.View.extend(
+      /** @lends EMLMeasurementTypeView.prototype */{
 
       tagName: "div",
       className: "eml-measurement-type row-fluid",
@@ -41,10 +49,15 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
       startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType",
 
       /**
-       * The label and URI of for the property that goes with terms selected
-       * with this interface as well as the terms inserted
+       * The label for the property that goes with terms selected with this 
+       * interface as well as the terms inserted
        */
       filterLabel: "contains measurements of type",
+
+      /**
+       * The URI of for the property that goes with terms selected with this 
+       * interface as well as the terms inserted
+       */
       filterURI: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#containsMeasurementsOfType",
 
       initialize: function (options) {
