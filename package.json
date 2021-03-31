@@ -1,0 +1,27 @@
+{
+  "name": "metacatui",
+  "version": "2.14.0",
+  "description": "MetacatUI: A client-side web interface for DataONE data repositories",
+  "main": "server.js",
+  "devDependencies": {
+    "@jsdoc/util": "^0.2.4",
+    "code-prettify": "^0.1.0",
+    "common-path-prefix": "^3.0.0",
+    "express": "^4.17.1",
+    "jsdoc": "^3.6.6",
+    "open-sans-fonts": "^1.6.2"
+  },
+  "scripts": {
+    "dev": "node server.js",
+    "jsdoc": "jsdoc -c docs/jsdoc-templates/metacatui/conf.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NCEAS/metacatui.git"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/NCEAS/metacatui/issues"
+  },
+  "homepage": "https://github.com/NCEAS/metacatui"
+}
