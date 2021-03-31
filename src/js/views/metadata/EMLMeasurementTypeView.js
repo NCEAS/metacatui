@@ -82,10 +82,10 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
           afterJumpToClass: function(cls) {
             var foundClass = viewRef.$("ul.ncboTree").find("a[data-id='" + encodeURIComponent(cls) + "']");
 
-            if (foundClass.length <= 1) {
+            if (foundClass.length <= 0) {
               return;
             }
-            
+
             foundClass[0].scrollIntoView(false)
           }
         });
