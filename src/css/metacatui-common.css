@@ -2785,6 +2785,8 @@ section#user-citations {
 .measurement-type-browse {
   display: grid;
   grid-template-columns: 2fr 1fr;
+	max-height: 12em;
+	overflow-y: scroll;
 }
 
 .measurement-type-browse-tree {
