@@ -36,6 +36,12 @@ define([
 
             subviews: {},
 
+            /**
+            * A reference to the parent EditorView that contains this view
+            * @type EditorView
+            */
+            parentEditorView: null,
+
             template: _.template(DataPackageTemplate),
             startMessageTemplate: _.template(DataPackageStartTemplate),
 
@@ -54,6 +60,8 @@ define([
 
             		//The data package to render
             		this.dataPackage = options.dataPackage || new DataPackage();
+
+                this.parentEditorView = options.parentEditorView || null;
             	}
             	//Create a new DataPackage collection if one wasn't sent
             	else if(!this.dataPackage){
@@ -92,6 +100,9 @@ define([
                 	});
                 }
 
+                //Render the Share control(s)
+                this.renderShareControl();
+
                 return this;
             },
 
@@ -112,7 +123,10 @@ define([
 
                 }
 
-                dataItemView = new DataItemView({model: item});
+                dataItemView = new DataItemView({
+                  model: item,
+                  parentEditorView: this.parentEditorView
+                });
                 this.subviews[item.id] = dataItemView; // keep track of all views
 
                 //Get the science metadata that documents this item
@@ -226,6 +240,17 @@ define([
             handleAddFiles: function(e){
             	//Pass this on to the DataItemView for the root data package
             	this.$(".data-package-item.folder").first().data("view").handleAddFiles(e);
+            },
+
+            /**
+            * Renders a control that opens the AccessPolicyView for editing permissions on this package
+            */
+            renderShareControl: function(){
+
+              if( this.parentEditorView && !this.parentEditorView.isAccessPolicyEditEnabled() ){
+                this.$("#data-package-table-share").remove();
+              }
+
             },
 
             /**

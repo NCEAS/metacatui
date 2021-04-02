@@ -32,6 +32,12 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             */
             model: null,
 
+            /**
+            * A reference to the parent EditorView that contains this DataItemView
+            * @type EditorView
+            */
+            parentEditorView: null,
+
             /** Events this view listens to */
             events: {
                 "focusout .name.canRename"       : "updateName",
@@ -62,6 +68,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 this.id = this.model.get("id");
                 this.canWrite = false; // Default. Updated in render()
                 this.canShare = false; // Default. Updated in render()
+                this.parentEditorView = options.parentEditorView || null;
             },
 
             /** Renders a DataItemView for the given DataONEObject
@@ -371,30 +378,40 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             * Renders a button that opens the AccessPolicyView for editing permissions on this data item
             */
             renderShareControl: function(){
+
               //Get the Share button element
               var shareButton = this.$(".sharing button");
 
-              //Start a title for the button tooltip
-              var sharebuttonTitle;
+              if( this.parentEditorView && this.parentEditorView.isAccessPolicyEditEnabled() ){
 
-              // If the user is not authorized to change the permissions of
-              // this object, then disable the share button
-              if (this.canShare) {
-                shareButton.removeClass("disabled");
-                sharebuttonTitle = "Share this item with others";
-              } else {
-                shareButton.addClass("disabled");
-                sharebuttonTitle = "You are not authorized to share this item."
+                //Start a title for the button tooltip
+                var sharebuttonTitle;
+
+                // If the user is not authorized to change the permissions of
+                // this object, then disable the share button
+                if (this.canShare) {
+                  shareButton.removeClass("disabled");
+                  sharebuttonTitle = "Share this item with others";
+                } else {
+                  shareButton.addClass("disabled");
+                  sharebuttonTitle = "You are not authorized to share this item."
+                }
+
+                // Set up tooltips for share button
+                shareButton.tooltip({
+                  title: sharebuttonTitle,
+                  placement: "top",
+                  container: this.el,
+                  trigger: "hover",
+                  delay: { show: 400 }
+                });
+
               }
+              else{
 
-              // Set up tooltips for share button
-              shareButton.tooltip({
-                title: sharebuttonTitle,
-                placement: "top",
-                container: this.el,
-                trigger: "hover",
-                delay: { show: 400 }
-              });
+                shareButton.remove();
+
+              }
             },
 
             /** Close the view and remove it from the DOM */
@@ -1131,25 +1148,26 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
              * @return {boolean} Whether the item can be shared
              */
             canShareItem: function() {
-              if (!MetacatUI.appModel.get("allowAccessPolicyChanges")) {
-                return false;
-              }
 
-              if (this.model.type === "EML") {
-                // Check whether we can share the resource map
-                var pkgModel = MetacatUI.rootDataPackage.packageModel,
-                    pkgAccessPolicy = pkgModel.get("accessPolicy");
+              if( this.parentEditorView ){
+                if( this.parentEditorView.isAccessPolicyEditEnabled() ){
+                  if (this.model.type === "EML") {
+                    // Check whether we can share the resource map
+                    var pkgModel = MetacatUI.rootDataPackage.packageModel,
+                        pkgAccessPolicy = pkgModel.get("accessPolicy");
 
-                var canShareResourceMap = pkgModel.isNew() || (pkgAccessPolicy && pkgAccessPolicy.isAuthorized("changePermission"));
+                    var canShareResourceMap = pkgModel.isNew() || (pkgAccessPolicy && pkgAccessPolicy.isAuthorized("changePermission"));
 
-                // Check whether we can share the metadata
-                var modelAccessPolicy = this.model.get("accessPolicy");
-                var canShareMetadata = this.model.isNew() || (modelAccessPolicy && modelAccessPolicy.isAuthorized("changePermission"));
+                    // Check whether we can share the metadata
+                    var modelAccessPolicy = this.model.get("accessPolicy");
+                    var canShareMetadata = this.model.isNew() || (modelAccessPolicy && modelAccessPolicy.isAuthorized("changePermission"));
 
-                // Only return true if we can share both
-                return canShareMetadata && canShareResourceMap;
-              } else {
-                return this.model.get("accessPolicy") && this.model.get("accessPolicy").isAuthorized("changePermission");
+                    // Only return true if we can share both
+                    return canShareMetadata && canShareResourceMap;
+                  } else {
+                    return this.model.get("accessPolicy") && this.model.get("accessPolicy").isAuthorized("changePermission");
+                  }
+                }
               }
             }
         });

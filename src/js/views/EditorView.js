@@ -169,7 +169,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     */
     renderAccessPolicyControl: function(){
       //If the AccessPolicy editor is enabled, add a button for opening it
-      if( MetacatUI.appModel.get("allowAccessPolicyChanges") ){
+      if( this.isAccessPolicyEditEnabled() ){
 
         var isHiddenBehindControl = (this.$(this.accessPolicyControlContainer).length > 0);
 
@@ -298,6 +298,19 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       catch(e){
         console.error("Error trying to render the AccessPolicyView: ", e);
       }
+    },
+
+    /**
+    * Checks if the Access Policy editor is enabled in this instance of MetacatUI for
+    * the type of object being edited.
+    * @returns {boolean}
+    */
+    isAccessPolicyEditEnabled: function(){
+
+      if( !MetacatUI.appModel.get("allowAccessPolicyChanges") ){
+        return false;
+      }
+
     },
 
     /**

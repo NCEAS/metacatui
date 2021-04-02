@@ -924,12 +924,50 @@ define(['jquery', 'underscore', 'backbone'],
       enablePublishDOIForSubjects: [],
 
       /**
-      * If true, users can change the AccessPolicy for their objects.
+      * If true, users can change the AccessPolicy for any of their objects.
+      * This is equivalent to setting {@link AppConfig#allowAccessPolicyChangesPortals} and
+      * {@link AppConfig#allowAccessPolicyChangesDatasets} to `true`.
       * @type {boolean}
       * @default true
       * @since 2.9.0
       */
       allowAccessPolicyChanges: true,
+
+      /**
+      * If true, users can change the AccessPolicy for their portals only.
+      * @type {boolean}
+      * @default true
+      * @since 2.15.0
+      */
+      allowAccessPolicyChangesPortals: true,
+
+      /**
+      * Limit portal Access policy editing to only a defined list of people or groups.
+      * To let everyone edit access policies for their own objects, keep this as an empty array
+      * and make sure {@link AppConfig#allowAccessPolicyChangesPortals} is set to `true`
+      * @type {boolean}
+      * @default true
+      * @since 2.15.0
+      */
+      allowAccessPolicyChangesPortalsForSubjects: [],
+
+      /**
+      * If true, users can change the AccessPolicy for their datasets only.
+      * @type {boolean}
+      * @default true
+      * @since 2.15.0
+      */
+      allowAccessPolicyChangesDatasets: true,
+
+      /**
+      * Limit dataset Access policy editing to only a defined list of people or groups.
+      * To let everyone edit access policies for their own objects, keep this as an empty array
+      * and make sure {@link AppConfig#allowAccessPolicyChangesDatasets} is set to `true`
+      * @type {boolean}
+      * @default true
+      * @since 2.15.0
+      */
+      allowAccessPolicyChangesDatasetsForSubjects: [],
 
       /**
       * The default Access Policy set on new objects uploaded to the repository.

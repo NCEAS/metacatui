@@ -273,6 +273,31 @@ define(['underscore',
         },
 
         /**
+        * @inheritdoc
+        */
+        isAccessPolicyEditEnabled: function(){
+
+          if( !MetacatUI.appModel.get("allowAccessPolicyChanges") ){
+            return false;
+          }
+
+          if( !MetacatUI.appModel.get("allowAccessPolicyChangesDatasets") ){
+            return false;
+          }
+
+          let limitedTo = MetacatUI.appModel.get("allowAccessPolicyChangesDatasetsForSubjects");
+          if( Array.isArray(limitedTo) && limitedTo.length ){
+
+            return _.intersection(limitedTo, MetacatUI.appUserModel.get("allIdentitiesAndGroups")).length > 0;
+
+          }
+          else{
+            return true;
+          }
+
+        },
+
+        /**
          * Update the text that is shown below the spinner while the editor is loading
          *
          * @param {string} message - The message to display
@@ -460,7 +485,8 @@ define(['underscore',
           //Render the Data Package view
           this.dataPackageView = new DataPackageView({
             edit: true,
-            dataPackage: MetacatUI.rootDataPackage
+            dataPackage: MetacatUI.rootDataPackage,
+            parentEditorView: this
           });
 
           //Render the view
@@ -632,7 +658,8 @@ define(['underscore',
           if (!hasPackageSubView) {
             this.dataPackageView = new DataPackageView({
               dataPackage: MetacatUI.rootDataPackage,
-              edit: true
+              edit: true,
+              parentEditorView: this
             });
             this.subviews.push(this.dataPackageView);
             dataPackageView.render();
