@@ -207,8 +207,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 //Initialize dropdowns
                 this.$el.find(".dropdown-toggle").dropdown();
 
-                //Get the AccessPolicy for this object
-                var shareButton = this.$(".sharing button");
+                //Render the Share button
+                this.renderShareControl();
 
                 if(this.model.get("type") == "Metadata"){
                   //Add the title data-attribute attribute to the name cell
@@ -218,27 +218,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 else{
                     this.$el.addClass("data");
                 }
-
-                // Set up tooltips for share button
-                var sharebuttonTitle;
-
-                // If the user is not authorized to change the permissions of
-                // this object, then disable the share button
-                if (this.canShare) {
-                  shareButton.removeClass("disabled");
-                  sharebuttonTitle = "Share this item with others";
-                } else {
-                  shareButton.addClass("disabled");
-                  sharebuttonTitle = "You are not authorized to share this item."
-                }
-
-                shareButton.tooltip({
-                  title: sharebuttonTitle,
-                  placement: "top",
-                  container: this.el,
-                  trigger: "hover",
-                  delay: { show: 400 }
-                });
 
                 // Add tooltip to a disabled Replace link
                 $(this.$el).find(".replace.disabled").tooltip({
@@ -386,6 +365,36 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                   });
 
                 return this;
+            },
+
+            /**
+            * Renders a button that opens the AccessPolicyView for editing permissions on this data item
+            */
+            renderShareControl: function(){
+              //Get the Share button element
+              var shareButton = this.$(".sharing button");
+
+              //Start a title for the button tooltip
+              var sharebuttonTitle;
+
+              // If the user is not authorized to change the permissions of
+              // this object, then disable the share button
+              if (this.canShare) {
+                shareButton.removeClass("disabled");
+                sharebuttonTitle = "Share this item with others";
+              } else {
+                shareButton.addClass("disabled");
+                sharebuttonTitle = "You are not authorized to share this item."
+              }
+
+              // Set up tooltips for share button
+              shareButton.tooltip({
+                title: sharebuttonTitle,
+                placement: "top",
+                container: this.el,
+                trigger: "hover",
+                delay: { show: 400 }
+              });
             },
 
             /** Close the view and remove it from the DOM */
