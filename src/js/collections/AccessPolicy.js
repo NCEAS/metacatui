@@ -171,23 +171,7 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
               }
 
-              if( accessRule.get("subject") == "public" && accessRule.get("read") === false ){
-                alreadyPrivate = true;
-              }
-
             }, this);
-
-            //If this policy does not already deny the public read access, then add that rule
-            if( !alreadyPrivate ){
-              //Create an access rule that denies public read
-              var publicDeny = new AccessRule({
-                subject: "public",
-                read: false,
-                dataONEObject: this.dataONEObject
-              });
-              //Add this access rule
-              this.add(publicDeny);
-            }
 
           },
 
@@ -199,21 +183,19 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
             var alreadyPublic = false;
 
-            //Find any public read deny rule and remove it
+            //Find any public read rule and set read=true
             this.each( function(accessRule){
 
               if( typeof accessRule === "undefined" )
                 return;
 
               //If the access rule subject is `public` and they are denied read access
-              if( accessRule.get("subject") == "public" && accessRule.get("read") === false ){
+              if( accessRule.get("subject") == "public" ){
 
                   //Remove this AccessRule model from the collection
-                  this.remove(accessRule);
+                  accessRule.set("read", true);
+                  alreadyPublic = true;
 
-              }
-              else if( accessRule.get("subject") == "public" && accessRule.get("read") === true ){
-                alreadyPublic = true;
               }
 
             }, this);
