@@ -1243,8 +1243,31 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
             //If there is no access policy XML sent,
             if( this.isNew() && !accessPolicyXML ){
-              //Set the default access policy using the AppModel configuration
-              accessPolicy.createDefaultPolicy();
+
+              try{
+                //If the app is configured to inherit the access policy from the parent metadata,
+                // then get the parent metadata and copy it's AccessPolicy
+                if( MetacatUI.appModel.get("inheritAccessPolicy") && this.get("isDocumentedByModels").length ){
+                  let scienceMetadata = this.get("isDocumentedByModels")[0];
+                  let sciMetaAccessPolicy = scienceMetadata.get("accessPolicy");
+
+                  if( sciMetaAccessPolicy ){
+                    accessPolicy.copyAccessPolicy(sciMetaAccessPolicy);
+                  }
+                  else{
+                    accessPolicy.createDefaultPolicy();
+                  }
+                }
+              }
+              catch(e){
+                console.error("Could not copy access policy, so defaulting to default", e);
+                accessPolicy.createDefaultPolicy();
+              }
+
+              //Otherwise, set the default access policy using the AppModel configuration
+              if( MetacatUI.appModel.get("inheritAccessPolicy") === false ){
+                accessPolicy.createDefaultPolicy();
+              }
             }
             else{
               //Parse the access policy XML to create AccessRule models from the XML
@@ -1405,7 +1428,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             if(this.isNew()) return true;
 
             // Compare the new system metadata XML to the old system metadata XML
-            
+
             var D1ObjectClone = this.clone(),
                 // Make sure we are using the parse function in the DataONEObject model.
                 // Sometimes hasUpdates is called from extensions of the D1Object model,
@@ -1413,7 +1436,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 oldSysMetaAttrs = new DataONEObject().parse(D1ObjectClone.get("sysMetaXML"));
 
             D1ObjectClone.set(oldSysMetaAttrs);
-            
+
             var oldSysMeta = D1ObjectClone.serializeSysMeta();
             var newSysMeta = this.serializeSysMeta();
 

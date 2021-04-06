@@ -946,7 +946,7 @@ define(['jquery', 'underscore', 'backbone'],
       * To let everyone edit access policies for their own objects, keep this as an empty array
       * and make sure {@link AppConfig#allowAccessPolicyChangesPortals} is set to `true`
       * @type {boolean}
-      * @default true
+      * @default []
       * @since 2.15.0
       */
       allowAccessPolicyChangesPortalsForSubjects: [],
@@ -970,9 +970,9 @@ define(['jquery', 'underscore', 'backbone'],
       allowAccessPolicyChangesDatasetsForSubjects: [],
 
       /**
-      * The default Access Policy set on new objects uploaded to the repository.
-      * Each literal object here gets set directly on an AccessRule model.
-      * See the AccessRule model list of default attributes for options on what to set here.
+      * The default {@link AccessPolicy} set on new objects uploaded to the repository.
+      * Each literal object here gets set directly on an {@link AccessRule} model.
+      * See the {@link AccessRule} list of default attributes for options on what to set here.
       * @see {@link AccessRule}
       * @type {object[]}
       * @since 2.9.0
@@ -991,6 +991,16 @@ define(['jquery', 'underscore', 'backbone'],
         subject: "public",
         read: true
       }],
+
+      /**
+      * When new data objects are added to a {@link DataPackage}, they can either inherit the {@link AccessPolicy} from the
+      * parent metadata object, or default to the {@link AppConfig#defaultAccessPolicy}. To inherit the {@link AccessPolicy}
+      * from the parent metadata object, set this config to `true`.
+      * @type {boolean}
+      * @default true
+      * @since 2.15.0
+      */
+      inheritAccessPolicy: true,
 
       /**
       * The user-facing name for editing the Access Policy. This is displayed as the header of the AccessPolicyView, for example

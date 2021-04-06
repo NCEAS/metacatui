@@ -94,6 +94,36 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
           },
 
           /**
+          * Copies all the AccessRules from the given AccessPolicy and replaces this AccessPolicy
+          * @param {AccessPolicy} otherAccessPolicy
+          * @fires Backbone.Collection#reset
+          * @since 2.15.0
+          */
+          copyAccessPolicy: function(otherAccessPolicy){
+
+            try{
+
+              let accessRules = [];
+
+              //For each access policy in the AppModel, create an AccessRule model
+              otherAccessPolicy.each(function(accessRule){
+
+                //Convert the AccessRule model to JSON and update the reference to the DataONEObject
+                let accessRuleJSON = accessRule.toJSON();
+                accessRuleJSON.dataONEObject = this.dataONEObject;
+                accessRules.push(accessRuleJSON);
+
+              }, this);
+
+              //Reset the Collection with these AccessRules
+              this.reset(accessRules);
+            }
+            catch(e){
+              console.error(e);
+            }
+          },
+
+          /**
           * Creates an access policy XML from the values set on the member
           * AccessRule models.
           * @return {string} A string of the access policy XML
