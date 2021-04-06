@@ -136,6 +136,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
         */
         provEdits: [],
 
+        /**
+        * The number of models that have been updated during the current save().
+        * This is reset to zero after the current save() is complete.
+        */
+        numSaves: 0,
+
         // Constructor: Initialize a new DataPackage
         initialize: function(models, options) {
             if(typeof options == "undefined")
@@ -1197,6 +1203,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 //Add it to the list of models in progress
                 modelsInProgress.push(model);
 
+                this.numSaves++;
+
               }, this);
 
               //Save the system metadata of all the Data objects
@@ -1207,6 +1215,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 dataModel.updateSysMeta();
                 //Add it to the list of models in progress
                 modelsInProgress.push(dataModel);
+                this.numSaves++;
               }, this);
 
               //If there are still models in progress of uploading, then exit. (We will return when they are synced to upload the resource map)
@@ -1240,6 +1249,17 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             else if(!this.needsUpdate()){
               return;
             }
+
+            //If no models were saved and this package has no changes, we can exit without saving the resource map
+            if( this.numSaves < 1 && !this.needsUpdate() ){
+              this.numSaves = 0;
+              this.packageModel.set("uploadStatus", this.packageModel.defaults().uploadStatus);
+              this.trigger("successSaving", this);
+              return;
+            }
+
+            //Reset the number of models saved since they should all be completed by now
+            this.numSaves = 0;
 
             //Determine the HTTP request type
             var requestType;
@@ -2782,7 +2802,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
             },
 
-            /*
+            /**
              * Checks if this resource map has had any changes that requires an update
              */
             needsUpdate: function(){
@@ -2802,15 +2822,16 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               while(!isDifferent && i<this.length){
                 //Get the original isDocBy relationships from the resource map, and the new isDocBy relationships from the models
                 var isDocBy = this.models[i].get("isDocumentedBy"),
-                  id = this.models[i].get("id"),
-                  origIsDocBy = this.originalIsDocBy[id];
+                    id = this.models[i].get("id"),
+                    origIsDocBy = this.originalIsDocBy[id];
 
                 //Make sure they are both formatted as arrays for these checks
-                isDocBy = _.compact(Array.isArray(isDocBy)? isDocBy : [isDocBy]);
-                origIsDocBy = _.compact(Array.isArray(origIsDocBy)? origIsDocBy : [origIsDocBy]);
+                isDocBy = _.uniq(_.flatten(_.compact(Array.isArray(isDocBy)? isDocBy : [isDocBy])));
+                origIsDocBy = _.uniq(_.flatten(_.compact(Array.isArray(origIsDocBy)? origIsDocBy : [origIsDocBy])));
 
                 //Remove the id of this object so metadata can not be "isDocumentedBy" itself
                 isDocBy = _.without(isDocBy, id);
+                origIsDocBy = _.without(origIsDocBy, id);
 
                 //Simply check if they are the same
                 if(origIsDocBy === isDocBy){
