@@ -1,5 +1,5 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', "models/Utilities", 'text!templates/registerCitation.html'],
+define(['jquery', 'underscore', 'backbone', "common/Utilities", 'text!templates/registerCitation.html'],
     function($, _, Backbone, Utilities, RegisterCitationTemplate) {
     'use strict';
 
