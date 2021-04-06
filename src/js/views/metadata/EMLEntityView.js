@@ -5,13 +5,13 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
         'views/metadata/EMLAttributeView',
         'text!templates/metadata/eml-entity.html',
         'text!templates/metadata/eml-attribute-menu-item.html',
-        'common/EntityUtils'],
+        'common/Utilities'],
     function(_, $, Backbone, LocalForage, DataONEObject, EMLAttribute, EMLEntity,
         DataPreviewView,
         EMLAttributeView,
         EMLEntityTemplate,
         EMLAttributeMenuItemTemplate,
-        EntityUtils){
+        Utilities){
 
         /**
         * @class EMLEntityView
@@ -650,7 +650,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
             handleFillViaFile: function(file) {
               var view = this;
 
-              EntityUtils.readSlice(file, this, function (event) {
+              Utilities.readSlice(file, this, function (event) {
                 if (event.target.readyState !== FileReader.DONE) {
                   return;
                 }
@@ -690,7 +690,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
              * @since 2.15.0
              */
             tryParseAndFillAttributeNames: function(content) {
-              var names = EntityUtils.tryParseCSVHeader(content);
+              var names = Utilities.tryParseCSVHeader(content);
 
               if (names.length === 0) {
                 this.updateFillButton('<i class="icon-warning-sign"></i> Couldn\'t fill');
