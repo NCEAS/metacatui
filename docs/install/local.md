@@ -20,15 +20,21 @@ Following are instructions for two local web server options - Node & Express JS 
 
 ### Server Option 1. NodeJS & ExpressJS (recommended)
 
-*Requirements:* [NodeJS](https://nodejs.org/en/download/) and ExpressJS. Install Express via `npm install express`
+*Requirements:* [NodeJS](https://nodejs.org/en/download/) and ExpressJS.
 
-MetacatUI also comes with a simple script that runs a [node.js](https://nodejs.org) application called [Express.js](https://expressjs.com), which responds to HTTP requests.
+MetacatUI also comes with a simple script that runs a [node.js](https://nodejs.org) application called [Express.js](https://expressjs.com), which can serve MetacatUI.
 
-- To start the Express server, run [`server.js`](https://github.com/NCEAS/metacatui/blob/master/server.js):
+Before starting the server, ensure the dependencies are installed:
 
-  ```bash
-  node server.js
-  ```
+```sh
+npm install
+```
+
+Then, to start the Express server:
+
+```bash
+npm run dev # or equivalent to node server.js
+```
 
 ### Server Option 2. Apache
 

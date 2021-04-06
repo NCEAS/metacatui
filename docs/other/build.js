@@ -2,7 +2,7 @@
 * ----- Require JS Optimization Build File -----
 * This is an experimental build config file that isn't quite working yet, but
 * is a work-in-progress for getting Require Optimization to work.
-* It is meant to be executed from the root directory of metacatui ('datadepot')
+* It is meant to be executed from the root directory of metacatui
 * but it lives in /docs directory for now since it's not working as intended yet.
 *
 * Run `r.js -o build.js` to build

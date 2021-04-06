@@ -2,9 +2,9 @@
 
 [View on GitHub](https://github.com/NCEAS/metacatui)
 
-![Data Search Page](https://raw.githubusercontent.com/NCEAS/metacatui/master/docs/screenshots/screenshot-search.png)
+![Data Search Page]({{site.url}}/screenshots/screenshot-search.png)
 
-[See more screenshots](screenshots/index.html)
+[See more screenshots]({{site.url}}/screenshots/index.html)
 
 ## Latest release
 Download the latest release on Github: [MetacatUI 2.14.0](https://github.com/NCEAS/metacatui/releases/tag/2.14.0)
@@ -15,17 +15,17 @@ Download the latest release on Github: [MetacatUI 2.14.0](https://github.com/NCE
 
 There are three separate installation instructions, depending on your use case:
 
-- [Installing MetacatUI for your Metacat repository](install)
-- [Installing MetacatUI locally for development with a Metacat repository](install/local.html)
-- [Installing MetacatUI locally to use with a remote DataONE Coordinating Node](install/use-with-cn.html)
+- [Installing MetacatUI for your Metacat repository]({{site.url}}/install)
+- [Installing MetacatUI locally for development with a Metacat repository]({{site.url}}/install/local.html)
+- [Installing MetacatUI locally to use with a remote DataONE Coordinating Node]({{site.url}}/install/use-with-cn.html)
 
 ### Customizing MetacatUI
-- [How to create a custom theme](install/configuration/index.html)
-- [Examples of how to customize MetacatUI](guides/index.html)
+- [How to create a custom theme]({{site.url}}/install/configuration/index.html)
+- [Examples of how to customize MetacatUI]({{site.url}}/guides/index.html)
 
 ### For developers
-- [MetacatUI Javascript documentation for developers](/metacatui/docs/index.html)
-- [Setting up a MetacatUI development environment](install/dev-env.html)
+- [MetacatUI Javascript documentation for developers]({{site.url}}/docs/index.html)
+- [Setting up a MetacatUI development environment]({{site.url}}/install/dev-env.html)
 
 #### Want to contribute to MetacatUI?
   - Join us on [Slack](https://slack.dataone.org/)

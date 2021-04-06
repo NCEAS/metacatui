@@ -246,6 +246,7 @@ PLATFORMS
 
 DEPENDENCIES
   github-pages
+  jekyll (~> 3.8.7)
   jekyll-feed (~> 0.6)
   minima (~> 2.0)
   tzinfo (~> 1.2)
@@ -253,4 +254,4 @@ DEPENDENCIES
   wdm (~> 0.1.0)
 
 BUNDLED WITH
-   2.1.4
+   2.2.3
