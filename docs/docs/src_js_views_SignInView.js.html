@@ -30,38 +30,38 @@
             <pre class="prettyprint source linenums"><code>/*global define */
 
 define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
-				'text!templates/alert.html', 'text!templates/loginButtons.html',
-				'text!templates/loginOptions.html', 'text!templates/login-ldap.html'],
-	function($, _, Backbone, LoginTemplate, AlertTemplate, LoginButtonsTemplate, LoginOptionsTemplate, LdapLoginTemplate) {
-	'use strict';
+        'text!templates/alert.html', 'text!templates/loginButtons.html',
+        'text!templates/loginOptions.html', 'text!templates/login-ldap.html'],
+  function($, _, Backbone, LoginTemplate, AlertTemplate, LoginButtonsTemplate, LoginOptionsTemplate, LdapLoginTemplate) {
+  'use strict';
 
   /**
   * @class SignInView
   * @classcategory Views
   * @extends Backbone.View
   */
-	var SignInView = Backbone.View.extend(
+  var SignInView = Backbone.View.extend(
     /** @lends SignInView.prototype */{
 
-		template: _.template(LoginTemplate),
-		alertTemplate: _.template(AlertTemplate),
-		buttonsTemplate: _.template(LoginButtonsTemplate),
-		loginOptionsTemplate: _.template(LoginOptionsTemplate),
-		ldapTemplate: _.template(LdapLoginTemplate),
+    template: _.template(LoginTemplate),
+    alertTemplate: _.template(AlertTemplate),
+    buttonsTemplate: _.template(LoginButtonsTemplate),
+    loginOptionsTemplate: _.template(LoginOptionsTemplate),
+    ldapTemplate: _.template(LdapLoginTemplate),
 
-		tagName: "div",
-		className: "sign-in-btns",
+    tagName: "div",
+    className: "sign-in-btns",
 
-		ldapError: false,
+    ldapError: false,
 
-		/* Set to true to only show the LDAP login form */
-		ldapOnly: false,
+    /* Set to true to only show the LDAP login form */
+    ldapOnly: false,
 
-		/* Set to true if this SignInView is the only thing on the page */
-		fullPage: false,
+    /* Set to true if this SignInView is the only thing on the page */
+    fullPage: false,
 
-		/* Set to true if this SignInView is in a modal window */
-		inPlace: false,
+    /* Set to true if this SignInView is in a modal window */
+    inPlace: false,
 
     /**
     * Set a query string that will be added to the redirect URL
@@ -73,45 +73,45 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
     * // This example may tell the view that the register citation modal was open when Sign In was clicked
     * "registerCitation=true"
     * @default ""
-    * @since 2.14.1
+    * @since 2.15.0
     */
     redirectQueryString: "",
 
-		/*A message to display at the top of the view */
-		topMessage: "",
+    /*A message to display at the top of the view */
+    topMessage: "",
 
-		initialize: function(options){
-			if(typeof options !== "undefined"){
-				this.inPlace = options.inPlace;
-				this.topMessage = options.topMessage;
-				this.fullPage = options.fullPage;
-				this.closeButtons = options.closeButtons === false? false : true;
-			}
-		},
+    initialize: function(options){
+      if(typeof options !== "undefined"){
+        this.inPlace = options.inPlace;
+        this.topMessage = options.topMessage;
+        this.fullPage = options.fullPage;
+        this.closeButtons = options.closeButtons === false? false : true;
+      }
+    },
 
-		render: function(){
-			//Don't render a SignIn view if there are no Sign In URLs configured
-			if(!MetacatUI.appModel.get("signInUrlOrcid"))
-				return this;
+    render: function(){
+      //Don't render a SignIn view if there are no Sign In URLs configured
+      if(!MetacatUI.appModel.get("signInUrlOrcid"))
+        return this;
 
-			var view = this;
+      var view = this;
 
-			if(this.inPlace){
-				this.$el.addClass("hidden modal");
-				this.$el.attr("data-backdrop", "static");
+      if(this.inPlace){
+        this.$el.addClass("hidden modal");
+        this.$el.attr("data-backdrop", "static");
 
-				//Add a message to the top, if supplied
-				if(typeof this.topMessage == "string")
-					this.$el.prepend('&lt;p class="center container">' + this.topMessage + '&lt;/p>');
-				else if(typeof this.topMessage == "object")
-					this.$el.prepend(this.topMessage);
+        //Add a message to the top, if supplied
+        if(typeof this.topMessage == "string")
+          this.$el.prepend('&lt;p class="center container">' + this.topMessage + '&lt;/p>');
+        else if(typeof this.topMessage == "object")
+          this.$el.prepend(this.topMessage);
 
-				//Copy/paste the contents of the sign-in popup
-				var signInBtns = $.parseHTML($("#signinPopup").html().trim()),
-					signInBtnsContainer = $(document.createElement("div")).addClass("center container").html(signInBtns);
+        //Copy/paste the contents of the sign-in popup
+        var signInBtns = $.parseHTML($("#signinPopup").html().trim()),
+          signInBtnsContainer = $(document.createElement("div")).addClass("center container").html(signInBtns);
 
-				signInBtnsContainer.find("a.signin").each(function(i, a){
-					var url = $(a).attr("href");
+        signInBtnsContainer.find("a.signin").each(function(i, a){
+          var url = $(a).attr("href");
 
           var redirectUrl = decodeURIComponent(url.substring( url.indexOf("target=")+7 ));
 
@@ -125,122 +125,122 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
             redirectUrl = redirectUrl.substring(0, redirectUrl.indexOf(routeName)) + "signinsuccess";
           }
 
-					url = url.substring(0, url.indexOf("target=")+7) + encodeURIComponent(redirectUrl);
-					$(a).attr("href", url);
-				});
+          url = url.substring(0, url.indexOf("target=")+7) + encodeURIComponent(redirectUrl);
+          $(a).attr("href", url);
+        });
 
-				signInBtnsContainer.find("h1, h2").remove();
+        signInBtnsContainer.find("h1, h2").remove();
 
-				this.$el.append(signInBtnsContainer);
+        this.$el.append(signInBtnsContainer);
 
-				//Remove the accordion widget from the ldap login so it gets displayed as a popup window instead
-				if( this.$("#signinLdap").length ){
-					this.$("[href='" + "#signinLdap']").addClass("signin");
-					this.$(".accordion").removeClass("accordion");
-				}
+        //Remove the accordion widget from the ldap login so it gets displayed as a popup window instead
+        if( this.$("#signinLdap").length ){
+          this.$("[href='" + "#signinLdap']").addClass("signin");
+          this.$(".accordion").removeClass("accordion");
+        }
 
-				this.$el.prepend($(document.createElement("div")).addClass("container").prepend(
-						$(document.createElement("a")).text("Close").addClass("close").prepend(
-						$(document.createElement("i")).addClass("icon icon-on-left icon-remove"))));
+        this.$el.prepend($(document.createElement("div")).addClass("container").prepend(
+            $(document.createElement("a")).text("Close").addClass("close").prepend(
+            $(document.createElement("i")).addClass("icon icon-on-left icon-remove"))));
 
-				//Listen for clicks
-				this.$("a.signin").on("click", function(e){
-					//Get the link URL and change the target to a special route
-					e.preventDefault();
+        //Listen for clicks
+        this.$("a.signin").on("click", function(e){
+          //Get the link URL and change the target to a special route
+          e.preventDefault();
 
-					var link = e.target;
-					if(link.nodeName != "A") link = $(link).parents("a");
+          var link = e.target;
+          if(link.nodeName != "A") link = $(link).parents("a");
 
-					var url = $(link).attr("href");
+          var url = $(link).attr("href");
 
-					//Open up a new small window with this URL to allow the user to login
-					window.open(url, "Login", "height=600,width=700");
+          //Open up a new small window with this URL to allow the user to login
+          window.open(url, "Login", "height=600,width=700");
 
-					//Listen for successful sign-in
-					window.listenForSignIn = setInterval(function(){
-						MetacatUI.appUserModel.checkToken(function(data){
-							$(".modal.sign-in-btns").modal("hide");
-							clearInterval(window.listenForSignIn);
+          //Listen for successful sign-in
+          window.listenForSignIn = setInterval(function(){
+            MetacatUI.appUserModel.checkToken(function(data){
+              $(".modal.sign-in-btns").modal("hide");
+              clearInterval(window.listenForSignIn);
 
-							if(MetacatUI.appUserModel.get("checked"))
-								MetacatUI.appUserModel.trigger("change:checked");
-							else
-								MetacatUI.appUserModel.set("checked", true);
-						});
-					}, 750);
-				});
+              if(MetacatUI.appUserModel.get("checked"))
+                MetacatUI.appUserModel.trigger("change:checked");
+              else
+                MetacatUI.appUserModel.set("checked", true);
+            });
+          }, 750);
+        });
 
-				if( this.closeButtons ){
-					this.$("a.close").on("click", function(e){
-						view.$el.modal("hide");
-					});
-				}
-				else{
-					this.$(".close").remove();
+        if( this.closeButtons ){
+          this.$("a.close").on("click", function(e){
+            view.$el.modal("hide");
+          });
+        }
+        else{
+          this.$(".close").remove();
 
-					//Create a sign out link
-					var divider     = document.createElement("hr"),
-							signOutLink = $(document.createElement("a"))
-															.addClass("error underline")
-															.text("Sign Out");
+          //Create a sign out link
+          var divider     = document.createElement("hr"),
+              signOutLink = $(document.createElement("a"))
+                              .addClass("error underline")
+                              .text("Sign Out");
 
-					//Add the Sign Out link to the view
-					this.$(".modal-body").append(divider, signOutLink);
+          //Add the Sign Out link to the view
+          this.$(".modal-body").append(divider, signOutLink);
 
-					//If we're on the EML211EditorView, then show a warning message that unsaved changes will be lost
-					if( MetacatUI.appView.currentView &amp;&amp; MetacatUI.appView.currentView.type == "EML211Editor" ){
-						signOutLink.after( $(document.createElement("p"))
-							.addClass("error")
-							.text("   Warning! - All your unsaved changes will be lost."));
-					}
+          //If we're on the EML211EditorView, then show a warning message that unsaved changes will be lost
+          if( MetacatUI.appView.currentView &amp;&amp; MetacatUI.appView.currentView.type == "EML211Editor" ){
+            signOutLink.after( $(document.createElement("p"))
+              .addClass("error")
+              .text("   Warning! - All your unsaved changes will be lost."));
+          }
 
-					//When the sign out link is clicked, we can just refresh the page.
-					signOutLink.on("click", function(e){
-						window.location.reload();
-					});
+          //When the sign out link is clicked, we can just refresh the page.
+          signOutLink.on("click", function(e){
+            window.location.reload();
+          });
 
-				}
-			}
-			else{
+        }
+      }
+      else{
 
-				//If it's a full-page sign-in view, then empty it first
-				if(this.el == MetacatUI.appView.el || this.fullPage){
-					this.$el.empty();
-					var container = document.createElement("div");
-					container.className = "container login";
+        //If it's a full-page sign-in view, then empty it first
+        if(this.el == MetacatUI.appView.el || this.fullPage){
+          this.$el.empty();
+          var container = document.createElement("div");
+          container.className = "container login";
 
-					if( this.ldapOnly ){
+          if( this.ldapOnly ){
 
-						var redirectUrl = window.location.origin + window.location.pathname;
-						redirectUrl = redirectUrl.substring(0, redirectUrl.lastIndexOf("/"));
-						redirectUrl + "/signinSuccessLdap";
+            var redirectUrl = window.location.origin + window.location.pathname;
+            redirectUrl = redirectUrl.substring(0, redirectUrl.lastIndexOf("/"));
+            redirectUrl + "/signinSuccessLdap";
 
-						$(container).append(this.ldapTemplate({
-							redirectUrl:  redirectUrl
-						}));
-						this.$el.append(container);
+            $(container).append(this.ldapTemplate({
+              redirectUrl:  redirectUrl
+            }));
+            this.$el.append(container);
 
-						//Hide all the other page elements so it's just the login form
-						$("#Navbar, #HeaderContainer, #Footer").hide();
-					}
-					else{
-						$(container).append(this.buttonsTemplate());
-						this.$el.append(container);
-					}
+            //Hide all the other page elements so it's just the login form
+            $("#Navbar, #HeaderContainer, #Footer").hide();
+          }
+          else{
+            $(container).append(this.buttonsTemplate());
+            this.$el.append(container);
+          }
 
-				}
-				else{
+        }
+        else{
 
-					if( this.ldapOnly ){
+          if( this.ldapOnly ){
 
-						var redirectUrl = MetacatUI.root + "/signinSuccessLdap";
+            var redirectUrl = MetacatUI.root + "/signinSuccessLdap";
 
-						this.$el.append(this.ldapTemplate({
-							redirectUrl: redirectUrl
-						}));
+            this.$el.append(this.ldapTemplate({
+              redirectUrl: redirectUrl
+            }));
 
-					}
-					else{
+          }
+          else{
             let signInUrl = MetacatUI.appModel.get('signInUrlOrcid') + window.location.href;
 
             if( this.redirectQueryString &amp;&amp; this.redirectQueryString.length ){
@@ -271,88 +271,88 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 
         }
 
-				//Insert the sign in popup screen once
-				if(!$("#signinPopup").length){
-					var target = encodeURIComponent(window.location.href);
-					var signInUrl = MetacatUI.appModel.get('signInUrl')? MetacatUI.appModel.get('signInUrl') + target : null;
-					var signInUrlOrcid = MetacatUI.appModel.get('signInUrlOrcid') ? MetacatUI.appModel.get('signInUrlOrcid') + target : null;
-					var signInUrlLdap = MetacatUI.appModel.get('signInUrlLdap') ? MetacatUI.appModel.get('signInUrlLdap') + target : null,
-							redirectUrl = (window.location.href.indexOf("signinldaperror") > -1) ?
-									window.location.href.replace("signinldaperror", "") : window.location.href;
+        //Insert the sign in popup screen once
+        if(!$("#signinPopup").length){
+          var target = encodeURIComponent(window.location.href);
+          var signInUrl = MetacatUI.appModel.get('signInUrl')? MetacatUI.appModel.get('signInUrl') + target : null;
+          var signInUrlOrcid = MetacatUI.appModel.get('signInUrlOrcid') ? MetacatUI.appModel.get('signInUrlOrcid') + target : null;
+          var signInUrlLdap = MetacatUI.appModel.get('signInUrlLdap') ? MetacatUI.appModel.get('signInUrlLdap') + target : null,
+              redirectUrl = (window.location.href.indexOf("signinldaperror") > -1) ?
+                  window.location.href.replace("signinldaperror", "") : window.location.href;
 
-					$("body").append(this.template({
-						signInUrl:  signInUrl,
-						signInUrlOrcid:  signInUrlOrcid,
-						signInUrlLdap:  signInUrlLdap,
-						ldapLoginForm: this.ldapTemplate({
-							redirectUrl: redirectUrl
-						}),
-						currentUrl: window.location.href,
-						loginOptions: this.loginOptionsTemplate({ signInUrl: signInUrl }).trim(),
-						collapseLdap: !MetacatUI.appUserModel.get("errorLogin"),
-						redirectUrl: redirectUrl
-					}));
+          $("body").append(this.template({
+            signInUrl:  signInUrl,
+            signInUrlOrcid:  signInUrlOrcid,
+            signInUrlLdap:  signInUrlLdap,
+            ldapLoginForm: this.ldapTemplate({
+              redirectUrl: redirectUrl
+            }),
+            currentUrl: window.location.href,
+            loginOptions: this.loginOptionsTemplate({ signInUrl: signInUrl }).trim(),
+            collapseLdap: !MetacatUI.appUserModel.get("errorLogin"),
+            redirectUrl: redirectUrl
+          }));
 
-					this.setUpPopup();
-				}
+          this.setUpPopup();
+        }
 
-				//If there is an error message in the URL, it means authentication has failed
-				if(this.ldapError){
-					MetacatUI.appUserModel.failedLdapLogin();
-					this.failedLdapLogin();
-				};
-			}
+        //If there is an error message in the URL, it means authentication has failed
+        if(this.ldapError){
+          MetacatUI.appUserModel.failedLdapLogin();
+          this.failedLdapLogin();
+        };
+      }
 
-			return this;
-		},
+      return this;
+    },
 
-		/*
-		 * This function is executed when LDAP authentication fails in the DataONE portal
-		 */
-		failedLdapLogin: function(){
-			//Insert an error message
-			this.$("form").before(this.alertTemplate({
-				classes: "alert-error",
-				msg: "Incorrect username or password. Please try again."
-			}));
+    /*
+     * This function is executed when LDAP authentication fails in the DataONE portal
+     */
+    failedLdapLogin: function(){
+      //Insert an error message
+      this.$("form").before(this.alertTemplate({
+        classes: "alert-error",
+        msg: "Incorrect username or password. Please try again."
+      }));
 
-			//If this is a full-page sign-in view, then take the form and insert it into the page
-			if(this.$el.attr("id") == "Content" &amp;&amp; !$("#Content form").length)
-				$("#Content").html( $("#signinLdap").html() );
-			//Else, just show the login in the modal window
-			else if(!this.ldapOnly){
-				$("#signinPopup").modal("show");
-			}
+      //If this is a full-page sign-in view, then take the form and insert it into the page
+      if(this.$el.attr("id") == "Content" &amp;&amp; !$("#Content form").length)
+        $("#Content").html( $("#signinLdap").html() );
+      //Else, just show the login in the modal window
+      else if(!this.ldapOnly){
+        $("#signinPopup").modal("show");
+      }
 
-			//Show the LDAP login form
-			$('#signinLdap').removeClass("collapse").css("height", "auto");
-		},
+      //Show the LDAP login form
+      $('#signinLdap').removeClass("collapse").css("height", "auto");
+    },
 
-		setUpPopup: function(){
-			var view = this;
+    setUpPopup: function(){
+      var view = this;
 
-			//Initialize the modal elements
-			$("#signupPopup, #signinPopup").modal({
-				show: false,
-				shown: function(){
+      //Initialize the modal elements
+      $("#signupPopup, #signinPopup").modal({
+        show: false,
+        shown: function(){
 
-					//Update the sign-in URLs so we are redirected back to the previous page after authentication
+          //Update the sign-in URLs so we are redirected back to the previous page after authentication
           if( MetacatUI.appModel.get("enableCILogonSignIn") ){
             $("a.update-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrl") + encodeURIComponent(window.location.href));
           }
-					$("a.update-orcid-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrlOrcid") + encodeURIComponent(window.location.href));
+          $("a.update-orcid-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrlOrcid") + encodeURIComponent(window.location.href));
 
-				}
-			});
-		},
+        }
+      });
+    },
 
-		onClose: function(){
-			this.$el.empty();
+    onClose: function(){
+      this.$el.empty();
 
-			if(window.listenForSignIn)	clearInterval(window.listenForSignIn);
-		}
-	});
-	return SignInView;
+      if(window.listenForSignIn)  clearInterval(window.listenForSignIn);
+    }
+  });
+  return SignInView;
 
 });
 </code></pre>
@@ -365,13 +365,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="Utilities.html">Utilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="Citation.html">Citation</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="MetricsModel.html">MetricsModel</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="MetricView.html">MetricView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="SignInView.html">SignInView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="UserView.html">UserView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilder.html">QueryBuilder</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchableSelectView.html">SearchableSelectView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="Utilities.html">Utilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="Citation.html">Citation</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="Metrics.html">Metrics</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLParty.html">EMLParty</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="CitationListView.html">CitationListView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="MetricView.html">MetricView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="SignInView.html">SignInView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="UserView.html">UserView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilderView.html">QueryBuilderView</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AccountSelectView.html">AccountSelectView</a></li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="ObjectFormatSelect.html">ObjectFormatSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchableSelectView.html">SearchableSelectView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Dec 22 2020 13:37:30 GMT-0600 (Central Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Feb 24 2021 15:33:24 GMT-0600 (Central Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

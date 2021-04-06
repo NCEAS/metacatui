@@ -224,7 +224,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1458">line 1458</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1481">line 1481</a>
     </li></ul></dd>
     
 
@@ -317,7 +317,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1687">line 1687</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1710">line 1710</a>
     </li></ul></dd>
     
 
@@ -471,7 +471,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line2000">line 2000</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line2023">line 2023</a>
     </li></ul></dd>
     
 
@@ -529,7 +529,7 @@
     
 
     
-    <h4 class="name" id="checkAuthority"><span class="type-signature"></span>checkAuthority<span class="signature">(action, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="checkAuthority"><span class="type-signature"></span>checkAuthority<span class="signature">(action<span class="signature-attributes">opt</span>, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
     
 
     
@@ -537,7 +537,8 @@
 
 
 <div class="description">
-    Check if the current user is authorized to perform an action on this object
+    Check if the current user is authorized to perform an action on this object. This function doesn't return
+the result of the check, but it sends an XHR, updates this model, and triggers a change event.
 </div>
 
 
@@ -565,6 +566,8 @@
         
 
         
+        <th>Default</th>
+        
 
         <th class="last">Description</th>
     </tr>
@@ -590,6 +593,8 @@
             
                 <td class="attributes">
                 
+                    &lt;optional><br>
+                
 
                 
 
@@ -598,10 +603,15 @@
             
 
             
+                <td class="default">
+                
+                    changePermission
+                
+                </td>
+            
 
             <td class="description last">The action (read, write, or changePermission) to check
-if the current user has authorization to perform. This function doesn't return
-the result of the check, but it sends an XHR, updates this model, and triggers a change event.</td>
+if the current user has authorization to perform. By default checks for the highest level of permission.</td>
         </tr>
 
     
@@ -632,6 +642,10 @@ the result of the check, but it sends an XHR, updates this model, and triggers a
                 </td>
             
 
+            
+                <td class="default">
+                
+                </td>
             
 
             <td class="description last">Additional options for this function. See the properties below.</td>
@@ -711,7 +725,7 @@ the result of the check, but it sends an XHR, updates this model, and triggers a
 
             
 
-            <td class="description last">A function to execute when the checkAuthority API returns an error</td>
+            <td class="description last">A function to execute when the checkAuthority API returns an error, or when no PID or SID can be found for this object.</td>
         </tr>
 
     
@@ -755,7 +769,7 @@ the result of the check, but it sends an XHR, updates this model, and triggers a
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line846">line 846</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line853">line 853</a>
     </li></ul></dd>
     
 
@@ -780,6 +794,24 @@ the result of the check, but it sends an XHR, updates this model, and triggers a
 
 
 
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -911,7 +943,7 @@ policy set in the AppModel.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1220">line 1220</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1234">line 1234</a>
     </li></ul></dd>
     
 
@@ -1028,7 +1060,7 @@ Return it as a DOM object
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1187">line 1187</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1201">line 1201</a>
     </li></ul></dd>
     
 
@@ -1121,7 +1153,7 @@ Return it as a DOM object
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1759">line 1759</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1782">line 1782</a>
     </li></ul></dd>
     
 
@@ -1232,7 +1264,7 @@ Return it as a DOM object
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line262">line 262</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line263">line 263</a>
     </li></ul></dd>
     
 
@@ -1420,7 +1452,7 @@ Return it as a DOM object
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1527">line 1527</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1550">line 1550</a>
     </li></ul></dd>
     
 
@@ -1565,7 +1597,7 @@ Return it as a DOM object
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1619">line 1619</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1642">line 1642</a>
     </li></ul></dd>
     
 
@@ -1680,7 +1712,7 @@ Return it as a DOM object
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line2174">line 2174</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line2197">line 2197</a>
     </li></ul></dd>
     
 
@@ -1795,7 +1827,7 @@ Return it as a DOM object
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1132">line 1132</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1146">line 1146</a>
     </li></ul></dd>
     
 
@@ -1888,7 +1920,7 @@ Return it as a DOM object
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1822">line 1822</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1845">line 1845</a>
     </li></ul></dd>
     
 
@@ -2042,7 +2074,7 @@ Return it as a DOM object
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1768">line 1768</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1791">line 1791</a>
     </li></ul></dd>
     
 
@@ -2219,7 +2251,7 @@ Return it as a DOM object
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1403">line 1403</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1426">line 1426</a>
     </li></ul></dd>
     
 
@@ -2263,7 +2295,7 @@ Return it as a DOM object
 
 
 <div class="description">
-    Checks if this model has updates that need to be synced with the server.
+    Checks if this system metadata XML has updates that need to be synced with the server.
 </div>
 
 
@@ -2312,7 +2344,7 @@ Return it as a DOM object
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1386">line 1386</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1400">line 1400</a>
     </li></ul></dd>
     
 
@@ -2426,7 +2458,7 @@ as images <a href="DataONEObject.html#isImage">DataONEObject#isImage</a> or soft
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1883">line 1883</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1906">line 1906</a>
     </li></ul></dd>
     
 
@@ -2590,7 +2622,7 @@ as images <a href="DataONEObject.html#isImage">DataONEObject#isImage</a> or soft
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1806">line 1806</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1829">line 1829</a>
     </li></ul></dd>
     
 
@@ -2750,7 +2782,7 @@ as images <a href="DataONEObject.html#isImage">DataONEObject#isImage</a> or soft
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line2079">line 2079</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line2102">line 2102</a>
     </li></ul></dd>
     
 
@@ -2865,7 +2897,7 @@ as images <a href="DataONEObject.html#isImage">DataONEObject#isImage</a> or soft
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1863">line 1863</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1886">line 1886</a>
     </li></ul></dd>
     
 
@@ -2981,7 +3013,7 @@ if there is no upload date and it's been synced (i.e. been fetched)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1443">line 1443</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1466">line 1466</a>
     </li></ul></dd>
     
 
@@ -3092,7 +3124,7 @@ if there is no upload date and it's been synced (i.e. been fetched)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1958">line 1958</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1981">line 1981</a>
     </li></ul></dd>
     
 
@@ -3210,7 +3242,7 @@ as images <a href="DataONEObject.html#isImage">DataONEObject#isImage</a> for dis
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1941">line 1941</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1964">line 1964</a>
     </li></ul></dd>
     
 
@@ -3374,7 +3406,7 @@ as images <a href="DataONEObject.html#isImage">DataONEObject#isImage</a> for dis
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1786">line 1786</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1809">line 1809</a>
     </li></ul></dd>
     
 
@@ -3487,7 +3519,7 @@ Used during parse() and serialize()
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line154">line 154</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line155">line 155</a>
     </li></ul></dd>
     
 
@@ -3709,7 +3741,7 @@ without directly using the DataONEObject.save() function.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line703">line 703</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line704">line 704</a>
     </li></ul></dd>
     
 
@@ -3803,7 +3835,7 @@ It deserializes the incoming XML from the /meta REST endpoint and converts it in
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line337">line 337</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line338">line 338</a>
     </li></ul></dd>
     
 
@@ -3896,7 +3928,7 @@ It deserializes the incoming XML from the /meta REST endpoint and converts it in
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1368">line 1368</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1382">line 1382</a>
     </li></ul></dd>
     
 
@@ -3989,7 +4021,7 @@ It deserializes the incoming XML from the /meta REST endpoint and converts it in
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line536">line 536</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line537">line 537</a>
     </li></ul></dd>
     
 
@@ -4082,7 +4114,7 @@ It deserializes the incoming XML from the /meta REST endpoint and converts it in
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line956">line 956</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line970">line 970</a>
     </li></ul></dd>
     
 
@@ -4193,7 +4225,7 @@ It deserializes the incoming XML from the /meta REST endpoint and converts it in
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1723">line 1723</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1746">line 1746</a>
     </li></ul></dd>
     
 
@@ -4287,7 +4319,7 @@ object's authoritative MN. This function updates the `possibleAuthMNs` attribute
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line2122">line 2122</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line2145">line 2145</a>
     </li></ul></dd>
     
 
@@ -4434,7 +4466,7 @@ see https://github.com/DataONEorg/sem-prov-ontologies/blob/master/provenance/Pro
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1976">line 1976</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1999">line 1999</a>
     </li></ul></dd>
     
 
@@ -4527,7 +4559,7 @@ see https://github.com/DataONEorg/sem-prov-ontologies/blob/master/provenance/Pro
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line414">line 414</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line415">line 415</a>
     </li></ul></dd>
     
 
@@ -4692,7 +4724,7 @@ see https://github.com/DataONEorg/sem-prov-ontologies/blob/master/provenance/Pro
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line490">line 490</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line491">line 491</a>
     </li></ul></dd>
     
 
@@ -4866,7 +4898,7 @@ EML entity when replacing files.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1262">line 1262</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1276">line 1276</a>
     </li></ul></dd>
     
 
@@ -5008,7 +5040,7 @@ EML entity when replacing files.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1480">line 1480</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1503">line 1503</a>
     </li></ul></dd>
     
 
@@ -5101,7 +5133,7 @@ EML entity when replacing files.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1498">line 1498</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line1521">line 1521</a>
     </li></ul></dd>
     
 
@@ -5194,7 +5226,7 @@ EML entity when replacing files.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line736">line 736</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line737">line 737</a>
     </li></ul></dd>
     
 
@@ -5287,7 +5319,7 @@ EML entity when replacing files.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line183">line 183</a>
+        <a href="src_js_models_DataONEObject.js.html">src/js/models/DataONEObject.js</a>, <a href="src_js_models_DataONEObject.js.html#line184">line 184</a>
     </li></ul></dd>
     
 
@@ -5351,13 +5383,13 @@ EML entity when replacing files.</td>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="Utilities.html">Utilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="Citation.html">Citation</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="MetricsModel.html">MetricsModel</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="MetricView.html">MetricView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="SignInView.html">SignInView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="UserView.html">UserView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilder.html">QueryBuilder</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchableSelectView.html">SearchableSelectView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="Utilities.html">Utilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="Citation.html">Citation</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="Metrics.html">Metrics</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLParty.html">EMLParty</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="CitationListView.html">CitationListView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="MetricView.html">MetricView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="SignInView.html">SignInView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="UserView.html">UserView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilderView.html">QueryBuilderView</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AccountSelectView.html">AccountSelectView</a></li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="ObjectFormatSelect.html">ObjectFormatSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchableSelectView.html">SearchableSelectView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Dec 22 2020 13:37:32 GMT-0600 (Central Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Feb 24 2021 15:33:27 GMT-0600 (Central Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -44,7 +44,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
     * // This example may tell the view that the register citation modal was open when Sign In was clicked
     * "registerCitation=true"
     * @default ""
-    * @since 2.14.1
+    * @since 2.15.0
     */
     redirectQueryString: "",
 

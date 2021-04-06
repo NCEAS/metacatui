@@ -31,7 +31,8 @@
     
         <h2><span class="attribs"><span class="type-signature"></span></span>QueryRuleView<span class="signature">()</span><span class="type-signature"></span></h2>
         
-            <div class="class-description">A view that provides an UI for a user to construct a single filter that is part of a complex query</div>
+            <div class="class-description">A view that provides an UI for a user to construct a single filter that
+is part of a complex query</div>
         
 
         
@@ -105,7 +106,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line25">line 25</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line24">line 24</a>
     </li></ul></dd>
     
 
@@ -292,7 +293,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line95">line 95</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line96">line 96</a>
     </li></ul></dd>
     
 
@@ -388,10 +389,10 @@
 
 
 <div class="description">
-    A single Filter model that is part of a Filters collection, such as
-the definition filters for a Collection or Portal or the filters for
-a Search model. The Filter model must be part of a Filters collection
-(i.e. there must be a model.collection property)
+    A single Filter model that is part of a Filters collection, such as the
+definition filters for a Collection or Portal or the filters for a Search
+model. The Filter model must be part of a Filters collection (i.e. there must
+be a model.collection property)
 </div>
 
 
@@ -448,7 +449,7 @@ a Search model. The Filter model must be part of a Filters collection
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line104">line 104</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line105">line 105</a>
     </li></ul></dd>
     
 
@@ -538,17 +539,14 @@ a Search model. The Filter model must be part of a Filters collection
 
         
             
-<h4 class="name" id="operatorOptions"><span class="type-signature"></span>operatorOptions<span class="type-signature"> :Array.&lt;object></span></h4>
+<h4 class="name" id="operatorOptions"><span class="type-signature"></span>operatorOptions<span class="type-signature"> :Array.&lt;<a href="global.html#OperatorOption">OperatorOption</a>></span></h4>
 
 
 
 
 <div class="description">
-    Defined the user-friendly operators that will be available in the
-dropdown list to connect the query fields to the query values.
-Each operator must be unique. This definition is used to pre-select
-the correct operator based on attributes in the associated filter model,
-as well as to update the filter model when a user selects a new operator.
+    The list of operators that will be available in the dropdown list that connects
+the query fields to the values. Each operator must be unique.
 </div>
 
 
@@ -557,225 +555,12 @@ as well as to update the filter model when a user selects a new operator.
     <ul>
         <li>
             
-<span class="param-type">Array.&lt;object></span>
+<span class="param-type">Array.&lt;<a href="global.html#OperatorOption">OperatorOption</a>></span>
 
 
         </li>
     </ul>
 
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>label</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The label to display to the user</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>icon</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">An icon that represents the operator</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>matchSubstring</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Whether the matchSubstring attribute is true or false in the filter model that matches this operator</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>exclude</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Whether the exclude attribute is true or false in the filter model that matches this operator</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>hasMax</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Whether the filter model that matches this operator must have a max attribute</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>hasMin</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Whether the filter model that matches this operator must have a min attribute</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>values</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;string></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">For this operator to work as desired, the values that should be set in the filter (e.g. ["true"] for the operator "is true")</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>types</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;string></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The node names of the filters that this operator is used for (e.g. "filter", "booleanFilter")</td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -809,7 +594,7 @@ as well as to update the filter model when a user selects a new operator.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line134">line 134</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line188">line 188</a>
     </li></ul></dd>
     
 
@@ -1115,6 +900,85 @@ as well as to update the filter model when a user selects a new operator.
 
         
             
+<h4 class="name" id="specialFields"><span class="type-signature"></span>specialFields<span class="type-signature"> :Array.&lt;<a href="global.html#SpecialField">SpecialField</a>></span></h4>
+
+
+
+
+<div class="description">
+    A list of additional fields which are not retrieved from the query API, but
+which should be added to the list of options. This can be used to add
+abstracted fields which are a combination of multiple query fields, or to add a
+duplicate field that has a different label. These special fields are passed on
+to <a href="QueryFieldSelectView.html#addFields">QueryFieldSelectView#addFields</a>.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Array.&lt;<a href="global.html#SpecialField">SpecialField</a>></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.15.0</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line130">line 130</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
 <h4 class="name" id="type"><span class="type-signature"></span>type<span class="type-signature"> :string</span></h4>
 
 
@@ -1259,21 +1123,17 @@ as well as to update the filter model when a user selects a new operator.
 
         
             
-<h4 class="name" id="valueSelectUImap"><span class="type-signature"></span>valueSelectUImap<span class="type-signature"> :Array.&lt;object></span></h4>
+<h4 class="name" id="valueSelectUImap"><span class="type-signature"></span>valueSelectUImap<span class="type-signature"> :Array.&lt;<a href="global.html#ValueInputOption">ValueInputOption</a>></span></h4>
 
 
 
 
 <div class="description">
-    The third input in each query rule is where the user enters a value,
-minimum, or maximum for the filter model. Different types of values
-are appropriate for different solr query fields, and so we display
-different interfaces depending on the type and category of the
-selected query fields. This object defines which type of interface
-to show depending on type and category. The list of interface requirements
-is ordered from *most* specific to *least*, since the first match will be
-selected. The query (metadata) fields must match both the filterTypes
-AND the categoes for a UI to be selected.
+    This list defines which type of value input to show depending on filter type,
+category, and query fields. The value input options are ordered from *most*
+specific to *least*, since the first match will be selected. The filter model
+must match either the queryFields, or both the filterTypes AND the categories
+for a UI to be selected.
 </div>
 
 
@@ -1282,156 +1142,12 @@ AND the categoes for a UI to be selected.
     <ul>
         <li>
             
-<span class="param-type">Array.&lt;object></span>
+<span class="param-type">Array.&lt;<a href="global.html#ValueInputOption">ValueInputOption</a>></span>
 
 
         </li>
     </ul>
 
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>filterTypes</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;string></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">An array of one or more filter types that are allowed for this interface.  If none are provided then any filter type is allowed.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>categories</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;string></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">An array of one or more categories that are allowed for this interface. These strings must exactly match the categories provided in QueryField.categoriesMap(). If none are provided then any category is allowed.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>queryFields</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;string></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Specific names of fields that are allowed in this interface. If none are provided, then any query fields are allowed that match the other properties.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>label</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">If the interface does not include a label (e.g. number filter), include a string to display here.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>uiFunction</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">A function that returns the UI view to use with all appropriate options set. The function will be called with this view as the context.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -1465,7 +1181,7 @@ AND the categoes for a UI to be selected.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line290">line 290</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line371">line 371</a>
     </li></ul></dd>
     
 
@@ -1501,8 +1217,8 @@ AND the categoes for a UI to be selected.
 
 
 <div class="description">
-    Create and insert an input that allows the user to select
-a metadata field to query
+    Create and insert an input that allows the user to select a metadata field to
+query
 </div>
 
 
@@ -1546,7 +1262,7 @@ a metadata field to query
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line532">line 532</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line834">line 834</a>
     </li></ul></dd>
     
 
@@ -1590,8 +1306,8 @@ a metadata field to query
 
 
 <div class="description">
-    Create and insert an input field where the user can select an operator
-for the given rule. Operators will vary depending on filter model type.
+    Create and insert an input field where the user can select an operator for the
+given rule. Operators will vary depending on filter model type.
 </div>
 
 
@@ -1643,7 +1359,8 @@ for the given rule. Operators will vary depending on filter model type.
 
             
 
-            <td class="description last">optional. The label of an operator to pre-select. Set to an empty string to render an empty operator selector.</td>
+            <td class="description last">optional. The label of an operator to
+pre-select. Set to an empty string to render an empty operator selector.</td>
         </tr>
 
     
@@ -1684,7 +1401,7 @@ for the given rule. Operators will vary depending on filter model type.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line653">line 653</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line998">line 998</a>
     </li></ul></dd>
     
 
@@ -1772,7 +1489,95 @@ for the given rule. Operators will vary depending on filter model type.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line519">line 519</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line645">line 645</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="addRuleInfo"><span class="type-signature"></span>addRuleInfo<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Insert container for the color-coded rule numbering.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line567">line 567</a>
     </li></ul></dd>
     
 
@@ -1816,8 +1621,7 @@ for the given rule. Operators will vary depending on filter model type.
 
 
 <div class="description">
-    Create and insert an input field where the user can provide a
-search value
+    Create and insert an input field where the user can provide a search value
 </div>
 
 
@@ -1861,7 +1665,7 @@ search value
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line991">line 991</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line1395">line 1395</a>
     </li></ul></dd>
     
 
@@ -1897,7 +1701,7 @@ search value
     
 
     
-    <h4 class="name" id="events"><span class="type-signature"></span>events<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="convertFromSpecialFields"><span class="type-signature"></span>convertFromSpecialFields<span class="signature">(fields, fields)</span><span class="type-signature"> &rarr; {Array.&lt;string>|Array.&lt;string>}</span></h4>
     
 
     
@@ -1905,95 +1709,13 @@ search value
 
 
 <div class="description">
-    The events this view will listen to and the associated function to call.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line110">line 110</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="getCategory"><span class="type-signature"></span>getCategory<span class="signature">(fields)</span><span class="type-signature"> &rarr; {type}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    getCategory - description
+    Takes a list of query field names and checks if it contains any of the
+<a href="QueryRuleView.html#specialFields">special field names</a>. Returns the list with
+the special field names replaced with the actual field names that those special
+fields represent. Stores the name of each special field name removed in an
+array set on the view's selectedSpecialFields property. selectedSpecialFields
+is cleared each time this function runs. This function is the opposite of
+<a href="QueryRuleView.html#convertToSpecialFields">QueryRuleView#convertToSpecialFields</a>
 </div>
 
 
@@ -2035,7 +1757,7 @@ search value
             <td class="type">
             
                 
-<span class="param-type">type</span>
+<span class="param-type">Array.&lt;string></span>
 
 
             
@@ -2045,7 +1767,541 @@ search value
 
             
 
-            <td class="description last">description</td>
+            <td class="description last">The list of field names to convert</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fields</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The list of fields to convert to actual query
+service index fields</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.15.0</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line805">line 805</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<ul>
+        <li>
+<div class="param-desc">
+    - The converted list of field names. If there were no
+special fields detected, or if there's an error, then then the field names are
+returned unchanged.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;string></span>
+
+
+    </dd>
+</dl>
+</li>
+    
+        <li>
+<div class="param-desc">
+    - Returns the list of fields with any special field
+replaced with real fields from the query service index
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;string></span>
+
+
+    </dd>
+</dl>
+</li>
+    </ul>
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="convertToSpecialFields"><span class="type-signature"></span>convertToSpecialFields<span class="signature">(fields, fields)</span><span class="type-signature"> &rarr; {Array.&lt;string>|Array.&lt;string>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Takes a list of query field names, checks if the model matches any of the
+special fields, and if it does, returns the list of fields with the actual
+field names replaced with the
+<a href="QueryRuleView.html#specialFields">special field name</a>. This function is the
+opposite of <a href="QueryRuleView.html#convertFromSpecialFields">QueryRuleView#convertFromSpecialFields</a>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>fields</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The list of field names to convert</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fields</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The list of fields to convert to special fields, if
+the model matches any of the special field objects</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.15.0</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line734">line 734</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<ul>
+        <li>
+<div class="param-desc">
+    - The converted list of field names. If there were no
+special fields detected, or if there's an error, then then the field names are
+returned unchanged.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;string></span>
+
+
+    </dd>
+</dl>
+</li>
+    
+        <li>
+<div class="param-desc">
+    - Returns the list of fields with actual query field names
+replaced with special field names, if any match
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;string></span>
+
+
+    </dd>
+</dl>
+</li>
+    </ul>
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="events"><span class="type-signature"></span>events<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    A function that creates and returns the Backbone events object.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line111">line 111</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Returns a Backbone events object
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getCategory"><span class="type-signature"></span>getCategory<span class="signature">(fields)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    getCategory - Given an array of query fields, get the user-facing category that
+these fields belong to. If there are fields from multiple categories, then a
+default "Text" category is returned.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>fields</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An array of query (Solr) fields</td>
         </tr>
 
     
@@ -2086,7 +2342,7 @@ search value
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line954">line 954</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line1358">line 1358</a>
     </li></ul></dd>
     
 
@@ -2115,7 +2371,7 @@ search value
 
         
 <div class="param-desc">
-    description
+    The label for the category that the given fields belong to
 </div>
 
 
@@ -2126,7 +2382,385 @@ search value
     </dt>
     <dd>
         
-<span class="param-type">type</span>
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getOperatorOptions"><span class="type-signature"></span>getOperatorOptions<span class="signature">(fields<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Get a list of <a href="QueryRuleView.html#operatorOptions">operatorOptions</a> that are
+allowed for this view's filter model
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>fields</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Optional list of fields to use instead of the
+fields set on this view's Filter model</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.15.0</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line1220">line 1220</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getPaletteColor"><span class="type-signature"></span>getPaletteColor<span class="signature">(index<span class="signature-attributes">opt</span>, defaultColor<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Selects a color from the
+<a href="QueryRuleView.html#ruleColorPalette">rule colour palette array</a>, given an
+index. If the index is greater than the length of the palette, then the palette
+is effectively repeated until long enough (i.e. colours will be recycled). If
+no index in provided, the first colour in the palette will be selected.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>index</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    0
+                
+                </td>
+            
+
+            <td class="description last">The position of the rule within the Filters
+collection.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>defaultColor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    "#57b39c"
+                
+                </td>
+            
+
+            <td class="description last">A default colour to use in case
+there is problem with this function (hex color code beginning with '#').</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line596">line 596</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    - Returns a hex color code string
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
 
 
     </dd>
@@ -2152,11 +2786,10 @@ search value
 
 
 <div class="description">
-    getRequiredFilterType - Based on an array of query (Solr) fields,
-get the type of filter model this rule should use. For example,
-if the fields are type text, use a regular filter model. If
-the fields are tdate, use a dateFilter. Also decide which filter
-to use if the field types are mixed.
+    getRequiredFilterType - Based on an array of query (Solr) fields, get the type
+of filter model this rule should use. For example, if the fields are type text,
+use a regular filter model. If the fields are tdate, use a dateFilter. Also
+decide which filter to use if the field types are mixed.
 </div>
 
 
@@ -2249,7 +2882,7 @@ to use if the field types are mixed.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line617">line 617</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line961">line 961</a>
     </li></ul></dd>
     
 
@@ -2315,8 +2948,8 @@ to use if the field types are mixed.
 
 
 <div class="description">
-    getSelectedOperator - Based on values set on the model, get the label
-to show in the "operator" filed of the Query Rule
+    getSelectedOperator - Based on values set on the model, get the label to show
+in the "operator" filed of the Query Rule
 </div>
 
 
@@ -2360,7 +2993,7 @@ to show in the "operator" filed of the Query Rule
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line862">line 862</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line1266">line 1266</a>
     </li></ul></dd>
     
 
@@ -2418,6 +3051,192 @@ to show in the "operator" filed of the Query Rule
     
 
     
+    <h4 class="name" id="getSpecialField"><span class="type-signature"></span>getSpecialField<span class="signature">(fields<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#SpecialField">SpecialField</a>|null}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Determines whether the filter model that this rule renders matches one of the
+<a href="QueryRuleView.html#specialFields">special fields</a> set on this view. If it
+does, returns the first special field object that matches. For a filter model
+to match to one of the special fields, it must contain all of the fields listed
+in the special field's "fields" property. If the special field has an array set
+for "values", then the model's values must also exactly match the special
+field's values.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>fields</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Optionally set a list of query fields to search
+with. If not set, then the fields that are set on the view's filter model are
+used.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.15.0</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line674">line 674</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    - The matching special field, or null if no match
+was found.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="global.html#SpecialField">SpecialField</a></span>
+|
+
+<span class="param-type">null</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="handleFieldChange"><span class="type-signature"></span>handleFieldChange<span class="signature">(newFields)</span><span class="type-signature"></span></h4>
     
 
@@ -2426,10 +3245,10 @@ to show in the "operator" filed of the Query Rule
 
 
 <div class="description">
-    handleFieldChange - Called when the Query Field Select View triggers
-a change event. Updates the model with the new fields, and if required,
-1) converts the filter model to a different type based on the types of
-fields selected, 2) updates the operator select and the value select
+    handleFieldChange - Called when the Query Field Select View triggers a change
+event. Updates the model with the new fields, and if required,
+1) converts the filter model to a different type based on the types of fields
+   selected, 2) updates the operator select and the value select
 </div>
 
 
@@ -2522,7 +3341,7 @@ fields selected, 2) updates the operator select and the value select
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line560">line 560</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line880">line 880</a>
     </li></ul></dd>
     
 
@@ -2566,8 +3385,8 @@ fields selected, 2) updates the operator select and the value select
 
 
 <div class="description">
-    handleOperatorChange - When the operator selection is changed, update
-the model and re-set the value UI when required
+    handleOperatorChange - When the operator selection is changed, update the model
+and re-set the value UI when required
 </div>
 
 
@@ -2619,7 +3438,8 @@ the model and re-set the value UI when required
 
             
 
-            <td class="description last">The new operator label within an array, e.g. ["is greater than"]</td>
+            <td class="description last">The new operator label within an array,
+e.g. ["is greater than"]</td>
         </tr>
 
     
@@ -2660,7 +3480,7 @@ the model and re-set the value UI when required
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line719">line 719</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line1069">line 1069</a>
     </li></ul></dd>
     
 
@@ -2704,8 +3524,8 @@ the model and re-set the value UI when required
 
 
 <div class="description">
-    handleValueChange - Called when the select values for rule are changed.
-Updates the model.
+    handleValueChange - Called when the select values for rule are changed. Updates
+the model.
 </div>
 
 
@@ -2798,7 +3618,7 @@ Updates the model.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line1075">line 1075</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line1512">line 1512</a>
     </li></ul></dd>
     
 
@@ -2935,7 +3755,96 @@ Updates the model.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line402">line 402</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line492">line 492</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="previewRemove"><span class="type-signature"></span>previewRemove<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Indicate to the user that the rule will be removed when they hover over the
+remove button.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line1582">line 1582</a>
     </li></ul></dd>
     
 
@@ -3031,7 +3940,8 @@ Updates the model.
 
             
 
-            <td class="description last">Which of the inputs to remove? "field", "operator", or "value"</td>
+            <td class="description last">Which of the inputs to remove? "field", "operator",
+or "value"</td>
         </tr>
 
     
@@ -3072,7 +3982,7 @@ Updates the model.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line1105">line 1105</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line1543">line 1543</a>
     </li></ul></dd>
     
 
@@ -3108,7 +4018,7 @@ Updates the model.
     
 
     
-    <h4 class="name" id="removeSelf"><span class="type-signature"></span>removeSelf<span class="signature">()</span><span class="type-signature"> &rarr; {type}</span></h4>
+    <h4 class="name" id="removeSelf"><span class="type-signature"></span>removeSelf<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -3116,8 +4026,8 @@ Updates the model.
 
 
 <div class="description">
-    removeSelf - When the delete button is clicked, remove this entire
-View and associated model
+    removeSelf - When the delete button is clicked, remove this entire View and
+associated model
 </div>
 
 
@@ -3161,7 +4071,7 @@ View and associated model
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line1148">line 1148</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line1595">line 1595</a>
     </li></ul></dd>
     
 
@@ -3186,28 +4096,6 @@ View and associated model
 
 
 
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    description
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">type</span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 
@@ -3271,7 +4159,7 @@ View and associated model
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line443">line 443</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line528">line 528</a>
     </li></ul></dd>
     
 
@@ -3329,7 +4217,7 @@ View and associated model
     
 
     
-    <h4 class="name" id="validateValue"><span class="type-signature"></span>validateValue<span class="signature">()</span><span class="type-signature"> &rarr; {type}</span></h4>
+    <h4 class="name" id="updateRuleInfo"><span class="type-signature"></span>updateRuleInfo<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -3337,8 +4225,10 @@ View and associated model
 
 
 <div class="description">
-    Ensure the value entered is valid, given the metadata field selected.
-If it's not, show an error. If it is, remove the error if there was one.
+    Adds or updates the color-coded query rule information displayed to the user.
+This needs to be run when rules are added or removed. Rule information includes
+the rule number, but may one day also display information such as the number of
+results that there are for this individual rule.
 </div>
 
 
@@ -3382,7 +4272,7 @@ If it's not, show an error. If it is, remove the error if there was one.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line1096">line 1096</a>
+        <a href="src_js_views_queryBuilder_QueryRuleView.js.html">src/js/views/queryBuilder/QueryRuleView.js</a>, <a href="src_js_views_queryBuilder_QueryRuleView.js.html#line622">line 622</a>
     </li></ul></dd>
     
 
@@ -3407,28 +4297,6 @@ If it's not, show an error. If it is, remove the error if there was one.
 
 
 
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    description
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">type</span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 
@@ -3450,13 +4318,13 @@ If it's not, show an error. If it is, remove the error if there was one.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="Utilities.html">Utilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="Citation.html">Citation</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="MetricsModel.html">MetricsModel</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="MetricView.html">MetricView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="SignInView.html">SignInView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="UserView.html">UserView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilder.html">QueryBuilder</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchableSelectView.html">SearchableSelectView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="Utilities.html">Utilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="Citation.html">Citation</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="Metrics.html">Metrics</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLParty.html">EMLParty</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="CitationListView.html">CitationListView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="MetricView.html">MetricView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="SignInView.html">SignInView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="UserView.html">UserView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilderView.html">QueryBuilderView</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AccountSelectView.html">AccountSelectView</a></li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="ObjectFormatSelect.html">ObjectFormatSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchableSelectView.html">SearchableSelectView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Dec 22 2020 13:37:32 GMT-0600 (Central Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Feb 24 2021 15:33:26 GMT-0600 (Central Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

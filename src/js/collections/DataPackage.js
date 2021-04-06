@@ -188,7 +188,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
           // Build the DataPackage URL based on the MetacatUI.appModel.objectServiceUrl
           // and id or seriesid
           url: function(options) {
-
             if(options && options.update){
               return MetacatUI.appModel.get("objectServiceUrl") +
                   (encodeURIComponent(this.packageModel.get("oldPid")) || encodeURIComponent(this.packageModel.get("seriesid")));
@@ -1354,7 +1353,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                   //Send this exception to Google Analytics
                   if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
                     ga("send", "exception", {
-                      "exDescription": "DataPackage save error: " + errorMsg +
+                      "exDescription": "DataPackage save error: " + data.responseText +
                         " | Id: " + collection.packageModel.get("id") + " | v. " + MetacatUI.metacatUIVersion,
                       "exFatal": true
                     });
@@ -3022,8 +3021,48 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               }
               else
                 model.set("collections", [this]);
-            }
+            },
 
+            /**
+             * Broadcast an accessPolicy across members of this package
+             *
+             * Note: Currently just sets the incoming accessPolicy on this
+             * object and doesn't broadcast to other members (such as data).
+             * How this works is likely to change in the future.
+             *
+             * Closely tied to the AccessPolicyView.broadcast property.
+             *
+             * @param {AccessPolicy} accessPolicy - The accessPolicy to
+             * broadcast
+             */
+            broadcastAccessPolicy: function(accessPolicy) {
+              if (!accessPolicy) {
+                return;
+              }
+
+              var policy = _.clone(accessPolicy);
+              this.packageModel.set("accessPolicy", policy);
+
+              // Stop now if the package is new because we don't want force
+              // a save just yet
+              if (this.packageModel.isNew()) {
+                return;
+              }
+
+              this.packageModel.on("sysMetaUpdateError", function(e) {
+                // Show a generic error. Any errors at this point are things the
+                // user can't really recover from. i.e., we've already checked
+                // that the user has changePermission perms and we've already
+                // re-tried the request a few times
+                var message = "There was an error sharing your dataset. Not all of your changes were applied.";
+
+                // TODO: Is this really the right way to hook into the editor's
+                //       error notification mechanism?
+                MetacatUI.appView.eml211EditorView.saveError(message);
+              });
+
+              this.packageModel.updateSysMeta();
+            }
         });
 
         return DataPackage;

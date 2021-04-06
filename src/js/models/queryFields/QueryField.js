@@ -40,6 +40,7 @@ define(
           categoryOrder: null,
           icon: null,
           label: null,
+          caseSensitive: false
         };
       },
 
@@ -80,6 +81,12 @@ define(
         var filterType = this.getFilterType();
         if (filterType){
           this.set("filterType", filterType)
+        }
+
+        // Indicate when the field is case-sensitive
+        var isCaseSensitive = this.caseSensitiveTypes().includes(this.get("type"));
+        if(isCaseSensitive){
+          this.set("caseSensitive", true)
         }
 
       },
@@ -254,6 +261,16 @@ define(
           numericFilter : ["int", "tfloat", "tlong", "long"],
           dateFilter : ["tdate"]
         }
+      },
+
+      /**
+       * Returns an Array of query types that are case-sensitive.
+       * @return {string[]} An array of query type names. These types should match the
+       * types set in the QueryField model "type" attribute.
+       * @since 2.15.0
+       */
+      caseSensitiveTypes: function(){
+        return ["string"]
       },
 
       /**
