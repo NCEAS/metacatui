@@ -80,7 +80,7 @@ define(['jquery', 'underscore', 'backbone'],
           this.get("fields").includes("seriesId") ){
         this.set("queryGroup", Math.floor(Math.random() * Math.floor(10000)).toString());
       }
-      
+
       //If this is an isPartOf filter, then add a label and description
       if( this.get("fields").length == 1 && this.get("fields").includes("isPartOf") ){
         this.set({
@@ -89,7 +89,7 @@ define(['jquery', 'underscore', 'backbone'],
           isInvisible: MetacatUI.appModel.get("hideIsPartOfFilter") === true ? true : false,
         });
       }
-    
+
     },
 
     /**
@@ -398,12 +398,12 @@ define(['jquery', 'underscore', 'backbone'],
       return (this.get("values").length > 0);
 
     },
-    
-    /**    
+
+    /**
      * isEmpty - Checks whether this Filter has any values or fields set
-     *      
+     *
      * @return {boolean}  returns true if the Filter's values and fields are empty
-     */     
+     */
     isEmpty: function(){
       try {
         var fields      =   this.get("fields"),
@@ -412,14 +412,14 @@ define(['jquery', 'underscore', 'backbone'],
             fieldsEmpty =   _.every(fields, function(item) { return item == "" }),
             noValues    =   values.length == 0;
             valuesEmpty =   _.every(values, function(item) { return item == "" });
-            
+
         var noMinNoMax = _.every(
           [this.get("min"), this.get("max")],
           function(num) {
             return (typeof num === "undefined") || (!num && num !== 0);
           }
         );
-            
+
         return noFields && fieldsEmpty && noValues && valuesEmpty && noMinNoMax
       } catch (e) {
         console.log("Failed to check if a Filter is empty, error message: " + e);

@@ -3,14 +3,22 @@
   <h4><i class="icon icon-group icon-on-left"></i><%=MetacatUI.appModel.get("accessPolicyName")%></h4>
 </div>
 <div class="modal-body">
-  <p class="subtle">Give others access to view, edit, and share this <%=(resourceType || "resource")%></p>
-
-  <h5>Public view</h5>
-  <p class="subtle">
-    When your <%=(resourceType || "resource")%> is private, only people you
-    approve can see the published content.
+  <p class="subtle">Give others access to view, edit, and share
+    <% if (resourceType === "data file") { %>
+      <em>just</em> <%= fileName ? fileName : "this data file" %>.
+    <% } else { %>
+      this <%=(resourceType || "resource")%>.
+    <% } %>
   </p>
-  <div class="public-toggle-container"></div>
+
+  <div id="public-toggle-section">
+    <h5>Public view</h5>
+    <p class="subtle help">
+      When your <%=(resourceType || "resource")%> is private, only people you
+      approve can see it.
+    </p>
+    <div class="public-toggle-container"></div>
+  </div>
 
   <h5>Permissions</h5>
   <p class="subtle">

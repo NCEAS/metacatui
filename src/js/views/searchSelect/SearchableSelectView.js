@@ -261,6 +261,15 @@ define([
               options.selected = _.clone(options.selected);
             }
 
+            // If pre-selected values that are passed to this view are also attached to a
+            // model (e.g. when they were passed to this view as {selected:
+            // parentView.model.get("values")}), then it's important that we use a clone
+            // instead. Otherwise this view may silently update the model, and important
+            // events may not be triggered.
+            if(options.selected){
+              options.selected = _.clone(options.selected);
+            }
+
             // Get all the options and apply them to this view
             if (typeof options == "object") {
               var optionKeys = Object.keys(options);
