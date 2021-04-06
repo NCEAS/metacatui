@@ -34,7 +34,9 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
             fillButtonTemplateString: '<button class="btn btn-primary fill-button"><i class="icon-magic"></i> Fill from file</button>',
 
             /**
-             *
+             * A list of file formats that can be auto-filled with attribute information
+             * @type {string[]}
+             * @since 2.15.0
              */
             fillableFormats: [
               "text/csv"
@@ -341,9 +343,9 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
 
             },
 
-            /*
+            /**
              * Shows the attribute in the attribute editor
-             * Param e - JS event or attribute model
+             * @param {Event} e - JS event or attribute model
              */
             showAttribute: function(e){
 
@@ -419,8 +421,9 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
               attrView.postRender();
             },
 
-            /*
+            /**
              * Show the attribute validation errors in the attribute navigation menu
+             * @param {EMLAttribute} attr
              */
             showAttributeValidation: function(attr){
 
@@ -434,7 +437,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
               attrLink.addClass("error").prepend(errorIcon);
             },
 
-            /*
+            /**
              * Hide the attribute validation errors from the attribute navigation menu
              */
             hideAttributeValidation: function(attr){
@@ -442,7 +445,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
                 .find("a").removeClass("error").find(".icon.error").remove();
             },
 
-            /*
+            /**
              * Show the user what will be removed when this remove button is clicked
              */
             previewAttrRemove: function(e){
@@ -451,8 +454,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
               removeBtn.parents(".attribute-menu-item").toggleClass("remove-preview");
             },
 
-            /*
-            * function showValidation
+            /**
             *
             * Will display validation styling and messaging. Should be called after
             * this view's model has been validated and there are error messages to display
@@ -507,9 +509,10 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
 
             },
 
-            /*
+            /**
              * Show the entity overview or attributes tab
              * depending on the click target
+             * @param {Event} e
              */
             showTab: function(e){
               e.preventDefault();
@@ -527,7 +530,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
 
             },
 
-            /*
+            /**
              * Show the entity in a modal dialog
              */
             show: function(){
@@ -536,7 +539,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
 
             },
 
-            /*
+            /**
              * Hide the entity modal dialog
              */
             hide: function(){
@@ -613,6 +616,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
              * Handle the click event on the fill button
              *
              * @param {Event} e - The click event
+             * @since 2.15.0
              */
             handleFill: function(e) {
               var d1Object = this.model.get("dataONEObject");
@@ -641,6 +645,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
              * Handle the fill event using a File object
              *
              * @param {File} file - A File object to fill from
+             * @since 2.15.0
              */
             handleFillViaFile: function(file) {
               var view = this;
@@ -656,6 +661,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
 
             /**
              * Handle the fill event by fetching the object
+             * @since 2.15.0
              */
             handleFillViaFetch: function() {
               var view = this;
@@ -665,11 +671,13 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
                 method: "get",
                 success: view.tryParseAndFillAttributeNames.bind(this),
                 error: function(error) {
-                  console.log("Error fetching DataObject to parse out headers", error);
+                  view.updateFillButton('<i class="icon-warning-sign"></i> Couldn\'t fill');
+                  console.error("Error fetching DataObject to parse out headers", error);
                 }
               }
 
-              this.updateFillButton('<i class="icon-time"></i> Please wait...');
+              this.updateFillButton('<i class="icon-time"></i> Please wait...', true);
+              this.disableFillButton();
 
               requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
               $.ajax(requestSettings);
@@ -679,6 +687,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
              * Attempt to parse header and fill attributes names
              *
              * @param {string} content - Part of a file to attempt to parse
+             * @since 2.15.0
              */
             tryParseAndFillAttributeNames: function(content) {
               var names = EntityUtils.tryParseCSVHeader(content);
@@ -689,6 +698,9 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
                 this.updateFillButton('<i class="icon-ok"></i> Filled!');
               }
 
+              //Make sure the button is enabled
+              this.enableFillButton();
+
               this.updateAttributeNames(names);
             },
 
@@ -698,7 +710,8 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
              * This will update existing attributes' names or create new
              * attributes as needed. This also performs a full re-render.
              *
-             * @param {Array} names - A list of names to apply
+             * @param {string[]} names - A list of names to apply
+             * @since 2.15.0
              */
             updateAttributeNames: function(names) {
               if (!names) {
@@ -707,6 +720,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
 
               var attributes = this.model.get("attributeList");
 
+              //Update the name of each attribute or create a new Attribute if one doesn't exist
               for (var i = 0; i < names.length; i++) {
                 if (attributes.length - 1 >= i) {
                   attributes[i].set("attributeName", names[i]);
@@ -721,6 +735,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
                 }
               }
 
+              //Update the attribute list
               this.model.set("attributeList", attributes);
 
               // Reset first
@@ -738,15 +753,35 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
              *
              * @param {string} messageHTML - HTML template string to set
              *   temporarily
+             * @param {boolean} disableTimeout - If true, the timeout will not be set
+             * @since 2.15.0
              */
-            updateFillButton: function(messageHTML) {
+            updateFillButton: function(messageHTML, disableTimeout) {
               var view = this;
 
               this.$(".fill-button").html(messageHTML);
 
-              window.setTimeout(function () {
-                view.$(".fill-button-container").html(view.fillButtonTemplateString);
-              }, 3000);
+              if( !disableTimeout ){
+                window.setTimeout(function () {
+                  view.$(".fill-button-container").html(view.fillButtonTemplateString);
+                }, 3000);
+              }
+            },
+
+            /**
+            * Disable the Fill Attributes button
+            * @since 2.15.0
+            */
+            disableFillButton: function(){
+              this.$(".fill-button").prop("disabled", true);
+            },
+
+            /**
+            * Enable the Fill Attributes button
+            * @since 2.15.0
+            */
+            enableFillButton: function(){
+              this.$(".fill-button").prop("disabled", false);
             }
           });
 
