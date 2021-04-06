@@ -3535,6 +3535,12 @@ add font awesome close icon */
   position: relative;
   display: inline-block;
 }
+.access-policy-view .public-toggle-disabled-text.public{
+  color: #005300; /*dark green*/
+}
+.access-policy-view .public-toggle-disabled-text.private{
+  color: #A04A01; /*dark orange*/
+}
 .access-policy-view .can-toggle{
   width: 200px;
 }

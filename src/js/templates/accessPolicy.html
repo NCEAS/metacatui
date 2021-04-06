@@ -11,12 +11,14 @@
     <% } %>
   </p>
 
-  <h5>Public view</h5>
-  <p class="subtle">
-    When your <%=(resourceType || "resource")%> is private, only people you
-    approve can see the published content.
-  </p>
-  <div class="public-toggle-container"></div>
+  <div id="public-toggle-section">
+    <h5>Public view</h5>
+    <p class="subtle help">
+      When your <%=(resourceType || "resource")%> is private, only people you
+      approve can see it.
+    </p>
+    <div class="public-toggle-container"></div>
+  </div>
 
   <h5>Permissions</h5>
   <p class="subtle">

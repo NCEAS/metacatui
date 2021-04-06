@@ -26,7 +26,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
     type: "AccessPolicy",
 
     /**
-    * The type of object/resource that this AccessPolicy is for.
+    * The type of object/resource that this AccessPolicy is for. This is used for display purposes only.
     * @example "dataset", "portal", "data file"
     * @type {string}
     */
@@ -71,6 +71,13 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
      * @since 2.15.0
      */
     broadcast: false,
+
+    /**
+    * A selector for the element in this view that contains the public/private toggle section
+    * @type {string}
+    * @since 2.15.0
+    */
+    publicToggleSection: "#public-toggle-section",
 
     /**
     * The events this view will listen to and the associated function to call.
@@ -194,23 +201,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
         this.renderHelpText();
 
         //Render the public/private toggle, if it's enabled in the app config
-        if( MetacatUI.appModel.get("showPortalPublicToggle") !== false ){
-          var enabledSubjects = MetacatUI.appModel.get("showPortalPublicToggleForSubjects");
-
-          if( Array.isArray(enabledSubjects) && enabledSubjects.length ){
-
-            var usersGroups = _.pluck(MetacatUI.appUserModel.get("isMemberOf"), "groupId");
-            if( _.contains(enabledSubjects, MetacatUI.appUserModel.get("username")) ||
-                _.intersection(enabledSubjects, usersGroups).length){
-                this.renderPublicToggle();
-            }
-
-          }
-          else{
-            this.renderPublicToggle();
-          }
-
-        }
+        this.renderPublicToggle();
 
       }
       catch(e){
@@ -230,7 +221,39 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
     */
     renderPublicToggle: function(){
 
-      var view = this;
+      //Check if the public/private toggle is enabled. Default to enabling it.
+      var isEnabled = true,
+          enabledSubjects = [];
+
+      //Get the DataONEObject that this AccessPlicy is about
+      var dataONEObject = this.collection.dataONEObject;
+
+      //If there is a DataONEObject model found, and it has a type
+      if(dataONEObject && dataONEObject.type){
+        //Get the Portal configs from the AppConfig
+        if( dataONEObject.type == "Portal" ){
+          isEnabled = MetacatUI.appModel.get("showPortalPublicToggle");
+          enabledSubjects = MetacatUI.appModel.get("showPortalPublicToggleForSubjects");
+        }
+        //Get the Dataset configs from the AppConfig
+        else{
+          isEnabled = MetacatUI.appModel.get("showDatasetPublicToggle");
+          enabledSubjects = MetacatUI.appModel.get("showDatasetPublicToggleForSubjects");
+        }
+      }
+
+      //Get the public/private help text
+      let helpText = this.getPublicToggleHelpText();
+
+      // Or if the public toggle is limited to a set of users and/or groups, and the current user is
+      // not in that list, then display a message instead of the toggle
+      if( !isEnabled || (Array.isArray(enabledSubjects) && enabledSubjects.length &&
+          !_.intersection(enabledSubjects, MetacatUI.appUserModel.get("allIdentitiesAndGroups")).length)){
+            let isPublicClass = this.collection.isPublic()? "public" : "private";
+            this.$(".public-toggle-container").html( $(document.createElement("p")).addClass("public-toggle-disabled-text " + isPublicClass).text(helpText) );
+            this.$(this.publicToggleSection).find("p.help").remove();
+            return;
+      }
 
       //Render the private/public toggle
       this.$(".public-toggle-container").html(
@@ -243,14 +266,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
       ).tooltip({
         placement: "top",
         trigger: "hover",
-        title: function(){
-          if( view.collection.isPublic() ){
-            return "Your " + view.resourceType + " is public. Anyone can see this content."
-          }
-          else{
-            return "Your " + view.resourceType + " is private. Only people you approve can see this content."
-          }
-        },
+        title: helpText,
         container: this.$(".public-toggle-container"),
         delay: {
           show: 800
@@ -259,6 +275,22 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
 
       //If the dataset is public, check the checkbox
       this.$(".public-toggle-container input").prop("checked", this.collection.isPublic());
+    },
+
+    /**
+    * Constructs and returns a message that explains if this resource is public or private. This message is displayed
+    * in the tooltip for the public/private toggle or in place of the toggle when the toggle is disabled. Override this
+    * function to create a custom message.
+    * @returns {string}
+    * @since 2.15.0
+    */
+    getPublicToggleHelpText: function(){
+      if( this.collection.isPublic() ){
+        return "Your " + this.resourceType + " is public. Anyone can see this " + this.resourceType + " in searches or by a direct link.";
+      }
+      else{
+        return "Your " + this.resourceType + " is private. Only people you approve can see this " + this.resourceType + ".";
+      }
     },
 
     /**

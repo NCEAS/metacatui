@@ -1097,6 +1097,15 @@ define(['jquery', 'underscore', 'backbone'],
       showDatasetPublicToggle: true,
 
       /**
+      * The public/private toggle will be displayed in the Sharing Options for datasets for only
+      * the given users or groups. To display the public/private toggle for everyone,
+      * set `showDatasetPublicToggle` to true and keep this array empty.
+      * @type {string[]}
+      * @since 2.15.0
+      */
+      showDatasetPublicToggleForSubjects: [],
+
+      /**
       * Set to false to hide the display of "My Portals", which shows the user's current portals
       * @type {boolean}
       * @default true
