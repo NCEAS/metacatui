@@ -971,7 +971,6 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
     },
 
-
     /**
      * @inheritdoc
      */

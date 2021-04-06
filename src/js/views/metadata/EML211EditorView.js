@@ -582,10 +582,10 @@ define(['underscore',
             console.log("Not EML. TODO: Render generic ScienceMetadata.");
             return;
 
-          } else {
+          }
 
-            //Create an EML model
-            if (model.type != "EML") {
+          //Create an EML model
+          if (model.type != "EML") {
               //Create a new EML model from the ScienceMetadata model
               var EMLmodel = new EML(model.toJSON());
               //Replace the old ScienceMetadata model in the collection
@@ -601,39 +601,38 @@ define(['underscore',
               return;
             }
 
-            //Create an EML211 View and render it
-            emlView = new EMLView({
-              model: model,
-              edit: true
-            });
-            this.subviews.push(emlView);
-            this.emlView = emlView;
-            emlView.render();
+          //Create an EML211 View and render it
+          emlView = new EMLView({
+            model: model,
+            edit: true
+          });
+          this.subviews.push(emlView);
+          this.emlView = emlView;
+          emlView.render();
 
-            //Show the required fields for this editor
-            this.renderRequiredIcons(MetacatUI.appModel.get("emlEditorRequiredFields"));
+          //Show the required fields for this editor
+          this.renderRequiredIcons(MetacatUI.appModel.get("emlEditorRequiredFields"));
 
-            // Create a citation view and render it
-            var citationView = new CitationView({
-              model: model,
-              title: "Untitled dataset"
-            });
+          // Create a citation view and render it
+          var citationView = new CitationView({
+            model: model,
+            title: "Untitled dataset"
+          });
 
-            if (model.isNew()) {
-              citationView.createLink = false;
-              citationView.createTitleLink = false;
-            }
-            else {
-              citationView.createLink = false;
-              citationView.createTitleLink = true;
-            }
-
-            this.subviews.push(citationView);
-            $("#citation-container").html(citationView.render().$el);
-
-            //Remove the rendering class from the body element
-            $("body").removeClass("rendering");
+          if (model.isNew()) {
+            citationView.createLink = false;
+            citationView.createTitleLink = false;
           }
+          else {
+            citationView.createLink = false;
+            citationView.createTitleLink = true;
+          }
+
+          this.subviews.push(citationView);
+          $("#citation-container").html(citationView.render().$el);
+
+          //Remove the rendering class from the body element
+          $("body").removeClass("rendering");
 
           // Focus the folder name field once loaded but only if this is a new
           // document
@@ -957,15 +956,6 @@ define(['underscore',
 
                   this.model.addEntity(entityModel, position);
                 }
-              }
-
-              //Create a new view for the entity based on the model type
-              if (entityModel.type == "EMLOtherEntity") {
-                entityView = new EMLEntityView({
-                  model: entityModel,
-                  DataONEObject: dataONEObject,
-                  edit: true
-                });
               }
               else {
                 entityView = new EMLEntityView({

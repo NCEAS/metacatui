@@ -82,6 +82,8 @@ function(_, $, Backbone, Woofmark, EMLText, ImageUploader, MarkdownView, TableEd
      * the image won't be resized based on height (but might be depending on
      * maxImageWidth).
      * @type {number}
+     * @default 1200
+     * @since 2.15.0
      */
     maxImageHeight: 1200,
 
@@ -91,6 +93,8 @@ function(_, $, Backbone, Woofmark, EMLText, ImageUploader, MarkdownView, TableEd
      * the image won't be resized based on width (but might be depending on
      * maxImageHeight).
      * @type {number}
+     * @default 1200
+     * @since 2.15.0
      */
     maxImageWidth: 1200,
 

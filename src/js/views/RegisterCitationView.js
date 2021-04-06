@@ -112,14 +112,25 @@ define(['jquery', 'underscore', 'backbone', "models/Utilities", 'text!templates/
 
           // get the form data before replacing everything with the loading icon!
           var formData = {};
-          formData["request_type"] = "dataset";
-          formData["metadata"] = new Array();
+          var citationObject = {};
+          var citaitonRelatedIdentifiersObject = {}
 
-          var citationRegisterObject = {};
-          citationRegisterObject["target_id"] = this.pid;
-          citationRegisterObject["source_id"] = publicationIdentifier;
-          citationRegisterObject["relation_type"] = relation_type;
-          formData["metadata"].push(citationRegisterObject);
+          // initializing the citation POSt object
+          formData["request_type"] = "dataset";
+          formData["submitter"] = MetacatUI.appUserModel.get("username");
+          formData["citations"] = new Array();
+
+          // form the citation object
+          citationObject["related_identifiers"] = new Array();
+          citationObject["source_id"] = publicationIdentifier;
+
+          // set the related identifiers
+          citaitonRelatedIdentifiersObject["identifier"] = this.pid;
+          citaitonRelatedIdentifiersObject["relation_type"] = relation_type;
+
+          // include all the required data
+          citationObject["related_identifiers"].push(citaitonRelatedIdentifiersObject);
+          formData["citations"].push(citationObject);
 
           // ajax call to submit the given form and then render the results in the content area
           var viewRef = this;
@@ -158,7 +169,7 @@ define(['jquery', 'underscore', 'backbone', "models/Utilities", 'text!templates/
 
         /**
         * Validates if the given input is a valid DOI string or not
-        * @since 2.14.1
+        * @since 2.15.0
         * @return {undefined}
         */
         validateDOI: function(){

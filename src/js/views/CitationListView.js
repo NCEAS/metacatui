@@ -3,7 +3,15 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
     function($, _, Backbone, Citations, CitationView) {
     'use strict';
 
-    var CitationListView = Backbone.View.extend({
+    /**
+    * @class CitationListView
+    * @classdesc The CitationListView displays a list of Citation models
+    * @classcategory Views
+    * @extends Backbone.View
+    * @constructor
+    */
+    var CitationListView = Backbone.View.extend(
+      /** @lends CitationListView.prototype */{
 
         id: 'table',
         className: 'table',
@@ -11,6 +19,12 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
         emptyCitations: null,
         citationsForDataCatalogView: null,
 
+        /**
+        * If true, the "register a citation" tool will display. This can be turned off/on
+        * with the {@link AppConfig#displayRegisterCitationTool} app configuration.
+        * @type {boolean}
+        * @since 2.15.0
+        */
         displayRegisterCitationTool: MetacatUI.appModel.get("displayRegisterCitationTool"),
 
         events: {

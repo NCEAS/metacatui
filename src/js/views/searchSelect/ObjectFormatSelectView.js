@@ -36,18 +36,21 @@ define([
         /**
          * Label for the input element
          * @type {string}
+         * @since 2.15.0
          */
         inputLabel: "Select one or more metadata types",
 
         /**
          * Text to show in the input field before any value has been entered
          * @type {string}
+         * @since 2.15.0
          */
         placeholderText: "Type in a metadata type",
 
         /**
          * Whether to allow users to select more than one value
          * @type {boolean}
+         * @since 2.15.0
          */
         allowMulti: true,
 
@@ -57,6 +60,7 @@ define([
          * or multiple search select dropdowns
          * @type {boolean}
          * @default true
+         * @since 2.15.0
          */
         allowAdditions: true,
 
@@ -64,6 +68,7 @@ define([
          * Render the view
          *
          * @return {ObjectFormatSelect}  Returns the view
+         * @since 2.15.0
          */
         render: function () {
 
