@@ -35,6 +35,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             /**
             * A reference to the parent EditorView that contains this DataItemView
             * @type EditorView
+            * @since 2.15.0
             */
             parentEditorView: null,
 
@@ -376,6 +377,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
             /**
             * Renders a button that opens the AccessPolicyView for editing permissions on this data item
+            * @since 2.15.0
             */
             renderShareControl: function(){
 
@@ -1146,6 +1148,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
              * shared.
              *
              * @return {boolean} Whether the item can be shared
+             * @since 2.15.0
              */
             canShareItem: function() {
 

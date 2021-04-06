@@ -304,6 +304,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     * Checks if the Access Policy editor is enabled in this instance of MetacatUI for
     * the type of object being edited.
     * @returns {boolean}
+    * @since 2.15.0
     */
     isAccessPolicyEditEnabled: function(){
 

@@ -55,6 +55,8 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
      * Used to track the collection of models set on the view in order to handle
      * undoing all changes made when we either hit Cancel or click otherwise
      * hide the modal (such as clicking outside of it).
+     * @type {AccessRule[]}
+     * @since 2.15.0
      */
     cachedModels: null,
 
@@ -65,6 +67,8 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
      *
      * This implementation is very likely to change in the future as we iron out
      * how to handle bulk accessPolicy (and other) changes.
+     * @type {boolean}
+     * @since 2.15.0
      */
     broadcast: false,
 
@@ -681,6 +685,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
     * Resets the state of the models stored in the view's collection to the
     * latest cached copy. Triggered either when the Cancel button is hit or
     * the modal containing this view is hidden.
+    * @since 2.15.0
     */
     reset: function() {
       if (!this.collection || !this.cachedModels) {

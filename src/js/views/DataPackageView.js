@@ -39,6 +39,7 @@ define([
             /**
             * A reference to the parent EditorView that contains this view
             * @type EditorView
+            * @since 2.15.0
             */
             parentEditorView: null,
 
@@ -244,6 +245,7 @@ define([
 
             /**
             * Renders a control that opens the AccessPolicyView for editing permissions on this package
+            * @since 2.15.0
             */
             renderShareControl: function(){
 
