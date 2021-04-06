@@ -1461,10 +1461,10 @@ define(['jquery',
           if (MetacatUI.appModel.get("displayDatasetMetrics")) {
             var buttonToolbar = this.$(".metrics-container");
 
-            if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
-              var citationsMetricView = new MetricView({ metricName: 'Citations', model: metricsModel, pid: this.pid });
-              buttonToolbar.append(citationsMetricView.render().el);
-              this.subviews.push(citationsMetricView);
+            if (MetacatUI.appModel.get("displayDatasetDownloadMetric")) {
+              var dwnldsMetricView = new MetricView({ metricName: 'Downloads', model: metricsModel, pid: this.pid });
+              buttonToolbar.append(dwnldsMetricView.render().el);
+              this.subviews.push(dwnldsMetricView);
             }
 
             if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
@@ -2791,26 +2791,26 @@ define(['jquery',
             script.text = JSON.stringify(json);
           }
         },
-        
+
         /**
          * Generate a Schema.org/identifier from the model's id
-         * 
+         *
          * Tries to use the PropertyValue pattern when the identifier is a DOI
          * and falls back to a Text value otherwise
-         * 
-         * @param {string} identifier - The raw identifier 
+         *
+         * @param {string} identifier - The raw identifier
          */
         generateSchemaOrgIdentifier: function (identifier) {
           if (!this.model.isDOI()) {
             return identifier;
           }
-          
+
           var doi = this.getCanonicalDOIIRI(identifier);
-          
+
           if (!doi) {
             return identifier;
           }
-          
+
           return {
             "@type": "PropertyValue",
             "propertyID": "https://registry.identifiers.org/registry/doi",
@@ -2818,7 +2818,7 @@ define(['jquery',
             "url": doi
           }
         },
-          
+
         /**
          * Generate a Schema.org/Place/geo from bounding coordinates
          *
@@ -2882,7 +2882,7 @@ define(['jquery',
          *      -105.01621,
          *      39.57422
          * ]}
-    
+
         */
         generateGeoJSONPoint: function (north, east) {
           var preamble = "{\"type\":\"Point\",\"coordinates\":",
