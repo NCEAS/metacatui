@@ -1,0 +1,31 @@
+.cards{
+  display: flex;
+  justify-content: center;
+}
+.card{
+  max-width: 150px;
+  justify-content: center;
+  display: grid;
+  margin: $padding;
+
+
+  a {
+    justify-self: center;
+    align-self: center;
+  }
+
+  svg{
+    color: $primary-brand-on-dark;
+    fill: $primary-brand-on-dark;
+    max-width: 100%;
+    max-height: 100px;
+    height: auto;
+  }
+
+  .name{
+    text-align: center;
+    color: $neutral;
+    margin-top: $padding;
+    display: block;
+  }
+}

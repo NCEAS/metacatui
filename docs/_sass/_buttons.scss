@@ -4,4 +4,18 @@ a.button{
   border-radius: 4px;
   color: $primary-brand-dark;
   font-weight: bold;
+  text-align: center;
+
+  > svg,
+  > img{
+    height: 1em;
+    fill: $primary-brand-dark;
+  }
+}
+
+.git-release .button{
+  min-width: 200px;
+  max-width: 3em;
+  display: block;
+  margin-bottom: $padding;
 }

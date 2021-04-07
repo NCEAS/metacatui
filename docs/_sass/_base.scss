@@ -12,7 +12,6 @@ body{
     grid-template-areas:
       "header header header"
       "main . side-nav";
-    max-width: 1500px;
 
     > article{
       grid-area: main;
@@ -51,7 +50,6 @@ body{
           align-self: flex-end;
           max-width: 17%;
           min-width: 150px;
-          text-align: center;
           flex-grow: 1;
         }
       }
@@ -78,4 +76,29 @@ img{
   background-color: #eaeaea;
   padding: 5px;
   border-radius: 4px;
+}
+
+.release-notes h1{
+  font-size: 1.3em;
+}
+.release-notes h2{
+  font-size: 1.1em;
+}
+.release-notes img {
+  border: 1px solid $neutral-light;
+  margin: $padding;
+  padding: $padding-small;
+  border-radius: 4px;
+  max-width: 90%;
+}
+.subtle{
+  font-size: .9em;
+  color: $neutral-light;
+}
+
+h2 .subtle{
+  font-weight: normal;
+  margin-left: $padding;
+  font-size: .6em;
+  vertical-align: middle;
 }

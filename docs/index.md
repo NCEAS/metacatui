@@ -6,4 +6,6 @@ id: homepage
 
 {% include homepage.html %}
 
-[See more screenshots]({{site.url}}/screenshots/index.html)
+<h2>Related Projects</h2>
+
+{% include related-proj.html %}

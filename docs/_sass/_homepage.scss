@@ -2,6 +2,14 @@ body#homepage{
   background-color: $neutral-dark;
   color: $neutral;
 }
-.homepage h1{
+#homepage h1,
+#homepage article h2{
+  text-align: center;
+}
+.homepage img{
+  margin: auto;
+  display: block;
+}
+.homepage p{
   text-align: center;
 }
