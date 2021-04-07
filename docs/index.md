@@ -13,4 +13,4 @@ MetacatUI is an open source, community project.  We [welcome contributions](http
 
 ## Related Projects
 
-{% include projects.html }
+{% include projects.html %}
