@@ -51,6 +51,7 @@ define(['jquery',
     * @classcategory Views
     * @extends Backbone.View
     * @constructor
+    * @screenshot views/MetadataView.png
     */
     var MetadataView = Backbone.View.extend(
     /** @lends MetadataView.prototype */{

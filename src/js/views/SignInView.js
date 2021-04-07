@@ -10,6 +10,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
   * @class SignInView
   * @classcategory Views
   * @extends Backbone.View
+  * @screenshot views/SignInView.png
   */
   var SignInView = Backbone.View.extend(
     /** @lends SignInView.prototype */{

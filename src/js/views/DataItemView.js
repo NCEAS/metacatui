@@ -13,6 +13,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             aggregated metadata and data objects.
         * @classcategory Views
         * @constructor
+        * @screenshot views/DataItemView.png
         */
         var DataItemView = Backbone.View.extend(
           /** @lends DataItemView.prototype */{

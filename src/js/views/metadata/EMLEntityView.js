@@ -17,6 +17,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
         * @class EMLEntityView
         * @classdesc An EMLEntityView shows the basic attributes of a DataONEObject, as described by EML
         * @classcategory Views/Metadata
+        * @screenshot views/metadata/EMLEntityView.png
         * @extends Backbone.View
         */
         var EMLEntityView = Backbone.View.extend(

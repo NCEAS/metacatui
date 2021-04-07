@@ -34,10 +34,7 @@
         <?js } ?>
 
         <?js if (doc.screenshot) { ?>
-            <div class="class-screenshot">
-              <h3>Screenshot</h3>
-              <img src="<?js= doc.screenshot ?>" class="thumbnail"/>
-            </div>
+            <?js= self.partial('plugins/screenshot.tmpl', doc.screenshot) ?>
         <?js } ?>
 
     <?js } else if (doc.kind === 'module' && doc.modules) { ?>

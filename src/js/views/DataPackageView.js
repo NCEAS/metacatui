@@ -19,6 +19,7 @@ define([
          * @classdesc The main view of a Data Package in the editor.  The view is
          *  a file/folder browser
          * @classcategory Views
+         * @screenshot views/DataPackageView.png
          */
         var DataPackageView = Backbone.View.extend(
           /** @lends DataPackageView.prototype */{

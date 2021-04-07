@@ -13,6 +13,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
   * @classdesc A view of an Access Policy of a DataONEObject
   * @classcategory Views
   * @extends Backbone.View
+  * @screenshot views/AccessPolicyView.png
   * @constructor
   */
   var AccessPolicyView = Backbone.View.extend(
