@@ -1,3 +1,4 @@
 url: "/metacatui"
+baseurl: "https://nceas.github.io/metacatui/"
 highlighter: "rouge"
 version: "2.15.0"
