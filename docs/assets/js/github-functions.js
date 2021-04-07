@@ -9,7 +9,7 @@ export async function getLatestRelease(){
   var releaseTemplate =
   '<div class="git-release">\
     <h2 class="tag-name">MetacatUI v{{tag-name}}<span class="subtle">{{date}}</span></h2>\
-    <a href="{{download-url}}" class="button"><img src="/assets/images/download.svg"/> Download</a>\
+    <a href="{{download-url}}" class="button"><img src="/metacatui/assets/images/download.svg"/> Download</a>\
     <a href="{{github-url}}">View on GitHub</a>\
     <section class="release-notes">\
       {{release-notes}}\

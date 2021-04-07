@@ -4,7 +4,7 @@ title: Latest release
 ---
 
 <script type="module">
-  import { getLatestRelease } from "/assets/js/github-functions.js";
+  import { getLatestRelease } from "/metacatui/assets/js/github-functions.js";
   getLatestRelease();
 </script>
 

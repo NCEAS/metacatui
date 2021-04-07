@@ -2,48 +2,48 @@
     font-family: 'Open Sans';
     font-weight: normal;
     font-style: normal;
-    src: url('/assets/fonts/OpenSans-Regular-webfont.woff') format('woff'),
-        url('/assets/fonts/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+    src: url('../fonts/OpenSans-Regular-webfont.woff') format('woff'),
+        url('../fonts/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
 }
 
 @font-face {
     font-family: 'Open Sans';
     font-weight: bold;
     font-style: normal;
-    src: url('/assets/fonts/OpenSans-Bold-webfont.woff') format('woff'),
-        url('/assets/fonts/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
+    src: url('../fonts/OpenSans-Bold-webfont.woff') format('woff'),
+        url('../fonts/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
 }
 
 @font-face {
     font-family: 'Open Sans';
     font-weight: normal;
     font-style: italic;
-    src: url('/assets/fonts/OpenSans-Italic-webfont.woff') format('woff'),
-        url('/assets/fonts/OpenSans-Italic-webfont.svg#OpenSansItalic') format('svg');
+    src: url('../fonts/OpenSans-Italic-webfont.woff') format('woff'),
+        url('../fonts/OpenSans-Italic-webfont.svg#OpenSansItalic') format('svg');
 }
 
 @font-face {
     font-family: 'Open Sans';
     font-weight: bold;
     font-style: italic;
-    src: url('/assets/fonts/OpenSans-BoldItalic-webfont.woff') format('woff'),
-        url('/assets/fonts/OpenSans-BoldItalic-webfont.svg#OpenSansBoldItalic') format('svg');
+    src: url('../fonts/OpenSans-BoldItalic-webfont.woff') format('woff'),
+        url('../fonts/OpenSans-BoldItalic-webfont.svg#OpenSansBoldItalic') format('svg');
 }
 
 @font-face {
     font-family: 'Open Sans Light';
     font-weight: normal;
     font-style: normal;
-    src: url('/assets/fonts/OpenSans-Light-webfont.woff') format('woff'),
-        url('/assets/fonts/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
+    src: url('../fonts/OpenSans-Light-webfont.woff') format('woff'),
+        url('../fonts/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
 }
 
 @font-face {
     font-family: 'Open Sans Light';
     font-weight: normal;
     font-style: italic;
-    src: url('/assets/fonts/OpenSans-LightItalic-webfont.woff') format('woff'),
-        url('/assets/fonts/OpenSans-LightItalic-webfont.svg#OpenSansLightItalic') format('svg');
+    src: url('../fonts/OpenSans-LightItalic-webfont.woff') format('woff'),
+        url('../fonts/OpenSans-LightItalic-webfont.svg#OpenSansLightItalic') format('svg');
 }
 
 body{

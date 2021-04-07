@@ -4,7 +4,7 @@ title: Release history
 ---
 
 <script type="module">
-  import { getReleases } from "/assets/js/github-functions.js";
+  import { getReleases } from "/metacatui/assets/js/github-functions.js";
   getReleases();
 </script>
 
