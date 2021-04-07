@@ -1247,9 +1247,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               try{
                 //If the app is configured to inherit the access policy from the parent metadata,
                 // then get the parent metadata and copy it's AccessPolicy
-                if( MetacatUI.appModel.get("inheritAccessPolicy") && this.get("isDocumentedByModels").length ){
-                  let scienceMetadata = this.get("isDocumentedByModels")[0];
-                  let sciMetaAccessPolicy = scienceMetadata.get("accessPolicy");
+                let scienceMetadata = this.get("isDocumentedByModels");
+                if( MetacatUI.appModel.get("inheritAccessPolicy") && scienceMetadata && scienceMetadata.length ){
+                  let sciMetaAccessPolicy = scienceMetadata[0].get("accessPolicy");
 
                   if( sciMetaAccessPolicy ){
                     accessPolicy.copyAccessPolicy(sciMetaAccessPolicy);
