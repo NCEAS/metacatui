@@ -3,54 +3,67 @@ define(['jquery', 'underscore', 'backbone', 'd3',
   "models/SolrResult",
   'DonutChart', 'views/CitationView',
   'text!templates/mdqRun.html', 'text!templates/mdqSuites.html', 'text!templates/loading-metrics.html', 'collections/QualityReport'],
-	function($, _, Backbone, d3,
+  function($, _, Backbone, d3,
     SolrResult,
     DonutChart, CitationView,
     MdqRunTemplate, SuitesTemplate, LoadingTemplate, QualityReport) {
-	'use strict';
+  'use strict';
 
-	// Build the Footer view of the application
-	var MdqRunView = Backbone.View.extend({
+  /**
+  * @class MdqRunView
+  * @classdesc A view that fetches and displays a Metadata Assessment Report
+  * @classcategory Views
+  * @name MdqRunView
+  * @extends Backbone.View
+  * @constructs
+  */
+  var MdqRunView = Backbone.View.extend(
+    /** @lends MdqRunView.prototype */{
 
-		el: '#Content',
+    el: '#Content',
 
-		events: {
-			//"click input[type='submit']"	:	"submitForm"
-			"change #suiteId" : "switchSuite"
-		},
+    events: {
+      "change #suiteId" : "switchSuite"
+    },
 
-		url: null,
-		pid: null,
-        // The currently selected/requested suite
-		suiteId: null,
-        // The list of all potential suites for this theme
-        suiteIdList: [],
-		loadingTemplate: _.template(LoadingTemplate),
-		template: _.template(MdqRunTemplate),
-        //suitesTemplate: _.template(SuitesTemplate),
-        breadcrumbContainer: "#breadcrumb-container",
-    
+    url: null,
+    pid: null,
+    /**
+    * The currently selected/requested suite
+    * @type {string}
+    */
+    suiteId: null,
+    /**
+    * The list of all potential suites for this theme
+    * @type {string[]}
+    */
+    suiteIdList: [],
+    loadingTemplate: _.template(LoadingTemplate),
+    template: _.template(MdqRunTemplate),
+    breadcrumbContainer: "#breadcrumb-container",
+
     /**
      * A JQuery selector for the element in the template that will contain the loading
      * image
      * @type {string}
+     * @since 2.15.0
      */
     loadingContainer: "#mdqResult",
 
-		initialize: function () {
+    initialize: function () {
 
-		},
+    },
 
-		switchSuite: function(event) {
-			var select = $(event.target);
-			var suiteId = $(select).val();
-			MetacatUI.uiRouter.navigate("quality/s=" + suiteId + "/" + encodeURIComponent(this.pid), {trigger: false});
-			this.suiteId = suiteId;
-			this.render();
-			return false;
-		},
+    switchSuite: function(event) {
+      var select = $(event.target);
+      var suiteId = $(select).val();
+      MetacatUI.uiRouter.navigate("quality/s=" + suiteId + "/" + encodeURIComponent(this.pid), {trigger: false});
+      this.suiteId = suiteId;
+      this.render();
+      return false;
+    },
 
-		render: function () {
+    render: function () {
 
       var viewRef = this;
 
@@ -88,7 +101,7 @@ define(['jquery', 'underscore', 'backbone', 'd3',
       var qualityUrl = MetacatUI.appModel.get("mdqRunsServiceUrl") + viewRef.suiteId + "/" + viewRef.pid;
       var qualityReport = new QualityReport([], { url: qualityUrl, pid: viewRef.pid });
       qualityReport.fetch({ url: qualityUrl });
-        
+
       this.listenToOnce(qualityReport, "fetchError", function() {
         // Inspect the results to see if a quality report was returned.
         // If not, then submit a request to the quality engine to create the
@@ -133,10 +146,10 @@ define(['jquery', 'underscore', 'backbone', 'd3',
                 return false;
             }
         }));
-        
+
         var groupedResults = qualityReport.groupResults(qualityReport.models);
         var groupedByType = qualityReport.groupByType(qualityReport.models);
-        
+
         var data = {
               objectIdentifier: qualityReport.id,
               suiteId: viewRef.suiteId,
@@ -156,8 +169,8 @@ define(['jquery', 'underscore', 'backbone', 'd3',
         viewRef.show();
         viewRef.$('.popover-this').popover();
       });
-      
-		},
+
+    },
 
     /**
      * Updates the message in the loading image
@@ -166,11 +179,11 @@ define(['jquery', 'underscore', 'backbone', 'd3',
      * in MetacatUI, then the contact email will be shown at the bottom of the message.
      * @param {boolean} [showLink=true] If set to true, a link back to the dataset will be
      * appended to the end of the message.
-     * @returns 
+     * @since 2.15.0
      */
     showMessage : function(message, showHelp = true, showLink = true){
       try {
-        
+
         var view = this;
         var messageEl = this.loadingEl.find(".message");
 
@@ -223,7 +236,7 @@ define(['jquery', 'underscore', 'backbone', 'd3',
     /**
      * Render a loading image with message
      */
-		showLoading: function() {
+    showLoading: function() {
       try {
         var loadingEl = this.loadingTemplate({
           message: "Retrieving assessment report...",
@@ -239,7 +252,7 @@ define(['jquery', 'underscore', 'backbone', 'd3',
           '. Error details: ' + error
         );
       }
-		},
+    },
 
     /**
      * Remove the loading image and message.
@@ -254,9 +267,9 @@ define(['jquery', 'underscore', 'backbone', 'd3',
           '. Error details: ' + error
         );
       }
-		},
+    },
 
-		showCitation: function(){
+    showCitation: function(){
 
       var solrResultModel = new SolrResult({
         id: this.pid
@@ -271,84 +284,84 @@ define(['jquery', 'underscore', 'backbone', 'd3',
 
         citationView.render();
 
-  			this.$("#mdqCitation").prepend(citationView.el);
+        this.$("#mdqCitation").prepend(citationView.el);
       });
       solrResultModel.getInfo();
 
-		},
+    },
 
-		show: function() {
-			var view = this;
-			this.$el.hide();
-			this.$el.fadeIn({duration: "slow"});
-		},
+    show: function() {
+      var view = this;
+      this.$el.hide();
+      this.$el.fadeIn({duration: "slow"});
+    },
 
-		drawScoreChart: function(results, groupedResults){
+    drawScoreChart: function(results, groupedResults){
 
-			var dataCount = results.length;
-			var data = [
-			            {label: "Pass", count: groupedResults.GREEN.length, perc: groupedResults.GREEN.length/results.length },
-			            {label: "Warn", count:  groupedResults.ORANGE.length, perc: groupedResults.ORANGE.length/results.length},
-			            {label: "Fail", count: groupedResults.RED.length, perc: groupedResults.RED.length/results.length},
-			            {label: "Info", count: groupedResults.BLUE.length, perc: groupedResults.BLUE.length/results.length},
-			        ];
+      var dataCount = results.length;
+      var data = [
+                  {label: "Pass", count: groupedResults.GREEN.length, perc: groupedResults.GREEN.length/results.length },
+                  {label: "Warn", count:  groupedResults.ORANGE.length, perc: groupedResults.ORANGE.length/results.length},
+                  {label: "Fail", count: groupedResults.RED.length, perc: groupedResults.RED.length/results.length},
+                  {label: "Info", count: groupedResults.BLUE.length, perc: groupedResults.BLUE.length/results.length},
+              ];
 
-			var svgClass = "data";
+      var svgClass = "data";
 
-			//If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
-			if(!d3){
-				this.$('.format-charts-data').html("<h2 class='" + svgClass + " fallback'>" + MetacatUI.appView.commaSeparateNumber(dataCount) + " data files</h2>");
+      //If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
+      if(!d3){
+        this.$('.format-charts-data').html("<h2 class='" + svgClass + " fallback'>" + MetacatUI.appView.commaSeparateNumber(dataCount) + " data files</h2>");
 
-				return;
-			}
+        return;
+      }
 
-			//Draw a donut chart
-			var donut = new DonutChart({
-							id: "data-chart",
-							data: data,
-							total: dataCount,
-							titleText: "checks",
-							titleCount: dataCount,
-							svgClass: svgClass,
-							countClass: "data",
-							height: 250,
-							width: 250,
-							keepOrder: true,
-							formatLabel: function(name) {
-								return name;
-							}
-						});
-			this.$('.format-charts-data').html(donut.render().el);
-		},
-        
-    	insertBreadcrumbs: function(){
-    		var breadcrumbs = $(document.createElement("ol"))
-    					      .addClass("breadcrumb")
-    					      .append($(document.createElement("li"))
-    					    		  .addClass("home")
-    					    		  .append($(document.createElement("a"))
-    					    				  .attr("href", MetacatUI.root? MetacatUI.root : "/")
-    					    				  .addClass("home")
-    					    				  .text("Home")))
-    	    				  .append($(document.createElement("li"))
-    	    						  .addClass("search")
-    					    		  .append($(document.createElement("a"))
-    					    				  .attr("href", MetacatUI.root + "/data" + ((MetacatUI.appModel.get("page") > 0)? ("/page/" + (parseInt(MetacatUI.appModel.get("page"))+1)) : ""))
-    					    				  .addClass("search")
-    					    				  .text("Search")))
-    	    				  .append($(document.createElement("li"))
-    					                      .append($(document.createElement("a"))
-    					    				  .attr("href", MetacatUI.root + "/view/" + encodeURIComponent(this.pid))
-    					    				  .addClass("inactive")
-    					    				  .text("Metadata")))
-                              .append($(document.createElement("li"))
-                                    .append($(document.createElement("a"))
-                                    .attr("href", MetacatUI.root + "/quality/" + encodeURIComponent(this.pid))
-                                    .addClass("inactive")
-                                    .text("Assessment Report")));
+      //Draw a donut chart
+      var donut = new DonutChart({
+              id: "data-chart",
+              data: data,
+              total: dataCount,
+              titleText: "checks",
+              titleCount: dataCount,
+              svgClass: svgClass,
+              countClass: "data",
+              height: 250,
+              width: 250,
+              keepOrder: true,
+              formatLabel: function(name) {
+                return name;
+              }
+            });
+      this.$('.format-charts-data').html(donut.render().el);
+    },
 
-    		this.$(this.breadcrumbContainer).html(breadcrumbs);
-    	},
-	});
-	return MdqRunView;
+    insertBreadcrumbs: function(){
+      var breadcrumbs = $(document.createElement("ol"))
+                  .addClass("breadcrumb")
+                  .append($(document.createElement("li"))
+                      .addClass("home")
+                      .append($(document.createElement("a"))
+                          .attr("href", MetacatUI.root? MetacatUI.root : "/")
+                          .addClass("home")
+                          .text("Home")))
+                  .append($(document.createElement("li"))
+                      .addClass("search")
+                      .append($(document.createElement("a"))
+                          .attr("href", MetacatUI.root + "/data" + ((MetacatUI.appModel.get("page") > 0)? ("/page/" + (parseInt(MetacatUI.appModel.get("page"))+1)) : ""))
+                          .addClass("search")
+                          .text("Search")))
+                  .append($(document.createElement("li"))
+                                  .append($(document.createElement("a"))
+                          .attr("href", MetacatUI.root + "/view/" + encodeURIComponent(this.pid))
+                          .addClass("inactive")
+                          .text("Metadata")))
+                            .append($(document.createElement("li"))
+                                  .append($(document.createElement("a"))
+                                  .attr("href", MetacatUI.root + "/quality/" + encodeURIComponent(this.pid))
+                                  .addClass("inactive")
+                                  .text("Assessment Report")));
+
+      this.$(this.breadcrumbContainer).html(breadcrumbs);
+    },
+  });
+  return MdqRunView;
 });

@@ -160,3 +160,7 @@ td.name{
 section{
   background-color: transparent;
 }
+.link-icon svg{
+  height: 1em;
+  vertical-align: middle;
+}
