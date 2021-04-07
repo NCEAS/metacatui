@@ -32,7 +32,7 @@ define(['jquery', 'underscore', 'backbone'],
     * @property {string} operator - The operator to use between values set on this model. "AND" or "OR"
     * @property {string} queryGroup - The name of the group this Filter is a part of, which is
     * primarily used when creating a query string from multiple Filter models. Filters
-    * in the same group will be wrapped in paranthesis in the query.
+    * in the same group will be wrapped in parenthesis in the query.
     * @property {boolean} exclude - If true, search index docs matching this filter will be excluded from the search results
     * @property {boolean} matchSubstring - If true, the search values will be wrapped in wildcard characters to match substrings
     * @property {string} label - A human-readable short label for this Filter
@@ -70,7 +70,7 @@ define(['jquery', 'underscore', 'backbone'],
         this.set( this.parse(this.get("objectDOM")) );
       }
 
-      //Assign a random query group to Filters that are specifing very specific datasets,
+      // Assign a random query group to Filters that are specifying very specific datasets,
       // such as by id, seriesId, or the isPartOf relationship. This is done so that
       // the query string is constructed with these filters "OR"ed into the query.
       // For example, a query might be to look for datasets by a certain scientist OR
@@ -80,7 +80,7 @@ define(['jquery', 'underscore', 'backbone'],
           this.get("fields").includes("seriesId") ){
         this.set("queryGroup", Math.floor(Math.random() * Math.floor(10000)).toString());
       }
-      
+
       //If this is an isPartOf filter, then add a label and description
       if( this.get("fields").length == 1 && this.get("fields").includes("isPartOf") ){
         this.set({
@@ -89,7 +89,7 @@ define(['jquery', 'underscore', 'backbone'],
           isInvisible: MetacatUI.appModel.get("hideIsPartOfFilter") === true ? true : false,
         });
       }
-    
+
     },
 
     /**
@@ -302,7 +302,7 @@ define(['jquery', 'underscore', 'backbone'],
       //If this filter should be excluding matches from the results,
       // then add a hyphen in front
       if( this.get("exclude") ){
-        queryString = "-" + queryString;
+        queryString = "-" + queryString + "%20AND%20*:*";
       }
 
       return queryString;
@@ -398,12 +398,12 @@ define(['jquery', 'underscore', 'backbone'],
       return (this.get("values").length > 0);
 
     },
-    
-    /**    
+
+    /**
      * isEmpty - Checks whether this Filter has any values or fields set
-     *      
+     *
      * @return {boolean}  returns true if the Filter's values and fields are empty
-     */     
+     */
     isEmpty: function(){
       try {
         var fields      =   this.get("fields"),
@@ -412,14 +412,14 @@ define(['jquery', 'underscore', 'backbone'],
             fieldsEmpty =   _.every(fields, function(item) { return item == "" }),
             noValues    =   values.length == 0;
             valuesEmpty =   _.every(values, function(item) { return item == "" });
-            
+
         var noMinNoMax = _.every(
           [this.get("min"), this.get("max")],
           function(num) {
             return (typeof num === "undefined") || (!num && num !== 0);
           }
         );
-            
+
         return noFields && fieldsEmpty && noValues && valuesEmpty && noMinNoMax
       } catch (e) {
         console.log("Failed to check if a Filter is empty, error message: " + e);
@@ -444,6 +444,9 @@ define(['jquery', 'underscore', 'backbone'],
         term = term.replace(/%3F/g, "\\%3F");
         term = term.replace(/\"/g, '\\"');
         term = term.replace(/\'/g, "\\'");
+        term = term.replace(/\#/g, "\\%23");
+        term = term.replace(/\-/g, "\\%2D");
+        term = term.replace(/\&amp\;/g, "\\%26");
 
         return term;
     },
@@ -486,7 +489,7 @@ define(['jquery', 'underscore', 'backbone'],
 
         var xmlDocument = $objectDOM[0].ownerDocument;
 
-        // Get new values
+        // Get new values. Set the key as the DOM element name (i.e. "field" instead of "fields")
         var filterData = {
           // The following values are common to all FilterType elements
           label: this.get("label"),
@@ -500,17 +503,17 @@ define(['jquery', 'underscore', 'backbone'],
         // Make new sub nodes using the new model data
         _.map(filterData, function(values, nodeName){
 
-          // Serialize the nodes with multiple occurences
+          // Serialize the nodes with multiple occurrences
           if( Array.isArray(values) ){
               _.each(values, function(value){
-                // Don't serialize falsey or default values
-                if((value || value === false) && value != this.defaults()[nodeName]){
+                // Don't serialize empty, null, or undefined values
+                if( value || value === false || value === 0 ){
                   var nodeSerialized = xmlDocument.createElement(nodeName);
                   $(nodeSerialized).text(value);
                   $objectDOM.append(nodeSerialized);
                 }
               }, this);
-          // Serialize the single occurence nodes
+          // Serialize the single occurrence nodes
           }
           // Don't serialize falsey or default values
           else if((values || values === false) && values != this.defaults()[nodeName]) {

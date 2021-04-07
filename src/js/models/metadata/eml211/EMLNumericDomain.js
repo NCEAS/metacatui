@@ -8,7 +8,7 @@ define(["jquery", "underscore", "backbone",
          * or ratio measurement scale attribute, and is an extension of
          * EMLMeasurementScale.
          * @classcategory Models/Metadata/EML211
-         * @see https://github.com/NCEAS/eml/blob/master/eml-attribute.xsd
+         * @see https://eml.ecoinformatics.org/schema/eml-attribute_xsd.html#AttributeType_measurementScale
          */
         var EMLNumericDomain = Backbone.Model.extend(
             /** @lends EMLNumericDomain.prototype */{

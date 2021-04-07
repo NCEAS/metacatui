@@ -77,6 +77,28 @@ function(_, $, Backbone, Woofmark, EMLText, ImageUploader, MarkdownView, TableEd
     showTOC: false,
 
     /**
+     * The maximum height for uploaded image files. If a file is taller than this, it
+     * will be resized without warning before being uploaded. If set to null,
+     * the image won't be resized based on height (but might be depending on
+     * maxImageWidth).
+     * @type {number}
+     * @default 1200
+     * @since 2.15.0
+     */
+    maxImageHeight: 1200,
+
+    /**
+     * The maximum width for uploaded image files. If a file is wider than this, it
+     * will be resized without warning before being uploaded. If set to null,
+     * the image won't be resized based on width (but might be depending on
+     * maxImageHeight).
+     * @type {number}
+     * @default 1200
+     * @since 2.15.0
+     */
+    maxImageWidth: 1200,
+
+    /**
     * A jQuery selector for the HTML textarea element that will contain the
     * markdown text.
     * @type {string}
@@ -548,9 +570,8 @@ function(_, $, Backbone, Woofmark, EMLText, ImageUploader, MarkdownView, TableEd
           imageTagName:       "img",
           height:             "175",
           width:              "300",
-          // TODO: shrink very large images ?
-          // maxHeight: 10000,
-          // maxWidth: 10000;
+          maxHeight:          view.maxImageHeight || null,
+          maxWidth:           view.maxImageWidth || null
         });
 
         // Show when image is uploading; temporarily disable the OK button

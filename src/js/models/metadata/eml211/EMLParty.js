@@ -2,7 +2,17 @@
 define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
     function($, _, Backbone, DataONEObject) {
 
-	var EMLParty = Backbone.Model.extend({
+      /**
+      * @class EMLParty
+      * @classcategory Models/Metadata/EML211
+      * @classdesc EMLParty represents a single Party from the EML 2.1.1 and 2.2.0
+      * metadata schema. This can be a person or organization.
+      * @see https://eml.ecoinformatics.org/schema/eml-party_xsd.html#ResponsibleParty
+      * @extends Backbone.Model
+      * @constructor
+      */
+	var EMLParty = Backbone.Model.extend(
+    /** @lends EMLParty.prototype */{
 
 		defaults: function(){
 			return {
@@ -838,7 +848,21 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         });
       }
       return modelValues;
-    },
+	},
+
+	/**
+	 * getName - For an individual, returns the first and last name as a string. Otherwise,
+	 * returns the organization or position name.
+	 *
+	 * @return {string} Returns the name of the party or an empty string if one cannot be found
+	 *
+	 * @since 2.15.0
+	 */
+	getName: function(){
+		return this.get("individualName") ?
+			this.get("individualName").givenName + " " + this.get("individualName").surName :
+			this.get("organizationName") || this.get("positionName") || "";
+	},
 
     /*
     * function nameIsEmpty - Returns true if the individualName set on this model contains

@@ -357,12 +357,12 @@
 		transition: bottom 0.3s;
 	}
 
+	/* Default position of portal pages nav on mobile. */
+	/* This will be changed by PortalEditorView */
+	.PortalView .section-links-container,
 	.Editor.Portal .section-links-toggle-container {
-		bottom: 73px;
-	}
-
-	.PortalView .section-links-container {
 		bottom: 0;
+		padding-left: 0;
 	}
 
 	.PortalView #portal-section-tabs,
@@ -392,12 +392,13 @@
 	}
 
 	.Editor.Portal #portal-section-tabs a.portal-section-link {
-		width: calc(100% - 60px);
+		width: calc(100% - 65px);
 		text-align: left;
 	}
 
 	.Editor.Portal #portal-section-tabs .portal-section-link,
-	.Editor.Portal #portal-section-tabs .section-menu-link {
+	.Editor.Portal #portal-section-tabs .section-menu-link,
+	.port-editor-sections .section-link-container .handle {
 		color: #555;
 	}
 
@@ -411,9 +412,13 @@
 	}
 
 	.section-link-container .popover.fade.right.in{
-		left: 0px !important;
-		margin-left: 6px;
+		left: 0 !important; 
+		right: 0 !important; 
+		margin-left: auto !important; 
+		margin-right: auto !important; 
+		top: -100% !important;
 		box-sizing: content-box;
+		
 	}
 	.section-link-container .popover.fade.right.in > .arrow {
 		display: none;
@@ -755,7 +760,24 @@
     margin: auto;
   }
 
-
+  /************ Editor footer (portal editor, metadata editor) *************/
+  #editor-footer{
+	grid-template-rows: auto auto;
+	grid-template-columns: 100%;
+	grid-template-areas: "save-controls" "trial-message";
+	gap: 0.4rem;
+	padding: 0.5rem;
+  }
+  #editor-footer .free-trial-message{
+	justify-self: center;
+	font-size: 0.87rem;
+  }
+  .editor-save-controls{
+	justify-self: center;
+  }
+  .editor-save-controls > a{
+    font-size: 1em;
+  }
 }
 
 @media only screen and (max-width : 1000px){

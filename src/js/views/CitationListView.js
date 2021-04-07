@@ -3,13 +3,29 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
     function($, _, Backbone, Citations, CitationView) {
     'use strict';
 
-    var CitationListView = Backbone.View.extend({
+    /**
+    * @class CitationListView
+    * @classdesc The CitationListView displays a list of Citation models
+    * @classcategory Views
+    * @extends Backbone.View
+    * @constructor
+    */
+    var CitationListView = Backbone.View.extend(
+      /** @lends CitationListView.prototype */{
 
         id: 'table',
         className: 'table',
         citationsCollection: null,
         emptyCitations: null,
         citationsForDataCatalogView: null,
+
+        /**
+        * If true, the "register a citation" tool will display. This can be turned off/on
+        * with the {@link AppConfig#displayRegisterCitationTool} app configuration.
+        * @type {boolean}
+        * @since 2.15.0
+        */
+        displayRegisterCitationTool: MetacatUI.appModel.get("displayRegisterCitationTool"),
 
         events: {
 
@@ -71,14 +87,18 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
 
                 // Dataset landing page - metadataview
                 if ( self.citationsForDataCatalogView ) {
-                    var emptyString = "We couldn't find any citations for this dataset. " +
-                        "If this dataset has been cited, you can register the citation to " + nodeName + ".";
+                    var emptyString = "We couldn't find any citations for this dataset.";
+
+                    if (self.displayRegisterCitationTool)
+                        emptyString += " If this dataset has been cited, you can register the citation to " + nodeName + ".";
 
                     var $emptyDataElement = $(document.createElement("p"))
                         .text(emptyString)
                         .addClass("empty-citation-list-text");
 
-                    $emptyList.append(this.registerCitationTemplate());
+                    if (self.displayRegisterCitationTool)
+                        $emptyList.append(this.registerCitationTemplate());
+
                     $emptyList.append($emptyDataElement);
 
                 }

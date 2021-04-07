@@ -326,6 +326,7 @@ header .citation {
 	margin-left: 43%;
 	margin-left: calc(50% - 23px);
 	margin-top: 40px;
+  color: #333;
 }
 .notification.loading.page .icon{
 	margin-top: 10px;
@@ -342,6 +343,7 @@ header .citation {
 	width: 100%;
 	margin: 20px auto;
 	display: block;
+  color: #333;
 }
 .filter-contain .notification.loading i{
   	color: #999;
@@ -2031,7 +2033,9 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 .register-citation-element .btn{
   justify-self: center;
 }
-
+#publication-identifier.register-citation-doi-validation {
+	border: 1px solid red;
+}
 /******************************************
 * Search Page / Data Catalog Page Metrics
 ******************************************/
@@ -2062,6 +2066,7 @@ i.catalog-metric-icon {
     box-sizing: border-box;
     position: relative;
     max-height: 390px;
+		justify-content: center;
 }
 .metric-chart-loading .message{
 	text-align: center;
@@ -2654,6 +2659,11 @@ section#user-citations {
 }
 .popover-title {
     text-transform: capitalize;
+}
+.popover-title code {
+	text-transform: none;
+	margin-left: 20px;
+	margin-top: -3px;
 }
 
 /* Don't force capitalization on annotation popover titles */
@@ -3441,13 +3451,19 @@ add font awesome close icon */
 .access-rule .subject .orcid.icon{
   vertical-align: top;
 }
-.access-policy-view-container.modal{
+
+.access-policy-view-container .modal {
   width: 80%;
-  max-width: 1000px;
-  left: 10%;
-  margin-left: 0px;
-  display: none;
+  margin-left: -40%;
+  display: grid;
+  grid-template-rows: 60px 1fr 60px;
+  max-height: 80%;
 }
+
+.access-policy-view-container .modal .modal-body {
+  max-height: 1000px;
+}
+
 .access-policy-view:not(.modal) .modal-header{
   border-bottom-width: 0px;
   padding: 0px;
@@ -3519,6 +3535,12 @@ add font awesome close icon */
   margin-bottom: 20px;
   position: relative;
   display: inline-block;
+}
+.access-policy-view .public-toggle-disabled-text.public{
+  color: #005300; /*dark green*/
+}
+.access-policy-view .public-toggle-disabled-text.private{
+  color: #A04A01; /*dark orange*/
 }
 .access-policy-view .can-toggle{
   width: 200px;
@@ -5349,6 +5371,9 @@ address.email-container:before{
     margin-top: 10px;
     margin-bottom: 10px;
 }
+.quality-report-view .metric-chart-loading {
+	margin: 50px auto;
+}
 .new-icon{
   color: #d2a908;
 }
@@ -6453,6 +6478,7 @@ body.mapMode{
 .can-toggle.can-toggle-small label .can-toggle-switch:hover:after {
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
 }
+
 /** Autocompletes **/
 .ui-autocomplete{
   width: 246px;
@@ -6843,6 +6869,7 @@ Query builder & query rule view
 .query-rule .filter.date .max {
   margin-left: 0;
 }
+
 /* ---- Icons for the operator options not included in font-awesome ---- */
 .icon-equal, .icon-not-equal, .icon-less-than, .icon-greater-than,
 .icon-less-than-or-eq, .icon-greater-than-or-eq {
@@ -6985,35 +7012,59 @@ ul.side-nav-items {
 	width: 100%;
 }
 #editor-footer{
-	background-color: #333;
   position: fixed;
-  width: 100%;
+  display: grid;
   box-sizing: border-box;
+  width: 100%;
   bottom: 0px;
-  padding: 20px 40px;
+  padding: 0.8rem;
   z-index: 13;
-	height: 74px;
-	box-sizing: border-box;
-  display: flex;
-  justify-content: flex-end;
-  align-items: baseline;
+  height: 74px;
+  background-color: #333;
+  align-items: center;
+  grid-template-rows: auto;
+  grid-template-columns: auto auto;
+  grid-template-areas: "trial-message save-controls";
+  gap: 0.5rem;
 }
 #editor-footer .free-trial-message{
   color: #FFF;
-  flex-grow: 2;
+  grid-area: trial-message;
 }
 #editor-footer .free-trial-message .icon{
   height: 1.1em;
   fill: #FFF;
 }
 .metadata-view #editor-footer{
-    display: none;
-    left: 0px;
+  display: none;
+  left: 0px;
 }
 #editor-footer a:not(.btn){
-    color: #FFF;
-    font-weight: bold;
-    line-height: 40px;
+  color: #FFF;
+  font-weight: bold;
+}
+/* The "view last saved version" and "save" button */
+.editor-save-controls{
+	justify-self: right;
+	display: grid;
+	grid-template-columns: auto auto;
+	gap: 1rem;
+	grid-area: save-controls;
+}
+.editor-save-controls > a{
+    line-height: 1.5em;
+    font-size: 1.1em;
+	font-weight: bold;
+	margin: 0;
+	height: 1.5em;
+	align-self: center;
+}
+.editor-save-controls > a:not(.btn){
+  color: #FFF;
+}
+.editor-save-controls .metadata-container textarea{
+	width: 100%;
+	margin-bottom: 20px;
 }
 #cancel-metadata-prov{
     margin-left: 30px;
@@ -7030,6 +7081,11 @@ ul.side-nav-items {
 	margin-bottom: 0px;
 	width: calc(100% - 2px);
 }
+/* Editor package table headers */
+#data-package-table-share,
+#data-package-table-guide-status {
+    text-align: center;
+}
 
 /* Editor package table row */
 .data-package-item td {
@@ -7039,8 +7095,14 @@ ul.side-nav-items {
 }
 
 .data-package-item td.name div {
-	padding: 8px 0 8px 0;
+	padding: 8px;
+	width: fit-content;
+	cursor: not-allowed;
 }
+.data-package-item td.canRename div {
+	cursor: text;
+}
+
 .data-package-item td.error > [contenteditable]{
 	border: 2px solid red;
 }
@@ -7071,6 +7133,10 @@ ul.side-nav-items {
     width: 100px;
 }
 
+.data-package-item td.public {
+  width: 60px;
+}
+
 /* Editor package table sharing column */
 .data-package-item td.sharing {
     width: 60px;
@@ -7093,11 +7159,10 @@ ul.side-nav-items {
 }
 
 
-/* Editor package table last column buttons */
+/* Editor package table buttons */
 .data-package-item td button {
     text-align: center;
     vertical-align: middle;
-    width: 8em;
 }
 .data-package-item td button .icon{
 	margin-left: 0px;
@@ -7212,6 +7277,11 @@ ul.side-nav-items {
   margin-left: -5px;
   margin-right: 5px;
 }
+  border: none;
+  background-color: inherit;
+  width: auto;
+}
+
 /* Editor package table button dropdown */
 .Editor #data-package-table td:last-of-type ul {
     border-radius: 4px;
@@ -7242,24 +7312,8 @@ ul.side-nav-items {
 	cursor:ns-resize;
 }
 
-.editor-save-controls{
-	float: right;
-}
-.editor-save-controls > a{
-	margin-left: 10px;
-    height: 1.5em;
-    line-height: 1.5em;
-    font-size: 1.1em;
-    font-weight: bold;
-}
-.editor-save-controls > a:not(.btn){
-  color: #FFF;
-}
-.editor-save-controls
-.metadata-container textarea{
-	width: 100%;
-	margin-bottom: 20px;
-}
+
+
 textarea.xlarge{
 	min-height: 200px;
 }
@@ -7454,6 +7508,18 @@ textarea.medium{
   padding: 0px 20px;
 	overflow: scroll;
 }
+
+.attribute-menu-container .fill-button-container {
+  background-color:  #EEE;
+	border-right: 1px solid #DDD;
+	width: 100%;
+}
+
+.attribute-menu-container .fill-button-container button {
+  width: calc(100% - 10px);
+	margin: 5px;
+}
+
 .eml-attribute .title{
 	margin-bottom: 20px;
 }

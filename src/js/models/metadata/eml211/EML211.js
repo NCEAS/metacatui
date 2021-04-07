@@ -1691,9 +1691,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           var fileNameFromEML = e.get("physicalObjectName") || e.get("entityName");
 
           // If the EML file name matches the DataONEObject file name
-          if( fileNameFromEML &&
-            ((fileNameFromEML.toLowerCase() == dataONEObj.get("fileName").toLowerCase()) ||
-              (fileNameFromEML.replace(/ /g, "_").toLowerCase() == dataONEObj.get("fileName").toLowerCase())) ){
+          if (fileNameFromEML &&
+              dataONEObj.get("fileName") &&
+              ((fileNameFromEML.toLowerCase() == dataONEObj.get("fileName").toLowerCase()) ||
+                (fileNameFromEML.replace(/ /g, "_").toLowerCase() == dataONEObj.get("fileName").toLowerCase()))) {
 
             //Get an array of all the other entities in this EML
             var otherEntities = _.without(this.get("entities"), e);
@@ -1947,6 +1948,40 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         this.trigger("change:" + role);
 
         return true;
+      },
+      
+      /**
+       * getPartiesByType - Gets an array of EMLParty members that have a particular party type or role.
+       * @param {string} partyType - A string that represents either the role or the party type. For example, "contact", "creator", "principalInvestigator", etc.
+       * @since 2.15.0
+       */
+      getPartiesByType: function(partyType){
+        
+        try {
+          if(!partyType){
+            return false
+          }
+          var associatedPartyTypes = new EMLParty().get("roleOptions"),
+              isAssociatedParty = associatedPartyTypes.includes(partyType),
+              parties = [];
+          // For "contact", "creator", "metadataProvider", "publisher", each party type has it's own
+          // array in the EML model
+          if(!isAssociatedParty){
+            parties = this.get(partyType);
+          // For "custodianSteward", "principalInvestigator", "collaboratingPrincipalInvestigator", etc.,
+          // party members are listed in the EML model's associated parties array. Each associated party's
+          // party type is indicated in the role attribute.
+          } else {
+            parties = _.filter(this.get("associatedParty"), function (associatedParty) {
+              return associatedParty.get("roles").includes(partyType) }
+            );
+          }
+
+          return parties;
+
+        } catch (error) {
+          console.log("Error trying to find a list of party members in an EML model by type. Error details: " + error);
+        }
       },
 
       createUnits: function(){

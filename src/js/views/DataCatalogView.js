@@ -8,7 +8,7 @@ define(["jquery",
         "models/Search",
         "models/Stats",
         "models/MetricsModel",
-        "models/Utilities",
+        "common/Utilities",
         "views/SearchResultView",
         "views/searchSelect/AnnotationFilterView",
         "text!templates/search.html",
@@ -82,6 +82,25 @@ define(["jquery",
             markers: {},
             tiles: [],
             tileCounts: [],
+
+            /**
+             * The general error message to show as a title in the error box when there
+             * is an error fetching results from solr
+             * @type {string}
+             * @default "Something went wrong while getting the list of datasets"
+             * @since 2.15.0
+             */
+            solrErrorTitle: "Something went wrong while getting the list of datasets",
+
+            /**
+             * The user-friendly text to show when a solr request gives a status 500
+             * error. If none is provided, then the error message that is returned from
+             * solr will be displayed.
+             * @type {string}
+             * @since 2.15.0
+             */
+            solrError500Message: null,
+
             // Contains the geohashes for all the markers on the map (if turned on in the Map model)
             markerGeohashes: [],
             // Contains all the info windows for all the markers on the map (if turned on in the Map model)
@@ -2885,26 +2904,35 @@ define(["jquery",
             showError: function(model, response){
 
               var errorMessage = "";
+              var statusCode = response.status;
 
-              try{
-                errorMessage = $(response.responseText).text();
+              if(!statusCode){
+                  statusCode = parseInt(response.statusText)
               }
-              catch(e){
+
+              if(statusCode == 500 && this.solrError500Message){
+                errorMessage = this.solrError500Message;
+              } else {
                 try{
-                  errorMessage = JSON.parse(response.responseText).error.msg;
-                }
-                catch(e){
-                  errorMessage = "";
-                }
-              }
-              finally{
-                if( typeof errorMessage == "string" && errorMessage.length ){
-                  errorMessage = "<p>Error details: " + errorMessage + "</p>";
-                }
+                    errorMessage = $(response.responseText).text();
+                  }
+                  catch(e){
+                    try{
+                      errorMessage = JSON.parse(response.responseText).error.msg;
+                    }
+                    catch(e){
+                      errorMessage = "";
+                    }
+                  }
+                  finally{
+                    if( typeof errorMessage == "string" && errorMessage.length ){
+                      errorMessage = "<p>Error details: " + errorMessage + "</p>";
+                    }
+                  }
               }
 
               MetacatUI.appView.showAlert(
-                "<h4><i class='icon icon-frown'></i>Something went wrong while getting the list of datasets.</h4>" + errorMessage,
+                "<h4><i class='icon icon-frown'></i>" + this.solrErrorTitle + ".</h4>" + errorMessage,
                 "alert-error",
                 this.$results
               );

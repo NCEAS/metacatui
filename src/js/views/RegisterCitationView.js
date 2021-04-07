@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.html'],
-    function($, _, Backbone, RegisterCitationTemplate) {
+define(['jquery', 'underscore', 'backbone', "common/Utilities", 'text!templates/registerCitation.html'],
+    function($, _, Backbone, Utilities, RegisterCitationTemplate) {
     'use strict';
 
     /**
@@ -43,8 +43,9 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.htm
                       'again or try emailing us the citation.',
 
         events: {
-          'hidden'                        : 'teardown',
-          'click .btn-register-citation'  : 'registerCitation'
+          'hidden'                              : 'teardown',
+          'click .btn-register-citation'        : 'registerCitation',
+          "focusout #publication-identifier"    : "validateDOI"
         },
 
         initialize: function(options) {
@@ -83,10 +84,17 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.htm
           return this;
         },
 
+
+
         /**
          * Get inputs from the modal and sends it to the DataONE Metrics Service
          */
         registerCitation: function() {
+
+          // check if the register button has been disabled
+          if (this.$(".btn-register-citation").is(".disabled")) {
+            return false;
+          }
 
           // get the input values
           var publicationIdentifier = this.$("#publication-identifier").val();
@@ -104,14 +112,25 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.htm
 
           // get the form data before replacing everything with the loading icon!
           var formData = {};
-          formData["request_type"] = "dataset";
-          formData["metadata"] = new Array();
+          var citationObject = {};
+          var citaitonRelatedIdentifiersObject = {}
 
-          var citationRegisterObject = {};
-          citationRegisterObject["target_id"] = this.pid;
-          citationRegisterObject["source_id"] = publicationIdentifier;
-          citationRegisterObject["relation_type"] = relation_type;
-          formData["metadata"].push(citationRegisterObject);
+          // initializing the citation POSt object
+          formData["request_type"] = "dataset";
+          formData["submitter"] = MetacatUI.appUserModel.get("username");
+          formData["citations"] = new Array();
+
+          // form the citation object
+          citationObject["related_identifiers"] = new Array();
+          citationObject["source_id"] = publicationIdentifier;
+
+          // set the related identifiers
+          citaitonRelatedIdentifiersObject["identifier"] = this.pid;
+          citaitonRelatedIdentifiersObject["relation_type"] = relation_type;
+
+          // include all the required data
+          citationObject["related_identifiers"].push(citaitonRelatedIdentifiersObject);
+          formData["citations"].push(citationObject);
 
           // ajax call to submit the given form and then render the results in the content area
           var viewRef = this;
@@ -146,6 +165,40 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.htm
 
           $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 
+        },
+
+        /**
+        * Validates if the given input is a valid DOI string or not
+        * @since 2.15.0
+        * @return {undefined}
+        */
+        validateDOI: function(){
+          var identifierInput = this.$("#publication-identifier").val();
+
+          if(!(Utilities.isValidDOI(identifierInput))){
+
+            //Show a warning that the user was trying to edit old content
+            MetacatUI.appView.showAlert({
+              message: "Please enter a valid DOI.",
+              classes: "alert-error",
+              container: this.$("#publication-identifier").parent(),
+              remove: true
+            });
+
+            this.$("#publication-identifier").addClass("register-citation-doi-validation");
+            this.$(".btn-register-citation").addClass("disabled")
+          }
+          else {
+            //Remove the validation error
+            this.$(".alert-container").remove();
+
+            this.$("#publication-identifier").removeClass("register-citation-doi-validation");
+
+            // If the Disabled class is active
+            if (this.$(".btn-register-citation").find(".disabled")) {
+              this.$(".btn-register-citation").removeClass("disabled");
+            }
+          }
         }
 
     });

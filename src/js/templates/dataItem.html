@@ -1,4 +1,4 @@
-﻿<!-- Icon column -->
+<!-- Icon column -->
 <% if ( typeof type !== "undefined" && type !== null && type == "Metadata" ) { %>
     <% var indentFolder = nodeLevel * 40; %>
     <td class="type-icon">
@@ -13,9 +13,19 @@
 
 <!-- Files column -->
 
-<td class="name" title="Click to rename" >
+<% var fileClasses = "name" %>
+<% var filenameEditable = "false" %>
+<% var filenameTitle = "You are not authorized to rename this file" %>
+
+<% if (canRename) { %>
+	<% fileClasses = fileClasses + " canRename" %>
+	<% var filenameEditable = "true" %>
+	<% var filenameTitle = "Click to rename" %>
+<% } %>
+
+<td class="<%= fileClasses %>" >
     <% if(uploadStatus != "l" && uploadStatus != "p"){ %>
-    	<div contenteditable="true">
+    	<div contenteditable="<%= filenameEditable %>" title="<%= filenameTitle %>">
     <% } else { %>
     	<div>
     <% } %>
@@ -46,16 +56,13 @@
     <td class="type"></td>
 
 <% } %>
-
 <!-- Privacy/Sharing column -->
-<% if( MetacatUI.appModel.get("allowAccessPolicyChanges") && (type && type != "Metadata") ){ %>
-  <td class="sharing">
-    <input type="checkbox" name="Make data private" value="true" class="private" />
-  </td>
-<% }
-   else if( MetacatUI.appModel.get("allowAccessPolicyChanges") ){ %>
-  <td></td>
+<% if( MetacatUI.appModel.get("allowAccessPolicyChanges")){ %>
+<td class="sharing">
+	<button type="button" class="btn access-policy-control"><i class="icon-group"></i> Share</button>
+</td>
 <% } %>
+
 
 <!-- Guide or Status column -->
 <td class="status">
@@ -65,6 +72,8 @@
 		</div>
 	<% } else if( (!uploadStatus || uploadStatus == "c" || uploadStatus == "q") && type != "Metadata" && numAttributes == 0 ) { %>
 		<i class="icon icon-circle-blank warning icon-large"></i>
+	<% } else if( uploadStatus == "w" && type != "Metadata" ) { %>
+		<i class="icon icon-warning-sign warning icon-large"></i>
 	<% } else if( type != "Metadata" && numAttributes > 0 && hasInvalidAttribute ) { %>
 		<i class="icon icon-exclamation-sign danger icon-large"></i>
 	<% } else if( type != "Metadata" && numAttributes > 0 && !hasInvalidAttribute && entityIsValid ) { %>
@@ -97,8 +106,8 @@
          <div class="btn-group">
            <% if( hasInvalidAttribute || !entityIsValid ){ %>
              <button class="btn edit error">Describe</button>
-           <%  } else if( (!uploadStatus || uploadStatus == "c" || uploadStatus == "q") && type != "Metadata" && numAttributes == 0 ){ %>
-    			  <button class="btn edit warning" title="Describe this file and the data in it">Describe</button>
+           <%  } else if( (!uploadStatus || uploadStatus == "c" || uploadStatus == "q" || uploadStatus == "w") && type != "Metadata" && numAttributes == 0 ){ %>
+				  <button class="btn edit warning" title="Describe this file and the data in it">Describe</button>
     			 <% } else { %>
     			 	<button class="btn edit" title="Describe this file and the data in it">Describe</button>
     			 <% } %>
@@ -110,7 +119,7 @@
     			 <ul class="dropdown-menu">
 						 <input class="file-replace" type="file" style="display:none; height: 0px; width: 0px" />
 
-						 <% if (canReplace) { %>
+						 <% if (canWrite) { %>
 							<li><a href="" class="replace replaceFile" title="Replace this file with another">Replace</a></li>
 						 <% } else { %>
 							<li><a href="" class="replace replaceFile muted disabled">Replace</a></li>

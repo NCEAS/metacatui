@@ -7,7 +7,7 @@ define(["jquery", "underscore", "backbone",
          * @class EMLAttribute
          * @classdesc EMLAttribute represents a data attribute within an entity, such as
          * a column variable in a data table, or a feature attribute in a shapefile.
-         * @see https://github.com/NCEAS/eml/blob/master/eml-attribute.xsd
+         * @see https://eml.ecoinformatics.org/schema/eml-attribute_xsd.html
          * @classcategory Models/Metadata/EML211
          */
         var EMLAttribute = Backbone.Model.extend(

@@ -68,7 +68,7 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                 attrs.filterType = ""
               }
               
-              // Ignoring the case of the typer type allows using either the
+              // Ignoring the case of the type allows using either the
               // filter type (e.g. BooleanFilter) or the nodeName value
               // (e.g. "booleanFilter")
               switch ( attrs.filterType.toLowerCase() ) {
