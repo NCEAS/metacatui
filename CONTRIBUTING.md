@@ -47,12 +47,12 @@ In short:
 
 Development is managed through the git repository at https://github.com/NCEAS/metacatui.  The repository is organized into several branches, each with a specific purpose.  
 
-**master**. The `master` branch represents a stable branch that is constantly maintained in a state ready for release. Any unreleased code changes on the master branch represent changes that have been tested and staged for the next release. When a set of features are mature and tested and ready for release, they are merged onto the `master` branch to await the next release.  The tip of the master branch always represents the set of features that have been staged for the next release. The version number in all configuration files and the README on the master branch follows [semantic versioning](https://semver.org/) and should always be set to either:
+**main**. The `main` branch represents a stable branch that is constantly maintained in a state ready for release. Any unreleased code changes on the main branch represent changes that have been tested and staged for the next release. When a set of features are mature and tested and ready for release, they are merged onto the `main` branch to await the next release.  The tip of the main branch always represents the set of features that have been staged for the next release. The version number in all configuration files and the README on the main branch follows [semantic versioning](https://semver.org/) and should always be set to either:
 
-- the current release version, if the HEAD of `master` still matches the HEAD of `releases`. For example, `2.8.5`.
+- the current release version, if the HEAD of `main` still matches the HEAD of `releases`. For example, `2.8.5`.
 - the planned next release number with a `beta` designator or release candidate `rc` designator appended as appropriate.  For example, `2.8.6-beta1` or `2.9.0-rc1`.
 
-**releases**. Releases are merged from the `master` branch to the `releases` branch, and the resulting commit is tagged with the release tag (e.g., `2.4.0`). The tip of the `releases` branch always reflects the most recent release of the software.
+**releases**. Releases are merged from the `main` branch to the `releases` branch, and the resulting commit is tagged with the release tag (e.g., `2.4.0`). The tip of the `releases` branch always reflects the most recent release of the software.
 
 **dev**. Development takes place on a series of development branches.  While there is some
 flexibility in how many development and feature branches are made, we typically
@@ -68,28 +68,28 @@ and should include a short descriptive label reflecting their purpose.  For exam
 You may also want to include the release version that you are targeting, such `feature-2.11.2-new-search`, or the branch you are targeting to merge into, such as `feature-dev-2.11-new-search`.
 You may also want to include the issue number that describes the feature, such as `feature-#1456-new-search`.
 
-All development branches should be frequently merged with changes from `master` to
+All development branches should be frequently merged with changes from `main` to
 ensure that the development branch stays up to date with other features that have
 been tested and are awaiting release.  Thus, each `feature-*` branch represents an opportunity
 for integration testing of the set of features intended to work together for a
 particular release.
 
 ### Development flow overview
-![](https://github.com/NCEAS/metacat/raw/master/docs/dev/images/nceas-dev-flow-full.png)
+![](https://github.com/NCEAS/metacat/raw/main/docs/dev/images/nceas-dev-flow-full.png)
 
 ### Development flow for a single release
-![](https://github.com/NCEAS/metacat/raw/master/docs/dev/images/nceas-single-release-flow.png)
+![](https://github.com/NCEAS/metacat/raw/main/docs/dev/images/nceas-single-release-flow.png)
 
 ## Release process
 
 1. Our release process starts with integration testing in a `dev-*` branch. Once all
 changes that are desired in a release are merged into the `dev-` branch, we run
 the full set of tests on a clean checkout of the `dev-` branch.
-2. After testing, the `dev-` branch is merged to master.
-3. Then the master branch can be merged to the `releases` branch, and tagged with
+2. After testing, the `dev-` branch is merged to main.
+3. Then the main branch can be merged to the `releases` branch, and tagged with
 the new version number (e.g. `2.11.2`). At
 this point, the tip of the `releases` branch will reflect the new release and
-the master branch is ready for work on the next release.
+the main branch is ready for work on the next release.
 4. Releases can be downloaded from the [Github releases page for the MetacatUI repository](https://github.com/NCEAS/metacatui/releases).
 
 ## Testing
@@ -100,7 +100,7 @@ Any new code developed should include a robust set of unit tests for each public
 method, as well as integration tests from new feature sets.  Tests should fully
 exercise the feature to ensure that it responds correctly to both good data inputs
 as well as various classes of corrupt or bad data.  All tests should pass before
-a `dev-` branch is merged to master, and all tests should pass before the `master`
+a `dev-` branch is merged to main, and all tests should pass before the `main`
 branch is merged to `releases` and tagged for a release.
 
 ## Code style
@@ -110,7 +110,7 @@ readable, and maintainable software.  While there has been significant variablil
 in the coding styles applied historically, new contributions should strive for
 clean code formatting.  Some of the guidelines we follow include:
 
-**JSDoc**. 
+**JSDoc**.
 All JavaScript code should be fully documented with JSDoc comments.  Special
 attention should be paid to documentation of Model attributes and functions, and View functions.  
 
