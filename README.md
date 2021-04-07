@@ -20,12 +20,6 @@ The dataset landing page
 
 -----------------
 
-## Installation
-
-See the [installation instructions](https://nceas.github.io/metacatui/install) on the MetacatUI website.
-
------------------
-
 ## Documentation
 
 Documentation can be found on the [MetacatUI website](https://nceas.github.io/metacatui).
