@@ -1,4 +1,4 @@
-# Installing MetacatUI locally for development with a Metacat repository
+# Installing MetacatUI locally for development with a remote Metacat repository
 
 ## Step 1. Clone MetacatUI
 

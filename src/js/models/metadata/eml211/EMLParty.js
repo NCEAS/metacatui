@@ -7,7 +7,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       * @classcategory Models/Metadata/EML211
       * @classdesc EMLParty represents a single Party from the EML 2.1.1 and 2.2.0
       * metadata schema. This can be a person or organization.
-      * @see https://github.com/NCEAS/eml/blob/master/eml-party.xsd
+      * @see https://eml.ecoinformatics.org/schema/eml-party_xsd.html#ResponsibleParty
       * @extends Backbone.Model
       * @constructor
       */

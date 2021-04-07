@@ -6,7 +6,7 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
          * @classdesc EMLOtherEntity represents a generic data entity, corresponding
          * with the EML otherEntity module.
          * @classcategory Models/Metadata/EML211
-         * @see https://github.com/NCEAS/eml/blob/master/eml-entity.xsd
+         * @see https://eml.ecoinformatics.org/schema/eml-dataset_xsd.html#DatasetType_otherEntity
          * @extends EMLEntity
          */
         var EMLOtherEntity = EMLEntity.extend(

@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>{{ page.title }}</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="stylesheet" href="/assets/css/rouge-highlighting.css">
+  </head>
+  <body id="{{ page.id }}">
+    <section>
+      {% include header.html %}
+      <article>
+        {{ content }}
+      </article>
+      {% include nav.html %}
+    </section>
+  </body>
+</html>
