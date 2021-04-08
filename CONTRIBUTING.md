@@ -58,19 +58,11 @@ Development is managed through the git repository at https://github.com/NCEAS/me
 targeting a particular release. Commits should only be pushed to this branch once they are ready to be deployed to
 production immediately after being pushed.
 
-**feature**. to isolate development
-on a specific set of capabilities, especially if it may be disruptive to other developers
-working on the main `develop` branch, feature branches should be created.
+**feature**. to isolate development on a specific set of capabilities, especially if it may be disruptive to other developers working on the main `develop` branch, feature branches should be created.
 
-Feature branches are named with a prefix of `feature`
-and should include a short descriptive label reflecting their purpose.  For example,
-`feature-new-search` may be a branch name for a feature related to a new search tool.
+Feature branches are named as `feature-` + `-{short-description}-` + `#{issue}`. With `{issue}` being the Github issue number related to that new feature. e.g. `feature-new-search-#1456`.
 
-You may also want to include the release version that you are targeting, such `feature-2.11.2-new-search`.
-
-You may also want to include the issue number that describes the feature, such as `feature-#1456-new-search`.
-
-All development branches should be frequently merged with changes from `main` to
+All `feature-*` branches should be frequently merged with changes from `main` to
 ensure that the development branch stays up to date with other features that have
 been tested and are awaiting release.  Thus, each `feature-*` branch represents an opportunity
 for integration testing of the set of features intended to work together for a

@@ -11,7 +11,7 @@
     <![endif]-->
     <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
     <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
-    <link type="text/css" rel="stylesheet" href="/assets/css/styles.css">
+    <link type="text/css" rel="stylesheet" href="/metacatui/assets/css/styles.css">
     <link type="text/css" rel="stylesheet" href="styles/style.css">
 </head>
 
@@ -1293,9 +1293,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               try{
                 //If the app is configured to inherit the access policy from the parent metadata,
                 // then get the parent metadata and copy it's AccessPolicy
-                if( MetacatUI.appModel.get("inheritAccessPolicy") &amp;&amp; this.get("isDocumentedByModels").length ){
-                  let scienceMetadata = this.get("isDocumentedByModels")[0];
-                  let sciMetaAccessPolicy = scienceMetadata.get("accessPolicy");
+                let scienceMetadata = this.get("isDocumentedByModels");
+                if( MetacatUI.appModel.get("inheritAccessPolicy") &amp;&amp; scienceMetadata &amp;&amp; scienceMetadata.length ){
+                  let sciMetaAccessPolicy = scienceMetadata[0].get("accessPolicy");
 
                   if( sciMetaAccessPolicy ){
                     accessPolicy.copyAccessPolicy(sciMetaAccessPolicy);
