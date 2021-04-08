@@ -846,6 +846,9 @@ text-shadow: none;
 .prov-chart .editor text {
     fill: #C0C0C0;
 }
+#select-prov-entity{
+  width: 100%;
+}
 /********* The Prov Chart colors *******/
 .prov-chart .node.uniqueNode1,
 .entitydetails.uniqueNode1{
