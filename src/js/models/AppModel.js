@@ -1038,7 +1038,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {string}
       * @default "https://purl.dataone.org/portals-1.1.0"
       * @readonly
-      * @since 2.15.0
+      * @since 2.x
       */
       portalEditorSerializationFormat: "https://purl.dataone.org/portals-1.1.0",
 
@@ -1099,7 +1099,7 @@ define(['jquery', 'underscore', 'backbone'],
       /**
       * The URL for a webpage where people can learn more about custom portal search
       * filters. If no URL is provided, links to more info about portals will be omitted.
-      * @since 2.15.0
+      * @since 2.x
       * @type {string}
       * @example "https://dataone.org/custom-search"
       * @default null
@@ -1425,7 +1425,7 @@ define(['jquery', 'underscore', 'backbone'],
        * operator and fieldsOperator attribute when parsed.
        * @type {string[]}
        * 
-       * @since 2.15.0
+       * @since 2.x
        */
       queryIdentifierFields: ["id", "identifier", "seriesId", "isPartOf"],
 

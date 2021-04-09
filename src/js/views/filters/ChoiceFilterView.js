@@ -39,7 +39,7 @@ define(['jquery', 'underscore', 'backbone',
     /**
      * The class to add to the element that a user should click to remove a choice
      * value and label when this view is in "uiEditor" mode
-     * @since 2.15.0
+     * @since 2.x
      * @type {string}
      */
     removeChoiceClass: "remove-choice",
@@ -138,7 +138,7 @@ define(['jquery', 'underscore', 'backbone',
     /**
      * Create the set of inputs where a use can select label-value pairs for the regular
      * choice filter view
-     * @since 2.15.0
+     * @since 2.x
      */
     createChoicesEditor: function(){
 
@@ -188,7 +188,7 @@ define(['jquery', 'underscore', 'backbone',
 
     /**
      * Create a row where a user can input a value and label for a single choice.
-     * @since 2.15.0
+     * @since 2.x
      */
     createChoiceEditor: function(choice){
       try {
@@ -247,7 +247,7 @@ define(['jquery', 'underscore', 'backbone',
 
     /**
      * Create an empty choice editor row
-     * @since 2.15.0
+     * @since 2.x
      */
     addEmptyChoiceEditor: function () {
       try {
@@ -287,7 +287,7 @@ define(['jquery', 'underscore', 'backbone',
     /**
      * Indicate to the user that the choice value and label inputs will be removed when
      * they hover over the remove button.
-     * @since 2.15.0
+     * @since 2.x
      */
     previewRemoveChoice: function (e) {
       try {
@@ -317,7 +317,7 @@ define(['jquery', 'underscore', 'backbone',
     /**
      * Remove a choice editor row and the corresponding label-value pair from the choice
      * Filter Model (TODO)
-     * @since 2.15.0
+     * @since 2.x
      * @param {Object} e The click event object
      */
     removeChoice: function(e){
@@ -350,7 +350,7 @@ define(['jquery', 'underscore', 'backbone',
     /**
      * Update the choices attribute in the choiceFilter model based on the values in the
      * choices editor
-     * @since 2.15.0
+     * @since 2.x
      */
     updateModelChoices: function(){
       try {

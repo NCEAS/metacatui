@@ -20,7 +20,7 @@ define(['jquery', 'underscore', 'backbone',
     * @classdesc Creates a view of an editor for a custom search filter
     * @classcategory Views/Filters
     * @screenshot views/filters/FilterEditorView.png
-    * @since 2.15.0
+    * @since 2.x
     * @name FilterEditorView
     * @extends Backbone.View
     * @constructor

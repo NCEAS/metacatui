@@ -24,7 +24,7 @@ define(['jquery', 'underscore', 'backbone',
      * The Filter model that this View renders. This is used to create a new
      * instance of the model if one is not provided to the view.
      * @type {Backbone.Model}
-     * @since 2.15.0
+     * @since 2.x
      */
     modelClass: Filter,
 
@@ -42,7 +42,7 @@ define(['jquery', 'underscore', 'backbone',
     /**
     * The template that renders the icon and label of a filter
     * @type {Underscore.Template}
-    * @since 2.15.0
+    * @since 2.x
     */
     labelTemplate: _.template(LabelTemplate),
 
@@ -55,14 +55,14 @@ define(['jquery', 'underscore', 'backbone',
      * has inputs that are overlaid above the filter elements where a user can edit the
      * placeholder text, label, etc. in a WYSIWYG fashion.
      * @type {string}
-     * @since 2.15.0
+     * @since 2.x
      */
     mode: "normal",
 
     /**
      * The class to add to the filter when it is in "uiBuilder" mode
      * @type {string}
-     * @since 2.15.0
+     * @since 2.x
      */
     uiBuilderClass: "ui-build",
 
@@ -72,7 +72,7 @@ define(['jquery', 'underscore', 'backbone',
      * have this class. Elements with this class also need to have a data-category
      * attribute with the name of the model attribute they correspond to.
      * @type {string}
-     * @since 2.15.0
+     * @since 2.x
      */
     uiInputClass: "ui-build-input",
 
@@ -248,7 +248,7 @@ define(['jquery', 'underscore', 'backbone',
      * Updates the corresponding model attribute when an input for one of the UI options
      * changes (in "uiBuilder" mode).
      * @param {Object} e The change event
-     * @since 2.15.0
+     * @since 2.x
      */
     updateUIAttribute: function(e){
       try {

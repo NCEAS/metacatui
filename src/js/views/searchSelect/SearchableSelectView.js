@@ -131,7 +131,7 @@ define([
         * is not possible. This view will trigger a "separatorChanged" event when the
         * separator is updated.
         * @type {string[]}
-        * @since 2.15.0
+        * @since 2.x
         */
         separatorTextOptions: ["AND", "OR"],
 
@@ -147,7 +147,7 @@ define([
          * An additional HTML class to add to separator elements on hover when a user can
          * click that element to switch the text.
          * @type {string}
-         * @since 2.15.0
+         * @since 2.x
          */
         changeableSeparatorClass: "changeable-separator",
 
@@ -156,7 +156,7 @@ define([
          * {@link SearchableSelectView#separatorTextOptions}), optional tooltip text to
          * show when a user hovers over a separator element.
          * @type {string}
-         * @since 2.15.0
+         * @since 2.x
          */
         changeableSeparatorTooltip: "Click to switch the operator",
 

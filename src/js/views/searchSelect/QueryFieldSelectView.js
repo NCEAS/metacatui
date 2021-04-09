@@ -160,7 +160,7 @@ define([
         /**
          * Retrieves the queryFields collection if not already fetched, then organizes the
          * fields based on the options passed to this view.
-         * @since 2.15.0
+         * @since 2.x
          */
         processFields : function(){
           try {

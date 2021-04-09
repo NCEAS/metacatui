@@ -47,7 +47,7 @@ define(["jquery",
          * rule. A unique ID will be appended to this ID, and the ID will be added to the
          * template.
          * @type {string}
-         * @since 2.15.0
+         * @since 2.x
          */
         addRuleButtonID: "add-rule-",
 
@@ -56,7 +56,7 @@ define(["jquery",
          * rule group. A unique ID will be appended to this ID, and the ID will be added
          * to the template.
          * @type {string}
-         * @since 2.15.0
+         * @since 2.x
          */
         addRuleGroupButtonID: "add-rule-group-",
 
@@ -66,7 +66,7 @@ define(["jquery",
          * (i.e. to switch between exclude:false and exclude:true in the filterGroup
          * model.)
          * @type {string}
-         * @since 2.15.0
+         * @since 2.x
          */
         excludeInputSelector: ".exclude-input",
 
@@ -75,7 +75,7 @@ define(["jquery",
          * allowing a user to switch the operator from "all" to "any" (i.e. to switch
          * between operator:"AND" and exclude:"OR" in the filterGroup model.)
          * @type {string}
-         * @since 2.15.0
+         * @since 2.x
          */
         operatorInputSelector: ".operator-input",
 
@@ -86,7 +86,7 @@ define(["jquery",
          * the maximum allowable nested levels, those levels will still be displayed. This
          * only prevents the "Add Rule Group" button from being shown.
          * @type {number}
-         * @since 2.15.0
+         * @since 2.x
          */
         nestedLevelsAllowed: 1,
 
@@ -141,7 +141,7 @@ define(["jquery",
         * will be no input to switch between the include & exclude and any & all, since
         * these are the exclude and operator attributes on the filterGroup model.
         * @type {FilterGroup}
-        * @since 2.15.0
+        * @since 2.x
         */
         filterGroup: null,
 
@@ -292,7 +292,7 @@ define(["jquery",
          * the FilterGroup model by selecting either "include" or "exclude"; and a second
          * that allows the user to edit the "operator" attribute in the FilterGroup model
          * by selecting between "all" and "any".
-         * @since 2.15.0
+         * @since 2.x
          */
         renderExcludeOperatorInputs: function(){
 
