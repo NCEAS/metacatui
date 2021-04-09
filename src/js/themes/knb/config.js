@@ -10,7 +10,9 @@ MetacatUI.AppConfig = Object.assign({
   baseUrl: "https://knb.ecoinformatics.org",
   metacatContext: "knb",
   mapKey: "AIzaSyCFcgRnv0TwBEdAnTsG5rBbD6Hprrv_Yic",
+  googleAnalyticsKey: "UA-1588494-14",
   repositoryName: "KNB",
+  nodeId: "urn:node:KNB",
   enableLdapSignIn: true,
 
   //Editor
@@ -93,13 +95,3 @@ MetacatUI.themeMap =
         'templates/preservation.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/preservation.html'
     }
 };
-
-MetacatUI.customAppConfig = function(){
-    //Only apply these settings when we are in production
-    if(!MetacatUI.appModel || (MetacatUI.appModel.get("baseUrl").indexOf("knb.ecoinformatics.org") < 0)) return;
-
-    //Gmaps key  AIzaSyA6-jiEs5rmEqKk70bigvnwuvhdZbt4tJs
-
-    MetacatUI.appModel.set("nodeId", "urn:node:KNB");
-    MetacatUI.appModel.set("googleAnalyticsKey", "UA-1588494-14");
-}
