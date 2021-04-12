@@ -1258,14 +1258,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     accessPolicy.createDefaultPolicy();
                   }
                 }
+                //Otherwise, set the default access policy using the AppModel configuration
+                else{
+                  accessPolicy.createDefaultPolicy();
+                }
               }
               catch(e){
-                console.error("Could not copy access policy, so defaulting to default", e);
-                accessPolicy.createDefaultPolicy();
-              }
-
-              //Otherwise, set the default access policy using the AppModel configuration
-              if( MetacatUI.appModel.get("inheritAccessPolicy") === false ){
+                console.error("Could create access policy, so defaulting to default", e);
                 accessPolicy.createDefaultPolicy();
               }
             }
