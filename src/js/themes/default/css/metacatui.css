@@ -1519,8 +1519,15 @@ li.ui-menu-item > a:hover,
 
     .popover{
     	font-size: 13px;
+    }    
+    
+    .popover-title {
+    	word-break: break-word;
     }
 
+    .popover-content {
+    	word-break: break-word;
+    }
 
   	/** View count **/
     .result-row .stats .count{
