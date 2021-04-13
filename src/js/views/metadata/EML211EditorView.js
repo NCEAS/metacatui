@@ -434,8 +434,7 @@ define(['underscore',
         */
         createDataPackage: function () {
           // Create a new Data packages
-          MetacatUI.rootDataPackage = new DataPackage([this.model]);
-          MetacatUI.rootDataPackage.packageModel.set("synced", true);
+          MetacatUI.rootDataPackage = new DataPackage([this.model], { packageModelAttrs: { synced: true }});
 
           //Handle the add of the metadata model
           MetacatUI.rootDataPackage.handleAdd(this.model);

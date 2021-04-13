@@ -156,21 +156,25 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             //Set the id or create a new one
             this.id = options.id || "resource_map_urn:uuid:" + uuid.v4();
 
-            // Create a DataONEObject to represent this resource map
-            this.packageModel = new DataONEObject({
-                formatType: "RESOURCE",
-                type: "DataPackage",
-                formatId: "http://www.openarchives.org/ore/terms",
-                childPackages: {},
-                id: this.id,
-                latestVersion: this.id
-            });
+            let packageModelAttrs = options.packageModelAttrs || {};
 
             if ( typeof options.packageModel !== "undefined" ) {
                 // use the given package model
               this.packageModel = new DataONEObject(options.packageModel);
 
             }
+            else{
+              // Create a DataONEObject to represent this resource map
+              this.packageModel = new DataONEObject(_.extend(packageModelAttrs, {
+                  formatType: "RESOURCE",
+                  type: "DataPackage",
+                  formatId: "http://www.openarchives.org/ore/terms",
+                  childPackages: {},
+                  id: this.id,
+                  latestVersion: this.id
+              }));
+            }
+
             this.id = this.packageModel.id;
 
             //Create a Filter for this DataPackage using the id
