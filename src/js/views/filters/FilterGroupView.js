@@ -74,9 +74,30 @@ define(['jquery', 'underscore', 'backbone',
           //Create a ToggleView
           var filterView = new ToggleFilterView({ model: filter });
         }
-        else if (filter.type == "sem_annotation") {
-          console.log("Semantic Annotation");
-          var filterView = new AnnotationFilterView();
+        else if (filter.get("fields").includes("sem_annotation")) {
+          if (MetacatUI.appModel.get("bioportalAPIKey")) {
+            var view = this;
+            var annotationFilterView = new AnnotationFilterView({
+              selected: view.model.get("values"),
+              separatorText: view.model.get("operator"),
+              multiselect: true
+            });
+            // filtersRow.append(annotationFilter.el)
+
+            //Append the filter view element to the view el
+            filtersRow.append(annotationFilterView.el);
+
+            annotationFilterView.render();
+            annotationFilterView.off("annotationSelected");
+            annotationFilterView.on("annotationSelected", function(event, item){
+              $("#annotation_input").val(item.value);
+              view.updateTextFilters(event, item)
+            });
+
+            //Save a reference to this subview
+            this.subviews.push(annotationFilterView);
+          }
+            return;
         }
         else{
           //Depending on the filter type, create a filter view
