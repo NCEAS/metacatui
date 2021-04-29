@@ -50,6 +50,14 @@ define(
         multiselect: false,
 
         /**
+         * If set to true, instead of showing the annotation tree interface in
+         * a popover, show it on the custom search filter interface, which allows
+         * the user to filter search based on the annotations.
+         * @type {boolean}
+         */
+        searchFilterSelect: false,
+
+        /**
          * The URL that indicates the concept where the tree should start
          * @type {string}
          */
@@ -150,7 +158,7 @@ define(
               view.multiSelectView = new SearchableSelect({
                 allowMulti: true,
                 allowAdditions: false,
-                inputLabel: "Add one or more concepts",
+                inputLabel: (view.inputLabel === undefined) ? "Add one or more concepts" : view.inputLabel,
                 separatorText: view.separatorText,
               })
               view.$el.append(view.multiSelectView.el);

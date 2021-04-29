@@ -8178,3 +8178,7 @@ CSS library fixes
 body > #extension-is-installed{
   display: none;
 }
+
+.annotation-filter.custom-annotation-search-filter .ui.selection.dropdown .menu {
+	position: relative;
+}

@@ -80,9 +80,11 @@ define(['jquery', 'underscore', 'backbone',
             var annotationFilterView = new AnnotationFilterView({
               selected: view.model.get("values"),
               separatorText: view.model.get("operator"),
-              multiselect: true
+              multiselect: true,
+              inputLabel: "Semantic Annotation"
             });
-            // filtersRow.append(annotationFilter.el)
+
+            annotationFilterView.$el.addClass("custom-annotation-search-filter");
 
             //Append the filter view element to the view el
             filtersRow.append(annotationFilterView.el);
