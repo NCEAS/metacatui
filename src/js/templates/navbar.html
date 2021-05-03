@@ -7,6 +7,9 @@
       <a id="nav-trigger"><i class="icon-reorder icon"></i><i class="icon-remove icon hidden"></i></a>
       <ul class="nav" id="main-nav">
         <li><a class="show-new-search" href="<%= MetacatUI.root %>/data">Data</a></li>
+        <% if( MetacatUI.appModel.get("enablePortalsList") == true ) { %>
+          <li><a href="<%=(MetacatUI.root)%>/portalsList">Portals</a></li>
+        <% } %>
         <li><a href="<%= MetacatUI.root %>/profile">Summary</a></li>
         <li><a href="<%= MetacatUI.root %>/about">About</a></li>
         <li class="input input-append">

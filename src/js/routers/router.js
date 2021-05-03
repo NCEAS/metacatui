@@ -37,7 +37,8 @@ function ($, _, Backbone) {
 			'quality(/s=:suiteId)(/:pid)(/)'    : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)(/)'                : 'renderAPI',       // API page
 			"edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)" : "renderPortalEditor",
-			'drafts' : 'renderDrafts'
+			'drafts' : 'renderDrafts',
+            'portalsList' : 'renderPortalsList'  // list of portals
 		},
 
 		helpPages: {
@@ -323,6 +324,16 @@ function ($, _, Backbone) {
 				MetacatUI.appView.showView(MetacatUI.appView.dataCatalogView);
 			}
 		},
+        
+        /**
+         * Renders the Portals List view.
+         */
+        renderPortalsList: function() {
+            require(['views/portals/PortalsListView'], function(PortalsList){
+                MetacatUI.appView.portalsList = new PortalsList({ el: "#Content", fullPage: true});
+                MetacatUI.appView.showView(MetacatUI.appView.portalsList);
+            });
+         },
 
     /**
      * renderPortal - Render the portal view based on the given name or id, as
