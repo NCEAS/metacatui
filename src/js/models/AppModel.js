@@ -59,9 +59,9 @@ define(['jquery', 'underscore', 'backbone'],
       emailContact: "knb-help@nceas.ucsb.edu",
 
       /**
-      * Your Google Maps API key, which is used to diplay interactive maps on the search
+      * Your Google Maps API key, which is used to display interactive maps on the search
       * views and static maps on dataset landing pages.
-      * If a Google Maps API key is no specified, the maps will be omitted from the interface.
+      * If a Google Maps API key is not specified, the maps will be omitted from the interface.
       * Sign up for Google Maps services at https://console.developers.google.com/
       * @type {string}
       * @example "AIzaSyCYyHnbIokUEpMx5M61ButwgNGX8fIHUs"
@@ -79,6 +79,19 @@ define(['jquery', 'underscore', 'backbone'],
       * @default null
       */
       googleAnalyticsKey: null,
+
+      /**
+      * The map to use in the catalog search (both DataCatalogViewWithFilters and
+      * DataCatalog). This can be set to either "google" (the default), or "cesium". To
+      * use Google maps, the {@link AppConfig#googleAnalyticsKey} must be set. To use
+      * Cesium maps, the {@link AppConfig#enableCesium} property must be set to true, and
+      * the {@link AppConfig#cesiumToken} must be set.
+      * @type {string}
+      * @example "cesium"
+      * @default "google"
+      * @since 2.X.X
+      */
+      dataCatalogMap: "google",
 
       /**
       * The node identifier for this repository. This is set dynamically by retrieving the

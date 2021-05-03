@@ -140,7 +140,10 @@ define(["jquery",
             // Render the main view and/or re-render subviews. Don't call .html() here
             // so we don't lose state, rather use .setElement(). Delegate rendering
             // and event handling to sub views
-            render: function() {
+                render: function () {
+                
+                // Which type of map are we rendering, Google maps or Cesium maps?
+                this.mapType = MetacatUI.appModel.get("dataCatalogMap") || "google";
 
                 // Use the global models if there are no other models specified at time of render
                 if ((MetacatUI.appModel.get("searchHistory").length > 0) &&
@@ -1832,37 +1835,42 @@ define(["jquery",
                 renderMap: function () {
 
                     // If gmaps isn't enabled or loaded with an error, use list mode
-                    // if (!gmaps || this.mode == "list") {
-                    //     this.ready = true;
-                    //     this.mode = "list";
-                    //     return;
-                    // }
+                    if (this.mapType === "google" && (!gmaps || this.mode == "list")) {
+                        this.ready = true;
+                        this.mode = "list";
+                        return;
+                    }
 
                     if (this.isSubView) {
                         this.$el.addClass("mapMode");
                     } else {
                         $("body").addClass("mapMode");
                     }
-                
-                    var mapContainer = $("#map-container").append("<div id='map-canvas'></div>");
 
-                    var mapView = new CesiumView({
-                        el: mapContainer
-                    });
-                    mapView.render();
-                    this.map = mapView;
+                    // Render Cesium maps, if that is the map type rendered.
+                    if (this.mapType == "cesium") {
+                        var mapContainer = $("#map-container").append("<div id='map-canvas'></div>");
 
-                    this.mapModel.set("map", this.map);
+                        var mapView = new CesiumView({
+                            el: mapContainer
+                        });
+                        mapView.render();
+                        this.map = mapView;
 
-                    this.map.showGeohashes()
+                        this.mapModel.set("map", this.map);
 
-                    // Mark the view as ready to start a search
-                    this.ready = true;
-                    this.triggerSearch();
-                    this.allowSearch = false;
-                
-                    // TODO / WIP : Implement the rest of the map search features...
-                return
+                        this.map.showGeohashes()
+
+                        // Mark the view as ready to start a search
+                        this.ready = true;
+                        this.triggerSearch();
+                        this.allowSearch = false;
+
+                        // TODO / WIP : Implement the rest of the map search features...
+                        return
+                    }
+
+                    // Continue with rendering Google maps, if that is configured mapType
                     
                 // Get the map options and create the map
                 gmaps.visualRefresh = true;
@@ -2151,10 +2159,14 @@ define(["jquery",
             /**
              * Create a tile for each geohash facet. A separate tile label is added to the map with the count of the facet.
              **/
-                drawTiles: function () {
+            drawTiles: function () {
 
-                // TODO: once CesiumMap is fully implemented, this function can be removed.
-                return
+                // This function is for Google maps only. The CesiumView draws its own
+                // tiles.
+                if (this.mapType !== "google") {
+                    return
+                }
+                
                 // Exit if maps are not in use
                 if ((this.mode != "map") || (!gmaps)) {
                     return false;
