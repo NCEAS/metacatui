@@ -57,7 +57,7 @@ define(['underscore',
         initialize: function (options) {
           try {
             // Set the Cesium map model on this view. Create a new one if required.
-            if (options.model) {
+            if (options && options.model) {
               this.model = options.model
             } else {
               this.model = new CesiumModel();
@@ -78,24 +78,17 @@ define(['underscore',
         */
         render: function () {
 
-          var view = this
-
           // If Cesium features are disabled in the AppConfig, then exit without rendering
           // anything.
           if (!MetacatUI.appModel.get("enableCesium")) {
             return;
           }
 
-          //Add the Cesium template
+          // Save a reference to this view
+          var view = this
+
+          // Add the Cesium template
           this.$el.html(this.template());
-          
-          // Set default "home" position/view
-          var hp = this.model.get("homePosition")
-          Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
-          // Give coordinates in west, south, east, north
-          Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(
-            hp.west, hp.south, hp.east, hp.north
-          );
 
           // Initialize the Cesium Viewer in the HTML element with the `cesiumContainer` ID.
           // TODO: make some of these options configurable
@@ -110,10 +103,74 @@ define(['underscore',
             animation: false
           });
 
-          // Save a reference to the cesium camera - it's used through-out the view to
-          // zoom, listen for user changes, etc.
-          this.camera = this.viewer.camera
+          // If there's a home position set on the Cesium model, fly to the home position
+          // and overwrite the behaviour of the home button.
+          if (this.model.get("homePosition")) {
+            this.showHome()
+            this.viewer.homeButton.viewModel.command.beforeExecute.addEventListener(
+              function (e) {
+                e.cancel = true;
+                view.showHome()
+              });
+          }
 
+        },
+
+        /**
+         * Navigate to the homePosition that's set on the CesiumModel.
+         */
+        showHome: function () {
+          try {
+            if (this.model.get("homePosition")) {
+              var position = this.model.get("homePosition")
+              this.viewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(
+                  position.longitude,
+                  position.latitude,
+                  position.height
+                ),
+                orientation: {
+                  heading: Cesium.Math.toRadians(position.heading),
+                  pitch: Cesium.Math.toRadians(position.pitch),
+                  roll: Cesium.Math.toRadians(position.roll)
+                }
+              });
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error navigating to the home position in a CesiumView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Get the current positioning of the camera in the view.
+         * @returns {CameraPosition} Returns an object with the longitude, latitude,
+         * height, heading, pitch, and roll in the same format that the CesiumModel uses
+         * for the homePosition (see {@link CesiumModel#defaults})
+         */
+        getCurrentPosition: function () {
+          try {
+            var view = this;
+            var cameraPosition = Cesium.Cartographic
+              .fromCartesian(view.viewer.camera.position)
+            return {
+              longitude: cameraPosition.longitude / Math.PI * 180,
+              latitude: cameraPosition.latitude / Math.PI * 180,
+              height: view.viewer.camera.position.z,
+              heading: Cesium.Math.toDegrees(view.viewer.camera.heading),
+              pitch: Cesium.Math.toDegrees(view.viewer.camera.pitch),
+              roll: Cesium.Math.toDegrees(view.viewer.camera.roll)
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error getting the current position in a CesiumView' +
+              '. Error details: ' + error
+            );
+          }
         },
 
         /**
