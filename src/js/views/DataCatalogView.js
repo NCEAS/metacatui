@@ -8,7 +8,7 @@ define(["jquery",
         "models/Search",
         "models/Stats",
         "models/MetricsModel",
-        "models/Utilities",
+        "common/Utilities",
         "views/SearchResultView",
         "views/searchSelect/AnnotationFilterView",
         "text!templates/search.html",
@@ -2905,7 +2905,7 @@ define(["jquery",
 
               var errorMessage = "";
               var statusCode = response.status;
-              
+
               if(!statusCode){
                   statusCode = parseInt(response.statusText)
               }

@@ -24,12 +24,14 @@ define([
         /**
          * The type of View this is
          * @type {string}
+         * @since 2.15.0
          */
         type: "AccountSelect",
 
         /**
          * The HTML class names for this view element
          * @type {string}
+         * @since 2.15.0
          */
         className: SearchableSelect.prototype.className + " account-select",
 
@@ -37,6 +39,7 @@ define([
          * Text to show in the input field before any value has been entered
          * @type {string}
          * @default "Start typing a name"
+         * @since 2.15.0
          */
         placeholderText: "Start typing a name",
 
@@ -44,6 +47,7 @@ define([
          * Label for the input element
          * @type {string}
          * @default "Search for a person or group"
+         * @since 2.15.0
          */
         inputLabel: "Search for a person or group",
 
@@ -51,6 +55,7 @@ define([
          * Whether to allow users to select more than one value
          * @type {boolean}
          * @default true
+         * @since 2.15.0
          */
         allowMulti: true,
 
@@ -114,12 +119,13 @@ define([
 
             })
           }
-          
+
         },
 
         /**
          * Creates a new SearchableSelectView
          * @param {Object} options - A literal object with options to pass to the view
+         * @since 2.15.0
          */
         initialize: function(options) {
 
@@ -147,7 +153,7 @@ define([
          * a list mapping dropdown content specifically for the FomanticUI API. When
          * forTemplate is true, then the results are formatted for use in the
          * SearchableSelectView template: {@link SearchableSelectView#template}.
-         * 
+         *
          * @param  {Object[]} results The response from
          * {@link LookupModel#getAccountsAutocomplete}
          * @param  {boolean} forTemplate=false Whether or not to format the results for
@@ -155,9 +161,10 @@ define([
          * @return {Object[]} The re-formatted results
          *
          * @see {@link https://fomantic-ui.com/modules/dropdown.html#remote-settings}
+         * @since 2.15.0
          */
         formatResults: function(results, forTemplate = false){
-          
+
           results = _.map(results, function(result){
 
             if(forTemplate){
@@ -173,7 +180,7 @@ define([
               result.label = result.label.replace("(", '<span class="description">')
               result.label = result.label.replace(")", '</span>')
             }
-            
+
             var icon = ""
 
             if(result.type === "person"){
@@ -208,12 +215,13 @@ define([
          * Render the view
          *
          * @return {AccountSelectView}  Returns the view
+         * @since 2.15.0
          */
         render: function(){
 
           var view = this;
 
-          // Use the account lookup service to match the pre-selected values to 
+          // Use the account lookup service to match the pre-selected values to
           // the account holder's name to use as a label.
 
           // If we haven't started looking up user/organization names yet...
@@ -228,7 +236,7 @@ define([
 
               view.selected.forEach(function(accountId){
                 MetacatUI.appLookupModel.getAccountsAutocomplete({ term: accountId }, function(results){
-                  
+
                   // The value should match only one account (since the value is an
                   // account ID). If we found the match, format it for the
                   // SearchableSelectView, and the icon and tooltip will automatically be
@@ -250,7 +258,7 @@ define([
               })
 
               return
-  
+
             }
 
           }
@@ -269,6 +277,7 @@ define([
          * @param  {string} position how to position the tooltip - top | bottom | left |
          * right
          * @return {jQuery} The element with a tooltip wrapped by jQuery
+         * @since 2.15.0
          */
         addTooltip: function(element, position = "bottom"){
 
@@ -317,7 +326,7 @@ define([
 
         },
 
-        // TODO: We may want to add a custom is valid option to warn the user when 
+        // TODO: We may want to add a custom is valid option to warn the user when
         // a value entered cannot be found in the accounts lookup service.
 
         // /**
@@ -329,7 +338,7 @@ define([
         //  */
         // isValidOption: function(value){
         // },
-        
+
 
       });
 

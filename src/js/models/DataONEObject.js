@@ -821,6 +821,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                         model.set("uploadStatus", "e");
                         model.set("sysMetaUploadStatus", "e");
 
+                        // Trigger a custom event for the sysmeta update that
+                        // errored
+                        model.trigger("sysMetaUpdateError");
+
                         //Send this exception to Google Analytics
                         if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
                             ga("send", "exception", {
@@ -1238,9 +1242,31 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             accessPolicy.dataONEObject = this;
 
             //If there is no access policy XML sent,
-            if( !accessPolicyXML ){
-              //Set the default access policy using the AppModel configuration
-              accessPolicy.createDefaultPolicy();
+            if( this.isNew() && !accessPolicyXML ){
+
+              try{
+                //If the app is configured to inherit the access policy from the parent metadata,
+                // then get the parent metadata and copy it's AccessPolicy
+                let scienceMetadata = this.get("isDocumentedByModels");
+                if( MetacatUI.appModel.get("inheritAccessPolicy") && scienceMetadata && scienceMetadata.length ){
+                  let sciMetaAccessPolicy = scienceMetadata[0].get("accessPolicy");
+
+                  if( sciMetaAccessPolicy ){
+                    accessPolicy.copyAccessPolicy(sciMetaAccessPolicy);
+                  }
+                  else{
+                    accessPolicy.createDefaultPolicy();
+                  }
+                }
+                //Otherwise, set the default access policy using the AppModel configuration
+                else{
+                  accessPolicy.createDefaultPolicy();
+                }
+              }
+              catch(e){
+                console.error("Could create access policy, so defaulting to default", e);
+                accessPolicy.createDefaultPolicy();
+              }
             }
             else{
               //Parse the access policy XML to create AccessRule models from the XML
@@ -1401,7 +1427,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             if(this.isNew()) return true;
 
             // Compare the new system metadata XML to the old system metadata XML
-            
+
             var D1ObjectClone = this.clone(),
                 // Make sure we are using the parse function in the DataONEObject model.
                 // Sometimes hasUpdates is called from extensions of the D1Object model,
@@ -1409,7 +1435,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 oldSysMetaAttrs = new DataONEObject().parse(D1ObjectClone.get("sysMetaXML"));
 
             D1ObjectClone.set(oldSysMetaAttrs);
-            
+
             var oldSysMeta = D1ObjectClone.serializeSysMeta();
             var newSysMeta = this.serializeSysMeta();
 

@@ -16,17 +16,23 @@ https://coolors.co/003049-2a9989-fcbf49-eae2b7-d62828
 
 body{
   margin: 0px;
-  font-family: Helvetica, Arial, sans-serif;
-}
-a, a:visited, a:active{
-  color: var(--secondary-brand);
+  font-family: "Open Sans", Helvetica, Arial, sans-serif;
+  display: grid;
+  grid-template-columns: 20% 80%;
+  background-color: #FFF;
+  color: var(--neutral-dark);
 }
 #main{
-  float: right;
-  width: 80%;
+  float: none;
+  width: auto;
+  height: 100vh;
+  overflow-y: auto;
 }
-nav{
-  width: 20%;
+#nav{
+  float: none;
+  width: auto;
+  height: 100vh;
+  overflow-y: auto;
   background-color: var(--neutral-dark);
   margin-top: 0px;
   padding-top: 20px;
@@ -40,18 +46,22 @@ nav h3 {
     font-size: 1.5em;
     margin-top: 20px;
     margin-bottom: 0px;
+    font-weight: bold;
+    letter-spacing: 0;
 }
 nav ul a, nav ul a:visited, nav ul a:active, nav h3, nav a{
   font-family: inherit;
   color: var(--neutral);
+  font-size: .95em;
 }
 .category-heading ~ li:not(.category-heading) {
     margin-left: 10px;
 }
 .category-heading {
   color: var(--neutral);
-  margin-top: 20px;
+  margin-top: 10px;
   font-weight: bold;
+  font-size: .95em;
 }
 .category-heading[data-category='Deprecated']{
   color: var(--deprecated);
@@ -159,4 +169,8 @@ td.name{
 }
 section{
   background-color: transparent;
+}
+.link-icon svg{
+  height: 1em;
+  vertical-align: middle;
 }

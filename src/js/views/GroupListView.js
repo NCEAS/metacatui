@@ -7,6 +7,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 	 * @class GroupListView
 	 * @classdesc Displays a list of UserModels of a UserGroup collection and allows owners to add/remove members from the group
    * @classcategory Views
+   * @screenshot views/GroupListView.png
 	 */
 	var GroupListView = Backbone.View.extend(
     /** @lends GroupListView.prototype */{

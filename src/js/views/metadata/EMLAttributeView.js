@@ -12,6 +12,7 @@ define(['underscore', 'jquery', 'backbone',
         * @class EMLAttributeView
         * @classdesc An EMLAttributeView displays the info about one attribute in a data object
         * @classcategory Views/Metadata
+        * @screenshot views/metadata/EMLAttributeView.png
         * @extends Backbone.View
         */
         var EMLAttributeView = Backbone.View.extend(

@@ -6,7 +6,7 @@ define(["jquery", "underscore", "backbone",
          * @classdesc EMLDateTimeDomain represents the measurement scale of a date/time
          * attribute.
          * @classcategory Models/Metadata/EML211
-         * @see https://github.com/NCEAS/eml/blob/master/eml-attribute.xsd
+         * @see https://eml.ecoinformatics.org/schema/eml-attribute_xsd.html#AttributeType_AttributeType_measurementScale_dateTime
          */
         var EMLDateTimeDomain = Backbone.Model.extend(
           /** @lends EMLDateTimeDomain.prototype */{

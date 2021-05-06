@@ -7,7 +7,6 @@ define([
     "semanticUIdropdown",
     "text!" + MetacatUI.root + "/components/semanticUI/dropdown.min.css",
     "text!templates/selectUI/searchableSelect.html",
-    
   ],
   function($, _, Backbone, Transition, TransitionCSS, Dropdown, DropdownCSS, Template) {
 
@@ -116,7 +115,7 @@ define([
          * ({@link SearchableSelectView#allowMulti} is true), optional text to insert
          * between labels
          * @type {string}
-         * @since {2.15.0}
+         * @since 2.15.0
          */
         separatorText: "",
 
@@ -261,7 +260,16 @@ define([
             if(options.selected){
               options.selected = _.clone(options.selected);
             }
-            
+
+            // If pre-selected values that are passed to this view are also attached to a
+            // model (e.g. when they were passed to this view as {selected:
+            // parentView.model.get("values")}), then it's important that we use a clone
+            // instead. Otherwise this view may silently update the model, and important
+            // events may not be triggered.
+            if(options.selected){
+              options.selected = _.clone(options.selected);
+            }
+
             // Get all the options and apply them to this view
             if (typeof options == "object") {
               var optionKeys = Object.keys(options);
@@ -286,6 +294,14 @@ define([
           try {
 
             var view = this;
+
+            if(view.apiSettings && !view.semanticAPILoaded){
+              require([MetacatUI.root + "/components/semanticUI/api.min.js"], function(SemanticAPI){
+                view.semanticAPILoaded = true
+                view.render();
+              })
+              return;
+            }
 
             // Render the template using the view attributes
             this.$el.html(this.template(this));
@@ -385,7 +401,7 @@ define([
                   }
 
                   // Trigger an event if items are selected after the UI has been rendered
-                  // (It is set as disabled until fully rendered). 
+                  // (It is set as disabled until fully rendered).
                   if(!$(this).hasClass("disabled")){
                     var newValues = _.clone(view.selected);
                     view.trigger('changeSelection', newValues);
@@ -395,12 +411,17 @@ define([
 
                   // Ensure tooltips for labels are removed
                   $(".search-select-tooltip").remove();
-                  
+
                   // Add a tooltip for single select elements (.text) or multi-select
                   // elements (.label). Delay so that to give time for DOM elements to be
                   // added or removed.
                   setTimeout(function(params) {
                     var textEl = view.$selectUI.find(".text:not(.default),.label");
+                    // Single select text element will not have the value attribute, add
+                    // it so that we can find the matching description for the tooltip
+                    if(!textEl.data("value") && !view.allowMulti){
+                      textEl.data("value", values)
+                    }
                     if(textEl){
                       textEl.each(function(i, el){
                         view.addTooltip.call(view, el, "top");
@@ -436,7 +457,7 @@ define([
               // Need separator text to create a separator element
               !this.separatorText ||
               // Need the list of selected values to determine the value's position
-              !this.selected || 
+              !this.selected ||
               // Separator is only required between two or more values
               this.selected.length <= 1 ||
               // Separator is only required after the first element has been added
@@ -575,6 +596,15 @@ define([
               });
             }
 
+            // Trigger an event when the user focuses in searchable inputs
+            var inputEl = this.$el.find("input.search")
+            if(inputEl){
+              inputEl.off("focus");
+              inputEl.on("focus", function(event){
+                view.trigger("inputFocus", event)
+              })
+            }
+
           } catch (e) {
             console.log("The searchable select post-render function failed, error message: " + e);
           }
@@ -642,8 +672,14 @@ define([
             // Find the description in the options object, using the data-value
             // attribute set in the template. The data-value attribute is either
             // the label, or the value, depending on if a value is provided.
-            var valueOrLabel = $(element).data("value"),
-                opt = _.chain(this.options)
+            var valueOrLabel = $(element).data("value");
+            if(typeof valueOrLabel === "undefined"){
+              return
+            }
+            if(typeof valueOrLabel === "boolean"){
+              valueOrLabel = valueOrLabel.toString()
+            }
+            var opt = _.chain(this.options)
                             .values()
                             .flatten()
                             .find(function(option){
@@ -680,7 +716,7 @@ define([
 
             return $(element)
           } catch (e) {
-            console.log("Failed to add tooltips in a searchable select view, error message: " + e);
+            console.log("Failed to add tooltip in a searchable select view, error message: " + e);
           }
 
         },
