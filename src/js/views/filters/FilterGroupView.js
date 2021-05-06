@@ -74,32 +74,40 @@ define(['jquery', 'underscore', 'backbone',
           //Create a ToggleView
           var filterView = new ToggleFilterView({ model: filter });
         }
-        else if (filter.get("fields").includes("sem_annotation")) {
-          if (MetacatUI.appModel.get("bioportalAPIKey")) {
-            var view = this;
-            var annotationFilterView = new AnnotationFilterView({
-              selected: view.model.get("values"),
-              separatorText: view.model.get("operator"),
-              multiselect: true,
-              inputLabel: "Semantic Annotation"
-            });
+        else if (filter.get("fields").includes("sem_annotation") && MetacatUI.appModel.get("bioportalAPIKey")) {
+          
+          var annotationEl = new FilterView({ model: filter });
+          annotationEl.render();
+          annotationEl.$el.addClass("custom-annotation-search-filter");
 
-            annotationFilterView.$el.addClass("custom-annotation-search-filter");
+          var view = this;
 
-            //Append the filter view element to the view el
-            filtersRow.append(annotationFilterView.el);
+          // create annotation view 
+          var annotationFilterView = new AnnotationFilterView({
+            selected: view.model.get("values"),
+            separatorText: view.model.get("operator"),
+            popoverTriggerSelector: annotationEl.$el
+          });
 
-            annotationFilterView.render();
-            annotationFilterView.off("annotationSelected");
-            annotationFilterView.on("annotationSelected", function(event, item){
-              $("#annotation_input").val(item.value);
-              view.updateTextFilters(event, item)
-            });
+          annotationFilterView.render();
+          annotationFilterView.off("annotationSelected");
+          annotationFilterView.on("annotationSelected", function(event, item){
+            // Get the value of the associated input
+            var term = (!item || !item.value) ? input.val() : item.value;
+            var label = (!item || !item.filterLabel) ? null : item.filterLabel;
+            var filterDesc = (!item || !item.desc) ? null : item.desc;
 
-            //Save a reference to this subview
-            this.subviews.push(annotationFilterView);
-          }
-            return;
+            var newValues = filter.get("values");
+            newValues.push(term);
+            filter.set("values", newValues);
+
+            view.trigger("addNewAnnotationSearch", event, item, filter);
+          });
+
+          //Append the filter view element to the view el
+          filtersRow.append(annotationEl.el);
+
+          return;
         }
         else{
           //Depending on the filter type, create a filter view

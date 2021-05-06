@@ -159,6 +159,10 @@ define(['jquery', 'underscore', 'backbone',
         //If a new filter is ever added to this filter group, re-render this view
         this.listenTo( filterGroup.get("filters"), "add remove", this.render );
 
+        this.listenTo( filterGroupView, "addNewAnnotationSearch", function(event, item){
+          this.trigger("updateDataCatalogView", event, item);
+        });
+
       }, this);
 
       if( divideIntoGroups ){

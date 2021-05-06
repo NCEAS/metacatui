@@ -90,10 +90,19 @@ define(["jquery",
             filterGroupsView: filterGroupsView
           });
 
+          this.dataCatalogView = dataCatalogView;
+          var view = this;
+
           this.$el.append(dataCatalogView.el);
           this.$el.data("view", this);
 
           dataCatalogView.render();
+
+          // Listener to handle the semantic annotation search
+          this.listenTo( filterGroupsView, "updateDataCatalogView", function(event, item){
+            view.dataCatalogView.updateTextFilters(event, item);
+            view.dataCatalogView.triggerSearch();
+          });
 
         }
 
