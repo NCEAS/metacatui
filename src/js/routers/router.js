@@ -38,7 +38,6 @@ function ($, _, Backbone) {
 			'api(/:anchorId)(/)'                : 'renderAPI',       // API page
 			"edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)" : "renderPortalEditor",
 			'drafts' : 'renderDrafts',
-            'portalsList' : 'renderPortalsList',  // list of portals
             'search' : 'renderPortalsSearch'
 		},
 
@@ -326,18 +325,8 @@ function ($, _, Backbone) {
 			}
 		},
 
-        /**
-         * Renders the Portals List view.
-         */
-        renderPortalsList: function() {
-            require(['views/portals/PortalsListView'], function(PortalsList){
-                MetacatUI.appView.portalsList = new PortalsList({ el: "#Content", fullPage: true});
-                MetacatUI.appView.showView(MetacatUI.appView.portalsList);
-            });
-         },
-
          /**
-          * Renders the Portals List view.
+          * Renders the Portals Search view.
           */
          renderPortalsSearch: function() {
              require(['views/portals/PortalsSearchView'], function(PortalsSearchView){
