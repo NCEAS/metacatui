@@ -303,7 +303,10 @@ define(["jquery",
                               "geohash_9",
                               "datasource",
                               "isPublic",
-                              "documents"];
+                              "documents",
+                              "label",
+                              "logo",
+                              "formatId"];
                 // Add spatial fields if the map is present
                 if ( gmaps ) {
                     fields.push("northBoundCoord", "southBoundCoord", "eastBoundCoord", "westBoundCoord");

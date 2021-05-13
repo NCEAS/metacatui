@@ -26,6 +26,13 @@ define([
         matchSubstring: true,
         exclude: false
       });
+      
+      filters.add({
+        fields: ["obsoletedBy"],
+        values: ["*"],
+        matchSubstring: false,
+        exclude: true 
+      });
 
       var searchModel = new Search();
       searchModel.set("filters", filters);
@@ -34,19 +41,18 @@ define([
       var dataCatalogView = new DataCatalogView({
         mode: "list",
         searchModel: searchModel,
-      //  searchResults: searchResults,
-      //  mapModel: this.model.get("mapModel"),
         isSubView: true,
         filters: false,
-        fixedHeight: false,
-    //    filterGroupsView: filterGroupsView
+        fixedHeight: false
       });
 
       this.$el.append(dataCatalogView.el);
       this.$el.data("view", this);
 
       dataCatalogView.render();
-    }
+      this.$el.find("#sidebar").hide();
+      this.$el.find("#results-header .sort-by").hide();
+      this.$el.find("#mainContent").hide();
 
   });
 
