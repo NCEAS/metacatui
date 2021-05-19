@@ -53,6 +53,7 @@ define([
       this.$el.find("#sidebar").hide();
       this.$el.find("#results-header .sort-by").hide();
       this.$el.find("#mainContent").hide();
+    }
 
   });
 
