@@ -214,23 +214,22 @@ define(["jquery",
               row.html("<td colspan='4' class='center'>You haven't created or have access to any " +
                         MetacatUI.appModel.get("portalTermPlural") + " yet.</td>");
               listContainer.html(row);
-              return;
+            }
+            else{
+              //Remove any 'loading' elements before adding items to the list
+              listContainer.find(".loading").remove();
+
+              //Iterate over each search result and render it
+              this.searchResults.each(function(searchResult){
+
+                //Create a list item element and add the search result element
+                // to the list container
+                listContainer.append(this.createListItem(searchResult));
+
+              }, this);
             }
 
-            //Remove any 'loading' elements before adding items to the list
-            listContainer.find(".loading").remove();
-
-            //Iterate over each search result and render it
-            this.searchResults.each(function(searchResult){
-
-              //Create a list item element and add the search result element
-              // to the list container
-              listContainer.append(this.createListItem(searchResult));
-
-            }, this);
-
-            //TODO: Unwrap the call to renderCreateButton() from this if condition,
-            // because the ListView will only ever be used when Usages/Bookkeeper is enabled
+            //DataONE Plus Preview mode will display the Create Portal button in a different manner
             if( !MetacatUI.appModel.get("dataonePlusPreviewMode") ){
               //Add a "Create" button to create a new portal
               this.renderCreateButton();
