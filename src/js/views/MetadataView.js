@@ -2760,7 +2760,7 @@ define(['jquery',
             elJSON.description = model.get("abstract");
           } else {
             var datasets_url = "https://dataone.org/datasets/" + encodeURIComponent(model.get("id"));
-            elJSON.description = 'No description is available. Visit <a href="' + datasets_url + '">' + datasets_url + '</a> for complete metadata about this dataset.';
+            elJSON.description = 'No description is available. Visit ' + datasets_url + ' for complete metadata about this dataset.';
           }
 
           // Dataset/keywords
