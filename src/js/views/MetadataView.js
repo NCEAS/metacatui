@@ -223,8 +223,8 @@ define(['jquery',
               //If there is only one metadata pid that documents this data object, then
               // get that metadata model for this view.
               if (isDocBy && isDocBy.length == 1) {
-                this.pid = _.first(isDocBy);
-                this.getModel(this.pid);
+                this.navigateWithFragment(_.first(isDocBy), this.pid);
+
                 return;
               }
               //If more than one metadata doc documents this data object, it is most likely
@@ -274,15 +274,12 @@ define(['jquery',
                       // TODO: Support navigation to multiple metadata docs. This should be a rare occurence, but
                       // it is possible that more than one metadata version chain documents a data object, and we need
                       // to show the user that the data is involved in multiple datasets.
-                      view.pid = latestVersions[0];
-                      view.getModel(latestVersions[0]);
+                      view.navigateWithFragment(latestVersions[0], view.pid);
                     }
                     //If a latest version wasn't found, which should never happen, but just in case, default to the
                     // last metadata pid in the isDocumentedBy field (most liekly to be the most recent since it was indexed last).
                     else {
-                      var fallbackPid = _.last(isDocBy);
-                      view.pid = fallbackPid;
-                      view.getModel(fallbackPid);
+                      view.navigateWithFragment(_.last(isDocBy), view.pid)
                     }
 
                   });
@@ -2505,6 +2502,28 @@ define(['jquery',
           if (entityDetailsEl || entityDetailsEl.length) {
             MetacatUI.appView.scrollTo(entityDetailsEl);
           }
+        },
+
+        /**
+         * Navigate to a new /view URL with a fragment
+         *
+         * Used in getModel() when the pid originally passed into MetadataView
+         * is not a metadata PID but is, instead, a data PID. getModel() does
+         * the work of finding an appropriate metadata PID for the data PID and
+         * this method handles re-routing to the correct URL.
+         *
+         * @param {string} metadata_pid - The new metadata PID
+         * @param {string} data_pid - Optional. A data PID that's part of the
+         *   package metadata_pid exists within.
+         */
+        navigateWithFragment: function (metadata_pid, data_pid) {
+          var next_route = "view/" + encodeURIComponent(metadata_pid);
+
+          if (typeof data_pid === "string" && data_pid.length > 0) {
+            next_route += "#" + encodeURIComponent(data_pid);
+          }
+
+          MetacatUI.uiRouter.navigate(next_route, { trigger: true });
         },
 
         closePopovers: function (e) {
