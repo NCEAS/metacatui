@@ -3009,6 +3009,13 @@ define(['jquery',
 
           // Insert
           document.head.insertAdjacentHTML("beforeend", hwpt);
+
+          // Update Zotero
+          // https://www.zotero.org/support/dev/exposing_metadata#force_zotero_to_refresh_metadata
+          document.dispatchEvent(new Event('ZoteroItemUpdated', {
+            bubbles: true,
+            cancelable: true
+          }));
         },
 
         createAnnotationViews: function () {
