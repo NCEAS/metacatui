@@ -2990,14 +2990,20 @@ define(['jquery',
           var title = this.model.get("title"),
             authors = this.model.get("origin"),
             publisher = this.getPublisherText(),
-            date = new Date(this.getDatePublishedText()).getUTCFullYear().toString();
+            date = new Date(this.getDatePublishedText()).getUTCFullYear().toString(),
+            isDOI = this.model.isDOI(this.model.get("id")),
+            id = this.model.get("id"),
+            abstract = this.model.get("abstract");
 
           // Generate HTML strings from each template
           var hwpt = this.metaTagsHighwirePressTemplate({
             title: title,
             authors: authors,
             publisher: publisher,
-            date: date
+            date: date,
+            isDOI: isDOI,
+            id: id,
+            abstract
           });
 
           // Clear any that are already in the document.
@@ -3006,6 +3012,8 @@ define(['jquery',
           $("meta[name='citation_author']").remove();
           $("meta[name='citation_publisher']").remove();
           $("meta[name='citation_date']").remove();
+          $("meta[name='citation_doi']").remove();
+          $("meta[name='citation_abstract']").remove();
 
           // Insert
           document.head.insertAdjacentHTML("beforeend", hwpt);

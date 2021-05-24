@@ -4,6 +4,12 @@
 _.each(authors, function(author) {
 %>
 <meta name="citation_author" content="<%= author %>">
-<% }); %>  
+<% }); %>
 <meta name="citation_publisher" content="<%= publisher %>">
 <meta name="citation_date" content="<%= date %>">
+<% if (isDOI) { %>
+  <meta name="citation_doi" content="<%= id %>">
+<% } %>
+<% if (abstract) { %>
+  <meta name="citation_abstract" content="<%= abstract %>">
+<% } %>
