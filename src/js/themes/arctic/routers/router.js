@@ -268,7 +268,7 @@ function ($, _, Backbone) {
 			if(MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn"))
 				this.renderSignIn();
 			else if(!MetacatUI.appUserModel.get("checked")){
-				this.listenToOnce(appUserModel, "change:checked", function(){
+				this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
 					if(MetacatUI.appUserModel.get("loggedIn"))
 						this.renderProfile(MetacatUI.appUserModel.get("username"), section, subsection);
 					else
