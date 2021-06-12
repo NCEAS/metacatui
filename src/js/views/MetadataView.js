@@ -3036,7 +3036,6 @@ define(['jquery',
                 el: annoEl
               });
               viewRef.subviews.push(newView);
-              newView.render();
             });
           }
           catch (e) {
