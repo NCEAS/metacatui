@@ -2,19 +2,18 @@ define(["jquery",
     "underscore",
     "backbone",
     "collections/Filters",
-    "collections/SolrResults",
-    "views/PagerView"],
-    function($, _, Backbone, Filters, SearchResults, PagerView){
+    "views/portals/PortalListView"],
+    function($, _, Backbone, Filters, PortalListView){
 
       "use strict";
-      
+
       /**
       * @class PortalsSearchView
       * @classdesc A view that shows a list of Portals in the main app window
       * @classcategory Views/Portals
       * @extends Backbone.View
       * @constructor
-      * @since 2.14.2
+      * @since 2.16.0
       * @screenshot views/PortalsSearchView.png
       */
 
@@ -22,55 +21,7 @@ define(["jquery",
         /** @lends PortalsSearchView.prototype */{
 
         /**
-        * A comma-separated list of Solr index fields to retrieve when searching for portals
-        * @type {string}
-        * @default "id,seriesId,title,formatId,label,logo,datasource"
-        */
-        searchFields: "id,seriesId,title,formatId,label,logo,datasource",
-
-        /**
-        * The number of portal search results to retrieve
-        * @default 100
-        * @type {number}
-        */
-        numPortals: 1000,
-        
-        /**
-        * The number of portal search results  to display (for each paged result)
-        * @default 100
-        * @type {number}
-        */
-        portalsPerPage: 3,
-
-        /**
-        * An array of additional SolrResult models for portals that will be displayed
-        * in this view in addition to the SolrResults found as a result of the search.
-        * These could be portals that wouldn't otherwise be found by a search but should be displayed anyway.
-        * @type {SolrResult[]}
-        */
-        additionalPortalsToDisplay: [],
-
-        /**
-        * A jQuery selector for the element that contains all portal lists.
-        * @type {string}
-        */
-        listContainerId: "#portals-list-container",
-        
-        /**
-        * The jQuery selector for the element that the list of portals, that can be edited, should be inserted into.
-        * @type {string}
-        */
-        myPortalsListContainerId: "#portals-list-user",
-        
-        /**
-        * A jQuery selector for the element that the list of portals, that can be viewed only, should be inserted into.
-        *  privideges) should be inserted into.
-        * @type {string}
-        */
-        allPortalsListContainerId: "#portals-list-all",
-        
-        /**
-        * The template for this view. 
+        * The template for this view.
         */
         template: _.template('<div id="portals-list-container"><div id="portals-list-user"/> <div id="portals-list-all"/> </div>'),
 
@@ -84,33 +35,60 @@ define(["jquery",
             //Insert the template
             this.$el.html( this.template() );
 
-            var filters = new Filters();
+            //Render the view after the user's authentication has been checked
+            if( !MetacatUI.appUserModel.get("checked") ){
+              this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.render);
+              return;
+            }
+
+
+            let allPortalsView = new PortalListView();
 
             // Filter datasets that the user has ownership of
             if ( MetacatUI.appUserModel.get("loggedIn") ) {
+              let filters = new Filters();
               filters.addWritePermissionFilter();
 
-              //Get the search results and render them
-              this.getSearchResults(filters, this.myPortalsListContainerId, "MY PORTALS", true);
-            }
-            
-            filters = new Filters();
-            if ( MetacatUI.appUserModel.get("loggedIn") ){
-              //Filter datasets by their ownership
-              filters.add({
-                fields: ["rightsHolder", "writePermission", "changePermission"],
-                values: MetacatUI.appUserModel.get("allIdentitiesAndGroups"),
-                operator: "OR",
-                matchSubstring: false,
-                exclude: true 
-              });
+              //Render My Portals list
+              let myPortalsView = new PortalListView();
+              myPortalsView.numPortals = 99999;
+              myPortalsView.numPortalsPerPage = 5;
+              myPortalsView.filters = filters;
+
+              //Create titles for the My Portals and All Portals sections
+              var title = $(document.createElement("h4"))
+                          .addClass("portals-list-title"),
+                  myPortalsTitle  = title.clone().text("My "  + MetacatUI.appModel.get("portalTermPlural")),
+                  allPortalsTitle = title.clone().text("All " + MetacatUI.appModel.get("portalTermPlural"));
+
+              this.$("#portals-list-user").append(myPortalsTitle, myPortalsView.el);
+              this.$("#portals-list-all").append(allPortalsTitle);
+
+              myPortalsView.render();
+
+              //Exclude portals the user is an owner of from the All portals list
+              let allPortalsFilters = new Filters();
+              allPortalsFilters.addWritePermissionFilter();
+              let permissionFilter = allPortalsFilters.at(allPortalsFilters.length-1);
+              if(permissionFilter){
+                permissionFilter.set("exclude", true);
+                allPortalsView.filters = allPortalsFilters;
+              }
+
             }
 
-            this.getSearchResults(filters, this.allPortalsListContainerId, "ALL PORTALS", false);
+            //Render All Portals
+            allPortalsView.numPortals = 99999;
+            allPortalsView.numPortalsPerPage = 10;
+
+            this.$("#portals-list-all").append(allPortalsView.el);
+
+            allPortalsView.render();
 
           }
           catch(e){
             console.error(e);
+            this.showError();
           }
         },
 
@@ -178,7 +156,7 @@ define(["jquery",
 
             //Get the first page of results
             searchResults.toPage(0);
-            
+
           }
           catch(e){
             this.showError();
@@ -193,7 +171,7 @@ define(["jquery",
         * @param {String} - The DOM element id to display the results in
         * @param {Boolean} - Does the user have permission to edit the displayed portal
         * @param {Number} - The number of portals list items to display (for each paged result)
-        * 
+        *
         */
         renderList: function(searchResults, title, containerId, editable, itemsPerPage) {
 
@@ -212,7 +190,7 @@ define(["jquery",
 
               return;
             }
-            
+
             var title = $(document.createElement("h4"))
                         .addClass("portals-list-title")
                         .text(title);
@@ -229,14 +207,14 @@ define(["jquery",
               listContainer.append(this.createListItem(searchResult, editable));
 
             }, this);
-            
+
             // Create a pager for this list if there are many group members
             var pager = new PagerView({
                 pages: this.$(containerId.concat(" .member")),
                 itemsPerPage: itemsPerPage,
                 classes: "portals-list-entry"
             });
-            
+
             listContainer.append(pager.render().el);
 
           }
@@ -297,39 +275,39 @@ define(["jquery",
 
                 // Add link to the portal to the list item
                 var logoLink = $(document.createElement("a"))
-                            .attr("href", MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural") 
+                            .attr("href", MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural")
                             + "/" + encodeURIComponent((searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id"))) )
 
                 var logoImg = $(document.createElement("img"))
                           .attr("src", searchResult.get("logo"))
                           .attr("alt", searchResult.get("title") + " logo");
                 logoLink.append(logoImg);
-                
+
                 logoDiv = $(document.createElement("div"))
                           .addClass("portal-logo")
                           .append(logoLink);
-                          
+
               } else {
                 // Create an empty <div>, as no portal image is available.
                 logoDiv = $(document.createElement("div"))
                           .addClass("portal-logo")
               }
-              
+
 
               var portalLabel = $(document.createElement("h4"))
                           .addClass("portal-label")
                           .text( searchResult.get("label"));
-              
+
               var portalTitle = $(document.createElement("p"))
                                 .addClass("portal-title")
                                 .text( searchResult.get("title"));
-              
+
               var portalInfo;
               portalInfo = $(document.createElement("div"))
                              .addClass("portal-info")
                              .append(portalLabel)
                              .append(portalTitle);
-                            
+
               //Add all the elements to the row
               listItem.append(logoDiv, portalInfo);
 
@@ -349,8 +327,8 @@ define(["jquery",
 
               if (editable) {
                 editDiv.append(editButton);
-              } 
-              
+              }
+
               listItem.append(editDiv);
             }
 
@@ -367,20 +345,17 @@ define(["jquery",
         * Displays an error message when rendering this view has failed.
         */
         showError: function(){
-      
+
           //Remove the loading elements
-          this.$(this.listContainerId).find(".loading").remove();
-      
-          if( this.$(this.listContainerId).children("tr").length == 0 ){
-      
-            //Show an error message
-            MetacatUI.appView.showAlert(
-              "Something went wrong while getting this list of portals.",
-              "alert-error",
-              this.$(this.listContainerId));
-          }
+          this.$(".loading").remove();
+
+          //Show an error message
+          MetacatUI.appView.showAlert(
+            "Something went wrong while getting this list of " + MetacatUI.appModel.get("portalTermPlural") + ".",
+            "alert-error",
+            this.$el);
         }
-      
+
         });
       return PortalsSearchView;
   });

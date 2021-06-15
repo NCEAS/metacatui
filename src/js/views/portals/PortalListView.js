@@ -3,8 +3,9 @@ define(["jquery",
     "backbone",
     "collections/Filters",
     "collections/SolrResults",
+    "views/PagerView",
     "text!templates/portals/portalList.html"],
-    function($, _, Backbone, Filters, SearchResults, Template){
+    function($, _, Backbone, Filters, SearchResults, PagerView, Template){
 
       /**
       * @class PortalListView
@@ -34,7 +35,14 @@ define(["jquery",
         * @type {string}
         * @default "id,seriesId,title,formatId,label,logo"
         */
-        searchFields: "id,seriesId,title,formatId,label,logo,datasource",
+        searchFields: "id,seriesId,title,formatId,label,logo,datasource,writePermission,abstract",
+
+        /**
+        * The number of portals to dispaly per page
+        * @default 10
+        * @type {number}
+        */
+        numPortalsPerPage: 10,
 
         /**
         * The number of portals to retrieve and render in this view
@@ -66,6 +74,14 @@ define(["jquery",
         * References to templates for this view. HTML files are converted to Underscore.js templates
         */
         template: _.template(Template),
+
+        /**
+        * Initializes a new view
+        */
+        initialize: function(){
+          //Create a new SearchResults collection
+          this.searchResults = new SearchResults();
+        },
 
         /**
         * Renders the list of portals
@@ -244,6 +260,14 @@ define(["jquery",
               this.renderCreateButton();
             }
 
+            // Create a pager for this list if there are many group members
+            var pager = new PagerView({
+                pages: this.$(".portals-list-entry"),
+                itemsPerPage: this.numPortalsPerPage
+            });
+
+            this.$el.append(pager.render().el);
+
           }
           catch(e){
             console.error(e);
@@ -262,9 +286,7 @@ define(["jquery",
         createListItem: function(searchResult){
 
           try{
-
-            //Create a table row
-            var listItem = $(document.createElement("tr"));
+            var listItem = $(document.createElement("div")).addClass("portals-list-entry");
 
             if( searchResult && typeof searchResult.get == "function" ){
 
@@ -277,8 +299,15 @@ define(["jquery",
               listItem.attr("data-seriesId", searchResult.get("seriesId"));
 
               //Create a logo image
-              var logo = "";
-              if( searchResult.get("logo") ){
+              var logoImg = "";
+              var logoDiv = "";
+
+              // Add link to the portal to the list item
+              var link = $(document.createElement("a"))
+                          .attr("href", MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural")
+                          + "/" + encodeURIComponent((searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id"))) );
+
+              if( searchResult.get("logo")) {
                 if( !searchResult.get("logo").startsWith("http") ){
 
                   var urlBase = "";
@@ -299,36 +328,61 @@ define(["jquery",
                   }
 
                   searchResult.set("logo", urlBase + searchResult.get("logo") );
-
                 }
 
-                logo = $(document.createElement("img"))
+                var logoImg = $(document.createElement("img"))
                           .attr("src", searchResult.get("logo"))
                           .attr("alt", searchResult.get("title") + " logo");
+                var logoLink = link.clone().append(logoImg);
+
+                logoDiv = $(document.createElement("div"))
+                          .addClass("portal-logo")
+                          .append(logoLink);
+
+              } else {
+                // Create an empty <div>, as no portal image is available.
+                logoDiv = $(document.createElement("div"))
+                          .addClass("portal-logo");
               }
 
-              //Create an Edit buttton
-              var buttons = "";
-              if(Object.values(MetacatUI.uiRouter.routes).includes("renderPortalEditor")){
+              var portalTitle = $(document.createElement("h5"))
+                                .addClass("portal-title")
+                                .text(searchResult.get("title"));
+              var titleLink = link.clone().append(portalTitle);
 
-                buttons = $(document.createElement("a")).attr("href",
-                             MetacatUI.root + "/edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + encodeURIComponent((searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id"))) )
-                             .text("Edit")
-                             .addClass("btn edit");
+              var descriptionText = searchResult.get("abstract") || "",
+                  maxLength = window.innerWidth < 800 ? 150 : 300;
+              if( descriptionText.length > maxLength ){
+                descriptionText = descriptionText.substr(0, maxLength);
+                descriptionText = descriptionText.substr(0, Math.min(descriptionText.length, descriptionText.lastIndexOf(" ")));
+                descriptionText += "...";
               }
+              var description = $(document.createElement("div"))
+                                .addClass("portal-description")
+                                .append( $(document.createElement("p"))
+                                          .text(descriptionText) );
 
+              var portalInfo = $(document.createElement("div"))
+                                 .addClass("portal-info")
+                                 .append(titleLink, description);
 
-              //Create a link to the portal view with the title as the text
-              var titleLink = $(document.createElement("a"))
-                              .attr("href", searchResult.createViewURL())
-                              .text(searchResult.get("title"));
+              var editDiv = $(document.createElement("div"))
+                            .addClass("portal-edit-link")
+                            .addClass("controls");
 
               //Add all the elements to the row
-              listItem.append(
-                $(document.createElement("td")).addClass("logo").append(logo),
-                $(document.createElement("td")).addClass("portal-label").text( searchResult.get("label") ),
-                $(document.createElement("td")).addClass("title").append(titleLink),
-                $(document.createElement("td")).addClass("controls").append(buttons));
+              listItem.append(logoDiv, portalInfo, editDiv);
+
+              //Render an Edit button
+              if ( MetacatUI.appUserModel.hasIdentityOverlap(searchResult.get("writePermission")) ){
+                  //Create an Edit buttton
+                  var editButton = $(document.createElement("a")).attr("href",
+                               MetacatUI.root + "/edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + encodeURIComponent((searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id"))) )
+                               .text("Edit")
+                               .addClass("btn edit");
+                  editDiv.append(editButton);
+              }
+
             }
 
             //Return the list item
