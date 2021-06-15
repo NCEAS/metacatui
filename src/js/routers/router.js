@@ -37,8 +37,7 @@ function ($, _, Backbone) {
 			'quality(/s=:suiteId)(/:pid)(/)'    : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)(/)'                : 'renderAPI',       // API page
 			"edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)" : "renderPortalEditor",
-			'drafts' : 'renderDrafts',
-            'search' : 'renderPortalsSearch'
+			'drafts' : 'renderDrafts'
 		},
 
 		helpPages: {
@@ -325,14 +324,14 @@ function ($, _, Backbone) {
 			}
 		},
 
-         /**
-          * Renders the Portals Search view.
-          */
-         renderPortalsSearch: function() {
-             require(['views/portals/PortalsSearchView'], function(PortalsSearchView){
-                 MetacatUI.appView.showView(new PortalsSearchView({ el: "#Content" }));
-             });
-          },
+     /**
+      * Renders the Portals Search view.
+      */
+     renderPortalsSearch: function() {
+         require(['views/portals/PortalsSearchView'], function(PortalsSearchView){
+             MetacatUI.appView.showView(new PortalsSearchView({ el: "#Content" }));
+         });
+      },
 
     /**
      * renderPortal - Render the portal view based on the given name or id, as
@@ -342,6 +341,13 @@ function ($, _, Backbone) {
      * @param  {string} portalSection A specific section within the portal
      */
 		renderPortal: function(label, portalSection) {
+
+      //If no portal was specified, go to the portal search view
+      if( !label ){
+          this.renderPortalsSearch();
+          return;
+      }
+
 			// Add the overall class immediately so the navbar is styled correctly right away
 			$("body").addClass("PortalView");
       // Look up the portal document seriesId by its registered name if given
