@@ -252,13 +252,15 @@ define(["jquery",
             //Add a "Create" button to create a new portal
             this.renderCreateButton();
 
-            // Create a pager for this list if there are many group members
-            var pager = new PagerView({
-                pages: this.$(".portals-list-entry"),
-                itemsPerPage: this.numPortalsPerPage
-            });
+            // Create a pager for this list if there are many portals
+            if( this.$(".portals-list-entry").length > this.numPortalsPerPage ){
+              var pager = new PagerView({
+                  pages: this.$(".portals-list-entry"),
+                  itemsPerPage: this.numPortalsPerPage
+              });
 
-            this.$el.append(pager.render().el);
+              this.$el.append(pager.render().el);
+            }
 
           }
           catch(e){
