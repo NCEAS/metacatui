@@ -60,6 +60,12 @@ define(["jquery",
         additionalPortalsToDisplay: [],
 
         /**
+        * The message to display when there are no portals in this list
+        * @type {string}
+        */
+        noResultsMessage: "You haven't created or have access to any " + MetacatUI.appModel.get("portalTermPlural") + " yet.",
+
+        /**
         * A jQuery selector for the element that the list should be inserted into
         * @type {string}
         */
@@ -227,8 +233,7 @@ define(["jquery",
             //If no search results were found, display a message
             if( (!this.searchResults || !this.searchResults.length) && !this.additionalPortalsToDisplay.length){
               var row = this.createListItem();
-              row.html("<td colspan='4' class='center'>You haven't created or have access to any " +
-                        MetacatUI.appModel.get("portalTermPlural") + " yet.</td>");
+              row.html("<div class='no-results'>" + this.noResultsMessage + "</div>");
               listContainer.html(row);
 
               //Add a "Create" button to create a new portal

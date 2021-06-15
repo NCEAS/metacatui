@@ -3633,6 +3633,10 @@ add font awesome close icon */
     border: 0px;
         margin: 10px 0px;
 }
+#portals-list-container .no-results {
+    grid-column-start: 2;
+    text-align: center;
+}
 
 /* Editor navigation (tabs) */
 .section-links-container{
