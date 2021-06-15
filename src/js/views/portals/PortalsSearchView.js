@@ -80,6 +80,7 @@ define(["jquery",
             //Render All Portals
             allPortalsView.numPortals = 99999;
             allPortalsView.numPortalsPerPage = 10;
+            allPortalsView.createBtnContainer = "#none";
 
             this.$("#portals-list-all").append(allPortalsView.el);
 
