@@ -1495,6 +1495,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             if( this.get("isNew") === false ){
               return false;
             }
+            //If the model is explicitly marked as new, return true
+            else if( this.get("isNew") === true ){
+              return true;
+            }
 
             //Check if there is an upload date that was retrieved from the server
             return ( this.get("dateUploaded") === this.defaults().dateUploaded &&
