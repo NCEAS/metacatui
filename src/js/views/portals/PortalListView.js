@@ -35,7 +35,7 @@ define(["jquery",
         * @type {string}
         * @default "id,seriesId,title,formatId,label,logo"
         */
-        searchFields: "id,seriesId,title,formatId,label,logo,datasource,writePermission,abstract",
+        searchFields: "id,seriesId,title,formatId,label,logo,datasource,writePermission,changePermission,rightsHolder,abstract",
 
         /**
         * The number of portals to dispaly per page
@@ -231,12 +231,8 @@ define(["jquery",
                         MetacatUI.appModel.get("portalTermPlural") + " yet.</td>");
               listContainer.html(row);
 
-              //TODO: Unwrap the call to renderCreateButton() from this if condition,
-              // because the ListView will only ever be used when Usages/Bookkeeper is enabled
-              if( !MetacatUI.appModel.get("dataonePlusPreviewMode") ){
-                //Add a "Create" button to create a new portal
-                this.renderCreateButton();
-              }
+              //Add a "Create" button to create a new portal
+              this.renderCreateButton();
 
               return;
             }
@@ -253,12 +249,8 @@ define(["jquery",
 
             }, this);
 
-            //TODO: Unwrap the call to renderCreateButton() from this if condition,
-            // because the ListView will only ever be used when Usages/Bookkeeper is enabled
-            if( !MetacatUI.appModel.get("dataonePlusPreviewMode") ){
-              //Add a "Create" button to create a new portal
-              this.renderCreateButton();
-            }
+            //Add a "Create" button to create a new portal
+            this.renderCreateButton();
 
             // Create a pager for this list if there are many group members
             var pager = new PagerView({
@@ -373,8 +365,23 @@ define(["jquery",
               //Add all the elements to the row
               listItem.append(logoDiv, portalInfo, editDiv);
 
+              //Construct an array of ownership subjects
+              var wPermission = searchResult.get("writePermission"),
+                  cPermission = searchResult.get("changePermission"),
+                  rightsHolder = searchResult.get("rightsHolder");
+              var owners = [];
+
+              [wPermission, cPermission, rightsHolder].forEach( subjects => {
+                if( typeof subjects == "string" ){
+                  owners.push(subjects);
+                }
+                else if( Array.isArray(subjects) ){
+                  owners = owners.concat(subjects);
+                }
+              });
+
               //Render an Edit button
-              if ( MetacatUI.appUserModel.hasIdentityOverlap(searchResult.get("writePermission")) ){
+              if ( MetacatUI.appUserModel.hasIdentityOverlap(owners) ){
                   //Create an Edit buttton
                   var editButton = $(document.createElement("a")).attr("href",
                                MetacatUI.root + "/edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + encodeURIComponent((searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id"))) )
