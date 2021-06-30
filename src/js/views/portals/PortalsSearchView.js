@@ -44,6 +44,11 @@ define(["jquery",
 
             let allPortalsView = new PortalListView();
 
+            //Create titles for the My Portals and All Portals sections
+            var title = $(document.createElement("h4"))
+                        .addClass("portals-list-title"),
+                allPortalsTitle = title.clone().text("All " + MetacatUI.appModel.get("portalTermPlural"));
+
             // Filter datasets that the user has ownership of
             if ( MetacatUI.appUserModel.get("loggedIn") ) {
               let filters = new Filters();
@@ -55,14 +60,10 @@ define(["jquery",
               myPortalsView.numPortalsPerPage = 5;
               myPortalsView.filters = filters;
 
-              //Create titles for the My Portals and All Portals sections
-              var title = $(document.createElement("h4"))
-                          .addClass("portals-list-title"),
-                  myPortalsTitle  = title.clone().text("My "  + MetacatUI.appModel.get("portalTermPlural")),
-                  allPortalsTitle = title.clone().text("All " + MetacatUI.appModel.get("portalTermPlural"));
+              //Create titles for the My Portals section
+              var myPortalsTitle = title.clone().text("My "  + MetacatUI.appModel.get("portalTermPlural"));
 
               this.$("#portals-list-user").append(myPortalsTitle, myPortalsView.el);
-              this.$("#portals-list-all").append(allPortalsTitle);
 
               myPortalsView.render();
 
@@ -83,7 +84,7 @@ define(["jquery",
             allPortalsView.createBtnContainer = "#none";
             allPortalsView.noResultsMessage = "There are no " + MetacatUI.appModel.get("portalTermPlural") + " to show.";
 
-            this.$("#portals-list-all").append(allPortalsView.el);
+            this.$("#portals-list-all").append(allPortalsTitle, allPortalsView.el);
 
             allPortalsView.render();
 
