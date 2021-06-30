@@ -32,25 +32,23 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/mainContent.html'],
 
       if(searchTerm){
         //Clear the search model to start a fresh search
-        MetacatUI.appSearchModel.clear().set(MetacatUI.appSearchModel.defaults);
+        MetacatUI.appSearchModel.clear().set(MetacatUI.appSearchModel.defaults());
 
         //Create a new array with the new search term
         var newSearch = [searchTerm];
 
         //Set up the search model for this new term
-        MetacatUI.appSearchModel.set('all', newSearch);  
+        MetacatUI.appSearchModel.set('all', newSearch);
       }
 
 			// make sure the browser knows where we are going
 			MetacatUI.uiRouter.navigate("data", {trigger: true});
 
-			// ...but don't want to follow links
-			return false;
-
 		},
 
 		triggerOnEnter: function(e) {
 			if (e.keyCode != 13) return;
+      e.preventDefault();
 			this.triggerSearch();
 		}
 
