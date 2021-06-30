@@ -1,34 +1,34 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone', 'text!templates/mainContent.html'],
-	function($, _, Backbone, MainContentTemplate) {
-	'use strict';
+  function($, _, Backbone, MainContentTemplate) {
+  'use strict';
 
-	// Build the main content view of the application
-	var MainContentView = Backbone.View.extend({
+  // Build the main content view of the application
+  var MainContentView = Backbone.View.extend({
 
-		el: '#mainContent',
+    el: '#mainContent',
 
-		tagName: 'section',
+    tagName: 'section',
 
-		template: _.template(MainContentTemplate),
+    template: _.template(MainContentTemplate),
 
-		initialize: function () {
-		},
+    initialize: function () {
+    },
 
-		events: {
-			'click #search_btn_main': 'triggerSearch',
-			'keypress #search_txt_main': 'triggerOnEnter'
-		},
+    events: {
+      'click #search_btn_main': 'triggerSearch',
+      'keypress #search_txt_main': 'triggerOnEnter'
+    },
 
-		render: function () {
-			this.$el.html(this.template());
+    render: function () {
+      this.$el.html(this.template());
 
-			return this;
-		},
+      return this;
+    },
 
-		triggerSearch: function() {
-			// alert the model that a search should be performed
-			var searchTerm = $("#search_txt_main").val();
+    triggerSearch: function() {
+      // alert the model that a search should be performed
+      var searchTerm = $("#search_txt_main").val();
 
       if(searchTerm){
         //Clear the search model to start a fresh search
@@ -41,18 +41,18 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/mainContent.html'],
         MetacatUI.appSearchModel.set('all', newSearch);
       }
 
-			// make sure the browser knows where we are going
-			MetacatUI.uiRouter.navigate("data", {trigger: true});
+      // make sure the browser knows where we are going
+      MetacatUI.uiRouter.navigate("data", {trigger: true});
 
-		},
+    },
 
-		triggerOnEnter: function(e) {
-			if (e.keyCode != 13) return;
+    triggerOnEnter: function(e) {
+      if (e.keyCode != 13) return;
       e.preventDefault();
-			this.triggerSearch();
-		}
+      this.triggerSearch();
+    }
 
 
-	});
-	return MainContentView;
+  });
+  return MainContentView;
 });
