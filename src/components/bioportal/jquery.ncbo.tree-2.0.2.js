@@ -272,8 +272,8 @@
         var parent = $(this).parent();
         var selectedNode = $(this);
         $('.active', TREE).attr('class', 'text');
-        if (this.className == 'text') {
-          this.className = 'active';
+        if ($(this).hasClass('text')) {
+          $(this).addClass('active');
         }
         if (typeof OPTIONS.afterSelect == 'function') {
           OPTIONS.afterSelect(decodeURIComponent(selectedNode.data("id")), selectedNode.text(), selectedNode);
