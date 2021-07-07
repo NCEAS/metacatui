@@ -320,7 +320,9 @@
     display: inline-block;
     font-family: AllerLight, Helvetica, sans-serif;
 }
-
+.PortalView #Navbar{
+  z-index: 1000;
+}
 
 /* FOOTER CSS
 -------------------------------------------------- */
@@ -543,6 +545,9 @@ footer .logos a:hover, a:focus{
 .PortalView{
   display: grid;
   grid-template-rows: 40px 0px 100fr 320px;
+}
+.PortalView.has-temporary-message {
+    grid-template-rows: auto 0px 100fr 320px;
 }
 .portal-view .portal-title{
   font-weight: 100;
