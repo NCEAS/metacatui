@@ -48,6 +48,8 @@
       afterExpandError:  false,
       afterSelect:       false,
       afterJumpToClass:  false,
+      jumpAfterSelect:   true,
+      selectFromAutocomplete: true,
       timeout:           999999,
       treeClass:         "ncboTree",
       autocompleteClass: "ncboAutocomplete",
@@ -270,8 +272,8 @@
         var parent = $(this).parent();
         var selectedNode = $(this);
         $('.active', TREE).attr('class', 'text');
-        if (this.className == 'text') {
-          this.className = 'active';
+        if ($(this).hasClass('text')) {
+          $(this).addClass('active');
         }
         if (typeof OPTIONS.afterSelect == 'function') {
           OPTIONS.afterSelect(decodeURIComponent(selectedNode.data("id")), selectedNode.text(), selectedNode);
@@ -356,7 +358,15 @@
         searchFromRoot: startingRoot,
         onSelect: function(item, searchInput) {
           $TREE_CONTAINER.trigger("searchItemSelected");
-          _this.jumpToClass(item["@id"]);
+
+          if (OPTIONS.jumpAfterSelect) {
+            _this.jumpToClass(item["@id"]);
+          }
+
+          if (OPTIONS.selectFromAutocomplete) {
+            $TREE_CONTAINER.trigger("afterSelect", [decodeURIComponent(item["@id"]), item["prefLabel"], item]);
+          }
+
           searchInput.val("");
         },
         minCharacters: 1,
