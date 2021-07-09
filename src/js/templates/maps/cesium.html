@@ -1,3 +1,158 @@
 <link href="<%=MetacatUI.root + '/components/cesium/Widgets/widgets.css'%>" rel="stylesheet" />
+<!--
 
-<div id="cesiumContainer" style="height:100%"></div>
+  ---- WIP ----
+  
+Styles that
+
+1) hide the portal header to show a preview of how portals could look when
+the new "panelled" layout is implemented. These styles should be added only if a portal
+has a configuration option that sets the display to panels.
+
+2) Style an example toolbar element. The toolbar will be converted to its own view.
+
+-->
+<style>
+
+  #pdgContainer {
+    height: 100vh;
+    max-height: 100vh;
+  }
+  #Navbar, #portal-header-container {
+    display: none !important;
+  }
+  
+  #toolbar {
+    background: rgba(42, 42, 42, 0.8);
+    padding: 4px;
+    border-radius: 4px;
+    position: fixed;
+    z-index: 10;
+    color: white;
+    margin: 20px;
+  }
+  .toolbar-row {
+    display: grid;
+    grid-template-columns: min-content 1fr max-content;
+    grid-template-rows: 1fr 1fr;
+    gap: 0.2rem 1.4rem;
+    grid-template-areas:
+      "checkbox name buttons"
+      "checkbox slider buttons";
+    align-items: center;
+    margin: 1.4rem 0;
+  }
+  .checkbox-container { grid-area: checkbox; }
+
+  .checkbox-container input { 
+    margin-left: 10px;
+  }
+
+  .buttons-container button { 
+    padding: 1px 6px;
+  }
+
+  .buttons-container button:last-of-type { 
+    margin-right: 10px;
+  }
+
+  .buttons-container { 
+    grid-area: buttons; 
+    display: flex;
+  }
+  .name-container { grid-area: name; }
+  .name-container select {
+    margin: 0;
+  }
+  .slider-container { grid-area: slider; }
+
+  #toolbar input {
+    vertical-align: middle;
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+
+  #toolbar .row {
+    transform: translateY(0);
+    transition: transform 0.4s ease-out;
+  }
+
+  #toolbar .up {
+    transform: translateY(33px);
+    transition: none;
+  }
+
+  #toolbar .down {
+    transform: translateY(-33px);
+    transition: none;
+  }
+</style>
+<div id="pdgContainer">
+
+  <!-- An example toolbar element. This will be its own view in the future, and things
+  like elevation shading and contour lines will be configurable layers. -->
+  
+  <div id="toolbar">
+    <div>
+      <div data-bind="foreach: layers">
+        <div class="toolbar-row" data-bind="css: { up: $parent.upLayer === $data, down: $parent.downLayer === $data }">
+          <div class="checkbox-container"><input type="checkbox" data-bind="checked: show"></div>
+          <div class="name-container">
+            <span data-bind="text: name, visible: !$parent.isSelectableLayer($data)"></span>
+            <select
+              data-bind="visible: $parent.isSelectableLayer($data), options: $parent.baseLayers, optionsText: 'name', value: $parent.selectedLayer"></select>
+          </div>
+          <div class="slider-container">
+            <input type="range" min="0" max="1" step="0.01" data-bind="value: alpha, valueUpdate: 'input'">
+          </div>
+          <div class="buttons-container">
+            <button type="button" class="cesium-button"
+              data-bind="click: function() { $parent.raise($data, $index()); }, visible: $parent.canRaise($index())">
+              ▲
+            </button>
+            <button type="button" class="cesium-button"
+              data-bind="click: function() { $parent.lower($data, $index()); }, visible: $parent.canLower($index())">
+              ▼
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="demo-container">
+      <label><input type="radio" name="shadingMaterials" value="none" data-bind="checked: selectedShading">
+        No shading</label>
+      <label><input type="radio" name="shadingMaterials" value="elevation" data-bind="checked: selectedShading">
+        Elevation</label>
+      <label><input type="radio" name="shadingMaterials" value="slope" data-bind="checked: selectedShading">
+        Slope</label>
+      <label><input type="radio" name="shadingMaterials" value="aspect" data-bind="checked: selectedShading">
+        Aspect</label>
+    </div>
+    <div class="demo-container">
+      <div>
+        <label><input type="checkbox" data-bind="checked: enableContour">Enable
+          Contour Lines</label>
+      </div>
+      <div>
+        Spacing
+        <input style="width: 136px" type="range" min="1.0" max="500.0" step="1.0"
+          data-bind="value: contourSpacing, valueUpdate: 'input', enable: enableContour">
+        <span data-bind="text: contourSpacing"></span>m
+      </div>
+      <div>
+        Line Width
+        <input style="width: 125px" type="range" min="1.0" max="10.0" step="1.0"
+          data-bind="value: contourWidth, valueUpdate: 'input', enable: enableContour">
+        <span data-bind="text: contourWidth"></span>px
+      </div>
+      <div>
+        <button type="button" data-bind="click: changeColor, enable: enableContour">
+          Change contour color
+        </button>
+      </div>
+    </div>
+  </div>
+  <div id="cesiumContainer" style="height:100%"></div>
+  
+</div>

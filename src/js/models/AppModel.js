@@ -1662,7 +1662,8 @@ define(['jquery', 'underscore', 'backbone'],
       * @default false
       * @since 2.X.X
       */
-      enableCesium: false,
+      enableCesium: true,
+
       /**
       * Your Access Token for the Cesium API, which can be retrieved from https://cesium.com/ion/tokens.
       * @type {string}
@@ -1670,6 +1671,16 @@ define(['jquery', 'underscore', 'backbone'],
       * @example eyJhbGciOiJIUzI1R5cCI6IkpXVCJ9.eyJqdGkiOiJmYzUwYjI0ZC0yN2Y4LTRiZjItOdCI6MTYwODIyNDg5MH0.KwCI2-4cHjFYXrR6-mUrwkhh1UdNARK7NxFLpFftjeg
       */
       cesiumToken: "",
+      
+      /**
+       * Your Access Token for the Bing Maps Imagery API, which can be retrieved from
+       * https://www.bingmapsportal.com/. Required if any Cesium layers use imagery
+       * directly from Bing.
+       * @type {string}
+       * @since 2.X.X
+       * @example AtZjkdlajkl_jklcCAO_1JYafsvAjU1nkd9jdD6CDnHyamndlasdt5CB7xs
+      */
+      bingMapsKey: "",
 
       /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users
