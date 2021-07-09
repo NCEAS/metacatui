@@ -14,6 +14,12 @@ define(["jquery",
        */
       var PortalImageModel = DataONEObject.extend(
         /** @lends PortalImage.prototype */{
+
+        /**
+        * @inheritdoc
+        */
+        type: "PortalImage",
+
         defaults: function(){
           return _.extend(DataONEObject.prototype.defaults(), {
             identifier: "",

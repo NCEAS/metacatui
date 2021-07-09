@@ -90,6 +90,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     createSeriesId: false, //If true, a seriesId will be created when this object is saved.
                     collections: [], //References to collections that this model is in
                     possibleAuthMNs: [], //A list of possible authoritative MNs of this object
+                    useAltRepo: false,
                     provSources: [],
                     provDerivations: [],
                     prov_generated: [],
@@ -199,7 +200,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             if ( this.isNew() ) {
 
               //Use the object service URL from the alt repo
-              if( activeAltRepo ){
+              if( this.get("useAltRepo") && activeAltRepo ){
                 baseUrl = activeAltRepo.objectServiceUrl;
               }
               //If this MetacatUI deployment is pointing to a MN, use the object service URL from the AppModel
@@ -216,7 +217,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 if ( this.get("hasContentChanges") ) {
 
                   //Use the object service URL from the alt repo
-                  if( activeAltRepo ){
+                  if( this.get("useAltRepo") && activeAltRepo ){
                     baseUrl = activeAltRepo.objectServiceUrl;
                   }
                   else{
@@ -229,7 +230,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 } else {
 
                   //Use the meta service URL from the alt repo
-                  if( activeAltRepo ){
+                  if( this.get("useAltRepo") && activeAltRepo ){
                     baseUrl = activeAltRepo.metaServiceUrl;
                   }
                   else{
@@ -242,7 +243,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 }
               } else {
                 //Use the meta service URL from the alt repo
-                if( activeAltRepo ){
+                if( this.get("useAltRepo") && activeAltRepo ){
                   baseUrl = activeAltRepo.metaServiceUrl;
                 }
                 else{
@@ -265,19 +266,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             if ( ! options ) var options = {};
             else var options = _.clone(options);
 
-            var baseUrl = "",
-                activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
-            //Use the meta service URL from the alt repo
-            if( activeAltRepo ){
-              baseUrl = activeAltRepo.metaServiceUrl;
-            }
-            //If this MetacatUI deployment is pointing to a MN, use the meta service URL from the AppModel
-            else{
-              baseUrl = MetacatUI.appModel.get("metaServiceUrl");
-            }
-
-            // Default to GET /meta
-            options.url = baseUrl + encodeURIComponent(this.get("id"));
+            options.url = this.url();
 
             //If we are using the Solr service to retrieve info about this object, then construct a query
             if((typeof options != "undefined") && options.solrService){
@@ -709,6 +698,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
           model.set("numSaveAttempts", 0);
           model.set("uploadStatus", "c");
+          model.set("isNew", false);
           model.trigger("successSaving", model);
 
           // Get the newest sysmeta set by the MN
@@ -1427,6 +1417,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             if(this.isNew()) return true;
 
             // Compare the new system metadata XML to the old system metadata XML
+
+            //Check if there is system metadata first
+            if( !this.get("sysMetaXML") ){
+              return false;
+            }
 
             var D1ObjectClone = this.clone(),
                 // Make sure we are using the parse function in the DataONEObject model.
