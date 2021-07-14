@@ -6,7 +6,7 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
          * @classdesc EMLDataTable represents a tabular data entity, corresponding
          * with the EML dataTable module.
          * @classcategory Models/Metadata/EML211
-         * @see https://github.com/NCEAS/eml/blob/master/eml-dataTable.xsd
+         * @see https://eml.ecoinformatics.org/schema/eml-datatable_xsd
          */
         var EMLDataTable = EMLEntity.extend(
           /** @lends EMLDataTable.prototype */{

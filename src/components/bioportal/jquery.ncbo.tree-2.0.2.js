@@ -49,7 +49,7 @@
       afterSelect:       false,
       afterJumpToClass:  false,
       jumpAfterSelect:   true,
-      selectFromAutocomplete: false,
+      selectFromAutocomplete: true,
       timeout:           999999,
       treeClass:         "ncboTree",
       autocompleteClass: "ncboAutocomplete",
@@ -158,7 +158,7 @@
         	var subClassOf = node["subClassOf"][0];
         	a.attr("data-subclassof", subClassOf);
         }
-        
+
         ul.append(li.append(a));
 
         var hasChildrenNotExpanded = typeof node.children !== 'undefined' && node.hasChildren && node.children.length == 0;

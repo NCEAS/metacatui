@@ -13,6 +13,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
   * @classdesc A view of an Access Policy of a DataONEObject
   * @classcategory Views
   * @extends Backbone.View
+  * @screenshot views/AccessPolicyView.png
   * @constructor
   */
   var AccessPolicyView = Backbone.View.extend(
@@ -26,7 +27,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
     type: "AccessPolicy",
 
     /**
-    * The type of object/resource that this AccessPolicy is for.
+    * The type of object/resource that this AccessPolicy is for. This is used for display purposes only.
     * @example "dataset", "portal", "data file"
     * @type {string}
     */
@@ -52,12 +53,41 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
     toggleTemplate: _.template(ToggleTemplate),
 
     /**
+     * Used to track the collection of models set on the view in order to handle
+     * undoing all changes made when we either hit Cancel or click otherwise
+     * hide the modal (such as clicking outside of it).
+     * @type {AccessRule[]}
+     * @since 2.15.0
+     */
+    cachedModels: null,
+
+    /**
+     * Whether or not changes to the accessPolicy managed by this view will be
+     * broadcasted to the accessPolicy of the editor's rootDataPackage's
+     * packageModle.
+     *
+     * This implementation is very likely to change in the future as we iron out
+     * how to handle bulk accessPolicy (and other) changes.
+     * @type {boolean}
+     * @since 2.15.0
+     */
+    broadcast: false,
+
+    /**
+    * A selector for the element in this view that contains the public/private toggle section
+    * @type {string}
+    * @since 2.15.0
+    */
+    publicToggleSection: "#public-toggle-section",
+
+    /**
     * The events this view will listen to and the associated function to call.
     * @type {Object}
     */
     events: {
       "change .public-toggle-container input" : "togglePrivacy",
       "click .save" : "save",
+      "click .cancel": "reset",
       "click .access-rule .remove" : "handleRemove"
     },
 
@@ -65,8 +95,8 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
     * Creates a new AccessPolicyView
     * @param {Object} options - A literal object with options to pass to the view
     */
-    initialize: function(options){
-
+    initialize: function(options) {
+      this.cachedModels = _.clone(this.collection.models);
     },
 
     /**
@@ -92,7 +122,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
               this.resourceType = "dataset";
               break;
             case ("EML" || "ScienceMetadata"):
-              this.resourceType = "science metadata";
+              this.resourceType = "metadata record";
               break;
             case "DataONEObject":
               this.resourceType = "data file";
@@ -111,7 +141,8 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
 
         //Insert the template into this view
         this.$el.html(this.template({
-          resourceType: this.resourceType
+          resourceType: this.resourceType,
+          fileName: dataONEObject.get("fileName")
         }));
 
         //If the user is not authorized to change the permissions of this object,
@@ -171,23 +202,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
         this.renderHelpText();
 
         //Render the public/private toggle, if it's enabled in the app config
-        if( MetacatUI.appModel.get("showPortalPublicToggle") !== false ){
-          var enabledSubjects = MetacatUI.appModel.get("showPortalPublicToggleForSubjects");
-
-          if( Array.isArray(enabledSubjects) && enabledSubjects.length ){
-
-            var usersGroups = _.pluck(MetacatUI.appUserModel.get("isMemberOf"), "groupId");
-            if( _.contains(enabledSubjects, MetacatUI.appUserModel.get("username")) ||
-                _.intersection(enabledSubjects, usersGroups).length){
-                this.renderPublicToggle();
-            }
-
-          }
-          else{
-            this.renderPublicToggle();
-          }
-
-        }
+        this.renderPublicToggle();
 
       }
       catch(e){
@@ -207,7 +222,39 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
     */
     renderPublicToggle: function(){
 
-      var view = this;
+      //Check if the public/private toggle is enabled. Default to enabling it.
+      var isEnabled = true,
+          enabledSubjects = [];
+
+      //Get the DataONEObject that this AccessPlicy is about
+      var dataONEObject = this.collection.dataONEObject;
+
+      //If there is a DataONEObject model found, and it has a type
+      if(dataONEObject && dataONEObject.type){
+        //Get the Portal configs from the AppConfig
+        if( dataONEObject.type == "Portal" ){
+          isEnabled = MetacatUI.appModel.get("showPortalPublicToggle");
+          enabledSubjects = MetacatUI.appModel.get("showPortalPublicToggleForSubjects");
+        }
+        //Get the Dataset configs from the AppConfig
+        else{
+          isEnabled = MetacatUI.appModel.get("showDatasetPublicToggle");
+          enabledSubjects = MetacatUI.appModel.get("showDatasetPublicToggleForSubjects");
+        }
+      }
+
+      //Get the public/private help text
+      let helpText = this.getPublicToggleHelpText();
+
+      // Or if the public toggle is limited to a set of users and/or groups, and the current user is
+      // not in that list, then display a message instead of the toggle
+      if( !isEnabled || (Array.isArray(enabledSubjects) && enabledSubjects.length &&
+          !_.intersection(enabledSubjects, MetacatUI.appUserModel.get("allIdentitiesAndGroups")).length)){
+            let isPublicClass = this.collection.isPublic()? "public" : "private";
+            this.$(".public-toggle-container").html( $(document.createElement("p")).addClass("public-toggle-disabled-text " + isPublicClass).text(helpText) );
+            this.$(this.publicToggleSection).find("p.help").remove();
+            return;
+      }
 
       //Render the private/public toggle
       this.$(".public-toggle-container").html(
@@ -220,14 +267,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
       ).tooltip({
         placement: "top",
         trigger: "hover",
-        title: function(){
-          if( view.collection.isPublic() ){
-            return "Your " + view.resourceType + " is public. Anyone can see this content."
-          }
-          else{
-            return "Your " + view.resourceType + " is private. Only people you approve can see this content."
-          }
-        },
+        title: helpText,
         container: this.$(".public-toggle-container"),
         delay: {
           show: 800
@@ -236,6 +276,22 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
 
       //If the dataset is public, check the checkbox
       this.$(".public-toggle-container input").prop("checked", this.collection.isPublic());
+    },
+
+    /**
+    * Constructs and returns a message that explains if this resource is public or private. This message is displayed
+    * in the tooltip for the public/private toggle or in place of the toggle when the toggle is disabled. Override this
+    * function to create a custom message.
+    * @returns {string}
+    * @since 2.15.0
+    */
+    getPublicToggleHelpText: function(){
+      if( this.collection.isPublic() ){
+        return "Your " + this.resourceType + " is public. Anyone can see this " + this.resourceType + " in searches or by a direct link.";
+      }
+      else{
+        return "Your " + this.resourceType + " is private. Only people you approve can see this " + this.resourceType + ".";
+      }
     },
 
     /**
@@ -582,6 +638,18 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
         return;
       }
 
+      // Broadcast the change across the package if appropriate
+      if (this.broadcast) {
+        MetacatUI.rootDataPackage.broadcastAccessPolicy(this.collection);
+      }
+
+      // Don't trigger a save if the item is new and just close the modal
+      if (dataONEObject.isNew()) {
+        $(this.$el).modal("hide");
+
+        return;
+      }
+
       //Show the save progress as it is in progress, complete, in error, etc.
       this.listenTo(dataONEObject, "change:uploadStatus", this.showSaveProgress);
 
@@ -605,6 +673,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
       if( status == "p" ){
         //Disable the Save button and change the text to say, "Saving..."
         this.$(".save.btn").text("Saving...").attr("disabled", "disabled");
+        this.$(".cancel.btn").attr("disabled", "disabled");
 
         return;
       }
@@ -612,13 +681,19 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
       else if( status == "c" ){
         //Create a checkmark icon
         var icon = $(document.createElement("i")).addClass("icon icon-ok icon-on-left"),
+            cancelBtn = this.$(".cancel.btn");
             saveBtn = this.$(".save.btn");
 
         //Disable the Save button and change the text to say, "Saving..."
+        cancelBtn.text("Saved").removeAttr("disabled");
         saveBtn.text("Saved").prepend(icon).removeAttr("disabled");
 
         setTimeout(function(){ saveBtn.empty().text("Save") }, 2000);
 
+        this.cachedModels = _.clone(this.collection.models);
+
+        // Hide the modal only on a successful save
+        $(this.$el).modal("hide");
       }
       //When the status is "error"
       else if( status == "e" ){
@@ -637,6 +712,20 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
 
       //Remove the listener for this function
       this.stopListening(dataONEObject, "change:uploadStatus", this.showSaveProgress);
+    },
+
+    /**
+    * Resets the state of the models stored in the view's collection to the
+    * latest cached copy. Triggered either when the Cancel button is hit or
+    * the modal containing this view is hidden.
+    * @since 2.15.0
+    */
+    reset: function() {
+      if (!this.collection || !this.cachedModels) {
+        return;
+      }
+
+      this.collection.set(this.cachedModels);
     },
 
     /**

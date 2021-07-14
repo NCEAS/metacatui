@@ -156,7 +156,9 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
           this.maxWidth           = options.maxWidth;
 
           if( !this.model ){
-            this.model = new DataONEObject({ synced: true });
+            this.model = new DataONEObject({
+              synced: true
+           });
           }
 
           if (!this.url && this.model) {
@@ -213,6 +215,8 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
         // Insert the main template for this view
         view.$el.html(dropzoneTemplate);
 
+        console.log(view.model.get("imageURL"), view.model.url())
+
         // Add upload & drag and drop functionality to the dropzone div.
         // For config details, see: https://www.dropzonejs.com/#configuration
         var $dropZone = view.$(".dropzone").dropzone({
@@ -260,7 +264,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
                 view.showImage(file, dataURL);
               };
             } catch (e) {
-              console.log("Error generating thumbnail image, error message: " + e);
+              console.error("Error generating thumbnail image, error message: " + e);
             }
 
           },
@@ -272,7 +276,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
               file.rejectDimensions = function(message) {  done(message)  };
               file.acceptDimensions = function(){  done()  };
             } catch (e) {
-              console.log("Error during dropzone's accept function. Error code: " + e);
+              console.error("Error during dropzone's accept function. Error code: " + e);
             }
           },
 
@@ -294,7 +298,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
                 return view.prepareD1Model(file, file.name, file.type, done);
               }
             } catch (e) {
-              console.log("Error during dropzone's transformFile function. Error code: " + e);
+              console.error("Error during dropzone's transformFile function. Error code: " + e);
             }
           },
 
@@ -307,7 +311,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
               formData.append("sysmeta", xmlBlob, "sysmeta.xml");
               formData.append("pid", view.model.get("id"));
             } catch (e) {
-              console.log("Error during dropzone's sending function. Error code: " + e);
+              console.error("Error during dropzone's sending function. Error code: " + e);
             }
           },
 
@@ -317,7 +321,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
               view.trigger("error");
               // Give a readable error if it's a server error
               if(xhr){
-                console.log(message);
+                console.error(message);
                 message = "There was an error uploading your file. Please try again later."
               }
               // Make sure image isn't showing (src for <img> and style for background images)
@@ -328,7 +332,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
               // Show error using dropzone's default behaviour
               this.defaultOptions.error(file, message);
             } catch (e) {
-              console.log("Problem handling error, message: " + e);
+              console.error("Problem handling error, message: " + e);
             }
           },
 
@@ -350,7 +354,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
                 view.trigger("successSaving", view.model);
               });
             } catch (e) {
-              console.log("Issue initializing dropzone, error message: " + e);
+              console.error("Issue initializing dropzone, error message: " + e);
             }
           }
 
@@ -365,7 +369,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
         }
       }
       catch(error){
-        console.log("ImageUploaderView could not be rendered, error message: ", error);
+        console.error("ImageUploaderView could not be rendered, error message: ", error);
       }
     },
 

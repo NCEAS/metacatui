@@ -327,6 +327,7 @@ header .citation {
 	margin-left: 43%;
 	margin-left: calc(50% - 23px);
 	margin-top: 40px;
+  color: #333;
 }
 .notification.loading.page .icon{
 	margin-top: 10px;
@@ -343,6 +344,7 @@ header .citation {
 	width: 100%;
 	margin: 20px auto;
 	display: block;
+  color: #333;
 }
 .filter-contain .notification.loading i{
   	color: #999;
@@ -844,6 +846,9 @@ text-shadow: none;
 /* Program editor node text */
 .prov-chart .editor text {
     fill: #C0C0C0;
+}
+#select-prov-entity{
+  width: 100%;
 }
 /********* The Prov Chart colors *******/
 .prov-chart .node.uniqueNode1,
@@ -2065,6 +2070,7 @@ i.catalog-metric-icon {
     box-sizing: border-box;
     position: relative;
     max-height: 390px;
+		justify-content: center;
 }
 .metric-chart-loading .message{
 	text-align: center;
@@ -3493,13 +3499,19 @@ add font awesome close icon */
 .access-rule .subject .orcid.icon{
   vertical-align: top;
 }
-.access-policy-view-container.modal{
+
+.access-policy-view-container .modal {
   width: 80%;
-  max-width: 1000px;
-  left: 10%;
-  margin-left: 0px;
-  display: none;
+  margin-left: -40%;
+  display: grid;
+  grid-template-rows: 60px 1fr 60px;
+  max-height: 80%;
 }
+
+.access-policy-view-container .modal .modal-body {
+  max-height: 1000px;
+}
+
 .access-policy-view:not(.modal) .modal-header{
   border-bottom-width: 0px;
   padding: 0px;
@@ -3571,6 +3583,12 @@ add font awesome close icon */
   margin-bottom: 20px;
   position: relative;
   display: inline-block;
+}
+.access-policy-view .public-toggle-disabled-text.public{
+  color: #005300; /*dark green*/
+}
+.access-policy-view .public-toggle-disabled-text.private{
+  color: #A04A01; /*dark orange*/
 }
 .access-policy-view .can-toggle{
   width: 200px;
@@ -5401,6 +5419,9 @@ address.email-container:before{
     margin-top: 10px;
     margin-bottom: 10px;
 }
+.quality-report-view .metric-chart-loading {
+	margin: 50px auto;
+}
 .new-icon{
   color: #d2a908;
 }
@@ -6505,6 +6526,7 @@ body.mapMode{
 .can-toggle.can-toggle-small label .can-toggle-switch:hover:after {
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
 }
+
 /** Autocompletes **/
 .ui-autocomplete{
   width: 246px;
@@ -7107,6 +7129,11 @@ ul.side-nav-items {
 	margin-bottom: 0px;
 	width: calc(100% - 2px);
 }
+/* Editor package table headers */
+#data-package-table-share,
+#data-package-table-guide-status {
+    text-align: center;
+}
 
 /* Editor package table row */
 .data-package-item td {
@@ -7154,6 +7181,10 @@ ul.side-nav-items {
     width: 100px;
 }
 
+.data-package-item td.public {
+  width: 60px;
+}
+
 /* Editor package table sharing column */
 .data-package-item td.sharing {
     width: 60px;
@@ -7176,11 +7207,10 @@ ul.side-nav-items {
 }
 
 
-/* Editor package table last column buttons */
+/* Editor package table buttons */
 .data-package-item td button {
     text-align: center;
     vertical-align: middle;
-    width: 8em;
 }
 .data-package-item td button .icon{
 	margin-left: 0px;
@@ -7295,6 +7325,11 @@ ul.side-nav-items {
   margin-left: -5px;
   margin-right: 5px;
 }
+  border: none;
+  background-color: inherit;
+  width: auto;
+}
+
 /* Editor package table button dropdown */
 .Editor #data-package-table td:last-of-type ul {
     border-radius: 4px;
@@ -7521,6 +7556,18 @@ textarea.medium{
   padding: 0px 20px;
 	overflow: scroll;
 }
+
+.attribute-menu-container .fill-button-container {
+  background-color:  #EEE;
+	border-right: 1px solid #DDD;
+	width: 100%;
+}
+
+.attribute-menu-container .fill-button-container button {
+  width: calc(100% - 10px);
+	margin: 5px;
+}
+
 .eml-attribute .title{
 	margin-bottom: 20px;
 }

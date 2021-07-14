@@ -1,34 +1,16 @@
-# MetacatUI is a web interface for Metacat data repositories.
+---
+layout: default
+title: MetacatUI
+id: homepage
+---
 
-[View on GitHub](https://github.com/NCEAS/metacatui)
+{% include homepage.html %}
 
-![Data Search Page](https://raw.githubusercontent.com/NCEAS/metacatui/master/docs/screenshots/screenshot-search.png)
+## About
+MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API.  Currently, it is used as the basis for the [KNB Data Repository](http://knb.ecoinformatics.org), the [NSF Arctic Data Center](https://arcticdata.io/catalog/), the [DataONE federation](https://search.dataone.org), and other repositories.
 
-[See more screenshots](screenshots/index.html)
+MetacatUI is an open source, community project.  We [welcome contributions](https://github.com/NCEAS/metacatui/blob/main/CONTRIBUTING.md) in many forms, including code, graphics, documentation, bug reports, testing, etc.  Use the [discussion list](https://github.com/NCEAS/metacatui/issues) to discuss these contributions with us.
 
-## Latest release
-Download the latest release on Github: [MetacatUI 2.14.0](https://github.com/NCEAS/metacatui/releases/tag/2.14.0)
+## Related Projects
 
-## Documentation
-
-### Installation
-
-There are three separate installation instructions, depending on your use case:
-
-- [Installing MetacatUI for your Metacat repository](install)
-- [Installing MetacatUI locally for development with a Metacat repository](install/local.html)
-- [Installing MetacatUI locally to use with a remote DataONE Coordinating Node](install/use-with-cn.html)
-
-### Customizing MetacatUI
-- [How to create a custom theme](install/configuration/index.html)
-- [Examples of how to customize MetacatUI](guides/index.html)
-
-### For developers
-- [MetacatUI Javascript documentation for developers](/metacatui/docs/index.html)
-- [Setting up a MetacatUI development environment](install/dev-env.html)
-
-#### Want to contribute to MetacatUI?
-  - Join us on [Slack](https://slack.dataone.org/)
-  - Email us at metacat-dev@ecoinformatics.org
-  - [Create a MetacatUI Github issue](https://github.com/NCEAS/metacatui/issues/new/choose)
-  - Read our [Contributing guidelines](https://github.com/NCEAS/metacatui/blob/master/CONTRIBUTING.md)
+{% include projects.html %}

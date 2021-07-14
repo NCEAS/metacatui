@@ -28,7 +28,8 @@ require.config({
         "views": "../src/js/views",
         "routers": "../src/js/routers",
         "templates": "../src/js/templates",
-        "themes": "../src/js/themes"
+        "themes": "../src/js/themes",
+        "common": "../src/js/common"
     },
     shim: {
         "mocha": {
@@ -53,7 +54,8 @@ define(["require", "mocha"], function(require, mocha) {
             "js/specs/models/metadata/eml211/EMLNonNumericDomain.spec",
             "js/specs/models/metadata/eml211/EMLNumericDomain.spec",
             "js/specs/models/metadata/eml211/EMLDateTimeDomain.spec",
-            "js/specs/models/metadata/eml211/EMLTemporalCoverage.spec"
+            "js/specs/models/metadata/eml211/EMLTemporalCoverage.spec",
+            "js/specs/common/EntityUtils.spec"
         ];
 
         // Include model and view tests

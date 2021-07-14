@@ -16,6 +16,13 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
           /** @lends Filters.prototype */{
 
             /**
+            * The name of this Collection class
+            * @type {string}
+            * @readonly
+            */
+            type: "Filters",
+
+            /**
             * If the search results must always match one of the ids in the id filters,
             * then the id filters will be added to the query with an AND operator.
             * @type {boolean}
@@ -45,7 +52,7 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
             * @returns {Filter|BooleanFilter|ChoiceFilter|DateFilter|NumericFilter|ToggleFilter}
             */
             model: function(attrs, options){
-              
+
               //If no filterType was specified, but an objectDOM exists (from parsing a Collection
               // or Portal document), get the filter type from the objectDOM node name
               if( !attrs.filterType && attrs.objectDOM ){
@@ -63,11 +70,11 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                     return new Filter(attrs, options);
                 }
               }
-              
+
               if(!attrs.filterType){
                 attrs.filterType = ""
               }
-              
+
               // Ignoring the case of the type allows using either the
               // filter type (e.g. BooleanFilter) or the nodeName value
               // (e.g. "booleanFilter")
@@ -354,22 +361,22 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
               this.remove(toRemove);
 
             },
-            
-            /**            
+
+            /**
              * removeEmptyFilters - Remove filters from the collection that are
              * lacking fields, values, and in the case of a numeric filter,
-             * a min and max value.        
-             */             
+             * a min and max value.
+             */
             removeEmptyFilters: function(){
-              
+
               try {
                 var toRemove = [];
-                
+
                 var noneEmpty = this.every(function(filter){ return !filter.isEmpty() });
                 if(noneEmpty){
                   return
                 }
-                
+
                 this.each(function(filter){
                   if(filter){
                     if(filter.isEmpty()){
@@ -382,17 +389,17 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
               } catch (e) {
                 console.log("Failed to remove empty Filter models from the Filters collection, error message: " + e);
               }
-              
+
             },
-            
-            /**            
+
+            /**
              * replaceModel - Remove a Filter from the Filters collection
              * silently, and replace it with a new model.
-             *              
+             *
              * @param  {Filter} model    The model to replace
              * @param  {object} newAttrs Attributes for the replacement model. Use the filterType attribute to replace with a different type of Filter.
              * @return {Filter}          Returns the replacement Filter model, which is already part of the Filters collection.
-             */             
+             */
             replaceModel: function(model, newAttrs){
               try {
                 var index = this.indexOf(model),
@@ -407,14 +414,14 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                 console.log("Failed to replace a Filter model in a Filters collection, error message: " + e);
               }
             },
-            
-            /**            
+
+            /**
              * visibleIndexOf - Get the index of a given model, excluding any
              * filters that are marked as invisible.
-             *              
+             *
              * @param  {Filter|BooleanFilter|NumericFilter|DateFilter} model The filter model for which to get the visible index
              * @return {number} An integer representing the filter model's position in the list of visible filters.
-             */             
+             */
             visibleIndexOf: function(model){
               try {
                 // Don't count invisible filters in the index we display to the user
@@ -427,7 +434,7 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                 console.log("Failed to get the index of a Filter within the collection of visible Filters, error message: " + e);
               }
             },
-            
+
             /*
             hasGeohashFilter: function() {
 

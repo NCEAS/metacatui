@@ -4,6 +4,7 @@ src/js/themes/ess-dive
 src/js/themes/opc
 src/js/themes/hosted-repository
 src/js/themes/dangermondpreserve
+src/js/themes/dangermond
 node_modules
 package-lock.json
 src/config/dev

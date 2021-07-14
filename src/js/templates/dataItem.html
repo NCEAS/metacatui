@@ -1,4 +1,4 @@
-﻿<!-- Icon column -->
+<!-- Icon column -->
 <% if ( typeof type !== "undefined" && type !== null && type == "Metadata" ) { %>
     <% var indentFolder = nodeLevel * 40; %>
     <td class="type-icon">
@@ -56,16 +56,13 @@
     <td class="type"></td>
 
 <% } %>
-
 <!-- Privacy/Sharing column -->
-<% if( MetacatUI.appModel.get("allowAccessPolicyChanges") && (type && type != "Metadata") ){ %>
-  <td class="sharing">
-    <input type="checkbox" name="Make data private" value="true" class="private" />
-  </td>
-<% }
-   else if( MetacatUI.appModel.get("allowAccessPolicyChanges") ){ %>
-  <td></td>
+<% if( MetacatUI.appModel.get("allowAccessPolicyChanges")){ %>
+<td class="sharing">
+	<button type="button" class="btn access-policy-control"><i class="icon-group"></i> Share</button>
+</td>
 <% } %>
+
 
 <!-- Guide or Status column -->
 <td class="status">

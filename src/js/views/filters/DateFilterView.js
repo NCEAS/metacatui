@@ -68,9 +68,14 @@ define(['jquery', 'underscore', 'backbone',
           min: this.model.get("rangeMin"),  //sets the minimum on the UI slider on initialization
           max: this.model.get("rangeMax"),   //sets the maximum on the UI slider on initialization
           values: [ this.model.get("min"), this.model.get("max") ], //where the left and right slider handles are
-          stop: function( event, ui ) {
-
+          slide: function( event, ui ) {
             // When the slider is changed, update the input values
+            view.$('input.min').val(ui.values[0]);
+            view.$('input.max').val(ui.values[1]);
+          },
+          stop: function (event, ui) {
+
+            // When the slider is stopped, update the input values
             view.$('input.min').val(ui.values[0]);
             view.$('input.max').val(ui.values[1]);
 
@@ -78,7 +83,7 @@ define(['jquery', 'underscore', 'backbone',
             view.model.set('min', ui.values[0]);
             view.model.set('max', ui.values[1]);
 
-          }
+          },
         });
 
         //When the rangeReset event is triggered, reset the slider
