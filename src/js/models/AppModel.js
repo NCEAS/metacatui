@@ -1708,6 +1708,16 @@ define(['jquery', 'underscore', 'backbone'],
       randomLabelNumericLength: 7,
 
       /**
+      * A URL of a webpage for people to learn more about provenance. If no URL is provided,
+      * links to more info about provenance will be omitted.
+      * @since 2.16.0
+      * @type {string}
+      * @example https://mysite.org/provenance-help
+      * @default https://www.dataone.org/webinars/provenance-and-dataone-facilitating-reproducible-science/
+      */
+      provenanceInfoURL: "https://www.dataone.org/webinars/provenance-and-dataone-facilitating-reproducible-science/",
+
+      /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users
       */
       /**
