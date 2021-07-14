@@ -7,7 +7,9 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
 
   /**
    * @class EMLMeasurementTypeView
-   * @classdec The EMLMeasurementTypeView is a view to render 
+   * @classdec The EMLMeasurementTypeView is a view to render a specialized
+   * EML annotation editor that lets the use pick a single annotation from a
+   * specified ontology or portion of an ontology.
    * @classcategory Views/Metadata
    * @extends Backbone.View
    */
@@ -49,13 +51,13 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
       startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType",
 
       /**
-       * The label for the property that goes with terms selected with this 
+       * The label for the property that goes with terms selected with this
        * interface as well as the terms inserted
        */
       filterLabel: "contains measurements of type",
 
       /**
-       * The URI of for the property that goes with terms selected with this 
+       * The URI of for the property that goes with terms selected with this
        * interface as well as the terms inserted
        */
       filterURI: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#containsMeasurementsOfType",
@@ -78,7 +80,7 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
           width: "400",
           startingRoot: this.startingRoot || "roots",
           jumpAfterSelect: true,
-          selectFromAutocomplete: false,
+          selectFromAutocomplete: true,
           afterJumpToClass: function(cls) {
             var foundClass = viewRef.$("ul.ncboTree").find("a[data-id='" + encodeURIComponent(cls) + "']");
 
@@ -144,7 +146,7 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
        * @param {string} prefLabel - The selected term's prefLabel
        * @param {Element} selectedNode - The clicked element
        */
-      selectConcept: function(event, classId, prefLabel, selectedNode) {        
+      selectConcept: function(event, classId, prefLabel, selectedNode) {
         var anno = new EMLAnnotation({
           propertyLabel: this.filterLabel,
           propertyURI: this.filterURI,
@@ -206,9 +208,9 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
 
       /**
        * Remove a annotations by value
-       * 
+       *
        * Removes all matching annotations with a matching valueURI
-       * 
+       *
        * @param {string} attribute - The model attribute to pull from
        * @param {string} value - The value to compare with
        */
