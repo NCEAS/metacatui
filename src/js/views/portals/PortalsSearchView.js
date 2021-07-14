@@ -14,7 +14,7 @@ define(["jquery",
       * @extends Backbone.View
       * @constructor
       * @since 2.16.0
-      * @screenshot views/PortalsSearchView.png
+      * @screenshot views/portals/PortalsSearchView.png
       */
 
       var PortalsSearchView = Backbone.View.extend(
