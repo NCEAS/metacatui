@@ -7,10 +7,11 @@ define(['jquery', 'underscore', 'backbone',
         'views/filters/DateFilterView',
         'views/filters/NumericFilterView',
         'views/filters/ToggleFilterView',
-        'views/searchSelect/AnnotationFilterView'
+        'views/searchSelect/AnnotationFilterView',
+        "views/searchSelect/SearchableSelectView"
       ],
   function($, _, Backbone, FilterGroup, FilterView, BooleanFilterView, ChoiceFilterView,
-    DateFilterView, NumericFilterView, ToggleFilterView, AnnotationFilterView) {
+    DateFilterView, NumericFilterView, ToggleFilterView, AnnotationFilterView, SearchableSelectView) {
   'use strict';
 
   /**
@@ -76,20 +77,14 @@ define(['jquery', 'underscore', 'backbone',
         }
         else if (filter.get("fields").includes("sem_annotation") && MetacatUI.appModel.get("bioportalAPIKey")) {
           
-          var annotationEl = new FilterView({ model: filter });
-          annotationEl.render();
-          annotationEl.$el.addClass("custom-annotation-search-filter");
-
           var view = this;
-
-          // create annotation view 
           var annotationFilterView = new AnnotationFilterView({
             selected: view.model.get("values"),
             separatorText: view.model.get("operator"),
-            popoverTriggerSelector: annotationEl.$el
+            multiselect: true
           });
 
-          annotationFilterView.render();
+          annotationFilterView.render()
           annotationFilterView.off("annotationSelected");
           annotationFilterView.on("annotationSelected", function(event, item){
             // Get the value of the associated input
@@ -102,10 +97,11 @@ define(['jquery', 'underscore', 'backbone',
             filter.set("values", newValues);
 
             view.trigger("addNewAnnotationSearch", event, item, filter);
+            annotationFilterView.off("annotationSelected");
           });
 
-          //Append the filter view element to the view el
-          filtersRow.append(annotationEl.el);
+          annotationFilterView.$el.addClass("custom-annotation-search-filter");
+          filtersRow.append(annotationFilterView.$el);
 
           return;
         }
