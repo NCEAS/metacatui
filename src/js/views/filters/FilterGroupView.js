@@ -81,7 +81,7 @@ define(['jquery', 'underscore', 'backbone',
           var annotationFilterView = new AnnotationFilterView({
             selected: view.model.get("values"),
             separatorText: view.model.get("operator"),
-            multiselect: true
+            portalselect: true
           });
 
           annotationFilterView.render()
@@ -97,7 +97,6 @@ define(['jquery', 'underscore', 'backbone',
             filter.set("values", newValues);
 
             view.trigger("addNewAnnotationSearch", event, item, filter);
-            annotationFilterView.off("annotationSelected");
           });
 
           annotationFilterView.$el.addClass("custom-annotation-search-filter");

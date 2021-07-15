@@ -51,6 +51,19 @@ define(
 
         /**
          * If set to true, instead of showing the annotation tree interface in
+         * a popover, show it in a portal select interface
+         * @type {boolean}
+         */
+        portalselect: false,
+
+        /**
+         * If true, this filter will be added to the query but will
+         * act in the "background", like a default filter 
+         */
+        isInvisible: true,
+
+        /**
+         * If set to true, instead of showing the annotation tree interface in
          * a popover, show it on the custom search filter interface, which allows
          * the user to filter search based on the annotations.
          * @type {boolean}
@@ -98,7 +111,7 @@ define(
 
             var view = this;
 
-            if(view.multiselect){
+            if(view.multiselect || view.portalselect){
               view.createMultiselect()
             } else {
               view.setUpTree()
