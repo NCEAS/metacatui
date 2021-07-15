@@ -164,7 +164,7 @@ define(['jquery', 'underscore', 'backbone',
           this.trigger("updateDataCatalogView", event, item);
 
           filter.set("isInvisible", false);
-          view.updateAppliedFilters(filter, {displayWithoutChanges: "true"}); 
+          view.updateAppliedFilters(filter); 
         });
 
       }, this);

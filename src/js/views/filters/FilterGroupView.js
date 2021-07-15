@@ -93,8 +93,14 @@ define(['jquery', 'underscore', 'backbone',
             var filterDesc = (!item || !item.desc) ? null : item.desc;
 
             var newValues = filter.get("values");
-            newValues.push(term);
-            filter.set("values", newValues);
+            // append to values array if not exist
+            if (newValues.indexOf(term) == -1) {
+              newValues.push(term);
+
+              // reset the filter values
+              filter.resetValue();
+              filter.set("values", newValues);
+            }
 
             view.trigger("addNewAnnotationSearch", event, item, filter);
           });
