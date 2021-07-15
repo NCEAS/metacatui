@@ -16,7 +16,7 @@ define(['jquery', 'underscore', 'backbone',
     /** @lends ChoiceFilterView.prototype */{
 
     /**
-    * A ChoiceFilter model to be rendered in this view 
+    * A ChoiceFilter model to be rendered in this view
     * @type {ChoiceFilter} */
     model: null,
 
@@ -79,7 +79,9 @@ define(['jquery', 'underscore', 'backbone',
 
       }, this );
 
+      //When the ChoiceFilter is changed, update the choice list in the UI
       this.listenTo(this.model, "change:values", this.updateChoices);
+      this.listenTo(this.model, "remove", this.updateChoices);
 
     },
 

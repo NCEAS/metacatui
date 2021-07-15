@@ -3,6 +3,7 @@ define(["jquery",
         "backbone",
         "gmaps",
         "collections/Filters",
+        "collections/SolrResults",
         "models/filters/FilterGroup",
         "models/filters/SpatialFilter",
         "models/Stats",
@@ -11,7 +12,7 @@ define(["jquery",
         "text!templates/dataCatalog.html",
         "nGeohash"
     ],
-    function($, _, Backbone, gmaps, Filters, FilterGroup, SpatialFilter, Stats,
+    function($, _, Backbone, gmaps, Filters, SearchResults, FilterGroup, SpatialFilter, Stats,
       DataCatalogView, FilterGroupsView,
       template, nGeohash) {
 
@@ -98,6 +99,10 @@ define(["jquery",
 
                 if(!this.statsModel){
                   this.statsModel = new Stats();
+                }
+
+                if( !this.searchResults ){
+                  this.searchResults = new SearchResults();
                 }
 
                 // Use map mode on tablets and browsers only
@@ -298,7 +303,10 @@ define(["jquery",
                               "geohash_9",
                               "datasource",
                               "isPublic",
-                              "documents"];
+                              "documents",
+                              "label",
+                              "logo",
+                              "formatId"];
                 // Add spatial fields if the map is present
                 if ( gmaps ) {
                     fields.push("northBoundCoord", "southBoundCoord", "eastBoundCoord", "westBoundCoord");

@@ -1391,7 +1391,7 @@ define(['jquery', 'underscore', 'backbone'],
         "edition", "gcmdKeyword", "isSpatial", "keyConcept", "ogcUrl", "parameter",
         "sensor", "source", "term", "investigatorText", "sku", "_text_",
         // Fields that have been made into a special combination field
-        "beginDate", "endDate",
+        "beginDate", "endDate", "awardNumber",
         // Provenance fields (keep only "prov_hasSources" and "prov_hasDerivations"),
         // since they are the only ones indexed on metadata objects
         "prov_wasGeneratedBy", "prov_generated", "prov_generatedByExecution",
@@ -1455,6 +1455,14 @@ define(['jquery', 'underscore', 'backbone'],
           label: "Year of Data Collection",
           description: "The temporal range of content described by the metadata",
           category: "Dates"
+        },
+        {
+          name: "funding-text-award-number",
+          fields: ["fundingText", "awardNumber"],
+          label: "Award Number",
+          description: "The award number for funding associated with a dataset or the " +
+            "description of funding source",
+          category: "Awards & funding"
         }
       ],
 
@@ -1705,6 +1713,16 @@ define(['jquery', 'underscore', 'backbone'],
       * @since 2.14.0
       */
       randomLabelNumericLength: 7,
+
+      /**
+      * A URL of a webpage for people to learn more about provenance. If no URL is provided,
+      * links to more info about provenance will be omitted.
+      * @since 2.16.0
+      * @type {string}
+      * @example https://mysite.org/provenance-help
+      * @default https://www.dataone.org/webinars/provenance-and-dataone-facilitating-reproducible-science/
+      */
+      provenanceInfoURL: "https://www.dataone.org/webinars/provenance-and-dataone-facilitating-reproducible-science/",
 
       /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users

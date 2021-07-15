@@ -849,6 +849,9 @@ text-shadow: none;
 #select-prov-entity{
   width: 100%;
 }
+.prov-entity-select .help-text a{
+  display: block;
+}
 /********* The Prov Chart colors *******/
 .prov-chart .node.uniqueNode1,
 .entitydetails.uniqueNode1{
@@ -3604,6 +3607,40 @@ add font awesome close icon */
 	max-width: 230px; /* for firefox */
 }
 
+#portals-list-container .portals-list-title {
+    color: #999;
+}
+
+.portals-list-entry {
+  display: grid;
+  grid-template-columns: 70px 100fr 50px;
+  column-gap: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+.portals-list-entry .portal-title {
+  margin-bottom: 0px;
+}
+.portals-list-entry .portal-edit-link {
+
+}
+.portals-list-entry .portal-description{
+
+}
+.portals-list-entry .portal-description p{
+  margin: 0;
+  color: #888;
+}
+
+.portals-list-entry.pager {
+    border: 0px;
+        margin: 10px 0px;
+}
+#portals-list-container .no-results {
+    grid-column-start: 2;
+    text-align: center;
+}
+
 /* Editor navigation (tabs) */
 .section-links-container{
   margin-bottom: 0px;
@@ -5695,7 +5732,7 @@ svg .no-activity,
 /******************************************
 ** Searching and Map ***
 ******************************************/
-#clear-all{
+#   clear-all{
   width: 95%;
   width: calc(100% - 10px);
   padding: 2px 5px;

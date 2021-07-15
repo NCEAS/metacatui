@@ -268,7 +268,7 @@ function ($, _, Backbone) {
 			if(MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn"))
 				this.renderSignIn();
 			else if(!MetacatUI.appUserModel.get("checked")){
-				this.listenToOnce(appUserModel, "change:checked", function(){
+				this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
 					if(MetacatUI.appUserModel.get("loggedIn"))
 						this.renderProfile(MetacatUI.appUserModel.get("username"), section, subsection);
 					else
@@ -454,6 +454,15 @@ function ($, _, Backbone) {
       this.renderText({ pageName: "signInHelp" });
     },
 
+    /**
+     * Renders the Portals Search view.
+     */
+    renderPortalsSearch: function() {
+        require(['views/portals/PortalsSearchView'], function(PortalsSearchView){
+            MetacatUI.appView.showView(new PortalsSearchView({ el: "#Content" }));
+        });
+     },
+
 		/**
 		 * renderPortal - Render the portal view based on the given name or id, as
 		 * well as optional section
@@ -462,6 +471,13 @@ function ($, _, Backbone) {
 		 * @param  {string} portalSection A specific section within the portal
 		 */
      renderPortal: function(label, portalSection) {
+
+       //If no portal was specified, go to the portal search view
+       if( !label ){
+           this.renderPortalsSearch();
+           return;
+       }
+
 			 // Add the overall class immediately so the navbar is styled correctly right away
  			 $("body").addClass("PortalView");
        // Look up the portal document seriesId by its registered name if given
