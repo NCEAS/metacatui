@@ -32,6 +32,9 @@ define(["jquery",
 
           try{
 
+            //Set the header type
+            MetacatUI.appModel.set("headerType", "default");
+
             //Insert the template
             this.$el.html( this.template() );
 
