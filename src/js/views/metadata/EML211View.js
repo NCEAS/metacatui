@@ -432,7 +432,7 @@ define(['underscore', 'jquery', 'backbone',
 
         /**
          * Render the information provided for a given EML party in the party section.
-         * 
+         *
          * @param  {EMLParty} emlParty - the EMLParty model to render. If set to null, a new EML party will be created for the given party type.
          * @param  {string} partyType - The party type for which to render a new EML party. E.g. "creator", "coPrincipalInvestigator", etc.
          */
@@ -635,7 +635,7 @@ define(['underscore', 'jquery', 'backbone',
           // Container element to hold all parties of this type
           var outerContainer = $(document.createElement("div")).addClass("party-type-container");
 
-          // Add a new header for the party type, 
+          // Add a new header for the party type,
           // plus an icon and spot for validation messages
           var header = $(document.createElement("h4"))
             .text(partyTypeProperties.label)
@@ -1892,11 +1892,11 @@ define(['underscore', 'jquery', 'backbone',
         section. This method handles updating the underlying TaxonomicCoverage
         models when the user changes form fields as well as inserting new
         form fields automatically when the user needs them.
-    
+
         Since a dataset has multiple TaxonomicCoverage elements at the dataset
         level, each Taxonomic Coverage is represented by a table element and
         all taxonomicClassifications within are rows in that table.
-    
+
         TODO: Finish this function
         TODO: Link this function into the DOM
         */
