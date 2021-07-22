@@ -92,6 +92,10 @@ define(['jquery', 'underscore', 'backbone',
             var label = (!item || !item.filterLabel) ? null : item.filterLabel;
             var filterDesc = (!item || !item.desc) ? null : item.desc;
 
+            var annotationLabelsMappings = new Object();
+            annotationLabelsMappings[term] = label;
+            filter.set("annotationLabelsMappings", annotationLabelsMappings);
+
             var newValues = filter.get("values");
             // append to values array if not exist
             if (newValues.indexOf(term) == -1) {

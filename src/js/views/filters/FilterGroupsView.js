@@ -164,7 +164,10 @@ define(['jquery', 'underscore', 'backbone',
           this.trigger("updateDataCatalogView", event, item);
 
           filter.set("isInvisible", false);
-          view.updateAppliedFilters(filter); 
+          // filterOptions = new Object();
+          // ffilterOptions[isAnnotationView] = true;
+          
+          view.updateAppliedFilters( filter ); 
         });
 
       }, this);
@@ -345,6 +348,7 @@ define(['jquery', 'underscore', 'backbone',
     * @param {Filter} filterModel - The FilterModel to display
     * @param {object} options - Additional options for this function
     * @property {boolean} options.displayWithoutChanges - If true, this filter will display even if the value hasn't been changed
+    * @property {boolean} options.isAnnotationView - If true, this filter will display labels associated with the annotation values
     */
     updateAppliedFilters: function(filterModel, options){
 
@@ -352,6 +356,10 @@ define(['jquery', 'underscore', 'backbone',
       if( typeof options != "object" ){
         var options = {};
       }
+      this.options = options;
+      var view = this;
+
+      if(filterModel.get("fields").includes("sem_annotation")) this.options.isAnnotationView = true;
 
       //If the value of this filter has changed, or if the displayWithoutChanges option
       // was passed, and if the filter is not invisible, then display it
@@ -367,8 +375,29 @@ define(['jquery', 'underscore', 'backbone',
             //Find the values that were added
             addedValues    = _.difference(newValues, previousValues);
 
+        // // if annotation portal update the previousValues array and recalculate the differenecs
+        // if (view.options.isAnnotationView) {
+        //   var updatedPreviousValues = Array();
+        //   _.each(previousValues, function(value){
+        //     for (let key in filterModel.get("annotationLabelsMappings")) {
+        //       if (filterModel.get("annotationLabelsMappings")[key] == value) updatedPreviousValues.push(key);
+        //       break;
+        //     }
+        //   });
+        //   //Find the values that were removed
+        //   removedValues  = _.difference(updatedPreviousValues, newValues),
+        //   //Find the values that were added
+        //   addedValues    = _.difference(newValues, updatedPreviousValues);
+        // }
+
         //If a filter has been added, display it
         _.each(addedValues, function(value){
+
+          // if annotation portal view, append the labels instead of the value
+          if (view.options.isAnnotationView) {
+            if(filterModel.get("annotationLabelsMappings")[value])
+              value = filterModel.get("annotationLabelsMappings")[value];
+          }
 
           //Add the applied filter to the view
           this.$(".applied-filters").append( this.createAppliedFilter(filterModel, value) );
@@ -377,6 +406,12 @@ define(['jquery', 'underscore', 'backbone',
 
         //Iterate over each removed filter value and remove them
         _.each(removedValues, function(value){
+
+          // if annotation portal view, append the labels instead of the value
+          if (view.options.isAnnotationView) {
+            if(filterModel.get("annotationLabelsMappings")[value])
+              value = filterModel.get("annotationLabelsMappings")[value];
+          }
 
           //Find all applied filter elements with a matching value
           var matchingFilters = this.$(".applied-filter[data-value='" + value + "']");
@@ -751,6 +786,13 @@ define(['jquery', 'underscore', 'backbone',
 
       var removeSilently = false;
 
+      //Create an options object if one wasn't sent
+      if( typeof options != "object" ){
+        var options = {};
+      }
+      this.options = options;
+      var view = this;
+
       //Parse all the additional options for this function
       if( typeof options == "object" ){
         removeSilently = typeof options.removeSilently != "undefined"? options.removeSilently : false;
@@ -758,6 +800,7 @@ define(['jquery', 'underscore', 'backbone',
 
 
       if( filterModel ){
+        if(filterModel.get("fields").includes("sem_annotation")) this.options.isAnnotationView = true;
 
         //NumericFilters and DateFilters get the min and max values reset
         if( filterModel.type == "NumericFilter" || filterModel.type == "DateFilter" ){
@@ -780,6 +823,14 @@ define(['jquery', 'underscore', 'backbone',
           //Get the current value
           var modelValues = filterModel.get("values"),
               thisValue   = $(appliedFilterEl).data("value");
+          
+          // retrive the label from the model for annotation view type
+          if (view.options.isAnnotationView) {
+            for (let key in filterModel.get("annotationLabelsMappings")) {
+              if (filterModel.get("annotationLabelsMappings")[key] == thisValue) thisValue = key;
+              break;
+            } 
+          }
 
           //Numbers that are set on the element `data` are stored as type `number`, but when `number`s are
           // set on Backbone models, they are converted to `string`s. So we need to check for this use case.
