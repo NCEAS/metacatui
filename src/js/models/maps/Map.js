@@ -1,20 +1,33 @@
-/* global define */
-define(
-  ['jquery', 'underscore', 'backbone', 'nGeohash'],
-  function ($, _, Backbone, nGeohash) {
-    "use strict";
+'use strict';
 
+define(
+  [
+    'jquery',
+    'underscore',
+    'backbone',
+    'nGeohash',
+    'collections/maps/Layers',
+    'collections/maps/Terrains'
+  ],
+  function (
+    $,
+    _,
+    Backbone,
+    nGeohash,
+    Layers,
+    Terrains
+  ) {
     /**
-     * @class CesiumModel
-     * @classdesc  The Map Model represents all of the settings and options for a Cesium
-     * Map.
+     * @class Map
+     * @classdesc The Map Model contains all of the settings and options for a required to
+     * render a map view.
      * @classcategory Models/Maps
-     * @name CesiumModel
+     * @name Map
      * @since 2.x.x
      * @extends Backbone.Model
      */
-    var CesiumModel = Backbone.Model.extend(
-      /** @lends CesiumModel.prototype */ {
+    var Map = Backbone.Model.extend(
+      /** @lends Map.prototype */ {
 
         /**
          * Coordinates that describe a camera position for Cesium
@@ -28,12 +41,19 @@ define(
          */
 
         /**
-         * Overrides the default Backbone.Model.defaults() function to
-         * specify default attributes for the CesiumModel
-         * @name CesiumModel#defaults
+         * Overrides the default Backbone.Model.defaults() function to specify default
+         * attributes for the Map
+         * @name Map#defaults
          * @type {Object}
          * @property {CameraPosition} homePosition - The position to display when the map
          * initially renders. The home button will also navigate back to this position.
+         * @property {Terrains} terrains - The terrain options to show in the map.
+         * @property {Layers} layers - The imagery and vector data to render in the map.
+         * @property {Boolean} [showToolbar = true] - Whether or not to show the side bar
+         * with layer list, etc. True by default.
+         * @property {Boolean} [showScaleBar = true] - Whether or not to show a scale bar.
+         * @property {Boolean} [showInfoBox = true] - Whether or not to allow users to
+         * click on map features to show more information about them.
         */
         defaults: function () {
           // TODO: Decide on reasonable default values.
@@ -47,7 +67,7 @@ define(
               pitch: -90,
               roll: 0,
             },
-            baseLayers: [
+            layers: new Layers([
               {
                 label: 'My Bing Map',
                 type: 'BingMapsImageryProvider',
@@ -81,16 +101,16 @@ define(
                 label: 'Stamen Maps',
                 type: 'OpenStreetMapImageryProvider',
                 options: {
-                  url: "https://stamen-tiles.a.ssl.fastly.net/watercolor/",
-                  fileExtension: "jpg",
-                  credit: "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under CC BY SA."
+                  url: 'https://stamen-tiles.a.ssl.fastly.net/watercolor/',
+                  fileExtension: 'jpg',
+                  credit: 'Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under CC BY SA.'
                 }
               },
               {
                 label: 'Natural Earth II (Local)',
                 type: 'TileMapServiceImageryProvider',
                 options: {
-                  url: MetacatUI.root + "/components/Cesium/Assets/Textures/NaturalEarthII"
+                  url: MetacatUI.root + '/components/Cesium/Assets/Textures/NaturalEarthII'
                 }
               },
               {
@@ -98,17 +118,14 @@ define(
                 type: 'WebMapTileServiceImageryProvider',
                 options: {
                   url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSShadedReliefOnly/MapServer/WMTS',
-                  layer: "USGSShadedReliefOnly",
-                  style: "default",
-                  format: "image/jpeg",
-                  tileMatrixSetID: "default028mm",
+                  layer: 'USGSShadedReliefOnly',
+                  style: 'default',
+                  format: 'image/jpeg',
+                  tileMatrixSetID: 'default028mm',
                   maximumLevel: 19,
-                  credit: "U. S. Geological Survey",
-
+                  credit: 'U. S. Geological Survey',
                 }
               },
-            ],
-            dataLayers: [
               {
                 label: 'United States GOES Infrared',
                 type: 'WebMapServiceImageryProvider',
@@ -144,13 +161,17 @@ define(
                 label: 'Tile Coordinates',
                 type: 'TileCoordinatesImageryProvider',
                 options: {}
-              },
-            ]
+              }
+            ]),
+            terrains: new Terrains(),
+            showToolbar: true,
+            showScaleBar: true,
+            showInfoBox: true
           };
         },
 
         /**
-         * initialize - Run when a new CesiumModel is created
+         * initialize - Run when a new Map is created
          */
         initialize: function (attrs, options) {
         },
@@ -165,11 +186,11 @@ define(
           try {
             // map of precision integer to minimum altitude
             const precisionAltMap = {
-              "1": 6000000,
-              "2": 4000000,
-              "3": 1000000,
-              "4": 100000,
-              "5": 0
+              '1': 6000000,
+              '2': 4000000,
+              '3': 1000000,
+              '4': 100000,
+              '5': 0
             }
             const precision = _.findKey(precisionAltMap, function (minAltitude) {
               return altitude >= minAltitude
@@ -178,7 +199,7 @@ define(
           }
           catch (error) {
             console.log(
-              'There was an error getting the geohash level from altitude in a CesiumModel' +
+              'There was an error getting the geohash level from altitude in a Map' +
               'Returning level 1 by default. ' +
               '. Error details: ' + error
             );
@@ -216,7 +237,7 @@ define(
           }
           catch (error) {
             console.log(
-              'There was an error getting geohashes in a CesiumModel' +
+              'There was an error getting geohashes in a Map' +
               '. Error details: ' + error
             );
           }
@@ -225,5 +246,5 @@ define(
 
       });
 
-    return CesiumModel;
+    return Map;
   });
