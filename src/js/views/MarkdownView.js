@@ -183,27 +183,6 @@ define([    "jquery", "underscore", "backbone",
 
             var view = this;
 
-            // Given a string of CSS and an associated unique ID,
-            // check whether that CSS file was already added to the document head,
-            // and add it if not. Prevents adding the CSS file multiple
-            // times if the view is loaded more than once. The first time each
-            // CSS path is added, we need to save a record of the event. It
-            // doesn't work to just search the document head for the style elemnt to
-            // determine if the CSS has already been added, because each instance
-            // of this view may be initialized too quickly, before the previous
-            // instance has had a chance to add the stylesheet element.
-            const addCSS = function(css, id){
-              if(!MetacatUI.loadedCSS){
-                MetacatUI.loadedCSS = []
-              }
-              if(!MetacatUI.loadedCSS.includes(id)){
-                MetacatUI.loadedCSS.push(id);
-                var style = document.createElement('style');
-                style.appendChild(document.createTextNode(css));
-                document.querySelector("head").appendChild(style);
-              }
-            }
-
             // SDextensions lists the desired order* of all potentailly required showdown extensions (* order matters! )
             var SDextensions = ["xssfilter", "katex", "highlight", "docbook",
                                 "showdown-htags", "bootstrap", "footnotes",
@@ -275,7 +254,7 @@ define([    "jquery", "underscore", "backbone",
                         ]
                     });
                     // Add CSS required to render katex math symbols correctly
-                    addCSS(showdownKatexCss, "showdownKatex");
+                    MetacatUI.appModel.addCSS(showdownKatexCss, "showdownKatex");
                     // Because custom config, register katex with showdown
                     showdown.extension("katex", katex);
                     updateExtensionList("katex", required=true);
@@ -296,7 +275,7 @@ define([    "jquery", "underscore", "backbone",
                 function(showdownHighlight, showdownHighlightCss){
                   updateExtensionList("highlight", required=true);
                   // CSS needed for highlight
-                  addCSS(showdownHighlightCss, "showdownHighlight");
+                  MetacatUI.appModel.addCSS(showdownHighlightCss, "showdownHighlight");
                 });
             } else {
                 updateExtensionList("highlight", required=false);

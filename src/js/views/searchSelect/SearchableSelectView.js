@@ -197,31 +197,9 @@ define([
 
           try {
 
-            var view = this;
-
-            // Given a string of CSS and an associated unique ID,
-            // check whether that CSS file was already added to the document head,
-            // and add it if not. Prevents adding the CSS file multiple
-            // times if the view is loaded more than once. The first time each
-            // CSS path is added, we need to save a record of the event. It
-            // doesn't work to just search the document head for the style element to
-            // determine if the CSS has already been added, because each instance
-            // of this view is initialized too quickly, before the previous
-            // instance has had a chance to add the stylesheet element.
-            const addCSS = function(css, id){
-              if(!MetacatUI.loadedCSS){
-                MetacatUI.loadedCSS = []
-              }
-              if(!MetacatUI.loadedCSS.includes(id)){
-                MetacatUI.loadedCSS.push(id);
-                var style = document.createElement('style');
-                style.appendChild(document.createTextNode(css));
-                document.querySelector("head").appendChild(style);
-              }
-            }
-
-            addCSS(TransitionCSS, "semanticUItransition");
-            addCSS(DropdownCSS, "semanticUIdropdown");
+            // Add CSS required for this view
+            MetacatUI.appModel.addCSS(TransitionCSS, "semanticUItransition");
+            MetacatUI.appModel.addCSS(DropdownCSS, "semanticUIdropdown");
 
             // Get all the options and apply them to this view
             if (typeof options == "object") {

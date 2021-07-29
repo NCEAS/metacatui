@@ -1950,7 +1950,32 @@ define(['jquery', 'underscore', 'backbone'],
       if( !defaultAltRepo ){
         this.set("activeAlternateRepositoryId", altRepos[0].identifier);
       }
-    }
+      },
+      
+      /**
+       * Given a string of CSS and an associated unique ID, check whether that CSS file
+       * was already added to the document head, and add it if not. Prevents adding the
+       * CSS file multiple times if the view is loaded more than once. The first time each
+       * CSS path is added, we need to save a record of the event. It doesn't work to just
+       * search the document head for the style element to determine if the CSS has
+       * already been added, because views may be initialized too quickly, before the
+       * previous instance has had a chance to add the stylesheet element.
+       * @param {string} css A string containing CSS styles
+       * @param {string} id A unique ID for the CSS styles which has not been used
+       * anywhere else in the app.
+       */
+      addCSS: function (css, id) {
+        if (!MetacatUI.loadedCSS) {
+          MetacatUI.loadedCSS = []
+        }
+        if (!MetacatUI.loadedCSS.includes(id)) {
+          MetacatUI.loadedCSS.push(id);
+          var style = document.createElement('style');
+          style.appendChild(document.createTextNode(css));
+          document.querySelector("head").appendChild(style);
+        }
+      }
+
   });
   return AppModel;
 });
