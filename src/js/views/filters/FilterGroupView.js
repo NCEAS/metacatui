@@ -92,18 +92,22 @@ define(['jquery', 'underscore', 'backbone',
             var label = (!item || !item.filterLabel) ? null : item.filterLabel;
             var filterDesc = (!item || !item.desc) ? null : item.desc;
 
-            var annotationLabelsMappings = new Object();
+            //set up annotation label mappings
+            var annotationLabelsMappings;
+            if(filter.get("annotationLabelsMappings")) {
+              annotationLabelsMappings = _.clone(filter.get("annotationLabelsMappings"));
+            } 
+            else {
+              annotationLabelsMappings  = new Object();
+            }
             annotationLabelsMappings[term] = label;
             filter.set("annotationLabelsMappings", annotationLabelsMappings);
 
-            var newValues = filter.get("values");
+            var newValues = _.clone(filter.get("values"));
             // append to values array if not exist
             if (newValues.indexOf(term) == -1) {
               newValues.push(term);
-
-              // reset the filter values
-              filter.resetValue();
-              filter.set("values", newValues);
+              filter.set({"values": newValues});
             }
 
             view.trigger("addNewAnnotationSearch", event, item, filter);

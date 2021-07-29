@@ -2852,6 +2852,8 @@ section#user-citations {
 .annotation-filter .searchable-select #bioportal-tree {
 	display: block;
 	margin-top: 0.5rem;
+	overflow-x: auto;
+
 }
 .annotation-filter .searchable-select .menu {
 	min-height: 10rem;
@@ -8274,4 +8276,8 @@ body > #extension-is-installed{
 	position: relative;
 	border: none;
 	box-shadow: none;
+}
+
+.annotation-filter.custom-annotation-search-filter .ui.selection.dropdown {
+	width: 450px !important;
 }

@@ -162,12 +162,6 @@ define(['jquery', 'underscore', 'backbone',
         var view  = this;
         this.listenTo( filterGroupView, "addNewAnnotationSearch", function(event, item, filter){
           this.trigger("updateDataCatalogView", event, item);
-
-          filter.set("isInvisible", false);
-          // filterOptions = new Object();
-          // ffilterOptions[isAnnotationView] = true;
-          
-          view.updateAppliedFilters( filter ); 
         });
 
       }, this);
@@ -348,7 +342,6 @@ define(['jquery', 'underscore', 'backbone',
     * @param {Filter} filterModel - The FilterModel to display
     * @param {object} options - Additional options for this function
     * @property {boolean} options.displayWithoutChanges - If true, this filter will display even if the value hasn't been changed
-    * @property {boolean} options.isAnnotationView - If true, this filter will display labels associated with the annotation values
     */
     updateAppliedFilters: function(filterModel, options){
 
@@ -375,21 +368,6 @@ define(['jquery', 'underscore', 'backbone',
             //Find the values that were added
             addedValues    = _.difference(newValues, previousValues);
 
-        // // if annotation portal update the previousValues array and recalculate the differenecs
-        // if (view.options.isAnnotationView) {
-        //   var updatedPreviousValues = Array();
-        //   _.each(previousValues, function(value){
-        //     for (let key in filterModel.get("annotationLabelsMappings")) {
-        //       if (filterModel.get("annotationLabelsMappings")[key] == value) updatedPreviousValues.push(key);
-        //       break;
-        //     }
-        //   });
-        //   //Find the values that were removed
-        //   removedValues  = _.difference(updatedPreviousValues, newValues),
-        //   //Find the values that were added
-        //   addedValues    = _.difference(newValues, updatedPreviousValues);
-        // }
-
         //If a filter has been added, display it
         _.each(addedValues, function(value){
 
@@ -407,7 +385,7 @@ define(['jquery', 'underscore', 'backbone',
         //Iterate over each removed filter value and remove them
         _.each(removedValues, function(value){
 
-          // if annotation portal view, append the labels instead of the value
+          // if annotation portal view, remove the values instead of the labels
           if (view.options.isAnnotationView) {
             if(filterModel.get("annotationLabelsMappings")[value])
               value = filterModel.get("annotationLabelsMappings")[value];
@@ -828,7 +806,6 @@ define(['jquery', 'underscore', 'backbone',
           if (view.options.isAnnotationView) {
             for (let key in filterModel.get("annotationLabelsMappings")) {
               if (filterModel.get("annotationLabelsMappings")[key] == thisValue) thisValue = key;
-              break;
             } 
           }
 
