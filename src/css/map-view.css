@@ -1,0 +1,174 @@
+/**
+ * Map View
+ *
+ * Defines the appearance of the view that shows an interactive 2D map or 3D globe and all
+ * of the other elements it contains:
+ * 
+ * - Cesium (map widget)
+ * - Scale Bar
+ * - Toolbar
+ * - Layer Details
+ * - Feature Info
+ *
+ */
+
+/* The outer-most container for the 3D/2D Map View */
+
+.map-view {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  /* TODO: remove this temporary style */
+  min-height: 60vh;
+  display: grid;
+  justify-content: center;
+}
+
+/* The containers for the elements within the Map View */
+
+.map-view__map-widget-container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.map-view__scale-bar-container {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+.map-view__toolbar-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+}
+
+.map-view__feature-info-container {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
+
+.map-view__layer-details-container {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+
+/**
+ * Scale Bar
+ *
+ * The legend that shows both the coordinates of the mouse and a scale bar
+ *
+ */
+
+.scale-bar {}
+
+/* __coordinates contains __longitude, __latitude, and __elevation */
+
+.scale-bar__coordinates {}
+
+/* The elements that contain the current coordinates */
+
+.scale-bar__longitude {}
+
+.scale-bar__latitude {}
+
+.scale-bar__elevation {}
+
+/* The __scale element contains __bar and __distance */
+
+.scale-bar__scale {}
+
+/* The length of the __bar element is set dynamically in ScaleBarView. It's length
+represents 1 unit of the given distance measurement. */
+
+.scale-bar__bar {}
+
+/* The elements that contains the distance measurement */
+
+.scale-bar__distance {}
+
+/**
+ * Toolbar
+ *
+ * The toolbar contains the layer list and UI for changing map settings
+ *
+ */
+
+.toolbar {
+  display: grid;
+  grid-template-columns: auto auto;
+}
+
+.toolbar__links {}
+
+.toolbar__all-content {
+  background-color: whitesmoke;
+  /* temp */
+}
+
+.toolbar__all-content--hidden {
+  display: none;
+}
+
+.toolbar__content {
+  /* TODO: remove temp styles */
+  height: 100%;
+  width: 100%;
+  /* hide unless the content section is active */
+  display: none;
+}
+
+.toolbar__content--active {
+  display: block;
+}
+
+.toolbar__link {
+  cursor: pointer;
+  height: 4rem;
+  width: 4rem;
+  background-color: whitesmoke;
+  /* temp */
+}
+
+.toolbar__link--active {}
+
+.toolbar__link-title {}
+
+.toolbar__link-icon {}
+
+/* Layers contains information about a map's layers and is used as a toolbar section */
+
+.layers {}
+
+.layer-list {}
+
+.layer-item {}
+
+/**
+ * Layer Details
+ *
+ * A box that shows details about a specific layer on a map
+ *
+ */
+
+.layer-details {}
+
+.layer-detail {}
+
+.layer-info {}
+
+.layer-opacity {}
+
+/**
+ * Feature Info
+ *
+ * The box that shows more information about a feature that a user clicks
+ *
+ */
+
+.feature-info {}

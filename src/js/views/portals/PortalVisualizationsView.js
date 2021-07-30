@@ -67,7 +67,7 @@ define(["jquery",
             this.renderFEVer();
           }
           else if( this.model.get("visualizationType") == "cesium" ){
-            this.renderCesium();
+            this.renderMap();
           }
 
         },
@@ -91,9 +91,9 @@ define(["jquery",
         },
 
         /**
-        * Renders a {@link CesiumView} and inserts into this view
+        * Renders a {@link MapView} and inserts into this view
         */
-        renderCesium: function(){
+        renderMap: function(){
 
           //Exit if Cesium is disabled
           if( !MetacatUI.appModel.get("enableCesium") ){
@@ -102,11 +102,11 @@ define(["jquery",
 
           let thisView = this;
 
-          //Create a CesiumView and render it in this view
-          require(["views/maps/CesiumView"], function(CesiumView){
-            let cesiumView = new CesiumView();
-            thisView.$el.html(cesiumView.el);
-            cesiumView.render();
+          //Create a MapView and render it in this view
+          require(["views/maps/MapView"], function(MapView){
+            let mapView = new MapView();
+            thisView.$el.html(mapView.el);
+            mapView.render();
           });
 
         },

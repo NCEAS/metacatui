@@ -1,0 +1,131 @@
+
+'use strict';
+
+define(
+  [
+    'jquery',
+    'underscore',
+    'backbone',
+    'collections/maps/Layers',
+    'text!templates/maps/layer-list.html',
+    // Sub-views
+    'views/maps/LayerItemView'
+  ],
+  function (
+    $,
+    _,
+    Backbone,
+    Layers,
+    Template,
+    // Sub-views
+    LayerItemView
+  ) {
+
+    /**
+    * @class LayerListView
+    * @classdesc A view of a ... TODO
+    * @classcategory Views/Maps TODO
+    * @name LayerListView
+    * @extends Backbone.View
+    * @screenshot maps/LayerListView.png // TODO: add screenshot
+    * @constructs
+    */
+    var LayerListView = Backbone.View.extend(
+      /** @lends LayerListView.prototype */{
+
+        /**
+        * The type of View this is
+        * @type {string}
+        */
+        type: 'LayerListView',
+
+        /**
+        * The HTML classes to use for this view's element
+        * @type {string}
+        */
+        className: 'layer-list', // TODO
+
+        /**
+        * The collection that this view uses
+        * @type {Layers}
+        */
+        collection: undefined,
+
+        /**
+         * The primary HTML template for this view
+         * @type {Underscore.template}
+         */
+        template: _.template(Template),
+
+        /**
+        * The events this view will listen to and the associated function to call.
+        * @type {Object}
+        */
+        events: {
+          // 'event selector': 'function',
+        },
+
+        /**
+        * Executed when a new LayerListView is created
+        * @param {Object} [options] - A literal object with options to pass to the view
+        */
+        initialize: function (options) {
+
+          try {
+            // Get all the options and apply them to this view
+            if (typeof options == 'object') {
+              for (const [key, value] of Object.entries(options)) {
+                this[key] = value;
+              }
+            }
+          } catch (e) {
+            console.log('A LayerListView failed to initialize. Error message: ' + e);
+          }
+
+        },
+
+        /**
+        * Renders this view
+        * @return {LayerListView} Returns the rendered view element
+        */
+        render: function () {
+
+          try {
+
+            // Save a reference to this view
+            var view = this;
+
+            // Insert the template into the view
+            this.$el.html(this.template({}));
+
+            // Ensure the view's main element has the given class name
+            this.el.classList.add(this.className);
+
+            // Render a layer item for each layer in the collection
+            this.collection.forEach(function (layerModel) {
+              var layerItem = new LayerItemView({
+                model: layerModel
+              })
+              layerItem.render();
+              view.el.appendChild(layerItem.el)
+            })
+
+            return this
+
+          }
+          catch (error) {
+            console.log(
+              'There was an error rendering a LayerListView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+
+      }
+    );
+
+    return LayerListView;
+
+  }
+);

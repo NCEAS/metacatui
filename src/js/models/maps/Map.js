@@ -52,7 +52,7 @@ define(
          * @property {Boolean} [showToolbar = true] - Whether or not to show the side bar
          * with layer list, etc. True by default.
          * @property {Boolean} [showScaleBar = true] - Whether or not to show a scale bar.
-         * @property {Boolean} [showInfoBox = true] - Whether or not to allow users to
+         * @property {Boolean} [showFeatureInfo = true] - Whether or not to allow users to
          * click on map features to show more information about them.
         */
         defaults: function () {
@@ -166,7 +166,7 @@ define(
             terrains: new Terrains(),
             showToolbar: true,
             showScaleBar: true,
-            showInfoBox: true
+            showFeatureInfo: true
           };
         },
 
