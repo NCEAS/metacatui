@@ -33,20 +33,33 @@ define(
         */
         model: Layer,
 
-        // /**
-        //  * Executed when a new Layers collection is created.
-        //  */
-        // initialize: function () {
-        //   try {
-
-        //   }
-        //   catch (error) {
-        //     console.log(
-        //       'There was an error initializing a Layers collection' +
-        //       '. Error details: ' + error
-        //     );
-        //   }
-        // },
+        /**
+         * Executed when a new Layers collection is created.
+         */
+        initialize: function () {
+          try {
+            // Only allow one Layer in the collection to be selected at a time. When a
+            // layer model's 'selected' attribute is changed to true, change all of the
+            // other model's selected attribute to false.
+            this.stopListening(this, 'change:selected');
+            this.listenTo(this, 'change:selected', function (changedLayer, newValue) {
+              if (newValue === true) {
+                var otherModels = this.reject(function (layerModel) {
+                  return layerModel === changedLayer
+                })
+                otherModels.forEach(function (otherModel) {
+                  otherModel.set('selected', false)
+                })
+              }
+            })
+          }
+          catch (error) {
+            console.log(
+              'There was an error initializing a Layers collection' +
+              '. Error details: ' + error
+            );
+          }
+        },
 
         // /**
         //  * Parses the given input into JSON objects used to create this collection's

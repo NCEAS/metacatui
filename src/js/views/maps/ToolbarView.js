@@ -65,11 +65,11 @@ define(
          *
          * @name ToolbarView#classes
          * @type {Object}
+         * @property {string} open The class to add to the view when the toolbar is open
+         * (and the content is visible)
          * @property {string} contentContainer The element that contains all containers
          * for the toolbar section content. This element must be part of this view's
          * template.
-         * @property {string} contentContainerHidden The class to add to the content
-         * container when the toolbar is closed (and content is therefore hidden)
          * @property {string} toggle The element in the template that acts as a toggle to
          * close the toolbar.
          * @property {string} linksContainer The container for all of the section links
@@ -85,8 +85,8 @@ define(
          * is the active section
          */
         classes: {
+          open: 'toolbar--open',
           contentContainer: 'toolbar__all-content',
-          contentContainerHidden: 'toolbar__all-content--hidden',
           toggle: 'toolbar__toggle',
           linksContainer: 'toolbar__links',
           link: 'toolbar__link',
@@ -177,13 +177,13 @@ define(
             // Save a reference to this view
             var view = this;
 
+            // Set the toolbar to open, depending on what is initially set in view.isOpen
+            if (this.isOpen) {
+              this.el.classList.add(this.classes.open)
+            }
+
             // Insert the template into the view
-            this.$el.html(this.template({
-              // These options are used to set the toolbar to open or closed, depending on
-              // what is initially set in view.isOpen
-              isOpen: view.isOpen,
-              contentHiddenClass: view.classes.contentContainerHidden
-            }));
+            this.$el.html(this.template({}));
 
             // Ensure the view's main element has the given class name
             this.el.classList.add(this.className);
@@ -356,7 +356,7 @@ define(
         open: function () {
           try {
             this.isOpen = true
-            this.contentContainer.classList.remove(this.classes.contentContainerHidden)
+            this.el.classList.add(this.classes.open)
           }
           catch (error) {
             console.log(
@@ -372,7 +372,7 @@ define(
         close: function () {
           try {
             this.isOpen = false
-            this.contentContainer.classList.add(this.classes.contentContainerHidden)
+            this.el.classList.remove(this.classes.open)
             // Ensure that no section is active when the toolbar is closed
             this.inactivateAllSections()
           }

@@ -107,12 +107,16 @@ represents 1 unit of the given distance measurement. */
 .toolbar__links {}
 
 .toolbar__all-content {
+  /* TODO: temp style: */
   background-color: whitesmoke;
-  /* temp */
+  /* Don't display the content unless the toolbar is open. The outermost element, with
+  class .toolbar, is not set to hidden so that the links (tabs) are still visible when the
+  toolbar is closed */
+  display: none;
 }
 
-.toolbar__all-content--hidden {
-  display: none;
+.toolbar--open .toolbar__all-content {
+  display: block;
 }
 
 .toolbar__content {
@@ -149,14 +153,36 @@ represents 1 unit of the given distance measurement. */
 
 .layer-item {}
 
+.layer-item__label {
+  cursor: pointer;
+}
+
+/* How to style the layer item when the layer details panel is showing for this item */
+
+.layer-item--selected .layer-item__label {
+  color: cadetblue;
+}
+
 /**
  * Layer Details
  *
- * A box that shows details about a specific layer on a map
+ * A panel that shows details about a specific layer on a map
  *
  */
 
-.layer-details {}
+.layer-details {
+  /* Don't show the details panel unless it also has the layer-details--open class */
+  display: none;
+  /* TODO: the following are just temp styles for development purposes */
+  background-color: white;
+  height: 100px;
+  width: 210px;
+  border: 1px solid grey;
+}
+
+.layer-details--open {
+  display: block;
+}
 
 .layer-detail {}
 

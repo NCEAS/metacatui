@@ -33,16 +33,18 @@ define(
         type: 'Layer',
 
         /**
-         * Default attributes for Layer models. Also includes all of the properties
-         * listed in {MapAsset#defaults}.
+         * Default attributes for Layer models. Also includes all of the properties listed
+         * in {MapAsset#defaults}.
          * @name Layer#defaults
-         * @property {Object} options The format of the data. // TODO: List the supported
+         * @property {Boolean} selected Set to true when this Layer has been selected by
+         * the user in the layer list.
         */
         defaults: function () {
           return _.extend(
             this.constructor.__super__.defaults.apply(this),
             {
               // TODO: add and document additional properties that are specific to layers
+              selected: false
             }
           );
         },
