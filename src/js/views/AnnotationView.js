@@ -31,6 +31,19 @@ define(['jquery',
         value: null,
 
         initialize: function () {
+            // Detect legacy pill DOM structure with the old arrow,
+            // ┌───────────┬───────┬───┐
+            // │ property  │ value │ ↗ │
+            // └───────────┴───────┴───┘
+            // clean up, and disable ourselves. This can be removed at some
+            // point in the future
+            if (this.$el.find(".annotation-findmore").length > 0) {
+                this.$el.find(".annotation-findmore").remove();
+                this.$el.find(".annotation-value").attr("style", "color: white");
+
+                return;
+            }
+
             this.property = {
                 type: "property",
                 el: null,
@@ -89,6 +102,10 @@ define(['jquery',
          * @param {Event} e - Click event
          */
         handleClick: function (e) {
+            if (!this.property || !this.value) {
+                    return;
+            }
+
             if (e.target.className === "annotation-property") {
                 if (this.property.popover) {
                     return;
