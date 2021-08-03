@@ -38,8 +38,10 @@ define(
          * @name Layer#defaults
          * @property {Boolean} selected Set to true when this Layer has been selected by
          * the user in the layer list.
-         * @property {Number} opacity A number between 0 and 1 indicating the (initial)
-         * opacity of the layer on the map
+         * @property {Number} opacity A number between 0 and 1 indicating the opacity of
+         * the layer on the map
+         * @property {Boolean} visible Set to true if the layer is visible on the map,
+         * false if it is hidden
         */
         defaults: function () {
           return _.extend(
@@ -47,7 +49,8 @@ define(
             {
               // TODO: add and document additional properties that are specific to layers
               selected: false,
-              opacity: 1
+              opacity: 1,
+              visible: true
             }
           );
         },

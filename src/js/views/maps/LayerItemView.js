@@ -60,11 +60,19 @@ define(
         /**
          * Classes that are used to identify the HTML elements that comprise this view.
          * @type {Object}
-         * @property {string} title The element that contains the layer's name/label
+         * @property {string} label The element that contains the layer's name/label
+         * @property {string} visibilityToggle The element that acts like a button to
+         * switch the Layer's visibility on and off
+         * @property {string} selected The class that gets added to the view when the
+         * Layer Item is selected
+         * @property {string} hidden The class that gets added to the view when the
+         * Layer Item is not visible
          */
         classes: {
           label: 'layer-item__label',
-          selected: 'layer-item--selected'
+          visibilityToggle: 'layer-item__visibility-toggle',
+          selected: 'layer-item--selected',
+          hidden: 'layer-item--hidden',
         },
 
         /**
@@ -77,6 +85,7 @@ define(
           try {
             var events = {}
             events['click .' + this.classes.label] = 'toggleSelectionAttr';
+            events['click .' + this.classes.visibilityToggle] = 'toggleVisibleAttr';
             return events
           }
           catch (error) {
@@ -132,6 +141,11 @@ define(
             this.stopListening(this.model, 'change:selected')
             this.listenTo(this.model, 'change:selected', this.toggleHighlighting)
 
+            // Similar to above, add or remove the hidden class when the layer's
+            // visibility changes
+            this.stopListening(this.model, 'change:visible')
+            this.listenTo(this.model, 'change:visible', this.toggleHiddenStyles)
+
             return this
 
           }
@@ -167,6 +181,28 @@ define(
         },
 
         /**
+         * Sets the Layer model's visibility status attribute to true if it's false, and
+         * to false if it's true. Executed when a user clicks on the visibility toggle.
+         */
+        toggleVisibleAttr: function () {
+          try {
+            var layerModel = this.model;
+            var currentStatus = layerModel.get('visible');
+            if (currentStatus === true) {
+              layerModel.set('visible', false);
+            } else {
+              layerModel.set('visible', true);
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error selecting or unselecting a layer in a LayerItemView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
          * Highlight/emphasize this item in the Layer List when it is selected (i.e. when
          * the Layer model's 'selected' attribute is set to true). If it is not selected,
          * then remove any highlighting. This function is executed whenever the model's
@@ -187,6 +223,28 @@ define(
           catch (error) {
             console.log(
               'There was an error changing the highlighting in a LayerItemView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Add or remove styles that indicate that the layer is hidden based on what is
+         * set in the Layer model's 'visible' attribute.
+         */
+        toggleHiddenStyles : function(){
+          try {
+            var layerModel = this.model;
+            var currentStatus = layerModel.get('visible');
+            if (currentStatus === true) {
+              this.el.classList.remove(this.classes.hidden)
+            } else {
+              this.el.classList.add(this.classes.hidden)
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error changing the hidden styles in a LayerItemView' +
               '. Error details: ' + error
             );
           }

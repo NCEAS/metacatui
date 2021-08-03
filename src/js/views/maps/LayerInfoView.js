@@ -96,7 +96,8 @@ define(
             this.el.classList.add(this.className);
 
             // Insert the template into the view
-            this.$el.html(this.template(this.model.toJSON()));
+            var templateOptions = this.model ? this.model.toJSON() : {};
+            this.$el.html(this.template(templateOptions));
 
             return this
 

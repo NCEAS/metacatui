@@ -4,11 +4,21 @@
  * Defines the appearance of the view that shows an interactive 2D map or 3D globe and all
  * of the other elements it contains:
  * 
+ * - Containers
  * - Cesium (map widget)
  * - Scale Bar
  * - Toolbar
+ * - Layers (child of toolbar)
  * - Layer Details
  * - Feature Info
+ *
+ */
+
+/*****************************************************************************************
+ *
+ * Containers
+ *
+ * Top-level containers for the elements within a Map View
  *
  */
 
@@ -58,7 +68,8 @@
   bottom: 0;
 }
 
-/**
+/*****************************************************************************************
+ *
  * Scale Bar
  *
  * The legend that shows both the coordinates of the mouse and a scale bar
@@ -92,7 +103,8 @@ represents 1 unit of the given distance measurement. */
 
 .scale-bar__distance {}
 
-/**
+/*****************************************************************************************
+ *
  * Toolbar
  *
  * The toolbar contains the layer list and UI for changing map settings
@@ -145,16 +157,35 @@ represents 1 unit of the given distance measurement. */
 
 .toolbar__link-icon {}
 
-/* Layers contains information about a map's layers and is used as a toolbar section */
+/*****************************************************************************************
+ *
+ * Layers
+ *
+ * Layers contains information about a map's layers and is used as a toolbar section
+ *
+ */
 
 .layers {}
 
 .layer-list {}
 
-.layer-item {}
+/* A layer-item is one item in the layer-list */
+
+.layer-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
 
 .layer-item__label {
   cursor: pointer;
+}
+
+.layer-item__visibility-toggle:before {
+  /* use the font awesome 'eye-open' icon */
+  font-family: FontAwesome;
+  content: "\f06e";
 }
 
 /* How to style the layer item when the layer details panel is showing for this item */
@@ -163,7 +194,19 @@ represents 1 unit of the given distance measurement. */
   color: cadetblue;
 }
 
-/**
+/* How to style the layer item when the layer is hidden on the map */
+
+.layer-item--hidden {
+  opacity: 0.5;
+}
+
+.layer-item--hidden .layer-item__visibility-toggle:before {
+  /* switch to the font awesome 'eye-closed' icon */
+  content: "\f070";
+}
+
+/*****************************************************************************************
+ *
  * Layer Details
  *
  * A panel that shows details about a specific layer on a map
@@ -174,9 +217,9 @@ represents 1 unit of the given distance measurement. */
   /* Don't show the details panel unless it also has the layer-details--open class */
   display: none;
   /* TODO: the following are just temp styles for development purposes */
-  background-color: white;
-  height: 100px;
-  width: 210px;
+  background-color: azure;
+  height: auto;
+  width: 220px;
   border: 1px solid grey;
 }
 
@@ -186,11 +229,59 @@ represents 1 unit of the given distance measurement. */
 
 .layer-detail {}
 
+.layer-detail__content {
+  /* Do not display this contents of this detail section unless the open class is added */
+  display: none;
+}
+
+.layer-detail--open .layer-detail__content {
+  display: block;
+}
+
 .layer-info {}
 
 .layer-opacity {}
 
-/**
+.layer-opacity__slider {
+  min-height: 6px;
+  border-radius: var(--br-default, 0.25rem);
+  background: var(--c-neutral-3);
+  position: relative;
+}
+
+/* The shaded part of the slider that stretches from 0 to the current opacity */
+
+/* Note that the range is also styled in the main metacatui CSS file, using the range's
+other class: .ui-slider-range */
+
+.layer-opacity__range {}
+
+/* The draggable handle element */
+
+/* Note: the handle for the slider is also styled in the main metacatui CSS file, using
+  the handle's other class: .ui-slider-handle */
+
+.layer-opacity__handle {
+  /* Set the margin to half the width of the handle so that it doesn't slide outside of
+  the bar */
+  margin-left: -0.5em;
+  /* The handle contains a div with the current opacity value (class
+  layer-opacity__label). Centre it within the handle. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The element that displays the current opacity as a percentage */
+
+.layer-opacity__label {
+  font-size: 0.8em;
+  /* Show the opacity value just below the slider handle */
+  margin-top: 2.2em;
+}
+
+/*****************************************************************************************
+ *
  * Feature Info
  *
  * The box that shows more information about a feature that a user clicks
