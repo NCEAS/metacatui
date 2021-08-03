@@ -71,6 +71,11 @@ define(
               {
                 label: 'My Bing Map',
                 type: 'BingMapsImageryProvider',
+                description: 'The first pan-Arctic map of ice-wedge polygons. An ice wedge is a crack in the ground formed by a narrow or thin piece of ice that measures 3 to 4 meters in length at ground level and extends downwards into the ground up to several meters. Ice wedges are degrading with climate change, affecting watershed hydrology, and amplifying the loss of permafrost.',
+                moreInfoLink: 'https://search.dataone.org/view/https%3A%2F%2Fpasta.lternet.edu%2Fpackage%2Fmetadata%2Feml%2Fknb-lter-mcm%2F7010%2F15',
+                downloadLink: 'https://cn.dataone.org/cn/v2/resolve/https%3A%2F%2Fpasta.lternet.edu%2Fpackage%2Fdata%2Feml%2Fknb-lter-mcm%2F7010%2F15%2F1aafff5c9473045c30275cb2c839904d',
+                attribution: 'Chandi Witharana. Ice wedge polygons. 2021. File last modified on 2 Jun. 2021. 3D tiles. Retrieved from https://permafrost.arcticdata.io on 3 Jun. 2021.',
+                id: 'doi:10.6073/pasta/f76000427015642ded094d19c91b4de2',
                 options:
                 {
                   url: 'https://dev.virtualearth.net',

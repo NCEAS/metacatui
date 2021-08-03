@@ -38,13 +38,16 @@ define(
          * @name Layer#defaults
          * @property {Boolean} selected Set to true when this Layer has been selected by
          * the user in the layer list.
+         * @property {Number} opacity A number between 0 and 1 indicating the (initial)
+         * opacity of the layer on the map
         */
         defaults: function () {
           return _.extend(
             this.constructor.__super__.defaults.apply(this),
             {
               // TODO: add and document additional properties that are specific to layers
-              selected: false
+              selected: false,
+              opacity: 1
             }
           );
         },

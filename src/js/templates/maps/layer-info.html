@@ -1,0 +1,16 @@
+<% if(typeof description !== 'undefined' && description){ %>
+  <div class="layer-info__description"><%= description %></div>
+<% } %>
+<% if(typeof attribution !== 'undefined' && attribution){ %>
+  <div class="layer-info__attribution">
+    <%= attribution %>
+  </div>
+<% } %>
+<div class="layer-info__links">
+  <% if(typeof moreInfoLink !== 'undefined' && moreInfoLink ){ %>
+    <a class="layer-info__link" href="<%= moreInfoLink %>">Full details</a>
+  <% } %>
+  <% if(typeof downloadLink !== 'undefined' && downloadLink ){ %>
+    <a class="layer-info__link" href="<%= downloadLink %>">Download data</a>
+  <% } %>
+</div>

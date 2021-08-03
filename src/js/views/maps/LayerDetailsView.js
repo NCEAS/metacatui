@@ -7,14 +7,22 @@ define(
     'underscore',
     'backbone',
     'models/maps/Layer',
-    'text!templates/maps/layer-details.html'
+    'text!templates/maps/layer-details.html',
+    // Sub-Views
+    'views/maps/LayerDetailView',
+    'views/maps/LayerOpacityView',
+    'views/maps/LayerInfoView'
   ],
   function (
     $,
     _,
     Backbone,
     Layer,
-    Template
+    Template,
+    // Sub-Views
+    LayerDetailView,
+    LayerOpacityView,
+    LayerInfoView
   ) {
 
     /**
@@ -61,11 +69,41 @@ define(
          * view when the layer details view is open/expanded (not hidden)
          * @property {string} toggle The element in the template that acts as a toggle to
          * close/hide the details view
+         * @property {string} sections The container for all of the LayerDetailViews.
          */
         classes: {
           open: 'layer-details--open',
           toggle: 'layer-details__toggle',
+          sections: 'layer-details__sections'
         },
+
+        /**
+         * Configuration for a Layer Detail section to show within this Layer Details
+         * view.
+         * @typedef {Object} DetailSectionOption
+         * @property {string} label The name to display for this section
+         * @property {Backbone.View} view Any view that will render content for the Layer
+         * Detail section. This view will be passed the Layer model. The view should
+         * display information about the Layer and/or allow some aspect of the Layer's
+         * appearance to be edited - e.g. a LayerInfoView or a LayerOpacityView.
+         */
+
+        /**
+         * A list of sections to render within this view that give details about the
+         * Layer, or allow editing of the Layer appearance. Each section will have a title
+         * and its content will be collapsible.
+         * @type {DetailSectionOption[]}
+         */
+        sections: [
+          {
+            label: 'Opacity',
+            view: LayerOpacityView
+          },
+          {
+            label: 'Info & Data',
+            view: LayerInfoView
+          }
+        ],
 
         /**
         * Creates an object that gives the events this view will listen to and the
@@ -130,6 +168,20 @@ define(
 
             // Ensure the view's main element has the given class name
             this.el.classList.add(this.className);
+
+            var sectionsContainer = this.el.querySelector('.' + this.classes.sections)
+
+            // Render each section in the Details panel
+            this.sections.forEach(function (section) {
+              var detailSection = new LayerDetailView({
+                label: section.label,
+                contentView: section.view,
+                model: view.model
+              })
+              sectionsContainer.append(detailSection.el)
+              detailSection.render()
+            })
+
             return this
 
           }

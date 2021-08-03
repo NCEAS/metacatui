@@ -19,8 +19,9 @@ define(
 
     /**
     * @class LayerInfoView
-    * @classdesc A view of a ... TODO
-    * @classcategory Views/Maps TODO
+    * @classdesc A view that shows some of the basic info from a Layer model, like the
+    * description, attribution, and link to more information.
+    * @classcategory Views/Maps
     * @name LayerInfoView
     * @extends Backbone.View
     * @screenshot maps/LayerInfoView.png // TODO: add screenshot
@@ -91,11 +92,11 @@ define(
             // Save a reference to this view
             var view = this;
 
-            // Insert the template into the view
-            this.$el.html(this.template({}));
-
             // Ensure the view's main element has the given class name
             this.el.classList.add(this.className);
+
+            // Insert the template into the view
+            this.$el.html(this.template(this.model.toJSON()));
 
             return this
 
