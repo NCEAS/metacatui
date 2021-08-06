@@ -220,9 +220,10 @@ define(
          * @param {Number} newOpacity A number between 0 and 1 indicating the new opacity
          * value for the Layer model
          */
-        updateLabel: function (newOpacity){
+        updateLabel: function (newOpacity) {
+         
           try {
-            if (!this.opacityLabel || !newOpacity || typeof newOpacity !== 'number') {
+            if (!this.opacityLabel || (typeof newOpacity === 'undefined') || typeof newOpacity !== 'number') {
               return
             }
             var opacityPercent = Math.round(newOpacity * 100);

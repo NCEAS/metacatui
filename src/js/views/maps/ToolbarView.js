@@ -134,7 +134,7 @@ define(
         sections: [
           {
             label: 'Layers',
-            icon: 'icon-name', // TODO
+            icon: 'map-marker',
             view: LayersView,
             viewOptions: {}
           }
@@ -288,10 +288,11 @@ define(
 
             // Create a container, label, and, icon
             var link = document.createElement('div')
-            var title = document.createElement('h6')
-            var icon = document.createElement('div')
+            var title = document.createElement('div')
+            var icon = document.createElement('i')
 
-            // TODO: Insert the icon
+            // Insert the icon
+            icon.className = 'icon-' + sectionOption.icon;
 
             // Add the relevant classes
             link.classList.add(this.classes.link)

@@ -230,7 +230,8 @@ define(
 
         /**
          * Add or remove styles that indicate that the layer is hidden based on what is
-         * set in the Layer model's 'visible' attribute.
+         * set in the Layer model's 'visible' attribute. Executed whenever the 'visible'
+         * attribute changes.
          */
         toggleHiddenStyles : function(){
           try {

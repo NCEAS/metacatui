@@ -2401,6 +2401,11 @@ dt {
   overflow: hidden;
 }
 
+.PortalView #Content {
+  /* we use a minimal footer in the portal, so only a small gap is needed */
+  padding-bottom: 3rem;
+}
+
 /* ----- */
 /* unset styles set by the base metacatui.css/bootstrap that conflict with d1website styles */
 footer {

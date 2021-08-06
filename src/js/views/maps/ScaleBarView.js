@@ -120,9 +120,9 @@ define(
               view.subElements[element] = document.querySelector('.' + className)
             }
 
-            // TODO
-            this.updateCoordinates("", "", "")
-            this.updateScale(0, "")
+            // TODO: remove example data
+            this.updateCoordinates("45.504741", "-73.597808", "120m")
+            this.updateScale(70, "2km")
 
             return this
 
@@ -164,14 +164,15 @@ define(
 
         /**
          * 
-         * @param {number} length The length of the bar, in pixels
+         * @param {number} width The length of the bar, in pixels
          * @param {number} distance The distance that the bar represents, in meters
          */
-        updateScale: function (length, distance) {
+        updateScale: function (width, distance) {
           try {
             // TODO: Get the rounded distance with units to show
             this.subElements.distance.textContent = distance;
-            this.subElements.bar.setAttribute('style', 'length:'+length+'px;');
+            // this.subElements.bar.setAttribute('style', 'width:'+length+'px;');
+            this.subElements.bar.style.width = width + 'px';
           }
           catch (error) {
             console.log(

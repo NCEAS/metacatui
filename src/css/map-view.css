@@ -16,6 +16,58 @@
 
 /*****************************************************************************************
  *
+ * Common classes
+ *
+ * Unlike the rest of the Map View styles, these classes do not follow the BEM naming
+ * convention. This is because these styles are used in various elements throughout the map
+ * view. If we switch to using SASS, then these class definitions can instead become SASS
+ * @mixins, and we can @include them where required.
+ *
+ */
+
+:root {
+  /* COLOURS */
+  --map-col-bkg: #111827F2;
+  /* grey 900 */
+  --map-col-bkg-active: #374151;
+  /* grey 600 */
+  --map-col-buttons: #4B5563F2;
+  /* grey 700 */
+  --map-col-text: #F9FAFB;
+  --map-col-highlight: var(--portal-primary-color);
+  /* SIZING: */
+  --map-size-toolbar-link: 2.2rem;
+  --map-border-radius: 0.5rem;
+  --map-width-toolbar: 21rem;
+  /* SHADOWS */
+  --map-shadow-md: 0 1px 9px -1px rgba(0, 0, 0, 0.2), 0 1px 2px 0px rgba(0, 0, 0, 0.5);
+}
+
+.map-view__button {
+  /* override default button styles */
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1.15;
+  margin: 0;
+  overflow: visible;
+  text-transform: none;
+  -webkit-appearance: button;
+  border: 0;
+  border-radius: var(--map-border-radius);
+  background: var(--map-col-buttons);
+  color: var(--map-col-text);
+  white-space: nowrap;
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+}
+
+.map-view__button:hover {
+  filter: brightness(1.2);
+}
+
+/*****************************************************************************************
+ *
  * Containers
  *
  * Top-level containers for the elements within a Map View
@@ -27,11 +79,15 @@
 .map-view {
   position: relative;
   height: 100%;
+  min-height: 73vh;
   width: 100%;
-  /* TODO: remove this temporary style */
-  min-height: 60vh;
   display: grid;
   justify-content: center;
+  box-sizing: border-box;
+}
+
+.map-view * {
+  box-sizing: inherit;
 }
 
 /* The containers for the elements within the Map View */
@@ -76,11 +132,32 @@
  *
  */
 
-.scale-bar {}
+.scale-bar {
+  width: max-content;
+  min-width: 12rem;
+  min-height: 2rem;
+  background: var(--map-col-bkg);
+  border-radius: var(--map-border-radius);
+  color: var(--map-col-text);
+  opacity: 0.7;
+  font-size: 0.8rem;
+  padding: 0.18rem 0.8rem;
+  display: grid;
+  grid-template-rows: 100%;
+  grid-template-columns: auto auto;
+  gap: 1rem;
+  align-items: center;
+}
 
 /* __coordinates contains __longitude, __latitude, and __elevation */
 
-.scale-bar__coordinates {}
+.scale-bar__coordinates {
+  display: grid;
+  grid-template-rows: 100%;
+  grid-template-columns: auto auto auto;
+  gap: 0.5rem;
+  align-items: center;
+}
 
 /* The elements that contain the current coordinates */
 
@@ -92,12 +169,21 @@
 
 /* The __scale element contains __bar and __distance */
 
-.scale-bar__scale {}
+.scale-bar__scale {
+  display: grid;
+  grid-template-rows: 100%;
+  grid-template-columns: auto auto;
+  gap: 0.5rem;
+  align-items: center;
+}
 
 /* The length of the __bar element is set dynamically in ScaleBarView. It's length
 represents 1 unit of the given distance measurement. */
 
-.scale-bar__bar {}
+.scale-bar__bar {
+  height: 6px;
+  background-color: var(--map-col-text);
+}
 
 /* The elements that contains the distance measurement */
 
@@ -114,48 +200,109 @@ represents 1 unit of the given distance measurement. */
 .toolbar {
   display: grid;
   grid-template-columns: auto auto;
+  color: var(--map-col-text);
 }
 
-.toolbar__links {}
+.toolbar__toggle {
+  width: 2rem;
+  align-self: flex-end;
+  padding: 0.4rem;
+  font-size: 1.3rem;
+  background-color: transparent;
+  opacity: 0.6;
+  margin-bottom: 0.5rem;
+  margin-right: -0.3rem;
+}
+
+.toolbar__links {
+  height: min-content;
+  background-color: var(--map-col-bkg);
+  border-radius: var(--map-border-radius);
+  margin: 0.5rem
+}
 
 .toolbar__all-content {
   /* TODO: temp style: */
   background-color: whitesmoke;
+  background-color: var(--map-col-bkg);
+  width: var(--map-width-toolbar);
+  padding: 0.8rem 1rem;
+  box-shadow: var(--map-shadow-md);
+  flex-direction: column;
   /* Don't display the content unless the toolbar is open. The outermost element, with
-  class .toolbar, is not set to hidden so that the links (tabs) are still visible when the
+  class .toolbar, is not hidden so that the links (tabs) are still visible when the
   toolbar is closed */
   display: none;
 }
 
 .toolbar--open .toolbar__all-content {
-  display: block;
+  display: flex;
 }
 
 .toolbar__content {
   /* TODO: remove temp styles */
   height: 100%;
   width: 100%;
+  justify-content: center;
   /* hide unless the content section is active */
   display: none;
 }
 
 .toolbar__content--active {
-  display: block;
+  display: flex;
 }
 
 .toolbar__link {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
-  height: 4rem;
-  width: 4rem;
-  background-color: whitesmoke;
-  /* temp */
+  height: var(--map-size-toolbar-link);
+  width: var(--map-size-toolbar-link);
+  background-color: var(--map-col-bkg);
+  border-radius: var(--map-border-radius);
+  padding: 0.2rem;
+  margin: 0.4rem;
 }
 
-.toolbar__link--active {}
+.toolbar__link:hover {
+  background-color: var(--map-col-bkg-active)
+}
 
-.toolbar__link-title {}
+.toolbar__link--active {
+  background-color: var(--map-col-highlight)
+}
 
-.toolbar__link-icon {}
+.toolbar__link--active:hover {
+  background-color: var(--map-col-highlight)
+}
+
+.toolbar__link-title {
+  position: absolute;
+  right: calc(-100% - 3rem);
+  color: var(--map-col-text);
+  margin-top: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  /* don't show the link title until the link is hovered */
+  display: none;
+}
+
+.toolbar__link:hover .toolbar__link-title {
+  display: block;
+  border-radius: var(--map-border-radius);
+  background-color: var(--map-col-bkg);
+  padding: 0.2rem 0.6rem
+}
+
+.toolbar__link-icon {
+  font-size: 1.4rem;
+  line-height: 100%;
+}
 
 /*****************************************************************************************
  *
@@ -167,7 +314,12 @@ represents 1 unit of the given distance measurement. */
 
 .layers {}
 
-.layer-list {}
+.layer-list {
+  display: grid;
+  grid-template-columns: 100%;
+  grid-template-rows: auto;
+  gap: 0.8rem;
+}
 
 /* A layer-item is one item in the layer-list */
 
@@ -175,11 +327,25 @@ represents 1 unit of the given distance measurement. */
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  align-items: center;
   width: 100%;
 }
 
 .layer-item__label {
   cursor: pointer;
+  font-size: 1.04rem;
+  font-weight: 500;
+  letter-spacing: 0.015em;
+  margin-right: 1rem;
+}
+
+.layer-item__label:hover {
+  color: var(--map-col-highlight);
+}
+
+.layer-item__visibility-toggle {
+  background: none;
+  opacity: 0.85;
 }
 
 .layer-item__visibility-toggle:before {
@@ -188,16 +354,21 @@ represents 1 unit of the given distance measurement. */
   content: "\f06e";
 }
 
+.layer-item__visibility-toggle:hover {
+  opacity: 0.5;
+}
+
 /* How to style the layer item when the layer details panel is showing for this item */
 
 .layer-item--selected .layer-item__label {
-  color: cadetblue;
+  color: var(--map-col-highlight);
+  font-weight: 700;
 }
 
 /* How to style the layer item when the layer is hidden on the map */
 
 .layer-item--hidden {
-  opacity: 0.5;
+  opacity: 0.3;
 }
 
 .layer-item--hidden .layer-item__visibility-toggle:before {
@@ -214,39 +385,154 @@ represents 1 unit of the given distance measurement. */
  */
 
 .layer-details {
+  width: var(--map-width-toolbar);
+  border-top-right-radius: var(--map-border-radius);
+  border-top-left-radius: var(--map-border-radius);
+  padding: 0.4rem 0.8rem;
+  background-color: var(--map-col-bkg-active);
+  color: var(--map-col-text);
+  box-shadow: var(--map-shadow-md);
+  grid-template-columns: auto min-content;
+  grid-template-rows: min-content auto;
+  gap: 1rem;
+  align-items: center;
   /* Don't show the details panel unless it also has the layer-details--open class */
   display: none;
-  /* TODO: the following are just temp styles for development purposes */
-  background-color: azure;
-  height: auto;
-  width: 220px;
-  border: 1px solid grey;
 }
 
 .layer-details--open {
-  display: block;
+  display: grid;
 }
 
-.layer-detail {}
+.layer-details__label {
+  /* the important is needed to overwrite more specific styles set on portal title tags */
+  color: var(--map-col-text) !important;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+  width: 100%;
+  font-weight: 500;
+  font-size: 0.9rem;
+  opacity: 60%;
+}
+
+.layer-details__toggle {
+  padding: 0.4rem;
+  font-size: 1.3rem;
+  background-color: transparent;
+  opacity: 0.6;
+}
+
+.layer-details__sections {
+  display: grid;
+  grid-template-rows: auto;
+  grid-template-columns: 100%;
+  gap: 0.5rem;
+  grid-column: 1 / 3;
+}
+
+.layer-detail {
+  display: grid;
+  grid-template-columns: auto 2rem;
+  grid-template-rows: auto auto;
+  align-items: center;
+}
+
+.layer-detail__label {
+  /* the important is needed to overwrite more specific styles set on portal title tags */
+  color: var(--map-col-text) !important;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  width: 100%;
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1;
+}
 
 .layer-detail__content {
+  grid-column: 1 / 3;
   /* Do not display this contents of this detail section unless the open class is added */
   display: none;
+  align-items: center;
+  justify-content: center;
+  margin: 1rem 0;
 }
 
 .layer-detail--open .layer-detail__content {
-  display: block;
+  display: flex;
 }
 
-.layer-info {}
+.layer-detail__toggle {
+  --toggle-size: 1.7rem;
+  display: block;
+  width: var(--toggle-size);
+  height: var(--toggle-size);
+  /* background: none; */
+}
 
-.layer-opacity {}
+.layer-detail__toggle:before {
+  /* use the font awesome chevron icon */
+  display: block;
+  font-family: FontAwesome;
+  content: "\f078";
+  transform: rotate(0deg);
+  transition-duration: 0.5s;
+  transition-property: transform;
+  font-size: 0.8rem;
+}
+
+.layer-detail--open .layer-detail__toggle:before {
+  transform: rotate(180deg);
+}
+
+.layer-info {
+  display: grid;
+  grid-template-columns: 100%;
+  grid-template-rows: auto;
+  gap: 1.2rem;
+}
+
+.layer-info__description {
+  font-size: 0.91rem;
+  line-height: 1.33;
+}
+
+.layer-info__attribution {
+  font-size: 0.8rem;
+  line-height: 1.3;
+  opacity: 0.8;
+}
+
+.layer-info__links {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+}
+
+.layer-info__link {
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  font-size: 0.9rem;
+}
+
+.layer-opacity {
+  min-height: 3rem;
+  display: grid;
+  align-content: center;
+  width: 90%;
+}
 
 .layer-opacity__slider {
   min-height: 6px;
-  border-radius: var(--br-default, 0.25rem);
+  border-radius: var(--map-border-radius);
   background: var(--c-neutral-3);
   position: relative;
+}
+
+.layer-opacity__range {
+  border-radius: var(--map-border-radius);
 }
 
 /* The shaded part of the slider that stretches from 0 to the current opacity */
@@ -264,7 +550,7 @@ other class: .ui-slider-range */
 .layer-opacity__handle {
   /* Set the margin to half the width of the handle so that it doesn't slide outside of
   the bar */
-  margin-left: -0.5em;
+  margin-left: -1em;
   /* The handle contains a div with the current opacity value (class
   layer-opacity__label). Centre it within the handle. */
   display: flex;
@@ -277,7 +563,7 @@ other class: .ui-slider-range */
 .layer-opacity__label {
   font-size: 0.8em;
   /* Show the opacity value just below the slider handle */
-  margin-top: 2.2em;
+  margin-top: 2.5em;
 }
 
 /*****************************************************************************************
@@ -288,4 +574,17 @@ other class: .ui-slider-range */
  *
  */
 
-.feature-info {}
+.feature-info {
+  border-top-right-radius: var(--map-border-radius);
+  border-top-left-radius: var(--map-border-radius);
+  padding: 0.4rem 0.8rem;
+  background-color: var(--map-col-bkg-active);
+  color: var(--map-col-text);
+  box-shadow: var(--map-shadow-md);
+  grid-template-columns: auto min-content;
+  grid-template-rows: min-content auto;
+  gap: 1rem;
+  align-items: center;
+  /* Don't show the details panel unless it also has the layer-details--open class */
+  /* display: none; */
+}
