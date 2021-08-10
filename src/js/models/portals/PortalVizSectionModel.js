@@ -2,9 +2,10 @@
 define(["jquery",
         "underscore",
         "backbone",
-        "models/portals/PortalSectionModel"
+  "models/portals/PortalSectionModel",
+  "models/maps/Map"
     ],
-    function($, _, Backbone, PortalSectionModel) {
+  function ($, _, Backbone, PortalSectionModel, Map) {
 
       /**
        * @class PortalVizSectionModel
@@ -59,6 +60,19 @@ define(["jquery",
             var vizTypes = this.get("supportedVisualizationTypes");
             if( Array.isArray(vizTypes) && vizTypes.includes(vizType) ){
               modelJSON.visualizationType = vizType;
+            }
+
+            // Find the map configuration JSON in the section option, if there is one.
+            if (vizType == "cesium") {
+              var mapConfigNode = allOptions.find("optionName:contains(mapConfig)");
+              var mapConfig = {};
+              if (mapConfigNode.length) {
+                mapConfig = mapConfigNode.first().siblings("optionValue").text();
+                if (mapConfig && mapConfig.length) {
+                  mapConfig = JSON.parse(mapConfig)
+                }
+              }
+              modelJSON.mapModel = new Map(mapConfig)
             }
 
           }

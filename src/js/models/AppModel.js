@@ -1965,14 +1965,51 @@ define(['jquery', 'underscore', 'backbone'],
        * anywhere else in the app.
        */
       addCSS: function (css, id) {
+        try {
         if (!MetacatUI.loadedCSS) {
           MetacatUI.loadedCSS = []
         }
         if (!MetacatUI.loadedCSS.includes(id)) {
           MetacatUI.loadedCSS.push(id);
           var style = document.createElement('style');
+            style.id = id;
           style.appendChild(document.createTextNode(css));
           document.querySelector("head").appendChild(style);
+          }
+        }
+        catch (error) {
+          console.log(
+            'There was an error adding CSS to the app' +
+            '. Error details: ' + error
+          );
+        }
+      },
+
+      /**
+       * Remove CSS from the app that was added using the {@link AppModel#addCSS}
+       * function.
+       * @param {string} id A unique ID for the CSS styles which has not been used
+       * anywhere else in the app. The same ID used to add the CSS with
+       * {@link AppModel#addCSS}
+       */
+      removeCSS: function (id) {
+        try {
+          if (!MetacatUI.loadedCSS) {
+            MetacatUI.loadedCSS = []
+          }
+          if (MetacatUI.loadedCSS.includes(id)) {
+            MetacatUI.loadedCSS = MetacatUI.loadedCSS.filter(e => e !== id);
+            var sheet = document.querySelector("head #" + id)
+            if (sheet) {
+              sheet.remove()
+            }
+          }
+        }
+        catch (error) {
+          console.log(
+            'There was an error removing CSS from the app' +
+            '. Error details: ' + error
+          );
         }
       }
 

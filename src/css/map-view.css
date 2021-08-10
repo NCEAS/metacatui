@@ -312,7 +312,9 @@ represents 1 unit of the given distance measurement. */
  *
  */
 
-.layers {}
+.layers {
+  width: 100%;
+}
 
 .layer-list {
   display: grid;
@@ -529,6 +531,7 @@ represents 1 unit of the given distance measurement. */
   border-radius: var(--map-border-radius);
   background: var(--c-neutral-3);
   position: relative;
+  background-color: var(--map-col-buttons);
 }
 
 .layer-opacity__range {
@@ -556,6 +559,7 @@ other class: .ui-slider-range */
   display: flex;
   align-items: center;
   justify-content: center;
+  border: none;
 }
 
 /* The element that displays the current opacity as a percentage */

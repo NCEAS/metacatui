@@ -93,7 +93,9 @@ define(["jquery",
                     mapModel: gmaps ? new MapModel() : null,
                     optionNames: ["primaryColor", "secondaryColor", "accentColor",
                             "mapZoomLevel", "mapCenterLatitude", "mapCenterLongitude",
-                            "mapShapeHue", "hideData", "hideMetrics", "hideMembers", "pageOrder"],
+                            "mapShapeHue", "hideData", "hideMetrics", "hideMembers",
+                            "pageOrder", "layout", "theme"
+                    ],
                     // Portal view colors, as specified in the portal document options
                     primaryColor: MetacatUI.appModel.get("portalDefaults").primaryColor || "#006699",
                     secondaryColor: MetacatUI.appModel.get("portalDefaults").secondaryColor || "#009299",
@@ -103,7 +105,9 @@ define(["jquery",
                     accentColorRGB: null,
                     primaryColorTransparent: MetacatUI.appModel.get("portalDefaults").primaryColorTransparent || "rgba(0, 102, 153, .7)",
                     secondaryColorTransparent: MetacatUI.appModel.get("portalDefaults").secondaryColorTransparent || "rgba(0, 146, 153, .7)",
-                    accentColorTransparent: MetacatUI.appModel.get("portalDefaults").accentColorTransparent || "rgba(248, 148, 6, .7)"
+                    accentColorTransparent: MetacatUI.appModel.get("portalDefaults").accentColorTransparent || "rgba(248, 148, 6, .7)",
+                    theme: null,
+                    layout: null
                 });
             },
 
@@ -641,8 +645,10 @@ define(["jquery",
 
                 });
 
-                // Parse the options
-                $(portalNode).find("option").each(function(i, option) {
+                // Parse the options. Use children() and not find() because we only want
+                // option nodes that are direct children of the portal node. Option nodes
+                // can also be found within section nodes.
+                $(portalNode).children("option").each(function(i, option) {
 
                     var optionName = $(option).find("optionName")[0].textContent,
                         optionValue = $(option).find("optionValue")[0].textContent;

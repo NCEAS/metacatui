@@ -340,6 +340,9 @@ define(["jquery",
             }
           }
 
+          // Check for theme/layout settings and add the required files
+          this.addTheming();
+
           // Insert the overall portal template
           this.$el.html(this.template(this.model.toJSON()));
 
@@ -486,6 +489,50 @@ define(["jquery",
           MetacatUI.appView.prevScrollpos = window.pageYOffset;
           $(window).on("scroll", "", undefined, this.handleScroll);
 
+        },
+
+        /**
+         * Checks the portal model for theme or layout options. If there are any, and if
+         * they are supported, then add the associated CSS.
+         */
+        addTheming: function(){
+          try {
+            // Check for theme and layout settings.
+            var theme = this.model.get("theme");
+            var layout = this.model.get("layout");
+            // TODO: make supported themes an app model config option?
+            var supportedThemes = ["dark"];
+            var supportedLayouts = ["panels"];
+            // We must remove theme/layout CSS when the user navigates away from the
+            // portal in onClose(). To do this, we need to keep track of which CSS is
+            // added during this step.
+            var view = this
+            view.addedThemeCSS = []
+            if (theme && supportedThemes.includes(theme)) {
+              require(
+                ["text!" + MetacatUI.root + "/css/portal-themes/" + theme + ".css"],
+                function (ThemeCss) {
+                  var cssID = "portal-theme-" + theme;
+                  MetacatUI.appModel.addCSS(ThemeCss, cssID);
+                  view.addedThemeCSS.push(cssID)
+                })
+            }
+            if (layout && supportedLayouts.includes(layout)) {
+              require(
+                ["text!" + MetacatUI.root + "/css/portal-layouts/" + layout + ".css"],
+                function (ThemeCss) {
+                  var cssID = "portal-layout-" + layout;
+                  MetacatUI.appModel.addCSS(ThemeCss, cssID);
+                  view.addedThemeCSS.push(cssID)
+                })
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error adding theme and/or layout styles in a PortalView' +
+              '. Error details: ' + error
+            );
+          }
         },
 
         /**
@@ -978,6 +1025,13 @@ define(["jquery",
           _.invoke(this.subviews, "remove");
 
           this.subviews = new Array();
+
+          // Remove any CSS that was added for the theme or layout
+          if (this.addedThemeCSS && this.addedThemeCSS.length) {
+            this.addedThemeCSS.forEach(function (cssID) {
+              MetacatUI.appModel.removeCSS(cssID);
+            });
+          }
 
           //Remove all listeners
           this.stopListening();

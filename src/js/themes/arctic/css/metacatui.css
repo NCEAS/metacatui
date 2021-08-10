@@ -1750,7 +1750,7 @@ MDQ items
     .ui-slider-handle{
     	border: 1px solid #999999;
     	background-color: #EFEFEF;
-    	top: -0.4em;
+  top: calc(50% - 0.5em);
     	position: absolute;
     	z-index: 2;
     	width: 1em;
