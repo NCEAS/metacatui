@@ -27,7 +27,7 @@
 
 :root {
   /* COLOURS */
-  --map-col-bkg: #111827F2;
+  --map-col-bkg: #111827;
   /* grey 900 */
   --map-col-bkg-active: #374151;
   /* grey 600 */
@@ -222,8 +222,6 @@ represents 1 unit of the given distance measurement. */
 }
 
 .toolbar__all-content {
-  /* TODO: temp style: */
-  background-color: whitesmoke;
   background-color: var(--map-col-bkg);
   width: var(--map-width-toolbar);
   padding: 0.8rem 1rem;
