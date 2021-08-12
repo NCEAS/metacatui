@@ -105,23 +105,23 @@ define(["jquery",
             var awards = this.model.get("awards") || "";
 
             //Add a container element
-            if(acknowledgements || awards){
+            if(acknowledgements || awards.length){
               var ack_div = $('<div class="well awards-info"></div>');
               this.$el.append(ack_div);
+
+              //Add the awards
+              if( awards.length ) {
+
+                  ack_div.append(this.awardsTemplate({awards: awards}));
+              }
+
+              //Add the acknowledgments
+              if( acknowledgements ) {
+
+                ack_div.append(this.acknowledgementsTemplate(acknowledgements.toJSON()));
+
+              }
             }
-
-            //Add the awards
-            if( awards ) {
-
-                ack_div.append(this.awardsTemplate({awards: awards}));
-            };
-
-            //Add the acknowledgments
-            if( acknowledgements ) {
-
-              ack_div.append(this.acknowledgementsTemplate(acknowledgements.toJSON()));
-
-            };
 
             this.$el.data("view", this);
 
