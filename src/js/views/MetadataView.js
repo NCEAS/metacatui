@@ -12,7 +12,7 @@ define(['jquery',
   'models/SolrResult',
   'models/metadata/ScienceMetadata',
   'models/MetricsModel',
-  'models/Utilities',
+  'common/Utilities',
   'views/DownloadButtonView',
   'views/ProvChartView',
   'views/MetadataIndexView',
@@ -51,6 +51,7 @@ define(['jquery',
     * @classcategory Views
     * @extends Backbone.View
     * @constructor
+    * @screenshot views/MetadataView.png
     */
     var MetadataView = Backbone.View.extend(
     /** @lends MetadataView.prototype */{
@@ -222,8 +223,8 @@ define(['jquery',
               //If there is only one metadata pid that documents this data object, then
               // get that metadata model for this view.
               if (isDocBy && isDocBy.length == 1) {
-                this.pid = _.first(isDocBy);
-                this.getModel(this.pid);
+                this.navigateWithFragment(_.first(isDocBy), this.pid);
+
                 return;
               }
               //If more than one metadata doc documents this data object, it is most likely
@@ -274,15 +275,12 @@ define(['jquery',
                       // TODO: Support navigation to multiple metadata docs. This should be a rare occurence, but
                       // it is possible that more than one metadata version chain documents a data object, and we need
                       // to show the user that the data is involved in multiple datasets.
-                      view.pid = latestVersions[0];
-                      view.getModel(latestVersions[0]);
+                      view.navigateWithFragment(latestVersions[0], view.pid);
                     }
                     //If a latest version wasn't found, which should never happen, but just in case, default to the
                     // last metadata pid in the isDocumentedBy field (most liekly to be the most recent since it was indexed last).
                     else {
-                      var fallbackPid = _.last(isDocBy);
-                      view.pid = fallbackPid;
-                      view.getModel(fallbackPid);
+                      view.navigateWithFragment(_.last(isDocBy), view.pid)
                     }
 
                   });
@@ -1462,10 +1460,10 @@ define(['jquery',
           if (MetacatUI.appModel.get("displayDatasetMetrics")) {
             var buttonToolbar = this.$(".metrics-container");
 
-            if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
-              var citationsMetricView = new MetricView({ metricName: 'Citations', model: metricsModel, pid: this.pid });
-              buttonToolbar.append(citationsMetricView.render().el);
-              this.subviews.push(citationsMetricView);
+            if (MetacatUI.appModel.get("displayDatasetDownloadMetric")) {
+              var dwnldsMetricView = new MetricView({ metricName: 'Downloads', model: metricsModel, pid: this.pid });
+              buttonToolbar.append(dwnldsMetricView.render().el);
+              this.subviews.push(dwnldsMetricView);
             }
 
             if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
@@ -2507,6 +2505,28 @@ define(['jquery',
           }
         },
 
+        /**
+         * Navigate to a new /view URL with a fragment
+         *
+         * Used in getModel() when the pid originally passed into MetadataView
+         * is not a metadata PID but is, instead, a data PID. getModel() does
+         * the work of finding an appropriate metadata PID for the data PID and
+         * this method handles re-routing to the correct URL.
+         *
+         * @param {string} metadata_pid - The new metadata PID
+         * @param {string} data_pid - Optional. A data PID that's part of the
+         *   package metadata_pid exists within.
+         */
+        navigateWithFragment: function (metadata_pid, data_pid) {
+          var next_route = "view/" + encodeURIComponent(metadata_pid);
+
+          if (typeof data_pid === "string" && data_pid.length > 0) {
+            next_route += "#" + encodeURIComponent(data_pid);
+          }
+
+          MetacatUI.uiRouter.navigate(next_route, { trigger: true });
+        },
+
         closePopovers: function (e) {
           //If this is a popover element or an element that has a popover, don't close anything.
           //Check with the .classList attribute to account for SVG elements
@@ -2758,6 +2778,9 @@ define(['jquery',
           // Dataset/description
           if (model.get("abstract")) {
             elJSON.description = model.get("abstract");
+          } else {
+            var datasets_url = "https://dataone.org/datasets/" + encodeURIComponent(model.get("id"));
+            elJSON.description = 'No description is available. Visit ' + datasets_url + ' for complete metadata about this dataset.';
           }
 
           // Dataset/keywords
@@ -2792,26 +2815,26 @@ define(['jquery',
             script.text = JSON.stringify(json);
           }
         },
-        
+
         /**
          * Generate a Schema.org/identifier from the model's id
-         * 
+         *
          * Tries to use the PropertyValue pattern when the identifier is a DOI
          * and falls back to a Text value otherwise
-         * 
-         * @param {string} identifier - The raw identifier 
+         *
+         * @param {string} identifier - The raw identifier
          */
         generateSchemaOrgIdentifier: function (identifier) {
           if (!this.model.isDOI()) {
             return identifier;
           }
-          
+
           var doi = this.getCanonicalDOIIRI(identifier);
-          
+
           if (!doi) {
             return identifier;
           }
-          
+
           return {
             "@type": "PropertyValue",
             "propertyID": "https://registry.identifiers.org/registry/doi",
@@ -2819,7 +2842,7 @@ define(['jquery',
             "url": doi
           }
         },
-          
+
         /**
          * Generate a Schema.org/Place/geo from bounding coordinates
          *
@@ -2883,7 +2906,7 @@ define(['jquery',
          *      -105.01621,
          *      39.57422
          * ]}
-    
+
         */
         generateGeoJSONPoint: function (north, east) {
           var preamble = "{\"type\":\"Point\",\"coordinates\":",
@@ -2968,14 +2991,20 @@ define(['jquery',
           var title = this.model.get("title"),
             authors = this.model.get("origin"),
             publisher = this.getPublisherText(),
-            date = new Date(this.getDatePublishedText()).getUTCFullYear().toString();
+            date = new Date(this.getDatePublishedText()).getUTCFullYear().toString(),
+            isDOI = this.model.isDOI(this.model.get("id")),
+            id = this.model.get("id"),
+            abstract = this.model.get("abstract");
 
           // Generate HTML strings from each template
           var hwpt = this.metaTagsHighwirePressTemplate({
             title: title,
             authors: authors,
             publisher: publisher,
-            date: date
+            date: date,
+            isDOI: isDOI,
+            id: id,
+            abstract
           });
 
           // Clear any that are already in the document.
@@ -2984,9 +3013,18 @@ define(['jquery',
           $("meta[name='citation_author']").remove();
           $("meta[name='citation_publisher']").remove();
           $("meta[name='citation_date']").remove();
+          $("meta[name='citation_doi']").remove();
+          $("meta[name='citation_abstract']").remove();
 
           // Insert
           document.head.insertAdjacentHTML("beforeend", hwpt);
+
+          // Update Zotero
+          // https://www.zotero.org/support/dev/exposing_metadata#force_zotero_to_refresh_metadata
+          document.dispatchEvent(new Event('ZoteroItemUpdated', {
+            bubbles: true,
+            cancelable: true
+          }));
         },
 
         createAnnotationViews: function () {
@@ -2999,7 +3037,6 @@ define(['jquery',
                 el: annoEl
               });
               viewRef.subviews.push(newView);
-              newView.render();
             });
           }
           catch (e) {

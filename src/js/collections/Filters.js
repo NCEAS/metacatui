@@ -32,7 +32,7 @@ define([
         * Function executed whenever a new Filters collection is created.
         * @param {Filter|BooleanFilter|ChoiceFilter|DateFilter|NumericFilter|ToggleFilter|FilterGroup[]} models -
         * Array of filter or filter group models to add to this creation
-        * @param {Object} [options] - 
+        * @param {Object} [options] -
         * @property {boolean} isUIFilterType - Set to true to indicate that these filters
         * or filterGroups are part of a UIFilterGroup (aka custom Portal search filter).
         * Otherwise, it's assumed that this model is in a Collection model definition.
@@ -134,9 +134,9 @@ define([
          *  @return {JSON} The result of the parsed XML, in JSON.
         */
         parse: function (objectDOM, isUIFilterType) {
-          
+
           var filters = this;
-          
+
           $(objectDOM).children().each(function (i, filterNode) {
             filters.add({
               objectDOM: filterNode,
@@ -150,7 +150,7 @@ define([
         /**
          * Builds the query string to send to the query engine. Iterates over each filter
          * in the collection and adds to the query string.
-         * 
+         *
          * @param {string} [operator=AND] The operator to use to combine multiple filters in this filter group. Must be AND or OR.
          * @return {string} The query string to send to Solr
          */
@@ -222,7 +222,7 @@ define([
           return completeQuery;
 
         },
-        
+
         /**
          * Searches the Filter models in this collection and returns any that have at
          * least one field that matches any of the ID query fields, such as by id, seriesId, or the isPartOf relationship.
@@ -271,7 +271,7 @@ define([
             }
             //Start an array to contain the query fragments
             var groupQueryFragments = [];
-  
+
             //For each Filter in this group, get the query string
             _.each(filterModels, function (filterModel) {
               // Get the Solr query string from this model. Pass on the group operator so
@@ -283,7 +283,7 @@ define([
                 groupQueryFragments.push(filterQuery);
               }
             }, this);
-            
+
             //Join this group's query fragments with an OR operator
             if (groupQueryFragments.length) {
               var queryString = groupQueryFragments.join("%20" + operator + "%20");
@@ -436,34 +436,37 @@ define([
         },
 
         /**
-         * removeEmptyFilters - Remove filters from the collection that are
+         * Remove filters from the collection that are
          * lacking fields, values, and in the case of a numeric filter,
          * a min and max value.
          * @param {boolean} [recursive=false] - Set to true to also remove empty filters
          * from within any and all nested filterGroups.
          */
-        removeEmptyFilters: function (recursive = false) {
+        removeEmptyFilters: function(recursive = false){
+
           try {
             var toRemove = this.difference(this.getNonEmptyFilters());
             this.remove(toRemove);
+
             if (recursive){
               var nestedGroups = this.filter(function (filterModel) {
-                return filterModel.type == "FilterGroup" }
-              );
+                return filterModel.type == "FilterGroup" });
+
               if(nestedGroups){
                 nestedGroups.forEach(function(filterGroupModel){
                   filterGroupModel.get("filters").removeEmptyFilters(true)
-                })
+                });
               }
             }
-          } catch (error) {
-            console.log("Error removing empty Filter models from a Filters collection. " +
-              "Error details: " + error
-            );
+
+          } catch (e) {
+            console.log("Failed to remove empty Filter models from the Filters collection, error message: " + e);
           }
+
         },
 
-        /**            
+
+        /**
          * getNonEmptyFilters - Returns the array of filters that are not empty
          * @return {Filter|BooleanFilter|ChoiceFilter|DateFilter|NumericFilter|ToggleFilter|FilterGroup[]}
          * returns an array of Filter or FilterGroup models that are not empty
@@ -478,44 +481,42 @@ define([
           }
         },
 
-        /**            
-         * replaceModel - Remove a Filter from the Filters collection silently, and
+        /**
+         * Remove a Filter from the Filters collection silently, and
          * replace it with a new model.
          *
          * @param  {Filter} model    The model to replace
-         * @param  {object} newAttrs Attributes for the replacement model. Use the
-         * filterType attribute to replace with a different type of Filter.
-         * @return {Filter}          Returns the replacement Filter model, which is
-         * already part of the Filters collection.
+         * @param  {object} newAttrs Attributes for the replacement model. Use the filterType attribute to replace with a different type of Filter.
+         * @return {Filter}          Returns the replacement Filter model, which is already part of the Filters collection.
          */
         replaceModel: function (model, newAttrs) {
           try {
             var index = this.indexOf(model),
               oldModelId = model.cid;
-            this.remove(oldModelId, { silent: true });
+
             var newModel = this.add(
               newAttrs,
               { at: index }
             );
+            this.remove(oldModelId, {silent:true});
+
             return newModel;
           } catch (e) {
             console.log("Failed to replace a Filter model in a Filters collection, " + e);
           }
         },
 
-        /**            
-         * visibleIndexOf - Get the index of a given model, excluding any filters that are
-         * marked as invisible.
+        /**
+         * visibleIndexOf - Get the index of a given model, excluding any
+         * filters that are marked as invisible.
          *
-         * @param  {Filter|BooleanFilter|NumericFilter|DateFilter} model The filter model
-         * for which to get the visible index
-         * @return {number} An integer representing the filter model's position in the
-         * list of visible filters.
+         * @param  {Filter|BooleanFilter|NumericFilter|DateFilter} model The filter model for which to get the visible index
+         * @return {number} An integer representing the filter model's position in the list of visible filters.
          */
-        visibleIndexOf: function (model) {
+        visibleIndexOf: function(model){
           try {
             // Don't count invisible filters in the index we display to the user
-            var visibleFilters = this.filter(function (filterModel) {
+            var visibleFilters = this.filter(function(filterModel){
               var isInvisible = filterModel.get("isInvisible");
               return typeof isInvisible == "undefined" || isInvisible === false
             });

@@ -94,6 +94,36 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
           },
 
           /**
+          * Copies all the AccessRules from the given AccessPolicy and replaces this AccessPolicy
+          * @param {AccessPolicy} otherAccessPolicy
+          * @fires Backbone.Collection#reset
+          * @since 2.15.0
+          */
+          copyAccessPolicy: function(otherAccessPolicy){
+
+            try{
+
+              let accessRules = [];
+
+              //For each access policy in the AppModel, create an AccessRule model
+              otherAccessPolicy.each(function(accessRule){
+
+                //Convert the AccessRule model to JSON and update the reference to the DataONEObject
+                let accessRuleJSON = accessRule.toJSON();
+                accessRuleJSON.dataONEObject = this.dataONEObject;
+                accessRules.push(accessRuleJSON);
+
+              }, this);
+
+              //Reset the Collection with these AccessRules
+              this.reset(accessRules);
+            }
+            catch(e){
+              console.error(e);
+            }
+          },
+
+          /**
           * Creates an access policy XML from the values set on the member
           * AccessRule models.
           * @return {string} A string of the access policy XML
@@ -141,23 +171,7 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
               }
 
-              if( accessRule.get("subject") == "public" && accessRule.get("read") === false ){
-                alreadyPrivate = true;
-              }
-
             }, this);
-
-            //If this policy does not already deny the public read access, then add that rule
-            if( !alreadyPrivate ){
-              //Create an access rule that denies public read
-              var publicDeny = new AccessRule({
-                subject: "public",
-                read: false,
-                dataONEObject: this.dataONEObject
-              });
-              //Add this access rule
-              this.add(publicDeny);
-            }
 
           },
 
@@ -169,21 +183,19 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
             var alreadyPublic = false;
 
-            //Find any public read deny rule and remove it
+            //Find any public read rule and set read=true
             this.each( function(accessRule){
 
               if( typeof accessRule === "undefined" )
                 return;
 
               //If the access rule subject is `public` and they are denied read access
-              if( accessRule.get("subject") == "public" && accessRule.get("read") === false ){
+              if( accessRule.get("subject") == "public" ){
 
                   //Remove this AccessRule model from the collection
-                  this.remove(accessRule);
+                  accessRule.set("read", true);
+                  alreadyPublic = true;
 
-              }
-              else if( accessRule.get("subject") == "public" && accessRule.get("read") === true ){
-                alreadyPublic = true;
               }
 
             }, this);
@@ -271,6 +283,7 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
           * Updates to system metadata will fail if the user doesn't have changePermission permission,
           * *unless* the user is performing an update() at the same time and has `write` permission
           * @returns {boolean}
+          * @since 2.15.0
           */
           isAuthorizedUpdateSysMeta: function(){
             try{

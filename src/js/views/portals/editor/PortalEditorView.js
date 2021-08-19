@@ -915,6 +915,31 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     },
 
     /**
+    * @inheritdoc
+    */
+    isAccessPolicyEditEnabled: function(){
+
+      if( !MetacatUI.appModel.get("allowAccessPolicyChanges") ){
+        return false;
+      }
+
+      if( !MetacatUI.appModel.get("allowAccessPolicyChangesPortals") ){
+        return false;
+      }
+
+      let limitedTo = MetacatUI.appModel.get("allowAccessPolicyChangesPortalsForSubjects");
+      if( Array.isArray(limitedTo) && limitedTo.length ){
+
+        return _.intersection(limitedTo, MetacatUI.appUserModel.get("allIdentitiesAndGroups")).length > 0;
+
+      }
+      else{
+        return true;
+      }
+
+    },
+
+    /**
      * If the given portal doesn't exist, display a Not Found message.
      */
     showNotFound: function(){
@@ -941,7 +966,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
             menuHeight = menu ? menu.offsetHeight : 0,
             hiddenHeight = (menuHeight * -1) + editorFooterHeight,
             currentScrollPos = window.pageYOffset;
-  
+
           if(!menu){
             return
           }
@@ -953,13 +978,12 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
             menu.style.bottom = hiddenHeight + "px";
           }
           MetacatUI.appView.prevScrollpos = currentScrollPos;
-  
+
         } catch (error) {
           console.log("There was an error adjusting menu position on scroll. Error details: " + error);
         }
-      
-    },
 
+    },
 
     /**
      * @inheritdoc

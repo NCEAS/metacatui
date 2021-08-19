@@ -75,22 +75,22 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     * @type {string}
     */
     helpTextContainer: "#filter-help-text",
-    
-    /**    
+
+    /**
      * An array of hex color codes used to help distinguish between different rules
-     * @type {string[]}    
-     */     
+     * @type {string[]}
+     */
      ruleColorPalette: ["#44AA99", "#137733", "#c9a538", "#CC6677", "#882355", "#AA4499","#332288"],
-    
-    /**        
+
+    /**
      * Query fields to exclude in the metadata field selector of each Query Rule. This
      * is a list of field names that exist in the query service index (i.e. Solr), but
      * which should be hidden in the Query Builder
      * @type {string[]}
-     */         
+     */
     queryBuilderExcludeFields: MetacatUI.appModel.get("collectionQueryExcludeFields"),
 
-    /**        
+    /**
      * Query fields to exclude in the metadata field selector for any Query Rules that are
      * in nested Query Builders (i.e. in nested Filter Groups). This is a list of field
      * names that exist in the query service index (i.e. Solr), but which should be hidden
@@ -106,6 +106,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
      * Query fields that do not exist in the query service index, but which we would
      * like to show as options in the Query Builder field input.
      * @type {SpecialField[]}
+     * @since 2.15.0
      */
     queryBuilderSpecialFields: MetacatUI.appModel.get("collectionQuerySpecialFields"),
 
@@ -133,15 +134,15 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     * Renders this view
     */
     render: function(){
-      
+
       var title = "Change the data in your collection"
       if(this.model.isNew()){
         title = "Add data to your collection"
       }
-      
+
       var helpText = "",
           email = MetacatUI.appModel.get("emailContact");
-      
+
       if (email) {
         helpText = 'Need help building your data collection? <a href="maito:' + email + '">Get in touch.</a>'
       }
@@ -154,7 +155,13 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
           "Click the save button when you're happy with the results.",
         helpText: helpText
       }));
-      
+
+      // Remove this when the Query Builder is no longer new:
+      this.$el
+        .find(".edit-collection-title")
+        .append($('<span class="new-icon" style="margin-left:10px; font-size:1rem; line-height: 25px;"><i class="icon icon-star icon-on-right"></i> NEW </span>'));
+        // .append($('<span class="badge badge-info d1_pill d1_pill--primary" style="margin-left:10px">NEW!</span>'));
+
       // Make sure that we have a series ID before we render the Data Catalog
       // View With Filters. For new portals, we generate and reserve a series ID
       // and use it to add an isPartOf filter to the portal model. This takes time,
@@ -167,16 +174,16 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         this.listenToOnce(this.model, "change:seriesId",    this.renderDataCatalog);
         this.listenToOnce(this.model, "latestVersionFound", this.renderDataCatalog);
       }
-      
+
       //this.renderCollectionControls();
 
     },
-    
-    /**    
+
+    /**
      * renderQueryBuilder - Render the QueryBuilder and insert it into this view
-     */     
+     */
     renderQueryBuilder: function(){
-      
+
       // If the isPartOf filter is hidden, then don't allow users to build
       // a Query Rule using the isPartOf field. If they do, that rule will
       // be hidden the next time they open the portal in the editor. Also,
@@ -185,7 +192,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       if(MetacatUI.appModel.get("hideIsPartOfFilter") === true ? true : false){
         this.queryBuilderExcludeFields.push("isPartOf")
       }
-      
+
       var queryBuilder = new QueryBuilder({
         filterGroup: this.model.get("definition"),
         ruleColorPalette: this.ruleColorPalette,
@@ -193,17 +200,17 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         nestedExcludeFields: this.queryBuilderNestedExcludeFields,
         specialFields: this.queryBuilderSpecialFields,
       });
-      
+
       // Render the Query Builder and insert it into this view
       this.$(this.queryBuilderViewContainer).html(queryBuilder.el);
       queryBuilder.render();
     },
-    
+
     /**
      * Render the DataCatalogViewWithFilters
      */
     renderDataCatalog: function(){
-      
+
       this.renderQueryBuilder();
 
       var searchModel = this.model.get("searchModel");
@@ -283,8 +290,8 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
                !this.model.get("searchResults").length){
 
          msg = "<h5>Your dataset collection is empty.</h5> " +
-               "<p>To add datasets to your collection, " + 
-               "add rules in the Query Builder above.</p>";
+               "<p>To add datasets to your collection, " +
+               "add rules in query builder above.</p>";
 
         //TODO: When the ability to add datasets to collection via the "isPartOf" relationship is added to MetacatUI
         // then update this message with details on how to add datasets to the collection

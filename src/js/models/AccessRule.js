@@ -29,7 +29,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 		/**
 		* Translates the access rule XML DOM into a JSON object to be set on the model.
-		* @param {Element} accessRuleXML Either an <allow> or <deny> DOM element that contains a single access rule
+		* @param {Element} accessRuleXML An <allow> DOM element that contains a single access rule
 		* @return {JSON} The Access Rule values to be set on this model
 		*/
 		parse: function( accessRuleXML ){
@@ -39,15 +39,13 @@ define(['jquery', 'underscore', 'backbone'],
 
 			accessRuleXML = $(accessRuleXML);
 
-			var allowOrDeny = accessRuleXML.prop("tagName").toLowerCase();
-
 			//Start an access rule object with the given subject
 			var parsedAccessRule = {
 						subject: accessRuleXML.find("subject").text()
 				  }
 
 			_.each( accessRuleXML.find("permission"), function( permissionNode ){
-				parsedAccessRule[ $(permissionNode).text() ] = ( allowOrDeny == "allow" ? true : false );
+				parsedAccessRule[ $(permissionNode).text() ] = true;
 			});
 
 			return parsedAccessRule;
@@ -89,35 +87,6 @@ define(['jquery', 'underscore', 'backbone'],
 
 					//Close the "allow" node
 					xml += '\t</allow>\n';
-
-				}
-
-				//Serialize the deny rules
-				if( this.get("read") === false || this.get("write") === false || this.get("changePermission") === false ){
-
-					//Start the "deny" node
-					xml += '\t<deny>\n';
-
-					//Add the subject
-					xml += '\t\t<subject>' + this.get("subject") + '</subject>\n';
-
-					//Add the read permission
-					if( this.get("read") === false ){
-						xml += '\t\t<permission>read</permission>\n';
-					}
-
-					//Add the write permission
-					if( this.get("write") === false ){
-						xml += '\t\t<permission>write</permission>\n';
-					}
-
-					//Add the changePermission permission
-					if( this.get("changePermission") === false ){
-						xml += '\t\t<permission>changePermission</permission>\n';
-					}
-
-					//Close the "deny" node
-					xml += '\t</deny>\n';
 
 				}
 

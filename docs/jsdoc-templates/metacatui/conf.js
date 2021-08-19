@@ -3,7 +3,7 @@
 module.exports = {
   "source": {
     "excludePattern": "js/themes/|components/|config/|css/|font/|img/",
-    "include": ["docs/other/addtlDocs.jsdoc"]
+    "include": ["./src", "docs/other/addtlDocs.jsdoc"]
   },
   "plugins": ["./docs/jsdoc-templates/metacatui/plugins/screenshot",
               "./docs/jsdoc-templates/metacatui/plugins/classcategory"],
@@ -22,6 +22,8 @@ module.exports = {
     }
   },
   "opts": {
-    "template": "./docs/jsdoc-templates/metacatui"
+    "template": "./docs/jsdoc-templates/metacatui",
+    "destination": "./docs/docs",
+    "recurse": true
   }
 }

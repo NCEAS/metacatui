@@ -8,6 +8,7 @@ function(_, $, Backbone, AccessRule){
   * @class AccessRuleView
   * @classdesc Renders a single access rule from an object's access policy
   * @classcategory Views
+  * @screenshot views/AccessRuleView.png
   */
   var AccessRuleView = Backbone.View.extend(
     /** @lends AccessRuleView.prototype */{

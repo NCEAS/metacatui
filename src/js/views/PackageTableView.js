@@ -323,8 +323,9 @@ define(['jquery', 'underscore', 'backbone',
 				$(tr).append(moreInfoCell);
 			}
 			else{
+        let metadataId = (this.onMetadataView && this.currentlyViewing)? this.currentlyViewing : memberModel.get("isDocumentedBy")[0];
 				var moreInfo = $(document.createElement("a"))
-								.attr("href", "<%= MetacatUI.root %>/view/" + encodeURIComponent(id))
+								.attr("href", MetacatUI.root + "/view/" + encodeURIComponent(metadataId) + "#" + encodeURIComponent(id))
 								.addClass("preview")
 								.attr("data-id", id)
 								.text("More info");

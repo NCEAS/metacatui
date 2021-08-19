@@ -1,0 +1,45 @@
+
+<!-- <div class="portals-list-entry member current-page" data-seriesid=<%=seriesId%> data-page="1"> -->
+    
+    
+    <% if( typeof logo != "undefined" ) {
+      var urlBase = "";
+      if( logo.startsWith("http") ){
+          %>
+        <div class="portal-logo"><img src="<%= logo %>" alt="<%= title + logo %>"/></div>
+        <%
+      } else {
+        //If there are alt repos configured, use the datasource obbject service URL
+        if( MetacatUI.appModel.get("alternateRepositories").length && searchResult.get("datasource") ){
+          var sourceMN = _.findWhere(MetacatUI.appModel.get("alternateRepositories"), { identifier: searchResult.get("datasource") });
+          if( sourceMN ){
+            urlBase = sourceMN.objectServiceUrl;
+          }
+        }
+
+        if( !urlBase ){
+          // use the resolve service if there is no object service url
+          // (e.g. in DataONE theme)
+          urlBase = MetacatUI.appModel.get("objectServiceUrl") ||
+                    MetacatUI.appModel.get("resolveServiceUrl");
+        }
+        %>
+
+        <div class="portal-logo"><img src="<%= urlBase + logo %>"/></div>
+      <% }
+    } %>
+    
+  <div class="portal-info">
+      <h4 class="portal-label"><%=label%></h4>
+      <p class="portal-title"><%=title%></p>
+  </div>
+  
+<!--  if(Object.values(MetacatUI.uiRouter.routes).includes("renderPortalEditor")){ -->
+
+    <!-- Don't display edit button if user is not logged in -->
+    <% if ( MetacatUI.appUserModel.get("loggedIn") ) { %>
+       <div class="portal-edit-link controls">
+         <a  href="<%= MetacatUI.root + "/edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + label || seriesId || id %>" class="btn edit">Edit</a>
+       </div>
+    <% } %>
+</div>

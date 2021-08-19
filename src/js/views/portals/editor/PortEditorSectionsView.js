@@ -791,12 +791,16 @@ function(_, $, Backbone, Sortable, Portal, PortalSection,
     */
     addSectionLink: function(sectionView, menuOptions, isFocused){
 
-      if( typeof isFocused != "boolean") {
-        var isFocused = false;
-      }
-
       try{
+
+        if (typeof isFocused != "boolean") {
+          var isFocused = false;
+        }
+
+        var view = this;
+
         var newLink = this.createSectionLink(sectionView, menuOptions);
+        var isMarkdownSection = $(newLink).data("view").type == "PortEditorMdSection"
 
         // Make the tab hidden to start
         $(newLink)
@@ -814,48 +818,55 @@ function(_, $, Backbone, Sortable, Portal, PortalSection,
         var addSectionEl = this.$(this.sectionLinksContainer)
                                .find(this.sectionLinkContainer + "[data-section-name='" + this.addPageLabel + "']")[0];
 
-        // If the new link is for a markdown section
-        if($(newLink).data("view").type == "PortEditorMdSection"){
+        // If the new link is for a markdown section and there's no user-defined page
+        // order, then insert the markdown sections before the data and metrics section
+        // (this is the default order when there is no page ordering).
+        if(
+          isMarkdownSection &&
+          (!view.model.get("pageOrder") || !view.model.get("pageOrder").length)
+        ){
+        
           // Find the last markdown section in the list of links
           var currentLinks = this.$(this.sectionLinksContainer).find(this.sectionLinkContainer);
-          var i = _.map(currentLinks, function(li){
+          var i = _.map(currentLinks, function (li) {
             return $(li).data("view") ? $(li).data("view").type : "";
           }).lastIndexOf("PortEditorMdSection");
           var lastMdSection = currentLinks[i];
           // Append the new link after the last markdown section, or add it first.
-          if (lastMdSection){
+          if (lastMdSection) {
             $(lastMdSection).after(newLink);
           } else {
             this.$(this.sectionLinksContainer).prepend(newLink);
           }
-
-          // If this is a newly added markdown section, highlight the section name
-          // and make it content editable
-          if(isFocused) {
-            var newSectionLink = $(newLink).children(".portal-section-link");
-            newSectionLink.attr("contenteditable", true);
-            newSectionLink.focus();
-
-            //Select the text of the link
-            if (window.getSelection && window.document.createRange) {
-              var selection = window.getSelection();
-              var range = window.document.createRange();
-              range.selectNodeContents( newSectionLink[0] );
-              selection.removeAllRanges();
-              selection.addRange(range);
-            } else if (window.document.body.createTextRange) {
-              range = window.document.body.createTextRange();
-              range.moveToElementText( newSectionLink[0] );
-              range.select();
-            }
-          }
-        // If not a markdown section and not the Settings section, and if there
-        // is already a "+" link, add new link before the "+" link
-      } else if (addSectionEl && sectionView.uniqueSectionLabel != "Settings"){
+        // If there is already some user-defined page ordering, or if not a markdown
+        // section and not the Settings section, and if there is already a "+" link, add
+        // new link before the "+" link
+        } else if (addSectionEl && sectionView.uniqueSectionLabel != "Settings"){
           $(addSectionEl).before(newLink);
         // If the new link is "Settings", or there's no "+" link yet, insert new link last.
         } else {
           this.$(this.sectionLinksContainer).append(newLink);
+        }
+
+        // If this is a newly added markdown section, highlight the section name and make
+        // it content editable. Currently only markdown sections labels are editable.
+        if (isFocused && isMarkdownSection) {
+          var newSectionLink = $(newLink).children(".portal-section-link");
+          newSectionLink.attr("contenteditable", true);
+          newSectionLink.focus();
+
+          //Select the text of the link
+          if (window.getSelection && window.document.createRange) {
+            var selection = window.getSelection();
+            var range = window.document.createRange();
+            range.selectNodeContents(newSectionLink[0]);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          } else if (window.document.body.createTextRange) {
+            range = window.document.body.createTextRange();
+            range.moveToElementText(newSectionLink[0]);
+            range.select();
+          }
         }
 
         // Animate the link to full width / opacity
@@ -1077,7 +1088,14 @@ function(_, $, Backbone, Sortable, Portal, PortalSection,
               this.switchSection(this.metricsView);
               break;
             case "freeform":
-              //Get the section model that was just added
+              // Set up page ordering if it isn't already. This allows us to add a new
+              // freeform page at the end of the list of tabs, instead of before Data and
+              // Metrics (the default before page ordering was enabled).
+              var pageOrder = this.model.get("pageOrder");
+              if (!pageOrder || !pageOrder.length) {
+                this.updatePageOrder();
+              }
+              // Get the section model that was just added
               var newestSection = this.model.get("sections")[this.model.get("sections").length-1];
               //Render the content section view for it
               this.renderContentSection(newestSection, true);

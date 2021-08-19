@@ -16,7 +16,7 @@ define(['jquery', 'underscore', 'backbone',
     /** @lends ChoiceFilterView.prototype */{
 
     /**
-    * A ChoiceFilter model to be rendered in this view 
+    * A ChoiceFilter model to be rendered in this view
     * @type {ChoiceFilter} */
     model: null,
 
@@ -67,13 +67,13 @@ define(['jquery', 'underscore', 'backbone',
     render: function () {
 
       var view = this;
-      
+
       // Renders the template and inserts the FilterEditorView if the mode is uiBuilder
       FilterView.prototype.render.call(this)
 
       var placeHolderText = this.model.get("placeholder");
       var select = this.$("select");
-      
+
       if(this.mode === "uiBuilder"){
 
         // If this is the filter view where the user can edit the filter UI options,
@@ -98,7 +98,7 @@ define(['jquery', 'underscore', 'backbone',
         // interface
 
         //Create the placeholder text for the dropdown menu
-        
+
         //If placeholder text is already provided in the model, use it
         //If not, create placeholder text using the model label
         if (!placeHolderText){
@@ -113,7 +113,7 @@ define(['jquery', 'underscore', 'backbone',
               placeHolderText = "Choose a " + this.model.get("label");
             }
           }
-          
+
         }
 
         //Create the default option
@@ -129,9 +129,11 @@ define(['jquery', 'underscore', 'backbone',
                           .text(choice.label) );
         }, this );
 
+        //When the ChoiceFilter is changed, update the choice list in the UI
         this.listenTo(this.model, "change:values", this.updateChoices);
+        this.listenTo(this.model, "remove", this.updateChoices);
       }
-      
+
 
     },
 
@@ -176,7 +178,7 @@ define(['jquery', 'underscore', 'backbone',
             },
           })
         })
-        
+
         return this.choicesEditor
       }
       catch (error) {
@@ -242,7 +244,7 @@ define(['jquery', 'underscore', 'backbone',
         console.log( 'There was an error  ChoiceFilterView' +
           ' Error details: ' + error );
       }
-      
+
     },
 
     /**
@@ -344,7 +346,7 @@ define(['jquery', 'underscore', 'backbone',
         console.log( 'There was an error removing a choice editor in the ChoiceFilterView' +
           ' Error details: ' + error );
       }
-      
+
     },
 
     /**

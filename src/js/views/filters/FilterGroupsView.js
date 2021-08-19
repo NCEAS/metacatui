@@ -423,7 +423,7 @@ define(['jquery', 'underscore', 'backbone',
     * display even if the value hasn't been changed
     */
     updateAppliedFilters: function(filterModel, options){
-      
+
       //Create an options object if one wasn't sent
       if( typeof options != "object" ){
         var options = {};
@@ -886,17 +886,21 @@ define(['jquery', 'underscore', 'backbone',
     */
     removeAllFilters: function(){
 
+      let removedFilters = [];
+
       //Iterate over each applied filter in the view
       _.each( this.$(".applied-filter"), function(appliedFilterEl){
 
         var $appliedFilterEl = $(appliedFilterEl);
+
+        removedFilters.push($appliedFilterEl.data("model"));
 
         if( $appliedFilterEl.is(".custom") ){
           this.removeCustomAppliedFilter( $appliedFilterEl.data("model") );
         }
         else{
 
-          //Remove the filter from the fitler group
+          //Remove the filter from the fitler group. Do this silently since we will trigger a "reset" event later
           this.removeFilter( $appliedFilterEl.data("model"), appliedFilterEl, { removeSilently: true } );
 
         }
@@ -908,6 +912,9 @@ define(['jquery', 'underscore', 'backbone',
 
       //Trigger the reset event on the Filters collection
       this.filters.trigger("reset");
+
+      //Trigger the remove event on all the models now that they are all removed
+      _.invoke(removedFilters, "trigger", "remove");
 
       //Toggle the applied filters header
       this.toggleAppliedFiltersHeader();

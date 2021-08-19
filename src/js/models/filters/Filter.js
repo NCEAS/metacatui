@@ -49,7 +49,7 @@ define(['jquery', 'underscore', 'backbone'],
     * @property {string} description - A longer description of this Filter's function
     * @property {boolean} isInvisible - If true, this filter will be added to the query
     * but will act in the "background", like a default filter
-    * @property {boolean} inFilterGroup - Deprecated: use isUIFilterType instead. 
+    * @property {boolean} inFilterGroup - Deprecated: use isUIFilterType instead.
     * @property {boolean} isUIFilterType - If true, this filter is one of the
     * UIFilterTypes, belongs to a UIFilterGroupType model, and is used to create a custom
     * Portal search filters. This changes how the XML is parsed and how the model is
@@ -86,7 +86,7 @@ define(['jquery', 'underscore', 'backbone'],
       if (attributes && attributes.isUIFilterType){
         this.set("isUIFilterType", true)
       }
-      
+
       //If this is an isPartOf filter, then add a label and description. Make it invisible
       //depending on how MetacatUI is configured.
       if( this.get("fields").length == 1 && this.get("fields").includes("isPartOf") ){
@@ -104,7 +104,7 @@ define(['jquery', 'underscore', 'backbone'],
           this.set(op, this.defaults()[op])
         }
       }, this);
-    
+
     },
 
     /**
@@ -544,12 +544,12 @@ define(['jquery', 'underscore', 'backbone'],
       return (this.get("values").length > 0);
 
     },
-    
-    /**    
+
+    /**
      * isEmpty - Checks whether this Filter has any values or fields set
-     *      
+     *
      * @return {boolean}  returns true if the Filter's values and fields are empty
-     */     
+     */
     isEmpty: function(){
       try {
         var fields      =   this.get("fields"),
@@ -558,7 +558,7 @@ define(['jquery', 'underscore', 'backbone'],
             fieldsEmpty =   _.every(fields, function(item) { return item == "" }),
             noValues    =   !values || values.length == 0;
             valuesEmpty =   _.every(values, function(item) { return item == "" });
-            
+
         var noMinNoMax = _.every(
           [this.get("min"), this.get("max")],
           function(num) {
@@ -576,7 +576,7 @@ define(['jquery', 'underscore', 'backbone'],
           }, this)
           return noUIVals && noFields && fieldsEmpty && noMinNoMax
         }
-        
+
         // For regular search filters, just a field and some sort of search term/value is
         // required
         return noFields && fieldsEmpty && noValues && valuesEmpty && noMinNoMax
@@ -606,6 +606,7 @@ define(['jquery', 'underscore', 'backbone'],
         term = term.replace(/\'/g, "\\'");
         term = term.replace(/\#/g, "\\%23");
         term = term.replace(/\-/g, "\\%2D");
+        term = term.replace(/\&amp\;/g, "\\%26");
 
         return term;
     },
@@ -878,7 +879,7 @@ define(['jquery', 'underscore', 'backbone'],
             this.set(op, this.defaults()[op]);
           }
         }, this);
-        
+
 
         //---Validate exclude and matchSubstring----
         //Exclude should always be a boolean

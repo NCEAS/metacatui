@@ -58,21 +58,13 @@ define(['jquery',
             this.valueResolved = false;
         },
 
-        render: function () {
-
-          //If there is no value URI, then there is probably no annotation
-          // metadata to render, so exit the function.
-          if( typeof this.valueURI == "undefined" ){
-            return this;
-          }
-
-          this.createPopover();
-
-          return this;
-        },
-
         // Helps us fetch data from the API on first interaction
         onClick: function () {
+            if (!this.popoverSource) {
+                this.createPopover();
+                this.popoverSource.popover("show");
+            }
+
             this.queryAndUpdateValue();
         },
 

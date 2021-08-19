@@ -19,7 +19,7 @@ Clone your fork to your local machine:
 git clone https://github.com/your-username/metacatui.git
 ```
 
-Open the forked repository (the `datadepot` folder) in your preferred code editor (e.g. Atom)
+Open the forked repository (the `metacatui` folder) in your preferred code editor (e.g. Atom)
 
 Test that your fork is ready to work with by making a small change to a file (e.g. add a space character) and committing and pushing the commit to your fork.
 

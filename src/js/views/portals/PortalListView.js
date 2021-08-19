@@ -3,14 +3,16 @@ define(["jquery",
     "backbone",
     "collections/Filters",
     "collections/SolrResults",
+    "views/PagerView",
     "text!templates/portals/portalList.html"],
-    function($, _, Backbone, Filters, SearchResults, Template){
+    function($, _, Backbone, Filters, SearchResults, PagerView, Template){
 
       /**
       * @class PortalListView
       * @classdesc A view that shows a list of Portals
       * @classcategory Views/Portals
       * @extends Backbone.View
+      * @screenshot views/portals/PortalListView.png
       * @constructor
       */
       return Backbone.View.extend(
@@ -34,7 +36,14 @@ define(["jquery",
         * @type {string}
         * @default "id,seriesId,title,formatId,label,logo"
         */
-        searchFields: "id,seriesId,title,formatId,label,logo,datasource",
+        searchFields: "id,seriesId,title,formatId,label,logo,datasource,writePermission,changePermission,rightsHolder,abstract",
+
+        /**
+        * The number of portals to dispaly per page
+        * @default 10
+        * @type {number}
+        */
+        numPortalsPerPage: 10,
 
         /**
         * The number of portals to retrieve and render in this view
@@ -52,6 +61,12 @@ define(["jquery",
         additionalPortalsToDisplay: [],
 
         /**
+        * The message to display when there are no portals in this list
+        * @type {string}
+        */
+        noResultsMessage: "You haven't created or have access to any " + MetacatUI.appModel.get("portalTermPlural") + " yet.",
+
+        /**
         * A jQuery selector for the element that the list should be inserted into
         * @type {string}
         */
@@ -66,6 +81,14 @@ define(["jquery",
         * References to templates for this view. HTML files are converted to Underscore.js templates
         */
         template: _.template(Template),
+
+        /**
+        * Initializes a new view
+        */
+        initialize: function(){
+          //Create a new SearchResults collection
+          this.searchResults = new SearchResults();
+        },
 
         /**
         * Renders the list of portals
@@ -211,16 +234,11 @@ define(["jquery",
             //If no search results were found, display a message
             if( (!this.searchResults || !this.searchResults.length) && !this.additionalPortalsToDisplay.length){
               var row = this.createListItem();
-              row.html("<td colspan='4' class='center'>You haven't created or have access to any " +
-                        MetacatUI.appModel.get("portalTermPlural") + " yet.</td>");
+              row.html("<div class='no-results'>" + this.noResultsMessage + "</div>");
               listContainer.html(row);
 
-              //TODO: Unwrap the call to renderCreateButton() from this if condition,
-              // because the ListView will only ever be used when Usages/Bookkeeper is enabled
-              if( !MetacatUI.appModel.get("dataonePlusPreviewMode") ){
-                //Add a "Create" button to create a new portal
-                this.renderCreateButton();
-              }
+              //Add a "Create" button to create a new portal
+              this.renderCreateButton();
 
               return;
             }
@@ -237,11 +255,17 @@ define(["jquery",
 
             }, this);
 
-            //TODO: Unwrap the call to renderCreateButton() from this if condition,
-            // because the ListView will only ever be used when Usages/Bookkeeper is enabled
-            if( !MetacatUI.appModel.get("dataonePlusPreviewMode") ){
-              //Add a "Create" button to create a new portal
-              this.renderCreateButton();
+            //Add a "Create" button to create a new portal
+            this.renderCreateButton();
+
+            // Create a pager for this list if there are many portals
+            if( this.$(".portals-list-entry").length > this.numPortalsPerPage ){
+              var pager = new PagerView({
+                  pages: this.$(".portals-list-entry"),
+                  itemsPerPage: this.numPortalsPerPage
+              });
+
+              this.$el.append(pager.render().el);
             }
 
           }
@@ -262,9 +286,7 @@ define(["jquery",
         createListItem: function(searchResult){
 
           try{
-
-            //Create a table row
-            var listItem = $(document.createElement("tr"));
+            var listItem = $(document.createElement("div")).addClass("portals-list-entry");
 
             if( searchResult && typeof searchResult.get == "function" ){
 
@@ -277,8 +299,15 @@ define(["jquery",
               listItem.attr("data-seriesId", searchResult.get("seriesId"));
 
               //Create a logo image
-              var logo = "";
-              if( searchResult.get("logo") ){
+              var logoImg = "";
+              var logoDiv = "";
+
+              // Add link to the portal to the list item
+              var link = $(document.createElement("a"))
+                          .attr("href", MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural")
+                          + "/" + encodeURIComponent((searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id"))) );
+
+              if( searchResult.get("logo")) {
                 if( !searchResult.get("logo").startsWith("http") ){
 
                   var urlBase = "";
@@ -299,36 +328,76 @@ define(["jquery",
                   }
 
                   searchResult.set("logo", urlBase + searchResult.get("logo") );
-
                 }
 
-                logo = $(document.createElement("img"))
+                var logoImg = $(document.createElement("img"))
                           .attr("src", searchResult.get("logo"))
                           .attr("alt", searchResult.get("title") + " logo");
+                var logoLink = link.clone().append(logoImg);
+
+                logoDiv = $(document.createElement("div"))
+                          .addClass("portal-logo")
+                          .append(logoLink);
+
+              } else {
+                // Create an empty <div>, as no portal image is available.
+                logoDiv = $(document.createElement("div"))
+                          .addClass("portal-logo");
               }
 
-              //Create an Edit button
-              var buttons = "";
-              if(Object.values(MetacatUI.uiRouter.routes).includes("renderPortalEditor")){
+              var portalTitle = $(document.createElement("h5"))
+                                .addClass("portal-title")
+                                .text(searchResult.get("title"));
+              var titleLink = link.clone().append(portalTitle);
 
-                buttons = $(document.createElement("a")).attr("href",
-                             MetacatUI.root + "/edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + encodeURIComponent((searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id"))) )
-                             .text("Edit")
-                             .addClass("btn edit");
+              var descriptionText = searchResult.get("abstract") || "",
+                  maxLength = window.innerWidth < 800 ? 150 : 300;
+              if( descriptionText.length > maxLength ){
+                descriptionText = descriptionText.substr(0, maxLength);
+                descriptionText = descriptionText.substr(0, Math.min(descriptionText.length, descriptionText.lastIndexOf(" ")));
+                descriptionText += "...";
               }
+              var description = $(document.createElement("div"))
+                                .addClass("portal-description")
+                                .append( $(document.createElement("p"))
+                                          .text(descriptionText) );
 
+              var portalInfo = $(document.createElement("div"))
+                                 .addClass("portal-info")
+                                 .append(titleLink, description);
 
-              //Create a link to the portal view with the title as the text
-              var titleLink = $(document.createElement("a"))
-                              .attr("href", searchResult.createViewURL())
-                              .text(searchResult.get("title"));
+              var editDiv = $(document.createElement("div"))
+                            .addClass("portal-edit-link")
+                            .addClass("controls");
 
               //Add all the elements to the row
-              listItem.append(
-                $(document.createElement("td")).addClass("logo").append(logo),
-                $(document.createElement("td")).addClass("portal-label").text( searchResult.get("label") ),
-                $(document.createElement("td")).addClass("title").append(titleLink),
-                $(document.createElement("td")).addClass("controls").append(buttons));
+              listItem.append(logoDiv, portalInfo, editDiv);
+
+              //Construct an array of ownership subjects
+              var wPermission = searchResult.get("writePermission"),
+                  cPermission = searchResult.get("changePermission"),
+                  rightsHolder = searchResult.get("rightsHolder");
+              var owners = [];
+
+              [wPermission, cPermission, rightsHolder].forEach( subjects => {
+                if( typeof subjects == "string" ){
+                  owners.push(subjects);
+                }
+                else if( Array.isArray(subjects) ){
+                  owners = owners.concat(subjects);
+                }
+              });
+
+              //Render an Edit button
+              if ( MetacatUI.appUserModel.hasIdentityOverlap(owners) ){
+                  //Create an Edit buttton
+                  var editButton = $(document.createElement("a")).attr("href",
+                               MetacatUI.root + "/edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + encodeURIComponent((searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id"))) )
+                               .text("Edit")
+                               .addClass("btn edit");
+                  editDiv.append(editButton);
+              }
+
             }
 
             //Return the list item

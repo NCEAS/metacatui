@@ -98,7 +98,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			//Is this our latest query? If not, use our last set of docs from the latest query
 			if((decodeURIComponent(this.currentquery).replace(/\+/g, " ") != solr.responseHeader.params.q) && this.docsCache)
 				return this.docsCache;
-				
+
 			if(!solr.response){
 				if(solr.error && solr.error.msg){
 					console.log("Solr error: " + solr.error.msg);
@@ -212,13 +212,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 				reset: true
 			}
 
-      if( this.usePOST ){
+      let usePOST = this.usePOST || (this.currentquery.length > 1500 && !MetacatUI.appModel.get("disableQueryPOSTs"));
+
+      if( usePOST ){
         options.type = "POST";
 
         var queryData = new FormData();
         queryData.append("q", decodeURIComponent(this.currentquery));
         queryData.append("rows", this.rows);
-        queryData.append("sort", this.sort);
+        queryData.append("sort", this.sort.replace("+", " "));
         queryData.append("fl", this.fields);
         queryData.append("start", this.start);
         queryData.append("wt", "json");

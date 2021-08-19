@@ -1,6 +1,7 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/PackageModel', 'views/CitationView', 'text!templates/resultsItem.html'],
-	function($, _, Backbone, SolrResult, Package, CitationView, ResultItemTemplate) {
+define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/PackageModel', 'views/CitationView', 'text!templates/resultsItem.html',
+         'text!templates/portals/portalResultItem.html'],
+	function($, _, Backbone, SolrResult, Package, CitationView, ResultItemTemplate, PortalResultItemTemplate) {
 
 	'use strict';
 
@@ -41,6 +42,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 
 			if(typeof options.metricsModel !== "undefined")
 				this.metricsModel = options.metricsModel;
+                
+                
+            if(typeof options.className !== "undefined") {
+                this.className = options.className;
+            }
+            
+            if(typeof options.template !== "undefined") {
+                this.template = options.template;
+            }
 		},
 
 		// Re-render the citation of the result item.
@@ -62,7 +72,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 
 			//Find the member node object
 			json.memberNode = _.findWhere(MetacatUI.nodeModel.get("members"), {identifier: this.model.get("datasource")});
-
+            
       //Figure out if this objbect is a collection or portal
       var isCollection = this.model.getType() == "collection" || this.model.getType() == "portal";
 
@@ -102,19 +112,18 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 			var resultRow = this.template(json);
 			this.$el.html(resultRow);
 
-      //Create the citation
-      var citation = new CitationView({metadata: this.model}).render().el;
-      var placeholder = this.$(".citation");
-      if(placeholder.length < 1) this.$el.append(citation);
-      else $(placeholder).replaceWith(citation);
-
-      //Create the OpenURL COinS
-      var span = this.getOpenURLCOinS();
-      this.$el.append(span);
-
-      //Non-collection metadata types will display metrics
+      //Non-collection metadata types will display metrics and citations
       if( !isCollection ){
-
+        //Create the citation
+        var citation = new CitationView({metadata: this.model}).render().el;
+        var placeholder = this.$(".citation");
+        if(placeholder.length < 1) this.$el.append(citation);
+        else $(placeholder).replaceWith(citation);
+        
+        //Create the OpenURL COinS
+        var span = this.getOpenURLCOinS();
+        this.$el.append(span);
+      
         if( MetacatUI.appModel.get("displayDatasetMetrics") && this.metricsModel ){
           if (this.metricsModel.get("views") !== null) {
             // Display metrics if the model has already been fetched
@@ -157,9 +166,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 		},
 
 		displayMetrics: function() {
+            
 
       //If metrics for this object should be hidden, exit the function
-      if( this.model.hideMetrics() ){
+      if( this.model.hideMetrics() ) {
         return;
       }
 
