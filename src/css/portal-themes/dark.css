@@ -22,6 +22,18 @@ body, .portal-view, .Portal #Content, .PortalView #Content {
   color: var(--portal-col-text);
 }
 
+.portal-view h2 {
+  font-weight: 700;
+  font-size: 1.7rem;
+  letter-spacing: 0.01em;
+  margin: 1.2rem 0 1.4rem;
+  line-height: 1.2;
+}
+
+.portal-display-image .portal-display-text, .portal-editor .portal-display-text {
+  background-color: rgb(19 27 44 / 78%);
+}
+
 .Portal.Editor #Navbar, .PortalView #Navbar, .Portal.Editor .navbar-inner, .PortalView .navbar-inner, .Portal .d1_nav, .PortalView .d1_nav {
   color: var(--portal-col-text);
   background-color: var(--portal-col-bkg-active);
@@ -76,4 +88,20 @@ a {
 .portal-section-content thead th {
   background-color: var(--portal-primary-color-transparent);
   color: var(--portal-col-text)
+}
+
+/* Table of contents in portal markdown section */
+
+.portal-editor .toc-ul, .portal-view .toc-ul {
+  background-color: var(--portal-col-bkg-active);
+  border-radius: 0.5rem;
+  opacity: 0.85;
+  margin-left: 0.8rem;
+  margin-right: 1rem;
+  box-shadow: 0px 1px 15px -1px rgba(32, 23, 23, 0.9);
+}
+
+.portal-view .toc li.active>a, .portal-editor .toc li.active>a, .portal-view .toc-ul li>a:hover, .portal-editor .toc-ul li>a:hover {
+  border-radius: 0.5rem;
+  box-shadow: 0px 1px 10px -1px rgba(0, 0, 0, 0.5);
 }

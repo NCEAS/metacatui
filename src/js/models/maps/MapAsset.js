@@ -4,7 +4,7 @@ define(
   [
     'jquery',
     'underscore',
-    'backbone',
+    'backbone'
   ],
   function (
     $,
@@ -36,8 +36,8 @@ define(
          * Default attributes for MapAsset models
          * @name MapAsset#defaults
          * @type {Object}
-         * @property {string} type The format of the data. // TODO: List the supported
-         * type values.
+         * @property {string} type The format of the data. Must be one of the types set in
+         * MapAsset#supportedTypes.
          * @property {string} label A user friendly name for this asset, to be displayed
          * in a map.
          * @property {string} description A brief description about the asset, e.g. which
@@ -54,6 +54,11 @@ define(
          * create and render the asset in the map. The properties of options are specific
          * to each type of asset, but most contain a URL to the server where the data is
          * hosted. TODO: Document options along with each associated type.
+         * @property {string} typeCategory The more general type that this asset is. One
+         * of imagery, data, (3D) tileset, or terrain. Set automatically during
+         * initialize.
+         * @property {*} cesiumModel A model created by Cesium that organizes the data to
+         * display in the Cesium Widget.
         */
         defaults: function () {
           return {
@@ -64,7 +69,9 @@ define(
             moreInfoLink: '',
             downloadLink: '',
             id: '',
-            options: {}
+            options: {},
+            typeCategory: 'unsupported',
+            cesiumModel: null
           }
         },
 
@@ -76,11 +83,113 @@ define(
          */
         initialize: function (attributes, options) {
           try {
-            // TODO
+            // Check if this is a type currently supported by MetacatUI. If it is, add the
+            // general type category (imagery, data, or 3DTiles) to the model attributes.
+            var type = attributes.type
+            var typeCategory = 'unsupported'
+            for (const [category, typesArray] of Object.entries(this.supportedTypes)) {
+              if (typesArray.includes(type)) {
+                typeCategory = category
+              }
+            }
+            this.set('typeCategory', typeCategory)
+
           }
           catch (error) {
             console.log(
               'There was an error initializing a MapAsset model' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * @type {Object} The type of map assets that MetacatUI supports, categorized by
+         * more general types - imagery, data, (3D) tilesets, and terrain.
+         * @property {string[]} imagery - The list of supported imagery layer types
+         * @property {string[]} data - The list of supported vector data types that will
+         * be used to create geometries, excluding any 3D tilesets.
+         * @property {string[]} tileset - The list of supported 3D tile types.
+         * @property {string[]} terrain - The list of supoorted terrain asset types that
+         * will be used to render peaks and valleys in 3D maps.
+         */
+        supportedTypes: {
+          imagery: ['BingMapsImageryProvider'],
+          data: ['GeoJsonDataSource'],
+          tileset: ['Cesium3DTileset'],
+          terrain: ['CesiumTerrainProvider']
+        },
+
+        /**
+         * Creates a Cesium model that contains information about the map asset for Cesium
+         * to render.
+         * @param {Boolean} recreate - Set recreate to true to force the function create
+         * the Cesium Model again. Otherwise, if a cesium model already exists, that is
+         * returned instead.
+         * @returns 
+         */
+        createCesiumModel: function (recreate = false) {
+          try {
+            var model = this;
+            var type = model.get('type')
+            var typeCategory = model.get('typeCategory')
+            var assetOptions = model.get('options')
+            var cesiumModel = null
+
+            if (type === 'unsupported') {
+              return
+            }
+
+            if (!recreate && this.get('cesiumModel')) {
+              return this.get('cesiumModel')
+            }
+
+            // Cesium is required for the create functions
+            require(['cesium'], function (Cesium) {
+
+              // Set the asset URL if this is a Cesium Ion resource
+              if (assetOptions && assetOptions.ionAssetId) {
+                // The Cesium Ion ID of the resource to access
+                var assetId = Number(assetOptions.ionAssetId)
+                var ionResourceOptions = {}
+                // Access token needs to be set before requesting cesium ion resources
+                ionResourceOptions.accessToken =
+                  assetOptions.cesiumToken || MetacatUI.appModel.get("cesiumToken");
+
+                assetOptions.url = Cesium.IonResource.fromAssetId(assetId, ionResourceOptions)
+              }
+
+              // Set the Bing Maps key
+              if (type === 'BingMapsImageryProvider') {
+                assetOptions.key = assetOptions.bingKey || MetacatUI.AppConfig.bingMapsKey
+              }
+
+              
+              if (type === 'GeoJsonDataSource') {
+                var url = assetOptions.url
+                // TODO
+                // assetOptions.markerColor = Cesium.Color.fromCssColorString('#dbba3d')
+                cesiumModel = Cesium.GeoJsonDataSource.load(url, assetOptions)
+              } else if (type && Cesium[type] && typeof Cesium[type] === 'function') {
+                cesiumModel = new Cesium[type](assetOptions)
+              }
+              
+              // Imagery must be converted from a Cesium Imagery Provider to a Cesium
+                // Imagery Layer. See
+                // https://cesium.com/learn/cesiumjs-learn/cesiumjs-imagery/#imagery-providers-vs-layers
+              if (typeCategory === 'imagery') {
+                cesiumModel = new Cesium.ImageryLayer(cesiumModel);
+              }
+
+              model.set('cesiumModel', cesiumModel)
+
+            })
+
+            return cesiumModel
+          }
+          catch (error) {
+            console.log(
+              'Failed to create a Cesium Model in a MapAsset model' +
               '. Error details: ' + error
             );
           }

@@ -8,7 +8,7 @@ define(
     'models/maps/Map',
     'text!templates/maps/map.html',
     // SubViews
-    'views/maps/CesiumView',
+    'views/maps/CesiumWidgetView',
     'views/maps/ToolbarView',
     'views/maps/ScaleBarView',
     'views/maps/FeatureInfoView',
@@ -184,7 +184,7 @@ define(
               el: this.subElements.mapWidgetContainer,
               model: this.model
             })
-            // this.mapWidget.render()
+            this.mapWidget.render()
             return this.mapWidget
           }
           catch (error) {
