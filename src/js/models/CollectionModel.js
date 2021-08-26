@@ -93,7 +93,7 @@ define(["jquery",
 
       // Create a Filters collection to store the definition filters. Add the catalog
       // search query fragment to the definition Filter Group model.
-      this.set("definition", new FilterGroup({ catalogSearch: true }));
+      this.set("definition", new FilterGroup({ catalogSearch: true, nodeName: "definition" }));
       this.set("definitionFilters", this.get("definition").get("filters"));
 
       // Update the blocklist with the node/repository labels
