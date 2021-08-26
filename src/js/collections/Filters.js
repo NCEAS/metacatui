@@ -494,11 +494,12 @@ define([
             var index = this.indexOf(model),
               oldModelId = model.cid;
 
+            this.remove(oldModelId, { silent: true });
+            
             var newModel = this.add(
               newAttrs,
               { at: index }
             );
-            this.remove(oldModelId, {silent:true});
 
             return newModel;
           } catch (e) {
