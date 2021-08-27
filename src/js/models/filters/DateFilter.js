@@ -415,6 +415,12 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         errors.rangeMin = "The minimum year in the date slider must be a number.";
       }
 
+      if (Object.keys(errors).length)
+        return errors;
+      else {
+        return;
+      }
+
     }
 
   });

@@ -435,6 +435,19 @@ define(['jquery', 'underscore', 'backbone',
         },
 
         /**
+         * Hide and destroy the filter editor modal window
+         */
+        hideModal: function () {
+          var view = this;
+          view.modalEl.off("hidden");
+          view.modalEl.on("hidden", function () {
+            view.modalEl.off();
+            view.modalEl.remove();
+          });
+          view.modalEl.modal("hide");
+        },
+
+        /**
          * Find the save and cancel buttons in the editing modal window, and add listeners
          * that close the modal and update the Filters collection on save
          */
@@ -445,28 +458,44 @@ define(['jquery', 'underscore', 'backbone',
             var saveButton = this.modalEl.find("." + this.classes.saveButton),
                 cancelButton = this.modalEl.find("." + this.classes.cancelButton),
                 deleteButton = this.modalEl.find("." + this.classes.deleteButton);
-            // All buttons should hide the modal window
-            var hideModal = function(){
-              view.modalEl.off("hidden");
-              view.modalEl.on("hidden", function () { view.destroyEditorModal() });
-              view.modalEl.modal("hide");
-            }
-            // Add listeners to the modal's "delete", "save", and "cancel" buttons
+            
+            // Add listeners to the modal's "delete", "save", and "cancel" buttons.
+
+            // SAVE
             saveButton.on('click', function (event) {
+
+              var results = view.createModel();
+
+              if (results.success === false) {
+                view.handleErrors(results.errors)
+                return
+              }
+
               saveButton.off('click');
-              hideModal();
-              view.addChanges();
+              view.hideModal();
+              // Only update the collection after the modal has closed because adding a
+              // new model triggers a re-render of the FilterGroupsView which interferes
+              // with removing the modal.
+              var oldModel = view.model;
+              // Update the filter model in the parent Filters collection
+              view.model = view.collection.replaceModel(oldModel, results.model);
+              
               if (view.editorView){
                 view.editorView.showControls();
               }
+              
             });
+
+            // CANCEL
             cancelButton.on('click', function (event) {
               cancelButton.off('click');
-              hideModal();
+              view.hideModal();
             })
+
+            // DELETE
             deleteButton.on('click', function (event) {
               deleteButton.off('click');
-              hideModal();
+              view.hideModal();
               if(!view.isNew){
                 view.collection.remove(view.model)
               }
@@ -474,6 +503,7 @@ define(['jquery', 'underscore', 'backbone',
                 view.editorView.showControls();
               }
             })
+
           }
           catch (error) {
             console.log(
@@ -591,33 +621,22 @@ define(['jquery', 'underscore', 'backbone',
         },
 
         /**
-         * Remove the editing modal window and all associated listeners and data.
-         */
-        destroyEditorModal: function () {
-          try {
-            var view = this;
-            view.modalEl.off();
-            view.modalEl.remove();
-          }
-          catch (error) {
-            console.log('There was an error removing a modal in a FilterEditorView' +
-              ' Error details: ' + error);
-          }
-        },
-
-        /**
          * Functions to run when a user clicks the "save" button in the editing modal
-         * window. Updates the filter model in the parent Filters collection with all of
-         * the new attributes that the user has selected.
+         * window. Creates a new Filter model with all of the new attributes that the user
+         * has selected. Checks if the model is valid. If it is, then returns the model.
+         * If it is not, then returns the errors.
          * @param {Object} event The click event
+         * @return {Object} Returns an object with a success property set to either true
+         * (if there were no errors), or false (if there were errors). If there were
+         * errors, then the object also has an errors property with the errors return from
+         * the Filter validate function. If there were no errors, then the object contains
+         * a model property with the new Filter to be saved to the Filters collection.
          */
-        addChanges: function (event) {
+        createModel: function (event) {
           try {
             var selectedUI = this.currentUIBuilder,
-                newModelAttrs = selectedUI.draftModel.toJSON(),
-                oldModel = this.model,
-                filtersCollection = this.collection;
-
+              newModelAttrs = selectedUI.draftModel.toJSON();
+            
             // Set the new fields
             newModelAttrs.fields = _.clone(this.fieldInput.selected);
             // set the new fieldsOperator
@@ -626,11 +645,49 @@ define(['jquery', 'underscore', 'backbone',
             delete newModelAttrs.objectDOM
             delete newModelAttrs.cid
 
-            this.model = filtersCollection.replaceModel(oldModel, newModelAttrs);
+            // The collection's model function identifies the type of model to create
+            // based on the filterType attribute. Create a model before we add it to the
+            // collection, so that we can make sure it's valid first, while still allowing
+            // a user to press the UNDO button and not add any changes to the Filters
+            // collection.
+            var newModel = this.collection.model(newModelAttrs);
+
+            // Check if the filter is valid.
+            var newModelErrors = newModel.validate();
+            if (newModelErrors) {
+              return {
+                success: false,
+                errors: newModelErrors
+              }
+            } else {
+              return {
+                success: true,
+                model: newModel
+              }
+            }
           }
           catch (error) {
             console.log('There was an error updating a Filter model in a FilterEditorView' +
               ' Error details: ' + error);
+          }
+        },
+
+        /**
+         * Shows errors in the filter editor modal window.
+         * @param {object} errors An object where keys represent the Filter model
+         * attribute that has an error, and the corresponding value explains the error in
+         * text.
+         */
+        handleErrors(errors) {
+          try {
+            console.log(errors)
+            // TODO: show errors in the editor modal
+          }
+          catch (error) {
+            console.log(
+              'There was an error  in a FilterEditorView' +
+              '. Error details: ' + error
+            );
           }
         },
 
