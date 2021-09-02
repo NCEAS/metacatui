@@ -4269,7 +4269,6 @@ add font awesome close icon */
 
 /* toggle builder in UI build mode */
 
-
 .toggle.ui-build .modal-instructions {
 	margin: 2rem 0 1rem;
 }
@@ -4296,6 +4295,17 @@ add font awesome close icon */
 }
 .ui-build .ui-build-input.true-label {
 	left: 100px;
+}
+
+/* Validation errors for Filters in UI Build mode */
+.ui-build .ui-build-input.error {
+  border: 1px dashed #e0b4b4;
+  color: #9f3a38;
+  background-color: #fff6f6;
+}
+
+.ui-build .ui-build-input.error::placeholder{
+  color: #9f3a38;
 }
 
 /* Portal Editor markdown section

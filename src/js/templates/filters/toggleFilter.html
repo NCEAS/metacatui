@@ -13,6 +13,7 @@
     print('<input placeholder="Off" class="ui-build-input false-label" data-category="falseLabel" value="' + ( falseLabel ? falseLabel : '' ) + '"/>');
     print('<p class="modal-instructions">When the toggle is on, search for</p>');
     print('<input placeholder="Search term when on" class="ui-build-input" data-category="trueValue" value="' + ( trueValue ? trueValue : "" ) + '">');
+    print('<p class="notification error" data-category="trueValue" style="display:none"></p>');
     if(falseValue){
       print('<p class="modal-instructions">When the toggle is off, search for</p>');
       print('<input placeholder="Search term when off" class="ui-build-input" data-category="falseValue" value="' + ( falseValue ? falseValue : "" ) + '">');

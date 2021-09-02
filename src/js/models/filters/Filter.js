@@ -53,7 +53,7 @@ define(['jquery', 'underscore', 'backbone'],
     * @property {boolean} isUIFilterType - If true, this filter is one of the
     * UIFilterTypes, belongs to a UIFilterGroupType model, and is used to create a custom
     * Portal search filters. This changes how the XML is parsed and how the model is
-    * serialized.
+    * validated and serialized.
     */
     defaults: function(){
       return{
@@ -829,6 +829,8 @@ define(['jquery', 'underscore', 'backbone'],
       try{
 
         var errors = {};
+        // UI filter types have 
+        var isUIFilterType = this.get("isUIFilterType");
 
         //---Validate fields----
         var fields = this.get("fields");
@@ -848,7 +850,7 @@ define(['jquery', 'underscore', 'backbone'],
 
         //---Validate values----
         var values = this.get("values");
-        //All values should be strings, booleans, numbers, or dates
+        // All values should be strings, booleans, numbers, or dates
         var invalidValues = _.filter(values, function(value){
           //Empty strings are invalid
           if( typeof value == "string" && !value.trim().length ){
@@ -866,8 +868,9 @@ define(['jquery', 'underscore', 'backbone'],
           this.set("values", _.without(values, invalidValues));
         }
 
-        //If there are no values, set an error message
-        if( !this.get("values").length ){
+        //If there are no values, and this isn't a custom search filter, set an error
+        //message.
+        if ( !isUIFilterType && !this.get("values").length ){
           errors.values = "Filters should include at least one search term.";
         }
 

@@ -18,10 +18,12 @@
         <div>
           <label class="ui-builder-container-text subtle">Earliest year</label>
           <input class="range-input ui-build-input" data-category="rangeMin" type="number" value="<%=rangeMin%>">
+          <p class="notification error" data-category="rangeMin" style="display:none"></p>
         </div>
         <div>
           <label class="ui-builder-container-text subtle">Latest year</label>
           <input class="range-input ui-build-input" data-category="rangeMax" type="number" value="<%=rangeMax%>">
+          <p class="notification error" data-category="rangeMax" style="display:none"></p>
         </div>
       </div>
     <% } %>
