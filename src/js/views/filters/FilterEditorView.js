@@ -438,13 +438,21 @@ define(['jquery', 'underscore', 'backbone',
          * Hide and destroy the filter editor modal window
          */
         hideModal: function () {
-          var view = this;
-          view.modalEl.off("hidden");
-          view.modalEl.on("hidden", function () {
-            view.modalEl.off();
-            view.modalEl.remove();
-          });
-          view.modalEl.modal("hide");
+          try {
+            var view = this;
+            view.modalEl.off("hidden");
+            view.modalEl.on("hidden", function () {
+              view.modalEl.off();
+              view.modalEl.remove();
+            });
+            view.modalEl.modal("hide");
+          }
+          catch (error) {
+            console.log(
+              'There was an error hiding the editing modal in a FilterEditorView' +
+              '. Error details: ' + error
+            );
+          }
         },
 
         /**
@@ -678,10 +686,13 @@ define(['jquery', 'underscore', 'backbone',
          * attribute that has an error, and the corresponding value explains the error in
          * text.
          */
-        handleErrors(errors) {
+        handleErrors: function(errors) {
           try {
-            console.log(errors)
-            // TODO: show errors in the editor modal
+            var view = this;
+            if (errors.fields) {
+              view.fieldInput.showMessage(errors.fields, "error", true)
+            }
+            view.currentUIBuilder.view.showValidationErrors(errors)
           }
           catch (error) {
             console.log(

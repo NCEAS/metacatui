@@ -128,7 +128,52 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         console.log("error updating the toggle filter object DOM, returning un-updated object DOM instead. Error message: " + e);
         return this.get("objectDOM") || "";
       }
-    }
+      },
+    
+      /**
+      * Checks if the values set on this model are valid and expected
+      * @return {object} - Returns a literal object with the invalid attributes and their
+      * corresponding error message
+      */
+      validate: function () {
+        try {
+
+          // Validate most of the ToggleFilter attributes using the parent validate
+          // function
+          var errors = Filter.prototype.validate.call(this);
+
+          // If everything is valid so far, then we have to create a new object to store
+          // errors
+          if (typeof errors != "object") {
+            errors = {};
+          }
+
+          // Delete error messages for the attributes that are going to be validated
+          // specially for the ToggleFilter
+          ["trueLabel", "trueValue", "falseLabel", "falseValue"].forEach(function (attr) {
+            delete errors[attr]
+          });
+
+          // At least one trueValue required
+          var trueValue = this.get("trueValue")
+          if (!trueValue) {
+            errors.trueValue = "The filter requires a term to search for when the toggle is on"
+          }
+
+          // Return the errors, if there are any
+          if (Object.keys(errors).length)
+            return errors;
+          else {
+            return;
+          }
+        }
+        catch (error) {
+          console.log(
+            'There was an error validating a ToggleFilter' +
+            '. Error details: ' + error
+          );
+        }
+      },
 
   });
 

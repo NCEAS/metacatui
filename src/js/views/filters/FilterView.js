@@ -210,7 +210,7 @@ define(['jquery', 'underscore', 'backbone',
     /**
     * Updates the view when the filter input is updated
     *
-    * @param {Event} - The DOM Event that occured on the filter view input element
+    * @param {Event} - The DOM Event that occurred on the filter view input element
     */
     handleChange: function(){
 
@@ -270,7 +270,92 @@ define(['jquery', 'underscore', 'backbone',
         console.log( 'There was an error updating a UI attribute in a FilterView' +
           ' Error details: ' + error );
       }
-    }
+      },
+    
+      /**
+       * Show validation errors. This is used for filters that are in "UIBuilder" mode.
+       * @param {Object} errors The error messages associated with each attribute that has
+       * an error, passed from the Filter model validation function.
+       */
+      showValidationErrors: function (errors) {
+        try {
+          var view = this;
+          var uiInputClass = this.uiInputClass;
+
+          for (const [category, message] of Object.entries(errors)) {
+
+            const input = view.el.querySelector("." + uiInputClass + "[data-category='" + category + "']");
+            const messageContainer = view.el.querySelector(".notification[data-category='" + category + "']");
+
+            view.showInputError(input, messageContainer, message);
+
+            if (input) {
+              input.addEventListener('input', function () {
+                view.hideInputError(input, messageContainer)
+              }, { once: true })
+            }
+          }
+        }
+        catch (error) {
+          console.log(
+            'There was an error showing validation errors in a FilterView' +
+            '. Error details: ' + error
+          );
+        }
+      },
+
+      /**
+       * This function indicates that there is an error with an input in this filter. It
+       * displays an error message and adds the error CSS class to the problematic input.
+       * @param {HTMLElement} input The input that has an error associated with its value
+       * @param {HTMLElement} messageContainer The element in which to insert the error
+       * message
+       * @param {string} message The error message to show
+       */
+      showInputError: function (input, messageContainer, message) {
+        try {
+          if (messageContainer && message) {
+            messageContainer.innerText = message;
+            messageContainer.style.display = "block";
+          }
+          if (input) {
+            input.classList.add("error");
+          }
+        }
+        catch (error) {
+          console.log(
+            'Failed to show an error message for an input in a FilterView' +
+            '. Error details: ' + error
+          );
+        }
+      },
+
+      /**
+       * This function hides the error message and error class added to inputs with the
+       * FilterView#showInputError function.
+       * @param {HTMLElement} input The input that had an error associated with its value
+       * @param {HTMLElement} messageContainer The element in which the error message was
+       * inserted
+       */
+      hideInputError: function (input, messageContainer) {
+        try {
+          if (messageContainer) {
+            messageContainer.innerText = "";
+            messageContainer.style.display = "none";
+          }
+          if (input) {
+            input.classList.remove("error");
+          }
+        }
+        catch (error) {
+          console.log(
+            'Failed to hide the error message for an input in a FilterView' +
+            '. Error details: ' + error
+          );
+        }
+      }
+    
+    
 
   });
   return FilterView;
