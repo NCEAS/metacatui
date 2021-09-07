@@ -18,14 +18,13 @@ define(["jquery",
         "text!templates/currentFilter.html",
         "text!templates/loading.html",
         "gmaps",
-        "nGeohash",
-        "text!templates/portals/portalResultItem.html"
+        "nGeohash"
     ],
     function(
       $, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel,
       MetricsModel, Utilities, SearchResultView, AnnotationFilter, CatalogTemplate,
       CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate,
-      LoadingTemplate, gmaps, nGeohash, PortalResultItemTemplate
+      LoadingTemplate, gmaps, nGeohash
     ) {
         "use strict";
 
@@ -2874,7 +2873,7 @@ define(["jquery",
                   model: result,
                   metricsModel: this.metricsModel
                 });
-                
+
                 // Add this item to the list
                 this.$results.append(view.render().el);
 
