@@ -1,12 +1,12 @@
 <div clas="annotation-popover-context">
-    <%= context %> <em><a href="<%= propertyURI %>"><%= propertyLabel %></a></em> <strong><a href="<%= valueURI %>"><%= valueLabel %></a></strong>
+    <%= context %> <em><a href="<%= propertyURI %>" target="_blank"><%= propertyLabel %></a></em> <strong><a href="<%= valueURI %>" target="_blank"><%= valueLabel %></a></strong>
 </div>
 <div class="annotation-popover-definition">
     <% if (definition) { %>
-        <i class="icon-link"></i> <strong><a href="<%= uri %>"><%= label %></a></strong> is defined as "<%= definition %>".
+        <i class="icon-link"></i> <strong><a href="<%= uri %>" target="_blank"><%= label %></a></strong> is defined as "<%= definition %>".
     <% } %>
 
-    Find more information about this term at <a href="<%= uri %>"><%= uri %></a>.
+    Find more information about this term at <a href="<%= uri %>" target="_blank"><%= uri %></a>.
 </div>
 <div class="annotation-popover-findmore">
     <i class="icon-search"></i> Find more datasets with annotations of <strong><a href="#" data-uri="<%= uri %>"><%= label %></a></strong>.
