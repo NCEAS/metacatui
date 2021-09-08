@@ -1,16 +1,16 @@
 <div clas="annotation-popover-context">
-    <%= context %> <em><a href="<%= propertyURI %>"><%= propertyLabel %></a></em> <strong><a href="<%= valueURI %>"><%= valueLabel %></a></strong>
+    <%= context %> <em><a href="<%= propertyURI %>" target="_blank"><%= propertyLabel %></a></em> <strong><a href="<%= valueURI %>" target="_blank"><%= valueLabel %></a></strong>
 </div>
 <div class="annotation-popover-definition">
     <% if (!valueResolved && MetacatUI.appModel.get("bioportalAPIKey")) { %>
-        Looking for more information about <a href="<%= valueURI %>"><%= valueLabel %></a>.
+        Looking for more information about <a href="<%= valueURI %>" target="_blank"><%= valueLabel %></a>.
     <% } else if (valueResolved && valueDefinition === null) { %>
-        No extra information could be found for <a href="<%= valueURI %>"><%= valueLabel %></a>.
+        No extra information could be found for <a href="<%= valueURI %>" target="_blank"><%= valueLabel %></a>.
     <% } else if(valueDefinition) { %>
-        <i class="icon-link"></i> <strong><a href="<%= valueURI %>"><%= valueLabel %></a></strong> is defined as "<%= valueDefinition %>".
+        <i class="icon-link"></i> <strong><a href="<%= valueURI %>" target="_blank"><%= valueLabel %></a></strong> is defined as "<%= valueDefinition %>".
     <% } %>
 
-    Find more information about this term at <a href="<%= valueURI %>"><%= valueURI %></a>.
+    Find more information about this term at <a href="<%= valueURI %>" target="_blank"><%= valueURI %></a>.
 </div>
 <div class="annotation-popover-findmore">
     <i class="icon-search"></i> Find more datasets with measurements of <strong><a href="#" data-uri="<%= valueURI %>"><%= valueLabel %></a></strong>.
