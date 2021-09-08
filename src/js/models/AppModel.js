@@ -1708,14 +1708,14 @@ define(['jquery', 'underscore', 'backbone'],
       randomLabelNumericLength: 7,
 
       /**
-      * A URL of a webpage for people to learn more about provenance. If no URL is provided,
-      * links to more info about provenance will be omitted.
-      * @since 2.16.0
-      * @type {string}
-      * @example https://mysite.org/provenance-help
-      * @default https://www.dataone.org/webinars/provenance-and-dataone-facilitating-reproducible-science/
+      * Enable or disable showing the MeasurementTypeView in the Editor's
+      * attribute modal dialog. The {@link AppModel#bioportalAPIKey} must be set to a valid Bioportal
+      * API key for the ontology tree widget to work.
+      * @type {boolean}
+      * @since 2.X.0
+      * @default false
       */
-      provenanceInfoURL: "https://www.dataone.org/webinars/provenance-and-dataone-facilitating-reproducible-science/",
+      enableMeasurementTypeView: false,
 
       /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users
@@ -1727,7 +1727,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {string}
       * @deprecated
       */
-      d1LogServiceUrl: null,
+      d1LogServiceUrl: null
       /**
       * This Bioportal REST API URL is used by the experimental and unsupported AnnotatorView to get multiple ontology class info at once.
       * @deprecated
@@ -1737,15 +1737,7 @@ define(['jquery', 'underscore', 'backbone'],
       * This DataONE API Annotator URL is used by the experimental and unsupported AnnotatorView to save an annotation
       * @deprecated
       */
-      //annotatorUrl: null,
-
-      /**
-      * Enable or disable showing the MeasurementTypeView in the Editor's 
-      * attribute modal dialog.
-      * @type {boolean}
-      * @since 2.14.0
-      */
-      enableMeasurementTypeView: false
+      //annotatorUrl: null
 		}, MetacatUI.AppConfig),
 
     defaultView: "data",
