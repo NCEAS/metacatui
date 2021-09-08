@@ -1708,6 +1708,16 @@ define(['jquery', 'underscore', 'backbone'],
       randomLabelNumericLength: 7,
 
       /**
+      * Enable or disable showing the MeasurementTypeView in the Editor's
+      * attribute modal dialog. The {@link AppModel#bioportalAPIKey} must be set to a valid Bioportal
+      * API key for the ontology tree widget to work.
+      * @type {boolean}
+      * @since 2.X.0
+      * @default false
+      */
+      enableMeasurementTypeView: false,
+
+      /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users
       */
       /**
@@ -1717,7 +1727,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {string}
       * @deprecated
       */
-      d1LogServiceUrl: null,
+      d1LogServiceUrl: null
       /**
       * This Bioportal REST API URL is used by the experimental and unsupported AnnotatorView to get multiple ontology class info at once.
       * @deprecated
@@ -1727,15 +1737,7 @@ define(['jquery', 'underscore', 'backbone'],
       * This DataONE API Annotator URL is used by the experimental and unsupported AnnotatorView to save an annotation
       * @deprecated
       */
-      //annotatorUrl: null,
-
-      /**
-      * Enable or disable showing the MeasurementTypeView in the Editor's 
-      * attribute modal dialog.
-      * @type {boolean}
-      * @since 2.14.0
-      */
-      enableMeasurementTypeView: false
+      //annotatorUrl: null
 		}, MetacatUI.AppConfig),
 
     defaultView: "data",
