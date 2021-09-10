@@ -145,7 +145,8 @@ define(['jquery', 'underscore', 'backbone',
             " selected. Change the 'filter data by' option to use this interface.",
           saveButton: "Use these filter settings",
           cancelButton: "Cancel",
-          deleteButton: "Remove filter"
+          deleteButton: "Remove filter",
+          validationError: "Please provide the content flagged below before saving this search filter."
         },
 
         /**
@@ -305,7 +306,7 @@ define(['jquery', 'underscore', 'backbone',
 
             this.editorView = options.editorView || null;
             
-            if (!options.isNew){
+            if (!options.isNew) {
               // If this view is an editor for an existing Filter model, check that the model
               // and the Filters collection is provided.
               if (!options.model) {
@@ -344,7 +345,6 @@ define(['jquery', 'underscore', 'backbone',
          */
         render: function () {
           try {
-
             // Save a reference to this view
             var view = this;
 
@@ -354,7 +354,7 @@ define(['jquery', 'underscore', 'backbone',
                 buttonIcon = "pencil";
             
             // Text & styling is different for the "add a new filter" button
-            if(this.isNew){
+            if (this.isNew) {
               buttonText = this.text.addFilterButton;
               buttonIcon = "plus";
               buttonClasses = buttonClasses + " btn";
@@ -461,6 +461,7 @@ define(['jquery', 'underscore', 'backbone',
          */
         activateModalButtons: function () {
           try {
+
             var view = this;
             // The buttons at the bottom of the modal
             var saveButton = this.modalEl.find("." + this.classes.saveButton),
@@ -488,7 +489,7 @@ define(['jquery', 'underscore', 'backbone',
               // Update the filter model in the parent Filters collection
               view.model = view.collection.replaceModel(oldModel, results.model);
               
-              if (view.editorView){
+              if (view.editorView) {
                 view.editorView.showControls();
               }
               
@@ -504,7 +505,7 @@ define(['jquery', 'underscore', 'backbone',
             deleteButton.on('click', function (event) {
               deleteButton.off('click');
               view.hideModal();
-              if(!view.isNew){
+              if (!view.isNew) {
                 view.collection.remove(view.model)
               }
               if (view.editorView) {
@@ -686,12 +687,23 @@ define(['jquery', 'underscore', 'backbone',
          * attribute that has an error, and the corresponding value explains the error in
          * text.
          */
-        handleErrors: function(errors) {
+        handleErrors: function (errors) {
           try {
             var view = this;
+
+            // Show a general error message in the modal. (Don't add it twice.)
+            if (view.validationErrorEl) {
+              view.validationErrorEl.remove()
+            }
+            view.validationErrorEl = $('<p class="alert alert-error">' + view.text.validationError + '</p>')
+            this.$el.find(".modal-body").prepend(view.validationErrorEl)
+
+            // Show an error for the "fields" attribute (common to all Filters)
             if (errors.fields) {
               view.fieldInput.showMessage(errors.fields, "error", true)
             }
+
+            // Show errors for the attributes specific to each Filter type
             view.currentUIBuilder.view.showValidationErrors(errors)
           }
           catch (error) {
