@@ -2742,8 +2742,7 @@ section#user-citations {
 }
 /** Annotation pills **/
 .annotation .annotation-property,
-.annotation .annotation-value,
-.annotation .annotation-findmore {
+.annotation .annotation-value {
   padding: 3px 6px;
 }
 
@@ -2760,21 +2759,11 @@ section#user-citations {
   border-width: 1px 0px 1px 0px;
   border-style: solid;
   border-color: #337ab7;
-  color: white;
-}
-
-.annotation .annotation-findmore {
-  background-color: #EEE;
-  border-width: 1px 1px 1px 0px;
-  border-style: solid;
-  border-color: #CCC;
   border-radius: 0px 3px 3px 0px;
-	padding: 0 10px;
 }
 
-.annotation .annotation-findmore div {
-	transform: rotate(45deg);
-	margin: 2px;
+.annotation .annotation-value .annotation-value-text {
+  color: white;
 }
 
  .annotation-popover-definition {
@@ -2784,6 +2773,7 @@ section#user-citations {
 
 .annotation-popover-definition {
 	border-top: 1px solid #CCC;
+	border-bottom: 1px solid #CCC;
 }
 /** Hide the search when in the dropdown menu **/
 .dropdown-menu .ncboAutocomplete {
