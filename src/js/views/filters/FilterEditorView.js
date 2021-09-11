@@ -118,16 +118,15 @@ define(['jquery', 'underscore', 'backbone',
 
         /**
          * Strings to use to display various messages to the user in this view
-         * @property {string} editButton - The text to show in the button a user
-         * clicks to open the editing modal window.
+         * @property {string} editButton - The text to show in the button a user clicks to
+         * open the editing modal window.
          * @property {string} addFilterButton - The text to show in the button a user
          * clicks to add a new search filter and open an editing modal window.
-         * @property {string} step1 - The instructions placed just before the fields
-         * input
-         * @property {string} step2 - The instructions placed after the fields input
-         * and before the uiBuilder select
-         * @property {string} filterNotAllowed - The message to show when a filter
-         * type doesn't work with the selected metadata fields
+         * @property {string} step1 - The instructions placed just before the fields input
+         * @property {string} step2 - The instructions placed after the fields input and
+         * before the uiBuilder select
+         * @property {string} filterNotAllowed - The message to show when a filter type
+         * doesn't work with the selected metadata fields
          * @property {string} saveButton - Text for the button at the bottom of the
          * editing modal that adds the filter model changes to the parent Filters
          * collection and closes the modal
@@ -135,6 +134,10 @@ define(['jquery', 'underscore', 'backbone',
          * editing modal that closes the modal window without making any changes.
          * @property {string} deleteButton - Text for the button at the bottom of the
          * editing modal that removes the Filter model from the Filters collection.
+         * @property {string} validationError - The message to show at the top of the
+         * modal when there is at least one validation error.
+         * @property {string} noFilterOption - The message to show when there is no UI
+         * available for the selected field or combination of fields.
          */
         text: {
           editButton: "EDIT",
@@ -146,7 +149,11 @@ define(['jquery', 'underscore', 'backbone',
           saveButton: "Use these filter settings",
           cancelButton: "Cancel",
           deleteButton: "Remove filter",
-          validationError: "Please provide the content flagged below before saving this search filter."
+          validationError: "Please provide the content flagged below before saving this " +
+            "search filter.",
+          noFilterOption: "There are currently no filter options available to support " +
+            "this field, or this combination of fields. Change the 'filter data by' " +
+            "option to select an interface."
         },
 
         /**
@@ -211,11 +218,21 @@ define(['jquery', 'underscore', 'backbone',
         * @typedef {Object} UIBuilderOption
         * @property {string} label - The user-facing label to show for this option
         * @property {string} modelType - The name of the filter model type that that this
-        * UI builder uses
-        * @property {string} iconFileName - The file name, including extension, of the
-        * SVG icon used to represent this option
+        * UI builder should create. Only one is allowed. The model must be one of the six
+        * filters that are allowed in a Portal "UIFilterGroupType". See
+        * {@link https://github.com/DataONEorg/collections-portals-schemas/blob/master/schemas/portals.xsd}.
+        * @property {string} iconFileName - The file name, including extension, of the SVG
+        * icon used to represent this option
         * @property {string} description - A very brief, user-facing description of how
         * this filter works
+        * @property {string[]} filterTypes - An array of one or more filter types that are
+        * allowed for this interface. If none are provided then any filter type is
+        * allowed. Filter types are one of the four keys defined in
+        * {@link QueryField#filterTypesMap}, and correspond to one of the four filter
+        * types that are allowed in a Collection definition. See
+        * {@link https://github.com/DataONEorg/collections-portals-schemas/blob/master/schemas/collections.xsd}.
+        * This property is used to help users match custom search filter UIs to
+        * appropriate query fields.
         * @property {function} modelFunction - A function that takes an optional object
         * with model properties and returns an instance of a model to use for this UI
         * builder
@@ -234,6 +251,7 @@ define(['jquery', 'underscore', 'backbone',
             modelType: "Filter",
             iconFileName: "filter.svg",
             description: "Allow people to search using any text they enter",
+            filterTypes: ["filter"],
             modelFunction: function (attrs) {
               return new Filter(attrs)
             },
@@ -249,6 +267,7 @@ define(['jquery', 'underscore', 'backbone',
             modelType: "ChoiceFilter",
             iconFileName: "choice.svg",
             description: "Allow people to select a search term from a list of options",
+            filterTypes: ["filter"],
             modelFunction: function (attrs) {
               return new ChoiceFilter(attrs)
             },
@@ -264,6 +283,7 @@ define(['jquery', 'underscore', 'backbone',
             modelType: "DateFilter",
             iconFileName: "number.svg",
             description: "Let people search for a range of years",
+            filterTypes: ["dateFilter"],
             modelFunction: function (attrs) {
               return new DateFilter(attrs)
             },
@@ -279,6 +299,7 @@ define(['jquery', 'underscore', 'backbone',
             modelType: "ToggleFilter",
             iconFileName: "toggle.svg",
             description: "Let people add or remove a single, specific search term",
+            filterTypes: ["filter"],
             modelFunction: function (attrs) {
               return new ToggleFilter(attrs)
             },
@@ -300,12 +321,18 @@ define(['jquery', 'underscore', 'backbone',
         initialize: function (options) {
           try {
 
+            // Ensure the query fields are cached for limitUITypes()
+            if (typeof MetacatUI.queryFields === "undefined") {
+              MetacatUI.queryFields = new QueryFields();
+              MetacatUI.queryFields.fetch();
+            }
+
             if (!options || typeof options != "object") {
               var options = {};
             }
 
             this.editorView = options.editorView || null;
-            
+
             if (!options.isNew) {
               // If this view is an editor for an existing Filter model, check that the model
               // and the Filters collection is provided.
@@ -314,7 +341,7 @@ define(['jquery', 'underscore', 'backbone',
                 return
               }
               if (!options.model.collection) {
-                console.log("The Filter model for a FilterEditorView must be part of a" + 
+                console.log("The Filter model for a FilterEditorView must be part of a" +
                   " Filters collection");
                 return
               }
@@ -325,7 +352,7 @@ define(['jquery', 'underscore', 'backbone',
               // If this is an editor for a new Filter model, create a default model and
               // make sure there is a Filters collection to add it to
               if (!options.collection) {
-                console.log("A Filters collection is required to render a " + 
+                console.log("A Filters collection is required to render a " +
                   "FilterEditorView for a new Filters model.");
                 return
               }
@@ -333,7 +360,7 @@ define(['jquery', 'underscore', 'backbone',
               this.collection = options.collection
               this.isNew = true
             }
-            
+
 
           } catch (error) {
             console.log("Error creating an FilterEditorView. Error details: " + error);
@@ -350,9 +377,9 @@ define(['jquery', 'underscore', 'backbone',
 
             // Create and insert an "edit" or a "add filter" button for the filter.
             var buttonText = this.text.editButton,
-                buttonClasses = this.classes.editButton,
-                buttonIcon = "pencil";
-            
+              buttonClasses = this.classes.editButton,
+              buttonIcon = "pencil";
+
             // Text & styling is different for the "add a new filter" button
             if (this.isNew) {
               buttonText = this.text.addFilterButton;
@@ -427,6 +454,9 @@ define(['jquery', 'underscore', 'backbone',
             // view.
             this.switchFilterType();
 
+            // Disable any filter types that do not match the currently selected fields
+            this.handleFieldChange(_.clone(view.model.get("fields")));
+
           }
           catch (error) {
             console.log('There was an error rendering the modal in a FilterEditorView' +
@@ -465,13 +495,23 @@ define(['jquery', 'underscore', 'backbone',
             var view = this;
             // The buttons at the bottom of the modal
             var saveButton = this.modalEl.find("." + this.classes.saveButton),
-                cancelButton = this.modalEl.find("." + this.classes.cancelButton),
-                deleteButton = this.modalEl.find("." + this.classes.deleteButton);
-            
+              cancelButton = this.modalEl.find("." + this.classes.cancelButton),
+              deleteButton = this.modalEl.find("." + this.classes.deleteButton);
+
             // Add listeners to the modal's "delete", "save", and "cancel" buttons.
 
             // SAVE
             saveButton.on('click', function (event) {
+
+              // Don't allow user to save a filter with a field that doesn't have a
+              // matching UI type supported yet.
+              if (view.noFilterOptions) {
+                view.handleErrors()
+                // Switch the message from "warning" to "error" so that it's clear this is
+                // the reason the user cannot save the filter
+                view.showNoFilterOptionMessage(false, "error");
+                return
+              }
 
               var results = view.createModel();
 
@@ -488,11 +528,11 @@ define(['jquery', 'underscore', 'backbone',
               var oldModel = view.model;
               // Update the filter model in the parent Filters collection
               view.model = view.collection.replaceModel(oldModel, results.model);
-              
+
               if (view.editorView) {
                 view.editorView.showControls();
               }
-              
+
             });
 
             // CANCEL
@@ -529,7 +569,7 @@ define(['jquery', 'underscore', 'backbone',
         renderUIBuilders: function () {
           try {
             var view = this;
-            
+
             // The container for the list of filter icons that allows users to switch
             // between filter types, plus the associated instruction paragraph
             var uiBuilderChoicesContainer = this.modalEl.find("." + this.classes.uiBuilderChoicesContainer);
@@ -622,10 +662,191 @@ define(['jquery', 'underscore', 'backbone',
             })
             view.modalEl.find("." + view.classes.fieldsContainer).append(view.fieldInput.el)
             view.fieldInput.render();
+
+            // When the field input is changed, limit UI options to options that match
+            // this field type
+            view.fieldInput.off("changeSelection")
+            view.fieldInput.on("changeSelection", function (selectedFields) {
+              view.handleFieldChange.call(view, selectedFields);
+            })
           }
           catch (error) {
             console.log('There was an error rendering a fields input in a FilterEditorView' +
               ' Error details: ' + error);
+          }
+        },
+
+        /**
+         * Run whenever the user selects or removes fields from the Query Field input.
+         * This function checks which filter UIs support the type of Query Field selected,
+         * and then blocks or enables the UIs in the editor. This is done to help prevent
+         * users from building mis-matched search filters, e.g. "Year Slider" filters with
+         * text query fields.
+         * @param {string[]} selectedFields The Query Field names (i.e. Solr field names)
+         * of the newly selected fields
+         */
+        handleFieldChange: function (selectedFields) {
+
+          try {
+            var view = this;
+
+            // Enable all UI types if no field is selected yet
+            if (!selectedFields || !selectedFields.length || selectedFields[0] === "") {
+              this.uiBuilders.forEach(function (uiBuilder) {
+                view.allowUI(uiBuilder)
+              })
+              return
+            }
+
+            // If at least one field is selected, then limit the available UI types to
+            // those that match the type of Query Field.
+            var type = MetacatUI.queryFields.getRequiredFilterType(selectedFields)
+
+            this.uiBuilders.forEach(function (uiBuilder) {
+              if (uiBuilder.filterTypes.includes(type)) {
+                view.allowUI(uiBuilder)
+              } else {
+                view.blockUI(uiBuilder)
+              }
+            })
+          }
+          catch (error) {
+            console.log(
+              'There was an error handling a field change in a FilterEditorView' +
+              '. Error details: ' + error
+            );
+          }
+
+        },
+
+        /**
+         * Marks a UI builder is blocked (so that it can't be selected) and updates the
+         * tooltip with text explaining that this UI can't be used with the selected
+         * fields. If the UI to block is the currently selected UI, then switches to the
+         * next allowed UI. If there are no UIs that are allowed, then shows a message and
+         * hides all UI builders.
+         * @param {UIBuilderOption} uiBuilder - The UI builder Object to block
+         */
+        blockUI: function (uiBuilder) {
+          try {
+            var view = this;
+            uiBuilder.allowed = false;
+            uiBuilder.button.addClass("disabled")
+            uiBuilder.button.tooltip("destroy")
+            uiBuilder.button.tooltip({
+              title: view.text.filterNotAllowed,
+              delay: {
+                show: 400,
+                hide: 50
+              }
+            })
+            // If the current UI is a blocked one...
+            if (this.currentUIBuilder === uiBuilder) {
+              // ... switch to the next unblocked one.
+              var allowedUIBuilder = _.findWhere(this.uiBuilders, { allowed: true });
+              if (allowedUIBuilder) {
+                view.switchFilterType(allowedUIBuilder.modelType)
+              } else {
+                // If there is no UI available, then show a message
+                this.showNoFilterOptionMessage()
+              }
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error blocking a filter UI builder in a FilterEditorView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Marks a UI builder is allowed (so that it can be selected) and updates the
+         * tooltip text with the description of this UI. If it's displayed, this function
+         * hides the message that indicates that there are no allowed UIs that match the
+         * selected query fields.
+         * @param {UIBuilderOption} uiBuilder - The UI builder Object to block
+         */
+        allowUI: function (uiBuilder) {
+
+          try {
+            // If at least one UI is allowed, then make sure the "no filter message" is
+            // hidden.
+            if (this.noFilterOptions) {
+              this.hideNoFilterOptionMessage()
+            }
+            uiBuilder.allowed = true;
+            uiBuilder.button.removeClass("disabled")
+            uiBuilder.button.tooltip("destroy")
+            uiBuilder.button.tooltip({
+              title: uiBuilder.description,
+              delay: {
+                show: 900,
+                hide: 50
+              }
+            })
+          }
+          catch (error) {
+            console.log(
+              'There was an error unblocking a filter UI builder in a FilterEditorView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Hides all filter builder UIs and displays a warning message indicating that
+         * there are currently no UI options that support the selected fields.
+         * @param {string} message A message to show. If not set, then the string set in
+         * the view's text.noFilterOption attribute is used.
+         * @param {string} [type="warning"] The type of message to display (warning,
+         * error, or info)
+         */
+        showNoFilterOptionMessage: function (message, type="warning") {
+          try {
+            this.noFilterOptions = true;
+            if (!message) {
+              message = this.text.noFilterOption
+            }
+            if (this.noFilterOptionMessageEl) {
+              this.noFilterOptionMessageEl.remove()
+            }
+            this.noFilterOptionMessageEl = $(
+              '<div class="alert alert-' + type + '">' + message + '</div>'
+            )
+            this.uiBuilderCarousel.hide()
+            this.uiBuilderCarousel.after(this.noFilterOptionMessageEl)
+          }
+          catch (error) {
+            console.log(
+              'There was an error showing a message to indicate that no filter builder ' +
+              'UI options are allowed in a FilterEditorView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Removes the message displayed by the
+         * {@link FilterEditorView#showNoFilterOptionMessage} function and un-hides all
+         * the filter builder UIs.
+         */
+        hideNoFilterOptionMessage: function () {
+          try {
+            this.noFilterOptions = false;
+            if (this.noFilterOptionMessageEl) {
+              this.noFilterOptionMessageEl.remove()
+              console.log(this.noFilterOptionMessageEl);
+            }
+            if (this.uiBuilderCarousel.is(':hidden')) {
+              this.uiBuilderCarousel.show()
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error hiding a message in a FilterEditorView' +
+              '. Error details: ' + error
+            );
           }
         },
 
@@ -645,7 +866,7 @@ define(['jquery', 'underscore', 'backbone',
           try {
             var selectedUI = this.currentUIBuilder,
               newModelAttrs = selectedUI.draftModel.toJSON();
-            
+
             // Set the new fields
             newModelAttrs.fields = _.clone(this.fieldInput.selected);
             // set the new fieldsOperator
@@ -698,13 +919,15 @@ define(['jquery', 'underscore', 'backbone',
             view.validationErrorEl = $('<p class="alert alert-error">' + view.text.validationError + '</p>')
             this.$el.find(".modal-body").prepend(view.validationErrorEl)
 
-            // Show an error for the "fields" attribute (common to all Filters)
-            if (errors.fields) {
-              view.fieldInput.showMessage(errors.fields, "error", true)
-            }
+            if (errors) {
+              // Show an error for the "fields" attribute (common to all Filters)
+              if (errors.fields) {
+                view.fieldInput.showMessage(errors.fields, "error", true)
+              }
 
-            // Show errors for the attributes specific to each Filter type
-            view.currentUIBuilder.view.showValidationErrors(errors)
+              // Show errors for the attributes specific to each Filter type
+              view.currentUIBuilder.view.showValidationErrors(errors)
+            }
           }
           catch (error) {
             console.log(
@@ -755,9 +978,18 @@ define(['jquery', 'underscore', 'backbone',
 
             // Get the properties of the Filter UI Editor for the new filter type.
             var uiBuilder = _.findWhere(this.uiBuilders, { modelType: newFilterType });
+
+            // Don't allow user to build a mis-matched filter (e.g. text filter with date
+            // field)
+            if (uiBuilder.allowed === false) {
+              return
+            }
+
+            // (Index is used for the carousel)
             var index = this.uiBuilders.indexOf(uiBuilder);
 
-            // Treat the first Filter in the list of filter UI editor options as the default
+            // Treat the first Filter in the list of filter UI editor options as the
+            // default
             if (!uiBuilder) {
               uiBuilder = this.uiBuilders[0];
               filterType = uiBuilder.modelType
@@ -790,7 +1022,7 @@ define(['jquery', 'underscore', 'backbone',
                 uiBuilder.draftModel = uiBuilder.modelFunction({ isUIFilterType: true });
               }
             }
-            
+
             if (Object.keys(newModelAttrs).length) {
               uiBuilder.draftModel.set(newModelAttrs)
             }
