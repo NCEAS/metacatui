@@ -2771,6 +2771,10 @@ section#user-citations {
 	padding: 3px 10px;
 }
 
+.annotation .annotation-remove {
+	padding: 3px 10px;
+}
+
  .annotation-popover-definition {
 	padding: 0.5rem 0;
 	margin: 0.5rem 0;
@@ -2779,6 +2783,14 @@ section#user-citations {
 .annotation-popover-definition {
 	border-top: 1px solid #CCC;
 	border-bottom: 1px solid #CCC;
+}
+
+/* MeasurementTypeView */
+.measurement-type-browse {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+	max-height: 12em;
+	overflow-y: scroll;
 }
 
 /* MeasurementTypeView */
