@@ -5,8 +5,8 @@ define(['underscore', 'jquery', 'backbone',
         'models/metadata/eml211/EMLMeasurementScale',
         'views/metadata/EMLMeasurementScaleView',
         'text!templates/metadata/eml-attribute.html'],
-    function(_, $, Backbone, DataONEObject, EMLAttribute, EMLMeasurementScale,
-    		EMLMeasurementScaleView, EMLAttributeTemplate){
+		function(_, $, Backbone, DataONEObject, EMLAttribute,
+			EMLMeasurementScale, EMLMeasurementScaleView, EMLAttributeTemplate){
 
         /**
         * @class EMLAttributeView
@@ -29,10 +29,10 @@ define(['underscore', 'jquery', 'backbone',
 
             /* Events this view listens to */
             events: {
-            	"change .input": "updateModel",
-            	"focusout" 	   : "showValidation",
-            	"keyup .error" : "hideValidation",
-            	"click .radio" : "hideValidation"
+              "change .input" : "updateModel",
+              "focusout" : "showValidation",
+              "keyup .error" : "hideValidation",
+              "click .radio" : "hideValidation"
             },
 
             initialize: function(options){
@@ -44,6 +44,7 @@ define(['underscore', 'jquery', 'backbone',
             },
 
             render: function(){
+              var viewRef = this;
 
             	var templateInfo = {
             			title: this.model.get("attributeName")? this.model.get("attributeName") : "Add New Attribute"
@@ -66,6 +67,20 @@ define(['underscore', 'jquery', 'backbone',
 
             	//Save a reference to this EMLAttribute model
             	measurementScaleModel.set("parentModel", this.model);
+
+              // Measurement Type
+              // Only shown when we have a BioPortal API key
+              if (MetacatUI.appModel.get("enableMeasurementTypeView") && MetacatUI.appModel.get("bioportalAPIKey")) {
+                // Dynamically require since this view is feature-flagged off by
+                // default and requires an API key
+                require(["views/metadata/EMLMeasurementTypeView"], function(EMLMeasurementTypeView){
+                  var view = new EMLMeasurementTypeView({
+                    model: viewRef.model
+                  });
+                  view.render();
+                  viewRef.$(".measurement-type-container").append(view.el);
+                });
+              }
 
             	//Create an EMLMeasurementScaleView for this attribute's measurement scale
             	var measurementScaleView = new EMLMeasurementScaleView({
