@@ -30,7 +30,6 @@ define(['underscore', 'jquery', 'backbone',
             /* Events this view listens to */
             events: {
               "change .input" : "updateModel",
-              "change input" : "updateModel",
               "focusout" : "showValidation",
               "keyup .error" : "hideValidation",
               "click .radio" : "hideValidation"
