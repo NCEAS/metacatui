@@ -426,7 +426,7 @@ define([
           var toRemove = [];
 
           this.each(function (filter) {
-            if (filter.get("fields").includes(field)) {
+            if (filter.get && filter.get("fields").includes(field)) {
               toRemove.push(filter);
             }
           });
