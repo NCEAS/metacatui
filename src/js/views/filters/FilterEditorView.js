@@ -4,13 +4,15 @@ define(['jquery', 'underscore', 'backbone',
   'models/filters/ChoiceFilter',
   'models/filters/DateFilter',
   'models/filters/ToggleFilter',
+  'collections/queryFields/QueryFields',
   'views/searchSelect/QueryFieldSelectView',
   'views/filters/FilterView',
   'views/filters/ChoiceFilterView',
   'views/filters/DateFilterView',
   'views/filters/ToggleFilterView',
-  'text!templates/filters/filterEditor.html'],
-  function ($, _, Backbone, Filter, ChoiceFilter, DateFilter, ToggleFilter,
+  'text!templates/filters/filterEditor.html'
+],
+  function ($, _, Backbone, Filter, ChoiceFilter, DateFilter, ToggleFilter, QueryFields,
     QueryFieldSelect, FilterView, ChoiceFilterView, DateFilterView, ToggleFilterView,
     Template) {
     'use strict';
