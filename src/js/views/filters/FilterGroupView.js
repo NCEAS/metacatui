@@ -83,6 +83,7 @@ define(['jquery', 'underscore', 'backbone',
             selected: filter.get("values"),
             inputLabel: filter.get("label"),
             separatorText: view.model.get("operator"),
+            placeholderText: filter.get("placeholder"),
             portalselect: true
           });
 
