@@ -84,6 +84,8 @@ define(['jquery', 'underscore', 'backbone',
             inputLabel: filter.get("label"),
             separatorText: view.model.get("operator"),
             placeholderText: filter.get("placeholder"),
+            icon: filter.get("icon"),
+            subType: "AnnotationFilterView",
             portalselect: true
           });
 

@@ -30,6 +30,14 @@ define([
          */
         type: "SearchableSelect",
 
+
+        /**
+         * The sub type of this View
+         * Mainly used for rendering custom annotation filter view on portal
+         * @type {string}
+         */
+        subType: "",
+
         /**
          * The HTML class names for this view element
          * @type {string}

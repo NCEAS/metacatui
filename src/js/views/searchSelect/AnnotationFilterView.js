@@ -173,6 +173,8 @@ define(
                 allowAdditions: false,
                 inputLabel: (view.inputLabel === undefined) ? "Add one or more concepts" : view.inputLabel,
                 placeholderText: (view.placeholderText === undefined) ? "Search for or select a value" : view.placeholderText,
+                icon: (view.icon === undefined) ? "" : view.icon,
+                subType: (view.subType === undefined) ? "" : view.subType,
                 separatorText: view.separatorText,
               })
               view.$el.append(view.multiSelectView.el);
