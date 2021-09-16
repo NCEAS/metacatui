@@ -78,8 +78,10 @@ define(['jquery', 'underscore', 'backbone',
         else if (filter.get("fields").includes("sem_annotation") && MetacatUI.appModel.get("bioportalAPIKey")) {
           
           var view = this;
+
           var annotationFilterView = new AnnotationFilterView({
-            selected: view.model.get("values"),
+            selected: filter.get("values"),
+            inputLabel: filter.get("label"),
             separatorText: view.model.get("operator"),
             portalselect: true
           });
