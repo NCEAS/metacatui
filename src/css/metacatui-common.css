@@ -8265,6 +8265,10 @@ body > #extension-is-installed{
   display: none;
 }
 
+.annotation-filter.custom-annotation-search-filter{
+	padding-bottom: 50px;
+}
+
 .annotation-filter.custom-annotation-search-filter .ui.selection.dropdown .menu,
 .annotation-filter.custom-annotation-search-filter .ui.selection.dropdown:hover .menu {
 	position: relative;
@@ -8280,4 +8284,5 @@ body > #extension-is-installed{
 
 .annotation-filter.custom-annotation-search-filter .ui.selection.dropdown {
 	width: 450px !important;
+	position: absolute;
 }
