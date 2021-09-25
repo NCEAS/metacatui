@@ -209,7 +209,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               }
 
               //Return the full URL
-              return baseUrl;
+              return baseUrl +
+                        (encodeURIComponent(this.get("id")) ||
+                         encodeURIComponent(this.get("seriesid")));
 
             }
             else {
