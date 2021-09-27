@@ -1355,6 +1355,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                   // Reset the content changes status
                   collection.packageModel.set("hasContentChanges", false);
 
+                  // This package is no longer new, so mark it as such
+                  collection.packageModel.set("isNew", false);
+
                   collection.trigger("successSaving", collection);
 
                   collection.packageModel.fetch({merge: true});
