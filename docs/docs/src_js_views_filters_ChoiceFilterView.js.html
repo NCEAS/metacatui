@@ -195,9 +195,10 @@ define(['jquery', 'underscore', 'backbone',
         var view = this;
         this.choicesEditor = $("&lt;div class='choices-editor'>&lt;/div>");
         var choicesEditorText = $("&lt;p class='modal-instructions'>Allow people to select from the following search terms&lt;/p>");
+        var choiceEditorError = $("&lt;p class='notification error' data-category='choices' style='display: none'>&lt;/p>");
         var labelContainer = $("&lt;div class='choice-editor unsortable'>&lt;/div>");
 
-        this.choicesEditor.append(choicesEditorText, labelContainer)
+        this.choicesEditor.append(choicesEditorText, choiceEditorError, labelContainer)
 
         labelContainer.append("&lt;p class='ui-builder-container-text choice-label subtle'>Enter the text to display&lt;/p>")
         labelContainer.append("&lt;p class='ui-builder-container-text choice-value subtle'>Enter the text to search for&lt;/p>")
@@ -438,20 +439,6 @@ define(['jquery', 'underscore', 'backbone',
     },
 
     /**
-    * Updates the view when the filter input is updated
-    *
-    * @param {Event} - The DOM Event that occurred on the filter view input element
-    */
-    handleChange: function(){
-
-      this.updateModel();
-
-      //Change the select menu back to the default option
-      this.$("select").val("");
-
-    },
-
-    /**
     * Updates the value set on the ChoiceFilter Model associated with this view.
     * The filter value is grabbed from the select element in this view.
     *
@@ -509,7 +496,49 @@ define(['jquery', 'underscore', 'backbone',
 
       }, this);
 
-    }
+    },
+    
+    /**
+     * Show validation errors. This is used for filters that are in "UIBuilder" mode.
+     * @param {Object} errors The error messages associated with each attribute that has
+     * an error, passed from the Filter model validation function.
+     */
+    showValidationErrors: function (errors) {
+      try {
+
+        var view = this;
+        // Select the messages container for the choice error (added in the template)
+        var messageContainer = view.el.querySelector(".notification[data-category='choices']");
+
+        // Show errors for label, placeholder, etc (elements common to all FilterViews)
+        FilterView.prototype.showValidationErrors.call(this, errors);
+
+        // Show errors in the choices editor
+        var inputs = this.choicesEditor.find("input");
+
+        // Add error styling to all the choices inputs. Remove error styling (and input
+        // listeners) from all inputs when there is text in at least one of them
+        var handleInput = function () {
+          inputs.each(function (i, input) {
+            view.hideInputError(input, messageContainer)
+            input.removeEventListener('input', handleInput)
+          })
+        }
+        if (inputs.length) {
+          inputs.each(function (i, input) {
+            view.showInputError(input);
+            input.addEventListener('input', handleInput);
+          })
+        }
+
+      }
+      catch (error) {
+        console.log(
+          'There was an error showing validation errors in a FilterView' +
+          '. Error details: ' + error
+        );
+      }
+    },
 
   });
   return ChoiceFilterView;

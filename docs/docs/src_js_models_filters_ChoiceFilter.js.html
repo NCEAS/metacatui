@@ -221,17 +221,20 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
         // Ensure that there is at least one choice
         if (!choices || choices.length === 0) {
-          errors.choices = "At least one option is required."
+          errors.choices = "At least one search term option is required."
         } else {
           // Remove any empty choices
           choices = choices.filter(function (choice) {
             return (choice.value || choice.label)
           })
           // If there is no value but there is a label, then set the search value to the
-          // label.
+          // label. If there is a value but no label, set the label to the value.
           choices.forEach(function (choice) {
             if (!choice.value) {
               choice.value = choice.label
+            }
+            if (!choice.label) {
+              choice.label = choice.value
             }
           })
         }

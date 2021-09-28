@@ -6,7 +6,7 @@ define(
 
     /**
      * @class QueryField
-     * @classdesc A QueryField is one of the fields supported by the the DataONE
+     * @classdesc A QueryField reprsents one of the fields supported by the DataONE
      * Solr index, as provided by the DataONE API
      * CNRead.getQueryEngineDescription() function. For more information, see:
      * https://indexer-documentation.readthedocs.io/en/latest/generated/solr_schema.html

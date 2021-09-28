@@ -421,7 +421,7 @@ field.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_filters_FilterEditorView.js.html">src/js/views/filters/FilterEditorView.js</a>, <a href="src_js_views_filters_FilterEditorView.js.html#line169">line 169</a>
+        <a href="src_js_views_filters_FilterEditorView.js.html">src/js/views/filters/FilterEditorView.js</a>, <a href="src_js_views_filters_FilterEditorView.js.html#line179">line 179</a>
     </li></ul></dd>
     
 
@@ -877,7 +877,7 @@ property OR a a queryFields property, not both.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_queryFields_QueryField.js.html">src/js/models/queryFields/QueryField.js</a>, <a href="src_js_models_queryFields_QueryField.js.html#line276">line 276</a>
+        <a href="src_js_models_queryFields_QueryField.js.html">src/js/models/queryFields/QueryField.js</a>, <a href="src_js_models_queryFields_QueryField.js.html#line280">line 280</a>
     </li></ul></dd>
     
 
@@ -1686,7 +1686,9 @@ represents a specific Filter model type and uses that associated Filter View.
             
 
             <td class="description last">The name of the filter model type that that this
-UI builder uses</td>
+UI builder should create. Only one is allowed. The model must be one of the six
+filters that are allowed in a Portal "UIFilterGroupType". See
+<a href="https://github.com/DataONEorg/collections-portals-schemas/blob/master/schemas/portals.xsd">https://github.com/DataONEorg/collections-portals-schemas/blob/master/schemas/portals.xsd</a>.</td>
         </tr>
 
     
@@ -1709,8 +1711,8 @@ UI builder uses</td>
 
             
 
-            <td class="description last">The file name, including extension, of the
-SVG icon used to represent this option</td>
+            <td class="description last">The file name, including extension, of the SVG
+icon used to represent this option</td>
         </tr>
 
     
@@ -1735,6 +1737,36 @@ SVG icon used to represent this option</td>
 
             <td class="description last">A very brief, user-facing description of how
 this filter works</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>filterTypes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An array of one or more filter types that are
+allowed for this interface. If none are provided then any filter type is
+allowed. Filter types are one of the four keys defined in
+<a href="QueryField.html#filterTypesMap">QueryField#filterTypesMap</a>, and correspond to one of the four filter
+types that are allowed in a Collection definition. See
+<a href="https://github.com/DataONEorg/collections-portals-schemas/blob/master/schemas/collections.xsd">https://github.com/DataONEorg/collections-portals-schemas/blob/master/schemas/collections.xsd</a>.
+This property is used to help users match custom search filter UIs to
+appropriate query fields.</td>
         </tr>
 
     
@@ -1822,7 +1854,7 @@ and returns the filter UI builder view for this option</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_filters_FilterEditorView.js.html">src/js/views/filters/FilterEditorView.js</a>, <a href="src_js_views_filters_FilterEditorView.js.html#line207">line 207</a>
+        <a href="src_js_views_filters_FilterEditorView.js.html">src/js/views/filters/FilterEditorView.js</a>, <a href="src_js_views_filters_FilterEditorView.js.html#line217">line 217</a>
     </li></ul></dd>
     
 
@@ -1919,7 +1951,8 @@ object defines a of interface to show for a given type and category.
 
             <td class="description last">An array of one or more filter types that
 are allowed for this interface.  If none are provided then any filter type is
-allowed.</td>
+allowed. Filter types are one of the four keys defined in
+<a href="QueryField.html#filterTypesMap">QueryField#filterTypesMap</a>.</td>
         </tr>
 
     

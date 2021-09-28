@@ -52,7 +52,7 @@ define(
 
     /**
      * @class QueryField
-     * @classdesc A QueryField is one of the fields supported by the the DataONE
+     * @classdesc A QueryField reprsents one of the fields supported by the DataONE
      * Solr index, as provided by the DataONE API
      * CNRead.getQueryEngineDescription() function. For more information, see:
      * https://indexer-documentation.readthedocs.io/en/latest/generated/solr_schema.html
@@ -163,6 +163,7 @@ define(
           formatId: "Metadata Format",
           fundingText: "Funding Description",
           identifier: "Metadata Identifier",
+          indexeddate: "Date last indexed",
           investigatorText: "Creator People Names",
           isPartOf: "Added to This Portal Manually",
           isService: "Data Available via Service",
@@ -289,23 +290,26 @@ define(
           siteText: "The name or description of the physical location where the data were collected",
           prov_hasSources: "One or more identifiers of metadata documents that have been used as sources to create a derived dataset. The derived datasets will be included in the search results.",
           prov_hasDerivations: "One or more identifiers of metadata documents that have been derived from another dataset. The source datasets will be included in the search results.",
+          indexeddate: "The date that the metadata document was last indexed (or re-indexed) in the search system."
         }
       },
 
       /**
-       * filterTypesMap -  Returns a map that matches every type of query field
-       * available in the index to the appropriate filter to use
-       * @return {object}  Returns an object where the keys are the nodenames of
-       *  the filters to use and the values are an array of the associated query types.
-       *  The query types in the array must exactly match the query types in the
-       *  type attribute of a query field model.
+       * filterTypesMap -  Returns a map that matches every type of query field available
+       * in the index to the appropriate filter to use. The four possible filters
+       * correspond to the filter types that are allowed in a Collection definition. See
+       * {@link {@link https://github.com/DataONEorg/collections-portals-schemas/blob/master/schemas/collections.xsd}}
+       * @return {object}  Returns an object where the keys are the nodenames of the
+       *  filters to use and the values are an array of the associated query types. The
+       *  query types in the array must exactly match the query types in the type
+       *  attribute of a query field model.
        */
       filterTypesMap: function(){
         return {
           filter  : ["string", "alphaOnlySort", "text_en_splitting", "text_en_splitting_tight", "text_general", "text_case_insensitive"],
           booleanFilter : ["boolean"],
           numericFilter : ["int", "tfloat", "tlong", "long"],
-          dateFilter : ["tdate"]
+          dateFilter : ["tdate", "date"]
         }
       },
 
@@ -356,7 +360,7 @@ define(
               "authorLastName",
                "contactOrganization",
               "contactOrganizationText", "investigator", "investigatorText",
-              "originator", "originatorText", "submitter", 
+              "originator", "originatorText", "submitter",
             ],
           },
           {
@@ -371,7 +375,7 @@ define(
             label: "Dates",
             icon: "calendar",
             queryFields: [
-              "dateUploaded", "beginDate", "endDate", "datePublished", "dateModified"
+              "dateUploaded", "beginDate", "endDate", "datePublished", "dateModified", "indexeddate"
             ],
           },
           {
@@ -512,6 +516,12 @@ define(
         }
       },
 
+      /**
+       * Gets a user-friendly description for this Query Field based on one of the strings
+       * configured in the {@link QueryField#description} function.
+       * @returns Returns one of the descriptions configured in this Model for this Field
+       * or "undefined" if one is not set.
+       */
       getFriendlyDescription: function(){
         try {
           var name  =  this.get("name");

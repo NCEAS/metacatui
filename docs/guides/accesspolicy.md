@@ -1,4 +1,8 @@
-# Setting a default access policy for uploads
+---
+layout: guide
+title: Setting a default access policy for uploads
+id: accesspolicy
+---
 
 When data files, metadata documents, and resource maps are uploaded to your repository
 through the MetacatUI dataset editor, each upload is assigned a [DataONE Access Policy](https://releases.dataone.org/online/api-documentation-v2.0.1/apis/Types.html#Types.AccessPolicy). Access Policies define who can view, edit, or edit ownership of an object.

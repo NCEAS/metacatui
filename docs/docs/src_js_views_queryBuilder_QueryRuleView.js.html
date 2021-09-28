@@ -413,7 +413,8 @@
          * @typedef {Object} ValueInputOption
          * @property {string[]} filterTypes - An array of one or more filter types that
          * are allowed for this interface.  If none are provided then any filter type is
-         * allowed.
+         * allowed. Filter types are one of the four keys defined in
+         * {@link QueryField#filterTypesMap}.
          * @property {string[]} categories - An array of one or more categories that are
          * allowed for this interface. These strings must exactly match the categories
          * provided in QueryField.categoriesMap(). If none are provided then any category
@@ -1064,7 +1065,7 @@
             // Get the current type of filter and required type given the newly selected
             // fields
             var typeBefore = this.model.get("nodeName"),
-                typeAfter = this.getRequiredFilterType(newFields);
+                typeAfter = MetacatUI.queryFields.getRequiredFilterType(newFields);
 
             // If the type has changed, then replace the model with one of the correct
             // type, update the value and operator inputs, and do nothing else
@@ -1110,45 +1111,6 @@
               " error message: " + e);
           }
 
-        },
-
-        /**
-         * getRequiredFilterType - Based on an array of query (Solr) fields, get the type
-         * of filter model this rule should use. For example, if the fields are type text,
-         * use a regular filter model. If the fields are tdate, use a dateFilter. Also
-         * decide which filter to use if the field types are mixed.
-         *
-         * @param  {string[]} fields The list of selected fields
-         * @return {string} The nodeName of the filter model to use
-         */
-        getRequiredFilterType: function (fields) {
-          try {
-            var types = [],
-              // When fields is empty or are different types
-              defaultFilterType = MetacatUI.queryFields.models[0].defaults().filterType;
-
-            if (!fields || fields.length === 0 || fields[0] === "") {
-              return defaultFilterType
-            }
-
-            fields.forEach((newField, i) => {
-              var fieldModel = MetacatUI.queryFields.findWhere({ name: newField });
-                types.push(fieldModel.get("filterType"));
-            });
-
-            // Test of all the fields are of the same type
-            var allEqual = types.every((val, i, arr) => val === arr[0]);
-
-            if (allEqual) {
-              return types[0]
-            } else {
-              return defaultFilterType
-            }
-
-          } catch (e) {
-            console.log("Failed to detect the required filter type in the Query Rule" +
-              " View, error message: " + e);
-          }
         },
 
         /**
@@ -1560,7 +1522,7 @@
 
             var view = this
               fields = this.model.get("fields"),
-              filterType = this.getRequiredFilterType(fields),
+              filterType = MetacatUI.queryFields.getRequiredFilterType(fields),
               category = this.getCategory(fields),
               interfaces = this.valueSelectUImap,
               label = "";

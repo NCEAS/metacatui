@@ -153,7 +153,48 @@ define(
           } catch (e) {
             console.log("Failed to parse Query Fields response, error message: " + e);
           }
-        }
+        },
+
+        /**
+         * getRequiredFilterType - Based on an array of query (Solr) field names, get the
+         * type of filter model to use with these fields. For example, if the fields are
+         * type text, use a regular filter model. If the fields are tdate, use a
+         * dateFilter. If the field types are mixed, then returns the filterType default
+         * value in QueryField models.
+         *
+         * @param  {string[]} fields The list of Query Field names
+         * @return {string} The nodeName of the filter model to use (one of the four types
+         * of fields that are set in {@link QueryField#filterTypesMap})
+         */
+         getRequiredFilterType: function (fields) {
+          try {
+            var types = [],
+              // When fields is empty or are different types
+              defaultFilterType = MetacatUI.queryFields.models[0].defaults().filterType;
+
+            if (!fields || fields.length === 0 || fields[0] === "") {
+              return defaultFilterType
+            }
+
+            fields.forEach((newField, i) => {
+              var fieldModel = MetacatUI.queryFields.findWhere({ name: newField });
+                types.push(fieldModel.get("filterType"));
+            });
+
+            // Test of all the fields are of the same type
+            var allEqual = types.every((val, i, arr) => val === arr[0]);
+
+            if (allEqual) {
+              return types[0]
+            } else {
+              return defaultFilterType
+            }
+
+          } catch (e) {
+            console.log("Failed to detect the required filter type in a Query Fields" +
+              " Collection, error message: " + e);
+          }
+        },
 
       });
     return QueryFields;
