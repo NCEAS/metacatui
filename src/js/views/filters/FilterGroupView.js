@@ -95,7 +95,7 @@ define(['jquery', 'underscore', 'backbone',
 
         //Some filters are handled specially
         //The isPartOf filter should be rendered as a ToggleFilter
-        if( filter.get("fields").includes("isPartOf") ){
+        if( filter.get && filter.get("fields").includes("isPartOf") ){
 
           //Set a trueValue on the model so it works with the ToggleView
           if( filter.get("values").length && filter.get("values")[0] ){

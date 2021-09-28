@@ -197,7 +197,11 @@ define(['jquery', 'underscore', 'backbone',
     *
     * @param {Event} - The DOM Event that occurred on the filter view input element
     */
-    handleTyping: function(e){
+      handleTyping: function (e) {
+      
+        if (["edit", "uiBuilder"].includes(this.mode)) {
+          return
+        }
 
       if (e.keyCode != 13){
         return;
@@ -212,7 +216,11 @@ define(['jquery', 'underscore', 'backbone',
     *
     * @param {Event} - The DOM Event that occurred on the filter view input element
     */
-    handleChange: function(){
+    handleChange: function () {
+
+      if (["edit", "uiBuilder"].includes(this.mode)) {
+        return
+      }
 
       this.updateModel();
 
@@ -225,7 +233,11 @@ define(['jquery', 'underscore', 'backbone',
     * Updates the value set on the Filter Model associated with this view.
     * The filter value is grabbed from the input element in this view.
     */
-    updateModel: function(){
+    updateModel: function () {
+      
+      if (["edit", "uiBuilder"].includes(this.mode)) {
+        return
+      }
 
       //Get the new value from the text input
       var newValue = this.$("input").val();

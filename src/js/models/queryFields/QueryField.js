@@ -247,12 +247,14 @@ define(
       },
 
       /**
-       * filterTypesMap -  Returns a map that matches every type of query field
-       * available in the index to the appropriate filter to use
-       * @return {object}  Returns an object where the keys are the nodenames of
-       *  the filters to use and the values are an array of the associated query types.
-       *  The query types in the array must exactly match the query types in the
-       *  type attribute of a query field model.
+       * filterTypesMap -  Returns a map that matches every type of query field available
+       * in the index to the appropriate filter to use. The four possible filters
+       * correspond to the filter types that are allowed in a Collection definition. See
+       * {@link {@link https://github.com/DataONEorg/collections-portals-schemas/blob/master/schemas/collections.xsd}}
+       * @return {object}  Returns an object where the keys are the nodenames of the
+       *  filters to use and the values are an array of the associated query types. The
+       *  query types in the array must exactly match the query types in the type
+       *  attribute of a query field model.
        */
       filterTypesMap: function(){
         return {
@@ -466,6 +468,12 @@ define(
         }
       },
 
+      /**
+       * Gets a user-friendly description for this Query Field based on one of the strings
+       * configured in the {@link QueryField#description} function.
+       * @returns Returns one of the descriptions configured in this Model for this Field
+       * or "undefined" if one is not set.
+       */
       getFriendlyDescription: function(){
         try {
           var name  =  this.get("name");

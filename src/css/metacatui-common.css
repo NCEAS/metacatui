@@ -4308,7 +4308,22 @@ add font awesome close icon */
 .ui-build .range-inputs > * {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
+}
+
+.ui-build .range-inputs .notification.error {
+  max-width: 15rem;
+}
+
+.ui-build .range-inputs .range-input-min {
+  align-items: start;
+}
+
+.ui-build .range-inputs .range-input-max .notification.error {
+  text-align: right;
+}
+
+.ui-build .range-inputs .range-input-max {
+  align-items: end;
 }
 
 /* toggle builder in UI build mode */
