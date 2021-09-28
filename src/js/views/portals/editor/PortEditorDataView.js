@@ -121,7 +121,7 @@ function( _, $, Backbone, FilterGroup, PortEditorSectionView, EditCollectionView
           isUIFilterType: true
         })])
       }
-      
+
       var filterGroupsView = new FilterGroupsView({
         filterGroups: this.model.get("filterGroups"),
         edit: true,
@@ -144,7 +144,7 @@ function( _, $, Backbone, FilterGroup, PortEditorSectionView, EditCollectionView
       try{
         e.preventDefault();
         e.stopPropagation();
-        var url = MetacatUI.appModel.get('baseUrl') + $(e.currentTarget).attr('href');
+        var url = MetacatUI.root + $(e.currentTarget).attr('href');
         window.open(url, '_blank');
       }
       catch(error){
