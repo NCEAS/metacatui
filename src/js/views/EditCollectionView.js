@@ -27,6 +27,12 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     type: "EditCollection",
 
     /**
+     * A reference to the parent editor view, if there is one
+     * @type {PortalEditorView}
+     */
+    editorView: undefined,
+
+    /**
     * The HTML tag name to use for this view's element
     * @type {string}
     */
@@ -77,12 +83,24 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
      ruleColorPalette: ["#44AA99", "#137733", "#c9a538", "#CC6677", "#882355", "#AA4499","#332288"],
 
     /**
-     * Query fields to exclude in the metadata field selector of each query rule. This
+     * Query fields to exclude in the metadata field selector of each Query Rule. This
      * is a list of field names that exist in the query service index (i.e. Solr), but
      * which should be hidden in the Query Builder
      * @type {string[]}
      */
     queryBuilderExcludeFields: MetacatUI.appModel.get("collectionQueryExcludeFields"),
+
+    /**
+     * Query fields to exclude in the metadata field selector for any Query Rules that are
+     * in nested Query Builders (i.e. in nested Filter Groups). This is a list of field
+     * names that exist in the query service index (i.e. Solr), but which should be hidden
+     * in nested Query Builders
+     * @type {string[]}
+     */
+    queryBuilderNestedExcludeFields: _.union(
+      MetacatUI.appModel.get("collectionQueryExcludeFields"),
+      MetacatUI.appModel.get("queryIdentifierFields")
+    ),
 
     /**
      * Query fields that do not exist in the query service index, but which we would
@@ -166,10 +184,8 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
      */
     renderQueryBuilder: function(){
 
-      var view = this;
-
       // If the isPartOf filter is hidden, then don't allow users to build
-      // a query rule using the isPartOf field. If they do, that rule will
+      // a Query Rule using the isPartOf field. If they do, that rule will
       // be hidden the next time they open the portal in the editor. Also,
       // the filter they create will overwrite the isPartOf filter created by
       // default.
@@ -178,13 +194,14 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       }
 
       var queryBuilder = new QueryBuilder({
-        collection: this.model.get("definitionFilters"),
+        filterGroup: this.model.get("definition"),
         ruleColorPalette: this.ruleColorPalette,
         excludeFields: this.queryBuilderExcludeFields,
+        nestedExcludeFields: this.queryBuilderNestedExcludeFields,
         specialFields: this.queryBuilderSpecialFields,
       });
 
-      // Render the query builder and insert it into this view
+      // Render the Query Builder and insert it into this view
       this.$(this.queryBuilderViewContainer).html(queryBuilder.el);
       queryBuilder.render();
     },
@@ -212,10 +229,11 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
           " Try undoing the last change you made.",
         solrErrorTitle: "Something went wrong searching for datasets that match your query",
         // Override the function that creates filter groups on the left of the
-        // data catalog view. With the query builder view, they are not needed.
-        // Otherwise, the defaultFilterGroups will be added to the query builder
+        // data catalog view. With the Query Builder view, they are not needed.
+        // Otherwise, the defaultFilterGroups will be added to the Query Builder
         createFilterGroups: function(){ return },
-        addAnnotationFilter: function(){ return }
+        addAnnotationFilter: function(){ return },
+        editorView: this.editorView
       });
 
       //Render the view and insert it into the page
@@ -264,7 +282,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       if ( currentFilters.length == 0 && this.model.get("searchResults").length ) {
         msg = "<h5>Your dataset collection hasn't been created yet.</h5>" +
               "<p>The datasets listed here are totally unfiltered. To specify which datasets belong to your collection, " +
-              "add rules in query builder above.</p>";
+              "add rules in the Query Builder above.</p>";
       }
       //If there is only an isPartOf filter, but no datasets have been marked as part of this collection
       else if( currentFilters.length == 1 &&

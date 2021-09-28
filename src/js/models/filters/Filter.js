@@ -29,19 +29,31 @@ define(['jquery', 'underscore', 'backbone'],
     * @property {string} nodeName - The XML node name for this filter's XML DOM
     * @property {string[]} fields - The search index fields to search
     * @property {string[]} values - The values to search for in the given search fields
-    * @property {string} operator - The operator to use between values set on this model. "AND" or "OR"
-    * @property {string} queryGroup - The name of the group this Filter is a part of, which is
-    * primarily used when creating a query string from multiple Filter models. Filters
-    * in the same group will be wrapped in parenthesis in the query.
-    * @property {boolean} exclude - If true, search index docs matching this filter will be excluded from the search results
-    * @property {boolean} matchSubstring - If true, the search values will be wrapped in wildcard characters to match substrings
+    * @property {string} operator - The operator to use between values set on this model.
+    * "AND" or "OR"
+    * @property {string} fieldsOperator - The operator to use between fields set on this
+    * model. "AND" or "OR"
+    * @property {string} queryGroup - Deprecated: Add this filter along with other the
+    * other associated query group filters to a FilterGroup model instead. Old definition:
+    * The name of the group this Filter is a part of, which is primarily used when
+    * creating a query string from multiple Filter models. Filters in the same group will
+    * be wrapped in parenthesis in the query.
+    * @property {boolean} exclude - If true, search index docs matching this filter will
+    * be excluded from the search results
+    * @property {boolean} matchSubstring - If true, the search values will be wrapped in
+    * wildcard characters to match substrings
     * @property {string} label - A human-readable short label for this Filter
     * @property {string} placeholder - A short example or description of this Filter
-    * @property {string} icon - A term that identifies a single icon in a supported icon library
+    * @property {string} icon - A term that identifies a single icon in a supported icon
+    * library
     * @property {string} description - A longer description of this Filter's function
-    * @property {boolean} isInvisible - If true, this filter will be added to the query but will
-    * act in the "background", like a default filter
-    * @property {boolean} inFilterGroup - If true, this filter belongs to a FilterGroup model
+    * @property {boolean} isInvisible - If true, this filter will be added to the query
+    * but will act in the "background", like a default filter
+    * @property {boolean} inFilterGroup - Deprecated: use isUIFilterType instead.
+    * @property {boolean} isUIFilterType - If true, this filter is one of the
+    * UIFilterTypes, belongs to a UIFilterGroupType model, and is used to create a custom
+    * Portal search filters. This changes how the XML is parsed and how the model is
+    * validated and serialized.
     */
     defaults: function(){
       return{
@@ -50,7 +62,7 @@ define(['jquery', 'underscore', 'backbone'],
         fields: [],
         values: [],
         operator: "AND",
-        queryGroup: null,
+        fieldsOperator: "AND",
         exclude: false,
         matchSubstring: false,
         label: null,
@@ -58,30 +70,25 @@ define(['jquery', 'underscore', 'backbone'],
         icon: null,
         description: null,
         isInvisible: false,
-        inFilterGroup: false
+        isUIFilterType: false
       }
     },
 
     /**
     * Creates a new Filter model
     */
-    initialize: function(){
+    initialize: function(attributes){
+
       if( this.get("objectDOM") ){
         this.set( this.parse(this.get("objectDOM")) );
       }
 
-      // Assign a random query group to Filters that are specifying very specific datasets,
-      // such as by id, seriesId, or the isPartOf relationship. This is done so that
-      // the query string is constructed with these filters "OR"ed into the query.
-      // For example, a query might be to look for datasets by a certain scientist OR
-      // with the given id. If those filters were ANDed together, the search would essentially
-      // ignore the creator filter and only return the dataset with the matching id.
-      if( this.get("fields").includes("isPartOf") || this.get("fields").includes("id") ||
-          this.get("fields").includes("seriesId") ){
-        this.set("queryGroup", Math.floor(Math.random() * Math.floor(10000)).toString());
+      if (attributes && attributes.isUIFilterType){
+        this.set("isUIFilterType", true)
       }
 
-      //If this is an isPartOf filter, then add a label and description
+      //If this is an isPartOf filter, then add a label and description. Make it invisible
+      //depending on how MetacatUI is configured.
       if( this.get("fields").length == 1 && this.get("fields").includes("isPartOf") ){
         this.set({
           label: "Datasets added manually",
@@ -89,6 +96,14 @@ define(['jquery', 'underscore', 'backbone'],
           isInvisible: MetacatUI.appModel.get("hideIsPartOfFilter") === true ? true : false,
         });
       }
+
+      // Operator must be AND or OR
+      ["fieldsOperator", "operator"].forEach(function(op){
+        if( !["AND", "OR"].includes(this.get(op)) ){
+          // Set the value to the default
+          this.set(op, this.defaults()[op])
+        }
+      }, this);
 
     },
 
@@ -121,13 +136,32 @@ define(['jquery', 'underscore', 'backbone'],
         modelJSON.label = this.parseTextNode(xml, "label");
       }
 
-      //Parse the operator, if it exists
+      // Check if this filter contains one of the Id fields - we use OR by default for the
+      // operator for these fields.
+      var idFields = MetacatUI.appModel.get("queryIdentifierFields");
+      var isIdFilter = false;
+      if(modelJSON.fields){
+        isIdFilter = _.some( idFields, function(idField) {
+          return modelJSON.fields.includes(idField)
+        });
+      }
+
+      //Parse the operators, if they exist
       if( $(xml).find("operator").length ){
         modelJSON.operator = this.parseTextNode(xml, "operator");
       }
       else{
-        if( modelJSON.fields.includes('id') ){
+        if( isIdFilter ){
           modelJSON.operator = "OR";
+        }
+      }
+
+      if( $(xml).find("fieldsOperator").length ){
+        modelJSON.fieldsOperator = this.parseTextNode(xml, "fieldsOperator");
+      }
+      else{
+        if( isIdFilter ){
+          modelJSON.fieldsOperator = "OR";
         }
       }
 
@@ -148,7 +182,7 @@ define(['jquery', 'underscore', 'backbone'],
       }
 
       //If this Filter is in a filter group, don't parse the values
-      if( !this.get("inFilterGroup") ){
+      if( !this.get("isUIFilterType") ){
         if( $(xml).children("value").length ){
           //Parse the value(s)
           modelJSON.values = this.parseTextNode(xml, "value", true);
@@ -248,8 +282,12 @@ define(['jquery', 'underscore', 'backbone'],
      * Builds a query string that represents this filter.
      *
      * @return {string} The query string to send to Solr
+     * @param {string} [groupLevelOperator] - "AND" or "OR". The operator used in the
+     * parent Filters collection to combine the filter query fragments together. If the
+     * group level operator is "OR" and this filter has exclude set to TRUE, then a
+     * positive clause is added.
      */
-    getQuery: function(){
+    getQuery: function(groupLevelOperator){
 
       //Get the values of this filter in Array format
       var values = this.get("values");
@@ -289,7 +327,7 @@ define(['jquery', 'underscore', 'backbone'],
 
         //Add the OR operator between field names
         if( fields.length > i+1 && queryString.length ){
-          queryString += "%20" + this.get("operator") + "%20";
+          queryString += "%20" + this.get("fieldsOperator") + "%20";
         }
 
       }, this);
@@ -301,12 +339,99 @@ define(['jquery', 'underscore', 'backbone'],
 
       //If this filter should be excluding matches from the results,
       // then add a hyphen in front
-      if( this.get("exclude") ){
-        queryString = "-" + queryString + "%20AND%20*:*";
+      if( queryString && this.get("exclude") ){
+        queryString = "-" + queryString;
+        if (this.requiresPositiveClause(groupLevelOperator)){
+          queryString = queryString + "%20AND%20*:*";
+          if (groupLevelOperator && groupLevelOperator === "OR"){
+            queryString = "(" + queryString + ")"
+          }
+        }
       }
 
       return queryString;
 
+    },
+
+    /**
+     * For "negative" Filters (filter models where exclude is set to true), detects
+     * whether the query requires an additional "positive" query phrase in order to avoid
+     * the problem of pure negative queries returning zero results. If this Filter is not
+     * part of a collection of Filters, assume it needs the positive clause. If this
+     * Filter is part of a collection of Filters, detect whether there are other,
+     * "positive" filters in the same query (i.e. filter models where exclude is set to
+     * false). If there are other positive queries, then an additional clause is not
+     * required. If the Filter is part of a pure negative query, but it is not the last
+     * filter, then don't add a clause since it will be added to the last, and only one
+     * is required. When looking for other positive and negative filters, exclude empty
+     * filters and filters that use any of the identifier fields, as these are appended to
+     * the end of the query.
+     * @see {@link https://github.com/NCEAS/metacatui/issues/1600}
+     * @see {@link https://cwiki.apache.org/confluence/display/SOLR/NegativeQueryProblems}
+     * @param {string} [groupLevelOperator] - "AND" or "OR". The operator used in the
+     * parent Filters collection to combine the filter query fragments together. If the
+     * group level operator is "OR" and this filter has exclude set to TRUE, then a
+     * positive clause is required.
+     * @return {boolean} returns true of this Filter needs a positive clause, false
+     * otherwise
+     */
+    requiresPositiveClause: function (groupLevelOperator){
+
+      try {
+
+        // Only negative queries require the additional clause
+        if(this.get("exclude") == false ){
+          return false
+        }
+        // If this Filter is not part of a collection of Filters, assume it needs the
+        // positive clause.
+        if(!this.collection){
+          return true
+        }
+        // If this Filter is the only one in the group, assume it needs a positive clause
+        if(this.collection.length === 1){
+          return true
+        }
+        // If this filter is being "OR"'ed together with other filters, then assume it
+        // needs the additional clause.
+        if (groupLevelOperator && groupLevelOperator === "OR"){
+          return true
+        }
+        // Get all of the other filters in the same collection that are not ID filters.
+        // These filters are always appended to the end of the query as a separated group.
+        var nonIDFilters = this.collection.getNonIdFilters();
+        // Exclude filters that would give an empty query string (e.g. because value is
+        // missing)
+        var filters = _.reject(nonIDFilters, function(filterModel){
+          if(filterModel === this){
+            return false
+          }
+          return !filterModel.isValid()
+        })
+
+        // If at least one filter in the collection is positive (exclude = false), then we
+        // don't need to add anything
+        var positiveFilters = _.find(filters, function(filterModel){
+          return filterModel.get("exclude") != true;
+        });
+        if(positiveFilters){
+          return false
+        }
+        // Assuming that all the non-ID filters are negative, check if this is the first
+        // last the list. Since we only need one additional positive query phrase to avoid
+        // the pure negative query problem, by convention, only add the positive phrase at
+        // the end of the filter group
+        if(this === _.last(filters)){
+          return true
+        } else {
+          return false
+        }
+      } catch (error) {
+        console.log("There was a problem detecting whether a Filter required a positive" +
+        " clause. Assuming that it needs one. Error details: " + error
+        );
+        return true
+      }
     },
 
     /**
@@ -321,6 +446,7 @@ define(['jquery', 'underscore', 'backbone'],
     * @return {string} The query substring
     */
     getValueQuerySubstring: function(values){
+
       //Start a query string for this field and get the values
       var valuesQueryString = "",
           values = values || this.get("values");
@@ -342,31 +468,29 @@ define(['jquery', 'underscore', 'backbone'],
         value = value.trim();
 
         var dateRangeRegEx = /^\[((\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d*Z)|\*)( |%20)TO( |%20)((\d{4}-[01]\d-[0-3]\dT[0-2]\d(:|\\:)[0-5]\d(:|\\:)[0-5]\d\.\d*Z)|\*)\]/,
-            isDateRange = dateRangeRegEx.test(value);
+            isDateRange = dateRangeRegEx.test(value),
+            isSearchPhrase = value.indexOf(" ") > -1,
+            isIdFilter = this.isIdFilter();
 
-        //Escape special characters
+        // Escape special characters
         value = this.escapeSpecialChar(value);
 
-        //If the value is a search phrase (more than one word), and not a date range string, wrap in quotes
-        if( value.indexOf(" ") > -1 && !isDateRange ){
-          valuesQueryString += "\"" + value + "\"";
+        // If the value is a search phrase (more than one word), is part of an ID filter,
+        // and not a date range string, wrap in quotes
+        if( (isSearchPhrase || isIdFilter) && !isDateRange ){
+          value = "\"" + value + "\"";
         }
-        else if( this.get("matchSubstring") && !isDateRange ){
 
-          //Look for existing wildcard characters at the end of the value string
-          if( value.match( /^\*|\*$/ ) ){
-            valuesQueryString += value;
+        if( this.get("matchSubstring") && !isDateRange ){
+          // Look for existing wildcard characters at the end of the value string, wrap
+          // the value string in wildcard characters if there aren't any yet.
+          if(! value.match( /^\*|\*$/ ) ){
+            value = "*" + value + "*"
           }
-          //Wrap the value string in wildcard characters
-          else{
-            valuesQueryString += "*" + value + "*";
-          }
+        }
 
-        }
-        else{
-          //Add the value to the query string
-          valuesQueryString += value;
-        }
+        // Add the value to the query string
+        valuesQueryString += value;
 
         //Add the operator between values
         if( values.length > i+1 && valuesQueryString.length ){
@@ -380,6 +504,28 @@ define(['jquery', 'underscore', 'backbone'],
       }
 
       return valuesQueryString;
+    },
+
+    /**
+     * Checks if any of the fields in this Filter match one of the
+     * {@link AppConfig#queryIdentifierFields}
+     * @since 2.x
+     */
+    isIdFilter: function(){
+      try {
+        var fields = this.get("fields");
+        if(!fields){
+          return false
+        }
+        var idFields = MetacatUI.appModel.get("queryIdentifierFields");
+        return _.some( idFields, function(idField) {
+          return fields.includes(idField)
+        })
+      } catch (error) {
+        console.log("Error checking if a Filter model is an ID filter. " +
+          "Assuming it is not. Error details:" + error );
+        return false
+      }
     },
 
     /**
@@ -408,9 +554,9 @@ define(['jquery', 'underscore', 'backbone'],
       try {
         var fields      =   this.get("fields"),
             values      =   this.get("values"),
-            noFields    =   fields.length == 0;
+            noFields    =   !fields || fields.length == 0;
             fieldsEmpty =   _.every(fields, function(item) { return item == "" }),
-            noValues    =   values.length == 0;
+            noValues    =   !values || values.length == 0;
             valuesEmpty =   _.every(values, function(item) { return item == "" });
 
         var noMinNoMax = _.every(
@@ -420,7 +566,21 @@ define(['jquery', 'underscore', 'backbone'],
           }
         );
 
+        // Values aren't required for UI filter types. Labels, icons, and descriptions are
+        // available.
+        if(this.get("isUIFilterType")){
+          noUIVals = _.every(["label", "icon", "description"], function(attrName){
+            var setValue = this.get(attrName);
+            var defaultValue = this.defaults()[attrName];
+            return !setValue || (setValue === defaultValue)
+          }, this)
+          return noUIVals && noFields && fieldsEmpty && noMinNoMax
+        }
+
+        // For regular search filters, just a field and some sort of search term/value is
+        // required
         return noFields && fieldsEmpty && noValues && valuesEmpty && noMinNoMax
+
       } catch (e) {
         console.log("Failed to check if a Filter is empty, error message: " + e);
       }
@@ -455,7 +615,6 @@ define(['jquery', 'underscore', 'backbone'],
      * Updates XML DOM with the new values from the model
      *
      *  @param {object} [options] A literal object with options for this serialization
-     *  @property {boolean} [options.forCollection] - If true, will create an XML DOM for Collection definitions, not FilterGroups
      *  @return {Element} A new XML element with the updated values
     */
     updateDOM: function(options){
@@ -470,10 +629,14 @@ define(['jquery', 'underscore', 'backbone'],
             filterOptionsNode;
 
         if( typeof objectDOM == "undefined" || !objectDOM || !$(objectDOM).length ){
+          // Node name differs for different filters, all of which use this function
+          var nodeName = this.get("nodeName") || "filter";
           // Create an XML filter element from scratch
-          var objectDOM = new DOMParser().parseFromString("<" + this.get("nodeName") +
-                          "></" + this.get("nodeName") + ">", "text/xml");
-          var $objectDOM = $(objectDOM).find(this.get("nodeName"));
+          var objectDOM = new DOMParser().parseFromString(
+            "<" + nodeName + "></" + nodeName + ">",
+            "text/xml"
+            );
+          var $objectDOM = $(objectDOM).find(nodeName);
         }
         else{
           objectDOM = objectDOM.cloneNode(true);
@@ -489,33 +652,55 @@ define(['jquery', 'underscore', 'backbone'],
 
         var xmlDocument = $objectDOM[0].ownerDocument;
 
-        // Get new values. Set the key as the DOM element name (i.e. "field" instead of "fields")
-        var filterData = {
-          // The following values are common to all FilterType elements
-          label: this.get("label"),
-          field: this.get("fields"),
-          operator: this.get("operator"),
-          exclude: this.get("exclude"),
-          matchSubstring: this.get("matchSubstring"),
-          value: this.get("values")
-        };
+        // Get new values. Must store in an array because the order that we add each
+        // element to the DOM matters
+        var filterData = [
+          {
+            nodeName: "label",
+            value: this.get("label"),
+          },
+          {
+            nodeName: "field",
+            value: this.get("fields"),
+          },
+          {
+            nodeName: "operator",
+            value: this.get("operator"),
+          },
+          {
+            nodeName: "exclude",
+            value: this.get("exclude"),
+          },
+          {
+            nodeName: "fieldsOperator",
+            value: this.get("fieldsOperator"),
+          },
+          {
+            nodeName: "matchSubstring",
+            value: this.get("matchSubstring"),
+          },
+          {
+            nodeName: "value",
+            value: this.get("values"),
+          },
+        ]
 
-        // Make new sub nodes using the new model data
-        _.map(filterData, function(values, nodeName){
+        filterData.forEach(function(element){
+          var values = element.value;
+          var nodeName = element.nodeName;
 
           // Serialize the nodes with multiple occurrences
           if( Array.isArray(values) ){
-              _.each(values, function(value){
-                // Don't serialize empty, null, or undefined values
-                if( value || value === false || value === 0 ){
-                  var nodeSerialized = xmlDocument.createElement(nodeName);
-                  $(nodeSerialized).text(value);
-                  $objectDOM.append(nodeSerialized);
-                }
-              }, this);
-          // Serialize the single occurrence nodes
+            _.each(values, function(value){
+              // Don't serialize empty, null, or undefined values
+              if( value || value === false || value === 0 ){
+                var nodeSerialized = xmlDocument.createElement(nodeName);
+                $(nodeSerialized).text(value);
+                $objectDOM.append(nodeSerialized);
+              }
+            }, this);
           }
-          // Don't serialize falsey or default values
+          // Serialize the single occurrence nodes. Don't serialize falsey or default values
           else if((values || values === false) && values != this.defaults()[nodeName]) {
             var nodeSerialized = xmlDocument.createElement(nodeName);
             $(nodeSerialized).text(values);
@@ -524,9 +709,9 @@ define(['jquery', 'underscore', 'backbone'],
 
         }, this);
 
-        //If this is a UIFilterType that won't be serialized into a Collection definition,
+        // If this is a UIFilterType that won't be serialized into a Collection definition,
         // then add extra XML nodes
-        if( !options.forCollection ){
+        if( this.get("isUIFilterType") ){
 
           //Update the filterOptions XML DOM
           filterOptionsNode = this.updateFilterOptionsDOM(filterOptionsNode);
@@ -555,44 +740,37 @@ define(['jquery', 'underscore', 'backbone'],
 
       try{
 
-        //If a filterOptions XML node was not given, create one
-        if( typeof filterOptionsNode == "undefined" || !filterOptionsNode.length ){
+        if (typeof filterOptionsNode == "undefined" || !filterOptionsNode.length) {
           var filterOptionsNode = new DOMParser().parseFromString("<filterOptions></filterOptions>", "text/xml");
-          var $filterOptionsNode = $(filterOptionsNode).find("filterOptions");
+          var filterOptionsNode = $(filterOptionsNode).find("filterOptions")[0];
         }
-        else{
-          //Convert the XML node into a jQuery object
-          var $filterOptionsNode = $(filterOptionsNode);
-        }
+        //Convert the XML node into a jQuery object
+        var $filterOptionsNode = $(filterOptionsNode);
 
         //Get the first option element
         var firstOptionNode = $filterOptionsNode.children("option").first();
 
-        // The following values are for UIFilterOptionsType
-        var optionsData = {};
-        optionsData.placeholder = this.get("placeholder");
-        optionsData.icon = this.get("icon");
-        optionsData.description = this.get("description");
-
         var xmlDocument;
-
-        if( filterOptionsNode.length ){
+        if (filterOptionsNode.length && filterOptionsNode[0]) {
           xmlDocument = filterOptionsNode[0].ownerDocument;
         }
-        if(!xmlDocument){
+        if (!xmlDocument) {
           xmlDocument = filterOptionsNode.ownerDocument;
         }
-        if(!xmlDocument){
+        if (!xmlDocument) {
           xmlDocument = filterOptionsNode;
         }
 
-        //Update the text value of existing
-        _.map(optionsData, function(value, nodeName){
+        // Update the text value of UI nodes. The following values are for
+        // UIFilterOptionsType
+        ["placeholder", "icon", "description"].forEach(function(nodeName){
+
           //Remove the existing node, if it exists
           $filterOptionsNode.children(nodeName).remove();
 
-          //If there is a value set on the model for this attribute, then create an XML
+          // If there is a value set on the model for this attribute, then create an XML
           // node for this attribute and set the text value
+          var value = this.get(nodeName);
           if( value ){
             var newNode = $(xmlDocument.createElement(nodeName)).text(value);
 
@@ -601,7 +779,7 @@ define(['jquery', 'underscore', 'backbone'],
             else
               $filterOptionsNode.append(newNode);
           }
-        });
+        }, this);
 
         //If no options were serialized, then return an empty string
         if( !$filterOptionsNode.children().length ){
@@ -612,6 +790,8 @@ define(['jquery', 'underscore', 'backbone'],
         }
       }
       catch(e){
+        console.log("Error updating the FilterOptions DOM in a Filter model, "+
+        "error details: ", e);
         return "";
       }
 
@@ -649,6 +829,8 @@ define(['jquery', 'underscore', 'backbone'],
       try{
 
         var errors = {};
+        // UI filter types have 
+        var isUIFilterType = this.get("isUIFilterType");
 
         //---Validate fields----
         var fields = this.get("fields");
@@ -668,7 +850,7 @@ define(['jquery', 'underscore', 'backbone'],
 
         //---Validate values----
         var values = this.get("values");
-        //All values should be strings, booleans, numbers, or dates
+        // All values should be strings, booleans, numbers, or dates
         var invalidValues = _.filter(values, function(value){
           //Empty strings are invalid
           if( typeof value == "string" && !value.trim().length ){
@@ -686,17 +868,21 @@ define(['jquery', 'underscore', 'backbone'],
           this.set("values", _.without(values, invalidValues));
         }
 
-        //If there are no values, set an error message
-        if( !this.get("values").length ){
+        //If there are no values, and this isn't a custom search filter, set an error
+        //message.
+        if ( !isUIFilterType && !this.get("values").length ){
           errors.values = "Filters should include at least one search term.";
         }
 
-        //---Validate operator----
+        //---Validate operators ----
         //The operator must be either AND or OR
-        if( this.get("operator") !== "AND" && this.get("operator") !== "OR" ){
-          //Reset the value to the default rather than return an error
-          this.set("operator", this.defaults().operator);
-        }
+        ["operator", "fieldsOperator"].forEach(function(op){
+          if( !["AND", "OR"].includes(this.get(op)) ){
+            //Reset the value to the default rather than return an error
+            this.set(op, this.defaults()[op]);
+          }
+        }, this);
+
 
         //---Validate exclude and matchSubstring----
         //Exclude should always be a boolean

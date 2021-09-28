@@ -451,7 +451,7 @@ width: 100%;
 
 /* Portal data page - filters */
 
-.filter-groups .filter .btn {
+.filter-groups .filter .btn:not(.btn-filter-editor) {
   color: var(--c-neutral-6);
   border-color: #ccc;
   border: 1px solid var(--c-neutral-3);

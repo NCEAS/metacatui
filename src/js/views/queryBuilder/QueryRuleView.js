@@ -17,8 +17,8 @@ define([
 ],
   function (
     $, _, Backbone, SearchableSelect, QueryFieldSelect, NodeSelect, AccountSelect,
-    NumericFilterView, DateFilterView, ObjectFormatSelect, AnnotationFilter, Filter, BooleanFilter,
-    NumericFilter, DateFilter
+    NumericFilterView, DateFilterView, ObjectFormatSelect, AnnotationFilter,
+    Filter, BooleanFilter,  NumericFilter, DateFilter
   ) {
 
     /**
@@ -71,20 +71,34 @@ define([
         valuesClass: "value",
 
         /**
-         * The class to add to the button that a user clicks to remove a rule
+         * The class to add to the element that a user should click to remove a rule.
          * @type {string}
          */
         removeClass: "remove-rule",
 
         /**
-         * The class to add to the view when a user hovers over the remove button
+         * An ID for the element that a user should click to remove a rule. A unique ID
+         * will be appended to this ID, and the ID will be added to the template.
          * @type {string}
          */
-        removePreviewClass: "remove-rule-preview",
+        removeRuleID: "remove-rule-",
 
         /**
-         * An array of hex color codes used to help distinguish between different rules
-         * @type {string[]}
+         * The maximum number of levels of nested Rule Groups (i.e. nested FilterGroup
+         * models) that a user is permitted to build in the Query Builder that contains
+         * this rule. This value should be passed to the rule by the parent Query Builder.
+         * This value minus one will be passed on to any child Query Builders (those that
+         * render nested FilterGroup models).
+         * @type {number}
+         * @since 2.x
+         */
+        nestedLevelsAllowed: 1,
+
+        /**
+         * An array of hex color codes used to help distinguish between different rules.
+         * If this is a nested Query Rule, and the rule should inherit its colour from
+         * the parent Query Rule, then set ruleColorPalette to "inherit".
+         * @type {string[]|string}
          */
         ruleColorPalette: ["#44AA99", "#137733", "#c9a538", "#CC6677", "#882355",
           "#AA4499", "#332288"],
@@ -95,12 +109,21 @@ define([
          */
         excludeFields: [],
 
+        /**        
+         * Query fields to exclude in the metadata field selector for any Query Rules that
+         * are in nested Query Builders (i.e. in nested Filter Groups). This is a list of
+         * field names that exist in the query service index (i.e. Solr), but which should
+         * be hidden in nested Query Builders
+         * @type {string[]}
+         */
+        nestedExcludeFields: [],
+
         /**
          * A single Filter model that is part of a Filters collection, such as the
          * definition filters for a Collection or Portal or the filters for a Search
          * model. The Filter model must be part of a Filters collection (i.e. there must
          * be a model.collection property)
-         * @type {Filter|BooleanFilter|NumericFilter|DateFilter}
+         * @type {Filter|BooleanFilter|NumericFilter|DateFilter|FilterGroup}
          */
         model: undefined,
 
@@ -110,9 +133,10 @@ define([
          */
         events: function () {
           var events = {};
-          events["click ." + this.removeClass] = "removeSelf";
-          events["mouseover ." + this.removeClass] = "previewRemove";
-          events["mouseout ." + this.removeClass] = "previewRemove";
+          var removeID = "#" + this.removeRuleID + this.cid;
+          events["click " + removeID] = "removeSelf";
+          events["mouseover " + removeID] = "previewRemove";
+          events["mouseout " + removeID] = "previewRemove";
           return events
         },
 
@@ -334,7 +358,7 @@ define([
 
 
         /**
-         * The third input in each query rule is where the user enters a value, minimum,
+         * The third input in each Query Rule is where the user enters a value, minimum,
          * or maximum for the filter model. Different types of values are appropriate for
          * different solr query fields, and so we display different interfaces depending
          * on the type and category of the selected query fields. A Value Input Option
@@ -529,30 +553,77 @@ define([
 
           try {
 
-            // TODO: How to indicate whether multiple fields/values are AND'ed or OR'ed
-            // together?
-
             // Add the Rule number.
             // TODO: Also add the number of datasets related to rule
             this.addRuleInfo();
             this.stopListening(this.model.collection, "remove");
             this.listenTo(this.model.collection, "remove", this.updateRuleInfo);
-
-            // Metadata Selector field Add a metadata selector field whether the rule is
-            // new or has already been created
-            this.addFieldSelect();
-
-            // Operator field and value field Add an operator input only for already
-            // existing filters (For new filters, a metadata field needs to be selected
-            // first)
-            if (
-              this.model.get("fields") &&
-              this.model.get("fields").length
-            ) {
-              this.addOperatorSelect();
-              this.addValueSelect();
+            // Nested rules should also listen for changes in Filters of their parent Rule
+            if(this.parentRule){
+              this.stopListening(this.parentRule.model.collection, "remove");
+              this.listenTo(this.parentRule.model.collection, "remove", this.updateRuleInfo);
             }
+
+            // The remove button is needed for both FilterGroups and other Filter models
             this.addRemoveButton();
+
+            // Render nested filter group views as another Query Builder.
+            if(this.model.type == "FilterGroup"){
+
+              this.$el.addClass("rule-group");
+
+              // We must initialize a QueryBuilderView using the inline require syntax to
+              // avoid the problem of circular dependencies. QueryRuleView requires
+              // QueryBuilderView, and QueryBuilderView requires QueryRuleView. For more
+              // info, see https://requirejs.org/docs/api.html#circular
+              var QueryBuilderView = require('views/queryBuilder/QueryBuilderView');
+
+              // The default
+              nestedLevelsAllowed = 1
+              // If we are adding a query builer, then it is a nested level. Subtract one
+              // from the total levels allowed.
+              if(typeof this.nestedLevelsAllowed == "number"){
+                nestedLevelsAllowed = this.nestedLevelsAllowed - 1
+              }
+
+              // If there is a special list of fields to exclude in nested Query Builders
+              // (i.e. in nested FilterGroup models), then pass this list on as the 
+              // excludeFields list in the child QueryBuilder
+              var excludeFields = this.excludeFields;
+              if(this.nestedExcludeFields && Array.isArray(this.nestedExcludeFields)){
+                excludeFields = this.nestedExcludeFields
+              }
+
+              // Insert QueryRuleView
+              var ruleGroup = new QueryBuilderView({
+                filterGroup: this.model,
+                // Nested Query Rules have the same color as their parent rule
+                ruleColorPalette: "inherit",
+                excludeFields: excludeFields,
+                specialFields: this.specialFields,
+                parentRule: this,
+                nestedLevelsAllowed: nestedLevelsAllowed
+              });
+              this.el.append(ruleGroup.el);
+              ruleGroup.render();
+            } else {
+              // For any other filter type... Add a metadata selector field whether the
+              // rule is new or has already been created
+              this.addFieldSelect();
+
+              // Operator field and value field Add an operator input only for already
+              // existing filters (For new filters, a metadata field needs to be selected
+              // first)
+              if (
+                this.model.get("fields") &&
+                this.model.get("fields").length
+              ) {
+                this.addOperatorSelect();
+                this.addValueSelect();
+              }
+            }
+
+            
 
             return this;
 
@@ -575,7 +646,7 @@ define([
             this.updateRuleInfo();
           } catch (error) {
             console.log(
-              "Error adding rule info container for a query rule, details: " + error
+              "Error adding rule info container for a Query Rule, details: " + error
             );
           }
         },
@@ -595,6 +666,11 @@ define([
          */
         getPaletteColor: function (index = 0, defaultColor = "#57b39c") {
           try {
+            // Allow the rule to inherit it's color from the parent rule within which it's
+            // nested
+            if(this.ruleColorPalette == "inherit"){
+              return null
+            }
             if (!this.ruleColorPalette || !this.ruleColorPalette.length) {
               return defaultColor;
             }
@@ -606,7 +682,7 @@ define([
             return this.ruleColorPalette[index];
           } catch (error) {
             console.log(
-              "Error getting a color for a query rule, using the default colour"
+              "Error getting a color for a Query Rule, using the default colour"
               + " instead. Error details: " + error
             );
             return defaultColor;
@@ -614,43 +690,72 @@ define([
         },
 
         /**
-         * Adds or updates the color-coded query rule information displayed to the user.
+         * Adds or updates the color-coded Query Rule information displayed to the user.
          * This needs to be run when rules are added or removed. Rule information includes
          * the rule number, but may one day also display information such as the number of
          * results that there are for this individual rule.
          */
         updateRuleInfo: function () {
           try {
-            var index = this.model.collection.visibleIndexOf(this.model);
-            if (typeof index === "number") {
-              this.$indexEl.text("Rule " + (index + 1));
+
+            // Rules are numbered in the order in which they appear in the Filters
+            // collection, excluding any invisible filter models. Rules nested in Rule
+            // Groups (within Filter Models) get numbered 3A, 3B, etc.
+            var letter = ""
+            var index = ""
+            // If this is a filter model nested in a filter group
+            if(this.parentRule){
+              index = this.parentRule.ruleNumber;
+              var letterIndex = this.model.collection.visibleIndexOf(this.model);
+              if(typeof letterIndex === "number"){
+                letter = String.fromCharCode(94 + letterIndex + 3).toUpperCase();
+              }
+            // For top-level filter models
+            } else {
+              index = this.model.collection.visibleIndexOf(this.model);
+            }
+
+            if(typeof index == "number"){
+              index = index + 1;
+            }
+
+            var ruleNumber = index + letter;
+
+            // Set the rule number of the parent view to be accessed by any nested child
+            // rules
+            this.ruleNumber = ruleNumber;
+
+            // if(this.model.type == "FilterGroup")
+            if (ruleNumber && ruleNumber.length) {
+              this.$indexEl.text("Rule " + ruleNumber);
             } else {
               this.$indexEl.text("");
               return
             }
             var color = this.getPaletteColor(index);
             if (color) {
-              this.$ruleInfoEl[0].style.setProperty('--rule-color', color);
+              this.el.style.setProperty('--rule-color', color);
             }
           } catch (error) {
             console.log(
-              "Error updating the rule numbering for a query rule. Details: " + error
+              "Error updating the rule numbering for a Query Rule. Details: " + error
             );
           }
         },
 
         /**
-         * addRemoveButton - Create and insert the button to remove the query rule
+         * addRemoveButton - Create and insert the button to remove the Query Rule
          */
         addRemoveButton: function () {
           try {
             var removeButton = $(
-              "<i class='" + this.removeClass +
-              " icon icon-remove' title='Remove this query rule'></i>"
+              "<i id='" + this.removeRuleID + this.cid +
+              "' class='" + this.removeClass +
+              " icon icon-remove' title='Remove this Query Rule'></i>"
             );
             this.el.append(removeButton[0]);
           } catch (e) {
-            console.error("Failed to , error message: " + e);
+            console.error("Failed to create a remove button for a Query Rule, error details: " + e);
           }
         },
         
@@ -846,13 +951,25 @@ define([
               selected: selectedFields,
               excludeFields: this.excludeFields,
               addFields: this.specialFields,
-              separatorText: this.model.get("operator")
+              separatorText: this.model.get("fieldsOperator"),
             });
             this.fieldSelect.$el.addClass(this.fieldsClass);
             this.el.append(this.fieldSelect.el);
             this.fieldSelect.render();
 
-            // Update model when the values change
+            // Update the model when the fieldsOperator changes
+            this.stopListening(
+              this.fieldSelect,
+              'separatorChanged'
+            );
+            this.listenTo(
+              this.fieldSelect,
+              'separatorChanged',
+              function(newOperator){
+                this.model.set("fieldsOperator", newOperator)
+              }
+            );
+            // Update model when the selected fields change
             this.stopListening(
               this.fieldSelect,
               'changeSelection'
@@ -1084,11 +1201,11 @@ define([
             }
 
             // Get the properties of the newly selected operator. The newOperatorLabel
-            // will be an array with one value.
-            var operator = _.findWhere(
-              this.operatorOptions,
-              { label: newOperatorLabel[0] }
-            );
+            // will be an array with one value. Select only from the available options,
+            // since there may be multiple options with the same label in
+            // this.operatorOptions.
+            var options = this.getOperatorOptions();
+            var operator = _.findWhere( options, { label: newOperatorLabel[0] });
 
             // Gather  information about which values are currently set on the model, and
             // which are required
@@ -1203,7 +1320,7 @@ define([
               this.addValueSelect();
             }
           } catch (e) {
-            console.error("Failed to handle the operator selection in a query rule " +
+            console.error("Failed to handle the operator selection in a Query Rule " +
               "view, error message: " + e);
           }
         },
@@ -1457,7 +1574,7 @@ define([
             }
 
             // Make sure the listeners set below are not set multiple times
-            this.stopListening( view.valueSelect, 'changeSelection inputFocus' );
+            this.stopListening(view.valueSelect, 'changeSelection inputFocus separatorChanged');
 
             // Update model when the values change - note that the date & numeric filter
             // views do not trigger a 'changeSelection' event, (because they are not based
@@ -1466,6 +1583,15 @@ define([
               view.valueSelect,
               'changeSelection',
               this.handleValueChange
+            );
+
+            // Update the model when the operator changes
+            this.listenTo(
+              view.valueSelect,
+              'separatorChanged',
+              function (newOperator) {
+                this.model.set("operator", newOperator)
+              }
             );
 
             // Show a message that reminds the user that capitalization matters when they
@@ -1512,9 +1638,7 @@ define([
         handleValueChange: function (newValues) {
 
           try {
-            // TODO:
-            //  - validate values first?
-            //  - how to update the model when values is empty?
+            // TODO: validate values
 
             // Don't add empty values to the model
             newValues = _.reject(newValues, function (val) { return val === "" });
@@ -1579,9 +1703,25 @@ define([
          * Indicate to the user that the rule will be removed when they hover over the
          * remove button.
          */
-        previewRemove: function () {
+        previewRemove: function (e) {
           try {
-            this.$el.toggleClass(this.removePreviewClass);
+
+            var normalOpacity = 1.0,
+                previewOpacity = 0.2,
+                speed = 175;
+
+            var removeEl = e.target;
+            var subElements = this.$el.children().not(removeEl);
+
+            if(e.type === "mouseover"){
+              subElements.fadeTo(speed, previewOpacity)
+              $(removeEl).fadeTo(speed, normalOpacity)
+            }
+            if(e.type === "mouseout"){
+              subElements.fadeTo(speed, normalOpacity)
+              $(removeEl).fadeTo(speed, previewOpacity)
+            }
+            
           } catch (error) {
             console.log("Error showing a preview of the removal of a Query Rule View," +
               " details: " + error);

@@ -1,0 +1,23 @@
+<div class="modal fade show" data-backdrop="static" data-keyboard="false">
+  <div class="modal-body">
+    <div class="<%= classes.fieldsContainer %>">
+      <p class="<%= classes.modalInstructions %>"><%= text.step1 %></p>
+    </div>
+    <div class="<%= classes.uiBuilderChoicesContainer %>">
+      <p class="<%= classes.modalInstructions %>"><%= text.step2 %></p>
+    </div>
+    <div class="<%= classes.uiBuilderContainer %>"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger btn-filter-editor <%= classes.deleteButton %>">
+      <i class="icon icon-remove icon-on-left"></i>
+      <%= text.deleteButton %>
+    </button>
+    <button class="btn btn-secondary btn-filter-editor <%= classes.cancelButton %>">
+      <i class="icon icon-undo icon-on-left"></i> <%= text.cancelButton %>
+    </button>
+    <button class="btn btn-primary btn-filter-editor <%= classes.saveButton %>">
+      <i class="icon icon-check icon-on-left"></i> <%= text.saveButton %>
+    </button>
+  </div>
+</div>

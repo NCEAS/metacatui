@@ -50,6 +50,12 @@ define(["jquery",
             template: _.template(template),
 
             /**
+             * A reference to the PortalEditorView
+             * @type {PortalEditorView}
+             */
+            editorView: undefined,
+
+            /**
             * The sort order for the Solr query
             * @type {string}
             */
@@ -62,12 +68,12 @@ define(["jquery",
             filterGroupsContainer: ".filter-groups-container",
 
             /**
-            * The Search model to use for creating and storing Filters and contructing query strings.
-            * This property is a Search model instead of a Filters collection in
-            * order to be quickly compatible with the superclass/superview, DataCatalogView,
-            * which was created with the (eventually to be deprecated) SearchModel.
-            * A Filters collection is set on the Search model and does most of the work
-            * for creating queries.
+            * The Search model to use for creating and storing Filters and constructing
+            * query strings. This property is a Search model instead of a Filters
+            * collection in order to be quickly compatible with the superclass/superview,
+            * DataCatalogView, which was created with the (eventually to be deprecated)
+            * SearchModel. A Filters collection is set on the Search model and does most
+            * of the work for creating queries.
             * @type (Search)
             */
             searchModel: undefined,
@@ -212,7 +218,9 @@ define(["jquery",
             },
 
             /**
-            * Creates filter groups and renders them in this view
+            * Creates UI Filter Groups and renders them in this view. UI Filter Groups
+            * are custom, interactive search filter elements, grouped together in one
+            * panel, section, tab, etc.
             */
             createFilterGroups: function(){
 
@@ -247,7 +255,8 @@ define(["jquery",
                 filterGroups: filterGroups,
                 filters: this.searchModel.get("filters"),
                 vertical: true,
-                parentView: this
+                parentView: this,
+                editorView: this.editorView
               });
 
               //Add the FilterGroupsView element to this view

@@ -1082,6 +1082,15 @@ define(['jquery', 'underscore', 'backbone'],
       hiddenSubjectsInAccessPolicy: [],
 
       /**
+      * The format ID the portal editor serializes a new portal document as
+      * @type {string}
+      * @default "https://purl.dataone.org/portals-1.1.0"
+      * @readonly
+      * @since 2.x
+      */
+      portalEditorSerializationFormat: "https://purl.dataone.org/portals-1.1.0",
+
+      /**
       * If true, the public/private toggle will be displayed in the Sharing Options for portals.
       * @type {boolean}
       * @default true
@@ -1144,6 +1153,15 @@ define(['jquery', 'underscore', 'backbone'],
       * @default null
       */
       portalInfoURL: null,
+      /**
+      * The URL for a webpage where people can learn more about custom portal search
+      * filters. If no URL is provided, links to more info about portals will be omitted.
+      * @since 2.x
+      * @type {string}
+      * @example "https://dataone.org/custom-search"
+      * @default null
+      */
+      portalSearchFiltersInfoURL: null,
       /**
       * Set to false to prevent ANYONE from creating a new portal.
       * @type {boolean}
@@ -1366,12 +1384,11 @@ define(['jquery', 'underscore', 'backbone'],
       archivedContentIsIndexed: true,
 
       /**
-       * The metadata fields to hide when a user is creating a collection
-       * definition using the query builder displayed in the portal builder on
-       * the data page, or anywhere else the EditCollectionView is displayed.
-       * Strings listed here should exactly match the 'name' for
-       * each field provided by the DataONE search index API (i.e. should match
-       * the Solr field).
+       * The metadata fields to hide when a user is creating a collection definition using
+       * the Query Builder View displayed in the portal builder on the data page, or
+       * anywhere else the EditCollectionView is displayed. Strings listed here should
+       * exactly match the 'name' for each field provided by the DataONE search index API
+       * (i.e. should match the Solr field).
        * @example ["sem_annotated_by", "mediaType"]
        * @type {string[]}
        */
@@ -1421,9 +1438,9 @@ define(['jquery', 'underscore', 'backbone'],
        * field. It must match one of the category names for an existing query field set in
        * {@link QueryField#categoriesMap}.
        * @property {string[]} [values] - An optional list of filter values. If set, this
-       * is used to determine whether a pre-existing query rule should be displayed as one
+       * is used to determine whether a pre-existing Query Rule should be displayed as one
        * of these special fields, or as a field from the query API. Setting values means
-       * that the values set on the query rule model must exactly match the values set.
+       * that the values set on the Query Rule model must exactly match the values set.
        *
        * @since 2.15.0
        */
@@ -1465,6 +1482,17 @@ define(['jquery', 'underscore', 'backbone'],
           category: "Awards & funding"
         }
       ],
+
+      /**
+       * The names of the query fields that use an object identifier as a value. Filter
+       * models that use one of these fields are handled specially when building query
+       * strings - they are OR'ed at the end of queries. They are also given an "OR"
+       * operator and fieldsOperator attribute when parsed.
+       * @type {string[]}
+       * 
+       * @since 2.x
+       */
+      queryIdentifierFields: ["id", "identifier", "seriesId", "isPartOf"],
 
       /**
        * The isPartOf filter is added to all new portals built in the Portal
@@ -1533,7 +1561,8 @@ define(['jquery', 'underscore', 'backbone'],
               placeholder: "DOI or ID",
               icon: "bullseye",
               description: "Find datasets if you have all or part of its DOI or ID",
-              operator: "OR"
+              operator: "OR",
+              fieldsOperator: "OR"
             },
             {
               fields: ["kingdom", "phylum", "class", "order", "family", "genus", "species"],

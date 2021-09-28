@@ -61,7 +61,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         }
 
         //If this Filter is in a filter group, don't parse the values
-        if( !this.get("inFilterGroup") ){
+        if( !this.get("isUIFilterType") ){
           //Get the min, max, and value nodes
           var minNode = $(xml).find("min"),
               maxNode = $(xml).find("max"),
@@ -125,12 +125,12 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
           //If there is another field, add an operator
           if( allFields[i+1] ){
-            queryString += "%20" + this.get("operator") + "%20";
+            queryString += "%20" + this.get("fieldsOperator") + "%20";
           }
 
         }, this);
 
-        //If there is more than one field, wrap the query in paranthesis
+        //If there is more than one field, wrap the query in parenthesis
         if( this.get("fields").length > 1 ){
           queryString = "(" + queryString + ")";
         }
@@ -270,7 +270,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       }
 
 
-      if( !options.forCollection ){
+      if( this.get("isUIFilterType") ){
 
         // Get new date data
         var dateData = {
@@ -372,14 +372,23 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       //Validate most of the DateFilter attributes using the parent validate function
       var errors = Filter.prototype.validate.call(this);
 
+      //If everything is valid so far, then we have to create a new object to store errors
+      if (typeof errors != "object") {
+        errors = {};
+      }
+
       //Delete error messages for the attributes that are going to be validated specially for the DateFilter
       delete errors.values;
       delete errors.min;
       delete errors.max;
 
-      //If everything is valid so far, then we have to create a new object to store errors
-      if( typeof errors != "object" ){
-        errors = {};
+      // Check that there is a rangeMin and a rangeMax. If there isn't, then just set to
+      // the default rather than creating an error.
+      if (!this.get("rangeMin") && this.get("rangeMin") !== 0) {
+        this.set("rangeMin", this.defaults().rangeMin)
+      }
+      if (!this.get("rangeMax") && this.get("rangeMax") !== 0) {
+        this.set("rangeMax", this.defaults().rangeMax)
       }
 
       //Check that there aren't any negative numbers
@@ -390,10 +399,10 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         errors.max = "The maximum year cannot be a negative number."
       }
       if( this.get("rangeMin") < 0 ){
-        errors.min = "The range minimum year cannot be a negative number."
+        errors.rangeMin = "The range minimum year cannot be a negative number."
       }
       if( this.get("rangeMax") < 0 ){
-        errors.min = "The range maximum year cannot be a negative number."
+        errors.rangeMax = "The range maximum year cannot be a negative number."
       }
 
       //Check that the min and max values are in order, if the minimum is not the default value of 0
@@ -411,8 +420,15 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       if( !errors.rangeMax && typeof this.get("rangeMax") != "number" ){
         errors.rangeMax = "The maximum year in the date slider must be a number.";
       }
+      
       if( !errors.rangeMin && typeof this.get("rangeMin") != "number" ){
         errors.rangeMin = "The minimum year in the date slider must be a number.";
+      }
+
+      if (Object.keys(errors).length)
+        return errors;
+      else {
+        return;
       }
 
     }

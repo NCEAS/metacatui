@@ -18,10 +18,11 @@ define(["jquery",
         "models/CollectionModel",
         "models/Search",
         "models/filters/FilterGroup",
-        "models/Map"
+        "models/Map",
     ],
-    function($, _, Backbone, gmaps, uuid, Filters, SolrResults, FilterModel, PortalSectionModel, PortalVizSectionModel, PortalImage,
-        EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
+    function($, _, Backbone, gmaps, uuid, Filters, SolrResults, FilterModel,
+        PortalSectionModel, PortalVizSectionModel, PortalImage,
+        EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel ) {
         /**
          * @classdesc A PortalModel is a specialized collection that represents a portal,
          * including the associated data, people, portal descriptions, results and
@@ -54,7 +55,7 @@ define(["jquery",
                 return _.extend(CollectionModel.prototype.defaults(), {
                     id: null,
                     objectXML: null,
-                    formatId: "https://purl.dataone.org/portals-1.0.0",
+                    formatId: MetacatUI.appModel.get("portalEditorSerializationFormat"),
                     formatType: "METADATA",
                     type: "portal",
                     //Is true if the last fetch was sent with user credentials. False if not.
@@ -71,6 +72,7 @@ define(["jquery",
                     filterGroups: [],
                     createSeriesId: true, //If true, a seriesId will be created when this object is saved.
                     // The portal document options may specify section to hide
+                    edit: false, // Set to true if this model is being used in a portal editor view
                     hideMetrics: null,
                     hideData: null,
                     hideMembers: null,
@@ -707,21 +709,28 @@ define(["jquery",
                     }
                 }
 
-                // Parse the FilterGroups
+                // Parse the UIFilterGroups
                 modelJSON.filterGroups = [];
                 var allFilters = modelJSON.searchModel.get("filters");
-                $(portalNode).find("filterGroup").each(function(i, filterGroup) {
+                $(portalNode).children("filterGroup").each(function(i, filterGroup) {
 
                   // Create a FilterGroup model
                   var filterGroupModel = new FilterGroup({
-                      objectDOM: filterGroup
+                      objectDOM: filterGroup,
+                      isUIFilterType: true
                   });
                   modelJSON.filterGroups.push(filterGroupModel);
 
-                  // Add the Filters from this FilterGroup to the portal's Search model
-                  allFilters.add(filterGroupModel.get("filters").models);
+                  // Add the Filters from this FilterGroup to the portal's Search model,
+                  // unless this portal model is being edited. Then we only want the
+                  // definition filters to be included in the search model.
+                  if (!modelRef.get("edit")){
+                    allFilters.add(filterGroupModel.get("filters").models);
+                  }
+                  
 
                 });
+
                 return modelJSON;
             },
 
@@ -886,7 +895,13 @@ define(["jquery",
                 // Serialize the collection elements
                 // ("name", "label", "description", "definition")
                 portalNode = this.updateCollectionDOM(portalNode);
+                xmlDoc = portalNode.getRootNode();
                 var $portalNode = $(portalNode);
+
+                // Set formatID
+                this.set("formatId",
+                  MetacatUI.appModel.get("portalEditorSerializationFormat") ||
+                  "https://purl.dataone.org/portals-1.1.0");
 
                 /* ==== Serialize portal logo ==== */
 
@@ -1260,31 +1275,37 @@ define(["jquery",
                   console.error(e);
                 }
 
-                /* ====  Serialize FilterGroups ==== */
+                /* ====  Serialize UI FilterGroups (aka custom search filters) ==== */
 
                 // Get new filter group values
                 var filterGroups = this.get("filterGroups");
 
-                // Remove any filter groups in the current objectDOM
-                $(xmlDoc).find("filterGroup").remove();
+                // Remove filter groups in the current objectDOM that are at the portal
+                // level. (don't use .find("filterGroup") as that would remove
+                // filterGroups that are nested in the definition
+                $portalNode.children("filterGroup").remove();
 
                 // Make a new node for each filter group in the model
                 _.each(filterGroups, function(filterGroup){
 
                   filterGroupSerialized = filterGroup.updateDOM();
 
-                  //Add the new element to the XMLDocument
-                  xmlDoc.adoptNode(filterGroupSerialized);
+                  if (filterGroupSerialized){
+                    //Add the new element to the XMLDocument
+                    xmlDoc.adoptNode(filterGroupSerialized);
 
-                  // Insert new node at correct position
-                  var insertAfter = model.getXMLPosition(portalNode, "filterGroup");
+                    // Insert new node at correct position
+                    var insertAfter = model.getXMLPosition(portalNode, "filterGroup");
 
-                  if(insertAfter){
-                    insertAfter.after(filterGroupSerialized);
+                    if (insertAfter) {
+                      insertAfter.after(filterGroupSerialized);
+                    }
+                    else {
+                      portalNode.appendChild(filterGroupSerialized);
+                    }
                   }
-                  else{
-                    portalNode.appendChild(filterGroupSerialized);
-                  }
+
+                  
                 });
 
                 /* ====  Remove duplicates ==== */
@@ -1403,12 +1424,13 @@ define(["jquery",
              *
             */
             createXML: function() {
+              var format = MetacatUI.appModel.get("portalEditorSerializationFormat") ||
+                "https://purl.dataone.org/portals-1.1.0";
+              var xmlString = "<por:portal xmlns:por=\"" + format + "\"></por:portal>";
+              var xmlNew = $.parseXML(xmlString);
+              var portalNode = xmlNew.getElementsByTagName("por:portal")[0];
 
-              // TODO: which attributes should a new XML portal doc should have?
-              var xmlString = "<por:portal xmlns:por=\"https://purl.dataone.org/portals-1.0.0\"></por:portal>",
-                  xmlNew = $.parseXML(xmlString),
-                  portalNode = xmlNew.getElementsByTagName("por:portal")[0];
-
+              this.set("ownerDocument", portalNode.ownerDocument);
               return(xmlNew);
             },
 
@@ -1785,8 +1807,14 @@ define(["jquery",
 
               var model = this;
 
-              // Ensure empty filters (rule groups) are removed
-              this.get("definitionFilters").removeEmptyFilters();
+              // Remove empty filters from the custom portal search filters.
+              this.get("filterGroups").forEach(function(filterGroupModel){
+                filterGroupModel.get("filters").removeEmptyFilters();
+              }, this);
+
+              // Ensure empty filters (rule groups) are removed, including from
+              // within any nested filter groups
+              this.get("definitionFilters").removeEmptyFilters(true);
 
               // Validate before we try anything else
               if(!this.isValid()){
@@ -1797,13 +1825,12 @@ define(["jquery",
                 return false;
               }
               else{
-
                 //Double-check that the label is available, if it was changed
                 if( (this.isNew() || this.get("originalLabel") != this.get("label")) && !this.get("labelDoubleChecked") ){
                   //If the label is taken
                   this.once("labelTaken", function(){
 
-                    //Stop listening to the label availablity
+                    //Stop listening to the label availability
                     this.stopListening("labelAvailable");
 
                     //Set that the label has been double-checked

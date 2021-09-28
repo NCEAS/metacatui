@@ -1,21 +1,43 @@
+<% var uiBuilder=typeof mode !=='undefined' ? mode==="uiBuilder" : false %>
+<% var disableIfBuildMode = "" %>
+<% if(uiBuilder){ disableIfBuildMode = 'disabled="true"' } %>
 <div class="slider-container">
-  <label>
-    <% if(icon){
-         print('<i class="icon icon-on-left icon-' + icon + '"></i>');
-       } %>
-    <%=label%>
-  </label>
-
   <% if( min || max ){ %>
+
+    <% if( uiBuilder){ %>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 27" class="slider-arrow" style="transform: scaleX(-1);">
+        <path d="M.1 0l6.4.1c1.4 0 2.6 0 3.8.2h.8C15 .9 17.7 2 20 4l.2.2.3.2.2.3.2.2.3.2v.2l.4.4.2.2.2.3v.2l.3.3.1.3.1.1.2.4.1.3.2.4.5 1.8v.4l.3 1.1v.6l.1.6.1.7v.7l.1.7V24l3-3.7H29l-5.6 6.4-5.6-6.4H20l2.7 3.7v-9.3l-.1-.8v-.6l-.1-.6C22 9.5 21.4 7.7 20 6l-.3-.3-.3-.2-.3-.3L19 5c-2.5-2.3-5.6-3.2-11.2-3.4H7l-6.8.1V0z"/>
+      </svg>
+    <% } %>
     <div class="slider year-slider"></div>
-    <div class="clear"></div>
-    <input class="min" type="number" value="<%=min%>">
-    <span class="to">to</span>
-    <input class="max" type="number" value="<%=max%>">
-    <div class="clear"></div>
+    <% if( uiBuilder){ %>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 27" class="slider-arrow">
+        <path d="M.1 0l6.4.1c1.4 0 2.6 0 3.8.2h.8C15 .9 17.7 2 20 4l.2.2.3.2.2.3.2.2.3.2v.2l.4.4.2.2.2.3v.2l.3.3.1.3.1.1.2.4.1.3.2.4.5 1.8v.4l.3 1.1v.6l.1.6.1.7v.7l.1.7V24l3-3.7H29l-5.6 6.4-5.6-6.4H20l2.7 3.7v-9.3l-.1-.8v-.6l-.1-.6C22 9.5 21.4 7.7 20 6l-.3-.3-.3-.2-.3-.3L19 5c-2.5-2.3-5.6-3.2-11.2-3.4H7l-6.8.1V0z"/>
+      </svg>
+      <div class="range-inputs">
+        <div>
+          <label class="ui-builder-container-text subtle">Earliest year</label>
+          <input class="range-input ui-build-input" data-category="rangeMin" type="number" value="<%=rangeMin%>">
+          <p class="notification error" data-category="rangeMin" style="display:none"></p>
+        </div>
+        <div>
+          <label class="ui-builder-container-text subtle">Latest year</label>
+          <input class="range-input ui-build-input" data-category="rangeMax" type="number" value="<%=rangeMax%>">
+          <p class="notification error" data-category="rangeMax" style="display:none"></p>
+        </div>
+      </div>
+    <% } %>
+    <% if(! uiBuilder){ %>
+      <div class="clear"></div>
+      <input class="min" type="number" value="<%=min%>">
+      <span class="to">to</span>
+      <input class="max" type="number" value="<%=max%>">
+      <div class="clear"></div>
+    <% } %>
+    
   <% } else { %>
-    <input type="date" value="" />
-    <button class="btn">
+    <input type="date" value="" <%= disableIfBuildMode %> />
+    <button class="btn" <%= disableIfBuildMode %> >
       <i class="icon icon-search"></i>
     </button>
   <% } %>

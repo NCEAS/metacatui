@@ -7,9 +7,10 @@ define(["jquery",
         "collections/SolrResults",
         "models/DataONEObject",
         "models/filters/Filter",
-        "models/filters/DateFilter",
-        "models/Search"],
-    function($, _, Backbone, uuid, Filters, SolrResults, DataONEObject, Filter, DateFilter, Search) {
+        "models/filters/FilterGroup",
+        "models/Search",
+      ],
+    function($, _, Backbone, uuid, Filters, SolrResults, DataONEObject, Filter, FilterGroup, Search) {
 
   /**
   * @class CollectionModel
@@ -32,8 +33,9 @@ define(["jquery",
     /**
     * Default attributes for CollectionModels
     * @type {Object}
-    * @property {string[]} ignoreQueryGroups - The Filter query groups to not serialize to the collection definition part of the XML document
-    * @property {Filters} definitionFilters - A Filters collection that stores filters that have been serialized to the Collection.
+    * @property {string[]} ignoreQueryGroups - Deprecated
+    * @property {FilterGroup} definition - The parent-level Filter Group model that represents the collection definition.
+    * @property {Filters} definitionFilters - A Filters collection that stores definition filters that have been serialized to the Collection. The same filters that are stored in the definition.
     * @property {Search} searchModel - A Search model with a Filters collection that contains the filters associated with this collection
     * @property {SolrResults} searchResults - A SolrResults collection that contains the filtered search results of datasets in this collection
     * @property {SolrResults} allSearchResults - A SolrResults collection that contains the unfiltered search results of all datasets in this collection
@@ -45,10 +47,10 @@ define(["jquery",
         originalLabel: null,
         labelBlockList: ["new"],
         description: null,
-        formatId: "https://purl.dataone.org/collections-1.0.0",
+        formatId: "https://purl.dataone.org/collections-1.1.0",
         formatType: "METADATA",
         type: "collection",
-        ignoreQueryGroups: ["catalog"],
+        definition: null,
         definitionFilters: null,
         searchModel: null,
         searchResults: new SolrResults(),
@@ -67,6 +69,7 @@ define(["jquery",
       this.listenToOnce(this.get("searchResults"), "sync", this.cacheSearchResults);
 
       //If the searchResults collection is replaced at any time, reset the listener
+      this.off("change:searchResults")
       this.on("change:searchResults", function(searchResults){
         this.listenToOnce(this.get("searchResults"), "sync", this.cacheSearchResults);
       });
@@ -75,21 +78,23 @@ define(["jquery",
       // Definition filters may be updated by the user in the Query Builder,
       // or they may be updated automatically by this model (e.g. when adding
       // an isPartOf filter).
-      this.off("change:definitionFilters");
-      this.on("change:definitionFilters", function(){
-        this.stopListening(this.get("definitionFilters"), "update change");
+      this.off("change:definition");
+      this.on("change:definition", function(){
+        this.stopListening(this.get("definition"), "update change");
         this.listenTo(
-          this.get("definitionFilters"),
+          this.get("definition"),
           "update change",
           this.updateSearchModel
         );
-      });
+      }, this);
 
       //Create a search model
       this.set("searchModel", this.createSearchModel());
 
-      //Create a Filters collection to store the definition filters
-      this.set("definitionFilters", new Filters());
+      // Create a Filters collection to store the definition filters. Add the catalog
+      // search query fragment to the definition Filter Group model.
+      this.set("definition", new FilterGroup({ catalogSearch: true, nodeName: "definition" }));
+      this.set("definitionFilters", this.get("definition").get("filters"));
 
       // Update the blocklist with the node/repository labels
       var nodeBlockList = MetacatUI.appModel.get("portalLabelBlockList");
@@ -116,27 +121,12 @@ define(["jquery",
       try {
         var model = this;
         
-        if(typeof record == "undefined" || !record){
-          record = {}
-        }
-        
-        // Remove models from the Search Model collection if models have been
-        // removed from the Definition Filters collection.
-        if(
-          record.changes &&
-          record.changes.removed &&
-          record.changes.removed.length
-        ){
-          this.get("searchModel").get("filters").remove(
-            record.changes.removed
-          )
-        }
-        
-        // Add or merge the definition filters with the Search Model collection.
+        // Merge the updated definition Filter Group model with the Search Model collection.
         this.get("searchModel").get("filters").add(
-          model.get("definitionFilters").models,
+          model.get("definition"),
           { merge: true }
         );
+
       } catch (e) {
         console.log("Failed to update the Search Model collection when the " +
         "Definition Model collection changed, error message: " + e);
@@ -251,33 +241,71 @@ define(["jquery",
      * @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
     */
     parseCollectionXML: function( rootNode ){
+
+      // Get and save the namespace version number. It should be 1.0.0 or 1.1.0. Version
+      // 1.0.0 portals will be updated to 1.1.0 on save. We need to know which version
+      // while parsing to keep rendering of the old versions of collections/portals
+      // consistent with how they were rendered before MetacatUI was updated to handle
+      // 1.1.0 collections/portals - e.g. the fieldsOperator attribute in filters.
+      var namespace = rootNode.namespaceURI,
+          versionRegex = /\d\.\d\.\d$/g,
+          version = namespace.match(versionRegex);
+      if(version && version.length && version[0] != ""){
+        this.set("originalVersion", version[0])
+      }
+
       var modelJSON = {};
 
       //Parse the simple text nodes
       modelJSON.name = this.parseTextNode(rootNode, "name");
       modelJSON.label = this.parseTextNode(rootNode, "label");
       modelJSON.description = this.parseTextNode(rootNode, "description");
-
+      
       //Create a Filters collection to contain the collection definition Filters
-      modelJSON.definitionFilters = new Filters();
-
-      // Parse the collection definition
-      _.each( $(rootNode).children("definition").children(), function(filterNode){
-
-        //Add this filter to the Filters collection
-        modelJSON.definitionFilters.add({
-          objectDOM: filterNode
-        });
-
-      });
+      var definitionXML = rootNode.getElementsByTagName("definition")[0]
+      // Add the catalog search query fragment to the definition Filter Group model
+      modelJSON.definition = new FilterGroup({ objectDOM: definitionXML, catalogSearch: true });
+      modelJSON.definitionFilters = modelJSON.definition.get("filters")
 
       //Create a Search model for this collection's filters
       modelJSON.searchModel = this.createSearchModel();
-      //Add all the filters from the Collection definition to the search model
-      modelJSON.searchModel.get("filters").add(modelJSON.definitionFilters.models);
+      // Add all the filters from the Collection definition to the search model as a single
+      // Filter Group model.
+      modelJSON.searchModel.get("filters").add(modelJSON.definition);
 
-      return modelJSON;
+      // If we are parsing the first version of a collection or portal
+      if(this.get("originalVersion") === "1.0.0"){
+        modelJSON = this.updateTo110(modelJSON);
+      }
 
+      return modelJSON
+    },
+    
+    /**
+     * Takes parsed Collections 1.0.0 XML in JSON format and makes any changes required so
+     * that collections are still represented in MetacatUI as they were before MetacatUI
+     * was updated to support 1.1.0 Collections.
+     * @param {JSON} modelJSON Parsed 1.0.0 Collections XML, in JSON
+     * @return {JSON} The updated JSON, compatible with 1.1.0 changes
+     */
+    updateTo110: function(modelJSON){
+      try {
+        // For version 1.0.0 filters, MetacatUI used the "operator" attribute to set the
+        // operator between both fields and values. In 1.1.0, we now have the
+        // "fieldsOperator" attribute. (Since "AND" was the default, only the "OR"
+        // operator is ever serialized). Therefore, if a version 1.0.0 filter has "OR" as
+        // the operator, we should also set the "fieldOperator" to "OR".
+        modelJSON.definitionFilters.each(function(filterModel){
+          if(filterModel.get("operator") === "OR"){
+            filterModel.set("fieldsOperator", "OR")
+          }
+        }, this);
+        return modelJSON
+      } catch (error) {
+        console.log("Error trying to update a 1.0.0 Collection to 1.1.0 " + 
+        "returning the JSON unchanged. Error details: " + error );
+        return modelJSON
+      }
     },
 
     /**
@@ -379,8 +407,8 @@ define(["jquery",
       
         // NOTE:
         // 1. Changes to the definition filters will automatically update the
-        // Search Model filters becuase of the listener set in initialize().
-        // 2. Add the new Filter model by passsing a list of attributes to the
+        // Search Model filters because of the listener set in initialize().
+        // 2. Add the new Filter model by passing a list of attributes to the
         // Filters collection, instead of by passing a new Filter, in order
         // to trigger 'update' and 'change' events for other models and views.
         
@@ -448,33 +476,32 @@ define(["jquery",
         }
       }
 
+      // Set schema version. May need to be updated from 1.0.0 to 1.1.0.
+      // The formatId is the same as the namespace URI.
+      var currentNamespace = this.defaults().formatId;
+    
+      // The NS attribute name could be xmlns:por or xmlns:col
+      objectDOM.attributes.forEach(function(attr){
+        if(attr.name.match(/^xmlns/)){
+          if(attr.value !== currentNamespace){
+            var newObjectDOM = this.createXML().documentElement;
+            while (objectDOM.firstChild) {
+              newObjectDOM.appendChild(objectDOM.firstChild);
+            }
+            objectDOM = newObjectDOM
+          }
+        }
+      }, this);
+
       // Remove definition node if it exists in XML already
       $(objectDOM).find("definition").remove();
 
-      // Create new definition element
-      var definitionSerialized = objectDOM.ownerDocument.createElement("definition");
-
       // Get the filters that are currently applied to the search.
-      var filtersToSerialize = this.get("definitionFilters");
-
-      // Iterate through the filter models
-      filtersToSerialize.each(function(filterModel){
-
-        // updateDOM of portal definition filters, then append to <definition>
-        var filterSerialized = filterModel.updateDOM({
-          forCollection: true
-        });
-
-        //Add the filter node to the XMLDocument
-        objectDOM.ownerDocument.adoptNode(filterSerialized);
-
-        //Append the filter node to the definition node
-        definitionSerialized.appendChild(filterSerialized);
-
-      });
+      var definitionSerialized = this.get("definition").updateDOM();
+      objectDOM.ownerDocument.adoptNode(definitionSerialized);
 
       //If at least one filter was serialized, add the <definition> node
-      if( definitionSerialized.childNodes.length ){
+      if (definitionSerialized.childNodes.length) {
         $(objectDOM).prepend(definitionSerialized);
       }
 
@@ -513,14 +540,13 @@ define(["jquery",
     */
     createXML: function() {
 
-      // TODO: which attributes should a new XML portal doc should have?
-      var xmlString = "<col:collection xmlns:col=\"https://purl.dataone.org/collections-1.0.0\"></col:collection>",
+      var xmlString = "<col:collection xmlns:col=\"https://purl.dataone.org/collections-1.1.0\"></col:collection>",
           xmlNew = $.parseXML(xmlString),
           colNode = xmlNew.getElementsByTagName("col:collections")[0];
 
       // set attributes
       colNode.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-      colNode.setAttribute("xsi:schemaLocation", "https://purl.dataone.org/collections-1.0.0");
+      colNode.setAttribute("xsi:schemaLocation", "https://purl.dataone.org/collections-1.1.0");
 
       this.set("ownerDocument", colNode.ownerDocument);
 
@@ -536,7 +562,11 @@ define(["jquery",
     */
     createSearchModel: function(){
       var search = new Search();
-      search.set("filters", new Filters(null, { catalogSearch: true }));
+      // Do not set "catalogSearch" to true, even though the search model is specifically
+      // created in order to do a catalog search. Instead, we set the definition
+      // filterGroup model catalogSearch = true. This allows us to append the query
+      // fragment with ID fields AFTER the catalog query fragment.
+      search.set("filters", new Filters());
       return search;
     },
 
@@ -548,7 +578,7 @@ define(["jquery",
     */
     getQuery: function(){
 
-      return this.get("searchModel").get("filters").getQuery();
+      return this.get("definition").getQuery();
 
     },
 
@@ -586,33 +616,32 @@ define(["jquery",
 
         var errors = {};
 
-        // ---- Validate label----
+        // Validate label
         var labelError = this.validateLabel(this.get("label"));
         if( labelError ){
           errors.label = labelError;
         }
 
-        // ---- Validate the definition filters ----
-        
-        if( this.get("definitionFilters").length == 0 ){
-          errors.definition = "Your dataset collection hasn't been created. Add at least one query " +
-                              "rule below to find datasets for this " +
-                              this.type.toLowerCase() + ". For example, to create a " + this.type.toLowerCase() +
-                              " for datasets from a specific research project, try using the project name field.";
-        }
-        else{
-          this.get("definitionFilters").each(function(filter){
+        // Validate the definition
+        var definitionError = this.get("definition").validate(attrs, options);
 
-            if( !filter.isValid() ){
-              errors.definition = "At least one filter is invalid.";
-            }
-
-          });
+        if(definitionError){
+          if(definitionError.noFilters){
+            type = this.type.toLowerCase();
+            errors.definition = "Your dataset collection hasn't been created. Add at " +
+              "least one query rule below to find datasets for this " + type +
+              ". For example, to create a " + type + " for datasets from a specific " +
+              "research project, try using the project name field.";
+          } else {
+            // Just show the first error for now.
+            errors.definition = Object.values(definitionError)[0]
+          }
         }
 
-        if( Object.keys(errors).length )
+        if( Object.keys(errors).length ) {
+          console.log(errors);
           return errors;
-        else{
+        } else {
           return;
         }
 
@@ -660,7 +689,7 @@ define(["jquery",
           }
         }
 
-        // If the label includes illegal characers
+        // If the label includes illegal characters
         // (Only allow letters, numbers, underscores and dashes)
         if(label.match(/[^A-Za-z0-9_-]/g)){
           return "URLs may only contain letters, numbers, underscores (_), and dashes (-).";
