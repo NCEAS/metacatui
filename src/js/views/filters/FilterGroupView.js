@@ -41,7 +41,7 @@ define(['jquery', 'underscore', 'backbone',
      * Set to true to render this view as a FilterGroup editor; allow the user to add,
      * delete, and edit filters within this group.
      * @type {boolean}
-     * @since 2.x
+     * @since 2.17.0
      */
     edit: false,
 

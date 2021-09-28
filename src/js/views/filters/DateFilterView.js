@@ -104,7 +104,7 @@ define(['jquery', 'underscore', 'backbone',
     * Updates the min and max values set on the Filter Model associated with this view.
     * @param {number} min - The new minimum value
     * @param {number} max - The new maximum value
-    * @since 2.x
+    * @since 2.17.0
     */
     updateModel: function(min, max){
       try {

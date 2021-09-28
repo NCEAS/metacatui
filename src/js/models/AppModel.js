@@ -1086,7 +1086,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {string}
       * @default "https://purl.dataone.org/portals-1.1.0"
       * @readonly
-      * @since 2.x
+      * @since 2.17.0
       */
       portalEditorSerializationFormat: "https://purl.dataone.org/portals-1.1.0",
 
@@ -1156,7 +1156,7 @@ define(['jquery', 'underscore', 'backbone'],
       /**
       * The URL for a webpage where people can learn more about custom portal search
       * filters. If no URL is provided, links to more info about portals will be omitted.
-      * @since 2.x
+      * @since 2.17.0
       * @type {string}
       * @example "https://dataone.org/custom-search"
       * @default null
@@ -1489,8 +1489,8 @@ define(['jquery', 'underscore', 'backbone'],
        * strings - they are OR'ed at the end of queries. They are also given an "OR"
        * operator and fieldsOperator attribute when parsed.
        * @type {string[]}
-       * 
-       * @since 2.x
+       *
+       * @since 2.17.0
        */
       queryIdentifierFields: ["id", "identifier", "seriesId", "isPartOf"],
 
@@ -1741,7 +1741,7 @@ define(['jquery', 'underscore', 'backbone'],
       * attribute modal dialog. The {@link AppModel#bioportalAPIKey} must be set to a valid Bioportal
       * API key for the ontology tree widget to work.
       * @type {boolean}
-      * @since 2.X.0
+      * @since 2.17.0
       * @default false
       */
       enableMeasurementTypeView: false,

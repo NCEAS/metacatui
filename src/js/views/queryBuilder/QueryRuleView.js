@@ -90,7 +90,7 @@ define([
          * This value minus one will be passed on to any child Query Builders (those that
          * render nested FilterGroup models).
          * @type {number}
-         * @since 2.x
+         * @since 2.17.0
          */
         nestedLevelsAllowed: 1,
 

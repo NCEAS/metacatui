@@ -509,7 +509,7 @@ define(['jquery', 'underscore', 'backbone'],
     /**
      * Checks if any of the fields in this Filter match one of the
      * {@link AppConfig#queryIdentifierFields}
-     * @since 2.x
+     * @since 2.17.0
      */
     isIdFilter: function(){
       try {

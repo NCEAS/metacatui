@@ -69,7 +69,7 @@ function( _, $, Backbone, FilterGroup, PortEditorSectionView, EditCollectionView
     * A jQuery selector for the element that the FilterGroupsView editor should be
     * inserted into
     * @type {string}
-    * @since 2.x
+    * @since 2.17.0
     */
     editFilterGroupsViewContainer: ".edit-filter-groups-container",
 

@@ -51,7 +51,7 @@ define(['jquery', 'underscore', 'backbone',
 
     /**
      * The template for this view. An HTML file is converted to an Underscore.js template
-     * @since 2.x
+     * @since 2.17.0
      */
     template: _.template(Template),
 
@@ -65,7 +65,7 @@ define(['jquery', 'underscore', 'backbone',
      * Set to true to render this view as a FilterGroups editor; allow the user add, edit,
      * and remove FilterGroups (TODO), and to add, delete, and edit filters within groups.
      * @type {boolean}
-     * @since 2.x
+     * @since 2.17.0
      */
     edit: false,
 
