@@ -117,6 +117,7 @@ define(
           formatId: "Metadata Format",
           fundingText: "Funding Description",
           identifier: "Metadata Identifier",
+          indexeddate: "Date last indexed",
           investigatorText: "Creator People Names",
           isPartOf: "Added to This Portal Manually",
           isService: "Data Available via Service",
@@ -243,6 +244,7 @@ define(
           siteText: "The name or description of the physical location where the data were collected",
           prov_hasSources: "One or more identifiers of metadata documents that have been used as sources to create a derived dataset. The derived datasets will be included in the search results.",
           prov_hasDerivations: "One or more identifiers of metadata documents that have been derived from another dataset. The source datasets will be included in the search results.",
+          indexeddate: "The date that the metadata document was last indexed (or re-indexed) in the search system."
         }
       },
 
@@ -261,7 +263,7 @@ define(
           filter  : ["string", "alphaOnlySort", "text_en_splitting", "text_en_splitting_tight", "text_general", "text_case_insensitive"],
           booleanFilter : ["boolean"],
           numericFilter : ["int", "tfloat", "tlong", "long"],
-          dateFilter : ["tdate"]
+          dateFilter : ["tdate", "date"]
         }
       },
 
@@ -312,7 +314,7 @@ define(
               "authorLastName",
                "contactOrganization",
               "contactOrganizationText", "investigator", "investigatorText",
-              "originator", "originatorText", "submitter", 
+              "originator", "originatorText", "submitter",
             ],
           },
           {
@@ -327,7 +329,7 @@ define(
             label: "Dates",
             icon: "calendar",
             queryFields: [
-              "dateUploaded", "beginDate", "endDate", "datePublished", "dateModified"
+              "dateUploaded", "beginDate", "endDate", "datePublished", "dateModified", "indexeddate"
             ],
           },
           {
