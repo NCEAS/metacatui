@@ -146,7 +146,7 @@ define(
           serviceTitle: "Data Service Title",
           serviceType: "Data Service Type",
           size: "File Size",
-          siteText: "Site",
+          siteText: "Site description",
           southBoundCoord: "Southern Most Latitude",
           submitter: "Submitter Username",
           text: "Any Metadata Field",
