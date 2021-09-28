@@ -6155,7 +6155,7 @@ svg .no-activity,
 /******************************************
 ** Searching and Map ***
 ******************************************/
-#   clear-all{
+#clear-all{
   width: 95%;
   width: calc(100% - 10px);
   padding: 2px 5px;
