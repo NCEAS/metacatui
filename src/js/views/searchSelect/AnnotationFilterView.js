@@ -32,7 +32,7 @@ define(
          * The HTML class names for this view element
          * @type {string}
          */
-        className: "annotation-filter",
+        className: "filter annotation-filter",
 
         /**
          * The selector for the element that will show/hide the annotation
@@ -145,10 +145,12 @@ define(
             // Make an element that contains the tree and reset/jumpUp buttons
             var buttonProps = "data-trigger='hover' data-placement='top' data-container='body' style='margin-right: 3px'"
             view.treeContent = $("<div></div>");
+            view.buttonContainer = $('<div class="ncbo-tree-buttons-container"></div>');
             view.jumpUpButton = $("<button class='icon icon-level-up tooltip-this btn' id='jumpUp' data-title='Go up to parent' " + buttonProps + " ></button>");
             view.resetButton = $("<button class='icon icon-undo tooltip-this btn' id='resetTree' data-title='Reset tree' " + buttonProps + " ></button>");
-            $(view.treeContent).append(view.jumpUpButton);
-            $(view.treeContent).append(view.resetButton);
+            $(view.buttonContainer).append(view.jumpUpButton);
+            $(view.buttonContainer).append(view.resetButton);
+            $(view.treeContent).append(view.buttonContainer);
             $(view.treeContent).append(view.treeEl);
 
           } catch (e) {

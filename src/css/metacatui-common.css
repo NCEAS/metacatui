@@ -2814,6 +2814,17 @@ section#user-citations {
 	overflow: visible;
 }
 
+.ncboTree {
+	width: auto;
+	max-height: 300px;
+}
+
+.ncbo-tree-buttons-container {
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
 /** hide the tree until we have it where we want it **/
 #bioportal-tree {
 	display: none;
@@ -2836,9 +2847,8 @@ section#user-citations {
 	width: 95%;
 }
 #bioportal-popover #bioportal-tree{
-	overflow-y: scroll;
-    max-height: 300px;
-    overflow-x: visible;
+	max-height: 400px;
+	height: 100;
 }
 
 #jumpUp {
@@ -2853,7 +2863,6 @@ section#user-citations {
 	display: block;
 	margin-top: 0.5rem;
 	overflow-x: auto;
-
 }
 .annotation-filter .searchable-select .menu {
 	min-height: 10rem;
@@ -6064,6 +6073,10 @@ body.mapMode{
 }
 
 /********* Filter Views ***********/
+.filter-groups .tab-content {
+	overflow: inherit;
+}
+
 .portal-view .filter-group{
   padding: 0px 20px;
 }
@@ -6280,6 +6293,41 @@ body.mapMode{
 .filter input[type='text']{
 	width: 80%;
 }
+
+.filter.annotation-filter {
+	min-width: 300px;
+}
+
+/*
+	Overrides for default Bootstrap styling for the searchable select
+	component when we use it as a Portal data search filter. These overrides make
+	the component look nearly identical to other filters (that use native form
+	elements)
+*/
+.filter.annotation-filter .ui.fluid.dropdown>.dropdown.icon {
+	top: 25%;
+}
+
+.filter.annotation-filter .dropdown.search {
+	padding: 0;
+	font-size: 100%;
+	box-sizing: border-box;
+	border-color: #ccc;
+	border-radius: 4px;
+}
+
+.filter.annotation-filter .dropdown.multiple.ui {
+	padding: 0;
+}
+
+.filter.annotation-filter .ui.multiple.search.dropdown > input.search {
+	font-size: inherit;
+	line-height: 1em;
+	min-height: 1em;
+	margin: 0.4em;
+}
+/* End Overrides for default Bootstrap styling for the searchable select */
+
 .filter-group .filter select{
   width: 100%;
 }
@@ -8263,26 +8311,4 @@ CSS library fixes
 /** Browser extension element fixes **/
 body > #extension-is-installed{
   display: none;
-}
-
-.annotation-filter.custom-annotation-search-filter{
-	padding-bottom: 50px;
-}
-
-.annotation-filter.custom-annotation-search-filter .ui.selection.dropdown .menu,
-.annotation-filter.custom-annotation-search-filter .ui.selection.dropdown:hover .menu {
-	position: relative;
-	border: none;
-	box-shadow: none;
-}
-
-.annotation-filter.custom-annotation-search-filter .ui.selection.dropdown .menu:hover {
-	position: relative;
-	border: none;
-	box-shadow: none;
-}
-
-.annotation-filter.custom-annotation-search-filter .ui.selection.dropdown {
-	width: 450px !important;
-	position: absolute;
 }
