@@ -511,7 +511,7 @@ define([
          */
         updateMenu: function(){
           try {
-            var menu = $(this.template(this)).find(".menu")[0].innerHTML;
+            var menu = $(this.template(this).trim()).find(".menu")[0].innerHTML;
             this.$el.find(".menu").html(menu);
           } catch (e) {
             console.log("Failed to update a searchable select menu, error message: " + e);
