@@ -86,7 +86,7 @@ define(['jquery', 'underscore', 'backbone',
             placeholderText: filter.get("placeholder"),
             icon: filter.get("icon"),
             subType: "AnnotationFilterView",
-            portalselect: true
+            useSearchableSelect: true
           });
 
           annotationFilterView.render()
