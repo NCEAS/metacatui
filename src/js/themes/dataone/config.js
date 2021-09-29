@@ -13,7 +13,7 @@ MetacatUI.AppConfig = Object.assign({
   d1Service: "/cn/v2",
   metacatContext: "",
   enableMonitorStatus: false,
-  enableCILogonSignIn: true,
+  enableCILogonSignIn: false,
   showSignInHelp: false,
 
   //Temp message
