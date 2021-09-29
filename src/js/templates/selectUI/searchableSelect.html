@@ -1,12 +1,14 @@
-<% if (subType == "AnnotationFilterView") {
-    if (icon) {
-      print('<label><i class="icon icon-on-left icon-' + icon + '"></i> '); %>
-      <%= inputLabel %> 
-      <% print('</label>');
-    }
-  }
-  else { %>
-    <p class="subtle searchable-select-label"> <%= inputLabel %> </p>
+<% if (subType == "AnnotationFilterView" ) { %>
+  <label>
+    <% if (icon) { %>
+      <i class="icon icon-on-left icon-<%= icon %>"></i>
+    <% } %>
+    <%= inputLabel %>
+  </label>
+  <% } else { %>
+    <p class="subtle searchable-select-label">
+      <%= inputLabel %>
+    </p>
   <% } %>
 
 <div class="fluid ui dropdown <% if(allowMulti){ %> multiple <% } %> selection search">
