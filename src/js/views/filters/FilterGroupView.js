@@ -79,7 +79,7 @@ define(['jquery', 'underscore', 'backbone',
           
           var view = this;
 
-          var annotationFilterView = new AnnotationFilterView({
+          var filterView = new AnnotationFilterView({
             selected: filter.get("values"),
             inputLabel: filter.get("label"),
             separatorText: view.model.get("operator"),
@@ -89,19 +89,17 @@ define(['jquery', 'underscore', 'backbone',
             useSearchableSelect: true
           });
 
-          annotationFilterView.render()
-          annotationFilterView.off("annotationSelected");
-          annotationFilterView.on("annotationSelected", function(event, item){
+          filterView.off("annotationSelected");
+          filterView.on("annotationSelected", function(event, item){
             // Get the value of the associated input
             var term = (!item || !item.value) ? input.val() : item.value;
             var label = (!item || !item.filterLabel) ? null : item.filterLabel;
-            var filterDesc = (!item || !item.desc) ? null : item.desc;
 
             //set up annotation label mappings
             var annotationLabelsMappings;
             if(filter.get("annotationLabelsMappings")) {
               annotationLabelsMappings = _.clone(filter.get("annotationLabelsMappings"));
-            } 
+            }
             else {
               annotationLabelsMappings  = new Object();
             }
@@ -117,11 +115,6 @@ define(['jquery', 'underscore', 'backbone',
 
             view.trigger("addNewAnnotationSearch", event, item, filter);
           });
-
-          annotationFilterView.$el.addClass("custom-annotation-search-filter");
-          filtersRow.append(annotationFilterView.$el);
-
-          return;
         }
         else{
           //Depending on the filter type, create a filter view
