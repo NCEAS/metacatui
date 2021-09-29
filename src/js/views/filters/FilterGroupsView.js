@@ -801,12 +801,12 @@ define(['jquery', 'underscore', 'backbone',
           //Get the current value
           var modelValues = filterModel.get("values"),
               thisValue   = $(appliedFilterEl).data("value");
-          
-          // retrive the label from the model for annotation view type
+
+          // Retrieve the label from the model for annotation view type
           if (view.options.isAnnotationView) {
             for (let key in filterModel.get("annotationLabelsMappings")) {
               if (filterModel.get("annotationLabelsMappings")[key] == thisValue) thisValue = key;
-            } 
+            }
           }
 
           //Numbers that are set on the element `data` are stored as type `number`, but when `number`s are
