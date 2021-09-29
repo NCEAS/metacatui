@@ -6,7 +6,7 @@ define(
     'jquery',
     'underscore',
     'backbone',
-    'collections/maps/Layers',
+    'collections/maps/MapAssets',
     'text!templates/maps/layer-list.html',
     // Sub-views
     'views/maps/LayerItemView'
@@ -15,7 +15,7 @@ define(
     $,
     _,
     Backbone,
-    Layers,
+    MapAssets,
     Template,
     // Sub-views
     LayerItemView
@@ -23,8 +23,10 @@ define(
 
     /**
     * @class LayerListView
-    * @classdesc A view of a ... TODO
-    * @classcategory Views/Maps TODO
+    * @classdesc A Layer List shows a collection of Map Assets, like imagery and vector
+    * layers. Each Map Asset in the collection is rendered as a single item in the list.
+    * Each item can be clicked for more details.
+    * @classcategory Views/Maps
     * @name LayerListView
     * @extends Backbone.View
     * @screenshot maps/LayerListView.png // TODO: add screenshot
@@ -43,11 +45,11 @@ define(
         * The HTML classes to use for this view's element
         * @type {string}
         */
-        className: 'layer-list', // TODO
+        className: 'layer-list',
 
         /**
-        * The collection that this view uses
-        * @type {Layers}
+        * The collection of layers to display in the list
+        * @type {MapAssets}
         */
         collection: undefined,
 

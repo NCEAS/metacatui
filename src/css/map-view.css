@@ -28,11 +28,9 @@
 :root {
   /* COLOURS */
   --map-col-bkg: #111827;
-  /* grey 900 */
-  --map-col-bkg-active: #374151;
-  /* grey 600 */
-  --map-col-buttons: #4B5563F2;
-  /* grey 700 */
+  --map-col-bkg-lighter: #1b2538;
+  --map-col-bkg-lightest: #242e42;
+  --map-col-buttons: #313c52;
   --map-col-text: #F9FAFB;
   --map-col-highlight: var(--portal-primary-color);
   /* SIZING: */
@@ -289,7 +287,7 @@ represents 1 unit of the given distance measurement. */
 }
 
 .toolbar__link:hover {
-  background-color: var(--map-col-bkg-active)
+  background-color: var(--map-col-bkg-lighter)
 }
 
 .toolbar__link--active {
@@ -412,7 +410,7 @@ represents 1 unit of the given distance measurement. */
   border-top-right-radius: var(--map-border-radius);
   border-top-left-radius: var(--map-border-radius);
   padding: 0.4rem 0.8rem;
-  background-color: var(--map-col-bkg-active);
+  background-color: var(--map-col-bkg-lighter);
   color: var(--map-col-text);
   box-shadow: var(--map-shadow-md);
   grid-template-columns: auto min-content;
@@ -600,16 +598,86 @@ other class: .ui-slider-range */
  */
 
 .feature-info {
+  width: var(--map-width-toolbar);
   border-top-right-radius: var(--map-border-radius);
   border-top-left-radius: var(--map-border-radius);
   padding: 0.4rem 0.8rem;
-  background-color: var(--map-col-bkg-active);
+  background-color: var(--map-col-bkg-lighter);
   color: var(--map-col-text);
   box-shadow: var(--map-shadow-md);
   grid-template-columns: auto min-content;
   grid-template-rows: min-content auto;
-  gap: 1rem;
+  gap: 2rem;
   align-items: center;
+  justify-items: center;
   /* Don't show the details panel unless it also has the layer-details--open class */
-  /* display: none; */
+  display: none;
 }
+
+.feature-info--open {
+  display: grid;
+}
+
+.feature-info__label {
+  color: var(--map-col-text) !important;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+  width: 100%;
+  font-weight: 500;
+  font-size: 0.9rem;
+  opacity: 60%;
+}
+
+.feature-info__content {
+  display: grid;
+  grid-template-rows: auto;
+  grid-template-columns: 100%;
+  gap: 1rem;
+  grid-column: 1 / 3;
+  padding-bottom: 1rem;
+}
+
+.feature-info__toggle {
+  padding: 0.4rem;
+  font-size: 1.3rem;
+  background-color: transparent;
+  opacity: 0.6;
+}
+
+.feature-info__table {
+  /* TODO: use colour vars */
+  background-color: var(--map-col-bkg-lightest);
+  border-radius: var(--map-border-radius);
+  box-shadow: var(--map-shadow-md);
+  width: calc(var(--map-width-toolbar) - 4rem);
+}
+
+.feature-info__table-body {}
+
+.feature-info__table-row {
+  padding-bottom: 0.6rem;
+  border: 1px solid #FFFFFF0D;
+  border-top-right-radius: var(--map-border-radius);
+}
+
+.feature-info__table-row:nth-child(even) {
+  background-color: var(--map-col-bkg-lighter);
+}
+
+.feature-info__table-cell {
+  padding: 0.6rem;
+  
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  max-width: 15rem;
+}
+
+/*****************************************************************************************
+ *
+ * Map Legend
+ *
+ * Legends for vector layers in the map
+ *
+ */

@@ -15,7 +15,7 @@ define(
     $,
     _,
     Backbone,
-    Map, // TODO
+    Map,
     Template,
     LayerListView
   ) {
@@ -115,7 +115,11 @@ define(
           }
         },
 
-        // TODO
+        /**
+         * Given a collection of layers, render a new LayerListView
+         * @param {MapAssets} layers 
+         * @returns 
+         */
         renderLayerList : function(layers){
           try {
             var layerList = new LayerListView({
@@ -126,7 +130,7 @@ define(
           }
           catch (error) {
             console.log(
-              'There was an error  in a LayersView' +
+              'There was an error rendering a layer list in a LayersView' +
               '. Error details: ' + error
             );
           }

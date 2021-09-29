@@ -6,24 +6,24 @@ define(
     'jquery',
     'underscore',
     'backbone',
-    'models/maps/Layer',
+    'models/maps/assets/MapAsset',
     'text!templates/maps/layer-item.html'
   ],
   function (
     $,
     _,
     Backbone,
-    Layer,
+    MapAsset,
     Template
   ) {
 
     /**
     * @class LayerItemView
-    * @classdesc One item in a Layer List: shows some basic information about the Layer,
-    * including label and icon. Also has a button that changes the visibility of the Layer
-    * of the map (by updating the 'visibility' attribute in the Layer model). Clicking on
-    * the Layer Item opens the Layer Details panel (by setting the 'selected' attribute to
-    * true in the Layer model.)
+    * @classdesc One item in a Layer List: shows some basic information about the Map
+    * Asset (Layer), including label and icon. Also has a button that changes the
+    * visibility of the Layer of the map (by updating the 'visibility' attribute in the
+    * MapAsset model). Clicking on the Layer Item opens the Layer Details panel (by
+    * setting the 'selected' attribute to true in the Layer model.)
     * @classcategory Views/Maps
     * @name LayerItemView
     * @extends Backbone.View
@@ -47,7 +47,7 @@ define(
 
         /**
         * The model that this view uses
-        * @type {Layer}
+        * @type {MapAsset}
         */
         model: undefined,
 
@@ -65,8 +65,8 @@ define(
          * switch the Layer's visibility on and off
          * @property {string} selected The class that gets added to the view when the
          * Layer Item is selected
-         * @property {string} hidden The class that gets added to the view when the
-         * Layer Item is not visible
+         * @property {string} hidden The class that gets added to the view when the Layer
+         * Item is not visible
          */
         classes: {
           label: 'layer-item__label',
@@ -133,6 +133,11 @@ define(
 
             // Ensure the view's main element has the given class name
             this.el.classList.add(this.className);
+
+            // Show the item as hidden and/or selected depending on the model properties
+            // that are set initially
+            this.toggleHiddenStyles()
+            this.toggleHighlighting()
 
             // When the Layer is selected, highlight this item in the Layer List. When
             // it's no longer selected, then make sure it's no longer highlighted. Set a

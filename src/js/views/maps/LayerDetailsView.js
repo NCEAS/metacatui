@@ -6,7 +6,7 @@ define(
     'jquery',
     'underscore',
     'backbone',
-    'models/maps/Layer',
+    'models/maps/assets/MapAsset',
     'text!templates/maps/layer-details.html',
     // Sub-Views
     'views/maps/LayerDetailView',
@@ -17,7 +17,7 @@ define(
     $,
     _,
     Backbone,
-    Layer,
+    MapAsset,
     Template,
     // Sub-Views
     LayerDetailView,
@@ -27,8 +27,9 @@ define(
 
     /**
     * @class LayerDetailsView
-    * @classdesc A panel with additional information about a Layer, plus some UI for
-    * updating the appearance of the Layer on the map, such as the opacity.
+    * @classdesc A panel with additional information about a Layer (a Map Asset like
+    * imagery or vector data), plus some UI for updating the appearance of the Layer on
+    * the map, such as the opacity.
     * @classcategory Views/Maps
     * @name LayerDetailsView
     * @extends Backbone.View
@@ -51,8 +52,8 @@ define(
         className: 'layer-details',
 
         /**
-        * The Layer model that this view uses
-        * @type {Layer}
+        * The MapAsset model that this view uses
+        * @type {MapAsset}
         */
         model: undefined,
 
@@ -83,15 +84,16 @@ define(
          * @typedef {Object} DetailSectionOption
          * @property {string} label The name to display for this section
          * @property {Backbone.View} view Any view that will render content for the Layer
-         * Detail section. This view will be passed the Layer model. The view should
-         * display information about the Layer and/or allow some aspect of the Layer's
-         * appearance to be edited - e.g. a LayerInfoView or a LayerOpacityView.
+         * Detail section. This view will be passed the MapAsset model. The view should
+         * display information about the MapAsset and/or allow some aspect of the
+         * MapAsset's appearance to be edited - e.g. a LayerInfoView or a
+         * LayerOpacityView.
          */
 
         /**
          * A list of sections to render within this view that give details about the
-         * Layer, or allow editing of the Layer appearance. Each section will have a title
-         * and its content will be collapsible.
+         * MapAsset, or allow editing of the MapAsset appearance. Each section will have a
+         * title and its content will be collapsible.
          * @type {DetailSectionOption[]}
          */
         sections: [
@@ -194,8 +196,8 @@ define(
         },
 
         /**
-         * Show/expand the Layer Details panel. Opening the panel also changes the Layer
-         * model's 'selected attribute' to true.
+         * Show/expand the Layer Details panel. Opening the panel also changes the
+         * MapAsset model's 'selected attribute' to true.
          */
         open: function () {
           try {
@@ -215,8 +217,8 @@ define(
         },
 
         /**
-         * Hide/collapse the Layer Details panel. Closing the panel also changes the Layer
-         * model's 'selected attribute' to false.
+         * Hide/collapse the Layer Details panel. Closing the panel also changes the
+         * MapAsset model's 'selected attribute' to false.
          */
         close: function () {
           try {
@@ -236,10 +238,11 @@ define(
         },
 
         /**
-         * Updates the Layer model set on the view then re-renders the view and displays
-         * information about the new model.
-         * @param {Layer|null} newModel the new Layer model to use to render the view. If
-         * set to null, then the view will be rendered without any layer information.
+         * Updates the MapAsset model set on the view then re-renders the view and
+         * displays information about the new model.
+         * @param {MapAsset|null} newModel the new MapAsset model to use to render the
+         * view. If set to null, then the view will be rendered without any layer
+         * information.
          */
         updateModel: function (newModel) {
           try {
@@ -248,7 +251,7 @@ define(
           }
           catch (error) {
             console.log(
-              'There was an error updating the Layer model in a LayerDetailsView' +
+              'There was an error updating the MapAsset model in a LayerDetailsView' +
               '. Error details: ' + error
             );
           }

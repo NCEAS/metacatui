@@ -5,14 +5,14 @@ define(
     'jquery',
     'underscore',
     'backbone',
-    'models/maps/Layer',
+    'models/maps/assets/MapAsset',
     'text!templates/maps/layer-detail.html',
   ],
   function (
     $,
     _,
     Backbone,
-    Layer,
+    MapAsset,
     Template
   ) {
 
@@ -21,8 +21,8 @@ define(
     * @classdesc A LayerDetailView creates a section to be inserted into a
     * LayerDetailsView. It renders a label and a toggle to collapse and expand the
     * section's contents. The contents of the Detail section can be rendered by any other
-    * view, but the view should be one that shows details about a Layer or allows editing
-    * elements of the Layer.
+    * view, but the view should be one that shows details about a MapAsset or allows
+    * editing elements of the MapAsset.
     * @classcategory Views/Maps
     * @name LayerDetailView
     * @extends Backbone.View
@@ -46,7 +46,7 @@ define(
 
         /**
         * The model that this view uses
-        * @type {Layer}
+        * @type {MapAsset}
         */
         model: undefined,
 

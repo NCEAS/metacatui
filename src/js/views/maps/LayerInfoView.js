@@ -6,20 +6,20 @@ define(
     'jquery',
     'underscore',
     'backbone',
-    'models/maps/Layer',
+    'models/maps/assets/MapAsset',
     'text!templates/maps/layer-info.html'
   ],
   function (
     $,
     _,
     Backbone,
-    Layer,
+    MapAsset,
     Template
   ) {
 
     /**
     * @class LayerInfoView
-    * @classdesc A view that shows some of the basic info from a Layer model, like the
+    * @classdesc A view that shows some of the basic info from a MapAsset model, like the
     * description, attribution, and link to more information.
     * @classcategory Views/Maps
     * @name LayerInfoView
@@ -44,7 +44,7 @@ define(
 
         /**
         * The model that this view uses
-        * @type {Layer}
+        * @type {MapAsset}
         */
         model: undefined,
 

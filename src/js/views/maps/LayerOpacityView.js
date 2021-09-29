@@ -6,21 +6,21 @@ define(
     'jquery',
     'underscore',
     'backbone',
-    'models/maps/Layer',
+    'models/maps/assets/MapAsset',
     'text!templates/maps/layer-opacity.html'
   ],
   function (
     $,
     _,
     Backbone,
-    Layer,
+    MapAsset,
     Template
   ) {
 
     /**
     * @class LayerOpacityView
-    * @classdesc A number slider that shows and updates the opacity in a Layer model
-    * @classcategory Views/Maps TODO
+    * @classdesc A number slider that shows and updates the opacity in a MapAsset model
+    * @classcategory Views/Maps
     * @name LayerOpacityView
     * @extends Backbone.View
     * @screenshot maps/LayerOpacityView.png // TODO: add screenshot
@@ -43,7 +43,7 @@ define(
 
         /**
         * The model that this view uses
-        * @type {Layer}
+        * @type {MapAsset}
         */
         model: undefined,
 
@@ -196,9 +196,9 @@ define(
         },
 
         /**
-         * Update the Layer model's opacity attribute with a new value.
+         * Update the MapAsset model's opacity attribute with a new value.
          * @param {Number} newOpacity A number between 0 and 1 indicating the new opacity
-         * value for the Layer model
+         * value for the MapAsset model
          */
         updateModel: function (newOpacity){
           try {
@@ -218,7 +218,7 @@ define(
         /**
          * Update the label with the newOpacity displayed as a percentage
          * @param {Number} newOpacity A number between 0 and 1 indicating the new opacity
-         * value for the Layer model
+         * value for the MapAsset model
          */
         updateLabel: function (newOpacity) {
          

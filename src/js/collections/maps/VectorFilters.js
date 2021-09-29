@@ -5,37 +5,36 @@ define(
     'jquery',
     'underscore',
     'backbone',
-    'models/maps/Terrain'
+    'models/maps/VectorFilter'
   ],
   function (
     $,
     _,
     Backbone,
-    Terrain
+    VectorFilter
   ) {
 
     /**
-     * @class Terrains
-     * @classdesc A Terrains collection is a group of Terrain models - models that
-     * represent the underlying 3D structure of the surface of the Earth, to be used in 3D
-     * maps.
-     * @class Terrains
-     * @classcategory Collections/Maps
+     * @class VectorFilters
+     * @classdesc A VectorFilters collection is a set of conditions used to show or hide
+     * features of a vector layer on a map.
+     * @class VectorFilters
+     * @classcategory Collections/maps
      * @extends Backbone.Collection
      * @since 2.x.x
      * @constructor
      */
-    var Terrains = Backbone.Collection.extend(
-      /** @lends Terrains.prototype */ {
+    var VectorFilters = Backbone.Collection.extend(
+      /** @lends VectorFilters.prototype */ {
 
         /**
         * The class/model that this collection contains.
         * @type {Backbone.Model}
         */
-        model: Terrain,
+        model: VectorFilter,
 
         // /**
-        //  * Executed when a new Terrains collection is created.
+        //  * Executed when a new VectorFilters collection is created.
         //  */
         // initialize: function () {
         //   try {
@@ -43,7 +42,7 @@ define(
         //   }
         //   catch (error) {
         //     console.log(
-        //       'There was an error initializing a Terrains collection' +
+        //       'There was an error initializing a VectorFilters collection' +
         //       '. Error details: ' + error
         //     );
         //   }
@@ -68,7 +67,7 @@ define(
         //   }
         //   catch (error) {
         //     console.log(
-        //       'There was an error parsing a Terrains collection' +
+        //       'There was an error parsing a VectorFilters collection' +
         //       '. Error details: ' + error
         //     );
         //   }
@@ -78,7 +77,7 @@ define(
       }
     );
 
-    return Terrains;
+    return VectorFilters;
 
   }
 );

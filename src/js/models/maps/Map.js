@@ -5,17 +5,15 @@ define(
     'jquery',
     'underscore',
     'backbone',
-    'nGeohash',
-    'collections/maps/Layers',
-    'collections/maps/Terrains'
+    'models/maps/Feature',
+    'collections/maps/MapAssets',
   ],
   function (
     $,
     _,
     Backbone,
-    nGeohash,
-    Layers,
-    Terrains
+    Feature,
+    MapAssets,
   ) {
     /**
      * @class Map
@@ -47,8 +45,12 @@ define(
          * @type {Object}
          * @property {CameraPosition} homePosition - The position to display when the map
          * initially renders. The home button will also navigate back to this position.
-         * @property {Terrains} terrains - The terrain options to show in the map.
-         * @property {Layers} layers - The imagery and vector data to render in the map.
+         * @property {MapAssets} terrains - The terrain options to show in the map.
+         * @property {MapAssets} layers - The imagery and vector data to render in the map.
+         * @property {Feature} selectedFeature - A particular feature from one of the
+         * layers that is highlighted/selected on the map. The 'selectedFeature' attribute
+         * should be updated with a Feature model when a user selects a geographical
+         * feature on the map (e.g. by clicking)
          * @property {Boolean} [showToolbar = true] - Whether or not to show the side bar
          * with layer list, etc. True by default.
          * @property {Boolean} [showScaleBar = true] - Whether or not to show a scale bar.
@@ -67,11 +69,12 @@ define(
               pitch: -90,
               roll: 0,
             },
-            layers: new Layers(),
-            terrains: new Terrains(),
+            layers: new MapAssets(),
+            terrains: new MapAssets(),
+            selectedFeature: new Feature(),
             showToolbar: true,
             showScaleBar: true,
-            showFeatureInfo: true
+            showFeatureInfo: true,
           };
         },
 
@@ -81,84 +84,69 @@ define(
         initialize: function (attrs, options) {
           try {
             if (attrs) {
+
+              // For now, filter out types that are not supported before initializing any
+              // MapAssets collections. TODO: Make this a configurable list somewhere. 
+              var supportedTypes = ['Cesium3DTileset', 'BingMapsImageryProvider', 'CesiumTerrainProvider']
+
               if (attrs.layers && attrs.layers.length && Array.isArray(attrs.layers)) {
-                this.set('layers', new Layers(attrs.layers))
+                var supportedLayers = _.filter(attrs.layers, function (layer) {
+                  return supportedTypes.includes(layer.type)
+                })
+                this.set('layers', new MapAssets(supportedLayers))
               }
+
               if (attrs.terrains && attrs.terrains.length && Array.isArray(attrs.terrains)) {
-                this.set('terrains', new Terrains(attrs.terrains))
+                var supportedTerrains = _.filter(attrs.terrains, function (terrain) {
+                  return supportedTypes.includes(terrain.type)
+                })
+                this.set('terrains', new MapAssets(supportedTerrains))
               }
+
             }
           }
           catch (error) {
             console.log(
-              'There was an error initalizing a Map model' +
+              'There was an error initializing a Map model' +
               '. Error details: ' + error
             );
           }
         },
 
         /**
-         * This function will return the appropriate geohash level to use for mapping
-         * geohash tiles on the map at the specified altitude (zoom level).
-         * @param {Number} altitude The distance from the surface of the earth in meters
-         * @returns The geohash level, an integer between 0 and 9.
+         * Set or unset the selected Feature on the map model. A selected feature is a
+         * polygon, line, point, or other element of vector data that is in focus on the
+         * map (e.g. because a user clicked it to show more details.)
+         * @param {Feature|Object} feature - Either a Feature model or an Object of
+         * attributes to set on a new Feature model. If no feature argument is passed to
+         * this function, then any currently selected feature will be removed.
+         * @returns 
          */
-        determineGeohashLevel: function (altitude) {
+        selectFeature(featureProps) {
           try {
-            // map of precision integer to minimum altitude
-            const precisionAltMap = {
-              '1': 6000000,
-              '2': 4000000,
-              '3': 1000000,
-              '4': 100000,
-              '5': 0
-            }
-            const precision = _.findKey(precisionAltMap, function (minAltitude) {
-              return altitude >= minAltitude
-            })
-            return Number(precision)
-          }
-          catch (error) {
-            console.log(
-              'There was an error getting the geohash level from altitude in a Map' +
-              'Returning level 1 by default. ' +
-              '. Error details: ' + error
-            );
-            return 1
-          }
-        },
 
-        /**
-         *
-         * @param {Number} south The south-most coordinate of the area to get geohashes for
-         * @param {Number} west The west-most coordinate of the area to get geohashes for
-         * @param {Number} north The north-most coordinate of the area to get geohashes for
-         * @param {Number} east The east-most coordinate of the area to get geohashes for
-         * @param {Number} precision An integer between 1 and 9 representing the geohash
-         * @param {Boolean} boundingBoxes Set to true to return the bounding box for each geohash
-         * level to show
-         */
-        getGeohashes: function (south, west, north, east, precision, boundingBoxes = false) {
-          try {
-            // Get all the geohash tiles contained in the map bounds
-            var geohashes = nGeohash.bboxes(
-              south, west, north, east, precision
-            )
-            // If the boundingBoxes option is set to false, then just return the list of
-            // geohashes
-            if (!boundingBoxes) {
-              return geohashes
+            if (!this.get('selectedFeature')) {
+              this.set('selectedFeature', new Feature())
             }
-            // Otherwise, return the bounding box for each geohash as well
-            var boundingBoxes = []
-            geohashes.forEach(function (geohash) {
-              boundingBoxes[geohash] = nGeohash.decode_bbox(geohash)
-            })
-            return boundingBoxes
+
+            // If no feature is passed to this function, then reset the selected feature
+            // to a default Feature model
+            if (!featureProps) {
+              featureProps = {}
+            }
+            // If feature is not a Feature model, assume it is an object with attributes
+            // to be set on a new Feature model.
+            if (featureProps instanceof Feature) {
+              featureProps = featureProps.attributes
+            }
+            // Update the Map model with the new selected feature information
+            var selectedFeature = this.get('selectedFeature')
+            selectedFeature.clear({ silent: true })
+            selectedFeature.set(_.extend(selectedFeature.defaults(), featureProps))
           }
           catch (error) {
             console.log(
-              'There was an error getting geohashes in a Map' +
+              'Failed to select a Feature in a Map model' +
               '. Error details: ' + error
             );
           }

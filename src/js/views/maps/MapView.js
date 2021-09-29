@@ -55,7 +55,7 @@ define(
         * The HTML classes to use for this view's element
         * @type {string}
         */
-        className: 'map-view', // TODO
+        className: 'map-view',
 
         /**
         * The model that this view uses
@@ -225,9 +225,17 @@ define(
         renderFeatureInfo : function(){
           try {
             this.featureInfo = new FeatureInfoView({
-              el: this.subElements.featureInfoContainer
+              el: this.subElements.featureInfoContainer,
+              model: this.model.get('selectedFeature')
             })
             this.featureInfo.render()
+            // If the Feature model is ever completely replaced for any reason, make the
+            // the Feature Info view gets updated.
+            this.stopListening(this.model, 'change:selectedFeature')
+            this.listenTo(this.model, 'change:selectedFeature', function (mapModel, FeatureModel) {
+              this.featureInfo.model = FeatureModel
+              this.featureInfo.update()
+            })
             return this.featureInfo
           }
           catch (error) {

@@ -19,8 +19,10 @@ define(
 
     /**
     * @class FeatureInfoView
-    * @classdesc A card that shows more details about a specific geo-spatial feature
-    * displayed on a Map View.
+    * @classdesc An info-box / panel that shows more details about a specific geo-spatial
+    * feature that is highlighted or in focus in a Map View. Details displayed include a
+    * table of attributes that are set on that feature, and a link to view more
+    * information about the Map Asset (e.g. 3D tileset) that contains the feature.
     * @classcategory Views/Maps
     * @name FeatureInfoView
     * @extends Backbone.View
@@ -55,12 +57,43 @@ define(
         template: _.template(Template),
 
         /**
-        * The events this view will listen to and the associated function to call.
-        * @type {Object}
+        * Creates an object that gives the events this view will listen to and the
+        * associated function to call. Each entry in the object has the format 'event
+        * selector': 'function'.
+        * @returns {Object}
         */
-        events: {
-          // 'event selector': 'function',
+        events: function () {
+          var events = {};
+          // Close the layer details panel when the toggle button is clicked. Get the
+          // class of the toggle button from the classes property set in this view.
+          events['click .' + this.classes.toggle] = 'close'
+          // Open the Layer Details panel
+          events['click .' + this.classes.layerDetailsButton] = 'showLayerDetails'
+          return events
         },
+
+        /**
+         * Classes that are used to identify the HTML elements that comprise this view.
+         * @type {Object}
+         * @property {string} open The class to add to the outermost HTML element for this
+         * view when the layer details view is open/expanded (not hidden)
+         * @property {string} toggle The element in the template that acts as a toggle to
+         * close/hide the info view
+         * @property {string} layerDetailsButton The layer details button is added to the
+         * view when the selected feature is associated with a layer (a MapAsset like a 3D
+         * tileset). When clicked, it opens the LayerDetailsView for that layer.
+         */
+        classes: {
+          open: 'feature-info--open',
+          toggle: 'feature-info__toggle',
+          layerDetailsButton: 'feature-info__layer-details-button'
+        },
+
+        /**
+         * Whether or not the layer details view is open
+         * @type {Boolean}
+         */
+        isOpen: false,
 
         /**
         * Executed when a new FeatureInfoView is created
@@ -88,15 +121,21 @@ define(
         render: function () {
 
           try {
-            
-            // Save a reference to this view
-            var view = this;
 
-            // Insert the template into the view
-            this.$el.html(this.template({}));
+            // Show the feature info box as open if the view is set to have it open
+            // already
+            if (this.isOpen) {
+              this.el.classList.add(this.classes.open);
+            }
+
+            this.renderContent()
 
             // Ensure the view's main element has the given class name
             this.el.classList.add(this.className);
+
+            // When the model changes, update the view
+            this.stopListening(this.model, 'change')
+            this.listenTo(this.model, 'change', this.update)
 
             return this
 
@@ -110,11 +149,82 @@ define(
         },
 
         /**
+         * Render or re-render the attributes table and layer details button.
+         */
+        renderContent: function () {
+          try {
+            var classes = this.classes;
+            var title = 'Feature';
+            var properties = null;
+            var showLayerDetailsButton = false;
+
+            if (this.model) {
+
+              var layerModel = this.model.get('layerModel')
+
+              // Show a link to open the details for the feature's parent layer
+              if (layerModel) {
+                showLayerDetailsButton = true;
+              }
+
+              // Create a title for the feature info box
+              var label = layerModel ? layerModel.get('label') : null;
+              var ID = this.model.get('mapId');
+              if (ID) {
+                title = title + ' ' + ID
+              }
+              if (label) {
+                this.model.get('properties')
+                title = title + ' from ' + label + ' Layer'
+              }
+
+              // Get the properties to show in the table
+              properties = this.model.get('properties')
+            }
+
+            // Insert the template into the view
+            this.$el.html(this.template({
+              classes: classes,
+              title: title,
+              properties: properties,
+              showLayerDetailsButton: showLayerDetailsButton
+            }));
+          }
+          catch (error) {
+            console.log(
+              'There was an error rendering the content of a FeatureInfoView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Show details about the layer that contains this feature. The function does this
+         * by setting the associated layer model's 'selected' attribute to true. The
+         * parent Map view has a listener set to show the Layer Details view when this
+         * attribute is changed.
+         */
+        showLayerDetails: function () {
+          try {
+            if (this.model && this.model.get('layerModel')) {
+              this.model.get('layerModel').set('selected', true)
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error showing the layer details panel from a FeatureInfoView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
          * Shows the feature info box
          */
-        show : function(){
+        open: function () {
           try {
-            // TODO
+            this.el.classList.add(this.classes.open);
+            this.isOpen = true;
           }
           catch (error) {
             console.log(
@@ -127,9 +237,13 @@ define(
         /**
          * Hide the feature info box from view
          */
-        hide : function(){
+        close: function () {
           try {
-            // TODO
+            this.el.classList.remove(this.classes.open);
+            this.isOpen = false;
+            // When the feature info panel is closed, reset the Feature model to default.
+            // This will trigger the map widget to un-highlight/de-select the feature.
+            this.model.setToDefault()
           }
           catch (error) {
             console.log(
@@ -141,11 +255,17 @@ define(
 
         /**
          * Update the content that's displayed in a feature info box, based on the
-         * information in the Feature model.
+         * information in the Feature model. Open the panel if there is a Feature model,
+         * or close it if there is no model or the model has only default values.
          */
-        updateContent : function(){
+        update: function () {
           try {
-            // TODO
+            if (!this.model || this.model.isDefault()) {
+              this.close()
+            } else {
+              this.open()
+              this.renderContent()
+            }
           }
           catch (error) {
             console.log(

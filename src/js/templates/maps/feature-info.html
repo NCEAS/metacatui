@@ -1,1 +1,22 @@
-<span style="opacity:0.5">Feature Info Goes Here</span>
+
+<h5 class="feature-info__label"><%= title %></h5>
+<button class="<%= classes.toggle %> map-view__button"><i class="icon-remove"></i></button>
+
+<div class="feature-info__content">
+  <% if(properties) { %>
+    <table class="feature-info__table">
+      <tbody class="feature-info__table-body">
+        <% for (const [key, value] of Object.entries(properties)) { %>
+          <tr class="feature-info__table-row">
+            <td class="feature-info__table-cell"><%= key %></td>
+            <td class="feature-info__table-cell"><%= value %></td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  <% } %>
+
+  <% if(showLayerDetailsButton) { %>
+  <button class="<%= classes.layerDetailsButton %> map-view__button">See Layer Details</button>
+  <% } %>
+</div>
