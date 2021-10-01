@@ -85,7 +85,8 @@ define(['jquery', 'underscore', 'backbone'],
       * DataCatalog). This can be set to either "google" (the default), or "cesium". To
       * use Google maps, the {@link AppConfig#googleAnalyticsKey} must be set. To use
       * Cesium maps, the {@link AppConfig#enableCesium} property must be set to true, and
-      * the {@link AppConfig#cesiumToken} must be set.
+      * the {@link AppConfig#cesiumToken} must be set. NOTE: The Cesium map is a WIP and
+      * not yet ready to use in the data catalog.
       * @type {string}
       * @example "cesium"
       * @default "google"

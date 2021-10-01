@@ -23,7 +23,7 @@ define(
     Map,
     Template,
     // SubViews
-    CesiumView,
+    CesiumWidgetView,
     ToolbarView,
     ScaleBarView,
     FeatureInfoView,
@@ -74,7 +74,7 @@ define(
          * @name MapView#classes
          * @type {Object}
          * @property {string} mapWidgetContainer The element that will hold the map widget
-         * (i.e. CesiumView)
+         * (i.e. CesiumWidgetView)
          * @property {string} scaleBarContainer The container for the ScaleBarView
          * @property {string} featureInfoContainer The container for the box that will
          * show details about a selected feature
@@ -174,13 +174,13 @@ define(
 
         /**
          * Renders the view that shows the map/globe and all of the geo-spatial data.
-         * Currently, this uses the CesiumView, but this function could be modified to use
-         * an alternative map widget in the future.
-         * @returns {CesiumView} Returns the rendered view
+         * Currently, this uses the CesiumWidgetView, but this function could be modified
+         * to use an alternative map widget in the future.
+         * @returns {CesiumWidgetView} Returns the rendered view
          */
         renderMapWidget : function(){
           try {
-            this.mapWidget = new CesiumView({
+            this.mapWidget = new CesiumWidgetView({
               el: this.subElements.mapWidgetContainer,
               model: this.model
             })

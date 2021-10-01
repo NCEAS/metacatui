@@ -11,7 +11,7 @@ define(["jquery",
         "models/Utilities",
         "views/SearchResultView",
         "views/searchSelect/AnnotationFilterView",
-        "views/maps/CesiumView",
+        "views/maps/CesiumWidgetView",
         "text!templates/search.html",
         "text!templates/statCounts.html",
         "text!templates/pager.html",
@@ -23,7 +23,7 @@ define(["jquery",
     ],
     function(
       $, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel,
-        MetricsModel, Utilities, SearchResultView, AnnotationFilter, CesiumView,
+        MetricsModel, Utilities, SearchResultView, AnnotationFilter, CesiumWidgetView,
         CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate,
         CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash
     ) {
@@ -1851,7 +1851,7 @@ define(["jquery",
                     if (this.mapType == "cesium") {
                         var mapContainer = $("#map-container").append("<div id='map-canvas'></div>");
 
-                        var mapView = new CesiumView({
+                        var mapView = new CesiumWidgetView({
                             el: mapContainer
                         });
                         mapView.render();
@@ -2161,8 +2161,8 @@ define(["jquery",
              **/
             drawTiles: function () {
 
-                // This function is for Google maps only. The CesiumView draws its own
-                // tiles.
+                // This function is for Google maps only. The CesiumWidgetView draws its
+                // own tiles.
                 if (this.mapType !== "google") {
                     return
                 }

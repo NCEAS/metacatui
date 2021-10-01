@@ -443,7 +443,7 @@ define(
           }
           catch (error) {
             console.log(
-              'There was an error navigating to the home position in a CesiumView' +
+              'There was an error navigating to the home position in a CesiumWidgetView' +
               '. Error details: ' + error
             );
           }
@@ -471,7 +471,7 @@ define(
           }
           catch (error) {
             console.log(
-              'There was an error getting the current position in a CesiumView' +
+              'There was an error getting the current position in a CesiumWidgetView' +
               '. Error details: ' + error
             );
           }
