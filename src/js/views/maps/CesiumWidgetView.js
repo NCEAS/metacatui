@@ -84,16 +84,9 @@ define(
           },
           {
             types: ['CesiumTerrainProvider'],
-            renderFunction: 'renderTerrain'
+            renderFunction: 'updateTerrain'
           }
         ],
-
-        /**
-         * Whether to allow users to click on vector features to display more information
-         * about those features.
-         * @type {Boolean}
-         */
-        allowPicking: true,
 
         /**
          * The border color to use on vector features that a user clicks.
@@ -175,14 +168,25 @@ define(
             // Save references to parts of the widget that the view will access often
             view.scene = view.widget.scene;
             view.camera = view.widget.camera;
+            view.inputHandler = view.widget.screenSpaceEventHandler;
+
+            view.scene.globe.depthTestAgainstTerrain = false;
+            // Disable HDR lighting for better performance and to avoid changing imagery colors.
+            view.scene.highDynamicRange = false;
 
             // Go to the home position, if one is set.
             view.showHome()
 
             // If users are allowed to click on features for more details, initialize
             // picking behaviour on the map
-            if (view.allowPicking) {
+            if (view.model.get('showFeatureInfo')) {
               view.initializePicking()
+            }
+
+            // If the scale bar is showing, then get the coordinates when the mouse moves
+            if (view.model.get('showScaleBar')) {
+              view.setMouseCoordinateListener()
+              view.setCameraListener()
             }
 
             // The Cesium Widget will support just one terrain option to start. Later,
@@ -240,11 +244,11 @@ define(
         /**
          * Because the Cesium widget is configured to use explicit rendering (see
          * {@link https://cesium.com/blog/2018/01/24/cesium-scene-rendering-performance/}),
-         * we need to tell Cesium when to render a new frame if it's not one of the cases
-         * handle automatically. This function tells the Cesium scene to render, but is
-         * limited by the underscore.js debounce function to only happen a maximum of once
-         * every 50 ms (see {@link https://underscorejs.org/#debounce}).
-         */
+              * we need to tell Cesium when to render a new frame if it's not one of the cases
+              * handle automatically. This function tells the Cesium scene to render, but is
+              * limited by the underscore.js debounce function to only happen a maximum of once
+              * every 50 ms (see {@link https://underscorejs.org/#debounce}).
+              */
         requestRender: _.debounce(function () {
           this.scene.requestRender()
         }, 50),
@@ -286,8 +290,7 @@ define(
 
             // Change cursor to pointer when the mouse is over a vector feature. Change it
             // back to the default when the mouse leaves a feature.
-            var hoverHandler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
-            hoverHandler.setInputAction(function (movement) {
+            view.inputHandler.setInputAction(function (movement) {
               var pickedFeature = scene.pick(movement.endPosition);
               if (Cesium.defined(pickedFeature)) {
                 view.el.style.cursor = 'pointer';
@@ -298,8 +301,7 @@ define(
 
             // When a feature is clicked, highlight the feature and trigger an event that
             // tells the parent map view to open the feature details panel
-            var clickHandler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
-            clickHandler.setInputAction(function (movement) {
+            view.inputHandler.setInputAction(function (movement) {
               // Select the feature that's at the position where the user clicked, if
               // there is one
               var pickedFeature = scene.pick(movement.position);
@@ -319,12 +321,12 @@ define(
 
         /**
          * This function is called whenever any attributes change in the {@link Feature}
-         * model that is set on the {@link Map} model's selectedFeature attribute. Looks
-         * in the Map model for the selected feature entity. Highlights that entity on the
-         * map by drawing a border around it with the highlightBorderColor configured on
-         * this view. Removes highlighting from all previously highlighted entities. NOTE:
-         * This currently only works with 3D tile features.
-         */
+          * model that is set on the {@link Map} model's selectedFeature attribute. Looks
+          * in the Map model for the selected feature entity. Highlights that entity on the
+          * map by drawing a border around it with the highlightBorderColor configured on
+          * this view. Removes highlighting from all previously highlighted entities. NOTE:
+          * This currently only works with 3D tile features.
+          */
         highlightSelectedFeature: function () {
           try {
             var view = this;
@@ -361,8 +363,8 @@ define(
          * contains the feature, and the ID that Cesium uses to identify it, and updates
          * the Feature model that is set on the Map's `selectedFeature` attribute. NOTE:
          * This currently only works with 3D tile features.
-         * @param {Cesium3DTileFeature} feature 
-         */
+         * @param {Cesium3DTileFeature} feature
+              */
         updateSelectedFeatureModel: function (feature) {
           try {
             var view = this
@@ -454,20 +456,21 @@ define(
          * @returns {CameraPosition} Returns an object with the longitude, latitude,
          * height, heading, pitch, and roll in the same format that the Map model uses
          * for the homePosition (see {@link Map#defaults})
-         */
-        getCurrentPosition: function () {
+        */
+        getCameraPosition: function () {
           try {
             var camera = this.camera
-            var cameraPosition = Cesium.Cartographic
-              .fromCartesian(camera.position)
+            var cameraPosition = Cesium.Cartographic.fromCartesian(camera.position)
+
             return {
-              longitude: cameraPosition.longitude / Math.PI * 180,
-              latitude: cameraPosition.latitude / Math.PI * 180,
+              longitude: Cesium.Math.toDegrees(cameraPosition.longitude),
+              latitude: Cesium.Math.toDegrees(cameraPosition.latitude),
               height: camera.position.z,
               heading: Cesium.Math.toDegrees(camera.heading),
               pitch: Cesium.Math.toDegrees(camera.pitch),
               roll: Cesium.Math.toDegrees(camera.roll)
             }
+
           }
           catch (error) {
             console.log(
@@ -477,16 +480,147 @@ define(
           }
         },
 
+        // TODO
+        setMouseCoordinateListener: function () {
+
+          // Use globe.ellipsoid.cartesianToCartographic?
+
+          var view = this;
+
+          // Handle mouse move
+          this.inputHandler.setInputAction(e => {
+
+            var mousePosition = e.endPosition;
+            var pickRay = view.camera.getPickRay(mousePosition);
+            var cartesian = view.scene.globe.pick(pickRay, view.scene);
+
+            // TODO: debounce
+            if (cartesian) {
+              var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+              view.model.set('currentPosition', {
+                latitude: Cesium.Math.toDegrees(cartographic.latitude),
+                longitude: Cesium.Math.toDegrees(cartographic.longitude),
+                height: cartographic.height,
+              })
+            }
+
+          }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+        },
+
+
+        /**
+         * Set listeners for when the Cesium camera changes a significant amount. Update
+         * the map model's currentScale attribute, which is used for the scale bar.
+         * See {@link https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#changed}.
+         */
+        setCameraListener: function () {
+          try {
+            const view = this
+
+            // When the camera position has changed significantly, update the scale.
+            view.camera.changed.addEventListener(function () {
+
+              // TODO: Limit how often the function runs if it seems to slow down the map.
+              // Find the distance between two pixels at the *bottom center* of the screen.
+              // Update the map Model's current scale.
+              let currentScale = {
+                pixels: null,
+                meters: null
+              }
+              const onePixelInMeters = view.pixelToMeters()
+              if (onePixelInMeters || onePixelInMeters === 0) {
+                currentScale = {
+                  pixels: 1,
+                  meters: onePixelInMeters
+                }
+              }
+              view.model.set('currentScale', currentScale);
+
+            });
+          }
+          catch (error) {
+            console.log(
+              'There was an error  in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Finds the geodesic distance (in meters) between two points that are 1 pixel
+         * apart at the bottom, center of the Cesium canvas. Adapted from TerriaJS. See
+         * {@link https://github.com/TerriaJS/terriajs/blob/main/lib/ReactViews/Map/Legend/DistanceLegend.jsx}
+         * @returns {number|boolean} Returns the distance on the globe, in meters, that is
+         * equivalent to 1 pixel on the screen at the center bottom point of the current
+         * scene. Returns false if there was a problem getting the measurement.
+         */
+        pixelToMeters: function () {
+          try {
+
+            const view = this
+            const scene = view.scene
+            const globe = scene.globe
+
+            // For measuring geodesic distances (shortest route between two points on the
+            // Earth's surface)
+            const geodesic = new Cesium.EllipsoidGeodesic();
+
+            // Find two points that are 1 pixel apart at the bottom center of the cesium
+            // canvas.
+            const width = scene.canvas.clientWidth;
+            const height = scene.canvas.clientHeight;
+
+            const left = scene.camera.getPickRay(
+              new Cesium.Cartesian2((width / 2) | 0, height - 1)
+            );
+            const right = scene.camera.getPickRay(
+              new Cesium.Cartesian2((1 + width / 2) | 0, height - 1)
+            );
+
+            const leftPosition = globe.pick(left, scene);
+            const rightPosition = globe.pick(right, scene);
+
+            // A point must exist at both positions to get the distance
+            if (!Cesium.defined(leftPosition) || !Cesium.defined(rightPosition)) {
+              return false
+            }
+
+            // Find the geodesic distance, in meters, between the two points that are 1
+            // pixel apart
+            const leftCartographic = globe.ellipsoid.cartesianToCartographic(
+              leftPosition
+            );
+            const rightCartographic = globe.ellipsoid.cartesianToCartographic(
+              rightPosition
+            );
+
+            geodesic.setEndPoints(leftCartographic, rightCartographic);
+
+            const onePixelInMeters = geodesic.surfaceDistance;
+
+            return onePixelInMeters
+
+          }
+          catch (error) {
+            console.log(
+              'Failed to get a pixel to meters measurement in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+            return false
+          }
+        },
+
         /**
          * Renders peaks and valleys in the 3D version of the map, given a terrain model.
          * If a terrain model has already been set on the map, this will replace it.
          * @param {Terrain} terrainModel a Terrain Map Asset model
-         */
-        renderTerrain: function (terrainModel) {
+        */
+        updateTerrain: function (terrainModel) {
           try {
             if (terrainModel.get('status') !== 'ready') {
               this.stopListening(terrainModel)
-              this.listenTo(terrainModel, 'change:status', this.renderTerrain)
+              this.listenTo(terrainModel, 'change:status', this.updateTerrain)
               return
             }
             var cesiumModel = terrainModel.get('cesiumModel')
@@ -505,8 +639,8 @@ define(
          * Renders a 3D tileset in the map and sets listeners to update the tileset when
          * the opacity or visibility changes.
          * @param {Layer} tilesetModel The Map Asset Layer model that contains the
-         * information about the 3D tiles to render in the map
-         */
+              * information about the 3D tiles to render in the map
+              */
         add3DTileset: function (tilesetModel) {
           try {
 
@@ -535,7 +669,7 @@ define(
          * Renders imagery in the Map given a Layer model. Sets listeners to update the
          * imagery when the opacity or visibility changes.
          * @param {Layer} imageryModel A Layer Map Asset model
-         */
+              */
         addImagery: function (imageryModel) {
           try {
             if (imageryModel.get('status') !== 'ready') {

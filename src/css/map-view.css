@@ -182,11 +182,9 @@
 
 /* The elements that contain the current coordinates */
 
-.scale-bar__longitude {}
-
-.scale-bar__latitude {}
-
-.scale-bar__elevation {}
+.scale-bar__label {
+  font-weight: 800;
+}
 
 /* The __scale element contains __bar and __distance */
 
@@ -202,7 +200,9 @@
 represents 1 unit of the given distance measurement. */
 
 .scale-bar__bar {
-  height: 6px;
+  height: 4px;
+  border-radius: 1px;
+  transition: width 0.3s;
   background-color: var(--map-col-text);
 }
 

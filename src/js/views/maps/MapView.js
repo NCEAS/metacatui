@@ -295,6 +295,18 @@ define(
               el: this.subElements.scaleBarContainer
             })
             this.scaleBar.render()
+
+            this.stopListening(this.model, 'change:currentPosition')
+            this.listenTo(this.model, 'change:currentPosition', function (model, position) {
+              this.scaleBar.updateCoordinates(position.latitude, position.longitude)
+            })
+
+            this.stopListening(this.model, 'change:currentScale')
+            this.listenTo(this.model, 'change:currentScale', function (model, scale) {
+              this.scaleBar.updateScale(scale.pixels, scale.meters)
+            })
+
+            
             return this.scaleBar
           }
           catch (error) {

@@ -46,16 +46,21 @@ define(
          * @property {CameraPosition} homePosition - The position to display when the map
          * initially renders. The home button will also navigate back to this position.
          * @property {MapAssets} terrains - The terrain options to show in the map.
-         * @property {MapAssets} layers - The imagery and vector data to render in the map.
+         * @property {MapAssets} layers - The imagery and vector data to render in the
+         * map.
          * @property {Feature} selectedFeature - A particular feature from one of the
          * layers that is highlighted/selected on the map. The 'selectedFeature' attribute
          * should be updated with a Feature model when a user selects a geographical
          * feature on the map (e.g. by clicking)
-         * @property {Boolean} [showToolbar = true] - Whether or not to show the side bar
-         * with layer list, etc. True by default.
-         * @property {Boolean} [showScaleBar = true] - Whether or not to show a scale bar.
-         * @property {Boolean} [showFeatureInfo = true] - Whether or not to allow users to
-         * click on map features to show more information about them.
+         * @property {Boolean} showToolbar - Whether or not to show the side bar with
+         * layer list, etc. True by default.
+         * @property {Boolean} showScaleBar - Whether or not to show a scale bar.
+         * @property {Boolean} showFeatureInfo - Whether or not to allow users to click on
+         * map features to show more information about them.
+         * @property {Object} currentScale - An object updated by the map widget that
+         * gives two equivalent measurements based on the map's current position and zoom
+         * level: The number of pixels on the screen that equal the number of meters on
+         * the map/globe.
         */
         defaults: function () {
           // TODO: Decide on reasonable default values.
@@ -75,6 +80,15 @@ define(
             showToolbar: true,
             showScaleBar: true,
             showFeatureInfo: true,
+            currentPosition: {
+              longitude: null,
+              latitude: null,
+              height: null
+            },
+            currentScale: {
+              meters: null,
+              pixels: null
+            }
           };
         },
 
