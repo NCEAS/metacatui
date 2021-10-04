@@ -11,7 +11,8 @@ define(
     // Sub-Views
     'views/maps/LayerDetailView',
     'views/maps/LayerOpacityView',
-    'views/maps/LayerInfoView'
+    'views/maps/LayerInfoView',
+    'views/maps/LayerNavigationView'
   ],
   function (
     $,
@@ -22,7 +23,8 @@ define(
     // Sub-Views
     LayerDetailView,
     LayerOpacityView,
-    LayerInfoView
+    LayerInfoView,
+    LayerNavigationView
   ) {
 
     /**
@@ -100,6 +102,10 @@ define(
           {
             label: 'Opacity',
             view: LayerOpacityView
+          },
+          {
+            label: 'Navigation',
+            view: LayerNavigationView
           },
           {
             label: 'Info & Data',

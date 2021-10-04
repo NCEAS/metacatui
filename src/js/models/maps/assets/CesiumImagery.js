@@ -174,6 +174,42 @@ define(
           }
         },
 
+        /**
+         * Checks if the Cesium Imagery Provider has been converted to a Cesium Imagery
+         * Layer model that is ready to use.
+         * @returns {Promise} Returns a promise that resolves to this model when ready.
+          */
+        whenReady: function () {
+          const model = this
+          return new Promise(function (resolve, reject) {
+            if (model.get('status') === 'ready') {
+              resolve(model)
+            }
+            model.stopListening(model, 'change:status')
+            model.listenTo(model, 'change:status', function () {
+              resolve(model)
+            })
+          });
+        },
+
+        /**
+         * Gets a Cesium Bounding Sphere that can be used to navigate to view the full
+         * extent of the imagery. See
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/BoundingSphere.html}
+         * @returns {Promise} Returns a promise that resolves to a Cesium Bounding Sphere
+         * when ready
+         */
+        getCameraBoundSphere: function () {
+          return this.whenReady()
+            .then(function (model) {
+              return model.get('cesiumModel').getViewableRectangle()
+            })
+            .then(function (rectangle) {
+              console.log(rectangle);
+              return Cesium.BoundingSphere.fromRectangle3D(rectangle)
+            })
+        },
+
         // /**
         //  * Parses the given input into a JSON object to be set on the model.
         //  *

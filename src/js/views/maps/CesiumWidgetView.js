@@ -7,6 +7,7 @@ define(
     'backbone',
     'cesium',
     'models/maps/Map',
+    'models/maps/assets/MapAsset',
     'text!templates/maps/cesium-widget-view.html'
   ],
   function (
@@ -15,6 +16,7 @@ define(
     Backbone,
     Cesium,
     Map,
+    MapAsset,
     Template
   ) {
 
@@ -175,7 +177,7 @@ define(
             view.scene.highDynamicRange = false;
 
             // Go to the home position, if one is set.
-            view.showHome()
+            view.flyHome()
 
             // If users are allowed to click on features for more details, initialize
             // picking behaviour on the map
@@ -206,6 +208,11 @@ define(
             // associated Cesium model.
             view.stopListening(view.model.get('layers'), 'appearanceChanged')
             view.listenTo(view.model.get('layers'), 'appearanceChanged', view.requestRender)
+
+            // Other views may trigger an event on the layer/asset model that indicates
+            // that the map should navigate to the extent of the data
+            view.stopListening(view.model.get('layers'), 'flyToExtent')
+            view.listenTo(view.model.get('layers'), 'flyToExtent', view.flyTo)
 
             // Add each layer from the Map model to the Cesium widget. Render using the
             // function configured in the View's mapAssetRenderFunctions property.
@@ -244,11 +251,11 @@ define(
         /**
          * Because the Cesium widget is configured to use explicit rendering (see
          * {@link https://cesium.com/blog/2018/01/24/cesium-scene-rendering-performance/}),
-              * we need to tell Cesium when to render a new frame if it's not one of the cases
-              * handle automatically. This function tells the Cesium scene to render, but is
-              * limited by the underscore.js debounce function to only happen a maximum of once
-              * every 50 ms (see {@link https://underscorejs.org/#debounce}).
-              */
+         * we need to tell Cesium when to render a new frame if it's not one of the cases
+         * handle automatically. This function tells the Cesium scene to render, but is
+         * limited by the underscore.js debounce function to only happen a maximum of once
+         * every 50 ms (see {@link https://underscorejs.org/#debounce}).
+         */
         requestRender: _.debounce(function () {
           this.scene.requestRender()
         }, 50),
@@ -421,15 +428,69 @@ define(
         },
 
         /**
+         * Move the camera position and zoom to the specified target entity or position on
+         * the map, using a nice animation.
+         * @param {MapAsset|Cesium.BoundingSphere|Object} target The target asset,
+         * bounding sphere, or location to change the camera focus to. If target is a
+         * MapAsset, then the bounding sphere from that asset will be used for the target
+         * destination. If target is an Object, it may contain any of the properties that
+         * are supported by the Cesium camera flyTo options, see
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#flyTo}. The target
+         * can otherwise be a Cesium BoundingSphere, see
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/BoundingSphere.html}
+         */
+        flyTo: function (target) {
+
+          try {
+
+            const view = this;
+
+            // A target is required
+            if (!target) {
+              return
+            }
+
+            // If the target is a Bounding Sphere, use the camera's built-in function
+            if (target instanceof Cesium.BoundingSphere) {
+              view.camera.flyToBoundingSphere(target)
+              return
+            }
+
+            // If the target is some type of map asset, then get a Bounding Sphere for
+            // that asset and call this function again.
+            if (target instanceof MapAsset && typeof target.getCameraBoundSphere === 'function') {
+              target.getCameraBoundSphere()
+                .then(function (assetBoundingSphere) {
+                  view.flyTo(assetBoundingSphere)
+                })
+              return
+            }
+
+            // If not a Map Asset or a BoundingSphere, then the target must be an Object.
+            // Assume target are options for the Cesium camera flyTo function
+            if (typeof target === 'object') {
+              view.camera.flyTo(target)
+            }
+
+          }
+          catch (error) {
+            console.log(
+              'There was an error navigating to a target position in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
          * Navigate to the homePosition that's set on the Map.
          */
-        showHome: function () {
+        flyHome: function () {
           try {
             var position = this.model.get('homePosition')
 
             if (position) {
 
-              this.camera.flyTo({
+              this.flyTo({
                 destination: Cesium.Cartesian3.fromDegrees(
                   position.longitude,
                   position.latitude,
@@ -480,32 +541,41 @@ define(
           }
         },
 
-        // TODO
+        /**
+         * Set a listener that updates the Map model's current position attribute whenever
+         * the mouse moves
+         */
         setMouseCoordinateListener: function () {
+          try {
+            // Use globe.ellipsoid.cartesianToCartographic?
 
-          // Use globe.ellipsoid.cartesianToCartographic?
+            var view = this;
 
-          var view = this;
+            // Handle mouse move
+            this.inputHandler.setInputAction(e => {
 
-          // Handle mouse move
-          this.inputHandler.setInputAction(e => {
+              var mousePosition = e.endPosition;
+              var pickRay = view.camera.getPickRay(mousePosition);
+              var cartesian = view.scene.globe.pick(pickRay, view.scene);
 
-            var mousePosition = e.endPosition;
-            var pickRay = view.camera.getPickRay(mousePosition);
-            var cartesian = view.scene.globe.pick(pickRay, view.scene);
+              // TODO: Limit how often the function runs if it seems to slow down the map.
+              if (cartesian) {
+                var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+                view.model.set('currentPosition', {
+                  latitude: Cesium.Math.toDegrees(cartographic.latitude),
+                  longitude: Cesium.Math.toDegrees(cartographic.longitude),
+                  height: cartographic.height,
+                })
+              }
 
-            // TODO: debounce
-            if (cartesian) {
-              var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
-              view.model.set('currentPosition', {
-                latitude: Cesium.Math.toDegrees(cartographic.latitude),
-                longitude: Cesium.Math.toDegrees(cartographic.longitude),
-                height: cartographic.height,
-              })
-            }
-
-          }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
-
+            }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+          }
+          catch (error) {
+            console.log(
+              'There was an error setting the mouse coordinate listener in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+          }
         },
 
 
@@ -639,8 +709,8 @@ define(
          * Renders a 3D tileset in the map and sets listeners to update the tileset when
          * the opacity or visibility changes.
          * @param {Layer} tilesetModel The Map Asset Layer model that contains the
-              * information about the 3D tiles to render in the map
-              */
+         * information about the 3D tiles to render in the map
+        */
         add3DTileset: function (tilesetModel) {
           try {
 

@@ -557,6 +557,10 @@ represents 1 unit of the given distance measurement. */
   border-radius: var(--map-border-radius);
 }
 
+.layer-navigation {
+  width: 100%;
+}
+
 /* The shaded part of the slider that stretches from 0 to the current opacity */
 
 /* Note that the range is also styled in the main metacatui CSS file, using the range's
