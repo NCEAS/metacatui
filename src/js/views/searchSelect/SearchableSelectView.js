@@ -7,7 +7,6 @@ define([
     "semanticUIdropdown",
     "text!" + MetacatUI.root + "/components/semanticUI/dropdown.min.css",
     "text!templates/selectUI/searchableSelect.html",
-    
   ],
   function($, _, Backbone, Transition, TransitionCSS, Dropdown, DropdownCSS, Template) {
 
@@ -20,6 +19,7 @@ define([
      * @extends Backbone.View
      * @constructor
      * @since 2.14.0
+     * @screenshot views/searchSelect/SearchableSelectView.png
      */
     return Backbone.View.extend(
       /** @lends SearchableSelectView.prototype */
@@ -111,6 +111,22 @@ define([
         imageHeight: 30,
 
         /**
+         * For select inputs where multiple values are allowed
+         * ({@link SearchableSelectView#allowMulti} is true), optional text to insert
+         * between labels
+         * @type {string}
+         * @since 2.15.0
+         */
+        separatorText: "",
+
+        /** The HTML class name to add to the separator elements that are created for this
+         * view.
+         * @type {string}
+         * @since 2.15.0
+         */
+        separatorClass: "separator",
+
+        /**
          * The list of options that a user can select from in the dropdown menu. For
          * un-categorized options, provide an array of objects, where each object is a
          * single option. To create category headings, provide an object containing named
@@ -182,6 +198,19 @@ define([
         selected: [],
 
         /**
+         * Can be set to an object to specify API settings for retrieving remote selection
+         * menu content from an API endpoint. Details of what can be set here are
+         * specified by the Semantic-UI / Fomantic-UI package. Set to false if not
+         * retrieving remote content.
+         * @type {Object|booealn}
+         * @default false
+         * @since 2.15.0
+         * @see {@link https://fomantic-ui.com/modules/dropdown.html#remote-settings}
+         * @see {@link https://fomantic-ui.com/behaviors/api.html#/settings}
+         */
+        apiSettings: false,
+
+        /**
          * The primary HTML template for this view. The template follows the
          * structure specified for the semanticUI dropdown module, see:
          * https://semantic-ui.com/modules/dropdown.html#/definition
@@ -201,6 +230,24 @@ define([
             MetacatUI.appModel.addCSS(TransitionCSS, "semanticUItransition");
             MetacatUI.appModel.addCSS(DropdownCSS, "semanticUIdropdown");
 
+            // If pre-selected values that are passed to this view are also attached to a
+            // model (e.g. when they were passed to this view as {selected:
+            // parentView.model.get("values")}), then it's important that we use a clone
+            // instead. Otherwise this view may silently update the model, and important
+            // events may not be triggered.
+            if(options.selected){
+              options.selected = _.clone(options.selected);
+            }
+
+            // If pre-selected values that are passed to this view are also attached to a
+            // model (e.g. when they were passed to this view as {selected:
+            // parentView.model.get("values")}), then it's important that we use a clone
+            // instead. Otherwise this view may silently update the model, and important
+            // events may not be triggered.
+            if(options.selected){
+              options.selected = _.clone(options.selected);
+            }
+
             // Get all the options and apply them to this view
             if (typeof options == "object") {
               var optionKeys = Object.keys(options);
@@ -218,13 +265,21 @@ define([
         /**
          * Render the view
          *
-         * @return {SeachableSelect}  Returns the view
+         * @return {SearchableSelect}  Returns the view
          */
         render: function() {
 
           try {
 
             var view = this;
+
+            if(view.apiSettings && !view.semanticAPILoaded){
+              require([MetacatUI.root + "/components/semanticUI/api.min.js"], function(SemanticAPI){
+                view.semanticAPILoaded = true
+                view.render();
+              })
+              return;
+            }
 
             // Render the template using the view attributes
             this.$el.html(this.template(this));
@@ -240,41 +295,121 @@ define([
             // https://semantic-ui.com/modules/dropdown.html#/settings
             this.$selectUI = this.$el.find('.ui.dropdown')
               .dropdown({
+                keys : {
+                  // So that a user may enter search text using a comma
+                  delimiter  : false
+                },
+                apiSettings: this.apiSettings,
                 fullTextSearch: true,
                 duration: 90,
+                forceSelection: false,
+                ignoreDiacritics: true,
                 clearable: view.clearable,
                 allowAdditions: view.allowAdditions,
                 hideAdditions: false,
                 allowReselection: true,
+                onRemove: function(removedValue){
+                  // Callback when a value is removed *for multi-select inputs only*
+                  // Remove the value from the selected array
+                  view.selected = view.selected.filter(function(value){
+                    return value !== removedValue
+                  })
+                },
                 onLabelCreate: function(value, text){
-                  // Add tooltips to the selected label elements
-                  view.addTooltip.call(view, this, "top");
-                  return this
-                },
-                onLabelRemove: function(){
-                  // Ensure tooltips for labels are removed
-                  $(".search-select-tooltip").remove();
-                },
-                onChange: function(value, text, $choice){
+                   // Callback when a label is created *for multi-select inputs only*
 
-                  // Add tooltips to the selected fields that are not labels
-                  // (i.e. that are not in multi-select UIs).
-                  var textEl = view.$selectUI.find(".text")
-                  if(textEl){
-                    if(text == textEl.html()){
-                      view.addTooltip.call(view, textEl, "top");
+                  // Add the value to the selected array (but don't add twice). Do this in
+                  // the onLabelCreate callback instead of in the onAdd callback because
+                  // we would like to update the selected array before we create the
+                  // separator element (below).
+                  if(!view.selected.includes(value)){
+                    view.selected.push(value)
+                  }
+                  // Add a separator between labels if required.
+                  var label = this;
+                  if(view.separatorRequired.call(view)){
+                    // Create the separator element.
+                    var separator = view.createSeparator.call(view);
+                    if(separator){
+                      // Attach the separator to the label so that we can easily remove it
+                      // when the label is removed.
+                      label.data("separator", separator);
+                      // Add it before the label element.
+                      label = separator.add(label);
                     }
                   }
-
-                  // Trigger an event if items are selected after the UI
-                  // has been rendered (It is set as disabled until fully rendered)
-                  if(!$(this).hasClass("disabled")){
-                    var newValues = value.split(",");
-                    view.trigger('changeSelection', newValues);
-                    view.selected = newValues;
+                  return label
+                },
+                onLabelRemove(value){
+                  // Call back when a user deletes a label *for multi-select inputs only*
+                  var label = this;
+                  // Remove the separator before this label if there is one.
+                  var sep = label.data("separator")
+                  if(sep){
+                    sep.remove()
+                  }
+                  // If this is the first label in an input of at least two, then delete
+                  // the separator directly *after* this label - The label that's second
+                  // will become first, and should not have an separator before it.
+                  var allLabels = view.$selectUI.find(".label");
+                  if(allLabels.index(label) === 0){
+                    var separatorAfter = label.next("." + view.separatorClass);
+                    if(separatorAfter){
+                      separatorAfter.remove();
+                    }
                   }
                 },
+                onChange: function(values, text, $choice){
+
+                  // Callback when values change for any type of input.
+
+                  // NOTE: The "values" argument is a string that contains all the
+                  // selected values separated by commas. We updated the view.selected
+                  // array with the onLabelCreate and onRemove callbacks instead of using
+                  // the values argument passed to this function in order to allow commas
+                  // within individual values. For example, if the user selected the value
+                  // "x" and the value "y,z", the values string would be "x,y,z" and it
+                  // would be difficult to see that two values were selected instead of
+                  // three.
+
+                  // Update values for single-select inputs (multi-select are updated
+                  // using the onLabelCreate and onRemove callbacks)
+                  if(!view.allowMulti){
+                    view.selected = [values]
+                  }
+
+                  // Trigger an event if items are selected after the UI has been rendered
+                  // (It is set as disabled until fully rendered).
+                  if(!$(this).hasClass("disabled")){
+                    var newValues = _.clone(view.selected);
+                    view.trigger('changeSelection', newValues);
+                  }
+
+                  // Refresh the tooltips on the labels/text
+
+                  // Ensure tooltips for labels are removed
+                  $(".search-select-tooltip").remove();
+
+                  // Add a tooltip for single select elements (.text) or multi-select
+                  // elements (.label). Delay so that to give time for DOM elements to be
+                  // added or removed.
+                  setTimeout(function(params) {
+                    var textEl = view.$selectUI.find(".text:not(.default),.label");
+                    // Single select text element will not have the value attribute, add
+                    // it so that we can find the matching description for the tooltip
+                    if(!textEl.data("value") && !view.allowMulti){
+                      textEl.data("value", values)
+                    }
+                    if(textEl){
+                      textEl.each(function(i, el){
+                        view.addTooltip.call(view, el, "top");
+                      })
+                    }
+                  }, 50);
+                },
               });
+
+            view.$selectUI.data("view", view);
 
             view.postRender();
 
@@ -282,6 +417,61 @@ define([
 
           } catch (e) {
             console.log("Error rendering the search select, error message: ", e);
+          }
+        },
+
+        /**
+         * Checks whether a separator should be created for the label that was just
+         * created, but not yet attached to the DOM
+         * @return {boolean} - Returns true if a separator should be created, false
+         * otherwise.
+         * @since 2.15.0
+         */
+        separatorRequired: function(){
+          try {
+            if(
+              // Separators not required if only one selection is allowed
+              !this.allowMulti ||
+              // Need separator text to create a separator element
+              !this.separatorText ||
+              // Need the list of selected values to determine the value's position
+              !this.selected ||
+              // Separator is only required between two or more values
+              this.selected.length <= 1 ||
+              // Separator is only required after the first element has been added
+              this.$selectUI.find(".label").length === 0
+            ){
+              return false
+            } else {
+              return true
+            }
+          } catch (error) {
+            console.log("Error checking if a label in a searchable select input " +
+            "requires a separator. Assuming that it does not need one. Error details: " +
+            error);
+            return false
+          }
+        },
+
+        /**
+         * Create the HTML for a separator element to insert between two labels. The
+         * view.separatorClass is added to the separator element.
+         * @return {JQuery} Returns the separator as a jQuery element
+         * @since 2.15.0
+         */
+        createSeparator: function(){
+          try {
+            var separatorText = this.separatorText;
+            // Text is required to create a separator.
+            if(!separatorText){
+              return null
+            }
+            var separator = $("<span>" + separatorText + "</span>");
+            separator.addClass(this.separatorClass);
+            return separator
+          } catch (error) {
+            console.log("There was an error creating a separator element in a " +
+              "Searchable Select View. Error details: " + error);
           }
         },
 
@@ -384,6 +574,15 @@ define([
               });
             }
 
+            // Trigger an event when the user focuses in searchable inputs
+            var inputEl = this.$el.find("input.search")
+            if(inputEl){
+              inputEl.off("focus");
+              inputEl.on("focus", function(event){
+                view.trigger("inputFocus", event)
+              })
+            }
+
           } catch (e) {
             console.log("The searchable select post-render function failed, error message: " + e);
           }
@@ -451,8 +650,14 @@ define([
             // Find the description in the options object, using the data-value
             // attribute set in the template. The data-value attribute is either
             // the label, or the value, depending on if a value is provided.
-            var valueOrLabel = $(element).data("value"),
-                opt = _.chain(this.options)
+            var valueOrLabel = $(element).data("value");
+            if(typeof valueOrLabel === "undefined"){
+              return
+            }
+            if(typeof valueOrLabel === "boolean"){
+              valueOrLabel = valueOrLabel.toString()
+            }
+            var opt = _.chain(this.options)
                             .values()
                             .flatten()
                             .find(function(option){
@@ -489,7 +694,7 @@ define([
 
             return $(element)
           } catch (e) {
-            console.log("Failed to add tooltips in a searchable select view, error message: " + e);
+            console.log("Failed to add tooltip in a searchable select view, error message: " + e);
           }
 
         },

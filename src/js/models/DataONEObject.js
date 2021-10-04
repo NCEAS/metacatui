@@ -90,6 +90,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     createSeriesId: false, //If true, a seriesId will be created when this object is saved.
                     collections: [], //References to collections that this model is in
                     possibleAuthMNs: [], //A list of possible authoritative MNs of this object
+                    useAltRepo: false,
                     provSources: [],
                     provDerivations: [],
                     prov_generated: [],
@@ -199,7 +200,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             if ( this.isNew() ) {
 
               //Use the object service URL from the alt repo
-              if( activeAltRepo ){
+              if( this.get("useAltRepo") && activeAltRepo ){
                 baseUrl = activeAltRepo.objectServiceUrl;
               }
               //If this MetacatUI deployment is pointing to a MN, use the object service URL from the AppModel
@@ -216,7 +217,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 if ( this.get("hasContentChanges") ) {
 
                   //Use the object service URL from the alt repo
-                  if( activeAltRepo ){
+                  if( this.get("useAltRepo") && activeAltRepo ){
                     baseUrl = activeAltRepo.objectServiceUrl;
                   }
                   else{
@@ -229,7 +230,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 } else {
 
                   //Use the meta service URL from the alt repo
-                  if( activeAltRepo ){
+                  if( this.get("useAltRepo") && activeAltRepo ){
                     baseUrl = activeAltRepo.metaServiceUrl;
                   }
                   else{
@@ -242,7 +243,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 }
               } else {
                 //Use the meta service URL from the alt repo
-                if( activeAltRepo ){
+                if( this.get("useAltRepo") && activeAltRepo ){
                   baseUrl = activeAltRepo.metaServiceUrl;
                 }
                 else{
@@ -265,19 +266,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             if ( ! options ) var options = {};
             else var options = _.clone(options);
 
-            var baseUrl = "",
-                activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
-            //Use the meta service URL from the alt repo
-            if( activeAltRepo ){
-              baseUrl = activeAltRepo.metaServiceUrl;
-            }
-            //If this MetacatUI deployment is pointing to a MN, use the meta service URL from the AppModel
-            else{
-              baseUrl = MetacatUI.appModel.get("metaServiceUrl");
-            }
-
-            // Default to GET /meta
-            options.url = baseUrl + encodeURIComponent(this.get("id"));
+            options.url = this.url();
 
             //If we are using the Solr service to retrieve info about this object, then construct a query
             if((typeof options != "undefined") && options.solrService){
@@ -709,6 +698,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
           model.set("numSaveAttempts", 0);
           model.set("uploadStatus", "c");
+          model.set("isNew", false);
           model.trigger("successSaving", model);
 
           // Get the newest sysmeta set by the MN
@@ -820,6 +810,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
                         model.set("uploadStatus", "e");
                         model.set("sysMetaUploadStatus", "e");
+
+                        // Trigger a custom event for the sysmeta update that
+                        // errored
+                        model.trigger("sysMetaUpdateError");
 
                         //Send this exception to Google Analytics
                         if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
@@ -1238,9 +1232,31 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             accessPolicy.dataONEObject = this;
 
             //If there is no access policy XML sent,
-            if( !accessPolicyXML ){
-              //Set the default access policy using the AppModel configuration
-              accessPolicy.createDefaultPolicy();
+            if( this.isNew() && !accessPolicyXML ){
+
+              try{
+                //If the app is configured to inherit the access policy from the parent metadata,
+                // then get the parent metadata and copy it's AccessPolicy
+                let scienceMetadata = this.get("isDocumentedByModels");
+                if( MetacatUI.appModel.get("inheritAccessPolicy") && scienceMetadata && scienceMetadata.length ){
+                  let sciMetaAccessPolicy = scienceMetadata[0].get("accessPolicy");
+
+                  if( sciMetaAccessPolicy ){
+                    accessPolicy.copyAccessPolicy(sciMetaAccessPolicy);
+                  }
+                  else{
+                    accessPolicy.createDefaultPolicy();
+                  }
+                }
+                //Otherwise, set the default access policy using the AppModel configuration
+                else{
+                  accessPolicy.createDefaultPolicy();
+                }
+              }
+              catch(e){
+                console.error("Could create access policy, so defaulting to default", e);
+                accessPolicy.createDefaultPolicy();
+              }
             }
             else{
               //Parse the access policy XML to create AccessRule models from the XML
@@ -1401,13 +1417,21 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             if(this.isNew()) return true;
 
             // Compare the new system metadata XML to the old system metadata XML
-            
-            var newSysMetaCloned = this.clone();
-                oldSysMetaAttrs = newSysMetaCloned.parse(newSysMetaCloned.get("sysMetaXML"));
 
-            newSysMetaCloned.set(oldSysMetaAttrs);
-            
-            var oldSysMeta = newSysMetaCloned.serializeSysMeta();
+            //Check if there is system metadata first
+            if( !this.get("sysMetaXML") ){
+              return false;
+            }
+
+            var D1ObjectClone = this.clone(),
+                // Make sure we are using the parse function in the DataONEObject model.
+                // Sometimes hasUpdates is called from extensions of the D1Object model,
+                // (e.g. from the portal model), and the parse function is overwritten
+                oldSysMetaAttrs = new DataONEObject().parse(D1ObjectClone.get("sysMetaXML"));
+
+            D1ObjectClone.set(oldSysMetaAttrs);
+
+            var oldSysMeta = D1ObjectClone.serializeSysMeta();
             var newSysMeta = this.serializeSysMeta();
 
             if ( oldSysMeta === "" ) return false;
@@ -1465,6 +1489,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             //If the model is explicitly marked as not new, return false
             if( this.get("isNew") === false ){
               return false;
+            }
+            //If the model is explicitly marked as new, return true
+            else if( this.get("isNew") === true ){
+              return true;
             }
 
             //Check if there is an upload date that was retrieved from the server

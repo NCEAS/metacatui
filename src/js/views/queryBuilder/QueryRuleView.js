@@ -5,20 +5,20 @@ define([
   "views/searchSelect/SearchableSelectView",
   "views/searchSelect/QueryFieldSelectView",
   "views/searchSelect/NodeSelectView",
+  "views/searchSelect/AccountSelectView",
   "views/filters/NumericFilterView",
   "views/filters/DateFilterView",
+  "views/searchSelect/ObjectFormatSelectView",
   "views/searchSelect/AnnotationFilterView",
-  "collections/queryFields/QueryFields",
   "models/filters/Filter",
   "models/filters/BooleanFilter",
   "models/filters/NumericFilter",
-  "models/filters/DateFilter",
-  "collections/ObjectFormats"
+  "models/filters/DateFilter"
 ],
   function (
-    $, _, Backbone, SearchableSelect, QueryFieldSelect, NodeSelect, NumericFilterView,
-    DateFilterView, AnnotationFilter, QueryFields, Filter, BooleanFilter, NumericFilter,
-    DateFilter, ObjectFormats
+    $, _, Backbone, SearchableSelect, QueryFieldSelect, NodeSelect, AccountSelect,
+    NumericFilterView, DateFilterView, ObjectFormatSelect, AnnotationFilter, Filter, BooleanFilter,
+    NumericFilter, DateFilter
   ) {
 
     /**
@@ -382,18 +382,19 @@ define([
                   },
                   {
                     label: "mixed",
-                    description: "Loose coupling means service works on any data."
+                    description: "Mixed coupling means service works on data described" +
+                    " by this metadata document but may work on other data."
                   },
                   {
                     label: "loose",
-                    description: "Mixed coupling means service works on data described" +
-                      " by this metadata document but may work on other data."
+                    description: "Loose coupling means service works on any data."
                   }
                 ],
                 allowMulti: true,
                 allowAdditions: false,
                 inputLabel: "Select a coupling",
-                selected: this.model.get("values")
+                selected: this.model.get("values"),
+                separatorText: this.model.get("operator")
               })
             }
           },
@@ -401,35 +402,9 @@ define([
           {
             queryFields: ["formatId"],
             uiFunction: function () {
-              // If there is an issue retrieving the object formats, just use a regular UI
-              if (!MetacatUI.objectFormats || MetacatUI.objectFormats.length == 0) {
-                // The last function in this list is the default value selection UI.
-                // "this" context should always be the view
-                var defaultMap = this.valueSelectUImap[this.valueSelectUImap.length - 1],
-                  defaultFunction = defaultMap.uiFunction;
-                return defaultFunction.call(this);
-              }
-              var formatIds = MetacatUI.objectFormats.toJSON();
-              var options = _.chain(formatIds)
-                // Since the query rules automatically include a rule for formatType =
-                // "METADATA", only allow filtering datasets by specific metadata type.
-                .where({ formatType: "METADATA" })
-                .map(
-                  function (format) {
-                    return {
-                      label: format.formatName,
-                      value: format.formatId,
-                      description: format.formatId
-                    }
-                  }
-                )
-                .value();
-              return new SearchableSelect({
-                options: options,
-                allowMulti: true,
-                allowAdditions: false,
-                inputLabel: "Select one or more metadata type",
-                selected: this.model.get("values")
+              return new ObjectFormatSelect({
+                selected: this.model.get("values"),
+                separatorText: this.model.get("operator")
               })
             }
           },
@@ -441,6 +416,7 @@ define([
               if (MetacatUI.appModel.get("bioportalAPIKey")) {
                 return new AnnotationFilter({
                   selected: this.model.get("values"),
+                  separatorText: this.model.get("operator"),
                   multiselect: true
                 });
                 // If there's no API key, render the default UI (the last in this list)
@@ -449,6 +425,16 @@ define([
               }
             }
           },
+          // User/Organization account ID lookup
+          {
+            queryFields: ["writePermission", "readPermission", "changePermission", "rightsHolder", "submitter"],
+            uiFunction: function () {
+              return new AccountSelect({
+                selected: this.model.get("values"),
+                separatorText: this.model.get("operator")
+              });
+            },
+          },
           // Repository picker for fields that need a member node ID
           {
             filterTypes: ["filter"],
@@ -456,7 +442,8 @@ define([
               "authoritativeMN", "datasource"],
             uiFunction: function () {
               return new NodeSelect({
-                selected: this.model.get("values")
+                selected: this.model.get("values"),
+                separatorText: this.model.get("operator")
               })
             }
           },
@@ -467,7 +454,8 @@ define([
             uiFunction: function () {
               return new NumericFilterView({
                 model: this.model,
-                showButton: false
+                showButton: false,
+                separatorText: this.model.get("operator")
               })
             }
           },
@@ -477,7 +465,8 @@ define([
             label: "Choose a year",
             uiFunction: function () {
               return new DateFilterView({
-                model: this.model
+                model: this.model,
+                separatorText: this.model.get("operator")
               })
             }
           },
@@ -489,7 +478,8 @@ define([
                 allowMulti: true,
                 allowAdditions: true,
                 inputLabel: "Type a value",
-                selected: this.model.get("values")
+                selected: this.model.get("values"),
+                separatorText: this.model.get("operator")
               })
             }
           }
@@ -516,13 +506,6 @@ define([
               console.error("error: A Filter model that's part of a Filters collection"
                 + " is required to initialize a Query Rule view.")
               return
-            }
-
-            // Ensure the object formats are cached, for the special data format filter
-            // ID.
-            if (!MetacatUI.objectFormats) {
-              MetacatUI.objectFormats = new ObjectFormats();
-              MetacatUI.objectFormats.fetch();
             }
 
             // The model may be removed during the save process if it's empty. Remove this
@@ -863,6 +846,7 @@ define([
               selected: selectedFields,
               excludeFields: this.excludeFields,
               addFields: this.specialFields,
+              separatorText: this.model.get("operator")
             });
             this.fieldSelect.$el.addClass(this.fieldsClass);
             this.el.append(this.fieldSelect.el);
@@ -1472,18 +1456,45 @@ define([
               view.valueSelect.$el.prepend(label)
             }
 
+            // Make sure the listeners set below are not set multiple times
+            this.stopListening( view.valueSelect, 'changeSelection inputFocus' );
+
             // Update model when the values change - note that the date & numeric filter
             // views do not trigger a 'changeSelection' event, (because they are not based
             // on a SearchSelect View) but update the models directly
-            this.stopListening(
-              view.valueSelect,
-              'changeSelection'
-            );
             this.listenTo(
               view.valueSelect,
               'changeSelection',
               this.handleValueChange
             );
+
+            // Show a message that reminds the user that capitalization matters when they
+            // are typing a value for a field that is case-sensitive.
+            this.listenTo(
+              view.valueSelect,
+              'inputFocus',
+              function(event){
+                var fields = this.model.get("fields");
+                var isCaseSensitive = _.some(fields, function(field){
+                  return MetacatUI.queryFields.findWhere({
+                    name: field,
+                    caseSensitive: true
+                  });
+                })
+                if(isCaseSensitive){
+                  var fieldsText = "The field"
+                  if(fields.length > 1){
+                    fieldsText = "At least one of the fields"
+                  }
+                  var message = "<i class='icon-lightbulb icon-on-left'></i> <b>Hint:</b> " +
+                        fieldsText +
+                        " you selected is case-sensitive. Capitalization matters here."
+                  view.valueSelect.showMessage(message, type = "info", removeOnChange = false)
+                } else {
+                  view.valueSelect.removeMessages()
+                }
+              }
+            )
 
             // Set the value to the value provided if there was one. Then validateValue()
           } catch (e) {
@@ -1535,7 +1546,7 @@ define([
             switch (inputType) {
               case "value":
                 if (this.valueSelect) {
-                  this.stopListening(this.valueSelect, 'changeSelection');
+                  this.stopListening( this.valueSelect, 'changeSelection inputFocus' );
                   this.valueSelect.remove();
                   this.valueSelect = null;
                 }

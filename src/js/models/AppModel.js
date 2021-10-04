@@ -834,7 +834,7 @@ define(['jquery', 'underscore', 'backbone'],
       * If true, displays the citation registration tool on the dataset landing page
       * @type {boolean}
       * @default true
-      * @since 2.14.1
+      * @since 2.15.0
       */
       displayRegisterCitationTool: true,
       /**
@@ -938,7 +938,9 @@ define(['jquery', 'underscore', 'backbone'],
       enablePublishDOIForSubjects: [],
 
       /**
-      * If true, users can change the AccessPolicy for their objects.
+      * If true, users can change the AccessPolicy for any of their objects.
+      * This is equivalent to setting {@link AppConfig#allowAccessPolicyChangesPortals} and
+      * {@link AppConfig#allowAccessPolicyChangesDatasets} to `true`.
       * @type {boolean}
       * @default true
       * @since 2.9.0
@@ -946,9 +948,45 @@ define(['jquery', 'underscore', 'backbone'],
       allowAccessPolicyChanges: true,
 
       /**
-      * The default Access Policy set on new objects uploaded to the repository.
-      * Each literal object here gets set directly on an AccessRule model.
-      * See the AccessRule model list of default attributes for options on what to set here.
+      * If true, users can change the AccessPolicy for their portals only.
+      * @type {boolean}
+      * @default true
+      * @since 2.15.0
+      */
+      allowAccessPolicyChangesPortals: true,
+
+      /**
+      * Limit portal Access policy editing to only a defined list of people or groups.
+      * To let everyone edit access policies for their own objects, keep this as an empty array
+      * and make sure {@link AppConfig#allowAccessPolicyChangesPortals} is set to `true`
+      * @type {boolean}
+      * @default []
+      * @since 2.15.0
+      */
+      allowAccessPolicyChangesPortalsForSubjects: [],
+
+      /**
+      * If true, users can change the AccessPolicy for their datasets only.
+      * @type {boolean}
+      * @default true
+      * @since 2.15.0
+      */
+      allowAccessPolicyChangesDatasets: true,
+
+      /**
+      * Limit dataset Access policy editing to only a defined list of people or groups.
+      * To let everyone edit access policies for their own objects, keep this as an empty array
+      * and make sure {@link AppConfig#allowAccessPolicyChangesDatasets} is set to `true`
+      * @type {boolean}
+      * @default true
+      * @since 2.15.0
+      */
+      allowAccessPolicyChangesDatasetsForSubjects: [],
+
+      /**
+      * The default {@link AccessPolicy} set on new objects uploaded to the repository.
+      * Each literal object here gets set directly on an {@link AccessRule} model.
+      * See the {@link AccessRule} list of default attributes for options on what to set here.
       * @see {@link AccessRule}
       * @type {object[]}
       * @since 2.9.0
@@ -967,6 +1005,16 @@ define(['jquery', 'underscore', 'backbone'],
         subject: "public",
         read: true
       }],
+
+      /**
+      * When new data objects are added to a {@link DataPackage}, they can either inherit the {@link AccessPolicy} from the
+      * parent metadata object, or default to the {@link AppConfig#defaultAccessPolicy}. To inherit the {@link AccessPolicy}
+      * from the parent metadata object, set this config to `true`.
+      * @type {boolean}
+      * @default true
+      * @since 2.15.0
+      */
+      inheritAccessPolicy: true,
 
       /**
       * The user-facing name for editing the Access Policy. This is displayed as the header of the AccessPolicyView, for example
@@ -1071,6 +1119,15 @@ define(['jquery', 'underscore', 'backbone'],
       * @since 2.9.0
       */
       showDatasetPublicToggle: true,
+
+      /**
+      * The public/private toggle will be displayed in the Sharing Options for datasets for only
+      * the given users or groups. To display the public/private toggle for everyone,
+      * set `showDatasetPublicToggle` to true and keep this array empty.
+      * @type {string[]}
+      * @since 2.15.0
+      */
+      showDatasetPublicToggleForSubjects: [],
 
       /**
       * Set to false to hide the display of "My Portals", which shows the user's current portals
@@ -1347,15 +1404,15 @@ define(['jquery', 'underscore', 'backbone'],
         "sourceText", "termText", "titlestr", "site", "id", "updateDate",
         "edition", "gcmdKeyword", "isSpatial", "keyConcept", "ogcUrl", "parameter",
         "sensor", "source", "term", "investigatorText", "sku", "_text_",
-        // Fields that have been made into a combo-field:
-        "beginDate", "endDate",
-        // Prov fields:
-        // "prov_generated", "prov_generatedByExecution",
-        // "prov_generatedByProgram", "prov_generatedByUser", "prov_hasDerivations",
-        // "prov_hasSources", "prov_instanceOfClass", "prov_used",
-        // "prov_usedByExecution", "prov_usedByProgram", "prov_usedByUser",
-        // "prov_wasDerivedFrom", "prov_wasExecutedByExecution",
-        // "prov_wasExecutedByUser", "prov_wasInformedBy"
+        // Fields that have been made into a special combination field
+        "beginDate", "endDate", "awardNumber",
+        // Provenance fields (keep only "prov_hasSources" and "prov_hasDerivations"),
+        // since they are the only ones indexed on metadata objects
+        "prov_wasGeneratedBy", "prov_generated", "prov_generatedByExecution",
+        "prov_generatedByProgram", "prov_generatedByUser", "prov_instanceOfClass",
+        "prov_used", "prov_usedByExecution", "prov_usedByProgram", "prov_usedByUser",
+        "prov_wasDerivedFrom", "prov_wasExecutedByExecution", "prov_wasExecutedByUser",
+        "prov_wasInformedBy"
       ],
 
       /**
@@ -1412,6 +1469,14 @@ define(['jquery', 'underscore', 'backbone'],
           label: "Year of Data Collection",
           description: "The temporal range of content described by the metadata",
           category: "Dates"
+        },
+        {
+          name: "funding-text-award-number",
+          fields: ["fundingText", "awardNumber"],
+          label: "Award Number",
+          description: "The award number for funding associated with a dataset or the " +
+            "description of funding source",
+          category: "Awards & funding"
         }
       ],
 
@@ -1681,7 +1746,17 @@ define(['jquery', 'underscore', 'backbone'],
        * @since 2.X.X
        * @example AtZjkdlajkl_jklcCAO_1JYafsvAjU1nkd9jdD6CDnHyamndlasdt5CB7xs
       */
-      bingMapsKey: "",
+        bingMapsKey: "",
+      
+      /**
+       * Enable or disable showing the MeasurementTypeView in the Editor's
+       * attribute modal dialog. The {@link AppModel#bioportalAPIKey} must be set to a valid Bioportal
+       * API key for the ontology tree widget to work.
+       * @type {boolean}
+       * @since 2.X.0
+       * @default false
+      */
+      enableMeasurementTypeView: false,
 
       /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users

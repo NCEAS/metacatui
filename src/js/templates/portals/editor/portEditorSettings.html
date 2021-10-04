@@ -19,11 +19,11 @@
       <% } %>
     </p>
     <p class="muted display-label">
-      <%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/<span class="display-label-value"><%=label%></span>
+      <%=MetacatUI.appModel.get('baseUrl') + MetacatUI.root%>/<%=portalTermPlural%>/<span class="display-label-value"><%=label%></span>
     </p>
     <div class="label-container hide">
         <div class="control-group">
-          <span class="muted"><%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/</span>
+          <span class="muted"><%=MetacatUI.appModel.get('baseUrl') + MetacatUI.root%>/<%=portalTermPlural%>/</span>
           <input type="text" value="<%=label%>" data-category="label" class="basic-text label-input-text"></input>
           <span class="notification help-inline" data-category="label"></span>
         </div>
@@ -69,6 +69,6 @@
 
 <% if(MetacatUI.appModel.get("theme") == "dataone"){ %>
 <div class="row-fluid subtle">
-  Enjoying DataONE portals or experiencing issues? <a href="mailto:support@dataone.org">Email us</a> or <a href="https://forms.gle/iuRhZePv4bitnXrBA" target="_blank">leave us feedback</a>. 
+  Enjoying DataONE portals or experiencing issues? <a href="mailto:support@dataone.org">Email us</a> or <a href="https://forms.gle/iuRhZePv4bitnXrBA" target="_blank">leave us feedback</a>.
 </div>
 <% } %>

@@ -15,6 +15,7 @@ define([
      * @extends SearchableSelect
      * @constructor
      * @since 2.14.0
+     * @screenshot views/searchSelect/QueryFieldSelectView.png
      */
     var QueryFieldSelectView = SearchableSelect.extend(
       /** @lends QueryFieldSelectView.prototype */
@@ -26,9 +27,9 @@ define([
         type: "QueryFieldSelect",
 
         /**
-         * className - Returns the class names for this view element
+         * className - the class names for this view element
          *
-         * @return {string}  class names
+         * @type {string}
          */
         className: SearchableSelect.prototype.className + " query-field-select",
 
@@ -73,7 +74,7 @@ define([
          * @property {string} category - The name of the category under which to place
          * this field. It must match one of the category names for an existing query
          * field.
-         * 
+         *
          * @since 2.15.0
          */
 
@@ -100,6 +101,7 @@ define([
          * must exactly match those in the
          * {@link QueryField#categoriesMap Query Field model}
          * @type {string[]}
+         * @since 2.15.0
          */
         categoriesToAlphabetize: ["General"],
 

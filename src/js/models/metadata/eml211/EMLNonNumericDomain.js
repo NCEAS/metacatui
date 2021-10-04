@@ -8,7 +8,7 @@ define(["jquery", "underscore", "backbone",
          * or ordinal measurement scale attribute, and is an extension of
          * EMLMeasurementScale.
          * @classcategory Models/Metadata/EML211
-         * @see https://github.com/NCEAS/eml/blob/master/eml-attribute.xsd
+         * @see https://eml.ecoinformatics.org/schema/eml-attribute_xsd.html#AttributeType_AttributeType_measurementScale_AttributeType_AttributeType_measurementScale_nominal_nonNumericDomain
          * @extends Backbone.Model
          * @constructor
          */

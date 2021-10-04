@@ -463,22 +463,27 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 
           _.each($(data).children(/.+subjectInfo/).children(), function(accountNode, i){
 
-            var name = "";
+			var name = "";
+			var type = "";
 
             if( $(accountNode).children("givenName").length ){
-              name = $(accountNode).children("givenName").text() + " " + $(accountNode).children("familyName").text()
+			  name = $(accountNode).children("givenName").text() + " " + $(accountNode).children("familyName").text()
+			  type = "person"
             }
             else{
-              name = $(accountNode).children("groupName").text();
+			  name = $(accountNode).children("groupName").text();
+			  type = "group"
             }
 
             if( !name ){
-              name = $(accountNode).children("subject").text();
+			  name = $(accountNode).children("subject").text();
+			  type = "unknown"
             }
 
             list.push({
               value: $(accountNode).children("subject").text(),
-              label: name + "  (" + $(accountNode).children("subject").text() + ")"
+			  label: name + "  (" + $(accountNode).children("subject").text() + ")",
+			  type: type
             });
           });
 

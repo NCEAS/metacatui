@@ -273,8 +273,33 @@ define(['underscore',
         },
 
         /**
+        * @inheritdoc
+        */
+        isAccessPolicyEditEnabled: function(){
+
+          if( !MetacatUI.appModel.get("allowAccessPolicyChanges") ){
+            return false;
+          }
+
+          if( !MetacatUI.appModel.get("allowAccessPolicyChangesDatasets") ){
+            return false;
+          }
+
+          let limitedTo = MetacatUI.appModel.get("allowAccessPolicyChangesDatasetsForSubjects");
+          if( Array.isArray(limitedTo) && limitedTo.length ){
+
+            return _.intersection(limitedTo, MetacatUI.appUserModel.get("allIdentitiesAndGroups")).length > 0;
+
+          }
+          else{
+            return true;
+          }
+
+        },
+
+        /**
          * Update the text that is shown below the spinner while the editor is loading
-         * 
+         *
          * @param {string} message - The message to display
          */
         updateLoadingText: function (message) {
@@ -409,8 +434,7 @@ define(['underscore',
         */
         createDataPackage: function () {
           // Create a new Data packages
-          MetacatUI.rootDataPackage = new DataPackage([this.model]);
-          MetacatUI.rootDataPackage.packageModel.set("synced", true);
+          MetacatUI.rootDataPackage = new DataPackage([this.model], { packageModelAttrs: { synced: true }});
 
           //Handle the add of the metadata model
           MetacatUI.rootDataPackage.handleAdd(this.model);
@@ -460,7 +484,8 @@ define(['underscore',
           //Render the Data Package view
           this.dataPackageView = new DataPackageView({
             edit: true,
-            dataPackage: MetacatUI.rootDataPackage
+            dataPackage: MetacatUI.rootDataPackage,
+            parentEditorView: this
           });
 
           //Render the view
@@ -556,10 +581,10 @@ define(['underscore',
             console.log("Not EML. TODO: Render generic ScienceMetadata.");
             return;
 
-          } else {
+          }
 
-            //Create an EML model
-            if (model.type != "EML") {
+          //Create an EML model
+          if (model.type != "EML") {
               //Create a new EML model from the ScienceMetadata model
               var EMLmodel = new EML(model.toJSON());
               //Replace the old ScienceMetadata model in the collection
@@ -575,39 +600,38 @@ define(['underscore',
               return;
             }
 
-            //Create an EML211 View and render it
-            emlView = new EMLView({
-              model: model,
-              edit: true
-            });
-            this.subviews.push(emlView);
-            this.emlView = emlView;
-            emlView.render();
+          //Create an EML211 View and render it
+          emlView = new EMLView({
+            model: model,
+            edit: true
+          });
+          this.subviews.push(emlView);
+          this.emlView = emlView;
+          emlView.render();
 
-            //Show the required fields for this editor
-            this.renderRequiredIcons(MetacatUI.appModel.get("emlEditorRequiredFields"));
+          //Show the required fields for this editor
+          this.renderRequiredIcons(MetacatUI.appModel.get("emlEditorRequiredFields"));
 
-            // Create a citation view and render it
-            var citationView = new CitationView({
-              model: model,
-              title: "Untitled dataset"
-            });
+          // Create a citation view and render it
+          var citationView = new CitationView({
+            model: model,
+            title: "Untitled dataset"
+          });
 
-            if (model.isNew()) {
-              citationView.createLink = false;
-              citationView.createTitleLink = false;
-            }
-            else {
-              citationView.createLink = false;
-              citationView.createTitleLink = true;
-            }
-
-            this.subviews.push(citationView);
-            $("#citation-container").html(citationView.render().$el);
-
-            //Remove the rendering class from the body element
-            $("body").removeClass("rendering");
+          if (model.isNew()) {
+            citationView.createLink = false;
+            citationView.createTitleLink = false;
           }
+          else {
+            citationView.createLink = false;
+            citationView.createTitleLink = true;
+          }
+
+          this.subviews.push(citationView);
+          $("#citation-container").html(citationView.render().$el);
+
+          //Remove the rendering class from the body element
+          $("body").removeClass("rendering");
 
           // Focus the folder name field once loaded but only if this is a new
           // document
@@ -632,7 +656,8 @@ define(['underscore',
           if (!hasPackageSubView) {
             this.dataPackageView = new DataPackageView({
               dataPackage: MetacatUI.rootDataPackage,
-              edit: true
+              edit: true,
+              parentEditorView: this
             });
             this.subviews.push(this.dataPackageView);
             dataPackageView.render();
@@ -930,15 +955,6 @@ define(['underscore',
 
                   this.model.addEntity(entityModel, position);
                 }
-              }
-
-              //Create a new view for the entity based on the model type
-              if (entityModel.type == "EMLOtherEntity") {
-                entityView = new EMLEntityView({
-                  model: entityModel,
-                  DataONEObject: dataONEObject,
-                  edit: true
-                });
               }
               else {
                 entityView = new EMLEntityView({
@@ -1249,12 +1265,40 @@ define(['underscore',
                 LocalForage.removeItem(draft.key).then(function () {
                   // Item should be removed
                 });
-              })
+              });
             });
           }
           catch (ex) {
             console.log("Failed to clear old drafts: ", ex);
           }
+        },
+
+        /**
+         * Show the AccessPolicy view in a modal dialog
+         *
+         * This method calls the superclass method, feeding it the identifier
+         * associated with the row in the package table that was clicked. The
+         * reason for this is so the AccessPolicyView can be used for single
+         * objects (like in the Portal editor) or an entire Collection of
+         * objects, like in the EML editor: The superclass impelements the
+         * generic behavior and the subclass tweaks it.
+         *
+         * @param {EventHandler} e: The click event
+         */
+        showAccessPolicyModal: function(e) {
+          var id = null;
+
+          try {
+            id = $(e.target).parents("tr").data("id");
+          } catch (e) {
+            console.log("Error determining the identifier to show an AccessPolicyView for:", e);
+          }
+
+          var model = MetacatUI.rootDataPackage.find(function(model) {
+            return model.get("id") === id;
+          });
+
+          EditorView.prototype.showAccessPolicyModal.call(this, e, model);
         }
       });
     return EML211EditorView;

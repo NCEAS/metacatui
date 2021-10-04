@@ -4,17 +4,20 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
         'views/DataPreviewView',
         'views/metadata/EMLAttributeView',
         'text!templates/metadata/eml-entity.html',
-        'text!templates/metadata/eml-attribute-menu-item.html'],
+        'text!templates/metadata/eml-attribute-menu-item.html',
+        'common/Utilities'],
     function(_, $, Backbone, LocalForage, DataONEObject, EMLAttribute, EMLEntity,
         DataPreviewView,
         EMLAttributeView,
         EMLEntityTemplate,
-        EMLAttributeMenuItemTemplate){
+        EMLAttributeMenuItemTemplate,
+        Utilities){
 
         /**
         * @class EMLEntityView
         * @classdesc An EMLEntityView shows the basic attributes of a DataONEObject, as described by EML
         * @classcategory Views/Metadata
+        * @screenshot views/metadata/EMLEntityView.png
         * @extends Backbone.View
         */
         var EMLEntityView = Backbone.View.extend(
@@ -29,17 +32,28 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
             /* The HTML template for an entity */
             template: _.template(EMLEntityTemplate),
             attributeMenuItemTemplate: _.template(EMLAttributeMenuItemTemplate),
+            fillButtonTemplateString: '<button class="btn btn-primary fill-button"><i class="icon-magic"></i> Fill from file</button>',
+
+            /**
+             * A list of file formats that can be auto-filled with attribute information
+             * @type {string[]}
+             * @since 2.15.0
+             */
+            fillableFormats: [
+              "text/csv"
+            ],
 
             /* Events this view listens to */
             events: {
               "change" : "saveDraft",
               "change input" : "updateModel",
               "change textarea" : "updateModel",
-              "click .nav-tabs a" : "showTab",
+              "click .entity-container > .nav-tabs a" : "showTab",
               "click .attribute-menu-item" : "showAttribute",
               "mouseover .attribute-menu-item .remove" : "previewAttrRemove",
               "mouseout .attribute-menu-item .remove"  : "previewAttrRemove",
-              "click .attribute-menu-item .remove" : "removeAttribute"
+              "click .attribute-menu-item .remove" : "removeAttribute",
+              "click .fill-button": "handleFill"
             },
 
             initialize: function(options){
@@ -57,6 +71,8 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
               this.renderPreview();
 
               this.renderAttributes();
+
+              this.renderFillButton();
 
               this.listenTo(this.model, "invalid", this.showValidation);
               this.listenTo(this.model, "valid", this.showValidation);
@@ -189,6 +205,25 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
 
             },
 
+            renderFillButton: function() {
+              var formatGuess = this.model.get("dataONEObject")
+                ? this.model.get("dataONEObject").get("formatId")
+                : this.model.get("entityType");
+
+              if (!_.contains(this.fillableFormats, formatGuess)) {
+                return;
+              }
+
+              var target = this.$(".fill-button-container");
+
+              if (!target.length === 1) {
+                return;
+              }
+
+              var btn = $(this.fillButtonTemplateString);
+              $(target).html(btn);
+            },
+
             updateModel: function(e){
               var changedAttr = $(e.target).attr("data-category");
 
@@ -298,7 +333,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
             },
 
             adjustHeight: function(e){
-              var contentAreaHeight = this.$(".modal-body").height() - this.$(".nav-tabs").height();
+              var contentAreaHeight = this.$(".modal-body").height() - this.$(".entity-container .nav-tabs").height();
 
               this.$(".attribute-menu, .attribute-list").css("height", contentAreaHeight + "px");
             },
@@ -309,9 +344,9 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
 
             },
 
-            /*
+            /**
              * Shows the attribute in the attribute editor
-             * Param e - JS event or attribute model
+             * @param {Event} e - JS event or attribute model
              */
             showAttribute: function(e){
 
@@ -387,8 +422,9 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
               attrView.postRender();
             },
 
-            /*
+            /**
              * Show the attribute validation errors in the attribute navigation menu
+             * @param {EMLAttribute} attr
              */
             showAttributeValidation: function(attr){
 
@@ -402,7 +438,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
               attrLink.addClass("error").prepend(errorIcon);
             },
 
-            /*
+            /**
              * Hide the attribute validation errors from the attribute navigation menu
              */
             hideAttributeValidation: function(attr){
@@ -410,7 +446,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
                 .find("a").removeClass("error").find(".icon.error").remove();
             },
 
-            /*
+            /**
              * Show the user what will be removed when this remove button is clicked
              */
             previewAttrRemove: function(e){
@@ -419,8 +455,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
               removeBtn.parents(".attribute-menu-item").toggleClass("remove-preview");
             },
 
-            /*
-            * function showValidation
+            /**
             *
             * Will display validation styling and messaging. Should be called after
             * this view's model has been validated and there are error messages to display
@@ -475,9 +510,10 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
 
             },
 
-            /*
+            /**
              * Show the entity overview or attributes tab
              * depending on the click target
+             * @param {Event} e
              */
             showTab: function(e){
               e.preventDefault();
@@ -486,16 +522,16 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
                var link = $(e.target);
 
                //Remove the active class from all links and add it to the new active link
-               this.$(".nav-tabs li").removeClass("active");
+               this.$(".entity-container > .nav-tabs li").removeClass("active");
                link.parent("li").addClass("active");
 
                //Hide all the panes and show the correct one
-               this.$(".tab-pane").hide();
+               this.$(".entity-container > .tab-content > .tab-pane").hide();
                this.$(link.attr("href")).show();
 
             },
 
-            /*
+            /**
              * Show the entity in a modal dialog
              */
             show: function(){
@@ -504,7 +540,7 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
 
             },
 
-            /*
+            /**
              * Hide the entity modal dialog
              */
             hide: function(){
@@ -575,6 +611,178 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
               catch (ex) {
                 console.log("Failed to clear old drafts: ", ex);
               }
+            },
+
+            /**
+             * Handle the click event on the fill button
+             *
+             * @param {Event} e - The click event
+             * @since 2.15.0
+             */
+            handleFill: function(e) {
+              var d1Object = this.model.get("dataONEObject");
+
+              if (!d1Object) {
+                return;
+              }
+
+              var file = d1Object.get("uploadFile");
+
+              try {
+                if (!file) {
+                  this.handleFillViaFetch();
+                } else {
+                  this.handleFillViaFile(file);
+                }
+              } catch (error) {
+                console.log("Error while attempting to fill", error);
+                view.updateFillButton(
+                  '<i class="icon-warning-sign"></i> Couldn\'t fill'
+                );
+              }
+            },
+
+            /**
+             * Handle the fill event using a File object
+             *
+             * @param {File} file - A File object to fill from
+             * @since 2.15.0
+             */
+            handleFillViaFile: function(file) {
+              var view = this;
+
+              Utilities.readSlice(file, this, function (event) {
+                if (event.target.readyState !== FileReader.DONE) {
+                  return;
+                }
+
+                view.tryParseAndFillAttributeNames.bind(view)(event.target.result);
+              });
+            },
+
+            /**
+             * Handle the fill event by fetching the object
+             * @since 2.15.0
+             */
+            handleFillViaFetch: function() {
+              var view = this;
+
+              var requestSettings = {
+                url:  MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(this.model.get("dataONEObject").get("id")),
+                method: "get",
+                success: view.tryParseAndFillAttributeNames.bind(this),
+                error: function(error) {
+                  view.updateFillButton('<i class="icon-warning-sign"></i> Couldn\'t fill');
+                  console.error("Error fetching DataObject to parse out headers", error);
+                }
+              }
+
+              this.updateFillButton('<i class="icon-time"></i> Please wait...', true);
+              this.disableFillButton();
+
+              requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+              $.ajax(requestSettings);
+            },
+
+            /**
+             * Attempt to parse header and fill attributes names
+             *
+             * @param {string} content - Part of a file to attempt to parse
+             * @since 2.15.0
+             */
+            tryParseAndFillAttributeNames: function(content) {
+              var names = Utilities.tryParseCSVHeader(content);
+
+              if (names.length === 0) {
+                this.updateFillButton('<i class="icon-warning-sign"></i> Couldn\'t fill');
+              } else {
+                this.updateFillButton('<i class="icon-ok"></i> Filled!');
+              }
+
+              //Make sure the button is enabled
+              this.enableFillButton();
+
+              this.updateAttributeNames(names);
+            },
+
+            /**
+             * Update attribute names from an array
+             *
+             * This will update existing attributes' names or create new
+             * attributes as needed. This also performs a full re-render.
+             *
+             * @param {string[]} names - A list of names to apply
+             * @since 2.15.0
+             */
+            updateAttributeNames: function(names) {
+              if (!names) {
+                return;
+              }
+
+              var attributes = this.model.get("attributeList");
+
+              //Update the name of each attribute or create a new Attribute if one doesn't exist
+              for (var i = 0; i < names.length; i++) {
+                if (attributes.length - 1 >= i) {
+                  attributes[i].set("attributeName", names[i]);
+                } else {
+                  attributes.push(
+                    new EMLAttribute({
+                      parentModel: this.model,
+                      xmlID: DataONEObject.generateId(),
+                      attributeName: names[i],
+                    })
+                  );
+                }
+              }
+
+              //Update the attribute list
+              this.model.set("attributeList", attributes);
+
+              // Reset first
+              this.$(".attribute-menu.side-nav-items").empty();
+              this.$(".eml-attribute").remove();
+
+              // Then re-render
+              this.renderAttributes();
+            },
+
+            /**
+             * Update the Fill button temporarily and set it back to the default
+             *
+             * Used to show success or failure of the filling operation
+             *
+             * @param {string} messageHTML - HTML template string to set
+             *   temporarily
+             * @param {boolean} disableTimeout - If true, the timeout will not be set
+             * @since 2.15.0
+             */
+            updateFillButton: function(messageHTML, disableTimeout) {
+              var view = this;
+
+              this.$(".fill-button").html(messageHTML);
+
+              if( !disableTimeout ){
+                window.setTimeout(function () {
+                  view.$(".fill-button-container").html(view.fillButtonTemplateString);
+                }, 3000);
+              }
+            },
+
+            /**
+            * Disable the Fill Attributes button
+            * @since 2.15.0
+            */
+            disableFillButton: function(){
+              this.$(".fill-button").prop("disabled", true);
+            },
+
+            /**
+            * Enable the Fill Attributes button
+            * @since 2.15.0
+            */
+            enableFillButton: function(){
+              this.$(".fill-button").prop("disabled", false);
             }
           });
 

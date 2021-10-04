@@ -320,7 +320,9 @@
     display: inline-block;
     font-family: AllerLight, Helvetica, sans-serif;
 }
-
+.PortalView #Navbar{
+  z-index: 1000;
+}
 
 /* FOOTER CSS
 -------------------------------------------------- */
@@ -544,6 +546,9 @@ footer .logos a:hover, a:focus{
   display: grid;
   grid-template-rows: 40px 0px 100fr 320px;
 }
+.PortalView.has-temporary-message {
+    grid-template-rows: auto 0px 100fr 320px;
+}
 .portal-view .portal-title{
   font-weight: 100;
 }
@@ -637,6 +642,14 @@ footer .logos a:hover, a:focus{
     background-color: transparent;
     color: inherit;
 }
+.data-package-item .btn{
+  color: #555;
+}
+.data-package-item .btn:hover,
+.data-package-item .btn:focus{
+  background-color: #ddd;
+  border-color: #999;
+}
 .data-package-item .btn.edit:hover,
 .data-package-item .btn.edit:focus{
 	background-color: white;
@@ -650,6 +663,9 @@ footer .logos a:hover, a:focus{
 }
 .data-package-item .dropdown-menu a{
 	color: #146660;
+}
+.data-package-item .btn.addFiles{
+  color: #FFF;
 }
 #data-package-table td:last-of-type ul li{
 	background-color: #FFF;

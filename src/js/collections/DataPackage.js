@@ -136,6 +136,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
         */
         provEdits: [],
 
+        /**
+        * The number of models that have been updated during the current save().
+        * This is reset to zero after the current save() is complete.
+        */
+        numSaves: 0,
+
         // Constructor: Initialize a new DataPackage
         initialize: function(models, options) {
             if(typeof options == "undefined")
@@ -150,21 +156,25 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             //Set the id or create a new one
             this.id = options.id || "resource_map_urn:uuid:" + uuid.v4();
 
-            // Create a DataONEObject to represent this resource map
-            this.packageModel = new DataONEObject({
-                formatType: "RESOURCE",
-                type: "DataPackage",
-                formatId: "http://www.openarchives.org/ore/terms",
-                childPackages: {},
-                id: this.id,
-                latestVersion: this.id
-            });
+            let packageModelAttrs = options.packageModelAttrs || {};
 
             if ( typeof options.packageModel !== "undefined" ) {
                 // use the given package model
               this.packageModel = new DataONEObject(options.packageModel);
 
             }
+            else{
+              // Create a DataONEObject to represent this resource map
+              this.packageModel = new DataONEObject(_.extend(packageModelAttrs, {
+                  formatType: "RESOURCE",
+                  type: "DataPackage",
+                  formatId: "http://www.openarchives.org/ore/terms",
+                  childPackages: {},
+                  id: this.id,
+                  latestVersion: this.id
+              }));
+            }
+
             this.id = this.packageModel.id;
 
             //Create a Filter for this DataPackage using the id
@@ -188,7 +198,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
           // Build the DataPackage URL based on the MetacatUI.appModel.objectServiceUrl
           // and id or seriesid
           url: function(options) {
-
             if(options && options.update){
               return MetacatUI.appModel.get("objectServiceUrl") +
                   (encodeURIComponent(this.packageModel.get("oldPid")) || encodeURIComponent(this.packageModel.get("seriesid")));
@@ -1198,6 +1207,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 //Add it to the list of models in progress
                 modelsInProgress.push(model);
 
+                this.numSaves++;
+
               }, this);
 
               //Save the system metadata of all the Data objects
@@ -1208,6 +1219,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 dataModel.updateSysMeta();
                 //Add it to the list of models in progress
                 modelsInProgress.push(dataModel);
+                this.numSaves++;
               }, this);
 
               //If there are still models in progress of uploading, then exit. (We will return when they are synced to upload the resource map)
@@ -1241,6 +1253,17 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             else if(!this.needsUpdate()){
               return;
             }
+
+            //If no models were saved and this package has no changes, we can exit without saving the resource map
+            if( this.numSaves < 1 && !this.needsUpdate() ){
+              this.numSaves = 0;
+              this.packageModel.set("uploadStatus", this.packageModel.defaults().uploadStatus);
+              this.trigger("successSaving", this);
+              return;
+            }
+
+            //Reset the number of models saved since they should all be completed by now
+            this.numSaves = 0;
 
             //Determine the HTTP request type
             var requestType;
@@ -1354,7 +1377,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                   //Send this exception to Google Analytics
                   if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
                     ga("send", "exception", {
-                      "exDescription": "DataPackage save error: " + errorMsg +
+                      "exDescription": "DataPackage save error: " + data.responseText +
                         " | Id: " + collection.packageModel.get("id") + " | v. " + MetacatUI.metacatUIVersion,
                       "exFatal": true
                     });
@@ -2783,7 +2806,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
             },
 
-            /*
+            /**
              * Checks if this resource map has had any changes that requires an update
              */
             needsUpdate: function(){
@@ -2803,15 +2826,16 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               while(!isDifferent && i<this.length){
                 //Get the original isDocBy relationships from the resource map, and the new isDocBy relationships from the models
                 var isDocBy = this.models[i].get("isDocumentedBy"),
-                  id = this.models[i].get("id"),
-                  origIsDocBy = this.originalIsDocBy[id];
+                    id = this.models[i].get("id"),
+                    origIsDocBy = this.originalIsDocBy[id];
 
                 //Make sure they are both formatted as arrays for these checks
-                isDocBy = _.compact(Array.isArray(isDocBy)? isDocBy : [isDocBy]);
-                origIsDocBy = _.compact(Array.isArray(origIsDocBy)? origIsDocBy : [origIsDocBy]);
+                isDocBy = _.uniq(_.flatten(_.compact(Array.isArray(isDocBy)? isDocBy : [isDocBy])));
+                origIsDocBy = _.uniq(_.flatten(_.compact(Array.isArray(origIsDocBy)? origIsDocBy : [origIsDocBy])));
 
                 //Remove the id of this object so metadata can not be "isDocumentedBy" itself
                 isDocBy = _.without(isDocBy, id);
+                origIsDocBy = _.without(origIsDocBy, id);
 
                 //Simply check if they are the same
                 if(origIsDocBy === isDocBy){
@@ -3022,8 +3046,48 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               }
               else
                 model.set("collections", [this]);
-            }
+            },
 
+            /**
+             * Broadcast an accessPolicy across members of this package
+             *
+             * Note: Currently just sets the incoming accessPolicy on this
+             * object and doesn't broadcast to other members (such as data).
+             * How this works is likely to change in the future.
+             *
+             * Closely tied to the AccessPolicyView.broadcast property.
+             *
+             * @param {AccessPolicy} accessPolicy - The accessPolicy to
+             * broadcast
+             */
+            broadcastAccessPolicy: function(accessPolicy) {
+              if (!accessPolicy) {
+                return;
+              }
+
+              var policy = _.clone(accessPolicy);
+              this.packageModel.set("accessPolicy", policy);
+
+              // Stop now if the package is new because we don't want force
+              // a save just yet
+              if (this.packageModel.isNew()) {
+                return;
+              }
+
+              this.packageModel.on("sysMetaUpdateError", function(e) {
+                // Show a generic error. Any errors at this point are things the
+                // user can't really recover from. i.e., we've already checked
+                // that the user has changePermission perms and we've already
+                // re-tried the request a few times
+                var message = "There was an error sharing your dataset. Not all of your changes were applied.";
+
+                // TODO: Is this really the right way to hook into the editor's
+                //       error notification mechanism?
+                MetacatUI.appView.eml211EditorView.saveError(message);
+              });
+
+              this.packageModel.updateSysMeta();
+            }
         });
 
         return DataPackage;

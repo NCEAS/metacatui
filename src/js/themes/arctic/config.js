@@ -37,6 +37,7 @@ MetacatUI.AppConfig = Object.assign({
   }],
   enablePublishDOI: false,
   hiddenSubjectsInAccessPolicy: ["CN=arctic-data-admins,DC=dataone,DC=org"],
+  showDatasetPublicToggleForSubjects: ["CN=arctic-data-admins,DC=dataone,DC=org"],
   editorSaveErrorMsgWithDraft: "Not all of your changes could be submitted " +
     "due to a technical error. But, we sent a draft of your edits to " +
     "our support team, who will contact " +

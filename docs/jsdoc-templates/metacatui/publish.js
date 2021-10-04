@@ -406,7 +406,7 @@ function linktoExternal(longName, name) {
  */
 function buildNav(members) {
     let globalNav;
-    let nav = '<h2><a href="index.html">Home</a></h2>';
+    let nav = ''; //'<h2><a href="index.html">Home</a></h2>';
     const seen = {};
 
     nav += buildMemberNav(members.modules, 'Modules', {}, linkto);

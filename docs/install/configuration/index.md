@@ -18,7 +18,7 @@ To create a custom theme, do the following:
 Copy and paste the `js/themes/default` directory to a new directory with the name of
 your theme:
 
-  ```
+  ```bash
   cp -rf src/js/themes/default src/js/themes/{my-theme-name}
   ```
 
@@ -26,13 +26,13 @@ Where `{my-theme-name}` is replaced with your chosen theme name.
 
 ### Step 2. Create a `templates` directory:
 
-  ```
+  ```bash
   mkdir src/js/themes/{my-theme-name}/templates
   ```
 
 ### Step 3. Customize the default navbar and footer templates
 
-  ```
+  ```bash
   cp src/js/templates/navbar.html src/js/themes/{my-theme-name}/templates/navbar.html
   cp src/js/templates/footer.html src/js/themes/{my-theme-name}/templates/footer.html
   ```
@@ -70,7 +70,7 @@ What this does is map the default location of these app components to the custom
 
 An example for the `footer.html` and `navbar.html` files is below. Your CSS does not need to be included here.
 
-  ```
+  ```js
   MetacatUI.themeMap =
   {
           '*': {
@@ -84,7 +84,7 @@ An example for the `footer.html` and `navbar.html` files is below. Your CSS does
 You can also include app configuration for this theme by defining a `MetacatUI.AppConfig` variable with
 configuration options. For example, if you want your theme to always use a certain `emailContact`, you can specify that configuration value like so:
 
-  ```
+  ```js
   MetacatUI.AppConfig = Object.assign({
     emailContact: "contact@ourrepo.org"
   }, (MetacatUI.AppConfig || {}));
@@ -121,7 +121,7 @@ file organization as the source code by creating a `model`, `view`, or other sub
 
 For example, say we want to extend the `TextView`:
 
-  ```
+  ```bash
   mkdir src/js/themes/{my-theme-name}/views
   touch src/js/themes/{my-theme-name}/views/TextView.js
   ```
@@ -133,14 +133,14 @@ First, we want to override the name of the `views/TextView` component. In your `
 file, edit the `themeMap` variable.
 Add a line for the base `TextView` and rename it something like `views/BaseTextView`:
 
-  ```
+  ```js
   "views/BaseTextView" : MetacatUI.root + "/js/views/TextView.js",
   ```
 **What does this do?** This maps a new component, `views/BaseTextView`, in the application to the `/js/views/TextView.js` file. If you were to stop here, you would see no change in MetacatUI, since the `views/BaseTextView` component isn't used by any view in the app.
 
 Next, add a line that maps your extended `TextView` to the `views/TextView` name:
 
-  ```
+  ```js
   "views/TextView" : MetacatUI.root + "/js/themes/" + MetacatUI.theme + "/views/TextView.js",
   ```
 
@@ -158,7 +158,7 @@ Then we create and return a Backbone view that `extend`s the `BaseTextView`.
 Then we add the custom functionality to the view. In this example, we just added a function that
 logs "Hello world!" to the console.
 
-  ```
+  ```js
   define(["jquery", "underscore", "backbone",
           "views/BaseTextView"],
       function($, _, Backbone, BaseTextView) {

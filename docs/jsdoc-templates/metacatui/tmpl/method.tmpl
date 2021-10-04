@@ -8,8 +8,13 @@ var self = this;
     <?js } ?>
 
     <?js if (data.kind !== 'namespace') { ?>
-    <h4 class="name" id="<?js= id ?>"><?js= data.attribs + (kind === 'class' ? 'new ' : '') +
-    name + (data.signature || '') ?></h4>
+    <h4 class="name" id="<?js= id ?>">
+      <a href="#<?js= id ?>" class="link-icon">
+        <?js= this.partial('icons/link-icon.tmpl') ?>
+      </a>
+      <?js= data.attribs + (kind === 'class' ? 'new ' : '') +
+    name + (data.signature || '') ?>
+    </h4>
     <?js } ?>
 
     <?js if (data.summary) { ?>

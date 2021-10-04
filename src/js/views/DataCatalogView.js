@@ -8,7 +8,7 @@ define(["jquery",
         "models/Search",
         "models/Stats",
         "models/MetricsModel",
-        "models/Utilities",
+        "common/Utilities",
         "views/SearchResultView",
         "views/searchSelect/AnnotationFilterView",
         "views/maps/CesiumWidgetView",
@@ -20,12 +20,13 @@ define(["jquery",
         "text!templates/loading.html",
         "gmaps",
         "nGeohash",
+        "text!templates/portals/portalResultItem.html"
     ],
     function(
       $, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel,
         MetricsModel, Utilities, SearchResultView, AnnotationFilter, CesiumWidgetView,
         CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate,
-        CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash
+        CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash, PortalResultItemTemplate
     ) {
         "use strict";
 
@@ -83,6 +84,25 @@ define(["jquery",
             markers: {},
             tiles: [],
             tileCounts: [],
+
+            /**
+             * The general error message to show as a title in the error box when there
+             * is an error fetching results from solr
+             * @type {string}
+             * @default "Something went wrong while getting the list of datasets"
+             * @since 2.15.0
+             */
+            solrErrorTitle: "Something went wrong while getting the list of datasets",
+
+            /**
+             * The user-friendly text to show when a solr request gives a status 500
+             * error. If none is provided, then the error message that is returned from
+             * solr will be displayed.
+             * @type {string}
+             * @since 2.15.0
+             */
+            solrError500Message: null,
+
             // Contains the geohashes for all the markers on the map (if turned on in the Map model)
             markerGeohashes: [],
             // Contains all the info windows for all the markers on the map (if turned on in the Map model)
@@ -2886,11 +2906,21 @@ define(["jquery",
                     package_service: this.$package_service
                 });
 
-                // Create a new result item
-                var view = new SearchResultView({
+                var view = null;
+                
+                // Render portal lists with a different format from other data items.
+                if(result.get("formatId") !== null && result.get("formatId").match(".*dataone.org/portals.*")) {
+                  view = new SearchResultView({
+                    model: result,
+                    template: _.template(PortalResultItemTemplate),
+                    className: 'portals-list-entry'
+                  });
+                } else {
+                  view = new SearchResultView({
                     model: result,
                     metricsModel: this.metricsModel
-                });
+                  });
+                }
 
                 // Add this item to the list
                 this.$results.append(view.render().el);
@@ -2921,26 +2951,35 @@ define(["jquery",
             showError: function(model, response){
 
               var errorMessage = "";
+              var statusCode = response.status;
 
-              try{
-                errorMessage = $(response.responseText).text();
+              if(!statusCode){
+                  statusCode = parseInt(response.statusText)
               }
-              catch(e){
+
+              if(statusCode == 500 && this.solrError500Message){
+                errorMessage = this.solrError500Message;
+              } else {
                 try{
-                  errorMessage = JSON.parse(response.responseText).error.msg;
-                }
-                catch(e){
-                  errorMessage = "";
-                }
-              }
-              finally{
-                if( typeof errorMessage == "string" && errorMessage.length ){
-                  errorMessage = "<p>Error details: " + errorMessage + "</p>";
-                }
+                    errorMessage = $(response.responseText).text();
+                  }
+                  catch(e){
+                    try{
+                      errorMessage = JSON.parse(response.responseText).error.msg;
+                    }
+                    catch(e){
+                      errorMessage = "";
+                    }
+                  }
+                  finally{
+                    if( typeof errorMessage == "string" && errorMessage.length ){
+                      errorMessage = "<p>Error details: " + errorMessage + "</p>";
+                    }
+                  }
               }
 
               MetacatUI.appView.showAlert(
-                "<h4><i class='icon icon-frown'></i>Something went wrong while getting the list of datasets.</h4>" + errorMessage,
+                "<h4><i class='icon icon-frown'></i>" + this.solrErrorTitle + ".</h4>" + errorMessage,
                 "alert-error",
                 this.$results
               );

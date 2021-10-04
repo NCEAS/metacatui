@@ -201,8 +201,13 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
         }
 
         if(!this.model){
+
           this.model = new PortalImage();
         }
+
+        //If an alternative repo is configured, upload to that alt repo
+        let useAltRepo = MetacatUI.appModel.getActiveAltRepo()? true : false;
+        this.model.set("useAltRepo", useAltRepo);
 
       } catch (e) {
         console.log("PortEditorImageView failed to initialize. Error message: " + e);

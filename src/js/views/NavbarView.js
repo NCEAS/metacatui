@@ -10,6 +10,7 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
   * @extends Backbone.View
   * @classcategory Views
   * @constructor
+  * @screenshot views/NavbarView.png
   */
 	var NavbarView = Backbone.View.extend(
     /** @lends NavbarView.prototype */ {

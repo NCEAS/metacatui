@@ -1,13 +1,14 @@
-define(["jquery", "underscore", "backbone",
-        "models/metadata/eml211/EMLMeasurementScale",
+define(["jquery", "underscore", "backbone", "uuid",
+        "models/metadata/eml211/EMLMeasurementScale", "models/metadata/eml211/EMLAnnotation",
         "models/DataONEObject"],
-    function($, _, Backbone, EMLMeasurementScale, DataONEObject) {
+    function($, _, Backbone, uuid, EMLMeasurementScale, EMLAnnotation,
+        DataONEObject) {
 
         /**
          * @class EMLAttribute
          * @classdesc EMLAttribute represents a data attribute within an entity, such as
          * a column variable in a data table, or a feature attribute in a shapefile.
-         * @see https://github.com/NCEAS/eml/blob/master/eml-attribute.xsd
+         * @see https://eml.ecoinformatics.org/schema/eml-attribute_xsd.html
          * @classcategory Models/Metadata/EML211
          */
         var EMLAttribute = Backbone.Model.extend(
@@ -28,7 +29,8 @@ define(["jquery", "underscore", "backbone",
 	                accuracy: null, // An EMLAccuracy object
 	                coverage: null, // an EMLCoverage object
 	                methods: [], // Zero or more EMLMethods objects
-	                references: null, // A reference to another EMLAttribute by id (needs work)
+                    references: null, // A reference to another EMLAttribute by id (needs work)
+                    annotation: [], // Zero or more EMLAnnotation objects
 
 	                /* Attributes not from EML */
 	                type: "attribute", // The element type in the DOM
@@ -81,7 +83,8 @@ define(["jquery", "underscore", "backbone",
                     "change:accuracy " +
                     "change:coverage " +
                     "change:methods " +
-                    "change:references",
+                    "change:references " +
+                    "change:annotation",
                     this.trickleUpChange);
             },
 
@@ -134,6 +137,20 @@ define(["jquery", "underscore", "backbone",
                         EMLMeasurementScale.getInstance(measurementScale.outerHTML);
                     attributes.measurementScale.set("parentModel", this);
                 }
+
+                // Add annotations
+                var annotations = $objectDOM.children("annotation");
+                attributes.annotation = [];
+
+                _.each(annotations, function(anno) {
+                    annotation = new EMLAnnotation({
+                            objectDOM: anno,
+                            objectXML: anno.outerHTML
+                    }, { parse: true });
+
+                    attributes.annotation.push(annotation);
+                }, this);
+
                 attributes.objectDOM = $objectDOM[0];
 
                 return attributes;
@@ -357,6 +374,22 @@ define(["jquery", "underscore", "backbone",
                 } else {
                     console.log("No measurementScale object has been defined.");
                 }
+
+                // Update annotations
+                var annotation = this.get("annotation");
+
+                // Always remove all annotations to start with
+                $(objectDOM).children("annotation").remove();
+
+                _.each(annotation, function(anno) {
+                    if (anno.isEmpty()) {
+                        return;
+                    }
+
+                    var after = this.getEMLPosition(objectDOM, "annotation");
+                    $(after).after(anno.updateDOM());
+                }, this);
+
                 return objectDOM;
             },
 
@@ -429,6 +462,26 @@ define(["jquery", "underscore", "backbone",
             },
 
             /*
+            * Validates each of the EMLAnnotation models on this model
+            *
+            * @return {Array} - Returns an array of error messages for all the EMLAnnotation models
+            */
+           validateAnnotations: function(){
+             var errors = [];
+
+             //Validate each of the EMLAttributes
+             _.each(this.get("annotation"), function (anno) {
+               if (anno.isValid()) {
+                 return;
+               }
+
+               errors.push(anno.validationError);
+             });
+
+             return errors;
+           },
+
+            /*
             * Climbs up the model heirarchy until it finds the EML model
             *
             * @return {EML211 or false} - Returns the EML 211 Model or false if not found
@@ -454,6 +507,9 @@ define(["jquery", "underscore", "backbone",
                 MetacatUI.rootDataPackage.packageModel.set("changed", true);
             },
 
+            createID: function() {
+                this.set("xmlID", uuid.v4());
+            }
         });
 
         return EMLAttribute;

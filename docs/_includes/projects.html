@@ -1,0 +1,8 @@
+<section class="cards">
+  {% for project in site.data.projects %}
+    <div class="related-project card">
+      <a href="{{ project.url }}">{% include icons/{{ project.logo }} %}</a>
+      <a href="{{ project.url }}" class="name">{{ project.name }}</a>
+    </div>
+  {% endfor %}
+</section>
