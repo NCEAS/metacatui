@@ -104,6 +104,7 @@ define(
           var cesiumOptions = this.get('cesiumOptions');
           var type = this.get('type')
           var providerFunction = Cesium[type]
+
           var initialAppearance = {
             alpha: this.get('opacity'),
             show: this.get('visible')
@@ -117,6 +118,11 @@ define(
 
           if (type === 'BingMapsImageryProvider') {
             cesiumOptions.key = cesiumOptions.key || MetacatUI.AppConfig.bingMapsKey
+          } else if (type === 'IonImageryProvider') {
+            cesiumOptions.assetId = Number(cesiumOptions.ionAssetId)
+            delete cesiumOptions.ionAssetId
+            cesiumOptions.accessToken =
+                cesiumOptions.cesiumToken || MetacatUI.appModel.get('cesiumToken');
           }
 
           if (providerFunction && typeof providerFunction === 'function') {

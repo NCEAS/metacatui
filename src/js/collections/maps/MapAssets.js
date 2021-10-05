@@ -55,7 +55,7 @@ define(
                 model: Cesium3DTileset
               },
               {
-                types: ['BingMapsImageryProvider'],
+                types: ['BingMapsImageryProvider', 'IonImageryProvider'],
                 model: CesiumImagery
               },
               {

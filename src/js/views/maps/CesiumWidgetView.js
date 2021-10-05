@@ -81,7 +81,7 @@ define(
             renderFunction: 'add3DTileset'
           },
           {
-            types: ['BingMapsImageryProvider'],
+            types: ['BingMapsImageryProvider', 'IonImageryProvider'],
             renderFunction: 'addImagery'
           },
           {
@@ -371,7 +371,7 @@ define(
          * the Feature model that is set on the Map's `selectedFeature` attribute. NOTE:
          * This currently only works with 3D tile features.
          * @param {Cesium3DTileFeature} feature
-              */
+        */
         updateSelectedFeatureModel: function (feature) {
           try {
             var view = this

@@ -101,7 +101,10 @@ define(
 
               // For now, filter out types that are not supported before initializing any
               // MapAssets collections. TODO: Make this a configurable list somewhere. 
-              var supportedTypes = ['Cesium3DTileset', 'BingMapsImageryProvider', 'CesiumTerrainProvider']
+              var supportedTypes = [
+                'Cesium3DTileset', 'BingMapsImageryProvider', 'IonImageryProvider',
+                'CesiumTerrainProvider'
+              ]
 
               if (attrs.layers && attrs.layers.length && Array.isArray(attrs.layers)) {
                 var supportedLayers = _.filter(attrs.layers, function (layer) {
