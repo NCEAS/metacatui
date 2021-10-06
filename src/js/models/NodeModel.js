@@ -14,7 +14,8 @@ define(['jquery', 'underscore', 'backbone'],
 			hiddenMembers: [],
 			currentMemberNode: MetacatUI.appModel.get("nodeId") || null,
 			checked: false,
-      error: false
+            error: false,
+            allowedSubmitters: [],
 		},
 
 		initialize: function(){
@@ -124,7 +125,7 @@ define(['jquery', 'underscore', 'backbone'],
 					if(!thisNode.attributes) return;
 
 					//'node' will be a single node
-					var node = {},
+					var node = {}  ,
 						nodeProperties = thisNode.children || thisNode.childNodes;
 
 					//Grab information about this node from XML nodes
@@ -135,11 +136,31 @@ define(['jquery', 'underscore', 'backbone'],
 						else
 							node[nodeProperty.nodeName] = nodeProperty.textContent;
 
+                        var submitters = [];
 						//Check if this member node has v2 read capabilities - important for the Package service
 						if((nodeProperty.nodeName == "services") && nodeProperty.childNodes.length){
 							var v2 = $(nodeProperty).find("service[name='MNRead'][version='v2'][available='true']").length;
 							node["readv2"] = v2;
+                            // Get the service restrictions for the current member node
+                            if( MetacatUI.nodeModel.get("currentMemberNode") == $(thisNode).find("identifier").text()) {
+                            var storageProperty = $(nodeProperty).find("service[name='MNStorage'][version='v2'][available='true']");
+                                if (storageProperty.children().length) {
+                                    var restrictionProperty = $(storageProperty).find("restriction[methodName='create']");
+                                    if (restrictionProperty.length && restrictionProperty.children().length) {
+                                        _.each(restrictionProperty.children(), function(subject) {
+                                            if(subject.nodeName == "subject") {
+                                                submitters.push(subject.textContent);
+                                                console.debug("submitter: ", subject.textContent);
+                                            }
+                                        });
+                                    }
+                                }
+                            }
 						}
+                        if(submitters.length) {
+                            var currentSubmitters = thisModel.get("allowedSubmitters");
+                            thisModel.set("allowedSubmitters", submitters.concat(currentSubmitters));
+                        }
 					});
 
 					//Grab information about this node from XLM attributes
