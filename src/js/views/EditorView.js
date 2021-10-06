@@ -2,8 +2,10 @@ define(['underscore',
         'jquery',
         'backbone',
         "views/SignInView",
-        "text!templates/editorSubmitMessage.html"],
-function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
+        "text!templates/editorSubmitMessage.html",
+        "text!templates/notAuthorizedSubmitter.html"],
+        
+function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate, NotAuthorizeSubmitter){
 
   /**
   * @class EditorView
@@ -21,6 +23,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     editorSubmitMessageTemplate: _.template(EditorSubmitMessageTemplate),
+    notAuthorizedSubmitterTemplate: _.template(NotAuthorizeSubmitter),
 
     /**
     * The element this view is contained in. A jQuery selector or the element itself.
@@ -79,6 +82,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       $("body").addClass("Editor rendering");
 
       this.delegateEvents();
+      this.checkIfAllowedSubmitter();
 
       //If there is no active alternate repository, set one
       if( !MetacatUI.appModel.getActiveAltRepo() && MetacatUI.appModel.get("alternateRepositories").length ){
@@ -608,7 +612,27 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       this.stopListening();
       this.undelegateEvents();
 
+  },
+  
+  /**
+  * Adds messaging to this view to tell an unauthorized user that they cannot create or update datasets.
+  * of this object(s).
+  */
+  checkIfAllowedSubmitter: function(){
+      if (typeof MetacatUI.appUserModel.get("isAuthorizedSubmitter") === 'undefined') {
+        this.listenToOnce(MetacatUI.appUserModel, "change:isAuthorizedSubmitter", function () {
+            this.checkIsAuthorizedSubmitter();
+        });
+        return;
+    } else {
+      if(MetacatUI.appUserModel.get("isAuthorizedSubmitter") == false) {
+        var message = this.notAuthorizedSubmitterTemplate({
+          messageText: "Your DataONE user is not included in the list of users that are allowed to submit datasets to this repository." 
+        });
+        MetacatUI.appView.showAlert(message, "alert-error", this.$("#editor-body"), null, {remove: true});
+      }
     }
+  }
 
   });
 

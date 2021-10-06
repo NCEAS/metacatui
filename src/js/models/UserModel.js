@@ -70,6 +70,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
         //When the user is logged in, see if they have a DataONE subscription
         this.on("change:loggedIn", this.fetchSubscription);
       }
+        this.checkAllowedSubmitters();
 		},
 
 		createSearchModel: function(){
@@ -1137,7 +1138,55 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		reset: function(){
 			var defaults = _.omit(this.defaults(), ["searchModel", "searchResults"]);
 			this.set(defaults);
-		}
+		},
+    
+    /**
+    * Check if the currently logged in user is in the list of users that are allowed to 
+    * create DataONE objects. Note that this list is set by the metacat configuration 
+    * parameter 'auth.allowSubmitters'.
+    */
+    checkAllowedSubmitters: function() {
+        
+        var thisModel = this;
+        if( !this.get("loggedIn") ){
+          this.set("isAuthorizedSubmitter", false);
+          this.listenToOnce(this, "change:loggedIn", function(){
+                thisModel.checkAllowedSubmitters();
+            });
+          return;
+        }
+        
+        // This is needed for `hasIdentityOverlap()``
+        if( !this.get("allIdentitiesAndGroups").length ){
+          this.listenToOnce(this, "change:allIdentitiesAndGroups", function(){
+                thisModel.checkAllowedSubmitters();
+            });
+          return;
+        }
+
+        // This is needed for 'allowedSubmitters'
+        if(!MetacatUI.nodeModel.get("checked")){
+            this.listenToOnce(MetacatUI.nodeModel, "change:checked", function(){
+                thisModel.checkAllowedSubmitters();
+            });
+            return;
+        }
+        // The allowed submitters list is obtained from the MN capabilities report
+        // provided by the CN 'listNodes' service
+        var allowedSubmitters = MetacatUI.nodeModel.get("allowedSubmitters");
+        // If allowedSubmitters is not set, then all users are allowed to submit
+        if(!allowedSubmitters.length) {
+            this.set("isAuthorizedSubmitter", true);
+        } else {
+            // This user (or equivalent identity) is in the allowed submitters list.
+          if(this.hasIdentityOverlap(allowedSubmitters)) {
+            this.set("isAuthorizedSubmitter", true);
+          } else {
+            this.set("isAuthorizedSubmitter", false);
+            }
+        }
+    },
+    
 	});
 
 	return UserModel;
