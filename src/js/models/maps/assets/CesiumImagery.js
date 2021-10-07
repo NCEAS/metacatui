@@ -211,7 +211,6 @@ define(
               return model.get('cesiumModel').getViewableRectangle()
             })
             .then(function (rectangle) {
-              console.log(rectangle);
               return Cesium.BoundingSphere.fromRectangle3D(rectangle)
             })
         },

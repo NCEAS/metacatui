@@ -151,12 +151,11 @@ define(
             if (!featureProps) {
               featureProps = {}
             }
-            // If feature is not a Feature model, assume it is an object with attributes
-            // to be set on a new Feature model.
+            // If feature is a Feature model, get the attributes to update the model.
             if (featureProps instanceof Feature) {
               featureProps = featureProps.attributes
             }
-            // Update the Map model with the new selected feature information
+            // Update the Feature model with the new selected feature information
             var selectedFeature = this.get('selectedFeature')
             selectedFeature.clear({ silent: true })
             selectedFeature.set(_.extend(selectedFeature.defaults(), featureProps))

@@ -347,24 +347,42 @@ define(
           */
         highlightSelectedFeature: function () {
           try {
-            var view = this;
+
+            const view = this;
+            const featureModel = view.model.get('selectedFeature');
+            let isTileset = false;
 
             // Remove highlight from all currently silhouetted 3D tiles
+            view.silhouettes.selected.forEach(function(cesiumEntity){
+              cesiumEntity.selectedInMap = false
+            })
             view.silhouettes.selected = []
 
-            // TODO: un-highlight all geometries with borders
-
             // Get the currently selected feature set on the model
-            var cesiumEntity = view.model.get('selectedFeature').get('mapAsset')
+            var cesiumEntity = featureModel.get('featureObject')
 
             // If the selected feature exists, then highlight it by adding a border.
             if (Cesium.defined(cesiumEntity)) {
+              isTileset = cesiumEntity instanceof Cesium.Cesium3DTileFeature;
               // Borders are added to 3D tiles by silhouetting them
-              if (cesiumEntity instanceof Cesium.Cesium3DTileFeature) {
+              if (isTileset) {
+                // Set a property on the Cesium.Cesium3DTileFeature for use by the
+                // evaluate color function. This allows the feature to be styled
+                // differently when selected (e.g. make opacity 1),
+                cesiumEntity.selectedInMap = true
+                // Add the border ('silhouettes')
                 view.silhouettes.selected = [cesiumEntity]
               }
               // TODO: add borders if this is another type of geometry (e.g. polygons)
             }
+
+            // Reset the 3D tile styles so the selected feature's style is updated.
+            if (featureModel.get('mapAsset')) {
+              if (isTileset) {
+                featureModel.get('mapAsset').update3DTileStyle()
+              }
+            }
+
             view.requestRender()
           }
           catch (error) {
@@ -388,7 +406,7 @@ define(
             var view = this
 
             // If the feature that was clicked on was already selected, do nothing
-            if (view.model.get('selectedFeature').get('mapAsset') === feature) {
+            if (view.model.get('selectedFeature').get('featureObject') === feature) {
               return;
             }
 
@@ -403,13 +421,13 @@ define(
 
               featureProps = {
                 properties: {},
-                layerModel: null,
+                mapAsset: null,
                 featureID: feature.pickId ? feature.pickId.key : null,
-                mapAsset: feature
+                featureObject: feature
               }
 
               // Find out which layer model this belongs to
-              featureProps.layerModel = layers.findWhere({
+              featureProps.mapAsset = layers.findWhere({
                 cesiumModel: feature.primitive
               })
 

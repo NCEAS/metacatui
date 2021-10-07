@@ -376,6 +376,7 @@ define(
           try {
             // Opacity of the entire layer is set by using it as the alpha for each color
             const opacity = this.get('opacity')
+
             // Colors configured to color features conditionally by a given property
             const colorPalette = this.get('colorPalette')
 
@@ -408,8 +409,16 @@ define(
                 // If there's just 1 color, then the function only needs to return that color.
               } else if (colors.length === 1) {
                 const rgb = colors.at(0).get('color');
-                evaluateColor = function () {
-                  return new Cesium.Color(rgb.red, rgb.green, rgb.blue, opacity);
+                evaluateColor = function (feature) {
+                  let featureOpacity = opacity;
+                  // The Cesium Map Widget View adds a property to a feature when it is
+                  // highlighted in the map. If this is the case, then make sure that the
+                  // alpha of the feature is 100%, otherwise the highlight borders in the
+                  // map do not show.
+                  if (feature.selectedInMap) {
+                    featureOpacity = 1
+                  }
+                  return new Cesium.Color(rgb.red, rgb.green, rgb.blue, featureOpacity);
                 }
 
                 // For a categorical color palette, the value of the feature property just
@@ -428,8 +437,16 @@ define(
                   }
                 })
                 evaluateColor = function (feature) {
-                  const colMatch = colorMap[feature.getProperty(prop)];
+                  let colMatch = colorMap[feature.getProperty(prop)];
                   if (colMatch) {
+                    // The Cesium Map Widget View adds a property to a feature when it is
+                    // highlighted in the map. If this is the case, then make sure that the
+                    // alpha of the feature is 100%, otherwise the highlight borders in the
+                    // map do not show.
+                    if (feature.selectedInMap) {
+                      colMatch = colMatch.clone()
+                      colMatch = Cesium.Color.fromAlpha(colMatch, 1)
+                    }
                     return colMatch
                   } else {
                     return defaultCol
