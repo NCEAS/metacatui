@@ -172,9 +172,20 @@ define(
             view.camera = view.widget.camera;
             view.inputHandler = view.widget.screenSpaceEventHandler;
 
-            view.scene.globe.depthTestAgainstTerrain = false;
             // Disable HDR lighting for better performance and to avoid changing imagery colors.
             view.scene.highDynamicRange = false;
+            view.scene.globe.enableLighting = false;
+
+            // Keep all parts of the globe lit regardless of what time the Cesium clock is
+            // set to. This avoids data and imagery appearing too dark.
+            view.scene.light = new Cesium.DirectionalLight({
+              direction: new Cesium.Cartesian3(1, 0, 0)
+            });
+            view.scene.preRender.addEventListener(function (scene, time) {
+              view.scene.light.direction = Cesium.Cartesian3.clone(
+                scene.camera.directionWC, view.scene.light.direction
+              );
+            });
 
             // Go to the home position, if one is set.
             view.flyHome()
