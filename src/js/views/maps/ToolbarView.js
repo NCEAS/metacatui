@@ -112,13 +112,30 @@ define(
         },
 
         /**
+         * A string that represents an icon. Can be either the name of the Font Awesome
+         * 3.2 icon OR an SVG string for an icon with all the following properties: 1)
+         * Uses viewBox attribute and not width/height; 2) Sets fill or stroke to
+         * "currentColor" in the svg element, no styles included elsewhere, 3) Has the
+         * required xmlns attribute
+         *
+         * @typedef {string} MapIconString
+         *
+         * @see {@link https://fontawesome.com/v3.2/icons/}
+         *
+         * @example
+         * '<svg viewBox="0 0 400 110" fill="currentColor"><path d="M0 0h300v100H0z"/></svg>'
+         * @example
+         * 'map-marker'
+         */
+
+        /**
          * Options/settings that are used to create a toolbar section and its associated
          * link/tab.
          *
          * @typedef {Object} SectionOption
          * @property {string} label The name of this section to show to the user.
-         * @property {string} icon The name of the icon to use to show in the link (tab)
-         * for this section.
+         * @property {MapIconString} icon The icon to show in the link (tab) for this
+         * section
          * @property {ToolbarSectionView} view The view that renders the content of the
          * toolbar section.
          * @property {object} viewOptions Any addition options to pass to the
@@ -134,7 +151,7 @@ define(
         sections: [
           {
             label: 'Layers',
-            icon: 'map-marker',
+            icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="m3.2 7.3 8.6 4.6a.5.5 0 0 0 .4 0l8.6-4.6a.4.4 0 0 0 0-.8L12.1 3a.5.5 0 0 0-.4 0L3.3 6.5a.4.4 0 0 0 0 .8Z"/><path d="M20.7 10.7 19 9.9l-6.7 3.6a.5.5 0 0 1-.4 0L5 9.9l-1.8.8a.5.5 0 0 0 0 .8l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.8Z"/><path d="m20.7 15.1-1.5-.7-7 3.8a.5.5 0 0 1-.4 0l-7-3.8-1.5.7a.5.5 0 0 0 0 .9l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.9Z"/></svg>',
             view: LayersView,
             viewOptions: {}
           }
@@ -286,24 +303,19 @@ define(
         renderSectionLink: function (sectionOption) {
           try {
 
-            // Create a container, label, and, icon
-            var link = document.createElement('div')
-            var title = document.createElement('div')
-            var icon = document.createElement('i')
-
-            // Insert the icon
-            icon.className = 'icon-' + sectionOption.icon;
+            // Create a container, label
+            const link = document.createElement('div')
+            const title = document.createElement('div')
+            // Create the icon
+            const icon = this.createIcon(sectionOption.icon)
 
             // Add the relevant classes
             link.classList.add(this.classes.link)
             title.classList.add(this.classes.linkTitle)
-            icon.classList.add(this.classes.linkIcon)
-
-            // Add the content
+            // Add the label text
             title.textContent = sectionOption.label
-
-            link.appendChild(icon)
-            link.appendChild(title)
+            
+            link.append(icon, title)
 
             return link
           }
@@ -312,6 +324,49 @@ define(
               'There was an error rendering a section link in a ToolbarView' +
               '. Error details: ' + error
             );
+          }
+        },
+
+        /**
+         * Given the name of a Font Awesome 3.2 icon, or an SVG string, creates an icon
+         * element with the appropriate classes for the tool bar link (tab)
+         * @param {MapIconString} iconString The string to use to create the icon
+         * @returns {HTMLElement} Returns either an <i> element with a Font Awesome icon,
+         * or and SVG with a custom icon
+         */
+        createIcon: function (iconString) {
+          try {
+            // The icon element we will create and return. By default, return an empty span
+            // element.
+            let icon = document.createElement('span');
+
+            // iconString must be string
+            if (typeof iconString === 'string') {
+
+              // Simple test to check if the string contains SVG content
+              const isSVG = iconString.toUpperCase().startsWith('<SVG');
+
+              // If the icon is an SVG element
+              if (isSVG) {
+                icon = new DOMParser()
+                  .parseFromString(iconString, 'image/svg+xml')
+                  .documentElement;
+                // If the icon is not an SVG, assume it's the name for a Font Awesome icon
+              } else {
+                icon = document.createElement('i')
+                icon.className = 'icon-' + iconString;
+              }
+
+            }
+            icon.classList.add(this.classes.linkIcon);
+            return icon
+          }
+          catch (error) {
+            console.log(
+              'There was an error  in a ToolbarView' +
+              '. Error details: ' + error
+            );
+            return document.createElement('span')
           }
         },
 
