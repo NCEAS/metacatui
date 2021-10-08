@@ -591,6 +591,7 @@ other class: .ui-slider-range */
   font-size: 0.8em;
   /* Show the opacity value just below the slider handle */
   margin-top: 2.5em;
+  color: var(--map-col-text);
 }
 
 /*****************************************************************************************

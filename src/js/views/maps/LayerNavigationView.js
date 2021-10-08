@@ -20,7 +20,7 @@ define(
     * @class LayerNavigationView
     * @classdesc A panel with buttons that control navigation to points of interest in a
     * Layer or other Map Asset, including a button that zooms to the entire extent of the
-    * asset.
+    * asset. This view may update the opacity and visibility of a MapAsset.
     * @classcategory Views/Maps
     * @name LayerNavigationView
     * @extends Backbone.View
@@ -126,10 +126,20 @@ define(
 
         /**
          * Trigger an event for the parent view to tell the map widget to zoom to the full
-         * extent of this layer or other asset
+         * extent of this layer or other asset. Also make sure that the layer is visible.
+         * If it's not visible after the user clicks the "zoom" button, that could be
+         * confusing.
          */
         flyToExtent : function(){
           try {
+            // If the opacity is very low, set it to 50%
+            if (this.model.get('opacity') < 0.05) {
+              this.model.set('opacity', 0.5)
+            }
+            // Make sure the layer is visible
+            if (this.model.get('visible') === false) {
+              this.model.set('visible', true)
+            }
             this.model.trigger('flyToExtent', this.model)
           }
           catch (error) {

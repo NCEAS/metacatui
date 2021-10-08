@@ -19,7 +19,9 @@ define(
 
     /**
     * @class LayerOpacityView
-    * @classdesc A number slider that shows and updates the opacity in a MapAsset model
+    * @classdesc A number slider that shows and updates the opacity in a MapAsset model.
+    * Changing the opacity of a layer will also make it visible, if it was not visible
+    * before (i.e. this view also updates the MapAsset's visible attribute.)
     * @classcategory Views/Maps
     * @name LayerOpacityView
     * @extends Backbone.View
@@ -122,16 +124,15 @@ define(
             var startOpacity = this.model ? this.model.get('opacity') || 1 : 1;
 
             // Find the element that will contain the slider
-            var sliderContainer = this.$el.find('.' + this.classes.sliderContainer).first()
+            view.sliderContainer = this.$el.find('.' + this.classes.sliderContainer).first()
 
-            // The event handler needs the view context to call other functions that
-            // update the model and the label
-            var sliderEventHandler = function (e, ui) {
-              view.handleSliderEvent(e, ui)
-            }
+            // The model opacity may be updated by this or other views or models. Make
+            // sure that the UI reflects any of these changes.
+            view.stopListening(view.model, 'change:opacity')
+            view.listenTo(view.model, 'change:opacity', view.updateSlider)
 
             // Create the jQuery slider widget. See https://api.jqueryui.com/slider/
-            sliderContainer.slider({
+            view.sliderContainer.slider({
               min: 0,
               max: 1,
               range: 'min',
@@ -144,17 +145,35 @@ define(
                 'ui-slider-range': view.classes.range
               },
               // event handling
-              slide: sliderEventHandler, // when the slider is moved by the user
-              change: sliderEventHandler // when the slider is changed programmatically
+              slide: handleSliderEvent, // when the slider is moved by the user
+              change: handleSliderEvent // when the slider is changed programmatically
             })
+
+            // What to do when the opacity slider is changed. The event handler needs the
+            // view context to call other functions that update the model and the label.
+            function handleSliderEvent (e, ui) {
+              const newOpacity = ui.value
+              const currentVisibility = view.model.get('visible')
+              // Update the model. This will trigger other UI updates in this view.
+              view.updateModel(newOpacity)
+              // If the opacity changes to anything but zero, then make sure the asset is
+              // also visible. (Why would a user change the opacity and not also want the
+              // layer visible?)
+              if (newOpacity > 0 && !currentVisibility) {
+                view.model.set('visible', true)
+              // If the opacity is changed to zero, also set visibility to false. This
+              // triggers the layer list to grey-out the layer item.
+              } else if (newOpacity === 0 && currentVisibility) {
+                view.model.set('visible', false)
+              }
+            }
 
             // Create the element that will display the current opacity value as a
             // percentage. Insert it into the slider handle so that it can be easily
             // positioned just below the handle, even as the handle moves.
             this.opacityLabel = document.createElement('div')
             this.opacityLabel.className = view.classes.label
-            sliderContainer.slider('instance').handle.append(this.opacityLabel)
-
+            view.sliderContainer.slider('instance').handle.append(this.opacityLabel)
             // Show the initial opacity value
             view.updateLabel(startOpacity)
 
@@ -170,21 +189,19 @@ define(
         },
 
         /**
-         * Get the new opacity value from the slider and update the model and label. This
-         * function is called when either of two events happen in the slider UI.
-         * @param {Event} e The event object - not used by this function
-         * @param {Object} ui An object with properties of the slider widget, including
-         * handle, handleIndex, and value. This function retrieves the current from from
-         * ui.value.
-         * @see {@link https://api.jqueryui.com/slider/#event-change}
+         * Get the new opacity value from the model and update the slider handle position
+         * and label. This function is called whenever the model opacity is updated.
          */
-        handleSliderEvent: function (e, ui) {
+        updateSlider: function () {
           try {
+            const newOpacity = this.model.get('opacity')
             // Only update if the value has actually changed
-            if (ui.value !== this.currentValue) {
-              this.updateModel(ui.value)
-              this.updateLabel(ui.value)
-              this.currentValue = ui.value
+            if (newOpacity !== this.displayedOpacity) {
+              this.updateLabel(newOpacity)
+              // If this function was triggered by any event other than a user sliding the
+              // handle, then the slider handle position will need to be updated
+              this.sliderContainer.slider('value', newOpacity)
+              this.displayedOpacity = newOpacity
             }
           }
           catch (error) {
@@ -200,9 +217,9 @@ define(
          * @param {Number} newOpacity A number between 0 and 1 indicating the new opacity
          * value for the MapAsset model
          */
-        updateModel: function (newOpacity){
+        updateModel: function (newOpacity) {
           try {
-            if (!this.model || !newOpacity || typeof newOpacity !== 'number') {
+            if (!this.model || typeof newOpacity !== 'number') {
               return
             }
             this.model.set('opacity', newOpacity)
@@ -221,7 +238,7 @@ define(
          * value for the MapAsset model
          */
         updateLabel: function (newOpacity) {
-         
+
           try {
             if (!this.opacityLabel || (typeof newOpacity === 'undefined') || typeof newOpacity !== 'number') {
               return
