@@ -22,7 +22,10 @@ define(
     * @classdesc An info-box / panel that shows more details about a specific geo-spatial
     * feature that is highlighted or in focus in a Map View. Details displayed include a
     * table of attributes that are set on that feature, and a link to view more
-    * information about the Map Asset (e.g. 3D tileset) that contains the feature.
+    * information about the Map Asset (e.g. 3D tileset) that contains the feature. The
+    * title of the panel will use the value of the feature's 'name', 'title', 'id', or
+    * 'identifier' property, if it has one (case insensitive). Otherwise, it will use the
+    * 'assetId' in the Feature model (an ID used by the map widget.)
     * @classcategory Views/Maps
     * @name FeatureInfoView
     * @extends Backbone.View
@@ -153,33 +156,55 @@ define(
          */
         renderContent: function () {
           try {
-            var classes = this.classes;
-            var title = 'Feature';
-            var properties = null;
-            var showLayerDetailsButton = false;
+            const classes = this.classes;
+            let title = 'Feature';
+            let properties = null;
+            let showLayerDetailsButton = false;
 
             if (this.model) {
 
-              var layerModel = this.model.get('layerModel')
+              // Get the layer/mapAsset model
+              const mapAsset = this.model.get('mapAsset')
+              // Get the properties to show in the table
+              properties = this.model.get('properties') ?? {}
 
               // Show a link to open the details for the feature's parent layer
-              if (layerModel) {
+              if (mapAsset) {
                 showLayerDetailsButton = true;
               }
 
               // Create a title for the feature info box
-              var label = layerModel ? layerModel.get('label') : null;
-              var ID = this.model.get('mapId');
-              if (ID) {
-                title = title + ' ' + ID
+              let label = mapAsset ? mapAsset.get('label') : null;
+
+              // Check if the feature has a name, title, ID, or identifier property.
+              // Search for these properties independent of case. If none of these
+              // properties exist, use the feature ID provided by the model.
+              let searchKeys = ['name', 'title', 'id', 'identifier']
+              searchKeys = searchKeys.map(key => key.toLowerCase());
+              const propKeys = Object.keys(properties)
+              const propKeysLower = propKeys.map(key => key.toLowerCase());
+
+              // Search by search key, since search keys are in order of preference. Find
+              // the first matching key.
+              const nameKeyLower = searchKeys.find(function (searchKey) {
+                return propKeysLower.includes(searchKey)
+              });
+
+              // Then figure out which of the original property keys matches (we need it
+              // in the original case).
+              const nameKey = propKeys[propKeysLower.indexOf(nameKeyLower)]
+
+              const name = properties[nameKey] ?? this.model.get('featureID');
+
+              if (name) {
+                title = title + ' ' + name
               }
+              
               if (label) {
-                this.model.get('properties')
                 title = title + ' from ' + label + ' Layer'
               }
 
-              // Get the properties to show in the table
-              properties = this.model.get('properties')
+              
             }
 
             // Insert the template into the view
@@ -206,8 +231,8 @@ define(
          */
         showLayerDetails: function () {
           try {
-            if (this.model && this.model.get('layerModel')) {
-              this.model.get('layerModel').set('selected', true)
+            if (this.model && this.model.get('mapAsset')) {
+              this.model.get('mapAsset').set('selected', true)
             }
           }
           catch (error) {
