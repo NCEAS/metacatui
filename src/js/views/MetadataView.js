@@ -1128,6 +1128,14 @@ define(['jquery',
             authorization = [],
             resourceMap = this.dataPackage ? this.dataPackage.packageModel : null,
             modelsToCheck = [this.model, resourceMap];
+            
+          // Check if a list of allowed submitters has been specified for this MN.
+          if (typeof MetacatUI.appUserModel.get("isAuthorizedSubmitter") === 'undefined') {
+              view.listenToOnce(MetacatUI.appUserModel, "change:isAuthorizedSubmitter", function () {
+                view.checkWritePermissions();
+              });
+            return;
+          } 
 
           modelsToCheck.forEach(function (model, index) {
             // If there is no resource map or no EML,
@@ -1175,8 +1183,9 @@ define(['jquery',
           } else {
             return
           }
-          // Only render the editor controls if we have completed the checks AND the user has full editor permissions
-          if (allTrue) {
+          // Only render the editor controls if user is in the 'allowed submitters' list (if it exists) and 
+          // if we have completed the checks AND the user has full editor permissions
+          if (MetacatUI.appUserModel.get("isAuthorizedSubmitter") == true && allTrue) {
             this.insertEditorControls();
           }
 
