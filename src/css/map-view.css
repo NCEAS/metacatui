@@ -117,12 +117,18 @@
   position: absolute;
   right: 0;
   bottom: 0;
+  /* Make sure the entire panel is visible always. Leave 5rem for scale bar. */
+  max-height: calc(100% - 5rem);
+  overflow: auto;
 }
 
 .map-view__layer-details-container {
   position: absolute;
   left: 0;
   bottom: 0;
+  /* Don't allow the panel to expand beyond the map view */
+  max-height: 100%;
+  overflow: auto;
 }
 
 /*****************************************************************************************
@@ -225,10 +231,10 @@ represents 1 unit of the given distance measurement. */
 }
 
 .toolbar__toggle {
-  width: 2rem;
+  width: 1.9rem;
   align-self: flex-end;
   padding: 0.4rem;
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   background-color: transparent;
   opacity: 0.6;
   margin-bottom: 0.5rem;
@@ -268,6 +274,7 @@ represents 1 unit of the given distance measurement. */
 }
 
 .toolbar__content--active {
+  padding-top: 1rem;
   display: flex;
 }
 
@@ -518,6 +525,8 @@ represents 1 unit of the given distance measurement. */
 .layer-info__description {
   font-size: 0.91rem;
   line-height: 1.33;
+  max-height: 22rem;
+  overflow: auto;
 }
 
 .layer-info__attribution {
@@ -606,16 +615,15 @@ other class: .ui-slider-range */
   width: var(--map-width-toolbar);
   border-top-right-radius: var(--map-border-radius);
   border-top-left-radius: var(--map-border-radius);
-  padding: 0.4rem 0.8rem;
+  padding: 1rem 0.8rem 1rem 0.8rem;
+  row-gap: 1rem;
   background-color: var(--map-col-bkg-lighter);
   color: var(--map-col-text);
   box-shadow: var(--map-shadow-md);
-  grid-template-columns: auto min-content;
-  grid-template-rows: min-content auto;
-  gap: 2rem;
-  align-items: center;
+  grid-template-columns: auto 2.5rem;
+  grid-template-rows: min-content 1fr min-content;
   justify-items: center;
-  /* Don't show the details panel unless it also has the layer-details--open class */
+  /* Don't show the details panel unless it also has the feature-info--open class */
   display: none;
 }
 
@@ -633,6 +641,7 @@ other class: .ui-slider-range */
   font-weight: 500;
   font-size: 0.9rem;
   opacity: 60%;
+  padding-left: 2.5rem;
 }
 
 .feature-info__content {
@@ -642,13 +651,15 @@ other class: .ui-slider-range */
   gap: 1rem;
   grid-column: 1 / 3;
   padding-bottom: 1rem;
+  overflow: scroll;
 }
 
 .feature-info__toggle {
-  padding: 0.4rem;
-  font-size: 1.3rem;
+  padding: 0.4rem 0.6rem 0.4rem;
+  font-size: 1.25rem;
   background-color: transparent;
   opacity: 0.6;
+  justify-self: end;
 }
 
 .feature-info__table {
