@@ -245,7 +245,15 @@ define(
                   'for the following layer:', layerModel
                 );
               } else {
-                renderFunction.call(view, layerModel)
+                // Do not immediately render layers that are initially invisible
+                if (layerModel.get('visible')) {
+                  renderFunction.call(view, layerModel)
+                } else {
+                  // Start rendering the layer once it is set to visible in the map
+                  view.listenToOnce(layerModel, 'change:visible', function () {
+                    renderFunction.call(view, layerModel)
+                  })
+                }
               }
 
             });
@@ -293,8 +301,8 @@ define(
               Cesium.PostProcessStageLibrary.createSilhouetteStage([view.silhouettes])
             );
 
-            // When the Map model's selectedFeature attribute changes, update which features
-            // are highlighted on the map.
+            // When the Map model's selectedFeature attribute changes, update which
+            // features are highlighted on the map.
             var setSelectedFeatureListeners = function () {
               var selectedFeature = view.model.get('selectedFeature')
               view.stopListening(selectedFeature, 'change')
@@ -354,8 +362,16 @@ define(
             let isTileset = false;
 
             // Remove highlight from all currently silhouetted 3D tiles
-            view.silhouettes.selected.forEach(function(cesiumEntity){
-              cesiumEntity.selectedInMap = false
+            view.silhouettes.selected.forEach(function(prevCesiumEntity){
+              prevCesiumEntity.selectedInMap = false
+              // Make sure the style is updated for the features that are no longer
+              // selected
+              const prevLayerModel = view.model.get('layers').findWhere({
+                cesiumModel: prevCesiumEntity.primitive
+              })
+              if (prevLayerModel.update3DTileStyle) {
+                prevLayerModel.update3DTileStyle()
+              }
             })
             view.silhouettes.selected = []
 
@@ -403,6 +419,7 @@ define(
          * @param {Cesium3DTileFeature} feature
         */
         updateSelectedFeatureModel: function (feature) {
+
           try {
             var view = this
 
