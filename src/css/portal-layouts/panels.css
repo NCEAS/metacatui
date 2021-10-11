@@ -18,6 +18,14 @@
   margin: 0;
 }
 
+/* On smaller screens... */
+
+@media only screen and (max-width: 768px) {
+  .PortalView #Content .portal-view {
+    grid-template-columns: 100%;
+  }
+}
+
 .map-view {
   min-height: 93vh;
 }
@@ -74,6 +82,18 @@
 .portal-view .portal-logo {
   max-height: 2rem;
   margin-right: 1rem;
+}
+
+/* Title & logo on smaller screens... */
+@media only screen and (max-width: 768px) {
+  .PortalView #portal-header-container .row .portal-logo {
+    max-width: 4rem;
+    margin: 0.7rem;
+  }
+  .PortalView #portal-header-container .portal-title {
+    font-size: 2rem;
+    margin: 0 0.5rem 0.7rem 0.5rem;
+  }
 }
 
 /* TODO */
@@ -136,7 +156,7 @@
   min-height: 3rem;
 }
 
-.portal-logos-view .span12{
+.portal-logos-view .span12 {
   display: flex;
   align-content: center;
 }

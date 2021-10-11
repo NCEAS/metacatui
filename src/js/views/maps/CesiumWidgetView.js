@@ -39,10 +39,11 @@ define(
         type: 'CesiumWidgetView',
 
         /**
-        * The HTML classes to use for this view's element
+        * The HTML classes to use for this view's element. Note that the first child
+        * element added to this view by cesium will have the class "cesium-widget".
         * @type {string}
         */
-        className: 'cesium-widget',
+        className: 'cesium-widget-view',
 
         /**
         * The model that this view uses

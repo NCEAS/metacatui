@@ -1,11 +1,14 @@
 :root {
   /* COLOURS */
-  --portal-col-bkg: #111827;
   /* grey 900 */
-  --portal-col-bkg-active: #374151;
+  --portal-col-bkg: #111827;
   /* grey 600 */
-  --portal-col-buttons: #4B5563F2;
+  --portal-col-bkg-active: #374151;
   /* grey 700 */
+  --portal-col-buttons: #4B5563F2;
+  /* grey 400 */
+  --portal-col-text-subtle: #9CA3AF;
+  /* grey 50 */
   --portal-col-text: #F9FAFB;
   /* teal */
   --portal-col-highlight: #269fb9;
@@ -49,6 +52,19 @@ body, .portal-view, .Portal #Content, .PortalView #Content {
 
 #Navbar .nav .dropdown-toggle .caret {
   border-top-color: var(--portal-col-text);
+}
+
+.Portal.Editor #Navbar #logo::after, .PortalView #Navbar #logo::after {
+  color: var(--portal-col-text-subtle);
+}
+
+/* sign in button */
+.header .nav li a.btn.login {
+  border-color: transparent;
+  color: var(--portal-col-text-subtle);
+}
+.header .nav li a.btn.login > .icon {
+  opacity: 0.7;
 }
 
 footer, #Footer {

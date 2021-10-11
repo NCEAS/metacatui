@@ -35,10 +35,14 @@
   --map-col-highlight: var(--portal-primary-color);
   /* SIZING: */
   --map-size-toolbar-link: 2.2rem;
+  --map-size-toolbar-link-margin: 0.4rem;
+  --map-size-toolbar-inter-link-margin: 0.5rem;
   --map-border-radius: 0.5rem;
   --map-width-toolbar: 21rem;
+  --map-toolbar-link-width: calc(var(--map-size-toolbar-link) + var(--map-size-toolbar-link-margin) + var(--map-size-toolbar-link-margin));
   /* SHADOWS */
   --map-shadow-md: 0 1px 9px -1px rgba(0, 0, 0, 0.2), 0 1px 2px 0px rgba(0, 0, 0, 0.5);
+  /* NOTE: 768px is used as the mobile -> desktop breakpoint throughout the map view, but we cannot use a CSS variable for this. */
 }
 
 .map-view__button {
@@ -83,8 +87,14 @@
   min-height: calc(100vh - var(--headerHeight));
   width: 100%;
   display: grid;
-  justify-content: center;
   box-sizing: border-box;
+}
+/* On larger screens, the toolbar should 'squish' the map, not overlap it */
+@media only screen and (min-width: 768px) {
+  .map-view{
+    grid-template-columns: auto minmax(0,100%);
+    justify-content: start;
+  }
 }
 
 .map-view * {
@@ -94,10 +104,18 @@
 /* The containers for the elements within the Map View */
 
 .map-view__map-widget-container {
-  height: 100%;
+  position: absolute;
   width: 100%;
-  display: flex;
-  align-items: center;
+  height: 100%;
+}
+/* So the map widget is underneath the links/tabs on larger screens (the toolbar should 'squish' the map, not overlap it) */
+@media only screen and (min-width: 768px) {
+  .map-view__map-widget-container {
+    order: 1;
+    position: relative;
+    width: calc(100% + var(--map-toolbar-link-width) + (2* var(--map-size-toolbar-inter-link-margin)));
+    margin-left: calc(-1 * var(--map-toolbar-link-width) - (2* var(--map-size-toolbar-inter-link-margin)));
+  }
 }
 
 .map-view__scale-bar-container {
@@ -111,6 +129,15 @@
   top: 0;
   left: 0;
   height: 100%;
+}
+/* On large screens, the toolbar should not overlap the map, it should squish it */
+@media only screen and (min-width: 768px) {
+  .map-view__toolbar-container {
+    order: 0;
+    position: relative;
+    display: flex;
+    flex-grow: 1;
+  }
 }
 
 .map-view__feature-info-container {
@@ -139,8 +166,9 @@
  *
  */
 
-.cesium-widget {
-  position: absolute;
+.cesium-widget-view {}
+
+.cesium-widget-view>.cesium-widget {
   width: 100%;
   height: 100%;
 }
@@ -226,7 +254,7 @@ represents 1 unit of the given distance measurement. */
 
 .toolbar {
   display: grid;
-  grid-template-columns: auto auto;
+  grid-auto-flow: column;
   color: var(--map-col-text);
 }
 
@@ -245,7 +273,7 @@ represents 1 unit of the given distance measurement. */
   height: min-content;
   background-color: var(--map-col-bkg);
   border-radius: var(--map-border-radius);
-  margin: 0.5rem
+  margin: var(--map-size-toolbar-inter-link-margin);
 }
 
 .toolbar__all-content {
@@ -290,7 +318,7 @@ represents 1 unit of the given distance measurement. */
   background-color: var(--map-col-bkg);
   border-radius: var(--map-border-radius);
   padding: 0.2rem;
-  margin: 0.4rem;
+  margin: var(--map-size-toolbar-link-margin);
 }
 
 .toolbar__link:hover {
@@ -307,7 +335,7 @@ represents 1 unit of the given distance measurement. */
 
 .toolbar__link-title {
   position: absolute;
-  right: calc(-100% - 3rem);
+  right: calc(-100% - var(--map-toolbar-link-width));
   color: var(--map-col-text);
   margin-top: 0.1em;
   text-transform: uppercase;
@@ -684,10 +712,13 @@ other class: .ui-slider-range */
 
 .feature-info__table-cell {
   padding: 0.6rem;
-  
   overflow-wrap: break-word;
   word-wrap: break-word;
   max-width: 15rem;
+}
+
+.feature-info__layer-details-button {
+  grid-column: 1 / 3;
 }
 
 /*****************************************************************************************
