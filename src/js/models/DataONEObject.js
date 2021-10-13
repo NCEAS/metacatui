@@ -71,7 +71,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     synced: false, // True if the full model has been synced
                     uploadStatus: null, //c=complete, p=in progress, q=queued, e=error, w=warning, no upload status=not in queue
                     uploadProgress: null,
-                    sysMetaUploadStatus: null, //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
+                    sysMetaUploadStatus: null, //c=complete, p=in progress, q=queued, e=error, l=loading, no upload status=not in queue
                     percentLoaded: 0, // Percent the file is read before caclculating the md5 sum
                     uploadFile: null, // The file reference to be uploaded (JS object: File)
                     errorMessage: null,
@@ -91,6 +91,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     collections: [], //References to collections that this model is in
                     possibleAuthMNs: [], //A list of possible authoritative MNs of this object
                     useAltRepo: false,
+                    isLoadingFiles: false, //Only relevant to Resource Map objects. Is true if there is at least one file still loading into the package.
+                    numLoadingFiles: 0, //Only relevant to Resource Map objects. The number of files still loading into the package.
                     provSources: [],
                     provDerivations: [],
                     prov_generated: [],
