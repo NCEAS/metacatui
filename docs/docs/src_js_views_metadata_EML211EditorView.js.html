@@ -418,7 +418,7 @@ define(['underscore',
           } else {
 
             // Create a new data package with this id
-            MetacatUI.rootDataPackage = new DataPackage([this.model], { id: resourceMapIds[0] });
+            this.createRootDataPackage([this.model], { id: resourceMapIds[0] });
 
             //Handle the add of the metadata model
             MetacatUI.rootDataPackage.saveReference(this.model);
@@ -457,7 +457,7 @@ define(['underscore',
             // Make sure we have the latest version of the resource map before we allow editing
             this.listenToOnce(MetacatUI.rootDataPackage.packageModel, "latestVersionFound", function (model) {
               //Create a new data package for the latest version package
-              MetacatUI.rootDataPackage = new DataPackage([this.model], { id: model.get("latestVersion") });
+              this.createRootDataPackage([this.model], { id: model.get("latestVersion") });
               //Handle the add of the metadata model
               MetacatUI.rootDataPackage.saveReference(this.model);
               this.listenToOnce(MetacatUI.rootDataPackage, "sync", function () {
@@ -480,7 +480,7 @@ define(['underscore',
         */
         createDataPackage: function () {
           // Create a new Data packages
-          MetacatUI.rootDataPackage = new DataPackage([this.model], { packageModelAttrs: { synced: true }});
+          this.createRootDataPackage([this.model], { packageModelAttrs: { synced: true }})
 
           try{
             //Inherit the access policy of the metadata document, if the metadata document is not `new`
@@ -525,6 +525,18 @@ define(['underscore',
           // Set the sysMetaXML for the packageModel
           MetacatUI.rootDataPackage.packageModel.set("sysMetaXML",
             MetacatUI.rootDataPackage.packageModel.serializeSysMeta());
+        },
+
+        /**
+        * Creates a {@link DataPackage} collection for this Editor view, and saves it as the Root Data Package of the app.
+        * This centralizes the DataPackage creation so listeners and other functionality is always performed
+        * @param {[DataONEObject[]|ScienceMetadata[]|EML211[]]} models - An array of models to add to the collection
+        * @param {object} [attributes] A literal object of attributes to pass to the DataPackage.initialize() function
+        */
+        createRootDataPackage: function(models, attributes){
+          MetacatUI.rootDataPackage = new DataPackage(models, attributes);
+
+          this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:numLoadingFiles", this.toggleEnableControls);
         },
 
         renderChildren: function (model, options) {
@@ -1098,6 +1110,20 @@ define(['underscore',
             this.hideControls();
 
           }
+        },
+
+        /**
+        * Toggles whether the Save controls for the Editor are enabled or disabled based on various attributes of the DataPackage and its models.
+        */
+        toggleEnableControls: function(){
+
+          if( MetacatUI.rootDataPackage.packageModel.get("isLoadingFiles") ){
+            this.disableControls("Waiting for " + MetacatUI.rootDataPackage.packageModel.get("numLoadingFiles") + " files to upload...");
+          }
+          else{
+            this.enableControls();
+          }
+
         },
 
         /**
