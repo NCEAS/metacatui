@@ -439,6 +439,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                   delete doc[field];
               });
 
+              //Remove any erroneous white space from fields
+              this.removeWhiteSpaceFromSolrFields(doc);
+
               return doc;
             }
             else
@@ -2257,8 +2260,31 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             this.set("possibleAuthMNs", possibleAuthMNs);
 
           }
+        },
+
+        /**
+        * Removes white space from string values returned by Solr when the white space causes issues.
+        * For now this only effects the `resourceMap` field, which will index new line characters and spaces
+        * when the RDF XML has those in the `identifier` XML element content. This was causing bugs where DataONEObject
+        * models were created with `id`s with new line and white space characters (e.g. `\n urn:uuid:1234...`)
+        * @param {object} json - The Solr document as a JS Object, which will be directly altered
+        */
+        removeWhiteSpaceFromSolrFields: function(json){
+          if( typeof json.resourceMap == "string" ){
+            json.resourceMap = json.resourceMap.trim();
+          }
+          else if( Array.isArray(json.resourceMap) ){
+            let newResourceMapIds = [];
+            _.each(json.resourceMap, function(rMapId){
+              if( typeof rMapId == "string" ){
+                newResourceMapIds.push(rMapId.trim());
+              }
+            });
+            json.resourceMap = newResourceMapIds;
+          }
         }
     },
+
     /** @lends DataONEObject.prototype */
     {
       /**

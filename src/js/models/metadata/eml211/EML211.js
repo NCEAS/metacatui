@@ -429,7 +429,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           );
         },
 
-        /* Fetch the EML from the MN object service */
+        /**
+        * Fetch the EML from the MN object service
+        * @param {object} [options] - A set of options for this fetch()
+        * @property {boolean} [options.systemMetadataOnly=false] - If true, only the system metadata will be fetched.
+        * If false, the system metadata AND EML document will be fetched.
+        */
         fetch: function(options) {
           if( ! options ) var options = {};
 
