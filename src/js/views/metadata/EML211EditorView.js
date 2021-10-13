@@ -436,6 +436,34 @@ define(['underscore',
           // Create a new Data packages
           MetacatUI.rootDataPackage = new DataPackage([this.model], { packageModelAttrs: { synced: true }});
 
+          try{
+            //Inherit the access policy of the metadata document, if the metadata document is not `new`
+            if(!this.model.isNew()){
+              let metadataAccPolicy = this.model.get("accessPolicy");
+              let accPolicy = MetacatUI.rootDataPackage.packageModel.get("accessPolicy")
+
+              //If there is no access policy, it hasn't been fetched yet, so wait
+              if( !metadataAccPolicy.length ){
+                //If the model is of ScienceMetadata class, we need to wait for the "replace" function,
+                // which happens when the model is fetched and an EML211 model is created to replace it.
+                if( this.model.type == "ScienceMetadata" ){
+                   this.listenTo(this.model, "replace", function(){
+                     this.listenToOnce(this.model, "sysMetaUpdated", function(){
+                       accPolicy.copyAccessPolicy(this.model.get("accessPolicy"))
+                       MetacatUI.rootDataPackage.packageModel.set("rightsHolder", this.model.get("rightsHolder"));
+                     });
+                   });
+                }
+              }
+              else{
+                accPolicy.copyAccessPolicy(this.model.get("accessPolicy"))
+              }
+            }
+          }
+          catch(e){
+            console.error("Could not copy the access policy from the metadata to the resource map: ", e);
+          }
+
           //Handle the add of the metadata model
           MetacatUI.rootDataPackage.handleAdd(this.model);
 
