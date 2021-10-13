@@ -428,7 +428,7 @@ define(['underscore',
           }
         },
 
-        /*
+        /**
         * Creates a DataPackage collection for this EML211EditorView and sets it on the MetacatUI
         * global object (as `rootDataPackage`)
         */
@@ -693,7 +693,7 @@ define(['underscore',
           }
         },
 
-        /*
+        /**
          * Set listeners on the view's model for various reasons.
          * This function centralizes all the listeners so that when/if the view's model is replaced, the listeners would be reset.
          */
@@ -764,6 +764,7 @@ define(['underscore',
 
         /**
          * Saves all edits in the collection
+         * @param {Event} e - The DOM Event that triggerd this function
          */
         save: function (e) {
           var btn = (e && e.target) ? $(e.target) : this.$("#save-editor");
@@ -777,8 +778,9 @@ define(['underscore',
           MetacatUI.rootDataPackage.save();
         },
 
-        /*
+        /**
          * When the data package collection saves successfully, tell the user
+         * @param {DataPackage|DataONEObject} savedObject - The model or collection that was just saved
          */
         saveSuccess: function (savedObject) {
 
@@ -813,8 +815,9 @@ define(['underscore',
           this.setListeners();
         },
 
-        /*
+        /**
          * When the data package collection fails to save, tell the user
+         * @param {string} errorMsg - The error message from the failed save() function
          */
         saveError: function (errorMsg) {
 
@@ -934,8 +937,9 @@ define(['underscore',
           this.model.findLatestVersion();
         },
 
-        /*
+        /**
          * Show the entity editor
+         * @param {Event} e - The DOM Event that triggerd this function
          */
         showEntity: function (e) {
           if (!e || !e.target)
@@ -1006,7 +1010,7 @@ define(['underscore',
 
         },
 
-        /*
+        /**
          * Shows a message if the user is not authorized to edit this package
          */
         notAuthorized: function () {

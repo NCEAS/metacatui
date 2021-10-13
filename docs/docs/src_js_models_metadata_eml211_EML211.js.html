@@ -1679,6 +1679,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             dataType: "text",
             success: function(response){
               model.set(DataONEObject.prototype.parse.call(model, response));
+
+              //Trigger a custom event that the sys meta was updated
+              model.trigger("sysMetaUpdated");
             },
             error: function(){
               model.trigger('error');
