@@ -3099,6 +3099,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             * `loading` into the DOM or `in progress` of an upload to the server, they will be considered as "loading" files.
             * @param {DataONEObject} [dataONEObject] - A model to begin tracking. Optional. If no DataONEObject is given, then only
             * the number of loading files will be calcualted and set on the packageModel.
+            * @since 2.17.1
             */
             setLoadingFiles: function(dataONEObject){
               //Set the number of loading files and the isLoadingFiles flag

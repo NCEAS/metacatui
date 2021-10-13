@@ -486,6 +486,7 @@ define(['underscore',
         * This centralizes the DataPackage creation so listeners and other functionality is always performed
         * @param {[DataONEObject[]|ScienceMetadata[]|EML211[]]} models - An array of models to add to the collection
         * @param {object} [attributes] A literal object of attributes to pass to the DataPackage.initialize() function
+        * @since 2.17.1
         */
         createRootDataPackage: function(models, attributes){
           MetacatUI.rootDataPackage = new DataPackage(models, attributes);
@@ -1068,6 +1069,7 @@ define(['underscore',
 
         /**
         * Toggles whether the Save controls for the Editor are enabled or disabled based on various attributes of the DataPackage and its models.
+        * @since 2.17.1
         */
         toggleEnableControls: function(){
 

@@ -389,6 +389,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
     /**
     * Enable the Save button. Resets any changes made in {@link EditorView#disableControls}
+    * @since 2.17.1
     */
     enableControls: function(){
       //When the package is saved, revert the Save button back to normal
@@ -402,6 +403,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     /**
     * Disable the Save button and display a message to explain why
     * @param {string} [message] - A short text message to display in the Save button
+    * @since 2.17.1
     */
     disableControls: function(message){
       //When the package is saved, revert the Save button back to normal
