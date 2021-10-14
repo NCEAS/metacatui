@@ -1074,7 +1074,8 @@ define(['underscore',
         toggleEnableControls: function(){
 
           if( MetacatUI.rootDataPackage.packageModel.get("isLoadingFiles") ){
-            this.disableControls("Waiting for " + MetacatUI.rootDataPackage.packageModel.get("numLoadingFiles") + " files to upload...");
+            let noun = MetacatUI.rootDataPackage.packageModel.get("numLoadingFiles") > 1? " files" : " file";
+            this.disableControls("Waiting for " + MetacatUI.rootDataPackage.packageModel.get("numLoadingFiles") + noun + " to upload...");
           }
           else{
             this.enableControls();
