@@ -57,7 +57,7 @@ define(['jquery', 'underscore', 'backbone',
       this.model = options.model || new FilterGroup();
 
       this.editorView = options.editorView || null;
-      
+
       this.subviews = new Array();
 
       if(options.edit === true){
@@ -93,7 +93,7 @@ define(['jquery', 'underscore', 'backbone',
         var viewOptions = {
           model: filter,
           mode: filterMode,
-          editorView: view.editorView
+          editorView: this.editorView
         }
 
         //Some filters are handled specially
@@ -109,13 +109,11 @@ define(['jquery', 'underscore', 'backbone',
           var filterView = new ToggleFilterView(viewOptions);
         }
         else if (filter.get("fields").includes("sem_annotation") && MetacatUI.appModel.get("bioportalAPIKey")) {
-          
-          var view = this;
 
           var filterView = new AnnotationFilterView({
             selected: filter.get("values"),
             inputLabel: filter.get("label"),
-            separatorText: view.model.get("operator"),
+            separatorText: this.model.get("operator"),
             placeholderText: filter.get("placeholder"),
             icon: filter.get("icon"),
             subType: "AnnotationFilterView",
@@ -146,11 +144,11 @@ define(['jquery', 'underscore', 'backbone',
               filter.set({"values": newValues});
             }
 
-            view.trigger("addNewAnnotationSearch", event, item, filter);
+            this.trigger("addNewAnnotationSearch", event, item, filter);
           });
         }
         else{
-          
+
           //Depending on the filter type, create a filter view
           switch( filter.type ){
             case "Filter":
