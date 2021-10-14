@@ -54,7 +54,7 @@ define(['jquery', 'underscore', 'backbone',
       this.model = options.model || new FilterGroup();
 
       this.editorView = options.editorView || null;
-      
+
       this.subviews = new Array();
 
       if(options.edit === true){
@@ -90,7 +90,7 @@ define(['jquery', 'underscore', 'backbone',
         var viewOptions = {
           model: filter,
           mode: filterMode,
-          editorView: view.editorView
+          editorView: this.editorView
         }
 
         //Some filters are handled specially
@@ -106,7 +106,7 @@ define(['jquery', 'underscore', 'backbone',
           var filterView = new ToggleFilterView(viewOptions);
         }
         else{
-          
+
           //Depending on the filter type, create a filter view
           switch( filter.type ){
             case "Filter":
