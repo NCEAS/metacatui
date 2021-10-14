@@ -63,12 +63,9 @@ define(["jquery",
           //Attach this view to the DOM element
           this.$el.data("view", this);
 
-          if( this.model.get("visualizationType") == "fever" ){
-            this.renderFEVer();
-          }
-          else if( this.model.get("visualizationType") == "cesium" ){
-            this.renderMap();
-          }
+          // To speed up the portal load times, visualization content is rendered in the
+          // postRender function. This function is called only when a section is active. 
+          this.hasRendered = false;
 
         },
 
@@ -122,16 +119,38 @@ define(["jquery",
 
         },
 
-        postRender: function(){
-
-          if( this.model.get("visualizationType") == "fever" ){
-            $(window).resize(this.adjustVizHeight);
-            $(".auto-height-member").resize(this.adjustVizHeight);
-
-            //Get the height of the visible part of the page for the iframe
-            this.adjustVizHeight();
+        /**
+         * Function called by the PortalView when the section that contains this
+         * visualization becomes active (e.g. the user clicks on the section tab). Render
+         * the visualization and, if this is a fever viz, adjust the height.
+         */
+        postRender: function () {
+          try {
+            if (!this.hasRendered) {
+              if( this.model.get("visualizationType") == "fever" ){
+                this.renderFEVer();
+                this.hasRendered = true;
+              }
+              else if( this.model.get("visualizationType") == "cesium" ){
+                this.renderMap();
+                this.hasRendered = true;
+              }
+            }
+  
+            if( this.model.get("visualizationType") == "fever" ){
+              $(window).resize(this.adjustVizHeight);
+              $(".auto-height-member").resize(this.adjustVizHeight);
+  
+              //Get the height of the visible part of the page for the iframe
+              this.adjustVizHeight();
+            }
           }
-
+          catch (error) {
+            console.log(
+              'Failed to render the visualization in the PortalVisualizationsView ' +
+              'postRender function. Error details: ' + error
+            );
+          }
         },
 
         adjustVizHeight: function(){
