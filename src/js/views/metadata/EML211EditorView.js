@@ -372,7 +372,7 @@ define(['underscore',
           } else {
 
             // Create a new data package with this id
-            MetacatUI.rootDataPackage = new DataPackage([this.model], { id: resourceMapIds[0] });
+            this.createRootDataPackage([this.model], { id: resourceMapIds[0] });
 
             //Handle the add of the metadata model
             MetacatUI.rootDataPackage.saveReference(this.model);
@@ -411,7 +411,7 @@ define(['underscore',
             // Make sure we have the latest version of the resource map before we allow editing
             this.listenToOnce(MetacatUI.rootDataPackage.packageModel, "latestVersionFound", function (model) {
               //Create a new data package for the latest version package
-              MetacatUI.rootDataPackage = new DataPackage([this.model], { id: model.get("latestVersion") });
+              this.createRootDataPackage([this.model], { id: model.get("latestVersion") });
               //Handle the add of the metadata model
               MetacatUI.rootDataPackage.saveReference(this.model);
               this.listenToOnce(MetacatUI.rootDataPackage, "sync", function () {
@@ -428,13 +428,41 @@ define(['underscore',
           }
         },
 
-        /*
+        /**
         * Creates a DataPackage collection for this EML211EditorView and sets it on the MetacatUI
         * global object (as `rootDataPackage`)
         */
         createDataPackage: function () {
           // Create a new Data packages
-          MetacatUI.rootDataPackage = new DataPackage([this.model], { packageModelAttrs: { synced: true }});
+          this.createRootDataPackage([this.model], { packageModelAttrs: { synced: true }})
+
+          try{
+            //Inherit the access policy of the metadata document, if the metadata document is not `new`
+            if(!this.model.isNew()){
+              let metadataAccPolicy = this.model.get("accessPolicy");
+              let accPolicy = MetacatUI.rootDataPackage.packageModel.get("accessPolicy")
+
+              //If there is no access policy, it hasn't been fetched yet, so wait
+              if( !metadataAccPolicy.length ){
+                //If the model is of ScienceMetadata class, we need to wait for the "replace" function,
+                // which happens when the model is fetched and an EML211 model is created to replace it.
+                if( this.model.type == "ScienceMetadata" ){
+                   this.listenTo(this.model, "replace", function(){
+                     this.listenToOnce(this.model, "sysMetaUpdated", function(){
+                       accPolicy.copyAccessPolicy(this.model.get("accessPolicy"))
+                       MetacatUI.rootDataPackage.packageModel.set("rightsHolder", this.model.get("rightsHolder"));
+                     });
+                   });
+                }
+              }
+              else{
+                accPolicy.copyAccessPolicy(this.model.get("accessPolicy"))
+              }
+            }
+          }
+          catch(e){
+            console.error("Could not copy the access policy from the metadata to the resource map: ", e);
+          }
 
           //Handle the add of the metadata model
           MetacatUI.rootDataPackage.handleAdd(this.model);
@@ -451,6 +479,19 @@ define(['underscore',
           // Set the sysMetaXML for the packageModel
           MetacatUI.rootDataPackage.packageModel.set("sysMetaXML",
             MetacatUI.rootDataPackage.packageModel.serializeSysMeta());
+        },
+
+        /**
+        * Creates a {@link DataPackage} collection for this Editor view, and saves it as the Root Data Package of the app.
+        * This centralizes the DataPackage creation so listeners and other functionality is always performed
+        * @param {[DataONEObject[]|ScienceMetadata[]|EML211[]]} models - An array of models to add to the collection
+        * @param {object} [attributes] A literal object of attributes to pass to the DataPackage.initialize() function
+        * @since 2.17.1
+        */
+        createRootDataPackage: function(models, attributes){
+          MetacatUI.rootDataPackage = new DataPackage(models, attributes);
+
+          this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:numLoadingFiles", this.toggleEnableControls);
         },
 
         renderChildren: function (model, options) {
@@ -665,7 +706,7 @@ define(['underscore',
           }
         },
 
-        /*
+        /**
          * Set listeners on the view's model for various reasons.
          * This function centralizes all the listeners so that when/if the view's model is replaced, the listeners would be reset.
          */
@@ -736,6 +777,7 @@ define(['underscore',
 
         /**
          * Saves all edits in the collection
+         * @param {Event} e - The DOM Event that triggerd this function
          */
         save: function (e) {
           var btn = (e && e.target) ? $(e.target) : this.$("#save-editor");
@@ -749,8 +791,9 @@ define(['underscore',
           MetacatUI.rootDataPackage.save();
         },
 
-        /*
+        /**
          * When the data package collection saves successfully, tell the user
+         * @param {DataPackage|DataONEObject} savedObject - The model or collection that was just saved
          */
         saveSuccess: function (savedObject) {
 
@@ -785,8 +828,9 @@ define(['underscore',
           this.setListeners();
         },
 
-        /*
+        /**
          * When the data package collection fails to save, tell the user
+         * @param {string} errorMsg - The error message from the failed save() function
          */
         saveError: function (errorMsg) {
 
@@ -906,8 +950,9 @@ define(['underscore',
           this.model.findLatestVersion();
         },
 
-        /*
+        /**
          * Show the entity editor
+         * @param {Event} e - The DOM Event that triggerd this function
          */
         showEntity: function (e) {
           if (!e || !e.target)
@@ -978,7 +1023,7 @@ define(['underscore',
 
         },
 
-        /*
+        /**
          * Shows a message if the user is not authorized to edit this package
          */
         notAuthorized: function () {
@@ -1020,6 +1065,22 @@ define(['underscore',
             this.hideControls();
 
           }
+        },
+
+        /**
+        * Toggles whether the Save controls for the Editor are enabled or disabled based on various attributes of the DataPackage and its models.
+        * @since 2.17.1
+        */
+        toggleEnableControls: function(){
+
+          if( MetacatUI.rootDataPackage.packageModel.get("isLoadingFiles") ){
+            let noun = MetacatUI.rootDataPackage.packageModel.get("numLoadingFiles") > 1? " files" : " file";
+            this.disableControls("Waiting for " + MetacatUI.rootDataPackage.packageModel.get("numLoadingFiles") + noun + " to upload...");
+          }
+          else{
+            this.enableControls();
+          }
+
         },
 
         /**

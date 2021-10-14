@@ -87,7 +87,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           var options = {};
         }
 
-        if( !options.forCollection ){
+        if( this.get("isUIFilterType") ){
           // Serialize <choice> elements
           var choices = this.get("choices");
 
@@ -146,7 +146,67 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         return this.get("objectDOM") || "";
       }
 
-    }
+      },
+    
+    /**
+    * Checks if the values set on this model are valid and expected
+    * @return {object} - Returns a literal object with the invalid attributes and their
+    * corresponding error message
+    */
+    validate : function(){
+      try {
+
+        // Validate most of the ChoiceFilter attributes using the parent validate
+        // function
+        var errors = Filter.prototype.validate.call(this);
+
+        // If everything is valid so far, then we have to create a new object to store
+        // errors
+        if (typeof errors != "object") {
+          errors = {};
+        }
+
+        // Delete error messages for the attributes that are going to be validated
+        // specially for the ChoiceFilter
+        delete errors.choices;
+
+        // Save a reference to the choices
+        var choices = this.get("choices")
+
+        // Ensure that there is at least one choice
+        if (!choices || choices.length === 0) {
+          errors.choices = "At least one search term option is required."
+        } else {
+          // Remove any empty choices
+          choices = choices.filter(function (choice) {
+            return (choice.value || choice.label)
+          })
+          // If there is no value but there is a label, then set the search value to the
+          // label. If there is a value but no label, set the label to the value.
+          choices.forEach(function (choice) {
+            if (!choice.value) {
+              choice.value = choice.label
+            }
+            if (!choice.label) {
+              choice.label = choice.value
+            }
+          })
+        }
+
+        // Return the errors, if there are any
+        if (Object.keys(errors).length)
+          return errors;
+        else {
+          return;
+        }
+      }
+      catch (error) {
+        console.log(
+          'There was an error validating a ChoiceFilter' +
+          '. Error details: ' + error
+        );
+      }
+    },
 
   });
 

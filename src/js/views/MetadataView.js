@@ -239,6 +239,7 @@ define(['jquery',
                     values: isDocBy,
                     fields: ["id", "seriesId"],
                     operator: "OR",
+                    fieldsOperator: "OR",
                     matchSubstring: false
                   }]),
                     //Create a list of search results

@@ -13,7 +13,7 @@ MetacatUI.AppConfig = Object.assign({
   d1Service: "/cn/v2",
   metacatContext: "",
   enableMonitorStatus: false,
-  enableCILogonSignIn: true,
+  enableCILogonSignIn: false,
   showSignInHelp: false,
 
   //Temp message
@@ -54,6 +54,7 @@ MetacatUI.AppConfig = Object.assign({
   dataonePlusPreviewMode: true,
   portalLimit: 5,
   portalInfoURL: "https://dataone.org/plus",
+  portalSearchFiltersInfoURL: "https://dataone.org/custom-search",
   portalDefaults: {
     sections: [
       { label: "About",

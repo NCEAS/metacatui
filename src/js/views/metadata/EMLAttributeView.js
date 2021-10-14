@@ -5,8 +5,8 @@ define(['underscore', 'jquery', 'backbone',
         'models/metadata/eml211/EMLMeasurementScale',
         'views/metadata/EMLMeasurementScaleView',
         'text!templates/metadata/eml-attribute.html'],
-    function(_, $, Backbone, DataONEObject, EMLAttribute, EMLMeasurementScale,
-    		EMLMeasurementScaleView, EMLAttributeTemplate){
+		function(_, $, Backbone, DataONEObject, EMLAttribute,
+			EMLMeasurementScale, EMLMeasurementScaleView, EMLAttributeTemplate){
 
         /**
         * @class EMLAttributeView
@@ -29,10 +29,10 @@ define(['underscore', 'jquery', 'backbone',
 
             /* Events this view listens to */
             events: {
-            	"change .input": "updateModel",
-            	"focusout" 	   : "showValidation",
-            	"keyup .error" : "hideValidation",
-            	"click .radio" : "hideValidation"
+              "change .input" : "updateModel",
+              "focusout" : "showValidation",
+              "keyup .error" : "hideValidation",
+              "click .radio" : "hideValidation"
             },
 
             initialize: function(options){
@@ -44,6 +44,7 @@ define(['underscore', 'jquery', 'backbone',
             },
 
             render: function(){
+              var viewRef = this;
 
             	var templateInfo = {
             			title: this.model.get("attributeName")? this.model.get("attributeName") : "Add New Attribute"
@@ -88,7 +89,43 @@ define(['underscore', 'jquery', 'backbone',
             },
 
             postRender: function(){
-            	this.measurementScaleView.postRender();
+              this.measurementScaleView.postRender();
+              this.renderMeasurementTypeView();
+            },
+
+            /**
+             * Render and insert the MeasurementTypeView for this view
+             *
+             * This is separated out into its own method so it can be called
+             * from `postRender()` which is called after the user swithces to
+             * the EntityView tab for this attribute. We do this to avoid
+             * loading as many MeasurementTypeViews as there are Attributes
+             * which would get us rate limited by BioPortal because every
+             * MeasurementTypeView hits BioPortal's API on render.
+             */
+            renderMeasurementTypeView: function () {
+              if (!(MetacatUI.appModel.get("enableMeasurementTypeView") && MetacatUI.appModel.get("bioportalAPIKey"))) {
+                return;
+              }
+
+              var viewRef     = this,
+                  containerEl = viewRef.$(".measurement-type-container");
+
+              // Only insert a new view if we haven't already
+              if (!containerEl.is(":empty")) {
+                return;
+              }
+
+              // Dynamically require since this view is feature-flagged off by
+              // default and requires an API key
+              require(["views/metadata/EMLMeasurementTypeView"], function (EMLMeasurementTypeView) {
+                var view = new EMLMeasurementTypeView({
+                  model: viewRef.model
+                });
+
+                view.render();
+                containerEl.html(view.el);
+              });
             },
 
             updateModel: function(e){

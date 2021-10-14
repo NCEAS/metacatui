@@ -1,8 +1,8 @@
 
 <!-- <div class="portals-list-entry member current-page" data-seriesid=<%=seriesId%> data-page="1"> -->
-    
-    
-    <% if( typeof logo != "undefined" ) {
+
+
+    <% if( typeof logo == "string" ) {
       var urlBase = "";
       if( logo.startsWith("http") ){
           %>
@@ -28,12 +28,12 @@
         <div class="portal-logo"><img src="<%= urlBase + logo %>"/></div>
       <% }
     } %>
-    
+
   <div class="portal-info">
       <h4 class="portal-label"><%=label%></h4>
       <p class="portal-title"><%=title%></p>
   </div>
-  
+
 <!--  if(Object.values(MetacatUI.uiRouter.routes).includes("renderPortalEditor")){ -->
 
     <!-- Don't display edit button if user is not logged in -->

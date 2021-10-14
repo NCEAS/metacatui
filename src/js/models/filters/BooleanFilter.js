@@ -37,7 +37,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       var modelJSON = Filter.prototype.parse.call(this, xml);
 
       //If this Filter is in a filter group, don't parse the value
-      if( !this.get("inFilterGroup") ){
+      if( !this.get("isUIFilterType") ){
 
         //Parse the boolean value
         modelJSON.values = this.parseTextNode(xml, "value");
@@ -81,7 +81,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         $(objectDOM).append(valueSerialized);
       }
 
-      if( !options.forCollection ){
+      if( this.get("isUIFilterType") ){
         //Make sure the filterOptions are listed last
         //Get the filterOptions element
         var filterOptions = $(objectDOM).children("filterOptions");

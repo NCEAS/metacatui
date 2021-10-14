@@ -20,46 +20,57 @@ define(['jquery', 'underscore', 'backbone',
     * @type {DateFilter} */
     model: null,
 
+    /**
+     * @inheritdoc
+     */
+    modelClass: DateFilter,
+
     className: "filter date",
 
     template: _.template(Template),
 
-    events: {
-      "change input" : "updateYearRange"
-    },
-
-    initialize: function (options) {
-
-      if( !options || typeof options != "object" ){
-        var options = {};
+    /**
+     * @inheritdoc
+     */
+    events: function(){
+      try {
+        var events = FilterView.prototype.events.call(this);
+        events["change input.max"] = "updateYearRange";
+        events["change input.min"] = "updateYearRange"
+        return events
       }
-
-      this.model = options.model || new DateFilter();
-
+      catch (error) {
+        console.log( 'There was an error creating the events object for a DateFilterView' +
+          ' Error details: ' + error );
+      }
     },
 
     render: function () {
-      
-      var templateVars = this.model.toJSON();
-      
-      if(!templateVars.min && templateVars.min !== 0){
-        templateVars.min = this.model.get("rangeMin");
-      }
-      if(!templateVars.max && templateVars.max !== 0){
-        templateVars.max = this.model.get("rangeMax");
-      }
-      
-      if(templateVars.min < this.model.get("rangeMin")){
-        templateVars.min = this.model.get("rangeMin")
-      }
-      
-      if(templateVars.max > this.model.get("rangeMax")){
-        templateVars.max = this.model.get("rangeMax")
-      }
-
-      this.$el.html( this.template( templateVars ) );
 
       var view = this;
+      var templateVars = this.model.toJSON();
+
+      var model = this.model,
+          min = model.get("min"),
+          max = model.get("max"),
+          rangeMin = model.get("rangeMin"),
+          rangeMax = model.get("rangeMax");
+
+      if(!min && min !== 0){
+        templateVars.min = rangeMin
+      }
+      if(!max && max !== 0){
+        templateVars.max = rangeMax
+      }
+      if(templateVars.min < rangeMin){
+        templateVars.min = rangeMin
+      }
+      if(templateVars.max > rangeMax){
+        templateVars.max = rangeMax
+      }
+
+      // Renders the template and inserts the FilterEditorView if the mode is uiBuilder
+      FilterView.prototype.render.call(this, templateVars);
 
       //jQueryUI slider
       this.$('.slider').slider({
@@ -80,15 +91,31 @@ define(['jquery', 'underscore', 'backbone',
             view.$('input.max').val(ui.values[1]);
 
             //Also update the DateFilter model
-            view.model.set('min', ui.values[0]);
-            view.model.set('max', ui.values[1]);
-
-          },
+            view.updateModel(ui.values[0], ui.values[1])
+          }
         });
 
         //When the rangeReset event is triggered, reset the slider
         this.listenTo(view.model, "rangeReset", this.resetSlider);
 
+    },
+
+    /**
+    * Updates the min and max values set on the Filter Model associated with this view.
+    * @param {number} min - The new minimum value
+    * @param {number} max - The new maximum value
+    * @since 2.17.0
+    */
+    updateModel: function(min, max){
+      try {
+        this.model.set({
+          min: min,
+          max: max
+        });
+      } catch (error) {
+        console.log("Error updating a DateFilter model from the DateFilter view. " +
+          "Error details: " + error);
+      }
     },
 
     /**
@@ -107,7 +134,6 @@ define(['jquery', 'underscore', 'backbone',
       this.model.set('max', maxVal);
 
       //Update the UI slider to match the new min and max
-      // Setter
       this.$( ".slider" ).slider( "option", "values", [ minVal, maxVal ] );
 
       //Send this event to Google Analytics

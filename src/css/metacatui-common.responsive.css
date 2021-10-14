@@ -673,6 +673,24 @@
     margin-right: 0px;
   }
 
+	/************** Custom search filter editor ****************/
+
+	.filter-editor .modal-body {
+		padding: 1rem;
+	}
+	.filter-editor .fields-container,
+	.ui-builder-choices-container {
+		grid-template-columns: 100%;
+		gap: 1rem;
+		justify-items: center;
+	}
+
+	.choice-input,
+	.choice-editor .ui-builder-container-text {
+		width: unset;
+		max-width: 206px;
+	}
+
 	/************** Search page ****************/
 	#sidebar{
 		width: 90%;
@@ -855,7 +873,6 @@
 		
 		/* Query rules in the query builder */
 		.query-rule {
-			
 			grid-template-columns: 2.2rem auto 1.3rem;
 			grid-template-rows: auto;
 			gap: 0.5rem 1rem;
@@ -863,6 +880,14 @@
 				"info field remove"
 				"info operator remove"
 				"info value remove";	
+		}
+
+		.query-rule.rule-group{
+			grid-template-columns: 2.2rem auto 1.3rem;
+			grid-template-areas:
+				"info query-builder remove"
+				"info query-builder remove"
+				"info query-builder remove";
 		}
 		
 		.rules-container {

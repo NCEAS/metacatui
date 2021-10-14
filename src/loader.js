@@ -44,7 +44,7 @@ MetacatUI.loadTheme = function() {
   * @type {string}
   * @default "default"
   * @readonly
-  * @description The theme name for this MetacatUI deployment. This is defined in the {@see AppConfig#theme}.
+  * @description The theme name for this MetacatUI deployment. This is defined in the {@link AppConfig#theme}.
   * If no theme is defined, the default theme is used.
   */
   //---- Get the theme name ----/

@@ -18,14 +18,13 @@ define(["jquery",
         "text!templates/currentFilter.html",
         "text!templates/loading.html",
         "gmaps",
-        "nGeohash",
-        "text!templates/portals/portalResultItem.html"
+        "nGeohash"
     ],
     function(
       $, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel,
       MetricsModel, Utilities, SearchResultView, AnnotationFilter, CatalogTemplate,
       CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate,
-      LoadingTemplate, gmaps, nGeohash, PortalResultItemTemplate
+      LoadingTemplate, gmaps, nGeohash
     ) {
         "use strict";
 
@@ -2870,21 +2869,10 @@ define(["jquery",
                     package_service: this.$package_service
                 });
 
-                var view = null;
-                
-                // Render portal lists with a different format from other data items.
-                if(result.get("formatId") !== null && result.get("formatId").match(".*dataone.org/portals.*")) {
-                  view = new SearchResultView({
-                    model: result,
-                    template: _.template(PortalResultItemTemplate),
-                    className: 'portals-list-entry'
-                  });
-                } else {
-                  view = new SearchResultView({
-                    model: result,
-                    metricsModel: this.metricsModel
-                  });
-                }
+                var view = new SearchResultView({
+                  model: result,
+                  metricsModel: this.metricsModel
+                });
 
                 // Add this item to the list
                 this.$results.append(view.render().el);

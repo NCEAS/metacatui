@@ -14,11 +14,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/eml211/EMLParty',
         'models/metadata/eml211/EMLProject',
         'models/metadata/eml211/EMLText',
-    'models/metadata/eml211/EMLMethods'],
+        'models/metadata/eml211/EMLMethods',
+        'models/metadata/eml211/EMLAnnotation'],
     function($, _, Backbone, uuid, Units, ScienceMetadata, DataONEObject,
         EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage,
         EMLDistribution, EMLEntity, EMLDataTable, EMLOtherEntity, EMLParty,
-            EMLProject, EMLText, EMLMethods) {
+            EMLProject, EMLText, EMLMethods, EMLAnnotation) {
 
       /**
       * @class EML211
@@ -62,7 +63,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               entities: [], //An array of EMLEntities
               pubplace: null,
               methods: null, // An EMLMethods objects
-              project: null, // An EMLProject object
+              project: null, // An EMLProject object,
+              annotation: [], // Dataset-level annotations
               nodeOrder: [
                 "alternateidentifier",
                 "shortname",
@@ -427,7 +429,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           );
         },
 
-        /* Fetch the EML from the MN object service */
+        /**
+        * Fetch the EML from the MN object service
+        * @param {object} [options] - A set of options for this fetch()
+        * @property {boolean} [options.systemMetadataOnly=false] - If true, only the system metadata will be fetched.
+        * If false, the system metadata AND EML document will be fetched.
+        */
         fetch: function(options) {
           if( ! options ) var options = {};
 
@@ -439,7 +446,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             this.fetchSystemMetadata(options);
 
             //If we are retrieving system metadata only, then exit now
-            if(options.sysMeta)
+            if(options.systemMetadataOnly)
               return;
 
           //Call Backbone.Model.fetch to retrieve the info
@@ -642,6 +649,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
             modelJSON["entities"].push(entityModel);
           }
+          else if (thisNode.localName === "annotation") {
+            if(typeof modelJSON["annotation"] == "undefined") {
+              modelJSON["annotation"] = [];
+            }
+
+            var annotationModel = new EMLAnnotation({
+              objectDOM: thisNode
+            }, { parse: true });
+
+            modelJSON["annotation"].push(annotationModel);
+          }
           else{
             //Is this a multi-valued field in EML?
             if(Array.isArray(this.get(convertedName))){
@@ -674,6 +692,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         //Update the packageId on the eml node with the EML id
         $(eml).attr("packageId", this.get("id"));
+
+        // Set id attribute on dataset node if needed
+        if (this.get("xmlID")) {
+          $(datasetNode).attr("id", this.get("xmlID"));
+        }
 
         // Set schema version
         $(eml).attr("xmlns:eml",
@@ -905,6 +928,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
       if(coverageNode.children().length == 0){
         coverageNode.remove();
       }
+
+      // Dataset-level annotations
+      datasetNode.children("annotation").remove();
+
+      _.each(this.get("annotation"), function(annotation) {
+        if (annotation.isEmpty()) {
+          return;
+        }
+
+        var after = this.getEMLPosition(eml, "annotation");
+
+        $(after).after(annotation.updateDOM());
+      }, this);
 
       //If there is no creator, create one from the user
       if(!this.get("creator").length){
@@ -1289,7 +1325,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           model.set("uploadStatus", "c");
           model.set("sysMetaXML", model.serializeSysMeta());
           model.set("oldPid", null);
-          model.fetch({merge: true, sysMeta: true});
+          model.fetch({merge: true, systemMetadataOnly: true});
           model.trigger("successSaving", model);
 
         },
@@ -1482,6 +1518,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         });
 
+        // Validate each EMLAnnotation model
+        _.each(this.get("annotation"), function (model) {
+          if (model.isValid()) {
+            return;
+          }
+
+          if (!errors.annotations) {
+            errors.annotations = [];
+          }
+
+          errors.annotations.push(model.validationError);
+        });
+
         //Check the required fields for this MetacatUI configuration
         if(MetacatUI.appModel.get("emlEditorRequiredFields")){
             _.each(Object.keys(MetacatUI.appModel.get("emlEditorRequiredFields")), function(key){
@@ -1584,6 +1633,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             dataType: "text",
             success: function(response){
               model.set(DataONEObject.prototype.parse.call(model, response));
+
+              //Trigger a custom event that the sys meta was updated
+              model.trigger("sysMetaUpdated");
             },
             error: function(){
               model.trigger('error');
@@ -1949,14 +2001,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         return true;
       },
-      
+
       /**
        * getPartiesByType - Gets an array of EMLParty members that have a particular party type or role.
        * @param {string} partyType - A string that represents either the role or the party type. For example, "contact", "creator", "principalInvestigator", etc.
        * @since 2.15.0
        */
       getPartiesByType: function(partyType){
-        
+
         try {
           if(!partyType){
             return false
@@ -2199,6 +2251,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         $(eml).attr("xsi:schemaLocation", current + " " + location);
 
         return eml;
+      },
+
+      createID: function() {
+        this.set("xmlID", uuid.v4());
       }
     });
 
