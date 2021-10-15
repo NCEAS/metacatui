@@ -158,7 +158,7 @@ define(
             view.el.classList.add(view.className);
 
             // Create the Cesium Widget and save a reference to it to the view
-            view.widget = new Cesium.Viewer(view.el, {
+            view.widget = new Cesium.CesiumWidget(view.el, {
               // We will add a base imagery layer after initialization
               imageryProvider: false,
               terrain: false,
@@ -210,8 +210,15 @@ define(
             var terrains = view.model.get('terrains')
             var terrainModel = terrains ? terrains.first() : false;
             if (terrainModel) {
-              var terrainRenderFunction = view[view.mapAssetRenderFunctions.terrain]
-              if (terrainRenderFunction) {
+              var type = terrainModel.get('type')
+              var renderOption = _.find(
+                view.mapAssetRenderFunctions,
+                function (option) {
+                  return option.types.includes(type)
+                }
+              )
+              if (renderOption) {
+                const terrainRenderFunction = view[renderOption.renderFunction]
                 terrainRenderFunction.call(view, terrainModel)
               }
             }
