@@ -499,9 +499,8 @@ define(
 
         /**
         * Gets a Cesium Bounding Sphere that can be used to navigate to view the full
-        * extent of the tileset. Gets a bounding sphere with a radius 40% the size of the
-        * radius returned from tileset.boundingSphere. Otherwise the camera is too far
-        * out. See {@link https://cesium.com/learn/cesiumjs/ref-doc/BoundingSphere.html}.
+        * extent of the tileset. See
+        * {@link https://cesium.com/learn/cesiumjs/ref-doc/BoundingSphere.html}.
         * @returns {Promise} Returns a promise that resolves to a Cesium Bounding Sphere
         * when ready
         */
@@ -511,7 +510,6 @@ define(
             .then(function (model) {
               const tileset = model.get('cesiumModel')
               const bSphere = Cesium.BoundingSphere.clone(tileset.boundingSphere);
-              bSphere.radius = bSphere.radius * 0.4
               return bSphere
             })
         },

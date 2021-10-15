@@ -8,6 +8,7 @@ define(
     'cesium',
     'models/maps/Map',
     'models/maps/assets/MapAsset',
+    'models/maps/assets/Cesium3DTileset',
     'text!templates/maps/cesium-widget-view.html'
   ],
   function (
@@ -17,6 +18,7 @@ define(
     Cesium,
     Map,
     MapAsset,
+    Cesium3DTileset,
     Template
   ) {
 
@@ -156,7 +158,7 @@ define(
             view.el.classList.add(view.className);
 
             // Create the Cesium Widget and save a reference to it to the view
-            view.widget = new Cesium.CesiumWidget(view.el, {
+            view.widget = new Cesium.Viewer(view.el, {
               // We will add a base imagery layer after initialization
               imageryProvider: false,
               terrain: false,
@@ -485,12 +487,18 @@ define(
          * {@link https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#flyTo}. The target
          * can otherwise be a Cesium BoundingSphere, see
          * {@link https://cesium.com/learn/cesiumjs/ref-doc/BoundingSphere.html}
+         * @param {object} options - For targets that are a bounding sphere or asset,
+         * options to pass to Cesium Camera.flyToBoundingSphere(). See
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#flyToBoundingSphere}.
          */
-        flyTo: function (target) {
+        flyTo: function (target, options) {
 
           try {
 
             const view = this;
+            if (typeof options !== 'object') {
+              options = {}
+            }
 
             // A target is required
             if (!target) {
@@ -499,7 +507,7 @@ define(
 
             // If the target is a Bounding Sphere, use the camera's built-in function
             if (target instanceof Cesium.BoundingSphere) {
-              view.camera.flyToBoundingSphere(target)
+              view.camera.flyToBoundingSphere(target, options)
               return
             }
 
@@ -508,7 +516,14 @@ define(
             if (target instanceof MapAsset && typeof target.getCameraBoundSphere === 'function') {
               target.getCameraBoundSphere()
                 .then(function (assetBoundingSphere) {
-                  view.flyTo(assetBoundingSphere)
+                  // Base value offset required to zoom in close enough to 3D tiles for
+                  // them to render.
+                  if ((target instanceof Cesium3DTileset) && !Cesium.defined(options.offset)) {
+                    options.offset = new Cesium.HeadingPitchRange(
+                      0.0, -0.5, assetBoundingSphere.radius
+                    )
+                  }
+                  view.flyTo(assetBoundingSphere, options)
                 })
               return
             }
