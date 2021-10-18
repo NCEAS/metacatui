@@ -1,12 +1,10 @@
-<label>
-  <% if(icon){
-       print('<i class="icon icon-on-left icon-' + icon + '"></i>');
-     } %>
-  <%=label%>
-</label>
+<% var uiBuilder=typeof mode !=='undefined' ? mode==="uiBuilder" : false %>
 <div class="filter-input-contain input-append">
-  <input type="text" value="" placeholder="<%=placeholder || label%>"></input>
-  <button class="btn">
+  <input type="text" value="" placeholder="<%= !uiBuilder ? placeholder || label : ''%>" <% if(uiBuilder){ print('disabled="true"'); } %> ></input>
+  <button class="btn" <% if(uiBuilder){ print('disabled="true"'); } %>>
     <i class="icon icon-search"></i>
   </button>
+  <% if(uiBuilder){ 
+    print('<input placeholder="placeholder" class="ui-build-input placeholder" data-category="placeholder" value ="' + ( placeholder ? placeholder : '' ) + '"">');
+  } %>
 </div>

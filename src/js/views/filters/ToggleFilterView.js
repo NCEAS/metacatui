@@ -21,44 +21,59 @@ define(['jquery', 'underscore', 'backbone',
     * @type {ToggleFilter} */
     model: null,
 
+    /**
+     * @inheritdoc
+     */
+    modelClass: ToggleFilter,
+
     className: "filter toggle",
 
     template: _.template(Template),
     booleanTemplate: _.template(BooleanTemplate),
 
-    events: {
-      "change input" : "updateModel"
-    },
-
-    initialize: function (options) {
-
-      if( !options || typeof options != "object" ){
-        var options = {};
+    /**
+     * @inheritdoc
+     */
+    events: function () {
+      try {
+        var events = FilterView.prototype.events.call(this);
+        events["change input.toggle-checkbox"] = "updateModel";
+        return events
       }
-
-      this.model = options.model || new ToggleFilter();
-
+      catch (error) {
+        console.log('There was an error creating the events object for a ToggleFilterView' +
+          ' Error details: ' + error);
+      }
     },
 
+    /**
+    * @inheritdoc
+    */
     render: function () {
 
-      var modelJSON = this.model.toJSON();
-      modelJSON.id = this.model.cid;
+      try {
+        var templateVars = this.model.toJSON();
+        templateVars.id = this.model.cid;
 
-      if( !this.model.get("falseLabel") ){
-        //If the value is the same as the trueValue, the checkbox should be checked
-        modelJSON.checked = (this.model.get("values")[0] == this.model.get("trueValue"))? true : false;
+        if( !this.model.get("falseLabel") ){
+          //If the value is the same as the trueValue, the checkbox should be checked
+          templateVars.checked = (this.model.get("values")[0] == this.model.get("trueValue"))? true : false;
 
-        //Use the BooleanFilter template for toggles with only a true value
-        this.$el.html( this.booleanTemplate( modelJSON ) )
-                .addClass("boolean");
+          //Use the BooleanFilter template for toggles with only a true value
+          this.$el.addClass("boolean");
+          this.template = this.booleanTemplate
+        }
+        
+        // Renders the template and inserts the FilterEditorView if the mode is uiBuilder
+        FilterView.prototype.render.call(this, templateVars);
+
+        this.listenTo(this.model, "change:values", this.updateToggle);
       }
-      else{
-        this.$el.html( this.template( modelJSON ) );
+      catch (error) {
+        console.log( 'There was an error rendering a ToggleFilterView.' +
+          ' Error details: ' + error );
       }
-
-      this.listenTo(this.model, "change:values", this.updateToggle);
-
+      
     },
 
     /**

@@ -63,7 +63,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         }
 
         //If this Filter is in a filter group, don't parse the values
-        if( !this.get("inFilterGroup") ){
+        if( !this.get("isUIFilterType") ){
           //Get the min, max, and value nodes
           var minNode = $(xml).find("min"),
               maxNode = $(xml).find("max"),
@@ -186,12 +186,12 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
           //If there is another field, add an operator
           if( allFields[i+1] && queryString.length ){
-            queryString += "%20" + this.get("operator") + "%20";
+            queryString += "%20" + this.get("fieldsOperator") + "%20";
           }
 
         }, this);
 
-        //If there is more than one field, wrap the query in paranthesis
+        //If there is more than one field, wrap the query in parentheses
         if( this.get("fields").length > 1 && queryString.length ){
           queryString = "(" + queryString + ")";
         }
@@ -231,7 +231,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           max: this.get("max")
         };
 
-        if( !options.forCollection ){
+        if( this.get("isUIFilterType") ){
           numericData = _.extend(numericData, {
             rangeMin: this.get("rangeMin"),
             rangeMax: this.get("rangeMax"),
@@ -259,7 +259,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         }, this);
 
         //Remove filterOptions for collection definition filters
-        if( options.forCollection ){
+        if( !this.get("isUIFilterType") ){
           $(objectDOM).children("filterOptions").remove();
         }
         else{

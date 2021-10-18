@@ -3,8 +3,9 @@ define(['jquery', 'underscore', 'backbone',
         'models/filters/Filter',
         'models/filters/FilterGroup',
         'views/filters/FilterGroupView',
-      'views/filters/FilterView'],
-  function($, _, Backbone, Filter, FilterGroup, FilterGroupView, FilterView) {
+        'views/filters/FilterView',
+        'text!templates/filters/filterGroups.html'],
+  function($, _, Backbone, Filter, FilterGroup, FilterGroupView, FilterView, Template) {
   'use strict';
 
   /**
@@ -31,6 +32,12 @@ define(['jquery', 'underscore', 'backbone',
     * @type {Filters}
     */
     filters: null,
+    
+    /**
+     * A reference to the PortalEditorView
+     * @type {PortalEditorView}
+    */
+    editorView: undefined,
 
     /**
     * @inheritdoc
@@ -43,10 +50,24 @@ define(['jquery', 'underscore', 'backbone',
     className: "filter-groups tabbable",
 
     /**
+     * The template for this view. An HTML file is converted to an Underscore.js template
+     * @since 2.17.0
+     */
+    template: _.template(Template),
+
+    /**
     * If true, displays the FilterGroups in a vertical list
     * @type {Boolean}
     */
     vertical: false,
+
+    /**
+     * Set to true to render this view as a FilterGroups editor; allow the user add, edit,
+     * and remove FilterGroups (TODO), and to add, delete, and edit filters within groups.
+     * @type {boolean}
+     * @since 2.17.0
+     */
+    edit: false,
 
     /**
     * @inheritdoc
@@ -68,11 +89,22 @@ define(['jquery', 'underscore', 'backbone',
       this.filterGroups = options.filterGroups || new Array();
       this.filters = options.filters || null;
 
+      // For portal search filters, ID filters should be added to the query with an AND
+      // operator, so that ID searches search *within* the definition collection.
+      if(this.filters){
+        this.filters.mustMatchIds = true
+      }
+
       if( options.vertical == true ){
         this.vertical = true;
       }
 
       this.parentView = options.parentView || null;
+      this.editorView = options.editorView || null;
+
+      if(options.edit === true){
+        this.edit = true
+      }
 
     },
 
@@ -85,8 +117,47 @@ define(['jquery', 'underscore', 'backbone',
       this.$el.empty();
       this.stopListening();
 
+      // Add information about editing the filter groups if this view is in edit mode
+      if(this.edit){
+        var title = "Change how people can search for data within your collection"
+        var isNew = this.filterGroups.length === 0;
+        if (this.filterGroups.length === 1 && this.filterGroups[0].isEmpty()) {
+          var isNew = true;
+        }
+
+        if (isNew) {
+          title = "Add filters to help people find data within your collection"
+        }
+
+        var description = "Search filters allow people to filter your data by specific " +
+          "metadata fields.",
+          learnMoreUrl = MetacatUI.appModel.get("portalSearchFiltersInfoURL");
+
+        if (learnMoreUrl) {
+          description = description + ' <a href="' + learnMoreUrl + '">Learn more</a>'
+        }
+
+        this.$el.html(this.template({
+          title: title,
+          description: description,
+          helpText: ""
+        }));
+
+        // Remove this when the custom search filter builder is no longer new:
+        this.$el
+          .find(".port-editor-subtitle")
+          .append($('<span class="new-icon" style="margin-left:10px; font-size:1rem; line-height: 25px;"><i class="icon icon-star icon-on-right"></i> NEW </span>'));
+      }
+
+        
       //Create an unordered list for all the filter tabs
       var groupTabs = $(document.createElement("ul")).addClass("nav nav-tabs filter-group-links");
+
+      // Until we allow adding/editing filter groups in the portal data page, hide the group tabs
+      // element if the portal does not already have groups in the editor.
+      if (this.filterGroups.length === 1 && !this.filterGroups[0].get("label") && !this.filterGroups[0].get("icon")){
+        groupTabs.hide()
+      }
 
       //Create a container div for the filter groups
       var filterGroupContainer = $(document.createElement("div")).addClass("tab-content");
@@ -140,9 +211,12 @@ define(['jquery', 'underscore', 'backbone',
           groupTab.css("width", (100 / this.filterGroups.length) + "%");
         }
 
-        //Create a FilterGroupView
+        // Create a FilterGroupView. Ensure the FilterGroup is in edit mode if the parent
+        // FilterGroups is.
         var filterGroupView = new FilterGroupView({
-          model: filterGroup
+          model: filterGroup,
+          edit: this.edit,
+          editorView: this.editorView
         });
 
         //Render the FilterGroupView
@@ -189,14 +263,22 @@ define(['jquery', 'underscore', 'backbone',
         activeFilterGroup.postRender();
       }
 
-      //Add a header element above the filter groups
-      this.$el.prepend( $(document.createElement("div")).addClass("filters-header") );
+      // Applied filters and the general search input are not needed when this view is
+      // in editing mode
+      if(!this.edit){
+        //Add a header element above the filter groups
+        this.$el.prepend( $(document.createElement("div")).addClass("filters-header") );
 
-      //Render the applied filters
-      this.renderAppliedFiltersSection();
+        //Render the applied filters
+        this.renderAppliedFiltersSection();
 
-      //Render an "All" filter
-      this.renderAllFilter();
+        //Render an "All" filter
+        this.renderAllFilter();
+      }
+
+      if(this.edit){
+        this.$el.addClass("edit-mode");
+      }
 
       if( this.vertical ){
         this.$el.addClass("vertical");
@@ -227,12 +309,13 @@ define(['jquery', 'underscore', 'backbone',
       appliedFiltersContainer.append(headerText, appliedFiltersEl);
       this.$(".filters-header").append(appliedFiltersContainer);
 
-      //Get all the nonNumeric filter models
+      //Get all the nonNumeric filter models. Reject nested filterGroups.
       var nonNumericFilters = this.filters.reject(function(filterModel){
-        return (filterModel.type == "NumericFilter" || filterModel.type == "DateFilter");
+        return (["FilterGroup", "NumericFilter", "DateFilter"].includes(filterModel.type));
       });
       //Listen to changes on the "values" attribute for nonNumeric filters
       _.each(nonNumericFilters, function(nonNumericFilter){
+
         this.listenTo(nonNumericFilter, "change:values", this.updateAppliedFilters);
 
         if( nonNumericFilter.get("values").length ){
@@ -336,7 +419,8 @@ define(['jquery', 'underscore', 'backbone',
     *
     * @param {Filter} filterModel - The FilterModel to display
     * @param {object} options - Additional options for this function
-    * @property {boolean} options.displayWithoutChanges - If true, this filter will display even if the value hasn't been changed
+    * @property {boolean} options.displayWithoutChanges - If true, this filter will
+    * display even if the value hasn't been changed
     */
     updateAppliedFilters: function(filterModel, options){
 

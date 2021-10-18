@@ -113,18 +113,52 @@ define([
         /**
          * For select inputs where multiple values are allowed
          * ({@link SearchableSelectView#allowMulti} is true), optional text to insert
-         * between labels
+         * between labels. Separator text is useful for indicating operators in filter
+         * fields or values.
          * @type {string}
          * @since 2.15.0
          */
         separatorText: "",
 
-        /** The HTML class name to add to the separator elements that are created for this
+        /**
+        * For select inputs where multiple values are allowed
+        * ({@link SearchableSelectView#allowMulti} is true), a list of
+        * {@link SearchableSelectView#separatorText} options. If a list is provided here
+        * (AND a value is provided for the {@link SearchableSelectView#separatorText}
+        * option), then a user can click on the separator text between two values to
+        * change the text to the next string in this list. If separatorTextOptions is
+        * false (or if there is no separatorText value), then changing the separator text
+        * is not possible. This view will trigger a "separatorChanged" event when the
+        * separator is updated.
+        * @type {string[]}
+        * @since 2.17.0
+        */
+        separatorTextOptions: ["AND", "OR"],
+
+        /**
+         * The HTML class name to add to the separator elements that are created for this
          * view.
          * @type {string}
          * @since 2.15.0
          */
         separatorClass: "separator",
+
+        /** 
+         * An additional HTML class to add to separator elements on hover when a user can
+         * click that element to switch the text.
+         * @type {string}
+         * @since 2.17.0
+         */
+        changeableSeparatorClass: "changeable-separator",
+
+        /**
+         * For separators that are changeable (see
+         * {@link SearchableSelectView#separatorTextOptions}), optional tooltip text to
+         * show when a user hovers over a separator element.
+         * @type {string}
+         * @since 2.17.0
+         */
+        changeableSeparatorTooltip: "Click to switch the operator",
 
         /**
          * The list of options that a user can select from in the dropdown menu. For
@@ -461,6 +495,7 @@ define([
          */
         createSeparator: function(){
           try {
+            var view = this;
             var separatorText = this.separatorText;
             // Text is required to create a separator.
             if(!separatorText){
@@ -468,10 +503,103 @@ define([
             }
             var separator = $("<span>" + separatorText + "</span>");
             separator.addClass(this.separatorClass);
+            
+            // Set a listener to change the text to one of the separatorText
+            // options on click, and to highlight all the separators when one is hovered
+            var separatorElHovered = false
+            if (view.separatorTextOptions && view.separatorTextOptions.length) {
+              // Indicate that the separator is clickable
+              separator.css('cursor', 'pointer');
+              // Make sure the listeners set below are only set once
+              separator.off("click mouseenter mouseout");
+              // Change all the separator text when one is clicked
+              separator.on("click", function () {
+                view.changeSeparator();
+              })
+              // Create the tooltip
+              if (view.changeableSeparatorTooltip) {
+                $(separator).tooltip('destroy');
+                $(separator).tooltip({
+                  title: view.changeableSeparatorTooltip,
+                  trigger: 'manual',
+                })
+              }
+              // Highlight all of the separator elements when one is hovered
+              separator.on("mouseenter", function () {
+                var separatorEls = view.$el.find("." + view.separatorClass)
+                separatorElHovered = true;
+                // Add a delay before the highlight class is added
+                setTimeout(function () {
+                  if (separatorElHovered){
+                    separatorEls.addClass(view.changeableSeparatorClass);
+                    if (view.changeableSeparatorTooltip){
+                      // Add an even longer delay before the tooltip is shown
+                      setTimeout(function () {
+                        if (separatorElHovered) {
+                          $(separator).tooltip('show')
+                        }
+                      }, 600);
+                    }
+                  }
+                }, 285);
+              })
+              // Hide all the tooltips and remove the highlight class on mouse out
+              separator.on("mouseout", function () {
+                separatorElHovered = false;
+                var separatorEls = view.$el.find("." + view.separatorClass)
+                separatorEls.removeClass(view.changeableSeparatorClass)
+                separatorEls.tooltip('hide')
+              })
+            }
             return separator
           } catch (error) {
             console.log("There was an error creating a separator element in a " +
               "Searchable Select View. Error details: " + error);
+          }
+        },
+
+        /**
+         * Changes the separator text for all separator elements to the next value that's
+         * set in the {@link SearchableSelectView#separatorTextOptions}. Triggers a
+         * "separatorChanged" event that passes on the new separator value.
+         */
+        changeSeparator: function(){
+          try {
+            var view = this;
+            if (
+              !view.separatorTextOptions ||
+              !view.separatorTextOptions.length ||
+              !view.separatorText
+            ){
+              return
+            }
+            // Get the next separator text option
+            var currentIndex = view.separatorTextOptions.indexOf(view.separatorText),
+                nextIndex = currentIndex + 1;
+            if (currentIndex === -1 || !view.separatorTextOptions[nextIndex] ){
+              nextIndex = 0
+            }
+            // Update the current separator text on the view
+            view.separatorText = view.separatorTextOptions[nextIndex]
+            // Change the separator text for all of the separators in the view with an
+            // animation
+            var separatorEls = view.$el.find("." + view.separatorClass)
+            separatorEls.transition({
+              animation: 'pulse',
+              displayType: 'inline-block',
+              duration: '250ms',
+              onComplete: function(){
+                $(this).text(view.separatorText)
+              }
+            });
+            // Trigger an event for parent views
+            view.trigger("separatorChanged", view.separatorText);
+          }
+          catch (error) {
+            console.log(
+              'There was an error switching the separator text in a SearchableSelectView' +
+              '. Error details: ' + error
+            );
           }
         },
 

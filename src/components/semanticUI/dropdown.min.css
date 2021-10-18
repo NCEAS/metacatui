@@ -201,8 +201,15 @@
   padding: 0.2rem;
   color: #9c9c9c;
   font-weight: 600;
+  transition: background-color .5s ease,color .4s ease;
 }
-
+.searchable-select .changeable-separator {
+  transition: background-color .5s ease,color .4s ease;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #e2eef1;
+  color: #2994bb;
+}
 
 @media only screen and (max-width: 767px) {
   /* Overwrite dropdown rule for accordion-mode */

@@ -41,6 +41,7 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
                     label: "Limit search to the map area",
                     icon: "globe",
                     operator: "OR",
+                    fieldsOperator: "OR",
                     matchSubstring: false
                 });
             },
@@ -107,6 +108,8 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
                 // since the Filter model will skip default values
                 var operatorNode = updatedDOM.ownerDocument.createElement("operator");
                 operatorNode.textContent = this.get("operator");
+                var fieldsOperatorNode = updatedDOM.ownerDocument.createElement("fieldsOperator");
+                fieldsOperatorNode.textContent = this.get("fieldsOperator");
 
                 var matchSubstringNode = updatedDOM.ownerDocument.createElement("matchSubstring");
                 matchSubstringNode.textContent = this.get("matchSubstring");

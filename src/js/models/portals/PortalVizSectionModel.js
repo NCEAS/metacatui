@@ -126,6 +126,18 @@ define(["jquery",
 
           }, this);
 
+          //Make sure the content element is valid
+          var contentEl = $(objectDOM).children("content");
+          if( contentEl.length ){
+              //If there is content in the content element
+              if( contentEl[0].childNodes.length ){
+                //If there is only text in the <content> element, we need to wrap it in a <markdown> element so it's schema valid
+                if( contentEl[0].childNodes[0].nodeType == 3 ){
+                  $(contentEl[0]).html("<markdown>" + contentEl[0].childNodes[0].textContent + "</markdown>");
+                }
+              }
+          }
+
           //If nothing was serialized, return an empty string
           if( !$(objectDOM).children().length ){
             return "";

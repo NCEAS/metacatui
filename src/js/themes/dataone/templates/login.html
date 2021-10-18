@@ -1,6 +1,8 @@
 <%
 	if((typeof newTab !== "undefined") && newTab) var linkAttr = 'target="_blank"';
 	else var linkAttr = '';
+
+  var enableCILogonSignIn = MetacatUI.appModel.get("enableCILogonSignIn");
 %>
 
 <div id="signinPopup" class="modal hide fade sign-in">
@@ -10,40 +12,64 @@
   	</div>
 	<div class="modal-body">
 		<div class="row-fluid">
-			<% if(signInUrlOrcid && !signInUrl) { %>
-				<div class="span12">
-			<% } else if (signInUrlOrcid){ %>
-				<div class="span5">
-			<% }
-			   if(signInUrlOrcid) { %>
-					<div class="orcid-signin">
-						<a href="<%=signInUrlOrcid%>" class="signin orcid-btn update-orcid-sign-in-url" <%=linkAttr%>>
-							<img src="<%= MetacatUI.root %>/img/orcid_64x64.png" />
-							<span>Sign in with ORCID</span>
-						</a>
-					</div>
-				</div>
-			<% }
-			   if(signInUrlOrcid && signInUrl) { %>
-				<span class="divider-text span1">OR</span>
-				<div class="span6">
-			<% }
-			   else if(signInUrl){ %>
-				<div class="span12">
-			<% }
-			   if(signInUrl) { %>
-					<div class="well scroll-y">
-						<a class="btn update-sign-in-url" href="<%=signInUrl%>" <%=linkAttr%>>Sign in with your University or Institution</a>
+      <% if(!enableCILogonSignIn){ %>
+        <div class="span5">
+          <div class="orcid-signin">
+            <a href="<%=signInUrlOrcid%>" class="signin orcid-btn update-orcid-sign-in-url" <%=linkAttr%>>
+              <img src="<%= MetacatUI.root %>/img/orcid_64x64.png" />
+              <span>Sign in with ORCID</span>
+            </a>
+          </div>
+        </div>
+        <span class="divider-text span1">OR</span>
+        <div class="span6">
+          <div class="well scroll-y">
+            <a class="btn" href="#" disabled="disabled" <%=linkAttr%>>Sign in with your University or Institution</a>
 
-						<% if(loginOptions){ %>
-								<p>Some of the 100+ Universities and Institutions to choose from:</p>
-								<div id="login-options"><%=loginOptions%></div>
-						<% } %>
-					</div>
-			<% }
-			   if(signInUrl){ %>
-				</div>
-			<% } %>
+            <p class="subtle">
+              This sign in option is temporarily unavailable. Please sign in with ORCID.
+              <br/>If you need to access datasets or portals that you have previously submitted
+              with a University or Institution account, then contact us at <a href="mailto:<%=MetacatUI.appModel.get('emailContact')%>">
+                <%=MetacatUI.appModel.get('emailContact')%></a>
+            </p>
+          </div>
+        </div>
+      <% } else { %>
+  			<% if(signInUrlOrcid && !enableCILogonSignIn) { %>
+  				<div class="span12">
+  			<% } else if (signInUrlOrcid){ %>
+  				<div class="span5">
+  			<% }
+  			   if(signInUrlOrcid) { %>
+  					<div class="orcid-signin">
+  						<a href="<%=signInUrlOrcid%>" class="signin orcid-btn update-orcid-sign-in-url" <%=linkAttr%>>
+  							<img src="<%= MetacatUI.root %>/img/orcid_64x64.png" />
+  							<span>Sign in with ORCID</span>
+  						</a>
+  					</div>
+  				</div>
+  			<% }
+  			   if(signInUrlOrcid && signInUrl && enableCILogonSignIn) { %>
+  				<span class="divider-text span1">OR</span>
+  				<div class="span6">
+  			<% }
+  			   else if(enableCILogonSignIn){ %>
+  				<div class="span12">
+  			<% }
+  			   if(enableCILogonSignIn) { %>
+  					<div class="well scroll-y">
+  						<a class="btn update-sign-in-url" href="<%=signInUrl%>" <%=linkAttr%>>Sign in with your University or Institution</a>
+
+  						<% if(loginOptions){ %>
+  								<p>Some of the 100+ Universities and Institutions to choose from:</p>
+  								<div id="login-options"><%=loginOptions%></div>
+  						<% } %>
+  					</div>
+  			<% }
+           if(enableCILogonSignIn){ %>
+  				</div>
+  			<% } %>
+      <% } %>
 		</div>
 	</div>
   <% if( MetacatUI.appModel.get("showSignInHelp") ){ %>
@@ -68,7 +94,7 @@
 				</a>
 			</div>
 		<% }
-		else if(signInUrl) { %>
+		else if(enableCILogonSignIn) { %>
 			<p>There's no need to create a new account - just use one of your existing accounts from Google or from a list of 100+ Universities and Institutions:</p>
 				<a class="btn btn-primary btn-large center update-sign-in-url" href="<%=signInUrl%>" <%=linkAttr%>>Sign up now</a>
 				<div class="well scroll-y">

@@ -1906,10 +1906,10 @@ a.btn.metrics {
     float: right;
 }
 i.icon.icon-cloud-download {
-    font-size: 1.2em; !important;
+	font-size: 1.2em !important;
 }
 i.icon.icon-eye-open {
-    font-size: 1.2em; !important;
+	font-size: 1.2em !important;
 }
 .btn-group+.btn-group, .btn-toolbar>.btn+.btn,
 .btn-toolbar>.btn+.btn-group, .btn-toolbar>.btn-group+.btn {
@@ -2224,8 +2224,8 @@ i.catalog-metric-icon {
 .views-metrics .metric-chart .resize .handle-mini,
 .downloads-metrics .metric-chart .resize .handle-mini {
 	fill: white;
-    stroke-width: 1px;
-    stroke: #555;
+	stroke-width: 1px;
+	stroke: #555;
 }
 
 /*
@@ -3803,7 +3803,14 @@ add font awesome close icon */
 .port-editor-section.port-editor-md{
   padding: 0px;
 }
-
+.port-editor-description {
+	max-width: 1400px;
+	margin-left: 1rem;
+}
+.port-editor-subtitle {
+	margin-top: 0;
+	margin-left: 1rem;
+}
 /* Portal Editor notifications */
 .portal-editor .alert:empty {
     display: none;
@@ -3942,7 +3949,7 @@ add font awesome close icon */
   font-size: 1.5em;
   display: block;
 }
-/* hide the remove message for logo images since we can reemove the entire logo instead */
+/* hide the remove message for logo images since we can remove the entire logo instead */
 .port-editor-settings .logos-container .edit-image .dropzone .remove-message,
 .port-editor-settings .logos-container .edit-image .dropzone .remove {
     display: none;
@@ -3957,9 +3964,15 @@ add font awesome close icon */
 .port-editor-settings .description-container textarea{
   width: 100%;
 }
-.port-editor-section.port-editor-data{
-  padding: 20px 40px;
+.port-editor-section .editable-subsection {
+	box-shadow: 0 1px 6px rgb(0 0 0 / 16%), 0 1px 8px -3px rgb(0 0 0 / 23%);
+	padding: 2rem 1.5rem;
+	border-radius: 3px;
+	border: 2px dashed #419ecc;
+	margin-top: 1rem;
+	margin-bottom: 2rem;
 }
+
 .port-editor-section.port-editor-data #sidebar > *{
   padding-left: 0px;
   padding-right: 0px;
@@ -3970,6 +3983,388 @@ add font awesome close icon */
   padding-right: 0px;
   box-sizing: border-box;
   width: 100%;
+}
+
+/* Filter Editor */
+/* custom portal search filter editor modal */
+
+.filter-editor.new {
+	display: flex;
+	align-self: center;
+	padding: 3rem 2rem 1rem 2rem;
+}
+.filter-editor:not(.new){
+	margin-bottom: 1rem;
+}
+.filter-editor .modal {
+	width: 100%;
+	max-width: 800px;
+	margin: auto;
+	left: 0;
+	right: 0;
+}
+
+.filter-editor .btn-filter-editor {
+	margin: 0;
+	padding: 4px 12px;
+}
+
+.filter-editor .delete-button {
+	float: left;
+}
+/* hide the delete button for new filters */
+.filter-editor.new .delete-button {
+	display: none;
+}
+
+.filter-editor .modal-body {
+	padding: 2rem;
+	max-height: 600px;
+}
+
+.filter-editor .modal-instructions {
+	font-weight: 500;
+	font-size: 1.1rem;
+	margin: 0;
+	text-align: left;
+}
+
+.filter-editor .fields-container {
+	display: grid;
+	grid-template-columns: max-content auto;
+	gap: 2rem;
+	align-items: center;
+	margin-bottom: 2rem;
+}
+.filter-editor .fields-container .modal-instructions {
+	margin-top: 1rem;
+}
+
+/* the list of filter UI types to choose from */
+
+.ui-builder-choices-container {
+	display: grid;
+	grid-template-columns: max-content auto;
+	gap: 2rem;
+	align-items: center;
+	margin-bottom: 2rem;
+}
+
+.ui-builder-choices {
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+}
+.ui-builder-choice {
+	margin: 0 .6em;
+	display: inline-block;
+	cursor: pointer;
+}
+
+/* the icon representing the interface type */
+.ui-builder-choice svg {
+	width: 3rem;
+	height: 100%;
+	max-height: 3.5rem;
+	vertical-align: middle;
+	fill: #b5c4ca;
+}
+/* the label for the interface type */
+.ui-builder-choice-label {
+	color: #b5c4ca;
+	text-transform: uppercase;
+	font-weight: 500;
+	font-size: 0.6rem;
+	margin: 0;
+}
+.ui-builder-choice:hover svg {
+	fill: #419ecc;
+}
+.ui-builder-choice:hover .ui-builder-choice-label{
+	color: #419ecc;
+}
+.ui-builder-choice.selected svg {
+	fill: #2c6f90;
+}
+.ui-builder-choice.selected .ui-builder-choice-label{
+	color: #2c6f90;
+}
+.ui-builder-choice.disabled {
+	cursor: not-allowed;
+}
+.ui-builder-choice.disabled svg {
+	fill: #EEF3F8;
+}
+.ui-builder-choice.disabled .ui-builder-choice-label{
+	color: #EEF3F8;
+}
+
+
+/* Modify the filter styles for editing */
+
+.filter-group .filter.ui-build {
+	margin: auto;
+}
+
+.filter-group .filter.ui-build:not(.date) label {
+	padding-right: 30px;
+}
+.filter.ui-build .icon-on-left {
+	margin: 8px;
+}
+
+.filter.ui-build input[type='text'],
+.filter.ui-build select {
+	height: 44px;
+	box-sizing: border-box;
+}
+
+.filter.ui-build .filter-input-contain {
+	/* width: unset; */
+	max-width: 350px;
+	min-width: 300px;
+}
+
+.ui-build.choice .ui-build-input.placeholder {
+	max-width: 91%;
+}
+
+.choices-editor .modal-instructions {
+	margin: 2rem 0;
+}
+
+.filter.ui-build .btn {
+	height: 44px;
+	width: 44px;
+}
+
+/* value input in filter editor, where user can select icon, label, placeholder, etc */
+.ui-build .ui-build-input {
+	display: block;
+	font-size: 0.95rem;
+	box-sizing: border-box;
+	border: 1px dashed #419ecc;
+	color: #555555;
+	border-radius: 4px;
+	line-height: 1;
+	padding: 0.42rem;
+	padding-left: 0.6rem;
+	min-height: 1rem;
+	min-width: 1rem;
+	width: 100%;
+	min-width: 280px;
+	max-width: 320px;
+	background-color: transparent;
+	/* width: 100%; */
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-weight: var(--fw-bold,500);
+	text-shadow: none;
+	box-shadow: 0 3px 5px #77797a17,0 1px 3px #77797a17;
+	transition: background-color .2s ease, box-shadow .2s ease;
+}
+.ui-build .ui-build-input::placeholder{
+	text-shadow: none;
+}
+.ui-build .ui-build-input:focus{
+	background-color: #d1e8f3;
+	outline: none;
+	box-shadow: 0 6px 13px #77797a24,0 2px 5px #77797a24;
+}
+.ui-build .ui-build-input:hover{
+	/* background-color: #d1e8f3; */
+	/* outline: none; */
+	box-shadow: 0 6px 13px #77797a24,0 2px 5px #77797a24;
+}
+.ui-build input[disabled],
+.ui-build button[disabled],
+.ui-build select[disabled]{
+	cursor: default;
+}
+.ui-builder-container-label {
+	font-size: 0.8rem;
+	margin: 0 0 3px 2px;
+}
+/* Position the placeholder element over the input */
+.ui-build .ui-build-input.placeholder {
+	position: absolute;
+	left: .5rem;
+	top: 5px;
+	min-width: 100px;
+	max-width: 265px
+}
+
+/* Choice editor is where use selects a value and label for <choice> elements */
+.choice-editor {
+	display: grid;
+	grid-template-columns: [handle] 0.8rem [label] 1fr [value] 1fr [remove] 1.2rem;
+	grid-gap: 0.4rem;
+	margin-bottom: 0.3rem;
+}
+
+.choice-editor .handle {
+	grid-area: handle;
+	height: 100%;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	cursor: grab;
+}
+
+.choice-editor.sortable-chosen,
+.choice-editor.sortable-chosen .handle {
+	cursor: grabbing;
+}
+.choice-editor .handle {
+	color: #b5c4ca;
+}
+
+.choice-editor .handle i:nth-of-type(2) {
+	margin-left: 2px;
+}
+
+.choice-editor .ui-builder-container-text {
+	width: 234px;
+	margin-left: 3px;
+	margin-bottom: 0;
+	font-size: 0.8rem;
+}
+.choice-editor .choice-label {
+	grid-area: label;
+}
+.choice-editor .choice-value {
+	grid-area: value;
+}
+
+.choice-editor input {
+	border-radius: 3px;
+	color: rgba(0,0,0,.87);
+	border: 1px solid rgba(34,36,38,.15);
+	line-height: 1em;
+	padding: .4rem .8rem;
+}
+.choice-editor input.choice-label {
+	font-weight: 560;
+}
+.choice-editor input.choice-value {
+	font-weight: 400;
+}
+
+.choice-editor input:focus {
+	border-color: #96c8da;
+	outline: none;
+}
+.choice-editor .remove-choice {
+	grid-area: remove;
+	font-size: 1.2rem;
+	cursor: pointer;
+	opacity: 0.2;
+	display: grid;
+	align-content: center;
+	justify-self: flex-end;
+}
+
+/* In a date filter where a user selects a minRange and maxRange */
+
+.filter-group .ui-build.filter.date,
+.filter-group .ui-build.filter.choice {
+	max-width: unset;
+  min-width: unset;
+	padding-right: 0;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.ui-build .slider-container {
+	display: grid;
+	grid-template-columns: 2.5rem minmax(300px, 400px) 2.5rem;
+	grid-template-rows: min-content min-content;
+	justify-items: center;
+	grid-gap: 1rem;
+}
+.ui-build .slider-arrow {
+	margin-top: 20px;
+	fill: #419ecc;
+	max-width: 40px;
+}
+.ui-build .year-slider{
+	margin-right: 4px;
+}
+.ui-build .range-inputs {
+	width: 100%;
+	grid-column: 1 / span 3;
+	display: flex;
+	justify-content: space-between;
+}
+
+.ui-build .range-input {
+	min-width: unset;
+	width: 90px;
+	min-height: 2.2rem;
+}
+
+.ui-build .range-inputs > * {
+	display: flex;
+	flex-direction: column;
+}
+
+.ui-build .range-inputs .notification.error {
+  max-width: 15rem;
+}
+
+.ui-build .range-inputs .range-input-min {
+  align-items: start;
+}
+
+.ui-build .range-inputs .range-input-max .notification.error {
+  text-align: right;
+}
+
+.ui-build .range-inputs .range-input-max {
+  align-items: end;
+}
+
+/* toggle builder in UI build mode */
+
+.toggle.ui-build .modal-instructions {
+	margin: 2rem 0 1rem;
+}
+
+.filter-editor .can-toggle-switch:before {
+	opacity: 0
+}
+.filter-editor .can-toggle label .can-toggle-switch:after {
+	color: white;
+}
+.ui-build .ui-build-input.true-label,
+.ui-build .ui-build-input.false-label{
+	font-size: 0.95em;
+	box-sizing: border-box;
+	position: absolute;
+	top: 0;
+	text-align: center;
+	line-height: 1.9em;
+	margin: 0.3em;
+	width: calc(100px - 0.6em);
+	padding: 0 12px;
+	min-width: unset;
+	max-width: unset;
+}
+.ui-build .ui-build-input.true-label {
+	left: 100px;
+}
+
+/* Validation errors for Filters in UI Build mode */
+.ui-build .ui-build-input.error {
+  border: 1px dashed #e0b4b4;
+  color: #9f3a38;
+  background-color: #fff6f6;
+}
+
+.ui-build .ui-build-input.error::placeholder{
+  color: #9f3a38;
 }
 
 /* Portal Editor markdown section
@@ -4208,8 +4603,7 @@ add font awesome close icon */
 }
 .port-editor-section svg .theme-accent-fill{
 	fill: #05ab8f
-},
-
+}
 .port-editor-section svg .skintone-fill{
 	fill: #72351c
 }
@@ -5776,7 +6170,7 @@ svg .no-activity,
 /******************************************
 ** Searching and Map ***
 ******************************************/
-#   clear-all{
+#clear-all{
   width: 95%;
   width: calc(100% - 10px);
   padding: 2px 5px;
@@ -5877,6 +6271,7 @@ body.mapMode{
   	overflow: hidden;
 }
 .filter-input-contain{
+	position: relative;
 	width: 100%;
 }
 .filter.btn{
@@ -6127,7 +6522,7 @@ body.mapMode{
   max-width: 100%;
   margin-bottom: 10px;
 }
-.filter-groups .filter .btn{
+.filter-groups .filter .btn:not(.btn-filter-editor){
 	box-shadow: none;
 	border-color: #ccc;
   color: #999;
@@ -6146,10 +6541,21 @@ body.mapMode{
 }
 .filter-groups .filter label{
 	cursor: default;
+	margin-bottom: 13px;
+	display: flex;
+	align-items: center;
 }
 .filter-group-links{
   border-top: 1px solid #DDD;
   clear: both;
+}
+.edit-mode .filter-group-links {
+	margin-top: 2rem;
+	margin-left: 1rem;
+}
+.edit-mode .filters-container {
+	margin-top: 1rem;
+	margin-left: 1.5rem;
 }
 .filter-groups.vertical .filter-group-links {
   border: 0px;
@@ -6606,6 +7012,7 @@ body.mapMode{
   width: 100%;
 	overflow-y: auto !important;
 	overflow-x: hidden !important;
+	margin-left: 0;
 }
 .edit-collection .result-header-count {
 	font-size: 1rem;
@@ -6619,14 +7026,6 @@ body.mapMode{
 	width: 49%;
 }
 
-.edit-collection-description {
-	max-width: 1400px;
-	margin-left: 1rem;
-}
-.edit-collection-title {
-	margin-top: 1.5rem;
-	margin-left: 1rem;
-}
 /* The Save and Cancel buttons */
 .collection-controls{
   margin-top: 20px;
@@ -6831,6 +7230,11 @@ Query builder & query rule view
 	border-radius: 3px;
 	box-sizing: border-box;
 }
+/* For query builders that are within a query rule row */
+.query-builder.nested{
+	box-shadow: none;
+	margin: 0 0 0.3rem 0;
+}
 
 .query-builder-title {
 	font-weight: 500;
@@ -6841,13 +7245,27 @@ Query builder & query rule view
 	padding: 1.4rem 2rem 1.2rem;
 	box-sizing: border-box;
 }
-.query-builder-title .operator {
-	padding: 0 .3rem;
-	border-bottom: 2px solid #adadad;
+.query-builder.nested .query-builder-title{
+	padding: 1rem 1rem 1rem 0.1rem;
 }
-.btn.add-rule {
+
+.query-builder .exclude-input,
+.query-builder .operator-input {
+	display: inline-block;
+}
+
+.query-builder .buttons-container {
 	margin-left: 2rem;
-	padding: 0.3rem 0.9rem 0.3rem 0.5rem;
+}
+
+.query-builder.nested .buttons-container {
+	margin-left: 0.1rem;
+}
+
+.query-builder .btn.add-rule,
+.query-builder .btn.add-rule-group {
+	padding: 0.25rem 0.55rem 0.25rem 0.25rem;
+	margin-right: 0.5rem;
 }
 
 .rules-container {
@@ -6857,14 +7275,22 @@ Query builder & query rule view
 	grid-gap: 1.5rem;
 	padding: 1.9rem 2rem;
 }
+.query-builder.nested .rules-container{
+	padding: 1.9rem 0 0.9rem 0.3rem;
+}
 
 .query-rule {
 	display: grid;
-	grid-template-columns: minmax(2.5rem, 4rem) 0.9fr 0.6fr 0.9fr 1.5rem;
+	grid-template-columns: 3.9rem 0.9fr 0.65fr 0.9fr 1.5rem;
 	grid-template-rows: 1fr;
 	grid-template-areas: "info field operator value remove";
 	grid-gap: 1.5rem;
 	align-items: top;
+}
+/* For query rules that contain a query builder */
+.query-rule.rule-group {
+	grid-template-columns: 3.9rem auto 1.5rem;
+	grid-template-areas: "info query-builder remove";
 }
 
 .query-rule .rule-info {
@@ -6873,6 +7299,8 @@ Query builder & query rule view
 	font-size: 0.9rem;
 	color: #00689d;
 	color: var(--rule-color);
+	display: flex;
+	justify-content: space-between;
 }
 
 .query-rule .rule-info:after {
@@ -6881,7 +7309,7 @@ Query builder & query rule view
   background: #00689d;
 	background: var(--rule-color);
   width:3px;
-  height: calc(100% + 0.5rem);
+  height: calc(100% + 0.2rem);
   border-radius: 1.5px;
 }
 
@@ -6906,26 +7334,20 @@ Query builder & query rule view
 	justify-self: flex-end;
 }
 
-.query-rule .rule-info,
-.query-rule .field,
-.query-rule .value,
-.query-rule .operator,
-.query-rule .remove-rule {
-	transition: opacity 0.2s ease-out;
-}
-.query-rule.remove-rule-preview .rule-info,
-.query-rule.remove-rule-preview .field,
-.query-rule.remove-rule-preview .value,
-.query-rule.remove-rule-preview .operator {
-	opacity: 0.5;
-}
-.query-rule.remove-rule-preview .remove-rule{
-	opacity: 1;
+.query-rule.rule-group > .remove-rule {
+	align-content: top;
+	height: fit-content;
+	margin-top: 4.1rem;
 }
 
 .searchable-select-label {
   margin: 0 0 3px 2px;
   font-size: 0.8rem;
+}
+
+.search-select-tooltip {
+	/* one greater than the .modal z-index */
+	z-index: 1051
 }
 
 /* make the number & date filter inputs match the operator and field inputs */
@@ -8150,6 +8572,15 @@ CSS library fixes
 	transform: translate3d(0,0,0);
 	-webkit-transform: translate3d(0,0,0);
 	-moz-transform: translate3d(0,0,0);
+}
+/* make the modal appear a little faster */
+.modal.fade {
+	--speed: 0.13s;
+	top: -8%;
+  -webkit-transition: opacity var(--speed) linear, top var(--speed) ease-out;
+     -moz-transition: opacity var(--speed) linear, top var(--speed) ease-out;
+       -o-transition: opacity var(--speed) linear, top var(--speed) ease-out;
+          transition: opacity var(--speed) linear, top var(--speed) ease-out;
 }
 
 /** Progress Bars from Bootstrap 3.3.6 **/

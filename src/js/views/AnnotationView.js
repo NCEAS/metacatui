@@ -6,6 +6,14 @@ define(['jquery',
     function($, _, Backbone, AnnotationPopoverTemplate) {
     'use strict';
 
+    /**
+    * @class AnnotationView
+    * @classdesc A view of a single semantic annotation for a metadata field. It is usually displayed on the {@link MetadataView}.
+    * @classcategory Views
+    * @extends Backbone.View
+    * @screenshot views/AnnotationView.png
+    * @constructor
+    */
     var AnnotationView = Backbone.View.extend(
       /** @lends AnnotationView.prototype */{
         className: 'annotation-view',
@@ -294,8 +302,8 @@ define(['jquery',
         /**
          * Update the cache for a given term.
          *
-         * @param term: (string) The URI
-         * @param match: (object) The BioPortal match object for the term
+         * @param {string} term - The term URI
+         * @param {Object} match - The BioPortal match object for the term
         */
         updateCache: function(term, match) {
             var cache = MetacatUI.appModel.get("bioportalLookupCache");
@@ -349,6 +357,7 @@ define(['jquery',
          * Get a friendly name (ie ECSO) from a long BioPortal URI
          *
          * @param {string} uri - A URI returned from the BioPortal API
+         * @return {string}
          */
         getFriendlyOntologyName: function(uri) {
             if ((typeof uri === "string")) {

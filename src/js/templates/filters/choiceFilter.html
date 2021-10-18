@@ -1,7 +1,4 @@
-<label>
-  <% if(icon){
-       print('<i class="icon icon-on-left icon-' + icon + '"></i>');
-     } %>
-  <%=label%>
-</label>
-<select></select>
+<% var uiBuilder=typeof mode !=='undefined' ? mode==="uiBuilder" : false %>
+<div class="filter-input-contain input-append">
+  <select <% if(uiBuilder){ print('disabled="true"'); } %> > </select>
+</span></div>

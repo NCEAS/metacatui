@@ -114,8 +114,10 @@ define(['jquery', 'underscore', 'backbone'],
 			//The list of formatIds that are images
 			var pdfIds = ["application/pdf"];
 			var annotationIds = ["http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html"];
-      var collectionIds = ["https://purl.dataone.org/collections-1.0.0"];
-      var portalIds = ["https://purl.dataone.org/portals-1.0.0"];
+			var collectionIds = ["https://purl.dataone.org/collections-1.0.0",
+				"https://purl.dataone.org/collections-1.1.0"];
+			var portalIds = ["https://purl.dataone.org/portals-1.0.0",
+				"https://purl.dataone.org/portals-1.1.0"];
 
 			//Determine the type via provONE
 			var instanceOfClass = this.get("prov_instanceOfClass");
@@ -404,6 +406,7 @@ define(['jquery', 'underscore', 'backbone'],
 					var docs = data.response.docs;
 
 					if(docs.length == 1){
+            docs[0].resourceMap = model.parseResourceMapField(docs[0]);
 						model.set(docs[0]);
 						model.trigger("sync");
 					}
@@ -417,6 +420,7 @@ define(['jquery', 'underscore', 'backbone'],
 						//If there is only one doc that is not obsoleted (the most recent), then
 						// set this doc's values on this model
 						if(mostRecent.length == 1){
+              mostRecent[0].resourceMap = model.parseResourceMapField(mostRecent[0]);
 							model.set(mostRecent[0]);
 							model.trigger("sync");
 						}
@@ -434,14 +438,17 @@ define(['jquery', 'underscore', 'backbone'],
 
 									//If there is a doc in the Solr results list that matches the series head id
 									if(seriesHead){
+                    seriesHead.resourceMap = model.parseResourceMapField(seriesHead);
 										//Set those values on this model
 										model.set(seriesHead);
 									}
 									//Otherwise, just fall back on the first doc in the list
 									else if( mostRecent.length ){
+                    mostRecent[0].resourceMap = model.parseResourceMapField(mostRecent[0]);
 										model.set(mostRecent[0]);
 									}
 									else {
+                    docs[0].resourceMap = model.parseResourceMapField(docs[0]);
 										model.set(docs[0]);
 									}
 
@@ -760,6 +767,24 @@ define(['jquery', 'underscore', 'backbone'],
       return (this.getType() == "portal" || this.getType() == "collection") ?
               MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural") + "/" + encodeURIComponent((this.get("label") || this.get("seriesId") || this.get("id"))) :
               MetacatUI.root + "/view/" + encodeURIComponent((this.get("seriesId") || this.get("id")));
+    },
+
+    parseResourceMapField: function(json){
+      if( typeof json.resourceMap == "string" ){
+        return json.resourceMap.trim();
+      }
+      else if( Array.isArray(json.resourceMap) ){
+        let newResourceMapIds = [];
+        _.each(json.resourceMap, function(rMapId){
+          if( typeof rMapId == "string" ){
+            newResourceMapIds.push(rMapId.trim());
+          }
+        });
+        return newResourceMapIds;
+      }
+
+      //If nothing works so far, return an empty array
+      return [];
     },
 
 		/****************************/

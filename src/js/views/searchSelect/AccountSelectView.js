@@ -9,9 +9,8 @@ define([
 
     /**
      * @class AccountSelectView
-     * @classdesc A select interface that allows the user to search from within
-     * the options, and optionally select multiple items. Also allows the items
-     * to be grouped, and to display an icon or image for each item.
+     * @classdesc A select interface that allows the user to search for and select one or
+     * more accountIDs
      * @classcategory Views/SearchSelect
      * @extends SearchableSelect
      * @constructor

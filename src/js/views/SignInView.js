@@ -196,7 +196,9 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
             $("#Navbar, #HeaderContainer, #Footer").hide();
           }
           else{
-            $(container).append(this.buttonsTemplate());
+            $(container).append(this.buttonsTemplate({
+              signInUrl: MetacatUI.appModel.get('signInUrlOrcid') + this.getRedirectURL()
+            }));
             this.$el.append(container);
           }
 
@@ -213,28 +215,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 
           }
           else{
-            let signInUrl = MetacatUI.appModel.get('signInUrlOrcid') + window.location.href;
-
-            if( this.redirectQueryString && this.redirectQueryString.length ){
-              let currentQueryString = window.location.search;
-
-              //If there is a current query string in the window.location, concatenate the
-              // new query string properly
-              if( currentQueryString.length ){
-
-                //Exclude the "?" character from the query string, if it is there already
-                if( this.redirectQueryString.charAt(0) == "?" ){
-                  this.redirectQueryString = this.redirectQueryString.substring(1)
-                }
-
-                //Add the new query string parameters
-                signInUrl += "&" + this.redirectQueryString;
-
-              }
-              else{
-                signInUrl += "?" + this.redirectQueryString;
-              }
-            }
+            let signInUrl = MetacatUI.appModel.get('signInUrlOrcid') + this.getRedirectURL();
 
             this.$el.append(this.buttonsTemplate({
               signInUrl: signInUrl
@@ -245,7 +226,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 
         //Insert the sign in popup screen once
         if(!$("#signinPopup").length){
-          var target = encodeURIComponent(window.location.href);
+          var target = this.getRedirectURL();
           var signInUrl = MetacatUI.appModel.get('signInUrl')? MetacatUI.appModel.get('signInUrl') + target : null;
           var signInUrlOrcid = MetacatUI.appModel.get('signInUrlOrcid') ? MetacatUI.appModel.get('signInUrlOrcid') + target : null;
           var signInUrlLdap = MetacatUI.appModel.get('signInUrlLdap') ? MetacatUI.appModel.get('signInUrlLdap') + target : null,
@@ -316,6 +297,39 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 
         }
       });
+    },
+
+    /**
+    * Constructs and returns a string of the URL that the user should return to when they are done signing in.
+    * This URL is sent to the DataONE portal service during login, via the `target` URL attribute. The DataONE
+    * portal will redirect the user back to the `target` URL when sign in is complete.
+    * @returns {string}
+    */
+    getRedirectURL: function(){
+      let redirectURL = window.location.href;
+
+      if( this.redirectQueryString && this.redirectQueryString.length ){
+        let currentQueryString = window.location.search;
+
+        //If there is a current query string in the window.location, concatenate the
+        // new query string properly
+        if( currentQueryString.length ){
+
+          //Exclude the "?" character from the query string, if it is there already
+          if( this.redirectQueryString.charAt(0) == "?" ){
+            this.redirectQueryString = this.redirectQueryString.substring(1)
+          }
+
+          //Add the new query string parameters
+          redirectURL += "&" + this.redirectQueryString;
+
+        }
+        else{
+          redirectURL += "?" + this.redirectQueryString;
+        }
+      }
+
+      return redirectURL;
     },
 
     onClose: function(){

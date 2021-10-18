@@ -58,6 +58,7 @@ MetacatUI.AppConfig = Object.assign({
     title: true
   },
   allowChangeRightsHolder: false,
+  enableMeasurementTypeView: true,
 
   //Searching
   enableSolrJoins: true,
