@@ -393,6 +393,21 @@ represents 1 unit of the given distance measurement. */
   font-weight: 500;
   letter-spacing: 0.015em;
   margin-right: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.layer-item__icon {
+  fill: currentColor;
+  height: 1.04rem;
+  width: auto;
+  margin-right: 0.6rem;
+  opacity: 0.8;
+}
+
+.layer-item__icon > svg {
+  height: 100%;
+  width: auto;
 }
 
 .layer-item__label:hover {

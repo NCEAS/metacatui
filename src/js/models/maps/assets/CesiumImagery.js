@@ -78,7 +78,7 @@ define(
          */
         initialize: function (attributes, options) {
           try {
-            this.constructor.__super__.initialize(attributes, options);
+            MapAsset.prototype.initialize.call(this, attributes, options);
 
             this.createCesiumModel();
           }

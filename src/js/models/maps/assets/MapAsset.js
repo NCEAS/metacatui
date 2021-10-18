@@ -4,12 +4,14 @@ define(
   [
     'jquery',
     'underscore',
-    'backbone'
+    'backbone',
+    'models/portals/PortalImage'
   ],
   function (
     $,
     _,
-    Backbone
+    Backbone,
+    PortalImage
   ) {
     /**
      * @classdesc A MapAsset Model comprises information required to fetch source data for
@@ -42,6 +44,12 @@ define(
          * MapAsset#supportedTypes. // <-- TODO
          * @property {string} label A user friendly name for this asset, to be displayed
          * in a map.
+         * @property {string} icon A PID for an SVG saved as a dataObject, or an SVG
+         * string. The SVG will be used as an icon that will be displayed next to the
+         * label in the layers list. It should be an SVG file that has no fills, borders,
+         * or styles set on it (since the icon will be shaded dynamically by the maps CSS
+         * using a fill attribute). It must use a viewbox property rather than a height
+         * and width.
          * @property {string} description A brief description about the asset, e.g. which
          * area it covers, the resolution, etc.
          * @property {string} attribution A credit or attribution to display along with
@@ -71,6 +79,7 @@ define(
           return {
             type: '',
             label: '',
+            icon: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1.2 13.7 3.6 3.5l7.2 8.7zM5 3.3c2 .3 3.5.4 4.4.4H13l3 6.3-4 1.8-7-8.5Zm9.1.6 2.8 6 4.5-2.2a23 23 0 0 1-.7-4c0-.8-1.2-.7-2-.7l-4.6.9ZM1 15l11-1.9c1.2-.3 2.7-1 4.2-2l2.5 5.2c-1.2.3-3.6.4-7.3.4-2.8 0-7.3 0-9.4-.8a2 2 0 0 1-1-.9Zm16.4-4.2 4-1.8 1.3 5.5c0 .4.1 1-.4 1.2l-2.5.5-2.4-5.4ZM1.7 17l-.5 2.6c0 .7.2 1 1 1.3a64.1 64.1 0 0 0 19.8 0c.4-.3 1-.5.7-1.6l-.5-2.3a52.6 52.6 0 0 1-20.6 0Z"/></svg>',
             description: '',
             attribution: '',
             moreInfoLink: '',
@@ -84,23 +93,43 @@ define(
           }
         },
 
-        // /**
-        //  * Executed when a new MapAsset model is created.
-        //  * @param {Object} [attributes] The initial values of the attributes, which will
-        //  * be set on the model.
-        //  * @param {Object} [options] Options for the initialize function.
-        //  */
-        // initialize: function (attributes, options) {
-        //   try {
-
-        //   }
-        //   catch (error) {
-        //     console.log(
-        //       'There was an error initializing a MapAsset model' +
-        //       '. Error details: ' + error
-        //     );
-        //   }
-        // },
+        /**
+         * Executed when a new MapAsset model is created.
+         * @param {Object} [attributes] The initial values of the attributes, which will
+         * be set on the model.
+         * @param {Object} [options] Options for the initialize function.
+         */
+        initialize: function (attributes, options) {
+          try {
+            const model = this;
+            // Simple test to see if string is an SVG
+            const isSVG = function (str) {
+              return str.startsWith('<svg')
+            }
+            // Fetch the icon, if there is one
+            if (attributes && attributes.icon && !isSVG(attributes.icon)) {
+              // Use the portal image model to get the correct baseURL for an image
+              const iconModel = new PortalImage({
+                identifier: attributes.icon
+              })
+              fetch(iconModel.get('imageURL'))
+                .then(function (response) {
+                  return response.text();
+                })
+                .then(function (data) {
+                  if (isSVG(data)) {
+                    model.set('icon', data)
+                  }
+                });
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error initializing a MapAsset model' +
+              '. Error details: ' + error
+            );
+          }
+        },
 
         // TODO: ?
         // /**

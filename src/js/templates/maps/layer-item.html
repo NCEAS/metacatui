@@ -1,2 +1,7 @@
-<span class="layer-item__label"><%= label %></span>
+<span class="layer-item__label">
+  <% if(icon && typeof icon === "string" && icon.startsWith('<svg')){ %>
+    <span class="layer-item__icon"><%= icon %></span>
+  <% } %>
+  <%= label %>
+</span>
 <button class="layer-item__visibility-toggle map-view__button" title="Toggle layer visibility"></button>

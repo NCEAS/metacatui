@@ -128,7 +128,8 @@ define(
 
             // Insert the template into the view
             this.$el.html(this.template({
-              label: this.model.get('label')
+              label: this.model.get('label'),
+              icon: this.model.get('icon')
             }));
 
             // Ensure the view's main element has the given class name
