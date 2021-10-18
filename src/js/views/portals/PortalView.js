@@ -664,7 +664,6 @@ define(["jquery",
           // Update the activeSection set on the view
           this.activeSection = sectionView;
 
-
           // Activate the section content
           this.$(this.sectionEls).each(function (i, contentEl) {
             if ($(contentEl).data("view") == sectionView) {
@@ -688,6 +687,23 @@ define(["jquery",
           //If the section view has post-render functionality, execute it now
           if (typeof sectionView.postRender == "function") {
             sectionView.postRender();
+          }
+
+          // Eventually, the panels layout will allow showing multiple sections at the
+          // same time in different panels. For now, the visualizations sections should
+          // take up the full height of the viewport (minus the header elements), and the
+          // footer should be hidden.
+          if (
+            (this.model.get("layout") === "panels") &&
+            (sectionView instanceof PortalVisualizationsView)
+          ) {
+            this.logosView.$el.hide()
+            MetacatUI.footerView.$el.hide()
+            document.body.style.setProperty('--footer-height', '0')
+          } else {
+            this.logosView.$el.show()
+            MetacatUI.footerView.$el.show()
+            document.body.style.removeProperty('--footer-height')
           }
 
           if (!this.nodeView) {
@@ -1048,6 +1064,10 @@ define(["jquery",
           $(window).off("scroll", "", this.handleScroll);
 
           $("body").removeClass("PortalView");
+
+          // Make sure the footer is visible (hidden for dataViz sections + panels layout)
+          MetacatUI.footerView.$el.show()
+          document.body.style.removeProperty('--footer-height')
 
           $("#editPortal").remove();
 

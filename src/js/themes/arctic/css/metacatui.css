@@ -59,6 +59,9 @@
 
 }
 
+:root {
+  --footer-height: 320px;
+}
 
 /* Body CSS
 -------------------------------------------------- */
@@ -342,7 +345,7 @@ footer {
  width: 100%;
  box-sizing: border-box;
  z-index: 2;
- height: 320px; /* Keeps the footer down */
+ height: var(--footer-height); /* Keeps the footer down */
 }
 #Content{
 	padding-bottom: 350px; /* Keeps footer down */
@@ -550,10 +553,10 @@ footer .logos a:hover, a:focus{
 }
 .PortalView{
   display: grid;
-  grid-template-rows: 40px 0px 100fr 320px;
+  grid-template-rows: 40px 0px 100fr var(--footer-height);
 }
 .PortalView.has-temporary-message {
-    grid-template-rows: auto 0px 100fr 320px;
+    grid-template-rows: auto 0px 100fr var(--footer-height);
 }
 .portal-view .portal-title{
   font-weight: 100;

@@ -86,13 +86,19 @@
 
 /* Title & logo on smaller screens... */
 @media only screen and (max-width: 768px) {
+
+  .Portal.Editor #editor-header, .PortalView #portal-header-container .row {
+    flex-direction: row;
+  }
+
   .PortalView #portal-header-container .row .portal-logo {
-    max-width: 4rem;
-    margin: 0.7rem;
+    max-width: 2.8rem;
+    margin: 0.5rem;
   }
   .PortalView #portal-header-container .portal-title {
-    font-size: 2rem;
-    margin: 0 0.5rem 0.7rem 0.5rem;
+    font-size: 1.5rem;
+    flex: 0;
+    margin: 0 0.5;
   }
 }
 
