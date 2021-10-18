@@ -697,12 +697,12 @@ define(["jquery",
             (this.model.get("layout") === "panels") &&
             (sectionView instanceof PortalVisualizationsView)
           ) {
-            this.logosView.$el.hide()
-            MetacatUI.footerView.$el.hide()
+            this.logosView.el.style.setProperty('display', 'none')
+            MetacatUI.footerView.el.style.setProperty('display', 'none')
             document.body.style.setProperty('--footer-height', '0')
           } else {
-            this.logosView.$el.show()
-            MetacatUI.footerView.$el.show()
+            this.logosView.el.style.removeProperty('display')
+            MetacatUI.footerView.el.style.removeProperty('display')
             document.body.style.removeProperty('--footer-height')
           }
 
@@ -1066,7 +1066,7 @@ define(["jquery",
           $("body").removeClass("PortalView");
 
           // Make sure the footer is visible (hidden for dataViz sections + panels layout)
-          MetacatUI.footerView.$el.show()
+          MetacatUI.footerView.el.style.removeProperty('display')
           document.body.style.removeProperty('--footer-height')
 
           $("#editPortal").remove();
