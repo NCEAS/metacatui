@@ -56,8 +56,8 @@ define(
          * that creates the Cesium model. The properties of options are specific to each
          * type of asset, but most contain a URL to the server where the data is hosted.
            // * @property {number} brightness The brightness of this layer. 1.0 uses the
-           // * unmodified imagery color. Less than 1.0 makes the imagery darker while //
-           * greater than 1.0 makes it brighter.
+           // * unmodified imagery color. Less than 1.0 makes the imagery darker while
+           //* greater than 1.0 makes it brighter.
         */
         defaults: function () {
           return _.extend(
@@ -81,6 +81,8 @@ define(
             MapAsset.prototype.initialize.call(this, attributes, options);
 
             this.createCesiumModel();
+
+            this.getThumbnail();
           }
           catch (error) {
             console.log(
@@ -213,6 +215,43 @@ define(
             .then(function (rectangle) {
               return Cesium.BoundingSphere.fromRectangle3D(rectangle)
             })
+        },
+
+        /**
+         * Requests a tile from the imagery provider that is at the center of the layer's
+         * bounding box and at the minimum level. Once the image is fetched, sets its URL
+         * on the thumbnail property of this model. This function is first called when the
+         * layer initialized, but waits for the cesiumModel to be ready.
+         */
+        getThumbnail: function () {
+          try {
+            if (this.get('status') !== 'ready') {
+              this.listenToOnce(this, 'change:status', this.getThumbnail)
+              return
+            }
+  
+            const model = this
+            const cesImageryLayer = this.get('cesiumModel');
+            const provider = cesImageryLayer.imageryProvider
+            const rect = cesImageryLayer.rectangle
+            var x = (rect.east + rect.west) / 2
+            var y = (rect.north + rect.south) / 2
+            var level = provider.minimumLevel
+  
+            provider.requestImage(x, y, level).then(function (response) {
+              var objectURL = URL.createObjectURL(response.blob);
+              model.set('thumbnail', objectURL)
+            }).otherwise(function (e) {
+              console.log('Error requesting an image tile to use as a thumbnail for an ' +
+              'Imagery Layer. Error message: ' + e);
+            })
+          }
+          catch (error) {
+            console.log(
+              'There was an error getting a thumbnail for a CesiumImagery layer' +
+              '. Error details: ' + error
+            );
+          }
         },
 
         // /**

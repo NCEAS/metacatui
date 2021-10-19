@@ -5,37 +5,38 @@ define(
     'jquery',
     'underscore',
     'backbone',
-    'collections/maps/VectorColors'
+    'collections/maps/AssetColors'
   ],
   function (
     $,
     _,
     Backbone,
-    VectorColors
+    AssetColors
   ) {
     /**
-     * @classdesc A VectorColorPalette Model represents a palette used to color a vector
-     * layer on a map (or plot) conditionally based on some property (attribute) of
-     * features in that layer.
+     * @classdesc A AssetColorPalette Model represents a color scale that is mapped to
+     * some attribute of a Map Asset. For vector assets, like 3D tilesets, this palette is
+     * used to conditionally color features on a map. For any type of asset, it can be
+     * used to generate a legend.
      * @classcategory Models/Maps
-     * @class VectorColorPalette
-     * @name VectorColorPalette
+     * @class AssetColorPalette
+     * @name AssetColorPalette
      * @extends Backbone.Model
      * @since 2.x.x
      * @constructor
     */
-    var VectorColorPalette = Backbone.Model.extend(
-      /** @lends VectorColorPalette.prototype */ {
+    var AssetColorPalette = Backbone.Model.extend(
+      /** @lends AssetColorPalette.prototype */ {
 
         /**
          * The name of this type of model
          * @type {string}
         */
-        type: 'VectorColorPalette',
+        type: 'AssetColorPalette',
 
         /**
-         * Default attributes for VectorColorPalette models
-         * @name VectorColorPalette#defaults
+         * Default attributes for AssetColorPalette models
+         * @name AssetColorPalette#defaults
          * @type {Object}
          * @property {string} paletteType Set to 'categorical', 'continuous', or
          * 'classified'. If categorical, then the color conditions will be interpreted
@@ -44,13 +45,15 @@ define(
          * gradient. The point in the gradient will be associated with the number set with
          * the color, and numbers in between points will be set to an interpolated color.
          * If 'classified', then the numbers set in the colors attribute will be
-         * interpreted as maximums. Continuous properties will be forced into discrete bins.
-         * NOTE: Currently only categorical palettes are supported.
-         * @property {string} property The name (ID) of the property in the vector layer's
-         * attribute table to color the vector data by.
+         * interpreted as maximums. Continuous properties will be forced into discrete
+         * bins. NOTE: Currently only categorical palettes are supported.
+         * @property {string} property The name (ID) of the property in the asset layer's
+         * attribute table to color the vector data by (or for imagery data that does not
+         * have an attribute table, just the name of the attribute that these colors map
+         * to).
          * @property {string} [label] A user-friendly name to display instead of the
          * actual property name.
-         * @property {VectorColors} colors The colors to use in the color palette, along
+         * @property {AssetColors} colors The colors to use in the color palette, along
          * with the conditions associated with each color (i.e. the properties of the
          * feature that must be true to use the given color.)
         */
@@ -59,12 +62,12 @@ define(
             paletteType: 'categorical',
             property: null,
             label: null,
-            colors: new VectorColors()
+            colors: new AssetColors()
           }
         },
 
         /**
-         * Executed when a new VectorColorPalette model is created.
+         * Executed when a new AssetColorPalette model is created.
          * @param {Object} [attributes] The initial values of the attributes, which will
          * be set on the model.
          * @param {Object} [options] Options for the initialize function.
@@ -72,12 +75,12 @@ define(
         initialize: function (attributes, options) {
           try {
             if (attributes && attributes.colors) {
-              this.set('colors', new VectorColors(attributes.colors))
+              this.set('colors', new AssetColors(attributes.colors))
             }
           }
           catch (error) {
             console.log(
-              'There was an error initializing a VectorColorPalette model' +
+              'There was an error initializing a AssetColorPalette model' +
               '. Error details: ' + error
             );
           }
@@ -87,7 +90,7 @@ define(
         //  * Parses the given input into a JSON object to be set on the model.
         //  *
         //  * @param {TODO} input - The raw response object
-        //  * @return {TODO} - The JSON object of all the VectorColorPalette attributes
+        //  * @return {TODO} - The JSON object of all the AssetColorPalette attributes
         //  */
         // parse: function (input) {
 
@@ -100,7 +103,7 @@ define(
         //   }
         //   catch (error) {
         //     console.log(
-        //       'There was an error parsing a VectorColorPalette model' +
+        //       'There was an error parsing a AssetColorPalette model' +
         //       '. Error details: ' + error
         //     );
         //   }
@@ -125,7 +128,7 @@ define(
         //   }
         //   catch (error) {
         //     console.log(
-        //       'There was an error validating a VectorColorPalette model' +
+        //       'There was an error validating a AssetColorPalette model' +
         //       '. Error details: ' + error
         //     );
         //   }
@@ -133,17 +136,17 @@ define(
 
         // /**
         //  * Creates a string using the values set on this model's attributes.
-        //  * @return {string} The VectorColorPalette string
+        //  * @return {string} The AssetColorPalette string
         //  */
         // serialize: function () {
         //   try {
-        //     var serializedVectorColorPalette = '';
+        //     var serializedAssetColorPalette = '';
 
-        //     return serializedVectorColorPalette;
+        //     return serializedAssetColorPalette;
         //   }
         //   catch (error) {
         //     console.log(
-        //       'There was an error serializing a VectorColorPalette model' +
+        //       'There was an error serializing a AssetColorPalette model' +
         //       '. Error details: ' + error
         //     );
         //   }
@@ -151,7 +154,7 @@ define(
 
       });
 
-    return VectorColorPalette;
+    return AssetColorPalette;
     
   }
 );

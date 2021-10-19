@@ -380,11 +380,10 @@ represents 1 unit of the given distance measurement. */
 /* A layer-item is one item in the layer-list */
 
 .layer-item {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
   width: 100%;
+  display: grid;
+  grid-template-columns: auto max-content min-content;
+  align-items: center;
 }
 
 .layer-item__label {
@@ -743,3 +742,26 @@ other class: .ui-slider-range */
  * Legends for vector layers in the map
  *
  */
+
+.map-legend--preview{
+  height: 1.2rem;
+  width: 100%
+}
+
+.map-legend__svg--preview{
+  height: 100%;
+  width: auto;
+}
+
+.map-legend__img--preview{
+  --img-overflow: 0.8rem;
+  /* allow images previews to bleed into the padding a little, so that more detail is visible */
+  height: calc(100% + var(--img-overflow));
+  max-width: 100%;
+  margin-top: calc(-0.5* var(--img-overflow));
+  border-radius: 3px;
+  box-shadow: var(--map-shadow-md);
+  /* imagery appears lighter on the map */
+  filter: brightness(1.75);
+}
+

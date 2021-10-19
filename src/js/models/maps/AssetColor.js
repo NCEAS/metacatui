@@ -12,23 +12,24 @@ define(
     Backbone
   ) {
     /**
-     * @classdesc A VectorColor Model represents a single color in a color scale used to
-     * conditionally color vector data in a map (or plot).
+     * @classdesc An AssetColor Model represents one color in a color scale that maps to
+     * attributes of a Map Asset. For vector assets (e.g. Cesium3DTileset models), the
+     * color is used to conditionally color vector data in a map (or plot).
      * @classcategory Models/Maps
-     * @class VectorColor
-     * @name VectorColor
+     * @class AssetColor
+     * @name AssetColor
      * @extends Backbone.Model
      * @since 2.x.x
      * @constructor
     */
-    var VectorColor = Backbone.Model.extend(
-      /** @lends VectorColor.prototype */ {
+    var AssetColor = Backbone.Model.extend(
+      /** @lends AssetColor.prototype */ {
 
         /**
          * The name of this type of model
          * @type {string}
         */
-        type: 'VectorColor',
+        type: 'AssetColor',
 
         /**
          * An object that defines the properties of a color
@@ -43,10 +44,10 @@ define(
          */
 
         /**
-         * Default attributes for VectorColor models
-         * @name VectorColor#defaults
+         * Default attributes for AssetColor models
+         * @name AssetColor#defaults
          * @type {Object}
-         * @property {string} value The value of the vector attribute that corresponds to
+         * @property {string} value The value of the attribute that corresponds to
          * this color. If set to null, then this color will be the default color.
          * @property {string|number} [label] A user-facing name for this attribute value,
          * to show in map legends, etc. If not set, then the value will be displayed
@@ -67,7 +68,7 @@ define(
         },
 
         /**
-         * Executed when a new VectorColor model is created.
+         * Executed when a new AssetColor model is created.
          * @param {Object} [attributes] The initial values of the attributes, which will
          * be set on the model.
          * @param {Object} [options] Options for the initialize function.
@@ -89,7 +90,7 @@ define(
           }
           catch (error) {
             console.log(
-              'There was an error initializing a VectorColor model' +
+              'There was an error initializing a AssetColor model' +
               '. Error details: ' + error
             );
           }
@@ -114,7 +115,7 @@ define(
         //  * Parses the given input into a JSON object to be set on the model.
         //  *
         //  * @param {TODO} input - The raw response object
-        //  * @return {TODO} - The JSON object of all the VectorColor attributes
+        //  * @return {TODO} - The JSON object of all the AssetColor attributes
         //  */
         // parse: function (input) {
 
@@ -126,7 +127,7 @@ define(
         //   }
         //   catch (error) {
         //     console.log(
-        //       'There was an error parsing a VectorColor model' +
+        //       'There was an error parsing a AssetColor model' +
         //       '. Error details: ' + error
         //     );
         //   }
@@ -151,7 +152,7 @@ define(
         //   }
         //   catch (error) {
         //     console.log(
-        //       'There was an error validating a VectorColor model' +
+        //       'There was an error validating a AssetColor model' +
         //       '. Error details: ' + error
         //     );
         //   }
@@ -159,17 +160,17 @@ define(
 
         // /**
         //  * Creates a string using the values set on this model's attributes.
-        //  * @return {string} The VectorColor string
+        //  * @return {string} The AssetColor string
         //  */
         // serialize: function () {
         //   try {
-        //     var serializedVectorColor = "";
+        //     var serializedAssetColor = "";
 
-        //     return serializedVectorColor;
+        //     return serializedAssetColor;
         //   }
         //   catch (error) {
         //     console.log(
-        //       'There was an error serializing a VectorColor model' +
+        //       'There was an error serializing a AssetColor model' +
         //       '. Error details: ' + error
         //     );
         //   }
@@ -177,7 +178,7 @@ define(
 
       });
 
-    return VectorColor;
+    return AssetColor;
 
   }
 );

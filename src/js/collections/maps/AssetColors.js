@@ -5,37 +5,37 @@ define(
     'jquery',
     'underscore',
     'backbone',
-    'models/maps/VectorColor'
+    'models/maps/AssetColor'
   ],
   function (
     $,
     _,
     Backbone,
-    VectorColor
+    AssetColor
   ) {
 
     /**
-     * @class VectorColors
-     * @classdesc A VectorColors collection represents the colors used to create a color
-     * scale for a Vector layer in a map. The last color in the collection should ideally
-     * be a default (see VectorColor model for details on how to set a default color.)
-     * @class VectorColors
+     * @class AssetColors
+     * @classdesc An AssetColors collection represents the colors used to create a color
+     * scale for an asset in a map. The last color in the collection should ideally
+     * be a default (see AssetColor model for details on how to set a default color.)
+     * @class AssetColors
      * @classcategory Collections/maps
      * @extends Backbone.Collection
      * @since 2.x.x
      * @constructor
      */
-    var VectorColors = Backbone.Collection.extend(
-      /** @lends VectorColors.prototype */ {
+    var AssetColors = Backbone.Collection.extend(
+      /** @lends AssetColors.prototype */ {
 
         /**
         * The class/model that this collection contains.
         * @type {Backbone.Model}
         */
-        model: VectorColor,
+        model: AssetColor,
 
         // /**
-        //  * Executed when a new VectorColors collection is created.
+        //  * Executed when a new AssetColors collection is created.
         //  */
         // initialize: function () {
         //   try {
@@ -43,7 +43,7 @@ define(
         //   }
         //   catch (error) {
         //     console.log(
-        //       'There was an error initializing a VectorColors collection' +
+        //       'There was an error initializing a AssetColors collection' +
         //       '. Error details: ' + error
         //     );
         //   }
@@ -68,7 +68,7 @@ define(
         //   }
         //   catch (error) {
         //     console.log(
-        //       'There was an error parsing a VectorColors collection' +
+        //       'There was an error parsing a AssetColors collection' +
         //       '. Error details: ' + error
         //     );
         //   }
@@ -78,7 +78,7 @@ define(
       }
     );
 
-    return VectorColors;
+    return AssetColors;
 
   }
 );

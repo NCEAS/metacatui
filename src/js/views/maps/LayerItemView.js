@@ -7,14 +7,18 @@ define(
     'underscore',
     'backbone',
     'models/maps/assets/MapAsset',
-    'text!templates/maps/layer-item.html'
+    'text!templates/maps/layer-item.html',
+    // Sub-views
+    'views/maps/LegendView'
   ],
   function (
     $,
     _,
     Backbone,
     MapAsset,
-    Template
+    Template,
+    // Sub-views
+    Legend
   ) {
 
     /**
@@ -23,7 +27,8 @@ define(
     * Asset (Layer), including label and icon. Also has a button that changes the
     * visibility of the Layer of the map (by updating the 'visibility' attribute in the
     * MapAsset model). Clicking on the Layer Item opens the Layer Details panel (by
-    * setting the 'selected' attribute to true in the Layer model.)
+    * setting the 'selected' attribute to true in the Layer model.) Additionally, shows a
+    * small preview of a legend for the data that's on the map.
     * @classcategory Views/Maps
     * @name LayerItemView
     * @extends Backbone.View
@@ -63,6 +68,8 @@ define(
          * @property {string} label The element that contains the layer's name/label
          * @property {string} visibilityToggle The element that acts like a button to
          * switch the Layer's visibility on and off
+         * @property {string} legendContainer The element that the legend preview will be
+         * inserted into.
          * @property {string} selected The class that gets added to the view when the
          * Layer Item is selected
          * @property {string} hidden The class that gets added to the view when the Layer
@@ -71,6 +78,7 @@ define(
         classes: {
           label: 'layer-item__label',
           visibilityToggle: 'layer-item__visibility-toggle',
+          legendContainer: 'layer-item__legend-container',
           selected: 'layer-item--selected',
           hidden: 'layer-item--hidden',
         },
@@ -131,6 +139,14 @@ define(
               label: this.model.get('label'),
               icon: this.model.get('icon')
             }));
+
+            // Add a thumbnail / legend preview
+            const legendContainer = this.el.querySelector('.' + this.classes.legendContainer)
+            const legendPreview = new Legend({
+              model: this.model,
+              mode: 'preview'
+            })
+            legendContainer.append(legendPreview.render().el)
 
             // Ensure the view's main element has the given class name
             this.el.classList.add(this.className);

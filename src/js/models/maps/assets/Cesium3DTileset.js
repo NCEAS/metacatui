@@ -7,8 +7,8 @@ define(
     'backbone',
     'cesium',
     'models/maps/assets/MapAsset',
-    'models/maps/VectorColor',
-    'models/maps/VectorColorPalette',
+    'models/maps/AssetColor',
+    'models/maps/AssetColorPalette',
     'collections/maps/VectorFilters'
   ],
   function (
@@ -17,8 +17,8 @@ define(
     Backbone,
     Cesium,
     MapAsset,
-    VectorColor,
-    VectorColorPalette,
+    AssetColor,
+    AssetColorPalette,
     VectorFilters
   ) {
     /**
@@ -57,8 +57,6 @@ define(
          * @type {Object}
          * @property {VectorFilters} filters A set of conditions used to show or hide
          * specific features of this tileset.
-         * @property {VectorColorPalette} colorPalette The color or colors to use to style
-         * this tileset.
          * @property {Cesium.Cesium3DTileset} cesiumModel A model created and used by
          * Cesium that organizes the data to display in the Cesium Widget. See
          * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileset.html}
@@ -71,9 +69,9 @@ define(
             this.constructor.__super__.defaults(),
             {
               filters: new VectorFilters(),
-              colorPalette: new VectorColorPalette(),
               cesiumModel: null,
               cesiumOptions: {},
+              colorPalette: new AssetColorPalette(),
               icon: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m12.6 12.8 4.9 5c.2.2.2.6 0 .8l-5 5c-.2.1-.5.1-.8 0l-4.9-5a.6.6 0 0 1 0-.8l5-5c.2-.2.5-.2.8 0ZM6.3 6.6l5 5v.7l-5 5c-.2.2-.6.2-.8 0l-5-5a.6.6 0 0 1 0-.8l5-5c.2-.1.6-.1.8 0Zm11 7.8 1.7 1.8c.3.2.3.6 0 .8l-.2.3c-.2.2-.6.2-.8 0l-1.8-1.8c-.2-.3-.2-.6 0-.9l.2-.2c.3-.2.6-.2.9 0ZM22 9.7l1.7 1.8c.3.2.3.6 0 .8l-3.3 3.4c-.2.2-.6.2-.9 0l-1.7-1.8a.6.6 0 0 1 0-.8L21 9.7c.3-.2.6-.2.9 0Zm-6-.2 1.7 1.7c.3.3.3.6 0 .9l-2 2c-.2.2-.6.2-.9 0l-1.7-1.8c-.2-.2-.3-.6 0-.8l2-2c.3-.3.6-.3.9 0ZM12.6.3l4.9 5c.2.2.2.5 0 .8l-5 4.9c-.2.2-.5.2-.8 0L6.8 6a.6.6 0 0 1 0-.8l5-4.9c.2-.2.5-.2.8 0Zm6.2 6.3 1.8 1.7c.2.3.2.7 0 1L19 10.7c-.3.3-.7.3-1 0L16.6 9c-.3-.2-.3-.6 0-1l1.4-1.3c.3-.3.7-.3 1 0Z"/></svg>'
             }
           );
@@ -92,10 +90,6 @@ define(
 
             if (attributes.filters) {
               this.set('filters', new VectorFilters(attributes.filters))
-            }
-
-            if (attributes && attributes.colorPalette) {
-              this.set('colorPalette', new VectorColorPalette(attributes.colorPalette))
             }
 
             this.createCesiumModel();
@@ -383,7 +377,7 @@ define(
             const colorPalette = this.get('colorPalette')
 
             // As a backup, use the default vector color
-            const defaultRgb = new VectorColor().defaults().color;
+            const defaultRgb = new AssetColor().defaults().color;
             let defaultCol = new Cesium.Color(
               defaultRgb.red, defaultRgb.green, defaultRgb.blue, opacity
             );

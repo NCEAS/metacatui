@@ -5,13 +5,15 @@ define(
     'jquery',
     'underscore',
     'backbone',
-    'models/portals/PortalImage'
+    'models/portals/PortalImage',
+    'models/maps/AssetColorPalette',
   ],
   function (
     $,
     _,
     Backbone,
-    PortalImage
+    PortalImage,
+    AssetColorPalette
   ) {
     /**
      * @classdesc A MapAsset Model comprises information required to fetch source data for
@@ -69,6 +71,10 @@ define(
          * @property {Boolean} visible Set to true if the layer is visible on the map,
          * false if it is hidden. This applies to raster (imagery) and vector assets, not
          * to terrain assets.
+         * @property {AssetColorPalette} colorPalette The color or colors mapped to
+         * attributes of this asset. This applies to raster/imagery and vector assets. For
+         * imagery, the colorPalette will be used to create a legend. For vector assets
+         * (e.g. 3Dtilesets), it will also be used to style the features.
          * @property {string} status Set to 'ready' when the resource is ready to be
          * rendered in a map view. Set to 'error' when the asset is not supported, or
          * there was a problem requesting the resource.
@@ -88,8 +94,10 @@ define(
             selected: false,
             opacity: 1,
             visible: true,
+            colorPalette: null,
             status: null,
-            statusDetails: null
+            statusDetails: null,
+            
           }
         },
 
@@ -102,6 +110,11 @@ define(
         initialize: function (attributes, options) {
           try {
             const model = this;
+
+            if (attributes && attributes.colorPalette) {
+              this.set('colorPalette', new AssetColorPalette(attributes.colorPalette))
+            }
+
             // Simple test to see if string is an SVG
             const isSVG = function (str) {
               return str.startsWith('<svg')

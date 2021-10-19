@@ -194,11 +194,6 @@ define(
             // Save a reference to this view
             var view = this;
 
-            // Set the toolbar to open, depending on what is initially set in view.isOpen
-            if (this.isOpen) {
-              this.el.classList.add(this.classes.open)
-            }
-
             // Insert the template into the view
             this.$el.html(this.template({}));
 
@@ -238,6 +233,13 @@ define(
                 view.handleLinkClick(sectionEl)
               });
             })
+
+            // Set the toolbar to open, depending on what is initially set in view.isOpen.
+            // Set the first section to active if the toolbar is open.
+            if (this.isOpen) {
+              this.el.classList.add(this.classes.open)
+              view.handleLinkClick(this.sectionElements[0])
+            }
 
             return this
 
