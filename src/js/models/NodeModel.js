@@ -24,7 +24,11 @@ define(['jquery', 'underscore', 'backbone'],
 			if(MetacatUI.appModel.get('nodeServiceUrl')){
 				//Get the node information from the CN
 				this.getNodeInfo();
-			}
+			} else if(MetacatUI.appModeel.get('getCapabilitiesServiceUrl')) {
+                // If the CN node service URL is not defined, see if we can get getCapabilities 
+                // information from the node directly
+				this.getCapabilities();
+            }
 		},
 
 		getMember: function(memberInfo){
@@ -77,6 +81,7 @@ define(['jquery', 'underscore', 'backbone'],
 				dataType: "text",
 				success: function(data, textStatus, xhr) {
 
+/
 					var xmlResponse = $.parseXML(data) || null;
 					if(!xmlResponse) return;
 

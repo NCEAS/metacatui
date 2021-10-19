@@ -451,6 +451,13 @@ define(['jquery', 'underscore', 'backbone'],
       */
       nodeServiceUrl: null,
       /**
+      * The URL for the DataONE listNodes() API. This URL is contructed dynamically when the
+      * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
+      * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/CN_APIs.html#CNCore.listNodes)
+      * @type {string}
+      */
+      getCapabilitiesServiceUrl: null, 
+      /**
       * The URL for the DataONE View API. This URL is contructed dynamically when the
       * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
       * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/MN_APIs.html#module-MNView)
@@ -1950,6 +1957,7 @@ define(['jquery', 'underscore', 'backbone'],
       urls.queryServiceUrl   = baseUrl + '/query/solr/?';
       urls.metaServiceUrl    = baseUrl + '/meta/';
       urls.packageServiceUrl = baseUrl + '/packages/application%2Fbagit-097/';
+      urls.getCapabilitiesServiceUrl   = baseUrl + '/';
 
       if( d1Service.indexOf("mn") > 0 ){
         urls.objectServiceUrl = baseUrl + '/object/';
