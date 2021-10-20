@@ -199,11 +199,19 @@ define(
               view.initializePicking()
             }
 
-            // If the scale bar is showing, then get the coordinates when the mouse moves
+            // If the scale bar is showing, update the pixel to meter scale on the map
+            // model when the camera angle/zoom level changes
             if (view.model.get('showScaleBar')) {
-              view.setMouseCoordinateListener()
-              view.setCameraListener()
+              // Set listeners for when the Cesium camera changes a significant amount. 
+              // See https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#changed}.
+              view.camera.changed.addEventListener(function () {
+                view.updateCurrentScale()
+              })
             }
+
+            // Sets listeners for when the mouse moves, depending on the value of the map
+            // model's showScaleBar and showFeatureInfo attributes
+            view.setMouseMoveListeners()
 
             // The Cesium Widget will support just one terrain option to start. Later,
             // we'll allow users to switch between terrains if there is more than one.
@@ -324,17 +332,6 @@ define(
             view.stopListening(view.model, 'change:selectedFeature')
             view.listenTo(view.model, 'change:selectedFeature', setSelectedFeatureListeners)
 
-            // Change cursor to pointer when the mouse is over a vector feature. Change it
-            // back to the default when the mouse leaves a feature.
-            view.inputHandler.setInputAction(function (movement) {
-              var pickedFeature = scene.pick(movement.endPosition);
-              if (Cesium.defined(pickedFeature)) {
-                view.el.style.cursor = 'pointer';
-              } else {
-                view.el.style.cursor = 'default';
-              }
-            }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
-
             // When a feature is clicked, highlight the feature and trigger an event that
             // tells the parent map view to open the feature details panel
             view.inputHandler.setInputAction(function (movement) {
@@ -345,6 +342,7 @@ define(
               // feature. This will also trigger an event to highlight the selected
               // feature.
               view.updateSelectedFeatureModel(pickedFeature)
+
             }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
           }
           catch (error) {
@@ -371,7 +369,7 @@ define(
             let isTileset = false;
 
             // Remove highlight from all currently silhouetted 3D tiles
-            view.silhouettes.selected.forEach(function(prevCesiumEntity){
+            view.silhouettes.selected.forEach(function (prevCesiumEntity) {
               prevCesiumEntity.selectedInMap = false
               // Make sure the style is updated for the features that are no longer
               // selected
@@ -611,24 +609,37 @@ define(
         },
 
         /**
-         * Set a listener that updates the Map model's current position attribute whenever
-         * the mouse moves
+         * Set a Cesium event handler for when the mouse moves. If the scale bar is
+         * enabled, then a updates the Map model's current position attribute whenever the
+         * mouse moves. If showFeatureInfo is enabled, then changes the cursor to a
+         * pointer when it hovers over a feature.
          */
-        setMouseCoordinateListener: function () {
+        setMouseMoveListeners: function () {
           try {
-            // Use globe.ellipsoid.cartesianToCartographic?
 
-            var view = this;
+            const view = this;
 
-            // Handle mouse move
-            this.inputHandler.setInputAction(e => {
+            // Change the cursor to a pointer when it hovers over a clickable feature
+            // (e.g. a 3D tile) if picking is enabled.
+            const updateCursor = function (mousePosition) {
+              var pickedFeature = view.scene.pick(mousePosition);
+              if (Cesium.defined(pickedFeature)) {
+                view.el.style.cursor = 'pointer';
+              } else {
+                view.el.style.cursor = 'default';
+              }
+            }
 
-              var mousePosition = e.endPosition;
+            // Slow this function down a little. Picking is quite slow.
+            const updateCursorThrottled = _.throttle(updateCursor, 150)
+
+            // Update the model with long and lat when the mouse moves, if the map model
+            // is set to show the scale bar
+            const setCurrentPosition = function (mousePosition) {
               var pickRay = view.camera.getPickRay(mousePosition);
               var cartesian = view.scene.globe.pick(pickRay, view.scene);
-
-              // TODO: Limit how often the function runs if it seems to slow down the map.
               if (cartesian) {
+                // Use globe.ellipsoid.cartesianToCartographic ?
                 var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
                 view.model.set('currentPosition', {
                   latitude: Cesium.Math.toDegrees(cartographic.latitude),
@@ -636,12 +647,23 @@ define(
                   height: cartographic.height,
                 })
               }
+            }
 
+            // Handle mouse move
+            this.inputHandler.setInputAction(function (movement) {
+              const mousePosition = movement.endPosition;
+              if (view.model.get('showScaleBar')) {
+                setCurrentPosition(mousePosition)
+              }
+              if (view.model.get('showFeatureInfo')) {
+                updateCursorThrottled(mousePosition)
+              }
             }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
           }
           catch (error) {
             console.log(
-              'There was an error setting the mouse coordinate listener in a CesiumWidgetView' +
+              'There was an error setting the mouse listeners in a CesiumWidgetView' +
               '. Error details: ' + error
             );
           }
@@ -649,34 +671,24 @@ define(
 
 
         /**
-         * Set listeners for when the Cesium camera changes a significant amount. Update
-         * the map model's currentScale attribute, which is used for the scale bar.
-         * See {@link https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#changed}.
+         * Update the map model's currentScale attribute, which is used for the scale bar.
+         * Finds the distance between two pixels at the *bottom center* of the screen.
          */
-        setCameraListener: function () {
+        updateCurrentScale: function () {
           try {
-            const view = this
-
-            // When the camera position has changed significantly, update the scale.
-            view.camera.changed.addEventListener(function () {
-
-              // TODO: Limit how often the function runs if it seems to slow down the map.
-              // Find the distance between two pixels at the *bottom center* of the screen.
-              // Update the map Model's current scale.
-              let currentScale = {
-                pixels: null,
-                meters: null
+            const view = this;
+            let currentScale = {
+              pixels: null,
+              meters: null
+            }
+            const onePixelInMeters = view.pixelToMeters()
+            if (onePixelInMeters || onePixelInMeters === 0) {
+              currentScale = {
+                pixels: 1,
+                meters: onePixelInMeters
               }
-              const onePixelInMeters = view.pixelToMeters()
-              if (onePixelInMeters || onePixelInMeters === 0) {
-                currentScale = {
-                  pixels: 1,
-                  meters: onePixelInMeters
-                }
-              }
-              view.model.set('currentScale', currentScale);
-
-            });
+            }
+            view.model.set('currentScale', currentScale);
           }
           catch (error) {
             console.log(
