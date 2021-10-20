@@ -82,8 +82,9 @@ define(
          * @type {Object}
          * @property {number} previewSvgDimensions.width - The width of the entire SVG
          * @property {number} previewSvgDimensions.height - The height of the entire SVG
-         * @property {number} squareSpacing - Spacing between each of the squares in the
-         * preview legend
+         * @property {number} squareSpacing - Maximum spacing between each of the squares
+         * in the preview legend. Squares will be spaced 20% closed than this when the
+         * legend is not hovered over.
          */
         previewSvgDimensions: {
           width: 160,
@@ -101,11 +102,13 @@ define(
          * the legend colours in the preview legend.
          * @property {string} previewImg The image element that represents a thumbnail of
          * image layers, in preview legends
+         * @property {string} tooltip Class added to tooltips used in preview legends
          */
         classes: {
           preview: 'map-legend--preview',
           previewSVG: 'map-legend__svg--preview',
           previewImg: 'map-legend__img--preview',
+          tooltip: 'map-tooltip',
         },
 
         /**
@@ -227,25 +230,32 @@ define(
             if (!colorPalette) {
               return
             }
-            
+            const view = this
             // Data to use in d3
             let data = colorPalette.get('colors').toJSON().reverse();
-            // The width of the SVG
+            // The max width of the SVG, to be reduced if there are few colours
             let width = this.previewSvgDimensions.width
             // The height of the SVG
             const height = this.previewSvgDimensions.height
-            // Height and width of the square is the height of the SVG, leaving some room for shadow to show
+            // Height and width of the square is the height of the SVG, leaving some room
+            // for shadow to show
             const squareSize = height * 0.92
-            // Spacing between squares
+            // Maximum spacing between squares. When not hovered, the squares will be
+            // spaced 80% of this value.
             let squareSpacing = this.previewSvgDimensions.squareSpacing
-            // The maximum number of squares that can fit on the SVG without any spilling over
+            // The maximum number of squares that can fit on the SVG without any spilling
+            // over
             const maxNumSquares = Math.floor(((width - squareSize) / squareSpacing) + 1)
 
-            // If there are more colors than fit in the SVG space, only show the first
-            // number of squares that will fit
+            // If there are more colors than fit in the max width of the SVG space, only
+            // show the first n squares that will fit
             if (data.length > maxNumSquares) {
               data = data.slice(0, maxNumSquares);
             }
+            // Add index to data for sorting later (also works as unique ID)
+            data.forEach(function (d, i) {
+              d.i = i;
+            });
 
             // Don't create an SVG that is wider than it need to be.
             width = squareSize + ((data.length - 1) * squareSpacing)
@@ -257,18 +267,23 @@ define(
               height: height,
             })
 
-            // Add the preview class to the SVG
+            // Add the preview class and dropshadow to the SVG
             svg.classed(this.classes.previewSVG, true)
             svg.style('filter', 'url(#dropshadow)')
 
+            // Calculates the placement of the square along x-axis, when SVG is hovered
+            // and when it's not
+            function getSquareX(i, hovered) {
+              const multiplier = hovered ? 1 : 0.8;
+              return ((width - squareSize) - (i * (squareSpacing * multiplier)))
+            }
+
             // Draw the legend (d3)
-            svg.selectAll('rect')
+            const legendSquares = svg.selectAll('rect')
               .data(data)
               .enter()
               .append('rect')
-              .attr('x', function (d, i) {
-                return ((width - squareSize) - (i * squareSpacing))
-              })
+              .attr('x', function (d, i) { return getSquareX(i, false) })
               .attr('height', squareSize)
               .attr('width', squareSize)
               .attr('rx', (squareSize * 0.1))
@@ -276,6 +291,60 @@ define(
                 return `rgb(${d.color.red * 255},${d.color.green * 255},${d.color.blue * 255})`
               })
               .style('filter', 'url(#dropshadow)')
+
+            // For legend with multiple colours, show a tooltip with the value/label when
+            // the user hovers over a square. Also bring that square to the fore-front of
+            // the legend when hovered. Only when MapAsset is visible though.
+            if (data.length > 1) {
+
+              // Space the squares further apart when they are hovered over
+              svg
+                .on('mouseenter', function () {
+                  if (view.model.get('visible')) {
+                    legendSquares
+                      .transition()
+                      .duration(250)
+                      .attr('x', function (d, i) { return getSquareX(i, true) })
+                  }
+                })
+                .on('mouseleave', function () {
+                  legendSquares
+                    .transition()
+                    .duration(200)
+                    .attr('x', function (d, i) { return getSquareX(i, false) })
+                })
+
+              legendSquares.on('mouseenter', function (d) {
+                if (view.model.get('visible')) {
+                  // Bring the hovered element to the front, while keeping other
+                  // legendSquares in order
+                  legendSquares.sort((a, b) => d3.ascending(a.i, b.i));
+                  this.parentNode.appendChild(this)
+                  // Show tooltip
+                  if (d.label || d.value) {
+                    $(this).tooltip({
+                      placement: 'bottom',
+                      trigger: 'manual',
+                      title: d.label || d.value,
+                      container: view.$el,
+                      animation: false
+                    }).on('show.bs.popover', function () {
+                      var $square = $(this);
+                      // Allow time for the tooltip to be added to the DOM
+                      setTimeout(function () {
+                        $square.data('tooltip').$tip.addClass(view.classes.tooltip)
+                      }, 2);
+                    })
+                    $(this).tooltip('show')
+                  }
+                }
+              })
+                // Hide tooltip and return squares to regular z-ordering
+                .on('mouseleave', function (d) {
+                  $(this).tooltip('destroy');
+                  legendSquares.sort((a, b) => d3.ascending(a.i, b.i));
+                })
+            }
           }
           catch (error) {
             console.log(
@@ -304,7 +373,7 @@ define(
             const container = this.el;
             const width = options.width;
             const height = options.height;
-            
+
             const svg = d3.select(container)
               .append('svg')
               .attr('preserveAspectRatio', 'xMidYMid')

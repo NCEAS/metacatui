@@ -45,6 +45,36 @@
   /* NOTE: 768px is used as the mobile -> desktop breakpoint throughout the map view, but we cannot use a CSS variable for this. */
 }
 
+.map-tooltip {
+  color: var(--map-col-text);
+  border-radius: var(--map-border-radius);
+  opacity: 1 !important;
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+  box-shadow: var(--map-shadow-md);
+}
+
+.map-tooltip.top .tooltip-arrow {
+  border-top-color: var(--map-col-buttons);
+}
+
+.map-tooltip.right .tooltip-arrow {
+  border-right-color: var(--map-col-buttons);
+}
+
+.map-tooltip.left .tooltip-arrow {
+  border-left-color: var(--map-col-buttons);
+}
+
+.map-tooltip.bottom .tooltip-arrow {
+  border-bottom-color: var(--map-col-buttons);
+}
+
+.map-tooltip .tooltip-inner {
+  padding: 0.3rem;
+  background-color: var(--map-col-buttons);
+}
+
 .map-view__button {
   /* override default button styles */
   font-family: inherit;
