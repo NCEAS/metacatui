@@ -38,6 +38,8 @@
 #portal-header-container {
   grid-area: header;
   margin: 0;
+  display: flex;
+  align-items: center;
 }
 
 /* #portal-sections:after {
@@ -71,6 +73,7 @@
 
 #portal-header-container>.row {
   padding: 0.5rem 0;
+  width: max-content;
 }
 
 .portal-view .portal-title {
@@ -83,6 +86,56 @@
   max-height: 2rem;
   margin-right: 1rem;
 }
+
+.portal-view .portal-description {
+  margin: 0;
+  position: relative;
+  margin-left: 0.8rem;
+}
+
+
+.portal-view .portal-description::before {
+  /* font awesome info icon */
+  font-family: FontAwesome;
+  content: "\f05a";
+  display: flex;
+  font-size: 1.1rem;
+  opacity: 0.5;
+  cursor: help;
+}
+
+.portal-view .portal-description:hover::before {
+  opacity: 0.8;
+}
+
+.portal-view .portal-description p {
+  position: absolute;
+  margin: 0;
+  top: 0;
+  left: 1.5rem;
+  width: max-content;
+  max-width: 15rem;
+  background-color: var(--portal-col-bkg-active, white);
+  z-index: 1;
+  padding: 0 0.3rem;
+  border-radius: 0.2rem;
+  box-shadow: 0 1px 9px -1px rgba(0, 0, 0, 0.2), 0 1px 2px 0px rgba(0, 0, 0, 0.5);
+  /* hide the description until the info icon is hovered */
+  display: none;
+}
+.portal-view .portal-description:hover > p {
+  display: block;
+}
+
+@media only screen and (max-width: 768px) {
+  .portal-view .portal-description p {
+    right: 100%;
+    bottom: -1.5rem;
+    top: unset;
+    left: unset;
+  }
+}
+
 
 /* Title & logo on smaller screens... */
 @media only screen and (max-width: 768px) {

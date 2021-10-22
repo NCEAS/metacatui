@@ -327,15 +327,9 @@ define(
                       trigger: 'manual',
                       title: d.label || d.value,
                       container: view.$el,
-                      animation: false
-                    }).on('show.bs.popover', function () {
-                      var $square = $(this);
-                      // Allow time for the tooltip to be added to the DOM
-                      setTimeout(function () {
-                        $square.data('tooltip').$tip.addClass(view.classes.tooltip)
-                      }, 2);
-                    })
-                    $(this).tooltip('show')
+                      animation: false,
+                      template: '<div class="tooltip '+ view.classes.tooltip +'"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>'
+                    }).tooltip('show')
                   }
                 }
               })

@@ -121,6 +121,7 @@ define(
             }
             // Fetch the icon, if there is one
             if (attributes && attributes.icon && !isSVG(attributes.icon)) {
+              model.set('iconStatus', 'fetching')
               // Use the portal image model to get the correct baseURL for an image
               const iconModel = new PortalImage({
                 identifier: attributes.icon
@@ -133,6 +134,10 @@ define(
                   if (isSVG(data)) {
                     model.set('icon', data)
                   }
+                  model.set('iconStatus', 'success')
+                })
+                .catch(function (response) {
+                  model.set('iconStatus', 'error')
                 });
             }
           }

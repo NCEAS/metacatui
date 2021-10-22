@@ -495,7 +495,7 @@ define(["jquery",
          * Checks the portal model for theme or layout options. If there are any, and if
          * they are supported, then add the associated CSS.
          */
-        addTheming: function(){
+        addTheming: function () {
           try {
             // Check for theme and layout settings.
             var theme = this.model.get("theme");
@@ -508,20 +508,22 @@ define(["jquery",
             // added during this step.
             var view = this
             view.addedThemeCSS = []
-            if (theme && supportedThemes.includes(theme)) {
-              require(
-                ["text!" + MetacatUI.root + "/css/portal-themes/" + theme + ".css"],
-                function (ThemeCss) {
-                  var cssID = "portal-theme-" + theme;
-                  MetacatUI.appModel.addCSS(ThemeCss, cssID);
-                  view.addedThemeCSS.push(cssID)
-                })
-            }
+            // Layout should be added before theme for CSS rules to work together properly
+            // when there is a theme + layout
             if (layout && supportedLayouts.includes(layout)) {
               require(
                 ["text!" + MetacatUI.root + "/css/portal-layouts/" + layout + ".css"],
                 function (ThemeCss) {
                   var cssID = "portal-layout-" + layout;
+                  MetacatUI.appModel.addCSS(ThemeCss, cssID);
+                  view.addedThemeCSS.push(cssID)
+                })
+            }
+            if (theme && supportedThemes.includes(theme)) {
+              require(
+                ["text!" + MetacatUI.root + "/css/portal-themes/" + theme + ".css"],
+                function (ThemeCss) {
+                  var cssID = "portal-theme-" + theme;
                   MetacatUI.appModel.addCSS(ThemeCss, cssID);
                   view.addedThemeCSS.push(cssID)
                 })

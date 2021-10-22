@@ -63,9 +63,11 @@ define(
         template: _.template(Template),
 
         /**
-         * Classes that are used to identify the HTML elements that comprise this view.
+         * Classes that are used to identify or create the HTML elements that comprise
+         * this view.
          * @type {Object}
          * @property {string} label The element that contains the layer's name/label
+         * @property {string} icon The span element that contains the SVG icon
          * @property {string} visibilityToggle The element that acts like a button to
          * switch the Layer's visibility on and off
          * @property {string} legendContainer The element that the legend preview will be
@@ -77,6 +79,7 @@ define(
          */
         classes: {
           label: 'layer-item__label',
+          icon: 'layer-item__icon',
           visibilityToggle: 'layer-item__visibility-toggle',
           legendContainer: 'layer-item__legend-container',
           selected: 'layer-item--selected',
@@ -136,9 +139,10 @@ define(
 
             // Insert the template into the view
             this.$el.html(this.template({
-              label: this.model.get('label'),
-              icon: this.model.get('icon')
+              label: this.model.get('label')
             }));
+
+            this.insertIcon()
 
             // Add a thumbnail / legend preview
             const legendContainer = this.el.querySelector('.' + this.classes.legendContainer)
@@ -180,11 +184,38 @@ define(
         },
 
         /**
+         * Waits for the icon attribute to be ready in the Map Asset model, then inserts
+         * the icon before the label.
+         */
+        insertIcon: function () {
+          try {
+            const iconStatus = this.model.get('iconStatus')
+            if (iconStatus && iconStatus === 'fetching') {
+              this.listenToOnce(this.model, 'change:iconStatus', this.insertIcon)
+              return
+            }
+            const icon = this.model.get('icon')
+            if (icon && typeof icon === 'string' && icon.startsWith('<svg')) {
+              const iconContainer = document.createElement('span')
+              iconContainer.classList.add(this.classes.icon)
+              iconContainer.innerHTML = icon
+              this.el.querySelector('.' + this.classes.label).prepend(iconContainer)
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error inserting an icon in a LayerItemView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
          * Sets the Layer model's 'selected' status attribute to true if it's false, and
          * to false if it's true. Executed when a user clicks on this Layer Item in a
          * Layer List view.
          */
-        toggleSelectionAttr : function(){
+        toggleSelectionAttr: function () {
           try {
             var layerModel = this.model;
             var currentStatus = layerModel.get('selected');
@@ -255,7 +286,7 @@ define(
          * set in the Layer model's 'visible' attribute. Executed whenever the 'visible'
          * attribute changes.
          */
-        toggleHiddenStyles : function(){
+        toggleHiddenStyles: function () {
           try {
             var layerModel = this.model;
             var currentStatus = layerModel.get('visible');

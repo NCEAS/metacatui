@@ -1,11 +1,12 @@
 <div class="metric-chart-loading">
+<style>:root{--test:pink;}</style>
 <% var minHeightSvg = "300px"; var maxHeightSvg = "370px"; %>
 
   <!-- FAIR line chart loading skeleton -->
   <% if(type == "FAIR"){ %>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 852 426" preserveAspectRatio="none" style="width: 100%; height: 100%; min-width: 950px; max-width: 1000px;">
       <g fill="none" fill-rule="evenodd">
-        <g fill="#f7f7f7">
+        <g fill="var(--m-chart-bkg, #f7f7f7)">
           <path d="M56 35h612v344H56zM691 146h45v11h-45zM9 127h13v169H9zM35 44h11v13H35zM35 122h11v13H35zM35 200h11v13H35zM35 278h11v13H35zM35 356h11v13H35zM724 174h85v11h-85z"/>
           <g transform="translate(694 177)">
             <path d="M0 1h20v4H0z"/>
@@ -24,7 +25,7 @@
           </g>
           <path d="M74 386h29v11H74zM145 386h29v11h-29zM215 386h29v11h-29zM286 386h29v11h-29zM356 386h29v11h-29zM427 386h29v11h-29zM497 386h29v11h-29zM568 386h29v11h-29zM638 386h29v11h-29zM341 423h42v-13h-42z"/>
         </g>
-        <g stroke="#ebebeb" stroke-width="5" transform="translate(90 80)" stroke-linecap="round" stroke-linejoin="round">
+        <g stroke="var(--m-chart-lines, #ebebeb)" stroke-width="5" transform="translate(90 80)" stroke-linecap="round" stroke-linejoin="round">
           <%
             const makeLineAnim = function(lineString){
               var values = [lineString];
@@ -85,7 +86,7 @@
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1392 353" preserveAspectRatio="none" style="height: 100%; width: 100%; max-height:<%= maxHeightSvg %>; min-height:<%= minHeightSvg %>;">
     <!-- background elements -->
     <g fill="none" fill-rule="evenodd">
-      <g fill="#f7f7f7">
+      <g fill="var(--m-chart-bkg, #f7f7f7)">
         <path
           d="M24 283h42v15H24zM131 283h42v15h-42zM663 283h42v15h-42zM770 283h42v15h-42zM877 283h42v15h-42zM983 283h42v15h-42zM1090 283h42v15h-42zM1196 283h42v15h-42zM344 283h42v15h-42zM1303 283h42v15h-42zM450 283h42v15h-42zM557 283h42v15h-42zM237 283h42v15h-42zM1 103h14v112H1zM22 0h173v19H22zM1359 50h33v15h-33zM1359 103h33v15h-33zM1359 156h33v15h-33zM1359 213h33v15h-33zM1163 4h42v15h-42z" />
         <path d="M1163 4h42v15h-42zM1100 4h56v15h-56z" />
@@ -93,7 +94,7 @@
         <path d="M1167 4h56v15h-56zM1295 4h56v15h-56zM22 26h1329v248H22zM22 311h1329v42H22z" />
       </g>
       <!-- bars -->
-      <g fill="#ebebeb" transform="translate(43 57)" class="bars">
+      <g fill="var(--m-chart-lines, #ebebeb)" transform="translate(43 57)" class="bars">
         <rect width="34" height="72" y="145">
           <animate attributeName="height" attributeType="XML" dur="3s" values="30;72;30" repeatCount="indefinite" />
           <animate attributeName="y" attributeType="XML" dur="3s" values="187;145;187" repeatCount="indefinite" />
@@ -200,45 +201,45 @@
   <!-- citations -->
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1443 438" preserveAspectRatio="none" style="height: 100%; width: 100%; max-height:290px; min-height:250px;">
     <linearGradient id="shimmer" x1="0%" y1="0%" x1="100%" y1="10%">
-
-      <stop offset="0%" stop-color="#f7f7f7">
-        <animate attributeName="stop-color" values="#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2" dur="1.95s" repeatCount="indefinite"/>
+      <style>:root{--test2:pink}</style>
+      <stop offset="0%" stop-color="var(--m-chart-bkg, #f7f7f7)">
+        <animate attributeName="stop-color" values="#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A" dur="1.95s" repeatCount="indefinite"/>
       </stop>
-      <stop offset="4%" stop-color="#f7f7f7">
-        <animate attributeName="stop-color" values="#FFFFFF;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2" dur="1.95s" repeatCount="indefinite"/>
+      <stop offset="4%" stop-color="var(--m-chart-bkg, #f7f7f7)">
+        <animate attributeName="stop-color" values="transparent;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A" dur="1.95s" repeatCount="indefinite"/>
       </stop>
-      <stop offset="12%" stop-color="#f7f7f7">
-        <animate attributeName="stop-color" values="#f2f2f2;#FFFFFF;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2" dur="1.95s" repeatCount="indefinite"/>
+      <stop offset="12%" stop-color="var(--m-chart-bkg, #f7f7f7)">
+        <animate attributeName="stop-color" values="#e8eaed1A;transparent;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A" dur="1.95s" repeatCount="indefinite"/>
       </stop>
-      <stop offset="19%" stop-color="#f7f7f7">
-        <animate attributeName="stop-color" values="#f2f2f2;#f2f2f2;#FFFFFF;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2" dur="1.95s" repeatCount="indefinite"/>
+      <stop offset="19%" stop-color="var(--m-chart-bkg, #f7f7f7)">
+        <animate attributeName="stop-color" values="#e8eaed1A;#e8eaed1A;transparent;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A" dur="1.95s" repeatCount="indefinite"/>
       </stop>
-      <stop offset="30%" stop-color="#f7f7f7">
-        <animate attributeName="stop-color" values="#f2f2f2;#f2f2f2;#f2f2f2;#FFFFFF;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2" dur="1.95s" repeatCount="indefinite"/>
+      <stop offset="30%" stop-color="var(--m-chart-bkg, #f7f7f7)">
+        <animate attributeName="stop-color" values="#e8eaed1A;#e8eaed1A;#e8eaed1A;transparent;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A" dur="1.95s" repeatCount="indefinite"/>
       </stop>
-      <stop offset="40%" stop-color="#f7f7f7">
-        <animate attributeName="stop-color" values="#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#FFFFFF;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2" dur="1.95s" repeatCount="indefinite"/>
+      <stop offset="40%" stop-color="var(--m-chart-bkg, #f7f7f7)">
+        <animate attributeName="stop-color" values="#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;transparent;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A" dur="1.95s" repeatCount="indefinite"/>
       </stop>
-      <stop offset="50%" stop-color="#f7f7f7">
-        <animate attributeName="stop-color" values="#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#FFFFFF;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2" dur="1.95s" repeatCount="indefinite"/>
+      <stop offset="50%" stop-color="var(--m-chart-bkg, #f7f7f7)">
+        <animate attributeName="stop-color" values="#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;transparent;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A" dur="1.95s" repeatCount="indefinite"/>
       </stop>
-      <stop offset="60%" stop-color="#f7f7f7">
-        <animate attributeName="stop-color" values="#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#FFFFFF;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2" dur="1.95s" repeatCount="indefinite"/>
+      <stop offset="60%" stop-color="var(--m-chart-bkg, #f7f7f7)">
+        <animate attributeName="stop-color" values="#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;transparent;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A" dur="1.95s" repeatCount="indefinite"/>
       </stop>
-      <stop offset="70%" stop-color="#f7f7f7">
-        <animate attributeName="stop-color" values="#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#FFFFFF;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2" dur="1.95s" repeatCount="indefinite"/>
+      <stop offset="70%" stop-color="var(--m-chart-bkg, #f7f7f7)">
+        <animate attributeName="stop-color" values="#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;transparent;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A" dur="1.95s" repeatCount="indefinite"/>
       </stop>
-      <stop offset="80%" stop-color="#f7f7f7">
-        <animate attributeName="stop-color" values="#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#FFFFFF;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2" dur="1.95s" repeatCount="indefinite"/>
+      <stop offset="80%" stop-color="var(--m-chart-bkg, #f7f7f7)">
+        <animate attributeName="stop-color" values="#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;transparent;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A" dur="1.95s" repeatCount="indefinite"/>
       </stop>
-      <stop offset="85%" stop-color="#f7f7f7">
-        <animate attributeName="stop-color" values="#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#FFFFFF;#f2f2f2;#f2f2f2;#f2f2f2" dur="1.95s" repeatCount="indefinite"/>
+      <stop offset="85%" stop-color="var(--m-chart-bkg, #f7f7f7)">
+        <animate attributeName="stop-color" values="#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;transparent;#e8eaed1A;#e8eaed1A;#e8eaed1A" dur="1.95s" repeatCount="indefinite"/>
       </stop>
-      <stop offset="96%" stop-color="#f7f7f7">
-        <animate attributeName="stop-color" values="#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#FFFFFF;#f2f2f2;#f2f2f2" dur="1.95s" repeatCount="indefinite"/>
+      <stop offset="96%" stop-color="var(--m-chart-bkg, #f7f7f7)">
+        <animate attributeName="stop-color" values="#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;transparent;#e8eaed1A;#e8eaed1A" dur="1.95s" repeatCount="indefinite"/>
       </stop>
-      <stop offset="100%" stop-color="#f7f7f7">
-        <animate attributeName="stop-color" values="#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2" dur="1.95s" repeatCount="indefinite"/>
+      <stop offset="100%" stop-color="var(--m-chart-bkg, #f7f7f7)">
+        <animate attributeName="stop-color" values="#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A;#e8eaed1A" dur="1.95s" repeatCount="indefinite"/>
       </stop>
 
     </linearGradient>
@@ -250,7 +251,7 @@
         <rect width="1329" height="104" y="252"/>
       </g>
       <!-- text skeleton -->
-      <g fill="#ebebeb" transform="translate(85.5 59)">
+      <g fill="var(--m-chart-lines, #ebebeb)" transform="translate(85.5 59)">
         <rect width="1271" height="10" y="252"/>
         <rect width="1202" height="10" x="70" y="281"/>
         <rect width="1015" height="10" x="70" y="310"/>
@@ -272,7 +273,7 @@
   class="character">
     <g fill="none" fill-rule="evenodd">
       <!-- base -->
-      <path fill="#E2F7FA" fill-rule="nonzero" d="M279 353c0-36-43-26-46-46-2-20-55-42-78-54l-2-2c-23-12-74-39-102-26s-49 7-50 32v4l-1 92h279z" opacity=".8"/>
+      <path fill="var(--m-chart-bubble-bkg, #E2F7FA)" fill-rule="nonzero" d="M279 353c0-36-43-26-46-46-2-20-55-42-78-54l-2-2c-23-12-74-39-102-26s-49 7-50 32v4l-1 92h279z" opacity=".8"/>
       <path fill="#1F2629" fill-rule="nonzero" d="M124 46c8 1 19 7 19 17 0 11-11 15-21 17 6 8 9 9 9 13-1 3-7 12-8 23 0 11-30 70-35 72-6 2 5 13-33 14-10 0-29-15-29-35 0-43 44-51 69-99 12-22 26-22 29-22z"/>
       <path fill="#837163" fill-rule="nonzero" d="M217 287l9-5 7 11-9 6z"/>
       <path fill="#224145" fill-rule="nonzero" d="M202 208c9 0 23 57 29 73-1 4-8 9-12 9l-27-44c-3-3 0-38 10-38z"/>
@@ -351,7 +352,7 @@
   right: 0; max-height:<%= maxHeightSvg %>; min-height:<%= minHeightSvg %>;" class="character">
     <!-- statistician base -->
     <g fill-rule="nonzero" transform="matrix(-1 0 0 1 1392 40)">
-      <path fill="#E2F7FA" d="M218 62c20 29 18 84 19 112 1 27 23 64 11 91s-56 44-76 48c-20 3-45-17-73-28-27-12-57-14-76-31-19-18-26-49-22-80s17-64 31-102S96 0 126 1s72 32 92 61z" opacity=".8" />
+      <path fill="var(--m-chart-bubble-bkg, #E2F7FA)" d="M218 62c20 29 18 84 19 112 1 27 23 64 11 91s-56 44-76 48c-20 3-45-17-73-28-27-12-57-14-76-31-19-18-26-49-22-80s17-64 31-102S96 0 126 1s72 32 92 61z" opacity=".8" />
       <path fill="#3282CE" d="M156 204c6 17 9 96 9 109h-32l-13-30 23-84 13 5z" />
       <path fill="#3F8FDA" d="M145 206c-2 11-17 98-21 107H78c-2-7-9-83 0-112 9-28 67 5 67 5z" />
       <path fill="#A78E7B" d="M153 160c3 0 43-19 52-26 9-8-2-14-6-12-3 2-38 17-46 19-7 3 0 19 0 19z" />

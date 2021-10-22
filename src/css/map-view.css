@@ -152,6 +152,8 @@
   position: absolute;
   top: 1rem;
   right: 1rem;
+  /* required to be placed above map widget in firefox: */
+  z-index: 1;
 }
 
 .map-view__toolbar-container {
@@ -159,6 +161,8 @@
   top: 0;
   left: 0;
   height: 100%;
+  /* required to be placed above map widget in firefox: */
+  z-index: 1;
 }
 /* On large screens, the toolbar should not overlap the map, it should squish it */
 @media only screen and (min-width: 768px) {
@@ -177,6 +181,8 @@
   /* Make sure the entire panel is visible always. Leave 5rem for scale bar. */
   max-height: calc(100% - 5rem);
   overflow: auto;
+  /* required to be placed above map widget in firefox: */
+  z-index: 1;
 }
 
 .map-view__layer-details-container {
@@ -186,6 +192,8 @@
   /* Don't allow the panel to expand beyond the map view */
   max-height: 100%;
   overflow: auto;
+  /* required to be placed above map widget in firefox: */
+  z-index: 1;
 }
 
 /*****************************************************************************************

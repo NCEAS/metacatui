@@ -1,19 +1,23 @@
 :root {
   /* COLOURS */
-  /* grey 900 */
   --portal-col-bkg: #111827;
-  /* grey 600 */
+  --portal-col-bkg-lighter: #1F2937;
   --portal-col-bkg-active: #374151;
-  /* grey 700 */
   --portal-col-buttons: #4B5563F2;
-  /* grey 400 */
   --portal-col-text-subtle: #9CA3AF;
-  /* grey 50 */
   --portal-col-text: #F9FAFB;
-  /* teal */
   --portal-col-highlight: #269fb9;
+  --portal-col-highlight-subtle: #0c4e66;
   /* SHADOWS */
   --map-shadow-md: 0 1px 9px -1px rgba(0, 0, 0, 0.2), 0 1px 2px 0px rgba(0, 0, 0, 0.5);
+  /* Colors used in the 'loading-metrics.html' template, on Metrics page */
+  --m-chart-bkg: var(--portal-col-bkg-lighter);
+  --m-chart-lines: var(--portal-col-bkg-active);
+  --m-chart-bubble-bkg: var(--portal-col-highlight-subtle);
+}
+
+.subtle {
+  color: var(--portal-col-text-subtle);
 }
 
 body, .portal-view, .Portal #Content, .PortalView #Content {
@@ -33,8 +37,8 @@ body, .portal-view, .Portal #Content, .PortalView #Content {
   line-height: 1.2;
 }
 
-.portal-display-image .portal-display-text, .portal-editor .portal-display-text {
-  background-color: rgb(19 27 44 / 78%);
+.portal-display-image .portal-display-text, .portal-editor .portal-display-text, .portal-section .portal-display-text {
+  background-color: rgb(28 39 64 / 82%);
 }
 
 .Portal.Editor #Navbar, .PortalView #Navbar, .Portal.Editor .navbar-inner, .PortalView .navbar-inner, .Portal .d1_nav, .PortalView .d1_nav {
@@ -58,12 +62,18 @@ body, .portal-view, .Portal #Content, .PortalView #Content {
   color: var(--portal-col-text-subtle);
 }
 
+.portal-view .portal-description {
+  color: var(--portal-col-text)
+}
+
 /* sign in button */
+
 .header .nav li a.btn.login {
   border-color: transparent;
   color: var(--portal-col-text-subtle);
 }
-.header .nav li a.btn.login > .icon {
+
+.header .nav li a.btn.login>.icon {
   opacity: 0.7;
 }
 
@@ -120,4 +130,119 @@ a {
 .portal-view .toc li.active>a, .portal-editor .toc li.active>a, .portal-view .toc-ul li>a:hover, .portal-editor .toc-ul li>a:hover {
   border-radius: 0.5rem;
   box-shadow: 0px 1px 10px -1px rgba(0, 0, 0, 0.5);
+}
+
+/* Metrics page */
+
+.profile .charts-container .stripe:nth-child(even) {
+  background-image: none;
+}
+
+.profile .stripe {
+  border-top: 1px solid var(--portal-col-bkg-active);
+}
+
+/* info alerts in the portal */
+
+.alert-info {
+  background-color: var(--portal-col-highlight-subtle);
+  border-color: var(--portal-col-highlight-subtle);
+  text-shadow: none;
+}
+
+/* SVG charts */
+
+.donut-title-text, svg .title, svg .tick text, .donut-arc-count,
+.portal-view .donut-title-count.data, .portal-view .donut-title-count.metadata,
+.portal-view .donut-title-text, .portal-view .donut-title-text {
+  color: var(--portal-col-text-subtle);
+  fill: var(--portal-col-text-subtle);
+}
+
+.tick line {
+  stroke: var(--portal-col-bkg-lighter);
+}
+
+#metric-modal .metric-chart rect.no-data, .views-metrics
+.metric-chart rect.no-data, .downloads-metrics .metric-chart rect.no-data {
+  fill: var(--portal-col-bkg-lighter);
+}
+
+#metric-modal .metric-chart text.no-data, .views-metrics .metric-chart text.no-data, .downloads-metrics .metric-chart text.no-data {
+  fill: var(--portal-col-text);
+}
+
+.empty-citation-list {
+  background-color: var(--portal-col-bkg-lighter);
+}
+
+.no-activity h3, .no-activity h4, .no-activity h5, .no-activity h6, .no-activity p, .no-activity .summary-container p, .no-activity a, .no-activity .message, .no-activity svg .title, .no-activity svg .bar-label, .profile .no-activity .packages p {
+  color: var(--portal-col-text-subtle);
+  stroke: var(--portal-col-text-subtle);
+  fill: var(--portal-col-text-subtle);
+}
+
+.donut.no-activity > g .donut-arc, .donut.data.no-activity > g .donut-arc, .donut.metadata.no-activity > g .donut-arc, .donut.no-activity .donut-title-count, .donut.no-activity .donut-title-text {
+  fill: var(--portal-col-buttons)
+}
+
+
+/* members page */
+
+.portal-view #Members .row-fluid:nth-child(odd) {
+  background-color: var(--portal-col-bkg-lighter)
+}
+
+/* data page */
+
+#results-view {
+  background-color: var(--portal-col-bkg);
+}
+
+.result-row:nth-child(odd) {
+  background-color: var(--portal-col-bkg-lighter);
+}
+
+.result-row {
+  border-top: 1px solid var(--portal-col-bkg-active);
+}
+
+.pagination ul>li>a, .pagination ul>li>span {
+  border: 1px solid var(--portal-col-bkg-active);
+  background-color: var(--portal-col-bkg);
+}
+
+select, .uneditable-input, input[type=text], input[type=password], input[type=datetime], input[type=datetime-local], input[type=date], input[type=month], input[type=time], input[type=week], input[type=number], input[type=email], input[type=url], input[type=tel], input[type=color], input[type=search], textarea {
+  border: 1px solid var(--portal-col-bkg-active);
+  background-color: var(--portal-col-bkg-lighter);
+  color: var(--portal-col-text)
+}
+
+.filter-groups .filter .btn:not(.btn-filter-editor) {
+  border-color: var(--portal-col-bkg-active);
+  color: var(--portal-col-text-subtle)
+}
+
+.filter-group-link a, .nav-tabs .filter-group-link a, .nav-tabs .filter-group-link.active a {
+  background-color: var(--portal-col-bkg);
+}
+
+.nav-tabs .filter-group-link.active a {
+  background-color: var(--portal-col-bkg-lighter);
+}
+
+.nav-tabs .filter-group-link a:hover, .filter-group-link a, .nav-tabs .filter-group-link a, .nav-tabs .filter-group-link.active a {
+  border-color: var(--portal-col-bkg-lighter);
+}
+
+.filter-group-link, .nav>li>a:focus, .nav>li>a:hover {
+  background-color: var(--portal-col-bkg-lighter);
+}
+
+.filter-group-links, .nav-tabs {
+  border-color: var(--portal-col-bkg-lighter);
+}
+
+.well {
+  color: var(--portal-col-text-subtle);
 }
