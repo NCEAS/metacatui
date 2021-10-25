@@ -90,6 +90,9 @@ define(
          * display information about the MapAsset and/or allow some aspect of the
          * MapAsset's appearance to be edited - e.g. a LayerInfoView or a
          * LayerOpacityView.
+         * @property {boolean} hideIfError Set to true to hide this section when there is
+         * an error loading the layer. Example: we should hide the opacity slider for
+         * layers that are not visible on the map
          */
 
         /**
@@ -101,15 +104,18 @@ define(
         sections: [
           {
             label: 'Opacity',
-            view: LayerOpacityView
+            view: LayerOpacityView,
+            hideIfError: true
           },
           {
             label: 'Navigation',
-            view: LayerNavigationView
+            view: LayerNavigationView,
+            hideIfError: true
           },
           {
             label: 'Info & Data',
-            view: LayerInfoView
+            view: LayerInfoView,
+            hideIfError: false
           }
         ],
 
@@ -179,8 +185,10 @@ define(
 
             var sectionsContainer = this.el.querySelector('.' + this.classes.sections)
 
+            this.renderedSections = _.clone(this.sections)
+
             // Render each section in the Details panel
-            this.sections.forEach(function (section) {
+            this.renderedSections.forEach(function (section) {
               var detailSection = new LayerDetailView({
                 label: section.label,
                 contentView: section.view,
@@ -188,6 +196,30 @@ define(
               })
               sectionsContainer.append(detailSection.el)
               detailSection.render()
+              // Hide the section if there is an error with the asset, and this section
+              // does make sense to show for a layer that can't be displayed
+              if (section.hideIfError && view.model) {
+                if (view.model.get('status') === 'error') {
+                  detailSection.el.style.display = 'none'
+                }
+              }
+              section.renderedView = detailSection
+            })
+
+            // Hide/show sections with the 'hideIfError' property when the status of the
+            // MapAsset changes
+            this.stopListening(this.model, 'change:status')
+            this.listenTo(this.model, 'change:status', function (model, status) {
+              const hideIfErrorSections = _.filter(this.renderedSections, function (section) {
+                return section.hideIfError
+              })
+              let displayProperty = ''
+              if (status === 'error') {
+                displayProperty = 'none'
+              }
+              hideIfErrorSections.forEach(function (section) {
+                section.renderedView.el.style.display = displayProperty
+              })
             })
 
             return this
@@ -252,6 +284,15 @@ define(
          */
         updateModel: function (newModel) {
           try {
+            // Remove listeners from sub-views
+            this.renderedSections.forEach(function (section) {
+              if (
+                section.renderedView &&
+                typeof section.renderedView.onClose === 'function'
+              ) {
+                section.renderedView.onClose()
+              }
+            })
             this.model = newModel;
             this.render()
           }

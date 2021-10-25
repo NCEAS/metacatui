@@ -76,6 +76,7 @@ define(
          * Layer Item is selected
          * @property {string} hidden The class that gets added to the view when the Layer
          * Item is not visible
+         * @property {string} tooltip Class added to tooltips used in this view
          */
         classes: {
           label: 'layer-item__label',
@@ -84,7 +85,16 @@ define(
           legendContainer: 'layer-item__legend-container',
           selected: 'layer-item--selected',
           hidden: 'layer-item--hidden',
+          tooltip: 'map-tooltip',
         },
+
+        /**
+         * The text to show in a tooltip when the MapAsset's status is set to 'error'. If
+         * the model also has a 'statusMessage', that will be appended to the end of this
+         * error message.
+         * @type {string}
+         */
+        errorMessage: 'There was a problem showing this layer.',
 
         /**
         * A function that gives the events this view will listen to and the associated
@@ -137,11 +147,18 @@ define(
             // Save a reference to this view
             var view = this;
 
+            if (!this.model) {
+              return
+            }
+
             // Insert the template into the view
             this.$el.html(this.template({
               label: this.model.get('label')
             }));
+            // Save a reference to the label element
+            this.labelEl = this.el.querySelector('.' + this.classes.label)
 
+            // Insert the icon on the left
             this.insertIcon()
 
             // Add a thumbnail / legend preview
@@ -159,6 +176,8 @@ define(
             // that are set initially
             this.toggleHiddenStyles()
             this.toggleHighlighting()
+            // Show the current status of this layer
+            this.showStatus()
 
             // When the Layer is selected, highlight this item in the Layer List. When
             // it's no longer selected, then make sure it's no longer highlighted. Set a
@@ -171,6 +190,11 @@ define(
             // visibility changes
             this.stopListening(this.model, 'change:visible')
             this.listenTo(this.model, 'change:visible', this.toggleHiddenStyles)
+
+            // Update the item in the list to show when it is loading, loaded, or there's
+            // been an error.
+            this.stopListening(this.model, 'change:status')
+            this.listenTo(this.model, 'change:status', this.showStatus);
 
             return this
 
@@ -303,6 +327,119 @@ define(
             );
           }
         },
+
+        /**
+         * Gets the Map Asset model's status and updates this Layer Item View to reflect
+         * that status to the user.
+         */
+        showStatus: function () {
+          try {
+            var layerModel = this.model;
+            var status = layerModel.get('status');
+            if (status === 'error') {
+              const errorMessage = layerModel.get('statusDetails')
+              this.showError(errorMessage)
+            } else if (status === 'ready') {
+              this.removeStatuses()
+            } else if (status === 'loading') {
+              this.showLoading()
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error showing the status in a LayerItemView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Remove any icons, tooltips, or other visual indicators of a Map Asset's error
+         * or loading status in this view
+         */
+        removeStatuses: function () {
+          try {
+            if (this.statusIcon) {
+              this.statusIcon.remove()
+            }
+            this.$el.tooltip('destroy')
+          }
+          catch (error) {
+            console.log(
+              'There was an error removing status indicators in a LayerItemView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Indicate to the user that there was a problem showing or loading this error.
+         * Shows a 'warning' icon to the right of the label for the asset and a tooltip
+         * with more details
+         * @param {string} message The error message to show in the tooltip
+         */
+        showError: function (message) {
+          try {
+            const view = this
+
+            // Remove any style elements for other statuses
+            this.removeStatuses()
+
+            // Show a warning icon
+            this.statusIcon = document.createElement('span')
+            this.statusIcon.innerHTML = `<i class="icon-warning-sign icon icon-on-right"></i>`
+            this.statusIcon.style.opacity = '0.6'
+            this.labelEl.append(this.statusIcon)
+
+            // Show a tooltip with the error message
+            let fullMessage = this.errorMessage
+            if (message) {
+              fullMessage = fullMessage + ' Error details: ' + message
+            }
+            this.$el.tooltip({
+              placement: 'top',
+              trigger: 'hover',
+              title: fullMessage,
+              container: 'body',
+              animation: false,
+              template: '<div class="tooltip ' +
+                view.classes.tooltip +
+                '"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>',
+              delay: { show: 250, hide: 5 }
+            })
+
+          }
+          catch (error) {
+            console.log(
+              'Failed to show the error status in a LayerItemView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Show a spinner icon to the right of the Map Asset label to indicate that this
+         * layer is loading
+         */
+        showLoading() {
+          try {
+            // Remove any style elements for other statuses
+            this.removeStatuses()
+
+            // Show a spinner icon
+            this.statusIcon = document.createElement('span')
+            this.statusIcon.innerHTML = `<i class="icon-spinner icon-spin icon-small loading icon icon-on-right"></i>`
+            this.statusIcon.style.opacity = '0.6'
+            this.labelEl.append(this.statusIcon)
+          }
+          catch (error) {
+            console.log(
+              'There was an error showing the loading status in a LayerItemView' +
+              '. Error details: ' + error
+            );
+          }
+        }
+
 
       }
     );

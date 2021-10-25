@@ -32,10 +32,10 @@ define(
          * @typedef {Object} CameraPosition
          * @property {number} longitude - Longitude of the central home point
          * @property {number} latitude - Latitude of the central home point
-         * @property {number} height - Height above sea level (meters)
-         * @property {number} heading -  The rotation about the negative z axis (degrees)
-         * @property {number} pitch - The rotation about the negative y axis (degrees)
-         * @property {number} roll - The rotation about the positive x axis (degrees)
+         * @property {number} [height] - Height above sea level (meters)
+         * @property {number} [heading] -  The rotation about the negative z axis (degrees)
+         * @property {number} [pitch] - The rotation about the negative y axis (degrees)
+         * @property {number} [roll] - The rotation about the positive x axis (degrees)
          */
 
         /**

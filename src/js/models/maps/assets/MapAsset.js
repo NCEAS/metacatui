@@ -111,9 +111,23 @@ define(
           try {
             const model = this;
 
+            // Set the color palette
             if (attributes && attributes.colorPalette) {
               this.set('colorPalette', new AssetColorPalette(attributes.colorPalette))
             }
+
+            // The map asset cannot be visible on the map if there was an error loading
+            // the asset
+            this.listenTo(this, 'change:status', function (model, status) {
+              if (status === 'error') {
+                this.set('visible', false)
+              }
+            })
+            this.listenTo(this, 'change:visible', function (model, visible) {
+              if (this.get('status') === 'error') {
+                this.set('visible', false)
+              }
+            })
 
             // Simple test to see if string is an SVG
             const isSVG = function (str) {

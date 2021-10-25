@@ -555,20 +555,33 @@ define(
           try {
             var position = this.model.get('homePosition')
 
-            if (position) {
+            if (position && Cesium.defined(position.longitude) && Cesium.defined(position.latitude)) {
 
-              this.flyTo({
-                destination: Cesium.Cartesian3.fromDegrees(
-                  position.longitude,
-                  position.latitude,
-                  position.height
-                ),
-                orientation: {
+              // Set a default height (elevation) if there isn't one set
+              if (!Cesium.defined(position.height)) {
+                position.height = 1000000;
+              }
+
+              const target = {}
+              target.destination = Cesium.Cartesian3.fromDegrees(
+                position.longitude,
+                position.latitude,
+                position.height
+              )
+
+              if (
+                Cesium.defined(position.heading) &&
+                Cesium.defined(position.pitch) &&
+                Cesium.defined(position.roll)
+              ) {
+                target.orientation = {
                   heading: Cesium.Math.toRadians(position.heading),
                   pitch: Cesium.Math.toRadians(position.pitch),
                   roll: Cesium.Math.toRadians(position.roll)
                 }
-              });
+              }
+
+              this.flyTo(target);
             }
           }
           catch (error) {

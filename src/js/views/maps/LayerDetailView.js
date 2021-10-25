@@ -154,11 +154,11 @@ define(
               var contentContainer = this.el.querySelector(
                 '.' + this.classes.contentContainer
               )
-              var subView = new this.contentView({
+              this.renderedContentView = new this.contentView({
                 model: this.model
               })
-              contentContainer.append(subView.el)
-              subView.render()
+              contentContainer.append(this.renderedContentView.el)
+              this.renderedContentView.render()
             }
 
             return this
@@ -191,6 +191,27 @@ define(
             );
           }
         },
+
+        /**
+         * Perform clean-up functions when this view is about to be removed from the page
+         * or navigated away from.
+         */
+        onClose: function () {
+          try {
+            if (
+              this.renderedContentView &&
+              typeof this.renderedContentView.onClose === 'function'
+            ) {
+              this.renderedContentView.onClose()
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error performing clean up functions in a LayerDetailView' +
+              '. Error details: ' + error
+            );
+          }
+        }
 
       }
     );

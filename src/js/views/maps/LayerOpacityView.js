@@ -254,6 +254,22 @@ define(
           }
         },
 
+        /**
+         * Perform clean-up functions when this view is about to be removed from the page
+         * or navigated away from.
+         */
+        onClose: function () {
+          try {
+            this.stopListening(this.model, 'change:opacity')
+          }
+          catch (error) {
+            console.log(
+              'There was an error performing clean up functions in a LayerOpacityView' +
+              '. Error details: ' + error
+            );
+          }
+        }
+
       }
     );
 

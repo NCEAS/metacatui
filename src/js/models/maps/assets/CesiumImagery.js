@@ -139,8 +139,19 @@ define(
                 model.setListeners()
               })
               .otherwise(function (error) {
+                // See https://cesium.com/learn/cesiumjs/ref-doc/RequestErrorEvent.html
+                let details = error;
+                // Write a helpful error message
+                switch (error.statusCode) {
+                  case 404:
+                    details = 'The resource was not found (error code 404).'
+                    break;
+                  case 500:
+                    details = 'There was a server error (error code 500).'
+                    break;
+                }
                 model.set('status', 'error');
-                model.set('statusDetails', error)
+                model.set('statusDetails', details)
               })
           } else {
             model.set('status', 'error')
