@@ -20,9 +20,17 @@
   color: var(--portal-col-text-subtle);
 }
 
-body, .portal-view, .Portal #Content, .PortalView #Content {
+.portal-view, .Portal #Content, .PortalView #Content {
   color: var(--portal-col-text);
+  background-color: var(--portal-col-bkg-lighter);
+}
+
+body, #portal-sections {
   background-color: var(--portal-col-bkg);
+}
+
+#portal-sections{
+  box-shadow: inset 0 7px 9px -7px rgb(0 0 0 / 40%);
 }
 
 .portal-view, .portal-view .portal-section-content, .portal-view h2, .portal-view h3, .portal-view h4, .portal-view h5, .portal-view h6 {
@@ -75,6 +83,10 @@ body, .portal-view, .Portal #Content, .PortalView #Content {
 
 .header .nav li a.btn.login>.icon {
   opacity: 0.7;
+}
+
+.navbar .login-container .login.btn {
+  color: var(--portal-col-text-subtle);
 }
 
 footer, #Footer {
@@ -134,6 +146,10 @@ a {
 
 /* Metrics page */
 
+.stripe, .profile .charts-container {
+  background-color: transparent;
+}
+
 .profile .charts-container .stripe:nth-child(even) {
   background-image: none;
 }
@@ -152,9 +168,7 @@ a {
 
 /* SVG charts */
 
-.donut-title-text, svg .title, svg .tick text, .donut-arc-count,
-.portal-view .donut-title-count.data, .portal-view .donut-title-count.metadata,
-.portal-view .donut-title-text, .portal-view .donut-title-text {
+.donut-title-text, svg .title, svg .tick text, .donut-arc-count, .portal-view .donut-title-count.data, .portal-view .donut-title-count.metadata, .portal-view .donut-title-text, .portal-view .donut-title-text {
   color: var(--portal-col-text-subtle);
   fill: var(--portal-col-text-subtle);
 }
@@ -163,8 +177,7 @@ a {
   stroke: var(--portal-col-bkg-lighter);
 }
 
-#metric-modal .metric-chart rect.no-data, .views-metrics
-.metric-chart rect.no-data, .downloads-metrics .metric-chart rect.no-data {
+#metric-modal .metric-chart rect.no-data, .views-metrics .metric-chart rect.no-data, .downloads-metrics .metric-chart rect.no-data {
   fill: var(--portal-col-bkg-lighter);
 }
 
@@ -182,10 +195,29 @@ a {
   fill: var(--portal-col-text-subtle);
 }
 
-.donut.no-activity > g .donut-arc, .donut.data.no-activity > g .donut-arc, .donut.metadata.no-activity > g .donut-arc, .donut.no-activity .donut-title-count, .donut.no-activity .donut-title-text {
+.donut.no-activity>g .donut-arc, .donut.data.no-activity>g .donut-arc, .donut.metadata.no-activity>g .donut-arc, .donut.no-activity .donut-title-count, .donut.no-activity .donut-title-text {
   fill: var(--portal-col-buttons)
 }
 
+#metric-modal .metric-chart rect.pane, .views-metrics .metric-chart rect.pane, .downloads-metrics .metric-chart rect.pane {
+  fill: var(--portal-col-bkg-lighter);
+}
+
+.portal-view #metric-modal .metric-chart .bar, .portal-view .views-metrics .metric-chart .bar, .portal-view .downloads-metrics .metric-chart .bar, .portal-view #metric-modal .metric-chart .scale_button:hover rect, .portal-view #metric-modal .metric-chart .bar, .portal-view #metric-modal .metric-chart .bar_context, .portal-view .views-metrics .metric-chart .scale_button:hover rect, .portal-view .views-metrics .metric-chart .bar, .portal-view .views-metrics .metric-chart .bar_context, .portal-view .downloads-metrics .metric-chart .scale_button:hover rect, .portal-view .downloads-metrics .metric-chart .bar, .portal-view .downloads-metrics .metric-chart .bar_context {
+  filter: brightness(1.2);
+}
+
+#metric-modal .metric-chart text, .views-metrics .metric-chart text, .downloads-metrics .metric-chart text {
+  fill: var(--portal-col-text-subtle)
+}
+
+#metric-modal .metric-chart .y.axis line, .views-metrics .metric-chart .y.axis line, .downloads-metrics .metric-chart .y.axis line {
+  fill: var(--portal-col-text-subtle)
+}
+
+#metric-modal .metric-chart .scale_button rect, .views-metrics .metric-chart .scale_button rect, .downloads-metrics .metric-chart .scale_button rect {
+  fill: var(--portal-col-bkg-active)
+}
 
 /* members page */
 
@@ -220,7 +252,8 @@ select, .uneditable-input, input[type=text], input[type=password], input[type=da
 
 .filter-groups .filter .btn:not(.btn-filter-editor) {
   border-color: var(--portal-col-bkg-active);
-  color: var(--portal-col-text-subtle)
+  color: var(--portal-col-text-subtle);
+  background-color: var(--portal-col-bkg-active);
 }
 
 .filter-group-link a, .nav-tabs .filter-group-link a, .nav-tabs .filter-group-link.active a {
@@ -245,4 +278,38 @@ select, .uneditable-input, input[type=text], input[type=password], input[type=da
 
 .well {
   color: var(--portal-col-text-subtle);
+}
+
+.catalog-metrics .badge {
+  background-color: var(--portal-col-bkg-active);
+  color: var(--portal-col-text-subtle)
+}
+
+/* Various elements in the portal view that need to be a little bit lighter */
+
+.portal-section-view a, .portal-view .quick-stats-count {
+  filter: brightness(1.25);
+}
+
+.donut {
+  filter: brightness(1.2);
+}
+
+.Portal.Editor #Navbar .brand, .PortalView #Navbar .brand {
+  filter: brightness(1.6);
+}
+
+.citations-metrics-list > .metric-table.table.table-striped.table-condensed td {
+  background-color: var(--portal-col-bkg)
+}
+
+/* nav in dataone theme */
+
+.PortalView .d1_nav__minimal-nav .d1_menu-item__top-item-name, .Portal .d1_nav__minimal-nav .d1_menu-item__top-item-name, .PortalView .d1_menu-item__icon, .Portal .d1_menu-item__icon, .PortalView .d1_menu-item__dropdown-icon, .Portal .d1_menu-item__dropdown-icon {
+  filter: brightness(1.6);
+}
+
+/* loading */
+.notification.loading p, .notification.loading .icon, .stripe .notification.loading i {
+  color: var(--portal-col-text-subtle)
 }

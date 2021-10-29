@@ -1189,11 +1189,11 @@ svg .title{
 .donut.data > g:nth-child(even) .donut-arc,
 .donut.data > g:nth-child(even) .donut-arc-label
 {
-	fill: #1f254f;
+  fill: #5f9fe3
 }
 .donut.data > g:nth-child(odd) .donut-arc,
 .donut.data > g:nth-child(odd) .donut-arc-label{
-	fill: #323e7c;
+	fill: #414c87;
 }
 /* Have a different color for the first arc so no two colors are adjacent */
 .donut.metadata > g:first-child .donut-arc,
@@ -1203,7 +1203,7 @@ svg .title{
 
 .donut.data > g:first-child .donut-arc,
 .donut.data > g:first-child .donut-arc-label{
-	fill: #5065c9;
+	fill: #5663a3;
 }
 
 

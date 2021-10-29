@@ -5,7 +5,7 @@
 
 .PortalView #Content .portal-view {
   display: grid;
-  grid-template-columns: max-content 1fr;
+  grid-template-columns: auto auto;
   grid-template-rows: min-content 1fr;
   gap: 0 1.5rem;
   grid-auto-flow: row;
@@ -73,13 +73,13 @@
 
 #portal-header-container>.row {
   padding: 0.5rem 0;
-  width: max-content;
+  width: auto;
 }
 
 .portal-view .portal-title {
   font-size: 1.1rem;
   font-weight: 500;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .portal-view .portal-logo {
@@ -150,8 +150,9 @@
   }
   .PortalView #portal-header-container .portal-title {
     font-size: 1.5rem;
-    flex: 0;
+    flex: 1;
     margin: 0 0.5;
+    white-space: unset;
   }
 }
 
@@ -206,7 +207,8 @@
 }
 
 .portal-logos-view {
-  padding: 1rem 0 0 0;
+  padding: 3.5rem 0 3.5rem 0;
+  margin: 0;
 }
 
 .portal-logos-view .img-logo {
@@ -220,8 +222,13 @@
   align-content: center;
 }
 
+.portal-logos-view .row-fluid .span4 {
+  width: auto;
+}
+
 .portal-view .logo-row {
   margin: 0;
+  justify-content: space-around;
 }
 
 .logo-row a {
