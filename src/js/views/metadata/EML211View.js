@@ -21,12 +21,14 @@ define(['underscore', 'jquery', 'backbone',
   'text!templates/metadata/locationsSection.html',
   'text!templates/metadata/taxonomicCoverage.html',
   'text!templates/metadata/taxonomicClassificationTable.html',
-  'text!templates/metadata/taxonomicClassificationRow.html'],
+  'text!templates/metadata/taxonomicClassificationRow.html',
+  'text!templates/metadata/data-sensitivity.html'],
   function (_, $, Backbone,
     ScienceMetadataView, EMLGeoCoverageView, EMLPartyView, EMLMethodsView, EMLTempCoverageView,
     EML, EMLGeoCoverage, EMLKeywordSet, EMLParty, EMLProject, EMLText, EMLTaxonCoverage,
     EMLTemporalCoverage, EMLMethods, Template, PeopleTemplate, EMLPartyCopyMenuTemplate, OverviewTemplate,
-    DatesTemplate, LocationsTemplate, TaxonomicCoverageTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow) {
+    DatesTemplate, LocationsTemplate, TaxonomicCoverageTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow,
+    DataSensitivityTemplate) {
 
     /**
     * @class EMLView
@@ -104,6 +106,7 @@ define(['underscore', 'jquery', 'backbone',
         /* Templates */
         template: _.template(Template),
         overviewTemplate: _.template(OverviewTemplate),
+        dataSensitivityTemplate: _.template(DataSensitivityTemplate),
         datesTemplate: _.template(DatesTemplate),
         locationsTemplate: _.template(LocationsTemplate),
         taxonomicCoverageTemplate: _.template(TaxonomicCoverageTemplate),
@@ -111,6 +114,12 @@ define(['underscore', 'jquery', 'backbone',
         taxonomicClassificationRowTemplate: _.template(TaxonomicClassificationRow),
         copyPersonMenuTemplate: _.template(EMLPartyCopyMenuTemplate),
         peopleTemplate: _.template(PeopleTemplate),
+
+        /**
+        * jQuery selector for the element that contains the Data Sensitivity section.
+        * @type {string}
+        */
+        dataSensitivityContainerSelector: "#data-sensitivity-container",
 
         /**
          * @type {object[]}
@@ -256,6 +265,9 @@ define(['underscore', 'jquery', 'backbone',
           this.renderTitle();
           this.listenTo(this.model, "change:title", this.renderTitle);
 
+          //Data Sensitivity
+          this.renderDataSensitivity();
+
           //Abstract
           _.each(this.model.get("abstract"), function (abs) {
             var abstractEl = this.createEMLText(abs, edit, "abstract");
@@ -310,6 +322,37 @@ define(['underscore', 'jquery', 'backbone',
         renderTitle: function () {
           var titleEl = this.createBasicTextFields("title", "Example: Greater Yellowstone Rivers from 1:126,700 U.S. Forest Service Visitor Maps (1961-1983)", false);
           this.$container.find(".overview").find(".title-container").html(titleEl);
+        },
+
+        /**
+        * Renders the Data Sensitivity section of the Editor using the data-sensitivity.html template.
+        */
+        renderDataSensitivity: function(){
+          try{
+
+            //If Data Sensitivity questions are disabled in the AppConfig, exit before rendering
+            if( !MetacatUI.appModel.get("enableDataSensitivityInEditor") ){
+              return;
+            }
+
+            var container = this.$(this.dataSensitivityContainerSelector),
+                view = this;
+
+            if(!container.length){
+              container = this.$(".section.overview");
+            }
+
+            require(['text!../img/icons/datatags/check-tag.svg', 'text!../img/icons/datatags/alert-tag.svg'], function(checkTagIcon, alertTagIcon){
+              container.html(view.dataSensitivityTemplate({
+                checkTagIcon: checkTagIcon,
+                alertTagIcon: alertTagIcon
+              }));
+            });
+          }
+          catch(e){
+            console.error("Could not render the Data Sensitivity section: ", e);
+          }
+
         },
 
         /*

@@ -395,6 +395,15 @@ define(['jquery', 'underscore', 'backbone'],
         thesaurus: "NASA Global Change Master Directory (GCMD)"
       }],
 
+
+      /**
+      * If true, questions related to Data Sensitivity will be shown in the EML Editor.
+      * @type {boolean}
+      * @default true
+      * @since 2.X
+      */
+      enableDataSensitivityInEditor: true,
+
       /**
       * The base URL for the repository. This only needs to be changed if the repository
       * is hosted at a different origin than the MetacatUI origin. This URL is used to contruct all

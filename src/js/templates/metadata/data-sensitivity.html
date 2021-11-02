@@ -1,0 +1,37 @@
+<h5>Data Sensitivity <i class="required-icon hidden" data-category="dataSensitivity"></i></h5>
+<p class="subtle">Pick the category that best describes the level of sensitivity or restriction of the data.</p>
+<p class="notification" data-category="dataSensitivity"></p>
+
+<div class="row-fluid">
+  <label for="non-sensitive-data-input" class="radio">
+    <input type="radio" id="non-sensitive-data-input" name="data-sens" value="non-sensitive" />
+    <span class="text">Non-sensitive data</span>
+    <div class="data-tag-icon icon icon-on-right blue"><%= checkTagIcon %></div>
+    <p class="notification hidden alert alert-info">
+      <strong>Proceed with uploading data.</strong>
+    </p>
+  </label>
+  <label for="min-sensitive-input" class="radio">
+    <input type="radio" id="min-sensitive-input" name="data-sens" value="min-sensitive" />
+    Some or all data is sensitive with minimal risk
+    <div class="data-tag-icon icon icon-on-right green"><%= checkTagIcon %></div>
+    <p class="notification hidden alert alert-success">
+      <strong>Proceed with uploading data,</strong> but ensure that only data that are safe for public
+      distribution are uploaded. Address questions about anonymization, aggregatation, de-identification, and data
+      embargoes with the data curation support team before uploading data.
+    </p>
+  </label>
+  <label for="max-sensitive-input" class="radio">
+    <input type="radio" id="max-sensitive-input" name="data-sens" value="max-sensitive" />
+    Some or all data is sensitive with significant risk
+    <div class="data-tag-icon icon icon-on-right yellow"><%= alertTagIcon %></div>
+    <div class="data-tag-icon icon icon-on-right orange"><%= alertTagIcon %></div>
+    <div class="data-tag-icon icon icon-on-right red"><%= alertTagIcon %></div>
+    <div class="data-tag-icon icon icon-on-right crimson"><%= alertTagIcon %></div>
+    <p class="notification hidden alert alert-warning">
+      <strong>Do NOT upload sensitive data.</strong> You should still enter a metadata description of your dataset that
+      omits all sensitive information to inform the community of the dataset's existence. Contact the data curation support
+      team about possible alternative approaches to safely preserve sensitive or protected data.
+    </p>
+  </label>
+</div>

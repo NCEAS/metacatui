@@ -516,6 +516,29 @@ display: inline;
 padding: .25em .5em;
 text-shadow: none;
 }
+/* Data Tag Icons */
+.data-tag{
+  height: 1.25em;
+  width: auto;
+}
+.data-tag-icon.blue g{
+  fill: #3FA9F5;
+}
+.data-tag-icon.green g{
+  fill: #00CE01;
+}
+.data-tag-icon.yellow g{
+  fill: #ead10a;
+}
+.data-tag-icon.orange g{
+  fill: #F38D08;
+}
+.data-tag-icon.red g{
+  fill: #FE0300;
+}
+.data-tag-icon.crimson g{
+  fill: #800000;
+}
 /******************************************
 ** Results and Result Rows ***
 ******************************************/
@@ -8104,6 +8127,9 @@ textarea.medium{
 /* ---- Overview ---- */
 .metadata-container .section.overview > div{
 	margin-bottom: 20px;
+}
+#data-sensitivity-container input:checked ~ .notification.hidden{
+  display: block;
 }
 
 /* ---- Funding ---- */
