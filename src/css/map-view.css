@@ -100,6 +100,12 @@
   filter: brightness(1.2);
 }
 
+/* hide the credits until we can find a better placement for them */
+.cesium-widget-credits, .cesium-credit-lightbox-overlay {
+  display: none !important;
+} 
+
+
 /*****************************************************************************************
  *
  * Containers
@@ -398,21 +404,20 @@ represents 1 unit of the given distance measurement. */
 
 /*****************************************************************************************
  *
- * Layers
+ * Layers List
  *
  * Layers contains information about a map's layers and is used as a toolbar section
  *
  */
 
-.layers {
-  width: 100%;
-}
 
 .layer-list {
   display: grid;
   grid-template-columns: 100%;
   grid-template-rows: auto;
   gap: 0.8rem;
+  width: 100%;
+  height: min-content;
 }
 
 /* A layer-item is one item in the layer-list */

@@ -219,22 +219,29 @@ define(
 
         /**
          * Renders the info box that is displayed when a user clicks on a feature on the
-         * map.
+         * map. If there are multiple features selected, this will show information for
+         * the first one only.
          * @returns {FeatureInfoView}  Returns the rendered view
          */
         renderFeatureInfo : function(){
           try {
             this.featureInfo = new FeatureInfoView({
               el: this.subElements.featureInfoContainer,
-              model: this.model.get('selectedFeature')
+              model: this.model.get('selectedFeatures').at(0)
             })
             this.featureInfo.render()
+
+            // When the selectedFeatures collection changes, update the feature info view
+            this.stopListening(this.model.get('selectedFeatures'), 'update')
+            this.listenTo(this.model.get('selectedFeatures'), 'update', function () {
+              this.featureInfo.changeModel(this.model.get('selectedFeatures').at(0))
+            })
+
             // If the Feature model is ever completely replaced for any reason, make the
             // the Feature Info view gets updated.
-            this.stopListening(this.model, 'change:selectedFeature')
-            this.listenTo(this.model, 'change:selectedFeature', function (mapModel, FeatureModel) {
-              this.featureInfo.model = FeatureModel
-              this.featureInfo.update()
+            this.stopListening(this.model, 'change:selectedFeatures')
+            this.listenTo(this.model, 'change:selectedFeatures', function (mapModel, featuresCollection) {
+              this.featureInfo.changeModel(featuresCollection.at(0))
             })
             return this.featureInfo
           }

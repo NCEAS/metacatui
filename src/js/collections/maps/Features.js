@@ -33,46 +33,52 @@ define(
         */
         model: Feature,
 
-        // /**
-        //  * Executed when a new Features collection is created.
-        //  */
-        // initialize: function () {
-        //   try {
+        /**
+         * Get an array of all of the unique Map Assets that are associated with this
+         * collection. (When a feature model is part of a layer, it will have the layer
+         * model (Map Asset) set as a property)
+         * @returns {MapAsset[]} Returns an a array of all the unique Map Assets (imagery,
+         * tilesets, etc.) in this collection.
+         */
+        getMapAssets: function () {
+          return this.getUniqueAttrs('mapAsset')
+        },
 
-        //   }
-        //   catch (error) {
-        //     console.log(
-        //       'There was an error initializing a Features collection' +
-        //       '. Error details: ' + error
-        //     );
-        //   }
-        // },
+        /**
+         * Get an array of all the unique feature objects associated with this collection.
+         * @returns {[]} Returns an array of all of the unique feature objects in the collection.
+         * Feature objects are the objects used by the map widget to represent a feature
+         * in the map. For example, in Cesium this could be a Cesium3DTileFeature or a
+         * GeometryInstance.
+         */
+        getFeatureObjects: function () {
+          return this.getUniqueAttrs('featureObject')
+        },
 
-        // /**
-        //  * Parses the given input into JSON objects used to create this collection's
-        //  * models.
-        //  *
-        //  * @param {TODO} input - The raw response object
-        //  * @return {Object[]} - The array of model attributes to be added to the
-        //  * collection.
-        //  */
-        // parse: function (input) {
-
-        //   try {
-
-        //     var modelAttrs = [];
-
-        //     return modelAttrs
-
-        //   }
-        //   catch (error) {
-        //     console.log(
-        //       'There was an error parsing a Features collection' +
-        //       '. Error details: ' + error
-        //     );
-        //   }
-
-        // },
+        /**
+         * Get an array of unique values for some attribute that may be set on the models
+         * in this collection
+         * @param {string} attrName The name of the attr to get unique values for
+         * @returns {[]} Returns an array of unique values of the given attribute
+         */
+        getUniqueAttrs: function (attrName) {
+          try {
+            let uniqueAttrs = []
+            this.each(function (featureModel) {
+              const attr = featureModel.get(attrName)
+              if (attr && !uniqueAttrs.includes(attr)) {
+                uniqueAttrs.push(attr)
+              }
+            })
+            return uniqueAttrs
+          }
+          catch (error) {
+            console.log(
+              'Failed to get unique values for an attribute in a Features collection' +
+              '. Error details: ' + error
+            );
+          }
+        }
 
       }
     );

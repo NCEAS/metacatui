@@ -98,6 +98,7 @@ define(
          * See {@link https://cesium.com/learn/cesiumjs/ref-doc/Color.html?classFilter=color}
          * @type {Cesium.Color}
          */
+        // TODO - Consider making this color configurable in the Map model
         highlightBorderColor: Cesium.Color.WHITE,
 
         /**
@@ -123,8 +124,8 @@ define(
             if (!this.model) {
               this.model = new Map()
             }
-            if (!this.model.get('selectedFeature')) {
-              this.model.selectFeature()
+            if (!this.model.get('selectedFeatures')) {
+              this.model.selectFeatures()
             }
 
 
@@ -318,19 +319,20 @@ define(
               Cesium.PostProcessStageLibrary.createSilhouetteStage([view.silhouettes])
             );
 
-            // When the Map model's selectedFeature attribute changes, update which
-            // features are highlighted on the map.
-            var setSelectedFeatureListeners = function () {
-              var selectedFeature = view.model.get('selectedFeature')
-              view.stopListening(selectedFeature, 'change')
-              view.listenTo(selectedFeature, 'change', view.highlightSelectedFeature)
+            // When any Feature models in the Map model's selectedFeature collection are
+            // changed, added, or removed, update which features are highlighted on the
+            // map.
+            var setSelectedFeaturesListeners = function () {
+              const selectedFeatures = view.model.get('selectedFeatures')
+              view.stopListening(selectedFeatures, 'update')
+              view.listenTo(selectedFeatures, 'update', view.highlightSelectedFeatures)
             }
-            setSelectedFeatureListeners()
+            setSelectedFeaturesListeners()
 
-            // If the Selected Feature model is ever completely replaced for any reason,
-            // make sure to reset the listeners onto the new Feature model
-            view.stopListening(view.model, 'change:selectedFeature')
-            view.listenTo(view.model, 'change:selectedFeature', setSelectedFeatureListeners)
+            // If the Selected Features collection is ever completely replaced for any
+            // reason, make sure to reset the listeners onto the new collection
+            view.stopListening(view.model, 'change:selectedFeatures')
+            view.listenTo(view.model, 'change:selectedFeatures', setSelectedFeaturesListeners)
 
             // When a feature is clicked, highlight the feature and trigger an event that
             // tells the parent map view to open the feature details panel
@@ -338,10 +340,10 @@ define(
               // Select the feature that's at the position where the user clicked, if
               // there is one
               var pickedFeature = scene.pick(movement.position);
-              // Update the Map model's `selectedFeature` model with the newly selected
-              // feature. This will also trigger an event to highlight the selected
-              // feature.
-              view.updateSelectedFeatureModel(pickedFeature)
+              // Update the Map model's `selectedFeatures` collection with the newly
+              // selected feature. This will also trigger an event to highlight the
+              // selected feature on this map.
+              view.updateSelectedFeatures([pickedFeature])
 
             }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
           }
@@ -361,12 +363,11 @@ define(
           * this view. Removes highlighting from all previously highlighted entities. NOTE:
           * This currently only works with 3D tile features.
           */
-        highlightSelectedFeature: function () {
+        highlightSelectedFeatures: function () {
           try {
 
             const view = this;
-            const featureModel = view.model.get('selectedFeature');
-            let isTileset = false;
+            const featureCollection = view.model.get('selectedFeatures');
 
             // Remove highlight from all currently silhouetted 3D tiles
             view.silhouettes.selected.forEach(function (prevCesiumEntity) {
@@ -376,42 +377,43 @@ define(
               const prevLayerModel = view.model.get('layers').findWhere({
                 cesiumModel: prevCesiumEntity.primitive
               })
-              if (prevLayerModel.update3DTileStyle) {
+              if (typeof prevLayerModel.update3DTileStyle === 'function') {
                 prevLayerModel.update3DTileStyle()
               }
             })
             view.silhouettes.selected = []
 
-            // Get the currently selected feature set on the model
-            var cesiumEntity = featureModel.get('featureObject')
+            featureCollection.each(function (featureModel) {
 
-            // If the selected feature exists, then highlight it by adding a border.
-            if (Cesium.defined(cesiumEntity)) {
-              isTileset = cesiumEntity instanceof Cesium.Cesium3DTileFeature;
-              // Borders are added to 3D tiles by silhouetting them
-              if (isTileset) {
-                // Set a property on the Cesium.Cesium3DTileFeature for use by the
-                // evaluate color function. This allows the feature to be styled
-                // differently when selected (e.g. make opacity 1),
-                cesiumEntity.selectedInMap = true
-                // Add the border ('silhouettes')
-                view.silhouettes.selected = [cesiumEntity]
+              // Get the currently selected features set on the collection
+              var cesiumEntity = featureModel.get('featureObject')
+
+              // If the selected feature exists, then highlight it by adding a border.
+              if (Cesium.defined(cesiumEntity)) {
+                if (cesiumEntity instanceof Cesium.Cesium3DTileFeature) {
+                  // Set a property on the Cesium.Cesium3DTileFeature for use by the
+                  // evaluate color function. This allows the feature to be styled
+                  // differently when selected (e.g. make opacity 1),
+                  cesiumEntity.selectedInMap = true
+                  // Borders are added to 3D tiles by silhouetting them
+                  view.silhouettes.selected.push(cesiumEntity)
+                }
+                // TODO: add borders if this is another type of geometry (e.g. polygons)
               }
-              // TODO: add borders if this is another type of geometry (e.g. polygons)
-            }
+            })
 
             // Reset the 3D tile styles so the selected feature's style is updated.
-            if (featureModel.get('mapAsset')) {
-              if (isTileset) {
-                featureModel.get('mapAsset').update3DTileStyle()
+            featureCollection.getMapAssets().forEach(function (mapAsset) {
+              if (typeof mapAsset.update3DTileStyle === 'function') {
+                mapAsset.update3DTileStyle()
               }
-            }
+            })
 
             view.requestRender()
           }
           catch (error) {
             console.log(
-              'There was an error highlighting a feature in a CesiumWidgetView' +
+              'There was an error highlighting features in a CesiumWidgetView' +
               '. Error details: ' + error
             );
           }
@@ -421,61 +423,72 @@ define(
          * Given a feature from a vector layer (e.g. a Cesium3DTileFeature), gets any
          * properties that are associated with that feature, the MapAsset model that
          * contains the feature, and the ID that Cesium uses to identify it, and updates
-         * the Feature model that is set on the Map's `selectedFeature` attribute. NOTE:
-         * This currently only works with 3D tile features.
-         * @param {Cesium3DTileFeature} feature
+         * the Features collection that is set on the Map's `selectedFeatures` attribute
+         * with a new Feature model. NOTE: This currently only works with 3D tile
+         * features.
+         * @param {Cesium3DTileFeature[]} features - An array of Cesium3DTileFeatures to
+         * select
         */
-        updateSelectedFeatureModel: function (feature) {
+        updateSelectedFeatures: function (features) {
 
           try {
-            var view = this
+            const view = this
+            const layers = view.model.get('layers')
 
-            // If the feature that was clicked on was already selected, do nothing
-            if (view.model.get('selectedFeature').get('featureObject') === feature) {
+            // Don't update the selected features collection if the newly selected
+            // features are identical
+            const oldFeatures = view.model.get('selectedFeatures').getFeatureObjects()
+            const noChange = _.isEqual(_.sortBy(features), _.sortBy(oldFeatures))
+            if (noChange) {
               return;
             }
 
-            // Passing null to the Map model's selectFeature function will reset the Map's
-            // selectedFeature Feature model to the defaults
-            var featureProps = null
+            // Properties of the selected features to pass to the Map model's
+            // selectFeatures function. Passing null will empty the map's selectedFeatures
+            // collection
+            let featuresProps = features ? [] : null
 
-            // If there is a selected feature, get all of the attributes needed for a
-            // Feature model
-            if (feature) {
-              var layers = view.model.get('layers')
-
-              featureProps = {
-                properties: {},
-                mapAsset: null,
-                featureID: feature.pickId ? feature.pickId.key : null,
-                featureObject: feature
-              }
-
-              // Find out which layer model this belongs to
-              featureProps.mapAsset = layers.findWhere({
-                cesiumModel: feature.primitive
-              })
-
-              // Get the attributes that are set on this feature.
-              if (feature instanceof Cesium.Cesium3DTileFeature) {
-                var propertyNames = feature.getPropertyNames();
-                var length = propertyNames.length;
-                for (var i = 0; i < length; ++i) {
-                  var propertyName = propertyNames[i];
-                  featureProps.properties[propertyName] = feature.getProperty(propertyName)
-                }
-              }
-              // TODO: Get properties from other types of features, e.g. polygon entities
-              // and markers created from geoJSON
+            if (!features || !Array.isArray(features)) {
+              features = []
             }
 
-            // Pass the new information to the Map's selectFeature function, which will
-            // update the selectFeature attribute on the Map model
-            view.model.selectFeature(featureProps)
+            features.forEach(function (feature) {
+              if (feature) {
+                const featureProps = {
+                  properties: {},
+                  mapAsset: null,
+                  featureID: feature.pickId ? feature.pickId.key : null,
+                  featureObject: feature
+                }
+                // Find out which layer model this belongs to
+                featureProps.mapAsset = layers.findWhere({
+                  cesiumModel: feature.primitive
+                })
+                // Get the attributes that are set on this feature.
+                if (feature instanceof Cesium.Cesium3DTileFeature) {
+                  var propertyNames = feature.getPropertyNames();
+                  var length = propertyNames.length;
+                  for (var i = 0; i < length; ++i) {
+                    var propertyName = propertyNames[i];
+                    featureProps.properties[propertyName] = feature.getProperty(propertyName)
+                  }
+                }
+                // TODO: Get properties from other types of features, e.g. polygon entities
+                // and markers created from geoJSON
+
+                // Add the feature Props
+                featuresProps.push(featureProps)
+              }
+            })
+
+            // Pass the new information to the Map's selectFeatures function, which will
+            // update the selectFeatures collection set on the Map model
+            view.model.selectFeatures(featuresProps)
+
           }
           catch (error) {
             console.log(
-              'There was an error updating the selected feature model from a ' +
+              'There was an error updating the selected features collection from a ' +
               'CesiumWidgetView. Error details: ' + error
             );
           }

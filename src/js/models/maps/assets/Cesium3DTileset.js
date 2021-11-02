@@ -519,73 +519,7 @@ define(
               const bSphere = Cesium.BoundingSphere.clone(tileset.boundingSphere);
               return bSphere
             })
-        },
-
-        // /**
-        //  * Parses the given input into a JSON object to be set on the model.
-        //  *
-        //  * @param {TODO} input - The raw response object
-        //  * @return {TODO} - The JSON object of all the Cesium3DTileset attributes
-        //  */
-        // parse: function (input) {
-
-        //   try {
-
-        //     var modelJSON = {};
-
-        //     return modelJSON
-
-        //   }
-        //   catch (error) {
-        //     console.log(
-        //       'There was an error parsing a Cesium3DTileset model' +
-        //       '. Error details: ' + error
-        //     );
-        //   }
-
-        // },
-
-        // /**
-        //  * Overrides the default Backbone.Model.validate.function() to check if this if
-        //  * the values set on this model are valid.
-        //  * 
-        //  * @param {Object} [attrs] - A literal object of model attributes to validate.
-        //  * @param {Object} [options] - A literal object of options for this validation
-        //  * process
-        //  * 
-        //  * @return {Object} - Returns a literal object with the invalid attributes and
-        //  * their corresponding error message, if there are any. If there are no errors,
-        //  * returns nothing.
-        //  */
-        // validate: function (attrs, options) {
-        //   try {
-
-        //   }
-        //   catch (error) {
-        //     console.log(
-        //       'There was an error validating a Cesium3DTileset model' +
-        //       '. Error details: ' + error
-        //     );
-        //   }
-        // },
-
-        // /**
-        //  * Creates a string using the values set on this model's attributes.
-        //  * @return {string} The Cesium3DTileset string
-        //  */
-        // serialize: function () {
-        //   try {
-        //     var serialized3DTileset = '';
-
-        //     return serialized3DTileset;
-        //   }
-        //   catch (error) {
-        //     console.log(
-        //       'There was an error serializing a Cesium3DTileset model' +
-        //       '. Error details: ' + error
-        //     );
-        //   }
-        // },
+        }
 
       });
 

@@ -97,7 +97,6 @@ define(
             colorPalette: null,
             status: null,
             statusDetails: null,
-            
           }
         },
 

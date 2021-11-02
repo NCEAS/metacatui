@@ -5,6 +5,7 @@ define(
     'jquery',
     'underscore',
     'backbone',
+    'collections/maps/Features',
     'models/maps/Feature',
     'collections/maps/MapAssets',
   ],
@@ -12,6 +13,7 @@ define(
     $,
     _,
     Backbone,
+    Features,
     Feature,
     MapAssets,
   ) {
@@ -48,10 +50,10 @@ define(
          * @property {MapAssets} terrains - The terrain options to show in the map.
          * @property {MapAssets} layers - The imagery and vector data to render in the
          * map.
-         * @property {Feature} selectedFeature - A particular feature from one of the
-         * layers that is highlighted/selected on the map. The 'selectedFeature' attribute
-         * should be updated with a Feature model when a user selects a geographical
-         * feature on the map (e.g. by clicking)
+         * @property {Features} selectedFeatures - Particular features from one or more
+         * layers that are highlighted/selected on the map. The 'selectedFeatures'
+         * attribute is updated by the map widget (cesium) with a Feature model when a
+         * user selects a geographical feature on the map (e.g. by clicking)
          * @property {Boolean} showToolbar - Whether or not to show the side bar with
          * layer list, etc. True by default.
          * @property {Boolean} showScaleBar - Whether or not to show a scale bar.
@@ -76,7 +78,7 @@ define(
             },
             layers: new MapAssets(),
             terrains: new MapAssets(),
-            selectedFeature: new Feature(),
+            selectedFeatures: new Features(),
             showToolbar: true,
             showScaleBar: true,
             showFeatureInfo: true,
@@ -131,34 +133,54 @@ define(
         },
 
         /**
-         * Set or unset the selected Feature on the map model. A selected feature is a
+         * Set or unset the selected Features on the map model. A selected feature is a
          * polygon, line, point, or other element of vector data that is in focus on the
          * map (e.g. because a user clicked it to show more details.)
-         * @param {Feature|Object} feature - Either a Feature model or an Object of
-         * attributes to set on a new Feature model. If no feature argument is passed to
-         * this function, then any currently selected feature will be removed.
+         * @param {Feature|Object[]} features - An array of Feature models or objects with
+         * attributes to set on new Feature models. If no features argument is passed to
+         * this function, then any currently selected feature will be removed (as long as
+         * replace is set to true)
+         * @param {Boolean} [replace=true] - If true, any currently selected features will
+         * be replaced with the newly selected features. If false, then the newly selected
+         * features will be added to any that are currently selected.
          * @returns 
          */
-        selectFeature(featureProps) {
+        selectFeatures(features, replace = true) {
           try {
 
-            if (!this.get('selectedFeature')) {
-              this.set('selectedFeature', new Feature())
+            const model = this;
+            const defaults = new Feature().defaults()
+
+            if (!model.get('selectedFeatures')) {
+              model.set('selectedFeatures', new Features())
+            }
+            
+            // If no feature is passed to this function (and replace is true), then empty
+            // the Features collection
+            if (!features || !Array.isArray(features)) {
+              features = []
             }
 
-            // If no feature is passed to this function, then reset the selected feature
-            // to a default Feature model
-            if (!featureProps) {
-              featureProps = {}
-            }
             // If feature is a Feature model, get the attributes to update the model.
-            if (featureProps instanceof Feature) {
-              featureProps = featureProps.attributes
-            }
+            features.forEach(function (feature, i) {
+              if (feature instanceof Feature) {
+                feature = feature.attributes
+              }
+              features[i] = _.extend(_.clone(defaults), feature)
+            })
+
             // Update the Feature model with the new selected feature information
-            var selectedFeature = this.get('selectedFeature')
-            selectedFeature.clear({ silent: true })
-            selectedFeature.set(_.extend(selectedFeature.defaults(), featureProps))
+            const selectedFeatures = model.get('selectedFeatures')
+
+            if (replace) {
+              selectedFeatures.reset(null, { silent: true })
+            }
+
+            selectedFeatures.add(features,  { silent: true })
+
+            // The update should only trigger one event
+            selectedFeatures.trigger('update')
+
           }
           catch (error) {
             console.log(

@@ -103,6 +103,10 @@ define(
             // Ensure the view's main element has the given class name
             this.el.classList.add(this.className);
 
+            if (!this.collection) {
+              return
+            }
+
             // Render a layer item for each layer in the collection
             this.collection.forEach(function (layerModel) {
               var layerItem = new LayerItemView({

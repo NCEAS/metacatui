@@ -204,7 +204,6 @@ define(
                 title = title + ' from ' + label + ' Layer'
               }
 
-              
             }
 
             // Insert the template into the view
@@ -266,9 +265,6 @@ define(
           try {
             this.el.classList.remove(this.classes.open);
             this.isOpen = false;
-            // When the feature info panel is closed, reset the Feature model to default.
-            // This will trigger the map widget to un-highlight/de-select the feature.
-            this.model.setToDefault()
           }
           catch (error) {
             console.log(
@@ -299,6 +295,23 @@ define(
             );
           }
         },
+
+        /**
+         * Stops listening to the previously set model, replaces it with a new Feature
+         * model, re-sets the listeners and re-renders the content in this view based on
+         * the new model.
+         * @param {Feature} newModel The new Feature model to display content for
+         */
+        changeModel: function (newModel) {
+          // Stop listening to the current model before it's removed
+          this.stopListening(this.model, 'change')
+          // Update the model
+          this.model = newModel
+          // Listen to the new model
+          this.listenTo(this.model, 'change', this.update)
+          // Update
+          this.update()
+        }
 
       }
     );

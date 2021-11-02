@@ -105,8 +105,8 @@ define(
         events: function () {
           try {
             var events = {}
-            events['click .' + this.classes.label] = 'toggleSelectionAttr';
-            events['click .' + this.classes.visibilityToggle] = 'toggleVisibleAttr';
+            events['click .' + this.classes.label] = 'toggleSelected';
+            events['click .' + this.classes.visibilityToggle] = 'toggleVisibility';
             return events
           }
           catch (error) {
@@ -174,8 +174,8 @@ define(
 
             // Show the item as hidden and/or selected depending on the model properties
             // that are set initially
-            this.toggleHiddenStyles()
-            this.toggleHighlighting()
+            this.showVisibility()
+            this.showSelection()
             // Show the current status of this layer
             this.showStatus()
 
@@ -184,12 +184,12 @@ define(
             // listener because the 'selected' attribute can be changed within this view,
             // from the parent Layers collection, or from the Layer Details View.
             this.stopListening(this.model, 'change:selected')
-            this.listenTo(this.model, 'change:selected', this.toggleHighlighting)
+            this.listenTo(this.model, 'change:selected', this.showSelection)
 
             // Similar to above, add or remove the hidden class when the layer's
             // visibility changes
             this.stopListening(this.model, 'change:visible')
-            this.listenTo(this.model, 'change:visible', this.toggleHiddenStyles)
+            this.listenTo(this.model, 'change:visible', this.showVisibility)
 
             // Update the item in the list to show when it is loading, loaded, or there's
             // been an error.
@@ -239,7 +239,7 @@ define(
          * to false if it's true. Executed when a user clicks on this Layer Item in a
          * Layer List view.
          */
-        toggleSelectionAttr: function () {
+        toggleSelected: function () {
           try {
             var layerModel = this.model;
             var currentStatus = layerModel.get('selected');
@@ -261,7 +261,7 @@ define(
          * Sets the Layer model's visibility status attribute to true if it's false, and
          * to false if it's true. Executed when a user clicks on the visibility toggle.
          */
-        toggleVisibleAttr: function () {
+        toggleVisibility: function () {
           try {
             var layerModel = this.model;
             var currentStatus = layerModel.get('visible');
@@ -284,10 +284,10 @@ define(
          * the Layer model's 'selected' attribute is set to true). If it is not selected,
          * then remove any highlighting. This function is executed whenever the model's
          * 'selected' attribute changes. It can be changed from within this view (with the
-         * toggleSelectionAttr function), from the parent Layers collection, or from the
+         * toggleSelected function), from the parent Layers collection, or from the
          * Layer Details View.
          */
-        toggleHighlighting: function () {
+        showSelection: function () {
           try {
             var layerModel = this.model;
             var currentStatus = layerModel.get('selected');
@@ -310,7 +310,7 @@ define(
          * set in the Layer model's 'visible' attribute. Executed whenever the 'visible'
          * attribute changes.
          */
-        toggleHiddenStyles: function () {
+        showVisibility: function () {
           try {
             var layerModel = this.model;
             var currentStatus = layerModel.get('visible');
@@ -421,7 +421,7 @@ define(
          * Show a spinner icon to the right of the Map Asset label to indicate that this
          * layer is loading
          */
-        showLoading() {
+        showLoading: function() {
           try {
             // Remove any style elements for other statuses
             this.removeStatuses()
