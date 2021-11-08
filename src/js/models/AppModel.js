@@ -122,9 +122,9 @@ define(['jquery', 'underscore', 'backbone'],
       * "Download All" button, and users will be directed to download files individually.
       * This is useful for preventing the Metacat package service from getting overloaded.
       * @type {number}
-      * @default 3000000000
+      * @default 100000000000
       */
-      maxDownloadSize: 3000000000,
+      maxDownloadSize: 100000000000,
 
       /**
       * Add a message that will display during a certain time period. This is useful when
