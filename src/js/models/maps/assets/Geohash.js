@@ -18,7 +18,7 @@ define(
     /**
      * @classdesc A Geohash Model represents a geohash layer in a map. NOTE: This is a WIP
      * and not yet supported.
-     * @classcategory Models/maps/assets
+     * @classcategory Models/Maps/Assets
      * @class Geohash
      * @name Geohash
      * @extends MapAsset

@@ -46,7 +46,7 @@ define(
 
         /**
          * Get an array of all the unique feature objects associated with this collection.
-         * @returns {[]} Returns an array of all of the unique feature objects in the collection.
+         * @returns {Array} Returns an array of all of the unique feature objects in the collection.
          * Feature objects are the objects used by the map widget to represent a feature
          * in the map. For example, in Cesium this could be a Cesium3DTileFeature or a
          * GeometryInstance.
@@ -59,7 +59,7 @@ define(
          * Get an array of unique values for some attribute that may be set on the models
          * in this collection
          * @param {string} attrName The name of the attr to get unique values for
-         * @returns {[]} Returns an array of unique values of the given attribute
+         * @returns {Array} Returns an array of unique values of the given attribute
          */
         getUniqueAttrs: function (attrName) {
           try {

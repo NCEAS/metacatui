@@ -37,21 +37,35 @@ define(
         type: 'CesiumTerrain',
 
         /**
+         * Options that are supported for creating terrain in Cesium. Any properties
+         * provided here are passed to the Cesium constructor function for the Terrain
+         * Provider, so other properties that are documented in Cesium are also supported.
+         * See `options` here:
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/CesiumTerrainProvider.html?classFilter=TerrainProvider}
+         * @typedef {Object} CesiumTerrain#cesiumOptions
+         * @property {string|number} ionAssetId - If this terrain is hosted by Cesium Ion,
+         * then Ion asset ID. 
+         */
+
+        /**
          * Default attributes for CesiumTerrain models
          * @name CesiumTerrain#defaults
          * @type {Object}
+         * @property {'CesiumTerrainProvider'} type A string indicating a Cesium Terrain
+         * Provider, see
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/?classFilter=TerrainProvider}
          * @property {Cesium.TerrainProvider} cesiumModel A model created and used by
          * Cesium that organizes the data to display in the Cesium Widget. See
          * {@link https://cesium.com/learn/cesiumjs/ref-doc/TerrainProvider.html}
-         * @property {3DTilesetOptions} cesiumOptions options are passed to the function
-         * that creates the Cesium model. The properties of options are specific to each
-         * type of asset, but most contain a URL to the server where the data is hosted.
-         * TODO: Document options along with each associated type.
+         * @property {CesiumTerrain#cesiumOptions} cesiumOptions options are passed to the
+         * function that creates the Cesium model. The properties of options are specific
+         * to each type of asset
         */
         defaults: function () {
           return _.extend(
             this.constructor.__super__.defaults(),
             {
+              type: 'CesiumTerrainProvider',
               cesiumModel: null,
               cesiumOptions: {},
             }

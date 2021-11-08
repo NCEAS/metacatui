@@ -23,7 +23,7 @@ define(
     * @classcategory Views/Maps
     * @name ScaleBarView
     * @extends Backbone.View
-    * @screenshot maps/ScaleBarView.png // TODO: add screenshot
+    * @screenshot views/maps/ScaleBarView.png
     * @constructs
     */
     var ScaleBarView = Backbone.View.extend(

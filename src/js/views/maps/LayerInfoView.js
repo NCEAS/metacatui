@@ -24,7 +24,7 @@ define(
     * @classcategory Views/Maps
     * @name LayerInfoView
     * @extends Backbone.View
-    * @screenshot maps/LayerInfoView.png // TODO: add screenshot
+    * @screenshot views/maps/LayerInfoView.png
     * @constructs
     */
     var LayerInfoView = Backbone.View.extend(

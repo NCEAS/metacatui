@@ -29,7 +29,7 @@ define(
     * @classcategory Views/Maps
     * @name LayerListView
     * @extends Backbone.View
-    * @screenshot maps/LayerListView.png // TODO: add screenshot
+    * @screenshot views/maps/LayerListView.png
     * @constructs
     */
     var LayerListView = Backbone.View.extend(

@@ -20,7 +20,7 @@ define(
      * scale for an asset in a map. The last color in the collection should ideally
      * be a default (see AssetColor model for details on how to set a default color.)
      * @class AssetColors
-     * @classcategory Collections/maps
+     * @classcategory Collections/Maps
      * @extends Backbone.Collection
      * @since 2.x.x
      * @constructor

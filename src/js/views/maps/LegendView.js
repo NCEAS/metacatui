@@ -25,10 +25,10 @@ define(
     * assets (only for color palettes that are type 'categorical'). Eventually, will
     * support full-sized legend for these, and other assets, and all types of color
     * palettes (including 'continuous' and 'classified')
-    * @classcategory Views/maps
+    * @classcategory Views/Maps
     * @name LegendView
     * @extends Backbone.View
-    * @screenshot maps/LegendView.png // TODO: add screenshot
+    * @screenshot views/maps/LegendView.png
     * @constructs
     */
     var LegendView = Backbone.View.extend(

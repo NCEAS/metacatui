@@ -29,7 +29,7 @@ define(
     * @classcategory Views/Maps
     * @name FeatureInfoView
     * @extends Backbone.View
-    * @screenshot maps/FeatureInfoView.png // TODO: add screenshot
+    * @screenshot views/maps/FeatureInfoView.png
     * @constructs
     */
     var FeatureInfoView = Backbone.View.extend(

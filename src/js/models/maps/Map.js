@@ -18,55 +18,140 @@ define(
     MapAssets,
   ) {
     /**
-     * @class Map
+     * @class MapModel
      * @classdesc The Map Model contains all of the settings and options for a required to
      * render a map view.
      * @classcategory Models/Maps
-     * @name Map
+     * @name MapModel
      * @since 2.x.x
      * @extends Backbone.Model
      */
-    var Map = Backbone.Model.extend(
-      /** @lends Map.prototype */ {
+    var MapModel = Backbone.Model.extend(
+      /** @lends MapModel.prototype */ {
 
         /**
-         * Coordinates that describe a camera position for Cesium
-         * @typedef {Object} CameraPosition
+         * Configuration options for a {@link MapModel} that control the appearance of the
+         * map, the data/imagery displayed, and which UI components are rendered. A
+         * MapConfig object can be used when initializing a Map model, e.g. `new
+         * Map(myMapConfig)`
+         * @namespace {Object} MapConfig
+         * @property {MapConfig#CameraPosition} [homePosition] - A set of coordinates that
+         * give the (3D) starting point of the Viewer. This position is also where the
+         * "home" button in the Cesium widget will navigate to when clicked.
+         * @property {MapConfig#MapAssetConfig[]} [layers] - A collection of imagery,
+         * tiles, vector data, etc. to display on the map. Layers wil be displayed in the
+         * order they appear. The array of the layer MapAssetConfigs are passed to a
+         * {@link MapAssets} collection.
+         * @property {MapConfig#MapAssetConfig[]} [terrains] - Configuration for one or more digital
+         * elevation models (DEM) for the surface of the earth. Note: Though multiple
+         * terrains are supported, currently only the first terrain is used in the
+         * CesiumWidgetView and there is not yet a UI for switching terrains in the map.
+         * The array of the terrain MapAssetConfigs are passed to a {@link MapAssets}
+         * collection.
+         * @property {Boolean} [showToolbar=true] - Whether or not to show the side bar
+         * with layer list, etc. If true, the {@link MapView} will render a
+         * {@link ToolbarView}.
+         * @property {Boolean} [showScaleBar=true] - Whether or not to show a scale bar.
+         * If true, the {@link MapView} will render a {@link ScaleBarView}.
+         * @property {Boolean} [showFeatureInfo=true] - Whether or not to allow users to
+         * click on map features to show more information about them.  If true, the
+         * {@link MapView} will render a {@link FeatureInfoView} and will initialize
+         * "picking" in the {@link CesiumWidgetView}.
+         * 
+         * @example
+         * {
+         *   "homePosition": {
+         *     "latitude": 74.23,
+         *     "longitude": -105.7
+         *   },
+         *   "layers": [
+         *     {
+         *       "label": "My 3D Tile layer",
+         *       "type": "Cesium3DTileset",
+         *       "description": "This is an example 3D tileset. This description will be visible in the LayerDetailsView. It will be the default color, since to colorPalette is specified.",
+         *       "cesiumOptions": {
+         *         "ionAssetId": "555"
+         *       },
+         *     }
+         *   ],
+         *   "terrains": [
+         *     {
+         *       "label": "Arctic DEM",
+         *       "type": "CesiumTerrainProvider",
+         *       "cesiumOptions": {
+         *         "ionAssetId": "3956",
+         *         "requestVertexNormals": true
+         *       }
+         *     }
+         *   ],
+         *   "showToolbar": true,
+         *   "showScaleBar": false,
+         *   "showFeatureInfo": false
+         * }
+        */
+
+        /**
+         * Coordinates that describe a camera position for Cesium. Requires at least a
+         * longitude and latitude.
+         * @typedef {Object} MapConfig#CameraPosition
          * @property {number} longitude - Longitude of the central home point
          * @property {number} latitude - Latitude of the central home point
          * @property {number} [height] - Height above sea level (meters)
-         * @property {number} [heading] -  The rotation about the negative z axis (degrees)
+         * @property {number} [heading] -  The rotation about the negative z axis
+         * (degrees)
          * @property {number} [pitch] - The rotation about the negative y axis (degrees)
          * @property {number} [roll] - The rotation about the positive x axis (degrees)
-         */
+         * 
+         * @example
+         * {
+         *  longitude: -119.8489,
+         *  latitude: 34.4140
+         * }
+         * 
+         * @example
+         * {
+         *  longitude: -65,
+         *  latitude: 56,
+         *  height: 10000000,
+         *  heading: 1,
+         *  pitch: -90,
+         *  roll: 0
+         * }
+        */
 
         /**
          * Overrides the default Backbone.Model.defaults() function to specify default
          * attributes for the Map
-         * @name Map#defaults
+         * @name MapModel#defaults
          * @type {Object}
-         * @property {CameraPosition} homePosition - The position to display when the map
-         * initially renders. The home button will also navigate back to this position.
-         * @property {MapAssets} terrains - The terrain options to show in the map.
-         * @property {MapAssets} layers - The imagery and vector data to render in the
-         * map.
-         * @property {Features} selectedFeatures - Particular features from one or more
-         * layers that are highlighted/selected on the map. The 'selectedFeatures'
-         * attribute is updated by the map widget (cesium) with a Feature model when a
-         * user selects a geographical feature on the map (e.g. by clicking)
-         * @property {Boolean} showToolbar - Whether or not to show the side bar with
-         * layer list, etc. True by default.
-         * @property {Boolean} showScaleBar - Whether or not to show a scale bar.
-         * @property {Boolean} showFeatureInfo - Whether or not to allow users to click on
-         * map features to show more information about them.
-         * @property {Object} currentScale - An object updated by the map widget that
-         * gives two equivalent measurements based on the map's current position and zoom
-         * level: The number of pixels on the screen that equal the number of meters on
-         * the map/globe.
+         * @property {MapConfig#CameraPosition} [homePosition={longitude: -65, latitude: 56, height: 10000000, heading: 1, pitch: -90, roll: 0}]
+         * A set of coordinates that give the
+         * (3D) starting point of the Viewer. This position is also where the "home"
+         * button in the Cesium viewer will navigate to when clicked.
+         * @property {MapAssets} [terrains = new MapAssets()] - The terrain options to
+         * show in the map.
+         * @property {MapAssets} [layers = new MapAssets()] - The imagery and vector data
+         * to render in the map.
+         * @property {Features} [selectedFeatures = new Features()] - Particular features
+         * from one or more layers that are highlighted/selected on the map. The
+         * 'selectedFeatures' attribute is updated by the map widget (cesium) with a
+         * Feature model when a user selects a geographical feature on the map (e.g. by
+         * clicking)
+         * @property {Boolean} [showToolbar=true] - Whether or not to show the side bar
+         * with layer list, etc. True by default.
+         * @property {Boolean} [showScaleBar=true] - Whether or not to show a scale bar.
+         * @property {Boolean} [showFeatureInfo=true] - Whether or not to allow users to
+         * click on map features to show more information about them.
+         * @property {Object} [currentPosition={ longitude: null, latitude: null, height: null}]
+         * An object updated by the map widget to show the longitude, latitude, and
+         * height (elevation) at the position of the mouse on the map. Note: The
+         * CesiumWidgetView does not yet update the height property.
+         * @property {Object} [currentScale={ meters: null, pixels: null }] An object
+         * updated by the map widget that gives two equivalent measurements based on the
+         * map's current position and zoom level: The number of pixels on the screen that
+         * equal the number of meters on the map/globe.
         */
         defaults: function () {
-          // TODO: Decide on reasonable default values.
-          // These defaults are test values for development only.
           return {
             homePosition: {
               longitude: -65,
@@ -74,7 +159,7 @@ define(
               height: 10000000,
               heading: 1,
               pitch: -90,
-              roll: 0,
+              roll: 0
             },
             layers: new MapAssets(),
             terrains: new MapAssets(),
@@ -95,11 +180,14 @@ define(
         },
 
         /**
-         * initialize - Run when a new Map is created
+         * Run when a new Map is created.
+         * @param {MapConfig} config - An object specifying configuration options for the
+         * map. If any config option is not specified, the default will be used instead
+         * (see {@link MapModel#defaults}).
          */
-        initialize: function (attrs, options) {
+        initialize: function (config) {
           try {
-            if (attrs) {
+            if (config) {
 
               // For now, filter out types that are not supported before initializing any
               // MapAssets collections. TODO: Make this a configurable list somewhere. 
@@ -108,15 +196,15 @@ define(
                 'CesiumTerrainProvider'
               ]
 
-              if (attrs.layers && attrs.layers.length && Array.isArray(attrs.layers)) {
-                var supportedLayers = _.filter(attrs.layers, function (layer) {
+              if (config.layers && config.layers.length && Array.isArray(config.layers)) {
+                var supportedLayers = _.filter(config.layers, function (layer) {
                   return supportedTypes.includes(layer.type)
                 })
                 this.set('layers', new MapAssets(supportedLayers))
               }
 
-              if (attrs.terrains && attrs.terrains.length && Array.isArray(attrs.terrains)) {
-                var supportedTerrains = _.filter(attrs.terrains, function (terrain) {
+              if (config.terrains && config.terrains.length && Array.isArray(config.terrains)) {
+                var supportedTerrains = _.filter(config.terrains, function (terrain) {
                   return supportedTypes.includes(terrain.type)
                 })
                 this.set('terrains', new MapAssets(supportedTerrains))
@@ -136,14 +224,13 @@ define(
          * Set or unset the selected Features on the map model. A selected feature is a
          * polygon, line, point, or other element of vector data that is in focus on the
          * map (e.g. because a user clicked it to show more details.)
-         * @param {Feature|Object[]} features - An array of Feature models or objects with
+         * @param {(Feature|Object[])} features - An array of Feature models or objects with
          * attributes to set on new Feature models. If no features argument is passed to
          * this function, then any currently selected feature will be removed (as long as
          * replace is set to true)
          * @param {Boolean} [replace=true] - If true, any currently selected features will
          * be replaced with the newly selected features. If false, then the newly selected
          * features will be added to any that are currently selected.
-         * @returns 
          */
         selectFeatures(features, replace = true) {
           try {
@@ -154,7 +241,7 @@ define(
             if (!model.get('selectedFeatures')) {
               model.set('selectedFeatures', new Features())
             }
-            
+
             // If no feature is passed to this function (and replace is true), then empty
             // the Features collection
             if (!features || !Array.isArray(features)) {
@@ -176,7 +263,7 @@ define(
               selectedFeatures.reset(null, { silent: true })
             }
 
-            selectedFeatures.add(features,  { silent: true })
+            selectedFeatures.add(features, { silent: true })
 
             // The update should only trigger one event
             selectedFeatures.trigger('update')
@@ -193,5 +280,5 @@ define(
 
       });
 
-    return Map;
+    return MapModel;
   });

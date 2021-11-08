@@ -24,11 +24,13 @@ define(
 
     /**
     * @class CesiumWidgetView
-    * @classdesc An interactive 2D and/or 3D map rendered using Cesium
-    * @classcategory Views/maps
+    * @classdesc An interactive 2D and/or 3D map/globe rendered using CesiumJS. This view
+    * comprises the globe without any of the UI elements like the scalebar, layer list,
+    * etc.
+    * @classcategory Views/Maps
     * @name CesiumWidgetView
     * @extends Backbone.View
-    * @screenshot maps/CesiumWidgetView.png // TODO: add screenshot
+    * @screenshot views/maps/CesiumWidgetView.png
     * @constructs
     */
     var CesiumWidgetView = Backbone.View.extend(
@@ -426,7 +428,7 @@ define(
          * the Features collection that is set on the Map's `selectedFeatures` attribute
          * with a new Feature model. NOTE: This currently only works with 3D tile
          * features.
-         * @param {Cesium3DTileFeature[]} features - An array of Cesium3DTileFeatures to
+         * @param {Cesium.Cesium3DTileFeature[]} features - An array of Cesium3DTileFeatures to
          * select
         */
         updateSelectedFeatures: function (features) {
@@ -607,7 +609,7 @@ define(
 
         /**
          * Get the current positioning of the camera in the view.
-         * @returns {CameraPosition} Returns an object with the longitude, latitude,
+         * @returns {MapConfig#CameraPosition} Returns an object with the longitude, latitude,
          * height, heading, pitch, and roll in the same format that the Map model uses
          * for the homePosition (see {@link Map#defaults})
         */
@@ -791,7 +793,7 @@ define(
         /**
          * Renders peaks and valleys in the 3D version of the map, given a terrain model.
          * If a terrain model has already been set on the map, this will replace it.
-         * @param {Terrain} terrainModel a Terrain Map Asset model
+         * @param {CesiumTerrain} terrainModel a Terrain Map Asset model
         */
         updateTerrain: function (terrainModel) {
           try {

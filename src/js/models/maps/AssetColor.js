@@ -32,14 +32,49 @@ define(
         type: 'AssetColor',
 
         /**
-         * An object that defines the properties of a color
+         * A color to use in a map color palette, along with the value that the color
+         * represents.
+         * @typedef {Object} ColorConfig
+         * @name MapConfig#ColorConfig
+         * @property {string|number} value The value of the attribute in a MapAsset that
+         * corresponds to this color. If set to null, then this color will be the default
+         * color.
+         * @property {string} [label] A user-facing name for this attribute value,
+         * to show in map legends, etc. If not set, then the value will be displayed
+         * instead.
+         * @property {(string|AssetColor#Color)} color Either an object with 'red',
+         * 'green', 'blue' properties defining the intensity of each of the three colours
+         * with a value between 0 and 1, OR a string with a hex color code beginning with
+         * #, e.g. '#44A96A'. The {@link AssetColor} model will convert the string to an
+         * {@link AssetColor#Color} object.
          * 
+         * @example
+         * {
+         *   value: 0,
+         *   label: 'water',
+         *   color: {
+         *     red: 0,
+         *     green: 0.1,
+         *     blue: 1 
+         *   }
+         * }
+         * 
+         * @example
+         * {
+         *   value: 'landmark',
+         *   color: '#7B44A9'
+         * }
+         */
+
+        /**
+         * An object that defines the properties of a color
          * @typedef {Object} Color
-         * @property {number} red A number between 0 and 1 indicating the intensity of red
+         * @name AssetColor#Color
+         * @property {number} [red=1] A number between 0 and 1 indicating the intensity of red
          * in this color.
-         * @property {number} blue A number between 0 and 1 indicating the intensity of
+         * @property {number} [blue=1] A number between 0 and 1 indicating the intensity of
          * red in this color.
-         * @property {number} green A number between 0 and 1 indicating the intensity of
+         * @property {number} [green=1] A number between 0 and 1 indicating the intensity of
          * red in this color.
          */
 
@@ -47,12 +82,12 @@ define(
          * Default attributes for AssetColor models
          * @name AssetColor#defaults
          * @type {Object}
-         * @property {string} value The value of the attribute that corresponds to
+         * @property {string|number} value The value of the attribute that corresponds to
          * this color. If set to null, then this color will be the default color.
-         * @property {string|number} [label] A user-facing name for this attribute value,
+         * @property {string} [label] A user-facing name for this attribute value,
          * to show in map legends, etc. If not set, then the value will be displayed
          * instead.
-         * @property {Color} color The red, green, and blue intensities that define the
+         * @property {AssetColor#Color} color The red, green, and blue intensities that define the
          * color
         */
         defaults: function () {
@@ -69,17 +104,16 @@ define(
 
         /**
          * Executed when a new AssetColor model is created.
-         * @param {Object} [attributes] The initial values of the attributes, which will
-         * be set on the model.
-         * @param {Object} [options] Options for the initialize function.
+         * @param {MapConfig#ColorConfig} [colorConfig] The initial values of the
+         * attributes, which will be set on the model.
          */
-        initialize: function (attributes, options) {
+        initialize: function (colorConfig) {
           try {
             // If the color is a hex code instead of an object with RGB values, then
             // convert it.
-            if (attributes && attributes.color && typeof attributes.color === 'string') {
+            if (colorConfig && colorConfig.color && typeof colorConfig.color === 'string') {
               // Assume the string is an hex color code and convert it to RGB
-              var rgb = this.hexToRGB(attributes.color)
+              var rgb = this.hexToRGB(colorConfig.color)
               if (rgb) {
                 this.set('color', rgb)
               } else {

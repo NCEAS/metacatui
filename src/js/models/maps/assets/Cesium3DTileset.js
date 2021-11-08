@@ -42,32 +42,41 @@ define(
         type: 'Cesium3DTileset',
 
         /**
-         * Options that are supported for creating 3D tilesets
-         * @typedef {Object} 3DTilesetOptions
+         * Options that are supported for creating 3D tilesets. The object will be passed
+         * to `Cesium.Cesium3DTileset(options)` as options, so the properties listed in
+         * the Cesium3DTileset documentation are also supported, see
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileset.html}
+         * @typedef {Object} Cesium3DTileset#cesiumOptions
          * @property {string|number} ionAssetId - If this tileset is hosted by Cesium Ion,
          * then Ion asset ID. 
          * @property {string} cesiumToken - If this tileset is hosted by Cesium Ion, then
          * the token needed to access this resource. If one is not set, then the default
-         * set in the repository's AppModel will be used.
+         * set in the repository's {@link AppConfig#cesiumToken} will be used.
          */
 
         /**
          * Default attributes for Cesium3DTileset models
-         * @name 3DTileset#defaults
+         * @name Cesium3DTileset#defaults
          * @type {Object}
-         * @property {VectorFilters} filters A set of conditions used to show or hide
-         * specific features of this tileset.
+         * @property {'Cesium3DTileset'} type The format of the data. Must be
+         * 'Cesium3DTileset'.
+         * @property {VectorFilters} [filters=new VectorFilters()] A set of conditions
+         * used to show or hide specific features of this tileset.
+         * @property {AssetColorPalette} [colorPalette=new AssetColorPalette()] The color
+         * or colors mapped to attributes of this asset. Used to style the features and to
+         * make a legend.
          * @property {Cesium.Cesium3DTileset} cesiumModel A model created and used by
          * Cesium that organizes the data to display in the Cesium Widget. See
          * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileset.html}
-         * @property {3DTilesetOptions} cesiumOptions options are passed to the function
-         * that creates the Cesium model. The properties of options are specific to each
-         * type of asset, but most contain a URL to the server where the data is hosted.
+         * @property {Cesium3DTileset#cesiumOptions} cesiumOptions options are passed
+         * to the function that creates the Cesium model. The properties of options are
+         * specific to each type of asset.
         */
         defaults: function () {
           return _.extend(
             this.constructor.__super__.defaults(),
             {
+              type: 'Cesium3DTileset',
               filters: new VectorFilters(),
               cesiumModel: null,
               cesiumOptions: {},
@@ -79,17 +88,16 @@ define(
 
         /**
          * Executed when a new Cesium3DTileset model is created.
-         * @param {Object} [attributes] The initial values of the attributes, which will
-         * be set on the model.
-         * @param {Object} [options] Options for the initialize function.
+         * @param {MapConfig#MapAssetConfig} [assetConfig] The initial values of the
+         * attributes, which will be set on the model.
          */
-        initialize: function (attributes, options) {
+        initialize: function (assetConfig) {
           try {
             
-            MapAsset.prototype.initialize.call(this, attributes, options);
+            MapAsset.prototype.initialize.call(this, assetConfig);
 
-            if (attributes.filters) {
-              this.set('filters', new VectorFilters(attributes.filters))
+            if (assetConfig.filters) {
+              this.set('filters', new VectorFilters(assetConfig.filters))
             }
 
             this.createCesiumModel();

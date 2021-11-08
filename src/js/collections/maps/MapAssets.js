@@ -38,13 +38,12 @@ define(
          * Creates the type of Map Asset based on the given type. This function is
          * typically not called directly. It is used by Backbone.js when adding a new
          * model to the collection.
-         * @param {object} attrs - A literal object that contains the attributes to pass
-         * to the model
-         * @param {object} options - A literal object of additional options to pass to the
+         * @param {MapConfig#MapAssetConfig} assetConfig - An object that configured the
+         * source the asset data, as well as metadata and display properties of the asset.
+         * @returns {(Cesium3DTileset|CesiumImagery|CesiumTerrain)} Returns a MapAsset
          * model
-         * @returns {Cesium3DTileset|CesiumImagery|CesiumTerrain} Returns a MapAsset model
         */
-        model: function (attrs, options) {
+        model: function (assetConfig) {
           try {
 
             // Supported types: Matches each 'type' attribute to the appropriate MapAsset
@@ -64,14 +63,14 @@ define(
               }
             ];
               
-            var type = attrs.type
+            var type = assetConfig.type
             var modelOption = _.find(mapAssetTypes, function (option) {
               return option.types.includes(type)
             })
 
             // Don't add an unsupported type to  the collection
             if (modelOption) {
-              return new modelOption.model(attrs, options)
+              return new modelOption.model(assetConfig)
             }
 
           }

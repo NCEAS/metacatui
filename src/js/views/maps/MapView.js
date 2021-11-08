@@ -39,7 +39,7 @@ define(
     * @classcategory Views/Maps
     * @name MapView
     * @extends Backbone.View
-    * @screenshot maps/MapView.png // TODO: add screenshot
+    * @screenshot views/maps/MapView.png
     * @constructs
     */
     var MapView = Backbone.View.extend(

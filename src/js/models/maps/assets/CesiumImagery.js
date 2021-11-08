@@ -38,31 +38,42 @@ define(
         type: 'CesiumImagery',
 
         /**
-         * Options that are supported for creating imagery tiles
-         * @typedef {Object} ImageryOptions
+         * Options that are supported for creating imagery tiles. Any properties provided
+         * here are passed to the Cesium constructor function, so other properties that
+         * are documented in Cesium are also supported. See
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/BingMapsImageryProvider.html#.ConstructorOptions}
+         * and
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/IonImageryProvider.html#.ConstructorOptions}.
+         * @typedef {Object} CesiumImagery#cesiumOptions
+         * @property {string|number} ionAssetId - If this imagery is hosted by Cesium Ion,
+         * then Ion asset ID. 
          * @property {string|number} key - A key or token required to access the tiles.
          * For example, if this is a BingMapsImageryProvider, then the Bing maps key. If
-         * one is required and not set, the model will look in MetacatUI for a key.
+         * one is required and not set, the model will look in the {@link AppModel} for a
+         * key, for example, {@link AppModel#bingMapsKey}
          */
 
         /**
          * Default attributes for CesiumImagery models
          * @name CesiumImagery#defaults
          * @type {Object}
+         * @property {'BingMapsImageryProvider'|'IonImageryProvider'} type A string
+         * indicating a Cesium Imagery Provider type. See
+         * {@link https://cesium.com/learn/cesiumjs-learn/cesiumjs-imagery/#more-imagery-providers}
          * @property {Cesium.ImageryLayer} cesiumModel A model created and used by Cesium
          * that organizes the data to display in the Cesium Widget. See
          * {@link https://cesium.com/learn/cesiumjs/ref-doc/ImageryLayer.html?classFilter=ImageryLayer}
-         * @property {ImageryOptions} cesiumOptions options are passed to the function
-         * that creates the Cesium model. The properties of options are specific to each
-         * type of asset, but most contain a URL to the server where the data is hosted.
-           // * @property {number} brightness The brightness of this layer. 1.0 uses the
-           // * unmodified imagery color. Less than 1.0 makes the imagery darker while
-           //* greater than 1.0 makes it brighter.
+         * and
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/?classFilter=ImageryProvider}
+         * @property {CesiumImagery#cesiumOptions} cesiumOptions options that are passed
+         * to the function that creates the Cesium model. The properties of options are
+         * specific to each type of asset.
         */
         defaults: function () {
           return _.extend(
             this.constructor.__super__.defaults(),
             {
+              type: '',
               cesiumModel: null,
               cesiumOptions: {},
               // brightness: 1, contrast: 1, gamma: 1, hue: 0, saturation: 1,

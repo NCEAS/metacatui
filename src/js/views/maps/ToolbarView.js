@@ -28,7 +28,7 @@ define(
     * @classcategory Views/Maps
     * @name ToolbarView
     * @extends Backbone.View
-    * @screenshot maps/ToolbarView.png // TODO: add screenshot
+    * @screenshot views/maps/ToolbarView.png
     * @constructs
     */
     var ToolbarView = Backbone.View.extend(

@@ -1760,7 +1760,8 @@ define(['jquery', 'underscore', 'backbone'],
       enableCesium: true,
 
       /**
-      * Your Access Token for the Cesium API, which can be retrieved from https://cesium.com/ion/tokens.
+      * Your Access Token for the Cesium API, which can be retrieved from
+      * {@link https://cesium.com/ion/tokens}.
       * @type {string}
       * @since 2.X.X
       * @example eyJhbGciOiJIUzI1R5cCI6IkpXVCJ9.eyJqdGkiOiJmYzUwYjI0ZC0yN2Y4LTRiZjItOdCI6MTYwODIyNDg5MH0.KwCI2-4cHjFYXrR6-mUrwkhh1UdNARK7NxFLpFftjeg

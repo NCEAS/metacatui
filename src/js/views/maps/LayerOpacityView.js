@@ -25,7 +25,7 @@ define(
     * @classcategory Views/Maps
     * @name LayerOpacityView
     * @extends Backbone.View
-    * @screenshot maps/LayerOpacityView.png // TODO: add screenshot
+    * @screenshot views/maps/LayerOpacityView.png
     * @constructs
     */
     var LayerOpacityView = Backbone.View.extend(

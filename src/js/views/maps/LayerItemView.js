@@ -32,7 +32,7 @@ define(
     * @classcategory Views/Maps
     * @name LayerItemView
     * @extends Backbone.View
-    * @screenshot maps/LayerItemView.png // TODO: add screenshot
+    * @screenshot views/maps/LayerItemView.png
     * @constructs
     */
     var LayerItemView = Backbone.View.extend(

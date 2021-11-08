@@ -14,7 +14,8 @@ define(
     /**
      * @classdesc A VectorFilter Model represents one condition used to show or hide
      * specific features of a vector layer on a map. The filter defines rules used to show
-     * features conditionally based on properties of the feature.
+     * features conditionally based on properties of the feature. For example, it could
+     * specify hiding all vectors for an asset that have an area greater than 10 km2. 
      * @classcategory Models/Maps
      * @class VectorFilter
      * @name VectorFilter
@@ -32,19 +33,61 @@ define(
         type: 'VectorFilter',
 
         /**
+         * A VectorFilterConfig specifies conditions under which specific features of a
+         * vector layer on a map should be visible. The filter defines rules used to show
+         * features conditionally based on properties of the feature. For example, it
+         * could specify hiding all vectors for an asset that have an area greater than
+         * 10km2. This configuration is passed to the {@link VectorFilter} model.
+         * @typedef {Object} VectorFilterConfig
+         * @name MapConfig#VectorFilterConfig
+         * @property {('categorical'|'numeric')} filterType If categorical, then a feature
+         * will be visible when its property value exactly matches one of those listed in
+         * the values attribute. If numeric, then a feature will be visible when its
+         * property value is between the min and max.
+         * @property {string} property The property (attribute) of the {@link MapAsset}
+         * feature to filter on.
+         * @property {(string[]|number[])} values Only used for categorical filters. If
+         * the property matches one of the values listed, the feature will be displayed.
+         * If the filter type is categorical and no values are set, then features will not
+         * be filtered on this property.
+         * @property {number} max Only used for numeric filters. The property's value must
+         * be less than the value set here for the feature to be visible. If the filter
+         * type is numeric, and max is set, then the max is infinite.
+         * @property {number} min Only used for numeric filters. The property's value must
+         * be greater than the value set here for the feature to be visible. If the filter
+         * type is numeric, and min is set, then the min is minus infinity.
+         *
+         * @example
+         * // Only show vectors with an 'area' property set to less than 10
+         * {
+         *   filterType: 'numeric'
+         *   property: 'area'
+         *   max: 10
+         * }
+         *
+         * @example
+         * // Show only features that have the 'boreal' or 'tropical' property set on their 'forestType' attribute
+         * {
+         *   filterType: 'categorical'
+         *   property: 'forestType'
+         *   values: ['boreal', 'tropical']
+         * }
+         */
+
+        /**
          * Default attributes for VectorFilter models
          * @name VectorFilter#defaults
          * @type {Object}
-         * @property {string} filterType Set to 'categorical' or 'numeric'. If
+         * @property {('categorical'|'numeric')} [filterType='categorical'] If
          * categorical, then a feature will be visible when its property value exactly
          * matches one of those listed in the values attribute. If numerical, then a
          * feature will be visible when its property value is between the min and max.
          * @property {string} property The property (attribute) of the feature to filter
          * on.
-         * @property {string[]|number[]} values Only used for categorical filters. If the
-         * property matches one of the values listed, the feature will be displayed. If
-         * the filter type is categorical and no values are set, then features will not be
-         * filtered on this property.
+         * @property {(string[]|number[])} values Only used for categorical filters. If
+         * the property matches one of the values listed, the feature will be displayed.
+         * If the filter type is categorical and no values are set, then features will not
+         * be filtered on this property.
          * @property {number} max Only used for numeric filters. The property's value must
          * be less than the value set here for the feature to be visible. If the filter
          * type is numeric, and max is set, then the max is infinite.
