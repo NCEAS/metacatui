@@ -71,6 +71,9 @@ define(
             // Don't add an unsupported type to  the collection
             if (modelOption) {
               return new modelOption.model(assetConfig)
+            } else {
+              // Return a generic MapAsset as a default
+              return new MapAsset(assetConfig)
             }
 
           }

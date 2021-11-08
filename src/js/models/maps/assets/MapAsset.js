@@ -75,9 +75,9 @@ define(
          * attributes of this asset. This applies to raster/imagery and vector assets. For
          * imagery, the colorPalette will be used to create a legend. For vector assets
          * (e.g. 3Dtilesets), it will also be used to style the features.
-         * @property {string} [status = null] Set to 'ready' when the resource is ready to be
-         * rendered in a map view. Set to 'error' when the asset is not supported, or
-         * there was a problem requesting the resource.
+         * @property {'ready'|'error'|null} [status = null] Set to 'ready' when the
+         * resource is ready to be rendered in a map view. Set to 'error' when the asset
+         * is not supported, or there was a problem requesting the resource.
          * @property {string} [statusDetails = null] Any further details about the status,
          * especially when there was an error.
         */
@@ -209,24 +209,6 @@ define(
             );
           }
         },
-
-        // TODO: ?
-        // /**
-        //  * @type {Object} The type of map assets that MetacatUI supports, categorized by
-        //  * more general types - imagery, data, (3D) tilesets, and terrain.
-        //  * @property {string[]} imagery - The list of supported imagery layer types
-        //  * @property {string[]} data - The list of supported vector data types that will
-        //  * be used to create geometries, excluding any 3D tilesets.
-        //  * @property {string[]} tileset - The list of supported 3D tile types.
-        //  * @property {string[]} terrain - The list of supported terrain asset types that
-        //  * will be used to render peaks and valleys in 3D maps.
-        //  */
-        // supportedTypes: {
-        //   imagery: ['BingMapsImageryProvider', 'IonImageryProvider'],
-        //   data: ['GeoJsonDataSource'],
-        //   tileset: ['Cesium3DTileset'],
-        //   terrain: ['CesiumTerrainProvider']
-        // },
 
         // /**
         //  * Parses the given input into a JSON object to be set on the model.

@@ -231,6 +231,9 @@ define(
               if (renderOption) {
                 const terrainRenderFunction = view[renderOption.renderFunction]
                 terrainRenderFunction.call(view, terrainModel)
+              } else {
+                console.log('The terrain type, "' + type + '", is not supported in the' +
+                ' map widget. Terrain will not be rendered.');
               }
             }
 
@@ -249,34 +252,8 @@ define(
             // Add each layer from the Map model to the Cesium widget. Render using the
             // function configured in the View's mapAssetRenderFunctions property.
             view.model.get('layers').forEach(function (layerModel) {
-              var type = layerModel.get('type')
-              var renderOption = _.find(
-                view.mapAssetRenderFunctions,
-                function (option) {
-                  return option.types.includes(type)
-                }
-              )
-              var renderFunction = view[renderOption.renderFunction]
-
-              if (!renderFunction || typeof renderFunction !== 'function') {
-                console.log(
-                  'A create function must be set in the Cesium Widget View for layer' +
-                  'models with type: ' + type + '. A layer will not be shown ' +
-                  'for the following layer:', layerModel
-                );
-              } else {
-                // Do not immediately render layers that are initially invisible
-                if (layerModel.get('visible')) {
-                  renderFunction.call(view, layerModel)
-                } else {
-                  // Start rendering the layer once it is set to visible in the map
-                  view.listenToOnce(layerModel, 'change:visible', function () {
-                    renderFunction.call(view, layerModel)
-                  })
-                }
-              }
-
-            });
+              view.renderLayer(layerModel)
+            })
 
             return this
 
@@ -285,6 +262,58 @@ define(
             console.log(
               'Failed to render a CesiumWidgetView. Error details: ' + error
             );
+          }
+        },
+
+        /**
+         * Finds the function that is configured for the given layer model type in the
+         * {@link CesiumWidgetView#mapAssetRenderFunctions} array, then renders the layer
+         * in the map. If there is a problem rendering the layer (e.g. it is an
+         * unsupported type that is not configured in the mapAssetRenderFunctions), then
+         * sets the layerModel's status to error.
+         * @param {MapAsset} layerModel A MapAsset layer to render in the map, such as a
+         * Cesium3DTileset or a CesiumImagery model.
+         */
+        renderLayer(layerModel) {
+          try {
+            if (!layerModel) {
+              return
+            }
+            var view = this
+            var type = layerModel.get('type')
+            // Find the render option from the options configured in the view, given the
+            // layer model type
+            const renderOption = _.find(view.mapAssetRenderFunctions, function (option) {
+              return option.types.includes(type)
+            }) || {};
+            // Get the function for this type
+            const renderFunction = view[renderOption.renderFunction]
+  
+            // If a render function for this layer model type was found, show it on the map
+            if (renderFunction && typeof renderFunction === 'function') {
+              // Do not immediately render layers that are initially invisible
+              if (layerModel.get('visible')) {
+                renderFunction.call(view, layerModel)
+              } else {
+                // Start rendering the layer once it is set to visible in the map
+                view.listenToOnce(layerModel, 'change:visible', function () {
+                  renderFunction.call(view, layerModel)
+                })
+              }
+            // If the cesium widget does not have a way to display this error, update the
+            // error status in the model (this will be reflected in the LayerListView)
+            } else {
+              layerModel.set('statusDetails', 'This type of layer is not supported in the map widget.')
+              layerModel.set('status', 'error')
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error rendering a layer in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+            layerModel.set('statusDetails', 'There was a problem rendering this layer in the map widget.')
+            layerModel.set('status', 'error')
           }
         },
 

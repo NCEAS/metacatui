@@ -189,25 +189,12 @@ define(
           try {
             if (config) {
 
-              // For now, filter out types that are not supported before initializing any
-              // MapAssets collections. TODO: Make this a configurable list somewhere. 
-              var supportedTypes = [
-                'Cesium3DTileset', 'BingMapsImageryProvider', 'IonImageryProvider',
-                'CesiumTerrainProvider'
-              ]
-
               if (config.layers && config.layers.length && Array.isArray(config.layers)) {
-                var supportedLayers = _.filter(config.layers, function (layer) {
-                  return supportedTypes.includes(layer.type)
-                })
-                this.set('layers', new MapAssets(supportedLayers))
+                this.set('layers', new MapAssets(config.layers))
               }
 
               if (config.terrains && config.terrains.length && Array.isArray(config.terrains)) {
-                var supportedTerrains = _.filter(config.terrains, function (terrain) {
-                  return supportedTypes.includes(terrain.type)
-                })
-                this.set('terrains', new MapAssets(supportedTerrains))
+                this.set('terrains', new MapAssets(config.terrains))
               }
 
             }
