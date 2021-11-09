@@ -484,7 +484,7 @@ define(['underscore',
         /**
         * Creates a {@link DataPackage} collection for this Editor view, and saves it as the Root Data Package of the app.
         * This centralizes the DataPackage creation so listeners and other functionality is always performed
-        * @param {[DataONEObject[]|ScienceMetadata[]|EML211[]]} models - An array of models to add to the collection
+        * @param {(DataONEObject[]|ScienceMetadata[]|EML211[])} models - An array of models to add to the collection
         * @param {object} [attributes] A literal object of attributes to pass to the DataPackage.initialize() function
         * @since 2.17.1
         */
