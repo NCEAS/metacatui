@@ -156,6 +156,7 @@ define(
          */
         initialize: function (assetConfig) {
           try {
+
             const model = this;
 
             // Set the color palette
@@ -176,35 +177,120 @@ define(
               }
             })
 
-            // Simple test to see if string is an SVG
-            const isSVG = function (str) {
-              return str.startsWith('<svg')
-            }
             // Fetch the icon, if there is one
-            if (assetConfig && assetConfig.icon && !isSVG(assetConfig.icon)) {
-              model.set('iconStatus', 'fetching')
-              // Use the portal image model to get the correct baseURL for an image
-              const iconModel = new PortalImage({
-                identifier: assetConfig.icon
-              })
-              fetch(iconModel.get('imageURL'))
-                .then(function (response) {
-                  return response.text();
-                })
-                .then(function (data) {
-                  if (isSVG(data)) {
-                    model.set('icon', data)
-                  }
-                  model.set('iconStatus', 'success')
-                })
-                .catch(function (response) {
-                  model.set('iconStatus', 'error')
-                });
+            if (assetConfig && assetConfig.icon) {
+              if (model.isSVG(assetConfig.icon)) {
+                model.updateIcon(assetConfig.icon)
+              } else {
+                // If the string is not an SVG then assume it is a PID and try to fetch
+                // the SVG file. fetchIcon will update the icon when complete.
+                model.fetchIcon(assetConfig.icon)
+              }
             }
           }
           catch (error) {
             console.log(
               'There was an error initializing a MapAsset model' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Sanitizes an SVG string and updates the model's 'icon' attribute the sanitized
+         * string. Also sets the 'iconStatus' attribute to 'success'.
+         * @param {string} icon An SVG string to use for the MapAsset icon
+         */
+        updateIcon: function (icon) {
+          const model = this
+          try {
+            model.sanitizeIcon(icon, function (sanitizedIcon) {
+              model.set('icon', sanitizedIcon)
+              model.set('iconStatus', 'success')
+            })
+          }
+          catch (error) {
+            console.log(
+              'There was an error updating an icon in a MapAsset model' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Simple test to see if a string is an SVG
+         * @param {string} str The string to check
+         * @returns {Boolean} Returns true if the string starts with `<svg` and ends with
+         * `</svg>`, regardless of case
+         */
+        isSVG: function (str) {
+          const strLower = str.toLowerCase()
+          return strLower.startsWith('<svg') && strLower.endsWith('</svg>')
+        },
+
+        /**
+         * Fetches an SVG given a pid, sanitizes it, then updates the model's icon
+         * attribute with the new and SVG string (after sanitizing it)
+         * @param {string} pid 
+         */
+        fetchIcon: function (pid) {
+          const model = this
+          try {
+            model.set('iconStatus', 'fetching')
+
+            // Use the portal image model to get the correct baseURL for an image
+            const imageURL = new PortalImage({
+              identifier: pid
+            }).get('imageURL')
+
+            fetch(imageURL)
+              .then(function (response) {
+                return response.text();
+              })
+              .then(function (data) {
+                if (model.isSVG(data)) {
+                  model.updateIcon(data)
+                }
+              })
+              .catch(function (response) {
+                model.set('iconStatus', 'error')
+              });
+          }
+          catch (error) {
+            console.log(
+              'Failed to fetch an icon for a MapAsset' +
+              '. Error details: ' + error
+            );
+            model.set('iconStatus', 'error')
+          }
+        },
+
+        /**
+         * Takes an SVG string and returns it with only the allowed tags and attributes
+         * @param {string} icon The SVG icon string to sanitize
+         * @param {function} callback Function to call once the icon has been sanitized.
+         * Will pass the sanitized icon string.
+         */
+        sanitizeIcon: function (icon, callback) {
+          try {
+            // Use the showdown xss filter to sanitize the SVG string
+            require(['showdown', 'showdownXssFilter'], function (showdown, showdownXss) {
+              var converter = new showdown.Converter({
+                extensions: ['xssfilter']
+              });
+              let sanitizedIcon = converter.makeHtml(icon);
+              // Remove the <p></p> tags that showdown wraps the string in
+              sanitizedIcon = sanitizedIcon.replace(/^(<p>)/, '')
+              sanitizedIcon = sanitizedIcon.replace(/(<\/p>)$/, '')
+              // Call the callback
+              if (callback && typeof callback === 'function') {
+                callback(sanitizedIcon)
+              }
+            })
+          }
+          catch (error) {
+            console.log(
+              'There was an error sanitizing an SVG icon in a MapAsset model' +
               '. Error details: ' + error
             );
           }

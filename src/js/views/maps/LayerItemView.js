@@ -213,13 +213,17 @@ define(
          */
         insertIcon: function () {
           try {
-            const iconStatus = this.model.get('iconStatus')
+            const model = this.model;
+            const iconStatus = model.get('iconStatus')
             if (iconStatus && iconStatus === 'fetching') {
-              this.listenToOnce(this.model, 'change:iconStatus', this.insertIcon)
+              this.listenToOnce(model, 'change:iconStatus', this.insertIcon)
               return
             }
-            const icon = this.model.get('icon')
-            if (icon && typeof icon === 'string' && icon.startsWith('<svg')) {
+            if (iconStatus === 'error') {
+              return
+            }
+            const icon = model.get('icon')
+            if (icon && typeof icon === 'string' && model.isSVG(icon)) {
               const iconContainer = document.createElement('span')
               iconContainer.classList.add(this.classes.icon)
               iconContainer.innerHTML = icon
