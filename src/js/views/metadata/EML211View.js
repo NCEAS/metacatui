@@ -347,6 +347,9 @@ define(['underscore', 'jquery', 'backbone',
                 checkTagIcon: checkTagIcon,
                 alertTagIcon: alertTagIcon
               }));
+
+              //Initialize all the tooltips
+              view.$(".tooltip-this").tooltip();
             });
           }
           catch(e){

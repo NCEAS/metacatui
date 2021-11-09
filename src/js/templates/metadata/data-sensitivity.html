@@ -6,7 +6,7 @@
   <label for="non-sensitive-data-input" class="radio">
     <input type="radio" id="non-sensitive-data-input" name="data-sens" value="non-sensitive" />
     <span class="text">Non-sensitive data</span>
-    <div class="data-tag-icon icon icon-on-right blue"><%= checkTagIcon %></div>
+    <a href="http://datatags.org/" target="_blank"><div class="data-tag-icon icon icon-on-right blue tooltip-this" data-title="DataTag: Blue (Non-confidential information)" data-trigger="hover focus" data-delay="600"><%= checkTagIcon %></div></a>
     <p class="notification hidden alert alert-info">
       <strong>Proceed with uploading data.</strong>
     </p>
@@ -14,7 +14,7 @@
   <label for="min-sensitive-input" class="radio">
     <input type="radio" id="min-sensitive-input" name="data-sens" value="min-sensitive" />
     Some or all data is sensitive with minimal risk
-    <div class="data-tag-icon icon icon-on-right green"><%= checkTagIcon %></div>
+    <a href="http://datatags.org/" target="_blank"><div class="data-tag-icon icon icon-on-right green tooltip-this" data-title="DataTag: Green (Non-confidential information)" data-trigger="hover focus" data-delay="600"><%= checkTagIcon %></div></a>
     <p class="notification hidden alert alert-success">
       <strong>Proceed with uploading data,</strong> but ensure that only data that are safe for public
       distribution are uploaded. Address questions about anonymization, aggregatation, de-identification, and data
@@ -24,10 +24,10 @@
   <label for="max-sensitive-input" class="radio">
     <input type="radio" id="max-sensitive-input" name="data-sens" value="max-sensitive" />
     Some or all data is sensitive with significant risk
-    <div class="data-tag-icon icon icon-on-right yellow"><%= alertTagIcon %></div>
-    <div class="data-tag-icon icon icon-on-right orange"><%= alertTagIcon %></div>
-    <div class="data-tag-icon icon icon-on-right red"><%= alertTagIcon %></div>
-    <div class="data-tag-icon icon icon-on-right crimson"><%= alertTagIcon %></div>
+    <a href="http://datatags.org/" target="_blank"><div class="data-tag-icon icon icon-on-right yellow tooltip-this" data-toggle="tooltip" data-title="DataTag: Yellow (Potentially harmful personal information)" data-trigger="hover focus" data-delay="600"><%= alertTagIcon %></div>
+    <div class="data-tag-icon icon icon-on-right orange tooltip-this" data-toggle="tooltip" data-title="DataTag: Orange (Sensitive personal information)" data-trigger="hover focus" data-delay="600"><%= alertTagIcon %></div>
+    <div class="data-tag-icon icon icon-on-right red tooltip-this" data-title="DataTag: Red (Very sensitive personal information)" data-trigger="hover focus" data-delay="600"><%= alertTagIcon %></div>
+    <div class="data-tag-icon icon icon-on-right crimson tooltip-this" data-title="DataTag: Crimson (Maximum sensitive personal information)" data-trigger="hover focus" data-delay="600"><%= alertTagIcon %></div></a>
     <p class="notification hidden alert alert-warning">
       <strong>Do NOT upload sensitive data.</strong> You should still enter a metadata description of your dataset that
       omits all sensitive information to inform the community of the dataset's existence. Contact the data curation support
