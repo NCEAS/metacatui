@@ -16,6 +16,7 @@ define(['jquery', 'underscore', 'backbone'],
 			checked: false,
             error: false,
             allowedSubmitters: [],
+            nodeInfoFound: false /* the node might access the CN, but not be part of the network, so check if MN capabilites are included in the CN report */
 		},
 
 		initialize: function(){
@@ -80,12 +81,16 @@ define(['jquery', 'underscore', 'backbone'],
 				url: MetacatUI.appModel.get('nodeServiceUrl'),
 				dataType: "text",
 				success: function(data, textStatus, xhr) {
-
-/
 					var xmlResponse = $.parseXML(data) || null;
 					if(!xmlResponse) return;
 
 					thisModel.saveNodeInfo(xmlResponse);
+                    // It is possible for MN to retrieve the CN node capabilties report, but not be registered with DataONE.
+                    // If the CN node report was successfully retrieved, but the calling MN was not in the report, then we 
+                    // need to get the MN capabilities directly from the MN.
+                    if(!thisModel.get("nodeInfoFound")) {
+                        thisModel.getCapabilities();
+                    }
 
 					thisModel.set("checked", true);
 				},
@@ -102,14 +107,48 @@ define(['jquery', 'underscore', 'backbone'],
             });
           }
 
-          //Trigger an error on this model
-          thisModel.set("error", true);
-          thisModel.trigger("error");
-
-          thisModel.set("checked", true);
+          // If the node capabilities service isn't available from the CN, try getting it from the current MN. 
+          // This is also intended to be used by standalone repositories, i.e. those that are not part of the DataONE network.
+          thisModel.getCapabilities();
         }
 			});
 		},
+        
+        getCapabilities: function(){
+            var thisModel  = this;
+
+            $.ajax({
+                url: MetacatUI.appModel.get('getCapabilitiesServiceUrl'),
+                dataType: "text",
+                success: function(data, textStatus, xhr) {
+                    
+                    var xmlResponse = $.parseXML(data) || null;
+                    if(!xmlResponse) return;
+                    thisModel.saveNodeInfo(xmlResponse);
+                    thisModel.set("checked", true);
+                },
+              error: function(xhr, textStatus, errorThrown){
+
+                //Log the error to the console
+                console.error("Couldn't get the DataONE node capabilities document: ", textStatus, errorThrown);
+
+                //Send this exception to Google Analytics
+                if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+                  ga("send", "exception", {
+                    "exDescription": "Couldn't get the DataONE node capabilties document: " + textStatus + ", " + errorThrown + " | v. " + MetacatUI.metacatUIVersion,
+                    "exFatal": false
+                  });
+                }
+
+                //Trigger an error on this model
+                thisModel.set("error", true);
+                thisModel.trigger("error");
+                thisModel.set("checked", true);
+              }
+            });
+        },
+
+        // end new
 
 		saveNodeInfo: function(xml){
 			var thisModel = this,
@@ -117,11 +156,17 @@ define(['jquery', 'underscore', 'backbone'],
 				coordList  = this.get('coordinators'),
 				children   = xml.children || xml.childNodes;
 
-
 			//Traverse the XML response to get the MN info
 			_.each(children, function(d1NodeList){
 
-				var d1NodeListChildren = d1NodeList.children || d1NodeList.childNodes;
+                // If the capabbilities reeport was obtained directly from the MN 
+                // then there will be a single <node> entry as the root elemeent. If it was obtained 
+                // from the CN 'listNodes' then the root element will be <nodeList>
+                if (d1NodeList.localName == "node") {
+				    var d1NodeListChildren = $(d1NodeList).toArray();
+                } else {
+				    var d1NodeListChildren = d1NodeList.children || d1NodeList.childNodes;
+                }
 
 				//The first (and only) child should be the d1NodeList
 				_.each(d1NodeListChildren, function(thisNode){
@@ -148,6 +193,7 @@ define(['jquery', 'underscore', 'backbone'],
 							node["readv2"] = v2;
                             // Get the service restrictions for the current member node
                             if( MetacatUI.nodeModel.get("currentMemberNode") == $(thisNode).find("identifier").text()) {
+                                thisModel.set("nodeInfoFound", true);
                             var storageProperty = $(nodeProperty).find("service[name='MNStorage'][version='v2'][available='true']");
                                 if (storageProperty.children().length) {
                                     var restrictionProperty = $(storageProperty).find("restriction[methodName='create']");
