@@ -79,6 +79,8 @@ require.config({
 	semanticUIdropdown: MetacatUI.root + '/components/semanticUI/dropdown.min',
 	// To make elements drag and drop, sortable
 	sortable: MetacatUI.root + '/components/sortable.min',
+  //Cesium
+  cesium: MetacatUI.root + "/components/cesium/Cesium",
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: MetacatUI.d3URL,
 	LineChart: ['views/LineChartView', null],
@@ -138,6 +140,11 @@ MetacatUI.appView = MetacatUI.appView || {};
 MetacatUI.uiRouter = MetacatUI.uiRouter || {};
 MetacatUI.appSearchResults = MetacatUI.appSearchResults || {};
 MetacatUI.appSearchModel = MetacatUI.appSearchModel || {};
+/**
+* @name MetacatUI.rootDataPackage
+* @type {string}
+* @description The top-level {@link DataPackage} that is currently being viewed or edited in MetacatUI.
+*/
 MetacatUI.rootDataPackage = MetacatUI.rootDataPackage || {};
 MetacatUI.statsModel = MetacatUI.statsModel || {};
 MetacatUI.mapModel = MetacatUI.mapModel || {};

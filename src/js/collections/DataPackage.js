@@ -2904,6 +2904,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
               this.saveReference(dataONEObject);
 
+              this.setLoadingFiles(dataONEObject);
+
               //Save a reference to this DataPackage
               // If the collections attribute is an array
 /*              if( Array.isArray(dataONEObject.get("collections")) ){
@@ -3090,6 +3092,38 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               });
 
               this.packageModel.updateSysMeta();
+            },
+
+            /**
+            * Tracks the upload status of DataONEObject models in this collection. If they are
+            * `loading` into the DOM or `in progress` of an upload to the server, they will be considered as "loading" files.
+            * @param {DataONEObject} [dataONEObject] - A model to begin tracking. Optional. If no DataONEObject is given, then only
+            * the number of loading files will be calcualted and set on the packageModel.
+            * @since 2.17.1
+            */
+            setLoadingFiles: function(dataONEObject){
+              //Set the number of loading files and the isLoadingFiles flag
+              let numLoadingFiles = this.where({ uploadStatus: "l" }).length + this.where({ uploadStatus: "p" }).length;
+              this.packageModel.set({"isLoadingFiles": numLoadingFiles > 0, "numLoadingFiles": numLoadingFiles});
+
+              if( dataONEObject ){
+                //Listen to the upload status to update the flag
+                this.listenTo(dataONEObject, "change:uploadStatus", function(){
+                  //If the object is done being successfully saved
+                  if( dataONEObject.get("uploadStatus") == "c" ){
+                    let numLoadingFiles = this.where({ uploadStatus: "l" }).length + this.where({ uploadStatus: "p" }).length;
+
+                    //If all models in this DataPackage have finished loading, then mark the loading as complete
+                    if( !numLoadingFiles ){
+                      this.packageModel.set({"isLoadingFiles": false, "numLoadingFiles": numLoadingFiles});
+                    }
+                    else{
+                      this.packageModel.set("numLoadingFiles", numLoadingFiles);
+                    }
+
+                  }
+                });
+              }
             }
         });
 

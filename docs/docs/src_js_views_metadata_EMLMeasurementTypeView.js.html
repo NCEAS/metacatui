@@ -217,6 +217,13 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
         }
 
         this.model.set("annotation", annotations);
+
+        // Ensure we have an id attribute because annotations require the
+        // parent to have one
+        if (!this.model.get("xmlID")) {
+          this.model.createID();
+        }
+
         this.model.trickleUpChange();
 
         // Force a re-render of the annotations

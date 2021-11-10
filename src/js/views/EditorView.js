@@ -392,6 +392,40 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate, NotAuthorizeSu
     },
 
     /**
+    * Enable the Save button. Resets any changes made in {@link EditorView#disableControls}
+    * @since 2.17.1
+    */
+    enableControls: function(){
+      //When the package is saved, revert the Save button back to normal
+      this.$("#save-editor").html(this.submitButtonText)
+                            .removeClass("btn-disabled")
+                            .parent()
+                            .tooltip("destroy");
+
+    },
+
+    /**
+    * Disable the Save button and display a message to explain why
+    * @param {string} [message] - A short text message to display in the Save button
+    * @since 2.17.1
+    */
+    disableControls: function(message){
+      //When the package is saved, revert the Save button back to normal
+      this.$("#save-editor").html(message || "Waiting for files to finish uploading...")
+                            .addClass("btn-disabled")
+                            .parent() //Add a tooltip to the parent element since tooltips won't work on a disabled button
+                            .tooltip({
+                              placement: "top",
+                              trigger: "hover focus click",
+                              html: false,
+                              title: "Saving is disabled while files are uploading. Please wait...",
+                              container: "body",
+                              delay: 600
+                            });
+
+    },
+
+    /**
     * Style the view to show that it is loading
     * @param {string|DOMElement} container - The element to put the loading styling in. Either a jQuery selector or the element itself.
     * @param {string|DOMElement} message - The message to display next to the loading icon. Either a jQuery selector or the element itself.

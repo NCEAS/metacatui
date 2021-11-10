@@ -1,0 +1,244 @@
+.PortalView #Content {
+  padding: 0;
+  margin: 0;
+}
+
+.PortalView #Content .portal-view {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: min-content 1fr;
+  gap: 0 1.5rem;
+  grid-auto-flow: row;
+  grid-template-areas: "header links" "sections sections" "logos logos";
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+/* On smaller screens... */
+
+@media only screen and (max-width: 768px) {
+  .PortalView #Content .portal-view {
+    grid-template-columns: 100%;
+  }
+}
+
+.map-view {
+  min-height: 93vh;
+}
+
+.portal-logos-view {
+  margin: 0.2rem 0;
+  border: none;
+}
+
+#portal-header-container {
+  grid-area: header;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* #portal-sections:after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  z-index: 999;
+  width: 100vw;
+  box-sizing: border-box;
+  height: 1px;
+  background-color: inherit;
+  box-shadow: 0px 18px 40px 1px rgba(0, 0, 0, 0.9);
+} */
+
+.section-links-container {
+  grid-area: links;
+  align-self: center;
+  margin-right: 0.8rem;
+}
+
+#portal-sections {
+  grid-area: sections;
+  position: relative;
+  overflow: hidden;
+}
+
+.portal-logos-view {
+  grid-area: logos;
+}
+
+#portal-header-container>.row {
+  padding: 0.5rem 0;
+  width: auto;
+}
+
+.portal-view .portal-title {
+  font-size: 1.1rem;
+  font-weight: 500;
+  white-space: normal;
+}
+
+.portal-view .portal-logo {
+  max-height: 2rem;
+  margin-right: 1rem;
+}
+
+.portal-view .portal-description {
+  margin: 0;
+  position: relative;
+  margin-left: 0.8rem;
+}
+
+
+.portal-view .portal-description::before {
+  /* font awesome info icon */
+  font-family: FontAwesome;
+  content: "\f05a";
+  display: flex;
+  font-size: 1.1rem;
+  opacity: 0.5;
+  cursor: help;
+}
+
+.portal-view .portal-description:hover::before {
+  opacity: 0.8;
+}
+
+.portal-view .portal-description p {
+  position: absolute;
+  margin: 0;
+  top: 0;
+  left: 1.5rem;
+  width: max-content;
+  max-width: 15rem;
+  background-color: var(--portal-col-bkg-active, white);
+  z-index: 1;
+  padding: 0 0.3rem;
+  border-radius: 0.2rem;
+  box-shadow: 0 1px 9px -1px rgba(0, 0, 0, 0.2), 0 1px 2px 0px rgba(0, 0, 0, 0.5);
+  /* hide the description until the info icon is hovered */
+  display: none;
+}
+.portal-view .portal-description:hover > p {
+  display: block;
+}
+
+@media only screen and (max-width: 768px) {
+  .portal-view .portal-description p {
+    right: 100%;
+    bottom: -1.5rem;
+    top: unset;
+    left: unset;
+  }
+}
+
+
+/* Title & logo on smaller screens... */
+@media only screen and (max-width: 768px) {
+
+  .Portal.Editor #editor-header, .PortalView #portal-header-container .row {
+    flex-direction: row;
+  }
+
+  .PortalView #portal-header-container .row .portal-logo {
+    max-width: 2.8rem;
+    margin: 0.5rem;
+  }
+  .PortalView #portal-header-container .portal-title {
+    font-size: 1.5rem;
+    flex: 1;
+    margin: 0 0.5;
+    white-space: unset;
+  }
+}
+
+/* TODO */
+
+.edit-portal-link-container {
+  display: none;
+}
+
+/* portal section links ("tabs") */
+
+#portal-section-tabs {
+  justify-content: flex-end;
+}
+
+#portal-section-tabs .section-link-container {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: transparent;
+  font-size: 0.83rem;
+  font-weight: 600;
+}
+
+.portal-view #portal-section-tabs .section-link-container.active {
+  background-color: transparent;
+}
+
+.portal-view #portal-section-tabs .section-link-container .portal-section-link {
+  color: currentColor;
+  opacity: 0.7;
+}
+
+.portal-view #portal-section-tabs .section-link-container.active .portal-section-link {
+  color: var(--portal-secondary-color);
+  opacity: 1;
+}
+
+#portal-section-tabs .section-link-container.active:hover, #portal-section-tabs .section-link-container:hover {
+  background-color: transparent;
+  color: var(--portal-secondary-color);
+}
+
+.portal-view #portal-section-tabs .section-link-container .portal-section-link:hover {
+  color: var(--portal-secondary-color) !important;
+  opacity: 1;
+}
+
+.portal-view .portal-title {
+  color: currentColor;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+}
+
+.portal-logos-view {
+  padding: 3.5rem 0 3.5rem 0;
+  margin: 0;
+}
+
+.portal-logos-view .img-logo {
+  margin: 0;
+  max-height: 5rem;
+  min-height: 3rem;
+}
+
+.portal-logos-view .span12 {
+  display: flex;
+  align-content: center;
+}
+
+.portal-logos-view .row-fluid .span4 {
+  width: auto;
+}
+
+.portal-view .logo-row {
+  margin: 0;
+  justify-content: space-around;
+}
+
+.logo-row a {
+  margin: 0 auto;
+}
+
+#portal-section-tabs .section-link-container {
+  flex-grow: unset;
+}
+
+footer {
+  height: min-content;
+}

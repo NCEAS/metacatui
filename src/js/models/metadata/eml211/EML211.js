@@ -429,7 +429,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           );
         },
 
-        /* Fetch the EML from the MN object service */
+        /**
+        * Fetch the EML from the MN object service
+        * @param {object} [options] - A set of options for this fetch()
+        * @property {boolean} [options.systemMetadataOnly=false] - If true, only the system metadata will be fetched.
+        * If false, the system metadata AND EML document will be fetched.
+        */
         fetch: function(options) {
           if( ! options ) var options = {};
 
@@ -441,7 +446,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             this.fetchSystemMetadata(options);
 
             //If we are retrieving system metadata only, then exit now
-            if(options.sysMeta)
+            if(options.systemMetadataOnly)
               return;
 
           //Call Backbone.Model.fetch to retrieve the info
@@ -1320,7 +1325,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           model.set("uploadStatus", "c");
           model.set("sysMetaXML", model.serializeSysMeta());
           model.set("oldPid", null);
-          model.fetch({merge: true, sysMeta: true});
+          model.fetch({merge: true, systemMetadataOnly: true});
           model.trigger("successSaving", model);
 
         },
@@ -1628,6 +1633,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             dataType: "text",
             success: function(response){
               model.set(DataONEObject.prototype.parse.call(model, response));
+
+              //Trigger a custom event that the sys meta was updated
+              model.trigger("sysMetaUpdated");
             },
             error: function(){
               model.trigger('error');
@@ -1993,14 +2001,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         return true;
       },
-      
+
       /**
        * getPartiesByType - Gets an array of EMLParty members that have a particular party type or role.
        * @param {string} partyType - A string that represents either the role or the party type. For example, "contact", "creator", "principalInvestigator", etc.
        * @since 2.15.0
        */
       getPartiesByType: function(partyType){
-        
+
         try {
           if(!partyType){
             return false

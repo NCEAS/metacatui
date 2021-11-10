@@ -5,3 +5,4 @@ of your MetacatUI application. Is something missing? [Email us](mailto:metacat-d
 
 - <a href="{{ site.url }}/guides/accesspolicy.html">Access Policies</a>
 - <a href="{{ site.url }}/guides/filters/configuring-filters.html">Search Filters</a>
+- <a href="{{ site.url }}/guides/maps/cesium.html">Cesium Map</a>

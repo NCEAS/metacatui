@@ -68,20 +68,6 @@ define(['underscore', 'jquery', 'backbone',
             	//Save a reference to this EMLAttribute model
             	measurementScaleModel.set("parentModel", this.model);
 
-              // Measurement Type
-              // Only shown when we have a BioPortal API key
-              if (MetacatUI.appModel.get("enableMeasurementTypeView") && MetacatUI.appModel.get("bioportalAPIKey")) {
-                // Dynamically require since this view is feature-flagged off by
-                // default and requires an API key
-                require(["views/metadata/EMLMeasurementTypeView"], function(EMLMeasurementTypeView){
-                  var view = new EMLMeasurementTypeView({
-                    model: viewRef.model
-                  });
-                  view.render();
-                  viewRef.$(".measurement-type-container").append(view.el);
-                });
-              }
-
             	//Create an EMLMeasurementScaleView for this attribute's measurement scale
             	var measurementScaleView = new EMLMeasurementScaleView({
             		model: measurementScaleModel,
@@ -103,7 +89,43 @@ define(['underscore', 'jquery', 'backbone',
             },
 
             postRender: function(){
-            	this.measurementScaleView.postRender();
+              this.measurementScaleView.postRender();
+              this.renderMeasurementTypeView();
+            },
+
+            /**
+             * Render and insert the MeasurementTypeView for this view
+             *
+             * This is separated out into its own method so it can be called
+             * from `postRender()` which is called after the user swithces to
+             * the EntityView tab for this attribute. We do this to avoid
+             * loading as many MeasurementTypeViews as there are Attributes
+             * which would get us rate limited by BioPortal because every
+             * MeasurementTypeView hits BioPortal's API on render.
+             */
+            renderMeasurementTypeView: function () {
+              if (!(MetacatUI.appModel.get("enableMeasurementTypeView") && MetacatUI.appModel.get("bioportalAPIKey"))) {
+                return;
+              }
+
+              var viewRef     = this,
+                  containerEl = viewRef.$(".measurement-type-container");
+
+              // Only insert a new view if we haven't already
+              if (!containerEl.is(":empty")) {
+                return;
+              }
+
+              // Dynamically require since this view is feature-flagged off by
+              // default and requires an API key
+              require(["views/metadata/EMLMeasurementTypeView"], function (EMLMeasurementTypeView) {
+                var view = new EMLMeasurementTypeView({
+                  model: viewRef.model
+                });
+
+                view.render();
+                containerEl.html(view.el);
+              });
             },
 
             updateModel: function(e){
