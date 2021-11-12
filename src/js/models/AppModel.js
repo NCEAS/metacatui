@@ -404,6 +404,17 @@ define(['jquery', 'underscore', 'backbone'],
       */
       enableDataSensitivityInEditor: true,
 
+
+      /**
+      * The URL of a webpage that shows more information about Data Sensitivity and DataTags. This will be used
+      * for links in help text throughout the app, such as next to Data Sensitivity questions in the dataset editor.
+      *
+      * @type {string}
+      * @default "http://datatags.org"
+      * @since 2.X
+      */
+      dataSensitivityInfoURL: "http://datatags.org",
+
       /**
       * The base URL for the repository. This only needs to be changed if the repository
       * is hosted at a different origin than the MetacatUI origin. This URL is used to contruct all

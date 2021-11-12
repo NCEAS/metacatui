@@ -59,6 +59,7 @@ MetacatUI.AppConfig = Object.assign({
   },
   allowChangeRightsHolder: false,
   enableMeasurementTypeView: true,
+  dataSensitivityInfoURL: "/managing-sensitive-data",
 
   //Searching
   enableSolrJoins: true,

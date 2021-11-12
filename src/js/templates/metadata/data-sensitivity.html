@@ -8,7 +8,7 @@
            value="http://purl.dataone.org/odo/SENSO_00000002" data-element-name="dataset"
            data-property-label="Data Sensitivity Category" data-property-URI="http://purl.dataone.org/odo/SENSO_00000005" data-value-label="Non-sensitive data" />
     <span class="text">Non-sensitive data</span>
-    <a href="http://datatags.org/" target="_blank"><div class="data-tag-icon icon icon-on-right blue tooltip-this" data-title="DataTag: Blue (Non-confidential information)" data-trigger="hover focus" data-delay="600"><%= checkTagIcon %></div></a>
+    <a href="<%= MetacatUI.appModel.get('dataSensitivityInfoURL') %>" target="_blank"><div class="data-tag-icon icon icon-on-right blue tooltip-this" data-title="DataTag: Blue (Non-confidential information)" data-trigger="hover focus" data-delay="600"><%= checkTagIcon %></div></a>
     <p class="subtle help-text">None of the data includes sensitive or protected information.</p>
     <p class="notification hidden alert alert-info">
       <strong>Proceed with uploading data.</strong>
@@ -19,7 +19,7 @@
            value="http://purl.dataone.org/odo/SENSO_00000003" data-element-name="dataset"
            data-property-label="Data Sensitivity Category" data-property-URI="http://purl.dataone.org/odo/SENSO_00000005" data-value-label="De-identified data" />
     <span>Some or all data is sensitive with minimal risk</span>
-    <a href="http://datatags.org/" target="_blank"><div class="data-tag-icon icon icon-on-right green tooltip-this" data-title="DataTag: Green (Non-confidential information)" data-trigger="hover focus" data-delay="600"><%= checkTagIcon %></div></a>
+    <a href="<%= MetacatUI.appModel.get('dataSensitivityInfoURL') %>" target="_blank"><div class="data-tag-icon icon icon-on-right green tooltip-this" data-title="DataTag: Green (Non-confidential information)" data-trigger="hover focus" data-delay="600"><%= checkTagIcon %></div></a>
     <p class="subtle help-text">Sensitive data has been de-identified, anonymized, aggregated, or summarized to remove sensitivities and enable safe data distribution. Examples include ensuring that human subjects data, protected species data, archaeological site locations and personally identifiable information have been properly anonymized, aggregated and summarized.</p>
     <p class="notification hidden alert alert-success">
       <strong>Proceed with uploading data,</strong> but ensure that only data that are safe for public
@@ -32,7 +32,7 @@
            value="http://purl.dataone.org/odo/SENSO_00000004" data-element-name="dataset"
            data-property-label="Data Sensitivity Category" data-property-URI="http://purl.dataone.org/odo/SENSO_00000005" data-value-label="Sensitive data" />
     <span>Some or all data is sensitive with significant risk</span>
-    <a href="http://datatags.org/" target="_blank"><div class="data-tag-icon icon icon-on-right yellow tooltip-this" data-toggle="tooltip" data-title="DataTag: Yellow (Potentially harmful personal information)" data-trigger="hover focus" data-delay="600"><%= alertTagIcon %></div>
+    <a href="<%= MetacatUI.appModel.get('dataSensitivityInfoURL') %>" target="_blank"><div class="data-tag-icon icon icon-on-right yellow tooltip-this" data-toggle="tooltip" data-title="DataTag: Yellow (Potentially harmful personal information)" data-trigger="hover focus" data-delay="600"><%= alertTagIcon %></div>
     <div class="data-tag-icon icon icon-on-right orange tooltip-this" data-toggle="tooltip" data-title="DataTag: Orange (Sensitive personal information)" data-trigger="hover focus" data-delay="600"><%= alertTagIcon %></div>
     <div class="data-tag-icon icon icon-on-right red tooltip-this" data-title="DataTag: Red (Very sensitive personal information)" data-trigger="hover focus" data-delay="600"><%= alertTagIcon %></div>
     <div class="data-tag-icon icon icon-on-right crimson tooltip-this" data-title="DataTag: Crimson (Maximum sensitive personal information)" data-trigger="hover focus" data-delay="600"><%= alertTagIcon %></div></a>

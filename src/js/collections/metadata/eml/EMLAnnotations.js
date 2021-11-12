@@ -6,6 +6,7 @@ function($, _, Backbone, EMLAnnotation){
    * @class EMLAnnotations
    * @classdesc A collection of EMLAnnotations.
    * @classcategory Collections/Metadata/EML
+   * @since 2.X
    */
   var EMLAnnotations = Backbone.Collection.extend(
     /** @lends EMLAnnotations.prototype */
@@ -14,6 +15,7 @@ function($, _, Backbone, EMLAnnotation){
       /**
       * The reference to the model class that this collection is made of.
       * @type EMLAnnotation
+      * @since 2.X
       */
       model: EMLAnnotation,
 
@@ -21,6 +23,7 @@ function($, _, Backbone, EMLAnnotation){
       * Checks if this collection already has an annotation for the same property URI.
       * @param {EMLAnnotation} annotation The EMLAnnotation to compare against the annotations already in this collection.
       * @returns {Boolean} Returns true is this collection already has an annotation for this property.
+      * @since 2.X
       */
       hasDuplicateOf: function(annotation){
 
@@ -50,6 +53,7 @@ function($, _, Backbone, EMLAnnotation){
       * Then adds the given annotation to the collection. If no duplicate is found, the given annotation is still added
       * to the collection.
       * @param {EMLAnnotation} annotation
+      * @since 2.X
       */
       replaceDuplicateWith: function(annotation){
 
