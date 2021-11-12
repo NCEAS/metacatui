@@ -87,6 +87,8 @@ define(['underscore', 'jquery', 'backbone',
           "click .eml-party .move-up": "movePersonUp",
           "click .eml-party .move-down": "movePersonDown",
 
+          "click input.annotation" : "addAnnotation",
+
           "click  .remove": "handleRemove"
         },
 
@@ -350,6 +352,20 @@ define(['underscore', 'jquery', 'backbone',
 
               //Initialize all the tooltips
               view.$(".tooltip-this").tooltip();
+
+              //Check the radio button that is already selected, per the EML
+              let annotations = view.model.get("annotations");
+
+              let propertyURI = container.find("[data-property-URI]").attr("data-property-URI");
+              if(propertyURI && annotations && annotations.length){
+                let annotation = annotations.findWhere({ propertyURI: propertyURI });
+
+                if(annotation){
+                  let annotationValue = annotation.get("valueURI");
+                  container.find("[value='" + annotationValue + "']").prop("checked", true);
+                }
+              }
+
             });
           }
           catch(e){
@@ -2432,6 +2448,42 @@ define(['underscore', 'jquery', 'backbone',
           for (var i = 0; i < tableNums.length; i++) {
             $(tableNums[i]).text(i + 1);
           }
+        },
+
+        /**
+        * Adds an {@link EMLAnnotation} to the {@link EML211} model currently being edited.
+        * Attributes for the annotation are retreived from the HTML attributes from the HTML element
+        * that was interacted with.
+        * @param {Event e} - An Event on an Element that contains {@link EMLAnnotation} data
+        */
+        addAnnotation: function(e){
+          try{
+            if( !e || !e.target ){
+              return;
+            }
+
+            let annotationData = _.clone(e.target.dataset);
+
+            //If this is a radio button, we only want one annotation of this type.
+            if( e.target.getAttribute("type") == "radio" ){
+              annotationData.allowDuplicates = false;
+            }
+
+            //Set the valueURI from the input value
+            annotationData.valueURI = $(e.target).val();
+
+            //Reformat the propertyURI property
+            if( annotationData.propertyUri ){
+              annotationData.propertyURI = annotationData.propertyUri;
+              delete annotationData.propertyUri;
+            }
+
+            this.model.addAnnotation(annotationData);
+          }
+          catch(error){
+            console.error("Couldn't add annotation: ", e);
+          }
+
         },
 
         /* Close the view and its sub views */

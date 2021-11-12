@@ -15,11 +15,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/eml211/EMLProject',
         'models/metadata/eml211/EMLText',
         'models/metadata/eml211/EMLMethods',
+        'collections/metadata/eml/EMLAnnotations',
         'models/metadata/eml211/EMLAnnotation'],
     function($, _, Backbone, uuid, Units, ScienceMetadata, DataONEObject,
         EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage,
         EMLDistribution, EMLEntity, EMLDataTable, EMLOtherEntity, EMLParty,
-            EMLProject, EMLText, EMLMethods, EMLAnnotation) {
+            EMLProject, EMLText, EMLMethods, EMLAnnotations, EMLAnnotation) {
 
       /**
       * @class EML211
@@ -64,7 +65,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               pubplace: null,
               methods: null, // An EMLMethods objects
               project: null, // An EMLProject object,
-              annotation: [], // Dataset-level annotations
+              annotations: null, // Dataset-level annotations
               nodeOrder: [
                 "alternateidentifier",
                 "shortname",
@@ -571,16 +572,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               }
 
             }
-                //Parse EMLText modules
-                else if(_.contains(emlText, thisNode.localName)){
-                  if(typeof modelJSON[convertedName] == "undefined") modelJSON[convertedName] = [];
+            //Parse EMLText modules
+            else if(_.contains(emlText, thisNode.localName)){
+              if(typeof modelJSON[convertedName] == "undefined") modelJSON[convertedName] = [];
 
-                  modelJSON[convertedName].push(new EMLText({
-                      objectDOM: thisNode,
-                      parentModel: model
-                    }));
+              modelJSON[convertedName].push(new EMLText({
+                  objectDOM: thisNode,
+                  parentModel: model
+                }));
 
-                }
+            }
           else if(_.contains(emlMethods, thisNode.localName)) {
             if(typeof modelJSON[thisNode.localName] === "undefined") modelJSON[thisNode.localName] = [];
 
@@ -649,16 +650,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
             modelJSON["entities"].push(entityModel);
           }
+          //Parse dataset-level annotations
           else if (thisNode.localName === "annotation") {
-            if(typeof modelJSON["annotation"] == "undefined") {
-              modelJSON["annotation"] = [];
+            if( !modelJSON["annotations"] ) {
+              modelJSON["annotations"] = new EMLAnnotations();
             }
 
             var annotationModel = new EMLAnnotation({
               objectDOM: thisNode
             }, { parse: true });
 
-            modelJSON["annotation"].push(annotationModel);
+            modelJSON["annotations"].add(annotationModel);
           }
           else{
             //Is this a multi-valued field in EML?
@@ -932,15 +934,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
       // Dataset-level annotations
       datasetNode.children("annotation").remove();
 
-      _.each(this.get("annotation"), function(annotation) {
-        if (annotation.isEmpty()) {
-          return;
-        }
+      if( this.get("annotations") ){
+        this.get("annotations").each(function(annotation) {
+          if (annotation.isEmpty()) {
+            return;
+          }
 
-        var after = this.getEMLPosition(eml, "annotation");
+          var after = this.getEMLPosition(eml, "annotation");
 
-        $(after).after(annotation.updateDOM());
-      }, this);
+          $(after).after(annotation.updateDOM());
+        }, this);
+
+        //Since there is at least one annotation, the dataset node needs to have an id attribute.
+        datasetNode.attr("id", this.getXMLSafeID());
+      }
 
       //If there is no creator, create one from the user
       if(!this.get("creator").length){
@@ -1519,17 +1526,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         });
 
         // Validate each EMLAnnotation model
-        _.each(this.get("annotation"), function (model) {
-          if (model.isValid()) {
-            return;
-          }
+        if( this.get("annotations") ){
+          this.get("annotations").each(function (model) {
+            if (model.isValid()) {
+              return;
+            }
 
-          if (!errors.annotations) {
-            errors.annotations = [];
-          }
+            if (!errors.annotations) {
+              errors.annotations = [];
+            }
 
-          errors.annotations.push(model.validationError);
-        });
+            errors.annotations.push(model.validationError);
+          }, this);
+        }
 
         //Check the required fields for this MetacatUI configuration
         if(MetacatUI.appModel.get("emlEditorRequiredFields")){
@@ -2255,7 +2264,75 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
       createID: function() {
         this.set("xmlID", uuid.v4());
+      },
+
+      /**
+      * Creates and adds an {@link EMLAnnotation} to this EML211 model with the given annotation data in JSON form.
+      * @param {object} annotationData The attribute data to set on the new {@link EMLAnnotation}. See {@link EMLAnnotation#defaults} for
+      * details on what attributes can be passed to the EMLAnnotation. In addition, there is an `elementName` property.
+      * @property {string} [annotationData.elementName] The name of the EML Element that this
+      annotation should be applied to. e.g. dataset, entity, attribute. Defaults to `dataset`. NOTE: Right now only dataset annotations are supported until
+      more annotation editing is added to the EML Editor.
+      * @property {Boolean} [annotationData.allowDuplicates] If false, this annotation will replace all annotations already set with the same propertyURI.
+      * By default, more than one annotation with a given propertyURI can be added (defaults to true)
+      */
+      addAnnotation: function(annotationData){
+
+        try{
+          if( !annotationData || typeof annotationData != "object" ){
+            return;
+          }
+
+          //If no element name is provided, default to the dataset element.
+          let elementName = "";
+          if( !annotationData.elementName ){
+            elementName = "dataset"
+          }
+          else{
+            elementName = annotationData.elementName;
+          }
+          //Remove the elementName property so it isn't set on the EMLAnnotation model later.
+          delete annotationData.elementName;
+
+          //Check if duplicates are allowed
+          let allowDuplicates = annotationData.allowDuplicates;
+          delete annotationData.allowDuplicates;
+
+          //Create a new EMLAnnotation model
+          let annotation = new EMLAnnotation(annotationData);
+
+          //Update annotations set on the dataset element
+          if( elementName == "dataset" ){
+            let annotations = this.get("annotations");
+
+            //If the current annotations set on the EML model are not in Array form, change it to an array
+            if( !annotations ){
+              annotations = new EMLAnnotations();
+            }
+
+            if( allowDuplicates === false ){
+              //Add the EMLAnnotation to the collection, making sure to remove duplicates first
+              annotations.replaceDuplicateWith(annotation);
+            }
+            else{
+              annotations.add(annotation);
+            }
+            this.set("annotations", annotations);
+
+          }
+          else{
+            /** @todo Add annotation support for other EML Elements */
+          }
+
+          console.log(this.get("annotations"))
+
+        }
+        catch(e){
+          console.error("Could not add Annotation to the EML: ", e);
+        }
+
       }
+
     });
 
     return EML211;
