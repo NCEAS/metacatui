@@ -7,6 +7,7 @@ define(
     'backbone',
     'models/maps/assets/MapAsset',
     'models/maps/assets/Cesium3DTileset',
+    'models/maps/assets/CesiumVectorData',
     'models/maps/assets/CesiumImagery',
     'models/maps/assets/CesiumTerrain',
   ],
@@ -16,6 +17,7 @@ define(
     Backbone,
     MapAsset,
     Cesium3DTileset,
+    CesiumVectorData,
     CesiumImagery,
     CesiumTerrain
   ) {
@@ -52,6 +54,10 @@ define(
               {
                 types: ['Cesium3DTileset'],
                 model: Cesium3DTileset
+              },
+              {
+                types: ['GeoJsonDataSource'],
+                model: CesiumVectorData
               },
               {
                 types: ['BingMapsImageryProvider', 'IonImageryProvider'],

@@ -61,14 +61,6 @@ define(
          */
         template: _.template(Template),
 
-        // /**
-        // * The events this view will listen to and the associated function to call.
-        // * @type {Object}
-        // */
-        // events: {
-        //   // 'event selector': 'function', 
-        // },
-
         /**
          * An array of objects the match a Map Asset's type property to the function in
          * this view that adds and renders that asset on the map, given the Map Asset
@@ -78,12 +70,17 @@ define(
          * @property {string[]} types The list of types that can be added to the map given
          * the renderFunction
          * @property {string} renderFunction The name of the function in the view that
-         * will add the asset to the map and render it, when passed the MapAsset model
+         * will add the asset to the map and render it, when passed the cesiumModel
+         * attribute from the MapAsset model
          */
         mapAssetRenderFunctions: [
           {
             types: ['Cesium3DTileset'],
             renderFunction: 'add3DTileset'
+          },
+          {
+            types: ['GeoJsonDataSource'],
+            renderFunction: 'addVectorData'
           },
           {
             types: ['BingMapsImageryProvider', 'IonImageryProvider'],
@@ -160,8 +157,13 @@ define(
             // Ensure the view's main element has the given class name
             view.el.classList.add(view.className);
 
+            // Clock will be used for the timeline component, and for the clock.ontick
+            // event
+            view.clock = new Cesium.Clock({ shouldAnimate: false })
+
             // Create the Cesium Widget and save a reference to it to the view
             view.widget = new Cesium.CesiumWidget(view.el, {
+              clock: view.clock,
               // We will add a base imagery layer after initialization
               imageryProvider: false,
               terrain: false,
@@ -193,6 +195,16 @@ define(
               );
             });
 
+            // Prepare Cesium to handle vector datasources (e.g. geoJsonDataSources)
+            view.dataSourceCollection = new Cesium.DataSourceCollection();
+            view.dataSourceDisplay = new Cesium.DataSourceDisplay({
+              scene: view.scene,
+              dataSourceCollection: view.dataSourceCollection,
+            });
+            view.clock.onTick.addEventListener(function () {
+              view.updateDataSourceDisplay.call(view)
+            })
+
             // Go to the home position, if one is set.
             view.flyHome()
 
@@ -216,27 +228,6 @@ define(
             // model's showScaleBar and showFeatureInfo attributes
             view.setMouseMoveListeners()
 
-            // The Cesium Widget will support just one terrain option to start. Later,
-            // we'll allow users to switch between terrains if there is more than one.
-            var terrains = view.model.get('terrains')
-            var terrainModel = terrains ? terrains.first() : false;
-            if (terrainModel) {
-              var type = terrainModel.get('type')
-              var renderOption = _.find(
-                view.mapAssetRenderFunctions,
-                function (option) {
-                  return option.types.includes(type)
-                }
-              )
-              if (renderOption) {
-                const terrainRenderFunction = view[renderOption.renderFunction]
-                terrainRenderFunction.call(view, terrainModel)
-              } else {
-                console.log('The terrain type, "' + type + '", is not supported in the' +
-                ' map widget. Terrain will not be rendered.');
-              }
-            }
-
             // When the appearance of a layer has been updated, then tell Cesium to
             // re-render the scene. Each layer model triggers the 'appearanceChanged'
             // function whenever the color, opacity, etc. has been updated in the
@@ -251,9 +242,17 @@ define(
 
             // Add each layer from the Map model to the Cesium widget. Render using the
             // function configured in the View's mapAssetRenderFunctions property.
-            view.model.get('layers').forEach(function (layerModel) {
-              view.renderLayer(layerModel)
+            view.model.get('layers').forEach(function (mapAsset) {
+              view.addAsset(mapAsset)
             })
+
+            // The Cesium Widget will support just one terrain option to start. Later,
+            // we'll allow users to switch between terrains if there is more than one.
+            var terrains = view.model.get('terrains')
+            var terrainModel = terrains ? terrains.first() : false;
+            if (terrainModel) {
+              view.addAsset(terrainModel)
+            }
 
             return this
 
@@ -262,58 +261,6 @@ define(
             console.log(
               'Failed to render a CesiumWidgetView. Error details: ' + error
             );
-          }
-        },
-
-        /**
-         * Finds the function that is configured for the given layer model type in the
-         * {@link CesiumWidgetView#mapAssetRenderFunctions} array, then renders the layer
-         * in the map. If there is a problem rendering the layer (e.g. it is an
-         * unsupported type that is not configured in the mapAssetRenderFunctions), then
-         * sets the layerModel's status to error.
-         * @param {MapAsset} layerModel A MapAsset layer to render in the map, such as a
-         * Cesium3DTileset or a CesiumImagery model.
-         */
-        renderLayer(layerModel) {
-          try {
-            if (!layerModel) {
-              return
-            }
-            var view = this
-            var type = layerModel.get('type')
-            // Find the render option from the options configured in the view, given the
-            // layer model type
-            const renderOption = _.find(view.mapAssetRenderFunctions, function (option) {
-              return option.types.includes(type)
-            }) || {};
-            // Get the function for this type
-            const renderFunction = view[renderOption.renderFunction]
-  
-            // If a render function for this layer model type was found, show it on the map
-            if (renderFunction && typeof renderFunction === 'function') {
-              // Do not immediately render layers that are initially invisible
-              if (layerModel.get('visible')) {
-                renderFunction.call(view, layerModel)
-              } else {
-                // Start rendering the layer once it is set to visible in the map
-                view.listenToOnce(layerModel, 'change:visible', function () {
-                  renderFunction.call(view, layerModel)
-                })
-              }
-            // If the cesium widget does not have a way to display this error, update the
-            // error status in the model (this will be reflected in the LayerListView)
-            } else {
-              layerModel.set('statusDetails', 'This type of layer is not supported in the map widget.')
-              layerModel.set('status', 'error')
-            }
-          }
-          catch (error) {
-            console.log(
-              'There was an error rendering a layer in a CesiumWidgetView' +
-              '. Error details: ' + error
-            );
-            layerModel.set('statusDetails', 'There was a problem rendering this layer in the map widget.')
-            layerModel.set('status', 'error')
           }
         },
 
@@ -328,6 +275,32 @@ define(
         requestRender: _.debounce(function () {
           this.scene.requestRender()
         }, 50),
+
+        /**
+         * An event that runs on every Cesium clock tick. Updates the vector data sources.
+         * Runs only every 20 ms at most  (see
+         * {@link https://underscorejs.org/#debounce}).
+         */
+        updateDataSourceDisplay: _.debounce(function () {
+          try {
+            const view = this;
+            // vectorStatus is true if all data sources are ready to be displayed, false
+            // otherwise.
+            const vectorStatus = view.dataSourceDisplay.update(view.clock.currentTime)
+            // Only call render if there has been a change in the data display (otherwise,
+            // the app may lag)
+            if (vectorStatus !== view.vectorStatus) {
+              view.scene.requestRender()
+              view.vectorStatus = vectorStatus
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error updating the data source display in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+          }
+        }, 20),
 
         /**
          * Set up the Cesium scene and set listeners and behaviour that enable users to
@@ -820,117 +793,104 @@ define(
         },
 
         /**
+         * Finds the function that is configured for the given asset model type in the
+         * {@link CesiumWidgetView#mapAssetRenderFunctions} array, then renders the asset
+         * in the map. If there is a problem rendering the asset (e.g. it is an
+         * unsupported type that is not configured in the mapAssetRenderFunctions), then
+         * sets the AssetModel's status to error.
+         * @param {MapAsset} mapAsset A MapAsset layer to render in the map, such as a
+         * Cesium3DTileset or a CesiumImagery model.
+         */
+        addAsset(mapAsset) {
+          try {
+            if (!mapAsset) {
+              return
+            }
+            var view = this
+            var type = mapAsset.get('type')
+            // Find the render option from the options configured in the view, given the
+            // asset model type
+            const renderOption = _.find(view.mapAssetRenderFunctions, function (option) {
+              return option.types.includes(type)
+            }) || {};
+            // Get the function for this type
+            const renderFunction = view[renderOption.renderFunction]
+
+            // If the cesium widget does not have a way to display this error, update the
+            // error status in the model (this will be reflected in the LayerListView)
+            if (!renderFunction || typeof renderFunction !== 'function') {
+              mapAsset.set('statusDetails', 'This type of resource is not supported in the map widget.')
+              mapAsset.set('status', 'error')
+              return
+            }
+
+            // The asset should be visible and the cesium model should be ready before
+            // starting to render the asset
+            const checkAndRenderAsset = function () {
+              let shouldRender = mapAsset.get('visible') && mapAsset.get('status') === 'ready'
+              if (shouldRender) {
+                renderFunction.call(view, mapAsset.get('cesiumModel'))
+                view.stopListening(mapAsset)
+              }
+            }
+
+            checkAndRenderAsset()
+
+            if (!mapAsset.get('visible')) {
+              view.listenToOnce(mapAsset, 'change:visible', checkAndRenderAsset)
+            }
+
+            if (mapAsset.get('status') !== 'ready') {
+              view.listenTo(mapAsset, 'change:status', checkAndRenderAsset)
+            }
+
+          }
+          catch (error) {
+            console.log(
+              'There was an error rendering an asset in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+            mapAsset.set('statusDetails', 'There was a problem rendering this resource in the map widget.')
+            mapAsset.set('status', 'error')
+          }
+        },
+
+        /**
          * Renders peaks and valleys in the 3D version of the map, given a terrain model.
          * If a terrain model has already been set on the map, this will replace it.
-         * @param {CesiumTerrain} terrainModel a Terrain Map Asset model
+         * @param {Cesium.TerrainProvider} cesiumModel a Cesium Terrain Provider model to
+         * use for the map
         */
-        updateTerrain: function (terrainModel) {
-          try {
-            if (terrainModel.get('status') !== 'ready') {
-              this.stopListening(terrainModel)
-              this.listenTo(terrainModel, 'change:status', this.updateTerrain)
-              return
-            }
-            var cesiumModel = terrainModel.get('cesiumModel')
-            this.scene.terrainProvider = cesiumModel
-            this.requestRender();
-          }
-          catch (error) {
-            console.log(
-              'There was an error rendering terrain in a CesiumWidgetView' +
-              '. Error details: ' + error
-            );
-          }
+        updateTerrain: function (cesiumModel) {
+          this.scene.terrainProvider = cesiumModel
+          this.requestRender();
         },
 
         /**
-         * Renders a 3D tileset in the map and sets listeners to update the tileset when
-         * the opacity or visibility changes.
-         * @param {Layer} tilesetModel The Map Asset Layer model that contains the
-         * information about the 3D tiles to render in the map
+         * Renders a 3D tileset in the map.
+         * @param {Cesium.Cesium3DTileset} cesiumModel The Cesium 3D tileset model that
+         * contains the information about the 3D tiles to render in the map
         */
-        add3DTileset: function (tilesetModel) {
-          try {
-
-            if (tilesetModel.get('status') !== 'ready') {
-              this.stopListening(tilesetModel)
-              this.listenTo(tilesetModel, 'change:status', this.add3DTileset)
-              return
-            }
-
-            this.stopListening(tilesetModel)
-
-            // Get the cesium tiles
-            var cesiumModel = tilesetModel.get('cesiumModel')
-            this.scene.primitives.add(cesiumModel)
-
-          }
-          catch (error) {
-            console.log(
-              'There was an error adding a 3D tileset to a CesiumWidgetView' +
-              '. Error details: ' + error
-            );
-          }
+        add3DTileset: function (cesiumModel) {
+          this.scene.primitives.add(cesiumModel)
         },
 
         /**
-         * Renders imagery in the Map given a Layer model. Sets listeners to update the
-         * imagery when the opacity or visibility changes.
-         * @param {Layer} imageryModel A Layer Map Asset model
-              */
-        addImagery: function (imageryModel) {
-          try {
-            if (imageryModel.get('status') !== 'ready') {
-              this.stopListening(imageryModel)
-              this.listenTo(imageryModel, 'change:status', this.addImagery)
-              return
-            }
-            var cesiumModel = imageryModel.get('cesiumModel')
-
-            if (cesiumModel) {
-              this.scene.imageryLayers.add(cesiumModel)
-            }
-          }
-          catch (error) {
-            console.log(
-              'There was an error adding imagery to a CesiumWidgetView' +
-              '. Error details: ' + error
-            );
-          }
+         * Renders vector data (excluding 3D tilesets) in the Map.
+         * @param {Cesium.GeoJsonDataSource} cesiumModel - The Cesium data source
+         * model to render on the map
+         */
+        addVectorData: function (cesiumModel) {
+          this.dataSourceCollection.add(cesiumModel)
         },
 
-        // WIP
-        // /**
-        //  * Renders geometries in the Cesium map based on vector data (e.g. GeoJSON)
-        //  * @param {Layer} vectorModel The 'data' type layer model to render
-        //  */
-        // addVectorData: function (assetModel) {
-
-        //   try {
-
-        //     // This is a WIP and not working yet
-        //     return
-        //     var view = this
-        //     var scene = view.scene
-        //     var cesiumModel = vectorModel.get('cesiumModel')
-
-        //     var dataSourceCollection = new Cesium.DataSourceCollection();
-        //     var dataSourceDisplay = new Cesium.DataSourceDisplay({
-        //       scene: scene,
-        //       dataSourceCollection: dataSourceCollection
-        //     });
-        //     var entities = dataSourceDisplay.defaultDataSource.entities;
-        //     dataSourceCollection.add(cesiumModel)
-        //   }
-        //   catch (error) {
-        //     console.log(
-        //       'There was an error rendering data in a CesiumWidgetView' +
-        //       '. Error details: ' + error
-        //     );
-        //   }
-
-        // },
-
+        /**
+         * Renders imagery in the Map.
+         * @param {Cesium.ImageryLayer} cesiumModel The Cesium imagery model to render
+        */
+        addImagery: function (cesiumModel) {
+          this.scene.imageryLayers.add(cesiumModel)
+        },
 
       }
     );
