@@ -328,6 +328,7 @@ define(['underscore', 'jquery', 'backbone',
 
         /**
         * Renders the Data Sensitivity section of the Editor using the data-sensitivity.html template.
+        * @fires EML211View#editorInputsAdded
         */
         renderDataSensitivity: function(){
           try{
@@ -354,17 +355,17 @@ define(['underscore', 'jquery', 'backbone',
               view.$(".tooltip-this").tooltip();
 
               //Check the radio button that is already selected, per the EML
-              let annotations = view.model.get("annotations");
+              let annotations = view.model.getDataSensitivity();
 
-              let propertyURI = container.find("[data-property-URI]").attr("data-property-URI");
-              if(propertyURI && annotations && annotations.length){
-                let annotation = annotations.findWhere({ propertyURI: propertyURI });
-
-                if(annotation){
-                  let annotationValue = annotation.get("valueURI");
-                  container.find("[value='" + annotationValue + "']").prop("checked", true);
-                }
+              if(annotations && annotations.length && typeof annotations[0].get == "function"){
+                let annotationValue = annotations[0].get("valueURI");
+                container.find("[value='" + annotationValue + "']").prop("checked", true);
               }
+
+
+              //Trigger the editorInputsAdded event which will let other parts of the app,
+              // such as the EditorView, know that new inputs are on the page
+              view.trigger("editorInputsAdded");
 
             });
           }

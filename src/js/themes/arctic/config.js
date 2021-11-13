@@ -45,6 +45,7 @@ MetacatUI.AppConfig = Object.assign({
   emlEditorRequiredFields: {
     abstract: true,
     alternateIdentifier: false,
+    dataSensitivity: true,
     funding: true,
     generalTaxonomicCoverage: false,
     geoCoverage: true,
@@ -59,7 +60,7 @@ MetacatUI.AppConfig = Object.assign({
   },
   allowChangeRightsHolder: false,
   enableMeasurementTypeView: true,
-  dataSensitivityInfoURL: "/managing-sensitive-data",
+  dataSensitivityInfoURL: "/sensitive-data-guidelines",
 
   //Searching
   enableSolrJoins: true,

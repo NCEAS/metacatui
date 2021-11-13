@@ -66,6 +66,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               methods: null, // An EMLMethods objects
               project: null, // An EMLProject object,
               annotations: null, // Dataset-level annotations
+              dataSensitivityPropertyURI: "http://purl.dataone.org/odo/SENSO_00000005",
               nodeOrder: [
                 "alternateidentifier",
                 "shortname",
@@ -1603,6 +1604,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 if(!this.get("abstract").length)
                   errors["abstract"] = "Provide an abstract.";
               }
+              else if(key == "dataSensitivity"){
+                if( !this.getDataSensitivity() ){
+                  errors["dataSensitivity"] = "Pick the category that best describes the level of sensitivity or restriction of the data.";
+                }
+              }
               else if( !this.get(key) || (Array.isArray(this.get(key)) && !this.get(key).length) ){
                 errors[key] = "Provide a " + key + ".";
               }
@@ -2331,6 +2337,34 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           console.error("Could not add Annotation to the EML: ", e);
         }
 
+      },
+
+      /**
+      * Finds annotations that are of the `data sensitivity` property from the NCEAS SENSO ontology.
+      * Returns undefined if none are found. This function returns EMLAnnotation models because the data
+      * sensitivity is stored in the EML Model as EMLAnnotations and added to EML as semantic annotations.
+      * @returns {EMLAnnotation[]|undefined}
+      */
+      getDataSensitivity: function(){
+        try{
+          let annotations = this.get("annotations");
+          if(annotations){
+            let found = annotations.where({ propertyURI: this.get("dataSensitivityPropertyURI") });
+            if( !found || !found.length ){
+              return;
+            }
+            else{
+              return found;
+            }
+          }
+          else{
+            return;
+          }
+        }
+        catch(e){
+          console.error("Failed to get Data Sensitivity from EML model: ", e);
+          return;
+        }
       }
 
     });

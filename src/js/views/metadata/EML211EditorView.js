@@ -652,6 +652,9 @@ define(['underscore',
 
           //Show the required fields for this editor
           this.renderRequiredIcons(MetacatUI.appModel.get("emlEditorRequiredFields"));
+          this.listenTo(emlView, "editorInputsAdded", function(){
+            this.trigger("editorInputsAdded")
+          });
 
           // Create a citation view and render it
           var citationView = new CitationView({

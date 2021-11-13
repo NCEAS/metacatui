@@ -4,7 +4,7 @@
 
 <div class="row-fluid">
   <label for="non-sensitive-data-input" class="radio">
-    <input class="annotation" type="radio" id="non-sensitive-data-input" name="data-sensitivity"
+    <input class="annotation" type="radio" id="non-sensitive-data-input" name="data-sensitivity" data-category="dataSensitivity"
            value="http://purl.dataone.org/odo/SENSO_00000002" data-element-name="dataset"
            data-property-label="Data Sensitivity Category" data-property-URI="http://purl.dataone.org/odo/SENSO_00000005" data-value-label="Non-sensitive data" />
     <span class="text">Non-sensitive data</span>
@@ -15,7 +15,7 @@
     </p>
   </label>
   <label for="min-sensitive-input" class="radio">
-    <input class="annotation" type="radio" id="min-sensitive-input" name="data-sensitivity"
+    <input class="annotation" type="radio" id="min-sensitive-input" name="data-sensitivity" data-category="dataSensitivity"
            value="http://purl.dataone.org/odo/SENSO_00000003" data-element-name="dataset"
            data-property-label="Data Sensitivity Category" data-property-URI="http://purl.dataone.org/odo/SENSO_00000005" data-value-label="De-identified data" />
     <span>Some or all data is sensitive with minimal risk</span>
@@ -28,7 +28,7 @@
     </p>
   </label>
   <label for="max-sensitive-input" class="radio">
-    <input class="annotation" type="radio" id="max-sensitive-input" name="data-sensitivity"
+    <input class="annotation" type="radio" id="max-sensitive-input" name="data-sensitivity" data-category="dataSensitivity"
            value="http://purl.dataone.org/odo/SENSO_00000004" data-element-name="dataset"
            data-property-label="Data Sensitivity Category" data-property-URI="http://purl.dataone.org/odo/SENSO_00000005" data-value-label="Sensitive data" />
     <span>Some or all data is sensitive with significant risk</span>

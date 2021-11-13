@@ -253,6 +253,7 @@ define(['jquery', 'underscore', 'backbone'],
        * @type {object}
        * @property {boolean} abstract - Default: true
        * @property {boolean} alternateIdentifier - Default: false
+       * @property {boolean} dataSensitivity Default: false
        * @property {boolean} funding - Default: false
        * @property {boolean} generalTaxonomicCoverage - Default: false
        * @property {boolean} taxonCoverage - Default: false. If true, at least one taxonomic rank and value will be required.
@@ -268,6 +269,7 @@ define(['jquery', 'underscore', 'backbone'],
                      abstract: true,
                      alternateIdentifier: false,
                      funding: false,
+                     dataSensitivity: false,
                      generalTaxonomicCoverage: false,
                      taxonCoverage: false,
                      geoCoverage: false,
@@ -284,6 +286,7 @@ define(['jquery', 'underscore', 'backbone'],
         *    abstract: true,
         *    alternateIdentifier: false,
         *    funding: false,
+        *    dataSensitivity: true,
         *    generalTaxonomicCoverage: false,
         *    taxonCoverage: false,
         *    geoCoverage: false,
@@ -299,6 +302,7 @@ define(['jquery', 'underscore', 'backbone'],
       emlEditorRequiredFields: {
         abstract: true,
         alternateIdentifier: false,
+        dataSensitivity: false,
         funding: false,
         generalTaxonomicCoverage: false,
         taxonCoverage: false,
