@@ -622,6 +622,46 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     },
 
     /**
+    * Creates an HTML string to display this error message on the page. Errors can be
+    * strings, arrays of strings, arrays of literal objects with string values, or a literal object with strings as the values.
+    * @param {string|string[]|object} error A single error message in string format or a collection of error strings as an array or object
+    * @returns {string} The error message HTML
+    */
+    getErrorListItem: function(error){
+      try{
+
+        let errorMessage = "";
+
+        //Strings get added to a list item HTML element
+        if( typeof error == "string" && error.trim().length ){
+          return `<li>${error}</li>`;
+        }
+        //If the error is an array, iterate over each error in the array
+        else if( Array.isArray(error) ){
+          _.each(error, function(subError){
+            errorMessage += this.getErrorListItem(subError);
+          }, this);
+          return errorMessage;
+        }
+        //If the error is a literal object, iterate over each key in the object
+        else if( typeof error == "object" ){
+          _.each(Object.keys(error), function(errorKey){
+            errorMessage += this.getErrorListItem(error[errorKey]);
+          }, this);
+          return errorMessage;
+        }
+        //Default to returning an empty string
+        else{
+          return "";
+        }
+      }
+      catch(e){
+        console.error("Failed to create the error message to show in the editor: ", e);
+        return "";
+      }
+    },
+
+    /**
     *  Perform clean-up functions when this view is about to be removed from the page or navigated away from.
     */
     onClose: function(){
