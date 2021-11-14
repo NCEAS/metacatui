@@ -233,8 +233,8 @@ define([    "jquery", "underscore", "backbone",
             // There is no test for the xss filter because it should always be
             // included. It's included via the updateExtensionList function for
             // consistency with the other, optional extensions.
-            require(["showdownXssFilter"], function(showdownKatex){
-                updateExtensionList("xssfilter", required=true);
+            require(["showdownXssFilter"], function(showdownXss){
+              updateExtensionList("xssfilter", required=true);
             })
 
             // --- Test for katex --- //
