@@ -437,7 +437,7 @@ define(["jquery", "underscore", "backbone", "uuid",
 
             	// If there is no measurement scale model, then add that error message
             	if( !measurementScaleModel ){
-            		errors.measurementScale = "Choose a category.";
+            		errors.measurementScale = "Choose a measurement scale category for this attribute.";
             	}
             	else{
             		var measurementScaleIsValid = measurementScaleModel.isValid();

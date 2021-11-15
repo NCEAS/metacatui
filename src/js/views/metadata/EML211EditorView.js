@@ -1148,7 +1148,14 @@ define(['underscore',
           }, this);
 
           if (errors) {
-            MetacatUI.appView.showAlert("Fix the errors flagged below before submitting.",
+
+            //Create a list of errors to display in the error message shown to the user
+            let errorList = "<ul>" +
+                            this.getErrorListItem(errors) +
+                            "</ul>";
+
+
+            MetacatUI.appView.showAlert("Fix the errors flagged below before submitting: " + errorList,
               "alert-error",
               this.$el,
               null,

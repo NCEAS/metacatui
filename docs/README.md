@@ -22,10 +22,10 @@ and then, to build the documentation, run:
 npm run jsdoc
 ```
 
-If you're still running the `bundle exec jekyll serve` command above, your updated documentation will be automatically available at http://localhost:4000/docs/.
+If you're still running the `bundle exec jekyll serve` command described below, your updated documentation will be automatically available at http://localhost:4000/docs/.
 
 Once your changes to the JSDocs are merged into the `main` branch, they will go live on the Github pages site at https://nceas.github.io/metacatui/docs/index.html.
-  
+
 ## Building the documentation website
 
 This directory is also built into a simple HTML website, using Jekyll, that is hosted on Github Pages. You can view the last published version of the Github site here: https://nceas.github.io/metacatui/
