@@ -6754,11 +6754,11 @@ body.mapMode{
 	the component look nearly identical to other filters (that use native form
 	elements)
 */
-.filter.annotation-filter .ui.fluid.dropdown>.dropdown.icon {
+.filter-groups .filter.annotation-filter .ui.fluid.dropdown>.dropdown.icon {
 	top: 25%;
 }
 
-.filter.annotation-filter .dropdown.search {
+.filter-groups .filter.annotation-filter .dropdown.search {
 	padding: 0;
 	font-size: 100%;
 	box-sizing: border-box;
@@ -6766,11 +6766,11 @@ body.mapMode{
 	border-radius: 4px;
 }
 
-.filter.annotation-filter .dropdown.multiple.ui {
+.filter-groups .filter.annotation-filter .dropdown.multiple.ui {
 	padding: 0;
 }
 
-.filter.annotation-filter .ui.multiple.search.dropdown > input.search {
+.filter-groups .filter.annotation-filter .ui.multiple.search.dropdown > input.search {
 	font-size: inherit;
 	line-height: 1em;
 	min-height: 1em;
