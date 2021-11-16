@@ -6763,7 +6763,7 @@ body.mapMode{
 	font-size: 100%;
 	box-sizing: border-box;
 	border-color: #ccc;
-	border-radius: 4px;
+	border-radius: 2px;
 }
 
 .filter-groups .filter.annotation-filter .dropdown.multiple.ui {
@@ -6772,9 +6772,8 @@ body.mapMode{
 
 .filter-groups .filter.annotation-filter .ui.multiple.search.dropdown > input.search {
 	font-size: inherit;
-	line-height: 1em;
-	min-height: 1em;
-	margin: 0.4em;
+	line-height: 20px;
+	margin: 4px 6px;
 }
 /* End Overrides for default Bootstrap styling for the searchable select */
 
