@@ -296,6 +296,27 @@ define(
           }
         },
 
+        /**
+         * Checks if the asset information has been fetched and is ready to use.
+         * @returns {Promise} Returns a promise that resolves to this model when ready.
+        */
+        whenReady: function () {
+          const model = this;
+          return new Promise(function (resolve, reject) {
+            if (model.get('status') === 'ready') {
+              resolve(model)
+              return
+            }
+            model.stopListening(model, 'change:status')
+            model.listenTo(model, 'change:status', function () {
+              if (model.get('status') === 'ready') {
+                model.stopListening(model, 'change:status')
+                resolve(model)
+              }
+            })
+          });
+        },
+
         // /**
         //  * Parses the given input into a JSON object to be set on the model.
         //  *

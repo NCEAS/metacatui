@@ -21,10 +21,11 @@ define(
     AssetColorPalette,
     VectorFilters
   ) {
-    /**
+    /** 
      * @classdesc A CesiumVectorData Model is a vector layer (excluding Cesium3DTilesets)
-     * that can be used in Cesium maps. For example, this could represent vectors rendered
-     * from a Cesium GeoJSONDataSource.
+     * that can be used in Cesium maps. This model corresponds to "DataSource" models in
+     * Cesium. For example, this could represent vectors rendered from a Cesium
+     * GeoJSONDataSource.
      * {@link https://cesium.com/learn/cesiumjs/ref-doc/GeoJsonDataSource.html}. Note:
      * GeoJsonDataSource is the only supported DataSource so far, eventually this model
      * could be used to support Cesium's CzmlDataSource and KmlDataSource (and perhaps a
@@ -104,6 +105,11 @@ define(
               this.set('filters', new VectorFilters(assetConfig.filters))
             }
 
+            // displayReady will be updated by the Cesium map within which the asset is
+            // rendered. The map will set it to true when the data is ready to be
+            // rendered. Used to know when it's safe to calculate a bounding sphere.
+            this.set('displayReady', false)
+
             this.createCesiumModel();
           }
           catch (error) {
@@ -153,8 +159,9 @@ define(
               dataSource.load(data, cesiumOptions)
                 .then(function (loadedData) {
                   model.set('cesiumModel', loadedData)
-                  model.set('status', 'ready')
                   model.setListeners()
+                  model.updateStyle()
+                  model.set('status', 'ready')
                 })
                 .otherwise(function (error) {
                   console.log('ERROR');
@@ -193,18 +200,43 @@ define(
             const model = this;
             const cesiumModel = this.get('cesiumModel')
             this.listenTo(this, 'change:visible', function (model, visible) {
-              cesiumModel.show = visible
+              cesiumModel.entities.show = visible
               // Let the map and/or other parent views know that a change has been made
-              // that requires the map to be re-rendered
+              // that requires the map to be re-rendered.
               model.trigger('appearanceChanged')
             })
           }
           catch (error) {
             console.log(
-              'There was an error setting listeners in a CesiumVectorData' +
+              'There was an error setting listeners in a CesiumVectorData model' +
               '. Error details: ' + error
             );
           }
+        },
+
+        /**
+         * Checks that the map is ready to display this asset. The displayReady attribute
+         * is updated by the Cesium map when the dataSourceDisplay is updated.
+         * @returns {Promise} Returns a promise that resolves to this model when ready to
+         * be displayed.
+        */
+        whenDisplayReady: function () {
+          return this.whenReady()
+            .then(function (model) {
+              return new Promise(function (resolve, reject) {
+                if (model.get('displayReady')) {
+                  resolve(model)
+                  return
+                }
+                model.stopListening(model, 'change:displayReady')
+                model.listenTo(model, 'change:displayReady', function () {
+                  if (model.get('displayReady')) {
+                    model.stopListening(model, 'change:displayReady')
+                    resolve(model)
+                  }
+                })
+              });
+            })
         },
 
         /**
@@ -233,37 +265,42 @@ define(
         },
 
         /**
-         * Checks if the vector data information has been fetched and is ready to
-         * use.
-         * @returns {Promise} Returns a promise that resolves to this model when ready.
-        */
-        whenReady: function () {
-          const model = this;
-          return new Promise(function (resolve, reject) {
-            if (model.get('status') === 'ready') {
-              resolve(model)
-            }
-            model.stopListening(model, 'change:status')
-            model.listenTo(model, 'change:status', function () {
-              resolve(model)
-            })
-          });
-        },
-
-        /**
-        * Gets a Cesium Bounding Sphere that can be used to navigate to view the full
-        * extent of the vector data. See
+        * Waits for the model to be ready to display, then gets a Cesium Bounding Sphere
+        * that can be used to navigate to view the full extent of the vector data. See
         * {@link https://cesium.com/learn/cesiumjs/ref-doc/BoundingSphere.html}.
+        * @param {Cesium.DataSourceDisplay} dataSourceDisplay The data source display
+        * attached to the CesiumWidget scene that this bounding sphere is for. Required.
         * @returns {Promise} Returns a promise that resolves to a Cesium Bounding Sphere
         * when ready
         */
-        getCameraBoundSphere: function () {
-          const model = this;
-          return this.whenReady()
+        getBoundingSphere: function (dataSourceDisplay) {
+          return this.whenDisplayReady()
             .then(function (model) {
-              // ... TODO
+              const entities = model.get('cesiumModel').entities.values.slice(0)
+              const boundingSpheres = [];
+              const boundingSphereScratch = new Cesium.BoundingSphere();
+              for (let i = 0, len = entities.length; i < len; i++) {
+                let state = Cesium.BoundingSphereState.PENDING;
+                state = dataSourceDisplay.getBoundingSphere(
+                  entities[i], false, boundingSphereScratch
+                )
+                if (state === Cesium.BoundingSphereState.PENDING) {
+                  return false;
+                } else if (state !== Cesium.BoundingSphereState.FAILED) {
+                  boundingSpheres.push(Cesium.BoundingSphere.clone(boundingSphereScratch));
+                }
+              }
+              if (boundingSpheres.length) {
+                return Cesium.BoundingSphere.fromBoundingSpheres(boundingSpheres);
+              }
+              return false
+            }).catch(function (error) {
+              console.log(
+                'Failed to get the bounding sphere for a CesiumVectorData model' +
+                '. Error details: ' + error
+              );
             })
-        }
+        },
 
       });
 

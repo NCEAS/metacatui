@@ -180,6 +180,11 @@ define(
             view.camera = view.widget.camera;
             view.inputHandler = view.widget.screenSpaceEventHandler;
 
+            // Zoom functions executed after each scene render
+            view.scene.postRender.addEventListener(function () {
+              view.postRender();
+            });
+
             // Disable HDR lighting for better performance and to avoid changing imagery colors.
             view.scene.highDynamicRange = false;
             view.scene.globe.enableLighting = false;
@@ -277,22 +282,79 @@ define(
         }, 50),
 
         /**
-         * An event that runs on every Cesium clock tick. Updates the vector data sources.
-         * Runs only every 20 ms at most  (see
-         * {@link https://underscorejs.org/#debounce}).
+         * Functions called after each time the scene renders. If a zoom target has been
+         * set by the {@link CesiumWidgetView#flyTo} function, then calls the functions
+         * that calculates the bounding sphere and zooms to it (which required to visual
+         * elements to be rendered first.)
          */
-        updateDataSourceDisplay: _.debounce(function () {
+        postRender: function () {
+          try {
+            if (this.zoomTarget) {
+              this.completeFlight(this.zoomTarget, this.zoomOptions)
+              this.zoomTarget = null;
+              this.zoomOptions = null;
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error calling post render functions in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Runs on every Cesium clock tick. Updates the display of the CesiumVectorData
+         * models in the scene. Similar to Cesium.DataSourceDisplay.update function, in
+         * that it runs update() on each DataSource and each DataSource's visualizer,
+         * except that it also updates each CesiumVectorData model's 'displayReady'
+         * attribute. (Sets to true when the asset is ready to be rendered in the map,
+         * false otherwise). Also re-renders the scene when the displayReady attribute
+         * changes. 
+         */
+        updateDataSourceDisplay: function () {
           try {
             const view = this;
-            // vectorStatus is true if all data sources are ready to be displayed, false
-            // otherwise.
-            const vectorStatus = view.dataSourceDisplay.update(view.clock.currentTime)
-            // Only call render if there has been a change in the data display (otherwise,
-            // the app may lag)
-            if (vectorStatus !== view.vectorStatus) {
-              view.scene.requestRender()
-              view.vectorStatus = vectorStatus
+
+            var dataSources = view.dataSourceDisplay.dataSources;
+            if (!dataSources || !dataSources.length) {
+              return
             }
+
+            let allReady = true;
+            const allReadyBefore = view.dataSourceDisplay._ready;
+
+
+            for (let i = 0, len = dataSources.length; i < len; i++) {
+
+              const time = view.clock.currentTime;
+              const dataSource = dataSources.get(i);
+              const visualizers = dataSource._visualizers;
+
+              const assetModel = view.model.get('layers').findWhere({
+                cesiumModel: dataSource
+              })
+              const displayReadyBefore = assetModel.get('displayReady')
+              let displayReadyNow = dataSource.update(time)
+
+              for (let x = 0; x < visualizers.length; x++) {
+                displayReadyNow = visualizers[x].update(time) && displayReadyNow;
+              }
+
+              assetModel.set('displayReady', displayReadyNow)
+
+              allReady = displayReadyNow && allReady
+
+            }
+
+            // If any dataSource has switched display states, then re-render the scene.
+            if (allReady !== allReadyBefore) {
+              view.scene.requestRender()
+            }
+            // The dataSourceDisplay must be set to 'ready' to get bounding spheres for
+            // dataSources
+            view.dataSourceDisplay._ready = allReady
+
           }
           catch (error) {
             console.log(
@@ -300,7 +362,7 @@ define(
               '. Error details: ' + error
             );
           }
-        }, 20),
+        },
 
         /**
          * Set up the Cesium scene and set listeners and behaviour that enable users to
@@ -464,21 +526,31 @@ define(
                   featureID: feature.pickId ? feature.pickId.key : null,
                   featureObject: feature
                 }
-                // Find out which layer model this belongs to
-                featureProps.mapAsset = layers.findWhere({
-                  cesiumModel: feature.primitive
-                })
-                // Get the attributes that are set on this feature.
+
+                // cesiumModel will be used to identify the corresponding MapAsset model
+                // in the layers collection
+                let cesiumModel = null
+
+                // the cesiumModel and property names are accessed differently for
                 if (feature instanceof Cesium.Cesium3DTileFeature) {
-                  var propertyNames = feature.getPropertyNames();
-                  var length = propertyNames.length;
-                  for (var i = 0; i < length; ++i) {
-                    var propertyName = propertyNames[i];
+                  // Get the cesium model - Cesium.Cesium3DTileFeature.primitive gives a
+                  // Cesium.Cesium3DTileset object
+                  cesiumModel = feature.primitive
+                  // Get the attributes table
+                  feature.getPropertyNames().forEach(function (propertyName) {
                     featureProps.properties[propertyName] = feature.getProperty(propertyName)
-                  }
+                  })
+                } else {
+                  // feature.id gives the entity.
+                  // TODO: Test - does this work for all datasources ?
+                  const entity = feature.id
+                  cesiumModel = entity.entityCollection.owner
+                  featureProps.properties = entity.properties.getValue(view.clock.currentTime)
                 }
-                // TODO: Get properties from other types of features, e.g. polygon entities
-                // and markers created from geoJSON
+
+                featureProps.mapAsset = layers.findWhere({
+                  cesiumModel: cesiumModel
+                })
 
                 // Add the feature Props
                 featuresProps.push(featureProps)
@@ -500,7 +572,24 @@ define(
 
         /**
          * Move the camera position and zoom to the specified target entity or position on
-         * the map, using a nice animation.
+         * the map, using a nice animation. This function starts the flying/zooming
+         * action by setting a zoomTarget and zoomOptions on the view and requesting the
+         * scene to render. The actual zooming is done by
+         * {@link CesiumWidgetView#completeFlight} after the scene has finished rendering.
+         * @param {*} target 
+         * @param {*} options 
+         */
+        flyTo: function (target, options) {
+          this.zoomTarget = target;
+          this.zoomOptions = options;
+          this.requestRender();
+        },
+
+        /**
+         * This function is called by {@link CesiumWidgetView#postRender}; it should only
+         * be called once the target has been fully rendered in the scene. This function
+         * gets the bounding sphere, if required, and moves the scene to encompass the
+         * full extent of the target.
          * @param {MapAsset|Cesium.BoundingSphere|Object} target The target asset,
          * bounding sphere, or location to change the camera focus to. If target is a
          * MapAsset, then the bounding sphere from that asset will be used for the target
@@ -513,7 +602,7 @@ define(
          * options to pass to Cesium Camera.flyToBoundingSphere(). See
          * {@link https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#flyToBoundingSphere}.
          */
-        flyTo: function (target, options) {
+        completeFlight: function (target, options) {
 
           try {
 
@@ -535,8 +624,9 @@ define(
 
             // If the target is some type of map asset, then get a Bounding Sphere for
             // that asset and call this function again.
-            if (target instanceof MapAsset && typeof target.getCameraBoundSphere === 'function') {
-              target.getCameraBoundSphere()
+            if (target instanceof MapAsset && typeof target.getBoundingSphere === 'function') {
+              // Pass the dataSourceDisplay for CesiumVectorData models
+              target.getBoundingSphere(view.dataSourceDisplay)
                 .then(function (assetBoundingSphere) {
                   // Base value offset required to zoom in close enough to 3D tiles for
                   // them to render.
@@ -699,7 +789,6 @@ define(
           }
         },
 
-
         /**
          * Update the map model's currentScale attribute, which is used for the scale bar.
          * Finds the distance between two pixels at the *bottom center* of the screen.
@@ -722,7 +811,7 @@ define(
           }
           catch (error) {
             console.log(
-              'There was an error  in a CesiumWidgetView' +
+              'There was an error updating the scale from a CesiumWidgetView' +
               '. Error details: ' + error
             );
           }
