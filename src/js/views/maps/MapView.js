@@ -178,7 +178,7 @@ define(
          * to use an alternative map widget in the future.
          * @returns {CesiumWidgetView} Returns the rendered view
          */
-        renderMapWidget : function(){
+        renderMapWidget: function () {
           try {
             this.mapWidget = new CesiumWidgetView({
               el: this.subElements.mapWidgetContainer,
@@ -200,7 +200,7 @@ define(
          * layer list.
          * @returns {ToolbarView} Returns the rendered view
          */
-        renderToolbar : function(){
+        renderToolbar: function () {
           try {
             this.toolbar = new ToolbarView({
               el: this.subElements.toolbarContainer,
@@ -223,7 +223,7 @@ define(
          * the first one only.
          * @returns {FeatureInfoView}  Returns the rendered view
          */
-        renderFeatureInfo : function(){
+        renderFeatureInfo: function () {
           try {
             this.featureInfo = new FeatureInfoView({
               el: this.subElements.featureInfoContainer,
@@ -232,16 +232,20 @@ define(
             this.featureInfo.render()
 
             // When the selectedFeatures collection changes, update the feature info view
-            this.stopListening(this.model.get('selectedFeatures'), 'update')
-            this.listenTo(this.model.get('selectedFeatures'), 'update', function () {
-              this.featureInfo.changeModel(this.model.get('selectedFeatures').at(0))
-            })
+            function setSelectFeaturesListeners() {
+              this.stopListening(this.model.get('selectedFeatures'), 'update')
+              this.listenTo(this.model.get('selectedFeatures'), 'update', function () {
+                this.featureInfo.changeModel(this.model.get('selectedFeatures').at(-1))
+              })
+            }
+            setSelectFeaturesListeners.call(this)
 
             // If the Feature model is ever completely replaced for any reason, make the
             // the Feature Info view gets updated.
             this.stopListening(this.model, 'change:selectedFeatures')
             this.listenTo(this.model, 'change:selectedFeatures', function (mapModel, featuresCollection) {
-              this.featureInfo.changeModel(featuresCollection.at(0))
+              this.featureInfo.changeModel(featuresCollection.at(-1))
+              setSelectFeaturesListeners.call(this)
             })
             return this.featureInfo
           }
@@ -258,7 +262,7 @@ define(
          * in the toolbar.
          * @returns {LayerDetailsView} Returns the rendered view
          */
-        renderLayerDetails : function(){
+        renderLayerDetails: function () {
           try {
             this.layerDetails = new LayerDetailsView({
               el: this.subElements.layerDetailsContainer
@@ -313,7 +317,7 @@ define(
               this.scaleBar.updateScale(scale.pixels, scale.meters)
             })
 
-            
+
             return this.scaleBar
           }
           catch (error) {

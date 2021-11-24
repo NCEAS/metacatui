@@ -120,6 +120,25 @@ define(
           }
         },
 
+        /**
+         * Set the parent map model on each of the MapAsset models in this collection.
+         * This must be the Map model that contains this asset collection.
+         * @param {MapModel} mapModel The map model to set on each of the MapAsset models
+         */
+        setMapModel: function (mapModel) {
+          try {
+            this.each(function (mapAssetModel) {
+              mapAssetModel.set('mapModel', mapModel)
+            })
+          }
+          catch (error) {
+            console.log(
+              'Failed to set the map model on a MapAssets collection' +
+              '. Error details: ' + error
+            );
+          }
+        }
+
       }
     );
 

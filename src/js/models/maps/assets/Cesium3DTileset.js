@@ -93,7 +93,7 @@ define(
          */
         initialize: function (assetConfig) {
           try {
-            
+
             MapAsset.prototype.initialize.call(this, assetConfig);
 
             if (assetConfig.filters) {
@@ -145,7 +145,7 @@ define(
                 // Listen to changes in the opacity, color, etc
                 model.setListeners();
                 // Set the initial visibility, opacity, filters, and colors
-                model.update3DTileStyle();
+                model.updateAppearance();
               })
               .otherwise(function (error) {
                 // See https://cesium.com/learn/cesiumjs/ref-doc/RequestErrorEvent.html
@@ -216,7 +216,7 @@ define(
             this.listenTo(
               this,
               'change:opacity change:color change:filters change:visible',
-              this.update3DTileStyle
+              this.updateAppearance
             )
 
           }
@@ -232,7 +232,7 @@ define(
          * Sets a new Cesium3DTileStyle on the Cesium 3D tileset model's style property,
          * based on the attributes set on this model. 
          */
-        update3DTileStyle: function () {
+        updateAppearance: function () {
           try {
 
             const model = this;
@@ -378,6 +378,31 @@ define(
         },
 
         /**
+         * Given a feature from a Cesium 3D tileset, returns any properties that are set
+         * on the feature, similar to an attributes table.
+         * @param {Cesium.Cesium3DTileFeature} feature A Cesium 3D Tile feature
+         * @returns {Object} An object containing key-value mapping of property names to
+         * properties.
+         */
+        getPropertiesFromFeature(feature) {
+          try {
+            const properties = {};
+            feature.getPropertyNames().forEach(function (propertyName) {
+              properties[propertyName] = feature.getProperty(propertyName)
+            })
+            return properties
+          }
+          catch (error) {
+            console.log(
+              'There was an error getting properties from a A Cesium 3D Tile feature' +
+              '. Error details: ' + error +
+              '. Returning an empty object.'
+            );
+            return {}
+          }
+        },
+
+        /**
          * Creates a function that takes a Cesium3DTileFeature (see
          * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileFeature.html}) and
          * returns a Cesium color based on the colorPalette property set on this model.
@@ -387,111 +412,34 @@ define(
          * @returns {function} A Cesium 3dTile evaluate color function
          */
         getColorFunction: function () {
-
           try {
+            const model = this;
             // Opacity of the entire layer is set by using it as the alpha for each color
-            const opacity = this.get('opacity')
+            const opacity = model.get('opacity')
 
-            // Colors configured to color features conditionally by a given property
-            const colorPalette = this.get('colorPalette')
-
-            // As a backup, use the default vector color
-            const defaultRgb = new AssetColor().defaults().color;
-            let defaultCol = new Cesium.Color(
-              defaultRgb.red, defaultRgb.green, defaultRgb.blue, opacity
-            );
-
-            // By default, just return the default color.
-            let evaluateColor = function () {
-              return defaultCol
-            };
-
-            // Write a function gives the correct color given a Cesium feature.
-            if (colorPalette) {
-
-              // The property to conditionally color the features by
-              const prop = colorPalette.get('property');
-              // Each palette type needs a different type of function
-              const type = colorPalette.get('paletteType');
-              // The collection of colors + conditions 
-              const colors = colorPalette.get('colors');
-
-              // If there are no colors, then use the default function which returns the
-              // default color.
-              if (!colors || colors.length === 0) {
-                // Skip the other if statements.
-
-                // If there's just 1 color, then the function only needs to return that color.
-              } else if (colors.length === 1) {
-                const rgb = colors.at(0).get('color');
-                evaluateColor = function (feature) {
-                  let featureOpacity = opacity;
-                  // The Cesium Map Widget View adds a property to a feature when it is
-                  // highlighted in the map. If this is the case, then make sure that the
-                  // alpha of the feature is 100%, otherwise the highlight borders in the
-                  // map do not show.
-                  if (feature.selectedInMap) {
-                    featureOpacity = 1
-                  }
-                  return new Cesium.Color(rgb.red, rgb.green, rgb.blue, featureOpacity);
-                }
-
-                // For a categorical color palette, the value of the feature property just
-                // needs to match one of the values in the list of color conditions. Use a
-                // map.
-              } else if (type === 'categorical') {
-                const colorMap = {}
-                colors.each(function (color) {
-                  const key = color.get('value')
-                  const rgb = color.get('color')
-                  const col = new Cesium.Color(rgb.red, rgb.green, rgb.blue, opacity);
-                  if (key || key === 0 || key === false) {
-                    colorMap[key] = col
-                  } else {
-                    defaultCol = col
-                  }
-                })
-                evaluateColor = function (feature) {
-                  let colMatch = colorMap[feature.getProperty(prop)];
-                  if (colMatch) {
-                    // The Cesium Map Widget View adds a property to a feature when it is
-                    // highlighted in the map. If this is the case, then make sure that the
-                    // alpha of the feature is 100%, otherwise the highlight borders in the
-                    // map do not show.
-                    if (feature.selectedInMap) {
-                      colMatch = colMatch.clone()
-                      colMatch = Cesium.Color.fromAlpha(colMatch, 1)
-                    }
-                    return colMatch
-                  } else {
-                    return defaultCol
-                  }
-                }
-
-                // For a classified color palette, the function should look for the first color condition where the feature's value is less...
-              } else if (type === 'classified') {
-                // evaluateColor = function (feature) {
-                //   // TODO
-                // }
-
-                // Use a gradient function 
-              } else if (type === 'continuous') {
-                // evaluateColor = function (feature) {
-                //   // TODO
-                // }
+            const evaluateColor = function (feature) {
+              const properties = model.getPropertiesFromFeature(feature);
+              let featureOpacity = opacity;
+              // If the feature is currently selected, set the opacity to max (otherwise the
+              // 'silhouette' borders in the map do not show in the Cesium widget)
+              if (model.featureIsSelected(feature)) {
+                featureOpacity = 1
+              }
+              const rgb = model.getColor(properties)
+              if (rgb) {
+                return new Cesium.Color(rgb.red, rgb.green, rgb.blue, featureOpacity);
+              } else {
+                return new Cesium.Color();
               }
             }
-
             return evaluateColor
-
-          } catch (error) {
+          }
+          catch (error) {
             console.log(
-              'There was an error creating a color function in a Cesium3DTileset' +
+              'There was an error creating a color function in a Cesium3DTileset model' +
               '. Error details: ' + error
             );
           }
-
-          return evaluateColor
         },
 
         /**

@@ -160,7 +160,7 @@ define(
                 .then(function (loadedData) {
                   model.set('cesiumModel', loadedData)
                   model.setListeners()
-                  model.updateStyle()
+                  model.updateAppearance()
                   model.set('status', 'ready')
                 })
                 .otherwise(function (error) {
@@ -205,6 +205,10 @@ define(
               // that requires the map to be re-rendered.
               model.trigger('appearanceChanged')
             })
+            this.listenTo(this, 'change:opacity change:color', function () {
+              model.updateAppearance()
+            })
+            // TODO - add listeners for filters (change:filters)
           }
           catch (error) {
             console.log(
@@ -240,16 +244,72 @@ define(
         },
 
         /**
+         * Given a feature from a Cesium Vector Data source, returns any properties that are set
+         * on the feature, similar to an attributes table.
+         * @param {Cesium.Entity} feature A Cesium Entity
+         * @returns {Object} An object containing key-value mapping of property names to
+         * properties.
+        */
+        getPropertiesFromFeature(feature) {
+          try {
+            const featureProps = feature.properties
+            let properties = {}
+            if (featureProps) {
+              properties = feature.properties.getValue(new Date())
+            }
+            return properties
+          }
+          catch (error) {
+            console.log(
+              'There was an error getting properties from a Cesium Entity' +
+              '. Error details: ' + error +
+              '. Returning an empty object.'
+            );
+            return {}
+          }
+        },
+
+        /**
          * Updates the styles set on the cesiumModel object based on the colorPalette and
          * filters attributes.
          */
-        updateStyle: function () {
+        updateAppearance: function () {
           try {
 
             const model = this;
             const cesiumModel = this.get('cesiumModel')
+            const opacity = this.get('opacity')
+            const entities = cesiumModel.entities.values
 
-            // TODO...
+            for (var i = 0; i < entities.length; i++) {
+
+              const entity = entities[i];
+              const properties = model.getPropertiesFromFeature(entity)
+
+              let outlineColor = null
+              let featureOpacity = opacity
+              let outline = false
+
+              // If the feature is selected, set the opacity to 1, and add an outline
+              if (model.featureIsSelected(entity)) {
+                featureOpacity = 1
+                outline = true
+                // TODO: This colour should be configurable in the Map model
+                outlineColor = Cesium.Color.WHITE
+              }
+
+              const rgb = model.getColor(properties)
+              const color = new Cesium.Color(
+                rgb.red, rgb.green, rgb.blue, featureOpacity
+              )
+
+              if (entity.polygon) {
+                entity.polygon.material = color
+                entity.polygon.outline = outline;
+                entity.polygon.outlineColor = outlineColor
+              }
+              // TODO: add support for other geometry types
+            }
 
             // Let the map and/or other parent views know that a change has been made that
             // requires the map to be re-rendered

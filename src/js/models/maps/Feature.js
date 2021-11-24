@@ -44,8 +44,8 @@ define(
          * in the map. It should be unique among all map features. (In Cesium, this is the
          * Pick ID key.)
          * @property {*} featureObject The object that a Map widget uses to represent this
-         * feature in the map. For example, in Cesium this could be a Cesium3DTileFeature
-         * or a GeometryInstance.
+         * feature in the map. For example, in Cesium this could be a
+         * Cesium.Cesium3DTileFeature or a Cesium.Entity.
         */
         defaults: function () {
           return {

@@ -6,7 +6,7 @@ define(
     'underscore',
     'backbone',
     'models/portals/PortalImage',
-    'models/maps/AssetColorPalette',
+    'models/maps/AssetColorPalette'
   ],
   function (
     $,
@@ -42,42 +42,42 @@ define(
          * Default attributes for MapAsset models
          * @name MapAsset#defaults
          * @type {Object}
-         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'CesiumTerrainProvider')} type The format of the data. Must be one of the supported types.
+         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'CesiumTerrainProvider')} type
+         * The format of the data. Must be one of the supported types.
          * @property {string} label A user friendly name for this asset, to be displayed
          * in a map.
          * @property {string} [icon = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1.2 13.7 3.6 3.5l7.2 8.7zM5 3.3c2 .3 3.5.4 4.4.4H13l3 6.3-4 1.8-7-8.5Zm9.1.6 2.8 6 4.5-2.2a23 23 0 0 1-.7-4c0-.8-1.2-.7-2-.7l-4.6.9ZM1 15l11-1.9c1.2-.3 2.7-1 4.2-2l2.5 5.2c-1.2.3-3.6.4-7.3.4-2.8 0-7.3 0-9.4-.8a2 2 0 0 1-1-.9Zm16.4-4.2 4-1.8 1.3 5.5c0 .4.1 1-.4 1.2l-2.5.5-2.4-5.4ZM1.7 17l-.5 2.6c0 .7.2 1 1 1.3a64.1 64.1 0 0 0 19.8 0c.4-.3 1-.5.7-1.6l-.5-2.3a52.6 52.6 0 0 1-20.6 0Z"/></svg>']
-         * A PID for an SVG saved as a dataObject, or an SVG
-         * string. The SVG will be used as an icon that will be displayed next to the
-         * label in the layers list. It should be an SVG file that has no fills, borders,
-         * or styles set on it (since the icon will be shaded dynamically by the maps CSS
-         * using a fill attribute). It must use a viewbox property rather than a height
-         * and width.
-         * @property {string} [description = ''] A brief description about the asset, e.g. which
-         * area it covers, the resolution, etc.
-         * @property {string} [attribution = ''] A credit or attribution to display along with
-         * this map resource.
-         * @property {string} [moreInfoLink = ''] A link to show in a map where a user can find
-         * more information about this resource.
-         * @property {string} [downloadLink = ''] A link to show in a map where a user can go to
-         * download the source data.
-         * @property {string} [id = ''] If this asset's data is archived in a DataONE repository,
-         * the ID of the data package.
-         * @property {Boolean} [selected = false] Set to true when this asset has been selected by
-         * the user in the layer list.
-         * @property {Number} [opacity = 1] A number between 0 and 1 indicating the opacity of
-         * the layer on the map, with 0 representing fully transparent and 1 representing
-         * fully opaque. This applies to raster (imagery) and vector assets, not to
-         * terrain assets.
-         * @property {Boolean} [visible = true] Set to true if the layer is visible on the map,
-         * false if it is hidden. This applies to raster (imagery) and vector assets, not
-         * to terrain assets.
+         * A PID for an SVG saved as a dataObject, or an SVG string. The SVG will be used
+         * as an icon that will be displayed next to the label in the layers list. It
+         * should be an SVG file that has no fills, borders, or styles set on it (since
+         * the icon will be shaded dynamically by the maps CSS using a fill attribute). It
+         * must use a viewbox property rather than a height and width.
+         * @property {string} [description = ''] A brief description about the asset, e.g.
+         * which area it covers, the resolution, etc.
+         * @property {string} [attribution = ''] A credit or attribution to display along
+         * with this map resource.
+         * @property {string} [moreInfoLink = ''] A link to show in a map where a user can
+         * find more information about this resource.
+         * @property {string} [downloadLink = ''] A link to show in a map where a user can
+         * go to download the source data.
+         * @property {string} [id = ''] If this asset's data is archived in a DataONE
+         * repository, the ID of the data package.
+         * @property {Boolean} [selected = false] Set to true when this asset has been
+         * selected by the user in the layer list.
+         * @property {Number} [opacity = 1] A number between 0 and 1 indicating the
+         * opacity of the layer on the map, with 0 representing fully transparent and 1
+         * representing fully opaque. This applies to raster (imagery) and vector assets,
+         * not to terrain assets.
+         * @property {Boolean} [visible = true] Set to true if the layer is visible on the
+         * map, false if it is hidden. This applies to raster (imagery) and vector assets,
+         * not to terrain assets.
          * @property {AssetColorPalette} [colorPalette] The color or colors mapped to
          * attributes of this asset. This applies to raster/imagery and vector assets. For
          * imagery, the colorPalette will be used to create a legend. For vector assets
          * (e.g. 3Dtilesets), it will also be used to style the features.
          * @property {'ready'|'error'|null} [status = null] Set to 'ready' when the
-         * resource is ready to be rendered in a map view. Set to 'error' when the asset
-         * is not supported, or there was a problem requesting the resource.
+         * resource is loaded and ready to be rendered in a map view. Set to 'error' when
+         * the asset is not supported, or there was a problem requesting the resource.
          * @property {string} [statusDetails = null] Any further details about the status,
          * especially when there was an error.
         */
@@ -187,6 +187,31 @@ define(
                 model.fetchIcon(assetConfig.icon)
               }
             }
+
+            // Update the style of the asset to highlight the selected features when 
+            // features from this asset are selected in the map.
+            if (typeof this.updateAppearance === 'function') {
+
+              const setSelectFeaturesListeners = function () {
+
+                const mapModel = this.get('mapModel')
+                if (!mapModel) { return }
+                const selectedFeatures = mapModel.get('selectedFeatures')
+
+                this.stopListening(selectedFeatures, 'update');
+                this.listenTo(selectedFeatures, 'update', this.updateAppearance)
+
+                this.stopListening(mapModel, 'change:selectedFeatures')
+                this.listenTo(mapModel, 'change:selectedFeatures', function () {
+                  this.updateAppearance()
+                  setSelectFeaturesListeners()
+                })
+
+              }
+              setSelectFeaturesListeners.call(this)
+              this.listenTo(this, 'change:mapModel', setSelectFeaturesListeners)
+              this.listenTo(this, 'change:mapModel', setSelectFeaturesListeners)
+            }
           }
           catch (error) {
             console.log(
@@ -194,6 +219,21 @@ define(
               '. Error details: ' + error
             );
           }
+        },
+
+        /**
+         * Given a feature object from a Feature model, checks if it is part of the
+         * selectedFeatures collection. See featureObject property from
+         * {@link Feature#defaults}.
+         * @param {*} feature - An object that a Map widget uses to represent this feature
+         * in the map, e.g. a Cesium.Entity or a Cesium.Cesium3DTileFeature
+         * @returns {boolean} Returns true if the given feature is part of the
+         * selectedFeatures collection in this asset
+         */
+        featureIsSelected: function (feature) {
+          const map = this.get('mapModel')
+          if (!map) { return false }
+          return map.get('selectedFeatures').containsFeature(feature)
         },
 
         /**
@@ -315,6 +355,33 @@ define(
               }
             })
           });
+        },
+
+        /**
+         * Given properties of a Feature model from this MapAsset, returns the color
+         * associated with that feature.
+         * @param {Object} properties The properties of the feature to get the color for;
+         * An object containing key-value mapping of property names to properties. (See
+         * the 'properties' attribute of {@link Feature#defaults}.)
+         * @returns {AssetColor#Color} The color associated with the given set of
+         * properties.
+        */
+        getColor: function (properties) {
+          try {
+            const model = this
+            const colorPalette = model.get('colorPalette')
+            if (colorPalette) {
+              return colorPalette.getColor(properties)
+            } else {
+              return new AssetColorPalette().getDefaultColor()
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error getting a color for a MapAsset model' +
+              '. Error details: ' + error
+            );
+          }
         },
 
         // /**

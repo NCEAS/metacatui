@@ -265,6 +265,12 @@ define(
           try {
             this.el.classList.remove(this.classes.open);
             this.isOpen = false;
+            // When the feature info panel is closed, remove the Feature model from the
+            // Features collection. This will trigger the map widget to remove
+            // highlighting from the feature.
+            if (this.model && this.model.collection) {
+              this.model.collection.remove(this.model);
+            }
           }
           catch (error) {
             console.log(
@@ -282,7 +288,9 @@ define(
         update: function () {
           try {
             if (!this.model || this.model.isDefault()) {
-              this.close()
+              if (this.isOpen) {
+                this.close()
+              }
             } else {
               this.open()
               this.renderContent()
@@ -308,6 +316,7 @@ define(
           // Update the model
           this.model = newModel
           // Listen to the new model
+          this.stopListening(this.model, 'change')
           this.listenTo(this.model, 'change', this.update)
           // Update
           this.update()

@@ -243,18 +243,12 @@ define(
               features[i] = _.extend(_.clone(defaults), feature)
             })
 
-            // Update the Feature model with the new selected feature information
-            const selectedFeatures = model.get('selectedFeatures')
-
-            if (replace) {
-              selectedFeatures.reset(null, { silent: true })
+            // Update the Feature model with the new selected feature information.
+            const options = {
+              remove: replace
             }
-
-            selectedFeatures.add(features, { silent: true })
-
-            // The update should only trigger one event
-            selectedFeatures.trigger('update')
-
+            model.get('selectedFeatures').set(features, options)
+            
           }
           catch (error) {
             console.log(
