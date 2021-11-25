@@ -465,12 +465,15 @@ define(
                   properties: {},
                   mapAsset: null,
                   featureID: null,
-                  featureObject: feature
+                  featureObject: feature,
+                  label: null,
                 }
                 if (feature instanceof Cesium.Cesium3DTileFeature) {
                   // Cesium.Cesium3DTileFeature.primitive gives the Cesium.Cesium3DTileset
                   cesiumModel = feature.primitive
                   attrs.featureID = feature.pickId ? feature.pickId.key : null
+                  // Search for a property to use as a label
+                  attrs.label = feature.getProperty('name') || feature.getProperty('label') || null
                 } else {
                   // TODO: Test - does feature.id give the entity this work for all datasources ?
                   // A picked feature object's ID gives the Cesium.Entity
@@ -478,6 +481,7 @@ define(
                   // Gives the parent DataSource
                   cesiumModel = attrs.featureObject.entityCollection.owner
                   attrs.featureID = attrs.featureObject.id
+                  attrs.label = attrs.featureObject.name
                 }
 
                 attrs.mapAsset = layers.findWhere({

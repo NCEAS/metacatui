@@ -135,13 +135,13 @@ define(
 
             const model = this;
             const cesiumOptions = model.get('cesiumOptions')
-            const type = this.get('type')
-            const label = this.get('label') || ''
+            const type = model.get('type')
+            const label = model.get('label') || ''
             const dataSourceFunction = Cesium[type]
 
             // If the cesium model already exists, don't create it again unless specified
-            if (!recreate && this.get('cesiumModel')) {
-              return this.get('cesiumModel')
+            if (!recreate && model.get('cesiumModel')) {
+              return model.get('cesiumModel')
             }
 
             if (!cesiumOptions || !cesiumOptions.data) {
@@ -286,30 +286,58 @@ define(
 
                 const entity = entities[i];
                 const properties = model.getPropertiesFromFeature(entity)
-  
+
                 let outlineColor = null
                 let featureOpacity = opacity
                 let outline = false
-  
+                // For polylines
+                let lineWidth = 3
+                // For billboard pins and points. We could make size configurable. Size
+                // could also be set according to a vector property
+                let markerSize = 25
+
                 // If the feature is selected, set the opacity to 1, and add an outline
                 if (model.featureIsSelected(entity)) {
                   featureOpacity = 1
                   outline = true
                   // TODO: This colour should be configurable in the Map model
                   outlineColor = Cesium.Color.WHITE
+                  lineWidth = 7
+                  markerSize = 34
                 }
-  
+
                 const rgb = model.getColor(properties)
                 const color = new Cesium.Color(
                   rgb.red, rgb.green, rgb.blue, featureOpacity
                 )
-  
+
                 if (entity.polygon) {
                   entity.polygon.material = color
                   entity.polygon.outline = outline;
                   entity.polygon.outlineColor = outlineColor
+                  entity.polygon.outlineWidth = outline ? 2 : 0
                 }
-                // TODO: add support for other geometry types
+                if (entity.billboard) {
+                  if (!model.pinBuilder) {
+                    model.pinBuilder = new Cesium.PinBuilder()
+                  }
+                  entity.billboard.image = model.pinBuilder.fromColor(color, markerSize).toDataURL()
+                  // To convert the automatically created billboards to points instead:
+                  // entity.billboard = undefined;
+                  // entity.point = new Cesium.PointGraphics();
+                }
+                if (entity.point) {
+                  entity.point.color = color
+                  entity.point.outlineColor = outlineColor
+                  entity.point.outlineWidth = outline ? 2 : 0
+                  // Points look better a little smaller than billboards
+                  entity.point.pixelSize = (markerSize * 0.5);
+                }
+                if (entity.polyline) {
+                  entity.polyline.material = color
+                  entity.polyline.width = lineWidth
+                }
+
               }
             }
 
@@ -332,9 +360,9 @@ define(
         updateFeatureVisibility: function () {
           try {
             const model = this;
-            const cesiumModel = this.get('cesiumModel')
+            const cesiumModel = model.get('cesiumModel')
             const entities = cesiumModel.entities.values
-            const filters = this.get('filters')
+            const filters = model.get('filters')
 
             for (var i = 0; i < entities.length; i++) {
               let visible = true

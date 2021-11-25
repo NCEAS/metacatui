@@ -39,13 +39,14 @@ define(
          * would be in an attributes table for a shapefile.
          * @property {MapAsset} mapAsset If the feature is part of a Map Asset, then the
          * model for that asset. For example, if this is a feature if a 3D tileset, then
-         * the 3DTileset model.
+         * the Cesium3DTileset map asset model.
          * @property {string|number} featureID An ID that's used to identify this feature
          * in the map. It should be unique among all map features. (In Cesium, this is the
          * Pick ID key.)
          * @property {*} featureObject The object that a Map widget uses to represent this
          * feature in the map. For example, in Cesium this could be a
          * Cesium.Cesium3DTileFeature or a Cesium.Entity.
+         * @property {string} label An optional friendly label for this feature.
         */
         defaults: function () {
           return {
@@ -53,6 +54,7 @@ define(
             mapAsset: null,
             featureID: null,
             featureObject: null,
+            label: null
           }
         },
 

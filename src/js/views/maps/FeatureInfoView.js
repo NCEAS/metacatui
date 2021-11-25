@@ -176,30 +176,37 @@ define(
               // Create a title for the feature info box
               let label = mapAsset ? mapAsset.get('label') : null;
 
-              // Check if the feature has a name, title, ID, or identifier property.
-              // Search for these properties independent of case. If none of these
-              // properties exist, use the feature ID provided by the model.
-              let searchKeys = ['name', 'title', 'id', 'identifier']
-              searchKeys = searchKeys.map(key => key.toLowerCase());
-              const propKeys = Object.keys(properties)
-              const propKeysLower = propKeys.map(key => key.toLowerCase());
+              // If the feature has a label, use that in the title
+              let name = this.model.get('label')
 
-              // Search by search key, since search keys are in order of preference. Find
-              // the first matching key.
-              const nameKeyLower = searchKeys.find(function (searchKey) {
-                return propKeysLower.includes(searchKey)
-              });
+              // If no feature label, check if the feature has a name, title, ID, or
+              // identifier property. Search for these properties independent of case. If
+              // none of these properties exist, use the feature ID provided by the model.
+              if (!name) {
+                
+                let searchKeys = ['name', 'title', 'id', 'identifier']
+                searchKeys = searchKeys.map(key => key.toLowerCase());
+                const propKeys = Object.keys(properties)
+                const propKeysLower = propKeys.map(key => key.toLowerCase());
 
-              // Then figure out which of the original property keys matches (we need it
-              // in the original case).
-              const nameKey = propKeys[propKeysLower.indexOf(nameKeyLower)]
+                // Search by search key, since search keys are in order of preference. Find
+                // the first matching key.
+                const nameKeyLower = searchKeys.find(function (searchKey) {
+                  return propKeysLower.includes(searchKey)
+                });
 
-              const name = properties[nameKey] ?? this.model.get('featureID');
+                // Then figure out which of the original property keys matches (we need it
+                // in the original case).
+                const nameKey = propKeys[propKeysLower.indexOf(nameKeyLower)]
+
+                name = properties[nameKey] ?? this.model.get('featureID');
+              }
+
 
               if (name) {
                 title = title + ' ' + name
               }
-              
+
               if (label) {
                 title = title + ' from ' + label + ' Layer'
               }

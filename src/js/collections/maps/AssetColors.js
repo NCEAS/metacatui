@@ -46,7 +46,7 @@ define(
             // Get the last colour in the array, in case there's more than one
             defaultColor = defaultColor.slice(-1).pop()
           }
-          if (!defaultColor) {
+          if (!defaultColor || !defaultColor.length) {
             defaultColor = new AssetColor();
           }
           return defaultColor
