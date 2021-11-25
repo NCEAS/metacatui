@@ -61,7 +61,7 @@ define(
         * The model that this view uses
         * @type {Map}
         */
-        model: new Map(),
+        model: null,
 
         /**
          * The primary HTML template for this view
@@ -114,6 +114,11 @@ define(
                 this[key] = value;
               }
             }
+
+            if(!this.model) {
+              this.model = new Map();
+            }
+            
           } catch (e) {
             console.log('A MapView failed to initialize. Error message: ' + e);
           }

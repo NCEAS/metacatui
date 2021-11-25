@@ -384,6 +384,34 @@ define(
           }
         },
 
+        /**
+         * This function checks whether a feature from the MapAsset is visible on the map
+         * based on the properties of the feature and the MapAsset's filter settings.
+         * @param {Object} properties The properties of the feature to be filtered. (See
+         * the 'properties' attribute of {@link Feature#defaults}.)
+         * @returns {boolean} Returns true if the feature passes all the filters, or if
+         * there are no filters set for this MapAsset. Returns false if the feature fails
+         * any of the filters.
+         */
+        featureIsVisible: function (properties) {
+          const model = this
+          const filters = model.get('filters')
+          if (filters && filters.length) {
+            return filters.featureIsVisible(properties)
+          } else {
+            return true
+          }
+        },
+
+        /**
+         * Checks that the visible attribute is set to true and that the opacity attribute
+         * is greater than zero. If both conditions are met, returns true.
+         * @returns {boolean} Returns true if the MapAsset has opacity > 0 and is visible.
+         */
+        isVisible: function () {
+          return this.get('visible') && this.get('opacity') > 0
+        },
+
         // /**
         //  * Parses the given input into a JSON object to be set on the model.
         //  *

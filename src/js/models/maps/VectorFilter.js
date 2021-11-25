@@ -106,6 +106,43 @@ define(
           }
         },
 
+        /**
+         * This function checks if a feature is visible based on the filter's rules.
+         * @param {Object} properties The properties of the feature to be filtered. (See
+         * the 'properties' attribute of {@link Feature#defaults}.)
+         * @returns {boolean} Returns true if the feature properties pass this filter
+         */
+        featureIsVisible: function (properties) {
+          try {
+            if (!properties) {
+              properties = {};
+            }
+            var visible = true;
+            if (this.get('filterType') === 'categorical') {
+              var values = this.get('values');
+              if (values.length > 0) {
+                visible = _.contains(values, properties[this.get('property')]);
+              }
+            } else if (this.get('filterType') === 'numeric') {
+              var max = this.get('max');
+              var min = this.get('min');
+              if (max !== null) {
+                visible = properties[this.get('property')] < max;
+              }
+              if (min !== null) {
+                visible = properties[this.get('property')] > min && visible;
+              }
+            }
+            return visible;
+          }
+          catch (error) {
+            console.log(
+              'There was an error checking feature visibility in a VectorFilter' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
         // /**
         //  * Executed when a new VectorFilter model is created.
         //  * @param {Object} [attributes] The initial values of the attributes, which will

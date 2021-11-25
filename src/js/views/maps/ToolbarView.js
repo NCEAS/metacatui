@@ -6,7 +6,6 @@ define(
     'jquery',
     'underscore',
     'backbone',
-    'models/maps/Map',
     'text!templates/maps/toolbar.html',
     // Sub-views
     'views/maps/LayerListView'
@@ -15,7 +14,6 @@ define(
     $,
     _,
     Backbone,
-    Map,
     Template,
     // Sub-views
     LayerListView
@@ -50,7 +48,7 @@ define(
         * The model that this view uses
         * @type {Map}
         */
-        model: undefined,
+        model: null,
 
         /**
          * The primary HTML template for this view. The template must have three element,

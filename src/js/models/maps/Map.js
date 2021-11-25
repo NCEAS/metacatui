@@ -191,6 +191,7 @@ define(
 
               if (config.layers && config.layers.length && Array.isArray(config.layers)) {
                 this.set('layers', new MapAssets(config.layers))
+                this.get('layers').setMapModel(this)
               }
 
               if (config.terrains && config.terrains.length && Array.isArray(config.terrains)) {

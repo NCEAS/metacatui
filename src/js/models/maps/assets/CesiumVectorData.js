@@ -160,6 +160,7 @@ define(
                 .then(function (loadedData) {
                   model.set('cesiumModel', loadedData)
                   model.setListeners()
+                  model.updateFeatureVisibility()
                   model.updateAppearance()
                   model.set('status', 'ready')
                 })
@@ -197,18 +198,12 @@ define(
          */
         setListeners: function () {
           try {
-            const model = this;
-            const cesiumModel = this.get('cesiumModel')
-            this.listenTo(this, 'change:visible', function (model, visible) {
-              cesiumModel.entities.show = visible
-              // Let the map and/or other parent views know that a change has been made
-              // that requires the map to be re-rendered.
-              model.trigger('appearanceChanged')
-            })
-            this.listenTo(this, 'change:opacity change:color', function () {
-              model.updateAppearance()
-            })
-            // TODO - add listeners for filters (change:filters)
+            this.stopListening(this, 'change:visible change:opacity change:color')
+            this.listenTo(
+              this, 'change:visible change:opacity change:color', this.updateAppearance
+            )
+            this.stopListening(this.get('filters'), 'update')
+            this.listenTo(this.get('filters'), 'update', this.updateFeatureVisibility)
           }
           catch (error) {
             console.log(
@@ -281,34 +276,41 @@ define(
             const opacity = this.get('opacity')
             const entities = cesiumModel.entities.values
 
-            for (var i = 0; i < entities.length; i++) {
+            // If the asset isn't visible at all, don't bother setting up colors. Just set
+            // every feature to hidden.
+            if (!model.isVisible()) {
+              cesiumModel.entities.show = false
+            } else {
+              cesiumModel.entities.show = true
+              for (var i = 0; i < entities.length; i++) {
 
-              const entity = entities[i];
-              const properties = model.getPropertiesFromFeature(entity)
-
-              let outlineColor = null
-              let featureOpacity = opacity
-              let outline = false
-
-              // If the feature is selected, set the opacity to 1, and add an outline
-              if (model.featureIsSelected(entity)) {
-                featureOpacity = 1
-                outline = true
-                // TODO: This colour should be configurable in the Map model
-                outlineColor = Cesium.Color.WHITE
+                const entity = entities[i];
+                const properties = model.getPropertiesFromFeature(entity)
+  
+                let outlineColor = null
+                let featureOpacity = opacity
+                let outline = false
+  
+                // If the feature is selected, set the opacity to 1, and add an outline
+                if (model.featureIsSelected(entity)) {
+                  featureOpacity = 1
+                  outline = true
+                  // TODO: This colour should be configurable in the Map model
+                  outlineColor = Cesium.Color.WHITE
+                }
+  
+                const rgb = model.getColor(properties)
+                const color = new Cesium.Color(
+                  rgb.red, rgb.green, rgb.blue, featureOpacity
+                )
+  
+                if (entity.polygon) {
+                  entity.polygon.material = color
+                  entity.polygon.outline = outline;
+                  entity.polygon.outlineColor = outlineColor
+                }
+                // TODO: add support for other geometry types
               }
-
-              const rgb = model.getColor(properties)
-              const color = new Cesium.Color(
-                rgb.red, rgb.green, rgb.blue, featureOpacity
-              )
-
-              if (entity.polygon) {
-                entity.polygon.material = color
-                entity.polygon.outline = outline;
-                entity.polygon.outlineColor = outlineColor
-              }
-              // TODO: add support for other geometry types
             }
 
             // Let the map and/or other parent views know that a change has been made that
@@ -319,6 +321,37 @@ define(
           catch (error) {
             console.log(
               'There was an error updating CesiumVectorData model styles' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Shows or hides each feature from this Map Asset based on the filters.
+         */
+        updateFeatureVisibility: function () {
+          try {
+            const model = this;
+            const cesiumModel = this.get('cesiumModel')
+            const entities = cesiumModel.entities.values
+            const filters = this.get('filters')
+
+            for (var i = 0; i < entities.length; i++) {
+              let visible = true
+              const entity = entities[i]
+              if (filters && filters.length) {
+                const properties = model.getPropertiesFromFeature(entity)
+                visible = model.featureIsVisible(properties)
+              }
+              entity.show = visible
+            }
+            // Let the map and/or other parent views know that a change has been made that
+            // requires the map to be re-rendered
+            model.trigger('appearanceChanged')
+          }
+          catch (error) {
+            console.log(
+              'There was an error updating CesiumVectorData feature visibility' +
               '. Error details: ' + error
             );
           }
