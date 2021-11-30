@@ -50,6 +50,7 @@ define(
         /**
          * Default attributes for CesiumTerrain models
          * @name CesiumTerrain#defaults
+         * @extends MapAsset#defaults
          * @type {Object}
          * @property {'CesiumTerrainProvider'} type A string indicating a Cesium Terrain
          * Provider, see

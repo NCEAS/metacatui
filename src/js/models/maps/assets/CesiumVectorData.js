@@ -61,6 +61,7 @@ define(
         /**
          * Default attributes for CesiumVectorData models
          * @name CesiumVectorData#defaults
+         * @extends MapAsset#defaults
          * @type {Object}
          * @property {'GeoJsonDataSource'} type The format of the data. Must be
          * 'GeoJsonDataSource'. (The only Cesium DataSource supported so far.)
@@ -165,7 +166,6 @@ define(
                   model.set('status', 'ready')
                 })
                 .otherwise(function (error) {
-                  console.log('ERROR');
                   // See https://cesium.com/learn/cesiumjs/ref-doc/RequestErrorEvent.html
                   let details = error;
                   // Write a helpful error message

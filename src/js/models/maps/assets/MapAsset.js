@@ -107,12 +107,11 @@ define(
          * description.
          * @typedef {Object} MapAssetConfig
          * @name MapConfig#MapAssetConfig
-         * @property
-         * {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'CesiumTerrainProvider')}
-         * type - A string indicating the format of the data. Some of these types
-         * correspond directly to Cesium classes.
-         * @property {(Cesium3DTileset#cesiumOptions|CesiumImagery#cesiumOptions|CesiumTerrain#cesiumOptions)}
-         * [cesiumOptions] For MapAssets that are configured for Cesium, like
+         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'CesiumTerrainProvider'|'GeoJsonDataSource')} type - 
+         * A string indicating the format of the data. Some of these types correspond
+         * directly to Cesium classes.
+         * @property {(Cesium3DTileset#cesiumOptions|CesiumImagery#cesiumOptions|CesiumTerrain#cesiumOptions|CesiumVectorData#cesiumOptions)} [cesiumOptions] - 
+         * For MapAssets that are configured for Cesium, like
          * Cesium3DTilesets, an object with options to pass to the Cesium constructor
          * function that creates the Cesium model. Options are specific to each type of
          * asset. For details, see documentation for each of the types.

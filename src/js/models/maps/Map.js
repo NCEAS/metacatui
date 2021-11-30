@@ -249,7 +249,7 @@ define(
               remove: replace
             }
             model.get('selectedFeatures').set(features, options)
-            
+
           }
           catch (error) {
             console.log(

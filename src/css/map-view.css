@@ -771,7 +771,7 @@ other class: .ui-slider-range */
   padding: 0.6rem;
   overflow-wrap: break-word;
   word-wrap: break-word;
-  max-width: 15rem;
+  max-width: calc( (var(--map-width-toolbar)/2) - 1rem );
 }
 
 .feature-info__layer-details-button {

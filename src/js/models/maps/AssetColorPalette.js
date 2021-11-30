@@ -104,8 +104,8 @@ define(
          * @example
          * {
          *    paletteType: 'categorical',
-         *    property: 'landUse'
-         *    label: 'Land Use in 2016'
+         *    property: 'landUse',
+         *    label: 'Land Use in 2016',
          *    colors: [
          *      { value: "agriculture", color: "#FF5733" },
          *      { value: "park", color: "#33FF80" }

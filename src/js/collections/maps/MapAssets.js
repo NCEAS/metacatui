@@ -42,8 +42,8 @@ define(
          * model to the collection.
          * @param {MapConfig#MapAssetConfig} assetConfig - An object that configured the
          * source the asset data, as well as metadata and display properties of the asset.
-         * @returns {(Cesium3DTileset|CesiumImagery|CesiumTerrain)} Returns a MapAsset
-         * model
+         * @returns {(Cesium3DTileset|CesiumImagery|CesiumTerrain|CesiumVectorData)}
+         * Returns a MapAsset model
         */
         model: function (assetConfig) {
           try {

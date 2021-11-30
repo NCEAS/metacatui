@@ -57,6 +57,7 @@ define(
         /**
          * Default attributes for Cesium3DTileset models
          * @name Cesium3DTileset#defaults
+         * @extends MapAsset#defaults
          * @type {Object}
          * @property {'Cesium3DTileset'} type The format of the data. Must be
          * 'Cesium3DTileset'.
