@@ -58,8 +58,8 @@ define(
          * @property {AssetColors} [colors = new AssetColors()] The colors to use in the
          * color palette, along with the conditions associated with each color (i.e. the
          * properties of the feature that must be true to use the given color.) . The last
-         * color in the collection should ideally be a default (see AssetColor model for
-         * details on how to set a default color.)
+         * color in the collection will always be treated as the default color - any
+         * feature that doesn't match the other colors will be colored with this color.
         */
         defaults: function () {
           return {
