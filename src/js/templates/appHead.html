@@ -38,10 +38,6 @@
 	<meta name="msapplication-TileImage" content="<%=MetacatUI.root%>/js/themes/<%=MetacatUI.theme%>/img/favicons/ms-icon-144x144.png">
 	<meta name="theme-color" content="#ffffff">
 
-  <% if(MetacatUI.appModel.get("annotatorUrl")){ %>
-    <link href="<%= MetacatUI.root %>/components/annotator/v1.2.10/annotator.min.css" rel="stylesheet" type="text/css">
-  <% } %>
-
   <% if(MetacatUI.appModel.get("bioportalAPIKey")){ %>
     <link href="<%= MetacatUI.root %>/components/bioportal/jquery.ncbo.tree.min.css" rel="stylesheet" type="text/css">
   <% } %>

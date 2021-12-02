@@ -1767,7 +1767,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @example eyJhbGciOiJIUzI1R5cCI6IkpXVCJ9.eyJqdGkiOiJmYzUwYjI0ZC0yN2Y4LTRiZjItOdCI6MTYwODIyNDg5MH0.KwCI2-4cHjFYXrR6-mUrwkhh1UdNARK7NxFLpFftjeg
       */
       cesiumToken: "",
-      
+
       /**
        * Your Access Token for the Bing Maps Imagery API, which can be retrieved from
        * https://www.bingmapsportal.com/. Required if any Cesium layers use imagery
@@ -1777,7 +1777,7 @@ define(['jquery', 'underscore', 'backbone'],
        * @example AtZjkdlajkl_jklcCAO_1JYafsvAjU1nkd9jdD6CDnHyamndlasdt5CB7xs
       */
         bingMapsKey: "",
-      
+
       /**
        * Enable or disable showing the MeasurementTypeView in the Editor's
        * attribute modal dialog. The {@link AppModel#bioportalAPIKey} must be set to a valid Bioportal
@@ -1803,12 +1803,7 @@ define(['jquery', 'underscore', 'backbone'],
       * This Bioportal REST API URL is used by the experimental and unsupported AnnotatorView to get multiple ontology class info at once.
       * @deprecated
       */
-      //bioportalBatchUrl: "https://data.bioontology.org/batch",
-      /**
-      * This DataONE API Annotator URL is used by the experimental and unsupported AnnotatorView to save an annotation
-      * @deprecated
-      */
-      //annotatorUrl: null
+      //bioportalBatchUrl: "https://data.bioontology.org/batch"
 		}, MetacatUI.AppConfig),
 
     defaultView: "data",
@@ -1899,9 +1894,6 @@ define(['jquery', 'underscore', 'backbone'],
         if(typeof this.get("orcidBaseUrl") != "undefined")
           this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');
 
-        //Annotator API
-        if(typeof this.get("annotatorUrl") !== "undefined")
-          this.set('annotatorUrl', d1CNBaseUrl + '/portal/annotator');
       }
 
       // Metadata quality report services
@@ -2057,7 +2049,7 @@ define(['jquery', 'underscore', 'backbone'],
         this.set("activeAlternateRepositoryId", altRepos[0].identifier);
       }
       },
-      
+
       /**
        * Given a string of CSS and an associated unique ID, check whether that CSS file
        * was already added to the document head, and add it if not. Prevents adding the
