@@ -29,3 +29,11 @@
 * If your instance of MetacatUI was using this view, you should instead link directly to external content or display
 * HTML pages using a MetacatUI template and the {@link TextView}.
 */
+
+/**
+* @class AnnotatorView
+* @deprecated
+* @classcategory Deprecated
+* @classdesc This view was officially deprecated in MetacatUI 2.18.0 although it had been unused by any production code for years. It used an experimental API to create and save annotations
+* to the DataONE environment. The semantic annotations now use EML 2.2.0 Annotations.
+*/

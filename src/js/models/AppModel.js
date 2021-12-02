@@ -90,7 +90,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {string}
       * @example "cesium"
       * @default "google"
-      * @since 2.X.X
+      * @since 2.18.0
       */
       dataCatalogMap: "google",
 
@@ -1755,7 +1755,7 @@ define(['jquery', 'underscore', 'backbone'],
       * If a {@link AppConfig#cesiumToken} is not provided, Cesium features will be disabled.
       * @type {boolean}
       * @default false
-      * @since 2.X.X
+      * @since 2.18.0
       */
       enableCesium: true,
 
@@ -1763,7 +1763,7 @@ define(['jquery', 'underscore', 'backbone'],
       * Your Access Token for the Cesium API, which can be retrieved from
       * {@link https://cesium.com/ion/tokens}.
       * @type {string}
-      * @since 2.X.X
+      * @since 2.18.0
       * @example eyJhbGciOiJIUzI1R5cCI6IkpXVCJ9.eyJqdGkiOiJmYzUwYjI0ZC0yN2Y4LTRiZjItOdCI6MTYwODIyNDg5MH0.KwCI2-4cHjFYXrR6-mUrwkhh1UdNARK7NxFLpFftjeg
       */
       cesiumToken: "",
@@ -1773,7 +1773,7 @@ define(['jquery', 'underscore', 'backbone'],
        * https://www.bingmapsportal.com/. Required if any Cesium layers use imagery
        * directly from Bing.
        * @type {string}
-       * @since 2.X.X
+       * @since 2.18.0
        * @example AtZjkdlajkl_jklcCAO_1JYafsvAjU1nkd9jdD6CDnHyamndlasdt5CB7xs
       */
         bingMapsKey: "",
