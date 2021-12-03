@@ -48,6 +48,8 @@ Then serve the Jekyll site from the `docs` directory:
 bundle exec jekyll serve
 ```
 
+You can now access the MetacatUI documentation website at the localhost address shown by Jekyll (most likely localhost:4000). Jekyll will watch for changes and rebuild the site as you edit the content. NOTE: Changes to the website config in `_.config.yml` will NOT trigger a rebuild, so you will need to stop Jekyll and restart with `bundle exec jekyll serve` again.
+
 [See the Github Pages documentation for additional help](https://help.github.com/en/enterprise/2.14/user/articles/setting-up-your-github-pages-site-locally-with-jekyll#step-4-build-your-local-jekyll-site)
 
 

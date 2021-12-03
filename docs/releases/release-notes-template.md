@@ -2,7 +2,7 @@
 
 ## Feature 1
 
-## Feature 2
+Description with screenshot
 
 # Bug fixes :hammer_and_wrench:
 
