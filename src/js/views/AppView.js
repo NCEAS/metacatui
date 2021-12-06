@@ -76,13 +76,29 @@ define(['jquery',
 			// set up the body
 			this.$el.append(this.template());
 
-			// render the nav
+			/**
+      * @name MetacatUI.navbarView
+      * @type NavbarView
+      * @description The view that displays a navigation menu on every MetacatUI page and controls the navigation between pages in MetacatUI.
+      */
 			MetacatUI.navbarView = new NavbarView();
 			MetacatUI.navbarView.setElement($('#Navbar')).render();
 
+      /**
+      * @name MetacatUI.altHeaderView
+      * @type AltHeaderView
+      * @description The view that displays a header on every MetacatUI view that uses the "AltHeader" header type.
+      * This header is usually for decorative / aesthetic purposes only.
+      */
 			MetacatUI.altHeaderView = new AltHeaderView();
 			MetacatUI.altHeaderView.setElement($('#HeaderContainer')).render();
 
+      /**
+      * @name MetacatUI.footerView
+      * @type FooterView
+      * @description The view that displays the main footer of the MetacatUI page.
+      * It has informational and navigational links in it and is displayed on every page, except for views that hide it for full-screen display.
+      */
 			MetacatUI.footerView = new FooterView();
 			MetacatUI.footerView.setElement($('#Footer')).render();
 
