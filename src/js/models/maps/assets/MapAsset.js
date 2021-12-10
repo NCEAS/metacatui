@@ -6,14 +6,16 @@ define(
     'underscore',
     'backbone',
     'models/portals/PortalImage',
-    'models/maps/AssetColorPalette'
+    'models/maps/AssetColorPalette',
+    MetacatUI.root + '/components/dayjs.min.js'
   ],
   function (
     $,
     _,
     Backbone,
     PortalImage,
-    AssetColorPalette
+    AssetColorPalette,
+    dayjs
   ) {
     /**
      * @classdesc A MapAsset Model comprises information required to fetch source data for
@@ -75,6 +77,13 @@ define(
          * attributes of this asset. This applies to raster/imagery and vector assets. For
          * imagery, the colorPalette will be used to create a legend. For vector assets
          * (e.g. 3Dtilesets), it will also be used to style the features.
+         * @property {MapConfig#FeatureTemplate} [featureTemplate] Configuration for
+         * content and layout of the Feature Info panel - the panel that shows information
+         * about a selected feature from a vector asset ({@link FeatureInfoView}).
+         * @property {MapConfig#CustomProperties} [customProperties] Configuration that
+         * allows for the definition of custom feature properties, potentially based on
+         * other properties. For example, a custom property could be a formatted version
+         * of an existing date property.
          * @property {'ready'|'error'|null} [status = null] Set to 'ready' when the
          * resource is loaded and ready to be rendered in a map view. Set to 'error' when
          * the asset is not supported, or there was a problem requesting the resource.
@@ -95,8 +104,10 @@ define(
             opacity: 1,
             visible: true,
             colorPalette: null,
+            customProperties: {},
+            featureTemplate: {},
             status: null,
-            statusDetails: null,
+            statusDetails: null
           }
         },
 
@@ -144,9 +155,125 @@ define(
          * mapped to attributes of this asset. This applies to raster/imagery and vector
          * assets. For imagery, the colorPalette will be used to create a legend. For
          * vector assets (e.g. 3Dtilesets), it will also be used to style the features.
+         * @property {MapConfig#FeatureTemplate} [featureTemplate] Configuration for the
+         * content and layout of the Feature Info panel ({@link FeatureInfoView}) - the
+         * panel that shows information about a selected feature from a vector asset. If
+         * no feature template is set, then the default table layout is used. 
+         * @property {MapConfig#CustomProperties} [customProperties] Definitions of custom
+         * properties of features, potentially based on existing properties. For example,
+         * a custom property could be a formatted version of another date property. These
+         * custom properties can be used in the filters, colorPalette, or featureTemplate.
+         * So far, custom strings and formatted dates are supported. Eventually, the
+         * custom properties may be expanded to support formatted numbers and booleans.
          * @property {MapConfig#VectorFilterConfig} [filters] - A set of conditions used
          * to show or hide specific features of this tileset.
         */
+
+        /**
+         * A feature template configures the format and content of information displayed
+         * in the Feature Info panel ({@link FeatureInfoView}). The Feature Info panel is
+         * displayed in a map when a user clicks on a vector feature in a map.
+         * @typedef {Object} FeatureTemplate
+         * @name MapConfig#FeatureTemplate
+         * @since 2.x.x
+         * @property {'story'|'table'} [template='table'] The name/ID of the template to
+         * use. This must match the name of one of the templates available in
+         * {@link FeatureInfoView#contentTemplates}.
+         * @property {string} [label] Sets which of the feature properties to use as the
+         * title for the FeatureInfoView. The string must exactly match the key for a
+         * property that exists in the feature.
+         * @property {MapConfig#StoryTemplateOptions} [options] A list of key-value pairs
+         * that map the template variable to a property/attribute of the the feature. Keys
+         * are the template variable names and values are the names of properties in the
+         * feature. Template variable names are specific to each template. Currently only
+         * the 'story' template allows variables. These are specified in the
+         * {@link FeatureInfoView#contentTemplates}.
+         * @example
+         * // Use the "story" template, which shows a secondary title, image, description,
+         * // and link.
+         * {
+         *   "template": "story",
+         *   "label": "title",
+         *   "options": {
+         *     "subtitle": "formattedDate",
+         *     "description": "summary",
+         *     "thumbnail": "imageSrc",
+         *     "url": "newsLink",
+         *     "urlText": "newsTitle",
+         *   }
+         * }
+         * @example
+         * // Use the default template (a table), but use the "forestName" attribute for
+         * // the FeatureInfo panel label
+         * {
+         *   "label": "forestName"
+         * }
+         */
+
+        /**
+         * An object that maps template variable to feature properties for the "story"
+         * template.
+         * @typedef {Object}
+         * @name MapConfig#StoryTemplateOptions
+         * @since 2.x.x
+         * @property {string} subtitle The name of a feature property to use for a
+         * secondary title in the template
+         * @property {string} description The name of a feature property that contains a
+         * brief summary or description of the feature; displayed as a paragraph.
+         * @property {string} thumbnail The name of a feature property that contains a URL
+         * for an image. Displayed as a thumbnail next to the description.
+         * @property {string} url The name of a feature property with a URL to use to
+         * create a link (e.g. to learn more information about the given feature)
+         * @property {string} urlText The name of a feature property that has text to
+         * display for the url. Defaults to 'Read More' if none is set.
+         */
+
+        /**
+         * An object where the keys indicate the name/ID of the new custom property to
+         * create, and the values are an object that defines the new property. 
+         * @typedef {Object.<string, (MapConfig#CustomDateProperty|MapConfig#CustomStringProperty)>} CustomProperties
+         * @name MapConfig#CustomProperties
+         * @since 2.x.x
+         * @example
+         * {
+         *   "year": {
+         *     "type": "date",
+         *     "property": "dateTime",
+         *     "format": "YYYY",
+         *   },
+         *   "urlText": {
+         *     "type": "string",
+         *     "value": "Click here to learn more about this feature"
+         *   }
+         * }
+         */
+
+        /**
+         * An object that defines a formatted date to use as a property in a feature. Used
+         * in the {@link MapConfig#CustomProperties} object.
+         * @typedef {Object} CustomDateProperty
+         * @name MapConfig#CustomDateProperty
+         * @since 2.x.x
+         * @property {'date'} type Must be set to 'date' to indicate that this is a custom
+         * date property
+         * @property {string} property The name/ID of the existing date property to format
+         * @property {string} format A string that indicates the new format to use.
+         * Follows the syntax used by Day.JS, see
+         * {@link https://day.js.org/docs/en/display/format}
+         */
+
+        /**
+         * An object that defines a custom string to use as a property in a feature. Used
+         * in the {@link MapConfig#CustomProperties} object.
+         * @typedef {Object} CustomStringProperty
+         * @name MapConfig#CustomStringProperty
+         * @since 2.x.x
+         * @property {'string'} type Must be set to 'string' to indicate that this is a
+         * custom string property
+         * @property {string} value The new string to use. So far only static strings are
+         * available. In the future, templates that include other properties may be
+         * supported.
+         */
 
         /**
          * Executed when a new MapAsset model is created.
@@ -234,6 +361,160 @@ define(
           if (!map) { return false }
           return map.get('selectedFeatures').containsFeature(feature)
         },
+
+        /**
+         * Given a set of properties from a Feature from this Map Asset model, add any
+         * custom properties to the properties object and return it.
+         * @since 2.x.x
+         * @param {Object} properties A set of key-value pairs representing the existing
+         * properties of a feature from this asset.
+         * @returns {Object} The properties object with any custom properties added.
+         */
+        addCustomProperties: function (properties) {
+          try {
+
+            const model = this;
+            const customProperties = model.get('customProperties');
+            const formattedProperties = {};
+
+            if (!customProperties || !Object.keys(customProperties).length) {
+              return properties
+            }
+
+            if (!properties || typeof properties !== 'object') {
+              properties = {}
+            }
+
+            if (customProperties) {
+              _.each(customProperties, function (config, key) {
+                let formattedValue = '';
+                if (config.type === 'date') {
+                  formattedValue = model.formatDateProperty(config, properties)
+                  // TODO: support formatted numbers and booleans...
+                  // } else if (config.type === 'number') {
+                  //   formattedValue = model.formatNumberProperty(config, properties)
+                  // } else if (config.type === 'boolean') {
+                  //   formattedValue = model.formatBooleanProperty(config, properties)
+                } else {
+                  formattedValue = model.formatStringProperty(config, properties)
+                }
+                formattedProperties[key] = formattedValue;
+              });
+            }
+            // merge the properties with the formatted properties
+            return Object.assign(properties, formattedProperties);
+          } catch (error) {
+            console.log(
+              'There was an error adding custom properties. Returning properties ' +
+              'unchanged. Error details: ' +
+              error
+            );
+            return properties
+          }
+        },
+
+        /**
+         * Given a definition for a new date property, and the properties that already
+         * exist on a specific feature, returns a new string with the formatted date.
+         * @since 2.x.x
+         * @param {MapConfig#CustomDateProperty} config - An object that defines the new
+         * date property to create
+         * @param {Object} properties key-value pairs representing existing properties in
+         * a Feature
+         * @returns {string} The value for the new date property, formatted as defined by
+         * config, for the given feature
+         */
+        formatDateProperty: function (config, properties) {
+          try {
+            if (!properties) {
+              properties = {}
+            }
+            let formattedDate = ''
+            if (!config || !config.format) {
+              return formattedDate;
+            }
+            const value = properties[config.property];
+            if (value) {
+              formattedDate = dayjs(value).format(config.format);
+            }
+            return formattedDate;
+          }
+          catch (error) {
+            console.log(
+              'There was an error formatting a date for a Feature model' +
+              '. Error details: ' + error
+            );
+            return '';
+          }
+        },
+
+        /**
+         * For a given set of Feature properties and a definition for a new sting
+         * property, returns the value of the custom property. Note that since only static
+         * strings are supported so far, this function essentially just returns the value
+         * of config.value. This function exists to allow support of dynamic strings in
+         * the future (e.g. combining strings from existing properties)
+         * @since 2.x.x
+         * @param {MapConfig#CustomStringProperty} config The object the defines the new
+         * custom property
+         * @param {Object} properties key-value pairs representing existing properties in
+         * a Feature
+         * @returns {string} The new string for the given Feature property
+         */
+        formatStringProperty: function (config, properties) {
+          try {
+            if (!properties) {
+              properties = {}
+            }
+            let formattedString = ''
+            if (!config || !config.value) {
+              return formattedString;
+            }
+            formattedString = config.value;
+            return formattedString;
+          }
+          catch (error) {
+            console.log(
+              'There was an error formatting a string for a Feature model' +
+              '. Error details: ' + error
+            );
+            return '';
+          }
+        },
+
+        // formatNumberProperty: function (config, properties) {
+        //   try {
+        //     if (!properties) {
+        //       properties = {}
+        //     }
+        //     let formattedNumber = ''
+        //     // TODO...
+        //   }
+        //   catch (error) {
+        //     console.log(
+        //       'There was an error formatting a number for a Feature model' +
+        //       '. Error details: ' + error
+        //     );
+        //     return '';
+        //   }
+        // },
+
+        // formatBooleanProperty: function (config, properties) {
+        //   try {
+        //     if (!properties) {
+        //       properties = {}
+        //     }
+        //     let formattedBoolean = ''
+        //     // TODO...
+        //   }
+        //   catch (error) {
+        //     console.log(
+        //       'There was an error formatting a boolean for a Feature model' +
+        //       '. Error details: ' + error
+        //     );
+        //     return '';
+        //   }
+        // },
 
         /**
          * Sanitizes an SVG string and updates the model's 'icon' attribute the sanitized

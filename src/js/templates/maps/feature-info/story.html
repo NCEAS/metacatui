@@ -1,0 +1,17 @@
+<div>
+<% if(thumbnail) { %>
+  <img class="feature-info__thumbnail" src="<%= thumbnail %>"/>
+<% } %>
+
+<% if(subtitle) { %>
+  <h5 class="feature-info__subtitle"><%= subtitle %></h5>
+<% } %>
+
+<% if(description) { %>
+  <p class="feature-info__description"><%= description %></p>
+<% } %>
+
+<% if(url) { %>
+  <a class="feature-info__link" href="<%= url %>" target="_blank"><%= urlText || "Read More" %></a>
+<% } %>
+</div>

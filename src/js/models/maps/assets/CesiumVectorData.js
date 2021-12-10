@@ -252,6 +252,7 @@ define(
             if (featureProps) {
               properties = feature.properties.getValue(new Date())
             }
+            properties = this.addCustomProperties(properties)
             return properties
           }
           catch (error) {

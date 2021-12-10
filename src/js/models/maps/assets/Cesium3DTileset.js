@@ -314,17 +314,17 @@ define(
          */
         getPropertiesFromFeature(feature) {
           try {
-            const properties = {};
+            let properties = {};
             feature.getPropertyNames().forEach(function (propertyName) {
               properties[propertyName] = feature.getProperty(propertyName)
             })
+            properties = this.addCustomProperties(properties)
             return properties
           }
           catch (error) {
             console.log(
               'There was an error getting properties from a A Cesium 3D Tile feature' +
-              '. Error details: ' + error +
-              '. Returning an empty object.'
+              '. Error details: ' + error + '. Returning an empty object.'
             );
             return {}
           }

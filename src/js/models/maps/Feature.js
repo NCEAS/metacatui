@@ -46,7 +46,7 @@ define(
          * @property {*} featureObject The object that a Map widget uses to represent this
          * feature in the map. For example, in Cesium this could be a
          * Cesium.Cesium3DTileFeature or a Cesium.Entity.
-         * @property {string} label An optional friendly label for this feature.
+         * @property {string} label An optional friendly label or name for this feature.
         */
         defaults: function () {
           return {

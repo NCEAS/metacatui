@@ -103,7 +103,7 @@
 /* hide the credits until we can find a better placement for them */
 .cesium-widget-credits, .cesium-credit-lightbox-overlay {
   display: none !important;
-} 
+}
 
 
 /*****************************************************************************************
@@ -125,10 +125,11 @@
   display: grid;
   box-sizing: border-box;
 }
+
 /* On larger screens, the toolbar should 'squish' the map, not overlap it */
 @media only screen and (min-width: 768px) {
-  .map-view{
-    grid-template-columns: auto minmax(0,100%);
+  .map-view {
+    grid-template-columns: auto minmax(0, 100%);
     justify-content: start;
   }
 }
@@ -144,6 +145,7 @@
   width: 100%;
   height: 100%;
 }
+
 /* So the map widget is underneath the links/tabs on larger screens (the toolbar should 'squish' the map, not overlap it) */
 @media only screen and (min-width: 768px) {
   .map-view__map-widget-container {
@@ -170,6 +172,7 @@
   /* required to be placed above map widget in firefox: */
   z-index: 1;
 }
+
 /* On large screens, the toolbar should not overlap the map, it should squish it */
 @media only screen and (min-width: 768px) {
   .map-view__toolbar-container {
@@ -447,7 +450,7 @@ represents 1 unit of the given distance measurement. */
   opacity: 0.8;
 }
 
-.layer-item__icon > svg {
+.layer-item__icon>svg {
   height: 100%;
   width: auto;
 }
@@ -692,7 +695,11 @@ other class: .ui-slider-range */
  *
  * Feature Info
  *
- * The box that shows more information about a feature that a user clicks
+ * The box that shows more information about a feature that a user clicks. The content is
+ * formatted according to a configurable template. Available templates include:
+ *
+ *     - table: A 2 column table that lists the key and value for each of the properties in a feature
+ *     - story: Intended to display a user friendly summary of the data in the feature. Includes a title, sub-title, description, image and link.
  *
  */
 
@@ -701,12 +708,12 @@ other class: .ui-slider-range */
   border-top-right-radius: var(--map-border-radius);
   border-top-left-radius: var(--map-border-radius);
   padding: 1rem 0.8rem 1rem 0.8rem;
-  row-gap: 1rem;
+  row-gap: 0.8rem;
   background-color: var(--map-col-bkg-lighter);
   color: var(--map-col-text);
   box-shadow: var(--map-shadow-md);
   grid-template-columns: auto 2.5rem;
-  grid-template-rows: min-content 1fr min-content;
+  grid-template-rows: min-content auto min-content;
   justify-items: center;
   /* Don't show the details panel unless it also has the feature-info--open class */
   display: none;
@@ -726,7 +733,6 @@ other class: .ui-slider-range */
   font-weight: 500;
   font-size: 0.9rem;
   opacity: 60%;
-  padding-left: 2.5rem;
 }
 
 .feature-info__content {
@@ -735,7 +741,7 @@ other class: .ui-slider-range */
   grid-template-columns: 100%;
   gap: 1rem;
   grid-column: 1 / 3;
-  padding-bottom: 1rem;
+  padding-bottom: 0.5rem;
   overflow: scroll;
 }
 
@@ -747,12 +753,19 @@ other class: .ui-slider-range */
   justify-self: end;
 }
 
+.feature-info__layer-details-button {
+  grid-column: 1 / 3;
+}
+
+
+/* styles for the (default) table template */
+
 .feature-info__table {
   /* TODO: use colour vars */
   background-color: var(--map-col-bkg-lightest);
   border-radius: var(--map-border-radius);
   box-shadow: var(--map-shadow-md);
-  width: calc(var(--map-width-toolbar) - 4rem);
+  width: calc(var(--map-width-toolbar) - 2.2rem);
 }
 
 .feature-info__table-body {}
@@ -771,12 +784,46 @@ other class: .ui-slider-range */
   padding: 0.6rem;
   overflow-wrap: break-word;
   word-wrap: break-word;
-  max-width: calc( (var(--map-width-toolbar)/2) - 1rem );
+  max-width: calc((var(--map-width-toolbar)/2) - 1rem);
 }
 
-.feature-info__layer-details-button {
-  grid-column: 1 / 3;
+/* styles for the story template */
+
+.feature-info__thumbnail {
+  min-width: 6rem;
+  min-height: 6rem;
+  max-width: 50%;
+  float: right;
+  margin: 0.3rem;
+  border-radius: var(--map-border-radius);
+  box-shadow: var(--map-shadow-md);
+
 }
+
+.feature-info__subtitle {
+  font-size: 0.9em;
+  text-transform: uppercase;
+  display: block;
+  opacity: 0.85;
+  margin: 0;
+  padding: 0;
+}
+
+.feature-info__description {
+  margin: 0.55rem 0;
+  font-size: 0.9rem;
+  line-height: 1.4rem;
+}
+
+.feature-info__link {
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  text-decoration: none;
+}
+
 
 /*****************************************************************************************
  *
@@ -786,17 +833,17 @@ other class: .ui-slider-range */
  *
  */
 
-.map-legend--preview{
+.map-legend--preview {
   height: 1.2rem;
   width: 100%
 }
 
-.map-legend__svg--preview{
+.map-legend__svg--preview {
   height: 100%;
   width: auto;
 }
 
-.map-legend__img--preview{
+.map-legend__img--preview {
   --img-overflow: 0.8rem;
   /* allow images previews to bleed into the padding a little, so that more detail is visible */
   height: calc(100% + var(--img-overflow));
@@ -807,4 +854,3 @@ other class: .ui-slider-range */
   /* imagery appears lighter on the map */
   filter: brightness(1.75);
 }
-

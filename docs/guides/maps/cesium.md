@@ -216,6 +216,20 @@ Below is an example of a detailed map configuration (descriptions have been shor
       "label": "Some Test GeoJSON",
       "type": "GeoJsonDataSource",
       "description": "A single point specified using GeoJSON",
+      "customProperties": {
+        "year": {
+          "type": "date",
+          "property": "dateAndTime",
+          "format": "YYYY"
+        }
+      },
+      "featureTemplate": {
+        "template": "story",
+        "label": "year",
+        "options": {
+          "description": "summary",
+        }
+      },
       "cesiumOptions": {
         "data": {
           "type": "FeatureCollection",
@@ -227,7 +241,9 @@ Below is an example of a detailed map configuration (descriptions have been shor
                 "coordinates": [102.0, 0.5]
               },
               "properties": {
-                "prop0": "value0"
+                "prop0": "value0",
+                "dateAndTime": "2007-03-01T13:00:00Z",
+                "summary": "This is an example point!"
               }
             }
           ]
