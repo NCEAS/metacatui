@@ -241,9 +241,12 @@ define(
             view.listenTo(view.model.get('layers'), 'appearanceChanged', view.requestRender)
 
             // Other views may trigger an event on the layer/asset model that indicates
-            // that the map should navigate to the extent of the data
+            // that the map should navigate to the extent of the data, or on the Map model
+            // to navigate to the home position.
             view.stopListening(view.model.get('layers'), 'flyToExtent')
             view.listenTo(view.model.get('layers'), 'flyToExtent', view.flyTo)
+            view.stopListening(view.model, 'flyHome')
+            view.listenTo(view.model, 'flyHome', view.flyHome)
 
             // Add each layer from the Map model to the Cesium widget. Render using the
             // function configured in the View's mapAssetRenderFunctions property.

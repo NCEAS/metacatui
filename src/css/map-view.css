@@ -317,6 +317,8 @@ represents 1 unit of the given distance measurement. */
 }
 
 .toolbar__links {
+  display: flex;
+  flex-direction: column;
   height: min-content;
   background-color: var(--map-col-bkg);
   border-radius: var(--map-border-radius);
@@ -382,7 +384,7 @@ represents 1 unit of the given distance measurement. */
 
 .toolbar__link-title {
   position: absolute;
-  right: calc(-100% - var(--map-toolbar-link-width));
+  left: calc(100% + 1rem);
   color: var(--map-col-text);
   margin-top: 0.1em;
   text-transform: uppercase;
