@@ -19,6 +19,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/footer.html'],
 
       /**
        * Hide the footer
+       * @since 2.x.x
        */
       hide: function () {
         this.el.style.setProperty('display', 'none') 
@@ -27,6 +28,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/footer.html'],
 
       /**
        * Show the footer after it was hidden
+       * @since 2.x.x
        */
       show: function () {
         this.el.style.removeProperty('display')
