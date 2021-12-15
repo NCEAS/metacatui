@@ -709,17 +709,15 @@ define(["jquery",
               this.logosView.el.style.setProperty('display', 'none')
             }
             if( MetacatUI.footerView ){
-              MetacatUI.footerView.el.style.setProperty('display', 'none')
+              MetacatUI.footerView.hide()
             }
-            document.body.style.setProperty('--footer-height', '0')
           } else {
             if( this.logosView ){
               this.logosView.el.style.removeProperty('display')
             }
             if( MetacatUI.footerView ){
-              MetacatUI.footerView.el.style.removeProperty('display')
+              MetacatUI.footerView.show()
             }
-            document.body.style.removeProperty('--footer-height')
           }
 
           if (!this.nodeView) {
