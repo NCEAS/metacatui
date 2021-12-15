@@ -22,7 +22,7 @@ define(
      * @class AssetColors
      * @classcategory Collections/Maps
      * @extends Backbone.Collection
-     * @since 2.x.x
+     * @since 2.18.0
      * @constructor
      */
     var AssetColors = Backbone.Collection.extend(

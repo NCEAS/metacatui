@@ -25,6 +25,7 @@ define(
     * @name LayerNavigationView
     * @extends Backbone.View
     * @screenshot views/maps/LayerNavigationView.png
+    * @since 2.18.0
     * @constructs
     */
     var LayerNavigationView = Backbone.View.extend(

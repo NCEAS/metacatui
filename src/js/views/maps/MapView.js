@@ -40,6 +40,7 @@ define(
     * @name MapView
     * @extends Backbone.View
     * @screenshot views/maps/MapView.png
+    * @since 2.18.0
     * @constructs
     */
     var MapView = Backbone.View.extend(

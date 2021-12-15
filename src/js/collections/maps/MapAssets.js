@@ -30,7 +30,7 @@ define(
      * @class MapAssets
      * @classcategory Collections/Maps
      * @extends Backbone.Collection
-     * @since 2.x.x
+     * @since 2.18.0
      * @constructor
      */
     var MapAssets = Backbone.Collection.extend(

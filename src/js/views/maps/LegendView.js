@@ -29,6 +29,7 @@ define(
     * @name LegendView
     * @extends Backbone.View
     * @screenshot views/maps/LegendView.png
+    * @since 2.18.0
     * @constructs
     */
     var LegendView = Backbone.View.extend(

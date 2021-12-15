@@ -27,6 +27,7 @@ define(
     * @name ToolbarView
     * @extends Backbone.View
     * @screenshot views/maps/ToolbarView.png
+    * @since 2.18.0
     * @constructs
     */
     var ToolbarView = Backbone.View.extend(

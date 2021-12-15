@@ -18,7 +18,7 @@ define(
      * @class Feature
      * @name Feature
      * @extends Backbone.Model
-     * @since 2.x.x
+     * @since 2.18.0
      * @constructor
     */
     var Feature = Backbone.Model.extend(

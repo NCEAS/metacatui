@@ -29,7 +29,7 @@ define(
      * @class Cesium3DTileset
      * @name Cesium3DTileset
      * @extends MapAsset
-     * @since 2.x.x
+     * @since 2.18.0
      * @constructor
     */
     var Cesium3DTileset = MapAsset.extend(

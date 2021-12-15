@@ -24,7 +24,7 @@ define(
      * @class CesiumTerrain
      * @name CesiumTerrain
      * @extends MapAsset
-     * @since 2.x.x
+     * @since 2.18.0
      * @constructor
     */
     var CesiumTerrain = MapAsset.extend(

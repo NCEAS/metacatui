@@ -33,6 +33,7 @@ define(
     * @name LayerItemView
     * @extends Backbone.View
     * @screenshot views/maps/LayerItemView.png
+    * @since 2.18.0
     * @constructs
     */
     var LayerItemView = Backbone.View.extend(

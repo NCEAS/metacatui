@@ -31,6 +31,7 @@ define(
     * @name FeatureInfoView
     * @extends Backbone.View
     * @screenshot views/maps/FeatureInfoView.png
+    * @since 2.18.0
     * @constructs
     */
     var FeatureInfoView = Backbone.View.extend(

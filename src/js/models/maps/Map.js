@@ -23,7 +23,7 @@ define(
      * render a map view.
      * @classcategory Models/Maps
      * @name MapModel
-     * @since 2.x.x
+     * @since 2.18.0
      * @extends Backbone.Model
      */
     var MapModel = Backbone.Model.extend(

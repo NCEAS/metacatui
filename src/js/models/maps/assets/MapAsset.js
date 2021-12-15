@@ -28,7 +28,7 @@ define(
      * @class MapAsset
      * @name MapAsset
      * @extends Backbone.Model
-     * @since 2.x.x
+     * @since 2.18.0
      * @constructor
     */
     var MapAsset = Backbone.Model.extend(

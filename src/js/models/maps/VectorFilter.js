@@ -20,7 +20,7 @@ define(
      * @class VectorFilter
      * @name VectorFilter
      * @extends Backbone.Model
-     * @since 2.x.x
+     * @since 2.18.0
      * @constructor
     */
     var VectorFilter = Backbone.Model.extend(
