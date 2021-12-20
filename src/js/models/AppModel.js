@@ -420,6 +420,31 @@ define(['jquery', 'underscore', 'backbone'],
       dataSensitivityInfoURL: "http://datatags.org",
 
       /**
+      * In the editor, sometimes it is useful to have guided questions for the Methods section
+      * in addition to the generic numbered method steps. These custom methods are defined here
+      * as an array of literal objects that define each custom Methods question. Custom methods
+      * are serialized to the EML as regular method steps, but with an unchangeable title, defined here,
+      * in order to identify them.
+      *
+      * @type {object[]}
+      * @typedef {object} CustomEMLMethod
+      * @property {string[]} titles One or more titles that may exist in an EML Method Step that identify that Method Step as a custom method type. THe first title in the array is serialized to the EML XML.
+      * @property {string} id A unique identifier for this custom method type.
+      * @property {boolean} required If true, this custom method will be a required field for submission in the EML editor.
+      * @default [{
+                    "titles": ["Ethical Research Procedures"],
+                    "id": "ethical-research-procedures",
+                    "required": false
+                  }]
+      * @since 2.X
+      */
+      customEMLMethods: [{
+        titles: ["Ethical Research Practices"],
+        id: "ethicalResearchPractices",
+        required: false
+      }],
+
+      /**
       * The base URL for the repository. This only needs to be changed if the repository
       * is hosted at a different origin than the MetacatUI origin. This URL is used to contruct all
       * of the DataONE REST API URLs. If you are testing MetacatUI against a development repository

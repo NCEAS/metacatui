@@ -2,7 +2,13 @@
 define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
     function($, _, Backbone, DataONEObject) {
 
-  var EMLText = Backbone.Model.extend({
+  /**
+  * @class EMLText211
+  * @classdesc A model that represents the EML 2.1.1 Text module
+  * @classcategory Models/Metadata/EML211
+  */
+  var EMLText = Backbone.Model.extend(
+    /** @lends EMLText211.prototype */{
 
     type: "EMLText",
 
@@ -33,7 +39,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       this.on("change:text", this.trickleUpChange);
     },
 
-    /*
+    /**
          * Maps the lower-case EML node names (valid in HTML DOM) to the camel-cased EML node names (valid in EML).
          * Used during parse() and serialize()
          */
@@ -43,7 +49,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       }
     },
 
-    /*
+    /**
     * function setText
     *
     * @param text {string} - The text, usually taken directly from an HTML textarea
@@ -54,22 +60,23 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       if( typeof text !== "string" )
         return "";
 
-      //Get the EML model and use the cleanXMLText function to clean up the text
-      var emlModel = this.getParentEML();
-      if( typeof emlModel == "object" && emlModel.type == "EML"){
-        text = emlModel.cleanXMLText(text);
-      }
+      let model = this;
 
-      //Get the list of paragraphs - checking for carriage returns and line feeds
-      var paragraphsCR = text.split(String.fromCharCode(13));
-      var paragraphsLF = text.split(String.fromCharCode(10));
+      require(["models/metadata/eml211/EML211"], function(EMLModel){
+        //Get the EML model and use the cleanXMLText function to clean up the text
+        text = EMLModel.prototype.cleanXMLText(text);
 
-      //Use the paragraph list that has the most
-      var paragraphs = (paragraphsCR > paragraphsLF)? paragraphsCR : paragraphsLF;
+        //Get the list of paragraphs - checking for carriage returns and line feeds
+        var paragraphsCR = text.split(String.fromCharCode(13));
+        var paragraphsLF = text.split(String.fromCharCode(10));
 
-      paragraphs = _.map(paragraphs, function(p){ return p.trim() });
+        //Use the paragraph list that has the most
+        var paragraphs = (paragraphsCR > paragraphsLF)? paragraphsCR : paragraphsLF;
 
-      this.set("text", paragraphs);
+        paragraphs = _.map(paragraphs, function(p){ return p.trim() });
+
+        model.set("text", paragraphs);
+      });
 
     },
 
@@ -134,7 +141,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         return xmlString;
     },
 
-    /*
+    /**
      * Makes a copy of the original XML DOM and updates it with the new values from the model.
      */
     updateDOM: function(){
@@ -168,10 +175,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       return objectDOM;
     },
 
-    /*
+    /**
     * Climbs up the model heirarchy until it finds the EML model
     *
-    * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+    * @return {EML211|false} - Returns the EML 211 Model or false if not found
     */
     getParentEML: function(){
       var emlModel = this.get("parentModel"),
@@ -219,6 +226,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       return true;
     },
 
+    /**
+    * Returns the EML Text paragraphs as a string, with each paragraph on a new line.
+    * @returns {string}
+    */
     toString: function() {
       var value = [];
 

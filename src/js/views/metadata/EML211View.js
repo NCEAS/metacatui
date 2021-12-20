@@ -1103,7 +1103,8 @@ define(['underscore', 'jquery', 'backbone',
 
           this.$(".section.methods").html(new EMLMethodsView({
             model: methodsModel,
-            edit: this.edit
+            edit: this.edit,
+            parentEMLView: this
           }).render().el);
         },
 
