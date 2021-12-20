@@ -211,14 +211,14 @@
 					</div>
 					<div class="clear"></div>
 				</div>
-                
-                
+
+
                 <% if(searchModelRef.filterIsAvailable("isPrivate")){ %>
                     <div class="filter-contain collapsable" id="is-public" data-category="isPrivate">
                          <label class="expand-collapse-control">
                              <i class="icon icon-caret-right expand"></i>
                              <i class="icon icon-caret-down collapse"></i>
-                             <img src="<%= MetacatUI.root %>/img/data-table.png" class="icon" />
+                             <i class="icon icon-lock" />
                              <span class="tooltip-this" data-trigger="hover" data-title="Check this to only public or private datasets" data-placement="top">
                                  Access
                              </span>
@@ -228,7 +228,7 @@
                       name="is_private_data" <% if (searchModelRef.filterIsAvailable("isPrivate") && isPrivate){ print("checked"); } %> />
                              <label for="is_private_data" data-trigger="hover" data-title="Checking this option will return only packages that are private."
                       data-placement="top" class="tooltip-this">
-                                 Private datasets
+                                 Private datasets only
                              </label>
                          </div>
                          <div class="clear"></div>
