@@ -219,15 +219,15 @@
                              <i class="icon icon-caret-right expand"></i>
                              <i class="icon icon-caret-down collapse"></i>
                              <i class="icon icon-lock" />
-                             <span class="tooltip-this" data-trigger="hover" data-title="Check this to only public or private datasets" data-placement="top">
+                             <% let loginHelpMessage = ""; if( !MetacatUI.appUserModel.get("loggedIn") ){ loginHelpMessage = "You need to be logged in to view private datasets." } %>
+                             <span class="tooltip-this" data-trigger="hover" data-title="Check this to only show private datasets. <%=loginHelpMessage%>" data-placement="top">
                                  Access
                              </span>
                          </label>
                          <div class="filter-input-contain clear">
                          <input class="filter" type="checkbox" id="is_public_data" data-category="isPrivate"
                       name="is_private_data" <% if (searchModelRef.filterIsAvailable("isPrivate") && isPrivate){ print("checked"); } %> />
-                             <label for="is_private_data" data-trigger="hover" data-title="Checking this option will return only packages that are private."
-                      data-placement="top" class="tooltip-this">
+                             <label for="is_private_data">
                                  Private datasets only
                              </label>
                          </div>
