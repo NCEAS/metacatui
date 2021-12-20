@@ -31,6 +31,7 @@
 			    <ul id="current-id-filters" class="current-filters" data-category="id"></ul>
 				<ul id="current-taxon-filters" class="current-filters" data-category="taxon"></ul>
 				<ul id="current-spatial-filters" class="current-filters" data-category="spatial"></ul>
+                <ul id="current-isPrivate-filters" class="current-filters" data-category="isPrivate"></ul>
 				<ul id="current-additionalCriteria-filters" class="current-filters" data-category="additionalCriteria"></ul>
 		    </div>
     		<div class="filter-container collapsable">
@@ -211,6 +212,28 @@
 					<div class="clear"></div>
 				</div>
 
+
+                <% if(searchModelRef.filterIsAvailable("isPrivate")){ %>
+                    <div class="filter-contain collapsable" id="is-public" data-category="isPrivate">
+                         <label class="expand-collapse-control">
+                             <i class="icon icon-caret-right expand"></i>
+                             <i class="icon icon-caret-down collapse"></i>
+                             <i class="icon icon-lock" />
+                             <span class="tooltip-this" data-trigger="hover" data-title="Check this to only public or private datasets" data-placement="top">
+                                 Access
+                             </span>
+                         </label>
+                         <div class="filter-input-contain clear">
+                         <input class="filter" type="checkbox" id="is_public_data" data-category="isPrivate"
+                      name="is_private_data" <% if (searchModelRef.filterIsAvailable("isPrivate") && isPrivate){ print("checked"); } %> />
+                             <label for="is_private_data" data-trigger="hover" data-title="Checking this option will return only packages that are private."
+                      data-placement="top" class="tooltip-this">
+                                 Private datasets only
+                             </label>
+                         </div>
+                         <div class="clear"></div>
+                     </div>
+                 <% } %>
 			</div>
 		</aside>
 

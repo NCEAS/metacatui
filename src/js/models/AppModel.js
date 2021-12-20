@@ -239,7 +239,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @default ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
       * @example ["all", "annotation", "attribute", "dataSource", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
       */
-      defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
+      defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial", "isPrivate"],
 
       /**
        * Enable to show Whole Tale features
