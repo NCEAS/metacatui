@@ -38,7 +38,24 @@ define(required,
     initialize: function(attributes){
       attributes = attributes || {};
 
-      if(attributes.objectDOM) this.set(this.parse(attributes.objectDOM));
+      if(attributes.objectDOM){
+        this.set(this.parse(attributes.objectDOM));
+      }
+      else if(attributes.customMethodID){
+
+        try{
+          let customMethodConfig = MetacatUI.appModel.get("customEMLMethods").find(config => config.id == attributes.customMethodID);
+
+          this.set("description", new EMLSpecializedText({
+            type: "description",
+            title: customMethodConfig.titleOptions[0],
+            titleOptions: customMethodConfig.titleOptions
+          }));
+        }
+        catch(e){
+          console.error(e);
+        }
+      }
       else{
         this.set("description", new EMLText({
           type: "description"
@@ -77,14 +94,14 @@ define(required,
 
       //Get the titles of all the custom method steps from the App Config
       let customMethodOptions = MetacatUI.appModel.get("customEMLMethods"),
-          customMethodTitles  = _.flatten(_.pluck(customMethodOptions, "titles")),
+          customMethodTitles  = _.flatten(_.pluck(customMethodOptions, "titleOptions")),
           isCustom = false;
 
       try{
         //If there is at least one custom method configured, check if this description is one
         if( customMethodOptions && customMethodOptions.length ){
           let specializedTextAttr  = EMLSpecializedText.prototype.parse(description[0]),
-              matchingCustomMethod = customMethodOptions.find(options => options.titles.includes(specializedTextAttr.title));
+              matchingCustomMethod = customMethodOptions.find(options => options.titleOptions.includes(specializedTextAttr.title));
 
           if( matchingCustomMethod ){
             isCustom = true;
@@ -93,7 +110,7 @@ define(required,
             modelJSON.description = new EMLSpecializedText({
               objectDOM: description[0],
               type: "description",
-              titleOptions: matchingCustomMethod.titles,
+              titleOptions: matchingCustomMethod.titleOptions,
               parentModel: this
              });
             //Save the other configurations of this custom method to this EMLMethodStep
@@ -166,7 +183,14 @@ define(required,
             return;
           }
 
-          $objectDOM.children("description").replaceWith(updatedDescription);
+          //Add the description to the method step
+          let existingDesc = $objectDOM.children("description");
+          if( existingDesc.length ){
+            existingDesc.replaceWith(updatedDescription);
+          }
+          else{
+            $objectDOM.append(updatedDescription);
+          }
         }
 
         try{

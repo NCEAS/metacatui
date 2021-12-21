@@ -88,46 +88,68 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       var paragraphs = [];
 
       //Get all the child nodes of this text element
-      var allNodes = $(objectDOM).children();
+      var $objectDOM = $(objectDOM);
 
       // Save all the contained nodes as paragraphs
       // ignore any nested formatting elements for now
       //TODO: Support more detailed text formatting
-      if( allNodes.length ){
+      if( $objectDOM.children().length ){
 
-        _.each(allNodes, function(node) {
-          if( node.textContent ){
-
-            //Get the list of paragraphs - checking for carriage returns and line feeds
-            var paragraphsCR = node.textContent.split(String.fromCharCode(13));
-            var paragraphsLF = node.textContent.split(String.fromCharCode(10));
-
-            //Use the paragraph list that has the most
-            var nestedParagraphs = (paragraphsCR > paragraphsLF)? paragraphsCR : paragraphsLF;
-
-            paragraphs = _.union(paragraphs, nestedParagraphs);
-          }
-        });
+        paragraphs = this.parseNestedElements($objectDOM);
 
       }
       else if( objectDOM.textContent ){
         paragraphs[0] = objectDOM.textContent;
       }
 
-      //Trim extra whitespace off each paragraph to get rid of the line break characters
-      paragraphs = _.map(paragraphs, function(text){
-        if(typeof text == "string")
-          return text.trim();
-        else
-          return text;
-      });
-
-      //Remove all falsey values - primarily empty strings
-      paragraphs = _.compact(paragraphs);
-
       return {
         text: paragraphs,
         originalText: paragraphs.slice(0) //The slice function will effectively clone the array
+      }
+    },
+
+    parseNestedElements: function(nodeEl){
+
+      let children = $(nodeEl).children(),
+          paragraphs = [];
+
+      children.each((i, childNode) => {
+        if( $(childNode).children().length ){
+          paragraphs = paragraphs.concat(this.parseNestedElements(childNode));
+        }
+        else{
+          paragraphs = paragraphs.concat(this.parseParagraphs(childNode));
+        }
+      })
+
+      return paragraphs;
+    },
+
+    parseParagraphs: function(nodeEl){
+      if( nodeEl.textContent ){
+
+        //Get the list of paragraphs - checking for carriage returns and line feeds
+        var paragraphsCR = nodeEl.textContent.split(String.fromCharCode(13));
+        var paragraphsLF = nodeEl.textContent.split(String.fromCharCode(10));
+
+        //Use the paragraph list that has the most
+        var paragraphs = (paragraphsCR > paragraphsLF)? paragraphsCR : paragraphsLF;
+
+        //Trim extra whitespace off each paragraph to get rid of the line break characters
+        paragraphs = _.map(paragraphs, function(text){
+          if(typeof text == "string")
+            return text.trim();
+          else
+            return text;
+        });
+
+        //Remove all falsey values - primarily empty strings
+        paragraphs = _.compact(paragraphs);
+
+        console.log("parsed p: ", paragraphs)
+
+        return paragraphs;
+
       }
     },
 

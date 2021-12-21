@@ -1,3 +1,7 @@
+<%
+  let eRPText = typeof ethicalResearchPractices != "undefined"? ethicalResearchPractices.get("description").toString() : "";
+%>
+
 <h4>Ethical Research Practices <i class="required-icon hidden" data-category="ethical-research-procedures"></i></h4>
 <p class="subtle">
 Describe how and the extent to which data collection procedures followed community standards for ethical research
@@ -7,4 +11,4 @@ anonymize, aggregate or de-identify the dataset, or to otherwise create a versio
 </p>
 <textarea data-attribute="methodStepDescription"
   data-step-attribute="description"
-  rows="7" class="method-step"><%=ethicalResearchPractices.get("description").toString()%></textarea>
+  rows="7" class="method-step"><%=eRPText%></textarea>

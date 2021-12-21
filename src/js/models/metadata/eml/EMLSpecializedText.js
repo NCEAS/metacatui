@@ -40,7 +40,7 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/eml220/EMLText'],
           var objectDOM = this.get("objectDOM").cloneNode(true);
 
         //Use the parent EMLText model parse() method
-        let parsedAttributes = EMLText.prototype.parse(objectDOM);
+        let parsedAttributes = EMLText.prototype.parse.call(this, objectDOM);
 
         try{
           //Find all of the title nodes inside each section
@@ -100,9 +100,9 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/eml220/EMLText'],
 
           //If there isn't a selection Element, create one and wrap it around the paras
           if( !sectionEl.length ){
-            let allParas = $(updatedDOM).children().children("para");
-            sectionEl = $(document.createElement("section"));
-            allParas.wrapAll(sectionEl);
+            let allParas = $(updatedDOM).find("para");
+            allParas.wrapAll("<section />");
+            sectionEl = $(updatedDOM).children("section");
           }
 
           //Find the most up-to-date title from the AppConfig.
@@ -115,7 +115,7 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/eml220/EMLText'],
           let titleEl = sectionEl.children("title");
           //If there isn't a title, create one
           if( !titleEl.length ){
-            titleEl = document.createElement("title").textContent = title;
+            titleEl = $(document.createElement("title")).text(title);
             sectionEl.prepend(titleEl);
           }
           //Otherwise update the title text content

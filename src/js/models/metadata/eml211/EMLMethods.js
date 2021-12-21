@@ -13,8 +13,6 @@ define(['jquery',
       return {
         objectXML: null,
         objectDOM: null,
-        methodStepDescription: [],
-        methodStepDescriptionCustom: [],
         methodSteps: [],
         studyExtentDescription: null,
         samplingDescription: null
@@ -24,7 +22,14 @@ define(['jquery',
     initialize: function(attributes){
       attributes = attributes || {};
 
-      if(attributes.objectDOM) this.set(this.parse(attributes.objectDOM));
+      if(attributes.objectDOM){
+        this.set(this.parse(attributes.objectDOM))
+      }
+      else{
+        //Create the custom method steps and add to the step list
+        let customMethodSteps = this.createCustomMethodSteps();
+        this.set("methodSteps", customMethodSteps);
+      }
 
       //specific attributes to listen to
       this.on("change:methodStepDescription change:studyExtentDescription change:samplingDescription",
@@ -54,12 +59,23 @@ define(['jquery',
 
       var model = this;
 
+      //Create the custom method steps
+      let customMethodSteps = this.createCustomMethodSteps();
+
       //Create new EMLMethodStep models for the method steps
       let allMethodSteps = _.map($(objectDOM).find('methodstep'), function(el, i) {
                               return new EMLMethodStep({
                                 objectDOM: el
                                });
-                            });
+                            }),
+          //Get the custom IDs for each method step, if there any
+          allMethodStepIDs = _.compact(allMethodSteps.map(step => { return step.get("customMethodID") }));
+
+      //Filter out any custom method steps that we already created from the DOM
+      customMethodSteps = customMethodSteps.filter(step => { return !allMethodStepIDs.includes(step.get("customMethodID")) });
+
+      //Combine the parsed method steps and the default custom method steps
+      allMethodSteps = allMethodSteps.concat(customMethodSteps);
 
       //Save the method steps to this model
       modelJSON.methodSteps = allMethodSteps;
@@ -124,7 +140,7 @@ define(['jquery',
       let configCustomMethods = _.clone(MetacatUI.appModel.get("customEMLMethods") || []);
       if( configCustomMethods.length ){
         configCustomMethods.forEach( customOptions => {
-          let matchingStep = customMethodSteps.find( step => { return step.get("description").get("title") == customOptions.titles[0] });
+          let matchingStep = customMethodSteps.find( step => { return step.get("description").get("title") == customOptions.titleOptions[0] });
           if( matchingStep ){
             sortedCustomMethodSteps.push(matchingStep);
           }
@@ -255,7 +271,8 @@ define(['jquery',
         }
 
         let newStep = new EMLMethodStep(attr);
-        this.set("methodSteps", this.get("methodSteps").push(newStep));
+        this.get("methodSteps").push(newStep);
+        this.set("methodSteps", this.get("methodSteps"));
         return newStep;
 
       }
@@ -342,29 +359,22 @@ define(['jquery',
     },
 
     /**
-    * @returns {object[]} An array of literal objects of the custom EML methods as defined in the {@link AppConfig} and the
-    * {@link EMLText} model for each of those methods
+    * Creates and returns the custom Method Step models, as configured in the {@link AppConfig}
+    * @returns {EMLMethodStep[]}
     */
-    getCustomMethods: function(){
+    createCustomMethodSteps: function(){
+      //Get the custom methods configured in the app
+      let configCustomMethods = MetacatUI.appModel.get("customEMLMethods"),
+          customMethods = [];
 
-      try{
-        let customMethods = [],
-            configuredCustomMethods = MetacatUI.appModel.get("customEMLMethods");
+      //If there is at least one
+      configCustomMethods.forEach(config => {
+        customMethods.push(new EMLMethodStep({
+          customMethodID: config.id
+        }))
+      });
 
-        //Using the identifier of each custom method object, get it from this model
-        if( Array.isArray(configuredCustomMethods) ){
-          _.pluck(configuredCustomMethods, "id").forEach(id => {
-            customMethods.push(this.get(id));
-          });
-        }
-
-        return customMethods;
-      }
-      catch(e){
-        console.error("Could not get custom methods: ", e);
-        return [];
-      }
-
+      return customMethods;
     }
   });
 
