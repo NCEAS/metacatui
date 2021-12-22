@@ -307,6 +307,49 @@ define(['jquery',
     },
 
     /**
+    * Removes the given EMLMethodStep from the overall EMLMethods
+    * @param {EMLMethodStep} step The EMLMethodStep to remove
+    * @since 2.19.0
+    */
+    removeMethodStep: function(step){
+      try{
+
+        if( !step ) return;
+
+        //Remove the EMLMethodStep from the steps list
+        this.set("methodSteps", _.without(this.get("methodSteps"), step));
+
+        //If this was the last step to be removed, and the rest of the EMLMethods
+        // model is empty, then remove the model from the parent EML model
+        if( this.isEmpty() ){
+          //Get the parent EML model
+          var parentEML = this.getParentEML();
+
+          //Make sure this model type is EML211
+          if( parentEML && parentEML.type == "EML" ){
+
+            //If the methods are an array,
+            if( Array.isArray(parentEML.get("methods")) ){
+              //remove this EMLMethods model from the array
+              parentEML.set( "methods", _.without(parentEML.get("methods"), this) );
+            }
+            else{
+              //If the methods attribute is set to this EMLMethods model,
+              // then just set it back to it's default
+              if( parentEML.get("methods") == this )
+                parentEML.set("methods", parentEML.defaults().methods);
+            }
+          }
+
+        }
+
+      }
+      catch(e){
+        console.error("Error while trying to remove a method step: ", e);
+      }
+    },
+
+    /**
     * Returns the EMLMethodSteps that are not custom methods, as configured in {@link AppConfig#customEMLMethods}
     * @returns {EMLMethodStep[]}
     * @since 2.19.0

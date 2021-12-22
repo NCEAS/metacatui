@@ -137,19 +137,26 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
 
           if(step){
             //Render the step HTML
-            stepEl = this.stepTemplate({
+            stepEl = $(this.stepTemplate({
               text: step.get("description").toString(),
               num: this.model.getNonCustomSteps().indexOf(step)+1
-            });
-            //Attach the model to the element
-            $(stepEl).find("textarea[data-attribute='methodStepDescription']").data({ methodStepModel: step });
+            }));
+            //Attach the model to the elements that will be interacted with
+            stepEl.find("textarea[data-attribute='methodStepDescription'], .remove").data({ methodStepModel: step });
           }
           else{
+
+            //Only one new method step should be displayed at the same time
+            if( this.$(".method-step.new").length ){
+              return;
+            }
+
             //Render the step HTML
-            stepEl = this.stepTemplate({
+            stepEl = $(this.stepTemplate({
               text: "",
               num: this.model.getNonCustomSteps().length+1
-            });
+            }));
+            stepEl.find("textarea[data-attribute='methodStepDescription']").addClass("new");
           }
 
           //Add the step to the page
@@ -293,74 +300,45 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
        */
       addNewMethodStep: function(){
         // Add new textareas as needed
-        var newStep = this.$(".method-step.new"),
-          nextStepNum = this.$(".method-step").length + 1,
-          methodStepContainer =  $(document.createElement("div")).addClass("step-container");
+        this.$(".method-step.new").removeClass("new");
 
-        newStep.removeClass("new");
-
-        //Put it all together
-        newStep.parent(".step-container")
-            .after(methodStepContainer.append(
-                $(document.createElement("h5"))
-                  .append("Step ", $(document.createElement("span")).addClass("step-num").text(nextStepNum)),
-                  this.renderTextArea(null, {
-                    category: "methodStepDescription",
-                type: "description",
-                classes: "new"
-                  }),
-                  $(document.createElement("i")).addClass("icon icon-remove remove hidden")
-        ));
+        this.renderMethodStep();
       },
 
       /**
        * Remove this method step
+       * @param {Event} e
        */
       removeMethodStep: function(e){
-        //Get the index of this step
-        var stepEl = $(e.target).parent(".step-container").find(".method-step"),
-          index  = this.$(".method-step").index(stepEl),
-          view   = this;
 
-        //Remove this step from the model
-        this.model.set("methodStepDescription", _.without(this.model.get("methodStepDescription"), this.model.get("methodStepDescription")[index]));
+        try{
+          //Get the EMLMethodStep
+          var step = $(e.target).data("methodStepModel");
 
-        //If this was the last step to be removed, and the rest of the EMLMethods
-        // model is empty, then remove the model from the parent EML model
-        if( this.model.isEmpty() ){
-          //Get the parent EML model
-          var parentEML = this.model.get("parentModel");
-
-          //Make sure this model type is EML211
-          if( parentEML && parentEML.type == "EML" ){
-
-            //If the methods are an array,
-            if( Array.isArray(parentEML.get("methods")) ){
-              //remove this EMLMethods model from the array
-              parentEML.set( "methods", _.without(parentEML.get("methods"), this.model) );
-            }
-            else{
-              //If the methods attribute is set to this EMLMethods model,
-              // then just set it back to it's default
-              if( parentEML.get("methods") == this.model )
-                parentEML.set("methods", parentEML.defaults().methods);
-            }
+          //Exit if there is no EMLMethodStep
+          if( !step ){
+            return;
           }
 
+          //Remove this step from the model
+          this.model.removeMethodStep(step);
+
+          //Remove the step elements from the page
+          let view = this;
+          $(e.target).parent(".step-container").slideUp("fast", function(){
+            this.remove();
+
+              //Bump down all the step numbers
+              var stepNums = view.$(".step-num");
+              stepNums.each((i, numEl) => {
+                numEl.textContent = i+1;
+              })
+
+          });
         }
-
-
-        //Remove the step elements from the page
-        stepEl.parent(".step-container").slideUp("fast", function(){
-          this.remove();
-
-            //Bump down all the step numbers
-            var stepNums = view.$(".step-num");
-
-            for(var i=index; i < stepNums.length; i++){
-              $(stepNums[i]).text(i+1);
-            }
-        });
+        catch(e){
+          console.error("Failed to remove the EML Method Step: ", e);
+        }
 
       },
 
