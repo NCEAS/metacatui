@@ -589,6 +589,16 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     },
 
     /**
+    * Gets a list of required fields for this editor, or an empty object if there are none.
+    * @returns {object}
+    * @since 2.19.0
+    */
+    getRequiredFields: function(){
+      return {}
+
+    },
+
+    /**
     * Checks if there are unsaved changes in this Editor that should prevent closing of this view.
     * This function is also executed by the AppView, which controls the top-level navigation.
     * @returns {boolean} Returns true if this view should be closed. False if it should remain opened and active.
