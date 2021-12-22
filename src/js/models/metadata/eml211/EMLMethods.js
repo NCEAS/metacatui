@@ -151,97 +151,108 @@ define(['jquery',
 
       objectDOM = $(objectDOM);
 
-      var methodStepsFromModel = this.get('methodSteps'),
-          regularMethodSteps = this.getNonCustomSteps(),
-          customMethodSteps = _.difference(methodStepsFromModel, regularMethodSteps),
-          sortedCustomMethodSteps = [],
-          methodStepsFromDOM   = $(objectDOM).find("methodstep");
+      try{
+        var methodStepsFromModel = this.get('methodSteps'),
+            regularMethodSteps = this.getNonCustomSteps(),
+            customMethodSteps = _.difference(methodStepsFromModel, regularMethodSteps),
+            sortedCustomMethodSteps = [],
+            methodStepsFromDOM   = $(objectDOM).find("methodstep");
 
-      //Detach the existing method steps from the DOM first
-      methodStepsFromDOM.detach();
+        //Detach the existing method steps from the DOM first
+        methodStepsFromDOM.detach();
 
-      //Sort the custom method steps to match the app config order
-      let configCustomMethods = _.clone(MetacatUI.appModel.get("customEMLMethods") || []);
-      if( configCustomMethods.length ){
-        configCustomMethods.forEach( customOptions => {
-          let matchingStep = customMethodSteps.find( step => { return step.get("description").get("title") == customOptions.titleOptions[0] });
-          if( matchingStep ){
-            sortedCustomMethodSteps.push(matchingStep);
+        try{
+
+          //Sort the custom method steps to match the app config order
+          let configCustomMethods = _.clone(MetacatUI.appModel.get("customEMLMethods") || []);
+          if( configCustomMethods.length ){
+            configCustomMethods.forEach( customOptions => {
+              let matchingStep = customMethodSteps.find( step => { return step.get("description").get("title") == customOptions.titleOptions[0] });
+              if( matchingStep ){
+                sortedCustomMethodSteps.push(matchingStep);
+              }
+            });
           }
+        }
+        catch(e){
+          console.error("Could not sort the custom methods during serialization. Will proceed without sorting the custom method steps: ", e);
+          sortedCustomMethodSteps = customMethodSteps;
+        }
+
+        //Update each method step and prepend to the top of the methods (reverse arrays first to keep the right order)
+        regularMethodSteps.reverse().concat(sortedCustomMethodSteps.reverse()).forEach(step => {
+          objectDOM.prepend(step.updateDOM());
         });
       }
-
-      //Update each method step and prepend to the top of the methods (reverse arrays first to keep the right order)
-      regularMethodSteps.reverse().concat(sortedCustomMethodSteps.reverse()).forEach(step => {
-        objectDOM.prepend(step.updateDOM());
-      });
-
-      // Update the sampling metadata
-      if (this.get('samplingDescription') || this.get('studyExtentDescription')) {
-
-        var samplingEl    = $(document.createElement('sampling')),
-            studyExtentEl = $(document.createElement('studyExtent')),
-            missingStudyExtent = false,
-            missingDescription = false;
-
-        //If there is a study extent description, then create a DOM element for it and append it to the parent node
-        if (this.get('studyExtentDescription') && !this.get('studyExtentDescription').isEmpty()) {
-          $(studyExtentEl).append(this.get('studyExtentDescription').updateDOM());
-
-          //If the text matches the default "filler" text, then mark it as missing
-          if( this.get('studyExtentDescription').get("text")[0] == "No study extent description provided."){
-            missingStudyExtent = true;
-          }
-
-        }
-        //If there isn't a study extent description, then mark it as missing and append the default "filler" text
-        else {
-          missingStudyExtent = true;
-          $(studyExtentEl).append($(document.createElement('description')).html("<para>No study extent description provided.</para>"));
-        }
-
-
-        //Add the study extent element to the sampling element
-        $(samplingEl).append(studyExtentEl);
-
-        //If there is a sampling description, then create a DOM element for it and append it to the parent node
-        if (this.get('samplingDescription') && !this.get('samplingDescription').isEmpty()) {
-          $(samplingEl).append(this.get('samplingDescription').updateDOM());
-
-          //If the text matches the default "filler" text, then mark it as missing
-          if( this.get('samplingDescription').get("text")[0] == "No sampling description provided."){
-            missingDescription = true;
-          }
-
-        }
-        //If there isn't a study extent description, then mark it as missing and append the default "filler" text
-        else {
-          missingDescription = true;
-          $(samplingEl).append($(document.createElement('samplingDescription')).html("<para>No sampling description provided.</para>"));
-        }
-
-        //Find the existing <sampling> element
-        var existingSampling = objectDOM.find("sampling");
-
-        //Remove all the sampling nodes if there is no study extent and no description
-        if(missingStudyExtent && missingDescription){
-          existingSampling.remove();
-
-          //If there are no method steps either, make sure their DOM elements are removed
-          if(numMethods == 0){
-            objectDOM.find("methodstep").remove();
-          }
-        }
-        //Replace the existing sampling element, if it exists
-        else if( existingSampling.length > 0 ){
-          existingSampling.replaceWith(samplingEl);
-        }
-        //Or append a new one
-        else{
-          objectDOM.append(samplingEl);
-        }
-
+      catch(e){
+        console.error("Failed to serialize the method steps. Proceeding without updating. ", e);
       }
+
+      try{
+        // Update the sampling metadata
+        if (this.get('samplingDescription') || this.get('studyExtentDescription')) {
+
+          var samplingEl    = $(document.createElement('sampling')),
+              studyExtentEl = $(document.createElement('studyExtent')),
+              missingStudyExtent = false,
+              missingDescription = false;
+
+          //If there is a study extent description, then create a DOM element for it and append it to the parent node
+          if (this.get('studyExtentDescription') && !this.get('studyExtentDescription').isEmpty()) {
+            $(studyExtentEl).append(this.get('studyExtentDescription').updateDOM());
+
+            //If the text matches the default "filler" text, then mark it as missing
+            if( this.get('studyExtentDescription').get("text")[0] == "No study extent description provided."){
+              missingStudyExtent = true;
+            }
+
+          }
+          //If there isn't a study extent description, then mark it as missing and append the default "filler" text
+          else {
+            missingStudyExtent = true;
+            $(studyExtentEl).append($(document.createElement('description')).html("<para>No study extent description provided.</para>"));
+          }
+
+          //Add the study extent element to the sampling element
+          $(samplingEl).append(studyExtentEl);
+
+          //If there is a sampling description, then create a DOM element for it and append it to the parent node
+          if (this.get('samplingDescription') && !this.get('samplingDescription').isEmpty()) {
+            $(samplingEl).append(this.get('samplingDescription').updateDOM());
+
+            //If the text matches the default "filler" text, then mark it as missing
+            if( this.get('samplingDescription').get("text")[0] == "No sampling description provided."){
+              missingDescription = true;
+            }
+
+          }
+          //If there isn't a study extent description, then mark it as missing and append the default "filler" text
+          else {
+            missingDescription = true;
+            $(samplingEl).append($(document.createElement('samplingDescription')).html("<para>No sampling description provided.</para>"));
+          }
+
+          //Find the existing <sampling> element
+          var existingSampling = objectDOM.find("sampling");
+
+          //Remove all the sampling nodes if there is no study extent and no description
+          if(missingStudyExtent && missingDescription){
+            existingSampling.remove();
+          }
+          //Replace the existing sampling element, if it exists
+          else if( existingSampling.length > 0 ){
+            existingSampling.replaceWith(samplingEl);
+          }
+          //Or append a new one
+          else{
+            objectDOM.append(samplingEl);
+          }
+        }
+      }
+      catch(e){
+        console.error("Error while serializing the study extent and sampling. Won't update. ", e);
+      }
+
 
       // Remove empty (zero-length or whitespace-only) nodes
       objectDOM.find("*").filter(function() { return $.trim(this.innerHTML) === ""; } ).remove();

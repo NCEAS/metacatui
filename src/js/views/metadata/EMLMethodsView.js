@@ -24,7 +24,11 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
           editTemplate: _.template(EMLMethodsTemplate),
 
           /**
-          * A small template to display each EMLMethodStep
+          * A small template to display each EMLMethodStep.
+          * If you are going to extend this template for a theme, note that:
+          * This template must keep the ".step-container" wrapper class.
+          * This template must keep the textarea with the default data attributes.
+          * The remove button must have a "remove" class
           * @type {UnderscoreTemplate}
           */
           stepTemplate: _.template('<div class="step-container">\
@@ -225,6 +229,11 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
             //Create a new EMLMethodStep model
             var newMethodStep = this.model.addMethodStep();
 
+            //Attach the model to the elements that will be interacted with
+            updatedInput.parents(".step-container")
+                        .find("textarea[data-attribute='methodStepDescription'], .remove")
+                        .data({ methodStepModel: newMethodStep });
+
             //Update the model with the textarea value
             newMethodStep.get("description").setText(updatedInput.val());
           }
@@ -245,6 +254,18 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
           }
           //If there's no value set on this attribute yet, create a new EMLText model
           else if(!textModelToUpdate){
+
+            let textType;
+            switch(changedAttr){
+              case "studyExtentDescription":
+                textType = "description";
+                break;
+              case "samplingDescription":
+                textType = "samplingdescription";
+                break;
+            }
+
+            if(!textType) return;
 
             //Create a new EMLText model
             var newTextModel = new EMLText({
