@@ -431,18 +431,14 @@ define(['jquery', 'underscore', 'backbone'],
       * @property {string[]} titleOptions One or more titles that may exist in an EML Method Step that identify that Method Step as a custom method type. THe first title in the array is serialized to the EML XML.
       * @property {string} id A unique identifier for this custom method type.
       * @property {boolean} required If true, this custom method will be a required field for submission in the EML editor.
-      * @default [{
+      * @example [{
                     "titleOptions": ["Ethical Research Procedures"],
                     "id": "ethical-research-procedures",
                     "required": false
                   }]
       * @since 2.X
       */
-      customEMLMethods: [{
-        titleOptions: ["Ethical Research Practices"],
-        id: "ethicalResearchPractices",
-        required: false
-      }],
+      customEMLMethods: [],
 
       /**
       * The base URL for the repository. This only needs to be changed if the repository

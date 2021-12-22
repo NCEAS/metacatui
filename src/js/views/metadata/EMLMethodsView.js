@@ -186,7 +186,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
 
               //Attach each custom method model to it's textarea or input
               allCustomMethods.forEach(step => {
-                view.$(view.customMethodsSelector).find("textarea,input").data({ methodStepModel: step })
+                view.$(view.customMethodsSelector).find("[data-custom-method-id='" + step.get("customMethodID") + "']").data({ methodStepModel: step })
               });
 
               //If this is inside a parent EML View (most likely), trigger the event

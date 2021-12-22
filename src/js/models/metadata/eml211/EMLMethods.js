@@ -167,7 +167,7 @@ define(['jquery',
           let configCustomMethods = _.clone(MetacatUI.appModel.get("customEMLMethods") || []);
           if( configCustomMethods.length ){
             configCustomMethods.forEach( customOptions => {
-              let matchingStep = customMethodSteps.find( step => { return step.get("description").get("title") == customOptions.titleOptions[0] });
+              let matchingStep = customMethodSteps.find( step => { return customOptions.titleOptions.includes(step.get("description").get("title")) });
               if( matchingStep ){
                 sortedCustomMethodSteps.push(matchingStep);
               }
