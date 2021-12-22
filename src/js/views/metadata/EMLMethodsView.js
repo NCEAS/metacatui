@@ -60,7 +60,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
 
           events: {
             "change" : "updateModel",
-            "keyup .method-step.new" : "addNewMethodStep",
+            "keyup .method-step.new" : "renderNewMethodStep",
             "click .remove" : "removeMethodStep",
             "mouseover .remove" : "previewRemove",
             "mouseout .remove"  : "previewRemove"
@@ -90,40 +90,15 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
               //Create a blank step for the user to make a new one
               this.renderMethodStep();
 
+              //Populate all the step numbers
+              this.updateMethodStepNums();
+
               //Render the custom methods differently
               this.renderCustomMethods();
             }
 
             return this;
           },
-
-      renderTextArea: function(textModel, data) {
-        if (typeof data === 'undefined') return;
-
-        var text,
-            isNew;
-
-        if (!textModel || typeof textModel === 'undefined') {
-          text = '';
-          isNew = true;
-        } else {
-          text = textModel.get('text').toString();
-          isNew = false;
-        }
-
-        var el = $(document.createElement('textarea'))
-          .attr('rows', '7')
-          .attr('data-attribute', data.category)
-          .attr('data-type', data.type)
-          .addClass("method-step").addClass(data.classes || "")
-          .text(text);
-
-        if (isNew) {
-          $(el).addClass('new')
-        }
-
-        return el;
-      },
 
       /**
       * Renders a single EMLMethodStep model
@@ -139,7 +114,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
             //Render the step HTML
             stepEl = $(this.stepTemplate({
               text: step.get("description").toString(),
-              num: this.model.getNonCustomSteps().indexOf(step)+1
+              num: ""
             }));
             //Attach the model to the elements that will be interacted with
             stepEl.find("textarea[data-attribute='methodStepDescription'], .remove").data({ methodStepModel: step });
@@ -154,8 +129,9 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
             //Render the step HTML
             stepEl = $(this.stepTemplate({
               text: "",
-              num: this.model.getNonCustomSteps().length+1
+              num: ""
             }));
+
             stepEl.find("textarea[data-attribute='methodStepDescription']").addClass("new");
           }
 
@@ -296,13 +272,15 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
       },
 
       /**
-       * Add a new method step
+       * Renders a new empty method step input. Does not update the model at all.
        */
-      addNewMethodStep: function(){
+      renderNewMethodStep: function(){
         // Add new textareas as needed
         this.$(".method-step.new").removeClass("new");
 
         this.renderMethodStep();
+
+        this.updateMethodStepNums();
       },
 
       /**
@@ -329,17 +307,24 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
             this.remove();
 
               //Bump down all the step numbers
-              var stepNums = view.$(".step-num");
-              stepNums.each((i, numEl) => {
-                numEl.textContent = i+1;
-              })
-
+              view.updateMethodStepNums();
           });
         }
         catch(e){
           console.error("Failed to remove the EML Method Step: ", e);
         }
 
+      },
+
+      /**
+      * Updates the step number in the view for each step
+      * @since 2.19.0
+      */
+      updateMethodStepNums: function(){
+        //Update all the step numbers
+        this.$(".step-num").each((i, numEl) => {
+          numEl.textContent = i+1;
+        })
       },
 
       previewRemove: function(e){
