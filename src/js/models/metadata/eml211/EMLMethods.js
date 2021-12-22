@@ -152,8 +152,8 @@ define(['jquery',
       objectDOM = $(objectDOM);
 
       var methodStepsFromModel = this.get('methodSteps'),
-          customMethodSteps = methodStepsFromModel.filter(step => { return step.isCustom() }),
-          regularMethodSteps = _.difference(methodStepsFromModel, customMethodSteps),
+          regularMethodSteps = this.getNonCustomSteps(),
+          customMethodSteps = _.difference(methodStepsFromModel, regularMethodSteps),
           sortedCustomMethodSteps = [],
           methodStepsFromDOM   = $(objectDOM).find("methodstep");
 
@@ -267,16 +267,15 @@ define(['jquery',
 
       }
 
-      //If there is more than one method step, remove any that have the default filler text
-      if( objectDOM.find("methodstep").length > 1 ){
-        objectDOM.find("methodstep:contains('No method step description provided.')").remove();
-      }
-
       //If there are sampling nodes but no method nodes, make method nodes
       if( objectDOM.find("samplingdescription").length > 0 &&
           objectDOM.find("studyextent").length > 0 &&
           objectDOM.find("methodstep").length == 0){
             objectDOM.prepend("<methodstep><description><para>No method step description provided.</para></description></methodstep>");
+      }
+      else{
+        //If there is more than one method step, remove any that have the default filler text
+        objectDOM.find("methodstep:contains('No method step description provided.')").remove();
       }
 
        return objectDOM;
@@ -342,6 +341,8 @@ define(['jquery',
           }
 
         }
+
+        this.trickleUpChange();
 
       }
       catch(e){
