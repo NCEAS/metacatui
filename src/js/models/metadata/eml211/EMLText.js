@@ -146,8 +146,6 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         //Remove all falsey values - primarily empty strings
         paragraphs = _.compact(paragraphs);
 
-        console.log("parsed p: ", paragraphs)
-
         return paragraphs;
 
       }
