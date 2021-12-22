@@ -10,6 +10,7 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/eml220/EMLText'],
       * "Ethical Research Practices". An EMLSpecializedText would have a title of `Ethical Research Practices`, which
       * would be serialized in the EML XML as a section title or markdown header.
       * @classcategory Models/Metadata/EML
+      * @since 2.19.0
       */
   var EMLSpecializedText = EMLText.extend(
     /** @lends EMLSpecializedText.prototype */{

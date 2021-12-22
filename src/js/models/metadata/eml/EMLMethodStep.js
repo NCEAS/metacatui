@@ -12,6 +12,17 @@ if( MetacatUI.appModel.get("customEMLMethods").length ){
 define(required,
     function($, _, Backbone, DataONEObject, EMLText, EMLSpecializedText) {
 
+  /**
+  * @class EMLMethodStep
+  * @classdesc Represents the EML Method Steps. The methodStep field allows for repeated sets of
+            elements that document a series of procedures followed to produce a
+            data object. These include text descriptions of the procedures,
+            relevant literature, software, instrumentation, source data and any
+            quality control measures taken.
+  * @classcategory Models/Metadata/EML
+  * @extends Backbone.Model
+  * @since 2.19.0
+  */
   var EMLMethodStep = Backbone.Model.extend({
 
     /**

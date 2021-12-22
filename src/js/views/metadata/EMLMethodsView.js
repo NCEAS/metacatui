@@ -128,6 +128,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
       /**
       * Renders a single EMLMethodStep model
       * @param step {[EMLMethodStep]}
+      * @since 2.19.0
       */
       renderMethodStep: function(step){
         try{
@@ -163,6 +164,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
       /**
       * Renders the inputs for the custom EML Methods that are configured in the {@link AppConfig}
       * If none are configured, nothing will be shown.
+      * @since 2.19.0
       */
       renderCustomMethods: function(){
 
@@ -286,7 +288,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
         $(e.target).parents(".step-container").find(".remove").show();
       },
 
-      /*
+      /**
        * Add a new method step
        */
       addNewMethodStep: function(){
@@ -311,7 +313,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
         ));
       },
 
-      /*
+      /**
        * Remove this method step
        */
       removeMethodStep: function(e){

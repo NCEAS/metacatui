@@ -7,8 +7,31 @@ define(['jquery',
     'models/metadata/eml211/EMLText'],
     function($, _, Backbone, DataONEObject, EMLMethodStep, EMLText) {
 
-  var EMLMethods = Backbone.Model.extend({
+  /**
+  * @class EMLMethods
+  * @classdesc Represents the EML Methods module. The methods field documents scientific methods
+              used in the collection of this dataset.  It includes information
+              on items such as tools, instrument calibration and
+              software.
+  * @classcategory Models/Metadata/EML211
+  * @extends Backbone.Model
+  */
+  var EMLMethods = Backbone.Model.extend(
+    /** @lends EMLMethods.prototype */{
 
+    /**
+    * The default values of this model that are get() or set()
+    * @returns {object}
+    * @property {string} objectXML The original XML snippet string from the EML XML
+    * @property {Element} objectDOM The original XML snippet as an Element
+    * @property {EMLMethodStep[]} methodSteps An array of EMLMethodSteps that describe the scientific method steps
+    * @property {EMLText} studyExtentDescription The field studyExtent represents both a
+                  specific sampling area and the sampling frequency (temporal
+                  boundaries, frequency of occurrence).
+    * @property {EMLText} samplingDescription The samplingDescription field allows for a
+                  text-based/human readable description of the sampling
+                  procedures used in the research project.
+    */
     defaults: function(){
       return {
         objectXML: null,
@@ -37,9 +60,10 @@ define(['jquery',
 
     },
 
-    /*
+    /**
      * Maps the lower-case EML node names (valid in HTML DOM) to the camel-cased EML node names (valid in EML).
      * Used during parse() and serialize()
+     * @returns {object}
      */
     nodeNameMap: function(){
       return _.extend(EMLMethodStep.prototype.nodeNameMap(), {
@@ -113,7 +137,7 @@ define(['jquery',
       return xmlString;
     },
 
-    /*
+    /**
      * Makes a copy of the original XML DOM and updates it with the new values from the model.
      */
     updateDOM: function(){
@@ -285,6 +309,7 @@ define(['jquery',
     /**
     * Returns the EMLMethodSteps that are not custom methods, as configured in {@link AppConfig#customEMLMethods}
     * @returns {EMLMethodStep[]}
+    * @since 2.19.0
     */
     getNonCustomSteps: function(){
       return this.get("methodSteps").filter(step => !step.isCustom());
@@ -337,7 +362,7 @@ define(['jquery',
 
     },
 
-    /*
+    /**
     * Climbs up the model heirarchy until it finds the EML model
     *
     * @return {EML211 or false} - Returns the EML 211 Model or false if not found
@@ -369,6 +394,7 @@ define(['jquery',
     /**
     * Creates and returns the custom Method Step models, as configured in the {@link AppConfig}
     * @returns {EMLMethodStep[]}
+    * @since 2.19.0
     */
     createCustomMethodSteps: function(){
       //Get the custom methods configured in the app
