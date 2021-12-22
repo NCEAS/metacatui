@@ -63,7 +63,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               purpose: [],
               entities: [], //An array of EMLEntities
               pubplace: null,
-              methods: null, // An EMLMethods objects
+              methods: new EMLMethods(), // An EMLMethods objects
               project: null, // An EMLProject object,
               annotations: null, // Dataset-level annotations
               dataSensitivityPropertyURI: "http://purl.dataone.org/odo/SENSO_00000005",
@@ -1525,6 +1525,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           }
 
         });
+
+        //Validate the EML Methods
+        let emlMethods = this.get("methods");
+        if( emlMethods ){
+          if( !emlMethods.isValid() ){
+            errors.methods = emlMethods.validationError;
+          }
+        }
 
         // Validate each EMLAnnotation model
         if( this.get("annotations") ){

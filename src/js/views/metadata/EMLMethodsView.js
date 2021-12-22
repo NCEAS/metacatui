@@ -348,6 +348,31 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
         })
       },
 
+      /**
+      * Shows validation errors that need to be fixed by the user
+      */
+      showValidation: function(){
+
+        try{
+
+          if( Object.keys(this.model.validationError).length ){
+            if( this.model.validationError.methodSteps ){
+              _.mapObject(this.model.validationError.methodSteps, (errors, customMethodID) => {
+                this.$(`.notification[data-category="${customMethodID}"]`)
+                    .text(errors.description)
+                    .addClass("error");
+                this.$(`[data-custom-method-id="${customMethodID}"]`).addClass("error");
+              });
+            }
+          }
+
+        }
+        catch(e){
+          console.warn("Failed to show Methods validation: ", e);
+        }
+
+      },
+
       previewRemove: function(e){
         $(e.target).parents(".step-container").toggleClass("remove-preview");
       }

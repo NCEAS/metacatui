@@ -295,6 +295,7 @@ define(['jquery',
     /**
     * Creates a new EMLMethodStep model and adds it to this model
     * @param {object} [attr] A literal object of attributes to set on the EMLMethodStep
+    * @since 2.19.0
     */
     addMethodStep: function(attr){
 
@@ -371,6 +372,15 @@ define(['jquery',
     },
 
     /**
+    * Returns the EMLMethodSteps that are custom methods, as configured in {@link AppConfig#customEMLMethods}
+    * @returns {EMLMethodStep[]}
+    * @since 2.19.0
+    */
+    getCustomSteps: function(){
+      return this.get("methodSteps").filter(step => step.isCustom());
+    },
+
+    /**
     *  function isEmpty() - Will check if there are any values set on this model
     * that are different than the default values and would be serialized to the EML.
     *
@@ -418,6 +428,42 @@ define(['jquery',
     },
 
     /**
+    * Overloads Backbone.Model.validate() to check if this model has valid values set on it.
+    * For now, only the custom method steps are validated, because they could be required.
+    * @extends Backbone.Model.validate
+    * @returns {object}
+    */
+    validate: function(){
+
+      try{
+
+        let validationErrors = {}
+
+        //Validate each custom Method Step
+        let customSteps = this.getCustomSteps(),
+            methodStepValidationErrors = {};
+
+        customSteps.forEach(step => {
+          if( !step.isValid() ){
+           methodStepValidationErrors[step.get("customMethodID")] = step.validationError;
+          }
+        });
+
+        if( Object.keys(methodStepValidationErrors).length ){
+          validationErrors.methodSteps = methodStepValidationErrors;
+        }
+
+        return validationErrors;
+
+      }
+      catch(e){
+        console.error("Error while validating the Methods: ", e);
+        return false;
+      }
+
+    },
+
+    /**
     * Climbs up the model heirarchy until it finds the EML model
     *
     * @return {EML211 or false} - Returns the EML 211 Model or false if not found
@@ -459,7 +505,8 @@ define(['jquery',
       //If there is at least one
       configCustomMethods.forEach(config => {
         customMethods.push(new EMLMethodStep({
-          customMethodID: config.id
+          customMethodID: config.id,
+          required: config.required
         }))
       });
 

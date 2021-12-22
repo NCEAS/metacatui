@@ -34,6 +34,7 @@ define(required,
     * @property {string[]} instrumentation One or more instruments used for measurement and recording data
     * @property {EMLMethodStep[]} subStep Nested additional method steps within this step.  This is useful for hierarchical method descriptions. This is *not* fully supported in MetacatUI yet
     * @property {string[]} customMethodID A unique identifier for this Custom Method Step type, which is defined in {@link AppConfig#customEMLMethods}
+    * @property {boolean} required If true, this method step is required in it's parent EML
     */
     defaults: function(){
       return {
@@ -42,7 +43,8 @@ define(required,
         description: null,
         instrumentation: [],
         subStep: [],
-        customMethodID: ""
+        customMethodID: "",
+        required: false
       }
     },
 
@@ -71,6 +73,11 @@ define(required,
         this.set("description", new EMLText({
           type: "description"
         }))
+      }
+
+      //Set the required attribute
+      if( typeof attributes.required == "boolean" ){
+        this.set("required", attributes.required);
       }
 
       //specific attributes to listen to
@@ -126,6 +133,7 @@ define(required,
              });
             //Save the other configurations of this custom method to this EMLMethodStep
             modelJSON.customMethodID = matchingCustomMethod.id;
+            modelJSON.required = matchingCustomMethod.required;
           }
         }
       }
@@ -254,6 +262,46 @@ define(required,
     */
     isCustom: function(){
       return this.get("description")? this.get("description").type == "EMLSpecializedText" : false;
+    },
+
+    /**
+    * Overloads Backbone.Model.validate() to check if this model has valid values set on it
+    * @extends Backbone.Model.validate
+    * @returns {object}
+    */
+    validate: function(){
+
+      try{
+
+        let validationErrors = {}
+
+        if( this.isCustom() && this.get("required") ){
+          let desc = this.get("description"),
+              isMissing = false;
+
+          //If there is a missing description, we need to show the required error
+          if( !desc ){
+            isMissing = true;
+          }
+          else if( !desc.get("text") ){
+            isMissing = true;
+          }
+          else if( !_.compact(desc.get("text")).length ){
+            isMissing = true;
+          }
+
+          if( isMissing ){
+            validationErrors.description = `${desc.get("title")} is required.`
+            return validationErrors;
+          }
+        }
+
+      }
+      catch(e){
+        console.error("Error while validating the Methods: ", e);
+        return false;
+      }
+
     },
 
     trickleUpChange: function(){
