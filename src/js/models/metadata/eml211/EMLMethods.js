@@ -283,6 +283,14 @@ define(['jquery',
     },
 
     /**
+    * Returns the EMLMethodSteps that are not custom methods, as configured in {@link AppConfig#customEMLMethods}
+    * @returns {EMLMethodStep[]}
+    */
+    getNonCustomSteps: function(){
+      return this.get("methodSteps").filter(step => !step.isCustom());
+    },
+
+    /**
     *  function isEmpty() - Will check if there are any values set on this model
     * that are different than the default values and would be serialized to the EML.
     *

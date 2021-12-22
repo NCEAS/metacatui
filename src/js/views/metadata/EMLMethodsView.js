@@ -82,7 +82,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
               }));
 
               //Render each EMLMethodStep
-              let regularMethodSteps = this.model.get("methodSteps").filter(step => !step.isCustom());
+              let regularMethodSteps = this.model.getNonCustomSteps();
               regularMethodSteps.forEach(step => {
                 this.renderMethodStep(step)
               });
@@ -138,7 +138,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
             //Render the step HTML
             stepEl = this.stepTemplate({
               text: step.get("description").toString(),
-              num: this.model.get("methodSteps").indexOf(step)+1
+              num: this.model.getNonCustomSteps().indexOf(step)+1
             });
             //Attach the model to the element
             $(stepEl).find("textarea[data-attribute='methodStepDescription']").data({ methodStepModel: step });
@@ -147,7 +147,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
             //Render the step HTML
             stepEl = this.stepTemplate({
               text: "",
-              num: this.model.get("methodSteps").length
+              num: this.model.getNonCustomSteps().length+1
             });
           }
 
