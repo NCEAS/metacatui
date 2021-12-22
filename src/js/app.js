@@ -79,6 +79,8 @@ require.config({
 	semanticUIdropdown: MetacatUI.root + '/components/semanticUI/dropdown.min',
 	// To make elements drag and drop, sortable
 	sortable: MetacatUI.root + '/components/sortable.min',
+  //Cesium
+  cesium: MetacatUI.root + "/components/cesium/Cesium",
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: MetacatUI.d3URL,
 	LineChart: ['views/LineChartView', null],

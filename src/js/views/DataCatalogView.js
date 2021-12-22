@@ -11,6 +11,7 @@ define(["jquery",
         "common/Utilities",
         "views/SearchResultView",
         "views/searchSelect/AnnotationFilterView",
+        "views/maps/CesiumWidgetView",
         "text!templates/search.html",
         "text!templates/statCounts.html",
         "text!templates/pager.html",
@@ -22,9 +23,9 @@ define(["jquery",
     ],
     function(
       $, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel,
-      MetricsModel, Utilities, SearchResultView, AnnotationFilter, CatalogTemplate,
-      CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate,
-      LoadingTemplate, gmaps, nGeohash
+        MetricsModel, Utilities, SearchResultView, AnnotationFilter, CesiumWidgetView,
+        CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate,
+        CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash
     ) {
         "use strict";
 
@@ -158,7 +159,10 @@ define(["jquery",
             // Render the main view and/or re-render subviews. Don't call .html() here
             // so we don't lose state, rather use .setElement(). Delegate rendering
             // and event handling to sub views
-            render: function() {
+                render: function () {
+                
+                // Which type of map are we rendering, Google maps or Cesium maps?
+                this.mapType = MetacatUI.appModel.get("dataCatalogMap") || "google";
 
                 // Use the global models if there are no other models specified at time of render
                 if ((MetacatUI.appModel.get("searchHistory").length > 0) &&
@@ -294,13 +298,13 @@ define(["jquery",
 
                 // Iterate through each search model text attribute and show UI filter for each
                 var categories = ["all", "attribute", "creator", "id", "taxon", "spatial",
-                    "additionalCriteria", "annotation"];
+                    "additionalCriteria", "annotation", "isPrivate"];
                 var thisTerm = null;
 
                 for (var i = 0; i < categories.length; i++) {
                     thisTerm = this.searchModel.get(categories[i]);
 
-                    if (thisTerm === undefined) break;
+                    if (thisTerm === undefined || thisTerm === null) break;
 
                     for (var x = 0; x < thisTerm.length; x++) {
                         this.showFilter(categories[i], thisTerm[x]);
@@ -1215,6 +1219,7 @@ define(["jquery",
                 $("#includes_data").prop("checked", this.searchModel.get("documents"));
                 $("#data_year").prop("checked", this.searchModel.get("dataYear"));
                 $("#publish_year").prop("checked", this.searchModel.get("pubYear"));
+                $("#is_private_data").prop("checked", this.searchModel.get("isPrivate"));
                 this.listDataSources();
 
                 // Zoom out the Google Map
@@ -1847,21 +1852,46 @@ define(["jquery",
              *                                             THE MAP
              * ==================================================================================================
              */
-            renderMap: function() {
+                renderMap: function () {
 
-                // If gmaps isn't enabled or loaded with an error, use list mode
-                if (!gmaps || this.mode == "list") {
-                    this.ready = true;
-                    this.mode = "list";
-                    return;
-                }
+                    // If gmaps isn't enabled or loaded with an error, use list mode
+                    if (this.mapType === "google" && (!gmaps || this.mode == "list")) {
+                        this.ready = true;
+                        this.mode = "list";
+                        return;
+                    }
 
-                if (this.isSubView) {
-                    this.$el.addClass("mapMode");
-                } else {
-                    $("body").addClass("mapMode");
-                }
+                    if (this.isSubView) {
+                        this.$el.addClass("mapMode");
+                    } else {
+                        $("body").addClass("mapMode");
+                    }
 
+                    // Render Cesium maps, if that is the map type rendered.
+                    if (this.mapType == "cesium") {
+                        var mapContainer = $("#map-container").append("<div id='map-canvas'></div>");
+
+                        var mapView = new CesiumWidgetView({
+                            el: mapContainer
+                        });
+                        mapView.render();
+                        this.map = mapView;
+
+                        this.mapModel.set("map", this.map);
+
+                        this.map.showGeohashes()
+
+                        // Mark the view as ready to start a search
+                        this.ready = true;
+                        this.triggerSearch();
+                        this.allowSearch = false;
+
+                        // TODO / WIP : Implement the rest of the map search features...
+                        return
+                    }
+
+                    // Continue with rendering Google maps, if that is configured mapType
+                    
                 // Get the map options and create the map
                 gmaps.visualRefresh = true;
                 var mapOptions = this.mapModel.get("mapOptions");
@@ -2149,7 +2179,14 @@ define(["jquery",
             /**
              * Create a tile for each geohash facet. A separate tile label is added to the map with the count of the facet.
              **/
-            drawTiles: function() {
+            drawTiles: function () {
+
+                // This function is for Google maps only. The CesiumWidgetView draws its
+                // own tiles.
+                if (this.mapType !== "google") {
+                    return
+                }
+                
                 // Exit if maps are not in use
                 if ((this.mode != "map") || (!gmaps)) {
                     return false;
@@ -2821,7 +2858,7 @@ define(["jquery",
                 //--First map all the results--
                 if (gmaps && this.mapModel) {
                     // Draw all the tiles on the map to represent the datasets
-                    this.drawTiles();
+                    // this.drawTiles();
 
                     // Remove the loading styles from the map
                     $("#map-container").removeClass("loading");
