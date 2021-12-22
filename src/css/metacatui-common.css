@@ -8349,6 +8349,9 @@ textarea.medium{
 .locations-table .eml-geocoverage.remove-preview{
 	opacity: .3;
 }
+.method-step.new + .remove{
+  display: none;
+}
 
 /* The width of each input element next to the remove button */
 .metadata-container .basic-text-row input,
