@@ -59,6 +59,9 @@
 
 }
 
+:root {
+  --footer-height: 320px;
+}
 
 /* Body CSS
 -------------------------------------------------- */
@@ -285,6 +288,12 @@
 .PortalView #Navbar .minimal-nav .btn-primary{
 	color: #FFF;
 }
+
+.Portal.Editor .header #inner-header,
+.PortalView .header #inner-header {
+  margin-right: 1rem;
+}
+
 .header .login.btn{
 	margin-left: 20px;
 	width: auto;
@@ -336,7 +345,7 @@ footer {
  width: 100%;
  box-sizing: border-box;
  z-index: 2;
- height: 320px; /* Keeps the footer down */
+ height: var(--footer-height); /* Keeps the footer down */
 }
 #Content{
 	padding-bottom: 350px; /* Keeps footer down */
@@ -544,10 +553,10 @@ footer .logos a:hover, a:focus{
 }
 .PortalView{
   display: grid;
-  grid-template-rows: 40px 0px 100fr 320px;
+  grid-template-rows: 40px 0px 100fr var(--footer-height);
 }
 .PortalView.has-temporary-message {
-    grid-template-rows: auto 0px 100fr 320px;
+    grid-template-rows: auto 0px 100fr var(--footer-height);
 }
 .portal-view .portal-title{
   font-weight: 100;
@@ -572,6 +581,7 @@ footer .logos a:hover, a:focus{
   height: 20px;
   width: 20px;
   background-size: contain;
+  margin-top: 4px;
 }
 .Portal.Editor #Navbar #logo::after,
 .PortalView #Navbar #logo::after{
@@ -579,7 +589,7 @@ footer .logos a:hover, a:focus{
   order: 3;
   margin-left: 29px;
   display: block;
-  margin-top: 2px;
+  margin-top: 3px;
   color: #888;
   font-size: .8em;
   white-space: nowrap;
@@ -606,6 +616,26 @@ footer .logos a:hover, a:focus{
   font-family: inherit;
 }
 
+.Portal.Editor .header #nav-trigger,
+.PortalView .header #nav-trigger {
+  margin: 0;
+}
+
+/* Sign in button... */
+.Portal.Editor #Navbar .nav .minimal-nav a.login,
+.PortalView #Navbar .nav .minimal-nav a.login {
+  padding: 0.3rem 0.5rem;
+  margin: 0.15rem 0 0 0;
+  display: flex;
+}
+.Portal.Editor #Navbar .nav .minimal-nav a.login > .icon,
+.PortalView #Navbar .nav .minimal-nav a.login > .icon {
+  display: block;
+}
+.Portal.Editor #Navbar .nav .minimal-nav a.login > span,
+.PortalView #Navbar .nav .minimal-nav a.login > span {
+  top: 0;
+}
 
 .port-editor-sections .section-link-container.sortable-ghost,
 .port-editor-sections .section-link-container.sortable-chosen {
@@ -1159,11 +1189,11 @@ svg .title{
 .donut.data > g:nth-child(even) .donut-arc,
 .donut.data > g:nth-child(even) .donut-arc-label
 {
-	fill: #1f254f;
+  fill: #5f9fe3
 }
 .donut.data > g:nth-child(odd) .donut-arc,
 .donut.data > g:nth-child(odd) .donut-arc-label{
-	fill: #323e7c;
+	fill: #414c87;
 }
 /* Have a different color for the first arc so no two colors are adjacent */
 .donut.metadata > g:first-child .donut-arc,
@@ -1173,7 +1203,7 @@ svg .title{
 
 .donut.data > g:first-child .donut-arc,
 .donut.data > g:first-child .donut-arc-label{
-	fill: #5065c9;
+	fill: #5663a3;
 }
 
 
@@ -1766,7 +1796,7 @@ MDQ items
     .ui-slider-handle{
     	border: 1px solid #999999;
     	background-color: #EFEFEF;
-    	top: -0.4em;
+  top: calc(50% - 0.5em);
     	position: absolute;
     	z-index: 2;
     	width: 1em;

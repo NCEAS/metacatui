@@ -1,29 +1,23 @@
-<div class="portal-view">
+<article class="portal-view">
   <div id="portal-header-container" class="row-fluid auto-height-member"></div>
 
-  <div class="row-fluid">
-    <article class="tabbable">
-
-      <div class="section-links-container auto-height-member">
-        <ul id="portal-section-tabs" class="nav nav-tabs"></ul>
-        <div class="show-sections-toggle">Pages <i class="icon-caret-up"></i></div>
-      </div>
-
-      <section id="portal-sections" class="row-fluid tab-content" data-section="portal">
-      </section>
-
-    </article>
+  <div class="section-links-container auto-height-member">
+    <ul id="portal-section-tabs" class="nav nav-tabs"></ul>
+    <div class="show-sections-toggle">Pages <i class="icon-caret-up"></i>
+    </div>
   </div>
 
-  <style type="text/css">
-  :root {
-    --portal-primary-color: <%=primaryColor%>;
-    --portal-secondary-color: <%=secondaryColor%>;
-    --portal-accent-color: <%=accentColor%>;
-    --portal-primary-color-transparent: <%=primaryColorTransparent%>;
-    --portal-secondary-color-transparent: <%=secondaryColorTransparent%>;
-    --portal-accent-color-transparent: <%=accentColorTransparent%>;
+  <section id="portal-sections" class="row-fluid tab-content" data-section="portal"></section>
 
-  }
+  <style type="text/css">
+    :root {
+      --portal-primary-color: <%=primaryColor%>;
+      --portal-secondary-color: <%=secondaryColor%>;
+      --portal-accent-color: <%=accentColor%>;
+      --portal-primary-color-transparent: <%=primaryColorTransparent%>;
+      --portal-secondary-color-transparent: <%=secondaryColorTransparent%>;
+      --portal-accent-color-transparent: <%=accentColorTransparent%>;
+
+    }
   </style>
-</div>
+</article>

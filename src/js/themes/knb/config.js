@@ -44,11 +44,13 @@ MetacatUI.AppConfig = Object.assign({
   hiddenSubjectsInAccessPolicy: ["CN=knb-data-admins,DC=dataone,DC=org"],
   showDatasetPublicToggleForSubjects: ["CN=knb-data-admins,DC=dataone,DC=org"],
   allowChangeRightsHolder: false,
+  enableMeasurementTypeView: true,
 
   //Searching
   disableQueryPOSTs: false,
   enableSolrJoins: true,
   displayRepoLogosInSearchResults: true,
+  defaultSearchFilters: ["all", "attribute", "annotation", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial", "isPrivate"],
 
   //Temp message
   temporaryMessage: "",

@@ -59,9 +59,9 @@ define(['jquery', 'underscore', 'backbone'],
       emailContact: "knb-help@nceas.ucsb.edu",
 
       /**
-      * Your Google Maps API key, which is used to diplay interactive maps on the search
+      * Your Google Maps API key, which is used to display interactive maps on the search
       * views and static maps on dataset landing pages.
-      * If a Google Maps API key is no specified, the maps will be omitted from the interface.
+      * If a Google Maps API key is not specified, the maps will be omitted from the interface.
       * Sign up for Google Maps services at https://console.developers.google.com/
       * @type {string}
       * @example "AIzaSyCYyHnbIokUEpMx5M61ButwgNGX8fIHUs"
@@ -79,6 +79,20 @@ define(['jquery', 'underscore', 'backbone'],
       * @default null
       */
       googleAnalyticsKey: null,
+
+      /**
+      * The map to use in the catalog search (both DataCatalogViewWithFilters and
+      * DataCatalog). This can be set to either "google" (the default), or "cesium". To
+      * use Google maps, the {@link AppConfig#googleAnalyticsKey} must be set. To use
+      * Cesium maps, the {@link AppConfig#enableCesium} property must be set to true, and
+      * the {@link AppConfig#cesiumToken} must be set. NOTE: The Cesium map is a WIP and
+      * not yet ready to use in the data catalog.
+      * @type {string}
+      * @example "cesium"
+      * @default "google"
+      * @since 2.X
+      */
+      dataCatalogMap: "google",
 
       /**
       * The node identifier for this repository. This is set dynamically by retrieving the
@@ -122,9 +136,9 @@ define(['jquery', 'underscore', 'backbone'],
       * "Download All" button, and users will be directed to download files individually.
       * This is useful for preventing the Metacat package service from getting overloaded.
       * @type {number}
-      * @default 3000000000
+      * @default 100000000000
       */
-      maxDownloadSize: 3000000000,
+      maxDownloadSize: 100000000000,
 
       /**
       * Add a message that will display during a certain time period. This is useful when
@@ -225,7 +239,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @default ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
       * @example ["all", "annotation", "attribute", "dataSource", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
       */
-      defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
+      defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial", "isPrivate"],
 
       /**
        * Enable to show Whole Tale features
@@ -1744,12 +1758,40 @@ define(['jquery', 'underscore', 'backbone'],
       randomLabelNumericLength: 7,
 
       /**
-      * Enable or disable showing the MeasurementTypeView in the Editor's
-      * attribute modal dialog. The {@link AppModel#bioportalAPIKey} must be set to a valid Bioportal
-      * API key for the ontology tree widget to work.
+      * If enabled (by setting to true), Cesium maps will be used in the interface.
+      * If a {@link AppConfig#cesiumToken} is not provided, Cesium features will be disabled.
       * @type {boolean}
-      * @since 2.17.0
       * @default false
+      * @since 2.18.0
+      */
+      enableCesium: true,
+
+      /**
+      * Your Access Token for the Cesium API, which can be retrieved from
+      * {@link https://cesium.com/ion/tokens}.
+      * @type {string}
+      * @since 2.18.0
+      * @example eyJhbGciOiJIUzI1R5cCI6IkpXVCJ9.eyJqdGkiOiJmYzUwYjI0ZC0yN2Y4LTRiZjItOdCI6MTYwODIyNDg5MH0.KwCI2-4cHjFYXrR6-mUrwkhh1UdNARK7NxFLpFftjeg
+      */
+      cesiumToken: "",
+
+      /**
+       * Your Access Token for the Bing Maps Imagery API, which can be retrieved from
+       * https://www.bingmapsportal.com/. Required if any Cesium layers use imagery
+       * directly from Bing.
+       * @type {string}
+       * @since 2.18.0
+       * @example AtZjkdlajkl_jklcCAO_1JYafsvAjU1nkd9jdD6CDnHyamndlasdt5CB7xs
+      */
+        bingMapsKey: "",
+
+      /**
+       * Enable or disable showing the MeasurementTypeView in the Editor's
+       * attribute modal dialog. The {@link AppModel#bioportalAPIKey} must be set to a valid Bioportal
+       * API key for the ontology tree widget to work.
+       * @type {boolean}
+       * @since 2.17.0
+       * @default false
       */
       enableMeasurementTypeView: false,
 
@@ -1768,12 +1810,7 @@ define(['jquery', 'underscore', 'backbone'],
       * This Bioportal REST API URL is used by the experimental and unsupported AnnotatorView to get multiple ontology class info at once.
       * @deprecated
       */
-      //bioportalBatchUrl: "https://data.bioontology.org/batch",
-      /**
-      * This DataONE API Annotator URL is used by the experimental and unsupported AnnotatorView to save an annotation
-      * @deprecated
-      */
-      //annotatorUrl: null
+      //bioportalBatchUrl: "https://data.bioontology.org/batch"
 		}, MetacatUI.AppConfig),
 
     defaultView: "data",
@@ -1864,9 +1901,6 @@ define(['jquery', 'underscore', 'backbone'],
         if(typeof this.get("orcidBaseUrl") != "undefined")
           this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');
 
-        //Annotator API
-        if(typeof this.get("annotatorUrl") !== "undefined")
-          this.set('annotatorUrl', d1CNBaseUrl + '/portal/annotator');
       }
 
       // Metadata quality report services
@@ -2021,7 +2055,69 @@ define(['jquery', 'underscore', 'backbone'],
       if( !defaultAltRepo ){
         this.set("activeAlternateRepositoryId", altRepos[0].identifier);
       }
-    }
+      },
+
+      /**
+       * Given a string of CSS and an associated unique ID, check whether that CSS file
+       * was already added to the document head, and add it if not. Prevents adding the
+       * CSS file multiple times if the view is loaded more than once. The first time each
+       * CSS path is added, we need to save a record of the event. It doesn't work to just
+       * search the document head for the style element to determine if the CSS has
+       * already been added, because views may be initialized too quickly, before the
+       * previous instance has had a chance to add the stylesheet element.
+       * @param {string} css A string containing CSS styles
+       * @param {string} id A unique ID for the CSS styles which has not been used
+       * anywhere else in the app.
+       */
+      addCSS: function (css, id) {
+        try {
+        if (!MetacatUI.loadedCSS) {
+          MetacatUI.loadedCSS = []
+        }
+        if (!MetacatUI.loadedCSS.includes(id)) {
+          MetacatUI.loadedCSS.push(id);
+          var style = document.createElement('style');
+            style.id = id;
+          style.appendChild(document.createTextNode(css));
+          document.querySelector("head").appendChild(style);
+          }
+        }
+        catch (error) {
+          console.log(
+            'There was an error adding CSS to the app' +
+            '. Error details: ' + error
+          );
+        }
+      },
+
+      /**
+       * Remove CSS from the app that was added using the {@link AppModel#addCSS}
+       * function.
+       * @param {string} id A unique ID for the CSS styles which has not been used
+       * anywhere else in the app. The same ID used to add the CSS with
+       * {@link AppModel#addCSS}
+       */
+      removeCSS: function (id) {
+        try {
+          if (!MetacatUI.loadedCSS) {
+            MetacatUI.loadedCSS = []
+          }
+          if (MetacatUI.loadedCSS.includes(id)) {
+            MetacatUI.loadedCSS = MetacatUI.loadedCSS.filter(e => e !== id);
+            var sheet = document.querySelector("head #" + id)
+            if (sheet) {
+              sheet.remove()
+            }
+          }
+        }
+        catch (error) {
+          console.log(
+            'There was an error removing CSS from the app' +
+            '. Error details: ' + error
+          );
+        }
+      }
+
   });
   return AppModel;
 });

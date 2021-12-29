@@ -85,6 +85,12 @@ define(["jquery",
         subviews: new Array(), // Could be a literal object {} */
 
         /**
+        * A reference to the Portal Logos View that displays the logos of this portal.
+        * @type PortalLogosView
+        */
+        logosView: null,
+
+        /**
          * A Portal Model is associated with this view and gets created during render()
          * @type {Portal}
          */
@@ -340,6 +346,9 @@ define(["jquery",
             }
           }
 
+          // Check for theme/layout settings and add the required files
+          this.addTheming();
+
           // Insert the overall portal template
           this.$el.html(this.template(this.model.toJSON()));
 
@@ -489,6 +498,52 @@ define(["jquery",
         },
 
         /**
+         * Checks the portal model for theme or layout options. If there are any, and if
+         * they are supported, then add the associated CSS.
+         */
+        addTheming: function () {
+          try {
+            // Check for theme and layout settings.
+            var theme = this.model.get("theme");
+            var layout = this.model.get("layout");
+            // TODO: make supported themes an app model config option?
+            var supportedThemes = ["dark"];
+            var supportedLayouts = ["panels"];
+            // We must remove theme/layout CSS when the user navigates away from the
+            // portal in onClose(). To do this, we need to keep track of which CSS is
+            // added during this step.
+            var view = this
+            view.addedThemeCSS = []
+            // Layout should be added before theme for CSS rules to work together properly
+            // when there is a theme + layout
+            if (layout && supportedLayouts.includes(layout)) {
+              require(
+                ["text!" + MetacatUI.root + "/css/portal-layouts/" + layout + ".css"],
+                function (ThemeCss) {
+                  var cssID = "portal-layout-" + layout;
+                  MetacatUI.appModel.addCSS(ThemeCss, cssID);
+                  view.addedThemeCSS.push(cssID)
+                })
+            }
+            if (theme && supportedThemes.includes(theme)) {
+              require(
+                ["text!" + MetacatUI.root + "/css/portal-themes/" + theme + ".css"],
+                function (ThemeCss) {
+                  var cssID = "portal-theme-" + theme;
+                  MetacatUI.appModel.addCSS(ThemeCss, cssID);
+                  view.addedThemeCSS.push(cssID)
+                })
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error adding theme and/or layout styles in a PortalView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
          * toggleSectionLinks - show or hide the section links nav. Used for
          * mobile/small screens only.
          */
@@ -617,7 +672,6 @@ define(["jquery",
           // Update the activeSection set on the view
           this.activeSection = sectionView;
 
-
           // Activate the section content
           this.$(this.sectionEls).each(function (i, contentEl) {
             if ($(contentEl).data("view") == sectionView) {
@@ -641,6 +695,29 @@ define(["jquery",
           //If the section view has post-render functionality, execute it now
           if (typeof sectionView.postRender == "function") {
             sectionView.postRender();
+          }
+
+          // Eventually, the panels layout will allow showing multiple sections at the
+          // same time in different panels. For now, the visualizations sections should
+          // take up the full height of the viewport (minus the header elements), and the
+          // footer should be hidden.
+          if (
+            (this.model.get("layout") === "panels") &&
+            (sectionView instanceof PortalVisualizationsView)
+          ) {
+            if( this.logosView ){
+              this.logosView.el.style.setProperty('display', 'none')
+            }
+            if( MetacatUI.footerView ){
+              MetacatUI.footerView.hide()
+            }
+          } else {
+            if( this.logosView ){
+              this.logosView.el.style.removeProperty('display')
+            }
+            if( MetacatUI.footerView ){
+              MetacatUI.footerView.show()
+            }
           }
 
           if (!this.nodeView) {
@@ -979,6 +1056,13 @@ define(["jquery",
 
           this.subviews = new Array();
 
+          // Remove any CSS that was added for the theme or layout
+          if (this.addedThemeCSS && this.addedThemeCSS.length) {
+            this.addedThemeCSS.forEach(function (cssID) {
+              MetacatUI.appModel.removeCSS(cssID);
+            });
+          }
+
           //Remove all listeners
           this.stopListening();
 
@@ -995,14 +1079,18 @@ define(["jquery",
 
           $("body").removeClass("PortalView");
 
+          // Make sure the footer is visible (hidden for dataViz sections + panels layout)
+          MetacatUI.footerView.el.style.removeProperty('display')
+          document.body.style.removeProperty('--footer-height')
+
           $("#editPortal").remove();
 
           this.undelegateEvents();
         },
 
         /**
-         * Checks if the label is a repository 
-         * 
+         * Checks if the label is a repository
+         *
          * @param {string} username - The portal label or the member node repository identifier
          */
         isNode: function (username) {
