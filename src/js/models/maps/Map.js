@@ -161,7 +161,10 @@ define(
               pitch: -90,
               roll: 0
             },
-            layers: new MapAssets(),
+            layers: new MapAssets([{
+                type: 'NaturalEarthII',
+                label: 'Base layer'
+              }]),
             terrains: new MapAssets(),
             selectedFeatures: new Features(),
             showToolbar: true,

@@ -84,7 +84,7 @@ define(
             renderFunction: 'addVectorData'
           },
           {
-            types: ['BingMapsImageryProvider', 'IonImageryProvider'],
+            types: ['BingMapsImageryProvider', 'IonImageryProvider','TileMapServiceImageryProvider'],
             renderFunction: 'addImagery'
           },
           {
@@ -250,10 +250,12 @@ define(
             view.listenTo(view.model, 'flyHome', view.flyHome)
 
             // Add each layer from the Map model to the Cesium widget. Render using the
-            // function configured in the View's mapAssetRenderFunctions property.
-            view.model.get('layers').forEach(function (mapAsset) {
+            // function configured in the View's mapAssetRenderFunctions property. Add in
+            // reverse order for layers to appear in the correct order on the map.
+            const layers = view.model.get('layers')
+            _.each(layers.last(layers.length).reverse(), function (mapAsset) {
               view.addAsset(mapAsset)
-            })
+            });
 
             // The Cesium Widget will support just one terrain option to start. Later,
             // we'll allow users to switch between terrains if there is more than one.

@@ -58,7 +58,7 @@ define(
          * @name CesiumImagery#defaults
          * @extends MapAsset#defaults
          * @type {Object}
-         * @property {'BingMapsImageryProvider'|'IonImageryProvider'} type A string
+         * @property {'BingMapsImageryProvider'|'IonImageryProvider'|'TileMapServiceImageryProvider'} type A string
          * indicating a Cesium Imagery Provider type. See
          * {@link https://cesium.com/learn/cesiumjs-learn/cesiumjs-imagery/#more-imagery-providers}
          * @property {Cesium.ImageryLayer} cesiumModel A model created and used by Cesium
@@ -90,6 +90,20 @@ define(
         initialize: function (assetConfig) {
           try {
             MapAsset.prototype.initialize.call(this, assetConfig);
+
+            if (assetConfig.type == 'NaturalEarthII') {
+              if (
+                !assetConfig.cesiumOptions || typeof assetConfig.cesiumOptions !== 'object'
+              ) {
+                assetConfig.cesiumOptions = {};
+              }
+
+              assetConfig.cesiumOptions.url = Cesium.buildModuleUrl(
+                'Assets/Textures/NaturalEarthII'
+              );
+              this.set('type', 'TileMapServiceImageryProvider')
+              this.set('cesiumOptions', assetConfig.cesiumOptions);
+            }
 
             this.createCesiumModel();
 
@@ -243,7 +257,16 @@ define(
             var level = provider.minimumLevel
 
             provider.requestImage(x, y, level).then(function (response) {
-              var objectURL = URL.createObjectURL(response.blob);
+
+              let data = response.blob
+              let objectURL = null
+
+              if (!data && response instanceof ImageBitmap) {
+                objectURL = model.getDataUriFromBitmap(response)
+              } else {
+                objectURL = URL.createObjectURL(data);
+              }
+
               model.set('thumbnail', objectURL)
             }).otherwise(function (e) {
               console.log('Error requesting an image tile to use as a thumbnail for an ' +
@@ -253,6 +276,31 @@ define(
           catch (error) {
             console.log(
               'There was an error getting a thumbnail for a CesiumImagery layer' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Gets a data URI from a bitmap image.
+         * @param {ImageBitmap} bitmap The bitmap image to convert to a data URI
+         * @returns {String} Returns a string containing the requested data URI.
+        */
+        getDataUriFromBitmap: function (imageBitmap) {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = imageBitmap.width;
+            canvas.height = imageBitmap.height;
+            const ctx = canvas.getContext('2d')
+            // y-flip the image - Natural Earth II bitmaps appear upside down otherwise
+            // TODO: Test with other imagery layers
+            ctx.translate(0, imageBitmap.height);
+            ctx.scale(1, -1);
+            ctx.drawImage(imageBitmap, 0, 0);
+            return canvas.toDataURL();
+          } catch (error) {
+            console.log(
+              'There was an error converting an ImageBitmap to a data URL' +
               '. Error details: ' + error
             );
           }
