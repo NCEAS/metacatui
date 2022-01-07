@@ -1593,6 +1593,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 if( !this.get("keywordSets").length )
                   errors.keywordSets = "Provide at least one keyword.";
               }
+              //The EMLMethods model will validate itself for required fields, but
+              // this is a rudimentary check to make sure the EMLMethods model was created
+              // in the first place
               else if(key == "methods"){
                 if(!this.get("methods"))
                   errors.methods = "At least one method step is required.";

@@ -453,6 +453,15 @@ define(['jquery',
           validationErrors.methodSteps = methodStepValidationErrors;
         }
 
+        //Check for the required fields
+        let isRequired = MetacatUI.appModel.get("emlEditorRequiredFields").methods === true;
+        if( isRequired ){
+          let steps = this.getNonCustomSteps();
+          if( !steps || !steps.length){
+            validationErrors.methodSteps = "At least one method step is required.";
+          }
+        }
+
         return Object.keys(validationErrors).length? validationErrors : false;
 
       }

@@ -33,6 +33,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
           */
           stepTemplate: _.template('<div class="step-container">\
                 <h5>Step <span class="step-num"><%=num%></span></h5>\
+                <p class="notification" data-attribute="methodStepDescription"></p>\
                 <textarea data-attribute="methodStepDescription"\
                       data-step-attribute="description"\
                       rows="7" class="method-step"><%=text%></textarea>\
@@ -357,12 +358,25 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
 
           if( Object.keys(this.model.validationError).length ){
             if( this.model.validationError.methodSteps ){
-              _.mapObject(this.model.validationError.methodSteps, (errors, customMethodID) => {
-                this.$(`.notification[data-category="${customMethodID}"]`)
-                    .text(errors.description)
+
+              //A general error about all method steps will just be a string.
+              //Apply the error styling to all the elements for the method steps
+              if( typeof this.model.validationError.methodSteps == "string" ){
+                this.$('.notification[data-attribute="methodStepDescription"]')
+                    .text(this.model.validationError.methodSteps)
                     .addClass("error");
-                this.$(`[data-custom-method-id="${customMethodID}"]`).addClass("error");
-              });
+                this.$('[data-attribute="methodStepDescription"]:not([data-custom-method-id])').addClass("error");
+              }
+              //Validation errors that aren't strings are errors about specific
+              // Custom EML Method Steps.
+              else{
+                _.mapObject(this.model.validationError.methodSteps, (errors, customMethodID) => {
+                  this.$(`.notification[data-category="${customMethodID}"]`)
+                      .text(errors.description)
+                      .addClass("error");
+                  this.$(`[data-custom-method-id="${customMethodID}"]`).addClass("error");
+                });
+              }
             }
           }
 
