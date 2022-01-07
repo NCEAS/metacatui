@@ -32,7 +32,7 @@
       <td class="draft-download">
         <a class="btn btn-primary download" data-filename="<%= draft.value.title.substr(0, 50).replace(/[^a-zA-Z0-9-]/, '_') %>.xml">Download</a>
         <a class="btn copy-to-clipboard"><i class="icon icon-copy"></i> Copy to Clipboard</a>
-        <textarea id="draft-<%= i %>" style="display: none;" rows="6" cols="80"><%= draft.value.draft %></textarea>
+        <textarea id="draft-<%= i %>" style="display: none;" rows="6" cols="80"><%- draft.value.draft %></textarea>
       </td>
     </tr>
   <% })%>
