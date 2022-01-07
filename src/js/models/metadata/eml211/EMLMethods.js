@@ -453,7 +453,7 @@ define(['jquery',
           validationErrors.methodSteps = methodStepValidationErrors;
         }
 
-        return validationErrors;
+        return Object.keys(validationErrors).length? validationErrors : false;
 
       }
       catch(e){
