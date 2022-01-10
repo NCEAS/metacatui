@@ -2334,14 +2334,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             else{
               annotations.add(annotation);
             }
-            this.set("annotations", annotations);
+
+            //Set the annotations and force the change to be recognized by the model
+            this.set("annotations", annotations, {silent: true});
+            this.handleChange(this, { force: true });
 
           }
           else{
             /** @todo Add annotation support for other EML Elements */
           }
-
-          console.log(this.get("annotations"))
 
         }
         catch(e){
