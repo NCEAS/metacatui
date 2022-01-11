@@ -232,12 +232,6 @@ define(['jquery', 'underscore', 'backbone',
 
         //If a new filter is ever added to this filter group, re-render this view
         this.listenTo( filterGroup.get("filters"), "add remove", this.render );
-
-        var view  = this;
-        this.listenTo( filterGroupView, "addNewAnnotationSearch", function(event, item, filter){
-          this.trigger("updateDataCatalogView", event, item);
-        });
-
       }, this);
 
       if( divideIntoGroups ){
@@ -436,8 +430,6 @@ define(['jquery', 'underscore', 'backbone',
       this.options = options;
       var view = this;
 
-      if(filterModel.get("fields").includes("sem_annotation")) this.options.isAnnotationView = true;
-
       //If the value of this filter has changed, or if the displayWithoutChanges option
       // was passed, and if the filter is not invisible, then display it
       if( !filterModel.get("isInvisible") &&
@@ -454,13 +446,6 @@ define(['jquery', 'underscore', 'backbone',
 
         //If a filter has been added, display it
         _.each(addedValues, function(value){
-
-          // if annotation portal view, append the labels instead of the value
-          if (view.options.isAnnotationView) {
-            if(filterModel.get("annotationLabelsMappings")[value])
-              value = filterModel.get("annotationLabelsMappings")[value];
-          }
-
           //Add the applied filter to the view
           this.$(".applied-filters").append( this.createAppliedFilter(filterModel, value) );
 
@@ -468,13 +453,6 @@ define(['jquery', 'underscore', 'backbone',
 
         //Iterate over each removed filter value and remove them
         _.each(removedValues, function(value){
-
-          // if annotation portal view, remove the values instead of the labels
-          if (view.options.isAnnotationView) {
-            if(filterModel.get("annotationLabelsMappings")[value])
-              value = filterModel.get("annotationLabelsMappings")[value];
-          }
-
           //Find all applied filter elements with a matching value
           var matchingFilters = this.$(".applied-filter[data-value='" + value + "']");
 
@@ -686,6 +664,10 @@ define(['jquery', 'underscore', 'backbone',
       else if( filterModel.get("values").length == 1 && filterModel.get("values")[0] == "*" ){
         filterValue = "";
       }
+      //Filters with the valueLabels attribute want to display an alternate value from the raw value here
+      else if ( filterModel.get("valueLabels") ) {
+        filterValue = filterModel.get("valueLabels")[value] || value;
+      }
       else if( !filterLabel ){
         filterLabel = filterModel.get("fields")[0];
       }
@@ -862,8 +844,6 @@ define(['jquery', 'underscore', 'backbone',
 
 
       if( filterModel ){
-        if(filterModel.get("fields").includes("sem_annotation")) this.options.isAnnotationView = true;
-
         //NumericFilters and DateFilters get the min and max values reset
         if( filterModel.type == "NumericFilter" || filterModel.type == "DateFilter" ){
 
@@ -885,13 +865,6 @@ define(['jquery', 'underscore', 'backbone',
           //Get the current value
           var modelValues = filterModel.get("values"),
               thisValue   = $(appliedFilterEl).data("value");
-
-          // Retrieve the label from the model for annotation view type
-          if (view.options.isAnnotationView) {
-            for (let key in filterModel.get("annotationLabelsMappings")) {
-              if (filterModel.get("annotationLabelsMappings")[key] == thisValue) thisValue = key;
-            }
-          }
 
           //Numbers that are set on the element `data` are stored as type `number`, but when `number`s are
           // set on Backbone models, they are converted to `string`s. So we need to check for this use case.

@@ -8,10 +8,11 @@ define(['jquery', 'underscore', 'backbone',
         'views/filters/NumericFilterView',
         'views/filters/ToggleFilterView',
         'views/searchSelect/AnnotationFilterView',
-        "views/searchSelect/SearchableSelectView"
+        "views/searchSelect/SearchableSelectView",
+        "views/filters/SemanticFilterView"
       ],
   function($, _, Backbone, FilterGroup, FilterView, BooleanFilterView, ChoiceFilterView,
-    DateFilterView, NumericFilterView, ToggleFilterView, AnnotationFilterView, SearchableSelectView) {
+    DateFilterView, NumericFilterView, ToggleFilterView, AnnotationFilterView, SearchableSelectView, SemanticFilterView) {
   'use strict';
 
   /**
@@ -109,43 +110,8 @@ define(['jquery', 'underscore', 'backbone',
           var filterView = new ToggleFilterView(viewOptions);
         }
         else if (filter.get("fields").includes("sem_annotation") && MetacatUI.appModel.get("bioportalAPIKey")) {
-
-          var filterView = new AnnotationFilterView({
-            selected: filter.get("values"),
-            inputLabel: filter.get("label"),
-            separatorText: this.model.get("operator"),
-            placeholderText: filter.get("placeholder"),
-            icon: filter.get("icon"),
-            subType: "AnnotationFilterView",
-            useSearchableSelect: true
-          });
-
-          filterView.off("annotationSelected");
-          filterView.on("annotationSelected", function(event, item){
-            // Get the value of the associated input
-            var term = (!item || !item.value) ? input.val() : item.value;
-            var label = (!item || !item.filterLabel) ? null : item.filterLabel;
-
-            //set up annotation label mappings
-            var annotationLabelsMappings;
-            if(filter.get("annotationLabelsMappings")) {
-              annotationLabelsMappings = _.clone(filter.get("annotationLabelsMappings"));
-            }
-            else {
-              annotationLabelsMappings  = new Object();
-            }
-            annotationLabelsMappings[term] = label;
-            filter.set("annotationLabelsMappings", annotationLabelsMappings);
-
-            var newValues = _.clone(filter.get("values"));
-            // append to values array if not exist
-            if (newValues.indexOf(term) == -1) {
-              newValues.push(term);
-              filter.set({"values": newValues});
-            }
-
-            this.trigger("addNewAnnotationSearch", event, item, filter);
-          });
+          // TODO: Show error when bioportalAPIKey is not set
+          var filterView = new SemanticFilterView(viewOptions);
         }
         else{
 

@@ -29,6 +29,8 @@ define(['jquery', 'underscore', 'backbone'],
     * @property {string} nodeName - The XML node name for this filter's XML DOM
     * @property {string[]} fields - The search index fields to search
     * @property {string[]} values - The values to search for in the given search fields
+    * @property {object} valueLabels - Optional human-readable labels for the elements of
+    * values. Keys are the value and the human-readable label is the value at that key.
     * @property {string} operator - The operator to use between values set on this model.
     * "AND" or "OR"
     * @property {string} fieldsOperator - The operator to use between fields set on this
@@ -61,6 +63,7 @@ define(['jquery', 'underscore', 'backbone'],
         nodeName: "filter",
         fields: [],
         values: [],
+        valueLabels: {},
         operator: "AND",
         fieldsOperator: "AND",
         exclude: false,
