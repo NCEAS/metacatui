@@ -51,7 +51,7 @@ define(
 
         /**
          * If true, this filter will be added to the query but will
-         * act in the "background", like a default filter 
+         * act in the "background", like a default filter
          */
         isInvisible: true,
 
@@ -64,10 +64,20 @@ define(
         useSearchableSelect: false,
 
         /**
+         * The acronym of the ontology or ontologies to render a tree from.
+         *
+         * Must be an ontology that's present on BioPortal.
+         *
+         * TODO: Test out comma-separated lists. How does that render?
+         * @type {string}
+         */
+        defaultOntology: "ECSO",
+
+        /**
          * The URL that indicates the concept where the tree should start
          * @type {string}
          */
-        startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType",
+        defaultStartingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType",
 
         /**
          * Creates a new AnnotationFilterView
@@ -80,8 +90,20 @@ define(
             if (typeof options == "object") {
               var optionKeys = Object.keys(options);
               _.each(optionKeys, function(key, i) {
+                // Only override non-null values so we can pass in nulls and
+                // still trigger default behavior
+                if (typeof options[key] === "undefined") {
+                  return;
+                }
+
                 this[key] = options[key];
               }, this);
+            }
+
+            // Mix in defaults if needed
+            if (!this.ontology) {
+              this.ontology = this.defaultOntology;
+              this.startingRoot = this.defaultStartingRoot;
             }
 
           } catch (e) {
@@ -130,7 +152,7 @@ define(
 
             view.treeEl = $('<div id="bioportal-tree"></div>').NCBOTree({
               apikey: MetacatUI.appModel.get("bioportalAPIKey"),
-              ontology: "ECSO",
+              ontology: view.ontology,
               width: "400",
               startingRoot: view.startingRoot
             });
@@ -164,13 +186,11 @@ define(
             require(["views/searchSelect/SearchableSelectView"], function(SearchableSelect){
 
               view.multiSelectView = new SearchableSelect({
-                allowMulti: true,
-                allowAdditions: false,
-                inputLabel: (view.inputLabel === undefined) ? "Add one or more concepts" : view.inputLabel,
-                placeholderText: (view.placeholderText === undefined) ? "Search for or select a value" : view.placeholderText,
-                icon: (view.icon === undefined) ? "" : view.icon,
-                subType: (view.subType === undefined) ? "" : view.subType,
+                inputLabel: view.inputlabel ? view.inputLabel: "Add one or more concepts",
+                placeholderText: view.placeholderText ? view.placeholderText : "Search for or select a value",
+                icon: view.icon,
                 separatorText: view.separatorText,
+                inputLabel: view.inputLabel
               })
               view.$el.append(view.multiSelectView.el);
               view.multiSelectView.render();
@@ -272,7 +292,7 @@ define(
             const ontologyCollection = _.map(view.selected, function(id){
               return {
                 "class" : id,
-                "ontology": "http://data.bioontology.org/ontologies/ECSO"
+                "ontology": "http://data.bioontology.org/ontologies/" + view.ontology
               }
             });
 
@@ -576,7 +596,7 @@ define(
               startingRoot: view.startingRoot
             });
 
-            tree.changeOntology("ECSO");
+            tree.changeOntology(view.ontology);
 
             // Force a re-render
             tree.init();
