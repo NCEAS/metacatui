@@ -2863,6 +2863,10 @@ section#user-citations {
 	max-height: 300px;
 }
 
+ul.ncboTree {
+	overflow: scroll;
+}
+
 .ncbo-tree-buttons-container {
 	position: absolute;
 	top: 0;
@@ -6740,10 +6744,6 @@ body.mapMode{
 }
 .filter input[type='text']{
 	width: 80%;
-}
-
-.filter.annotation-filter {
-	min-width: 300px;
 }
 
 /*
