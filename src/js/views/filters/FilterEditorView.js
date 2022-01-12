@@ -1140,6 +1140,9 @@ define(['jquery', 'underscore', 'backbone',
          * check
          * @param {string[]} selectedFields A set of search field names to look
          * for restrictions
+         *
+         * @return {boolean} Whether or not the uiBuilder is allowed for all
+         * of selectedFields.
          */
         isBuilderAllowedForFields: function (uiBuilder, selectedFields) {
           var view = this;

@@ -115,6 +115,9 @@ define(['jquery',
          * Rather than fetch and/or store all the possible labels for all
          * possible URIs, we store a label for whichever terms the user chooses
          * and keep that around until we need it in the UI.
+         *
+         * @param {string} term The term URI to set a label for
+         * @param {string} label The label to set
          */
         setLabelMapping: function (term, label) {
           var newMappings;
