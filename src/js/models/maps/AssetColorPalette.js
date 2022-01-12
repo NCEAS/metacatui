@@ -40,7 +40,8 @@ define(
          * @type {Object}
          * @property {('categorical'|'continuous'|'classified')}
          * [paletteType='categorical'] Set to 'categorical', 'continuous', or
-         * 'classified'. NOTE: Currently only categorical palettes are supported.
+         * 'classified'. NOTE: Currently only categorical and continuous palettes are
+         * supported.
          * - Categorical: the color conditions will be interpreted such that one color
          *   represents a single value (e.g. a discrete palette).
          * - Continuous: each color in the colors attribute will represent a point in a
@@ -79,8 +80,8 @@ define(
          * @typedef {Object} ColorPaletteConfig
          * @name MapConfig#ColorPaletteConfig
          * @property {('categorical'|'continuous'|'classified')}
-         * [paletteType='categorical'] NOTE: Currently only categorical palettes are
-         * supported.
+         * [paletteType='categorical'] NOTE: Currently only categorical and continuous
+         * palettes are supported.
          * - Categorical: the color conditions will be interpreted such that one color
          *   represents a single value (e.g. a discrete palette).
          * - Continuous: each color in the colors attribute will represent a point in a
