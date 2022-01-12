@@ -315,6 +315,25 @@ define(['jquery', 'underscore', 'backbone',
         ],
 
         /**
+         * The list of restrictions on which UI builders should be allowed for a
+         * particular field.
+         *
+         * Values for "fieldName" should be QueryField names. Members of the
+         * key "allowedModelTypes" should be modelTypes from UIBuilderOptions
+         * and may repeat.
+         *
+         * @type {UIBuilderRestriction[]}
+         */
+        uiBuilderRestrictions: [
+          {
+            "fieldName": "sem_annotation",
+            "allowedModelTypes": [
+              "Filter"
+            ]
+          }
+        ],
+
+        /**
          * Executed when this view is created
          * @param {object} options - A literal object of options to pass to this view
          * @property {Filter|ChoiceFilter|DateFilter|ToggleFilter} options.model - The
@@ -705,7 +724,10 @@ define(['jquery', 'underscore', 'backbone',
             var type = MetacatUI.queryFields.getRequiredFilterType(selectedFields)
 
             this.uiBuilders.forEach(function (uiBuilder) {
-              if (uiBuilder.filterTypes.includes(type)) {
+              if (
+                uiBuilder.filterTypes.includes(type) &&
+                view.isBuilderAllowedForFields(uiBuilder, selectedFields)
+              ) {
                 view.allowUI(uiBuilder)
               } else {
                 view.blockUI(uiBuilder)
@@ -1108,6 +1130,47 @@ define(['jquery', 'underscore', 'backbone',
           }
         },
 
+        /**
+         * Determine whether a particular UIBuilder is allowed for a set of
+         * search field names. For use in handleFieldChange to enable or disable
+         * certain UI builders using allowUI/blockUI when the user selects
+         * different search fields.
+         *
+         * @param {UIBuilderOption} uiBuilder The UIBuilderOption object to
+         * check
+         * @param {string[]} selectedFields A set of search field names to look
+         * for restrictions
+         */
+        isBuilderAllowedForFields: function (uiBuilder, selectedFields) {
+          var view = this;
+
+          var hasRestriction = _.map(selectedFields, function (field) {
+            var restrictions = _.findWhere(view.uiBuilderRestrictions, {
+              "fieldName": field,
+            });
+
+            if (typeof restrictions === "undefined") {
+              return false;
+            }
+
+            var isAllowed = _.find(
+              restrictions.allowedModelTypes,
+              function (mt) { return mt === uiBuilder.modelType; }
+            );
+
+            if (typeof isAllowed === "undefined") {
+              return true;
+            }
+
+            return false;
+          });
+
+          if (_.some(hasRestriction)) {
+            return false;
+          }
+
+          return true;
+        },
       })
     return FilterEditorView
   });
