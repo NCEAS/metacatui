@@ -24,6 +24,7 @@ define(
     * @name ScaleBarView
     * @extends Backbone.View
     * @screenshot views/maps/ScaleBarView.png
+    * @since 2.18.0
     * @constructs
     */
     var ScaleBarView = Backbone.View.extend(

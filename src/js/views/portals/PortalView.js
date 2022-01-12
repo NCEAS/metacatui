@@ -85,6 +85,12 @@ define(["jquery",
         subviews: new Array(), // Could be a literal object {} */
 
         /**
+        * A reference to the Portal Logos View that displays the logos of this portal.
+        * @type PortalLogosView
+        */
+        logosView: null,
+
+        /**
          * A Portal Model is associated with this view and gets created during render()
          * @type {Portal}
          */
@@ -699,13 +705,19 @@ define(["jquery",
             (this.model.get("layout") === "panels") &&
             (sectionView instanceof PortalVisualizationsView)
           ) {
-            this.logosView.el.style.setProperty('display', 'none')
-            MetacatUI.footerView.el.style.setProperty('display', 'none')
-            document.body.style.setProperty('--footer-height', '0')
+            if( this.logosView ){
+              this.logosView.el.style.setProperty('display', 'none')
+            }
+            if( MetacatUI.footerView ){
+              MetacatUI.footerView.hide()
+            }
           } else {
-            this.logosView.el.style.removeProperty('display')
-            MetacatUI.footerView.el.style.removeProperty('display')
-            document.body.style.removeProperty('--footer-height')
+            if( this.logosView ){
+              this.logosView.el.style.removeProperty('display')
+            }
+            if( MetacatUI.footerView ){
+              MetacatUI.footerView.show()
+            }
           }
 
           if (!this.nodeView) {
@@ -1077,8 +1089,8 @@ define(["jquery",
         },
 
         /**
-         * Checks if the label is a repository 
-         * 
+         * Checks if the label is a repository
+         *
          * @param {string} username - The portal label or the member node repository identifier
          */
         isNode: function (username) {

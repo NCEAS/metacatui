@@ -29,6 +29,7 @@ define(
     * @name LegendView
     * @extends Backbone.View
     * @screenshot views/maps/LegendView.png
+    * @since 2.18.0
     * @constructs
     */
     var LegendView = Backbone.View.extend(
@@ -184,7 +185,7 @@ define(
             }
 
             // TODO:
-            // - preview categorical legend
+            // - preview continuous legend
             // - preview classified legend
             // - full legends with labels, title, etc.
 
@@ -375,17 +376,18 @@ define(
 
             if (options.dropshadowFilter) {
 
-              const filterText = `<filter id="dropshadow" height="110%">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="2"/> <!-- stdDeviation is how much to blur -->
-              <feOffset dx="1" dy="1" result="offsetblur"/> <!-- how much to offset -->
-              <feComponentTransfer>
-                <feFuncA type="linear" slope="0.7"/> <!-- slope is the opacity of the shadow -->
-              </feComponentTransfer>
-              <feMerge> 
-                <feMergeNode/> <!-- this contains the offset blurred image -->
-                <feMergeNode in="SourceGraphic"/> <!-- this contains the element that the filter is applied to -->
-              </feMerge>
-            </filter>`
+              const filterText =
+              `<filter id="dropshadow" height="110%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="2"/> <!-- stdDeviation is how much to blur -->
+                <feOffset dx="1" dy="1" result="offsetblur"/> <!-- how much to offset -->
+                <feComponentTransfer>
+                  <feFuncA type="linear" slope="0.7"/> <!-- slope is the opacity of the shadow -->
+                </feComponentTransfer>
+                <feMerge> 
+                  <feMergeNode/> <!-- this contains the offset blurred image -->
+                  <feMergeNode in="SourceGraphic"/> <!-- this contains the element that the filter is applied to -->
+                </feMerge>
+              </filter>`
 
               const filterEl = new DOMParser().parseFromString(
                 '<svg xmlns="http://www.w3.org/2000/svg">' + filterText + '</svg>',

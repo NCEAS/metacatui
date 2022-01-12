@@ -31,6 +31,7 @@ define(
     * @name CesiumWidgetView
     * @extends Backbone.View
     * @screenshot views/maps/CesiumWidgetView.png
+    * @since 2.18.0
     * @constructs
     */
     var CesiumWidgetView = Backbone.View.extend(
@@ -61,14 +62,6 @@ define(
          */
         template: _.template(Template),
 
-        // /**
-        // * The events this view will listen to and the associated function to call.
-        // * @type {Object}
-        // */
-        // events: {
-        //   // 'event selector': 'function', 
-        // },
-
         /**
          * An array of objects the match a Map Asset's type property to the function in
          * this view that adds and renders that asset on the map, given the Map Asset
@@ -78,12 +71,17 @@ define(
          * @property {string[]} types The list of types that can be added to the map given
          * the renderFunction
          * @property {string} renderFunction The name of the function in the view that
-         * will add the asset to the map and render it, when passed the MapAsset model
+         * will add the asset to the map and render it, when passed the cesiumModel
+         * attribute from the MapAsset model
          */
         mapAssetRenderFunctions: [
           {
             types: ['Cesium3DTileset'],
             renderFunction: 'add3DTileset'
+          },
+          {
+            types: ['GeoJsonDataSource'],
+            renderFunction: 'addVectorData'
           },
           {
             types: ['BingMapsImageryProvider', 'IonImageryProvider'],
@@ -160,8 +158,13 @@ define(
             // Ensure the view's main element has the given class name
             view.el.classList.add(view.className);
 
+            // Clock will be used for the timeline component, and for the clock.ontick
+            // event
+            view.clock = new Cesium.Clock({ shouldAnimate: false })
+
             // Create the Cesium Widget and save a reference to it to the view
             view.widget = new Cesium.CesiumWidget(view.el, {
+              clock: view.clock,
               // We will add a base imagery layer after initialization
               imageryProvider: false,
               terrain: false,
@@ -178,6 +181,11 @@ define(
             view.camera = view.widget.camera;
             view.inputHandler = view.widget.screenSpaceEventHandler;
 
+            // Zoom functions executed after each scene render
+            view.scene.postRender.addEventListener(function () {
+              view.postRender();
+            });
+
             // Disable HDR lighting for better performance and to avoid changing imagery colors.
             view.scene.highDynamicRange = false;
             view.scene.globe.enableLighting = false;
@@ -193,11 +201,21 @@ define(
               );
             });
 
+            // Prepare Cesium to handle vector datasources (e.g. geoJsonDataSources)
+            view.dataSourceCollection = new Cesium.DataSourceCollection();
+            view.dataSourceDisplay = new Cesium.DataSourceDisplay({
+              scene: view.scene,
+              dataSourceCollection: view.dataSourceCollection,
+            });
+            view.clock.onTick.addEventListener(function () {
+              view.updateDataSourceDisplay.call(view)
+            })
+
             // Go to the home position, if one is set.
             view.flyHome()
 
             // If users are allowed to click on features for more details, initialize
-            // picking behaviour on the map
+            // picking behavior on the map.
             if (view.model.get('showFeatureInfo')) {
               view.initializePicking()
             }
@@ -216,27 +234,6 @@ define(
             // model's showScaleBar and showFeatureInfo attributes
             view.setMouseMoveListeners()
 
-            // The Cesium Widget will support just one terrain option to start. Later,
-            // we'll allow users to switch between terrains if there is more than one.
-            var terrains = view.model.get('terrains')
-            var terrainModel = terrains ? terrains.first() : false;
-            if (terrainModel) {
-              var type = terrainModel.get('type')
-              var renderOption = _.find(
-                view.mapAssetRenderFunctions,
-                function (option) {
-                  return option.types.includes(type)
-                }
-              )
-              if (renderOption) {
-                const terrainRenderFunction = view[renderOption.renderFunction]
-                terrainRenderFunction.call(view, terrainModel)
-              } else {
-                console.log('The terrain type, "' + type + '", is not supported in the' +
-                ' map widget. Terrain will not be rendered.');
-              }
-            }
-
             // When the appearance of a layer has been updated, then tell Cesium to
             // re-render the scene. Each layer model triggers the 'appearanceChanged'
             // function whenever the color, opacity, etc. has been updated in the
@@ -245,15 +242,26 @@ define(
             view.listenTo(view.model.get('layers'), 'appearanceChanged', view.requestRender)
 
             // Other views may trigger an event on the layer/asset model that indicates
-            // that the map should navigate to the extent of the data
+            // that the map should navigate to the extent of the data, or on the Map model
+            // to navigate to the home position.
             view.stopListening(view.model.get('layers'), 'flyToExtent')
             view.listenTo(view.model.get('layers'), 'flyToExtent', view.flyTo)
+            view.stopListening(view.model, 'flyHome')
+            view.listenTo(view.model, 'flyHome', view.flyHome)
 
             // Add each layer from the Map model to the Cesium widget. Render using the
             // function configured in the View's mapAssetRenderFunctions property.
-            view.model.get('layers').forEach(function (layerModel) {
-              view.renderLayer(layerModel)
+            view.model.get('layers').forEach(function (mapAsset) {
+              view.addAsset(mapAsset)
             })
+
+            // The Cesium Widget will support just one terrain option to start. Later,
+            // we'll allow users to switch between terrains if there is more than one.
+            var terrains = view.model.get('terrains')
+            var terrainModel = terrains ? terrains.first() : false;
+            if (terrainModel) {
+              view.addAsset(terrainModel)
+            }
 
             return this
 
@@ -262,58 +270,6 @@ define(
             console.log(
               'Failed to render a CesiumWidgetView. Error details: ' + error
             );
-          }
-        },
-
-        /**
-         * Finds the function that is configured for the given layer model type in the
-         * {@link CesiumWidgetView#mapAssetRenderFunctions} array, then renders the layer
-         * in the map. If there is a problem rendering the layer (e.g. it is an
-         * unsupported type that is not configured in the mapAssetRenderFunctions), then
-         * sets the layerModel's status to error.
-         * @param {MapAsset} layerModel A MapAsset layer to render in the map, such as a
-         * Cesium3DTileset or a CesiumImagery model.
-         */
-        renderLayer(layerModel) {
-          try {
-            if (!layerModel) {
-              return
-            }
-            var view = this
-            var type = layerModel.get('type')
-            // Find the render option from the options configured in the view, given the
-            // layer model type
-            const renderOption = _.find(view.mapAssetRenderFunctions, function (option) {
-              return option.types.includes(type)
-            }) || {};
-            // Get the function for this type
-            const renderFunction = view[renderOption.renderFunction]
-  
-            // If a render function for this layer model type was found, show it on the map
-            if (renderFunction && typeof renderFunction === 'function') {
-              // Do not immediately render layers that are initially invisible
-              if (layerModel.get('visible')) {
-                renderFunction.call(view, layerModel)
-              } else {
-                // Start rendering the layer once it is set to visible in the map
-                view.listenToOnce(layerModel, 'change:visible', function () {
-                  renderFunction.call(view, layerModel)
-                })
-              }
-            // If the cesium widget does not have a way to display this error, update the
-            // error status in the model (this will be reflected in the LayerListView)
-            } else {
-              layerModel.set('statusDetails', 'This type of layer is not supported in the map widget.')
-              layerModel.set('status', 'error')
-            }
-          }
-          catch (error) {
-            console.log(
-              'There was an error rendering a layer in a CesiumWidgetView' +
-              '. Error details: ' + error
-            );
-            layerModel.set('statusDetails', 'There was a problem rendering this layer in the map widget.')
-            layerModel.set('status', 'error')
           }
         },
 
@@ -330,7 +286,90 @@ define(
         }, 50),
 
         /**
-         * Set up the Cesium scene and set listeners and behaviour that enable users to
+         * Functions called after each time the scene renders. If a zoom target has been
+         * set by the {@link CesiumWidgetView#flyTo} function, then calls the functions
+         * that calculates the bounding sphere and zooms to it (which required to visual
+         * elements to be rendered first.)
+         */
+        postRender: function () {
+          try {
+            if (this.zoomTarget) {
+              this.completeFlight(this.zoomTarget, this.zoomOptions)
+              this.zoomTarget = null;
+              this.zoomOptions = null;
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error calling post render functions in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Runs on every Cesium clock tick. Updates the display of the CesiumVectorData
+         * models in the scene. Similar to Cesium.DataSourceDisplay.update function, in
+         * that it runs update() on each DataSource and each DataSource's visualizer,
+         * except that it also updates each CesiumVectorData model's 'displayReady'
+         * attribute. (Sets to true when the asset is ready to be rendered in the map,
+         * false otherwise). Also re-renders the scene when the displayReady attribute
+         * changes. 
+         */
+        updateDataSourceDisplay: function () {
+          try {
+            const view = this;
+
+            var dataSources = view.dataSourceDisplay.dataSources;
+            if (!dataSources || !dataSources.length) {
+              return
+            }
+
+            let allReady = true;
+            const allReadyBefore = view.dataSourceDisplay._ready;
+
+
+            for (let i = 0, len = dataSources.length; i < len; i++) {
+
+              const time = view.clock.currentTime;
+              const dataSource = dataSources.get(i);
+              const visualizers = dataSource._visualizers;
+
+              const assetModel = view.model.get('layers').findWhere({
+                cesiumModel: dataSource
+              })
+              const displayReadyBefore = assetModel.get('displayReady')
+              let displayReadyNow = dataSource.update(time)
+
+              for (let x = 0; x < visualizers.length; x++) {
+                displayReadyNow = visualizers[x].update(time) && displayReadyNow;
+              }
+
+              assetModel.set('displayReady', displayReadyNow)
+
+              allReady = displayReadyNow && allReady
+
+            }
+
+            // If any dataSource has switched display states, then re-render the scene.
+            if (allReady !== allReadyBefore) {
+              view.scene.requestRender()
+            }
+            // The dataSourceDisplay must be set to 'ready' to get bounding spheres for
+            // dataSources
+            view.dataSourceDisplay._ready = allReady
+
+          }
+          catch (error) {
+            console.log(
+              'There was an error updating the data source display in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Set up the Cesium scene and set listeners and behavior that enable users to
          * click on vector features on the map to view more information about them.
          */
         initializePicking: function () {
@@ -345,106 +384,45 @@ define(
             view.silhouettes.uniforms.color = view.highlightBorderColor;
             view.silhouettes.uniforms.length = 0.02;
             view.silhouettes.selected = [];
-
             scene.postProcessStages.add(
               Cesium.PostProcessStageLibrary.createSilhouetteStage([view.silhouettes])
             );
-
             // When any Feature models in the Map model's selectedFeature collection are
-            // changed, added, or removed, update which features are highlighted on the
-            // map.
-            var setSelectedFeaturesListeners = function () {
+            // changed, added, or removed, update silhouetting of 3D tiles.
+            function setSelectedFeaturesListeners() {
               const selectedFeatures = view.model.get('selectedFeatures')
               view.stopListening(selectedFeatures, 'update')
-              view.listenTo(selectedFeatures, 'update', view.highlightSelectedFeatures)
+              view.listenTo(selectedFeatures, 'update', function () {
+                // Remove highlights from previously selected 3D tiles
+                view.silhouettes.selected = []
+                // Highlight the newly selected 3D tiles
+                selectedFeatures
+                  .getFeatureObjects('Cesium3DTileFeature')
+                  .forEach(function (featureObject) {
+                    view.silhouettes.selected.push(featureObject)
+                  })
+              })
             }
-            setSelectedFeaturesListeners()
 
+            setSelectedFeaturesListeners()
             // If the Selected Features collection is ever completely replaced for any
             // reason, make sure to reset the listeners onto the new collection
             view.stopListening(view.model, 'change:selectedFeatures')
             view.listenTo(view.model, 'change:selectedFeatures', setSelectedFeaturesListeners)
 
-            // When a feature is clicked, highlight the feature and trigger an event that
-            // tells the parent map view to open the feature details panel
+            // When a feature is clicked update the Map model's `selectedFeatures`
+            // collection with the newly selected features. This will also trigger an
+            // event to update styling of map assets with selected features, and tells the
+            // parent map view to open the feature details panel.
             view.inputHandler.setInputAction(function (movement) {
-              // Select the feature that's at the position where the user clicked, if
-              // there is one
               var pickedFeature = scene.pick(movement.position);
-              // Update the Map model's `selectedFeatures` collection with the newly
-              // selected feature. This will also trigger an event to highlight the
-              // selected feature on this map.
               view.updateSelectedFeatures([pickedFeature])
-
             }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
           }
           catch (error) {
             console.log(
               'There was an error initializing picking in a CesiumWidgetView' +
-              '. Error details: ' + error
-            );
-          }
-        },
-
-        /**
-         * This function is called whenever any attributes change in the {@link Feature}
-          * model that is set on the {@link Map} model's selectedFeature attribute. Looks
-          * in the Map model for the selected feature entity. Highlights that entity on the
-          * map by drawing a border around it with the highlightBorderColor configured on
-          * this view. Removes highlighting from all previously highlighted entities. NOTE:
-          * This currently only works with 3D tile features.
-          */
-        highlightSelectedFeatures: function () {
-          try {
-
-            const view = this;
-            const featureCollection = view.model.get('selectedFeatures');
-
-            // Remove highlight from all currently silhouetted 3D tiles
-            view.silhouettes.selected.forEach(function (prevCesiumEntity) {
-              prevCesiumEntity.selectedInMap = false
-              // Make sure the style is updated for the features that are no longer
-              // selected
-              const prevLayerModel = view.model.get('layers').findWhere({
-                cesiumModel: prevCesiumEntity.primitive
-              })
-              if (typeof prevLayerModel.update3DTileStyle === 'function') {
-                prevLayerModel.update3DTileStyle()
-              }
-            })
-            view.silhouettes.selected = []
-
-            featureCollection.each(function (featureModel) {
-
-              // Get the currently selected features set on the collection
-              var cesiumEntity = featureModel.get('featureObject')
-
-              // If the selected feature exists, then highlight it by adding a border.
-              if (Cesium.defined(cesiumEntity)) {
-                if (cesiumEntity instanceof Cesium.Cesium3DTileFeature) {
-                  // Set a property on the Cesium.Cesium3DTileFeature for use by the
-                  // evaluate color function. This allows the feature to be styled
-                  // differently when selected (e.g. make opacity 1),
-                  cesiumEntity.selectedInMap = true
-                  // Borders are added to 3D tiles by silhouetting them
-                  view.silhouettes.selected.push(cesiumEntity)
-                }
-                // TODO: add borders if this is another type of geometry (e.g. polygons)
-              }
-            })
-
-            // Reset the 3D tile styles so the selected feature's style is updated.
-            featureCollection.getMapAssets().forEach(function (mapAsset) {
-              if (typeof mapAsset.update3DTileStyle === 'function') {
-                mapAsset.update3DTileStyle()
-              }
-            })
-
-            view.requestRender()
-          }
-          catch (error) {
-            console.log(
-              'There was an error highlighting features in a CesiumWidgetView' +
               '. Error details: ' + error
             );
           }
@@ -477,44 +455,57 @@ define(
             // Properties of the selected features to pass to the Map model's
             // selectFeatures function. Passing null will empty the map's selectedFeatures
             // collection
-            let featuresProps = features ? [] : null
-
+            let featuresAttrs = features ? [] : null
             if (!features || !Array.isArray(features)) {
               features = []
             }
 
             features.forEach(function (feature) {
               if (feature) {
-                const featureProps = {
+                // To find corresponding MapAsset model in the layers collection
+                let cesiumModel = null
+                // Attributes to make a new Feature model
+                const attrs = {
                   properties: {},
                   mapAsset: null,
-                  featureID: feature.pickId ? feature.pickId.key : null,
-                  featureObject: feature
+                  featureID: null,
+                  featureObject: feature,
+                  label: null,
                 }
-                // Find out which layer model this belongs to
-                featureProps.mapAsset = layers.findWhere({
-                  cesiumModel: feature.primitive
-                })
-                // Get the attributes that are set on this feature.
                 if (feature instanceof Cesium.Cesium3DTileFeature) {
-                  var propertyNames = feature.getPropertyNames();
-                  var length = propertyNames.length;
-                  for (var i = 0; i < length; ++i) {
-                    var propertyName = propertyNames[i];
-                    featureProps.properties[propertyName] = feature.getProperty(propertyName)
-                  }
+                  // Cesium.Cesium3DTileFeature.primitive gives the Cesium.Cesium3DTileset
+                  cesiumModel = feature.primitive
+                  attrs.featureID = feature.pickId ? feature.pickId.key : null
+                  // Search for a property to use as a label
+                  attrs.label = feature.getProperty('name') || feature.getProperty('label') || null
+                } else {
+                  // TODO: Test - does feature.id give the entity this work for all datasources ?
+                  // A picked feature object's ID gives the Cesium.Entity
+                  attrs.featureObject = feature.id
+                  // Gives the parent DataSource
+                  cesiumModel = attrs.featureObject.entityCollection.owner
+                  attrs.featureID = attrs.featureObject.id
+                  attrs.label = attrs.featureObject.name
                 }
-                // TODO: Get properties from other types of features, e.g. polygon entities
-                // and markers created from geoJSON
 
-                // Add the feature Props
-                featuresProps.push(featureProps)
+                attrs.mapAsset = layers.findWhere({
+                  cesiumModel: cesiumModel
+                })
+
+                if (
+                  attrs.mapAsset &&
+                  typeof attrs.mapAsset.getPropertiesFromFeature === 'function'
+                ) {
+                  attrs.properties = attrs.mapAsset.getPropertiesFromFeature(attrs.featureObject)
+                }
+
+                featuresAttrs.push(attrs)
               }
             })
 
             // Pass the new information to the Map's selectFeatures function, which will
             // update the selectFeatures collection set on the Map model
-            view.model.selectFeatures(featuresProps)
+            view.model.selectFeatures(featuresAttrs)
 
           }
           catch (error) {
@@ -527,7 +518,24 @@ define(
 
         /**
          * Move the camera position and zoom to the specified target entity or position on
-         * the map, using a nice animation.
+         * the map, using a nice animation. This function starts the flying/zooming
+         * action by setting a zoomTarget and zoomOptions on the view and requesting the
+         * scene to render. The actual zooming is done by
+         * {@link CesiumWidgetView#completeFlight} after the scene has finished rendering.
+         * @param {*} target 
+         * @param {*} options 
+         */
+        flyTo: function (target, options) {
+          this.zoomTarget = target;
+          this.zoomOptions = options;
+          this.requestRender();
+        },
+
+        /**
+         * This function is called by {@link CesiumWidgetView#postRender}; it should only
+         * be called once the target has been fully rendered in the scene. This function
+         * gets the bounding sphere, if required, and moves the scene to encompass the
+         * full extent of the target.
          * @param {MapAsset|Cesium.BoundingSphere|Object} target The target asset,
          * bounding sphere, or location to change the camera focus to. If target is a
          * MapAsset, then the bounding sphere from that asset will be used for the target
@@ -540,7 +548,7 @@ define(
          * options to pass to Cesium Camera.flyToBoundingSphere(). See
          * {@link https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#flyToBoundingSphere}.
          */
-        flyTo: function (target, options) {
+        completeFlight: function (target, options) {
 
           try {
 
@@ -562,8 +570,9 @@ define(
 
             // If the target is some type of map asset, then get a Bounding Sphere for
             // that asset and call this function again.
-            if (target instanceof MapAsset && typeof target.getCameraBoundSphere === 'function') {
-              target.getCameraBoundSphere()
+            if (target instanceof MapAsset && typeof target.getBoundingSphere === 'function') {
+              // Pass the dataSourceDisplay for CesiumVectorData models
+              target.getBoundingSphere(view.dataSourceDisplay)
                 .then(function (assetBoundingSphere) {
                   // Base value offset required to zoom in close enough to 3D tiles for
                   // them to render.
@@ -726,7 +735,6 @@ define(
           }
         },
 
-
         /**
          * Update the map model's currentScale attribute, which is used for the scale bar.
          * Finds the distance between two pixels at the *bottom center* of the screen.
@@ -749,7 +757,7 @@ define(
           }
           catch (error) {
             console.log(
-              'There was an error  in a CesiumWidgetView' +
+              'There was an error updating the scale from a CesiumWidgetView' +
               '. Error details: ' + error
             );
           }
@@ -820,117 +828,104 @@ define(
         },
 
         /**
+         * Finds the function that is configured for the given asset model type in the
+         * {@link CesiumWidgetView#mapAssetRenderFunctions} array, then renders the asset
+         * in the map. If there is a problem rendering the asset (e.g. it is an
+         * unsupported type that is not configured in the mapAssetRenderFunctions), then
+         * sets the AssetModel's status to error.
+         * @param {MapAsset} mapAsset A MapAsset layer to render in the map, such as a
+         * Cesium3DTileset or a CesiumImagery model.
+         */
+        addAsset(mapAsset) {
+          try {
+            if (!mapAsset) {
+              return
+            }
+            var view = this
+            var type = mapAsset.get('type')
+            // Find the render option from the options configured in the view, given the
+            // asset model type
+            const renderOption = _.find(view.mapAssetRenderFunctions, function (option) {
+              return option.types.includes(type)
+            }) || {};
+            // Get the function for this type
+            const renderFunction = view[renderOption.renderFunction]
+
+            // If the cesium widget does not have a way to display this error, update the
+            // error status in the model (this will be reflected in the LayerListView)
+            if (!renderFunction || typeof renderFunction !== 'function') {
+              mapAsset.set('statusDetails', 'This type of resource is not supported in the map widget.')
+              mapAsset.set('status', 'error')
+              return
+            }
+
+            // The asset should be visible and the cesium model should be ready before
+            // starting to render the asset
+            const checkAndRenderAsset = function () {
+              let shouldRender = mapAsset.get('visible') && mapAsset.get('status') === 'ready'
+              if (shouldRender) {
+                renderFunction.call(view, mapAsset.get('cesiumModel'))
+                view.stopListening(mapAsset)
+              }
+            }
+
+            checkAndRenderAsset()
+
+            if (!mapAsset.get('visible')) {
+              view.listenToOnce(mapAsset, 'change:visible', checkAndRenderAsset)
+            }
+
+            if (mapAsset.get('status') !== 'ready') {
+              view.listenTo(mapAsset, 'change:status', checkAndRenderAsset)
+            }
+
+          }
+          catch (error) {
+            console.log(
+              'There was an error rendering an asset in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+            mapAsset.set('statusDetails', 'There was a problem rendering this resource in the map widget.')
+            mapAsset.set('status', 'error')
+          }
+        },
+
+        /**
          * Renders peaks and valleys in the 3D version of the map, given a terrain model.
          * If a terrain model has already been set on the map, this will replace it.
-         * @param {CesiumTerrain} terrainModel a Terrain Map Asset model
+         * @param {Cesium.TerrainProvider} cesiumModel a Cesium Terrain Provider model to
+         * use for the map
         */
-        updateTerrain: function (terrainModel) {
-          try {
-            if (terrainModel.get('status') !== 'ready') {
-              this.stopListening(terrainModel)
-              this.listenTo(terrainModel, 'change:status', this.updateTerrain)
-              return
-            }
-            var cesiumModel = terrainModel.get('cesiumModel')
-            this.scene.terrainProvider = cesiumModel
-            this.requestRender();
-          }
-          catch (error) {
-            console.log(
-              'There was an error rendering terrain in a CesiumWidgetView' +
-              '. Error details: ' + error
-            );
-          }
+        updateTerrain: function (cesiumModel) {
+          this.scene.terrainProvider = cesiumModel
+          this.requestRender();
         },
 
         /**
-         * Renders a 3D tileset in the map and sets listeners to update the tileset when
-         * the opacity or visibility changes.
-         * @param {Layer} tilesetModel The Map Asset Layer model that contains the
-         * information about the 3D tiles to render in the map
+         * Renders a 3D tileset in the map.
+         * @param {Cesium.Cesium3DTileset} cesiumModel The Cesium 3D tileset model that
+         * contains the information about the 3D tiles to render in the map
         */
-        add3DTileset: function (tilesetModel) {
-          try {
-
-            if (tilesetModel.get('status') !== 'ready') {
-              this.stopListening(tilesetModel)
-              this.listenTo(tilesetModel, 'change:status', this.add3DTileset)
-              return
-            }
-
-            this.stopListening(tilesetModel)
-
-            // Get the cesium tiles
-            var cesiumModel = tilesetModel.get('cesiumModel')
-            this.scene.primitives.add(cesiumModel)
-
-          }
-          catch (error) {
-            console.log(
-              'There was an error adding a 3D tileset to a CesiumWidgetView' +
-              '. Error details: ' + error
-            );
-          }
+        add3DTileset: function (cesiumModel) {
+          this.scene.primitives.add(cesiumModel)
         },
 
         /**
-         * Renders imagery in the Map given a Layer model. Sets listeners to update the
-         * imagery when the opacity or visibility changes.
-         * @param {Layer} imageryModel A Layer Map Asset model
-              */
-        addImagery: function (imageryModel) {
-          try {
-            if (imageryModel.get('status') !== 'ready') {
-              this.stopListening(imageryModel)
-              this.listenTo(imageryModel, 'change:status', this.addImagery)
-              return
-            }
-            var cesiumModel = imageryModel.get('cesiumModel')
-
-            if (cesiumModel) {
-              this.scene.imageryLayers.add(cesiumModel)
-            }
-          }
-          catch (error) {
-            console.log(
-              'There was an error adding imagery to a CesiumWidgetView' +
-              '. Error details: ' + error
-            );
-          }
+         * Renders vector data (excluding 3D tilesets) in the Map.
+         * @param {Cesium.GeoJsonDataSource} cesiumModel - The Cesium data source
+         * model to render on the map
+         */
+        addVectorData: function (cesiumModel) {
+          this.dataSourceCollection.add(cesiumModel)
         },
 
-        // WIP
-        // /**
-        //  * Renders geometries in the Cesium map based on vector data (e.g. GeoJSON)
-        //  * @param {Layer} vectorModel The 'data' type layer model to render
-        //  */
-        // addVectorData: function (assetModel) {
-
-        //   try {
-
-        //     // This is a WIP and not working yet
-        //     return
-        //     var view = this
-        //     var scene = view.scene
-        //     var cesiumModel = vectorModel.get('cesiumModel')
-
-        //     var dataSourceCollection = new Cesium.DataSourceCollection();
-        //     var dataSourceDisplay = new Cesium.DataSourceDisplay({
-        //       scene: scene,
-        //       dataSourceCollection: dataSourceCollection
-        //     });
-        //     var entities = dataSourceDisplay.defaultDataSource.entities;
-        //     dataSourceCollection.add(cesiumModel)
-        //   }
-        //   catch (error) {
-        //     console.log(
-        //       'There was an error rendering data in a CesiumWidgetView' +
-        //       '. Error details: ' + error
-        //     );
-        //   }
-
-        // },
-
+        /**
+         * Renders imagery in the Map.
+         * @param {Cesium.ImageryLayer} cesiumModel The Cesium imagery model to render
+        */
+        addImagery: function (cesiumModel) {
+          this.scene.imageryLayers.add(cesiumModel)
+        },
 
       }
     );

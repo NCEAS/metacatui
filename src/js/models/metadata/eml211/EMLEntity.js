@@ -258,7 +258,7 @@ define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
                 //Validate the attributes
                 var attributeErrors = this.validateAttributes();
                 if(attributeErrors.length)
-                  errors.attributeList = errors;
+                  errors.attributeList = attributeErrors;
 
                 if( Object.keys(errors).length )
                   return errors;

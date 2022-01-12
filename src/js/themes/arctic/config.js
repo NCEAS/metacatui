@@ -50,7 +50,7 @@ MetacatUI.AppConfig = Object.assign({
     geoCoverage: true,
     intellectualRights: true,
     keywordSets: false,
-    methods: false,
+    methods: true,
     samplingDescription: false,
     studyExtentDescription: false,
     taxonCoverage: false,
@@ -64,7 +64,7 @@ MetacatUI.AppConfig = Object.assign({
   enableSolrJoins: true,
   mapKey: "AIzaSyCYoTkUEpMAiOoWx5M61ButwgNGX8fIHUs",
   searchMapTileHue: "231",
-  defaultSearchFilters: ["all", "attribute", "annotation", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
+  defaultSearchFilters: ["all", "attribute", "annotation", "creator", "dataYear", "pubYear", "id", "taxon", "spatial", "isPrivate"],
 
   //Temp message
   temporaryMessage: "",

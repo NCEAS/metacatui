@@ -160,7 +160,7 @@ define(["jquery",
             // so we don't lose state, rather use .setElement(). Delegate rendering
             // and event handling to sub views
                 render: function () {
-                
+
                 // Which type of map are we rendering, Google maps or Cesium maps?
                 this.mapType = MetacatUI.appModel.get("dataCatalogMap") || "google";
 
@@ -298,13 +298,13 @@ define(["jquery",
 
                 // Iterate through each search model text attribute and show UI filter for each
                 var categories = ["all", "attribute", "creator", "id", "taxon", "spatial",
-                    "additionalCriteria", "annotation"];
+                    "additionalCriteria", "annotation", "isPrivate"];
                 var thisTerm = null;
 
                 for (var i = 0; i < categories.length; i++) {
                     thisTerm = this.searchModel.get(categories[i]);
 
-                    if (thisTerm === undefined) break;
+                    if (thisTerm === undefined || thisTerm === null) break;
 
                     for (var x = 0; x < thisTerm.length; x++) {
                         this.showFilter(categories[i], thisTerm[x]);
@@ -1219,6 +1219,7 @@ define(["jquery",
                 $("#includes_data").prop("checked", this.searchModel.get("documents"));
                 $("#data_year").prop("checked", this.searchModel.get("dataYear"));
                 $("#publish_year").prop("checked", this.searchModel.get("pubYear"));
+                $("#is_private_data").prop("checked", this.searchModel.get("isPrivate"));
                 this.listDataSources();
 
                 // Zoom out the Google Map
@@ -1890,7 +1891,7 @@ define(["jquery",
                     }
 
                     // Continue with rendering Google maps, if that is configured mapType
-                    
+
                 // Get the map options and create the map
                 gmaps.visualRefresh = true;
                 var mapOptions = this.mapModel.get("mapOptions");
@@ -2185,7 +2186,7 @@ define(["jquery",
                 if (this.mapType !== "google") {
                     return
                 }
-                
+
                 // Exit if maps are not in use
                 if ((this.mode != "map") || (!gmaps)) {
                     return false;
@@ -2857,7 +2858,7 @@ define(["jquery",
                 //--First map all the results--
                 if (gmaps && this.mapModel) {
                     // Draw all the tiles on the map to represent the datasets
-                    // this.drawTiles();
+                    this.drawTiles();
 
                     // Remove the loading styles from the map
                     $("#map-container").removeClass("loading");

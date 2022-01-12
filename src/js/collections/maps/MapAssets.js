@@ -7,6 +7,7 @@ define(
     'backbone',
     'models/maps/assets/MapAsset',
     'models/maps/assets/Cesium3DTileset',
+    'models/maps/assets/CesiumVectorData',
     'models/maps/assets/CesiumImagery',
     'models/maps/assets/CesiumTerrain',
   ],
@@ -16,6 +17,7 @@ define(
     Backbone,
     MapAsset,
     Cesium3DTileset,
+    CesiumVectorData,
     CesiumImagery,
     CesiumTerrain
   ) {
@@ -28,7 +30,7 @@ define(
      * @class MapAssets
      * @classcategory Collections/Maps
      * @extends Backbone.Collection
-     * @since 2.x.x
+     * @since 2.18.0
      * @constructor
      */
     var MapAssets = Backbone.Collection.extend(
@@ -40,8 +42,8 @@ define(
          * model to the collection.
          * @param {MapConfig#MapAssetConfig} assetConfig - An object that configured the
          * source the asset data, as well as metadata and display properties of the asset.
-         * @returns {(Cesium3DTileset|CesiumImagery|CesiumTerrain)} Returns a MapAsset
-         * model
+         * @returns {(Cesium3DTileset|CesiumImagery|CesiumTerrain|CesiumVectorData)}
+         * Returns a MapAsset model
         */
         model: function (assetConfig) {
           try {
@@ -52,6 +54,10 @@ define(
               {
                 types: ['Cesium3DTileset'],
                 model: Cesium3DTileset
+              },
+              {
+                types: ['GeoJsonDataSource'],
+                model: CesiumVectorData
               },
               {
                 types: ['BingMapsImageryProvider', 'IonImageryProvider'],
@@ -113,6 +119,25 @@ define(
             );
           }
         },
+
+        /**
+         * Set the parent map model on each of the MapAsset models in this collection.
+         * This must be the Map model that contains this asset collection.
+         * @param {MapModel} mapModel The map model to set on each of the MapAsset models
+         */
+        setMapModel: function (mapModel) {
+          try {
+            this.each(function (mapAssetModel) {
+              mapAssetModel.set('mapModel', mapModel)
+            })
+          }
+          catch (error) {
+            console.log(
+              'Failed to set the map model on a MapAssets collection' +
+              '. Error details: ' + error
+            );
+          }
+        }
 
       }
     );

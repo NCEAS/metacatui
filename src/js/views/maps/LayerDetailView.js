@@ -27,6 +27,7 @@ define(
     * @name LayerDetailView
     * @extends Backbone.View
     * @screenshot views/maps/LayerDetailView.png
+    * @since 2.18.0
     * @constructs
     */
     var LayerDetailView = Backbone.View.extend(

@@ -411,7 +411,6 @@ define(['jquery',
                   // Injects Clipboard objects into DOM elements returned from the View Service
                   viewRef.insertCopiables();
 
-                  viewRef.setUpAnnotator();
                 }
               },
               error: function (xhr, textStatus, errorThrown) {
@@ -452,8 +451,6 @@ define(['jquery',
             //Add a map of the spatial coverage
             if (gmaps) view.insertSpatialCoverageMap();
 
-            // render annotator from index content, too
-            view.setUpAnnotator();
           });
         },
 
@@ -2436,26 +2433,6 @@ define(['jquery',
               containerClasses: "page",
               includeEmail: true
             }));
-        },
-
-        /**
-        * If the annotator feature is enabled, this function renders an AnnotatorView.
-        * The Annotator feature is experiemental and unsupported, so this should only be enabled by advanced users
-        * @deprecated
-        */
-        setUpAnnotator: function () {
-          if (!MetacatUI.appModel.get("annotatorUrl"))
-            return;
-
-          var thisView = this;
-
-          require(["views/AnnotatorView"], function (AnnotatorView) {
-            var annotator = new AnnotatorView({
-              parentView: thisView
-            });
-            thisView.subviews.push(annotator);
-            annotator.render();
-          });
         },
 
         /**

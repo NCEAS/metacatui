@@ -21,7 +21,7 @@ define(
      * @class VectorFilters
      * @classcategory Collections/Maps
      * @extends Backbone.Collection
-     * @since 2.x.x
+     * @since 2.18.0
      * @constructor
      */
     var VectorFilters = Backbone.Collection.extend(
@@ -31,7 +31,34 @@ define(
         * The class/model that this collection contains.
         * @type {Backbone.Model}
         */
-        model: VectorFilter
+        model: VectorFilter,
+
+        /**
+         * This function is used to determine if a feature should be shown or hidden based
+         * on the current filters.
+         * @param {Object} properties The properties of the feature to be filtered.
+         * (See the 'properties' attribute of {@link Feature#defaults}.)
+         * @returns {boolean} Returns true if the feature passes all of the filters.
+         */
+        featureIsVisible: function (properties) {
+          try {
+            if (!properties) {
+              properties = {};
+            }
+            let visible = true;
+            this.each(function (filter) {
+              visible = visible && filter.featureIsVisible(properties);
+            });
+            return visible;
+          }
+          catch (error) {
+            console.log(
+              'There was an error filtering a feature in a VectorFilters collection' +
+              '. Error details: ' + error + '. The feature will be visible.'
+            );
+            return true;
+          }
+        }
 
       }
     );
