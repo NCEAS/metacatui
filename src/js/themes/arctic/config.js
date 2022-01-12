@@ -50,7 +50,7 @@ MetacatUI.AppConfig = Object.assign({
     geoCoverage: true,
     intellectualRights: true,
     keywordSets: false,
-    methods: false,
+    methods: true,
     samplingDescription: false,
     studyExtentDescription: false,
     taxonCoverage: false,
