@@ -230,6 +230,8 @@ define(['jquery', 'underscore', 'backbone',
         * @property {string[]} filterTypes - An array of one or more filter types that are
         * allowed for this interface. If none are provided then any filter type is
         * allowed. Filter types are one of the four keys defined in
+        * @property {string[]} blockedFields - An array of one or more search
+        * fields for which this interface should be blocked
         * {@link QueryField#filterTypesMap}, and correspond to one of the four filter
         * types that are allowed in a Collection definition. See
         * {@link https://github.com/DataONEorg/collections-portals-schemas/blob/master/schemas/collections.xsd}.
@@ -254,6 +256,7 @@ define(['jquery', 'underscore', 'backbone',
             iconFileName: "filter.svg",
             description: "Allow people to search using any text they enter",
             filterTypes: ["filter"],
+            blockedFields: [],
             modelFunction: function (attrs) {
               return new Filter(attrs)
             },
@@ -270,6 +273,7 @@ define(['jquery', 'underscore', 'backbone',
             iconFileName: "choice.svg",
             description: "Allow people to select a search term from a list of options",
             filterTypes: ["filter"],
+            blockedFields: ["sem_annotation"],
             modelFunction: function (attrs) {
               return new ChoiceFilter(attrs)
             },
@@ -286,6 +290,7 @@ define(['jquery', 'underscore', 'backbone',
             iconFileName: "number.svg",
             description: "Let people search for a range of years",
             filterTypes: ["dateFilter"],
+            blockedFields: ["sem_annotation"],
             modelFunction: function (attrs) {
               return new DateFilter(attrs)
             },
@@ -302,6 +307,7 @@ define(['jquery', 'underscore', 'backbone',
             iconFileName: "toggle.svg",
             description: "Let people add or remove a single, specific search term",
             filterTypes: ["filter"],
+            blockedFields: ["sem_annotation"],
             modelFunction: function (attrs) {
               return new ToggleFilter(attrs)
             },
@@ -311,25 +317,6 @@ define(['jquery', 'underscore', 'backbone',
                 mode: "uiBuilder"
               });
             }
-          }
-        ],
-
-        /**
-         * The list of restrictions on which UI builders should be allowed for a
-         * particular field.
-         *
-         * Values for "fieldName" should be QueryField names. Members of the
-         * key "allowedModelTypes" should be modelTypes from UIBuilderOptions
-         * and may repeat.
-         *
-         * @type {UIBuilderRestriction[]}
-         */
-        uiBuilderRestrictions: [
-          {
-            "fieldName": "sem_annotation",
-            "allowedModelTypes": [
-              "Filter"
-            ]
           }
         ],
 
@@ -1138,42 +1125,28 @@ define(['jquery', 'underscore', 'backbone',
          *
          * @param {UIBuilderOption} uiBuilder The UIBuilderOption object to
          * check
-         * @param {string[]} selectedFields A set of search field names to look
-         * for restrictions
+         * @param {string[]} selectedFields An array of search field names to
+         * look for restrictions
          *
          * @return {boolean} Whether or not the uiBuilder is allowed for all
-         * of selectedFields.
+         * of selectedFields. Returns true only if all selectedFields are
+         * allowed, not just one or more.
          */
         isBuilderAllowedForFields: function (uiBuilder, selectedFields) {
-          var view = this;
-
-          var hasRestriction = _.map(selectedFields, function (field) {
-            var restrictions = _.findWhere(view.uiBuilderRestrictions, {
-              "fieldName": field,
-            });
-
-            if (typeof restrictions === "undefined") {
-              return false;
-            }
-
-            var isAllowed = _.find(
-              restrictions.allowedModelTypes,
-              function (mt) { return mt === uiBuilder.modelType; }
-            );
-
-            if (typeof isAllowed === "undefined") {
-              return true;
-            }
-
-            return false;
-          });
-
-          if (_.some(hasRestriction)) {
-            return false;
+          // Return true early if this uiBuilder has no blockedFields
+          if (!uiBuilder.blockedFields || uiBuilder.blockedFields.length == 0) {
+            return true;
           }
 
-          return true;
-        },
+          // Check each blockedField for presence in selectedFields
+          var isAllowed = uiBuilder.blockedFields.map(function (blockedField) {
+            return !selectedFields.includes(blockedField);
+          });
+
+          return isAllowed.every(function (e) {
+            return e;
+          });
+        }
       })
     return FilterEditorView
   });
