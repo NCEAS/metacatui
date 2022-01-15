@@ -150,6 +150,9 @@ define(
          * updated by the map widget that gives two equivalent measurements based on the
          * map's current position and zoom level: The number of pixels on the screen that
          * equal the number of meters on the map/globe.
+         * @property {Object} [currentViewExtent={ north: null, east: null, south: null, west: null }]
+         * An object updated by the map widget that gives the extent of the current
+         * visible area as a bounding box in longitude/latitude coordinates.
         */
         defaults: function () {
           return {
@@ -178,6 +181,12 @@ define(
             currentScale: {
               meters: null,
               pixels: null
+            },
+            currentViewExtent: {
+              north: null,
+              east: null,
+              south: null,
+              west: null
             }
           };
         },

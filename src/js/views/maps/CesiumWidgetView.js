@@ -84,7 +84,7 @@ define(
             renderFunction: 'addVectorData'
           },
           {
-            types: ['BingMapsImageryProvider', 'IonImageryProvider','TileMapServiceImageryProvider'],
+            types: ['BingMapsImageryProvider', 'IonImageryProvider', 'TileMapServiceImageryProvider'],
             renderFunction: 'addImagery'
           },
           {
@@ -150,7 +150,7 @@ define(
             }
 
             // Save a reference to this view
-            var view = this;
+            const view = this;
 
             // Insert the template into the view
             view.$el.html(view.template({}));
@@ -180,6 +180,10 @@ define(
             view.scene = view.widget.scene;
             view.camera = view.widget.camera;
             view.inputHandler = view.widget.screenSpaceEventHandler;
+
+            // Decrease the amount the camera must change before the changed event is
+            // raised.
+            view.camera.percentChanged = 0.1
 
             // Zoom functions executed after each scene render
             view.scene.postRender.addEventListener(function () {
@@ -220,15 +224,16 @@ define(
               view.initializePicking()
             }
 
-            // If the scale bar is showing, update the pixel to meter scale on the map
-            // model when the camera angle/zoom level changes
-            if (view.model.get('showScaleBar')) {
-              // Set listeners for when the Cesium camera changes a significant amount. 
-              // See https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#changed}.
-              view.camera.changed.addEventListener(function () {
+            // Set listeners for when the Cesium camera changes a significant amount.
+            view.camera.changed.addEventListener(function () {
+              // Update the bounding box for the visible area in the Map model
+              view.updateViewExtent()
+              // If the scale bar is showing, update the pixel to meter scale on the map
+              // model when the camera angle/zoom level changes
+              if (view.model.get('showScaleBar')) {
                 view.updateCurrentScale()
-              })
-            }
+              }
+            })
 
             // Sets listeners for when the mouse moves, depending on the value of the map
             // model's showScaleBar and showFeatureInfo attributes
@@ -329,7 +334,6 @@ define(
 
             let allReady = true;
             const allReadyBefore = view.dataSourceDisplay._ready;
-
 
             for (let i = 0, len = dataSources.length; i < len; i++) {
 
@@ -677,6 +681,250 @@ define(
         },
 
         /**
+         * Update the 'currentViewExtent' attribute in the Map model with the north,
+         * south, east, and west-most lat/long that define a bounding box around the
+         * currently visible area of the map.
+         */
+        updateViewExtent: function () {
+          try {
+            const view = this;
+            const camera = view.camera;
+            const scene = view.scene;
+
+            // This will be the bounding box of the visible area
+            let coords = { north: null, south: null, east: null, west: null }
+
+            // First try getting the visible bounding box using the simple method
+            if (!view.scratchRectangle) {
+              // Store the rectangle that we use for the calculation (reduces pressure on
+              // garbage collector system since this function is called often).
+              view.scratchRectangle = new Cesium.Rectangle();
+            }
+            var rect = camera.computeViewRectangle(
+              scene.globe.ellipsoid, view.scratchRectangle
+            );
+            coords.north = Cesium.Math.toDegrees(rect.north)
+            coords.east = Cesium.Math.toDegrees(rect.east)
+            coords.south = Cesium.Math.toDegrees(rect.south)
+            coords.west = Cesium.Math.toDegrees(rect.west)
+
+            // Check if the resulting coordinates cover the entire globe (happens if some of
+            // the sky is visible)
+
+            const fullGlobeCoverage = coords.west === -180 && coords.east === 180 &&
+              coords.south === -90 && coords.north === 90
+
+            // See if we can limit the bounding box to a smaller extent
+            if (fullGlobeCoverage) {
+
+              // Find points at the top, bottom, right, and left corners of the globe
+              const edges = view.findEdges()
+
+              // Get the midPoint between the top and bottom points on the globe. Use this
+              // to decide if the northern or southern hemisphere is more in view.
+              const midPoint = view.findMidpoint(edges.top, edges.bottom)
+
+              if (midPoint) {
+
+                // Get the latitude of the mid point
+                const midPointLat = view.getDegreesFromCartesian(midPoint).latitude
+
+                // Get the latitudes of all the edge points so that we can calculate the
+                // southern and northern most coordinate
+                const edgeLatitudes = []
+                Object.values(edges).forEach(function (point) {
+                  edgeLatitudes.push(view.getDegreesFromCartesian(point).latitude)
+                })
+
+                if (midPointLat > 0) {
+                  // If the midPoint is in the northern hemisphere, limit the southern part
+                  // of the bounding box to the southern most edge point latitude
+                  coords.south = Math.min(...edgeLatitudes)
+                } else {
+                  // Vice versa for the southern hemisphere
+                  coords.north = Math.max(...edgeLatitudes)
+                }
+              }
+
+              // If not focused directly on one of the poles, then also limit the east and
+              // west sides of the bounding box
+              const northPointLat = view.getDegreesFromCartesian(edges.top).latitude
+              const southPointLat = view.getDegreesFromCartesian(edges.bottom).latitude
+
+              if (northPointLat > 25 && southPointLat < -25) {
+                coords.east = view.getDegreesFromCartesian(edges.right).longitude
+                coords.west = view.getDegreesFromCartesian(edges.left).longitude
+              }
+            }
+
+            view.model.set('currentViewExtent', coords)
+
+          }
+          catch (error) {
+            console.log(
+              'Failed to update the Map view extent from a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Get longitude and latitude degrees from a cartesian point.
+         * @param {Cesium.Cartesian3} cartesian - The point to get degrees for
+         * @returns Returns an object with the longitude and latitude in degrees, as well
+         * as the height in meters
+         */
+        getDegreesFromCartesian: function (cartesian) {
+          const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+          return {
+            longitude: Cesium.Math.toDegrees(cartographic.longitude),
+            latitude: Cesium.Math.toDegrees(cartographic.latitude),
+            height: cartographic.height
+          }
+        },
+
+        /**
+         * Find four points that exist on the globe that are closest to the top-center,
+         * bottom-center, right-middle, and left-middle points of the screen. Note that
+         * these are not necessarily the northern, southern, eastern, and western -most
+         * points, since the map may be oriented in any direction (e.g. facing the north
+         * pole).
+         *
+         * @returns {Cesium.Cartesian3[]} Returns an object with the top, bottom, left,
+         * and right points of the globe.
+         */
+        findEdges: function () {
+          try {
+            const view = this;
+            const canvas = view.scene.canvas
+            const maxX = canvas.clientWidth;
+            const maxY = canvas.clientHeight;
+            const midX = (maxX / 2) | 0;
+            const midY = (maxY / 2) | 0;
+
+            // Points at the extreme edges of the cesium canvas. These may not be points on
+            // the globe (i.e. they could be in the sky)
+            const topCanvas = new Cesium.Cartesian2(midX, 0)
+            const rightCanvas = new Cesium.Cartesian2(maxX, midY)
+            const bottomCanvas = new Cesium.Cartesian2(midX, maxY)
+            const leftCanvas = new Cesium.Cartesian2(0, midY)
+
+            // Find the real world coordinate that is closest to the canvas edge points
+            const points = {
+              top: view.findPointOnGlobe(topCanvas, bottomCanvas),
+              right: view.findPointOnGlobe(rightCanvas, leftCanvas),
+              bottom: view.findPointOnGlobe(bottomCanvas, topCanvas),
+              left: view.findPointOnGlobe(leftCanvas, rightCanvas),
+            }
+
+            return points
+          }
+          catch (error) {
+            console.log(
+              'There was an error finding the edge points in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Given two Cartesian3 points, compute the midpoint.
+         * @param {Cesium.Cartesian3} p1  The first point
+         * @param {Cesium.Cartesian3} p2  The second point
+         * @returns {Cesium.Cartesian3 | null} The midpoint or null if p1 or p2 is not
+         * defined.
+         */
+        findMidpoint: function (p1, p2) {
+          try {
+            if (!p1 || !p2) {
+              return null
+            }
+            // Compute vector from p1 to p2
+            let p1p2 = new Cesium.Cartesian3(0.0, 0.0, 0.0);
+            Cesium.Cartesian3.subtract(p2, p1, p1p2);
+
+            // Compute vector to midpoint
+            let halfp1p2 = new Cesium.Cartesian3(0.0, 0.0, 0.0);
+            Cesium.Cartesian3.multiplyByScalar(p1p2, 0.5, halfp1p2);
+
+            // Compute point half way between p1 and p2
+            let p3 = new Cesium.Cartesian3(0.0, 0.0, 0.0);
+            p3 = Cesium.Cartesian3.add(p1, halfp1p2, p3);
+
+            // Force point onto surface of ellipsoid
+            const midPt = Cesium.Cartographic.fromCartesian(p3);
+            const p3a = Cesium.Cartesian3.fromRadians(midPt.longitude, midPt.latitude, 0.0);
+
+            return p3a
+          }
+          catch (error) {
+            console.log(
+              'There was an error finding a midpoint in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Find a coordinate that exists on the surface of the globe between two Cartesian
+         * points. The points do not need to be withing the bounds of the globe/map (i.e.
+         * they can be points in the sky). Uses the Bresenham Algorithm to traverse pixels
+         * from the first coordinate to the second, until it finds a valid coordinate.
+         * @param {Cesium.Cartesian2} startCoordinates The coordinates to start searching,
+         * in pixels
+         * @param {Cesium.Cartesian2} endCoordinates The coordinates to stop searching, in
+         * pixels
+         * @returns {Cesium.Cartesian3 | null} Returns the x, y, z coordinates of the
+         * first real point, or null if a valid point was not found.
+         *
+         * @see {@link https://groups.google.com/g/cesium-dev/c/e2H7EefikAk}
+         */
+        findPointOnGlobe: function (startCoordinates, endCoordinates) {
+
+          const view = this;
+          const camera = view.camera;
+
+          let coordinate = camera.pickEllipsoid(startCoordinates, this.ellipsoid);
+
+          // Translate coordinates
+          let x1 = startCoordinates.x;
+          let y1 = startCoordinates.y;
+          const x2 = endCoordinates.x;
+          const y2 = endCoordinates.y;
+          // Define differences and error check
+          const dx = Math.abs(x2 - x1);
+          const dy = Math.abs(y2 - y1);
+          const sx = (x1 < x2) ? 1 : -1;
+          const sy = (y1 < y2) ? 1 : -1;
+          let err = dx - dy;
+
+          coordinate = camera.pickEllipsoid({ x: x1, y: y1 }, this.ellipsoid);
+          if (coordinate) {
+            return coordinate
+          }
+
+          // Main loop
+          while (!((x1 == x2) && (y1 == y2))) {
+            const e2 = err << 1;
+            if (e2 > -dy) {
+              err -= dy;
+              x1 += sx;
+            }
+            if (e2 < dx) {
+              err += dx;
+              y1 += sy;
+            }
+
+            coordinate = camera.pickEllipsoid({ x: x1, y: y1 }, this.ellipsoid);
+            if (coordinate) {
+              return coordinate
+            }
+          }
+
+          return null;
+        },
+
+        /**
          * Set a Cesium event handler for when the mouse moves. If the scale bar is
          * enabled, then a updates the Map model's current position attribute whenever the
          * mouse moves. If showFeatureInfo is enabled, then changes the cursor to a
@@ -779,20 +1027,23 @@ define(
             const view = this
             const scene = view.scene
             const globe = scene.globe
+            const camera = scene.camera
 
             // For measuring geodesic distances (shortest route between two points on the
             // Earth's surface)
-            const geodesic = new Cesium.EllipsoidGeodesic();
+            if (!view.geodesic) {
+              view.geodesic = new Cesium.EllipsoidGeodesic();
+            }
 
             // Find two points that are 1 pixel apart at the bottom center of the cesium
             // canvas.
             const width = scene.canvas.clientWidth;
             const height = scene.canvas.clientHeight;
 
-            const left = scene.camera.getPickRay(
+            const left = camera.getPickRay(
               new Cesium.Cartesian2((width / 2) | 0, height - 1)
             );
-            const right = scene.camera.getPickRay(
+            const right = camera.getPickRay(
               new Cesium.Cartesian2((1 + width / 2) | 0, height - 1)
             );
 
@@ -813,9 +1064,9 @@ define(
               rightPosition
             );
 
-            geodesic.setEndPoints(leftCartographic, rightCartographic);
+            view.geodesic.setEndPoints(leftCartographic, rightCartographic);
 
-            const onePixelInMeters = geodesic.surfaceDistance;
+            const onePixelInMeters = view.geodesic.surfaceDistance;
 
             return onePixelInMeters
 
