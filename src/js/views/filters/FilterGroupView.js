@@ -109,8 +109,7 @@ define(['jquery', 'underscore', 'backbone',
           //Create a ToggleView
           var filterView = new ToggleFilterView(viewOptions);
         }
-        else if (filter.get("fields").includes("sem_annotation") && MetacatUI.appModel.get("bioportalAPIKey")) {
-          // TODO: Show error when bioportalAPIKey is not set
+        else if (view.areAllFieldsSemantic(filter.get("fields")) && MetacatUI.appModel.get("bioportalAPIKey")) {
           var filterView = new SemanticFilterView(viewOptions);
         }
         else{
@@ -188,6 +187,34 @@ define(['jquery', 'underscore', 'backbone',
 
       });
 
+    },
+
+    /**
+     * Helper function to check whether or not a set of query field names are
+     * all semantic fields.
+     *
+     * Checks the array "fields"
+     *
+     * @param {string[]} fields The list of query fields to check
+     * @return {boolean} Whether or not all members of fields are semantic.
+     * Returns true only when fields and AppModel.querySemanticFields are
+     * non-zero in length and all values of fields are present in
+     * AppModel.querySemanticFields.
+     */
+    areAllFieldsSemantic: function (fields) {
+      if (!fields || !fields.length) {
+        return false;
+      }
+
+      var querySemanticFields = MetacatUI.appModel.get("querySemanticFields");
+
+      if (!querySemanticFields) {
+        return false;
+      }
+
+      return fields.every(function (field) {
+        return querySemanticFields.includes(field);
+      });
     }
 
   });
