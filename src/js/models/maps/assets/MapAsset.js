@@ -699,6 +699,21 @@ define(
           return this.get('visible') && this.get('opacity') > 0
         },
 
+        /**
+         * Make sure the layer is visible. Sets visibility to true if false, and sets
+         * opacity to 0.5 if it's less than 0.05.
+         */
+        show: function () {
+          // If the opacity is very low, set it to 50%
+          if (this.get('opacity') < 0.05) {
+            this.set('opacity', 0.5)
+          }
+          // Make sure the layer is visible
+          if (this.get('visible') === false) {
+            this.set('visible', true)
+          }
+        },
+
         // /**
         //  * Parses the given input into a JSON object to be set on the model.
         //  *

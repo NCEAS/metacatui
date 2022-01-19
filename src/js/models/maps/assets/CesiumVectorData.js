@@ -281,6 +281,11 @@ define(
             // every feature to hidden.
             if (!model.isVisible()) {
               cesiumModel.entities.show = false
+              // Indicate that the layer is hidden if the opacity is zero by updating the
+              // visibility property
+              if (model.get('opacity') === 0) {
+                model.set('visible', false);
+              }
             } else {
               cesiumModel.entities.show = true
               for (var i = 0; i < entities.length; i++) {

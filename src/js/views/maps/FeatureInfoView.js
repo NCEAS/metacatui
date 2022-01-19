@@ -108,6 +108,7 @@ define(
           events['click .' + this.classes.toggle] = 'close'
           // Open the Layer Details panel
           events['click .' + this.classes.layerDetailsButton] = 'showLayerDetails'
+          events['click .' + this.classes.zoomButton] = 'zoomToFeature'
           return events
         },
 
@@ -130,6 +131,7 @@ define(
           open: 'feature-info--open',
           toggle: 'feature-info__toggle',
           layerDetailsButton: 'feature-info__layer-details-button',
+          zoomButton: 'feature-info__zoom-button',
           contentContainer: 'feature-info__content',
           title: 'feature-info__label'
         },
@@ -224,6 +226,7 @@ define(
               iFrame: iFrame,
               iFrameContentContainer: iFrameDoc.getElementById('content'),
               layerDetailsButton: view.el.querySelector('.' + classes.layerDetailsButton),
+              zoomButton: view.el.querySelector('.' + classes.zoomButton),
             }
 
             view.update();
@@ -258,10 +261,15 @@ define(
             const iFrame = this.elements.iFrame
             const iFrameDiv = this.elements.iFrameContentContainer
             const layerDetailsButton = this.elements.layerDetailsButton
+            const zoomButton = this.elements.zoomButton
             const mapAsset = this.model.get('mapAsset')
             let mapAssetLabel = mapAsset ? mapAsset.get('label') : null
-            const buttonDisplay = mapAsset ? null : 'none'
-            const buttonText = 'See ' + mapAssetLabel + ' Layer Details'
+            const layerButtonDisplay = mapAsset ? null : 'none'
+            const layerButtonText = 'See ' + mapAssetLabel + ' layer details'
+            // The Cesium Map Widget can't zoom to Cesium3DTileFeatures, so for now, hide
+            // the 'zoom to feature' button
+            const zoomButtonDisplay =
+              (!mapAsset || mapAsset.get('type') === 'Cesium3DTileset') ? 'none' : null;
 
             // Insert the title into the title element
             this.elements.title.innerHTML = title
@@ -276,8 +284,11 @@ define(
             })
 
             // Show or hide the layer details button, update the text
-            layerDetailsButton.style.display = buttonDisplay
-            layerDetailsButton.innerText = buttonText
+            layerDetailsButton.style.display = layerButtonDisplay
+            layerDetailsButton.innerText = layerButtonText
+
+            // Show or hide the zoom to feature button
+            zoomButton.style.display = zoomButtonDisplay
 
           }
           catch (error) {
@@ -449,6 +460,27 @@ define(
         },
 
         /**
+         * Trigger an event from the parent Map Asset model that tells the Map Widget to
+         * zoom to the full extent of this feature in the map. Also make sure that the Map
+         * Asset layer is visible in the map.
+         */
+        zoomToFeature: function () {
+          try {
+            const model = this.model;
+            const mapAsset = model ? model.get('mapAsset') : false;
+            if (mapAsset) {
+              mapAsset.trigger('flyToExtent', model)
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error zooming to a feature from a FeatureInfoView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
          * Shows the feature info box
          */
         open: function () {
@@ -517,15 +549,36 @@ define(
          * @param {Feature} newModel The new Feature model to display content for
          */
         changeModel: function (newModel) {
-          // Stop listening to the current model before it's removed
-          this.stopListening(this.model, 'change')
+
+          const view = this
+          const currentModel = view.model
+          const currentMapAsset = currentModel ? currentModel.get('mapAsset') : null;
+          
+          // Stop listening to the current Feature & Map Asset models before they're removed
+          view.stopListening(currentModel, 'change')
+          if (currentMapAsset) {
+            view.stopListening(currentMapAsset, 'change:visible')
+          }
+
           // Update the model
-          this.model = newModel
+          view.model = newModel
           // Listen to the new model
-          this.stopListening(this.model, 'change')
-          this.listenTo(this.model, 'change', this.update)
+          view.stopListening(newModel, 'change')
+          view.listenTo(newModel, 'change', view.update)
+
+          // If the Map Asset layer is ever hidden, then de-select the Feature and close
+          // the view view
+          const newMapAsset = newModel ? newModel.get('mapAsset') : null;
+          if (newMapAsset) {
+            view.listenTo(newMapAsset, 'change:visible', function () {
+              if (!newMapAsset.get('visible')) {
+                view.close()
+              }
+            })
+          }
+
           // Update
-          this.update()
+          view.update()
         }
 
       }

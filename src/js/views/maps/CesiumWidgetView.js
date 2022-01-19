@@ -9,6 +9,7 @@ define(
     'models/maps/Map',
     'models/maps/assets/MapAsset',
     'models/maps/assets/Cesium3DTileset',
+    'models/maps/Feature',
     'text!templates/maps/cesium-widget-view.html'
   ],
   function (
@@ -19,6 +20,7 @@ define(
     Map,
     MapAsset,
     Cesium3DTileset,
+    Feature,
     Template
   ) {
 
@@ -528,8 +530,19 @@ define(
          * action by setting a zoomTarget and zoomOptions on the view and requesting the
          * scene to render. The actual zooming is done by
          * {@link CesiumWidgetView#completeFlight} after the scene has finished rendering.
-         * @param {*} target 
-         * @param {*} options 
+         * @param {MapAsset|Cesium.BoundingSphere|Object|Feature} target The target asset,
+         * bounding sphere, or location to change the camera focus to. If target is a
+         * MapAsset, then the bounding sphere from that asset will be used for the target
+         * destination. If target is an Object, it may contain any of the properties that
+         * are supported by the Cesium camera flyTo options, see
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#flyTo}. If the
+         * target is a Feature, then it must be a Feature of a CesiumVectorData layer
+         * (currently Cesium3DTileFeatures are not supported). The target can otherwise be
+         * a Cesium BoundingSphere, see
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/BoundingSphere.html}
+         * @param {object} options - For targets that are a bounding sphere or asset,
+         * options to pass to Cesium Camera.flyToBoundingSphere(). See
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#flyToBoundingSphere}.
          */
         flyTo: function (target, options) {
           this.zoomTarget = target;
@@ -542,13 +555,15 @@ define(
          * be called once the target has been fully rendered in the scene. This function
          * gets the bounding sphere, if required, and moves the scene to encompass the
          * full extent of the target.
-         * @param {MapAsset|Cesium.BoundingSphere|Object} target The target asset,
+         * @param {MapAsset|Cesium.BoundingSphere|Object|Feature} target The target asset,
          * bounding sphere, or location to change the camera focus to. If target is a
          * MapAsset, then the bounding sphere from that asset will be used for the target
          * destination. If target is an Object, it may contain any of the properties that
          * are supported by the Cesium camera flyTo options, see
-         * {@link https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#flyTo}. The target
-         * can otherwise be a Cesium BoundingSphere, see
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#flyTo}. If the
+         * target is a Feature, then it must be a Feature of a CesiumVectorData layer
+         * (currently Cesium3DTileFeatures are not supported). The target can otherwise be
+         * a Cesium BoundingSphere, see
          * {@link https://cesium.com/learn/cesiumjs/ref-doc/BoundingSphere.html}
          * @param {object} options - For targets that are a bounding sphere or asset,
          * options to pass to Cesium Camera.flyToBoundingSphere(). See
@@ -589,6 +604,25 @@ define(
                   }
                   view.flyTo(assetBoundingSphere, options)
                 })
+              return
+            }
+
+            // Note: This doesn't work yet for Cesium3DTilesetFeatures -
+            // Cesium.BoundingSphereState gets stuck in "PENDING" and never resolves.
+            // There's no native way of getting the bounding sphere or location from a
+            // 3DTileFeature!
+            if (target instanceof Feature) {
+              // If the target is a Feature, get the Bounding Sphere for the Feature
+              // and call this function again.
+              const feature = target.get('featureObject')
+              let featureBoundingSphere = new Cesium.BoundingSphere();
+              view.dataSourceDisplay.getBoundingSphere(
+                feature, false, featureBoundingSphere
+              )
+              setTimeout(() => {
+                view.flyTo(featureBoundingSphere, options)
+              }, 0);
+
               return
             }
 

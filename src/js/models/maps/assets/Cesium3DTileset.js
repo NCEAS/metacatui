@@ -246,6 +246,12 @@ define(
               cesiumModel.style = new Cesium.Cesium3DTileStyle({
                 show: false
               });
+              // Indicate that the layer is hidden if the opacity is zero by updating the
+              // visibility property
+              if (model.get('opacity') === 0) {
+                model.set('visible', false);
+              }
+
               // Let the map and/or other parent views know that a change has been made
               // that requires the map to be re-rendered
               model.trigger('appearanceChanged')
