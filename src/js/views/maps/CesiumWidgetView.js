@@ -665,7 +665,7 @@ define(
             return {
               longitude: Cesium.Math.toDegrees(cameraPosition.longitude),
               latitude: Cesium.Math.toDegrees(cameraPosition.latitude),
-              height: camera.position.z,
+              height: cameraPosition.height,
               heading: Cesium.Math.toDegrees(camera.heading),
               pitch: Cesium.Math.toDegrees(camera.pitch),
               roll: Cesium.Math.toDegrees(camera.roll)
@@ -722,8 +722,7 @@ define(
 
               // Get the midPoint between the top and bottom points on the globe. Use this
               // to decide if the northern or southern hemisphere is more in view.
-              const midPoint = view.findMidpoint(edges.top, edges.bottom)
-
+              let midPoint = view.findMidpoint(edges.top, edges.bottom)
               if (midPoint) {
 
                 // Get the latitude of the mid point
@@ -733,7 +732,11 @@ define(
                 // southern and northern most coordinate
                 const edgeLatitudes = []
                 Object.values(edges).forEach(function (point) {
-                  edgeLatitudes.push(view.getDegreesFromCartesian(point).latitude)
+                  if (point) {
+                    edgeLatitudes.push(
+                      view.getDegreesFromCartesian(point).latitude
+                    )
+                  }
                 })
 
                 if (midPointLat > 0) {
@@ -752,8 +755,12 @@ define(
               const southPointLat = view.getDegreesFromCartesian(edges.bottom).latitude
 
               if (northPointLat > 25 && southPointLat < -25) {
-                coords.east = view.getDegreesFromCartesian(edges.right).longitude
-                coords.west = view.getDegreesFromCartesian(edges.left).longitude
+                if (edges.right) {
+                  coords.east = view.getDegreesFromCartesian(edges.right).longitude
+                }
+                if (edges.left) {
+                  coords.west = view.getDegreesFromCartesian(edges.left).longitude
+                }
               }
             }
 
@@ -883,8 +890,13 @@ define(
 
           const view = this;
           const camera = view.camera;
+          const ellipsoid = view.scene.globe.ellipsoid;
 
-          let coordinate = camera.pickEllipsoid(startCoordinates, this.ellipsoid);
+          if (!startCoordinates || !endCoordinates) {
+            return null
+          }
+
+          let coordinate = camera.pickEllipsoid(startCoordinates, ellipsoid);
 
           // Translate coordinates
           let x1 = startCoordinates.x;
@@ -898,7 +910,7 @@ define(
           const sy = (y1 < y2) ? 1 : -1;
           let err = dx - dy;
 
-          coordinate = camera.pickEllipsoid({ x: x1, y: y1 }, this.ellipsoid);
+          coordinate = camera.pickEllipsoid({ x: x1, y: y1 }, ellipsoid);
           if (coordinate) {
             return coordinate
           }
@@ -915,7 +927,7 @@ define(
               y1 += sy;
             }
 
-            coordinate = camera.pickEllipsoid({ x: x1, y: y1 }, this.ellipsoid);
+            coordinate = camera.pickEllipsoid({ x: x1, y: y1 }, ellipsoid);
             if (coordinate) {
               return coordinate
             }
