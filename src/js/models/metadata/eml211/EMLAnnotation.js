@@ -3,8 +3,8 @@ define(["jquery", "underscore", "backbone"],
 
     /**
      * @class EMLAnnotation
-     * @classdesc Storess EML SemanticAnnotation elements.
-     *
+     * @classdesc Stores EML SemanticAnnotation elements.
+     * @classcategory Models/Metadata/EML211
      * @see https://eml.ecoinformatics.org/eml-2.2.0/eml-semantics.xsd
      */
     var EMLAnnotation = Backbone.Model.extend(

@@ -21,12 +21,14 @@ define(['underscore', 'jquery', 'backbone',
   'text!templates/metadata/locationsSection.html',
   'text!templates/metadata/taxonomicCoverage.html',
   'text!templates/metadata/taxonomicClassificationTable.html',
-  'text!templates/metadata/taxonomicClassificationRow.html'],
+  'text!templates/metadata/taxonomicClassificationRow.html',
+  'text!templates/metadata/data-sensitivity.html'],
   function (_, $, Backbone,
     ScienceMetadataView, EMLGeoCoverageView, EMLPartyView, EMLMethodsView, EMLTempCoverageView,
     EML, EMLGeoCoverage, EMLKeywordSet, EMLParty, EMLProject, EMLText, EMLTaxonCoverage,
     EMLTemporalCoverage, EMLMethods, Template, PeopleTemplate, EMLPartyCopyMenuTemplate, OverviewTemplate,
-    DatesTemplate, LocationsTemplate, TaxonomicCoverageTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow) {
+    DatesTemplate, LocationsTemplate, TaxonomicCoverageTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow,
+    DataSensitivityTemplate) {
 
     /**
     * @class EMLView
@@ -85,6 +87,8 @@ define(['underscore', 'jquery', 'backbone',
           "click .eml-party .move-up": "movePersonUp",
           "click .eml-party .move-down": "movePersonDown",
 
+          "click input.annotation" : "addAnnotation",
+
           "click  .remove": "handleRemove"
         },
 
@@ -104,6 +108,7 @@ define(['underscore', 'jquery', 'backbone',
         /* Templates */
         template: _.template(Template),
         overviewTemplate: _.template(OverviewTemplate),
+        dataSensitivityTemplate: _.template(DataSensitivityTemplate),
         datesTemplate: _.template(DatesTemplate),
         locationsTemplate: _.template(LocationsTemplate),
         taxonomicCoverageTemplate: _.template(TaxonomicCoverageTemplate),
@@ -111,6 +116,12 @@ define(['underscore', 'jquery', 'backbone',
         taxonomicClassificationRowTemplate: _.template(TaxonomicClassificationRow),
         copyPersonMenuTemplate: _.template(EMLPartyCopyMenuTemplate),
         peopleTemplate: _.template(PeopleTemplate),
+
+        /**
+        * jQuery selector for the element that contains the Data Sensitivity section.
+        * @type {string}
+        */
+        dataSensitivityContainerSelector: "#data-sensitivity-container",
 
         /**
          * @type {object[]}
@@ -256,6 +267,9 @@ define(['underscore', 'jquery', 'backbone',
           this.renderTitle();
           this.listenTo(this.model, "change:title", this.renderTitle);
 
+          //Data Sensitivity
+          this.renderDataSensitivity();
+
           //Abstract
           _.each(this.model.get("abstract"), function (abs) {
             var abstractEl = this.createEMLText(abs, edit, "abstract");
@@ -310,6 +324,55 @@ define(['underscore', 'jquery', 'backbone',
         renderTitle: function () {
           var titleEl = this.createBasicTextFields("title", "Example: Greater Yellowstone Rivers from 1:126,700 U.S. Forest Service Visitor Maps (1961-1983)", false);
           this.$container.find(".overview").find(".title-container").html(titleEl);
+        },
+
+        /**
+        * Renders the Data Sensitivity section of the Editor using the data-sensitivity.html template.
+        * @fires EML211View#editorInputsAdded
+        */
+        renderDataSensitivity: function(){
+          try{
+
+            //If Data Sensitivity questions are disabled in the AppConfig, exit before rendering
+            if( !MetacatUI.appModel.get("enableDataSensitivityInEditor") ){
+              return;
+            }
+
+            var container = this.$(this.dataSensitivityContainerSelector),
+                view = this;
+
+            if(!container.length){
+              container = this.$(".section.overview");
+            }
+
+            require(['text!../img/icons/datatags/check-tag.svg', 'text!../img/icons/datatags/alert-tag.svg'], function(checkTagIcon, alertTagIcon){
+              container.html(view.dataSensitivityTemplate({
+                checkTagIcon: checkTagIcon,
+                alertTagIcon: alertTagIcon
+              }));
+
+              //Initialize all the tooltips
+              view.$(".tooltip-this").tooltip();
+
+              //Check the radio button that is already selected, per the EML
+              let annotations = view.model.getDataSensitivity();
+
+              if(annotations && annotations.length && typeof annotations[0].get == "function"){
+                let annotationValue = annotations[0].get("valueURI");
+                container.find("[value='" + annotationValue + "']").prop("checked", true);
+              }
+
+
+              //Trigger the editorInputsAdded event which will let other parts of the app,
+              // such as the EditorView, know that new inputs are on the page
+              view.trigger("editorInputsAdded");
+
+            });
+          }
+          catch(e){
+            console.error("Could not render the Data Sensitivity section: ", e);
+          }
+
         },
 
         /*
@@ -1040,7 +1103,8 @@ define(['underscore', 'jquery', 'backbone',
 
           this.$(".section.methods").html(new EMLMethodsView({
             model: methodsModel,
-            edit: this.edit
+            edit: this.edit,
+            parentEMLView: this
           }).render().el);
         },
 
@@ -2386,6 +2450,42 @@ define(['underscore', 'jquery', 'backbone',
           for (var i = 0; i < tableNums.length; i++) {
             $(tableNums[i]).text(i + 1);
           }
+        },
+
+        /**
+        * Adds an {@link EMLAnnotation} to the {@link EML211} model currently being edited.
+        * Attributes for the annotation are retreived from the HTML attributes from the HTML element
+        * that was interacted with.
+        * @param {Event e} - An Event on an Element that contains {@link EMLAnnotation} data
+        */
+        addAnnotation: function(e){
+          try{
+            if( !e || !e.target ){
+              return;
+            }
+
+            let annotationData = _.clone(e.target.dataset);
+
+            //If this is a radio button, we only want one annotation of this type.
+            if( e.target.getAttribute("type") == "radio" ){
+              annotationData.allowDuplicates = false;
+            }
+
+            //Set the valueURI from the input value
+            annotationData.valueURI = $(e.target).val();
+
+            //Reformat the propertyURI property
+            if( annotationData.propertyUri ){
+              annotationData.propertyURI = annotationData.propertyUri;
+              delete annotationData.propertyUri;
+            }
+
+            this.model.addAnnotation(annotationData);
+          }
+          catch(error){
+            console.error("Couldn't add annotation: ", e);
+          }
+
         },
 
         /* Close the view and its sub views */

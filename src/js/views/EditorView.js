@@ -579,6 +579,23 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
         }
 
       }, this);
+
+      //When new inputs have been added to this Editor, re-render these required icons.
+      // This is helpful when new questions are added to the editor after the intial rendering.
+      this.off("editorInputsAdded");
+      this.on("editorInputsAdded", function(){
+        this.renderRequiredIcons(requiredFields);
+      }, this);
+    },
+
+    /**
+    * Gets a list of required fields for this editor, or an empty object if there are none.
+    * @returns {object}
+    * @since 2.19.0
+    */
+    getRequiredFields: function(){
+      return {}
+
     },
 
     /**
