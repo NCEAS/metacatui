@@ -56,7 +56,8 @@ define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
 	                parentModel: null, // The parent model this entity belongs to
 	                dataONEObject: null, //Reference to the DataONEObject this EMLEntity describes
 	                objectXML: null, // The serialized XML of this EML entity
-	                objectDOM: null  // The DOM of this EML entity
+	                objectDOM: null,  // The DOM of this EML entity
+                  type: "otherentity"
             	}
             },
 
