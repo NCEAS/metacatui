@@ -40,7 +40,8 @@ define(
          * @type {Object}
          * @property {('categorical'|'continuous'|'classified')}
          * [paletteType='categorical'] Set to 'categorical', 'continuous', or
-         * 'classified'. NOTE: Currently only categorical palettes are supported.
+         * 'classified'. NOTE: Currently only categorical and continuous palettes are
+         * supported.
          * - Categorical: the color conditions will be interpreted such that one color
          *   represents a single value (e.g. a discrete palette).
          * - Continuous: each color in the colors attribute will represent a point in a
@@ -79,8 +80,8 @@ define(
          * @typedef {Object} ColorPaletteConfig
          * @name MapConfig#ColorPaletteConfig
          * @property {('categorical'|'continuous'|'classified')}
-         * [paletteType='categorical'] NOTE: Currently only categorical palettes are
-         * supported.
+         * [paletteType='categorical'] NOTE: Currently only categorical and continuous
+         * palettes are supported.
          * - Categorical: the color conditions will be interpreted such that one color
          *   represents a single value (e.g. a discrete palette).
          * - Continuous: each color in the colors attribute will represent a point in a
@@ -122,6 +123,10 @@ define(
           try {
             if (paletteConfig && paletteConfig.colors) {
               this.set('colors', new AssetColors(paletteConfig.colors))
+            }
+            // If a continuous palette has only 1 colour, then treat it as categorical
+            if (this.get('paletteType') === 'continuous' && this.get('colors').length === 1) {
+              this.set('paletteType', 'categorical')
             }
           }
           catch (error) {
@@ -185,32 +190,48 @@ define(
             // }
             // color = sortedColors[i].get('color');
           } else if (type === 'continuous') {
-            // TODO: test
-
             // For a continuous color palette, the value of the feature property must
             // either match one of the values in the color palette, or be interpolated
-            // between the values in the palette. 
-            
-            // const sortedColors = colors.toArray().sort(function (a, b) {
-            //   return a.get('value') - b.get('value')
-            // })
-            // let i = 0;
-            // while (i < sortedColors.length && propValue >= sortedColors[i].get('value')) {
-            //   i++;
-            // }
-            // if (i === 0) {
-            //   color = sortedColors[0].get('color');
-            // }
-            // else if (i === sortedColors.length) {
-            //   color = sortedColors[i - 1].get('color');
-            // }
-            // else {
-            //   const percent = (propValue - sortedColors[i - 1].get('value')) /
-            //     (sortedColors[i].get('value') - sortedColors[i - 1].get('value'));
-            //   color = sortedColors[i - 1].get('color').interpolate(sortedColors[i].get('color'), percent);
-            // }
+            // between the values in the palette.
+            const sortedColors = colors.toArray().sort(function (a, b) {
+              return a.get('value') - b.get('value')
+            })
+            let i = 0;
+            while (i < sortedColors.length && propValue >= sortedColors[i].get('value')) {
+              i++;
+            }
+            if (i === 0) {
+              color = sortedColors[0].get('color');
+            }
+            else if (i === sortedColors.length) {
+              color = sortedColors[i - 1].get('color');
+            }
+            else {
+              const percent = (propValue - sortedColors[i - 1].get('value')) /
+                (sortedColors[i].get('value') - sortedColors[i - 1].get('value'));
+              color = colorPalette.interpolate(sortedColors[i - 1].get('color'), sortedColors[i].get('color'), percent)
+            }
           }
           return color
+        },
+
+        /**
+         * Given two colors, returns a color that is a linear interpolation between the
+         * two colors.
+         * @param {AssetColor#Color} color1 The first color.
+         * @param {AssetColor#Color} color2 The second color.
+         * @param {number} fraction The percentage of the way between the two colors, 0-1.
+         * @returns {AssetColor#Color} The interpolated color.
+         */
+        interpolate: function (color1, color2, fraction) {
+          const red = color1.red + fraction * (color2.red - color1.red)
+          const green = color1.green + fraction * (color2.green - color1.green)
+          const blue = color1.blue + fraction * (color2.blue - color1.blue)
+          return {
+            red: red,
+            green: green,
+            blue: blue
+          }
         },
 
         /**
