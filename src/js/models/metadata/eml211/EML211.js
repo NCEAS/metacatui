@@ -483,7 +483,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
           var emlParties = ["metadataprovider", "associatedparty", "creator", "contact", "publisher"],
               emlDistribution = ["distribution"],
-              emlEntities = ["datatable", "otherentity", "spatialvector"],
+              emlEntities = ["datatable", "otherentity", "spatialvector", "spatialraster", "storedprocedure", "view"],
               emlText = ["abstract", "additionalinfo"],
               emlMethods = ["methods"];
 
@@ -630,18 +630,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 }, {
                   parse: true
                 });
-                  } else if ( thisNode.localName == "datatable") {
-                      entityModel = new EMLDataTable({
-                          objectDOM: thisNode,
-                          parentModel: model
-                      }, {
-                          parse: true
-                      });
-            } else {
-              entityModel = new EMLOtherEntity({
+            } else if ( thisNode.localName == "datatable") {
+                entityModel = new EMLDataTable({
+                    objectDOM: thisNode,
+                    parentModel: model
+                }, {
+                    parse: true
+                });
+            }
+            else {
+              entityModel = new EMLEntity({
                   objectDOM: thisNode,
                   parentModel: model,
-                          entityType: "application/octet-stream"
+                  entityType: "application/octet-stream",
+                  type: thisNode.localName
                 }, {
                   parse: true
                 });
@@ -1034,7 +1036,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
       }
 
       //Get the existing taxon coverage nodes from the EML
-      var existingEntities = datasetNode.find("otherEntity, dataTable");
+      var existingEntities = datasetNode.find("otherEntity, dataTable, spatialRaster, spatialVector, storedProcedure, view");
 
       //Serialize the entities
       _.each(this.get("entities"), function(entity, position) {
@@ -1665,7 +1667,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         // Go through each node in the node list and find the position where this
         // node will be inserted after
         for (var i = position - 1; i >= 0; i--) {
-          if ($(eml).find("dataset").find(nodeOrder[i]).length) {
+          if ($(eml).find("dataset").children(nodeOrder[i]).length) {
             return $(eml).find("dataset").children(nodeOrder[i]).last();
           }
         }
