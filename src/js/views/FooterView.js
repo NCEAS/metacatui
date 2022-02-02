@@ -3,8 +3,14 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/footer.html'],
   function ($, _, Backbone, FooterTemplate) {
     'use strict';
 
-    // Build the Footer view of the application
-    var FooterView = Backbone.View.extend({
+    /**
+    * @class FooterView
+    * @classdesc The FooterView renders the main footer for the application, at the bottom of each page.
+    * @classcategory Views
+    * @extends Backbone.View
+    */
+    var FooterView = Backbone.View.extend(
+      /** @lends FooterView.prototype */{
 
       el: '#Footer',
 

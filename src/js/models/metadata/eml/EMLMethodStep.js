@@ -23,7 +23,8 @@ define(required,
   * @extends Backbone.Model
   * @since 2.19.0
   */
-  var EMLMethodStep = Backbone.Model.extend({
+  var EMLMethodStep = Backbone.Model.extend(
+    /** @lends EMLMethodStep.prototype */{
 
     /**
     * Default attributes for EMLMethodSteps

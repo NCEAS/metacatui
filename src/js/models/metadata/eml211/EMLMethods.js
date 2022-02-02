@@ -475,7 +475,7 @@ define(['jquery',
     /**
     * Climbs up the model heirarchy until it finds the EML model
     *
-    * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+    * @return {EML211|false} - Returns the EML 211 Model or false if not found
     */
     getParentEML: function(){
       var emlModel = this.get("parentModel"),

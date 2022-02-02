@@ -107,7 +107,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
 
       /**
       * Renders a single EMLMethodStep model
-      * @param step {[EMLMethodStep]}
+      * @param {EMLMethodStep} [step]
       * @since 2.19.0
       */
       renderMethodStep: function(step){

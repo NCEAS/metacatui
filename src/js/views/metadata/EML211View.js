@@ -2456,7 +2456,7 @@ define(['underscore', 'jquery', 'backbone',
         * Adds an {@link EMLAnnotation} to the {@link EML211} model currently being edited.
         * Attributes for the annotation are retreived from the HTML attributes from the HTML element
         * that was interacted with.
-        * @param {Event e} - An Event on an Element that contains {@link EMLAnnotation} data
+        * @param {Event} e - An Event on an Element that contains {@link EMLAnnotation} data
         */
         addAnnotation: function(e){
           try{
