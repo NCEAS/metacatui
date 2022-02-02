@@ -19,16 +19,16 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/footer.html'],
 
       /**
        * Hide the footer
-       * @since 2.x.x
+       * @since 2.19.0
        */
       hide: function () {
-        this.el.style.setProperty('display', 'none') 
+        this.el.style.setProperty('display', 'none')
         document.body.style.setProperty('--footer-height', '0')
       },
 
       /**
        * Show the footer after it was hidden
-       * @since 2.x.x
+       * @since 2.19.0
        */
       show: function () {
         this.el.style.removeProperty('display')

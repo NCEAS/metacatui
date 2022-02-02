@@ -643,7 +643,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     * strings, arrays of strings, arrays of literal objects with string values, or a literal object with strings as the values.
     * @param {string|string[]|object} error A single error message in string format or a collection of error strings as an array or object
     * @returns {string} The error message HTML
-    * @since 2.X
+    * @since 2.18.0
     */
     getErrorListItem: function(error){
       try{

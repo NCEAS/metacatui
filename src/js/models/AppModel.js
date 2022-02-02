@@ -418,7 +418,7 @@ define(['jquery', 'underscore', 'backbone'],
       * If true, questions related to Data Sensitivity will be shown in the EML Editor.
       * @type {boolean}
       * @default true
-      * @since 2.X
+      * @since 2.19.0
       */
       enableDataSensitivityInEditor: true,
 
@@ -429,7 +429,7 @@ define(['jquery', 'underscore', 'backbone'],
       *
       * @type {string}
       * @default "http://datatags.org"
-      * @since 2.X
+      * @since 2.19.0
       */
       dataSensitivityInfoURL: "http://datatags.org",
 
@@ -450,7 +450,7 @@ define(['jquery', 'underscore', 'backbone'],
                     "id": "ethical-research-procedures",
                     "required": false
                   }]
-      * @since 2.X
+      * @since 2.19.0
       */
       customEMLMethods: [],
 
