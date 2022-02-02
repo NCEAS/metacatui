@@ -236,7 +236,7 @@ define(['jquery', 'underscore', 'backbone'],
       * filter names from this array to show or hide them. See "example" to see all the
       * filter options.
       * @type {string[]}
-      * @default ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
+      * @default ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial", "isPrivate"]
       * @example ["all", "annotation", "attribute", "dataSource", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
       */
       defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial", "isPrivate"],
