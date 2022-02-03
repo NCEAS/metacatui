@@ -452,6 +452,11 @@ define(['jquery', 'underscore', 'backbone'],
       * @since 2.19.0
       */
       /**
+      * In the editor, sometimes it is useful to have guided questions for the Methods section
+      * in addition to the generic numbered method steps. These custom methods are defined here
+      * as an array of literal objects that define each custom Methods question. Custom methods
+      * are serialized to the EML as regular method steps, but with an unchangeable title, defined here,
+      * in order to identify them.
       * @type {CustomEMLMethod}
       * @since 2.19.0
       */
