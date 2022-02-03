@@ -6,7 +6,6 @@ define(
     'jquery',
     'underscore',
     'backbone',
-    'models/maps/Map',
     'text!templates/maps/toolbar.html',
     // Sub-views
     'views/maps/LayerListView'
@@ -15,7 +14,6 @@ define(
     $,
     _,
     Backbone,
-    Map,
     Template,
     // Sub-views
     LayerListView
@@ -29,6 +27,7 @@ define(
     * @name ToolbarView
     * @extends Backbone.View
     * @screenshot views/maps/ToolbarView.png
+    * @since 2.18.0
     * @constructs
     */
     var ToolbarView = Backbone.View.extend(
@@ -50,7 +49,7 @@ define(
         * The model that this view uses
         * @type {Map}
         */
-        model: undefined,
+        model: null,
 
         /**
          * The primary HTML template for this view. The template must have three element,
@@ -136,13 +135,17 @@ define(
          * @property {string} label The name of this section to show to the user.
          * @property {MapIconString} icon The icon to show in the link (tab) for this
          * section
-         * @property {Backbone.View} view The view that renders the content of the toolbar
-         * section.
-         * @property {object} viewOptions Any additional options to pass to the content
+         * @property {Backbone.View} [view] The view that renders the content of the
+         * toolbar section.
+         * @property {object} [viewOptions] Any additional options to pass to the content
          * view. By default, the label, icon, and Map model will be passed to the view as
          * 'label', 'icon', and 'model', respectively. To pass a specific attribute from
          * the Map model, use a string with the syntax 'model.desiredAttribute'. For
          * example, 'model.layers' will be converted to view.model.get('layers')
+         * @property {function} [action] A function to call when the link/tab is clicked.
+         * This can be provided instead of a view and viewOptions, in which case no
+         * toolbar section will be created. The function will be passed the view and the
+         * Map model as arguments.
          */
 
         /**
@@ -159,6 +162,13 @@ define(
             viewOptions: {
               model: null,
               collection: 'model.layers'
+            }
+          },
+          {
+            label: 'Home',
+            icon: 'home',
+            action: function (view, model) {
+              model.trigger('flyHome')
             }
           }
         ],
@@ -224,15 +234,21 @@ define(
             this.sections.forEach(function (sectionOption) {
               // Render the link and content elements
               var linkEl = view.renderSectionLink(sectionOption)
-              var contentEl = view.renderSectionContent(sectionOption)
+              var action = sectionOption.action
+              let contentEl = null;
+              if (sectionOption.view) {
+                contentEl = view.renderSectionContent(sectionOption)
+              }
               // Set the section to false to start
               var isActive = false
               // Save a reference to these elements and their status. sectionEl is an
               // object that has type SectionElement (documented in comments below)
-              var sectionEl = { linkEl, contentEl, isActive }
+              var sectionEl = { linkEl, contentEl, isActive, action }
               view.sectionElements.push(sectionEl)
               // Attach the link and content to the view
-              view.contentContainer.appendChild(contentEl);
+              if (contentEl) {
+                view.contentContainer.appendChild(contentEl);
+              }
               view.linksContainer.appendChild(linkEl);
               // Add a listener that shows the section when the link is clicked
               linkEl.addEventListener('click', function () {
@@ -286,11 +302,13 @@ define(
               this.close()
               return
             }
-            if (!toolbarOpen) {
+            if (!toolbarOpen && sectionEl.contentEl) {
               this.open()
             }
             if (!sectionActive) {
-              this.inactivateAllSections()
+              if (sectionEl.contentEl) {
+                this.inactivateAllSections()
+              }
               this.activateSection(sectionEl)
             }
           }
@@ -463,9 +481,15 @@ define(
          */
         activateSection: function (sectionEl) {
           try {
-            sectionEl.isActive = true;
-            sectionEl.contentEl.classList.add(this.classes.contentActive)
-            sectionEl.linkEl.classList.add(this.classes.linkActive)
+            if (sectionEl.action && typeof sectionEl.action === 'function') {
+              const view = this;
+              const model = this.model;
+              sectionEl.action(view, model)
+            } else {
+              sectionEl.isActive = true;
+              sectionEl.contentEl.classList.add(this.classes.contentActive)
+              sectionEl.linkEl.classList.add(this.classes.linkActive)
+            }
           }
           catch (error) {
             console.log(
@@ -482,8 +506,10 @@ define(
         inactivateSection: function (sectionEl) {
           try {
             sectionEl.isActive = false;
-            sectionEl.contentEl.classList.remove(this.classes.contentActive)
-            sectionEl.linkEl.classList.remove(this.classes.linkActive)
+            if (sectionEl.contentEl) {
+              sectionEl.contentEl.classList.remove(this.classes.contentActive)
+              sectionEl.linkEl.classList.remove(this.classes.linkActive)
+            }
           }
           catch (error) {
             console.log(

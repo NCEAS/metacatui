@@ -22,7 +22,7 @@ define(
      * @class AssetColorPalette
      * @name AssetColorPalette
      * @extends Backbone.Model
-     * @since 2.x.x
+     * @since 2.18.0
      * @constructor
     */
     var AssetColorPalette = Backbone.Model.extend(
@@ -40,7 +40,8 @@ define(
          * @type {Object}
          * @property {('categorical'|'continuous'|'classified')}
          * [paletteType='categorical'] Set to 'categorical', 'continuous', or
-         * 'classified'. NOTE: Currently only categorical palettes are supported.
+         * 'classified'. NOTE: Currently only categorical and continuous palettes are
+         * supported.
          * - Categorical: the color conditions will be interpreted such that one color
          *   represents a single value (e.g. a discrete palette).
          * - Continuous: each color in the colors attribute will represent a point in a
@@ -58,8 +59,8 @@ define(
          * @property {AssetColors} [colors = new AssetColors()] The colors to use in the
          * color palette, along with the conditions associated with each color (i.e. the
          * properties of the feature that must be true to use the given color.) . The last
-         * color in the collection should ideally be a default (see AssetColor model for
-         * details on how to set a default color.)
+         * color in the collection will always be treated as the default color - any
+         * feature that doesn't match the other colors will be colored with this color.
         */
         defaults: function () {
           return {
@@ -79,8 +80,8 @@ define(
          * @typedef {Object} ColorPaletteConfig
          * @name MapConfig#ColorPaletteConfig
          * @property {('categorical'|'continuous'|'classified')}
-         * [paletteType='categorical'] NOTE: Currently only categorical palettes are
-         * supported.
+         * [paletteType='categorical'] NOTE: Currently only categorical and continuous
+         * palettes are supported.
          * - Categorical: the color conditions will be interpreted such that one color
          *   represents a single value (e.g. a discrete palette).
          * - Continuous: each color in the colors attribute will represent a point in a
@@ -104,15 +105,15 @@ define(
          * @example
          * {
          *    paletteType: 'categorical',
-         *    property: 'landUse'
-         *    label: 'Land Use in 2016'
+         *    property: 'landUse',
+         *    label: 'Land Use in 2016',
          *    colors: [
          *      { value: "agriculture", color: "#FF5733" },
          *      { value: "park", color: "#33FF80" }
          *    ]
          * }
         */
-        
+
         /**
          * Executed when a new AssetColorPalette model is created.
          * @param {MapConfig#ColorPaletteConfig} [paletteConfig] The initial values of the
@@ -123,6 +124,10 @@ define(
             if (paletteConfig && paletteConfig.colors) {
               this.set('colors', new AssetColors(paletteConfig.colors))
             }
+            // If a continuous palette has only 1 colour, then treat it as categorical
+            if (this.get('paletteType') === 'continuous' && this.get('colors').length === 1) {
+              this.set('paletteType', 'categorical')
+            }
           }
           catch (error) {
             console.log(
@@ -130,6 +135,112 @@ define(
               '. Error details: ' + error
             );
           }
+        },
+
+        /**
+         * Given properties of a feature, returns the color associated with that feature.
+         * @param {Object} properties The properties of the feature to get the color for.
+         * (See the 'properties' attribute of {@link Feature#defaults}.)
+         * @returns {AssetColor#Color} The color associated with the given set of
+         * properties.
+         */
+        getColor: function (properties) {
+
+          const colorPalette = this;
+
+          // As a backup, use the default color
+          const defaultColor = this.getDefaultColor();
+          let color = defaultColor
+
+          // The name of the property to conditionally color the features by
+          const prop = colorPalette.get('property');
+          // The value for the this property in the given properties
+          const propValue = properties[prop];
+          // Each palette type has different ways of getting the color
+          const type = colorPalette.get('paletteType');
+          // The collection of colors + conditions 
+          const colors = colorPalette.get('colors');
+
+          if (!colors || colors.length === 0) {
+            // Skip the other if statements, use default color.
+          } else if (colors.length === 1) {
+            // If there's just 1 color, then return that color.
+            color = colors.at(0).get('color');
+          } else if (type === 'categorical') {
+            // For a categorical color palette, the value of the feature property just
+            // needs to match one of the values in the list of color conditions.
+            // If it matches, then return the color associated with that value.
+            const colorMatch = colors.findWhere({ value: propValue });
+            if (colorMatch) {
+              color = colorMatch.get('color');
+            }
+          } else if (type === 'classified') {
+            // TODO: test
+            
+            // For a classified color palette, the value of the feature property needs to
+            // be greater than or equal to the value of the color condition. Use a
+            // sorted array.
+            
+            // const sortedColors = colors.toArray().sort(function (a, b) {
+            //   return a.get('value') - b.get('value')
+            // })
+            // let i = 0;
+            // while (i < sortedColors.length && propValue >= sortedColors[i].get('value')) {
+            //   i++;
+            // }
+            // color = sortedColors[i].get('color');
+          } else if (type === 'continuous') {
+            // For a continuous color palette, the value of the feature property must
+            // either match one of the values in the color palette, or be interpolated
+            // between the values in the palette.
+            const sortedColors = colors.toArray().sort(function (a, b) {
+              return a.get('value') - b.get('value')
+            })
+            let i = 0;
+            while (i < sortedColors.length && propValue >= sortedColors[i].get('value')) {
+              i++;
+            }
+            if (i === 0) {
+              color = sortedColors[0].get('color');
+            }
+            else if (i === sortedColors.length) {
+              color = sortedColors[i - 1].get('color');
+            }
+            else {
+              const percent = (propValue - sortedColors[i - 1].get('value')) /
+                (sortedColors[i].get('value') - sortedColors[i - 1].get('value'));
+              color = colorPalette.interpolate(sortedColors[i - 1].get('color'), sortedColors[i].get('color'), percent)
+            }
+          }
+          return color
+        },
+
+        /**
+         * Given two colors, returns a color that is a linear interpolation between the
+         * two colors.
+         * @param {AssetColor#Color} color1 The first color.
+         * @param {AssetColor#Color} color2 The second color.
+         * @param {number} fraction The percentage of the way between the two colors, 0-1.
+         * @returns {AssetColor#Color} The interpolated color.
+         */
+        interpolate: function (color1, color2, fraction) {
+          const red = color1.red + fraction * (color2.red - color1.red)
+          const green = color1.green + fraction * (color2.green - color1.green)
+          const blue = color1.blue + fraction * (color2.blue - color1.blue)
+          return {
+            red: red,
+            green: green,
+            blue: blue
+          }
+        },
+
+        /**
+         * Gets the default color for the color palette, returns it as an object of RGB
+         * intestines between 0 and 1.
+         * @returns {AssetColor#Color} The default color for the palette.
+         */
+        getDefaultColor: function () {
+          return this.get('colors').getDefaultColor().get('color');
         },
 
         // /**
@@ -170,7 +281,7 @@ define(
         //  */
         // validate: function (attrs, options) {
         //   try {
-            
+
         //   }
         //   catch (error) {
         //     console.log(
@@ -201,6 +312,6 @@ define(
       });
 
     return AssetColorPalette;
-    
+
   }
 );

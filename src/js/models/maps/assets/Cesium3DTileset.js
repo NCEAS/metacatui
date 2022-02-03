@@ -29,7 +29,7 @@ define(
      * @class Cesium3DTileset
      * @name Cesium3DTileset
      * @extends MapAsset
-     * @since 2.x.x
+     * @since 2.18.0
      * @constructor
     */
     var Cesium3DTileset = MapAsset.extend(
@@ -57,6 +57,7 @@ define(
         /**
          * Default attributes for Cesium3DTileset models
          * @name Cesium3DTileset#defaults
+         * @extends MapAsset#defaults
          * @type {Object}
          * @property {'Cesium3DTileset'} type The format of the data. Must be
          * 'Cesium3DTileset'.
@@ -93,7 +94,7 @@ define(
          */
         initialize: function (assetConfig) {
           try {
-            
+
             MapAsset.prototype.initialize.call(this, assetConfig);
 
             if (assetConfig.filters) {
@@ -145,7 +146,7 @@ define(
                 // Listen to changes in the opacity, color, etc
                 model.setListeners();
                 // Set the initial visibility, opacity, filters, and colors
-                model.update3DTileStyle();
+                model.updateAppearance();
               })
               .otherwise(function (error) {
                 // See https://cesium.com/learn/cesiumjs/ref-doc/RequestErrorEvent.html
@@ -209,15 +210,15 @@ define(
         setListeners: function () {
           try {
 
-            // Make sure the listeners are only set once!
-            this.stopListening(this);
-
-            // When opacity, color, or filter changes
+            // When opacity, color, or visibility changes (will also update the filters)
+            this.stopListening(this, 'change:opacity change:color change:visible')
             this.listenTo(
-              this,
-              'change:opacity change:color change:filters change:visible',
-              this.update3DTileStyle
+              this, 'change:opacity change:color change:visible', this.updateAppearance
             )
+
+            // When filters change
+            this.stopListening(this.get('filters'), 'update')
+            this.listenTo(this.get('filters'), 'update', this.updateFeatureVisibility)
 
           }
           catch (error) {
@@ -232,42 +233,34 @@ define(
          * Sets a new Cesium3DTileStyle on the Cesium 3D tileset model's style property,
          * based on the attributes set on this model. 
          */
-        update3DTileStyle: function () {
+        updateAppearance: function () {
           try {
-
             const model = this;
-
             // The style set on the Cesium 3D tileset needs to be updated to show the
             // changes on a Cesium map.
-            const cesiumModel = this.get('cesiumModel')
+            const cesiumModel = model.get('cesiumModel')
 
             // If the layer isn't visible at all, don't bother setting up colors or
             // filters. Just set every feature to hidden.
-            if (this.get('visible') === false || this.get('opacity') === 0) {
+            if (!model.isVisible()) {
               cesiumModel.style = new Cesium.Cesium3DTileStyle({
                 show: false
               });
+              // Let the map and/or other parent views know that a change has been made
+              // that requires the map to be re-rendered
+              model.trigger('appearanceChanged')
             } else {
-              // evaluateColor is the function that Cesium will use to decide which color to
-              // shade each feature.
-              const evaluateColor = this.getColorFunction()
-
-              // Filters configured to conditionally show/hide features based on one or more
-              // properties
-              let filterExpression = this.getFilterExpression();
-
-              // Set a new 3D style
+              // Set a new 3D style with a  function that Cesium will use to shade each
+              // feature.
               cesiumModel.style = new Cesium.Cesium3DTileStyle({
                 color: {
-                  evaluateColor: evaluateColor,
-                },
-                show: filterExpression
+                  evaluateColor: model.getColorFunction(),
+                }
               });
+              // Since the style has to be reset, re-add the filters expression. This also
+              // triggers the appearanceChanged event
+              model.updateFeatureVisibility()
             }
-
-            // Let the map and/or other parent views know that a change has been made that
-            // requires the map to be re-rendered
-            model.trigger('appearanceChanged')
 
           }
           catch (error) {
@@ -279,101 +272,61 @@ define(
         },
 
         /**
-         * Using the Vector Filter Collections set on this tileset model, creates a string
-         * to use for the 'show' property in a Cesium3DTileStyle. This string is an
-         * expression defined using the 3D Tiles Styling language, see
-         * {@link https://github.com/CesiumGS/3d-tiles/tree/main/specification/Styling#styling-features}
-         * and
-         * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileStyle.html#show}.
-         * @returns {string|boolean} Returns a string of one or more expressions used to
-         * conditionally show features, or true if there are no valid filters set on this
-         * model
+         * Updates the Cesium style set on this tileset. Adds a new expression to the
+         * show property that will filter the features based on the filters set on this
+         * model.
          */
-        getFilterExpression: function () {
+        updateFeatureVisibility: function () {
           try {
 
-            // Each Filter model in the Filters collection creates one part of the filter
-            // expression.
+            const model = this;
+            const cesiumModel = this.get('cesiumModel')
             const filters = this.get('filters')
 
-            // The final filter expression string
-            let filtersExpression = ''
-
-            if (filters && filters.length) {
-
-              // Create a filter expression statement for each filter in the model. AND
-              // all expressions together into one string.
-              filters.each(function (filter) {
-
-                // type can be 'categorical' or 'numeric'
-                const type = filter.get('filterType')
-
-                // The feature property to filter on
-                const prop = filter.get('property')
-
-                // For numeric filters, create an expression in the format:
-                // (${myProperty} >= min && ${myProperty} <= max)
-                if (type === 'numeric') {
-
-                  const min = filter.get('min')
-                  const max = filter.get('max')
-
-                  if ((min || min === 0) && typeof min === 'number') {
-                    if (filtersExpression.length) {
-                      filtersExpression += ' && '
-                    }
-                    filtersExpression += `(\$\{${prop}\} >= ${min})`
-                  }
-
-                  if ((max || max === 0) && typeof max === 'number') {
-                    if (filtersExpression.length) {
-                      filtersExpression += ' && '
-                    }
-                    filtersExpression += `(\$\{${prop}\} <= ${max})`
-                  }
-
-                  // For categorical filters, create an expression in the format:
-                  // (${myProperty} === val1 || ${myProperty} === val2 || ${myProperty} === val3)
-                } else if (type === 'categorical') {
-
-                  const vals = filter.get('values')
-                  let catExpression = ''
-
-                  vals.forEach(function (val) {
-                    if (catExpression.length) {
-                      catExpression += ' || '
-                    }
-                    catExpression += `\$\{${prop}\} === ${val}`
-                  })
-
-                  if (catExpression.length) {
-                    catExpression = '(' + catExpression + ')'
-                    if (filtersExpression.length) {
-                      filtersExpression += ' && '
-                    }
-                    filtersExpression += catExpression
-                  }
-
-                }
-              })
-            }
-
-            if (filtersExpression.length) {
-              return filtersExpression
+            // If there are no filters, just set the show property to true
+            if (!filters || !filters.length) {
+              cesiumModel.style.show = true
             } else {
-              // If there are no filters, then use the default function which shows all
-              // features.
-              return true
+              const expression = new Cesium.StyleExpression()
+              expression.evaluate = function (feature) {
+                const properties = model.getPropertiesFromFeature(feature)
+                return model.featureIsVisible(properties)
+              }
+              cesiumModel.style.show = expression
             }
+            model.trigger('appearanceChanged')
 
           }
           catch (error) {
             console.log(
-              'There was an error creating a filter expression in a Cesium3DTileset' +
-              '. Error details: ' + error +
-              '. Returning "true", which will show all features in the tileset.'
+              'There was an error  in a Cesium3DTileset' +
+              '. Error details: ' + error
             );
-            return true
+          }
+        },
+
+        /**
+         * Given a feature from a Cesium 3D tileset, returns any properties that are set
+         * on the feature, similar to an attributes table.
+         * @param {Cesium.Cesium3DTileFeature} feature A Cesium 3D Tile feature
+         * @returns {Object} An object containing key-value mapping of property names to
+         * properties.
+         */
+        getPropertiesFromFeature(feature) {
+          try {
+            let properties = {};
+            feature.getPropertyNames().forEach(function (propertyName) {
+              properties[propertyName] = feature.getProperty(propertyName)
+            })
+            properties = this.addCustomProperties(properties)
+            return properties
+          }
+          catch (error) {
+            console.log(
+              'There was an error getting properties from a A Cesium 3D Tile feature' +
+              '. Error details: ' + error + '. Returning an empty object.'
+            );
+            return {}
           }
         },
 
@@ -387,129 +340,34 @@ define(
          * @returns {function} A Cesium 3dTile evaluate color function
          */
         getColorFunction: function () {
-
           try {
+            const model = this;
             // Opacity of the entire layer is set by using it as the alpha for each color
-            const opacity = this.get('opacity')
+            const opacity = model.get('opacity')
 
-            // Colors configured to color features conditionally by a given property
-            const colorPalette = this.get('colorPalette')
-
-            // As a backup, use the default vector color
-            const defaultRgb = new AssetColor().defaults().color;
-            let defaultCol = new Cesium.Color(
-              defaultRgb.red, defaultRgb.green, defaultRgb.blue, opacity
-            );
-
-            // By default, just return the default color.
-            let evaluateColor = function () {
-              return defaultCol
-            };
-
-            // Write a function gives the correct color given a Cesium feature.
-            if (colorPalette) {
-
-              // The property to conditionally color the features by
-              const prop = colorPalette.get('property');
-              // Each palette type needs a different type of function
-              const type = colorPalette.get('paletteType');
-              // The collection of colors + conditions 
-              const colors = colorPalette.get('colors');
-
-              // If there are no colors, then use the default function which returns the
-              // default color.
-              if (!colors || colors.length === 0) {
-                // Skip the other if statements.
-
-                // If there's just 1 color, then the function only needs to return that color.
-              } else if (colors.length === 1) {
-                const rgb = colors.at(0).get('color');
-                evaluateColor = function (feature) {
-                  let featureOpacity = opacity;
-                  // The Cesium Map Widget View adds a property to a feature when it is
-                  // highlighted in the map. If this is the case, then make sure that the
-                  // alpha of the feature is 100%, otherwise the highlight borders in the
-                  // map do not show.
-                  if (feature.selectedInMap) {
-                    featureOpacity = 1
-                  }
-                  return new Cesium.Color(rgb.red, rgb.green, rgb.blue, featureOpacity);
-                }
-
-                // For a categorical color palette, the value of the feature property just
-                // needs to match one of the values in the list of color conditions. Use a
-                // map.
-              } else if (type === 'categorical') {
-                const colorMap = {}
-                colors.each(function (color) {
-                  const key = color.get('value')
-                  const rgb = color.get('color')
-                  const col = new Cesium.Color(rgb.red, rgb.green, rgb.blue, opacity);
-                  if (key || key === 0 || key === false) {
-                    colorMap[key] = col
-                  } else {
-                    defaultCol = col
-                  }
-                })
-                evaluateColor = function (feature) {
-                  let colMatch = colorMap[feature.getProperty(prop)];
-                  if (colMatch) {
-                    // The Cesium Map Widget View adds a property to a feature when it is
-                    // highlighted in the map. If this is the case, then make sure that the
-                    // alpha of the feature is 100%, otherwise the highlight borders in the
-                    // map do not show.
-                    if (feature.selectedInMap) {
-                      colMatch = colMatch.clone()
-                      colMatch = Cesium.Color.fromAlpha(colMatch, 1)
-                    }
-                    return colMatch
-                  } else {
-                    return defaultCol
-                  }
-                }
-
-                // For a classified color palette, the function should look for the first color condition where the feature's value is less...
-              } else if (type === 'classified') {
-                // evaluateColor = function (feature) {
-                //   // TODO
-                // }
-
-                // Use a gradient function 
-              } else if (type === 'continuous') {
-                // evaluateColor = function (feature) {
-                //   // TODO
-                // }
+            const evaluateColor = function (feature) {
+              const properties = model.getPropertiesFromFeature(feature);
+              let featureOpacity = opacity;
+              // If the feature is currently selected, set the opacity to max (otherwise the
+              // 'silhouette' borders in the map do not show in the Cesium widget)
+              if (model.featureIsSelected(feature)) {
+                featureOpacity = 1
+              }
+              const rgb = model.getColor(properties)
+              if (rgb) {
+                return new Cesium.Color(rgb.red, rgb.green, rgb.blue, featureOpacity);
+              } else {
+                return new Cesium.Color();
               }
             }
-
             return evaluateColor
-
-          } catch (error) {
+          }
+          catch (error) {
             console.log(
-              'There was an error creating a color function in a Cesium3DTileset' +
+              'There was an error creating a color function in a Cesium3DTileset model' +
               '. Error details: ' + error
             );
           }
-
-          return evaluateColor
-        },
-
-        /**
-         * Checks if the Cesium 3D tileset information has been fetched and is ready to
-         * use.
-         * @returns {Promise} Returns a promise that resolves to this model when ready.
-        */
-        whenReady: function () {
-          const model = this;
-          return new Promise(function (resolve, reject) {
-            if (model.get('status') === 'ready') {
-              resolve(model)
-            }
-            model.stopListening(model, 'change:status')
-            model.listenTo(model, 'change:status', function () {
-              resolve(model)
-            })
-          });
         },
 
         /**
@@ -519,7 +377,7 @@ define(
         * @returns {Promise} Returns a promise that resolves to a Cesium Bounding Sphere
         * when ready
         */
-        getCameraBoundSphere: function () {
+        getBoundingSphere: function () {
           const model = this;
           return this.whenReady()
             .then(function (model) {

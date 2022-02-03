@@ -29,6 +29,7 @@ define(
     * @name LegendView
     * @extends Backbone.View
     * @screenshot views/maps/LegendView.png
+    * @since 2.18.0
     * @constructs
     */
     var LegendView = Backbone.View.extend(
@@ -168,23 +169,25 @@ define(
               }
             }
 
-            // For categorical vector color palettes, in preview mode
-            if (colorPalette && mode === 'preview' && paletteType === 'categorical') {
-              this.renderCategoricalPreviewLegend(colorPalette)
-            }
-            // For imagery layers that do not have a color palette, in preview mode
-            else if (mode === 'preview' && typeof this.model.getThumbnail === 'function') {
-              if (!this.model.get('thumbnail')) {
-                this.listenToOnce(this.model, 'change:thumbnail', function () {
+            if (mode === 'preview') {
+              // For categorical vector color palettes, in preview mode
+              if (colorPalette && paletteType === 'categorical') {
+                this.renderCategoricalPreviewLegend(colorPalette)
+              } else if (colorPalette && paletteType === 'continuous') {
+                this.renderContinuousPreviewLegend(colorPalette)
+              }
+              // For imagery layers that do not have a color palette, in preview mode
+              else if (typeof this.model.getThumbnail === 'function') {
+                if (!this.model.get('thumbnail')) {
+                  this.listenToOnce(this.model, 'change:thumbnail', function () {
+                    this.renderImagePreviewLegend(this.model.get('thumbnail'))
+                  })
+                } else {
                   this.renderImagePreviewLegend(this.model.get('thumbnail'))
-                })
-              } else {
-                this.renderImagePreviewLegend(this.model.get('thumbnail'))
+                }
               }
             }
-
             // TODO:
-            // - preview categorical legend
             // - preview classified legend
             // - full legends with labels, title, etc.
 
@@ -321,14 +324,14 @@ define(
                   legendSquares.sort((a, b) => d3.ascending(a.i, b.i));
                   this.parentNode.appendChild(this)
                   // Show tooltip
-                  if (d.label || d.value) {
+                  if (d.label || d.value || d.value === 0) {
                     $(this).tooltip({
                       placement: 'bottom',
                       trigger: 'manual',
                       title: d.label || d.value,
                       container: view.$el,
                       animation: false,
-                      template: '<div class="tooltip '+ view.classes.tooltip +'"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>'
+                      template: '<div class="tooltip ' + view.classes.tooltip + '"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>'
                     }).tooltip('show')
                   }
                 }
@@ -343,6 +346,117 @@ define(
           catch (error) {
             console.log(
               'There was an error creating a categorical legend preview in a LegendView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Creates a preview legend for continuous color palettes and inserts it into the
+         * view
+         * @param {AssetColorPalette} colorPalette - The AssetColorPalette that maps
+         * feature attributes to colors, used to create the legend
+         */
+        renderContinuousPreviewLegend: function (colorPalette) {
+          try {
+            if (!colorPalette) {
+              return
+            }
+            const view = this
+            // Data to use in d3
+            let data = colorPalette.get('colors').toJSON();
+            // The max width of the SVG
+            let width = this.previewSvgDimensions.width
+            // The height of the SVG
+            const height = this.previewSvgDimensions.height
+            // Height of the gradient rectangle, leaving some room for the drop shadow
+            const gradientHeight = height * 0.92
+
+            // A unique ID for the gradient
+            const gradientId = 'gradient-' + view.cid;
+
+            // SVG element
+            const svg = this.createSVG({
+              dropshadowFilter: false,
+              width: width,
+              height: height,
+            })
+
+            // Add the preview class and dropshadow to the SVG
+            svg.classed(this.classes.previewSVG, true)
+            svg.style('filter', 'url(#dropshadow)')
+
+            // Create a gradient using the data
+            const gradient = svg.append('defs')
+              .append('linearGradient')
+              .attr('id', gradientId)
+              .attr('x1', '0%')
+              .attr('y1', '0%')
+
+            // Add the gradient stops
+            data.forEach(function (d, i) {
+              gradient.append('stop')
+                // offset should be relative to the value in the data
+                .attr('offset', d.value / data[data.length - 1].value * 100 + '%')
+                .attr('stop-color', `rgb(${d.color.red * 255},${d.color.green * 255},${d.color.blue * 255})`)
+            })
+
+            // Create the rectangle
+            const rect = svg.append('rect')
+              .attr('x', 0)
+              .attr('y', 0)
+              .attr('width', width)
+              .attr('height', gradientHeight)
+              .attr('rx', (gradientHeight * 0.1))
+              .style('fill', 'url(#' + gradientId + ')')
+            
+            // Create a proxy element to attach the tooltip to, so that we can move the
+            // tooltip to follow the mouse (by moving the proxy element to follow the mouse)
+            const proxyEl = svg.append('rect').attr('y', gradientHeight)
+
+            rect.on('mousemove', function () {
+              if (view.model.get('visible')) {
+                // Get the coordinates of the mouse relative to the rectangle
+                let xMouse = d3.mouse(this)[0];
+                if (xMouse < 0) {
+                  xMouse = 0;
+                }
+                if (xMouse > width) {
+                  xMouse = width;
+                }
+                // Get the relative position of the mouse to the gradient
+                const relativePosition = xMouse / width;
+                // Get the value at the relative position by interpolating the data
+                let value = d3.interpolate(data[0].value, data[data.length - 1].value)(relativePosition);
+                // Show tooltip with the value
+                if (value || value === 0) {
+                  // Round to 1 decimal place
+                  value = Math.round(value * 10) / 10
+                  // Move the proxy element to follow the mouse
+                  proxyEl.attr('x', xMouse)
+                  // Attach the tooltip to the proxy element. Tooltip needs to be
+                  // refreshed every time the mouse moves
+                  $(proxyEl).tooltip('destroy');
+                  $(proxyEl).tooltip({
+                    placement: 'bottom',
+                    trigger: 'manual',
+                    title: value,
+                    container: view.$el,
+                    animation: false,
+                    template: '<div class="tooltip ' + view.classes.tooltip + '"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>'
+                  }).tooltip('show')
+                }
+              }
+            })
+              // Hide tooltip
+              .on('mouseleave', function () {
+                $(proxyEl).tooltip('destroy');
+              })
+
+          }
+          catch (error) {
+            console.log(
+              'There was an error rendering a continuous preview legend in a LegendView' +
               '. Error details: ' + error
             );
           }
@@ -375,17 +489,18 @@ define(
 
             if (options.dropshadowFilter) {
 
-              const filterText = `<filter id="dropshadow" height="110%">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="2"/> <!-- stdDeviation is how much to blur -->
-              <feOffset dx="1" dy="1" result="offsetblur"/> <!-- how much to offset -->
-              <feComponentTransfer>
-                <feFuncA type="linear" slope="0.7"/> <!-- slope is the opacity of the shadow -->
-              </feComponentTransfer>
-              <feMerge> 
-                <feMergeNode/> <!-- this contains the offset blurred image -->
-                <feMergeNode in="SourceGraphic"/> <!-- this contains the element that the filter is applied to -->
-              </feMerge>
-            </filter>`
+              const filterText =
+              `<filter id="dropshadow" height="110%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="2"/> <!-- stdDeviation is how much to blur -->
+                <feOffset dx="1" dy="1" result="offsetblur"/> <!-- how much to offset -->
+                <feComponentTransfer>
+                  <feFuncA type="linear" slope="0.7"/> <!-- slope is the opacity of the shadow -->
+                </feComponentTransfer>
+                <feMerge> 
+                  <feMergeNode/> <!-- this contains the offset blurred image -->
+                  <feMergeNode in="SourceGraphic"/> <!-- this contains the element that the filter is applied to -->
+                </feMerge>
+              </filter>`
 
               const filterEl = new DOMParser().parseFromString(
                 '<svg xmlns="http://www.w3.org/2000/svg">' + filterText + '</svg>',

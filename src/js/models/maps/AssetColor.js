@@ -19,7 +19,7 @@ define(
      * @class AssetColor
      * @name AssetColor
      * @extends Backbone.Model
-     * @since 2.x.x
+     * @since 2.18.0
      * @constructor
     */
     var AssetColor = Backbone.Model.extend(

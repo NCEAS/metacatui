@@ -30,6 +30,7 @@ define(
     * @name LayerListView
     * @extends Backbone.View
     * @screenshot views/maps/LayerListView.png
+    * @since 2.18.0
     * @constructs
     */
     var LayerListView = Backbone.View.extend(

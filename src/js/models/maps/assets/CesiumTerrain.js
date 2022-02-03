@@ -24,7 +24,7 @@ define(
      * @class CesiumTerrain
      * @name CesiumTerrain
      * @extends MapAsset
-     * @since 2.x.x
+     * @since 2.18.0
      * @constructor
     */
     var CesiumTerrain = MapAsset.extend(
@@ -50,6 +50,7 @@ define(
         /**
          * Default attributes for CesiumTerrain models
          * @name CesiumTerrain#defaults
+         * @extends MapAsset#defaults
          * @type {Object}
          * @property {'CesiumTerrainProvider'} type A string indicating a Cesium Terrain
          * Provider, see

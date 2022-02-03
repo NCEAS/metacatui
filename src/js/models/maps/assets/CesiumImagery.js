@@ -25,7 +25,7 @@ define(
      * @class CesiumImagery
      * @name CesiumImagery
      * @extends MapAsset
-     * @since 2.x.x
+     * @since 2.18.0
      * @constructor
     */
     var CesiumImagery = MapAsset.extend(
@@ -56,6 +56,7 @@ define(
         /**
          * Default attributes for CesiumImagery models
          * @name CesiumImagery#defaults
+         * @extends MapAsset#defaults
          * @type {Object}
          * @property {'BingMapsImageryProvider'|'IonImageryProvider'} type A string
          * indicating a Cesium Imagery Provider type. See
@@ -83,13 +84,12 @@ define(
 
         /**
          * Executed when a new CesiumImagery model is created.
-         * @param {Object} [attributes] The initial values of the attributes, which will
-         * be set on the model.
-         * @param {Object} [options] Options for the initialize function.
+         * @param {MapConfig#MapAssetConfig} [assetConfig] The initial values of the
+         * attributes, which will be set on the model.
          */
-        initialize: function (attributes, options) {
+        initialize: function (assetConfig) {
           try {
-            MapAsset.prototype.initialize.call(this, attributes, options);
+            MapAsset.prototype.initialize.call(this, assetConfig);
 
             this.createCesiumModel();
 
@@ -135,7 +135,7 @@ define(
             cesiumOptions.assetId = Number(cesiumOptions.ionAssetId)
             delete cesiumOptions.ionAssetId
             cesiumOptions.accessToken =
-                cesiumOptions.cesiumToken || MetacatUI.appModel.get('cesiumToken');
+              cesiumOptions.cesiumToken || MetacatUI.appModel.get('cesiumToken');
           }
 
           if (providerFunction && typeof providerFunction === 'function') {
@@ -205,31 +205,13 @@ define(
         },
 
         /**
-         * Checks if the Cesium Imagery Provider has been converted to a Cesium Imagery
-         * Layer model that is ready to use.
-         * @returns {Promise} Returns a promise that resolves to this model when ready.
-          */
-        whenReady: function () {
-          const model = this
-          return new Promise(function (resolve, reject) {
-            if (model.get('status') === 'ready') {
-              resolve(model)
-            }
-            model.stopListening(model, 'change:status')
-            model.listenTo(model, 'change:status', function () {
-              resolve(model)
-            })
-          });
-        },
-
-        /**
          * Gets a Cesium Bounding Sphere that can be used to navigate to view the full
          * extent of the imagery. See
          * {@link https://cesium.com/learn/cesiumjs/ref-doc/BoundingSphere.html}
          * @returns {Promise} Returns a promise that resolves to a Cesium Bounding Sphere
          * when ready
          */
-        getCameraBoundSphere: function () {
+        getBoundingSphere: function () {
           return this.whenReady()
             .then(function (model) {
               return model.get('cesiumModel').getViewableRectangle()
@@ -251,7 +233,7 @@ define(
               this.listenToOnce(this, 'change:status', this.getThumbnail)
               return
             }
-  
+
             const model = this
             const cesImageryLayer = this.get('cesiumModel');
             const provider = cesImageryLayer.imageryProvider
@@ -259,13 +241,13 @@ define(
             var x = (rect.east + rect.west) / 2
             var y = (rect.north + rect.south) / 2
             var level = provider.minimumLevel
-  
+
             provider.requestImage(x, y, level).then(function (response) {
               var objectURL = URL.createObjectURL(response.blob);
               model.set('thumbnail', objectURL)
             }).otherwise(function (e) {
               console.log('Error requesting an image tile to use as a thumbnail for an ' +
-              'Imagery Layer. Error message: ' + e);
+                'Imagery Layer. Error message: ' + e);
             })
           }
           catch (error) {

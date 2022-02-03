@@ -27,6 +27,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                     all: [],
                     creator: [],
                     taxon: [],
+                    isPrivate: null,
                     documents: false,
                     resourceMap: false,
                     yearMin: 1900, //The user-selected minimum year
@@ -97,6 +98,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 seriesId: "seriesId",
                 taxon: "Taxon",
                 spatial: "Location",
+                isPrivate: "Private datasets",
                 all: ""
             },
 
@@ -117,7 +119,8 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 rightsHolder: "rightsHolder",
                 submitter: "submitter",
                 username: ["rightsHolder", "writePermission", "changePermission"],
-                taxon: ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
+                taxon: ["kingdom", "phylum", "class", "order", "family", "genus", "species"],
+                isPrivate: "isPublic"
             },
 
             facetNameMap: {
@@ -126,6 +129,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 "annotation": "sem_annotation",
                 "spatial": "site",
                 "taxon": ["kingdom", "phylum", "class", "order", "family", "genus", "species"],
+                "isPublic": "isPublic",
                 "all": "keywords"
             },
 
@@ -489,6 +493,25 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                             " AND endDate:[* TO " + yearMax + "-12-31T00:00:00Z]";
                     }
                 }
+                
+                //----- public/private ------
+                if (this.filterIsAvailable("isPrivate") && ((filter == "isPrivate") || getAll)) {
+                    
+                    var isPrivate = this.get('isPrivate');
+                    if (isPrivate !== null && isPrivate !== 'undefined') {
+
+                        if( query.length ){
+                          query += " AND ";
+                        }
+
+                        // Currently, the Solr field 'isPublic' can be set to true or false, or not set.
+                        // isPrivate is equivalent to "isPublic:false" or isPublic not set
+                        if(isPrivate) {
+                            query += "-isPublic:true"
+                        }
+                    }
+                }
+
 
                 //-----Data Source--------
                 if (this.filterIsAvailable("dataSource") && ((filter == "dataSource") || getAll)) {

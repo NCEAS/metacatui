@@ -298,13 +298,13 @@ define(["jquery",
 
                 // Iterate through each search model text attribute and show UI filter for each
                 var categories = ["all", "attribute", "creator", "id", "taxon", "spatial",
-                    "additionalCriteria", "annotation"];
+                    "additionalCriteria", "annotation", "isPrivate"];
                 var thisTerm = null;
 
                 for (var i = 0; i < categories.length; i++) {
                     thisTerm = this.searchModel.get(categories[i]);
 
-                    if (thisTerm === undefined) break;
+                    if (thisTerm === undefined || thisTerm === null) break;
 
                     for (var x = 0; x < thisTerm.length; x++) {
                         this.showFilter(categories[i], thisTerm[x]);
@@ -1219,6 +1219,7 @@ define(["jquery",
                 $("#includes_data").prop("checked", this.searchModel.get("documents"));
                 $("#data_year").prop("checked", this.searchModel.get("dataYear"));
                 $("#publish_year").prop("checked", this.searchModel.get("pubYear"));
+                $("#is_private_data").prop("checked", this.searchModel.get("isPrivate"));
                 this.listDataSources();
 
                 // Zoom out the Google Map

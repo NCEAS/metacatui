@@ -15,3 +15,5 @@ Important information that software developers who use MetacatUI for their repos
 
 ### New configuration options
 - [configOption](https://nceas.github.io/metacatui/docs/AppConfig.html#configOption) - Description
+
+### See the complete changelog: [https://github.com/NCEAS/metacatui/compare/2.17.0...2.18.0](https://github.com/NCEAS/metacatui/compare/2.17.0...2.18.0)

@@ -1,5 +1,9 @@
 <h2>Methods &amp; Sampling</h2>
 <p class="notification" data-category="methods"></p>
+
+<div class="row-fluid custom-methods-container">
+</div>
+
 <div class="row-fluid methodStep">
 	<h4>Methods <i class="required-icon hidden" data-category="methods"></i></h4>
 	<p class="subtle">
@@ -9,21 +13,7 @@
 		 and any quality control measures.
 	</p>
 
-	<% _(methodStepDescription).each(function(step, i) { %>
-		<div class="step-container">
-			<h5>Step <span class="step-num"><%=i+1%></span></h5>
-			<textarea data-attribute="methodStepDescription"
-					  data-type="description"
-					  rows="7" class="method-step"><%=step%></textarea>
-			<i class="remove icon-remove"></i>
-		</div>
-	<% }) %>
-
-	<div class="step-container">
-		<h5>Step <span class="step-num"><%=methodStepDescription.length+1%></span></h5>
-		<textarea class="new method-step" data-attribute="methodStepDescription" data-type="description" rows="7"></textarea>
-		<i class="remove icon-remove hidden"></i>
-	</div>
+  <div id="eml-method-steps-container"></div>
 
 </div>
 <div class="row-fluid sampling">

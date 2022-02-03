@@ -38,7 +38,7 @@ All layer and and terrain models are extensions of the more generic `MapAsset` m
 
 #### Cesium asset models
 
-The [`Cesium3DTileset`]({{site.url}}/docs/Cesium3DTileset), [`CesiumImagery`]({{site.url}}/docs/CesiumImagery), and [`CesiumTerrain`]({{site.url}}/docs/CesiumTerrain) asset models are very closely tied to the `Cesium` architecture. Separating these `Cesium` assets from the `CesiumWidgetView` makes it easier to write new assets in the future, and keeps the `CesiumWidgetView` from becoming too expansive.
+The [`Cesium3DTileset`]({{site.url}}/docs/Cesium3DTileset), [`CesiumVectorData`]({{site.url}}/docs/CesiumVectorData), [`CesiumImagery`]({{site.url}}/docs/CesiumImagery), and [`CesiumTerrain`]({{site.url}}/docs/CesiumTerrain) asset models are very closely tied to the `Cesium` architecture. Separating these `Cesium` assets from the `CesiumWidgetView` makes it easier to write new assets in the future, and keeps the `CesiumWidgetView` from becoming too expansive.
 
 All three of these Cesium asset models have the common `createCesiumModel()` function, which constructs the appropriate `cesiumModel` for the type, given the `cesiumOptions` set on the model. The `cesiumModel` is then used by the `CesiumWidgetView` to render the data on the map. In addition, the `type` attribute used in each of these asset models directly corresponds to the Cesium constructor function that creates the `cesiumModel`.
 
@@ -210,6 +210,44 @@ Below is an example of a detailed map configuration (descriptions have been shor
       "moreInfoLink": "https://www.microsoft.com/maps",
       "cesiumOptions": {
         "ionAssetId": "2"
+      }
+    },
+    {
+      "label": "Some Test GeoJSON",
+      "type": "GeoJsonDataSource",
+      "description": "A single point specified using GeoJSON",
+      "customProperties": {
+        "year": {
+          "type": "date",
+          "property": "dateAndTime",
+          "format": "YYYY"
+        }
+      },
+      "featureTemplate": {
+        "template": "story",
+        "label": "year",
+        "options": {
+          "description": "summary",
+        }
+      },
+      "cesiumOptions": {
+        "data": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "geometry": {
+                "type": "Point",
+                "coordinates": [102.0, 0.5]
+              },
+              "properties": {
+                "prop0": "value0",
+                "dateAndTime": "2007-03-01T13:00:00Z",
+                "summary": "This is an example point!"
+              }
+            }
+          ]
+        }
       }
     }
   ],

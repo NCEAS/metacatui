@@ -579,6 +579,23 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
         }
 
       }, this);
+
+      //When new inputs have been added to this Editor, re-render these required icons.
+      // This is helpful when new questions are added to the editor after the intial rendering.
+      this.off("editorInputsAdded");
+      this.on("editorInputsAdded", function(){
+        this.renderRequiredIcons(requiredFields);
+      }, this);
+    },
+
+    /**
+    * Gets a list of required fields for this editor, or an empty object if there are none.
+    * @returns {object}
+    * @since 2.19.0
+    */
+    getRequiredFields: function(){
+      return {}
+
     },
 
     /**
@@ -626,7 +643,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     * strings, arrays of strings, arrays of literal objects with string values, or a literal object with strings as the values.
     * @param {string|string[]|object} error A single error message in string format or a collection of error strings as an array or object
     * @returns {string} The error message HTML
-    * @since 2.X
+    * @since 2.18.0
     */
     getErrorListItem: function(error){
       try{

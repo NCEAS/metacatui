@@ -15,11 +15,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/eml211/EMLProject',
         'models/metadata/eml211/EMLText',
         'models/metadata/eml211/EMLMethods',
+        'collections/metadata/eml/EMLAnnotations',
         'models/metadata/eml211/EMLAnnotation'],
     function($, _, Backbone, uuid, Units, ScienceMetadata, DataONEObject,
         EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage,
         EMLDistribution, EMLEntity, EMLDataTable, EMLOtherEntity, EMLParty,
-            EMLProject, EMLText, EMLMethods, EMLAnnotation) {
+            EMLProject, EMLText, EMLMethods, EMLAnnotations, EMLAnnotation) {
 
       /**
       * @class EML211
@@ -62,9 +63,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               purpose: [],
               entities: [], //An array of EMLEntities
               pubplace: null,
-              methods: null, // An EMLMethods objects
+              methods: new EMLMethods(), // An EMLMethods objects
               project: null, // An EMLProject object,
-              annotation: [], // Dataset-level annotations
+              annotations: null, // Dataset-level annotations
+              dataSensitivityPropertyURI: "http://purl.dataone.org/odo/SENSO_00000005",
               nodeOrder: [
                 "alternateidentifier",
                 "shortname",
@@ -483,7 +485,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
           var emlParties = ["metadataprovider", "associatedparty", "creator", "contact", "publisher"],
               emlDistribution = ["distribution"],
-              emlEntities = ["datatable", "otherentity", "spatialvector"],
+              emlEntities = ["datatable", "otherentity", "spatialvector", "spatialraster", "storedprocedure", "view"],
               emlText = ["abstract", "additionalinfo"],
               emlMethods = ["methods"];
 
@@ -571,16 +573,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               }
 
             }
-                //Parse EMLText modules
-                else if(_.contains(emlText, thisNode.localName)){
-                  if(typeof modelJSON[convertedName] == "undefined") modelJSON[convertedName] = [];
+            //Parse EMLText modules
+            else if(_.contains(emlText, thisNode.localName)){
+              if(typeof modelJSON[convertedName] == "undefined") modelJSON[convertedName] = [];
 
-                  modelJSON[convertedName].push(new EMLText({
-                      objectDOM: thisNode,
-                      parentModel: model
-                    }));
+              modelJSON[convertedName].push(new EMLText({
+                  objectDOM: thisNode,
+                  parentModel: model
+                }));
 
-                }
+            }
           else if(_.contains(emlMethods, thisNode.localName)) {
             if(typeof modelJSON[thisNode.localName] === "undefined") modelJSON[thisNode.localName] = [];
 
@@ -630,18 +632,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 }, {
                   parse: true
                 });
-                  } else if ( thisNode.localName == "datatable") {
-                      entityModel = new EMLDataTable({
-                          objectDOM: thisNode,
-                          parentModel: model
-                      }, {
-                          parse: true
-                      });
-            } else {
-              entityModel = new EMLOtherEntity({
+            } else if ( thisNode.localName == "datatable") {
+                entityModel = new EMLDataTable({
+                    objectDOM: thisNode,
+                    parentModel: model
+                }, {
+                    parse: true
+                });
+            }
+            else {
+              entityModel = new EMLEntity({
                   objectDOM: thisNode,
                   parentModel: model,
-                          entityType: "application/octet-stream"
+                  entityType: "application/octet-stream",
+                  type: thisNode.localName
                 }, {
                   parse: true
                 });
@@ -649,16 +653,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
             modelJSON["entities"].push(entityModel);
           }
+          //Parse dataset-level annotations
           else if (thisNode.localName === "annotation") {
-            if(typeof modelJSON["annotation"] == "undefined") {
-              modelJSON["annotation"] = [];
+            if( !modelJSON["annotations"] ) {
+              modelJSON["annotations"] = new EMLAnnotations();
             }
 
             var annotationModel = new EMLAnnotation({
               objectDOM: thisNode
             }, { parse: true });
 
-            modelJSON["annotation"].push(annotationModel);
+            modelJSON["annotations"].add(annotationModel);
           }
           else{
             //Is this a multi-valued field in EML?
@@ -932,15 +937,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
       // Dataset-level annotations
       datasetNode.children("annotation").remove();
 
-      _.each(this.get("annotation"), function(annotation) {
-        if (annotation.isEmpty()) {
-          return;
-        }
+      if( this.get("annotations") ){
+        this.get("annotations").each(function(annotation) {
+          if (annotation.isEmpty()) {
+            return;
+          }
 
-        var after = this.getEMLPosition(eml, "annotation");
+          var after = this.getEMLPosition(eml, "annotation");
 
-        $(after).after(annotation.updateDOM());
-      }, this);
+          $(after).after(annotation.updateDOM());
+        }, this);
+
+        //Since there is at least one annotation, the dataset node needs to have an id attribute.
+        datasetNode.attr("id", this.getXMLSafeID());
+      }
 
       //If there is no creator, create one from the user
       if(!this.get("creator").length){
@@ -1034,7 +1044,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
       }
 
       //Get the existing taxon coverage nodes from the EML
-      var existingEntities = datasetNode.find("otherEntity, dataTable");
+      var existingEntities = datasetNode.find("otherEntity, dataTable, spatialRaster, spatialVector, storedProcedure, view");
 
       //Serialize the entities
       _.each(this.get("entities"), function(entity, position) {
@@ -1518,18 +1528,28 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         });
 
+        //Validate the EML Methods
+        let emlMethods = this.get("methods");
+        if( emlMethods ){
+          if( !emlMethods.isValid() ){
+            errors.methods = emlMethods.validationError;
+          }
+        }
+
         // Validate each EMLAnnotation model
-        _.each(this.get("annotation"), function (model) {
-          if (model.isValid()) {
-            return;
-          }
+        if( this.get("annotations") ){
+          this.get("annotations").each(function (model) {
+            if (model.isValid()) {
+              return;
+            }
 
-          if (!errors.annotations) {
-            errors.annotations = [];
-          }
+            if (!errors.annotations) {
+              errors.annotations = [];
+            }
 
-          errors.annotations.push(model.validationError);
-        });
+            errors.annotations.push(model.validationError);
+          }, this);
+        }
 
         //Check the required fields for this MetacatUI configuration
         if(MetacatUI.appModel.get("emlEditorRequiredFields")){
@@ -1575,6 +1595,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 if( !this.get("keywordSets").length )
                   errors.keywordSets = "Provide at least one keyword.";
               }
+              //The EMLMethods model will validate itself for required fields, but
+              // this is a rudimentary check to make sure the EMLMethods model was created
+              // in the first place
               else if(key == "methods"){
                 if(!this.get("methods"))
                   errors.methods = "At least one method step is required.";
@@ -1593,6 +1616,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               else if(key == "abstract"){
                 if(!this.get("abstract").length)
                   errors["abstract"] = "Provide an abstract.";
+              }
+              else if(key == "dataSensitivity"){
+                if( !this.getDataSensitivity() ){
+                  errors["dataSensitivity"] = "Pick the category that best describes the level of sensitivity or restriction of the data.";
+                }
               }
               else if( !this.get(key) || (Array.isArray(this.get(key)) && !this.get(key).length) ){
                 errors[key] = "Provide a " + key + ".";
@@ -1665,7 +1693,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         // Go through each node in the node list and find the position where this
         // node will be inserted after
         for (var i = position - 1; i >= 0; i--) {
-          if ($(eml).find("dataset").find(nodeOrder[i]).length) {
+          if ($(eml).find("dataset").children(nodeOrder[i]).length) {
             return $(eml).find("dataset").children(nodeOrder[i]).last();
           }
         }
@@ -2255,7 +2283,104 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
       createID: function() {
         this.set("xmlID", uuid.v4());
+      },
+
+      /**
+      * Creates and adds an {@link EMLAnnotation} to this EML211 model with the given annotation data in JSON form.
+      * @param {object} annotationData The attribute data to set on the new {@link EMLAnnotation}. See {@link EMLAnnotation#defaults} for
+      * details on what attributes can be passed to the EMLAnnotation. In addition, there is an `elementName` property.
+      * @property {string} [annotationData.elementName] The name of the EML Element that this
+      annotation should be applied to. e.g. dataset, entity, attribute. Defaults to `dataset`. NOTE: Right now only dataset annotations are supported until
+      more annotation editing is added to the EML Editor.
+      * @property {Boolean} [annotationData.allowDuplicates] If false, this annotation will replace all annotations already set with the same propertyURI.
+      * By default, more than one annotation with a given propertyURI can be added (defaults to true)
+      */
+      addAnnotation: function(annotationData){
+
+        try{
+          if( !annotationData || typeof annotationData != "object" ){
+            return;
+          }
+
+          //If no element name is provided, default to the dataset element.
+          let elementName = "";
+          if( !annotationData.elementName ){
+            elementName = "dataset"
+          }
+          else{
+            elementName = annotationData.elementName;
+          }
+          //Remove the elementName property so it isn't set on the EMLAnnotation model later.
+          delete annotationData.elementName;
+
+          //Check if duplicates are allowed
+          let allowDuplicates = annotationData.allowDuplicates;
+          delete annotationData.allowDuplicates;
+
+          //Create a new EMLAnnotation model
+          let annotation = new EMLAnnotation(annotationData);
+
+          //Update annotations set on the dataset element
+          if( elementName == "dataset" ){
+            let annotations = this.get("annotations");
+
+            //If the current annotations set on the EML model are not in Array form, change it to an array
+            if( !annotations ){
+              annotations = new EMLAnnotations();
+            }
+
+            if( allowDuplicates === false ){
+              //Add the EMLAnnotation to the collection, making sure to remove duplicates first
+              annotations.replaceDuplicateWith(annotation);
+            }
+            else{
+              annotations.add(annotation);
+            }
+
+            //Set the annotations and force the change to be recognized by the model
+            this.set("annotations", annotations, {silent: true});
+            this.handleChange(this, { force: true });
+
+          }
+          else{
+            /** @todo Add annotation support for other EML Elements */
+          }
+
+        }
+        catch(e){
+          console.error("Could not add Annotation to the EML: ", e);
+        }
+
+      },
+
+      /**
+      * Finds annotations that are of the `data sensitivity` property from the NCEAS SENSO ontology.
+      * Returns undefined if none are found. This function returns EMLAnnotation models because the data
+      * sensitivity is stored in the EML Model as EMLAnnotations and added to EML as semantic annotations.
+      * @returns {EMLAnnotation[]|undefined}
+      */
+      getDataSensitivity: function(){
+        try{
+          let annotations = this.get("annotations");
+          if(annotations){
+            let found = annotations.where({ propertyURI: this.get("dataSensitivityPropertyURI") });
+            if( !found || !found.length ){
+              return;
+            }
+            else{
+              return found;
+            }
+          }
+          else{
+            return;
+          }
+        }
+        catch(e){
+          console.error("Failed to get Data Sensitivity from EML model: ", e);
+          return;
+        }
       }
+
     });
 
     return EML211;

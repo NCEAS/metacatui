@@ -236,10 +236,10 @@ define(['jquery', 'underscore', 'backbone'],
       * filter names from this array to show or hide them. See "example" to see all the
       * filter options.
       * @type {string[]}
-      * @default ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
+      * @default ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial", "isPrivate"]
       * @example ["all", "annotation", "attribute", "dataSource", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
       */
-      defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
+      defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial", "isPrivate"],
 
       /**
        * Enable to show Whole Tale features
@@ -267,6 +267,7 @@ define(['jquery', 'underscore', 'backbone'],
        * @type {object}
        * @property {boolean} abstract - Default: true
        * @property {boolean} alternateIdentifier - Default: false
+       * @property {boolean} dataSensitivity Default: false
        * @property {boolean} funding - Default: false
        * @property {boolean} generalTaxonomicCoverage - Default: false
        * @property {boolean} taxonCoverage - Default: false. If true, at least one taxonomic rank and value will be required.
@@ -282,6 +283,7 @@ define(['jquery', 'underscore', 'backbone'],
                      abstract: true,
                      alternateIdentifier: false,
                      funding: false,
+                     dataSensitivity: false,
                      generalTaxonomicCoverage: false,
                      taxonCoverage: false,
                      geoCoverage: false,
@@ -298,6 +300,7 @@ define(['jquery', 'underscore', 'backbone'],
         *    abstract: true,
         *    alternateIdentifier: false,
         *    funding: false,
+        *    dataSensitivity: true,
         *    generalTaxonomicCoverage: false,
         *    taxonCoverage: false,
         *    geoCoverage: false,
@@ -313,6 +316,7 @@ define(['jquery', 'underscore', 'backbone'],
       emlEditorRequiredFields: {
         abstract: true,
         alternateIdentifier: false,
+        dataSensitivity: false,
         funding: false,
         generalTaxonomicCoverage: false,
         taxonCoverage: false,
@@ -408,6 +412,47 @@ define(['jquery', 'underscore', 'backbone'],
         label: "GCMD",
         thesaurus: "NASA Global Change Master Directory (GCMD)"
       }],
+
+
+      /**
+      * If true, questions related to Data Sensitivity will be shown in the EML Editor.
+      * @type {boolean}
+      * @default true
+      * @since 2.19.0
+      */
+      enableDataSensitivityInEditor: true,
+
+
+      /**
+      * The URL of a webpage that shows more information about Data Sensitivity and DataTags. This will be used
+      * for links in help text throughout the app, such as next to Data Sensitivity questions in the dataset editor.
+      *
+      * @type {string}
+      * @default "http://datatags.org"
+      * @since 2.19.0
+      */
+      dataSensitivityInfoURL: "http://datatags.org",
+
+      /**
+      * In the editor, sometimes it is useful to have guided questions for the Methods section
+      * in addition to the generic numbered method steps. These custom methods are defined here
+      * as an array of literal objects that define each custom Methods question. Custom methods
+      * are serialized to the EML as regular method steps, but with an unchangeable title, defined here,
+      * in order to identify them.
+      *
+      * @type {object[]}
+      * @typedef {object} CustomEMLMethod
+      * @property {string[]} titleOptions One or more titles that may exist in an EML Method Step that identify that Method Step as a custom method type. THe first title in the array is serialized to the EML XML.
+      * @property {string} id A unique identifier for this custom method type.
+      * @property {boolean} required If true, this custom method will be a required field for submission in the EML editor.
+      * @example [{
+                    "titleOptions": ["Ethical Research Procedures"],
+                    "id": "ethical-research-procedures",
+                    "required": false
+                  }]
+      * @since 2.19.0
+      */
+      customEMLMethods: [],
 
       /**
       * The base URL for the repository. This only needs to be changed if the repository
