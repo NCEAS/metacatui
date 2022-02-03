@@ -440,7 +440,6 @@ define(['jquery', 'underscore', 'backbone'],
       * are serialized to the EML as regular method steps, but with an unchangeable title, defined here,
       * in order to identify them.
       *
-      * @type {object[]}
       * @typedef {object} CustomEMLMethod
       * @property {string[]} titleOptions One or more titles that may exist in an EML Method Step that identify that Method Step as a custom method type. THe first title in the array is serialized to the EML XML.
       * @property {string} id A unique identifier for this custom method type.
@@ -450,6 +449,10 @@ define(['jquery', 'underscore', 'backbone'],
                     "id": "ethical-research-procedures",
                     "required": false
                   }]
+      * @since 2.19.0
+      */
+      /**
+      * @type {CustomEMLMethod}
       * @since 2.19.0
       */
       customEMLMethods: [],
