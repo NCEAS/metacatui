@@ -2,7 +2,13 @@
 define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
     function($, _, Backbone, DataONEObject) {
 
-  var EMLText = Backbone.Model.extend({
+  /**
+  * @class EMLText211
+  * @classdesc A model that represents the EML 2.1.1 Text module
+  * @classcategory Models/Metadata/EML211
+  */
+  var EMLText = Backbone.Model.extend(
+    /** @lends EMLText211.prototype */{
 
     type: "EMLText",
 
@@ -33,7 +39,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       this.on("change:text", this.trickleUpChange);
     },
 
-    /*
+    /**
          * Maps the lower-case EML node names (valid in HTML DOM) to the camel-cased EML node names (valid in EML).
          * Used during parse() and serialize()
          */
@@ -43,7 +49,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       }
     },
 
-    /*
+    /**
     * function setText
     *
     * @param text {string} - The text, usually taken directly from an HTML textarea
@@ -54,22 +60,23 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       if( typeof text !== "string" )
         return "";
 
-      //Get the EML model and use the cleanXMLText function to clean up the text
-      var emlModel = this.getParentEML();
-      if( typeof emlModel == "object" && emlModel.type == "EML"){
-        text = emlModel.cleanXMLText(text);
-      }
+      let model = this;
 
-      //Get the list of paragraphs - checking for carriage returns and line feeds
-      var paragraphsCR = text.split(String.fromCharCode(13));
-      var paragraphsLF = text.split(String.fromCharCode(10));
+      require(["models/metadata/eml211/EML211"], function(EMLModel){
+        //Get the EML model and use the cleanXMLText function to clean up the text
+        text = EMLModel.prototype.cleanXMLText(text);
 
-      //Use the paragraph list that has the most
-      var paragraphs = (paragraphsCR > paragraphsLF)? paragraphsCR : paragraphsLF;
+        //Get the list of paragraphs - checking for carriage returns and line feeds
+        var paragraphsCR = text.split(String.fromCharCode(13));
+        var paragraphsLF = text.split(String.fromCharCode(10));
 
-      paragraphs = _.map(paragraphs, function(p){ return p.trim() });
+        //Use the paragraph list that has the most
+        var paragraphs = (paragraphsCR > paragraphsLF)? paragraphsCR : paragraphsLF;
 
-      this.set("text", paragraphs);
+        paragraphs = _.map(paragraphs, function(p){ return p.trim() });
+
+        model.set("text", paragraphs);
+      });
 
     },
 
@@ -81,46 +88,66 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       var paragraphs = [];
 
       //Get all the child nodes of this text element
-      var allNodes = $(objectDOM).children();
+      var $objectDOM = $(objectDOM);
 
       // Save all the contained nodes as paragraphs
       // ignore any nested formatting elements for now
       //TODO: Support more detailed text formatting
-      if( allNodes.length ){
+      if( $objectDOM.children().length ){
 
-        _.each(allNodes, function(node) {
-          if( node.textContent ){
-
-            //Get the list of paragraphs - checking for carriage returns and line feeds
-            var paragraphsCR = node.textContent.split(String.fromCharCode(13));
-            var paragraphsLF = node.textContent.split(String.fromCharCode(10));
-
-            //Use the paragraph list that has the most
-            var nestedParagraphs = (paragraphsCR > paragraphsLF)? paragraphsCR : paragraphsLF;
-
-            paragraphs = _.union(paragraphs, nestedParagraphs);
-          }
-        });
+        paragraphs = this.parseNestedElements($objectDOM);
 
       }
       else if( objectDOM.textContent ){
         paragraphs[0] = objectDOM.textContent;
       }
 
-      //Trim extra whitespace off each paragraph to get rid of the line break characters
-      paragraphs = _.map(paragraphs, function(text){
-        if(typeof text == "string")
-          return text.trim();
-        else
-          return text;
-      });
-
-      //Remove all falsey values - primarily empty strings
-      paragraphs = _.compact(paragraphs);
-
       return {
         text: paragraphs,
         originalText: paragraphs.slice(0) //The slice function will effectively clone the array
+      }
+    },
+
+    parseNestedElements: function(nodeEl){
+
+      let children = $(nodeEl).children(),
+          paragraphs = [];
+
+      children.each((i, childNode) => {
+        if( $(childNode).children().length ){
+          paragraphs = paragraphs.concat(this.parseNestedElements(childNode));
+        }
+        else{
+          paragraphs = paragraphs.concat(this.parseParagraphs(childNode));
+        }
+      })
+
+      return paragraphs;
+    },
+
+    parseParagraphs: function(nodeEl){
+      if( nodeEl.textContent ){
+
+        //Get the list of paragraphs - checking for carriage returns and line feeds
+        var paragraphsCR = nodeEl.textContent.split(String.fromCharCode(13));
+        var paragraphsLF = nodeEl.textContent.split(String.fromCharCode(10));
+
+        //Use the paragraph list that has the most
+        var paragraphs = (paragraphsCR > paragraphsLF)? paragraphsCR : paragraphsLF;
+
+        //Trim extra whitespace off each paragraph to get rid of the line break characters
+        paragraphs = _.map(paragraphs, function(text){
+          if(typeof text == "string")
+            return text.trim();
+          else
+            return text;
+        });
+
+        //Remove all falsey values - primarily empty strings
+        paragraphs = _.compact(paragraphs);
+
+        return paragraphs;
+
       }
     },
 
@@ -134,7 +161,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         return xmlString;
     },
 
-    /*
+    /**
      * Makes a copy of the original XML DOM and updates it with the new values from the model.
      */
     updateDOM: function(){
@@ -168,10 +195,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       return objectDOM;
     },
 
-    /*
+    /**
     * Climbs up the model heirarchy until it finds the EML model
     *
-    * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+    * @return {EML211|false} - Returns the EML 211 Model or false if not found
     */
     getParentEML: function(){
       var emlModel = this.get("parentModel"),
@@ -219,6 +246,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       return true;
     },
 
+    /**
+    * Returns the EML Text paragraphs as a string, with each paragraph on a new line.
+    * @returns {string}
+    */
     toString: function() {
       var value = [];
 

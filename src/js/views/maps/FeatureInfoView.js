@@ -65,7 +65,7 @@ define(
          * A ContentTemplate object specifies a single template designed to render
          * information about the Feature.
          * @typedef {Object} ContentTemplate
-         * @since 2.x.x
+         * @since 2.19.0
          * @property {string} [name] - An identifier for this template.
          * @property {string[]} [options] - The list of keys (option names) that are
          * allowed for the given template. Only options with these keys will be passed to
@@ -81,7 +81,7 @@ define(
          * last template in the list is the default template. It will be used when a
          * matching template is not found or one is not specified.
          * @type {ContentTemplate[]}
-         * @since 2.x.x
+         * @since 2.19.0
          */
         contentTemplates: [
           {
@@ -186,13 +186,13 @@ define(
             const iFrame = view.el
               .querySelector('.' + classes.contentContainer);
 
-            // Select the iFrame 
+            // Select the iFrame
             const iFrameDoc = iFrame
               .contentWindow
               .document
 
             // Add a script that gets all of the CSS stylesheets from the parent and
-            // applies them within the iFrame. Create a div within the iFrame to hold the 
+            // applies them within the iFrame. Create a div within the iFrame to hold the
             // feature info template content.
             iFrameDoc.open();
             iFrameDoc.write(`
@@ -219,7 +219,7 @@ define(
             `);
             iFrameDoc.close();
 
-            // Identify the elements from the template that will be updated when the 
+            // Identify the elements from the template that will be updated when the
             // Feature model changes
             view.elements = {
               title: view.el.querySelector('.' + classes.title),
@@ -303,7 +303,7 @@ define(
          * Get the inner HTML content to insert into the iFrame. The content will vary
          * based on the feature and if there is a template set on the parent Map Asset
          * model.
-         * @since 2.x.x
+         * @since 2.19.0
          * @returns {Promise|null} Returns a promise that resolves to the content HTML
          * when ready, otherwise null
          */
@@ -364,7 +364,7 @@ define(
 
         /**
          * Create a title for the feature info box
-         * @since 2.x.x
+         * @since 2.19.0
          * @returns {string} The title for the feature info box
          */
         getFeatureTitle: function () {

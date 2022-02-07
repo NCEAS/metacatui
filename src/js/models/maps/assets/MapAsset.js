@@ -161,7 +161,7 @@ define(
          * @property {MapConfig#FeatureTemplate} [featureTemplate] Configuration for the
          * content and layout of the Feature Info panel ({@link FeatureInfoView}) - the
          * panel that shows information about a selected feature from a vector asset. If
-         * no feature template is set, then the default table layout is used. 
+         * no feature template is set, then the default table layout is used.
          * @property {MapConfig#CustomProperties} [customProperties] Definitions of custom
          * properties of features, potentially based on existing properties. For example,
          * a custom property could be a formatted version of another date property. These
@@ -178,7 +178,7 @@ define(
          * displayed in a map when a user clicks on a vector feature in a map.
          * @typedef {Object} FeatureTemplate
          * @name MapConfig#FeatureTemplate
-         * @since 2.x.x
+         * @since 2.19.0
          * @property {'story'|'table'} [template='table'] The name/ID of the template to
          * use. This must match the name of one of the templates available in
          * {@link FeatureInfoView#contentTemplates}.
@@ -218,7 +218,7 @@ define(
          * template.
          * @typedef {Object}
          * @name MapConfig#StoryTemplateOptions
-         * @since 2.x.x
+         * @since 2.19.0
          * @property {string} subtitle The name of a feature property to use for a
          * secondary title in the template
          * @property {string} description The name of a feature property that contains a
@@ -233,10 +233,10 @@ define(
 
         /**
          * An object where the keys indicate the name/ID of the new custom property to
-         * create, and the values are an object that defines the new property. 
+         * create, and the values are an object that defines the new property.
          * @typedef {Object.<string, (MapConfig#CustomDateProperty|MapConfig#CustomStringProperty)>} CustomProperties
          * @name MapConfig#CustomProperties
-         * @since 2.x.x
+         * @since 2.19.0
          * @example
          * {
          *   "year": {
@@ -256,7 +256,7 @@ define(
          * in the {@link MapConfig#CustomProperties} object.
          * @typedef {Object} CustomDateProperty
          * @name MapConfig#CustomDateProperty
-         * @since 2.x.x
+         * @since 2.19.0
          * @property {'date'} type Must be set to 'date' to indicate that this is a custom
          * date property
          * @property {string} property The name/ID of the existing date property to format
@@ -270,7 +270,7 @@ define(
          * in the {@link MapConfig#CustomProperties} object.
          * @typedef {Object} CustomStringProperty
          * @name MapConfig#CustomStringProperty
-         * @since 2.x.x
+         * @since 2.19.0
          * @property {'string'} type Must be set to 'string' to indicate that this is a
          * custom string property
          * @property {string} value The new string to use. So far only static strings are
@@ -321,7 +321,7 @@ define(
               }
             }
 
-            // Update the style of the asset to highlight the selected features when 
+            // Update the style of the asset to highlight the selected features when
             // features from this asset are selected in the map.
             if (typeof this.updateAppearance === 'function') {
 
@@ -372,7 +372,7 @@ define(
         /**
          * Given a set of properties from a Feature from this Map Asset model, add any
          * custom properties to the properties object and return it.
-         * @since 2.x.x
+         * @since 2.19.0
          * @param {Object} properties A set of key-value pairs representing the existing
          * properties of a feature from this asset.
          * @returns {Object} The properties object with any custom properties added.
@@ -423,7 +423,7 @@ define(
         /**
          * Given a definition for a new date property, and the properties that already
          * exist on a specific feature, returns a new string with the formatted date.
-         * @since 2.x.x
+         * @since 2.19.0
          * @param {MapConfig#CustomDateProperty} config - An object that defines the new
          * date property to create
          * @param {Object} properties key-value pairs representing existing properties in
@@ -461,7 +461,7 @@ define(
          * strings are supported so far, this function essentially just returns the value
          * of config.value. This function exists to allow support of dynamic strings in
          * the future (e.g. combining strings from existing properties)
-         * @since 2.x.x
+         * @since 2.19.0
          * @param {MapConfig#CustomStringProperty} config The object the defines the new
          * custom property
          * @param {Object} properties key-value pairs representing existing properties in
@@ -558,7 +558,7 @@ define(
         /**
          * Fetches an SVG given a pid, sanitizes it, then updates the model's icon
          * attribute with the new and SVG string (after sanitizing it)
-         * @param {string} pid 
+         * @param {string} pid
          */
         fetchIcon: function (pid) {
           const model = this
@@ -741,11 +741,11 @@ define(
         // /**
         //  * Overrides the default Backbone.Model.validate.function() to check if this if
         //  * the values set on this model are valid.
-        //  * 
+        //  *
         //  * @param {Object} [attrs] - A literal object of model attributes to validate.
         //  * @param {Object} [options] - A literal object of options for this validation
         //  * process
-        //  * 
+        //  *
         //  * @return {Object} - Returns a literal object with the invalid attributes and
         //  * their corresponding error message, if there are any. If there are no errors,
         //  * returns nothing.

@@ -21,7 +21,7 @@ define(
     AssetColorPalette,
     VectorFilters
   ) {
-    /** 
+    /**
      * @classdesc A CesiumVectorData Model is a vector layer (excluding Cesium3DTilesets)
      * that can be used in Cesium maps. This model corresponds to "DataSource" models in
      * Cesium. For example, this could represent vectors rendered from a Cesium
@@ -34,7 +34,7 @@ define(
      * @class CesiumVectorData
      * @name CesiumVectorData
      * @extends MapAsset
-     * @since 2.x.x
+     * @since 2.19.0
      * @constructor
     */
     var CesiumVectorData = MapAsset.extend(
