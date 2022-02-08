@@ -44,7 +44,7 @@ define(
          * Default attributes for MapAsset models
          * @name MapAsset#defaults
          * @type {Object}
-         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'TileMapServiceImageryProvider'|'CesiumTerrainProvider')} type
+         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'WebMapTileServiceImageryProvider'|'TileMapServiceImageryProvider'|'CesiumTerrainProvider')} type
          * The format of the data. Must be one of the supported types.
          * @property {string} label A user friendly name for this asset, to be displayed
          * in a map.
@@ -118,7 +118,7 @@ define(
          * description.
          * @typedef {Object} MapAssetConfig
          * @name MapConfig#MapAssetConfig
-         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'TileMapServiceImageryProvider'|'NaturalEarthII'|'CesiumTerrainProvider'|'GeoJsonDataSource')} type - 
+         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'WebMapTileServiceImageryProvider'|'TileMapServiceImageryProvider'|'NaturalEarthII'|'CesiumTerrainProvider'|'GeoJsonDataSource')} type - 
          * A string indicating the format of the data. Some of these types correspond
          * directly to Cesium classes. The NaturalEarthII type is a special imagery layer
          * that automatically sets the cesiumOptions to load the Natural Earth II imagery
