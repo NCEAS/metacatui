@@ -60,7 +60,7 @@ define(
                 model: CesiumVectorData
               },
               {
-                types: ['BingMapsImageryProvider', 'IonImageryProvider'],
+                types: ['BingMapsImageryProvider', 'IonImageryProvider', 'WebMapTileServiceImageryProvider'],
                 model: CesiumImagery
               },
               {

@@ -58,7 +58,7 @@ define(
          * @name CesiumImagery#defaults
          * @extends MapAsset#defaults
          * @type {Object}
-         * @property {'BingMapsImageryProvider'|'IonImageryProvider'} type A string
+         * @property {'BingMapsImageryProvider'|'IonImageryProvider'|'WebMapTileServiceImageryProvider'} type A string
          * indicating a Cesium Imagery Provider type. See
          * {@link https://cesium.com/learn/cesiumjs-learn/cesiumjs-imagery/#more-imagery-providers}
          * @property {Cesium.ImageryLayer} cesiumModel A model created and used by Cesium

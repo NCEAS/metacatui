@@ -651,7 +651,10 @@ define(['underscore',
           emlView.render();
 
           //Show the required fields for this editor
-          this.renderRequiredIcons(MetacatUI.appModel.get("emlEditorRequiredFields"));
+          this.renderRequiredIcons(this.getRequiredFields());
+          this.listenTo(emlView, "editorInputsAdded", function(){
+            this.trigger("editorInputsAdded")
+          });
 
           // Create a citation view and render it
           var citationView = new CitationView({
@@ -1367,6 +1370,28 @@ define(['underscore',
           });
 
           EditorView.prototype.showAccessPolicyModal.call(this, e, model);
+        },
+
+        /**
+        * Gets the EML required fields, as configured in the {@link AppConfig#emlEditorRequiredFields}, and adds
+        * possible other special fields that may be configured elsewhere. (e.g. the {@link AppConfig#customEMLMethods})
+        * @extends EditorView.getRequiredFields
+        */
+        getRequiredFields: function(){
+          let requiredFields = _.clone(MetacatUI.appModel.get("emlEditorRequiredFields"));
+
+          //Add required fields for Custom Methods, which are configured in a different property of the AppConfig
+          let customMethodOptions =  MetacatUI.appModel.get("customEMLMethods");
+          if(customMethodOptions){
+            customMethodOptions.forEach(options => {
+              if( options.required && !requiredFields[options.id] ){
+                requiredFields[options.id] = true;
+              }
+            })
+          }
+
+          return requiredFields;
+
         }
       });
     return EML211EditorView;
