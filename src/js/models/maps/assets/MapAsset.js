@@ -44,7 +44,7 @@ define(
          * Default attributes for MapAsset models
          * @name MapAsset#defaults
          * @type {Object}
-         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'CesiumTerrainProvider')} type
+         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'WebMapTileServiceImageryProvider'|'CesiumTerrainProvider')} type
          * The format of the data. Must be one of the supported types.
          * @property {string} label A user friendly name for this asset, to be displayed
          * in a map.
@@ -118,7 +118,7 @@ define(
          * description.
          * @typedef {Object} MapAssetConfig
          * @name MapConfig#MapAssetConfig
-         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'CesiumTerrainProvider'|'GeoJsonDataSource')} type -
+         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'WebMapTileServiceImageryProvider'|'CesiumTerrainProvider'|'GeoJsonDataSource')} type -
          * A string indicating the format of the data. Some of these types correspond
          * directly to Cesium classes.
          * @property {(Cesium3DTileset#cesiumOptions|CesiumImagery#cesiumOptions|CesiumTerrain#cesiumOptions|CesiumVectorData#cesiumOptions)} [cesiumOptions] -
