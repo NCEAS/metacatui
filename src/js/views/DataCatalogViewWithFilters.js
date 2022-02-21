@@ -103,6 +103,9 @@ define(["jquery",
                     MetacatUI.appModel.set("searchMode", this.mode);
                 }
 
+                // Which type of map are we rendering, Google maps or Cesium maps?
+                this.mapType = MetacatUI.appModel.get("dataCatalogMap") || "google";
+
                 if(!this.statsModel){
                   this.statsModel = new Stats();
                 }
