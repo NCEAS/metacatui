@@ -1,6 +1,6 @@
 {
   "name": "metacatui",
-  "version": "2.15.0",
+  "version": "2.19.1",
   "description": "MetacatUI: A client-side web interface for DataONE data repositories",
   "main": "server.js",
   "devDependencies": {
@@ -13,7 +13,9 @@
   },
   "scripts": {
     "dev": "node server.js",
-    "jsdoc": "jsdoc -c docs/jsdoc-templates/metacatui/conf.js"
+    "jsdoc": "jsdoc -c docs/jsdoc-templates/metacatui/conf.js",
+    "doc": "cd docs; bundle exec jekyll serve"
+
   },
   "repository": {
     "type": "git",
@@ -23,5 +25,5 @@
   "bugs": {
     "url": "https://github.com/NCEAS/metacatui/issues"
   },
-  "homepage": "https://github.com/NCEAS/metacatui"
+  "homepage": "https://nceas.github.io/metacatui/"
 }
