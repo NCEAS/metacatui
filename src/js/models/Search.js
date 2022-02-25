@@ -354,10 +354,10 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                       }
 
                       if( forPOST ){
-                        query += this.fieldNameMap["id"] + ':*' + this.escapeSpecialChar(identifiers) + "*";
+                        query += this.fieldNameMap["id"] + ':*' + identifiers + "*";
                       }
                       else{
-                        query += this.fieldNameMap["id"] + ':*' + this.escapeSpecialChar(encodeURIComponent(identifiers)) + "*";
+                        query += this.fieldNameMap["id"] + ':*' + encodeURIComponent(identifiers) + "*";
                       }
                     }
                 }
@@ -493,7 +493,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                             " AND endDate:[* TO " + yearMax + "-12-31T00:00:00Z]";
                     }
                 }
-                
+
                 //----- public/private ------
                 if (this.filterIsAvailable("isPrivate") && ((filter == "isPrivate") || getAll)) {
                     
@@ -569,8 +569,6 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                           }
                         }
 
-                        filterValue = model.escapeSpecialChar(filterValue);
-
                         if( query.length ){
                           query += " AND ";
                         }
@@ -597,7 +595,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                           query += " AND ";
                         }
 
-                        query += model.escapeSpecialChar(value);
+                        query += value;
                     }
                 }
 
@@ -635,7 +633,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                           query += " AND ";
                         }
 
-                        query += model.escapeSpecialChar(filterValue);
+                        query += filterValue;
                     }
                 }
 
@@ -675,7 +673,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                               query += " AND ";
                             }
 
-                            query += model.fieldNameMap[filterName] + ":" + model.escapeSpecialChar(filterValue);
+                            query += model.fieldNameMap[filterName] + ":" + filterValue;
                         }
                     }
                 });
@@ -773,10 +771,10 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                       }
 
                       if( forPOST ){
-                        query += this.fieldNameMap["spatial"] + ':' + model.escapeSpecialChar(spatial);
+                        query += this.fieldNameMap["spatial"] + ':' + spatial;
                       }
                       else{
-                        query += this.fieldNameMap["spatial"] + ':' + model.escapeSpecialChar(encodeURIComponent(spatial));
+                        query += this.fieldNameMap["spatial"] + ':' + encodeURIComponent(spatial);
                       }
 
                     }
@@ -802,14 +800,19 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                       }
 
                       if( forPOST ){
-                        query += this.fieldNameMap["creator"] + ':' + model.escapeSpecialChar(creator);
+                        query += this.fieldNameMap["creator"] + ':' + creator;
                       }
                       else{
-                        query += this.fieldNameMap["creator"] + ':' + model.escapeSpecialChar(encodeURIComponent(creator));
+                        query += this.fieldNameMap["creator"] + ':' + encodeURIComponent(creator);
                       }
                     }
                 }
 
+                // The query is already URL-encoded except for brackets, if the request is not POST.
+                if ( !forPOST ) {
+                   query = query.replace(/\[/g, "%5B");
+                   query = query.replace(/\]/g, "%5D");
+                }
                 return query;
             },
 
@@ -884,19 +887,6 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 return false;
             },
 
-            escapeSpecialChar: function(term) {
-                term = term.replace(/%7B/g, "\\%7B");
-                term = term.replace(/%7D/g, "\\%7D");
-                term = term.replace(/%3A/g, "\\%3A");
-                term = term.replace(/:/g, "\\:");
-                term = term.replace(/\(/g, "\\(");
-                term = term.replace(/\)/g, "\\)");
-                term = term.replace(/\?/g, "\\?");
-                term = term.replace(/%3F/g, "\\%3F");
-
-                return term;
-            },
-
             /*
              * Makes a Solr syntax grouped query using the field name, the field values to search for, and the operator.
              * Example:  title:(resistance OR salmon OR "pink salmon")
@@ -934,24 +924,24 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
 
                     if (this.needsQuotes(values[0])) {
                       if( forPOST ){
-                        queryAddition = '"' + this.escapeSpecialChar(value) + '"';
+                        queryAddition = '"' + value + '"';
                       }
                       else{
-                        queryAddition = '%22' + this.escapeSpecialChar(encodeURIComponent(value)) + '%22';
+                        queryAddition = '%22' + encodeURIComponent(value) + '%22';
                       }
                     } else if (subtext) {
                       if( forPOST ){
-                        queryAddition = "*" + this.escapeSpecialChar(value) + "*";
+                        queryAddition = "*" + value + "*";
                       }
                       else{
-                        queryAddition = "*" + this.escapeSpecialChar(encodeURIComponent(value)) + "*";
+                        queryAddition = "*" + encodeURIComponent(value) + "*";
                       }
                     } else {
                       if( forPOST ){
-                        queryAddition = this.escapeSpecialChar(value);
+                        queryAddition = value;
                       }
                       else{
-                        queryAddition = this.escapeSpecialChar(encodeURIComponent(value));
+                        queryAddition = encodeURIComponent(value);
                       }
                     }
                     query = fieldName + ":" + queryAddition;
@@ -971,17 +961,14 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                           }
                         } else if (subtext) {
                           if( forPOST ){
-                            value = "*" + this.escapeSpecialChar(value) + "*";
+                            value = "*" + value + "*";
                           }
                           else{
-                            value = "*" + this.escapeSpecialChar(encodeURIComponent(value)) + "*";
+                            value = "*" + encodeURIComponent(value) + "*";
                           }
                         } else {
-                          if( forPOST ){
-                            value = this.escapeSpecialChar(value);
-                          }
-                          else{
-                            value = this.escapeSpecialChar(encodeURIComponent(value));
+                          if( !forPOST ){
+                            value = encodeURIComponent(value);
                           }
                         }
 
@@ -1061,24 +1048,24 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
 
                         if (model.needsQuotes(v) || _.contains(fieldNames, "id")) {
                           if( forPOST ){
-                            valueString += '"' + this.escapeSpecialChar(v.trim()) + '"';
+                            valueString += '"' + v.trim() + '"';
                           }
                           else{
-                            valueString += '"' + this.escapeSpecialChar(encodeURIComponent(v.trim())) + '"';
+                            valueString += '"' + encodeURIComponent(v.trim()) + '"';
                           }
                         } else if (subtext) {
                           if( forPOST ){
-                            valueString += "*" + this.escapeSpecialChar(v.trim()) + "*";
+                            valueString += "*" + v.trim() + "*";
                           }
                           else{
-                            valueString += "*" + this.escapeSpecialChar(encodeURIComponent(v.trim())) + "*";
+                            valueString += "*" + encodeURIComponent(v.trim()) + "*";
                           }
                         } else {
                           if( forPOST ){
-                            valueString += this.escapeSpecialChar(v.trim());
+                            valueString += v.trim();
                           }
                           else{
-                            valueString += this.escapeSpecialChar(encodeURIComponent(v.trim()));
+                            valueString += encodeURIComponent(v.trim());
                           }
                         }
 

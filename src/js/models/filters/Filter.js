@@ -470,14 +470,12 @@ define(['jquery', 'underscore', 'backbone'],
         var dateRangeRegEx = /^\[((\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d*Z)|\*)( |%20)TO( |%20)((\d{4}-[01]\d-[0-3]\dT[0-2]\d(:|\\:)[0-5]\d(:|\\:)[0-5]\d\.\d*Z)|\*)\]/,
             isDateRange = dateRangeRegEx.test(value),
             isSearchPhrase = value.indexOf(" ") > -1,
-            isIdFilter = this.isIdFilter();
-
-        // Escape special characters
-        value = this.escapeSpecialChar(value);
+            isIdFilter = this.isIdFilter(),
+            isOrcId = /^(?:https?:\/\/orcid\.org\/)?(?:\w{4}-){3}\w{4}/.test(value);
 
         // If the value is a search phrase (more than one word), is part of an ID filter,
         // and not a date range string, wrap in quotes
-        if( (isSearchPhrase || isIdFilter) && !isDateRange ){
+        if( (isSearchPhrase || isIdFilter || isOrcId) && !isDateRange ){
           value = "\"" + value + "\"";
         }
 
@@ -584,31 +582,6 @@ define(['jquery', 'underscore', 'backbone'],
       } catch (e) {
         console.log("Failed to check if a Filter is empty, error message: " + e);
       }
-    },
-
-    /**
-    * Escapes Solr query reserved characters so that search terms can include
-    *  those characters without throwing an error.
-    *
-    * @param {string} term - The search term or phrase to escape
-    * @return {string} - The search term or phrase, after special characters are escaped
-    */
-    escapeSpecialChar: function(term) {
-        term = term.replace(/%7B/g, "\\%7B");
-        term = term.replace(/%7D/g, "\\%7D");
-        term = term.replace(/%3A/g, "\\%3A");
-        term = term.replace(/:/g, "\\:");
-        term = term.replace(/\(/g, "\\(");
-        term = term.replace(/\)/g, "\\)");
-        term = term.replace(/\?/g, "\\?");
-        term = term.replace(/%3F/g, "\\%3F");
-        term = term.replace(/\"/g, '\\"');
-        term = term.replace(/\'/g, "\\'");
-        term = term.replace(/\#/g, "\\%23");
-        term = term.replace(/\-/g, "\\%2D");
-        term = term.replace(/\&amp\;/g, "\\%26");
-
-        return term;
     },
 
     /**

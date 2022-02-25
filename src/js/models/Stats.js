@@ -434,6 +434,15 @@ define(['jquery', 'underscore', 'backbone', 'promise'],
           dataType: "json",
           success: successCallback
         }
+
+        // TODO: Replace this clunky GET adjustment by refactoring the construction of fullQueryURL's encoding
+        requestSettings.url = requestSettings.url.replace(/\[/g, "%5B");
+        requestSettings.url = requestSettings.url.replace(/\]/g, "%5D");
+        requestSettings.url = requestSettings.url.replace(/\(/g, "%28");
+        requestSettings.url = requestSettings.url.replace(/\)/g, "%29");
+        requestSettings.url = requestSettings.url.replace(/!/g, "%21");
+        requestSettings.url = requestSettings.url.replace(/{/g, "%7B");
+        requestSettings.url = requestSettings.url.replace(/}/g, "%7D");
       }
 
       //Send the request
@@ -609,6 +618,10 @@ define(['jquery', 'underscore', 'backbone', 'promise'],
           dataType: "json",
           success: successCallback
         }
+
+        // TODO: Replace this clunky GET adjustment by refactoring the construction of fullQueryURL's encoding
+        requestSettings.url = requestSettings.url.replace(/\[/g, "%5B");
+        requestSettings.url = requestSettings.url.replace(/\]/g, "%5D");
       }
 
       //Send the request
@@ -718,7 +731,9 @@ define(['jquery', 'underscore', 'backbone', 'promise'],
     * searches for the earliest endDate.
     */
     getFirstBeginDate: function(){
-      var model = this;
+      var model = this,
+          open_bracket = this.get("usePOST") ? "[" : encodeURIComponent("["),
+          close_bracket = this.get("usePOST") ? "]" : encodeURIComponent("]");
 
       //Define a success callback when the query is successful
       var successCallback = function(data, textStatus, xhr) {
@@ -728,7 +743,8 @@ define(['jquery', 'underscore', 'backbone', 'promise'],
 
           //Construct a query to find the earliest endDate
           var query = model.get('query') +
-                " AND endDate:[" + model.get("firstPossibleDate") + " TO " + (new Date()).toISOString() + "]" + //Use date filter to weed out badly formatted data
+                " AND endDate:" + open_bracket + model.get("firstPossibleDate") + " TO " +
+                (new Date()).toISOString() + close_bracket + //Use date filter to weed out badly formatted data
                 " AND -obsoletedBy:*",
               //Get one row only
               rows = "1",
@@ -789,7 +805,7 @@ define(['jquery', 'underscore', 'backbone', 'promise'],
       }
 
       //Construct a query
-      var specialQueryParams = " AND beginDate:[" + this.get("firstPossibleDate") + " TO " + (new Date()).toISOString() + "] AND -obsoletedBy:* AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
+      var specialQueryParams = " AND beginDate:" + open_bracket + this.get("firstPossibleDate") + " TO " + (new Date()).toISOString() + close_bracket + " AND -obsoletedBy:* AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
           query = this.get("query") + specialQueryParams,
           //Get one row only
           rows = "1",
@@ -876,13 +892,15 @@ define(['jquery', 'underscore', 'backbone', 'promise'],
     * Gets the latest endDate from the Solr index
     */
     getLastEndDate: function(){
-      var model = this;
+      var model = this,
+          open_bracket = this.get("usePOST") ? "[" : encodeURIComponent("["),
+          close_bracket = this.get("usePOST") ? "]" : encodeURIComponent("]");
 
       var now = new Date();
 
       //Get the latest temporal data coverage year
-      var specialQueryParams = " AND endDate:[" + this.get("firstPossibleDate") + " TO " + now.toISOString() + "]" + //Use date filter to weed out badly formatted data
-            " AND -obsoletedBy:* AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
+      var specialQueryParams = " AND endDate:" + open_bracket + this.get("firstPossibleDate") + " TO " + now.toISOString() + close_bracket +
+            " AND -obsoletedBy:* AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*", //Use date filter to weed out badly formatted data
           query = this.get('query') + specialQueryParams,
           rows = 1,
           fl   = "endDate",

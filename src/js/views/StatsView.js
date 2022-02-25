@@ -291,12 +291,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		if (this.userType === "repository") {
 			if (this.userLabel !== undefined)
 			{
-				var identifier = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(this.userId));
+				var identifier = encodeURIComponent(this.userId);
 				this.model.getTotalReplicas(identifier);
 			}
 			else if (this.nodeSummaryView) {
 				var nodeId = MetacatUI.appModel.get("nodeId");
-				var identifier = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(nodeId));
+				var identifier = encodeURIComponent(nodeId);
 				this.model.getTotalReplicas(identifier);
 			}
 

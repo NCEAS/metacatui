@@ -374,19 +374,17 @@ define(['jquery', 'underscore', 'backbone'],
 			if(!fields)
 				var fields = "abstract,id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,keywords,attributeName,pubDate,eastBoundCoord,westBoundCoord,northBoundCoord,southBoundCoord,beginDate,endDate,dateUploaded,archived,datasource,replicaMN,isAuthorized,isPublic,size,read_count_i,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,serviceType,project,dateModified";
 
-			var escapeSpecialChar = MetacatUI.appSearchModel.escapeSpecialChar;
-
 			var query = "q=";
 
 			//If there is no seriesId set, then search for pid or sid
 			if(!this.get("seriesId"))
-				query += '(id:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '" OR seriesId:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '")';
+				query += '(id:"' + encodeURIComponent(this.get("id")) + '" OR seriesId:"' + encodeURIComponent(this.get("id")) + '")';
 			//If a seriesId is specified, then search for that
 			else if(this.get("seriesId") && (this.get("id").length > 0))
-				query += '(seriesId:"' + escapeSpecialChar(encodeURIComponent(this.get("seriesId"))) + '" AND id:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '")';
+				query += '(seriesId:"' + encodeURIComponent(this.get("seriesId")) + '" AND id:"' + encodeURIComponent(this.get("id")) + '")';
 			//If only a seriesId is specified, then just search for the most recent version
 			else if(this.get("seriesId") && !this.get("id"))
-				query += 'seriesId:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '" -obsoletedBy:*';
+				query += 'seriesId:"' + encodeURIComponent(this.get("id")) + '" -obsoletedBy:*';
 
 			query += "&fl=" + fields + //Specify the fields to return
 			         "&wt=json&rows=1000" + //Get the results in JSON format and get 1000 rows
