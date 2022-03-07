@@ -227,7 +227,17 @@ define(["jquery",
         renderList: function(){
 
           try{
-
+              /**
+              * Adds messaging to this view to tell an unauthorized user that they cannot create or update datasets.
+              * of this object(s).
+              */
+              if (typeof MetacatUI.appUserModel.get("isAllowedSubmitter") === 'undefined') {
+                this.listenToOnce(MetacatUI.appUserModel, "change:isAllowedSubmitter", function () {
+                    this.renderList();
+                });
+                return;
+              } 
+              
             //Get the list container element
             var listContainer = this.$(this.listContainer);
 
@@ -389,7 +399,8 @@ define(["jquery",
               });
 
               //Render an Edit button
-              if ( MetacatUI.appUserModel.hasIdentityOverlap(owners) ){
+              
+              if ( MetacatUI.appUserModel.hasIdentityOverlap(owners) && MetacatUI.appUserModel.get("isAllowedSubmitter") == true){
                   //Create an Edit buttton
                   var editButton = $(document.createElement("a")).attr("href",
                                MetacatUI.root + "/edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + encodeURIComponent((searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id"))) )

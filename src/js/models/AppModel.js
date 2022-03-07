@@ -1849,6 +1849,22 @@ define(['jquery', 'underscore', 'backbone'],
       enableMeasurementTypeView: false,
 
       /**
+      * This message will display when a user tries to submit a dataset and they are not in the allowed submitters list.
+      * The allowed submitters list is set in the Metacat configuration for a Member Node and inspected by Metacatui.
+      * @see https://knb.ecoinformatics.org/knb/docs/metacat-properties.html#authorization-and-authentication-properties
+      * @type {string}
+      */
+      notAllowedSubmitterMessage: "You are not authorized to submit or edit datasets.",
+
+      /**
+      * Enable checking of the allowed submitters list is set in the Metacat configuration for a Member Node and inspected by Metacatui.
+      * @see https://knb.ecoinformatics.org/knb/docs/metacat-properties.html#authorization-and-authentication-properties.
+      * @type {boolean}
+      * @default false
+      */
+      checkAllowedSubmitters: false,
+
+      /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users
       */
       /**

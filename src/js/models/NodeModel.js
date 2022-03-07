@@ -193,7 +193,6 @@ define(['jquery', 'underscore', 'backbone'],
 							node["readv2"] = v2;
                             // Get the service restrictions for the current member node
                             if( MetacatUI.nodeModel.get("currentMemberNode") == $(thisNode).find("identifier").text()) {
-                                thisModel.set("nodeInfoFound", true);
                             var storageProperty = $(nodeProperty).find("service[name='MNStorage'][version='v2'][available='true']");
                                 if (storageProperty.children().length) {
                                     var restrictionProperty = $(storageProperty).find("restriction[methodName='create']");
@@ -201,7 +200,6 @@ define(['jquery', 'underscore', 'backbone'],
                                         _.each(restrictionProperty.children(), function(subject) {
                                             if(subject.nodeName == "subject") {
                                                 submitters.push(subject.textContent);
-                                                console.debug("submitter: ", subject.textContent);
                                             }
                                         });
                                     }

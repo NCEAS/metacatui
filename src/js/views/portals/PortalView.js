@@ -568,6 +568,15 @@ define(["jquery",
 
           // Insert the button into the navbar
           var container = $(this.editButtonContainer);
+          
+          if (typeof MetacatUI.appUserModel.get("isAllowedSubmitter") === 'undefined') {
+            this.listenToOnce(MetacatUI.appUserModel, "change:isAllowedSubmitter", function () {
+                this.insertOwnerControls();
+            });
+            return;
+        } else if (!MetacatUI.appUserModel.get("isAllowedSubmitter") == true) {
+            return;
+           } 
 
           var model = this.model;
 

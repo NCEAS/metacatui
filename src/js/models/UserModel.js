@@ -1146,10 +1146,18 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
     * parameter 'auth.allowSubmitters'.
     */
     checkAllowedSubmitters: function() {
-        
         var thisModel = this;
+        
+        var checkAllowedSubmitters = MetacatUI.appModel.get("checkAllowedSubmitters");
+        // If 'checkAllowedSubmitters' is set to false, then set the current user
+        // to allowed, to allow access without checking the metacat config 'allow.submitters' list.
+        if (!checkAllowedSubmitters) {
+            this.set("isAllowedSubmitter", true);
+            return;
+        }
+
         if( !this.get("loggedIn") ){
-          this.set("isAuthorizedSubmitter", false);
+          this.set("isAllowedSubmitter", false);
           this.listenToOnce(this, "change:loggedIn", function(){
                 thisModel.checkAllowedSubmitters();
             });
@@ -1176,13 +1184,13 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
         var allowedSubmitters = MetacatUI.nodeModel.get("allowedSubmitters");
         // If allowedSubmitters is not set, then all users are allowed to submit
         if(!allowedSubmitters.length) {
-            this.set("isAuthorizedSubmitter", true);
+            this.set("isAllowedSubmitter", true);
         } else {
             // This user (or equivalent identity) is in the allowed submitters list.
           if(this.hasIdentityOverlap(allowedSubmitters)) {
-            this.set("isAuthorizedSubmitter", true);
+            this.set("isAllowedSubmitter", true);
           } else {
-            this.set("isAuthorizedSubmitter", false);
+            this.set("isAllowedSubmitter", false);
             }
         }
     },
