@@ -2036,7 +2036,7 @@ define(['jquery', 'underscore', 'backbone'],
       urls.authServiceUrl    = baseUrl + '/isAuthorized/';
       urls.queryServiceUrl   = baseUrl + '/query/solr/?';
       urls.metaServiceUrl    = baseUrl + '/meta/';
-      urls.packageServiceUrl = baseUrl + '/packages/application%2Fbagit-097/';
+      urls.packageServiceUrl = baseUrl + '/packages/application%2Fbagit-1.0/';
 
       if( d1Service.indexOf("mn") > 0 ){
         urls.objectServiceUrl = baseUrl + '/object/';
