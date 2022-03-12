@@ -196,6 +196,7 @@ function(Bootstrap, AppView, AppModel) {
 
 		//Load the App View now
 		MetacatUI.appView = new AppView();
+    MetacatUI.appView.render();
 
 		// Initialize routing and start Backbone.history()
 		(function() {

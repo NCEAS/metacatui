@@ -1,16 +1,9 @@
-"use strict";
-
-define(["chai", "chai-jquery", "chai-backbone",
-    "../../../../../../src/js/models/metadata/eml211/EMLNonNumericDomain"],
-    function(chai, chaiJquery, chaiBackbone, EMLNonNumericDomain) {
+define(["../../../../../../../src/js/models/metadata/eml211/EMLNonNumericDomain"],
+    function(EMLNonNumericDomain) {
 
         // Configure the Chai assertion library
         var should =  chai.should();
         var expect = chai.expect;
-
-        // Pull in Jquery and Backbone-specific assertion libraries
-        chai.use(chaiJquery); // exported from chai-jquery.js
-        chai.use(chaiBackbone); // exported from chai-backbone.js
 
         describe("EMLNonNumericDomain Test Suite", function (){
             var emlNonNumericDomain = new EMLNonNumericDomain();

@@ -1,21 +1,14 @@
-"use strict";
-
-define(["chai", "chai-jquery", "chai-backbone",
-        "../../../../../../src/js/models/metadata/eml211/EMLMeasurementScale",
-        "../../../../../../src/js/models/metadata/eml211/EMLNonNumericDomain",
-        "../../../../../../src/js/models/metadata/eml211/EMLNumericDomain",
-        "../../../../../../src/js/models/metadata/eml211/EMLDateTimeDomain",
+define(["../../../../../../../src/js/models/metadata/eml211/EMLMeasurementScale",
+        "../../../../../../../src/js/models/metadata/eml211/EMLNonNumericDomain",
+        "../../../../../../../src/js/models/metadata/eml211/EMLNumericDomain",
+        "../../../../../../../src/js/models/metadata/eml211/EMLDateTimeDomain",
 ],
-    function(chai, chaiJquery, chaiBackbone, EMLMeasurementScale,
+    function(EMLMeasurementScale,
         EMLNonNumericDomain, EMLNumericDomain, EMLDateTimeDomain) {
 
         // Configure the Chai assertion library
         var should =  chai.should();
         var expect = chai.expect;
-
-        // Pull in Jquery and Backbone-specific assertion libraries
-        chai.use(chaiJquery); // exported from chai-jquery.js
-        chai.use(chaiBackbone); // exported from chai-backbone.js
 
         describe("EMLMeasurementScale Factory Test Suite", function (){
             var emlMeasurementScale;
