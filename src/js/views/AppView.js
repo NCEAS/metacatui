@@ -74,16 +74,24 @@ define(['jquery',
 			document.title = MetacatUI.appModel.get("title");
 		},
 
-		// Render the main view and/or re-render subviews. Don't call .html() here
-		// so we don't lose state, rather use .setElement(). Delegate rendering
-		// and event handling to sub views
+		/** Render the main view and/or re-render subviews. Delegate rendering
+		and event handling to sub views.
+    ---
+    If there is no AppView element on the page, don't render the application.
+     ---
+    If there is no AppView element on the page, this function will exit without rendering anything.
+    For instance, this can occur when the AppView is loaded during unit tests.
+    See {@link AppView#el} to check which element is required for rendering. By default,
+    it is set to the element with the `metacatui-app` id (check docs for the most up-to-date info).
+    ----
+    This step is usually unnecessary for Backbone Views since they should only render elements inside of
+    their own `el` anyway. But the APpView is different since it renders the overall structure of MetacatUI.
+    */
 		render: function () {
 
       //If there is no AppView element on the page, don't render the application.
-      //For instance, this can occur when the AppView is loaded during unit tests.
-      //See {@link AppView#el} to check which element is required for rendering. By default,
-      // it is set to the element with the `metacatui-app` id (check docs for the most up-to-date info).
       if( !this.el ){
+        console.warn("Not rendering the UI of the app since the AppView HTML element (AppView.el) does not exist on the page. Make sure you have the AppView element included in index.html");
         return;
       }
 
