@@ -91,7 +91,7 @@ define(['jquery',
 
       //If there is no AppView element on the page, don't render the application.
       if( !this.el ){
-        console.warn("Not rendering the UI of the app since the AppView HTML element (AppView.el) does not exist on the page. Make sure you have the AppView element included in index.html");
+        console.error("Not rendering the UI of the app since the AppView HTML element (AppView.el) does not exist on the page. Make sure you have the AppView element included in index.html");
         return;
       }
 
@@ -153,6 +153,11 @@ define(['jquery',
 
 		// Our view switcher for the whole app
 		showView: function(view, viewOptions) {
+
+      if( !this.el ){
+        console.error("Not rendering the UI of the app since the AppView HTML element (AppView.el) does not exist on the page. Make sure you have the AppView element included in index.html");
+        return;
+      }
 
 			//reference to appView
 			var thisAppViewRef = this;
