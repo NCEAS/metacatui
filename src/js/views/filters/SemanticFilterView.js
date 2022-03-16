@@ -14,6 +14,7 @@ define(['jquery',
     *   AnnotationFilterView.
     * @classcategory Views/Filters
     * @extends FilterView
+    * @screenshot views/filters/SemanticFilterView.png
     * @since 2.X
     */
     var SemanticFilterView = FilterView.extend(
