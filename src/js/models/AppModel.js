@@ -1567,6 +1567,7 @@ define(['jquery', 'underscore', 'backbone'],
        * a SemanticFilterView.
        *
        * @type {string[]}
+       * @since 2.X
        */
       querySemanticFields: ["sem_annotation"],
 

@@ -52,6 +52,8 @@ define(
         /**
          * If true, this filter will be added to the query but will
          * act in the "background", like a default filter
+         * @type {boolean}
+         * @since 2.X
          */
         isInvisible: true,
 
@@ -60,6 +62,7 @@ define(
          * a popover, show it on the custom search filter interface, which allows
          * the user to filter search based on the annotations.
          * @type {boolean}
+         * @since 2.X
          */
         useSearchableSelect: false,
 
@@ -70,6 +73,7 @@ define(
          *
          * TODO: Test out comma-separated lists. How does that render?
          * @type {string}
+         * @since 2.X
          */
         defaultOntology: "ECSO",
 
