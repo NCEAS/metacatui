@@ -1,3 +1,7 @@
-<h5 class="layer-detail__label"><%=label%></h5>
-<button class="layer-detail__toggle map-view__button"></button>
+<% if (showTitle) { %>
+  <h5 class="layer-detail__label"><%=label%></h5>
+<% } %>
+<% if (collapsible) { %>
+  <button class="layer-detail__toggle map-view__button"></button>
+<% } %>
 <div class="layer-detail__content"></div>

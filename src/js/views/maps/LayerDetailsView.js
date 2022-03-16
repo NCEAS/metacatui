@@ -91,6 +91,10 @@ define(
          * display information about the MapAsset and/or allow some aspect of the
          * MapAsset's appearance to be edited - e.g. a LayerInfoView or a
          * LayerOpacityView.
+         * @property {boolean} collapsible Whether or not this section should be
+         * expandable and collapsible.
+         * @property {boolean} showTitle Whether or not to show the title/label for this
+         * section.
          * @property {boolean} hideIfError Set to true to hide this section when there is
          * an error loading the layer. Example: we should hide the opacity slider for
          * layers that are not visible on the map
@@ -104,18 +108,24 @@ define(
          */
         sections: [
           {
-            label: 'Opacity',
-            view: LayerOpacityView,
+            label: 'Navigation',
+            view: LayerNavigationView,
+            collapsible: false,
+            showTitle: false,
             hideIfError: true
           },
           {
-            label: 'Navigation',
-            view: LayerNavigationView,
+            label: 'Opacity',
+            view: LayerOpacityView,
+            collapsible: false,
+            showTitle: true,
             hideIfError: true
           },
           {
             label: 'Info & Data',
             view: LayerInfoView,
+            collapsible: true,
+            showTitle: true,
             hideIfError: false
           }
         ],
@@ -193,7 +203,9 @@ define(
               var detailSection = new LayerDetailView({
                 label: section.label,
                 contentView: section.view,
-                model: view.model
+                model: view.model,
+                collapsible: section.collapsible,
+                showTitle: section.showTitle
               })
               sectionsContainer.append(detailSection.el)
               detailSection.render()
