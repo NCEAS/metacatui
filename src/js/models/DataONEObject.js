@@ -1448,8 +1448,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
              Set the changed flag on any system metadata or content attribute changes,
              and set the hasContentChanges flag on content changes only
              @param {DataONEObject} [model]
+             @param {object} options Furhter options for this function
+             @property {boolean} options.force If true, a change will be handled regardless if the attribute actually changed
            */
-          handleChange: function(model) {
+          handleChange: function(model, options) {
             if(!model) var model = this;
 
               var sysMetaAttrs = ["serialVersion", "identifier", "formatId", "formatType", "size", "checksum",
@@ -1477,7 +1479,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               // And get a list of all changed content attributes
               changedContentAttrs = _.difference(changedSysMetaOrContentAttrs, sysMetaAttrs);
 
-              if ( changedContentAttrs.length > 0 && !this.get("hasContentChanges") && model.get("synced") ) {
+              if ( (changedContentAttrs.length > 0 && !this.get("hasContentChanges") && model.get("synced")) ||
+                   (options && options.force)) {
                 this.set("hasContentChanges", true);
                 this.addToUploadQueue();
               }

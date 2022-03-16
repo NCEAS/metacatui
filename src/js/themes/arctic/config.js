@@ -45,12 +45,13 @@ MetacatUI.AppConfig = Object.assign({
   emlEditorRequiredFields: {
     abstract: true,
     alternateIdentifier: false,
+    dataSensitivity: true,
     funding: true,
     generalTaxonomicCoverage: false,
     geoCoverage: true,
     intellectualRights: true,
     keywordSets: false,
-    methods: false,
+    methods: true,
     samplingDescription: false,
     studyExtentDescription: false,
     taxonCoverage: false,
@@ -59,6 +60,12 @@ MetacatUI.AppConfig = Object.assign({
   },
   allowChangeRightsHolder: false,
   enableMeasurementTypeView: true,
+  dataSensitivityInfoURL: "/sensitive-data-guidelines",
+  customEMLMethods: [{
+    titleOptions: ["Ethical Research Practices"],
+    id: "ethicalResearchPractices",
+    required: true
+  }],
 
   //Searching
   enableSolrJoins: true,
