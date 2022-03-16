@@ -1571,11 +1571,14 @@ define(['jquery', 'underscore', 'backbone'],
       hideIsPartOfFilter: true,
 
       /**
-      * The default FilterGroups to use in the data catalog search (DataCatalogViewWithFilters)
-      *   The DataCatalogViewWithFilters is only used in the EditCollectionView (when editing collections or portals), as of 2.9.0
-      *   To change the default filters in the main data search view (DataCatalogView), edit the `defaultSearchFilters` attribute here.
-      * This is an array of literal objects that will be converted into FilterGroup models
-      * @type {object[]}
+      * This configuration is not currently used any where in MetacatUI.
+      * The default {@link FilterGroup}s to use in the FUTURE data catalog search ({@link DataCatalogViewWithFilters}).
+      *   The {@link DataCatalogViewWithFilters} will soon replace the {@link DataCatalogView} as the primary search view when
+      *   users first visit the /data page to search for data in the repository.
+      * To change the default filters in the current search view ({@link DataCatalogView}), edit the {@link AppModel#defaultSearchFilters} attribute.
+      * This is an array of literal objects that will be directly set on the {@link FilterGroup} models. Refer to the {@link FilterGroup#defaults} for
+      * options.
+      * @type {FilterGroup#defaults[]}
       */
       defaultFilterGroups: [
         {
