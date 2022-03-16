@@ -342,7 +342,8 @@ define(['underscore', 'jquery', 'backbone',
                 view = this;
 
             if(!container.length){
-              container = this.$(".section.overview");
+              container = $(`<div id="data-sensitivity-container"></div>`);
+              this.$(".section.overview").append(container);
             }
 
             require(['text!../img/icons/datatags/check-tag.svg', 'text!../img/icons/datatags/alert-tag.svg'], function(checkTagIcon, alertTagIcon){
