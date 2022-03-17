@@ -190,7 +190,6 @@ define(
             require(["views/searchSelect/SearchableSelectView"], function(SearchableSelect){
 
               view.multiSelectView = new SearchableSelect({
-                inputLabel: view.inputlabel ? view.inputLabel: "Add one or more concepts",
                 placeholderText: view.placeholderText ? view.placeholderText : "Search for or select a value",
                 icon: view.icon,
                 separatorText: view.separatorText,
