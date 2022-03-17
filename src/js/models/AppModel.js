@@ -1564,7 +1564,8 @@ define(['jquery', 'underscore', 'backbone'],
       /**
        * The names of the query fields that may require special treatment in the
        * UI. For example, upgrade the view for a Filter from a FilterView to
-       * a SemanticFilterView.
+       * a SemanticFilterView or to block certain UIBuilders in FilterEditorView
+       *  that don't make sense for a semantic field.
        *
        * @type {string[]}
        * @since 2.X

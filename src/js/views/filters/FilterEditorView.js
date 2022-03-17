@@ -273,7 +273,7 @@ define(['jquery', 'underscore', 'backbone',
             iconFileName: "choice.svg",
             description: "Allow people to select a search term from a list of options",
             filterTypes: ["filter"],
-            blockedFields: ["sem_annotation"],
+            blockedFields: [...MetacatUI.appModel.get("querySemanticFields")],
             modelFunction: function (attrs) {
               return new ChoiceFilter(attrs)
             },
@@ -290,7 +290,7 @@ define(['jquery', 'underscore', 'backbone',
             iconFileName: "number.svg",
             description: "Let people search for a range of years",
             filterTypes: ["dateFilter"],
-            blockedFields: ["sem_annotation"],
+            blockedFields: [...MetacatUI.appModel.get("querySemanticFields")],
             modelFunction: function (attrs) {
               return new DateFilter(attrs)
             },
@@ -307,7 +307,7 @@ define(['jquery', 'underscore', 'backbone',
             iconFileName: "toggle.svg",
             description: "Let people add or remove a single, specific search term",
             filterTypes: ["filter"],
-            blockedFields: ["sem_annotation"],
+            blockedFields: [...MetacatUI.appModel.get("querySemanticFields")],
             modelFunction: function (attrs) {
               return new ToggleFilter(attrs)
             },
