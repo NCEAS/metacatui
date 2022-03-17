@@ -284,11 +284,6 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
 
         }
 
-        //Add this model to the parent EML model when it is valid
-        if(this.model.isValid()){
-          this.model.get("parentModel").set("methods", this.model);
-        }
-
         //Show the remove button
         $(e.target).parents(".step-container").find(".remove").show();
       },
