@@ -193,6 +193,9 @@ define(
                 this[key] = value;
               }
             }
+            if(this.model && this.model.get('toolbarOpen') === true) {
+              this.isOpen = true;
+            }
           } catch (e) {
             console.log('A ToolbarView failed to initialize. Error message: ' + e);
           }

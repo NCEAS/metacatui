@@ -106,6 +106,11 @@ MetacatUI.AppConfig = Object.assign({
     seriesId: "urn:uuid:06a249da-f9c8-4946-8be4-ac80883bbd22",
     datasource: "urn:node:KNB",
     label: "ecoblender"
+  },
+  {
+    seriesId: "urn:uuid:2de4fa60-1a6f-4c59-b393-79f63bbcb62d",
+    datasource: "urn:node:mnUCSB1",
+    label: "dangermond"
   }],
 
   //Dataset landing pages
