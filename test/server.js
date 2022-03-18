@@ -1,11 +1,10 @@
-/* Simple MetacatUI development server.
+/* Simple MetacatUI test server.
 
 You'll need node.js and express.js to run this.
 
 - Install dependencies with `npm install`.
-- Run with `npm run dev`
+- Run with `npm run test`
 
-You'll also likely want to edit index.html and loader.js as needed.
 See README.md for more details.
 */
 
@@ -14,8 +13,14 @@ const path = require("path");
 const port = process.env.PORT || 3001;
 const app = express();
 
-console.log(__dirname)
-app.use(express.static("../"))
-app.listen(port);
+//Serve files from the metacatui root directory. We need to serve the metacatui source files for the tests to run
+const rootDir = __dirname.substring(0, __dirname.lastIndexOf("/"))
+app.use(express.static(rootDir))
 
+// Redirect routes to the root to the test page
+app.get('/', (req, res) => {
+    res.redirect("/test")
+})
+
+app.listen(port);
 console.log("Tests are now running at http://localhost:" + port + "/test");
