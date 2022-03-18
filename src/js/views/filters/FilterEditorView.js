@@ -540,6 +540,7 @@ define(['jquery', 'underscore', 'backbone',
             // CANCEL
             cancelButton.on('click', function (event) {
               cancelButton.off('click');
+              view.currentUIBuilder = null;
               view.hideModal();
             })
 

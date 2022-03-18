@@ -264,6 +264,9 @@ define(['jquery', 'underscore', 'backbone',
      */
     updateUIAttribute: function(e){
       try {
+        if (this.mode != "uiBuilder") {
+          return
+        }
         var inputEl = e.target;
         if (!inputEl) {
           return
