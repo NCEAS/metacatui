@@ -140,7 +140,9 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           var max = this.get("max"),
               min = this.get("min"),
               value = this.get("values") ? this.get("values")[0] : null,
-              escapeMinus = function(val){ return val.toString().replace("-", "\\%2D") };
+              escapeMinus = function(val){ return val.toString().replace("-", "\\%2D") },
+              exists = function (val) { return val !== null && val !== undefined }
+          
 
           //Construct a query string for ranges, min, or max
           if(
@@ -162,15 +164,15 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
             //If there is at least a min or max
             else{
               //If there's a min but no max, set the max to a wildcard (unbounded)
-              if( (min || min === 0) && !max ){
+              if( exists(min) && !exists(max) ){
                 max = "*";
               }
               //If there's a max but no min, set the min to a wildcard (unbounded)
-              else if ( !min && min !== 0 && max ){
+              else if ( exists(max) && !exists(min) ){
                 min = "*";
               }
               //If the max is higher than the min, set the max to a wildcard (unbounded)
-              else if( (max || max === 0) && (min || min === 0) && (max < min) ){
+              else if( exists(max) && exists(min) && (max < min) ){
                 max = "*";
               }
 
