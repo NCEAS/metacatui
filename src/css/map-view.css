@@ -31,12 +31,12 @@
   --map-col-bkg-lighter: #1b2538;
   --map-col-bkg-lightest: #242e42;
   --map-col-buttons: #313c52;
-  --map-col-buttons-emphasis: var(--portal-secondary-color, #04da88);
   --map-col-text: #F9FAFB;
-  --map-col-highlight: var(--portal-primary-color);
   --map-col-green: #069868;
   --map-col-blue: #057fc6;
   --map-col-yellow: #f8b406;
+  --map-col-buttons-emphasis: var(--portal-secondary-color, var(--map-col-green));
+  --map-col-highlight: var(--portal-primary-color, var(--map-col-blue));
   /* SIZING: */
   --map-size-toolbar-link: 2.2rem;
   --map-size-toolbar-link-margin: 0.4rem;
@@ -111,6 +111,13 @@
 
 .map-view__button:hover {
   filter: brightness(1.2);
+}
+
+.map-view__button--emphasis {
+  background: var(--map-col-buttons-emphasis);
+  padding: 0.5rem 0.55rem;
+  font-weight: 900;
+  font-size: 1rem;
 }
 
 /* ---- BADGE ---- */
