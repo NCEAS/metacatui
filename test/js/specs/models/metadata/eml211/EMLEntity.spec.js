@@ -85,17 +85,20 @@ define(["../../../../../../src/js/models/metadata/eml211/EMLEntity.js"], functio
         }
       });
 
+      beforeEach(function(){
+        emlEntity.set("xmlID", attributes.id);
+        emlEntity.set("alternateIdentifier",[attributes.altIds[0], attributes.altIds[1]]);
+        emlEntity.set("entityName", attributes.entityName);
+        emlEntity.set("entityDescription", attributes.entityDescription);
+        updatedDOM = emlEntity.updateDOM()
+      })
+
       it("updates the XML DOM", function() {
-          emlEntity.set("xmlID", attributes.id);
-          emlEntity.set("alternateIdentifier",[attributes.altIds[0], attributes.altIds[1]]);
-          emlEntity.set("entityName", attributes.entityName);
-          emlEntity.set("entityDescription", attributes.entityDescription);
-          updatedDOM = emlEntity.updateDOM();
-          expect(updatedDOM).to.exist;
+        expect(updatedDOM).to.exist;
       });
 
-      it("has the new XML ID", function(){
-        emlEntity.get("xmlID").should.equal(attributes.id);
+      it("updates the XML ID", function(){
+        console.log(updatedDOM)
         $(updatedDOM).attr("id").should.equal(attributes.id);
       });
 

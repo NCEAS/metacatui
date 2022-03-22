@@ -322,6 +322,10 @@ define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
                  $(objectDOM).attr("id", xmlID);
                  this.set("xmlID", xmlID);
                }
+               //If there isn't a matching DataONEObject but there is an id set on this model, use that id
+               else if(this.get("xmlID")){
+                $(objectDOM).attr("id", this.get("xmlID"));
+               }
 
                 // Update the alternateIdentifiers
                 var altIDs = this.get("alternateIdentifier");
@@ -412,8 +416,9 @@ define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
                 }
 
                 // Update the attributeList section
-                var attributeList = this.get("attributeList");
-                var attributeListInDOM = $(objectDOM).children("attributelist");
+                let attributeList = this.get("attributeList");
+                let attributeListInDOM = $(objectDOM).children("attributelist");
+                let attributeListNode;
                 if ( attributeListInDOM.length ) {
                     attributeListNode = attributeListInDOM[0];
                     $(attributeListNode).children().remove(); // Each attr will be replaced

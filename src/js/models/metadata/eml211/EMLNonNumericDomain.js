@@ -152,7 +152,7 @@ define(["jquery", "underscore", "backbone",
                 domainObject.textDomain = {};
                 var xmlID;
                 var definition;
-                var patterns = [];
+                let patterns = [];
                 var source;
 
                 // Add the XML id attribute
@@ -277,7 +277,6 @@ define(["jquery", "underscore", "backbone",
                 var domainNode; // Either a textDomain or enumeratedDomain node
                 var definitionNode;
                 var patternNode;
-                var patterns;
                 var sourceNode;
                 var enumeratedDomainNode;
                 var codeDefinitions;
@@ -329,11 +328,24 @@ define(["jquery", "underscore", "backbone",
                         // Update the existing DOM node by id
                         if ( xmlID && $(objectDOM).find("#" + xmlID).length ) {
 
-                            $domainInDOM = $(objectDOM).find("#" + xmlID).find("textdomain");
-
                             if ( domainType === "textDomain" ) {
 
-                              this.updateTextDomain(domain.textDomain, $domainInDOM);
+                                let originalTextDomain = $(objectDOM).find("#" + xmlID).find("textdomain");
+
+                                //If there are existing textDomain nodes in the DOM, update them
+                                if( originalTextDomain.length ){
+                                    let updatedTextDomain = this.updateTextDomain(domain.textDomain, originalTextDomain);
+                                    originalTextDomain.replaceWith(updatedTextDomain);
+                                }
+                                //If there are no textDomain nodes in the DOM, create new ones
+                                else{
+                                  //Create new textDomain nodes
+                                  let newTextDomain = this.createTextDomain(domain.textDomain);
+
+                                  //Insert the new textDomain nodes into the nonNumericDomain node
+                                  $( $(objectDOM).children("nonnumericdomain")[i] ).html( newTextDomain );
+                                }
+
                             } else if ( domainType === "enumeratedDomain") {
 
                               this.updateEnumeratedDomainDOM(domain.enumeratedDomain, $domainInDOM);
@@ -347,17 +359,20 @@ define(["jquery", "underscore", "backbone",
                             //If this is a text domain,
                             if( typeof domain.textDomain === "object" ){
 
+                                let originalTextDomain = $($(objectDOM).children("nonnumericdomain")[i]).find("textdomain");
+
                                 //If there are existing textDomain nodes in the DOM, update them
-                                if( $($(objectDOM).children("nonnumericdomain")[i]).find("textdomain").length > 0 ){
-                                  this.updateTextDomain(domain.textDomain, $($(objectDOM).children("nonnumericdomain")[i]).find("textdomain"));
+                                if( originalTextDomain.length ){
+                                    let updatedTextDomain = this.updateTextDomain(domain.textDomain, originalTextDomain);
+                                    originalTextDomain.replaceWith(updatedTextDomain);
                                 }
                                 //If there are no textDomain nodes in the DOM, create new ones
                                 else{
                                   //Create new textDomain nodes
-                                  var newTextDomainNodes = this.createTextDomain(domain.textDomain);
+                                  var newTextDomain = this.createTextDomain(domain.textDomain);
 
                                   //Insert the new textDomain nodes into the nonNumericDomain node
-                                  $( $(objectDOM).children("nonnumericdomain")[i] ).html( newTextDomainNodes );
+                                  $( $(objectDOM).children("nonnumericdomain")[i] ).html( newTextDomain );
                                 }
 
                             }
@@ -698,7 +713,7 @@ define(["jquery", "underscore", "backbone",
               // Add any new patterns
               if ( textDomain.pattern && textDomain.pattern.length ) {
 
-                  patterns = Array.from(textDomain.pattern).reverse();
+                  let patterns = Array.from(textDomain.pattern).reverse();
 
                   _.each(patterns, function(pattern) {
 
