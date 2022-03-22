@@ -31,8 +31,9 @@
   --map-col-bkg-lighter: #1b2538;
   --map-col-bkg-lightest: #242e42;
   --map-col-buttons: #313c52;
+  --map-col-buttons-emphasis: var(--portal-secondary-color, #04da88);
   --map-col-text: #F9FAFB;
-  --map-col-highlight: var(--portal-primary-color);
+  --map-col-highlight: var(--portal-primary-color, #00a0e9);
   /* SIZING: */
   --map-size-toolbar-link: 2.2rem;
   --map-size-toolbar-link-margin: 0.4rem;
@@ -98,6 +99,13 @@
 
 .map-view__button:hover {
   filter: brightness(1.2);
+}
+
+.map-view__button--emphasis {
+  background: var(--map-col-buttons-emphasis);
+  padding: 0.5rem 0.55rem;
+  font-weight: 900;
+  font-size: 1rem;
 }
 
 /* hide the credits until we can find a better placement for them */
@@ -582,6 +590,10 @@ represents 1 unit of the given distance measurement. */
   display: flex;
 }
 
+.layer-detail--no-header .layer-detail__content {
+  margin-top: 0;
+}
+
 .layer-detail__toggle {
   --toggle-size: 1.7rem;
   display: block;
@@ -658,6 +670,8 @@ represents 1 unit of the given distance measurement. */
 
 .layer-navigation {
   width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 /* The shaded part of the slider that stretches from 0 to the current opacity */
