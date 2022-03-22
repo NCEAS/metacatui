@@ -1,0 +1,13 @@
+{
+  "tests": [
+    "./js/specs/common/Utilities.spec.js",
+    "./js/specs/models/metadata/eml211/EMlAttribute.spec.js",
+    "./js/specs/models/metadata/eml211/EMLDateTimeDomain.spec.js",
+    "./js/specs/models/metadata/eml211/EMLEntity.spec.js",
+    "./js/specs/models/metadata/eml211/EMLMeasurementScale.spec.js",
+    "./js/specs/models/metadata/eml211/EMLNonNumericDomain.spec.js",
+    "./js/specs/models/metadata/eml211/EMLNumericDomain.spec.js",
+    "./js/specs/models/metadata/eml211/EMLOtherEntity.spec.js",
+    "./js/specs/models/metadata/eml211/EMLTemporalCoverage.spec.js"
+]
+}

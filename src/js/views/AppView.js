@@ -63,58 +63,8 @@ define(['jquery',
 			//Is there a logged-in user?
 			MetacatUI.appUserModel.checkStatus();
 
-			// set up the head - make sure to prepend, otherwise the CSS may be out of order!
-			$("head").append(this.appHeadTemplate({
-				theme: MetacatUI.theme,
-				googleAnalyticsKey: MetacatUI.appModel.get("googleAnalyticsKey")
-      }))
-      //Add the JSON-LD to the head element
-      .append($(document.createElement("script")).attr("type", "application/ld+json")
-                                                 .attr("id", "jsonld")
-                                                 .html(this.jsonLDTemplate()));
-
-			// set up the body
-			this.$el.append(this.template());
-
-			/**
-      * @name MetacatUI.navbarView
-      * @type NavbarView
-      * @description The view that displays a navigation menu on every MetacatUI page and controls the navigation between pages in MetacatUI.
-      */
-			MetacatUI.navbarView = new NavbarView();
-			MetacatUI.navbarView.setElement($('#Navbar')).render();
-
-      /**
-      * @name MetacatUI.altHeaderView
-      * @type AltHeaderView
-      * @description The view that displays a header on every MetacatUI view that uses the "AltHeader" header type.
-      * This header is usually for decorative / aesthetic purposes only.
-      */
-			MetacatUI.altHeaderView = new AltHeaderView();
-			MetacatUI.altHeaderView.setElement($('#HeaderContainer')).render();
-
-      /**
-      * @name MetacatUI.footerView
-      * @type FooterView
-      * @description The view that displays the main footer of the MetacatUI page.
-      * It has informational and navigational links in it and is displayed on every page, except for views that hide it for full-screen display.
-      */
-			MetacatUI.footerView = new FooterView();
-			MetacatUI.footerView.setElement($('#Footer')).render();
-
-      this.showTemporaryMessage();
-
-			//Load the Slaask chat widget if it is enabled in this theme
-			if(MetacatUI.appModel.get("slaaskKey") && window._slaask)
-		    	_slaask.init(MetacatUI.appModel.get("slaaskKey"));
-
 			//Change the document title when the app changes the MetacatUI.appModel title at any time
 			this.listenTo(MetacatUI.appModel, "change:title", this.changeTitle);
-
-			this.listenForActivity();
-			this.listenForTimeout();
-
-			this.initializeWidgets();
 
       this.checkIncompatibility();
 		},
@@ -124,12 +74,78 @@ define(['jquery',
 			document.title = MetacatUI.appModel.get("title");
 		},
 
-		// Render the main view and/or re-render subviews. Don't call .html() here
-		// so we don't lose state, rather use .setElement(). Delegate rendering
-		// and event handling to sub views
+		/** Render the main view and/or re-render subviews. Delegate rendering
+		and event handling to sub views.
+    ---
+    If there is no AppView element on the page, don't render the application.
+     ---
+    If there is no AppView element on the page, this function will exit without rendering anything.
+    For instance, this can occur when the AppView is loaded during unit tests.
+    See {@link AppView#el} to check which element is required for rendering. By default,
+    it is set to the element with the `metacatui-app` id (check docs for the most up-to-date info).
+    ----
+    This step is usually unnecessary for Backbone Views since they should only render elements inside of
+    their own `el` anyway. But the APpView is different since it renders the overall structure of MetacatUI.
+    */
 		render: function () {
 
-			return this;
+      //If there is no AppView element on the page, don't render the application.
+      if( !this.el ){
+        console.error("Not rendering the UI of the app since the AppView HTML element (AppView.el) does not exist on the page. Make sure you have the AppView element included in index.html");
+        return;
+      }
+
+      // set up the head - make sure to prepend, otherwise the CSS may be out of order!
+      $("head").append(this.appHeadTemplate({
+        theme: MetacatUI.theme,
+        googleAnalyticsKey: MetacatUI.appModel.get("googleAnalyticsKey")
+      }))
+      //Add the JSON-LD to the head element
+      .append($(document.createElement("script")).attr("type", "application/ld+json")
+                                                 .attr("id", "jsonld")
+                                                 .html(this.jsonLDTemplate()));
+
+      // set up the body
+      this.$el.append(this.template());
+
+      /**
+      * @name MetacatUI.navbarView
+      * @type NavbarView
+      * @description The view that displays a navigation menu on every MetacatUI page and controls the navigation between pages in MetacatUI.
+      */
+      MetacatUI.navbarView = new NavbarView();
+      MetacatUI.navbarView.setElement($('#Navbar')).render();
+
+      /**
+      * @name MetacatUI.altHeaderView
+      * @type AltHeaderView
+      * @description The view that displays a header on every MetacatUI view that uses the "AltHeader" header type.
+      * This header is usually for decorative / aesthetic purposes only.
+      */
+      MetacatUI.altHeaderView = new AltHeaderView();
+      MetacatUI.altHeaderView.setElement($('#HeaderContainer')).render();
+
+      /**
+      * @name MetacatUI.footerView
+      * @type FooterView
+      * @description The view that displays the main footer of the MetacatUI page.
+      * It has informational and navigational links in it and is displayed on every page, except for views that hide it for full-screen display.
+      */
+      MetacatUI.footerView = new FooterView();
+      MetacatUI.footerView.setElement($('#Footer')).render();
+
+      this.showTemporaryMessage();
+
+      //Load the Slaask chat widget if it is enabled in this theme
+      if(MetacatUI.appModel.get("slaaskKey") && window._slaask)
+          _slaask.init(MetacatUI.appModel.get("slaaskKey"));
+
+      this.listenForActivity();
+      this.listenForTimeout();
+
+      this.initializeWidgets();
+
+      return this;
 		},
 
 		// the currently rendered view
@@ -137,6 +153,11 @@ define(['jquery',
 
 		// Our view switcher for the whole app
 		showView: function(view, viewOptions) {
+
+      if( !this.el ){
+        console.error("Not rendering the UI of the app since the AppView HTML element (AppView.el) does not exist on the page. Make sure you have the AppView element included in index.html");
+        return;
+      }
 
 			//reference to appView
 			var thisAppViewRef = this;

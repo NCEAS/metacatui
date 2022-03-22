@@ -1,23 +1,16 @@
-"use strict";
-
-define(["chai", "chai-jquery", "chai-backbone",
-    "../../../../../../src/js/models/metadata/eml211/EMLNonNumericDomain"],
-    function(chai, chaiJquery, chaiBackbone, EMLNonNumericDomain) {
+define(["../../../../../../../src/js/models/metadata/eml211/EMLNonNumericDomain"],
+    function(EMLNonNumericDomain) {
 
         // Configure the Chai assertion library
-        var should =  chai.should();
-        var expect = chai.expect;
-
-        // Pull in Jquery and Backbone-specific assertion libraries
-        chai.use(chaiJquery); // exported from chai-jquery.js
-        chai.use(chaiBackbone); // exported from chai-backbone.js
+        const should =  chai.should();
+        const expect = chai.expect;
 
         describe("EMLNonNumericDomain Test Suite", function (){
-            var emlNonNumericDomain = new EMLNonNumericDomain();
-            var textDomainXML; // mock response from the server
-            var enumDomainCodeDefXML; // mock response from the server
-            var textDomainAttrs; // object returned by EMLNonNumericDomain.parse()
-            var enumDomainCodeDefAttrs; // object returned by EMLNonNumericDomain.parse()
+            let emlNonNumericDomain = new EMLNonNumericDomain();
+            let textDomainXML; // mock response from the server
+            let enumDomainCodeDefXML; // mock response from the server
+            let textDomainAttrs; // object returned by EMLNonNumericDomain.parse()
+            let enumDomainCodeDefAttrs; // object returned by EMLNonNumericDomain.parse()
             /* Setup */
             before(function() {
                 // Parse a nominal textDomain fragment
@@ -86,11 +79,11 @@ define(["chai", "chai-jquery", "chai-backbone",
             });
 
             describe("For a nominal scale with a text domain, updateDOM()", function() {
-                var emlNonNumericDomain;
-                var updatedDOM;
-                var options;
-                var nonNumericDomain;
-                var textDomain;
+                let emlNonNumericDomain;
+                let updatedDOM;
+                let options;
+                let nonNumericDomain;
+                let textDomain;
 
                 /* Set up */
                 before(function() {
@@ -117,9 +110,13 @@ define(["chai", "chai-jquery", "chai-backbone",
                     updatedDOM = undefined;
                 });
 
-                it("should return a modified text domain definition and pattern", function() {
-                    $(updatedDOM).children("nonNumericDomain").children("textdomain").attr("id").should.equal("12345");
+
+
+                it("should update the text domain definition", function() {
                     $(updatedDOM).children("nonNumericDomain").children("textdomain").children("definition")[0].textContent.should.equal("Another definition");
+                });
+
+                it("should update the text domain pattern", function() {
                     $(updatedDOM).children("nonNumericDomain").children("textdomain").children("pattern")[0].textContent.should.equal("{0-9}{0-9}{0-9}");
                 });
 
@@ -157,14 +154,14 @@ define(["chai", "chai-jquery", "chai-backbone",
             });
         });
 
-        var NonNumericDomainUtil = {
+        let NonNumericDomainUtil = {
             /* Returns a nominal non-numeric text domain fragment */
             getTestNominalTextDomainXML: function() {
-                var xml = [];
+                let xml = [];
                 xml.push(
                     "<nominal>\n",
                     "\t<nonNumericDomain>\n",
-                    "\t\t<textDomain id=\"12345\">\n",
+                    "\t\t<textDomain>\n",
                     "\t\t\t<definition>Any text</definition>\n",
                     "\t\t\t<pattern>*</pattern>\n",
                     "\t\t\t<sourced>Any source</sourced>\n",
@@ -177,11 +174,11 @@ define(["chai", "chai-jquery", "chai-backbone",
 
             /* Returns an ordinal non-numeric enumerated domain fragment */
             getTestOrdinalEnumeratedCodeDefinitionDomainXML: function() {
-                var xml = [];
+                let xml = [];
                 xml.push(
                     "<ordinal>\n",
                     "\t<nonNumericDomain>\n",
-                    "\t\t<enumeratedDomain id=\"54321\">\n",
+                    "\t\t<enumeratedDomain>\n",
                     "\t\t\t<codeDefinition>\n",
                     "\t\t\t\t<code>JAL</code>\n",
                     "\t\t\t\t<definition>Jalama Beach, California</definition>\n",

@@ -1,17 +1,7 @@
-"use strict";
-
-define([
-  "chai",
-  "chai-jquery",
-  "chai-backbone",
-  "../../../../src/js/common/EntityUtils",
-], function (chai, chaiJquery, chaiBackbone, EntityUtils) {
+define(["../../../../../../src/js/common/Utilities"], function (EntityUtils) {
   var expect = chai.expect;
 
-  chai.use(chaiJquery);
-  chai.use(chaiBackbone);
-
-  describe("EntityUtilsTestSuite", function () {
+  describe("EntityUtils", function () {
     describe("tryParseCSVHeader", function () {
       var parse = EntityUtils.tryParseCSVHeader;
 
