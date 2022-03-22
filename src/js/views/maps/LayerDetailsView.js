@@ -74,11 +74,20 @@ define(
          * @property {string} toggle The element in the template that acts as a toggle to
          * close/hide the details view
          * @property {string} sections The container for all of the LayerDetailViews.
+         * @property {string} label The label element for the layer that displays a title
+         * in the header of the details view
+         * @property {string} notification The element that holds the notification message,
+         * if there is one. Inserted before all the details sections.
+         * @property {string} badge The class to add to the badge element that is shown
+         * when the layer has a notification message.
          */
         classes: {
           open: 'layer-details--open',
           toggle: 'layer-details__toggle',
-          sections: 'layer-details__sections'
+          sections: 'layer-details__sections',
+          label: 'layer-details__label',
+          notification: 'layer-details__notification',
+          badge: 'map-view__badge'
         },
 
         /**
@@ -179,6 +188,7 @@ define(
 
             // Save a reference to this view
             var view = this;
+            var model = this.model;
 
             // Show the layer details box as open if the view is set to have it open
             // already
@@ -188,22 +198,24 @@ define(
 
             // Insert the template into the view
             this.$el.html(this.template({
-              label: this.model ? this.model.get('label') || '' : ''
+              label: model ? model.get('label') || '' : ''
             }));
 
             // Ensure the view's main element has the given class name
             this.el.classList.add(this.className);
 
-            var sectionsContainer = this.el.querySelector('.' + this.classes.sections)
-
-            this.renderedSections = _.clone(this.sections)
+            // Select elements in the template that we will need to manipulate
+            const sectionsContainer = this.el.querySelector('.' + this.classes.sections)
+            const labelEl = this.el.querySelector('.' + this.classes.label)
 
             // Render each section in the Details panel
+            this.renderedSections = _.clone(this.sections)
+
             this.renderedSections.forEach(function (section) {
               var detailSection = new LayerDetailView({
                 label: section.label,
                 contentView: section.view,
-                model: view.model,
+                model: model,
                 collapsible: section.collapsible,
                 showTitle: section.showTitle
               })
@@ -211,8 +223,8 @@ define(
               detailSection.render()
               // Hide the section if there is an error with the asset, and this section
               // does make sense to show for a layer that can't be displayed
-              if (section.hideIfError && view.model) {
-                if (view.model.get('status') === 'error') {
+              if (section.hideIfError && model) {
+                if (model && model.get('status') === 'error') {
                   detailSection.el.style.display = 'none'
                 }
               }
@@ -221,8 +233,8 @@ define(
 
             // Hide/show sections with the 'hideIfError' property when the status of the
             // MapAsset changes
-            this.stopListening(this.model, 'change:status')
-            this.listenTo(this.model, 'change:status', function (model, status) {
+            this.stopListening(model, 'change:status')
+            this.listenTo(model, 'change:status', function (model, status) {
               const hideIfErrorSections = _.filter(this.renderedSections, function (section) {
                 return section.hideIfError
               })
@@ -234,6 +246,35 @@ define(
                 section.renderedView.el.style.display = displayProperty
               })
             })
+
+            // If this layer has a notification, show the badge and notification
+            // message
+            const notice = model ? model.get('notification') : null
+            if (notice && (notice.message || notice.badge)) {
+              // message
+              if (notice.message) {
+                const noticeEl = document.createElement('div')
+                noticeEl.classList.add(this.classes.notification)
+                noticeEl.innerText = notice.message
+                if (notice.style) {
+                  const badgeClass = this.classes.notification + '--' + notice.style
+                  noticeEl.classList.add(badgeClass)
+                }
+                sectionsContainer.prepend(noticeEl)
+              }
+              // badge
+              if (notice.badge) {
+                const badge = document.createElement('span')
+                badge.classList.add(this.classes.badge)
+                badge.innerText = notice.badge
+                if (notice.style) {
+                  const badgeClass = this.classes.badge + '--' + notice.style
+                  badge.classList.add(badgeClass)
+                }
+                labelEl.append(badge)
+              }
+              
+            }
 
             return this
 
