@@ -109,7 +109,7 @@ MetacatUI.AppConfig = Object.assign({
   }],
 
   // Set the bagit format
-  bagitFormat: "application%2Fbagit-1.0",
+  packageFormat: "application%2Fbagit-1.0",
 
   //Dataset landing pages
   displayDatasetEditButton: false,

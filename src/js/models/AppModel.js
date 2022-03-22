@@ -1859,14 +1859,14 @@ define(['jquery', 'underscore', 'backbone'],
       //bioportalBatchUrl: "https://data.bioontology.org/batch"
 
       /**
-       * The bagitFormat is the identifier for the version of bagit used when downloading data packages. The format should
+       * The packageFormat is the identifier for the version of bagit used when downloading data packages. The format should
        * not contain any additional characters after, for example a backslash.
        * For hierarchical dowloads, use application%2Fbagit-1.0
       * @type {string}
       * @default "application%2Fbagit-097"
       * @example application%2Fbagit-1.0
        */
-      bagitFormat: 'application%2Fbagit-097'
+      packageFormat: 'application%2Fbagit-097'
 		}, MetacatUI.AppConfig),
 
     defaultView: "data",
@@ -2046,7 +2046,7 @@ define(['jquery', 'underscore', 'backbone'],
       urls.authServiceUrl    = baseUrl + '/isAuthorized/';
       urls.queryServiceUrl   = baseUrl + '/query/solr/?';
       urls.metaServiceUrl    = baseUrl + '/meta/';
-      urls.packageServiceUrl = baseUrl + '/packages/'+this.get('bagitFormat')+'/';
+      urls.packageServiceUrl = baseUrl + '/packages/'+this.get('packageFormat')+'/';
 
       if( d1Service.indexOf("mn") > 0 ){
         urls.objectServiceUrl = baseUrl + '/object/';
