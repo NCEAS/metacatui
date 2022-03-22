@@ -108,6 +108,9 @@ MetacatUI.AppConfig = Object.assign({
     label: "ecoblender"
   }],
 
+  // Set the bagit format
+  bagitFormat: "application%2Fbagit-1.0",
+
   //Dataset landing pages
   displayDatasetEditButton: false,
   displayDatasetControls: false,
