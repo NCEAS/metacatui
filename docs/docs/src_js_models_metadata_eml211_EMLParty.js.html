@@ -805,7 +805,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				surName   = individualName.surName || null;
 
 			//If there are no values in this model that would be serialized, then the model is valid
-			if( !this.get("organizationName") &amp;&amp; !this.get("positionName") &amp;&amp; !givenName.length &amp;&amp; !surName
+			if( !this.get("organizationName") &amp;&amp; !this.get("positionName") &amp;&amp; !givenName[0]?.length &amp;&amp; !surName
 					&amp;&amp; !this.get("address").length &amp;&amp; !this.get("phone").length &amp;&amp; !this.get("fax").length
 					&amp;&amp; !this.get("email").length &amp;&amp; !this.get("onlineUrl").length &amp;&amp; !this.get("userId").length){
 
@@ -826,7 +826,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
 			}
 			//If there is a first name and no last name, then this is not a valid individualName
-			else if( (givenName.length &amp;&amp; !surName) &amp;&amp; this.get("organizationName") &amp;&amp; this.get("positionName") ){
+			else if( (givenName[0]?.length &amp;&amp; !surName) &amp;&amp; this.get("organizationName") &amp;&amp; this.get("positionName") ){
 
 				return { surName: "Provide a last name." }
 

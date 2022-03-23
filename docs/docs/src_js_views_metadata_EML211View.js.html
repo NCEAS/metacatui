@@ -388,7 +388,8 @@
                 view = this;
 
             if(!container.length){
-              container = this.$(".section.overview");
+              container = $(`&lt;div id="data-sensitivity-container">&lt;/div>`);
+              this.$(".section.overview").append(container);
             }
 
             require(['text!../img/icons/datatags/check-tag.svg', 'text!../img/icons/datatags/alert-tag.svg'], function(checkTagIcon, alertTagIcon){

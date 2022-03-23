@@ -97,6 +97,9 @@ define(
          * @property {Boolean} [showToolbar=true] - Whether or not to show the side bar
          * with layer list, etc. If true, the {@link MapView} will render a
          * {@link ToolbarView}.
+         * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar
+         * is open when the map is initialized. Set to false by default, so
+         * that the toolbar is hidden by default.
          * @property {Boolean} [showScaleBar=true] - Whether or not to show a scale bar.
          * If true, the {@link MapView} will render a {@link ScaleBarView}.
          * @property {Boolean} [showFeatureInfo=true] - Whether or not to allow users to
@@ -185,6 +188,9 @@ define(
          * clicking)
          * @property {Boolean} [showToolbar=true] - Whether or not to show the side bar
          * with layer list, etc. True by default.
+         * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar
+         * is open when the map is initialized. Set to false by default, so
+         * that the toolbar is hidden by default.
          * @property {Boolean} [showScaleBar=true] - Whether or not to show a scale bar.
          * @property {Boolean} [showFeatureInfo=true] - Whether or not to allow users to
          * click on map features to show more information about them.
@@ -211,6 +217,7 @@ define(
             terrains: new MapAssets(),
             selectedFeatures: new Features(),
             showToolbar: true,
+            toolbarOpen: false,
             showScaleBar: true,
             showFeatureInfo: true,
             currentPosition: {

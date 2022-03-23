@@ -60,7 +60,7 @@ define(
     'views/maps/FeatureInfoView',
     'views/maps/LayerDetailsView',
     // CSS
-    "text!" + MetacatUI.root + "/css/map-view.css",
+    'text!' + MetacatUI.root + '/css/map-view.css',
   ],
   function (
     $,
@@ -130,11 +130,11 @@ define(
          * will show details about a specific layer
          */
         classes: {
-          mapWidgetContainer: "map-view__map-widget-container",
-          scaleBarContainer: "map-view__scale-bar-container",
-          featureInfoContainer: "map-view__feature-info-container",
-          toolbarContainer: "map-view__toolbar-container",
-          layerDetailsContainer: "map-view__layer-details-container"
+          mapWidgetContainer: 'map-view__map-widget-container',
+          scaleBarContainer: 'map-view__scale-bar-container',
+          featureInfoContainer: 'map-view__feature-info-container',
+          toolbarContainer: 'map-view__toolbar-container',
+          layerDetailsContainer: 'map-view__layer-details-container'
         },
 
         /**
@@ -153,7 +153,7 @@ define(
 
           try {
             // Add the CSS required for this view and its sub-views.
-            MetacatUI.appModel.addCSS(MapCSS, "mapView");
+            MetacatUI.appModel.addCSS(MapCSS, 'mapView');
 
             // Get all the options and apply them to this view
             if (typeof options == 'object') {
@@ -201,14 +201,14 @@ define(
             this.renderMapWidget();
 
             // Optionally add the toolbar, layer details, scale bar, and feature info box.
-            if (this.model.get("showToolbar")) {
+            if (this.model.get('showToolbar')) {
               this.renderToolbar();
               this.renderLayerDetails();
             }
-            if (this.model.get("showScaleBar")) {
+            if (this.model.get('showScaleBar')) {
               this.renderScaleBar();
             }
-            if (this.model.get("showFeatureInfo")) {
+            if (this.model.get('showFeatureInfo')) {
               this.renderFeatureInfo();
             }
 

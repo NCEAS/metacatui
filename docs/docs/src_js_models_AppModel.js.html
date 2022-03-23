@@ -498,6 +498,11 @@ define(['jquery', 'underscore', 'backbone'],
       * @since 2.19.0
       */
       /**
+      * In the editor, sometimes it is useful to have guided questions for the Methods section
+      * in addition to the generic numbered method steps. These custom methods are defined here
+      * as an array of literal objects that define each custom Methods question. Custom methods
+      * are serialized to the EML as regular method steps, but with an unchangeable title, defined here,
+      * in order to identify them.
       * @type {CustomEMLMethod}
       * @since 2.19.0
       */
@@ -1612,11 +1617,14 @@ define(['jquery', 'underscore', 'backbone'],
       hideIsPartOfFilter: true,
 
       /**
-      * The default FilterGroups to use in the data catalog search (DataCatalogViewWithFilters)
-      *   The DataCatalogViewWithFilters is only used in the EditCollectionView (when editing collections or portals), as of 2.9.0
-      *   To change the default filters in the main data search view (DataCatalogView), edit the `defaultSearchFilters` attribute here.
-      * This is an array of literal objects that will be converted into FilterGroup models
-      * @type {object[]}
+      * This configuration is not currently used any where in MetacatUI.
+      * The default {@link FilterGroup}s to use in the FUTURE data catalog search ({@link DataCatalogViewWithFilters}).
+      *   The {@link DataCatalogViewWithFilters} will soon replace the {@link DataCatalogView} as the primary search view when
+      *   users first visit the /data page to search for data in the repository.
+      * To change the default filters in the current search view ({@link DataCatalogView}), edit the {@link AppModel#defaultSearchFilters} attribute.
+      * This is an array of literal objects that will be directly set on the {@link FilterGroup} models. Refer to the {@link FilterGroup#defaults} for
+      * options.
+      * @type {FilterGroup#defaults[]}
       */
       defaultFilterGroups: [
         {
@@ -1892,12 +1900,22 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {string}
       * @deprecated
       */
-      d1LogServiceUrl: null
+      d1LogServiceUrl: null,
       /**
       * This Bioportal REST API URL is used by the experimental and unsupported AnnotatorView to get multiple ontology class info at once.
       * @deprecated
       */
       //bioportalBatchUrl: "https://data.bioontology.org/batch"
+
+      /**
+       * The packageFormat is the identifier for the version of bagit used when downloading data packages. The format should
+       * not contain any additional characters after, for example a backslash.
+       * For hierarchical dowloads, use application%2Fbagit-1.0
+      * @type {string}
+      * @default "application%2Fbagit-097"
+      * @example application%2Fbagit-1.0
+       */
+      packageFormat: 'application%2Fbagit-097'
 		}, MetacatUI.AppConfig),
 
     defaultView: "data",
@@ -2077,7 +2095,7 @@ define(['jquery', 'underscore', 'backbone'],
       urls.authServiceUrl    = baseUrl + '/isAuthorized/';
       urls.queryServiceUrl   = baseUrl + '/query/solr/?';
       urls.metaServiceUrl    = baseUrl + '/meta/';
-      urls.packageServiceUrl = baseUrl + '/packages/application%2Fbagit-097/';
+      urls.packageServiceUrl = baseUrl + '/packages/'+this.get('packageFormat')+'/';
 
       if( d1Service.indexOf("mn") > 0 ){
         urls.objectServiceUrl = baseUrl + '/object/';
