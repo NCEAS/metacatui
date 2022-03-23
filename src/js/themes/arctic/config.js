@@ -84,7 +84,7 @@ MetacatUI.AppConfig = Object.assign({
   datasetMapFillColor: "",
 
   // Set the bagit format
-  packageFormat: "application%2Fbagit-1.0",
+  //packageFormat: "application%2Fbagit-1.0",
 
   //Google Analytics
   googleAnalyticsKey: "UA-75482301-1"

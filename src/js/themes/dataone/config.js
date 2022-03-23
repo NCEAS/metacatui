@@ -113,9 +113,6 @@ MetacatUI.AppConfig = Object.assign({
     label: "dangermond"
   }],
 
-  // Set the bagit format
-  packageFormat: "application%2Fbagit-1.0",
-
   //Dataset landing pages
   displayDatasetEditButton: false,
   displayDatasetControls: false,
