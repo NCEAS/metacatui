@@ -3,6 +3,7 @@ define(['underscore',
         'backbone',
         "views/SignInView",
         "text!templates/editorSubmitMessage.html"],
+        
 function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
   /**
@@ -700,8 +701,8 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       this.stopListening();
       this.undelegateEvents();
 
-    }
-
+  },
+  
   });
 
   return EditorView;

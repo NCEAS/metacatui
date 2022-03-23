@@ -243,6 +243,25 @@ define(['underscore',
           if (!MetacatUI.rootDataPackage.packageModel) {
             return
           }
+          
+          /**
+          * Adds messaging to this view to tell an unauthorized user that they cannot create or update datasets.
+          * of this object(s).
+          */
+          if (typeof MetacatUI.appUserModel.get("isAllowedSubmitter") === 'undefined') {
+            this.listenToOnce(MetacatUI.appUserModel, "change:isAllowedSubmitter", function () {
+                this.renderEditorComponents();
+            });
+            return;
+          } else {
+            // If the user is not an authorized submitter (see metacat parmeter auth.submitters), then 
+            // stop rendering of the editor.
+            if(!MetacatUI.appUserModel.get("isAllowedSubmitter") == true) {
+                this.displayNotAllowedSubmitter();
+                return;
+            }
+          }
+          
           var resMapPermission = MetacatUI.rootDataPackage.packageModel.get("isAuthorized_write"),
             metadataPermission = this.model.get("isAuthorized_write");
 
@@ -1392,6 +1411,31 @@ define(['underscore',
 
           return requiredFields;
 
+      },
+
+        /**
+        * Adds messaging to this view to tell an unauthorized user that they cannot create or update datasets.
+        * of this object(s).
+        */
+        displayNotAllowedSubmitter: function(){
+            //var message = this.notAllowedSubmitterTemplate({
+            //    messageText: "Your DataONE user is not included in the list of users that are allowed to submit datasets to this repository." 
+            // });
+              
+            var msg;
+            if (typeof MetacatUI.appModel.get("notAllowedSubmitterMessage") === 'undefined') {
+              msg = "You are not authorized to submit or edit datasets";
+            } else {
+              msg = MetacatUI.appModel.get("notAllowedSubmitterMessage");
+            }
+
+            this.$("#editor-body").empty();
+            //Show the not found message
+            MetacatUI.appView.showAlert(msg, "alert-error", this.$("#editor-body"), null, {remove: true});
+            this.$("#editor-view-not-found-pid").text(this.pid);
+            //Stop listening to any further events
+            this.stopListening();
+            this.model.off();
         }
       });
     return EML211EditorView;
