@@ -50,6 +50,19 @@ define(['jquery', 'underscore', 'backbone',
         this.showButton = options.showButton;
       }
 
+      // Re-render if the rangeMin, rangeMax, or step changes
+      const limitChange = "change:rangeMin change:rangeMax change:step"
+      this.stopListening(this.model, limitChange);
+      this.listenTo(this.model, limitChange, this.render);
+
+      this.listenTo(this.model, 'change:min', function () {
+        console.log(this.model.get('min'))
+      })
+
+      this.listenTo(this.model, 'change:max', function () {
+        console.log(this.model.get('max'))
+      })
+
     },
 
     render: function () {
@@ -133,7 +146,7 @@ define(['jquery', 'underscore', 'backbone',
     updateModel: function(){
       // Get the value of the number input
       var value = this.$("input.single-number").val(),
-          value = parseInt(value);
+          value = Number(value);
           
       if(["min", "max"].includes(this.singleValueType)){
         this.model.set(this.singleValueType, value)
@@ -150,12 +163,12 @@ define(['jquery', 'underscore', 'backbone',
     updateRange : function(e) {
 
       //Get the min and max values from the number inputs
-      var minVal = parseInt(this.$('input.min').val());
-      var maxVal = parseInt(this.$('input.max').val());
+      var minVal = Number(this.$('input.min').val());
+      var maxVal = Number(this.$('input.max').val());
 
       //Update the DateFilter model to match what is in the text inputs
-      this.model.set('min', parseInt(minVal));
-      this.model.set('max', parseInt(maxVal));
+      this.model.set('min', Number(minVal));
+      this.model.set('max', Number(maxVal));
 
       // Update the UI slider to match the new min and max.
       // Can only update the slider values if the slider has been initialized.

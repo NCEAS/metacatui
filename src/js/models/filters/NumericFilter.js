@@ -23,7 +23,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         * @property {Date}    rangeMin - The lowest possible number that 'min' can be
         * @property {Date}    rangeMax - The highest possible number that 'max' can be
         * @property {string}  nodeName - The XML node name to use when serializing this model into XML
-        * @property {boolean} range - If true, this Filter will use a numeric range as the search tterm instead of an exact number
+        * @property {boolean} range - If true, this Filter will use a numeric range as the search term instead of an exact number
         * @property {number}  step - The number to increase the search value by when incrementally increasing or decreasing the numeric range
         */
         defaults: function () {
@@ -36,6 +36,94 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
             range: true,
             step: 0
           });
+        },
+
+        initialize: function (attributes, options) {
+
+          const model = this;
+          Filter.prototype.initialize.call(this, attributes, options);
+
+          // Limit the range min, range max, and update step if the model switches from
+          // being a coordinate filter to a regular numeric filter or vice versa
+          model.listenTo(model, 'change:fields', function () {
+            model.toggleCoordinateLimits()
+          })
+          model.toggleCoordinateLimits();
+
+        },
+
+        // TODO: Add JSDocs
+        // Default values for the rangeMin, rangeMax, and step for coordinate filters
+        coordDefaults: function (coord = 'longitude') {
+          return {
+            rangeMin: coord === 'longitude' ? -180 : -90,
+            rangeMax: coord === 'longitude' ? 180 : 90,
+            step: 0.00001
+          }
+        },
+
+        // TODO: Add JSDocs
+        // add or remove the rangeMin, rangeMax, and step associated with coordinate queries
+        toggleCoordinateLimits: function (overwrite = false) {
+
+          const model = this;
+          const lonDefaults = model.coordDefaults('longitude');
+          const latDefaults = model.coordDefaults('latitude');
+          const numDefaults = model.defaults();
+          attrs = Object.keys(lonDefaults);
+
+          const isDefault = function (attr) {
+            const val = model.get(attr)
+            return (val == numDefaults[attr]) || (val == latDefaults[attr]) || (val == lonDefaults[attr])
+          }
+
+          // When the model has changed to a numeric filter, set the range min, range max,
+          // and step to the default values for a numeric filter, if they are currently set
+          // to the default values for a coordinate filter (or when overwrite is true).
+          let isCoordQuery = false
+          let defaultsToSet = numDefaults
+
+          // When the model has changed to a coordinate filter, set the range min, range max,
+          // and step to the default values for a coordinate filter, if they are currently set
+          // to the default values for a numeric filter (or when overwrite is true).
+          if (model.isCoordinateQuery()) {
+            isCoordQuery = true
+            // Use longitude range (-180, 180) for longitude only queries, or queries with
+            // both longitude and latitude
+            defaultsToSet = lonDefaults
+            if (model.isLatitudeQuery()) {
+              defaultsToSet = latDefaults
+            }
+          }
+
+          attrs.forEach(function (attr) {
+            if (isDefault(attr) || overwrite) {
+              model.set(attr, defaultsToSet[attr])
+            }
+          })
+
+          model.limitToRange()
+
+        },
+
+        // TODO: Add JSDocs
+        // limit the min & max to rangeMin and rangeMax
+        limitToRange: function () {
+
+          const model = this;
+          const min = model.get('min');
+          const max = model.get('max');
+          const rangeMin = model.get('rangeMin');
+          const rangeMax = model.get('rangeMax');
+
+          if (min != null && min < rangeMin && rangeMin != null) {
+            model.set('min', rangeMin);
+          }
+
+          if (max != null && max > rangeMax && rangeMax != null) {
+            model.set('max', rangeMax);
+          }
+
         },
 
         /**
@@ -275,6 +363,11 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
                 filterOptions.detach();
                 $(objectDOM).append(filterOptions);
               }
+            }
+
+            // If there is a min or max or both, there must not be a value
+            if (numericData.min || numericData.min === 0 || numericData.max || numericData.max === 0) {
+              $(objectDOM).children("value").remove();
             }
 
             return objectDOM;

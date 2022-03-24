@@ -816,6 +816,79 @@ define(['jquery', 'underscore', 'backbone'],
       else{
         return false;
       }
+      },
+    
+    /**
+     * Check whether a set of query fields contain only fields that specify latitude and/or
+     * longitude
+     * @param {string[]} [fields] A list of fields to check for coordinate fields. If not
+     * provided, the fields set on the model will be used.
+     * @returns {Boolean} Returns true if every field is a field that specifies latitude or
+     * longitude
+     * @since x.x.x
+    */
+    isCoordinateQuery: function (fields) {
+      try {
+        if (!fields) {
+          fields = this.get('fields');
+        }
+        const latitudeFields = MetacatUI.appModel.get('queryLatitudeFields');
+        const longitudeFields = MetacatUI.appModel.get('queryLongitudeFields');
+        const coordinateFields = latitudeFields.concat(longitudeFields);
+        return _.every(fields, function (field) {
+          return _.contains(coordinateFields, field);
+        })
+      }
+      catch (e) {
+        console.log('Error checking if filter is a coordinate filter. Returning false. ', e);
+        return false;
+      }
+    },
+    
+    /**
+     * Check whether a set of query fields contain only fields that specify latitude
+     * @param {string[]} [fields] A list of fields to check for coordinate fields. If not
+     * provided, the fields set on the model will be used.
+     * @returns {Boolean} Returns true if every field is a field that specifies latitude
+     * @since x.x.x
+    */
+    isLatitudeQuery: function (fields) {
+      try {
+        if (!fields) {
+          fields = this.get('fields');
+        }
+        const latitudeFields = MetacatUI.appModel.get('queryLatitudeFields');
+        return _.every(fields, function (field) {
+          return _.contains(latitudeFields, field);
+        })
+      }
+      catch (e) {
+        console.log('Error checking if filter is a latitude filter. Returning false. ', e);
+        return false;
+      }
+    },
+
+    /**
+     * Check whether a set of query fields contain only fields that specify longitude
+     * @param {string[]} [fields] A list of fields to check for longitude fields. If not
+     * provided, the fields set on the model will be used.
+     * @returns {Boolean} Returns true if every field is a field that specifies longitude
+     * @since x.x.x
+    */
+    isLongitudeQuery: function (fields) {
+      try {
+        if (!fields) {
+          fields = this.get('fields');
+        }
+        const longitudeFields = MetacatUI.appModel.get('queryLongitudeFields');
+        return _.every(fields, function (field) {
+          return _.contains(longitudeFields, field);
+        })
+      }
+      catch (error) {
+        console.log('Error checking if filter is a longitude filter. Returning false. ', e);
+        return false;
+      }
     },
 
     /**
