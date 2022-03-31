@@ -1,4 +1,4 @@
-define(["../../../../../../../src/js/models/metadata/eml211/EMLAttribute"],
+define(["../../../../../../../../src/js/models/metadata/eml211/EMLAttribute"],
     function(EMLAttribute) {
 
         // Configure the Chai assertion library

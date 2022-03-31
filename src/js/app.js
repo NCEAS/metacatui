@@ -322,5 +322,7 @@ function(Bootstrap, AppView, AppModel) {
 				Backbone.history.navigate(route, true);
 			}
 		});
+
+		MetacatUI.appModel.trigger("appInitialized");
 	});
 });

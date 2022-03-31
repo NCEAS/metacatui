@@ -1,4 +1,4 @@
-define(["../../../../../../../src/js/models/metadata/eml211/EMLNonNumericDomain"],
+define(["../../../../../../../../src/js/models/metadata/eml211/EMLNonNumericDomain"],
     function(EMLNonNumericDomain) {
 
         // Configure the Chai assertion library

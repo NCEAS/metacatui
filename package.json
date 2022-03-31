@@ -15,7 +15,8 @@
     "dev": "node server.js",
     "jsdoc": "jsdoc -c docs/jsdoc-templates/metacatui/conf.js",
     "doc": "cd docs; bundle exec jekyll serve",
-    "test": "node test/server.js"
+    "test": "node test/server.js",
+    "integration-test": "node test/server.js integration"
   },
   "repository": {
     "type": "git",
