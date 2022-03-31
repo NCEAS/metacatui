@@ -885,14 +885,28 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
             },
 
             escapeSpecialChar: function(term) {
-                term = term.replace(/%7B/g, "\\%7B");
-                term = term.replace(/%7D/g, "\\%7D");
-                term = term.replace(/%3A/g, "\\%3A");
-                term = term.replace(/:/g, "\\:");
-                term = term.replace(/\(/g, "\\(");
-                term = term.replace(/\)/g, "\\)");
-                term = term.replace(/\?/g, "\\?");
-                term = term.replace(/%3F/g, "\\%3F");
+                term = term.replace(/%7B/g, "%5C%7B");
+                term = term.replace(/%7D/g, "%5C%7D");
+                term = term.replace(/%3A/g, "%5C%3A");
+                term = term.replace(/:/g, "%5C:");
+                term = term.replace(/\(/g, "%5C(");
+                term = term.replace(/\)/g, "%5C)");
+                term = term.replace(/\?/g, "%5C?");
+                term = term.replace(/%3F/g, "%5C%3F");
+                term = term.replace(/%2B/g, "%5C%2B");
+                //Remove ampersands (&) for now since they are reserved Solr characters and the Metacat Solr can't seem to handle them even when they are escaped properly for some reason
+                term = term.replace(/%26/g, "");
+                term = term.replace(/%7C%7C/g, "%5C%7C%5C%7C");
+                term = term.replace(/%21/g, "%5C%21");
+                term = term.replace(/%28/g, "%5C%28");
+                term = term.replace(/%29/g, "%5C%29");
+                term = term.replace(/%5B/g, "%5C%5B");
+                term = term.replace(/%5D/g, "%5C%5D");
+                term = term.replace(/%5E/g, "%5C%5E");
+                term = term.replace(/%22/g, "%5C%22");
+                term = term.replace(/~/g, "%5C~");
+                term = term.replace(/-/g, "%5C-");
+                term = term.replace(/%2F/g, "%5C%2F");
 
                 return term;
             },

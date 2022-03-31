@@ -1057,20 +1057,6 @@ define(["jquery",
                     return false;
                 }
 
-                // Take out quotes since all search multi-word terms are wrapped in quotes anyway
-                while (term.startsWith('"') || term.startsWith("'")) {
-                    term = term.substr(1);
-                }
-                while (term.startsWith("%22")) {
-                    term = term.substr(3);
-                }
-                while (term.endsWith('"') || term.endsWith("'")) {
-                    term = term.substr(0, term.length - 1);
-                }
-                while (term.startsWith("%22")) {
-                    term = term.substr(0, term.length - 3);
-                }
-
                 // Close the autocomplete box
                 if (e.type == "hoverautocompleteselect") {
                     $(input).hoverAutocomplete("close");
