@@ -94,6 +94,12 @@ define(['jquery', 'underscore', 'backbone', "models/DataONEObject", "models/meta
 		updateDOM: function(){
 			var objectDOM = this.get("objectDOM") ? this.get("objectDOM").cloneNode(true) : document.createElement("project");
 
+			// If there is an\ xmlID specified, add it.
+			var xmlID = this.get("xmlID");
+			if (xmlID) {
+				$(objectDOM).attr("id", xmlID);
+			}
+
 			//Create a project title
 			//If there is no title node, create one
 			if( !$(objectDOM).find("title").length ){
