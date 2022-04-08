@@ -51,6 +51,9 @@ define(
          * For example, if this is a BingMapsImageryProvider, then the Bing maps key. If
          * one is required and not set, the model will look in the {@link AppModel} for a
          * key, for example, {@link AppModel#bingMapsKey}
+         * @property {'GeographicTilingScheme'|'WebMercatorTilingScheme'} tilingScheme -
+         * The tiling scheme to use when constructing an imagery provider. If not set,
+         * Cesium uses WebMercatorTilingScheme by default.
          */
 
         /**
@@ -136,6 +139,16 @@ define(
             delete cesiumOptions.ionAssetId
             cesiumOptions.accessToken =
               cesiumOptions.cesiumToken || MetacatUI.appModel.get('cesiumToken');
+          }
+          if (cesiumOptions && cesiumOptions.tilingScheme) {
+            const ts = cesiumOptions.tilingScheme
+            const availableTS = ['GeographicTilingScheme', 'WebMercatorTilingScheme']
+            if (availableTS.indexOf(ts) > -1) {
+              cesiumOptions.tilingScheme = new Cesium[ts]()
+            } else {
+              console.log(`${ts} is not a valid tiling scheme. Using WebMercatorTilingScheme`)
+              cesiumOptions.tilingScheme = new Cesium.WebMercatorTilingScheme()
+            }
           }
 
           if (providerFunction && typeof providerFunction === 'function') {
