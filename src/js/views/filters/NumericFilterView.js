@@ -39,6 +39,8 @@ define(['jquery', 'underscore', 'backbone',
     showButton: true,
 
     initialize: function (options) {
+      
+      const view = this
 
       if( !options || typeof options != "object" ){
         var options = {};
@@ -53,15 +55,12 @@ define(['jquery', 'underscore', 'backbone',
       // Re-render if the rangeMin, rangeMax, or step changes
       const limitChange = "change:rangeMin change:rangeMax change:step"
       this.stopListening(this.model, limitChange);
-      this.listenTo(this.model, limitChange, this.render);
+      this.listenTo(this.model, limitChange, function () {
+        setTimeout(function () {
+          view.render();
+        }, 1);
+      });
 
-      this.listenTo(this.model, 'change:min', function () {
-        console.log(this.model.get('min'))
-      })
-
-      this.listenTo(this.model, 'change:max', function () {
-        console.log(this.model.get('max'))
-      })
 
     },
 
@@ -90,7 +89,8 @@ define(['jquery', 'underscore', 'backbone',
             disabled: false,
             min: this.model.get("rangeMin"),  //sets the minimum on the UI slider on initialization
             max: this.model.get("rangeMax"),   //sets the maximum on the UI slider on initialization
-            values: [ this.model.get("min"), this.model.get("max") ], //where the left and right slider handles are
+            values: [this.model.get("min"), this.model.get("max")], //where the left and right slider handles are
+            step: this.model.get("step"),
             stop: function( event, ui ) {
 
               // When the slider is changed, update the input values
@@ -114,12 +114,12 @@ define(['jquery', 'underscore', 'backbone',
         
         if(numberInput && numberInput.length){
           //If a minimum number is set on the model defaults
-          if(this.model.get("min") !== null){
+          if(this.model.get("min") != null){
             //Set the minimum value on the number input
             numberInput.attr("value", this.model.get("min"));
             this.singleValueType = "min"
           //If a maximum number is set on the model defaults
-          } else if(this.model.get("max") !== null){
+          } else if(this.model.get("max") != null){
             //Set the minimum value on the number input
             numberInput.attr("value", this.model.get("max"));
             this.singleValueType = "max"
@@ -131,7 +131,7 @@ define(['jquery', 'underscore', 'backbone',
           }
       }
         //Set a step attribute if there is one set on the model
-        if( this.model.get("step") ){
+        if( this.model.get("step") != null ){
           numberInput.attr("step", this.model.get("step"));
         }
       }

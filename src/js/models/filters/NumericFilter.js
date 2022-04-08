@@ -34,7 +34,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
             rangeMin: null,
             rangeMax: null,
             range: true,
-            step: 0
+            step: 1
           });
         },
 
@@ -52,8 +52,14 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
         },
 
-        // TODO: Add JSDocs
-        // Default values for the rangeMin, rangeMax, and step for coordinate filters
+        /**
+         * For filters that represent geographic coordinates, return the
+         * appropriate defaults for the NumericFilter model.
+         * @param {'latitude'|'longitude'} coord - The coordinate type to get
+         * defaults for.
+         * @returns {Object} The rangeMin, rangeMax, and step values for the
+         * given coordinate type
+         */
         coordDefaults: function (coord = 'longitude') {
           return {
             rangeMin: coord === 'longitude' ? -180 : -90,
@@ -62,68 +68,182 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           }
         },
 
-        // TODO: Add JSDocs
-        // add or remove the rangeMin, rangeMax, and step associated with coordinate queries
+        /**
+         * Add or remove the rangeMin, rangeMax, and step associated with
+         * coordinate queries. If the filter is a coordinate filter, then add
+         * the appropriate defaults for the rangeMin, rangeMax, and step. If
+         * the filter is NOT a coordinate filter, then set rangeMin, rangeMax,
+         * and step to the regular defaults for a numeric filter.
+         * @param {Boolean} [overwrite=false] - By default, the rangeMin,
+         * rangeMax, and step will only be reset if they are currently set to
+         * one of the default values (e.g. if the model has default values for
+         * a numeric filter, they will be set to the default values for a
+         * coordinate filter). To change this behaviour to always reset the
+         * attributes to the new defaults values, set overwrite to true.
+         */
         toggleCoordinateLimits: function (overwrite = false) {
+          try {
+            const model = this;
+            const lonDefaults = model.coordDefaults('longitude');
+            const latDefaults = model.coordDefaults('latitude');
+            const numDefaults = model.defaults();
+            const attrs = Object.keys(lonDefaults); // 'rangeMin', 'rangeMax', and 'step'
 
-          const model = this;
-          const lonDefaults = model.coordDefaults('longitude');
-          const latDefaults = model.coordDefaults('latitude');
-          const numDefaults = model.defaults();
-          attrs = Object.keys(lonDefaults);
-
-          const isDefault = function (attr) {
-            const val = model.get(attr)
-            return (val == numDefaults[attr]) || (val == latDefaults[attr]) || (val == lonDefaults[attr])
-          }
-
-          // When the model has changed to a numeric filter, set the range min, range max,
-          // and step to the default values for a numeric filter, if they are currently set
-          // to the default values for a coordinate filter (or when overwrite is true).
-          let isCoordQuery = false
-          let defaultsToSet = numDefaults
-
-          // When the model has changed to a coordinate filter, set the range min, range max,
-          // and step to the default values for a coordinate filter, if they are currently set
-          // to the default values for a numeric filter (or when overwrite is true).
-          if (model.isCoordinateQuery()) {
-            isCoordQuery = true
-            // Use longitude range (-180, 180) for longitude only queries, or queries with
-            // both longitude and latitude
-            defaultsToSet = lonDefaults
-            if (model.isLatitudeQuery()) {
-              defaultsToSet = latDefaults
+            const isDefault = function (attr) {
+              const val = model.get(attr)
+              return (val == numDefaults[attr]) || (val == latDefaults[attr]) || (val == lonDefaults[attr])
             }
-          }
 
-          attrs.forEach(function (attr) {
-            if (isDefault(attr) || overwrite) {
-              model.set(attr, defaultsToSet[attr])
+            // When the model has changed to a numeric filter, set the range min, range max,
+            // and step to the default values for a numeric filter, if they are currently set
+            // to the default values for a coordinate filter (or when overwrite is true).
+            let defaultsToSet = numDefaults
+
+            // When the model has changed to a coordinate filter, set the range min, range max,
+            // and step to the default values for a coordinate filter, if they are currently set
+            // to the default values for a numeric filter (or when overwrite is true).
+            if (model.isCoordinateQuery()) {
+              // Use longitude range (-180, 180) for longitude only queries, or queries with
+              // both longitude and latitude
+              defaultsToSet = lonDefaults
+              if (model.isLatitudeQuery()) {
+                defaultsToSet = latDefaults
+              }
             }
-          })
+            attrs.forEach(function (attr) {
+              if (isDefault(attr) || overwrite) {
+                model.set(attr, defaultsToSet[attr])
+              }
+            })
 
-          model.limitToRange()
-
+            model.limitToRange()
+            model.roundToStep()
+          }
+          catch (error) {
+            console.log(
+              'There was an error toggling Coordinate limits in a NumericFilter' +
+              '. Error details: ' + error
+            );
+          }
         },
 
-        // TODO: Add JSDocs
-        // limit the min & max to rangeMin and rangeMax
+        /**
+         * Ensures that the min, max, and value are within the rangeMin and rangeMax.
+         */
         limitToRange: function () {
+          try {
+            const model = this;
+            const min = model.get('min');
+            const max = model.get('max');
 
-          const model = this;
-          const min = model.get('min');
-          const max = model.get('max');
-          const rangeMin = model.get('rangeMin');
-          const rangeMax = model.get('rangeMax');
+            const rangeMin = model.get('rangeMin');
+            const rangeMax = model.get('rangeMax');
 
-          if (min != null && min < rangeMin && rangeMin != null) {
-            model.set('min', rangeMin);
+            const values = model.get('values');
+            const value = values != null && values.length ? values[0] : null;
+
+            // Set MIN to min or max if it is outside the range
+            if (min != null) {
+              if (rangeMin != null && min < rangeMin) {
+                model.set('min', rangeMin);
+              }
+              if (rangeMax != null && min > rangeMax) {
+                model.set('min', rangeMax);
+              }
+            }
+
+            // Set the MAX to min or max if it is outside the range
+            if (max != null) {
+              if (rangeMax != null && max > rangeMax) {
+                model.set('max', rangeMax);
+              }
+              if (rangeMin != null && max < rangeMin) {
+                model.set('max', rangeMin);
+              }
+            }
+
+            // Set the VALUE to min or max if it is outside the range
+            if (value != null) {
+              if (rangeMax != null && value > rangeMax) {
+                values[0] = rangeMax;
+                model.set('values', values);
+              }
+              if (rangeMin != null && value < rangeMin) {
+                values[0] = rangeMin;
+                model.set('values', values);
+              }
+            }
           }
-
-          if (max != null && max > rangeMax && rangeMax != null) {
-            model.set('max', rangeMax);
+          catch (error) {
+            console.log(
+              'There was an error limiting a NumericFilter to the range' +
+              '. Error details: ' + error
+            );
           }
+        },
 
+        /**
+         * Rounds the min, max, and/or value to the same number of decimal
+         * places as the step.
+         */
+        roundToStep: function () {
+          try {
+            const model = this;
+            const min = model.get('min');
+            const max = model.get('max');
+            const step = model.get('step');
+
+            const values = model.get('values');
+            const value = values != null && values.length ? values[0] : null;
+
+            // Returns the number of decimal places in a number
+            function countDecimals(n) {
+              let text = n.toString()
+              // verify if number 0.000005 is represented as "5e-6"
+              if (text.indexOf('e-') > -1) {
+                let [base, trail] = text.split('e-');
+                let deg = parseInt(trail, 10);
+                return deg;
+              }
+              // count decimals for number in representation like "0.123456"
+              if (Math.floor(n) !== n) {
+                return n.toString().split(".")[1].length || 0;
+              }
+              return 0;
+            }
+
+            // Rounds a number to the specified number of decimal places
+            function roundTo(n, digits) {
+              if (digits === undefined) {
+                digits = 0;
+              }
+              const multiplicator = Math.pow(10, digits);
+              n = parseFloat((n * multiplicator).toFixed(11));
+              const test = (Math.round(n) / multiplicator);
+              return +(test.toFixed(digits));
+            }
+
+            // Round min & max to number of decimal places in step
+            if (step != null) {
+              let digits = countDecimals(step)
+              if (min != null) {
+                model.set('min', roundTo(min, digits))
+              }
+              if (max != null) {
+                model.set('max', roundTo(max, digits))
+              }
+              if (value != null) {
+                values[0] = roundTo(value, digits)
+                model.set('values', values)
+              }
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error rounding values in a NumericFilter to the step' +
+              '. Error details: ' + error
+            );
+          }
         },
 
         /**
@@ -193,7 +313,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
             }
           }
           catch (e) {
-            //If an error occured while parsing the XML, return a blank JS object
+            //If an error occurred while parsing the XML, return a blank JS object
             //(i.e. this model will just have the default values).
             return {};
           }
