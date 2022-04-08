@@ -3,6 +3,7 @@
     "./js/specs/unit/collections/SolrResults.js",
     "./js/specs/unit/models/Search.js",
     "./js/specs/unit/models/filters/Filter.js",
+    "./js/specs/unit/models/filters/NumericFilter.js",
     "./js/specs/unit/models/metadata/eml211/EMlAttribute.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLDateTimeDomain.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLEntity.spec.js",
