@@ -1,4 +1,4 @@
-define(["../../../../../../../src/js/models/metadata/eml211/EMLOtherEntity"],
+define(["../../../../../../../../src/js/models/metadata/eml211/EMLOtherEntity"],
     function(EMLOtherEntity) {
 
         // Configure the Chai assertion library

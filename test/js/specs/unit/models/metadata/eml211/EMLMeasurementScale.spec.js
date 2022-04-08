@@ -1,7 +1,7 @@
-define(["../../../../../../../src/js/models/metadata/eml211/EMLMeasurementScale",
-        "../../../../../../../src/js/models/metadata/eml211/EMLNonNumericDomain",
-        "../../../../../../../src/js/models/metadata/eml211/EMLNumericDomain",
-        "../../../../../../../src/js/models/metadata/eml211/EMLDateTimeDomain",
+define(["../../../../../../../../src/js/models/metadata/eml211/EMLMeasurementScale",
+        "../../../../../../../../src/js/models/metadata/eml211/EMLNonNumericDomain",
+        "../../../../../../../../src/js/models/metadata/eml211/EMLNumericDomain",
+        "../../../../../../../../src/js/models/metadata/eml211/EMLDateTimeDomain",
 ],
     function(EMLMeasurementScale,
         EMLNonNumericDomain, EMLNumericDomain, EMLDateTimeDomain) {

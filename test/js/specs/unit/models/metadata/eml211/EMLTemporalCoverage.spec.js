@@ -1,4 +1,4 @@
-define(["../../../../../../../src/js/models/metadata/eml211/EMLTemporalCoverage"],
+define(["../../../../../../../../src/js/models/metadata/eml211/EMLTemporalCoverage"],
     function(EMLTemporalCoverage) {
 
         // Configure the Chai assertion library

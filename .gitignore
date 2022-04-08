@@ -10,3 +10,4 @@ package-lock.json
 src/config/dev
 docs/_site
 docs/vendor
+*.code-workspace

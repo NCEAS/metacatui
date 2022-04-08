@@ -1,4 +1,4 @@
-define(["../../../../../../../src/js/models/metadata/eml211/EMLDateTimeDomain"], function(EMLDateTimeDomain) {
+define(["../../../../../../../../src/js/models/metadata/eml211/EMLDateTimeDomain"], function(EMLDateTimeDomain) {
 
         // Configure the Chai assertion library
         var should =  chai.should();

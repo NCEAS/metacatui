@@ -1,4 +1,4 @@
-define(["../../../../../../src/js/models/metadata/eml211/EMLEntity.js"], function(EMLEntity){
+define(["../../../../../../../src/js/models/metadata/eml211/EMLEntity.js"], function(EMLEntity){
 
   // Configure the Chai assertion library
   let should = chai.should();
