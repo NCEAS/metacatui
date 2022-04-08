@@ -925,6 +925,44 @@ define(
         */
         addImagery: function (cesiumModel) {
           this.scene.imageryLayers.add(cesiumModel)
+          this.sortImagery()
+        },
+
+        /**
+         * Arranges the imagery that is rendered the Map according to the order
+         * that the imagery is arranged in the layers collection.
+         * @since x.x.x
+         */
+        sortImagery() {
+          try {
+            const imageryInMap = this.scene.imageryLayers
+            const imageryModels = this.model.get('layers').getAll('CesiumImagery')
+
+            // If there are no imagery layers, or just one, return
+            if (
+              !imageryInMap || !imageryModels ||
+              imageryInMap.length <= 1 || imageryModels.length <= 1
+            ) {
+              return
+            }
+
+            // If there are more than one imagery layer, arrange them in the order that
+            // they were added to the map
+            for (let i = 0; i < imageryModels.length; i++) {
+              const cesiumModel = imageryModels[i].get('cesiumModel')
+              if (cesiumModel) {
+                if (imageryInMap.contains(cesiumModel)) {
+                  imageryInMap.lowerToBottom(cesiumModel)
+                }
+              }
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error sorting displayed imagery in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+          }
         },
 
       }

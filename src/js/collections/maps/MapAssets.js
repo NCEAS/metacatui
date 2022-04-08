@@ -137,6 +137,43 @@ define(
               '. Error details: ' + error
             );
           }
+        },
+
+        /**
+         * Get a list of MapAsset models from this collection that are of a
+         * given type.
+         * @param {'Cesium3DTileset'|'CesiumVectorData'|'CesiumImagery'|'CesiumTerrain'} assetType -
+         * The general type of asset to filter the collection by.
+         * @returns {MapAsset[]} - Returns an array of MapAsset models that are
+         * instances of the given asset type.
+         * @since x.x.x
+         */
+        getAll: function (assetType) {
+          try {
+            // map strings to the models they represent
+            var assetTypeMap = {
+              'Cesium3DTileset': Cesium3DTileset,
+              'CesiumVectorData': CesiumVectorData,
+              'CesiumImagery': CesiumImagery,
+              'CesiumTerrain': CesiumTerrain
+            }
+            if (assetType) {
+              return this.filter(function (assetModel) {
+                return assetModel instanceof assetTypeMap[assetType]
+              })
+            } else {
+              return this.models
+            }
+          }
+          catch (error) {
+            console.log(
+              'Failed to get all of the MapAssets in a MapAssets collection' +
+              '. Error details: ' + error +
+              '\n\n' +
+              'Returning all models in the asset collection.'
+            );
+            return this.models
+          }
         }
 
       }
