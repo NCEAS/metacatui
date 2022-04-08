@@ -5,12 +5,14 @@
        } %>
     <%=label%>
   </label>
-  <div class="slider numeric-slider"></div>
-  <div class="clear"></div>
-  <input class="range min" type="number" value="<%=min%>" step="<%=step%>" min="<%=rangeMin%>" max="<%=rangeMax%>">
-  <span class="to">to</span>
-  <input class="range max" type="number" value="<%=max%>" step="<%=step%>" min="<%=rangeMin%>" max="<%=rangeMax%>">
-  <div class="clear"></div>
+  <div class="slider-container">
+    <div class="slider numeric-slider"></div>
+    <div class="clear"></div>
+    <input class="range min" type="number" value="<%=min%>" step="<%=step%>" min="<%=rangeMin%>" max="<%=rangeMax%>">
+    <span class="to">to</span>
+    <input class="range max" type="number" value="<%=max%>" step="<%=step%>" min="<%=rangeMin%>" max="<%=rangeMax%>">
+    <div class="clear"></div>
+  </div>
 <% } else { %>
   <label>
     <% if(icon){
