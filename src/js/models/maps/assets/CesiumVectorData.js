@@ -277,6 +277,10 @@ define(
             const opacity = this.get('opacity')
             const entities = cesiumModel.entities.values
 
+            // Suspending events while updating a large number of entities helps
+            // performance.
+            cesiumModel.entities.suspendEvents()
+
             // If the asset isn't visible at all, don't bother setting up colors. Just set
             // every feature to hidden.
             if (!model.isVisible()) {
@@ -342,6 +346,8 @@ define(
               }
             }
 
+            cesiumModel.entities.resumeEvents()
+
             // Let the map and/or other parent views know that a change has been made that
             // requires the map to be re-rendered
             model.trigger('appearanceChanged')
@@ -365,6 +371,10 @@ define(
             const entities = cesiumModel.entities.values
             const filters = model.get('filters')
 
+            // Suspending events while updating a large number of entities helps
+            // performance.
+            cesiumModel.entities.suspendEvents()
+
             for (var i = 0; i < entities.length; i++) {
               let visible = true
               const entity = entities[i]
@@ -374,6 +384,9 @@ define(
               }
               entity.show = visible
             }
+
+            cesiumModel.entities.resumeEvents()
+            
             // Let the map and/or other parent views know that a change has been made that
             // requires the map to be re-rendered
             model.trigger('appearanceChanged')
