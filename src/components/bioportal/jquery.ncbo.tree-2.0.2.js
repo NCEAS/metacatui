@@ -410,6 +410,9 @@
             });
             ROOT.html(formatNodes(roots));
             setTreeNodes(ROOT, false);
+          },
+          error: function(error) {
+            ROOT.html($("<span>").html("Failed to load."))
           }
         });
       }

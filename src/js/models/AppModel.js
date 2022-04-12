@@ -1562,6 +1562,17 @@ define(['jquery', 'underscore', 'backbone'],
       queryIdentifierFields: ["id", "identifier", "seriesId", "isPartOf"],
 
       /**
+       * The names of the query fields that may require special treatment in the
+       * UI. For example, upgrade the view for a Filter from a FilterView to
+       * a SemanticFilterView or to block certain UIBuilders in FilterEditorView
+       *  that don't make sense for a semantic field.
+       *
+       * @type {string[]}
+       * @since 2.X
+       */
+      querySemanticFields: ["sem_annotation"],
+
+      /**
        * The isPartOf filter is added to all new portals built in the Portal
        * Builder automatically. It is required for dataset owners to include
        * their dataset in a specific portal collection. By default, this filter
@@ -1647,7 +1658,7 @@ define(['jquery', 'underscore', 'backbone'],
               placeholder: "Geographic region",
               icon: "globe",
               description: "The geographic region or study site, as described by the submitter"
-            }
+            },
           ]
         }
       ],

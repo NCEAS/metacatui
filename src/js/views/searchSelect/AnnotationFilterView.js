@@ -32,7 +32,7 @@ define(
          * The HTML class names for this view element
          * @type {string}
          */
-        className: "annotation-filter",
+        className: "filter annotation-filter",
 
         /**
          * The selector for the element that will show/hide the annotation
@@ -50,10 +50,38 @@ define(
         multiselect: false,
 
         /**
+         * If true, this filter will be added to the query but will
+         * act in the "background", like a default filter
+         * @type {boolean}
+         * @since 2.X
+         */
+        isInvisible: true,
+
+        /**
+         * If set to true, instead of showing the annotation tree interface in
+         * a popover, show it on the custom search filter interface, which allows
+         * the user to filter search based on the annotations.
+         * @type {boolean}
+         * @since 2.X
+         */
+        useSearchableSelect: false,
+
+        /**
+         * The acronym of the ontology or ontologies to render a tree from.
+         *
+         * Must be an ontology that's present on BioPortal.
+         *
+         * TODO: Test out comma-separated lists. How does that render?
+         * @type {string}
+         * @since 2.X
+         */
+        defaultOntology: "ECSO",
+
+        /**
          * The URL that indicates the concept where the tree should start
          * @type {string}
          */
-        startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType",
+        defaultStartingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType",
 
         /**
          * Creates a new AnnotationFilterView
@@ -66,8 +94,20 @@ define(
             if (typeof options == "object") {
               var optionKeys = Object.keys(options);
               _.each(optionKeys, function(key, i) {
+                // Only override non-null values so we can pass in nulls and
+                // still trigger default behavior
+                if (typeof options[key] === "undefined") {
+                  return;
+                }
+
                 this[key] = options[key];
               }, this);
+            }
+
+            // Mix in defaults if needed
+            if (!this.ontology) {
+              this.ontology = this.defaultOntology;
+              this.startingRoot = this.defaultStartingRoot;
             }
 
           } catch (e) {
@@ -90,7 +130,7 @@ define(
 
             var view = this;
 
-            if(view.multiselect){
+            if(view.multiselect || view.useSearchableSelect){
               view.createMultiselect()
             } else {
               view.setUpTree()
@@ -116,7 +156,7 @@ define(
 
             view.treeEl = $('<div id="bioportal-tree"></div>').NCBOTree({
               apikey: MetacatUI.appModel.get("bioportalAPIKey"),
-              ontology: "ECSO",
+              ontology: view.ontology,
               width: "400",
               startingRoot: view.startingRoot
             });
@@ -124,10 +164,12 @@ define(
             // Make an element that contains the tree and reset/jumpUp buttons
             var buttonProps = "data-trigger='hover' data-placement='top' data-container='body' style='margin-right: 3px'"
             view.treeContent = $("<div></div>");
+            view.buttonContainer = $('<div class="ncbo-tree-buttons-container"></div>');
             view.jumpUpButton = $("<button class='icon icon-level-up tooltip-this btn' id='jumpUp' data-title='Go up to parent' " + buttonProps + " ></button>");
             view.resetButton = $("<button class='icon icon-undo tooltip-this btn' id='resetTree' data-title='Reset tree' " + buttonProps + " ></button>");
-            $(view.treeContent).append(view.jumpUpButton);
-            $(view.treeContent).append(view.resetButton);
+            $(view.buttonContainer).append(view.jumpUpButton);
+            $(view.buttonContainer).append(view.resetButton);
+            $(view.treeContent).append(view.buttonContainer);
             $(view.treeContent).append(view.treeEl);
 
           } catch (e) {
@@ -148,10 +190,10 @@ define(
             require(["views/searchSelect/SearchableSelectView"], function(SearchableSelect){
 
               view.multiSelectView = new SearchableSelect({
-                allowMulti: true,
-                allowAdditions: false,
-                inputLabel: "Add one or more concepts",
+                placeholderText: view.placeholderText ? view.placeholderText : "Search for or select a value",
+                icon: view.icon,
                 separatorText: view.separatorText,
+                inputLabel: view.inputLabel
               })
               view.$el.append(view.multiSelectView.el);
               view.multiSelectView.render();
@@ -163,6 +205,12 @@ define(
                 // Otherwise, update the multi-select right away with tree element
                 view.updateMultiselect.call(view)
               }
+
+              //Forward the separatorChanged event from the SearchableSelectView to this AnnotationFilterView
+              //(perhaps this view should have been a subclass?)
+              view.multiSelectView.on("separatorChanged", (separatorText) => {
+                view.trigger("separatorChanged", separatorText)
+              })
             })
           } catch (e) {
             console.log("Failed to create the multi-select interface for an Annotation Filter View, error message: " + e);
@@ -253,7 +301,7 @@ define(
             const ontologyCollection = _.map(view.selected, function(id){
               return {
                 "class" : id,
-                "ontology": "http://data.bioontology.org/ontologies/ECSO"
+                "ontology": "http://data.bioontology.org/ontologies/" + view.ontology
               }
             });
 
@@ -557,7 +605,7 @@ define(
               startingRoot: view.startingRoot
             });
 
-            tree.changeOntology("ECSO");
+            tree.changeOntology(view.ontology);
 
             // Force a re-render
             tree.init();

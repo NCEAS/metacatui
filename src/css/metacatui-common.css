@@ -2881,6 +2881,21 @@ section#user-citations {
 	overflow: visible;
 }
 
+.ncboTree {
+	width: auto;
+	max-height: 300px;
+}
+
+ul.ncboTree {
+	overflow: scroll;
+}
+
+.ncbo-tree-buttons-container {
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
 /** hide the tree until we have it where we want it **/
 #bioportal-tree {
 	display: none;
@@ -2903,9 +2918,7 @@ section#user-citations {
 	width: 95%;
 }
 #bioportal-popover #bioportal-tree{
-	overflow-y: scroll;
-    max-height: 300px;
-    overflow-x: visible;
+	max-height: 400px;
 }
 
 #jumpUp {
@@ -2919,6 +2932,7 @@ section#user-citations {
 .annotation-filter .searchable-select #bioportal-tree {
 	display: block;
 	margin-top: 0.5rem;
+	overflow-x: auto;
 }
 .annotation-filter .searchable-select .menu {
 	min-height: 10rem;
@@ -6522,6 +6536,10 @@ body.mapMode{
 }
 
 /********* Filter Views ***********/
+.filter-groups .tab-content {
+	overflow: inherit;
+}
+
 .portal-view .filter-group{
   padding: 0px 20px;
 }
@@ -6749,6 +6767,36 @@ body.mapMode{
 .filter input[type='text']{
 	width: 80%;
 }
+
+/*
+	Overrides for default Bootstrap styling for the searchable select
+	component when we use it as a Portal data search filter. These overrides make
+	the component look nearly identical to other filters (that use native form
+	elements)
+*/
+.filter-groups .filter.annotation-filter .ui.fluid.dropdown>.dropdown.icon {
+	top: 25%;
+}
+
+.filter-groups .filter.annotation-filter .dropdown.search {
+	padding: 0;
+	font-size: 100%;
+	box-sizing: border-box;
+	border-color: #ccc;
+	border-radius: 2px;
+}
+
+.filter-groups .filter.annotation-filter .dropdown.multiple.ui {
+	padding: 0;
+}
+
+.filter-groups .filter.annotation-filter .ui.multiple.search.dropdown > input.search {
+	font-size: inherit;
+	line-height: 20px;
+	margin: 4px 6px;
+}
+/* End Overrides for default Bootstrap styling for the searchable select */
+
 .filter-group .filter select{
   width: 100%;
 }
