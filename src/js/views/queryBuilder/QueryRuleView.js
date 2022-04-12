@@ -440,7 +440,7 @@ define([
               // A bioportalAPIKey is required for the Annotation Filter UI
               if (MetacatUI.appModel.get("bioportalAPIKey")) {
                 return new AnnotationFilter({
-                  selected: this.model.get("values"),
+                  selected: this.model.get("values").slice(),
                   separatorText: this.model.get("operator"),
                   multiselect: true,
                   inputLabel: "Type a value",
