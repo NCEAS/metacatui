@@ -205,6 +205,12 @@ define(
                 // Otherwise, update the multi-select right away with tree element
                 view.updateMultiselect.call(view)
               }
+
+              //Forward the separatorChanged event from the SearchableSelectView to this AnnotationFilterView
+              //(perhaps this view should have been a subclass?)
+              view.multiSelectView.on("separatorChanged", (separatorText) => {
+                view.trigger("separatorChanged", separatorText)
+              })
             })
           } catch (e) {
             console.log("Failed to create the multi-select interface for an Annotation Filter View, error message: " + e);
