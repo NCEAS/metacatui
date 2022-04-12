@@ -1560,6 +1560,20 @@ define(['jquery', 'underscore', 'backbone'],
        * @since 2.17.0
        */
       queryIdentifierFields: ["id", "identifier", "seriesId", "isPartOf"],
+      
+      /**
+       * The name of the query fields that specify latitude. Filter models that these
+       * fields are handled specially, since they must be a float value and have a
+       * pre-determined minRange and maxRange (-90 to 90).
+       */
+      queryLatitudeFields: ["northBoundCoord", "southBoundCoord"],
+      
+      /**
+       * The name of the query fields that specify longitude. Filter models that these
+       * fields are handled specially, since they must be a float value and have a
+       * pre-determined minRange and maxRange (-180 to 180).
+       */
+      queryLongitudeFields: ["eastBoundCoord", "westBoundCoord"],
 
       /**
        * The names of the query fields that may require special treatment in the
