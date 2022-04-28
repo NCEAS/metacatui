@@ -14,45 +14,42 @@
 						<ul class="dropdown-menu sub-menu">
 			        		<li><a href="<%= MetacatUI.root %>/data" class="show-new-search">Search</a></li>
 			        		<li><a href="<%= MetacatUI.root %>/profile">Summary</a></li>
-			        		<li><a href="/publications">Publications</a></li>
-                  <li><a href="<%= MetacatUI.root %>/portals">Portals</a></li>
+                  			<li><a href="<%= MetacatUI.root %>/portals">Portals</a></li>
+							<li><a href="/training">Data Preservation</a></li>
 			        	</ul>
 		        	</li>
 					<li class="dropdown">
 						<a>Support</a>
 						<ul class="dropdown-menu sub-menu">
-							<li><a href="/support">Support Info</a></li>
-			        		<li><a href="/working-with-data/">Working with data</a></li>
-                  <li><a href="/data-portals/">Data Portals</a></li>
+							<li><a href="/support">Submission Guide</a></li>
 			        		<li><a href="/q-and-a">Frequently Asked Questions</a></li>
+							<li><a href="/working-with-data/">Resources</a></li>
 			        	</ul>
 			        </li>
 					<li class="dropdown">
-						<a>About</a>
+						<a>Community</a>
 						<ul class="dropdown-menu sub-menu">
-							<li><a href="/about">Arctic Data Center</a></li>
-			        		<li><a href="/category/news">News</a></li>
-			        		<li><a href="/team">Team</a></li>
-			        		<li><a href="/history">History</a></li>
+							<li><a href="/social-scientific-data-workshop/">Social Sciences</a></li>
+							<li><a href="/category/news">News</a></li>
+			        		<li><a href="/science-advisory-board">Advisory Board</a></li>
+			       		</ul>
+					</li>
+					<li class="dropdown">
+						<a>Learn</a>
+						<ul class="dropdown-menu sub-menu">
+							<li><a href="training">Upcoming Courses</a></li>
+							<li><a href="training-old">Past Courses</a></li>
 			        	</ul>
 					</li>
 					<li class="dropdown">
-						<a>Community</a>
+						<a>Portals</a>
 						<ul class="dropdown-menu sub-menu">
-              <li><a href="/training">Training</a></li>
-							<li><a href="/category/blog/">Blog</a></li>
-              <li><a href="/mosaic">Mosaic Expedition</a></li>
-              <li><a href="/social-scientific-data-workshop/">Arctic Social Science Data Workshop</a></li>
-			        <li><a href="/synthesis-working-groups">Synthesis Working Groups</a></li>
-			       </ul>
+							<li><a href="<%= MetacatUI.root %>/portals/socialscience">Social Science Data</a></li>
+							<li><a href="<%= MetacatUI.root %>/portals/permafrost">Permafrost Discovery Gateway</a></li>
+							<li><a href="<%= MetacatUI.root %>/portals/arcticwhalebae">Arctic Whale Ecology</a></li>
+			        	</ul>
 					</li>
-			    <li><a href="<%= MetacatUI.root %>/submit">Submit Data</a></li>
-
-          <% if(MetacatUI.appModel.get("showMyPortals") !== false){ %>
-            <li>
-              <a href="<%= MetacatUI.root %>/edit/<%= MetacatUI.appModel.get('portalTermPlural')%>">Create Portal<span class="new-icon"><i class="icon icon-star icon-on-right"></i>NEW</span></a>
-            </li>
-          <% } %>
+			    	<li><a href="<%= MetacatUI.root %>/submit">Submit Data</a></li>
 
 					<% if (loggedIn) { %>
         		<li class="dropdown minimal-nav">

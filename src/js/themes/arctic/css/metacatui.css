@@ -254,13 +254,11 @@
   text-decoration: none;
   padding: 0.75em;
   width: 100%;
-  text-align: center;
 }
 .header .dropdown-menu li a{
 	background-color: #1F254F;
 	color: #FFF;
   font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
-  text-align: center;
   min-width: 180px;
   border-bottom: 1px solid #495082;
   white-space: pre-wrap;
