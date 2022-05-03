@@ -371,12 +371,22 @@ footer .footer-inner{
   align-items: center;
   justify-content: center;
 }
+footer .footer-links{
+	width: 100%;
+}
+footer .footer-links .footer-nav{
+	display: flex;
+justify-content: space-evenly;
+}
 footer .adc-contact {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-evenly;
     width: 100%;
+}
+footer .nav > li >a:hover{
+	background-color: transparent;
 }
 footer .adc-contact .contact-title {
     color: #666;
