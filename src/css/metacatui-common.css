@@ -7774,6 +7774,7 @@ ul.side-nav-items {
     border-width: 1px;
     border-style: solid;
     margin-top: 6px;
+	min-width: 100px;
 }
 .data-package-item .dropdown-menu .muted {
     color: #CCC;
