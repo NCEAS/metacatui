@@ -224,6 +224,36 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 }
             },
 
+            /**
+             * 
+             * @param {Filters|Filter[]} filters The collection of filters to add to this model OR an array of Filter models
+             */
+            addFilters: function(filters){
+              try{
+
+                let currentFilters = this.get("filters");
+
+                //If the passed collection is the same as the one set already, return
+                if( currentFilters == filters )
+                  return;
+                //If the given Filters collec is different than the one set on the model now, combine them
+                else if( Filters.isPrototypeOf(currentFilters) && Filters.isPrototypeOf(filters) ){
+                  filters.models.forEach(f => { currentFilters.add(f) });
+                  this.set("filters", currentFilters);
+                }
+                else if( Filters.isPrototypeOf(currentFilters) && Array.isArray(filters) ){
+                  filters.forEach(f => { currentFilters.add(f) });
+                  this.set("filters", currentFilters);
+                }
+                else if( !currentFilters )
+                  this.set("filters", new Filters(filters));
+                
+              }
+              catch(e){
+                console.error("Couldn't add Filters to the Search model: ", e);
+              }
+            },
+
             /*
              * Resets the geoashes and geohashLevel filters to default
              */

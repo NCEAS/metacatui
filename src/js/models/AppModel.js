@@ -1596,11 +1596,7 @@ define(['jquery', 'underscore', 'backbone'],
       hideIsPartOfFilter: true,
 
       /**
-      * This configuration is not currently used any where in MetacatUI.
-      * The default {@link FilterGroup}s to use in the FUTURE data catalog search ({@link DataCatalogViewWithFilters}).
-      *   The {@link DataCatalogViewWithFilters} will soon replace the {@link DataCatalogView} as the primary search view when
-      *   users first visit the /data page to search for data in the repository.
-      * To change the default filters in the current search view ({@link DataCatalogView}), edit the {@link AppModel#defaultSearchFilters} attribute.
+      * The default {@link FilterGroup}s to use in the data catalog search ({@link CatalogSearchView}).
       * This is an array of literal objects that will be directly set on the {@link FilterGroup} models. Refer to the {@link FilterGroup#defaults} for
       * options.
       * @type {FilterGroup#defaults[]}
@@ -1677,7 +1673,28 @@ define(['jquery', 'underscore', 'backbone'],
         }
       ],
 
+      /** 
+       * The document fields to return when conducting a search. This is the list of fields returned by the main catalog search view. 
+       * @type {string[]}
+       * @since 2.X
+       * @example ["id", "title", "obsoletedBy"]
+      */
+      defaultSearchFields: ["id", "seriesId", "title", "origin", "pubDate","dateUploaded","abstract","resourceMap","beginDate","endDate","read_count_i","geohash_9","datasource","isPublic","project","documents","label","logo","formatId","northBoundCoord","southBoundCoord","eastBoundCoord","westBoundCoord"],
+
       /**
+       * @type {MapModel#defaults}
+       * @since 2.X
+       */
+       catalogSearchMapOptions: {
+        showToolbar: false,
+        layers: [{
+          label: "Datasets",
+          opacity: 0.5,
+          visible: true
+        }]
+       },
+
+     /**
       * Semantic annotation configuration
       * Include your Bioportal api key to show ontology information for metadata annotations
       * see: http://bioportal.bioontology.org/account

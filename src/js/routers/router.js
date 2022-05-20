@@ -37,7 +37,15 @@ function ($, _, Backbone) {
 			'quality(/s=:suiteId)(/:pid)(/)'    : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)(/)'                : 'renderAPI',       // API page
 			"edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)" : "renderPortalEditor",
-			'drafts' : 'renderDrafts'
+			'drafts' : 'renderDrafts',
+			"test" : "renderTest"
+		},
+
+		renderTest: function(){
+			require(["views/search/CatalogSearchView"], function(CatalogSearchView){
+				MetacatUI.appView.catalogSearchView = new CatalogSearchView();
+				MetacatUI.appView.showView(MetacatUI.appView.catalogSearchView);
+			});
 		},
 
 		helpPages: {
