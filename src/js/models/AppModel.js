@@ -1820,7 +1820,7 @@ define(['jquery', 'underscore', 'backbone'],
       * temporary and only useful for internal DataONE purposes. This functionality will be replaced
       * with the DataONE Bookkeeper service, eventually.
       */
-      dataoneHostedRepos: ["urn:node:KNB", "urn:node:ARCTIC", "urn:node:CA_OPC", "urn:node:TNC_DANGERMOND", "urn:node:ESS_DIVE"],
+      dataoneHostedRepos: ["urn:node:KNB", "urn:node:ARCTIC", "urn:node:CA_OPC", "urn:node:ESS_DIVE", "urn:node:CERP_SFWMD"],
 
       /**
       * The length of random portal label generated during preview/trial mode of DataONE Plus
