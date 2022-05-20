@@ -48,6 +48,11 @@ define(['jquery',
       if(attributes.objectDOM){
         this.set(this.parse(attributes.objectDOM))
       }
+      else if(attributes.objectXML){
+        let objectDOM = $.parseHTML(attributes.objectXML)[0];
+        this.set("objectDOM", objectDOM);
+        this.set(this.parse(objectDOM))
+      }
       else{
         //Create the custom method steps and add to the step list
         let customMethodSteps = this.createCustomMethodSteps();
@@ -280,16 +285,23 @@ define(['jquery',
 
       //If there are sampling nodes but no method nodes, make method nodes
       if( objectDOM.find("samplingdescription").length > 0 &&
-          objectDOM.find("studyextent").length > 0 &&
-          objectDOM.find("methodstep").length == 0){
+          objectDOM.find("studyextent").length > 0){
+        //Make a filler method node
+        if(!objectDOM.find("methodstep").length){
             objectDOM.prepend("<methodstep><description><para>No method step description provided.</para></description></methodstep>");
-      }
-      else{
-        //If there is more than one method step, remove any that have the default filler text
-        objectDOM.find("methodstep:contains('No method step description provided.')").remove();
+        }
+        else if(objectDOM.find("methodstep").length > 1){
+          //If there is more than one method step, remove any that have the default filler text
+          objectDOM.find("methodstep:contains('No method step description provided.')").remove();
+          //Double check that there is always at least one method step (or there will be an EML validation error)
+          if(!objectDOM.find("methodstep").length){
+            objectDOM.prepend("<methodstep><description><para>No method step description provided.</para></description></methodstep>");
+          }
+        }
+
       }
 
-       return objectDOM;
+       return objectDOM.length? objectDOM[0] : objectDOM;
     },
 
     /**
