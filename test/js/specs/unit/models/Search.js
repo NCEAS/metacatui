@@ -16,7 +16,6 @@ define(["../../../../../../../../src/js/models/Search"], function(Search) {
 
         describe("The Search model", function(){
             it("should be created", function(){
-                expect(false).to.be.true; //Fail a test temporarily to test auto CI workflow
                 search = new Search();
                 search.should.be.instanceof(Search);
             })

@@ -1,5 +1,7 @@
 MetacatUI Testing
 ======================
+![Tests Status](https://github.com/NCEAS/metacatui/actions/workflows/test.js.yml/badge.svg)
+
 Overview
 --------
 Following Test-Driven Development (TDD) best practices (and BDD best practices as well), unit tests should be written
