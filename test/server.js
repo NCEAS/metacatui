@@ -15,6 +15,10 @@ const path = require("path");
 const port = process.env.PORT || 3001;
 const app = express();
 
+//GitHub Actions core package for automated testing via GitHub Actions
+const core = require('@actions/core');
+
+
 //Serve files from the metacatui root directory. We need to serve the metacatui source files for the tests to run
 const rootDir = __dirname.substring(0, __dirname.lastIndexOf("/"))
 app.use(express.static(rootDir))
@@ -75,5 +79,5 @@ async function runTests(url){
   return html;
 }
 
-runTests(url).catch(console.error)
+runTests(url).catch((error)=>{ console.error(error.message); core.setFailed(error.message); })
 
