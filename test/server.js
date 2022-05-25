@@ -55,8 +55,8 @@ async function runTests(url){
   //Get and print the results
   let passes=parseInt($("#mocha-stats .passes em").text()) || 0;
   let fails=parseInt($("#mocha-stats .failures em").text()) || 0;
-  let passMsg=`PASSES: ${passes}`;
-  let failMsg = `FAILS:  ${fails}`;
+  let passNum=`PASSES: ${passes}`;
+  let failNum = `FAILS:  ${fails}`;
 
   if(testType!="keep-running"){
     server.close();
@@ -66,14 +66,13 @@ async function runTests(url){
   }
 
   if(fails>0){
-      throw Error(`One or more MetacatUI tests failed. Test failure details can be viewed by running "npm view-tests".
-        ${failMsg}
-        ${passMsg}`);
+
+      throw Error(`One or more MetacatUI tests failed. Test failure details can be viewed by running "npm view-tests". \n${failNum}\n${passNum}\nFailed Tests: \n-------------\n${getFailTestsMessage($)}`);
   }
   else{
       console.log(`All tests have completed and passed.
-      ${failMsg}
-      ${passMsg}`);
+      ${failNum}
+      ${passNum}`);
   }
 
   return html;
@@ -81,3 +80,23 @@ async function runTests(url){
 
 runTests(url).catch((error)=>{ console.error(error.message); core.setFailed(error.message); })
 
+function getFailTestsMessage($){
+      //Parse the error messages from the HTML
+      let failMsg="";
+      $("#mocha-report .test.fail .error").each((i,e)=>{
+        failMsg+=`\n[${i+1}]: `;
+        let testInfo = "";
+        $(e).parents(".suite").each((j,s)=>{
+          if(j>0){
+            testInfo = $(s).children("h1").text() + `\n     > ${testInfo}`;
+          }
+          else{
+            testInfo = $(s).children("h1").text();
+          }
+        });
+        testInfo+=`\n     > ${$(e).text()}`
+  
+        failMsg+=testInfo;
+      });
+      return failMsg;
+}
