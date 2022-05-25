@@ -3,7 +3,7 @@
 You'll need node.js and express.js to run this.
 
 - Install dependencies with `npm install`.
-- Run with `npm run test`
+- Run with `npm test`
 
 See README.md for more details.
 */
@@ -39,21 +39,20 @@ const server = app.listen(port);
 //Get the full URL where tests are
 url="http://localhost:"+port+url;
 
-async function ssr(url) {
+async function runTests(url){
   const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();
   await page.goto(url, {waitUntil: 'networkidle0'});
   const html = await page.content(); // serialized HTML of page DOM.
   await browser.close();
-  //console.log(html)
-//  const result_html = ssr("http://localhost:"+port+url);
-const $ = cheerio.load(html);
 
-//Get and print the results
-let passes=parseInt($("#mocha-stats .passes em").text()) || 0;
-let fails=parseInt($("#mocha-stats .failures em").text()) || 0;
-let passMsg=`PASSES: ${passes}`;
-let failMsg = `FAILS: ${fails}`;
+  const $ = cheerio.load(html);
+
+  //Get and print the results
+  let passes=parseInt($("#mocha-stats .passes em").text()) || 0;
+  let fails=parseInt($("#mocha-stats .failures em").text()) || 0;
+  let passMsg=`PASSES: ${passes}`;
+  let failMsg = `FAILS:  ${fails}`;
 
   if(testType!="keep-running"){
     server.close();
@@ -62,21 +61,19 @@ let failMsg = `FAILS: ${fails}`;
       console.log(`Test results are available at ${url}`);
   }
 
-
   if(fails>0){
-      console.error(failMsg);
-      console.error(`Test failure details can be viewed by running "npm view-tests" and visiting ${url}`);
-      throw Error(`${failMsg}
-                   ${passMsg}`);
+      throw Error(`One or more MetacatUI tests failed. Test failure details can be viewed by running "npm view-tests".
+        ${failMsg}
+        ${passMsg}`);
   }
   else{
-      console.log(passMsg, failMsg);
+      console.log(`All tests have completed and passed.
+      ${failMsg}
+      ${passMsg}`);
   }
 
   return html;
 }
 
-ssr(url)
-
-
+runTests(url).catch(console.error)
 
