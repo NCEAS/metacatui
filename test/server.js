@@ -52,22 +52,25 @@ const $ = cheerio.load(html);
 //Get and print the results
 let passes=parseInt($("#mocha-stats .passes em").text()) || 0;
 let fails=parseInt($("#mocha-stats .failures em").text()) || 0;
-
-console.log(`PASSES: ${passes}`);
-
-if(fails>0){
-    console.error(`FAILS: ${fails}`);
-    console.error(`Test failure details can be viewed by running "npm view-tests" and visiting ${url}`)
-}
-else{
-    console.error(`FAILS: ${fails}`);
-}
+let passMsg=`PASSES: ${passes}`;
+let failMsg = `FAILS: ${fails}`;
 
   if(testType!="keep-running"){
     server.close();
   }
   else{
       console.log(`Test results are available at ${url}`);
+  }
+
+
+  if(fails>0){
+      console.error(failMsg);
+      console.error(`Test failure details can be viewed by running "npm view-tests" and visiting ${url}`);
+      throw Error(`${failMsg}
+                   ${passMsg}`);
+  }
+  else{
+      console.log(passMsg, failMsg);
   }
 
   return html;
