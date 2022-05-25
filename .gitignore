@@ -8,7 +8,6 @@ src/js/themes/dangermond
 src/js/themes/sfwmd
 src/js/themes/cerp
 node_modules
-package-lock.json
 src/config/dev
 docs/_site
 docs/vendor
