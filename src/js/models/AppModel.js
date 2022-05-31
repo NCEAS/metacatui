@@ -310,7 +310,9 @@ define(['jquery', 'underscore', 'backbone'],
         *    samplingDescription: false,
         *    studyExtentDescription: false,
         *    temporalCoverage: false,
-        *    title: true
+        *    title: true,
+        *    contact: true,
+        *    principalInvestigator: true
         *  }
        */
       emlEditorRequiredFields: {
@@ -327,7 +329,30 @@ define(['jquery', 'underscore', 'backbone'],
         samplingDescription: false,
         studyExtentDescription: false,
         temporalCoverage: false,
-        title: true
+        title: true,
+        creator: true,
+        contact: true
+      },
+
+      /** 
+       * A list of required fields for each EMLParty (People) in the dataset editor. 
+       * This is a literal object where the keys are the EML Party type (e.g. creator, principalInvestigator) {@link see EMLParty.partytypes}
+       * and the values are arrays of field names.
+       * By default, EMLPartys are *always* required to have an individual's name, position name, or organization name.
+       * @type {object}
+       * @since 2.21.0
+       * @example 
+       *   {
+       *      contact: ["email"],
+       *      creator: ["email", "address", "phone"]
+       *      principalInvestigator: ["organizationName"]
+       *   }
+       * @default 
+       *  {
+       *  }
+      */
+      emlEditorRequiredFields_EMLParty: {
+       
       },
 
       /**

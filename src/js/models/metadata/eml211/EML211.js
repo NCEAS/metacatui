@@ -1421,7 +1421,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
        * Checks if this EML model has all the required values necessary to save to the server
        */
       validate: function() {
-        var errors = {};
+        let errors = {};
 
         //A title is always required by EML
         if( !this.get("title").length || !this.get("title")[0] ){
@@ -1552,57 +1552,55 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         }
 
         //Check the required fields for this MetacatUI configuration
-        if(MetacatUI.appModel.get("emlEditorRequiredFields")){
-            _.each(Object.keys(MetacatUI.appModel.get("emlEditorRequiredFields")), function(key){
-              var isRequired = MetacatUI.appModel.get("emlEditorRequiredFields")[key];
+        for([field, isRequired] of Object.entries(MetacatUI.appModel.get("emlEditorRequiredFields"))){
 
-              //If it's not required, then exit
-              if(!isRequired) return;
+          //If it's not required, then go to the next field
+          if(!isRequired) continue;
 
-              if(key == "alternateIdentifier"){
+          if(field == "alternateIdentifier"){
                 if( !this.get("alternateIdentifier").length || _.every(this.get("alternateIdentifier"), function(altId){ return altId.trim() == "" }) )
                   errors.alternateIdentifier = "At least one alternate identifier is required."
               }
-              else if(key == "generalTaxonomicCoverage"){
+          else if(field == "generalTaxonomicCoverage"){
                 if( !this.get("taxonCoverage").length || !this.get("taxonCoverage")[0].get("generalTaxonomicCoverage") )
                   errors.generalTaxonomicCoverage = "Provide a description of the general taxonomic coverage of this data set.";
               }
-              else if(key == "geoCoverage"){
+          else if(field == "geoCoverage"){
                 if(!this.get("geoCoverage").length)
                   errors.geoCoverage = "At least one location is required.";
               }
-              else if(key == "intellectualRights"){
+          else if(field == "intellectualRights"){
                 if( !this.get("intellectualRights") )
                   errors.intellectualRights = "Select usage rights for this data set.";
               }
-              else if(key == "studyExtentDescription"){
+          else if(field == "studyExtentDescription"){
                 if( !this.get("methods") || !this.get("methods").get("studyExtentDescription") )
                   errors.studyExtentDescription = "Provide a study extent description.";
               }
-              else if(key == "samplingDescription"){
+          else if(field == "samplingDescription"){
                 if( !this.get("methods") || !this.get("methods").get("samplingDescription") )
                   errors.samplingDescription = "Provide a sampling description.";
               }
-              else if(key == "temporalCoverage"){
+          else if(field == "temporalCoverage"){
                 if(!this.get("temporalCoverage").length)
                   errors.temporalCoverage = "Provide the date(s) for this data set.";
               }
-              else if(key == "taxonCoverage"){
+          else if(field == "taxonCoverage"){
                 if(!this.get("taxonCoverage").length)
                   errors.taxonCoverage = "At least one taxa rank and value is required.";
               }
-              else if(key == "keywordSets"){
+          else if(field == "keywordSets"){
                 if( !this.get("keywordSets").length )
                   errors.keywordSets = "Provide at least one keyword.";
               }
               //The EMLMethods model will validate itself for required fields, but
               // this is a rudimentary check to make sure the EMLMethods model was created
               // in the first place
-              else if(key == "methods"){
+          else if(field == "methods"){
                 if(!this.get("methods"))
                   errors.methods = "At least one method step is required.";
               }
-              else if(key == "funding"){
+          else if(field == "funding"){
                 // Note: Checks for either the funding or award element. award
                 // element is checked by the project's objectDOM for now until
                 // EMLProject fully supports the award element
@@ -1613,20 +1611,32 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                       this.get("project").get("objectDOM").querySelectorAll("award").length > 0)))
                   errors.funding = "Provide at least one project funding number or name.";
               }
-              else if(key == "abstract"){
+          else if(field == "abstract"){
                 if(!this.get("abstract").length)
                   errors["abstract"] = "Provide an abstract.";
               }
-              else if(key == "dataSensitivity"){
+          else if(field == "dataSensitivity"){
                 if( !this.getDataSensitivity() ){
                   errors["dataSensitivity"] = "Pick the category that best describes the level of sensitivity or restriction of the data.";
                 }
               }
-              else if( !this.get(key) || (Array.isArray(this.get(key)) && !this.get(key).length) ){
-                errors[key] = "Provide a " + key + ".";
+          //If this is an EMLParty type, check that there is a party of this type in the model
+          else if( EMLParty.prototype.partyTypes.map(t=>t.dataCategory).includes(field) ){
+            //If this is an associatedParty role
+            if( EMLParty.prototype.defaults().roleOptions?.includes(field) ){
+              if(!this.get("associatedParty")?.map(p=>p.get("roles")).flat().includes(field)){
+                errors[field] = "Provide information about the people or organization(s) in the role: " + 
+                  EMLParty.prototype.partyTypes.find(t=>t.dataCategory==field)?.label;
               }
-            }, this);
-
+            }
+            else if( !this.get(field)?.length ){
+              errors[field] = "Provide information about the people or organization(s) in the role: " + 
+                  EMLParty.prototype.partyTypes.find(t=>t.dataCategory==field)?.label;
+            }
+          }
+          else if( !this.get(field) || !this.get(field)?.length ){
+            errors[field] = "Provide a " + field + ".";
+          }
         }
 
         if( Object.keys(errors).length )

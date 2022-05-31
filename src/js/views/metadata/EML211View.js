@@ -124,63 +124,13 @@ define(['underscore', 'jquery', 'backbone',
         dataSensitivityContainerSelector: "#data-sensitivity-container",
 
         /**
+         * An array of literal objects to describe each type of EML Party. This property has been moved to 
+         * {@link EMLParty#partyTypes} as of 2.21.0 and will soon be deprecated.
          * @type {object[]}
-         * @property {string} label - The name of the party category to display to the user
-         * @property {string} dataCategory - The string that is used to represent this party. This value
-         *  should exactly match one of the strings listed in EMLParty typeOptions or EMLParty roleOptions.
-         * @property {string} description - An optional description to display below the label to help the user
-         *  with this category.
-         * @property {boolean} createFromUser - If set to true, the information from the logged-in user will be
-         *  used to create an EML party for this category if none exist already when the view loads.
-         * @property {number} limit - If the number of parties allowed for this category is not unlimited,
-         *  then limit should be set to the maximum allowable number.
+         * @deprecated
          * @since 2.15.0
          */
-        partyTypes: [
-          {
-            label: "Dataset Creators (Authors/Owners/Originators)",
-            dataCategory: "creator",
-            description: "Each person or organization listed as a Creator will be listed in the data" +
-              " citation. At least one person, organization, or position with a 'Creator'" +
-              " role is required.",
-            createFromUser: true
-          },
-          {
-            label: "Contact",
-            dataCategory: "contact",
-            createFromUser: true
-          },
-          {
-            label: "Principal Investigators",
-            dataCategory: "principalInvestigator"
-          },
-          {
-            label: "Co-Principal Investigators",
-            dataCategory: "coPrincipalInvestigator"
-          },
-          {
-            label: "Collaborating-Principal Investigators",
-            dataCategory: "collaboratingPrincipalInvestigator"
-          },
-          {
-            label: "Metadata Provider",
-            dataCategory: "metadataProvider"
-          },
-          {
-            label: "Custodians/Stewards",
-            dataCategory: "custodianSteward"
-          },
-          {
-            label: "Publisher",
-            dataCategory: "publisher",
-            description: "Only one publisher can be specified.",
-            limit: 1
-          },
-          {
-            label: "Users",
-            dataCategory: "user"
-          }
-        ],
+        partyTypes: EMLParty.prototype.partyTypes,
 
         initialize: function (options) {
 
@@ -393,7 +343,7 @@ define(['underscore', 'jquery', 'backbone',
           // Create a dropdown menu for adding new person types
           this.renderPeopleDropdown();
 
-          this.partyTypes.forEach(function (partyType) {
+          EMLParty.prototype.partyTypes.forEach(function (partyType) {
 
             // Make sure that there are no container elements saved
             // in the partyType array, since we may need to re-create the
@@ -414,7 +364,8 @@ define(['underscore', 'jquery', 'backbone',
 
             // If no parties exist for the given party type, but one is required,
             // (e.g. for contact and creator), then create one from the user's information.
-            if ((!parties || !parties.length) && partyType.createFromUser) {
+            if (!parties?.length && partyType.createFromUser){
+              
               var newParty = new EMLParty({
                 type: partyType.isAssociatedParty ? "associatedParty" : partyType.dataCategory,
                 roles: partyType.isAssociatedParty ? [partyType.dataCategory] : [],
@@ -423,13 +374,18 @@ define(['underscore', 'jquery', 'backbone',
               newParty.createFromUser();
               model.addParty(newParty);
               parties = [newParty]
+
             }
 
-            // Render each party
+            // Render each party of this type
             if (parties.length) {
               parties.forEach(function (party) {
                 this.renderPerson(party, partyType.dataCategory);
               }, this);
+            }
+            //If there are no parties of this type but they are required, then render a new empty person for this type
+            else if(MetacatUI.appModel.get("emlEditorRequiredFields")[partyType.dataCategory]){
+              this.renderPerson(null, partyType.dataCategory);
             }
 
           }, this);
@@ -479,7 +435,7 @@ define(['underscore', 'jquery', 'backbone',
               .addClass("row-striped");
 
             //For each party type, add it to the menu as an option
-            this.partyTypes.forEach(function (partyType) {
+            EMLParty.prototype.partyTypes.forEach(function (partyType) {
               $(this.partyMenu).append($(document.createElement("option"))
                 .val(partyType.dataCategory)
                 .text(partyType.label))
@@ -518,7 +474,7 @@ define(['underscore', 'jquery', 'backbone',
             // Find the party type or role based on the type given.
             // Update the model.
             if (partyType) {
-              var partyTypeProperties = _.findWhere(this.partyTypes, { dataCategory: partyType });
+              var partyTypeProperties = _.findWhere(EMLParty.prototype.partyTypes, { dataCategory: partyType });
               if (partyTypeProperties) {
                 if (partyTypeProperties.isAssociatedParty) {
                   var newRoles = _.clone(emlParty.get("roles"));
@@ -557,7 +513,7 @@ define(['underscore', 'jquery', 'backbone',
             if (partyType === "new") {
               container = this.newPartyContainer;
             } else {
-              var partyTypeProperties = _.findWhere(this.partyTypes, { dataCategory: partyType });
+              var partyTypeProperties = _.findWhere(EMLParty.prototype.partyTypes, { dataCategory: partyType });
               if (partyTypeProperties) {
                 container = partyTypeProperties.containerEl;
               }
@@ -615,7 +571,7 @@ define(['underscore', 'jquery', 'backbone',
           var container = $(e.target).parents(".eml-party"),
             emlParty = container.length ? container.data("model") : null,
             partyType = container.length && emlParty ? emlParty.get("roles")[0] || emlParty.get("type") : null;
-          partyTypeProperties = _.findWhere(this.partyTypes, { dataCategory: partyType }),
+            partyTypeProperties = _.findWhere(EMLParty.prototype.partyTypes, { dataCategory: partyType }),
             numPartyForms = this.$("[data-attribute='" + partyType + "'] .eml-party").length,
             numNewPartyForms = this.$("[data-attribute='" + partyType + "'] .eml-party.new").length;
 
@@ -645,7 +601,7 @@ define(['underscore', 'jquery', 'backbone',
           //Get the form and model
           var partyForm = this.newPartyContainer,
             partyModel = partyForm.find(".eml-party").data("model").clone(),
-            partyTypeProperties = _.findWhere(this.partyTypes, { dataCategory: partyType });
+            partyTypeProperties = _.findWhere(EMLParty.prototype.partyTypes, { dataCategory: partyType });
 
 
           // Remove this type from the dropdown menu
@@ -685,7 +641,7 @@ define(['underscore', 'jquery', 'backbone',
 
           if (!partyType) return;
 
-          var partyTypeProperties = _.findWhere(this.partyTypes, { dataCategory: partyType });
+          var partyTypeProperties = _.findWhere(EMLParty.prototype.partyTypes, { dataCategory: partyType });
 
           if (!partyTypeProperties) {
             return
@@ -718,7 +674,12 @@ define(['underscore', 'jquery', 'backbone',
           //Add the new party container
           partyTypeProperties.containerEl = $(document.createElement("div"))
             .attr("data-attribute", partyType)
+            .attr("data-category", partyType)
             .addClass("row-striped");
+          let notification=document.createElement("p");
+          notification.className="notification";
+          notification.setAttribute("data-category", partyType);
+          partyTypeProperties.containerEl.append(notification);
           outerContainer.append(partyTypeProperties.containerEl);
 
           // Add in the new party type container just before the dropdown
@@ -782,7 +743,7 @@ define(['underscore', 'jquery', 'backbone',
 
           _.each(currentRoles, function (currentRole) {
 
-            var partyTypeProperties = _.findWhere(this.partyTypes, { dataCategory: currentRole }),
+            var partyTypeProperties = _.findWhere(EMLParty.prototype.partyTypes, { dataCategory: currentRole }),
               label = partyTypeProperties ? partyTypeProperties.label : "";
 
             menu.find("input[value='" + currentRole + "']")
@@ -796,7 +757,7 @@ define(['underscore', 'jquery', 'backbone',
           // If the maximum number of parties has already been for this party type,
           // then don't allow adding more.
 
-          var partiesWithLimits = _.filter(this.partyTypes, function (partyType) {
+          var partiesWithLimits = _.filter(EMLParty.prototype.partyTypes, function (partyType) {
             return typeof partyType.limit === "number"
           });
 
@@ -859,7 +820,7 @@ define(['underscore', 'jquery', 'backbone',
 
             //Get the roles
             var role = $(checkedBox).val(),
-              partyTypeProperties = _.findWhere(this.partyTypes, { dataCategory: role });
+              partyTypeProperties = _.findWhere(EMLParty.prototype.partyTypes, { dataCategory: role });
 
             //Create a new EMLParty model
             var newPerson = new EMLParty();
