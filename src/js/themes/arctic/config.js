@@ -56,7 +56,11 @@ MetacatUI.AppConfig = Object.assign({
     studyExtentDescription: false,
     taxonCoverage: false,
     temporalCoverage: true,
-    title: true
+    title: true,
+    contact: true
+  },
+  emlEditorRequiredFields_EMLParty: {
+    "contact": ["email"]
   },
   allowChangeRightsHolder: false,
   enableMeasurementTypeView: true,

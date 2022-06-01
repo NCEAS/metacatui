@@ -31,6 +31,9 @@ MetacatUI.AppConfig = Object.assign({
     temporalCoverage: true,
     title: true
   },
+  emlEditorRequiredFields_EMLParty: {
+    "contact": ["email"]
+  },
   defaultAccessPolicy: [{
     subject: "CN=knb-data-admins,DC=dataone,DC=org",
     read: true,
