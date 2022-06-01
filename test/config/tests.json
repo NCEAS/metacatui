@@ -4,6 +4,7 @@
     "./js/specs/unit/models/Search.js",
     "./js/specs/unit/models/filters/Filter.js",
     "./js/specs/unit/models/filters/NumericFilter.js",
+    "./js/specs/unit/models/metadata/eml211/EML211.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLAttribute.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLDateTimeDomain.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLEntity.spec.js",
@@ -12,6 +13,7 @@
     "./js/specs/unit/models/metadata/eml211/EMLNonNumericDomain.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLNumericDomain.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLOtherEntity.spec.js",
+    "./js/specs/unit/models/metadata/eml211/EMLParty.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLTemporalCoverage.spec.js",
     "./js/specs/unit/common/Utilities.spec.js"
   ],
