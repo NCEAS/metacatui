@@ -133,6 +133,8 @@ define(
               return this.get('cesiumModel')
             }
 
+            model.resetStatus();
+
             // Check if this tileset is a Cesium Ion resource, and if it is, set the url
             // from the asset Id
             this.setCesiumURL()
