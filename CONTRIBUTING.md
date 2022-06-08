@@ -110,7 +110,8 @@ readable, and maintainable software.  While there has been significant variablil
 in the coding styles applied historically, new contributions should strive for
 clean code formatting.  Some of the guidelines we follow include:
 
-**Documentation**.
+## Documentation
+
 All JavaScript code should be fully documented with [JSDoc](https://jsdoc.app/) comments.
 
 For Models and Views:
