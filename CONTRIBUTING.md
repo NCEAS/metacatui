@@ -8,6 +8,7 @@
 - [Release process](#release-process)
 - [Testing](#testing)
 - [Code style](#code-style)
+- [Documentation](#documentation)
 - [Contributor license agreement](#contributor-license-agreement)
 
 ## Types of contributions
