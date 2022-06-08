@@ -15,6 +15,7 @@
     "./js/specs/unit/models/metadata/eml211/EMLOtherEntity.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLParty.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLTemporalCoverage.spec.js",
+    "./js/specs/unit/models/maps/assets/CesiumImagery.js",
     "./js/specs/unit/common/Utilities.spec.js"
   ],
   "integration": [

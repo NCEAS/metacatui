@@ -145,6 +145,8 @@ define(
               return model.get('cesiumModel')
             }
 
+            model.resetStatus();
+
             if (!cesiumOptions || !cesiumOptions.data) {
               model.set('status', 'error');
               model.set('statusDetails', 'Vector data source is missing: A URL or GeoJSON/TopoJson object is required')

@@ -638,6 +638,17 @@ define(
         },
 
         /**
+         * Resets the Map Asset's status and statusDetails attributes to their default
+         * values.
+         * @since X.X.X
+         */
+        resetStatus: function () {
+          const defaults = this.defaults()
+          this.set('status', defaults.status)
+          this.set('statusDetails', defaults.statusDetails)
+        },
+
+        /**
          * Checks if the asset information has been fetched and is ready to use.
          * @returns {Promise} Returns a promise that resolves to this model when ready.
         */
