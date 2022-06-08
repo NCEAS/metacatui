@@ -99,6 +99,14 @@ define(['jquery', 'underscore', 'backbone', "models/DataONEObject", "models/meta
 			if (xmlID) {
 				$(objectDOM).attr("id", xmlID);
 			}
+			var scope = this.get("scope");
+			if (scope) {
+				$(objectDOM).attr("scope", scope);
+			}
+			var system = this.get("system");
+			if (system) {
+				$(objectDOM).attr("system", system);
+			}
 
 			//Create a project title
 			//If there is no title node, create one
