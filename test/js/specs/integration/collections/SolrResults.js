@@ -2,19 +2,18 @@ define(["../../../../../../../../src/js/collections/SolrResults", "../../../../.
     // Configure the Chai assertion library
     var should =  chai.should();
     var expect = chai.expect;
-    let solrResults, search;
 
     describe("SolrResults Test Suite", function(){
 
         beforeEach(function(){
-            solrResults = new SolrResults();
-            search = new Search();
+            
         })
 
         describe("Sending the default Data Catalog query", function(){
             
             it("should get the correct results", function(done){
-
+                let solrResults = new SolrResults();
+                let search = new Search();
                 solrResults.setfields("id,seriesId,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,read_count_i,geohash_9,datasource,isPublic,documents,sem_annotation,northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord,formatType,formatId");
                 solrResults.setQuery(search.getQuery());
                 solrResults.rows = 25;
@@ -40,6 +39,8 @@ define(["../../../../../../../../src/js/collections/SolrResults", "../../../../.
         describe("Adding filters", function(){
 
             it("should filter by id", function(done){
+                let solrResults = new SolrResults();
+                let search = new Search();
                 solrResults.rows = 1;
                 solrResults.start = 0;
                 solrResults.setfields("identifier");
@@ -64,6 +65,8 @@ define(["../../../../../../../../src/js/collections/SolrResults", "../../../../.
             });
 
             it("should filter by 'all'", function(done){
+                let solrResults = new SolrResults();
+                let search = new Search();
                 solrResults.rows = 5;
                 solrResults.start = 0;
                 solrResults.setfields("text");
@@ -86,6 +89,8 @@ define(["../../../../../../../../src/js/collections/SolrResults", "../../../../.
             })
 
             it("should filter by data year", function(done){
+                let solrResults=new SolrResults();
+                let search=new Search();
                 solrResults.rows = 5;
                 solrResults.start = 0;
                 solrResults.setfields("beginDate,endDate");
@@ -95,14 +100,19 @@ define(["../../../../../../../../src/js/collections/SolrResults", "../../../../.
                 solrResults.setQuery(search.getQuery());
 
                 solrResults.once("reset", function(){
+                    console.log(solrResults)
                     solrResults.length.should.equal(5);
                     solrResults.pluck("beginDate").every(r => { 
+                        console.log(r)
                         let d = new Date(r);
-                        return d > (new Date(Date.UTC("2017", "12", "31", "23", "59", "59")))
+                        d = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes(), d.getUTCMilliseconds());
+                        console.log(d)
+                        return d > (new Date(Date.UTC(2017, 11, 31, 23, 59, 59)))
                     }).should.be.true;
                     solrResults.pluck("endDate").every(r => { 
                         let d = new Date(r);
-                        return d < (new Date(Date.UTC("2026", "01", "01", "00", "00", "00")))
+                        d = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes(), d.getUTCMilliseconds());
+                        return d < (new Date(Date.UTC(2026, 00, 01, 00, 00, 00)))
                     }).should.be.true;
                     done()
                 });
@@ -116,6 +126,8 @@ define(["../../../../../../../../src/js/collections/SolrResults", "../../../../.
 
         describe("Special characters", function(){
             it("should escape special characters", function(done){
+                let solrResults = new SolrResults();
+                let search = new Search();
                 search.set("all", ['+ - & || ! ( ) { } [ ] ^ " ~ * ? : /', '"', " "]);
                 solrResults.rows = 0;
                 solrResults.start = 0;
