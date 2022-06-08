@@ -8,6 +8,7 @@
 - [Release process](#release-process)
 - [Testing](#testing)
 - [Code style](#code-style)
+- [Documentation](#documentation)
 - [Contributor license agreement](#contributor-license-agreement)
 
 ## Types of contributions
@@ -93,9 +94,15 @@ integration tests in the `tests` subdirectory.
 Any new code developed should include a robust set of unit tests for each public
 method, as well as integration tests from new feature sets.  Tests should fully
 exercise the feature to ensure that it responds correctly to both good data inputs
-as well as various classes of corrupt or bad data.  All tests should pass before
-the `develop` branch is merged to main, and all tests should pass before the `main`
-branch is merged to `releases` and tagged for a release.
+as well as various classes of corrupt or bad data.  All tests should pass before submitting a PR
+or merging to `develop`.
+
+Tests are automatically run via GitHub Actions. Check the root `README.md` file
+for this GitHub Actions status badge and make sure it says "Passing":
+
+![Tests Status](https://github.com/NCEAS/metacatui/actions/workflows/test.js.yml/badge.svg)
+
+Read more documentation about how tests are run and viewed in [/test/README.md](/test/README.md)
 
 ## Code style
 
@@ -104,7 +111,8 @@ readable, and maintainable software.  While there has been significant variablil
 in the coding styles applied historically, new contributions should strive for
 clean code formatting.  Some of the guidelines we follow include:
 
-**Documentation**.
+## Documentation
+
 All JavaScript code should be fully documented with [JSDoc](https://jsdoc.app/) comments.
 
 For Models and Views:
