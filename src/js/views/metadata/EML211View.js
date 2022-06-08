@@ -171,7 +171,7 @@ define(['underscore', 'jquery', 'backbone',
             // This is needed because the EML model validate & serialize functions may
             // automatically make changes, such as adding a contact and creator
             // if none is supplied by the user.
-            this.listenTo(dataPackage, "successSaving", this.renderAllSections);
+            this.listenTo(dataPackage.packageModel, "successSaving", this.renderAllSections);
           }, this);
 
           return this;
