@@ -1361,13 +1361,6 @@ svg .no-activity,
     color: #1f254f;
 }
 
-/**
-MDQ items
-**/
-#suites {
-	display: none;
-}
-
   /* Metadata rendering CSS
   -------------------------------------------------- */
     #Metadata {
@@ -1505,12 +1498,6 @@ MDQ items
       background-color: #323D90;
     }
 
-/* MDQ CSS
--------------------------------------------------- */
-
-#mdqTypeSummary #suites{
-	display: none;
-}
 
 /* Metadata Index CSS
 -------------------------------------------------- */
