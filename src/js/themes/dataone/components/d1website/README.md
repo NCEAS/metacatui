@@ -68,7 +68,7 @@ static_files:
   "site.webmanifest"  : "site.webmanifest"
 ---
 
-### Version: 2022-05-20 09:09:17.0165 -0400 EDT m=+5.126602820
+### Version: 2022-06-09 16:51:15.252361 -0400 EDT m=+5.255779127
 
 # Exports from the DataONE website for the MetacatUI DataONE theme
 
