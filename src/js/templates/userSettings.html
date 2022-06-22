@@ -113,43 +113,7 @@
       </div>
     </div>
   <% } %>
-
-	<div class="span8 subsection" data-section="groups">
-		<div class="panel panel-default">
-		  <div class="panel-heading">
-		  	<h4 class="panel-title">My Groups</h4>
-		  </div>
-		  <div class="panel-body">
-		  		<p>Manage access and permissions to your data with groups.
-		  		You can grant multiple users permission to edit, publish, or
-		  		archive your data by assigning permissions via the group (instead of assigning permissions individually).
-		  		For example, create a group and grant all members permission to access a private data set before publication.
-		  		Or create a group of your collaborators so that members can edit each other's data sets.</p>
-		  		<div id="group-list-container"></div>
-		  		<div class="panel panel-default" id="add-group-container">
-		  			<div class="panel-heading">
-		  				<a href="#" class="toggle-slide" data-slide-el="add-group-form-container"><i class="icon icon-plus"></i> Add a new group</a>
-		  			</div>
-		  			<div class="panel-body hidden" id="add-group-form-container">
-		  				<div id="add-group-alert-container"></div>
-		  			 	<form>
-		  			 		<div class="form-group">
-			  			 		<label for="name" class="control-group span3">Group Name</label>
-				  				<input type="text" name="name" id="add-group-name" maxlength="50" minlength="1" class="input-xlarge" />
-				  				<span class="subtle help-text">Choose wisely; you cannot change this name later.</span>
-				  				<div id="group-name-notification-container" class="form-feedback"></div>
-			  				</div>
-
-			  				<ul class="list-group member-list">
-			  				</ul>
-
-			  				<input type="submit" value="Create Group" class="btn btn-primary" id="add-group-submit"/>
-			  			</form>
-		  			</div>
-			  	</div>
-		  </div>
-		</div>
-	</div>
+	<div id="groups-container"></div>
 	<div class="span8 subsection active" data-section="token">
 	<% }
 	else {
