@@ -74,9 +74,6 @@ MetacatUI.AppConfig = Object.assign({
   hideSummaryMetadataAssessment: false,
   limitPortalsToSubjects: ["CN=knb-data-admins,DC=dataone,DC=org"],
   portalEditNotAuthCreateMessage: "Creating new portals is a feature currently only available to a select group of Beta testers. You should still be able to access your existing portals. Please contact us with any questions at the email address below."
-
-  // Set the bagit format
-  //packageFormat: "application%2Fbagit-1.0",
   
 }, MetacatUI.AppConfig);
 

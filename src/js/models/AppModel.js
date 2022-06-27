@@ -1916,10 +1916,10 @@ define(['jquery', 'underscore', 'backbone'],
        * not contain any additional characters after, for example a backslash.
        * For hierarchical dowloads, use application%2Fbagit-1.0
       * @type {string}
-      * @default "application%2Fbagit-097"
-      * @example application%2Fbagit-1.0
+      * @default "application%2Fbagit-1.0"
+      * @example application%2Fbagit-097
        */
-      packageFormat: 'application%2Fbagit-097'
+      packageFormat: 'application%2Fbagit-1.0'
 		}, MetacatUI.AppConfig),
 
     defaultView: "data",
