@@ -31,11 +31,12 @@ function ($, _, Backbone) {
 			"signinldaperror(/)"                : "renderLdapSignInError",
 			"signinLdap(/)"                     : "renderLdapSignIn",
 			"signinSuccessLdap(/)"              : "renderLdapSignInSuccess",
-      "signin-help"                       : "renderSignInHelp", //The Sign In troubleshotting page
+      		"signin-help"                       : "renderSignInHelp", //The Sign In troubleshotting page
 			'share(/*pid)(/)'                   : 'renderEditor', // registry page
 			'submit(/*pid)(/)'                  : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)(/)'    : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)(/)'                : 'renderAPI',       // API page
+			"projects"                          : "renderProjectInfo", // Projects view
 			"edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)" : "renderPortalEditor",
 			'drafts' : 'renderDrafts'
 		},
@@ -165,6 +166,13 @@ function ($, _, Backbone) {
 				}
 
 			this.renderText(options);
+		},
+
+		renderProjectInfo: function() {
+			require(["views/ProjectView"], function(ProjectView) {
+				MetacatUI.appView.projectView = new ProjectView();
+				MetacatUI.appView.showView(MetacatUI.appView.projectView)
+			});
 		},
 
 		/*
