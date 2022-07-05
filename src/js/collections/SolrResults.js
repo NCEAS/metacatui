@@ -23,7 +23,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 
 			this.docsCache    = options.docsCache || null;
 		    this.currentquery = options.query   || '*:*';
-		    this.fields 	  = options.fields  || "id,title";
 		    this.rows 		  = options.rows    || 25;
 		    this.start 		  = options.start   || 0;
 		    this.sort 		  = options.sort    || 'dateUploaded desc';
@@ -33,6 +32,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		    this.minYear 	  = options.minYear || 1900;
 		    this.maxYear 	  = options.maxYear || new Date().getFullYear();
         this.queryServiceUrl = options.queryServiceUrl || MetacatUI.appModel.get('queryServiceUrl');
+
+		if( MetacatUI.appModel.get("defaultSearchFields")?.length )
+			this.fields = MetacatUI.appModel.get("defaultSearchFields").join(",");
+		else 
+			this.fields = options.fields || "id,title";
+
 
         //If POST queries are disabled in the whole app, don't use POSTs here
         if( MetacatUI.appModel.get("disableQueryPOSTs") ){

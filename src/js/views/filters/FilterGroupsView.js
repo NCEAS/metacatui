@@ -1,11 +1,12 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone',
+        'collections/Filters',
         'models/filters/Filter',
         'models/filters/FilterGroup',
         'views/filters/FilterGroupView',
         'views/filters/FilterView',
         'text!templates/filters/filterGroups.html'],
-  function($, _, Backbone, Filter, FilterGroup, FilterGroupView, FilterView, Template) {
+  function($, _, Backbone, Filters, Filter, FilterGroup, FilterGroupView, FilterView, Template) {
   'use strict';
 
   /**
@@ -87,7 +88,7 @@ define(['jquery', 'underscore', 'backbone',
       }
 
       this.filterGroups = options.filterGroups || new Array();
-      this.filters = options.filters || null;
+      this.filters = options.filters || new Filters();
 
       // For portal search filters, ID filters should be added to the query with an AND
       // operator, so that ID searches search *within* the definition collection.
