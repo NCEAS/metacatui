@@ -1638,6 +1638,13 @@ define(['jquery', 'underscore', 'backbone'],
               description: "Measurement type, e.g. density, temperature, species"
             },
             {
+              fields: ["sem_annotation"],
+              label: "Annotation",
+              placeholder: "Search for class...",
+              icon: "tag",
+              description: "Semantic annotations"
+            },
+            {
               filterType: "ToggleFilter",
               fields: ["documents"],
               label: "Show only results with data",
