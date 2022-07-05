@@ -5,7 +5,7 @@ define(["jquery",
         "collections/maps/MapAssets",
         "models/filters/FilterGroup",
         "models/connectors/Filters-Search",
-        "models/maps/CesiumGeohash",
+        "models/maps/assets/Geohash",
         "models/maps/Map",
         "views/search/SearchResultsView",
         "views/filters/FilterGroupsView",
@@ -112,6 +112,9 @@ function($, $ui, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, Cesiu
 
     setupView: function(){
         $("body").addClass(`catalog-search-body ${this.mode}Mode`);
+
+        //Add LinkedData to the page
+        this.addLinkedData();
 
         this.$el.html(this.template);
 
@@ -242,8 +245,61 @@ function($, $ui, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, Cesiu
         this.mapView.widgetView
     },
 
+     /**
+      * Linked Data Object for appending the jsonld into the browser DOM 
+      * */ 
+     addLinkedData: function() {
+
+        // JSON Linked Data Object
+        let elJSON = {
+            "@context": {
+                "@vocab": "http://schema.org/"
+            },
+            "@type": "DataCatalog",
+        }
+
+        // Find the MN info from the CN Node list
+        let members = MetacatUI.nodeModel.get("members"),
+            nodeModelObject;
+
+        for (let i = 0; i < members.length; i++) {
+            if (members[i].identifier == MetacatUI.nodeModel.get("currentMemberNode")) {
+                nodeModelObject = members[i];
+            }
+        }
+        if (nodeModelObject) {
+            // "keywords": "",
+            // "provider": "",
+            let conditionalData = {
+                "description": nodeModelObject.description,
+                "identifier": nodeModelObject.identifier,
+                "image": nodeModelObject.logo,
+                "name": nodeModelObject.name,
+                "url": nodeModelObject.url
+            }
+            $.extend(elJSON, conditionalData);
+        }
+
+
+        // Check if the jsonld already exists from the previous data view
+        // If not create a new script tag and append otherwise replace the text for the script
+        if (!document.getElementById("jsonld")) {
+            var el = document.createElement("script");
+            el.type = "application/ld+json";
+            el.id = "jsonld";
+            el.text = JSON.stringify(elJSON);
+            document.querySelector("head").appendChild(el);
+        } else {
+            var script = document.getElementById("jsonld");
+            script.text = JSON.stringify(elJSON);
+        }
+    },
+
     onClose: function(){
         $("body").removeClass(`catalog-search-body ${this.mode}Mode`); 
+        
+        //Remove the JSON-LD from the page
+        document.getElementById("jsonld")?.remove();
     }
 
 });
