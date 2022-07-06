@@ -965,6 +965,60 @@ define(
           }
         },
 
+        /**
+         * Display a box around every rendered tile in the tiling scheme, and
+         * draw a label inside it indicating the X, Y, Level indices of the
+         * tile. This is mostly useful for debugging terrain and imagery
+         * rendering problems. This function should be called after the other
+         * imagery layers have been added to the map, e.g. at the end of the
+         * render function.
+         * @param {string} [color='#ffffff'] The color of the grid outline and
+         * labels. Must be a CSS color string, beginning with a #.
+         * @param {'GeographicTilingScheme'|'WebMercatorTilingScheme'}
+         *  [tilingScheme='GeographicTilingScheme'] The tiling scheme to use.
+         *  Defaults to GeographicTilingScheme.
+         */
+        showImageryGrid: function (
+          color = '#ffffff',
+          tilingScheme = 'GeographicTilingScheme'
+        ) {
+          try {
+            const view = this
+            // Check the color is valid
+            if (!color || typeof color !== 'string' || !color.startsWith('#')) {
+              console.log(`${color} is an invalid color for imagery grid. ` +
+                `Must be a hex color starting with '#'. ` +
+                `Setting color to white: '#ffffff'`)
+              color = '#ffffff'
+            }
+
+            // Check the tiling scheme is valid
+            const availableTS = ['GeographicTilingScheme', 'WebMercatorTilingScheme']
+            if (availableTS.indexOf(tilingScheme) == -1) {
+              console.log(`${tilingScheme} is not a valid tiling scheme ` +
+                `for the imagery grid. Using WebMercatorTilingScheme`)
+              tilingScheme = 'WebMercatorTilingScheme'
+            }
+
+            // Create the imagery grid
+            const gridOpts = {
+              tilingScheme: new Cesium[tilingScheme](),
+              color: Cesium.Color.fromCssColorString(color)
+            }
+
+            const gridOutlines = new Cesium.GridImageryProvider(gridOpts)
+            const gridCoords = new Cesium.TileCoordinatesImageryProvider(gridOpts)
+            view.scene.imageryLayers.addImageryProvider(gridOutlines)
+            view.scene.imageryLayers.addImageryProvider(gridCoords)
+          }
+          catch (error) {
+            console.log(
+              'There was an error showing the imagery grid in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+          }
+        }
+
       }
     );
 
