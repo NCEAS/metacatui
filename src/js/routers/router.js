@@ -37,15 +37,7 @@ function ($, _, Backbone) {
 			'quality(/s=:suiteId)(/:pid)(/)'    : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)(/)'                : 'renderAPI',       // API page
 			"edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)" : "renderPortalEditor",
-			'drafts' : 'renderDrafts',
-			"test" : "renderTest"
-		},
-
-		renderTest: function(){
-			require(["views/search/CatalogSearchView"], function(CatalogSearchView){
-				MetacatUI.appView.catalogSearchView = new CatalogSearchView();
-				MetacatUI.appView.showView(MetacatUI.appView.catalogSearchView);
-			});
+			'drafts' : 'renderDrafts'
 		},
 
 		helpPages: {
@@ -299,38 +291,49 @@ function ($, _, Backbone) {
 		renderData: function (mode, query, page) {
 			this.routeHistory.push("data");
 
-			///Check for a page URL parameter
-			if((typeof page === "undefined") || !page)
-				MetacatUI.appModel.set("page", 0);
-			else if(page == 0)
-				MetacatUI.appModel.set('page', 0);
-			else
-				MetacatUI.appModel.set('page', page-1);
+            ///Check for a page URL parameter
+            if((typeof page === "undefined") || !page)
+                MetacatUI.appModel.set("page", 0);
+            else if(page == 0)
+                MetacatUI.appModel.set('page', 0);
+            else
+                MetacatUI.appModel.set('page', page-1);
+
+            //Check if we are using the new CatalogSearchView
+            if(!MetacatUI.appModel.get("useDeprecatedDataCatalogView")){
+                require(["views/search/CatalogSearchView"], function(CatalogSearchView){
+                    MetacatUI.appView.catalogSearchView = new CatalogSearchView();
+                    MetacatUI.appView.showView(MetacatUI.appView.catalogSearchView);
+                });
+                return;
+            }
 
 			//Check for a query URL parameter
 			if((typeof query !== "undefined") && query){
 				MetacatUI.appSearchModel.set('additionalCriteria', [query]);
 			}
 
-			if(!MetacatUI.appView.dataCatalogView){
-				require(['views/DataCatalogView'], function(DataCatalogView){
-					MetacatUI.appView.dataCatalogView = new DataCatalogView();
+            require(['views/DataCatalogView'], function(DataCatalogView){
+                if(!MetacatUI.appView.dataCatalogView)
+                    MetacatUI.appView.dataCatalogView = new DataCatalogView();
 
-					//Check for a search mode URL parameter
-					if((typeof mode !== "undefined") && mode)
-						MetacatUI.appView.dataCatalogView.mode = mode;
+                //Check for a search mode URL parameter
+                if((typeof mode !== "undefined") && mode)
+                    MetacatUI.appView.dataCatalogView.mode = mode;
 
-					MetacatUI.appView.showView(MetacatUI.appView.dataCatalogView);
-				});
-			}
-			else{
-				//Check for a search mode URL parameter
-				if((typeof mode !== "undefined") && mode)
-					MetacatUI.appView.dataCatalogView.mode = mode;
+                MetacatUI.appView.showView(MetacatUI.appView.dataCatalogView);
+            });
 
-				MetacatUI.appView.showView(MetacatUI.appView.dataCatalogView);
-			}
 		},
+
+        renderDataCatalog: function(page){
+            require(["views/search/CatalogSearchView"], function(CatalogSearchView){
+				MetacatUI.appView.catalogSearchView = new CatalogSearchView();
+                //Set the page number. The page number in the URL is based on index 1
+                MetacatUI.appView.catalogSearchView.page = page-1;
+				MetacatUI.appView.showView(MetacatUI.appView.catalogSearchView);
+			});
+        },
 
      /**
       * Renders the Portals Search view.
