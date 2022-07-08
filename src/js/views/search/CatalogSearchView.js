@@ -132,9 +132,6 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
         this.addLinkedData();
 
         this.$el.html(this.template);
-
-        //Add to #Content
-        $("#Content").html(this.el);
     },
 
     setMode: function(){

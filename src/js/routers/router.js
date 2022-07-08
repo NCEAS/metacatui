@@ -326,15 +326,6 @@ function ($, _, Backbone) {
 
 		},
 
-        renderDataCatalog: function(page){
-            require(["views/search/CatalogSearchView"], function(CatalogSearchView){
-				MetacatUI.appView.catalogSearchView = new CatalogSearchView();
-                //Set the page number. The page number in the URL is based on index 1
-                MetacatUI.appView.catalogSearchView.page = page-1;
-				MetacatUI.appView.showView(MetacatUI.appView.catalogSearchView);
-			});
-        },
-
      /**
       * Renders the Portals Search view.
       */
