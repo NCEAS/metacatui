@@ -84,7 +84,7 @@ define(['jquery', 'underscore', 'backbone',
       try {
         var events = {
           "click .btn": "handleChange",
-          "keypress input": "handleTyping"
+          "keydown input": "handleTyping"
         }
         events["change ." + this.uiInputClass] = "updateUIAttribute"
         return events
@@ -203,11 +203,14 @@ define(['jquery', 'underscore', 'backbone',
           return
         }
 
-      if (e.keyCode != 13){
-        return;
-      }
-
-      this.handleChange();
+        if (e.key == "Enter"){
+          this.handleChange();
+          return;
+        }
+        else{
+          /** @todo Get search suggestions when the user is typing. See {@link DataCatalogView#getAutoCompletes }*/
+          
+        }
 
     },
 
