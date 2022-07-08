@@ -9,9 +9,10 @@ define(["jquery",
         "views/search/SearchResultsView",
         "views/filters/FilterGroupsView",
         "views/maps/MapView",
-        "views/search/PagerView"
+        "views/search/PagerView",
+        "views/search/SorterView"
     ],
-function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeohash, Map, SearchResultsView, FilterGroupsView, MapView, PagerView){
+function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeohash, Map, SearchResultsView, FilterGroupsView, MapView, PagerView, SorterView){
 
     "use strict";
 
@@ -47,6 +48,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
             <div class="filter-groups-container"></div>
             <div>
                 <div class="pager-container"></div>
+                <div class="sorter-container"></div>
                 <div class="search-results-container"></div>
             </div>
             <div class="map-container"></div>
@@ -64,6 +66,16 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
     searchResults: null,
 
     filterGroupsView: null,
+
+    /**
+     * @type {PagerView}
+     */
+    pagerView: null,
+
+    /**
+     * @type {SorterView}
+     */
+    sorterView: null,
 
     searchModel: null,
 
@@ -85,22 +97,28 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
     filterGroupsContainer: ".filter-groups-container",
 
     /**
-    * The jQuery selector for the SearchResultsView container
+    * The query selector for the SearchResultsView container
     * @type {string}
     */
      searchResultsContainer: ".search-results-container",
 
     /**
-    * The jQuery selector for the CesiumWidgetView container
+    * The query selector for the CesiumWidgetView container
     * @type {string}
     */
     mapContainer: ".map-container",
 
     /**
-    * The jQuery selector for the PagerView container
+    * The query selector for the PagerView container
     * @type {string}
     */
     pagerContainer: ".pager-container",
+
+    /**
+    * The query selector for the SorterView container
+    * @type {string}
+    */
+     sorterContainer: ".sorter-container",
 
      /**
     * The events this view will listen to and the associated function to call.
@@ -155,6 +173,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
         this.renderPager();
 
         //Render Sorter
+        this.renderSorter();
 
         //Render Cesium
         this.renderMap();
@@ -208,6 +227,22 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
 
         //Render the pager view
         this.pagerView.render();
+    },
+
+    /**
+     * Creates a SorterView and adds it to the page.
+     */
+    renderSorter: function(){
+        this.sorterView = new SorterView();
+        
+        //Give the SorterView the SearchResults to listen to and update
+        this.sorterView.searchResults = this.searchResultsView.searchResults;
+
+        //Add the sorter view to the page
+        this.el.querySelector(this.sorterContainer).replaceChildren(this.sorterView.el);
+
+        //Render the sorter view
+        this.sorterView.render();
     },
 
     setupSearch: function(){

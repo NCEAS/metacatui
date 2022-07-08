@@ -141,6 +141,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
         this.header.set({"start" : this.start});
       }
 
+      this.lastUrl = this.url();
+
       var fetchOptions = this.createFetchOptions();
       this.fetch(fetchOptions);
     },
@@ -156,6 +158,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
       if (this.header != null) {
         this.header.set({"start" : this.start});
       }
+
+      this.lastUrl = this.url();
 
       var fetchOptions = this.createFetchOptions();
       this.fetch(fetchOptions);
@@ -179,6 +183,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 
       this.start = requestedStart;
 
+      this.lastUrl = this.url();
+
       var fetchOptions = this.createFetchOptions();
       this.fetch(fetchOptions);
     },
@@ -193,6 +199,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
         this.currentquery = newquery;
         this.start = 0;
       }
+
+      this.lastUrl = this.url();
 
       var fetchOptions = this.createFetchOptions();
       this.fetch(fetchOptions);
@@ -220,6 +228,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 
     setSort: function(newsort) {
       this.sort = newsort;
+      this.trigger("change:sort");
     },
 
     setFacet: function(fields) {
@@ -324,6 +333,25 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
         else{
             return 0;
         }
+    },
+
+    /**
+     * Gets and returns the URL string that was sent during the last fetch. 
+     * @since 2.X
+     * @returns {string}
+     */
+    getLastUrl: function(){
+        return this.lastUrl || "";
+    },
+
+    /**
+     * Determines whether the search parameters have changed since the last fetch. Returns true the next URL
+     * to be sent in a fetch() is different at all from the last url that was fetched.
+     * @since 2.X
+     * @returns {boolean}
+     */
+    hasChanged: function(){
+        return this.url() != this.getLastUrl();
     }
   });
 

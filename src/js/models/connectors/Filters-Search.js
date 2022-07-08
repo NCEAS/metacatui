@@ -38,6 +38,10 @@ define(['backbone', "collections/Filters", "collections/SolrResults", "models/Se
             this.stopListening(this.get("filters"), "add remove update reset change");
             this.listenTo(this.get("filters"), "add remove update reset change", this.triggerSearch);
 
+            //Listen to the sort order changing
+            this.stopListening(this.get("searchResults"), "change:sort");
+            this.listenTo(this.get("searchResults"), "change:sort", this.triggerSearch);
+
             //If the logged-in status changes, send a new search
             this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.triggerSearch);
 
@@ -60,16 +64,8 @@ define(['backbone', "collections/Filters", "collections/SolrResults", "models/Se
             //If the query hasn't changed since the last query that was sent, don't do anything.
             //This function may have been triggered by a change event on a filter that doesn't
             //affect the query at all
-            if( query == searchResults.getLastQuery()){
+            if( !searchResults.hasChanged() ){
               return;
-            }
-
-            /**
-             * @TODO sortOrder should just be set on the SolrResults collec itself?
-             */
-            let sortOrder = searchModel.get("sortOrder");
-            if ( sortOrder ) {
-                searchResults.setSort(sortOrder);
             }
 
             // Set the query on the SolrResults collection

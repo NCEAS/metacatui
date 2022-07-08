@@ -1,18 +1,17 @@
 /*global define */
-define(["jquery",
-        "underscore",
-        "backbone",
+define(["backbone",
         "collections/SolrResults",
         "views/search/SearchResultView"
     ],
-function($, _, Backbone, SearchResults, SearchResultView){
+function(Backbone, SearchResults, SearchResultView){
 
     "use strict";
 
     /**
     * @class SearchResultsView
-    * @classcategory Views
+    * @classcategory Views/Search
     * @extends Backbone.View
+    * @since 2.X
     * @constructor
     */
     return Backbone.View.extend(
@@ -103,7 +102,7 @@ function($, _, Backbone, SearchResults, SearchResultView){
      * @param {SearchResultView} view
      */
     addResultView: function(view) {
-      this.$el.append(view.el);
+      this.el.append(view.el);
       view.render();
     },
 
@@ -118,12 +117,12 @@ function($, _, Backbone, SearchResults, SearchResultView){
 
       this.empty();
 
-      this.$el.html(this.noResultsTemplate);
+      this.el.replaceChildren(this.noResultsTemplate);
 
     },
 
     empty: function(){
-      this.$el.empty();
+      this.el.innerHTML = "";
     },
 
     loading: function(){
