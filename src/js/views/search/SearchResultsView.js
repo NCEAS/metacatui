@@ -42,14 +42,23 @@ function(Backbone, SearchResults, SearchResultView){
     events: {
     },
 
+    /**
+     * The SolrResults collection that fetches and parses the searches.
+     * @type {SolrResults}
+     */
     searchResults: null,
 
+    /**
+     * The HTML to display when no search results are found.
+     * @since 2.X
+     * @type {string}
+     */
     noResultsTemplate: `<div class="no-search-results">No results found.</div>`,
 
     render: function(){
 
       if( !this.searchResults ){
-        this.createSearchResults();
+        this.setSearchResults();
       }
 
       this.loading();
@@ -60,17 +69,28 @@ function(Backbone, SearchResults, SearchResultView){
 
     },
 
+    /**
+     * Sets listeners on the {@link SearchResultsView#searchResults} to change what is displayed in this view.
+     */
     startListening: function(){
       this.listenTo(this.searchResults, "add", this.addResultModel);
       this.listenTo(this.searchResults, "reset", this.addResultCollection);
       this.listenTo(this.searchResults, "request", this.loading);
     },
 
-    createSearchResults: function(){
+    /**
+     * Creates and sets the {@link SearchResultsView#searchResults} property.
+     * @returns {SolrResults}
+     */
+    setSearchResults: function(){
       this.searchResults = new SearchResults();
       return this.searchResults;
     },
 
+    /**
+     * Renders the given {@link SolrResult} model inside this view.
+     * @param {SolrResult} searchResult 
+     */
     addResultModel: function(searchResult){
       try{
         let view = this.createSearchResultView();
@@ -82,6 +102,9 @@ function(Backbone, SearchResults, SearchResultView){
       }
     },
 
+    /**
+     * Renders all {@link SolrResult}s from the {@link SearchResultsView#searchResults} collection.
+     */
     addResultCollection: function(){
       if( !this.searchResults )
         return;
@@ -113,6 +136,9 @@ function(Backbone, SearchResults, SearchResultView){
       return new SearchResultView();
     },
 
+    /**
+     * Shows a message when no search results have been found.
+     */
     showNoResults: function(){
 
       this.empty();
@@ -125,6 +151,9 @@ function(Backbone, SearchResults, SearchResultView){
       this.el.innerHTML = "";
     },
 
+    /**
+     * Renders a skeleton of this view that communicates to the user that it is loading.
+     */
     loading: function(){
 
       this.empty();

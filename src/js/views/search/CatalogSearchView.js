@@ -47,6 +47,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
         <section class="catalog-search-inner">
             <div class="filter-groups-container"></div>
             <div>
+                <div class="title-container"></div>
                 <div class="pager-container"></div>
                 <div class="sorter-container"></div>
                 <div class="search-results-container"></div>
@@ -100,7 +101,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
     * The query selector for the SearchResultsView container
     * @type {string}
     */
-     searchResultsContainer: ".search-results-container",
+    searchResultsContainer: ".search-results-container",
 
     /**
     * The query selector for the CesiumWidgetView container
@@ -118,7 +119,13 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
     * The query selector for the SorterView container
     * @type {string}
     */
-     sorterContainer: ".sorter-container",
+    sorterContainer: ".sorter-container",
+
+    /**
+     * The query selector for the title container
+     * @type {string}
+     */
+    titleContainer: ".title-container",
 
      /**
     * The events this view will listen to and the associated function to call.
@@ -167,7 +174,11 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
     renderComponents: function(){
         this.renderFilters();
 
+        //Render the list of search results
         this.renderSearchResults();
+
+        //Render the Title
+        this.renderTitle();
 
         //Render Pager
         this.renderPager();
@@ -243,6 +254,44 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
 
         //Render the sorter view
         this.sorterView.render();
+    },
+
+    /**
+    * Constructs an HTML string of the title of this view
+    * @param {number} start 
+    * @param {number} end 
+    * @param {number} numFound 
+    * @returns {string}
+    */
+    titleTemplate: function(start, end, numFound){
+        let html = `<div id="statcounts"><h5 class="result-header-count bold-header" id="countstats"><span>${MetacatUI.appView.commaSeparateNumber(start)}</span> to <span>${MetacatUI.appView.commaSeparateNumber(end)}</span>`;
+        
+        if(typeof numFound == "number"){
+            html += ` of <span>${MetacatUI.appView.commaSeparateNumber(numFound)}</span>`;
+        }
+
+        html += `</h5></div>`;
+        return html;
+    },
+
+    /**
+     * Updates the view title using the {@link CatalogSearchView#searchResults} data.
+     */
+    renderTitle: function(){
+        let titleEl = this.el.querySelector(this.titleContainer);
+        
+        if(!titleEl){
+            titleEl = document.createElement("div");
+            titleEl.classList.add("title-container");
+            this.el.prepend(titleEl);
+        }
+
+        titleEl.innerHTML="";
+        
+        let title = this.titleTemplate(this.searchResultsView.searchResults.getStart(), this.searchResultsView.searchResults.getEnd(), this.searchResultsView.searchResults.getNumFound());
+
+        titleEl.insertAdjacentHTML("beforeend", title);
+
     },
 
     setupSearch: function(){

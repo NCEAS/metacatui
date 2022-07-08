@@ -336,6 +336,43 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
     },
 
     /**
+     * Returns the index number of the first search result E.g. the first page of results may be 0-24, where 0 is the start.
+     * @since 2.X
+     * @returns {number}
+     */
+    getStart: function(){
+        if(this.header){
+            return this.header.get("start");
+        }
+        else{
+            return this.start;
+        }
+    },
+
+    /**
+     * Calculates the index number of the last search result. E.g. the first page of results may be 0-24, where 24 is the end.
+     * @since 2.X
+     * @returns {number}
+     */
+    getEnd: function(){
+        return parseInt(this.getStart()) + parseInt(this.getRows()) - 1; // -1 since it is zero-based numbering
+    },
+
+    /**
+     * Returns the number of search result rows 
+     * @since 2.X
+     * @returns {number}
+     */
+    getRows: function(){
+        if(this.header){
+            return this.header.get("rows");
+        }
+        else{
+            return this.rows;
+        }
+    },
+
+    /**
      * Gets and returns the URL string that was sent during the last fetch. 
      * @since 2.X
      * @returns {string}
