@@ -1,12 +1,11 @@
 /*global define */
 define(["jquery",
-        "jqueryui",
         "underscore",
         "backbone",
         "collections/SolrResults",
         "views/search/SearchResultView"
     ],
-function($, $ui, _, Backbone, SearchResults, SearchResultView){
+function($, _, Backbone, SearchResults, SearchResultView){
 
     "use strict";
 
