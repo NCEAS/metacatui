@@ -1,6 +1,5 @@
 /*global define */
 define(["jquery",
-        "jqueryui",
         "backbone",
         "collections/maps/MapAssets",
         "models/filters/FilterGroup",
@@ -10,8 +9,9 @@ define(["jquery",
         "views/search/SearchResultsView",
         "views/filters/FilterGroupsView",
         "views/maps/MapView",
+        "views/search/PagerView"
     ],
-function($, $ui, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeohash, Map, SearchResultsView, FilterGroupsView, MapView){
+function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeohash, Map, SearchResultsView, FilterGroupsView, MapView, PagerView){
 
     "use strict";
 
@@ -45,12 +45,21 @@ function($, $ui, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, Cesiu
     template: `
         <section class="catalog-search-inner">
             <div class="filter-groups-container"></div>
-            <div class="search-results-container"></div>
+            <div>
+                <div class="pager-container"></div>
+                <div class="search-results-container"></div>
+            </div>
             <div class="map-container"></div>
         </section>
     `,
 
-    mode: "",
+    /**
+     * The search mode to use. This can be set to either `map` or `list`. List mode will hide all map features.
+     * @type string
+     * @since 2.X
+     * @default "map"
+     */
+    mode: "map",
 
     searchResults: null,
 
@@ -86,6 +95,12 @@ function($, $ui, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, Cesiu
     * @type {string}
     */
     mapContainer: ".map-container",
+
+    /**
+    * The jQuery selector for the PagerView container
+    * @type {string}
+    */
+    pagerContainer: ".pager-container",
 
      /**
     * The events this view will listen to and the associated function to call.
@@ -125,11 +140,7 @@ function($, $ui, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, Cesiu
     setMode: function(){
         //Get the search mode - either "map" or "list"
         if ((typeof this.mode === "undefined") || !this.mode) {
-            this.mode = MetacatUI.appModel.get("searchMode");
-            if ((typeof this.mode === "undefined") || !this.mode) {
-                this.mode = "map";
-            }
-            MetacatUI.appModel.set("searchMode", this.mode);
+            this.mode = "map";
         }
 
         // Use map mode on tablets and browsers only
@@ -144,6 +155,7 @@ function($, $ui, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, Cesiu
         this.renderSearchResults();
 
         //Render Pager
+        this.renderPager();
 
         //Render Sorter
 
@@ -170,8 +182,9 @@ function($, $ui, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, Cesiu
     createSearchResults: function(){
         this.searchResultsView = new SearchResultsView();
 
-        if( this.connector )
-            this.searchResultsView.searchResults = this.connector.get("searchResults")
+        if( this.connector ){
+            this.searchResultsView.searchResults = this.connector.get("searchResults");
+        }
     },
 
     renderSearchResults: function(){
@@ -182,6 +195,22 @@ function($, $ui, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, Cesiu
 
         //Render the view
         this.searchResultsView.render();
+    },
+
+    /**
+     * Creates a PagerView and adds it to the page.
+     */
+    renderPager: function(){
+        this.pagerView = new PagerView();
+        
+        //Give the PagerView the SearchResults to listen to and update
+        this.pagerView.searchResults = this.searchResultsView.searchResults;
+
+        //Add the pager view to the page
+        this.el.querySelector(this.pagerContainer).replaceChildren(this.pagerView.el);
+
+        //Render the pager view
+        this.pagerView.render();
     },
 
     setupSearch: function(){

@@ -6520,6 +6520,14 @@ body.mapMode{
 .sort-by select{
 	width: auto;
 }
+.pager-view li a{
+	min-height: 20px;
+	min-width: 12px;
+}
+.pager-view li a:not([href]){
+    pointer-events: none;
+    color: #CCC;
+}
 #results-container .pagination{
 	box-sizing: border-box;
 }

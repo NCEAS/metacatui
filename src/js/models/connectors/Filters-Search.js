@@ -5,7 +5,9 @@ define(['backbone', "collections/Filters", "collections/SolrResults", "models/Se
 
   /**
   * @class FiltersSearchConnector
-  * @classdesc A model that creates listeners between the Filters collection and the Search model
+  * @classdesc A model that creates listeners between the Filters collection and the Search model. It does not assume anything
+  * about how the search results or filters will be displayed in the UI or why those components need to be connected. It simply
+  * sends a new search when the filters have been changed.
   * @name FiltersSearchConnector
   * @extends Backbone.Model
   * @constructor

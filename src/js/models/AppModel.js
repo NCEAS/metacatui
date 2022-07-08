@@ -20,7 +20,6 @@ define(['jquery', 'underscore', 'backbone'],
       //TODO: These attributes are stored in the AppModel, but shouldn't be set in the AppConfig,
       //so we need to add docs for them in a separate place
       headerType: 'default',
-      searchMode: MetacatUI.mapKey ? 'map' : 'list',
       searchHistory: [],
       page: 0,
       previousPid: null,
@@ -1919,6 +1918,18 @@ define(['jquery', 'underscore', 'backbone'],
       enableMeasurementTypeView: false,
 
       /**
+       * As of 2.X, the {@link DataCatalogView} is being soft-deprecated and replaced with the new {@link CatalogSearchView}.
+       * To give MetacatUI operators time to transition to the new {@link CatalogSearchView}, this configuration option can be
+       * enabled (by setting to `true`) and will tell MetacatUI to use the legacy {@link DataCatalogView}. It is highly suggested
+       * that MetacatUI operators switch to supporting the new {@link CatalogSearchView} as soon as possible as the legacy {@link DataCatalogView}
+       * will be fully deprecated and removed in the future.
+       * @since 2.X
+       * @type {boolean}
+       * @default false
+       */
+      useDeprecatedDataCatalogView: false,
+
+      /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users
       */
       /**
@@ -1929,6 +1940,15 @@ define(['jquery', 'underscore', 'backbone'],
       * @deprecated
       */
       d1LogServiceUrl: null,
+
+      /**
+       * This configuration option is deprecated. This is only used by the {@link DataCatalogView} and {@link DataCatalogViewWithFilters},
+       * both of which have been replaced by the {@link CatalogSearchView}. The search mode is now controlled directly on the {@link CatalogSearchView}
+       * instead of controlled at the global level here.
+       * @deprecated
+       */
+      searchMode: MetacatUI.mapKey ? 'map' : 'list',
+
       /**
       * This Bioportal REST API URL is used by the experimental and unsupported AnnotatorView to get multiple ontology class info at once.
       * @deprecated

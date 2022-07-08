@@ -1,7 +1,7 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrResult'],
-	function($, _, Backbone, SolrHeader, SolrResult) {
-	'use strict';
+  function($, _, Backbone, SolrHeader, SolrResult) {
+  'use strict';
 
   /**
    @class SolrResults
@@ -10,77 +10,78 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
    @classcategory Collections
    @constructor
   */
-	var SolrResults = Backbone.Collection.extend(
+  var SolrResults = Backbone.Collection.extend(
     /** @lends SolrResults.prototype */{
-		// Reference to this collection's model.
-		model: SolrResult,
+            
+    // Reference to this collection's model.
+    model: SolrResult,
 
-		initialize: function(models, options) {
+    initialize: function(models, options) {
 
-			if( typeof options === "undefined" || !options ){
-				var options = {};
-			}
+      if( typeof options === "undefined" || !options ){
+        var options = {};
+      }
 
-			this.docsCache    = options.docsCache || null;
-		    this.currentquery = options.query   || '*:*';
-		    this.rows 		  = options.rows    || 25;
-		    this.start 		  = options.start   || 0;
-		    this.sort 		  = options.sort    || 'dateUploaded desc';
-		    this.facet 		  = options.facet   || [];
-		    this.facetCounts  = "nothing";
-		    this.stats 		  = options.stats   || false;
-		    this.minYear 	  = options.minYear || 1900;
-		    this.maxYear 	  = options.maxYear || new Date().getFullYear();
-        this.queryServiceUrl = options.queryServiceUrl || MetacatUI.appModel.get('queryServiceUrl');
+      this.docsCache    = options.docsCache || null;
+      this.currentquery = options.query   || '*:*';
+      this.rows       = options.rows    || 25;
+      this.start       = options.start   || 0;
+      this.sort       = options.sort    || 'dateUploaded desc';
+      this.facet       = options.facet   || [];
+      this.facetCounts  = "nothing";
+      this.stats       = options.stats   || false;
+      this.minYear     = options.minYear || 1900;
+      this.maxYear     = options.maxYear || new Date().getFullYear();
+      this.queryServiceUrl = options.queryServiceUrl || MetacatUI.appModel.get('queryServiceUrl');
 
-		if( MetacatUI.appModel.get("defaultSearchFields")?.length )
-			this.fields = MetacatUI.appModel.get("defaultSearchFields").join(",");
-		else 
-			this.fields = options.fields || "id,title";
+      if( MetacatUI.appModel.get("defaultSearchFields")?.length )
+        this.fields = MetacatUI.appModel.get("defaultSearchFields").join(",");
+      else 
+        this.fields = options.fields || "id,title";
 
 
-        //If POST queries are disabled in the whole app, don't use POSTs here
-        if( MetacatUI.appModel.get("disableQueryPOSTs") ){
-          this.usePOST = false;
-        }
-        //If this collection was initialized with the usePOST option, use POSTs here
-        else if( options.usePOST ){
-          this.usePOST = true;
-        }
-        //Otherwise default to using GET
-        else{
-          this.usePOST = false;
-        }
-		},
+      //If POST queries are disabled in the whole app, don't use POSTs here
+      if( MetacatUI.appModel.get("disableQueryPOSTs") ){
+        this.usePOST = false;
+      }
+      //If this collection was initialized with the usePOST option, use POSTs here
+      else if( options.usePOST ){
+        this.usePOST = true;
+      }
+      //Otherwise default to using GET
+      else{
+        this.usePOST = false;
+      }
+    },
 
-		url: function() {
-			//Convert facet keywords to a string
-			var facetFields = "";
+    url: function() {
+      //Convert facet keywords to a string
+      var facetFields = "";
 
       this.facet = _.uniq(this.facet);
 
-			for (var i=0; i<this.facet.length; i++){
-				facetFields += "&facet.field=" + this.facet[i];
-			}
-			// limit to matches
-			if (this.facet.length > 0) {
-				facetFields += "&facet.mincount=1"; // only facets meeting the current search
-				facetFields += "&facet.limit=-1"; // CAREFUL: -1 means no limit on the number of facets
-			}
+      for (var i=0; i<this.facet.length; i++){
+        facetFields += "&facet.field=" + this.facet[i];
+      }
+      // limit to matches
+      if (this.facet.length > 0) {
+        facetFields += "&facet.mincount=1"; // only facets meeting the current search
+        facetFields += "&facet.limit=-1"; // CAREFUL: -1 means no limit on the number of facets
+      }
 
-			//Do we need stats?
-			if (!this.stats){
-				var stats = "";
-			}
-			else{
-				var stats = "&stats=true";
-				for(var i=0; i<this.stats.length; i++){
-					stats += "&stats.field=" + this.stats[i];
-				}
-			}
+      //Do we need stats?
+      if (!this.stats){
+        var stats = "";
+      }
+      else{
+        var stats = "&stats=true";
+        for(var i=0; i<this.stats.length; i++){
+          stats += "&stats.field=" + this.stats[i];
+        }
+      }
 
-			//create the query url
-			var endpoint = (this.queryServiceUrl || MetatcatUI.appModel.get("queryServiceUrl")) + "q=" + this.currentquery;
+      //create the query url
+      var endpoint = (this.queryServiceUrl || MetatcatUI.appModel.get("queryServiceUrl")) + "q=" + this.currentquery;
 
       if(this.fields)
         endpoint += "&fl=" + this.fields;
@@ -95,127 +96,145 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 
       endpoint += stats + "&wt=json";
 
-			return endpoint;
-		},
+      return endpoint;
+    },
 
-		parse: function(solr) {
+    parse: function(solr) {
 
-			//Is this our latest query? If not, use our last set of docs from the latest query
-			if((decodeURIComponent(this.currentquery).replace(/\+/g, " ") != solr.responseHeader.params.q) && this.docsCache)
-				return this.docsCache;
+      //Is this our latest query? If not, use our last set of docs from the latest query
+      if((decodeURIComponent(this.currentquery).replace(/\+/g, " ") != solr.responseHeader.params.q) && this.docsCache)
+        return this.docsCache;
 
-			if(!solr.response){
-				if(solr.error && solr.error.msg){
-					console.log("Solr error: " + solr.error.msg);
-				}
-				return
-			}
+      if(!solr.response){
+        if(solr.error && solr.error.msg){
+          console.log("Solr error: " + solr.error.msg);
+        }
+        return
+      }
 
-			//Save some stats
-			this.header = new SolrHeader(solr.responseHeader);
-			this.header.set({"numFound" : solr.response.numFound});
-			this.header.set({"start" : solr.response.start});
-			this.header.set({"rows" : solr.responseHeader.params.rows});
+      //Save some stats
+      this.header = new SolrHeader(solr.responseHeader);
+      this.header.set({"numFound" : solr.response.numFound});
+      this.header.set({"start" : solr.response.start});
+      this.header.set({"rows" : solr.responseHeader.params.rows});
 
-			//Get the facet counts and store them in this model
+      //Get the facet counts and store them in this model
       if( solr.facet_counts ){
         this.facetCounts = solr.facet_counts.facet_fields;
       }
 
-			//Cache this set of results
-			this.docsCache = solr.response.docs;
+      //Cache this set of results
+      this.docsCache = solr.response.docs;
 
-			return solr.response.docs;
-		},
+      return solr.response.docs;
+    },
 
-		nextpage: function() {
-			// Only increment the page if the current page is not the last page
-			if (this.start + this.rows < this.header.get("numFound")) {
-				this.start += this.rows;
-			}
-			if (this.header != null) {
-				this.header.set({"start" : this.start});
-			}
+    /** 
+    *   Fetches the next page of results
+    */
+    nextpage: function() {
+      // Only increment the page if the current page is not the last page
+      if (this.start + this.rows < this.header.get("numFound")) {
+        this.start += this.rows;
+      }
+      if (this.header != null) {
+        this.header.set({"start" : this.start});
+      }
 
-			var fetchOptions = this.createFetchOptions();
-			this.fetch(fetchOptions);
-		},
+      var fetchOptions = this.createFetchOptions();
+      this.fetch(fetchOptions);
+    },
 
-		prevpage: function() {
-			this.start -= this.rows;
-			if (this.start < 0) {
-				this.start = 0;
-			}
-			if (this.header != null) {
-				this.header.set({"start" : this.start});
-			}
+    /** 
+    *   Fetches the previous page of results
+    */
+    prevpage: function() {
+      this.start -= this.rows;
+      if (this.start < 0) {
+        this.start = 0;
+      }
+      if (this.header != null) {
+        this.header.set({"start" : this.start});
+      }
 
-			var fetchOptions = this.createFetchOptions();
-			this.fetch(fetchOptions);
-		},
+      var fetchOptions = this.createFetchOptions();
+      this.fetch(fetchOptions);
+    },
 
-		toPage: function(page) {
-			// go to the requested page
-			var requestedStart = this.rows * page;
-			if (this.header != null) {
-				if (requestedStart < this.header.get("numFound")) {
-					this.start = requestedStart;
-				}
-				this.header.set({"start" : this.start});
-			}
+    /** 
+    *   Fetches the given page of results
+    * @param {number} page
+    */
+    toPage: function(page) {
+      // go to the requested page
+      var requestedStart = this.rows * page;
 
-			var fetchOptions = this.createFetchOptions();
-			this.fetch(fetchOptions);
-		},
+      /*
+      if (this.header != null) {
+        if (requestedStart < this.header.get("numFound")) {
+          this.start = requestedStart;
+        }
+        this.header.set({"start" : this.start});
+      }*/
 
-		setrows: function(numrows) {
-			this.rows = numrows;
-		},
+      this.start = requestedStart;
 
-		query: function(newquery) {
+      var fetchOptions = this.createFetchOptions();
+      this.fetch(fetchOptions);
+    },
+
+    setrows: function(numrows) {
+      this.rows = numrows;
+    },
+
+    query: function(newquery) {
 
       if(typeof newquery != "undefined" && this.currentquery != newquery){
-				this.currentquery = newquery;
-				this.start = 0;
-			}
+        this.currentquery = newquery;
+        this.start = 0;
+      }
 
-			var fetchOptions = this.createFetchOptions();
-			this.fetch(fetchOptions);
-		},
+      var fetchOptions = this.createFetchOptions();
+      this.fetch(fetchOptions);
+    },
 
-		setQuery: function(newquery) {
-			if (this.currentquery != newquery) {
-				this.currentquery = newquery;
-				this.start = 0;
+    setQuery: function(newquery) {
+      if (this.currentquery != newquery) {
+        this.currentquery = newquery;
+        this.start = 0;
         this.lastQuery = newquery;
-			}
-		},
+      }
+    },
 
+    /** 
+    *   Returns the last query that was fetched.
+    * @returns {string}
+    */
     getLastQuery: function(){
       return this.lastQuery;
     },
 
-		setfields: function(newfields) {
-				this.fields = newfields;
-		},
+    setfields: function(newfields) {
+      this.fields = newfields;
+    },
 
-		setSort: function(newsort) {
-			this.sort = newsort;
-		},
+    setSort: function(newsort) {
+      this.sort = newsort;
+    },
 
-		setFacet: function(fields) {
-			this.facet = fields;
-		},
+    setFacet: function(fields) {
+      this.facet = fields;
+    },
 
-		setStats: function(fields){
-			this.stats = fields;
-		},
+    setStats: function(fields){
+      this.stats = fields;
+    },
 
-		createFetchOptions: function(){
-			var options = {
-				start : this.start,
-				reset: true
-			}
+    createFetchOptions: function(){
+      var options = {
+        start : this.start,
+        reset: true
+      }
 
       let usePOST = this.usePOST || (this.currentquery.length > 1500 && !MetacatUI.appModel.get("disableQueryPOSTs"));
 
@@ -235,9 +254,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 
           queryData.append("facet", "true");
 
-    			for (var i=0; i<this.facet.length; i++){
-    				queryData.append("facet.field", this.facet[i]);
-    			}
+          for (var i=0; i<this.facet.length; i++){
+            queryData.append("facet.field", this.facet[i]);
+          }
 
           queryData.append("facet.mincount", "1");
           queryData.append("facet.limit", "-1");
@@ -251,8 +270,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
           queryData.append("stats", "true");
 
           for(var i=0; i<this.stats.length; i++){
-  					queryData.append("stats.field", this.stats[i]);
-  				}
+            queryData.append("stats.field", this.stats[i]);
+          }
 
         }
 
@@ -264,9 +283,49 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 
       }
 
-			return _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
-		}
-	});
+      return _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
+    },
 
-	return SolrResults;
+    /**
+    * Returns the total number of results that were just fetched, or undefined if nothing has been fetched yet
+    * @since 2.X
+    * @returns {number|undefined}
+    */
+    getNumFound: function(){
+      return this.header?.get("numFound");
+    },
+
+    /**
+    * Calculates and returns the total pages of results that was just fetched
+    * @since 2.X
+    * @returns {number}
+    */
+    getNumPages: function(){
+      let total = this.getNumFound();
+    
+      if(total){
+        return Math.ceil(total/this.header.get("rows"))-1; //-1 because our pages are zero-based numbered (where page 0 gets the first n results)
+      }
+      else{
+        return 0;
+      }
+    },
+
+    /**
+     * Calculates and returns the current page of results that was just fetched
+     * @since 2.X
+     * @returns {number}
+     */
+    getCurrentPage: function(){
+        
+        if(this.header?.get("start") && this.header?.get("rows")){
+            return Math.ceil(this.header.get("start")/this.header.get("rows"));
+        }
+        else{
+            return 0;
+        }
+    }
+  });
+
+  return SolrResults;
 });
