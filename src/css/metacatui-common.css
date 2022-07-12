@@ -581,6 +581,15 @@ text-shadow: none;
 	padding-bottom: 200px; /* Leaving room for the last row to show */
 	padding-right: 15px; /* Padding for the scrollbar */
 }
+.catalog-search-body.mapMode .search-results-panel-container .map-toggle-container{
+    display: none;
+}
+.catalog-search-body.listMode .map-panel-container{
+    display: none;
+}
+.catalog-search-body.listMode .catalog-search-inner{
+	grid-template-columns: auto 1fr 0;
+}
 .catalog-search-view .cesium-widget-view {
 	width: inherit;
 	margin-left: 0;

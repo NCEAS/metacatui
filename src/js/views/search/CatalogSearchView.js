@@ -46,13 +46,17 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
     template: `
         <section class="catalog-search-inner">
             <div class="filter-groups-container"></div>
-            <div>
+            <div class="search-results-panel-container">
+                <div class="map-toggle-container"><a class="toggle-map"><i class="icon icon-double-angle-left"></i> Show Map</a></div>
                 <div class="title-container"></div>
                 <div class="pager-container"></div>
                 <div class="sorter-container"></div>
                 <div class="search-results-container"></div>
             </div>
-            <div class="map-container"></div>
+            <div class="map-panel-container">
+                <div class="map-toggle-container"><a class="toggle-map">Hide Map <i class="icon icon-double-angle-right"></i></a></div>
+                <div class="map-container"></div>
+            </div>
         </section>
     `,
 
@@ -132,6 +136,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
     * @type {Object}
     */
     events: {
+        "click .map-toggle-container" : "toggleMode"
     },
 
     render: function(){
@@ -150,8 +155,11 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
 
     },
 
+    /**
+     * Sets up the basic components of this view
+     */
     setupView: function(){
-        $("body").addClass(`catalog-search-body ${this.mode}Mode`);
+        document.querySelector("body").classList.add(`catalog-search-body`, `${this.mode}Mode`);
 
         //Add LinkedData to the page
         this.addLinkedData();
@@ -159,6 +167,9 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
         this.$el.html(this.template);
     },
 
+    /**
+     * Sets the search mode (map or list)
+     */
     setMode: function(){
         //Get the search mode - either "map" or "list"
         if ((typeof this.mode === "undefined") || !this.mode) {
@@ -190,6 +201,9 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
         this.renderMap();
     },
 
+    /**
+     * Renders the search filters
+     */
     renderFilters: function(){
         //Render FilterGroups
         this.filterGroupsView = new FilterGroupsView({
@@ -206,6 +220,9 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
         this.filterGroupsView.render();
     },
 
+    /**
+     * Creates the SearchResultsView and saves a reference to the SolrResults collection
+     */
     createSearchResults: function(){
         this.searchResultsView = new SearchResultsView();
 
@@ -214,6 +231,9 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
         }
     },
 
+    /**
+     * Renders the search result list
+     */
     renderSearchResults: function(){
         if(!this.searchResultsView) return;
 
@@ -294,6 +314,9 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
 
     },
 
+    /**
+     * Creates the Filter models and SolrResults that will be used for searches
+     */
     setupSearch: function(){
 
         //Get an array of all Filter models
@@ -340,6 +363,9 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
 
     },
 
+    /**
+     * Renders the Cesium map
+     */
     renderMap: function(){
         let mapOptions = Object.assign({}, MetacatUI.appModel.get("catalogSearchMapOptions") || {});
         let assets = new MapAssets();
@@ -351,8 +377,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
         this.mapView.model = map;
         
         this.$(this.mapContainer).empty().append(this.mapView.el);
-        this.mapView.render();
-        this.mapView.widgetView
+        this.mapView.render();        
     },
 
      /**
@@ -405,8 +430,29 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
         }
     },
 
+    /**
+     * Toggles between map and list search mode
+     * @since 2.X
+     */
+    toggleMode: function(){
+
+        let classList = document.querySelector("body").classList;
+
+        if(this.mode == "map"){
+            this.mode = "list";
+            classList.remove("mapMode");
+            classList.add("listMode")
+        }
+        else{
+            this.mode = "map";
+            classList.remove("listMode");
+            classList.add("mapMode")
+        }
+
+    },
+
     onClose: function(){
-        $("body").removeClass(`catalog-search-body ${this.mode}Mode`); 
+        document.querySelector("body").classList.remove(`catalog-search-body`, `${this.mode}Mode`); 
         
         //Remove the JSON-LD from the page
         document.getElementById("jsonld")?.remove();
