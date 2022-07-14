@@ -949,7 +949,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         }, this);
 
         //Since there is at least one annotation, the dataset node needs to have an id attribute.
-        datasetNode.attr("id", this.getXMLSafeID());
+        datasetNode.attr("id", this.getUniqueEntityId(this));
       }
 
       //If there is no creator, create one from the user
