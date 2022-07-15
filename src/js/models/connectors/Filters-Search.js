@@ -61,15 +61,15 @@ define(['backbone', "collections/Filters", "collections/SolrResults", "models/Se
             // Get the Solr query string from the Search filter collection
             let query = filters.getQuery();
 
+            // Set the query on the SolrResults collection
+            searchResults.setQuery(query);
+
             //If the query hasn't changed since the last query that was sent, don't do anything.
             //This function may have been triggered by a change event on a filter that doesn't
             //affect the query at all
             if( !searchResults.hasChanged() ){
-              return;
+                return;
             }
-
-            // Set the query on the SolrResults collection
-            searchResults.setQuery(query);
 
             // Get the page number
             let page = MetacatUI.appModel.get("page") || 0;

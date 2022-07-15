@@ -90,6 +90,10 @@ define(
           {
             types: ['CesiumTerrainProvider'],
             renderFunction: 'updateTerrain'
+          },
+          {
+            types: ['CesiumGeohash'],
+            renderFunction: 'addGeohashes'
           }
         ],
 
@@ -207,6 +211,7 @@ define(
               scene: view.scene,
               dataSourceCollection: view.dataSourceCollection,
             });
+            console.log(view)
             view.clock.onTick.addEventListener(function () {
               view.updateDataSourceDisplay.call(view)
             })
@@ -836,7 +841,7 @@ define(
          * @param {MapAsset} mapAsset A MapAsset layer to render in the map, such as a
          * Cesium3DTileset or a CesiumImagery model.
          */
-        addAsset(mapAsset) {
+        addAsset: function(mapAsset) {
           try {
             if (!mapAsset) {
               return
@@ -881,7 +886,7 @@ define(
 
           }
           catch (error) {
-            console.log(
+            console.error(
               'There was an error rendering an asset in a CesiumWidgetView' +
               '. Error details: ' + error
             );
@@ -917,6 +922,25 @@ define(
          */
         addVectorData: function (cesiumModel) {
           this.dataSourceCollection.add(cesiumModel)
+        },
+
+        /**
+         * Renders a CesiumGeohash map asset on the map
+         * */
+        addGeohashes: function () {
+            let view = this;
+            
+            require(["views/maps/CesiumGeohashes"], (CesiumGeohashes)=>{
+                //Create a CesiumGeohashes view
+                let cg = new CesiumGeohashes();
+                cg.cesiumViewer = view;
+
+                //Get the CesiumGeohash MapAsset and save a reference in the view
+                let cesiumGeohashAsset = view.model.get('layers').find(mapAsset => mapAsset.get("type") == "CesiumGeohash");
+                cg.cesiumGeohash = cesiumGeohashAsset;
+
+                cg.render();
+            })
         },
 
         /**

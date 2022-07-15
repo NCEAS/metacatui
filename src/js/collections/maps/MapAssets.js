@@ -10,6 +10,7 @@ define(
     'models/maps/assets/CesiumVectorData',
     'models/maps/assets/CesiumImagery',
     'models/maps/assets/CesiumTerrain',
+    'models/maps/assets/CesiumGeohash'
   ],
   function (
     $,
@@ -19,7 +20,8 @@ define(
     Cesium3DTileset,
     CesiumVectorData,
     CesiumImagery,
-    CesiumTerrain
+    CesiumTerrain,
+    CesiumGeohash
   ) {
 
     /**
@@ -66,6 +68,10 @@ define(
               {
                 types: ['CesiumTerrainProvider'],
                 model: CesiumTerrain
+              },
+              {
+                types: ['CesiumGeohash'],
+                model: CesiumGeohash
               }
             ];
               

@@ -4,7 +4,8 @@ define(["jquery",
         "collections/maps/MapAssets",
         "models/filters/FilterGroup",
         "models/connectors/Filters-Search",
-        "models/maps/assets/Geohash",
+        "models/connectors/Geohash-Search",
+        "models/maps/assets/CesiumGeohash",
         "models/maps/Map",
         "views/search/SearchResultsView",
         "views/filters/FilterGroupsView",
@@ -12,7 +13,7 @@ define(["jquery",
         "views/search/PagerView",
         "views/search/SorterView"
     ],
-function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeohash, Map, SearchResultsView, FilterGroupsView, MapView, PagerView, SorterView){
+function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSearchConnector, CesiumGeohash, Map, SearchResultsView, FilterGroupsView, MapView, PagerView, SorterView){
 
     "use strict";
 
@@ -190,6 +191,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
 
         //Render the Title
         this.renderTitle();
+        this.listenTo(this.searchResultsView.searchResults, "reset", this.renderTitle);
 
         //Render Pager
         this.renderPager();
@@ -308,7 +310,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
 
         titleEl.innerHTML="";
         
-        let title = this.titleTemplate(this.searchResultsView.searchResults.getStart(), this.searchResultsView.searchResults.getEnd(), this.searchResultsView.searchResults.getNumFound());
+        let title = this.titleTemplate(this.searchResultsView.searchResults.getStart()+1, this.searchResultsView.searchResults.getEnd()+1, this.searchResultsView.searchResults.getNumFound());
 
         titleEl.insertAdjacentHTML("beforeend", title);
 
@@ -332,6 +334,8 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
         connector.startListening();
 
         this.createSearchResults();
+
+        this.createMap();
     },
 
     /**
@@ -364,18 +368,44 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, CesiumGeoh
     },
 
     /**
-     * Renders the Cesium map
+     * Create the models and views associated with the map and map search
+     */
+    createMap: function(){
+        let mapOptions = Object.assign({}, MetacatUI.appModel.get("catalogSearchMapOptions") || {});
+        let map = new Map(mapOptions);
+
+        //Add a CesiumGeohash layer to the map
+       /* let geohashLayer = new CesiumGeohash();
+        geohashLayer.
+        let assets = map.get("layers");
+        assets.add(geohashLayer);
+*/
+
+        let geohashLayer = map.get("layers").findWhere({type: "CesiumGeohash"})
+
+        //Connect the CesiumGeohash to the SolrResults
+        let connector = new GeohashSearchConnector({
+            cesiumGeohash: geohashLayer,
+            searchResults: this.searchResultsView.searchResults
+        });
+        connector.startListening();
+        this.geohashSearchConnector = connector;
+
+        //Set the geohash level for the search
+        if( Array.isArray(this.searchResultsView.searchResults.facet) ) 
+            this.searchResultsView.searchResults.facet.push("geohash_" + geohashLayer.get("geohashLevel"));
+        else
+            this.searchResultsView.searchResults.facet = "geohash_" + geohashLayer.get("geohashLevel");
+        
+        //Create the Map model and view
+        this.mapView = new MapView({ model: map });
+    },
+
+    /**
+     * Renders the Cesium map with a geohash layer
      */
     renderMap: function(){
-        let mapOptions = Object.assign({}, MetacatUI.appModel.get("catalogSearchMapOptions") || {});
-        let assets = new MapAssets();
-        assets.add(new CesiumGeohash());
-        mapOptions.layers = assets;
-        
-        let map = new Map(mapOptions);
-        this.mapView = new MapView();
-        this.mapView.model = map;
-        
+        //Add the map to the page and render it
         this.$(this.mapContainer).empty().append(this.mapView.el);
         this.mapView.render();        
     },

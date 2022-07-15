@@ -1,55 +1,95 @@
-define(["jquery",
-        "backbone",
+define(["backbone",
+        "cesium",
         "nGeohash",
-        "models/maps/CesiumGeohashes"],
-  function($, Backbone, geohash, CesiumGeohashes){
+        "models/maps/assets/CesiumGeohash"],
+  function(Backbone, Cesium, geohash, CesiumGeohash){
 
     return Backbone.View.extend({
 
         cesiumViewer: null,
+
+        /**
+         * A reference to the CesiumGeohash MapAsset model that is rendered in this view
+         * @type CesiumGeohash
+         */
+        cesiumGeohash: null,
         
         render: function(){
 
+            //If there is no CesiumGeohash model, exit without rendering
+            if(!this.cesiumGeohash){
+                return;
+            }
 
+           this.entities = this.cesiumGeohash.get("cesiumModel").entities;
+
+            if(this.cesiumGeohash.get('status') == "ready"){
+               this.drawGeohashes();
+               window.geohashview = this;
+            }
+
+            //When the status changes, re-render this view
+            this.listenTo(this.cesiumGeohash, "change:status", this.drawGeohashes);
 
         },
         
         drawGeohashes: function(){
-            let polygon,
-                viewer = this.cesiumViewer;
+            console.log("render geohash boxes")
 
-            bboxes(-90,-180,90,180,2).forEach( (hash) => {
+            let polygon,
+                entities = this.entities,
+                dataSource = this.dataSource,
+                viewer = this.cesiumViewer,
+                hue = this.cesiumGeohash.get("hue");
+
+            //If there is no CesiumGeohash model, exit without rendering
+            if(!this.cesiumGeohash){
+                return;
+            }        
+
+            //Remove all the Entities from the Cesium layer
+            entities.removeAll();
+
+            let counts = this.cesiumGeohash.get("geohashCounts");
+
+            for(let i=0; i < counts.length; i+=2){
           
-              let bbox = geohash.decode_bbox(hash),
-                  count = parseInt(Math.random()*100),
-                  alpha = count/100+0.3;
+              let hash = counts[i],
+                  bbox = geohash.decode_bbox(hash),
+                  count = counts[i+1],
+                  alpha = count/this.cesiumGeohash.get("totalCount") + 0.5;
           
-              polygon = viewer.entities.add({
-                polygon : {
+              let polygon = entities.add({
+                  polygon : {
                   hierarchy : Cesium.Cartesian3.fromDegreesArray([ 
-                    bbox[1], bbox[0],
-                      bbox[3], bbox[0],  
-                      bbox[3], bbox[2],
-                      bbox[1], bbox[2] ]),
+                          bbox[1], bbox[0],
+                          bbox[3], bbox[0],  
+                          bbox[3], bbox[2],
+                          bbox[1], bbox[2] ]),
                   height : 1000,
-                  material : Cesium.Color.fromHsl(Math.floor(Math.random() * 360)/360, 0.5, 0.6, 0.5),
+                  material : Cesium.Color.fromHsl(hue/360, 0.5, 0.6, alpha),
                   outline : true,
                   outlineColor : Cesium.Color.WHITE
-                }
+                },
+                show: true
               });
           
-              let label = viewer.entities.add({
+              let label = entities.add({
                 position : Cesium.Cartesian3.fromDegrees((bbox[3]+bbox[1])/2, (bbox[2]+bbox[0])/2),
                 label : {
-                    text : hash,
+                    text : count.toString(),
                     font : '14pt monospace',
                     style: Cesium.LabelStyle.FILL,
                     outlineWidth : 0,
                     scaleByDistance : new Cesium.NearFarScalar(1.5e2, 5.0, 8.0e6, 0.7)
-                }
+                },
+                show: true
               });
           
-            });
+            }
+
+            viewer.dataSourceDisplay.dataSources.add(this.cesiumGeohash.get("cesiumModel"))
+
         }
           
 

@@ -93,6 +93,18 @@ define(['jquery', 'underscore', 'backbone'],
       */
       dataCatalogMap: "google",
 
+      catalogSearchMapOptions: {
+        "homePosition": {
+            "heading": 356,
+            "height": 15375560,
+            "latitude": 84.23277,
+            "longitude": -106.79526,
+            "pitch": -89.83940540045835,
+            "roll": 0
+          },
+        "layers":[]
+      },
+
       /**
       * The node identifier for this repository. This is set dynamically by retrieving the
       * DataONE Coordinating Node document and finding this repository in the Node list.
@@ -1718,11 +1730,24 @@ define(['jquery', 'underscore', 'backbone'],
        */
        catalogSearchMapOptions: {
         showToolbar: false,
-        layers: [{
-          label: "Datasets",
-          opacity: 0.5,
-          visible: true
-        }]
+        layers: [
+            {
+                "type": "CesiumGeohash",
+                "opacity": 1,
+                "hue": 205 //blue
+            },
+        {
+            "label": "Satellite imagery",
+            "icon": "urn:uuid:4177c2e1-3037-4964-bf00-5f13182308d9",
+            "type": "IonImageryProvider",
+            "description": "Global satellite imagery down to 15 cm resolution in urban areas",
+            "attribution": "Data provided by Bing Maps © 2021 Microsoft Corporation",
+            "moreInfoLink": "https://www.microsoft.com/maps",
+            "opacity": 1,
+            "cesiumOptions": {
+            "ionAssetId": "2"
+            }
+         }]
        },
 
      /**
