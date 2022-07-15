@@ -3,14 +3,14 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
         'collections/UserGroup',
     		'models/UserModel',
         "models/Stats",
-        'views/SignInView', 'views/StatsView', 'views/DataCatalogView',
-        'views/GroupListView',
+		'views/SignInView', 'views/StatsView', 'views/DataCatalogView',
+		'views/UserGroupView',
         'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html',
         'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'],
 	function($, _, Backbone, Clipboard,
     UserGroup,
     UserModel, Stats,
-    SignInView, StatsView, DataCatalogView, GroupListView,
+    SignInView, StatsView, DataCatalogView, UserGroupView,
     userProfileTemplate, AlertTemplate, LoadingTemplate,
     ProfileMenuTemplate, SettingsTemplate, NoResultsTemplate) {
 	'use strict';
@@ -51,9 +51,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			"click .confirm-request-btn"   : "confirmMapRequest",
 			"click .reject-request-btn"	   : "rejectMapRequest",
 			"click [highlight-subsection]" : "highlightSubSection",
-			"blur #add-group-name"         : "checkGroupName",
 			"keypress #add-group-name"     : "preventSubmit",
-			"click #add-group-submit"      : "createGroup",
 			"click .token-tab" 			   : "switchTabs"
 		},
 
@@ -219,31 +217,53 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			//Listen to changes in the user's search terms
 			this.listenTo(this.model, "change:searchModel", this.renderProfile);
 
+
 			//Insert this user's data content
 			this.insertContent();
 
-			//List the groups this user is in
-			if(this.model.get("type") == "group"){
-				//Create the User Group collection
-				var options = {
-					name: this.model.get("fullName"),
-					groupId: this.model.get("username"),
-					rawData: this.model.get("rawData") || null
-					}
-				var userGroup = new UserGroup([], options);
-
-				//Create the group list and add it to the page
-				var viewOptions = { collapsable: false, showGroupName: false }
-				var groupList = this.createGroupList(userGroup, viewOptions);
-				this.$("#user-membership-container").html(groupList);
-			}
-			else{
-				this.insertMembership();
-			}
+			// create the UserGroupView to generate the membership list
+			// this is the first call to UserGroupView so we instantiate it here
+			var groupView = new UserGroupView({model: this.model});
+			this.subviews.push(groupView);
+			this.renderMembershipList();
 		},
 
-		renderSettings: function(){
-		//Don't render anything if the user profile settings are turned off
+			renderMembershipList: function() {
+				//List the groups this user is in by creating usergroupview subview
+				//List the groups this user is in by creating usergroupview subview
+				var groupView = _.where(this.subviews, {type: "UserGroupView"}).at(0);
+
+				if(this.model.get("type") == "group"){
+					//Create the User Group collection
+					var options = {
+						name: this.model.get("fullName"),
+						groupId: this.model.get("username"),
+						rawData: this.model.get("rawData") || null
+					}
+					var userGroup = new UserGroup([], options);
+					//Create the group list and add it to the page
+					var viewOptions = { collapsable: false, showGroupName: false }
+					var groupList = groupView.createGroupList(userGroup, viewOptions);
+					this.$("#user-membership-container").html(groupList);
+				}
+				else{
+					var groups = _.sortBy(this.model.get("isMemberOf"), "name");
+					if(!groups.length){
+						this.$("#user-membership-header").hide();
+						return;
+					}
+					this.sectionHolder.append(groupView.insertMembership(groups, this.$("#user-membership-container")).html());
+				}
+			},
+
+			renderGroupsSection: function() {
+				var groupView = _.where(this.subviews, {type: "UserGroupView"}).at(0);
+				var container = this.$('#groups-container');
+				container.append(groupView.render().el)
+			},
+
+			renderSettings: function(){
+					//Don't render anything if the user profile settings are turned off
 		if( MetacatUI.appModel.get("enableUserProfileSettings") === false ){
 			return;
 		}
@@ -253,9 +273,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 		this.$settings = this.$("[data-section='settings']");
 
 		//Draw the group list
-		this.insertCreateGroupForm();
-		this.listenTo(this.model, "change:isMemberOf", this.getGroups);
-		this.getGroups();
+		this.renderGroupsSection();
 
 		//Listen for the identity list
 		this.listenTo(this.model, "change:identities", this.insertIdentityList);
@@ -610,41 +628,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 		},
 
 		/*
-		 * Inserts a list of groups this user is a member of
-		 */
-		insertMembership: function(){
-			var groups = _.sortBy(this.model.get("isMemberOf"), "name");
-			if(!groups.length){
-				this.$("#user-membership-header").hide();
-				return;
-			}
-
-			var	model  = this.model,
-				list   = $(document.createElement("ul")).addClass("list-group member-list"),
-				listHeader = $(document.createElement("h5")).addClass("list-group-item list-group-header").text("Member of " + groups.length + " groups"),
-				listContainer = this.$("#user-membership-container");
-
-			_.each(groups, function(group, i){
-				var name = group.name || "Group",
-					listItem = $(document.createElement("li")).addClass("list-group-item"),
-					groupLink = group.groupId? $(document.createElement("a")).attr("href", MetacatUI.root + "/profile/" + group.groupId).text(name).appendTo(listItem) : "<a></a>";
-
-				$(list).append(listItem);
-			});
-
-			if(this.model.get("username") == MetacatUI.appUserModel.get("username")){
-				var link = $(document.createElement("a")).attr("href", MetacatUI.root + "/profile/" + MetacatUI.appUserModel.get("username") + "/s=settings/s=groups").text("Create New Group"),
-					icon = $(document.createElement("i")).addClass("icon icon-on-left icon-plus"),
-					listItem = $(document.createElement("li")).addClass("list-group-item create-group").append( $(link).prepend(icon) );
-
-				$(list).append(listItem);
-			}
-
-			listContainer.html(list);
-			list.before(listHeader);
-		},
-
-		/*
 		 * When this user has not uploaded any content, render the profile differently
 		 */
 		noActivity: function(){
@@ -654,171 +637,10 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			this.insertStats();
 		},
 
-		//-------------------------------------------------------------- Groups -------------------------------------------------------//
-		/*
-		 * Gets the groups that this user is a part of and creates a UserGroup collection for each
-		 */
-		getGroups: function(){
-			var view = this,
-				groups = [];
-
-			//Create a group Collection for each group this user is a member of
-			_.each(_.sortBy(this.model.get("isMemberOf"), "name"), function(group){
-				var userGroup = new UserGroup([view.model], group);
-				groups.push(userGroup);
-
-				view.listenTo(userGroup, "sync", function(){
-					var list = view.createGroupList(userGroup);
-					this.$("#group-list-container").append(list);
-				});
-				userGroup.getGroup();
-			});
-		},
-
-
-		/*
-		 * Inserts a GroupListView for the given UserGroup collection
-		 */
-		createGroupList: function(userGroup, options){
-			//Only create a list for new groups that aren't yet on the page
-			var existingGroupLists = _.where(this.subviews, {type: "GroupListView"});
-			if(existingGroupLists)
-				var groupIds = _.pluck(existingGroupLists, "groupId");
-			if(groupIds && (_.contains(groupIds, userGroup.groupId)))
-				return;
-
-			//Create a list of the view options
-			if(typeof options == "object")
-				options.collection = userGroup;
-			else
-				var options = { collection: userGroup };
-
-			//Create the view and save it as a subview
-			var groupView = new GroupListView(options);
-			this.subviews.push(groupView);
-
-			//Collapse the views if need be
-			if((this.model.get("isMemberOf") && (this.model.get("isMemberOf").length > 3)) || (userGroup.length > 3))
-				groupView.collapseMemberList();
-
-			//Finally, render it and return
-			return groupView.render().el;
-		},
-
-		/*
-		 * Will send a request for info about this user and their groups, and redraw the group lists
-		 * Will reset the Create New group form, too
-		 */
-		refreshGroupLists: function(){
-			this.insertCreateGroupForm();
-			this.model.getInfo();
-		},
-
-		/*
-		 * Inserts a new form for this user to create a new group.
-		 * The form container is grabbed from the user settings template
-		 */
-		insertCreateGroupForm: function(){
-			//Reset the form
-			$("#add-group-form-container").find("input[type='text']").val("").removeClass("has-error");
-			$("#group-name-notification-container").empty().removeClass("notification success error");
-
-			//Create a pending group that is stored locally until the user submits it
-			this.pendingGroup = new UserGroup([this.model], { pending: true });
-			var groupView = new GroupListView({ collection: this.pendingGroup });
-			groupView.setElement(this.$("#add-group-container .member-list"));
-			groupView.render();
-		},
-
-		/*
-		 * Gets the group name the user has entered and attempts to get this group from the server
-		 * If no group is found, then the group name is marked as available. Otherwise an error msg is displayed
-		 */
-		checkGroupName: function(e){
-			if(!e || !e.target) return;
-
-			var view = this,
-				$notification = $("#group-name-notification-container"),
-				$input = $(e.target);
-
-			//Get the name typed in by the user
-			var name = $input.val().trim();
-			if(!name) return;
-
-			this.listenToOnce(this.pendingGroup, "nameChecked", function(collection){
-				//If the group name/id is available, then display so
-				if(collection.nameAvailable){
-					var icon = $(document.createElement("i")).addClass("icon icon-ok"),
-						message = "The name " + collection.name + " is available",
-						container = $(document.createElement("div")).addClass("notification success");
-
-					$notification.html($(container).append(icon, message));
-					$input.removeClass("has-error");
-				}
-				else{
-					var icon = $(document.createElement("i")).addClass("icon icon-remove"),
-						message = "The name " + collection.name + " is already taken",
-						container = $(document.createElement("div")).addClass("notification error");
-
-					$notification.html($(container).append(icon, message));
-					$input.addClass("has-error");
-				}
-
-			});
-
-			this.pendingGroup.checkName(name);
-		},
-
-		/*
-		 * Syncs the pending group with the server
-		 */
-		createGroup: function(e){
-			e.preventDefault();
-
-			//If there is no name specified, give warning
-			if(!this.pendingGroup.name){
-				var $notification = $("#group-name-notification-container"),
-					$input = $("#add-group-name");
-
-				var icon = $(document.createElement("i")).addClass("icon icon-exclamation"),
-				    message = "You must enter a group name",
-				    container = $(document.createElement("div")).addClass("notification error");
-
-				$notification.html($(container).append(icon, message));
-				$input.addClass("has-error");
-
-				return;
-			}
-			//If this name is not available, exit
-			else if(this.pendingGroup.nameAvailable == false) return;
-
-			var view = this,
-				group = this.pendingGroup;
-			var success = function(data){
-				view.showAlert("Success! Your group has been saved. View it <a href='" + MetacatUI.root + "/profile/" + group.groupId + "'>here</a>", "alert-success", "#add-group-alert-container");
-				view.refreshGroupLists();
-			}
-			var error = function(xhr){
-				var response = xhr? $.parseHTML(xhr.responseText) : null,
-					description = "";
-				if(response && response.length)
-					description = $(response).find("description").text();
-
-				if(description) description = "(" + description + ").";
-				else description = "";
-
-				view.showAlert("Your group could not be created. " + description + " Please try again.", "alert-error", "#add-group-alert-container")
-			}
-
-			//Create it!
-			if(!this.pendingGroup.save(success, error))
-				error();
-		},
-
 		//------------------------------------------------ Identities/Accounts -------------------------------------------------------//
-		/*
-		 * Sends a new identity map request and displays notifications about the result
-		 */
+			/*
+             * Sends a new identity map request and displays notifications about the result
+             */
 		sendMapRequest: function(e) {
 			e.preventDefault();
 
