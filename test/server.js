@@ -69,6 +69,9 @@ async function runTests(url){
 
       throw Error(`One or more MetacatUI tests failed. Test failure details can be viewed by running "npm view-tests". \n${failNum}\n${passNum}\nFailed Tests: \n-------------\n${getFailTestsMessage($)}`);
   }
+  else if(passes==0 && fails==0){
+    throw Error(`The MetacatUI test suite failed to run. View the Javascript error console by running 'npm view-tests'`);
+  }
   else{
       console.log(`All tests have completed and passed.
       ${failNum}
