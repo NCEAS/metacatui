@@ -1450,6 +1450,18 @@ define(['jquery', 'underscore', 'backbone'],
       },
 
       /**
+       * Add an API service URL that retrieves projects data. This is an optional
+       * configuration in case the memberNode have a third-party service that provides
+       * their projects information.
+       *
+       * If the configuration is not set, set the default projects list in the views using it.
+       *
+       * @type {string}
+       * @private
+       * @since 2.20.0 #TODO Update version here.
+       */
+      projectsApiUrl: undefined,
+      /**
       * Enable or disable the use of Fluid Earth Viewer visualizations in portals.
       * This config option is marked as `private` since this is an experimental feature.
       * @type {boolean}
