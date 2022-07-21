@@ -233,6 +233,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 
     setFacet: function(fields) {
       this.facet = fields;
+      this.trigger("change:facet");
     },
 
     setStats: function(fields){

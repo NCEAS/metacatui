@@ -36,7 +36,10 @@ define(['backbone', "models/maps/assets/CesiumGeohash", "collections/SolrResults
                     this.get("cesiumGeohash").set("status", "ready");
                 }
             });
-            console.log("started listening")
+            
+            this.listenTo(this.get("cesiumGeohash"), "change:geohashLevel", function(){
+                this.get("searchResults").setFacet(["geohash_"+this.get("cesiumGeohash").get("geohashLevel")]);
+            });
         }
 
   });

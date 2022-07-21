@@ -41,7 +41,7 @@ define(
          * @param {Number} altitude The distance from the surface of the earth in meters
          * @returns The geohash level, an integer between 0 and 9.
          */
-        determineGeohashLevel: function (altitude) {
+        setGeohashLevel: function (altitude) {
           try {
             // map of precision integer to minimum altitude
             const precisionAltMap = {
@@ -54,7 +54,7 @@ define(
             const precision = _.findKey(precisionAltMap, function (minAltitude) {
               return altitude >= minAltitude
             })
-            return Number(precision)
+            this.set("geohashLevel", Number(precision));
           }
           catch (error) {
             console.log(

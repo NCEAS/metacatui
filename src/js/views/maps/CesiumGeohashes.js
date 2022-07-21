@@ -25,16 +25,30 @@ define(["backbone",
 
             if(this.cesiumGeohash.get('status') == "ready"){
                this.drawGeohashes();
-               window.geohashview = this;
             }
 
             //When the status changes, re-render this view
             this.listenTo(this.cesiumGeohash, "change:status", this.drawGeohashes);
 
+            this.listenToMovement();
+
+        },
+
+        /**
+         * Listens to Cesium Camera movement so the geohash level can change when the camera zooms in
+         */
+        listenToMovement: function(){
+            //Listen to camera movement to change the geohash level
+            let view = this;
+            this.cesiumViewer.scene.camera.moveEnd.addEventListener(function () {
+                //Get the position of the Cesium camera
+                let c = Cesium.Cartographic.fromCartesian(new Cesium.Cartesian3(view.cesiumViewer.scene.camera.position.x, view.cesiumViewer.scene.camera.position.y, view.cesiumViewer.scene.camera.position.z))
+                //Set the geohash level based on the camera position height
+                view.cesiumGeohash.setGeohashLevel(c.height);
+            });
         },
         
         drawGeohashes: function(){
-            console.log("render geohash boxes")
 
             let polygon,
                 entities = this.entities,

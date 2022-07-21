@@ -39,8 +39,8 @@ define(['backbone', "collections/Filters", "collections/SolrResults", "models/Se
             this.listenTo(this.get("filters"), "add remove update reset change", this.triggerSearch);
 
             //Listen to the sort order changing
-            this.stopListening(this.get("searchResults"), "change:sort");
-            this.listenTo(this.get("searchResults"), "change:sort", this.triggerSearch);
+            this.stopListening(this.get("searchResults"), "change:sort change:facet");
+            this.listenTo(this.get("searchResults"), "change:sort change:facet", this.triggerSearch);
 
             //If the logged-in status changes, send a new search
             this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.triggerSearch);
