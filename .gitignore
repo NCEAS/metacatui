@@ -7,6 +7,7 @@ src/js/themes/dangermondpreserve
 src/js/themes/dangermond
 src/js/themes/sfwmd
 src/js/themes/cerp
+src/js/themes/drp
 node_modules
 src/config/dev
 docs/_site
