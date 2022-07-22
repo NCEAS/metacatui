@@ -12,7 +12,7 @@ define(['jquery', 'backbone', 'models/projects/Project'],
          * @classcategory Collections
          @extends Backbone.Collection
          @constructor
-         @since 2.X
+         @since 2.22.0
          */
 
         var ProjectList = Backbone.Collection.extend(

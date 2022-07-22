@@ -1697,7 +1697,7 @@ define(['jquery', 'underscore', 'backbone'],
        *  that don't make sense for a semantic field.
        *
        * @type {string[]}
-       * @since 2.X
+       * @since 2.22.0
        */
       querySemanticFields: ["sem_annotation"],
 
@@ -1798,7 +1798,7 @@ define(['jquery', 'underscore', 'backbone'],
       /** 
        * The document fields to return when conducting a search. This is the list of fields returned by the main catalog search view. 
        * @type {string[]}
-       * @since 2.X
+       * @since 2.22.0
        * @example ["id", "title", "obsoletedBy"]
       */
       defaultSearchFields: ["id", "seriesId", "title", "origin", "pubDate","dateUploaded","abstract","resourceMap","beginDate","endDate","read_count_i","geohash_9","datasource","isPublic","project","documents","label","logo","formatId","northBoundCoord","southBoundCoord","eastBoundCoord","westBoundCoord"],
@@ -2001,7 +2001,7 @@ define(['jquery', 'underscore', 'backbone'],
        * enabled (by setting to `true`) and will tell MetacatUI to use the legacy {@link DataCatalogView}. It is highly suggested
        * that MetacatUI operators switch to supporting the new {@link CatalogSearchView} as soon as possible as the legacy {@link DataCatalogView}
        * will be fully deprecated and removed in the future.
-       * @since 2.X
+       * @since 2.22.0
        * @type {boolean}
        * @default false
        */

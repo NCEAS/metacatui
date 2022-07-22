@@ -12,7 +12,7 @@ define([
          * with this view has a placeholder to render the projects with the desired way.
          * @classcategory Views/Projects
          * @extends Backbone.View
-         * @since 2.X
+         * @since 2.22.0
          */
         var ProjectView = Backbone.View.extend(
             /** @lends ProjectView.prototype */{
@@ -60,7 +60,7 @@ define([
             /**
              * Handles the change event for selecting a project in the dropdown and then render.
              * @param {Event} e
-             * @since 2.X
+             * @since 2.22.0
              */
             handleSelectProject: function (e) {
                 // Set the selectedProject based on the selected project id from the select element.
@@ -72,7 +72,7 @@ define([
             /**
              * Call back to set the selectedProject
              * This is used as a callback to only set the current project on the success of the fetch call.
-             *  @since 2.X
+             *  @since 2.22.0
              */
             setSelectedProject: function () {
                 if (this.selectedProject === undefined)
@@ -83,7 +83,7 @@ define([
             /**
              * Call back to initialize the ProjectsList
              * This is used as a callback so that the fetch would happen after the change:token event gets loaded.
-             *  @since 2.X
+             *  @since 2.22.0
              */
             getProjectsList: function (){
                 // Note that if the projectsApiUrl config is not set, projectsList will fall to the default set.

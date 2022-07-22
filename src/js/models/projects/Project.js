@@ -8,7 +8,7 @@ define(['jquery', 'backbone'],
          *          projects from a third-party API in case projects information is located outside of
          *          metacat.
          * @classcategory Models/Projects
-         * @since 2.X
+         * @since 2.22.0
          */
 
         var Project = Backbone.Model.extend(/** @lends Project.prototype */{

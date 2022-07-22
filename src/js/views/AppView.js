@@ -91,7 +91,7 @@ define([
       * and displayed via {@link AppView#showView}, the view will be inserted into this element.
       * @type {string}
       * @default "#Content"
-      * @since 2.X
+      * @since 2.22.0
       */
       contentSelector: "#Content",
 

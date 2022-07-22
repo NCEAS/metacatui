@@ -7,7 +7,7 @@ define(["backbone"], function (Backbone) {
   * @name SorterView
   * @extends Backbone.View
   * @constructor
-  * @since 2.X
+  * @since 2.22.0
   * @classcategory Views/Search
   * */
   return Backbone.View.extend(
@@ -25,7 +25,7 @@ define(["backbone"], function (Backbone) {
        * @typedef {Object} SearchSortOptions
        * @property {string} value The sort value that will be sent directly to the search index in the query string.
        * @property {string} label The name of the sort option that will be shown to the user.
-       * @since 2.X
+       * @since 2.22.0
        */
       sortOptions: [
         { value: "dateUploaded+desc", label: "Most recent" },

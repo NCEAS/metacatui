@@ -39,7 +39,7 @@ define(['backbone', "collections/Filters", "collections/SolrResults"],
 
         /**
          * Sets listeners on the Filters and SearchResults to trigger a search when the search changes
-         * @since 2.X
+         * @since 2.22.0
          */
         startListening: function(){
 
@@ -61,7 +61,7 @@ define(['backbone', "collections/Filters", "collections/SolrResults"],
         * Get Results from the Solr index by combining the Filter query string fragments
         * in each Filter instance in the Search collection and querying Solr.
         * @fires SolrResults#toPage
-        * @since 2.X
+        * @since 2.22.0
         */
         triggerSearch: function() {
             let filters = this.get("filters"),

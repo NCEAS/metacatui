@@ -15,7 +15,7 @@ define(['jquery',
     * @classcategory Views/Filters
     * @extends FilterView
     * @screenshot views/filters/SemanticFilterView.png
-    * @since 2.X
+    * @since 2.22.0
     */
     var SemanticFilterView = FilterView.extend(
     /** @lends SemanticFilterView.prototype */{
@@ -42,7 +42,7 @@ define(['jquery',
         * Note that this View doesn't have a template and instead delegates to
         * the AnnotationFilterView which renders a SearchableSelectView which
         * renders an NCBOTree.
-        * @since 2.X
+        * @since 2.22.0
         */
         render: function () {
 
@@ -100,7 +100,7 @@ define(['jquery',
          *
          * Note: This isn't really a stable API and is really something we might
          * remove in the future if we refactor the NCBOTree widget.
-         * @since 2.X
+         * @since 2.22.0
          */
         defocus: function () {
           this.$el.find("div.menu").removeClass("visible").addClass("hidden")
@@ -122,7 +122,7 @@ define(['jquery',
          *
          * @param {string} term The term URI to set a label for
          * @param {string} label The label to set
-         * @since 2.X
+         * @since 2.22.0
          */
         setLabelMapping: function (term, label) {
           var newMappings;

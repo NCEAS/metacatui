@@ -11,7 +11,7 @@ function(Backbone){
     * @extends Backbone.View
     * @description Renders a simple pager element for a SolrResults collection. 
     * @constructor
-    * @since 2.X
+    * @since 2.22.0
     */
     return Backbone.View.extend(
     /** @lends SearchResultsPagerView.prototype */ {

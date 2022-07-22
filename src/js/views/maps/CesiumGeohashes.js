@@ -10,7 +10,7 @@ define(["backbone",
     * @classcategory Views/Maps
     * @extends Backbone.View
     * @classdesc Draws geohash boxes and their associated count/density in a Cesium {@link CesiumWidgetView}. Uses the {@link CesiumGeohash} Map Asset for the geohash data.
-    * @since 2.X
+    * @since 2.22.0
     */
     return Backbone.View.extend(/** @lends CesiumGeohashes.prototype */{
 
@@ -19,7 +19,7 @@ define(["backbone",
         /**
          * A reference to the CesiumGeohash MapAsset model that is rendered in this view
          * @type {CesiumGeohash}
-         * @since 2.X
+         * @since 2.22.0
          */
         cesiumGeohash: null,
         
@@ -45,7 +45,7 @@ define(["backbone",
 
         /**
          * Listens to Cesium Camera movement so the geohash level can change when the camera zooms in
-         * @since 2.X
+         * @since 2.22.0
          */
         listenToMovement: function(){
             //Listen to camera movement to change the geohash level
@@ -61,7 +61,7 @@ define(["backbone",
         /**
          * Draws the geohash polygons on the Cesium map (via {@link CesiumGeohash}) associated with this view. Draws a number representing the
          * count/density associated with that polygon (e.g. number of datasets in that area).
-         * @since 2.X
+         * @since 2.22.0
          */
         drawGeohashes: function(){
 

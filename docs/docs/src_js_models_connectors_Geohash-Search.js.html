@@ -76,7 +76,7 @@ define(['backbone', "models/maps/assets/CesiumGeohash", "collections/SolrResults
          * Sets listeners on the CesiumGeohash map asset and the SearchResults. It will get the geohash facet data
          * from the SolrResults and set it on the CesiumGeohash so it can be used by a map view. It also updates the 
          * geohash level in the SolrResults so that it can be used by the next query.
-         * @since 2.X
+         * @since 2.22.0
          */
         startListening: function(){
             this.listenTo(this.get("searchResults"), "reset", function(){

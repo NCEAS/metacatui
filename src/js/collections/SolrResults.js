@@ -298,7 +298,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 
     /**
     * Returns the total number of results that were just fetched, or undefined if nothing has been fetched yet
-    * @since 2.X
+    * @since 2.22.0
     * @returns {number|undefined}
     */
     getNumFound: function(){
@@ -307,7 +307,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 
     /**
     * Calculates and returns the total pages of results that was just fetched
-    * @since 2.X
+    * @since 2.22.0
     * @returns {number}
     */
     getNumPages: function(){
@@ -323,7 +323,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 
     /**
      * Calculates and returns the current page of results that was just fetched
-     * @since 2.X
+     * @since 2.22.0
      * @returns {number}
      */
     getCurrentPage: function(){
@@ -338,7 +338,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 
     /**
      * Returns the index number of the first search result E.g. the first page of results may be 0-24, where 0 is the start.
-     * @since 2.X
+     * @since 2.22.0
      * @returns {number}
      */
     getStart: function(){
@@ -352,7 +352,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 
     /**
      * Calculates the index number of the last search result. E.g. the first page of results may be 0-24, where 24 is the end.
-     * @since 2.X
+     * @since 2.22.0
      * @returns {number}
      */
     getEnd: function(){
@@ -361,7 +361,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 
     /**
      * Returns the number of search result rows 
-     * @since 2.X
+     * @since 2.22.0
      * @returns {number}
      */
     getRows: function(){
@@ -375,7 +375,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 
     /**
      * Gets and returns the URL string that was sent during the last fetch. 
-     * @since 2.X
+     * @since 2.22.0
      * @returns {string}
      */
     getLastUrl: function(){
@@ -385,7 +385,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
     /**
      * Determines whether the search parameters have changed since the last fetch. Returns true the next URL
      * to be sent in a fetch() is different at all from the last url that was fetched.
-     * @since 2.X
+     * @since 2.22.0
      * @returns {boolean}
      */
     hasChanged: function(){

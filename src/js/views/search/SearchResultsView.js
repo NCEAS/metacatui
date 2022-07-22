@@ -12,7 +12,7 @@ function(Backbone, SearchResults, SearchResultView){
     * @name SearchResultsView
     * @classcategory Views/Search
     * @extends Backbone.View
-    * @since 2.X
+    * @since 2.22.0
     * @constructor
     */
     return Backbone.View.extend(
@@ -51,7 +51,7 @@ function(Backbone, SearchResults, SearchResultView){
 
     /**
      * The HTML to display when no search results are found.
-     * @since 2.X
+     * @since 2.22.0
      * @type {string}
      */
     noResultsTemplate: `<div class="no-search-results">No results found.</div>`,
