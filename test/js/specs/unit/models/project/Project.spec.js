@@ -14,7 +14,7 @@ function checkFields(model, fields, values) {
 }
 
 define([
-    "../../../../../../../../src/js/models/Project",
+    "../../../../../../../../src/js/models/projects/Project",
 ], function (Project) {
 
     // Configure the Chai assertion library
