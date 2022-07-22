@@ -36,7 +36,6 @@ function ($, _, Backbone) {
 			'submit(/*pid)(/)'                  : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)(/)'    : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)(/)'                : 'renderAPI',       // API page
-			"projects"                          : "renderProjectInfo", // Projects view
 			"edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)" : "renderPortalEditor",
 			'drafts' : 'renderDrafts'
 		},
