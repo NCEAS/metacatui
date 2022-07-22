@@ -1,0 +1,16 @@
+<div class="row">
+    <div class="row">
+        <div class="col-12">
+            <select id="projects" class="ui dropdown projects-dropdown">
+                <!--     PLACEHOLDER FOR PROJECT TEMPLATE RENDER       -->
+                <!--                Example code below                 -->
+                <% if ( projectList && projectList.length > 0 ) { %>
+                <% projectList.models.forEach(function(project) { %><option <% if ( selectedProject && selectedProject.id == project.id ) { %>
+                    <%=selected="selected"%>
+                <% }%>
+                    value="<%= project.id %>"><%= project.get("project_title") %></option> <% })%>
+                <% } %>
+            </select>
+        </div>
+    </div>
+</div>
