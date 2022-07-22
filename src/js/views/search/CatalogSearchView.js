@@ -10,7 +10,7 @@ define(["jquery",
         "views/search/SearchResultsView",
         "views/filters/FilterGroupsView",
         "views/maps/MapView",
-        "views/search/PagerView",
+        "views/search/SearchResultsPagerView",
         "views/search/SorterView"
     ],
 function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSearchConnector, CesiumGeohash, Map, SearchResultsView, FilterGroupsView, MapView, PagerView, SorterView){
@@ -19,13 +19,14 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
 
     /**
     * @class CatalogSearchView
+    * @name CatalogSearchView
     * @classcategory Views
     * @extends Backbone.View
     * @constructor
     * @since 2.X
     */
     return Backbone.View.extend(
-      /** @lends Backbone.View.prototype */ {
+      /** @lends CatalogSearchView.prototype */ {
 
     /**
     * The type of View this is
@@ -91,8 +92,8 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
     filterGroups: null,
 
     /** 
-     * @type {FilterGroup#defaults[]} filterGroupsJSON 
      * An array of literal objects to transform into FilterGroup models. These FilterGroups will be displayed in this view and used for searching. If not provided, the {@link AppConfig#defaultFilterGroups} will be used.
+    * @type {FilterGroup#defaults[]} 
      */
     filterGroupsJSON: null,
 

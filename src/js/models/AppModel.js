@@ -84,26 +84,47 @@ define(['jquery', 'underscore', 'backbone'],
       * DataCatalog). This can be set to either "google" (the default), or "cesium". To
       * use Google maps, the {@link AppConfig#googleAnalyticsKey} must be set. To use
       * Cesium maps, the {@link AppConfig#enableCesium} property must be set to true, and
-      * the {@link AppConfig#cesiumToken} must be set. NOTE: The Cesium map is a WIP and
-      * not yet ready to use in the data catalog.
+      * the {@link AppConfig#cesiumToken} must be set. DEPRECATION NOTE: This configuration 
+      * is deprecated along with the {@link DataCatalogView} and {@link DataCatalogViewWithFilters}
+      * views and Google Maps. The {@link CatalogSearchView} will replace these as the primary search view and will only
+      * support Cesium, not Google Maps.
       * @type {string}
       * @example "cesium"
       * @default "google"
-      * @since 2.X
+      * @deprecated
       */
       dataCatalogMap: "google",
 
+      /**
+       * The default options for the Cesium map used in the {@link CatalogSearchView} for searching the data
+       * catalog. Add custom layers, a default home position (for example, zoom into your area of research),
+       * and enable/disable map widgets. See {@link MapConfig} for the full suite of options. Keep the `CesiumGeohash`
+       * layer here in order to show the search results in the map as geohash boxes. Use any satellite imagery
+       * layer of your choice, such as a self-hosted imagery layer or hosted on Cesium Ion.
+       * @type {MapConfig}
+       * @since 2.22.0
+       */
       catalogSearchMapOptions: {
-        "homePosition": {
-            "heading": 356,
-            "height": 15375560,
-            "latitude": 84.23277,
-            "longitude": -106.79526,
-            "pitch": -89.83940540045835,
-            "roll": 0
-          },
-        "layers":[]
-      },
+        showToolbar: false,
+        layers: [
+            {
+                "type": "CesiumGeohash",
+                "opacity": 1,
+                "hue": 205 //blue
+            },
+        {
+            "label": "Satellite imagery",
+            "icon": "urn:uuid:4177c2e1-3037-4964-bf00-5f13182308d9",
+            "type": "IonImageryProvider",
+            "description": "Global satellite imagery down to 15 cm resolution in urban areas",
+            "attribution": "Data provided by Bing Maps © 2021 Microsoft Corporation",
+            "moreInfoLink": "https://www.microsoft.com/maps",
+            "opacity": 1,
+            "cesiumOptions": {
+            "ionAssetId": "2"
+            }
+         }]
+       },
 
       /**
       * The node identifier for this repository. This is set dynamically by retrieving the
@@ -1735,32 +1756,6 @@ define(['jquery', 'underscore', 'backbone'],
        * @example ["id", "title", "obsoletedBy"]
       */
       defaultSearchFields: ["id", "seriesId", "title", "origin", "pubDate","dateUploaded","abstract","resourceMap","beginDate","endDate","read_count_i","geohash_9","datasource","isPublic","project","documents","label","logo","formatId","northBoundCoord","southBoundCoord","eastBoundCoord","westBoundCoord"],
-
-      /**
-       * @type {MapModel#defaults}
-       * @since 2.X
-       */
-       catalogSearchMapOptions: {
-        showToolbar: false,
-        layers: [
-            {
-                "type": "CesiumGeohash",
-                "opacity": 1,
-                "hue": 205 //blue
-            },
-        {
-            "label": "Satellite imagery",
-            "icon": "urn:uuid:4177c2e1-3037-4964-bf00-5f13182308d9",
-            "type": "IonImageryProvider",
-            "description": "Global satellite imagery down to 15 cm resolution in urban areas",
-            "attribution": "Data provided by Bing Maps © 2021 Microsoft Corporation",
-            "moreInfoLink": "https://www.microsoft.com/maps",
-            "opacity": 1,
-            "cesiumOptions": {
-            "ionAssetId": "2"
-            }
-         }]
-       },
 
      /**
       * Semantic annotation configuration

@@ -20,8 +20,8 @@ define(
     /**
      * @classdesc A Geohash Model represents a geohash layer in a map.
      * @classcategory Models/Maps/Assets
-     * @class GeohashAsset
-     * @name GeohashAsset
+     * @class CesiumGeohash
+     * @name CesiumGeohash
      * @extends MapAsset
      * @since 2.18.0
      * @constructor

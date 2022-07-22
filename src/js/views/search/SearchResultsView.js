@@ -9,13 +9,14 @@ function(Backbone, SearchResults, SearchResultView){
 
     /**
     * @class SearchResultsView
+    * @name SearchResultsView
     * @classcategory Views/Search
     * @extends Backbone.View
     * @since 2.X
     * @constructor
     */
     return Backbone.View.extend(
-      /** @lends Backbone.View.prototype */ {
+      /** @lends SearchResultsView.prototype */ {
 
     /**
     * The type of View this is

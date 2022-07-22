@@ -1,16 +1,18 @@
 /*global define */
 define(["backbone"], function (Backbone) {
   "use strict";
-
+/**
+  * @class SorterView
+  * @classdesc A view that displays a sort controller and sets the sort order on the attached {@link SolrResults} collection.
+  * @name SorterView
+  * @extends Backbone.View
+  * @constructor
+  * @since 2.X
+  * @classcategory Views/Search
+  * */
   return Backbone.View.extend(
     /**
-     * @class SorterView
-     * @classdesc A view that displays a sort controller and sets the sort order on the attached {@link SolrResults} collection.
-     * @name SorterView
-     * @extends Backbone.View
-     * @constructor
-     * @since 2.X
-     * @classcategory Views/Search
+     * @lends SorterView.prototype
      */ {
       /**
        * A reference to the {@link SolrResults} collection that this sorter displays and controls.

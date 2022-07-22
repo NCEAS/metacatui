@@ -34,6 +34,8 @@ define(["jquery",
         * @classcategory Views
         * @extends Backbone.View
         * @constructor
+        * @deprecated 
+        * @description This view is deprecated and will eventually be removed in a future version (likely 3.0.0)
         */
         var DataCatalogView = Backbone.View.extend(
           /** @lends DataCatalogView.prototype */ {

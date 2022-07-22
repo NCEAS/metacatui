@@ -1,11 +1,12 @@
 /*global define */
-define(['backbone', "collections/Filters", "collections/SolrResults", "models/Search"],
-  function(Backbone, Filters, SearchResults, Search) {
+define(['backbone', "collections/Filters", "collections/SolrResults"],
+  function(Backbone, Filters, SearchResults) {
   'use strict';
 
   /**
   * @class FiltersSearchConnector
-  * @classdesc A model that creates listeners between the Filters collection and the Search model. It does not assume anything
+  * @name FiltersSearchConnector
+  * @classdesc A model that creates listeners between a Filters collection and a SearchResults. It does not assume anything
   * about how the search results or filters will be displayed in the UI or why those components need to be connected. It simply
   * sends a new search when the filters have been changed.
   * @name FiltersSearchConnector
@@ -16,12 +17,16 @@ define(['backbone', "collections/Filters", "collections/SolrResults", "models/Se
   return Backbone.Model.extend(
     /** @lends FiltersSearchConnector.prototype */ {
 
+        /**
+         * @type {object}
+         * @property {Filter[]} filtersList An array of Filter models to optionally add to the Filters collection
+         * @property {Filters} filters A Filters collection to use for this search
+         * @property {SolrResults} searchResults The SolrResults collection that the search results will be stored in
+         */
         defaults: function(){
             return{
                 filtersList: [],
                 filters: new Filters([], { catalogSearch: true }), 
-                /** @TODO Remove Search Model as a dependency for this model. It may not be necessary anymore since Filters create queries themselves */
-                search: new Search(),
                 searchResults: new SearchResults()
             }
         },
@@ -32,6 +37,10 @@ define(['backbone', "collections/Filters", "collections/SolrResults", "models/Se
             }
         },
 
+        /**
+         * Sets listeners on the Filters and SearchResults to trigger a search when the search changes
+         * @since 2.X
+         */
         startListening: function(){
 
             // Listen to changes in the Filters to trigger a search
@@ -48,14 +57,14 @@ define(['backbone', "collections/Filters", "collections/SolrResults", "models/Se
         },
 
 
-        /*
+        /**
         * Get Results from the Solr index by combining the Filter query string fragments
         * in each Filter instance in the Search collection and querying Solr.
-        *
+        * @fires SolrResults#toPage
+        * @since 2.X
         */
         triggerSearch: function() {
-            let searchModel = this.get("search"),
-                filters = this.get("filters"),
+            let filters = this.get("filters"),
                 searchResults = this.get("searchResults");
 
             // Get the Solr query string from the Search filter collection

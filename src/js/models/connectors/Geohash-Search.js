@@ -14,6 +14,11 @@ define(['backbone', "models/maps/assets/CesiumGeohash", "collections/SolrResults
   return Backbone.Model.extend(
     /** @lends GeohashSearchConnector.prototype */ {
 
+        /**
+         * @type {object}
+         * @property {SolrResults} searchResults
+         * @property {CesiumGeohash} cesiumGeohash
+         */
         defaults: function(){
             return{
                 searchResults: null,
@@ -21,6 +26,12 @@ define(['backbone', "models/maps/assets/CesiumGeohash", "collections/SolrResults
             }
         },
 
+        /**
+         * Sets listeners on the CesiumGeohash map asset and the SearchResults. It will get the geohash facet data
+         * from the SolrResults and set it on the CesiumGeohash so it can be used by a map view. It also updates the 
+         * geohash level in the SolrResults so that it can be used by the next query.
+         * @since 2.X
+         */
         startListening: function(){
             this.listenTo(this.get("searchResults"), "reset", function(){
                 //Set the new geohash facet counts on the CesiumGeohash MapAsset

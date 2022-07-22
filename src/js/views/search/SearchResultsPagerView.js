@@ -4,10 +4,19 @@ function(Backbone){
 
     "use strict";
 
+    /**
+    * @class SearchResultsPagerView
+    * @name SearchResultsPagerView
+    * @classcategory Views/Search
+    * @extends Backbone.View
+    * @description Renders a simple pager element for a SolrResults collection. 
+    * @constructor
+    * @since 2.X
+    */
     return Backbone.View.extend(
-    /** @lends Backbone.View.prototype */ {
+    /** @lends SearchResultsPagerView.prototype */ {
 
-        className: "pager-view pagination pagination-centered resultspager",
+        className: "pager-view search-results-pager-view pagination pagination-centered resultspager",
 
         tagName: "nav",
 
