@@ -1,6 +1,6 @@
 ## MetacatUI: A client-side web interface for DataONE data repositories
 
-- **Author**: Matthew B. Jones, Chris Jones, Ben Leinfelder, Lauren Walker, Bryce Mecum, Peter Slaughter, Rushiraj Nenuji, Robyn Thiessen-Bock ([NCEAS](https://www.nceas.ucsb.edu))
+- **Author**: Matthew B. Jones, Chris Jones, Lauren Walker, Robyn Thiessen-Bock, Ben Leinfelder, Peter Slaughter, Bryce Mecum, Rushiraj Nenuji ([NCEAS](https://www.nceas.ucsb.edu)), Hesham Elbashandy, Val Hendrix 
 - **License**: [Apache 2](http://opensource.org/licenses/Apache-2.0)
 - [Package source code on Github](https://github.com/NCEAS/metacatui)
 - [**Submit Bugs and feature requests**](https://github.com/NCEAS/metacatui/issues/new/choose)
@@ -52,6 +52,7 @@ Work on this package was supported by:
 - NSF-DATANET grant #1430508 to W. Michener, M. B. Jones, D. Vieglais, S. Allard and P. Cruse
 - NSF DIBBS grant #1443062 to T. Habermann and M. B. Jones
 - NSF-PLR grant #1546024 to M. B. Jones, S. Baker-Yeboah, J. Dozier, M. Schildhauer, and A. Budden
+- NSF-PLR grant #2042102 to M. B. Jones,  A. Budden, M. Schildhauer, and  J. Dozier
 
 Additional support was provided for working group collaboration by the National Center for Ecological Analysis and Synthesis, a Center funded by the University of California, Santa Barbara, and the State of California.
 
