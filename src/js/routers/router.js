@@ -167,8 +167,8 @@ function ($, _, Backbone) {
 			this.renderText(options);
 		},
 
-		renderProjectInfo: function() {
-			require(["views/ProjectView"], function(ProjectView) {
+		renderProjects: function() {
+			require(["views/projects/ProjectView"], function(ProjectView) {
 				MetacatUI.appView.projectView = new ProjectView();
 				MetacatUI.appView.showView(MetacatUI.appView.projectView)
 			});

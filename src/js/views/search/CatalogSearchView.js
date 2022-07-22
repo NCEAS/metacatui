@@ -22,6 +22,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
     * @classcategory Views
     * @extends Backbone.View
     * @constructor
+    * @since 2.X
     */
     return Backbone.View.extend(
       /** @lends Backbone.View.prototype */ {
@@ -170,10 +171,11 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
 
     /**
      * Sets the search mode (map or list)
+     * @since 2.X
      */
     setMode: function(){
         //Get the search mode - either "map" or "list"
-        if ((typeof this.mode === "undefined") || !this.mode) {
+        if (((typeof this.mode === "undefined") || !this.mode) && (MetacatUI.appModel.get("enableCesium"))) {
             this.mode = "map";
         }
 
@@ -205,6 +207,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
 
     /**
      * Renders the search filters
+     * @since 2.X
      */
     renderFilters: function(){
         //Render FilterGroups
@@ -224,6 +227,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
 
     /**
      * Creates the SearchResultsView and saves a reference to the SolrResults collection
+     * @since 2.X
      */
     createSearchResults: function(){
         this.searchResultsView = new SearchResultsView();
@@ -235,6 +239,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
 
     /**
      * Renders the search result list
+     * @since 2.X
      */
     renderSearchResults: function(){
         if(!this.searchResultsView) return;
@@ -248,6 +253,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
 
     /**
      * Creates a PagerView and adds it to the page.
+     * @since 2.X
      */
     renderPager: function(){
         this.pagerView = new PagerView();
@@ -264,6 +270,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
 
     /**
      * Creates a SorterView and adds it to the page.
+     * @since 2.X
      */
     renderSorter: function(){
         this.sorterView = new SorterView();
@@ -284,6 +291,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
     * @param {number} end 
     * @param {number} numFound 
     * @returns {string}
+    * @since 2.X
     */
     titleTemplate: function(start, end, numFound){
         let html = `<div id="statcounts"><h5 class="result-header-count bold-header" id="countstats"><span>${MetacatUI.appView.commaSeparateNumber(start)}</span> to <span>${MetacatUI.appView.commaSeparateNumber(end)}</span>`;
@@ -298,6 +306,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
 
     /**
      * Updates the view title using the {@link CatalogSearchView#searchResults} data.
+     * @since 2.X
      */
     renderTitle: function(){
         let titleEl = this.el.querySelector(this.titleContainer);
@@ -318,6 +327,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
 
     /**
      * Creates the Filter models and SolrResults that will be used for searches
+     * @since 2.X
      */
     setupSearch: function(){
 
@@ -343,6 +353,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
     * are custom, interactive search filter elements, grouped together in one
     * panel, section, tab, etc.
     * @param {FilterGroup#defaults[]} filterGroupsJSON An array of literal objects to transform into FilterGroup models. These FilterGroups will be displayed in this view and used for searching. If not provided, the {@link AppConfig#defaultFilterGroups} will be used.
+    * @since 2.X
     */
     createFilterGroups: function(filterGroupsJSON=this.filterGroupsJSON){
 
@@ -369,6 +380,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
 
     /**
      * Create the models and views associated with the map and map search
+     * @since 2.X
      */
     createMap: function(){
         let mapOptions = Object.assign({}, MetacatUI.appModel.get("catalogSearchMapOptions") || {});
@@ -403,6 +415,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
 
     /**
      * Renders the Cesium map with a geohash layer
+     * @since 2.X
      */
     renderMap: function(){
         //Add the map to the page and render it
@@ -412,6 +425,7 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
 
      /**
       * Linked Data Object for appending the jsonld into the browser DOM 
+      * @since 2.X
       * */ 
      addLinkedData: function() {
 

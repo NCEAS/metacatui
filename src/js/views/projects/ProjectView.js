@@ -2,7 +2,7 @@ define([
         'jquery',
         'underscore',
         'backbone',
-        'text!templates/projectInfo.html', 'models/Project',
+        'text!templates/projectInfo.html', 'models/projects/Project',
         'collections/ProjectList'],
     function ($, _, Backbone, template, Project, ProjectList) {
         /**
@@ -10,10 +10,12 @@ define([
          * @classdesc    This is a base view for projects list loading. It is structured
          * on the premise that a project gets selected to be having its details viewed. The template associated
          * with this view has a placeholder to render the projects with the desired way.
-         * @classcategory Views
+         * @classcategory Views/Projects
          * @extends Backbone.View
+         * @since 2.X
          */
-        var ProjectView = Backbone.View.extend({
+        var ProjectView = Backbone.View.extend(
+            /** @lends ProjectView.prototype */{
             el: "#Content",
             template: _.template(template),
             projectList: undefined, // Set default list if not using projectsApiUrl
@@ -57,7 +59,8 @@ define([
 
             /**
              * Handles the change event for selecting a project in the dropdown and then render.
-             * @param e
+             * @param {Event} e
+             * @since 2.X
              */
             handleSelectProject: function (e) {
                 // Set the selectedProject based on the selected project id from the select element.
@@ -69,6 +72,7 @@ define([
             /**
              * Call back to set the selectedProject
              * This is used as a callback to only set the current project on the success of the fetch call.
+             *  @since 2.X
              */
             setSelectedProject: function () {
                 if (this.selectedProject === undefined)
@@ -79,6 +83,7 @@ define([
             /**
              * Call back to initialize the ProjectsList
              * This is used as a callback so that the fetch would happen after the change:token event gets loaded.
+             *  @since 2.X
              */
             getProjectsList: function (){
                 // Note that if the projectsApiUrl config is not set, projectsList will fall to the default set.

@@ -1,6 +1,6 @@
 /* global define */
 "use strict";
-define(['jquery', 'backbone', 'models/Project'],
+define(['jquery', 'backbone', 'models/projects/Project'],
     function ($, Backbone, Project) {
         'use strict';
         /**
@@ -12,9 +12,11 @@ define(['jquery', 'backbone', 'models/Project'],
          * @classcategory Collections
          @extends Backbone.Collection
          @constructor
+         @since 2.X
          */
 
-        var ProjectList = Backbone.Collection.extend({
+        var ProjectList = Backbone.Collection.extend(
+            /** @lends ProjectList.prototype */{
             model: Project,
             type: "ProjectList",                            //The name of this type of collection
             authToken: undefined,

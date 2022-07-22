@@ -2,15 +2,16 @@ define(['jquery', 'backbone'],
     function($, Backbone) {
         'use strict';
         /**
-         * @class Citation
+         * @class Project
          * @classdesc A Project model represents a single instance of a project. This can be
          *          used for a projects list view populating EML projects. It also supports loading
          *          projects from a third-party API in case projects information is located outside of
          *          metacat.
-         * @classcategory Models
+         * @classcategory Models/Projects
+         * @since 2.X
          */
 
-        var Project = Backbone.Model.extend({
+        var Project = Backbone.Model.extend(/** @lends Project.prototype */{
 
             idAttribute: "id",
             defaults: {           // Set the project model attributes defaults here.
