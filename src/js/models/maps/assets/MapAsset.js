@@ -122,12 +122,13 @@ define(
          * description.
          * @typedef {Object} MapAssetConfig
          * @name MapConfig#MapAssetConfig
-         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'WebMapTileServiceImageryProvider'|'TileMapServiceImageryProvider'|'NaturalEarthII'|'CesiumTerrainProvider'|'GeoJsonDataSource')} type - 
+         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'WebMapTileServiceImageryProvider'|'WebMapServiceImageryProvider'|'TileMapServiceImageryProvider'|'NaturalEarthII'|'CesiumTerrainProvider'|'GeoJsonDataSource'|'USGSImageryTopo')} type - 
          * A string indicating the format of the data. Some of these types correspond
          * directly to Cesium classes. The NaturalEarthII type is a special imagery layer
          * that automatically sets the cesiumOptions to load the Natural Earth II imagery
          * that is shipped with Cesium/MetacatUI. If this type is set, then no other
-         * cesiumOptions are required.
+         * cesiumOptions are required. The same is true for USGSImageryTopo, which pulls
+         * imagery directly from USGS.
          * @property {(Cesium3DTileset#cesiumOptions|CesiumImagery#cesiumOptions|CesiumTerrain#cesiumOptions|CesiumVectorData#cesiumOptions)} [cesiumOptions] - 
          * For MapAssets that are configured for Cesium, like
          * Cesium3DTilesets, an object with options to pass to the Cesium constructor

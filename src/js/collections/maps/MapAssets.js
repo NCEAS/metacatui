@@ -62,7 +62,7 @@ define(
                 model: CesiumVectorData
               },
               {
-                types: ['BingMapsImageryProvider', 'IonImageryProvider', 'WebMapTileServiceImageryProvider', 'TileMapServiceImageryProvider', 'NaturalEarthII'],
+                types: ['BingMapsImageryProvider', 'IonImageryProvider', 'WebMapTileServiceImageryProvider', 'TileMapServiceImageryProvider', 'WebMapServiceImageryProvider', 'NaturalEarthII', 'USGSImageryTopo'],
                 model: CesiumImagery
               },
               {

@@ -86,7 +86,7 @@ define(
             renderFunction: 'addVectorData'
           },
           {
-            types: ['BingMapsImageryProvider', 'IonImageryProvider', 'TileMapServiceImageryProvider', 'WebMapTileServiceImageryProvider'],
+            types: ['BingMapsImageryProvider', 'IonImageryProvider', 'TileMapServiceImageryProvider', 'WebMapTileServiceImageryProvider', 'WebMapServiceImageryProvider'],
             renderFunction: 'addImagery'
           },
           {
