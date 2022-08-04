@@ -45,12 +45,19 @@ define(
          * and
          * {@link https://cesium.com/learn/cesiumjs/ref-doc/IonImageryProvider.html#.ConstructorOptions}.
          * @typedef {Object} CesiumImagery#cesiumOptions
-         * @property {string|number} ionAssetId - If this imagery is hosted by Cesium Ion,
-         * then Ion asset ID. 
+         * @property {string|number} ionAssetId - If this imagery is hosted by Cesium
+         * Ion, then Ion asset ID. 
          * @property {string|number} key - A key or token required to access the tiles.
          * For example, if this is a BingMapsImageryProvider, then the Bing maps key. If
          * one is required and not set, the model will look in the {@link AppModel} for a
          * key, for example, {@link AppModel#bingMapsKey}
+         * @property {'GeographicTilingScheme'|'WebMercatorTilingScheme'} tilingScheme -
+         * The tiling scheme to use when constructing an imagery provider. If not set,
+         * Cesium uses WebMercatorTilingScheme by default.
+         * @property {Number[]} rectangle - The rectangle covered by the layer. The list
+         * of west, south, east, north bounding degree coordinates, respectively. This
+         * will be passed to Cesium.Rectangle.fromDegrees to define the bounding box of
+         * the imagery layer. If left undefined, the layer will cover the entire globe.
          */
 
         /**
@@ -132,15 +139,18 @@ define(
           var type = this.get('type')
           var providerFunction = Cesium[type]
 
+          // If the cesium model already exists, don't create it again unless specified
+          if (!recreate && this.get('cesiumModel')) {
+            console.log('returning existing cesium model');
+            return this.get('cesiumModel')
+          }
+
+          model.resetStatus();
+
           var initialAppearance = {
             alpha: this.get('opacity'),
             show: this.get('visible')
             // TODO: brightness, contrast, gamma, etc.
-          }
-
-          // If the cesium model already exists, don't create it again unless specified
-          if (!recreate && this.get('cesiumModel')) {
-            return this.get('cesiumModel')
           }
 
           if (type === 'BingMapsImageryProvider') {
@@ -150,6 +160,22 @@ define(
             delete cesiumOptions.ionAssetId
             cesiumOptions.accessToken =
               cesiumOptions.cesiumToken || MetacatUI.appModel.get('cesiumToken');
+          }
+          if (cesiumOptions && cesiumOptions.tilingScheme) {
+            const ts = cesiumOptions.tilingScheme
+            const availableTS = ['GeographicTilingScheme', 'WebMercatorTilingScheme']
+            if (availableTS.indexOf(ts) > -1) {
+              cesiumOptions.tilingScheme = new Cesium[ts]()
+            } else {
+              console.log(`${ts} is not a valid tiling scheme. Using WebMercatorTilingScheme`)
+              cesiumOptions.tilingScheme = new Cesium.WebMercatorTilingScheme()
+            }
+          }
+
+          if (cesiumOptions.rectangle) {
+            cesiumOptions.rectangle = Cesium.Rectangle.fromDegrees(
+              ...cesiumOptions.rectangle
+            )
           }
 
           if (providerFunction && typeof providerFunction === 'function') {

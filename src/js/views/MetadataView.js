@@ -2150,7 +2150,7 @@ define(['jquery',
               if (container) {
 
                 //Only show data displays for images hosted on the same origin
-                if (type == "image" && solrResult.get("url").indexOf(window.location.host) > -1) {
+                if (type == "image") {
 
                   //Create the data display HTML
                   var dataDisplay = $.parseHTML(viewRef.dataDisplayTemplate({

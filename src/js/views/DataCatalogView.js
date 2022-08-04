@@ -34,6 +34,8 @@ define(["jquery",
         * @classcategory Views
         * @extends Backbone.View
         * @constructor
+        * @deprecated 
+        * @description This view is deprecated and will eventually be removed in a future version (likely 3.0.0)
         */
         var DataCatalogView = Backbone.View.extend(
           /** @lends DataCatalogView.prototype */ {
@@ -1055,20 +1057,6 @@ define(["jquery",
                 // Check that something was actually entered
                 if ((term == "") || (term == " ")) {
                     return false;
-                }
-
-                // Take out quotes since all search multi-word terms are wrapped in quotes anyway
-                while (term.startsWith('"') || term.startsWith("'")) {
-                    term = term.substr(1);
-                }
-                while (term.startsWith("%22")) {
-                    term = term.substr(3);
-                }
-                while (term.endsWith('"') || term.endsWith("'")) {
-                    term = term.substr(0, term.length - 1);
-                }
-                while (term.startsWith("%22")) {
-                    term = term.substr(0, term.length - 3);
                 }
 
                 // Close the autocomplete box

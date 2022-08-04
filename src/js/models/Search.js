@@ -224,6 +224,36 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 }
             },
 
+            /**
+             * 
+             * @param {Filters|Filter[]} filters The collection of filters to add to this model OR an array of Filter models
+             */
+            addFilters: function(filters){
+              try{
+
+                let currentFilters = this.get("filters");
+
+                //If the passed collection is the same as the one set already, return
+                if( currentFilters == filters )
+                  return;
+                //If the given Filters collec is different than the one set on the model now, combine them
+                else if( Filters.isPrototypeOf(currentFilters) && Filters.isPrototypeOf(filters) ){
+                  filters.models.forEach(f => { currentFilters.add(f) });
+                  this.set("filters", currentFilters);
+                }
+                else if( Filters.isPrototypeOf(currentFilters) && Array.isArray(filters) ){
+                  filters.forEach(f => { currentFilters.add(f) });
+                  this.set("filters", currentFilters);
+                }
+                else if( !currentFilters )
+                  this.set("filters", new Filters(filters));
+                
+              }
+              catch(e){
+                console.error("Couldn't add Filters to the Search model: ", e);
+              }
+            },
+
             /*
              * Resets the geoashes and geohashLevel filters to default
              */
@@ -885,14 +915,28 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
             },
 
             escapeSpecialChar: function(term) {
-                term = term.replace(/%7B/g, "\\%7B");
-                term = term.replace(/%7D/g, "\\%7D");
-                term = term.replace(/%3A/g, "\\%3A");
-                term = term.replace(/:/g, "\\:");
-                term = term.replace(/\(/g, "\\(");
-                term = term.replace(/\)/g, "\\)");
-                term = term.replace(/\?/g, "\\?");
-                term = term.replace(/%3F/g, "\\%3F");
+                term = term.replace(/%7B/g, "%5C%7B");
+                term = term.replace(/%7D/g, "%5C%7D");
+                term = term.replace(/%3A/g, "%5C%3A");
+                term = term.replace(/:/g, "%5C:");
+                term = term.replace(/\(/g, "%5C(");
+                term = term.replace(/\)/g, "%5C)");
+                term = term.replace(/\?/g, "%5C?");
+                term = term.replace(/%3F/g, "%5C%3F");
+                term = term.replace(/%2B/g, "%5C%2B");
+                //Remove ampersands (&) for now since they are reserved Solr characters and the Metacat Solr can't seem to handle them even when they are escaped properly for some reason
+                term = term.replace(/%26/g, "");
+                term = term.replace(/%7C%7C/g, "%5C%7C%5C%7C");
+                term = term.replace(/%21/g, "%5C%21");
+                term = term.replace(/%28/g, "%5C%28");
+                term = term.replace(/%29/g, "%5C%29");
+                term = term.replace(/%5B/g, "%5C%5B");
+                term = term.replace(/%5D/g, "%5C%5D");
+                term = term.replace(/%5E/g, "%5C%5E");
+                term = term.replace(/%22/g, "%5C%22");
+                term = term.replace(/~/g, "%5C~");
+                term = term.replace(/-/g, "%5C-");
+                term = term.replace(/%2F/g, "%5C%2F");
 
                 return term;
             },

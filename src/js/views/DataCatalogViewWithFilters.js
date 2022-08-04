@@ -22,9 +22,11 @@ define(["jquery",
          * and the Filter models for managing queries rather than the
          * Search model and the filter literal objects used in the
          * parent DataCatalogView.  This accommodates custom portal filters.
+         * This view is deprecated and will eventually be removed in a future version (likely 3.0.0)
          * @classcategory Views
          * @extends DataCatalogView
          * @constructor
+         * @deprecated
          */
         var DataCatalogViewWithFilters = DataCatalogView.extend(
           /** @lends DataCatalogViewWithFilters.prototype */{
@@ -315,6 +317,7 @@ define(["jquery",
                               "geohash_9",
                               "datasource",
                               "isPublic",
+                              "project",
                               "documents",
                               "label",
                               "logo",

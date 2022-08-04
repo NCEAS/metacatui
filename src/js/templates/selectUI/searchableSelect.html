@@ -1,4 +1,6 @@
-<p class="subtle searchable-select-label"> <%= inputLabel %></p>
+<% if (inputLabel) { %>
+  <p class="subtle searchable-select-label"><%= inputLabel %></p>
+<% } %>
 
 <div class="fluid ui dropdown <% if(allowMulti){ %> multiple <% } %> selection search">
   <% // Do not pre-select options by providing a value to the hidden input field. %>

@@ -29,6 +29,8 @@ define(['jquery', 'underscore', 'backbone'],
     * @property {string} nodeName - The XML node name for this filter's XML DOM
     * @property {string[]} fields - The search index fields to search
     * @property {string[]} values - The values to search for in the given search fields
+    * @property {object} valueLabels - Optional human-readable labels for the elements of
+    * values. Keys are the value and the human-readable label is the value at that key.
     * @property {string} operator - The operator to use between values set on this model.
     * "AND" or "OR"
     * @property {string} fieldsOperator - The operator to use between fields set on this
@@ -61,6 +63,7 @@ define(['jquery', 'underscore', 'backbone'],
         nodeName: "filter",
         fields: [],
         values: [],
+        valueLabels: {},
         operator: "AND",
         fieldsOperator: "AND",
         exclude: false,
@@ -470,14 +473,19 @@ define(['jquery', 'underscore', 'backbone'],
         var dateRangeRegEx = /^\[((\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d*Z)|\*)( |%20)TO( |%20)((\d{4}-[01]\d-[0-3]\dT[0-2]\d(:|\\:)[0-5]\d(:|\\:)[0-5]\d\.\d*Z)|\*)\]/,
             isDateRange = dateRangeRegEx.test(value),
             isSearchPhrase = value.indexOf(" ") > -1,
-            isIdFilter = this.isIdFilter();
+            isIdFilter = this.isIdFilter(),
+            //Test for ORCIDs and group subjects
+            isSubject = /^(?:https?:\/\/orcid\.org\/)?(?:\w{4}-){3}\w{4}$|^(?:CN=.{1,},DC=.{1,},DC=.{1,})$/i.test(value);
 
         // Escape special characters
         value = this.escapeSpecialChar(value);
 
+        //URL encode the search value
+        value = encodeURIComponent(value);
+
         // If the value is a search phrase (more than one word), is part of an ID filter,
         // and not a date range string, wrap in quotes
-        if( (isSearchPhrase || isIdFilter) && !isDateRange ){
+        if( (isSearchPhrase || isIdFilter || isSubject) && !isDateRange ){
           value = "\"" + value + "\"";
         }
 
@@ -513,14 +521,22 @@ define(['jquery', 'underscore', 'backbone'],
      */
     isIdFilter: function(){
       try {
-        var fields = this.get("fields");
+        let fields = this.get("fields");
+        let values = this.get("values");
+
         if(!fields){
           return false
         }
-        var idFields = MetacatUI.appModel.get("queryIdentifierFields");
-        return _.some( idFields, function(idField) {
-          return fields.includes(idField)
-        })
+        let idFields = MetacatUI.appModel.get("queryIdentifierFields");
+        let match = _.some(idFields, idField => fields.includes(idField));
+        
+        //Check if the values are all identifiers by checking for uuids and dois
+        if(!match && values.length){
+          match = values.every(v => /^urn:uuid:\w{8,}-\w{4,}-\w{4,}-\w{4,}-\w{12,}$|^.{0,}doi.{1,}10.\d{4,9}\/[-._;()\/:A-Z0-9]+$/i.test(v));
+        }
+
+        return match;
+
       } catch (error) {
         console.log("Error checking if a Filter model is an ID filter. " +
           "Assuming it is not. Error details:" + error );
@@ -594,21 +610,17 @@ define(['jquery', 'underscore', 'backbone'],
     * @return {string} - The search term or phrase, after special characters are escaped
     */
     escapeSpecialChar: function(term) {
-        term = term.replace(/%7B/g, "\\%7B");
-        term = term.replace(/%7D/g, "\\%7D");
-        term = term.replace(/%3A/g, "\\%3A");
-        term = term.replace(/:/g, "\\:");
-        term = term.replace(/\(/g, "\\(");
-        term = term.replace(/\)/g, "\\)");
-        term = term.replace(/\?/g, "\\?");
-        term = term.replace(/%3F/g, "\\%3F");
-        term = term.replace(/\"/g, '\\"');
-        term = term.replace(/\'/g, "\\'");
-        term = term.replace(/\#/g, "\\%23");
-        term = term.replace(/\-/g, "\\%2D");
-        term = term.replace(/\&amp\;/g, "\\%26");
 
-        return term;
+      if(!term || typeof term != "string"){
+        return "";
+      }
+
+      // Removes all the ampersands since Metacat cannot handle escaped ampersands for some reason 
+      // See https://github.com/NCEAS/metacat/issues/1576
+      term = term.replaceAll("&", "");
+
+      return term.replace(/\+|-|&|\||!|\(|\)|\{|\}|\[|\]|\^|\\|\"|~|\?|:|\//g, "\\$&");
+
     },
 
     /**
@@ -809,11 +821,82 @@ define(['jquery', 'underscore', 'backbone'],
       }
 
       if( value ){
-        var dateMatch = value.match(/[\d|\-|:|T]*Z TO [\d|\-|:|T]*Z/);
-
-        return (Array.isArray(dateMatch) && dateMatch.length);
+        return /[\d|\-|:|T]*Z TO [\d|\-|:|T]*Z/.test(value);
       }
       else{
+        return false;
+      }
+      },
+    
+    /**
+     * Check whether a set of query fields contain only fields that specify latitude and/or
+     * longitude
+     * @param {string[]} [fields] A list of fields to check for coordinate fields. If not
+     * provided, the fields set on the model will be used.
+     * @returns {Boolean} Returns true if every field is a field that specifies latitude or
+     * longitude
+     * @since x.x.x
+    */
+    isCoordinateQuery: function (fields) {
+      try {
+        if (!fields) {
+          fields = this.get('fields');
+        }
+        const latitudeFields = MetacatUI.appModel.get('queryLatitudeFields');
+        const longitudeFields = MetacatUI.appModel.get('queryLongitudeFields');
+        const coordinateFields = latitudeFields.concat(longitudeFields);
+        return _.every(fields, function (field) {
+          return _.contains(coordinateFields, field);
+        })
+      }
+      catch (e) {
+        console.log('Error checking if filter is a coordinate filter. Returning false. ', e);
+        return false;
+      }
+    },
+    
+    /**
+     * Check whether a set of query fields contain only fields that specify latitude
+     * @param {string[]} [fields] A list of fields to check for coordinate fields. If not
+     * provided, the fields set on the model will be used.
+     * @returns {Boolean} Returns true if every field is a field that specifies latitude
+     * @since x.x.x
+    */
+    isLatitudeQuery: function (fields) {
+      try {
+        if (!fields) {
+          fields = this.get('fields');
+        }
+        const latitudeFields = MetacatUI.appModel.get('queryLatitudeFields');
+        return _.every(fields, function (field) {
+          return _.contains(latitudeFields, field);
+        })
+      }
+      catch (e) {
+        console.log('Error checking if filter is a latitude filter. Returning false. ', e);
+        return false;
+      }
+    },
+
+    /**
+     * Check whether a set of query fields contain only fields that specify longitude
+     * @param {string[]} [fields] A list of fields to check for longitude fields. If not
+     * provided, the fields set on the model will be used.
+     * @returns {Boolean} Returns true if every field is a field that specifies longitude
+     * @since x.x.x
+    */
+    isLongitudeQuery: function (fields) {
+      try {
+        if (!fields) {
+          fields = this.get('fields');
+        }
+        const longitudeFields = MetacatUI.appModel.get('queryLongitudeFields');
+        return _.every(fields, function (field) {
+          return _.contains(longitudeFields, field);
+        })
+      }
+      catch (error) {
+        console.log('Error checking if filter is a longitude filter. Returning false. ', e);
         return false;
       }
     },

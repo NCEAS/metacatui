@@ -63,12 +63,15 @@ define(
          * expand or collapse this Layer Detail section.
          * @property {string} open The class to add to the view when the contents are
          * visible (i.e. the section is expanded)
+         * @property {string} noHeader The class to add to the view when there is no
+         * title/label and the view is not collapsible.
          * @property {string} label The element that holds the view's label text
          * @property {string} contentContainer The container into which the contentView's
          * rendered content will be placed
          */
         classes: {
           open: 'layer-detail--open',
+          noHeader: 'layer-detail--no-header',
           label: 'layer-detail__label',
           toggle: 'layer-detail__toggle',
           contentContainer: 'layer-detail__content'
@@ -147,7 +150,9 @@ define(
 
             // Insert the template into the view
             this.$el.html(this.template({
-              label: this.label
+              label: this.label,
+              collapsible: this.collapsible,
+              showTitle: this.showTitle
             }));
 
             // Render the content for this Layer Detail section
@@ -160,6 +165,10 @@ define(
               })
               contentContainer.append(this.renderedContentView.el)
               this.renderedContentView.render()
+            }
+
+            if (!this.collapsible && !this.showTitle) {
+              this.el.classList.add(this.classes.noHeader);
             }
 
             return this

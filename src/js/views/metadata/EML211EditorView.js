@@ -1103,7 +1103,7 @@ define(['underscore',
           _.each(errors, function (errorMsg, category) {
 
             var categoryEls = this.$("[data-category='" + category + "']"),
-              dataItemRow = categoryEls.parents(".data-package-item");
+                dataItemRow = categoryEls.parents(".data-package-item");
 
             //If this field is in a DataItemView, then delegate to that view
             if (dataItemRow.length && dataItemRow.data("view")) {
@@ -1122,7 +1122,7 @@ define(['underscore',
                   $(el).data("view").showValidation();
                 });
               }
-              else {
+              else if(categoryEls.length) {
                 //Show the error message
                 categoryEls.filter(".notification").addClass("error").text(errorMsg);
 

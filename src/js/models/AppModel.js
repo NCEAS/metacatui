@@ -20,7 +20,6 @@ define(['jquery', 'underscore', 'backbone'],
       //TODO: These attributes are stored in the AppModel, but shouldn't be set in the AppConfig,
       //so we need to add docs for them in a separate place
       headerType: 'default',
-      searchMode: MetacatUI.mapKey ? 'map' : 'list',
       searchHistory: [],
       page: 0,
       previousPid: null,
@@ -85,14 +84,47 @@ define(['jquery', 'underscore', 'backbone'],
       * DataCatalog). This can be set to either "google" (the default), or "cesium". To
       * use Google maps, the {@link AppConfig#googleAnalyticsKey} must be set. To use
       * Cesium maps, the {@link AppConfig#enableCesium} property must be set to true, and
-      * the {@link AppConfig#cesiumToken} must be set. NOTE: The Cesium map is a WIP and
-      * not yet ready to use in the data catalog.
+      * the {@link AppConfig#cesiumToken} must be set. DEPRECATION NOTE: This configuration 
+      * is deprecated along with the {@link DataCatalogView} and {@link DataCatalogViewWithFilters}
+      * views and Google Maps. The {@link CatalogSearchView} will replace these as the primary search view and will only
+      * support Cesium, not Google Maps.
       * @type {string}
       * @example "cesium"
       * @default "google"
-      * @since 2.X
+      * @deprecated
       */
       dataCatalogMap: "google",
+
+      /**
+       * The default options for the Cesium map used in the {@link CatalogSearchView} for searching the data
+       * catalog. Add custom layers, a default home position (for example, zoom into your area of research),
+       * and enable/disable map widgets. See {@link MapConfig} for the full suite of options. Keep the `CesiumGeohash`
+       * layer here in order to show the search results in the map as geohash boxes. Use any satellite imagery
+       * layer of your choice, such as a self-hosted imagery layer or hosted on Cesium Ion.
+       * @type {MapConfig}
+       * @since 2.22.0
+       */
+      catalogSearchMapOptions: {
+        showToolbar: false,
+        layers: [
+            {
+                "type": "CesiumGeohash",
+                "opacity": 1,
+                "hue": 205 //blue
+            },
+        {
+            "label": "Satellite imagery",
+            "icon": "urn:uuid:4177c2e1-3037-4964-bf00-5f13182308d9",
+            "type": "IonImageryProvider",
+            "description": "Global satellite imagery down to 15 cm resolution in urban areas",
+            "attribution": "Data provided by Bing Maps © 2021 Microsoft Corporation",
+            "moreInfoLink": "https://www.microsoft.com/maps",
+            "opacity": 1,
+            "cesiumOptions": {
+            "ionAssetId": "2"
+            }
+         }]
+       },
 
       /**
       * The node identifier for this repository. This is set dynamically by retrieving the
@@ -310,7 +342,9 @@ define(['jquery', 'underscore', 'backbone'],
         *    samplingDescription: false,
         *    studyExtentDescription: false,
         *    temporalCoverage: false,
-        *    title: true
+        *    title: true,
+        *    contact: true,
+        *    principalInvestigator: true
         *  }
        */
       emlEditorRequiredFields: {
@@ -327,7 +361,30 @@ define(['jquery', 'underscore', 'backbone'],
         samplingDescription: false,
         studyExtentDescription: false,
         temporalCoverage: false,
-        title: true
+        title: true,
+        creator: true,
+        contact: true
+      },
+
+      /** 
+       * A list of required fields for each EMLParty (People) in the dataset editor. 
+       * This is a literal object where the keys are the EML Party type (e.g. creator, principalInvestigator) {@link see EMLParty.partytypes}
+       * and the values are arrays of field names.
+       * By default, EMLPartys are *always* required to have an individual's name, position name, or organization name.
+       * @type {object}
+       * @since 2.21.0
+       * @example 
+       *   {
+       *      contact: ["email"],
+       *      creator: ["email", "address", "phone"]
+       *      principalInvestigator: ["organizationName"]
+       *   }
+       * @default 
+       *  {
+       *  }
+      */
+      emlEditorRequiredFields_EMLParty: {
+       
       },
 
       /**
@@ -1414,6 +1471,18 @@ define(['jquery', 'underscore', 'backbone'],
       },
 
       /**
+       * Add an API service URL that retrieves projects data. This is an optional
+       * configuration in case the memberNode have a third-party service that provides
+       * their projects information.
+       *
+       * If the configuration is not set, set the default projects list in the views using it.
+       *
+       * @type {string}
+       * @private
+       * @since 2.20.0 #TODO Update version here.
+       */
+      projectsApiUrl: undefined,
+      /**
       * Enable or disable the use of Fluid Earth Viewer visualizations in portals.
       * This config option is marked as `private` since this is an experimental feature.
       * @type {boolean}
@@ -1560,6 +1629,31 @@ define(['jquery', 'underscore', 'backbone'],
        * @since 2.17.0
        */
       queryIdentifierFields: ["id", "identifier", "seriesId", "isPartOf"],
+      
+      /**
+       * The name of the query fields that specify latitude. Filter models that these
+       * fields are handled specially, since they must be a float value and have a
+       * pre-determined minRange and maxRange (-90 to 90).
+       */
+      queryLatitudeFields: ["northBoundCoord", "southBoundCoord"],
+      
+      /**
+       * The name of the query fields that specify longitude. Filter models that these
+       * fields are handled specially, since they must be a float value and have a
+       * pre-determined minRange and maxRange (-180 to 180).
+       */
+      queryLongitudeFields: ["eastBoundCoord", "westBoundCoord"],
+
+      /**
+       * The names of the query fields that may require special treatment in the
+       * UI. For example, upgrade the view for a Filter from a FilterView to
+       * a SemanticFilterView or to block certain UIBuilders in FilterEditorView
+       *  that don't make sense for a semantic field.
+       *
+       * @type {string[]}
+       * @since 2.22.0
+       */
+      querySemanticFields: ["sem_annotation"],
 
       /**
        * The isPartOf filter is added to all new portals built in the Portal
@@ -1571,11 +1665,7 @@ define(['jquery', 'underscore', 'backbone'],
       hideIsPartOfFilter: true,
 
       /**
-      * This configuration is not currently used any where in MetacatUI.
-      * The default {@link FilterGroup}s to use in the FUTURE data catalog search ({@link DataCatalogViewWithFilters}).
-      *   The {@link DataCatalogViewWithFilters} will soon replace the {@link DataCatalogView} as the primary search view when
-      *   users first visit the /data page to search for data in the repository.
-      * To change the default filters in the current search view ({@link DataCatalogView}), edit the {@link AppModel#defaultSearchFilters} attribute.
+      * The default {@link FilterGroup}s to use in the data catalog search ({@link CatalogSearchView}).
       * This is an array of literal objects that will be directly set on the {@link FilterGroup} models. Refer to the {@link FilterGroup#defaults} for
       * options.
       * @type {FilterGroup#defaults[]}
@@ -1590,6 +1680,13 @@ define(['jquery', 'underscore', 'backbone'],
               placeholder: "density, length, etc.",
               icon: "table",
               description: "Measurement type, e.g. density, temperature, species"
+            },
+            {
+              fields: ["sem_annotation"],
+              label: "Annotation",
+              placeholder: "Search for class...",
+              icon: "tag",
+              description: "Semantic annotations"
             },
             {
               filterType: "ToggleFilter",
@@ -1647,12 +1744,20 @@ define(['jquery', 'underscore', 'backbone'],
               placeholder: "Geographic region",
               icon: "globe",
               description: "The geographic region or study site, as described by the submitter"
-            }
+            },
           ]
         }
       ],
 
-      /**
+      /** 
+       * The document fields to return when conducting a search. This is the list of fields returned by the main catalog search view. 
+       * @type {string[]}
+       * @since 2.22.0
+       * @example ["id", "title", "obsoletedBy"]
+      */
+      defaultSearchFields: ["id", "seriesId", "title", "origin", "pubDate","dateUploaded","abstract","resourceMap","beginDate","endDate","read_count_i","geohash_9","datasource","isPublic","project","documents","label","logo","formatId","northBoundCoord","southBoundCoord","eastBoundCoord","westBoundCoord"],
+
+     /**
       * Semantic annotation configuration
       * Include your Bioportal api key to show ontology information for metadata annotations
       * see: http://bioportal.bioontology.org/account
@@ -1795,7 +1900,7 @@ define(['jquery', 'underscore', 'backbone'],
       * temporary and only useful for internal DataONE purposes. This functionality will be replaced
       * with the DataONE Bookkeeper service, eventually.
       */
-      dataoneHostedRepos: ["urn:node:KNB", "urn:node:ARCTIC", "urn:node:CA_OPC", "urn:node:TNC_DANGERMOND", "urn:node:ESS_DIVE"],
+      dataoneHostedRepos: ["urn:node:KNB", "urn:node:ARCTIC", "urn:node:CA_OPC", "urn:node:ESS_DIVE", "urn:node:CERP_SFWMD"],
 
       /**
       * The length of random portal label generated during preview/trial mode of DataONE Plus
@@ -1845,6 +1950,18 @@ define(['jquery', 'underscore', 'backbone'],
       enableMeasurementTypeView: false,
 
       /**
+       * As of 2.X, the {@link DataCatalogView} is being soft-deprecated and replaced with the new {@link CatalogSearchView}.
+       * To give MetacatUI operators time to transition to the new {@link CatalogSearchView}, this configuration option can be
+       * enabled (by setting to `true`) and will tell MetacatUI to use the legacy {@link DataCatalogView}. It is highly suggested
+       * that MetacatUI operators switch to supporting the new {@link CatalogSearchView} as soon as possible as the legacy {@link DataCatalogView}
+       * will be fully deprecated and removed in the future.
+       * @since 2.22.0
+       * @type {boolean}
+       * @default false
+       */
+      useDeprecatedDataCatalogView: true,
+
+      /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users
       */
       /**
@@ -1854,12 +1971,31 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {string}
       * @deprecated
       */
-      d1LogServiceUrl: null
+      d1LogServiceUrl: null,
+
+      /**
+       * This configuration option is deprecated. This is only used by the {@link DataCatalogView} and {@link DataCatalogViewWithFilters},
+       * both of which have been replaced by the {@link CatalogSearchView}. The search mode is now controlled directly on the {@link CatalogSearchView}
+       * instead of controlled at the global level here.
+       * @deprecated
+       */
+      searchMode: MetacatUI.mapKey ? 'map' : 'list',
+
       /**
       * This Bioportal REST API URL is used by the experimental and unsupported AnnotatorView to get multiple ontology class info at once.
       * @deprecated
       */
       //bioportalBatchUrl: "https://data.bioontology.org/batch"
+
+      /**
+       * The packageFormat is the identifier for the version of bagit used when downloading data packages. The format should
+       * not contain any additional characters after, for example a backslash.
+       * For hierarchical dowloads, use application%2Fbagit-1.0
+      * @type {string}
+      * @default "application%2Fbagit-1.0"
+      * @example application%2Fbagit-097
+       */
+      packageFormat: 'application%2Fbagit-1.0'
 		}, MetacatUI.AppConfig),
 
     defaultView: "data",
@@ -2039,7 +2175,7 @@ define(['jquery', 'underscore', 'backbone'],
       urls.authServiceUrl    = baseUrl + '/isAuthorized/';
       urls.queryServiceUrl   = baseUrl + '/query/solr/?';
       urls.metaServiceUrl    = baseUrl + '/meta/';
-      urls.packageServiceUrl = baseUrl + '/packages/application%2Fbagit-097/';
+      urls.packageServiceUrl = baseUrl + '/packages/'+this.get('packageFormat')+'/';
 
       if( d1Service.indexOf("mn") > 0 ){
         urls.objectServiceUrl = baseUrl + '/object/';

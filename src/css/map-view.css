@@ -32,7 +32,11 @@
   --map-col-bkg-lightest: #242e42;
   --map-col-buttons: #313c52;
   --map-col-text: #F9FAFB;
-  --map-col-highlight: var(--portal-primary-color);
+  --map-col-green: #069868;
+  --map-col-blue: #057fc6;
+  --map-col-yellow: #f8b406;
+  --map-col-buttons-emphasis: var(--portal-secondary-color, var(--map-col-green));
+  --map-col-highlight: var(--portal-primary-color, var(--map-col-blue));
   /* SIZING: */
   --map-size-toolbar-link: 2.2rem;
   --map-size-toolbar-link-margin: 0.4rem;
@@ -44,6 +48,13 @@
   --map-shadow-md: 0 1px 9px -1px rgba(0, 0, 0, 0.2), 0 1px 2px 0px rgba(0, 0, 0, 0.5);
   /* NOTE: 768px is used as the mobile -> desktop breakpoint throughout the map view, but we cannot use a CSS variable for this. */
 }
+
+/* hide the credits until we can find a better placement for them */
+.cesium-widget-credits, .cesium-credit-lightbox-overlay {
+  display: none !important;
+}
+
+/* ---- TOOLTIP ---- */
 
 .map-tooltip {
   color: var(--map-col-text);
@@ -75,6 +86,8 @@
   background-color: var(--map-col-buttons);
 }
 
+/* ---- BUTTON ---- */
+
 .map-view__button {
   /* override default button styles */
   font-family: inherit;
@@ -100,9 +113,51 @@
   filter: brightness(1.2);
 }
 
-/* hide the credits until we can find a better placement for them */
-.cesium-widget-credits, .cesium-credit-lightbox-overlay {
-  display: none !important;
+.map-view__button--emphasis {
+  background: var(--map-col-buttons-emphasis);
+  padding: 0.5rem 0.55rem;
+  font-weight: 900;
+  font-size: 1rem;
+}
+
+/* ---- BADGE ---- */
+
+.map-view__badge{
+  padding: 0.4em 0.5em 0.3em 0.55em;
+  margin: 0 -0.2rem 0 0.3rem;
+  font-size: 0.62rem;
+  background-color: var(--map-col-bkg-lighter);
+  color: var(--map-col-text);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  filter: brightness(1.3);
+  border-radius: var(--map-border-radius);
+  line-height: 100%;
+  font-weight: 500;
+}
+
+.map-view__badge--blue{
+  background-color: var(--map-col-blue);
+  filter: none;
+}
+
+.map-view__badge--green{
+  background-color: var(--map-col-green);
+  filter: none;
+}
+
+.map-view__badge--yellow{
+  background-color: var(--map-col-yellow);
+  color: var(--map-col-bkg-lighter);
+  filter: none;
+  font-weight: 600;
+  opacity: 0.9;
+}
+.map-view__badge--contrast{
+  background-color: var(--map-col-text);
+  color: var(--map-col-bkg);
+  opacity: 0.8;
+  font-weight: 600;
 }
 
 
@@ -328,7 +383,7 @@ represents 1 unit of the given distance measurement. */
 .toolbar__all-content {
   background-color: var(--map-col-bkg);
   width: var(--map-width-toolbar);
-  padding: 0.8rem 1rem;
+  padding: 0.8rem;
   box-shadow: var(--map-shadow-md);
   flex-direction: column;
   /* Don't display the content unless the toolbar is open. The outermost element, with
@@ -436,10 +491,10 @@ represents 1 unit of the given distance measurement. */
 
 .layer-item__label {
   cursor: pointer;
-  font-size: 1.04rem;
+  font-size: 0.93rem;
   font-weight: 500;
   letter-spacing: 0.015em;
-  margin-right: 1rem;
+  margin-right: 0.4rem;
   display: flex;
   align-items: center;
 }
@@ -448,7 +503,7 @@ represents 1 unit of the given distance measurement. */
   fill: currentColor;
   height: 1.04rem;
   width: auto;
-  margin-right: 0.6rem;
+  margin-right: 0.34rem;
   opacity: 0.8;
 }
 
@@ -464,6 +519,8 @@ represents 1 unit of the given distance measurement. */
 .layer-item__visibility-toggle {
   background: none;
   opacity: 0.85;
+  padding: 0;
+  margin-left: 0.5rem;
 }
 
 .layer-item__visibility-toggle:before {
@@ -512,7 +569,8 @@ represents 1 unit of the given distance measurement. */
   box-shadow: var(--map-shadow-md);
   grid-template-columns: auto min-content;
   grid-template-rows: min-content auto;
-  gap: 1rem;
+  row-gap: 1rem;
+  column-gap: 0.5rem;
   align-items: center;
   /* Don't show the details panel unless it also has the layer-details--open class */
   display: none;
@@ -531,7 +589,7 @@ represents 1 unit of the given distance measurement. */
   text-align: center;
   width: 100%;
   font-weight: 500;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   opacity: 60%;
 }
 
@@ -540,6 +598,36 @@ represents 1 unit of the given distance measurement. */
   font-size: 1.3rem;
   background-color: transparent;
   opacity: 0.6;
+}
+
+/* The notification div holds a badge & message, if one is set */
+.layer-details__notification {
+  margin: -0.2rem 0 0.9rem 0;
+  padding: 0.3rem 0.5rem;
+  background-color: var(--map-col-buttons);
+  border-radius: var(--map-border-radius);
+}
+
+.layer-details__notification--blue{
+  background-color: var(--map-col-blue);
+  filter: none;
+}
+
+.layer-details__notification--green{
+  background-color: var(--map-col-green);
+  filter: none;
+}
+
+.layer-details__notification--yellow{
+  background-color: var(--map-col-yellow);
+  color: var(--map-col-bkg-lighter);
+  filter: none;
+  opacity: 0.9;
+}
+.layer-details__notification--contrast{
+  background-color: var(--map-col-text);
+  color: var(--map-col-bkg);
+  opacity: 0.95;
 }
 
 .layer-details__sections {
@@ -562,10 +650,10 @@ represents 1 unit of the given distance measurement. */
   color: var(--map-col-text) !important;
   margin: 0;
   text-transform: uppercase;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.04em;
   width: 100%;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   line-height: 1;
 }
 
@@ -580,6 +668,10 @@ represents 1 unit of the given distance measurement. */
 
 .layer-detail--open .layer-detail__content {
   display: flex;
+}
+
+.layer-detail--no-header .layer-detail__content {
+  margin-top: 0;
 }
 
 .layer-detail__toggle {
@@ -658,6 +750,8 @@ represents 1 unit of the given distance measurement. */
 
 .layer-navigation {
   width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 /* The shaded part of the slider that stretches from 0 to the current opacity */
@@ -733,7 +827,7 @@ other class: .ui-slider-range */
   text-align: center;
   width: 100%;
   font-weight: 500;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   opacity: 60%;
 }
 
@@ -771,7 +865,7 @@ other class: .ui-slider-range */
   width: calc(var(--map-width-toolbar) - 2.2rem);
 }
 
-.feature-info__table-body {}
+/* .feature-info__table-body {} */
 
 .feature-info__table-row {
   padding-bottom: 0.6rem;

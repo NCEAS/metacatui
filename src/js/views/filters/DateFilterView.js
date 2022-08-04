@@ -126,8 +126,8 @@ define(['jquery', 'underscore', 'backbone',
     updateYearRange : function(e) {
 
       //Get the min and max values from the number inputs
-      var minVal = this.$('input.min').val();
-      var maxVal = this.$('input.max').val();
+      var minVal = parseInt(this.$('input.min').val());
+      var maxVal = parseInt(this.$('input.max').val());
 
       //Update the DateFilter model to match what is in the text inputs
       this.model.set('min', minVal);

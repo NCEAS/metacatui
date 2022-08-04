@@ -52,6 +52,7 @@ require.config({
     he: MetacatUI.root + '/components/he',
     citation: MetacatUI.root + '/components/citation.min',
     promise: MetacatUI.root + '/components/es6-promise.min',
+	metacatuiConnectors: MetacatUI.root + "/js/connectors/Filters-Search",
 	// showdown + extensions (used in the MarkdownView to convert markdown to html)
 	showdown: MetacatUI.root + '/components/showdown/showdown.min',
 	showdownHighlight: MetacatUI.root + '/components/showdown/extensions/showdown-highlight/showdown-highlight',
@@ -131,6 +132,9 @@ require.config({
 	},
 	promise: {
 	 	exports: 'Promise'
+	},
+	metacatuiConnectors: {
+		exports: "FiltersSearchConnector"
 	}
   }
 });
@@ -196,6 +200,7 @@ function(Bootstrap, AppView, AppModel) {
 
 		//Load the App View now
 		MetacatUI.appView = new AppView();
+    MetacatUI.appView.render();
 
 		// Initialize routing and start Backbone.history()
 		(function() {
@@ -321,5 +326,7 @@ function(Bootstrap, AppView, AppModel) {
 				Backbone.history.navigate(route, true);
 			}
 		});
+
+		MetacatUI.appModel.trigger("appInitialized");
 	});
 });

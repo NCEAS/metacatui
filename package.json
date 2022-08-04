@@ -1,21 +1,28 @@
 {
   "name": "metacatui",
-  "version": "2.19.1",
+  "version": "2.22.0",
   "description": "MetacatUI: A client-side web interface for DataONE data repositories",
   "main": "server.js",
+  "dependencies": {
+    "@actions/core": "^1.8.2",
+    "cheerio": "^1.0.0-rc.11",
+    "express": "^4.17.1",
+    "puppeteer": "^14.1.1"
+  },
   "devDependencies": {
     "@jsdoc/util": "^0.2.4",
     "code-prettify": "^0.1.0",
     "common-path-prefix": "^3.0.0",
-    "express": "^4.17.1",
     "jsdoc": "^3.6.6",
     "open-sans-fonts": "^1.6.2"
   },
   "scripts": {
     "dev": "node server.js",
     "jsdoc": "jsdoc -c docs/jsdoc-templates/metacatui/conf.js",
-    "doc": "cd docs; bundle exec jekyll serve"
-
+    "doc": "cd docs; bundle exec jekyll serve",
+    "test": "node test/server.js",
+    "integration-test": "node test/server.js integration",
+    "view-tests": "node test/server.js keep-running"
   },
   "repository": {
     "type": "git",

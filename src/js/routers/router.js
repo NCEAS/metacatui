@@ -31,7 +31,7 @@ function ($, _, Backbone) {
 			"signinldaperror(/)"                : "renderLdapSignInError",
 			"signinLdap(/)"                     : "renderLdapSignIn",
 			"signinSuccessLdap(/)"              : "renderLdapSignInSuccess",
-      "signin-help"                       : "renderSignInHelp", //The Sign In troubleshotting page
+      		"signin-help"                       : "renderSignInHelp", //The Sign In troubleshotting page
 			'share(/*pid)(/)'                   : 'renderEditor', // registry page
 			'submit(/*pid)(/)'                  : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)(/)'    : 'renderMdqRun', // MDQ page
@@ -167,6 +167,13 @@ function ($, _, Backbone) {
 			this.renderText(options);
 		},
 
+		renderProjects: function() {
+			require(["views/projects/ProjectView"], function(ProjectView) {
+				MetacatUI.appView.projectView = new ProjectView();
+				MetacatUI.appView.showView(MetacatUI.appView.projectView)
+			});
+		},
+
 		/*
     * Renders the editor view given a root package identifier,
     * or a metadata identifier.  If the latter, the corresponding
@@ -291,37 +298,39 @@ function ($, _, Backbone) {
 		renderData: function (mode, query, page) {
 			this.routeHistory.push("data");
 
-			///Check for a page URL parameter
-			if((typeof page === "undefined") || !page)
-				MetacatUI.appModel.set("page", 0);
-			else if(page == 0)
-				MetacatUI.appModel.set('page', 0);
-			else
-				MetacatUI.appModel.set('page', page-1);
+            ///Check for a page URL parameter
+            if((typeof page === "undefined") || !page)
+                MetacatUI.appModel.set("page", 0);
+            else if(page == 0)
+                MetacatUI.appModel.set('page', 0);
+            else
+                MetacatUI.appModel.set('page', page-1);
+
+            //Check if we are using the new CatalogSearchView
+            if(!MetacatUI.appModel.get("useDeprecatedDataCatalogView")){
+                require(["views/search/CatalogSearchView"], function(CatalogSearchView){
+                    MetacatUI.appView.catalogSearchView = new CatalogSearchView();
+                    MetacatUI.appView.showView(MetacatUI.appView.catalogSearchView);
+                });
+                return;
+            }
 
 			//Check for a query URL parameter
 			if((typeof query !== "undefined") && query){
 				MetacatUI.appSearchModel.set('additionalCriteria', [query]);
 			}
 
-			if(!MetacatUI.appView.dataCatalogView){
-				require(['views/DataCatalogView'], function(DataCatalogView){
-					MetacatUI.appView.dataCatalogView = new DataCatalogView();
+            require(['views/DataCatalogView'], function(DataCatalogView){
+                if(!MetacatUI.appView.dataCatalogView)
+                    MetacatUI.appView.dataCatalogView = new DataCatalogView();
 
-					//Check for a search mode URL parameter
-					if((typeof mode !== "undefined") && mode)
-						MetacatUI.appView.dataCatalogView.mode = mode;
+                //Check for a search mode URL parameter
+                if((typeof mode !== "undefined") && mode)
+                    MetacatUI.appView.dataCatalogView.mode = mode;
 
-					MetacatUI.appView.showView(MetacatUI.appView.dataCatalogView);
-				});
-			}
-			else{
-				//Check for a search mode URL parameter
-				if((typeof mode !== "undefined") && mode)
-					MetacatUI.appView.dataCatalogView.mode = mode;
+                MetacatUI.appView.showView(MetacatUI.appView.dataCatalogView);
+            });
 
-				MetacatUI.appView.showView(MetacatUI.appView.dataCatalogView);
-			}
 		},
 
      /**

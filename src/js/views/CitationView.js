@@ -247,7 +247,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
           if(memberNode)
               publisherText = memberNode.name + ". ";
-            else
+          else if(datasource == MetacatUI.appModel.get("nodeId"))
+            publisherText = MetacatUI.appModel.get("repositoryName");
+          else
               publisherText = datasource + ". ";
         }
         else{

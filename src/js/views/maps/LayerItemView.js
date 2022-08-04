@@ -64,8 +64,8 @@ define(
         template: _.template(Template),
 
         /**
-         * Classes that are used to identify or create the HTML elements that comprise
-         * this view.
+         * Classes that are used to identify or create the HTML elements that comprise this
+         * view.
          * @type {Object}
          * @property {string} label The element that contains the layer's name/label
          * @property {string} icon The span element that contains the SVG icon
@@ -73,10 +73,12 @@ define(
          * switch the Layer's visibility on and off
          * @property {string} legendContainer The element that the legend preview will be
          * inserted into.
-         * @property {string} selected The class that gets added to the view when the
-         * Layer Item is selected
+         * @property {string} selected The class that gets added to the view when the Layer
+         * Item is selected
          * @property {string} hidden The class that gets added to the view when the Layer
          * Item is not visible
+         * @property {string} badge The class to add to the badge element that is shown
+         * when the layer has a notification message
          * @property {string} tooltip Class added to tooltips used in this view
          */
         classes: {
@@ -86,6 +88,7 @@ define(
           legendContainer: 'layer-item__legend-container',
           selected: 'layer-item--selected',
           hidden: 'layer-item--hidden',
+          badge: 'map-view__badge',
           tooltip: 'map-tooltip',
         },
 
@@ -348,6 +351,11 @@ define(
               this.showError(errorMessage)
             } else if (status === 'ready') {
               this.removeStatuses()
+              const notice = layerModel.get('notification')
+              const badge = notice ? notice.badge : null
+              if (badge) {
+                this.showBadge(badge, notice.style)
+              }
             } else if (status === 'loading') {
               this.showLoading()
             }
@@ -369,6 +377,9 @@ define(
             if (this.statusIcon) {
               this.statusIcon.remove()
             }
+            if (this.badge) {
+              this.badge.remove()
+            }
             this.$el.tooltip('destroy')
           }
           catch (error) {
@@ -380,12 +391,40 @@ define(
         },
 
         /**
+         * Create a badge element and insert it to the right of the layer label.
+         * @param {string} text - The text to display in the badge
+         * @param {string} [style] - The style of the badge. Can be any of the styles
+         * defined in the {@link MapConfig#Notification} style property, e.g. 'green'
+         */
+        showBadge: function (text, style) {
+          try {
+            if (!text) {
+              return
+            }
+            this.removeStatuses();
+            this.badge = document.createElement('span')
+            this.badge.classList.add(this.classes.badge)
+            this.badge.innerText = text
+            this.labelEl.append(this.badge)
+            if (style) {
+              const badgeClass = this.classes.badge + '--' + style
+              this.badge.classList.add(badgeClass)
+            }
+          } catch (error) {
+            console.log(
+              'There was an error showing the badge in a LayerItemView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
          * Indicate to the user that there was a problem showing or loading this error.
          * Shows a 'warning' icon to the right of the label for the asset and a tooltip
          * with more details
-         * @param {string} message The error message to show in the tooltip
+         * @param {string} message The error message to show in the tooltip.
          */
-        showError: function (message) {
+        showError: function (message='') {
           try {
             const view = this
 

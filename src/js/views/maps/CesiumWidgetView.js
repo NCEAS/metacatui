@@ -92,6 +92,10 @@ define(
           {
             types: ['CesiumTerrainProvider'],
             renderFunction: 'updateTerrain'
+          },
+          {
+            types: ['CesiumGeohash'],
+            renderFunction: 'addGeohashes'
           }
         ],
 
@@ -213,6 +217,7 @@ define(
               scene: view.scene,
               dataSourceCollection: view.dataSourceCollection,
             });
+            console.log(view)
             view.clock.onTick.addEventListener(function () {
               view.updateDataSourceDisplay.call(view)
             })
@@ -1135,7 +1140,7 @@ define(
          * @param {MapAsset} mapAsset A MapAsset layer to render in the map, such as a
          * Cesium3DTileset or a CesiumImagery model.
          */
-        addAsset(mapAsset) {
+        addAsset: function(mapAsset) {
           try {
             if (!mapAsset) {
               return
@@ -1180,7 +1185,7 @@ define(
 
           }
           catch (error) {
-            console.log(
+            console.error(
               'There was an error rendering an asset in a CesiumWidgetView' +
               '. Error details: ' + error
             );
@@ -1219,12 +1224,123 @@ define(
         },
 
         /**
+         * Renders a CesiumGeohash map asset on the map
+         * */
+        addGeohashes: function () {
+            let view = this;
+            
+            require(["views/maps/CesiumGeohashes"], (CesiumGeohashes)=>{
+                //Create a CesiumGeohashes view
+                let cg = new CesiumGeohashes();
+                cg.cesiumViewer = view;
+
+                //Get the CesiumGeohash MapAsset and save a reference in the view
+                let cesiumGeohashAsset = view.model.get('layers').find(mapAsset => mapAsset.get("type") == "CesiumGeohash");
+                cg.cesiumGeohash = cesiumGeohashAsset;
+
+                cg.render();
+            })
+        },
+
+        /**
          * Renders imagery in the Map.
          * @param {Cesium.ImageryLayer} cesiumModel The Cesium imagery model to render
         */
         addImagery: function (cesiumModel) {
           this.scene.imageryLayers.add(cesiumModel)
+          this.sortImagery()
         },
+
+        /**
+         * Arranges the imagery that is rendered the Map according to the order
+         * that the imagery is arranged in the layers collection.
+         * @since x.x.x
+         */
+        sortImagery() {
+          try {
+            const imageryInMap = this.scene.imageryLayers
+            const imageryModels = this.model.get('layers').getAll('CesiumImagery')
+
+            // If there are no imagery layers, or just one, return
+            if (
+              !imageryInMap || !imageryModels ||
+              imageryInMap.length <= 1 || imageryModels.length <= 1
+            ) {
+              return
+            }
+
+            // If there are more than one imagery layer, arrange them in the order that
+            // they were added to the map
+            for (let i = 0; i < imageryModels.length; i++) {
+              const cesiumModel = imageryModels[i].get('cesiumModel')
+              if (cesiumModel) {
+                if (imageryInMap.contains(cesiumModel)) {
+                  imageryInMap.lowerToBottom(cesiumModel)
+                }
+              }
+            }
+          }
+          catch (error) {
+            console.log(
+              'There was an error sorting displayed imagery in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
+         * Display a box around every rendered tile in the tiling scheme, and
+         * draw a label inside it indicating the X, Y, Level indices of the
+         * tile. This is mostly useful for debugging terrain and imagery
+         * rendering problems. This function should be called after the other
+         * imagery layers have been added to the map, e.g. at the end of the
+         * render function.
+         * @param {string} [color='#ffffff'] The color of the grid outline and
+         * labels. Must be a CSS color string, beginning with a #.
+         * @param {'GeographicTilingScheme'|'WebMercatorTilingScheme'}
+         *  [tilingScheme='GeographicTilingScheme'] The tiling scheme to use.
+         *  Defaults to GeographicTilingScheme.
+         */
+        showImageryGrid: function (
+          color = '#ffffff',
+          tilingScheme = 'GeographicTilingScheme'
+        ) {
+          try {
+            const view = this
+            // Check the color is valid
+            if (!color || typeof color !== 'string' || !color.startsWith('#')) {
+              console.log(`${color} is an invalid color for imagery grid. ` +
+                `Must be a hex color starting with '#'. ` +
+                `Setting color to white: '#ffffff'`)
+              color = '#ffffff'
+            }
+
+            // Check the tiling scheme is valid
+            const availableTS = ['GeographicTilingScheme', 'WebMercatorTilingScheme']
+            if (availableTS.indexOf(tilingScheme) == -1) {
+              console.log(`${tilingScheme} is not a valid tiling scheme ` +
+                `for the imagery grid. Using WebMercatorTilingScheme`)
+              tilingScheme = 'WebMercatorTilingScheme'
+            }
+
+            // Create the imagery grid
+            const gridOpts = {
+              tilingScheme: new Cesium[tilingScheme](),
+              color: Cesium.Color.fromCssColorString(color)
+            }
+
+            const gridOutlines = new Cesium.GridImageryProvider(gridOpts)
+            const gridCoords = new Cesium.TileCoordinatesImageryProvider(gridOpts)
+            view.scene.imageryLayers.addImageryProvider(gridOutlines)
+            view.scene.imageryLayers.addImageryProvider(gridCoords)
+          }
+          catch (error) {
+            console.log(
+              'There was an error showing the imagery grid in a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+          }
+        }
 
       }
     );

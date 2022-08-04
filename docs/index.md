@@ -3,6 +3,13 @@ layout: default
 title: MetacatUI
 id: homepage
 ---
+<div class="notification" style="background-image:url({{ site.url }}/assets/images/celebration.webp); padding:20px; border-radius:15px; background-size:100%;">
+    <h2>MetacatUI 3.0.0 is coming soon</h2>
+    <p>
+        The next major version of MetacatUI is under way and will mainly focus on performance (#2027) 
+        and better dependency management. Track the status of the features on <a href="https://github.com/NCEAS/metacatui/issues?q=is%3Aopen+is%3Aissue+milestone%3A%22MetacatUI+3.0.0%22">GitHub Issues</a>. Share any feedback or questions with the development team on <a href="https://github.com/NCEAS/metacatui/discussions/2028">GitHub Discussions</a>.
+    </p>
+</div>
 
 {% include homepage.html %}
 

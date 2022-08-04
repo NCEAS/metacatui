@@ -84,6 +84,9 @@ define(
          * allows for the definition of custom feature properties, potentially based on
          * other properties. For example, a custom property could be a formatted version
          * of an existing date property.
+         * @property {MapConfig#Notification} [notification] A custom badge and message to
+         * display about the layer in the Layer list. For example, this could highlight
+         * the layer if it is new, give a warning if they layer is under development, etc.
          * @property {'ready'|'error'|null} [status = null] Set to 'ready' when the
          * resource is loaded and ready to be rendered in a map view. Set to 'error' when
          * the asset is not supported, or there was a problem requesting the resource.
@@ -106,6 +109,7 @@ define(
             colorPalette: null,
             customProperties: {},
             featureTemplate: {},
+            notification: {},
             status: null,
             statusDetails: null
           }
@@ -170,6 +174,9 @@ define(
          * custom properties may be expanded to support formatted numbers and booleans.
          * @property {MapConfig#VectorFilterConfig} [filters] - A set of conditions used
          * to show or hide specific features of this tileset.
+         * @property {MapConfig#Notification} [notification] A custom badge and message to
+         * display about the layer in the Layer list. For example, this could highlight
+         * the layer if it is new, give a warning if they layer is under development, etc.
         */
 
         /**
@@ -277,6 +284,20 @@ define(
          * available. In the future, templates that include other properties may be
          * supported.
          */
+
+        /**
+         * A notification displays a badge in the {@link LayerListView} and a message in
+         * the {@link LayerDetailsView}. This is useful for indicating some special status
+         * of the layer: "new", "under development", etc.
+         * @typedef {Object} Notification
+         * @name MapConfig#Notification
+         * @since x.x.x
+         * @property {'yellow'|'green'|'blue'|'contrast'} [style] - The badge and message
+         * color. If none is set, then notification elements will be similar to the
+         * background colour (subtle).
+         * @property {string} badge - The text to display in the badge element next to the
+         * layer label in the list. This badge should be as few characters as possible.
+         * @property {string} message - A longer message to display explaining the status.
 
         /**
          * Executed when a new MapAsset model is created.
@@ -621,6 +642,17 @@ define(
               '. Error details: ' + error
             );
           }
+        },
+
+        /**
+         * Resets the Map Asset's status and statusDetails attributes to their default
+         * values.
+         * @since X.X.X
+         */
+        resetStatus: function () {
+          const defaults = this.defaults()
+          this.set('status', defaults.status)
+          this.set('statusDetails', defaults.statusDetails)
         },
 
         /**

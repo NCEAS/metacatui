@@ -1,4 +1,9 @@
+:root{
+	--pad: 20px;
 
+	--loading-background-color: #f1f1f19e;
+	--loading-background-color-darker: #e6e4e49e;
+}
 /******************************************
 ** General Styling ***
 ******************************************/
@@ -540,6 +545,64 @@ text-shadow: none;
   fill: #800000;
 }
 /******************************************
+** CatalogSearchView ***
+******************************************/
+.catalog-search-view .catalog-search-inner{
+	display: grid;
+	justify-content: stretch;
+	align-items: stretch;
+	grid-template-columns: auto 1fr 1fr;
+}
+.catalog-search-view .filter-groups-container {
+	width: 215px;
+	padding: var(--pad)
+}	
+.catalog-search-view .search-results-container,
+.catalog-search-view .map-container {
+}
+.catalog-search-body.mapMode{
+	height: 100vh;
+	width: 100vw;
+	padding-bottom: 0px;
+	display: grid;
+	align-items: stretch;
+	justify-content: stretch;
+	overflow: hidden;
+}
+.catalog-search-body.mapMode #Content{
+	padding: 40px 0px 0px 0px;
+}
+.catalog-search-body.mapMode .search-results-view .result-row:last-child{
+	margin-bottom: 100px;
+}
+.catalog-search-body.mapMode .search-results-view {
+	overflow-y: scroll;
+	height: 100vh;
+	padding-bottom: 200px; /* Leaving room for the last row to show */
+	padding-right: 15px; /* Padding for the scrollbar */
+}
+.catalog-search-body.mapMode .search-results-panel-container .map-toggle-container{
+    display: none;
+}
+.catalog-search-body.listMode .map-panel-container{
+    display: none;
+}
+.catalog-search-body.listMode .catalog-search-inner{
+	grid-template-columns: auto 1fr 0;
+}
+.catalog-search-view .cesium-widget-view {
+	width: inherit;
+	margin-left: 0;
+}
+.search-results-view .result-row{
+	padding: var(--pad);
+}
+.catalog-search-view .no-search-results{
+	padding: var(--pad);
+	text-align: center;
+}
+
+/******************************************
 ** Results and Result Rows ***
 ******************************************/
 .result-row{
@@ -547,6 +610,23 @@ text-shadow: none;
 	 width: 95%;
 	 width: calc(100% - 15px);
 	 border-top: 1px solid #EEE;
+}
+.result-row-loading .citation-loading{
+	width: 100%;
+	height: 3em;
+	background-color: var(--loading-background-color-darker);
+	border-radius: 6px;
+}
+.result-row-loading .circles-loading{
+	display: flex;
+	justify-items: left;
+	column-gap: 1em;
+}
+.result-row-loading .circle-loading{
+	background-color: var(--loading-background-color-darker);
+	height: 1em;
+	width: 1em;
+	margin-top: var(--pad);
 }
 .result-row .info-icons .icons{
 	float: left;
@@ -2881,6 +2961,21 @@ section#user-citations {
 	overflow: visible;
 }
 
+.ncboTree {
+	width: auto;
+	max-height: 300px;
+}
+
+ul.ncboTree {
+	overflow: scroll;
+}
+
+.ncbo-tree-buttons-container {
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
 /** hide the tree until we have it where we want it **/
 #bioportal-tree {
 	display: none;
@@ -2903,9 +2998,7 @@ section#user-citations {
 	width: 95%;
 }
 #bioportal-popover #bioportal-tree{
-	overflow-y: scroll;
-    max-height: 300px;
-    overflow-x: visible;
+	max-height: 400px;
 }
 
 #jumpUp {
@@ -2919,6 +3012,7 @@ section#user-citations {
 .annotation-filter .searchable-select #bioportal-tree {
 	display: block;
 	margin-top: 0.5rem;
+	overflow-x: auto;
 }
 .annotation-filter .searchable-select .menu {
 	min-height: 10rem;
@@ -6435,6 +6529,14 @@ body.mapMode{
 .sort-by select{
 	width: auto;
 }
+.pager-view li a{
+	min-height: 20px;
+	min-width: 12px;
+}
+.pager-view li a:not([href]){
+    pointer-events: none;
+    color: #CCC;
+}
 #results-container .pagination{
 	box-sizing: border-box;
 }
@@ -6522,6 +6624,10 @@ body.mapMode{
 }
 
 /********* Filter Views ***********/
+.filter-groups .tab-content {
+	overflow: inherit;
+}
+
 .portal-view .filter-group{
   padding: 0px 20px;
 }
@@ -6708,19 +6814,24 @@ body.mapMode{
   width: auto;
 }
 .filter.date .min,
-.filter.date .max{
+.filter.date .max,
+.filter.numeric .min,
+.filter.numeric .max{
 	max-width: 30%;
 }
-.filter.date .to{
+.filter.date .to,
+.filter.numeric .to{
 	width: 30%;
 	width: calc(40% - 50px);
 	text-align: center;
 	display: inline-block;
 }
-.filter.date .min{
+.filter.date .min,
+.filter.numeric .min{
 	float: left;
 }
-.filter.date .max{
+.filter.date .max,
+.filter.numeric .max{
 	float: right;
 	margin-left: 10px;
 }
@@ -6749,6 +6860,36 @@ body.mapMode{
 .filter input[type='text']{
 	width: 80%;
 }
+
+/*
+	Overrides for default Bootstrap styling for the searchable select
+	component when we use it as a Portal data search filter. These overrides make
+	the component look nearly identical to other filters (that use native form
+	elements)
+*/
+.filter-groups .filter.annotation-filter .ui.fluid.dropdown>.dropdown.icon {
+	top: 25%;
+}
+
+.filter-groups .filter.annotation-filter .dropdown.search {
+	padding: 0;
+	font-size: 100%;
+	box-sizing: border-box;
+	border-color: #ccc;
+	border-radius: 2px;
+}
+
+.filter-groups .filter.annotation-filter .dropdown.multiple.ui {
+	padding: 0;
+}
+
+.filter-groups .filter.annotation-filter .ui.multiple.search.dropdown > input.search {
+	font-size: inherit;
+	line-height: 20px;
+	margin: 4px 6px;
+}
+/* End Overrides for default Bootstrap styling for the searchable select */
+
 .filter-group .filter select{
   width: 100%;
 }
@@ -7389,11 +7530,13 @@ Query builder & query rule view
 	margin: 0.6rem 0 1rem;
 }
 
-.query-rule .filter.date .to {
+.query-rule .filter.date .to,
+.query-rule .filter.numeric .to {
 	width: 10%;
 	text-align: center;
 }
-.query-rule .filter.date .max {
+.query-rule .filter.date .max,
+.query-rule .filter.numeric .max {
   margin-left: 0;
 }
 
@@ -7719,6 +7862,7 @@ ul.side-nav-items {
     border-width: 1px;
     border-style: solid;
     margin-top: 6px;
+	min-width: 100px;
 }
 .data-package-item .dropdown-menu .muted {
     color: #CCC;
@@ -8758,6 +8902,12 @@ CSS library fixes
 	color: var(--portal-primary-color);
 	fill: var(--portal-primary-color);
 	font-size: xx-large;
+}
+
+/******* Loading styles *******/
+.circle-loading{
+	border-radius: 50%;
+	background-color: var(--loading-background-color);
 }
 
 /** Browser extension element fixes **/

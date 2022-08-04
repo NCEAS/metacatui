@@ -1,11 +1,12 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone',
+        'collections/Filters',
         'models/filters/Filter',
         'models/filters/FilterGroup',
         'views/filters/FilterGroupView',
         'views/filters/FilterView',
         'text!templates/filters/filterGroups.html'],
-  function($, _, Backbone, Filter, FilterGroup, FilterGroupView, FilterView, Template) {
+  function($, _, Backbone, Filters, Filter, FilterGroup, FilterGroupView, FilterView, Template) {
   'use strict';
 
   /**
@@ -87,7 +88,7 @@ define(['jquery', 'underscore', 'backbone',
       }
 
       this.filterGroups = options.filterGroups || new Array();
-      this.filters = options.filters || null;
+      this.filters = options.filters || new Filters();
 
       // For portal search filters, ID filters should be added to the query with an AND
       // operator, so that ID searches search *within* the definition collection.
@@ -232,7 +233,6 @@ define(['jquery', 'underscore', 'backbone',
 
         //If a new filter is ever added to this filter group, re-render this view
         this.listenTo( filterGroup.get("filters"), "add remove", this.render );
-
       }, this);
 
       if( divideIntoGroups ){
@@ -428,6 +428,8 @@ define(['jquery', 'underscore', 'backbone',
       if( typeof options != "object" ){
         var options = {};
       }
+      this.options = options;
+      var view = this;
 
       //If the value of this filter has changed, or if the displayWithoutChanges option
       // was passed, and if the filter is not invisible, then display it
@@ -445,7 +447,6 @@ define(['jquery', 'underscore', 'backbone',
 
         //If a filter has been added, display it
         _.each(addedValues, function(value){
-
           //Add the applied filter to the view
           this.$(".applied-filters").append( this.createAppliedFilter(filterModel, value) );
 
@@ -453,7 +454,6 @@ define(['jquery', 'underscore', 'backbone',
 
         //Iterate over each removed filter value and remove them
         _.each(removedValues, function(value){
-
           //Find all applied filter elements with a matching value
           var matchingFilters = this.$(".applied-filter[data-value='" + value + "']");
 
@@ -665,6 +665,10 @@ define(['jquery', 'underscore', 'backbone',
       else if( filterModel.get("values").length == 1 && filterModel.get("values")[0] == "*" ){
         filterValue = "";
       }
+      //Filters with the valueLabels attribute want to display an alternate value from the raw value here
+      else if ( filterModel.get("valueLabels") ) {
+        filterValue = filterModel.get("valueLabels")[value] || value;
+      }
       else if( !filterLabel ){
         filterLabel = filterModel.get("fields")[0];
       }
@@ -827,6 +831,13 @@ define(['jquery', 'underscore', 'backbone',
 
       var removeSilently = false;
 
+      //Create an options object if one wasn't sent
+      if( typeof options != "object" ){
+        var options = {};
+      }
+      this.options = options;
+      var view = this;
+
       //Parse all the additional options for this function
       if( typeof options == "object" ){
         removeSilently = typeof options.removeSilently != "undefined"? options.removeSilently : false;
@@ -834,7 +845,6 @@ define(['jquery', 'underscore', 'backbone',
 
 
       if( filterModel ){
-
         //NumericFilters and DateFilters get the min and max values reset
         if( filterModel.type == "NumericFilter" || filterModel.type == "DateFilter" ){
 
