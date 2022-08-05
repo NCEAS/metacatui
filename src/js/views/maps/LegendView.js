@@ -392,13 +392,26 @@ define(
               .attr('id', gradientId)
               .attr('x1', '0%')
               .attr('y1', '0%')
+            
+            var getOffset = function (d, data) {
+              const min = data[0].value
+              const max = data[data.length - 1].value
+              const range = max - min
+              return (d.value - min) / (range) * 100 + '%'
+            }
+            var getStopColor = function (d) {
+              const r = d.color.red * 255
+              const g = d.color.green * 255
+              const b = d.color.blue * 255
+              return `rgb(${r},${g},${b})`
+            }
 
             // Add the gradient stops
             data.forEach(function (d, i) {
               gradient.append('stop')
                 // offset should be relative to the value in the data
-                .attr('offset', d.value / data[data.length - 1].value * 100 + '%')
-                .attr('stop-color', `rgb(${d.color.red * 255},${d.color.green * 255},${d.color.blue * 255})`)
+                .attr('offset', getOffset(d,data))
+                .attr('stop-color', getStopColor(d))
             })
 
             // Create the rectangle

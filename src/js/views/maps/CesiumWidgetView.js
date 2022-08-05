@@ -217,7 +217,6 @@ define(
               scene: view.scene,
               dataSourceCollection: view.dataSourceCollection,
             });
-            console.log(view)
             view.clock.onTick.addEventListener(function () {
               view.updateDataSourceDisplay.call(view)
             })
