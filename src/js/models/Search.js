@@ -25,6 +25,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
             defaults: function() {
                 return {
                     all: [],
+                    projectText: [],
                     creator: [],
                     taxon: [],
                     isPrivate: null,
@@ -99,7 +100,8 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 taxon: "Taxon",
                 spatial: "Location",
                 isPrivate: "Private datasets",
-                all: ""
+                all: "",
+                projectText: "Project",
             },
 
             //Map the filter names to their index field names
@@ -120,7 +122,8 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 submitter: "submitter",
                 username: ["rightsHolder", "writePermission", "changePermission"],
                 taxon: ["kingdom", "phylum", "class", "order", "family", "genus", "species"],
-                isPrivate: "isPublic"
+                isPrivate: "isPublic",
+                projectText: "projectText"
             },
 
             facetNameMap: {
@@ -130,7 +133,8 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 "spatial": "site",
                 "taxon": ["kingdom", "phylum", "class", "order", "family", "genus", "species"],
                 "isPublic": "isPublic",
-                "all": "keywords"
+                "all": "keywords",
+                "projectText": "project"
             },
 
             getCurrentFilters: function() {
@@ -839,6 +843,20 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                       }
                     }
                 }
+                
+                // Add project filter
+                if (this.filterIsAvailable("projectText") && ((filter == "projectText") || getAll)) {
+
+                    var project = this.get('projectText');
+                    if (project && project.length > 0) {
+
+                        if( query.length ){
+                            query += " AND ";
+                        }
+                        query += 'projectText:"' + project[0].value + '"';
+                    }
+                }
+
 
                 return query;
             },
