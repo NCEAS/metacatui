@@ -848,7 +848,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 if (this.filterIsAvailable("projectText") && ((filter == "projectText") || getAll)) {
 
                     var project = this.get('projectText');
-                    if (project.length > 0 && project !== 'undefined') {
+                    if (project && project.length > 0) {
 
                         if( query.length ){
                             query += " AND ";
