@@ -375,6 +375,29 @@ define(
             // A unique ID for the gradient
             const gradientId = 'gradient-' + view.cid;
 
+            // Calculate the rounding precision we should use based on the
+            // range of the data. This determines how each value in the legend
+            // is displayed in the tooltip on mouseover. See the
+            // rect.on('mousemove'... function, below
+            data = data.sort((a, b) => a.value - b.value);
+            const min = data[0].value
+            const max = data[data.length - 1].value
+            const range = max - min
+            let roundingConstant = 10 // Allow 1 decimal place by default
+            if (range < 0.0001 || range > 100000) {
+              roundingConstant = null // Will use scientific notation
+            } else if (range < 0.001) {
+              roundingConstant = 100000 // Allow 5 decimal places
+            } else if (range < 0.01) {
+              roundingConstant = 10000 // Allow 4 decimal places
+            } else if (range < 0.1) {
+              roundingConstant = 1000 // Allow 3 decimal places
+            } else if (range < 1) {
+              roundingConstant = 100 // Allow 2 decimal places
+            } else if (range > 100) {
+              roundingConstant = 1 // No decimal places
+            }
+
             // SVG element
             const svg = this.createSVG({
               dropshadowFilter: false,
@@ -392,11 +415,8 @@ define(
               .attr('id', gradientId)
               .attr('x1', '0%')
               .attr('y1', '0%')
-            
+
             var getOffset = function (d, data) {
-              const min = data[0].value
-              const max = data[data.length - 1].value
-              const range = max - min
               return (d.value - min) / (range) * 100 + '%'
             }
             var getStopColor = function (d) {
@@ -410,7 +430,7 @@ define(
             data.forEach(function (d, i) {
               gradient.append('stop')
                 // offset should be relative to the value in the data
-                .attr('offset', getOffset(d,data))
+                .attr('offset', getOffset(d, data))
                 .attr('stop-color', getStopColor(d))
             })
 
@@ -422,7 +442,7 @@ define(
               .attr('height', gradientHeight)
               .attr('rx', (gradientHeight * 0.1))
               .style('fill', 'url(#' + gradientId + ')')
-            
+
             // Create a proxy element to attach the tooltip to, so that we can move the
             // tooltip to follow the mouse (by moving the proxy element to follow the mouse)
             const proxyEl = svg.append('rect').attr('y', gradientHeight)
@@ -443,8 +463,12 @@ define(
                 let value = d3.interpolate(data[0].value, data[data.length - 1].value)(relativePosition);
                 // Show tooltip with the value
                 if (value || value === 0) {
-                  // Round to 1 decimal place
-                  value = Math.round(value * 10) / 10
+                  // Round or show in scientific notation
+                  if (roundingConstant) {
+                    value = (Math.round(value * roundingConstant) / roundingConstant).toString()
+                  } else {
+                    value = value.toExponential(2).toString()
+                  }
                   // Move the proxy element to follow the mouse
                   proxyEl.attr('x', xMouse)
                   // Attach the tooltip to the proxy element. Tooltip needs to be
