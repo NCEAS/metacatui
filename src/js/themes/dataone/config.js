@@ -21,7 +21,7 @@ MetacatUI.AppConfig = Object.assign({
 
   //Searching
   displayRepoLogosInSearchResults: true,
-  disableQueryPOSTs: true,
+  disableQueryPOSTs: false,
   enableSolrJoins: true,
   defaultSearchFilters: ["all", "attribute", "annotation", "documents", "dataSource", "creator", "dataYear", "pubYear", "id", "taxon", "spatial", "isPrivate"],
   bioportalAPIKey: "",
