@@ -118,7 +118,16 @@ function ($, _, Backbone) {
 			else if(page == 0)
 				MetacatUI.appModel.set('page', 0);
 			else
-				MetacatUI.appModel.set('page', page-1);
+				MetacatUI.appModel.set('page', page - 1);
+			
+			//Check if we are using the new CatalogSearchView
+			if(!MetacatUI.appModel.get("useDeprecatedDataCatalogView")){
+				require(["views/search/CatalogSearchView"], function(CatalogSearchView){
+						MetacatUI.appView.catalogSearchView = new CatalogSearchView();
+						MetacatUI.appView.showView(MetacatUI.appView.catalogSearchView);
+				});
+				return;
+			}
 
 			//Check for a query URL parameter
 			if((typeof query !== "undefined") && query){;
