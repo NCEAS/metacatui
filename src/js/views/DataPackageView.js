@@ -7,16 +7,20 @@ define([
     'collections/DataPackage',
     'models/DataONEObject',
     'models/metadata/ScienceMetadata',
-    'models/metadata/eml211/EML211', 'views/DataItemView',
+    'models/metadata/eml211/EML211', 
+    'models/PackageModel',
+    'views/DownloadButtonView',
+    'views/DataItemView',
     'text!templates/dataPackage.html',
-    'text!templates/dataPackageStart.html'],
-    function($, _, Backbone, LocalForage, DataPackage, DataONEObject, ScienceMetadata, EML211, DataItemView,
-    		DataPackageTemplate, DataPackageStartTemplate) {
+    'text!templates/dataPackageStart.html',
+    'text!templates/downloadContents.html'],
+    function($, _, Backbone, LocalForage, DataPackage, DataONEObject, ScienceMetadata, EML211, Package, DownloadButtonView, DataItemView,
+    		DataPackageTemplate, DataPackageStartTemplate, DownloadContentsTemplate) {
         'use strict';
 
         /**
          * @class DataPackageView
-         * @classdesc The main view of a Data Package in the editor.  The view is
+         * @classdesc The main view of a Data Package in MetacatUI.  The view is
          *  a file/folder browser
          * @classcategory Views
          * @screenshot views/DataPackageView.png
@@ -63,7 +67,7 @@ define([
             		//The data package to render
             		this.dataPackage = options.dataPackage || new DataPackage();
 
-                this.parentEditorView = options.parentEditorView || null;
+                    this.parentEditorView = options.parentEditorView || null;
             	}
             	//Create a new DataPackage collection if one wasn't sent
             	else if(!this.dataPackage){
