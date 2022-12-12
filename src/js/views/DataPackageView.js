@@ -28,7 +28,7 @@ define([
         var DataPackageView = Backbone.View.extend(
           /** @lends DataPackageView.prototype */{
 
-            template: _.template(DownloadContentsTemplate),
+            downloadContentsTemplate: _.template(DownloadContentsTemplate),
 
             tagName: "table",
 
@@ -67,23 +67,60 @@ define([
             isOpen: true,
 
             initialize: function(options) {
-            	//Get the options sent to this view
-            	if(typeof options == "object"){
-            		//The edit option will allow the user to edit the table
-            		this.edit = options.edit || false;
+                if((options === undefined) || (!options)) var options = {};
 
-            		//The data package to render
-            		this.dataPackage = options.dataPackage || new DataPackage();
+                if (!options.edit) {
+                    //The edit option will allow the user to edit the table
+                    this.edit = options.edit || false;
 
-                    this.parentEditorView = options.parentEditorView || null;
-            	}
-            	//Create a new DataPackage collection if one wasn't sent
-            	else if(!this.dataPackage){
-            		this.dataPackage = new DataPackage();
-            	}
+                    this.packageId  = options.packageId	 || null;
+                    this.memberId	= options.memberId	 || null;
+                    this.attributes = options.attributes || null;
+                    this.metadataViewClassName += options.metadataViewClassName  || "";
+                    this.currentlyViewing = options.currentlyViewing || null;
+                    this.numVisible = options.numVisible || 4;
+                    this.parentView = options.parentView || null;
+                    this.title = options.title || "";
+                    this.nested = (typeof options.nested === "undefined")? false : options.nested;
 
-                return this;
+                    //Set up the Package model
+                    if((typeof options.model === "undefined") || !options.model){
+                        this.model = new Package();
+                        this.model.set("memberId", this.memberId);
+                        this.model.set("packageId", this.packageId);
+                    }
 
+                    if(!(typeof options.metricsModel == "undefined")){
+                        this.metricsModel = options.metricsModel;
+                    }
+
+                    //Get the members
+                    if(this.packageId)    this.model.getMembers();
+                    else if(this.memberId) this.model.getMembersByMemberID(this.memberId);
+
+                    this.onMetadataView = (this.parentView && this.parentView.type == "Metadata");
+                    this.hasEntityDetails = (this.onMetadataView && (this.model.get("members") && this.model.get("members").length < 150))? this.parentView.hasEntityDetails() : false;
+
+                    this.listenTo(this.model, "changeAll", this.renderMetadataView);
+                }
+                else {
+                    //Get the options sent to this view
+                    if(typeof options == "object"){
+                        //The edit option will allow the user to edit the table
+                        this.edit = options.edit || false;
+
+                        //The data package to render
+                        this.dataPackage = options.dataPackage || new DataPackage();
+
+                        this.parentEditorView = options.parentEditorView || null;
+                    }
+                    //Create a new DataPackage collection if one wasn't sent
+                    else if(!this.dataPackage){
+                        this.dataPackage = new DataPackage();
+                    }
+
+                    return this;
+                }
             },
 
             /**
@@ -116,6 +153,103 @@ define([
 
                 //Render the Share control(s)
                 this.renderShareControl();
+
+                return this;
+            },
+
+            /*
+            * Creates a table of package/download contents that this metadata doc is a part of
+            */
+            renderMetadataView: function(){
+
+                var view = this,
+                    members = this.model.get("members");
+
+                //If the model isn't complete, we may be still waiting on a response from the index so don't render anything yet
+                if(!this.model.complete) return false;
+
+                //Start the HTML for the rows
+                var	tbody = $(document.createElement("tbody"));
+
+                //Filter out the packages from the member list
+                members = _.filter(members, function(m){ return(m.type != "Package") });
+
+                //Filter the members in order of preferred appearance
+                members = this.sort(members);
+                this.sortedMembers = members;
+
+                var metadata = this.model.getMetadata();
+
+                //Count the number of rows in this table
+                var numRows = members.length;
+
+                //Cut down the members list to only those that will be visible
+                members = members.slice(0, this.numVisible);
+                this.rowsComplete = false;
+
+                //Create the HTML for each row
+                _.each(members, function(solrResult){
+                    //Append the row element
+                    $(tbody).append(view.getMemberRow(solrResult));
+                });
+
+                var bodyRows = $(tbody).find("tr");
+                this.numHidden = numRows - this.numVisible;
+
+                //Draw the footer which will have an expandable/collapsable control
+                if(this.numHidden > 0){
+                    var tfoot        = $(document.createElement("tfoot")),
+                        tfootRow     = $(document.createElement("tr")),
+                        tfootCell    = $(document.createElement("th")).attr("colspan", "100%"),
+                        item         = (this.numHidden == 1)? "item" : "items",
+                        expandLink   = $(document.createElement("a")).addClass("expand-control control").text("Show " + this.numHidden + " more " + item + " in this data set"),
+                        expandIcon   = $(document.createElement("i")).addClass("icon icon-caret-right icon-on-left"),
+                        collapseLink = $(document.createElement("a")).addClass("collapse-control control").text("Show less").css("display", "none"),
+                        collapseIcon = $(document.createElement("i")).addClass("icon icon-caret-up icon-on-left");
+
+                    $(tfoot).append(tfootRow);
+                    $(tfootRow).append(tfootCell);
+                    $(tfootCell).append(expandLink, collapseLink);
+                    $(expandLink).prepend(expandIcon);
+                    $(collapseLink).prepend(collapseIcon);
+                }
+
+                if(bodyRows.length == 0){
+                    tbody.html("<tr><td colspan='100%'>This is an empty dataset.</td></tr>");
+                }
+
+                if(!this.title && metadata){
+                    this.title = '<a href="<%= MetacatUI.root %>/view/' + encodeURIComponent(metadata.get("id")) +
+                        '">Files in this dataset';
+
+                    if(this.model.get("id"))
+                        this.title += '<span class="subtle"> Package: ' + this.model.get("id") + '</span>';
+
+                    this.title += '</a>';
+                }
+                else if(!this.title && !metadata){
+                    this.title = "Files in this dataset";
+                }
+
+                this.$el.html(this.downloadContentsTemplate({
+                        title   : this.title || "Files in this dataset",
+                        metadata : this.nested ? metadata : null,
+                        colspan : bodyRows.first().find("td").length,
+                        packageId : this.model.get("id"),
+                            nested : this.nested
+                }));
+
+                //Insert the Download All button
+                if(this.model.getURL() && this.model.get("id")){
+
+                    var downloadBtn = new DownloadButtonView({ model: this.model });
+                    downloadBtn.render();
+                    this.$(".download-container").append(downloadBtn.el);
+                }
+
+                //Add the table body and footer
+                this.$("thead").after(tbody);
+                if(typeof tfoot !== "undefined") this.$(tbody).after(tfoot);
 
                 return this;
             },
