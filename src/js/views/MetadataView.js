@@ -19,7 +19,6 @@ define(['jquery',
   'views/MetadataIndexView',
   'views/ExpandCollapseListView',
   'views/ProvStatementView',
-  'views/PackageTableView',
   'views/CitationView',
   'views/AnnotationView',
   'views/MarkdownView',
@@ -40,7 +39,7 @@ define(['jquery',
   'views/MetricView',
 ],
   function ($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
-    MetricsModel, Utilities, DataPackageView, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
+    MetricsModel, Utilities, DataPackageView, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement,
     CitationView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
     VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
     MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
@@ -143,7 +142,7 @@ define(['jquery',
           });
 
           //Listen to when the package table has been rendered
-          this.once("packageTableRendered", function () {
+          this.once("dataPackageRendered", function () {
             //Scroll to the element on the page that is in the hash fragment (if there is one)
             this.scrollToFragment();
           });
@@ -176,10 +175,10 @@ define(['jquery',
           }
 
           this.listenToOnce(this.dataPackage, "complete", function () {
-            var packageTableView = _.findWhere(this.subviews, { type: "PackageTable" });
-            if (packageTableView) {
-              packageTableView.dataPackageCollection = this.dataPackage;
-              packageTableView.checkForPrivateMembers();
+            var dataPackageView = _.findWhere(this.subviews, { type: "DataPackage" });
+            if (dataPackageView) {
+              dataPackageView.dataPackageCollection = this.dataPackage;
+              dataPackageView.checkForPrivateMembers();
             }
 
           });
@@ -883,7 +882,7 @@ define(['jquery',
           this.subviews.push(tableView);
 
           //Trigger a custom event in this view that indicates the package table has been rendered
-          this.trigger("packageTableRendered");
+          this.trigger("dataPackageRendered");
         },
 
         insertParentLink: function (packageModel) {
@@ -1789,18 +1788,18 @@ define(['jquery',
           this.hideEditorControls();
 
           // Update the metadata table header with the new resource map id.
-          // First find the PackageTableView for the top level package, and
+          // First find the DataPackageView for the top level package, and
           // then re-render it with the update resmap id.
           var view = this;
           var metadataId = this.packageModels[0].getMetadata().get("id")
           _.each(this.subviews, function (thisView, i) {
             // Check if this is a ProvChartView
-            if (thisView.type && thisView.type.indexOf("PackageTable") !== -1) {
+            if (thisView.type && thisView.type.indexOf("DataPackage") !== -1) {
               if (thisView.currentlyViewing == metadataId) {
                 var packageId = view.dataPackage.packageModel.get("id");
                 var title = packageId ? '<span class="subtle">Package: ' + packageId + '</span>' : "";
                 thisView.title = "Files in this dataset " + title;
-                thisView.render();
+                thisView.renderMetadataView();
               }
             }
           });

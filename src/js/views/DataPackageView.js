@@ -30,6 +30,8 @@ define([
 
             downloadContentsTemplate: _.template(DownloadContentsTemplate),
 
+            type: "DataPackage",
+
             tagName: "table",
 
             className: "table table-striped table-hover",
