@@ -13,6 +13,7 @@ define(['jquery',
   'models/metadata/ScienceMetadata',
   'models/MetricsModel',
   'common/Utilities',
+  'views/DataPackageView',
   'views/DownloadButtonView',
   'views/ProvChartView',
   'views/MetadataIndexView',
@@ -39,7 +40,7 @@ define(['jquery',
   'views/MetricView',
 ],
   function ($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
-    MetricsModel, Utilities, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
+    MetricsModel, Utilities, DataPackageView, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
     CitationView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
     VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
     MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
@@ -848,7 +849,8 @@ define(['jquery',
           if (typeof packageModel === "undefined") return;
 
           //** Draw the package table **//
-          var tableView = new PackageTable({
+          var tableView = new DataPackageView({
+            edit: false,
             model: packageModel,
             currentlyViewing: this.pid,
             parentView: this,
@@ -873,7 +875,7 @@ define(['jquery',
             var tableContainer = tablesContainer;
 
           //Insert the package table HTML
-          $(tableContainer).append(tableView.render().el);
+          $(tableContainer).append(tableView.renderMetadataView().el);
           $(this.tableContainer).children(".loading").remove();
 
           $(tableContainer).find(".tooltip-this").tooltip();
