@@ -697,18 +697,7 @@ define(
         */
         getCameraPosition: function () {
           try {
-            var camera = this.camera
-            var cameraPosition = Cesium.Cartographic.fromCartesian(camera.position)
-
-            return {
-              longitude: Cesium.Math.toDegrees(cameraPosition.longitude),
-              latitude: Cesium.Math.toDegrees(cameraPosition.latitude),
-              height: cameraPosition.height,
-              heading: Cesium.Math.toDegrees(camera.heading),
-              pitch: Cesium.Math.toDegrees(camera.pitch),
-              roll: Cesium.Math.toDegrees(camera.roll)
-            }
-
+            return this.getDegreesFromCartesian(this.camera.position)
           }
           catch (error) {
             console.log(
@@ -821,11 +810,16 @@ define(
          */
         getDegreesFromCartesian: function (cartesian) {
           const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
-          return {
-            longitude: Cesium.Math.toDegrees(cartographic.longitude),
-            latitude: Cesium.Math.toDegrees(cartographic.latitude),
+          const degrees = {
             height: cartographic.height
           }
+          const coordinates = ['longitude', 'latitude', 'heading', 'pitch', 'roll']
+          coordinates.forEach(function (coordinate) {
+            if (Cesium.defined(cartographic[coordinate])) {
+              degrees[coordinate] = Cesium.Math.toDegrees(cartographic[coordinate])
+            }
+          });
+          return degrees
         },
 
         /**
@@ -1005,13 +999,7 @@ define(
               var pickRay = view.camera.getPickRay(mousePosition);
               var cartesian = view.scene.globe.pick(pickRay, view.scene);
               if (cartesian) {
-                // Use globe.ellipsoid.cartesianToCartographic ?
-                var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
-                view.model.set('currentPosition', {
-                  latitude: Cesium.Math.toDegrees(cartographic.latitude),
-                  longitude: Cesium.Math.toDegrees(cartographic.longitude),
-                  height: cartographic.height,
-                })
+                view.model.set('currentPosition', view.getDegreesFromCartesian(cartesian))
               }
             }
 
@@ -1139,7 +1127,7 @@ define(
          * @param {MapAsset} mapAsset A MapAsset layer to render in the map, such as a
          * Cesium3DTileset or a CesiumImagery model.
          */
-        addAsset: function(mapAsset) {
+        addAsset: function (mapAsset) {
           try {
             if (!mapAsset) {
               return
@@ -1224,27 +1212,27 @@ define(
 
         /**
          * Renders a CesiumGeohash map asset on the map
-         * */
+         */
         addGeohashes: function () {
-            let view = this;
-            
-            require(["views/maps/CesiumGeohashes"], (CesiumGeohashes)=>{
-                //Create a CesiumGeohashes view
-                let cg = new CesiumGeohashes();
-                cg.cesiumViewer = view;
+          let view = this;
 
-                //Get the CesiumGeohash MapAsset and save a reference in the view
-                let cesiumGeohashAsset = view.model.get('layers').find(mapAsset => mapAsset.get("type") == "CesiumGeohash");
-                cg.cesiumGeohash = cesiumGeohashAsset;
+          require(["views/maps/CesiumGeohashes"], (CesiumGeohashes) => {
+            //Create a CesiumGeohashes view
+            let cg = new CesiumGeohashes();
+            cg.cesiumViewer = view;
 
-                cg.render();
-            })
+            //Get the CesiumGeohash MapAsset and save a reference in the view
+            let cesiumGeohashAsset = view.model.get('layers').find(mapAsset => mapAsset.get("type") == "CesiumGeohash");
+            cg.cesiumGeohash = cesiumGeohashAsset;
+
+            cg.render();
+          })
         },
 
         /**
          * Renders imagery in the Map.
          * @param {Cesium.ImageryLayer} cesiumModel The Cesium imagery model to render
-        */
+         */
         addImagery: function (cesiumModel) {
           this.scene.imageryLayers.add(cesiumModel)
           this.sortImagery()
