@@ -2,14 +2,16 @@
 
 :tada: First off, thanks for contributing! :tada:
 
-- [Types of contributions](#types-of-contributions)
-- [Pull Requests](#pull-requests)
-- [Development Workflow](#development-workflow)
-- [Release process](#release-process)
-- [Testing](#testing)
-- [Code style](#code-style)
-- [Documentation](#documentation)
-- [Contributor license agreement](#contributor-license-agreement)
+- [Contributing to MetacatUI](#contributing-to-metacatui)
+  - [Types of contributions](#types-of-contributions)
+  - [Pull Requests](#pull-requests)
+  - [Development Workflow](#development-workflow)
+    - [Development flow overview](#development-flow-overview)
+  - [Release process](#release-process)
+  - [Testing](#testing)
+  - [Code style](#code-style)
+  - [Documentation](#documentation)
+  - [Contributor license agreement](#contributor-license-agreement)
 
 ## Types of contributions
 
@@ -48,23 +50,16 @@ In short:
 
 Development is managed through the git repository at https://github.com/NCEAS/metacatui.  The repository is organized into several branches, each with a specific purpose.  
 
-**main**. The `main` branch represents a stable branch that is constantly maintained in a state ready for release. Any unreleased code changes on the main branch represent changes that have been tested and staged for the next release. When a set of features are mature and tested and ready for release, they are merged onto the `main` branch to await the next release.  The tip of the main branch always represents the set of features that have been staged for the next release. The version number in all configuration files and the README on the main branch follows [semantic versioning](https://semver.org/) and should always be set to either:
+**main**. Releases are merged from the `develop` branch to the `main` branch, and the resulting commit is tagged with the release tag (e.g., `2.4.0`). The tip of the `main` branch always reflects the most recent release of the software. The version number in all configuration files and the README on the main branch follows [semantic versioning](https://semver.org/) and should always be set to the current release version, for example, `2.8.5`.
 
-- the current release version, if the HEAD of `main` still matches the HEAD of `releases`. For example, `2.8.5`.
-- the planned next release number with a `beta` designator or release candidate `rc` designator appended as appropriate.  For example, `2.8.6-beta1` or `2.9.0-rc1`.
-
-**releases**. Releases are merged from the `main` branch to the `releases` branch, and the resulting commit is tagged with the release tag (e.g., `2.4.0`). The tip of the `releases` branch always reflects the most recent release of the software.
-
-**develop**. Development takes place on a single branch for integrated development and testing of the set of features
-targeting a particular release. Commits should only be pushed to this branch once they are ready to be deployed to
-production immediately after being pushed.
+**develop**. The `develop` branch is a stable branch that is constantly maintained in a state ready for release. Commits should only be pushed to this branch once they are ready to be deployed to production immediately after being pushed. Any unreleased code changes on the develop branch represent changes that have been tested and staged for the next release. The tip of the develop branch always represents the set of features that have been staged for the next release. Commits are added to the develop branch via a pull request or after consultation with the designated MetacatUI product owner.
 
 **feature**. to isolate development on a specific set of capabilities, especially if it may be disruptive to other developers working on the main `develop` branch, feature branches should be created.
 
-Feature branches are named as `feature-` + `-{short-description}-` + `#{issue}`. With `{issue}` being the Github issue number related to that new feature. e.g. `feature-new-search-#1456`.
+Feature branches are named as `feature-` + `#{issue}` + `-{short-description}-`. With `{issue}` being the Github issue number related to that new feature. e.g. `feature-#1456-new-search`.
 
-All `feature-*` branches should be frequently merged with changes from `main` to
-ensure that the development branch stays up to date with other features that have
+All `feature-*` branches should be frequently merged with changes from `develop` to
+ensure that the feature branch stays up to date with other features that have
 been tested and are awaiting release.  Thus, each `feature-*` branch represents an opportunity
 for integration testing of the set of features intended to work together for a
 particular release.
@@ -81,10 +76,7 @@ needs to be created that is behind the main **develop** branch.
 changes that are desired in a release are merged into the `develop` branch, we run
 the full set of tests on a clean checkout of the `develop` branch.
 2. After testing, the `develop` branch is merged to main.
-3. Then the main branch can be merged to the `releases` branch, and tagged with
-the new version number (e.g. `2.11.2`). At
-this point, the tip of the `releases` branch will reflect the new release and
-the main branch is ready for work on the next release.
+3. Then the `main` branch can be tagged with the new version number (e.g. `2.11.2`).
 4. Releases can be downloaded from the [Github releases page for the MetacatUI repository](https://github.com/NCEAS/metacatui/releases).
 
 ## Testing

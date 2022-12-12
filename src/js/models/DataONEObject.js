@@ -1054,6 +1054,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             //Replace the old access policy with the new one if it exists
             if ( accessPolicyXML ) {
               accessPolicyNode.replaceWith(accessPolicyXML);
+            } else {
+              // Remove the node if it is empty
+              accessPolicyNode.remove();
             }
 
               // Set the obsoletes node after replPolicy or accessPolicy, or rightsHolder

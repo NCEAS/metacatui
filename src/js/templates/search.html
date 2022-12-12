@@ -10,6 +10,7 @@
 		    <div class="current-filters-container">
 		    	<h5>My Search</h5>
 		    	<ul id="current-all-filters" class="current-filters" data-category="all"></ul>
+				<ul id="current-projectText-filters" class="current-filters" data-category="projectText"></ul>
 		    	<ul id="current-attribute-filters" class="current-filters" data-category="attribute"></ul>
 		    	<ul id="current-annotation-filters" class="current-filters" data-category="annotation"></ul>
 		    	<ul id="current-documents-filters" class="current-filters" data-category="documents">
@@ -36,6 +37,24 @@
 		    </div>
     		<div class="filter-container collapsable">
 				<h5 id="filters-header">Filter by:</h5>
+
+				<% if(searchModelRef.filterIsAvailable("projectText")){ %>
+				<div class="filter-contain collapsable" data-category="projectText">
+					<label class="expand-collapse-control">
+						<i class="icon icon-caret-right expand"></i>
+						<i class="icon icon-caret-down collapse"></i>
+						<i class="icon icon-group"></i>
+						<span class="tooltip-this" data-trigger="hover" data-title="Find datasets if they have the filter project name." data-placement="top">
+							Project
+						</span>
+					</label>
+					<div class="filter-input-contain input-append ">
+						<input class="filter" type="text" placeholder="Project name" id="projectText_input" data-category="projectText">
+						<button class="filter btn" id="projectText_btn" data-category="projectText"><i class="icon-search"></i></button>
+					</div>
+					<div class="clear"></div>
+				</div>
+				<% } %>
 
 				<div class="filter-contain collapsable" data-category="attribute">
 					<label class="expand-collapse-control">

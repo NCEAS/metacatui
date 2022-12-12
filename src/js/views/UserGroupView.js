@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'views/GroupListView', 'text!templates/userGroup.html'],
-	function($, _, Backbone, UserGroup, GroupListView, Template) {
+define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'views/GroupListView', 'text!templates/userGroup.html', 'text!templates/alert.html'],
+	function($, _, Backbone, UserGroup, GroupListView, Template, AlertTemplate) {
 		'use strict';
 
 		/**
@@ -23,6 +23,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'views/Grou
 			},
 
 			template: _.template(Template),
+			alertTemplate: _.template(AlertTemplate),
 
 			initialize: function(options){
 				if((typeof options == "undefined"))

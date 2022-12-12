@@ -250,8 +250,7 @@ define(
         toggleSelected: function () {
           try {
             var layerModel = this.model;
-            var currentStatus = layerModel.get('selected');
-            if (currentStatus === true) {
+            if (layerModel.get('selected')) {
               layerModel.set('selected', false);
             } else {
               layerModel.set('selected', true);
@@ -271,11 +270,16 @@ define(
          */
         toggleVisibility: function () {
           try {
-            var layerModel = this.model;
-            var currentStatus = layerModel.get('visible');
-            if (currentStatus === true) {
+            const layerModel = this.model;
+            // Hide if visible
+            if (layerModel.get('visible')) {
               layerModel.set('visible', false);
+            // Show if hidden
             } else {
+              // If user is trying to make the layer visible, make sure the opacity is not 0
+              if (layerModel.get('opacity') === 0) {
+                layerModel.set('opacity', 0.5);
+              }
               layerModel.set('visible', true);
             }
           }
@@ -298,8 +302,7 @@ define(
         showSelection: function () {
           try {
             var layerModel = this.model;
-            var currentStatus = layerModel.get('selected');
-            if (currentStatus === true) {
+            if (layerModel.get('selected')) {
               this.el.classList.add(this.classes.selected)
             } else {
               this.el.classList.remove(this.classes.selected)
@@ -321,8 +324,7 @@ define(
         showVisibility: function () {
           try {
             var layerModel = this.model;
-            var currentStatus = layerModel.get('visible');
-            if (currentStatus === true) {
+            if (layerModel.get('visible')) {
               this.el.classList.remove(this.classes.hidden)
             } else {
               this.el.classList.add(this.classes.hidden)
