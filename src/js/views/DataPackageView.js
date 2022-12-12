@@ -138,8 +138,8 @@ define([
                 }
 
                 dataItemView = new DataItemView({
-                  model: item,
-                  parentEditorView: this.parentEditorView
+                    model: item,
+                    parentEditorView: this.parentEditorView
                 });
                 this.subviews[item.id] = dataItemView; // keep track of all views
 
@@ -262,9 +262,9 @@ define([
             */
             renderShareControl: function(){
 
-              if( this.parentEditorView && !this.parentEditorView.isAccessPolicyEditEnabled() ){
-                this.$("#data-package-table-share").remove();
-              }
+                if( this.parentEditorView && !this.parentEditorView.isAccessPolicyEditEnabled() ){
+                    this.$("#data-package-table-share").remove();
+                }
 
             },
 
@@ -667,51 +667,51 @@ define([
             },
     
             checkForPrivateMembers: function(){
-            try{
-                var packageModel      = this.model,
-                    packageCollection = this.dataPackageCollection;
-    
-                if( !packageModel || !packageCollection ){
-                return;
-                }
-    
-                //Get the number of package members found in Solr and parsed from the RDF XML
-                var numMembersFromSolr = packageModel.get("members").length,
-                    numMembersFromRDF  = packageCollection.length;
-    
-                //If there are more package members in the RDF XML tthan found in SOlr, we
-                // can assume that those objects are private.
-                if( numMembersFromRDF > numMembersFromSolr ){
-                var downloadButtons = this.$(".btn.download");
-    
-                for( var i=0; i<downloadButtons.length; i++){
-    
-                    var btn = downloadButtons[i];
-    
-                    //Find the Download All button for the package
-                    var downloadURL = $(btn).attr("href");
-                    if( downloadURL.indexOf(packageModel.get("id")) > -1 ||
-                        downloadURL.indexOf( encodeURIComponent(packageModel.get("id"))) > -1 ){
-    
-                    //Disable this download button
-                    $(btn).attr("disabled", "disabled")
-                            .addClass("disabled")
-                            .attr("href", "")
-                            .tooltip({
-                            trigger: "hover",
-                            placement: "top",
-                            delay: 500,
-                            title: "This dataset may contain private data, so each data file should be downloaded individually."
-                            });
-    
-                    i = downloadButtons.length;
+                try{
+                    var packageModel      = this.model,
+                        packageCollection = this.dataPackageCollection;
+        
+                    if( !packageModel || !packageCollection ){
+                        return;
+                    }
+        
+                    //Get the number of package members found in Solr and parsed from the RDF XML
+                    var numMembersFromSolr = packageModel.get("members").length,
+                        numMembersFromRDF  = packageCollection.length;
+        
+                    //If there are more package members in the RDF XML tthan found in SOlr, we
+                    // can assume that those objects are private.
+                    if( numMembersFromRDF > numMembersFromSolr ){
+                        var downloadButtons = this.$(".btn.download");
+            
+                        for( var i=0; i<downloadButtons.length; i++){
+            
+                            var btn = downloadButtons[i];
+            
+                            //Find the Download All button for the package
+                            var downloadURL = $(btn).attr("href");
+                            if( downloadURL.indexOf(packageModel.get("id")) > -1 ||
+                                downloadURL.indexOf( encodeURIComponent(packageModel.get("id"))) > -1 ){
+            
+                            //Disable this download button
+                            $(btn).attr("disabled", "disabled")
+                                    .addClass("disabled")
+                                    .attr("href", "")
+                                    .tooltip({
+                                    trigger: "hover",
+                                    placement: "top",
+                                    delay: 500,
+                                    title: "This dataset may contain private data, so each data file should be downloaded individually."
+                                    });
+            
+                            i = downloadButtons.length;
+                            }
+                        }
                     }
                 }
+                catch(e){
+                    console.error(e);
                 }
-            }
-            catch(e){
-                console.error(e);
-            }
             }
     
             /*showDownloadProgress: function(e){
