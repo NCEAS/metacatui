@@ -67,7 +67,7 @@ define([
                 if (!options.edit) {
                     //The edit option will allow the user to edit the table
                     this.edit = options.edit || false;
-
+                    this.mode = "view";
                     this.packageId  = options.packageId	 || null;
                     this.memberId	= options.memberId	 || null;
                     this.attributes = options.attributes || null;
@@ -75,7 +75,7 @@ define([
                     this.metadataViewClassName += options.metadataViewClassName  || "";
                     this.currentlyViewing = options.currentlyViewing || null;
                     this.numVisible = options.numVisible || 4;
-                    this.parentView = options.parentView || null;
+                    this.parentEditorView = options.parentView || null;
                     this.title = options.title || "";
                     this.nested = (typeof options.nested === "undefined")? false : options.nested;
 
@@ -104,6 +104,7 @@ define([
                     if(typeof options == "object"){
                         //The edit option will allow the user to edit the table
                         this.edit = options.edit || false;
+                        this.mode = "edit";
 
                         //The data package to render
                         this.dataPackage = options.dataPackage || new DataPackage();
@@ -130,7 +131,6 @@ define([
                     title   : this.title || "Files in this dataset",
                     classes: "download-contents table-striped table-condensed table",
                     metadata : this.nested ? metadata : null,
-                    packageId : this.model.get("id"),
                     nested : this.nested
                 }));
 
@@ -179,95 +179,174 @@ define([
                     return false; // Don't double render
 
                 }
-
                 dataItemView = new DataItemView({
                     model: item,
+                    mode: this.mode,
                     parentEditorView: this.parentEditorView
                 });
                 this.subviews[item.id] = dataItemView; // keep track of all views
 
-                //Get the science metadata that documents this item
-                scimetaParent = item.get("isDocumentedBy");
+                if (this.edit) {
+                    //Get the science metadata that documents this item
+                    scimetaParent = item.get("isDocumentedBy");
 
-                //If this item is not documented by a science metadata object,
-                // and there is only one science metadata doc in the package, then assume it is
-                // documented by that science metadata doc
-                if( typeof scimetaParent == "undefined" || !scimetaParent ){
+                    //If this item is not documented by a science metadata object,
+                    // and there is only one science metadata doc in the package, then assume it is
+                    // documented by that science metadata doc
+                    if( typeof scimetaParent == "undefined" || !scimetaParent ){
 
-                	//Get the science metadata models
-                	var metadataIds = this.dataPackage.sciMetaPids;
+                        //Get the science metadata models
+                        var metadataIds = this.dataPackage.sciMetaPids;
 
-                	//If there is only one science metadata model in the package, then use it
-                	if( metadataIds.length == 1 )
-                		scimetaParent = metadataIds[0];
-                }
-                //Otherwise, get the first science metadata doc that documents this object
-                else{
-                    scimetaParent = scimetaParent[0];
-                }
-
-                if((scimetaParent == item.get("id")) || (!scimetaParent && item.get("type") == "Metadata")) {
-                	// This is a metadata folder row, append it to the table
-                    this.$el.append(dataItemView.render().el);
-
-                    // Render any delayed models if this is the parent
-                    if ( _.contains(Object.keys(this.delayedModels), dataItemView.id) ) {
-
-                        delayed_models = this.delayedModels[dataItemView.id];
-                        _.each(delayed_models, this.addOne, this);
-
+                        //If there is only one science metadata model in the package, then use it
+                        if( metadataIds.length == 1 )
+                            scimetaParent = metadataIds[0];
                     }
-                }
-                else{
-                    // Find the parent row by it's id, stored in a custom attribute
-                	if(scimetaParent)
-                		parentRow = this.$("[data-id='" + scimetaParent + "']");
+                    //Otherwise, get the first science metadata doc that documents this object
+                    else{
+                        scimetaParent = scimetaParent[0];
+                    }
 
-                    if ( typeof parentRow !== "undefined" && parentRow.length ) {
-                        // This is a data row, insert below it's metadata parent folder
-                        parentRow.after(dataItemView.render().el);
+                    if((scimetaParent == item.get("id")) || (!scimetaParent && item.get("type") == "Metadata")) {
+                        // This is a metadata folder row, append it to the table
+                        this.$el.append(dataItemView.render().el);
 
-                        // Remove it from the delayedModels list if necessary
-                        if ( _.contains(Object.keys(this.delayedModels), scimetaParent) ) {
-                            delayed_models = this.delayedModels[scimetaParent];
-                            var index = _.indexOf(delayed_models, item);
-                            delayed_models = delayed_models.splice(index, 1);
+                        // Render any delayed models if this is the parent
+                        if ( _.contains(Object.keys(this.delayedModels), dataItemView.id) ) {
 
-                            // Put the shortened array back if delayed models remains
-                            if ( delayed_models.length > 0 ) {
-                                this.delayedModels[scimetaParent] = delayed_models;
+                            delayed_models = this.delayedModels[dataItemView.id];
+                            _.each(delayed_models, this.addOne, this);
 
-                            } else {
-                                this.delayedModels[scimetaParent] = undefined;
-
-                            }
                         }
+                    }
+                    else{
+                        // Find the parent row by it's id, stored in a custom attribute
+                        if(scimetaParent)
+                            parentRow = this.$("[data-id='" + scimetaParent + "']");
 
-                        this.trigger("addOne");
+                        if ( typeof parentRow !== "undefined" && parentRow.length ) {
+                            // This is a data row, insert below it's metadata parent folder
+                            parentRow.after(dataItemView.render().el);
 
-                    } else {
-                        console.warn("Couldn't render " + item.id + ". Delayed until parent is rendered.");
-                        // Postpone the data row until the parent is rendered
-                        delayed_models = this.delayedModels[scimetaParent];
+                            // Remove it from the delayedModels list if necessary
+                            if ( _.contains(Object.keys(this.delayedModels), scimetaParent) ) {
+                                delayed_models = this.delayedModels[scimetaParent];
+                                var index = _.indexOf(delayed_models, item);
+                                delayed_models = delayed_models.splice(index, 1);
 
-                        // Delay the model rendering if it isn't already delayed
-                        if ( typeof delayed_models !== "undefined" ) {
+                                // Put the shortened array back if delayed models remains
+                                if ( delayed_models.length > 0 ) {
+                                    this.delayedModels[scimetaParent] = delayed_models;
 
-                            if ( ! _.contains(delayed_models, item) ) {
-                                delayed_models.push(item);
-                                this.delayedModels[scimetaParent] = delayed_models;
+                                } else {
+                                    this.delayedModels[scimetaParent] = undefined;
 
+                                }
                             }
+
+                            this.trigger("addOne");
 
                         } else {
-                            delayed_models = [];
-                            delayed_models.push(item);
-                            this.delayedModels[scimetaParent] = delayed_models;
-                        }
-                    }
+                            console.warn("Couldn't render " + item.id + ". Delayed until parent is rendered.");
+                            // Postpone the data row until the parent is rendered
+                            delayed_models = this.delayedModels[scimetaParent];
 
+                            // Delay the model rendering if it isn't already delayed
+                            if ( typeof delayed_models !== "undefined" ) {
+
+                                if ( ! _.contains(delayed_models, item) ) {
+                                    delayed_models.push(item);
+                                    this.delayedModels[scimetaParent] = delayed_models;
+
+                                }
+
+                            } else {
+                                delayed_models = [];
+                                delayed_models.push(item);
+                                this.delayedModels[scimetaParent] = delayed_models;
+                            }
+                        }
+
+                    }
+                }
+                else {
+
+                    // This is a metadata folder row, append it to the table
+                    this.$el.append(dataItemView.render().el);
+
+                    this.trigger("addOne");
                 }
 
+            },
+
+            /**
+             * Render the Data Package View and insert it into this view
+             */
+            renderDataPackage: function () {
+
+                var view = this;
+    
+                if(MetacatUI.rootDataPackage.packageModel.isNew()){
+                view.renderMember(this.model);
+                };
+    
+                // As the root collection is updated with models, render the UI
+                this.listenTo(MetacatUI.rootDataPackage, "add", function (model) {
+    
+                if (!model.get("synced") && model.get('id'))
+                    this.listenTo(model, "sync", view.renderMember);
+                else if (model.get("synced"))
+                    view.renderMember(model);
+    
+                //Listen for changes on this member
+                model.on("change:fileName", model.addToUploadQueue);
+                });
+    
+                //Render the Data Package view
+                this.dataPackageView = new DataPackageView({
+                edit: true,
+                dataPackage: MetacatUI.rootDataPackage,
+                parentEditorView: this
+                });
+    
+                //Render the view
+                var $packageTableContainer = this.$("#data-package-container");
+                $packageTableContainer.html(this.dataPackageView.render().el);
+    
+                //Make the view resizable on the bottom
+                var handle = $(document.createElement("div"))
+                .addClass("ui-resizable-handle ui-resizable-s")
+                .attr("title", "Drag to resize")
+                .append($(document.createElement("i")).addClass("icon icon-caret-down"));
+                $packageTableContainer.after(handle);
+                $packageTableContainer.resizable({
+                handles: { "s": handle },
+                minHeight: 100,
+                maxHeight: 900,
+                resize: function () {
+                    view.emlView.resizeTOC();
+                }
+                });
+    
+                var tableHeight = ($(window).height() - $("#Navbar").height()) * .40;
+                $packageTableContainer.css("height", tableHeight + "px");
+    
+                var table = this.dataPackageView.$el;
+                this.listenTo(this.dataPackageView, "addOne", function () {
+                if (table.outerHeight() > $packageTableContainer.outerHeight() && table.outerHeight() < 220) {
+                    $packageTableContainer.css("height", table.outerHeight() + handle.outerHeight());
+                    if (this.emlView)
+                    this.emlView.resizeTOC();
+                }
+                });
+    
+                if (this.emlView)
+                this.emlView.resizeTOC();
+    
+                //Save the view as a subview
+                this.subviews.push(this.dataPackageView);
+    
+                this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:childPackages", this.renderChildren);
             },
 
             /**
@@ -487,138 +566,6 @@ define([
                 models = _.flatten(sortedModels);
     
                 return models;
-            },
-    
-            getMemberRow: function(memberModel, options){
-                var formatType = memberModel.get("formatType"),
-                    type       = memberModel.type == "Package" ? "data" : memberModel.getType(),
-                    id		   = memberModel.get("id"),
-                    entityName = memberModel.get("fileName"),
-                    url        = memberModel.get("url"),
-                    hidden     = (typeof options === "undefined") ? false : options.hidden,
-                    collapsable = hidden? true : (typeof options === "undefined") ? false : options.collapsable;
-    
-                if(!url){
-                    memberModel.setURL();
-                    url = memberModel.get('url');
-                }
-                //Use the metadata title instead of the ID
-                if(!entityName && (formatType == "METADATA")) entityName = memberModel.get("title");
-                if((formatType == "METADATA") && entityName) entityName =  "Metadata: " + entityName;
-                else if((formatType == "METADATA") && !entityName) entityName = "Metadata";
-    
-                //Display the id in the table if not name is present
-                if((typeof entityName === "undefined") || !entityName) entityName = id;
-    
-                //Create a row for this member of the data package
-                var tr = $(document.createElement("tr"));
-    
-                //Icon cell (based on formatType)
-                var iconCell = $(document.createElement("td")).addClass("format-type"),
-                    formatTypeIcon = document.createElement("i"),
-                    icon = "icon-table";
-    
-                //Determine the icon type based on format type
-                if(type == "program")
-                    icon = "icon-code";
-                else if(type == "data")
-                    icon = "icon-table";
-                else if(type == "metadata")
-                    icon = "icon-file-text";
-                else if (type == "image")
-                    icon = "icon-picture";
-                else if (type == "pdf")
-                    icon = "icon-file pdf";
-    
-                $(formatTypeIcon).addClass(icon).tooltip({
-                    placement: "top",
-                    trigger: "hover focus",
-                    title: type.charAt(0).toUpperCase() + type.slice(1)
-    
-                });
-                $(iconCell).html(formatTypeIcon);
-                $(tr).append(iconCell);
-    
-    
-                //Name cell
-                var nameCell = $(document.createElement("td")).addClass("name wrap-contents");
-                var nameEl = $(document.createElement("span")).text(entityName);
-                $(nameCell).html(nameEl);
-                $(tr).append(nameCell);
-    
-                if(entityName == id)
-                    $(nameCell).addClass("entity-name-placeholder").attr("data-id", id);
-    
-                //"More info" cell
-                var moreInfoCell = $(document.createElement("td")).addClass("more-info");
-    
-                //If we are on the metadata view and there is no entity details section, then append a blank cell
-                var	entityDetails = this.hasEntityDetails? this.parentView.findEntityDetailsContainer(memberModel) : false,
-                    currentlyViewing = (id == this.currentlyViewing);
-                if((this.onMetadataView && !this.hasEntityDetails) || (this.onMetadataView && !entityDetails) || currentlyViewing || this.nested){
-                    $(tr).append(moreInfoCell);
-                }
-                else{
-                    let metadataId = (this.onMetadataView && this.currentlyViewing)? this.currentlyViewing : memberModel.get("isDocumentedBy")[0];
-                    var moreInfo = $(document.createElement("a"))
-                                    .attr("href", MetacatUI.root + "/view/" + encodeURIComponent(metadataId) + "#" + encodeURIComponent(id))
-                                    .addClass("preview")
-                                    .attr("data-id", id)
-                                    .text("More info");
-                    $(moreInfoCell).append(moreInfo);
-                }
-                $(tr).append(moreInfoCell);
-    
-                //Format id cell
-                var fileTypeCell = $(document.createElement("td")).addClass("formatId wrap-contents");
-                $(fileTypeCell).html(memberModel.getFormat());
-                $(tr).append(fileTypeCell);
-    
-                //File size cell
-                var sizeCell = $(document.createElement("td")).addClass("size");
-                var size = memberModel.bytesToSize();
-                $(sizeCell).text(size);
-                $(tr).append(sizeCell);
-    
-                if( MetacatUI.appModel.get("displayDatasetMetrics") ){
-                        // Retreiving the Package Metrics Counts from the Metrics Model
-                        // Adding a Metric Cell for the corresponding DataONE object in the table
-                        var readsCell = $(document.createElement("td"))
-                                    .addClass("metrics-count downloads")
-                                                    .attr("data-id", id);
-                    $(tr).append(readsCell);
-            
-                    if( !memberModel.hideMetrics() ){
-                            // If the model has already been fethced.
-                            if (this.metricsModel.get("views") !== null) {
-                                readsCell.append(this.getMemberRowMetrics(id, formatType));
-                            }
-                            else {
-                                // Update the metrics later on
-                                // If the fetch() is still in progress.
-                                this.listenTo(this.metricsModel, "sync", function(){
-                                    var readsCell = this.$('.metrics-count.downloads[data-id="' + id + '"]');
-                                    readsCell.text(this.getMemberRowMetrics(id, formatType));
-                                });
-                            }
-                    }
-                }
-    
-                //Download button cell
-                var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");
-    
-                var downloadButton = new DownloadButtonView({ model: memberModel });
-                downloadButton.render();
-    
-                $(downloadBtnCell).append(downloadButton.el);
-                $(tr).append(downloadBtnCell);
-    
-                if(collapsable)
-                    tr.addClass("collapse");
-                if(hidden)
-                    tr.css("display", "none");
-    
-                return tr;
             },
     
             // Member row metrics for the package table

@@ -144,6 +144,10 @@ define(['jquery',
 
           //Listen to when the package table has been rendered
           this.once("dataPackageRendered", function () {
+            var packageTableContainer = this.$("#data-package-container");
+            $(packageTableContainer).children(".loading").remove();
+
+
             //Scroll to the element on the page that is in the hash fragment (if there is one)
             this.scrollToFragment();
           });
@@ -194,7 +198,7 @@ define(['jquery',
           }
           // Fetch the data package. DataPackage.parse() triggers 'complete'
           this.dataPackage.fetch({
-            fetchModels: false
+            fetchModels: true
           });
 
         },
@@ -841,7 +845,7 @@ define(['jquery',
         insertPackageTable: function (packageModel, options) {
           var view  = this;
           if (!this.dataPackageSynced) {
-            this.on("changed:dataPackageSynced", function(){
+            this.listenToOnce(this, "changed:dataPackageSynced", function(){
               view.insertPackageTable(packageModel, options);
             });
             return;

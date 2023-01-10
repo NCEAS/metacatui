@@ -17,7 +17,7 @@
 <% var filenameEditable = "false" %>
 <% var filenameTitle = "You are not authorized to rename this file" %>
 
-<% if (canRename) { %>
+<% if (viewType === "edit" && canRename) { %>
 	<% fileClasses = fileClasses + " canRename" %>
 	<% var filenameEditable = "true" %>
 	<% var filenameTitle = "Click to rename" %>
@@ -56,6 +56,9 @@
     <td class="type"></td>
 
 <% } %>
+
+
+<% if (viewType === "edit") { %>
 <!-- Privacy/Sharing column -->
 <% if( MetacatUI.appModel.get("allowAccessPolicyChanges")){ %>
 <td class="sharing">
@@ -130,3 +133,5 @@
 
         <% } %>
 </td>
+
+<% } %>
