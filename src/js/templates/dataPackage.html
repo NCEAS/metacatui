@@ -1,4 +1,16 @@
-﻿  <thead id="data-package-table-head">
+﻿<% 
+  if (!edit){
+    if(!title) var title = "Files in this dataset";
+    if(nested) var classes = "nested";
+    if(!colspan) var colspan = 7;  
+  }
+%>
+
+<% if (!edit) {%>
+<table class="<%=classes%>">
+<% } %>
+
+  <thead id="data-package-table-head">
     <!-- icon column -->
     <th id="data-package-table-icon"></th>
     <!-- Files column -->
@@ -17,3 +29,7 @@
     <th id="data-package-table-button"><!--i class="icon-large icon-pencil"></i--></th>
   </thead>
   <tbody id="data-package-table-body"><%=loading%></tbody>
+
+<% if (!edit) {%>
+</table>
+<% } %>

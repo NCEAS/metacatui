@@ -126,6 +126,7 @@ define([
              */
             render: function() {
                 this.$el.append(this.template({
+                    edit: this.edit,
                 	loading: MetacatUI.appView.loadingTemplate({msg: "Loading files table... "}),
                 	id: this.dataPackage.get("id")
                 }));
@@ -229,12 +230,15 @@ define([
                     this.title = "Files in this dataset";
                 }
 
-                this.$el.html(this.downloadContentsTemplate({
+                this.$el.html(this.template({
+                        edit: this.edit,
                         title   : this.title || "Files in this dataset",
+                        classes: "download-contents table-striped table-condensed table",
                         metadata : this.nested ? metadata : null,
                         colspan : bodyRows.first().find("td").length,
                         packageId : this.model.get("id"),
-                            nested : this.nested
+                        nested : this.nested,
+                        loading: MetacatUI.appView.loadingTemplate({msg: "Loading files table... "})
                 }));
 
                 //Insert the Download All button
