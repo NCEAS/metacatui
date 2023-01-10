@@ -36,10 +36,6 @@ define([
 
             className: "table table-striped table-hover",
 
-            metadataViewTagName : "div",
-
-		    metadataViewClassName : "download-contents",
-
             id: "data-package-table",
 
             events: {
