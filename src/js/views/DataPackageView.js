@@ -12,10 +12,9 @@ define([
     'views/DownloadButtonView',
     'views/DataItemView',
     'text!templates/dataPackage.html',
-    'text!templates/dataPackageStart.html',
-    'text!templates/downloadContents.html'],
+    'text!templates/dataPackageStart.html'],
     function($, _, Backbone, LocalForage, DataPackage, DataONEObject, ScienceMetadata, EML211, Package, DownloadButtonView, DataItemView,
-    		DataPackageTemplate, DataPackageStartTemplate, DownloadContentsTemplate) {
+    		DataPackageTemplate, DataPackageStartTemplate) {
         'use strict';
 
         /**
@@ -27,8 +26,6 @@ define([
          */
         var DataPackageView = Backbone.View.extend(
           /** @lends DataPackageView.prototype */{
-
-            downloadContentsTemplate: _.template(DownloadContentsTemplate),
 
             type: "DataPackage",
 
