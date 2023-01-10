@@ -71,6 +71,7 @@ define([
                     this.packageId  = options.packageId	 || null;
                     this.memberId	= options.memberId	 || null;
                     this.attributes = options.attributes || null;
+                    this.dataPackage = options.dataPackage || new DataPackage();
                     this.metadataViewClassName += options.metadataViewClassName  || "";
                     this.currentlyViewing = options.currentlyViewing || null;
                     this.numVisible = options.numVisible || 4;
@@ -96,7 +97,7 @@ define([
                     this.onMetadataView = (this.parentView && this.parentView.type == "Metadata");
                     this.hasEntityDetails = (this.onMetadataView && (this.model.get("members") && this.model.get("members").length < 150))? this.parentView.hasEntityDetails() : false;
 
-                    this.listenTo(this.model, "changeAll", this.renderMetadataView);
+                    this.listenTo(this.model, "changeAll", this.render);
                 }
                 else {
                     //Get the options sent to this view
@@ -125,130 +126,39 @@ define([
                 this.$el.append(this.template({
                     edit: this.edit,
                 	loading: MetacatUI.appView.loadingTemplate({msg: "Loading files table... "}),
-                	id: this.dataPackage.get("id")
+                	id: this.dataPackage.get("id"),
+                    title   : this.title || "Files in this dataset",
+                    classes: "download-contents table-striped table-condensed table",
+                    metadata : this.nested ? metadata : null,
+                    packageId : this.model.get("id"),
+                    nested : this.nested
                 }));
 
-                // Listen for  add events because models are being merged
-                this.listenTo(this.dataPackage, 'add', this.addOne);
-                this.listenTo(this.dataPackage, "fileAdded", this.addOne);
+                if (this.edit) {
+                    // Listen for  add events because models are being merged
+                    this.listenTo(this.dataPackage, 'add', this.addOne);
+                    this.listenTo(this.dataPackage, "fileAdded", this.addOne);
+                }
 
                 // Render the current set of models in the DataPackage
                 this.addAll();
 
-                //If this is a new data package, then display a message and button
-                if((this.dataPackage.length == 1 && this.dataPackage.models[0].isNew()) || !this.dataPackage.length){
+                if (this.edit) {
+                    //If this is a new data package, then display a message and button
+                    if((this.dataPackage.length == 1 && this.dataPackage.models[0].isNew()) || !this.dataPackage.length){
 
-                	var messageRow = this.startMessageTemplate();
+                        var messageRow = this.startMessageTemplate();
 
-                	this.$("tbody").append(messageRow);
+                        this.$("tbody").append(messageRow);
 
-                	this.listenTo(this.dataPackage, "add", function(){
-                		this.$(".message-row").remove();
-                	});
+                        this.listenTo(this.dataPackage, "add", function(){
+                            this.$(".message-row").remove();
+                        });
+                    }
+
+                    //Render the Share control(s)
+                    this.renderShareControl();
                 }
-
-                //Render the Share control(s)
-                this.renderShareControl();
-
-                return this;
-            },
-
-            /*
-            * Creates a table of package/download contents that this metadata doc is a part of
-            */
-            renderMetadataView: function(){
-
-                var view = this,
-                    members = this.model.get("members");
-
-                //If the model isn't complete, we may be still waiting on a response from the index so don't render anything yet
-                if(!this.model.complete) return false;
-
-                //Start the HTML for the rows
-                var	tbody = $(document.createElement("tbody"));
-
-                //Filter out the packages from the member list
-                members = _.filter(members, function(m){ return(m.type != "Package") });
-
-                //Filter the members in order of preferred appearance
-                members = this.sort(members);
-                this.sortedMembers = members;
-
-                var metadata = this.model.getMetadata();
-
-                //Count the number of rows in this table
-                var numRows = members.length;
-
-                //Cut down the members list to only those that will be visible
-                members = members.slice(0, this.numVisible);
-                this.rowsComplete = false;
-
-                //Create the HTML for each row
-                _.each(members, function(solrResult){
-                    //Append the row element
-                    $(tbody).append(view.getMemberRow(solrResult));
-                });
-
-                var bodyRows = $(tbody).find("tr");
-                this.numHidden = numRows - this.numVisible;
-
-                //Draw the footer which will have an expandable/collapsable control
-                if(this.numHidden > 0){
-                    var tfoot        = $(document.createElement("tfoot")),
-                        tfootRow     = $(document.createElement("tr")),
-                        tfootCell    = $(document.createElement("th")).attr("colspan", "100%"),
-                        item         = (this.numHidden == 1)? "item" : "items",
-                        expandLink   = $(document.createElement("a")).addClass("expand-control control").text("Show " + this.numHidden + " more " + item + " in this data set"),
-                        expandIcon   = $(document.createElement("i")).addClass("icon icon-caret-right icon-on-left"),
-                        collapseLink = $(document.createElement("a")).addClass("collapse-control control").text("Show less").css("display", "none"),
-                        collapseIcon = $(document.createElement("i")).addClass("icon icon-caret-up icon-on-left");
-
-                    $(tfoot).append(tfootRow);
-                    $(tfootRow).append(tfootCell);
-                    $(tfootCell).append(expandLink, collapseLink);
-                    $(expandLink).prepend(expandIcon);
-                    $(collapseLink).prepend(collapseIcon);
-                }
-
-                if(bodyRows.length == 0){
-                    tbody.html("<tr><td colspan='100%'>This is an empty dataset.</td></tr>");
-                }
-
-                if(!this.title && metadata){
-                    this.title = '<a href="<%= MetacatUI.root %>/view/' + encodeURIComponent(metadata.get("id")) +
-                        '">Files in this dataset';
-
-                    if(this.model.get("id"))
-                        this.title += '<span class="subtle"> Package: ' + this.model.get("id") + '</span>';
-
-                    this.title += '</a>';
-                }
-                else if(!this.title && !metadata){
-                    this.title = "Files in this dataset";
-                }
-
-                this.$el.html(this.template({
-                        edit: this.edit,
-                        title   : this.title || "Files in this dataset",
-                        classes: "download-contents table-striped table-condensed table",
-                        metadata : this.nested ? metadata : null,
-                        colspan : bodyRows.first().find("td").length,
-                        packageId : this.model.get("id"),
-                        nested : this.nested,
-                        loading: MetacatUI.appView.loadingTemplate({msg: "Loading files table... "})
-                }));
-
-                //Insert the Download All button
-                if(this.model.getURL() && this.model.get("id")){
-
-                    var downloadBtn = new DownloadButtonView({ model: this.model });
-                    downloadBtn.render();
-                    this.$(".download-container").append(downloadBtn.el);
-                }
-
-                //Add the table body and footer
-                this.$("thead").after(tbody);
-                if(typeof tfoot !== "undefined") this.$(tbody).after(tfoot);
 
                 return this;
             },

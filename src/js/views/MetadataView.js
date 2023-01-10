@@ -850,6 +850,7 @@ define(['jquery',
           //** Draw the package table **//
           var tableView = new DataPackageView({
             edit: false,
+            dataPackage: MetacatUI.dataPackage,
             model: packageModel,
             currentlyViewing: this.pid,
             parentView: this,
@@ -874,7 +875,7 @@ define(['jquery',
             var tableContainer = tablesContainer;
 
           //Insert the package table HTML
-          $(tableContainer).append(tableView.renderMetadataView().el);
+          $(tableContainer).append(tableView.render().el);
           $(this.tableContainer).children(".loading").remove();
 
           $(tableContainer).find(".tooltip-this").tooltip();
@@ -1799,7 +1800,7 @@ define(['jquery',
                 var packageId = view.dataPackage.packageModel.get("id");
                 var title = packageId ? '<span class="subtle">Package: ' + packageId + '</span>' : "";
                 thisView.title = "Files in this dataset " + title;
-                thisView.renderMetadataView();
+                thisView.render();
               }
             }
           });
