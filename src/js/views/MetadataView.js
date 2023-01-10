@@ -65,6 +65,7 @@ define(['jquery',
         model: new SolrResult(),
         packageModels: new Array(),
         dataPackage: null,
+        dataPackageSynced: false,
         el: '#Content',
         metadataContainer: "#metadata-container",
         citationContainer: "#citation-container",
@@ -175,6 +176,8 @@ define(['jquery',
           }
 
           this.listenToOnce(this.dataPackage, "complete", function () {
+            this.dataPackageSynced = true;
+            this.trigger("changed:dataPackageSynced");
             var dataPackageView = _.findWhere(this.subviews, { type: "DataPackage" });
             if (dataPackageView) {
               dataPackageView.dataPackageCollection = this.dataPackage;
@@ -836,6 +839,13 @@ define(['jquery',
         },
 
         insertPackageTable: function (packageModel, options) {
+          var view  = this;
+          if (!this.dataPackageSynced) {
+            this.on("changed:dataPackageSynced", function(){
+              view.insertPackageTable(packageModel, options);
+            });
+            return;
+          }
           var viewRef = this;
 
           if (options) {
@@ -850,7 +860,7 @@ define(['jquery',
           //** Draw the package table **//
           var tableView = new DataPackageView({
             edit: false,
-            dataPackage: MetacatUI.dataPackage,
+            dataPackage: this.dataPackage,
             model: packageModel,
             currentlyViewing: this.pid,
             parentView: this,
