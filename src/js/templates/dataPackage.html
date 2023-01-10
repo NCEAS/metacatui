@@ -20,13 +20,20 @@
     <!-- Type column -->
     <th id="data-package-table-type">Type</th>
     <!-- Share column -->
-    <% if( MetacatUI.appModel.get("allowAccessPolicyChanges") ){ %>
+    <% if( edit && MetacatUI.appModel.get("allowAccessPolicyChanges") ){ %>
       <th id="data-package-table-share">Share</th>
     <% } %>
-    <!-- Guide or Status column -->
-    <th id="data-package-table-guide-status">Status</th>
-    <!-- Button column -->
-    <th id="data-package-table-button"><!--i class="icon-large icon-pencil"></i--></th>
+    <% if (edit) {%>
+      <!-- Guide or Status column -->
+      <th id="data-package-table-guide-status">Status</th>
+      <!-- Button column -->
+      <th id="data-package-table-button"><!--i class="icon-large icon-pencil"></i--></th>
+    <% } else { %>
+      <!-- Metrics column -->
+      <th id="data-package-table-metrics">Metrics</th>
+      <!-- Button column -->
+      <th id="data-package-table-button"><!--i class="icon-large icon-pencil"></i--></th>
+    <% } %>
   </thead>
   <tbody id="data-package-table-body"><%=loading%></tbody>
 
