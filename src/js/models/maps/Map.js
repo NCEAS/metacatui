@@ -171,9 +171,9 @@ define(
               roll: 0
             },
             layers: new MapAssets([{
-                type: 'NaturalEarthII',
-                label: 'Base layer'
-              }]),
+              type: 'NaturalEarthII',
+              label: 'Base layer'
+            }]),
             terrains: new MapAssets(),
             selectedFeatures: new Features(),
             showToolbar: true,
@@ -208,12 +208,15 @@ define(
           try {
             if (config) {
 
-              if (config.layers && config.layers.length && Array.isArray(config.layers)) {
+              function isNonEmptyArray(a) {
+                return a && a.length && Array.isArray(a)
+              }
+
+              if (isNonEmptyArray(config.layers)) {
                 this.set('layers', new MapAssets(config.layers))
                 this.get('layers').setMapModel(this)
               }
-
-              if (config.terrains && config.terrains.length && Array.isArray(config.terrains)) {
+              if (isNonEmptyArray(config.terrains)) {
                 this.set('terrains', new MapAssets(config.terrains))
               }
 

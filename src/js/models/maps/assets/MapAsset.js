@@ -348,7 +348,6 @@ define(
             if (typeof this.updateAppearance === 'function') {
 
               const setSelectFeaturesListeners = function () {
-
                 const mapModel = this.get('mapModel')
                 if (!mapModel) { return }
                 const selectedFeatures = mapModel.get('selectedFeatures')
@@ -364,7 +363,7 @@ define(
 
               }
               setSelectFeaturesListeners.call(this)
-              this.listenTo(this, 'change:mapModel', setSelectFeaturesListeners)
+              this.stopListening(this, 'change:mapModel', setSelectFeaturesListeners)
               this.listenTo(this, 'change:mapModel', setSelectFeaturesListeners)
             }
           }

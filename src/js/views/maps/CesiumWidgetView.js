@@ -92,10 +92,6 @@ define(
           {
             types: ['CesiumTerrainProvider'],
             renderFunction: 'updateTerrain'
-          },
-          {
-            types: ['CesiumGeohash'],
-            renderFunction: 'addGeohashes'
           }
         ],
 
@@ -332,6 +328,7 @@ define(
         updateDataSourceDisplay: function () {
           try {
             const view = this;
+            const layers = view.model.get('layers')
 
             var dataSources = view.dataSourceDisplay.dataSources;
             if (!dataSources || !dataSources.length) {
@@ -347,7 +344,7 @@ define(
               const dataSource = dataSources.get(i);
               const visualizers = dataSource._visualizers;
 
-              const assetModel = view.model.get('layers').findWhere({
+              const assetModel = layers.findWhere({
                 cesiumModel: dataSource
               })
               const displayReadyBefore = assetModel.get('displayReady')
@@ -1208,25 +1205,6 @@ define(
          */
         addVectorData: function (cesiumModel) {
           this.dataSourceCollection.add(cesiumModel)
-        },
-
-        /**
-         * Renders a CesiumGeohash map asset on the map
-         */
-        addGeohashes: function () {
-          let view = this;
-
-          require(["views/maps/CesiumGeohashes"], (CesiumGeohashes) => {
-            //Create a CesiumGeohashes view
-            let cg = new CesiumGeohashes();
-            cg.cesiumViewer = view;
-
-            //Get the CesiumGeohash MapAsset and save a reference in the view
-            let cesiumGeohashAsset = view.model.get('layers').find(mapAsset => mapAsset.get("type") == "CesiumGeohash");
-            cg.cesiumGeohash = cesiumGeohashAsset;
-
-            cg.render();
-          })
         },
 
         /**

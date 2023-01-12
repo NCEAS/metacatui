@@ -7,7 +7,7 @@ define(
     'backbone',
     'cesium',
     'nGeohash',
-    'models/maps/assets/MapAsset',
+    'models/maps/assets/CesiumVectorData',
   ],
   function (
     $,
@@ -15,18 +15,18 @@ define(
     Backbone,
     Cesium,
     nGeohash,
-    MapAsset
+    CesiumVectorData
   ) {
     /**
      * @classdesc A Geohash Model represents a geohash layer in a map.
      * @classcategory Models/Maps/Assets
      * @class CesiumGeohash
      * @name CesiumGeohash
-     * @extends MapAsset
+     * @extends CesiumVectorData
      * @since 2.18.0
      * @constructor
     */
-    return MapAsset.extend(
+    return CesiumVectorData.extend(
       /** @lends Geohash.prototype */ {
 
         /**
@@ -36,65 +36,251 @@ define(
         type: 'CesiumGeohash',
 
         /**
-         * This function will return the appropriate geohash level to use for mapping
-         * geohash tiles on the map at the specified altitude (zoom level).
-         * @param {Number} altitude The distance from the surface of the earth in meters
-         * @returns The geohash level, an integer between 0 and 9.
-         */
-        setGeohashLevel: function (altitude) {
-          try {
-            // map of precision integer to minimum altitude
-            const precisionAltMap = {
-              '1': 6000000,
-              '2': 4000000,
-              '3': 1000000,
-              '4': 100000,
-              '5': 0
+         * Default attributes for Geohash models
+         * @name CesiumGeohash#defaults
+         * @type {Object}
+         * @extends CesiumVectorData#defaults
+         * @property {'CesiumGeohash'} type The format of the data. Must be
+         * 'CesiumGeohash'.
+         * @property {boolean} isGeohashLayer A flag to indicate that this is a
+         * Geohash layer, since we change the type to CesiumVectorData. Used by
+         * the Catalog Search View to find this layer so it can be connected to
+         * search results.
+         * @property {object} precisionAltMap Map of precision integer to
+         * minimum altitude (m)
+         * @property {Number} altitude The current distance from the surface of
+         * the earth in meters
+         * @property {Number} level The geohash level, an integer between 0 and
+         * 9.
+         * @property {object} bounds The current bounding box (south, west,
+         * north, east) within which to render geohashes (in longitude/latitude
+         * coordinates).
+         * @property {string[]} counts An array of geohash strings followed by
+         * their associated count. e.g. ["a", 123, "f", 8]
+         * @property {Number} totalCount The total number of results that were
+         * just fetched
+         * @property {Number} geohashes 
+        */
+
+        defaults: function () {
+          return Object.assign(
+            CesiumVectorData.prototype.defaults(),
+            {
+              type: 'GeoJsonDataSource',
+              label: 'Geohashes',
+              isGeohashLayer: true,
+              precisionAltMap: {
+                1: 6000000,
+                2: 4000000,
+                3: 1000000,
+                4: 100000,
+                5: 0
+              },
+              altitude: null,
+              level: 1,
+              bounds: {
+                north: null,
+                east: null,
+                south: null,
+                west: null
+              },
+              level: 1,
+              counts: [],
+              totalCount: 0,
+              geohashes: []
             }
-            const precision = _.findKey(precisionAltMap, function (minAltitude) {
-              return altitude >= minAltitude
-            })
-            this.set("geohashLevel", Number(precision));
+          )
+        },
+
+        /**
+         * Executed when a new CesiumGeohash model is created.
+         * @param {MapConfig#MapAssetConfig} [assetConfig] The initial values of
+         * the attributes, which will be set on the model.
+         */
+        initialize: function (assetConfig) {
+          try {
+            this.setGeohashListeners()
+            this.set('type', 'GeoJsonDataSource')
+            CesiumVectorData.prototype.initialize.call(this, assetConfig);
           }
           catch (error) {
             console.log(
-              'There was an error getting the geohash level from altitude in a Geohash ' +
-              'Returning level 1 by default. ' +
-              'model. Error details: ' + error
+              'There was an error initializing a CesiumVectorData model' +
+              '. Error details: ' + error
             );
-            return 1
           }
         },
 
         /**
-         *
-         * @param {Number} south The south-most coordinate of the area to get geohashes
-         * for
-         * @param {Number} west The west-most coordinate of the area to get geohashes for
-         * @param {Number} north The north-most coordinate of the area to get geohashes
-         * for
-         * @param {Number} east The east-most coordinate of the area to get geohashes for
-         * @param {Number} precision An integer between 1 and 9 representing the geohash
-         * @param {Boolean} boundingBoxes Set to true to return the bounding box for each
-         * geohash level to show
+         * Connect this layer to the map to get updates on the current view
+         * extent (bounds) and altitude. Update the Geohashes when the altitude
+         * or bounds in the model change.
          */
-        getGeohashes: function (south, west, north, east, precision, boundingBoxes = false) {
+        setGeohashListeners: function () {
           try {
-            // Get all the geohash tiles contained in the map bounds
-            var geohashes = nGeohash.bboxes(
-              south, west, north, east, precision
-            )
-            // If the boundingBoxes option is set to false, then just return the list of
-            // geohashes
-            if (!boundingBoxes) {
-              return geohashes
-            }
-            // Otherwise, return the bounding box for each geohash as well
-            var boundingBoxes = []
-            geohashes.forEach(function (geohash) {
-              boundingBoxes[geohash] = nGeohash.decode_bbox(geohash)
+            const model = this
+
+            // Update the geohashes when the bounds or altitude change
+            model.stopListening(model,
+              'change:level change:bounds change:altitude change:geohashes')
+            model.listenTo(model, 'change:altitude', model.setGeohashLevel)
+            model.listenTo(model, 'change:bounds change:level', model.setGeohashes)
+            model.listenTo(model, 'change:geohashes', function () {
+              model.createCesiumModel(true)
             })
-            return boundingBoxes
+
+            // Connect this layer to the map to get current bounds and altitude
+            function setMapListeners() {
+              const mapModel = model.get('mapModel')
+              if (!mapModel) { return }
+              model.listenTo(mapModel, 'change:currentViewExtent',
+                function (map, newExtent) {
+                  model.set('bounds', newExtent)
+                })
+              model.listenTo(mapModel, 'change:currentPosition',
+                function (model, newPosition) {
+                  // TODO: This is the estimated elevation at the cursor.
+                  // Get calculation for "camera" altitude instead.
+                  // const alt = newPosition['height']
+                  // model.set('altitude', alt)
+              })
+            }
+            setMapListeners.call(model)
+            model.stopListening(model, 'change:mapModel', setMapListeners)
+            model.listenTo(model, 'change:mapModel', setMapListeners)
+          }
+          catch (error) {
+            console.log(
+              'There was an error setting listeners in a CesiumGeohash' +
+              '. Error details: ', error
+            );
+          }
+        },
+
+        /**
+         * Given the geohashes set on the model, return as geoJSON
+         * @returns {object} GeoJSON representing the geohashes with counts
+         */
+        toGeoJSON: function () {
+          try {
+            // The base GeoJSON format
+            const geojson = {
+              "type": "FeatureCollection",
+              "features": []
+            }
+            const geohashes = this.get('geohashes')
+            if (!geohashes) {
+              return geojson
+            }
+            const features = []
+            // Format for geohashes:
+            // { geohashID: [minlat, minlon, maxlat, maxlon] }.
+            for (const [id, bb] of Object.entries(geohashes)) {
+              const minlat = bb[0]
+              const minlon = bb[1]
+              const maxlat = bb[2]
+              const maxlon = bb[3]
+              const feature = {
+                "type": "Feature",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [minlon, minlat],
+                      [maxlon, minlat],
+                      [maxlon, maxlat],
+                      [minlon, maxlat],
+                      [minlon, minlat]
+                    ]
+                  ]
+                },
+                "properties": {
+                  // "count": 0, // TODO - add counts
+                  "geohash": id
+                }
+              }
+              features.push(feature)
+            }
+            geojson['features'] = features
+            return geojson
+          }
+          catch (error) {
+            console.log(
+              'There was an error converting geohashes to GeoJSON ' +
+              'in a CesiumGeohash model. Error details: ', error
+            );
+          }
+        },
+
+        /**
+         * Creates a Cesium.DataSource model and sets it to this model's
+         * 'cesiumModel' attribute. This cesiumModel contains all the
+         * information required for Cesium to render the vector data. See
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/DataSource.html?classFilter=DataSource}
+         * @param {Boolean} [recreate = false] - Set recreate to true to force
+         * the function create the Cesium Model again. Otherwise, if a cesium
+         * model already exists, that is returned instead.
+         */
+        createCesiumModel: function (recreate = false) {
+          try {
+            const model = this;
+            // Set the GeoJSON representing geohashes on the model
+            const cesiumOptions = model.get('cesiumOptions')
+            cesiumOptions['data'] = model.toGeoJSON()
+            cesiumOptions['clampToGround'] = true
+            model.set('cesiumOptions', cesiumOptions)
+            // Create the model like a regular GeoJSON data source
+            CesiumVectorData.prototype.createCesiumModel.call(this, recreate)
+          }
+          catch (error) {
+            console.log(
+              'There was an error creating a CesiumGeohash model' +
+              '. Error details: ', error
+            );
+          }
+        },
+
+        /**
+         * Reset the geohash level set on the model, given the altitude that is
+         * currently set on the model.
+         */
+        setGeohashLevel: function () {
+          try {
+            const precisionAltMap = this.get('precisionAltMap')
+            const altitude = this.get('altitude')
+            const precision = Object.keys(precisionAltMap)
+              .find(key => altitude >= precisionAltMap[key]);
+            this.set('level', precision);
+          }
+          catch (error) {
+            console.log(
+              'There was an error getting the geohash level from altitude in ' +
+              'a Geohash mode. Setting to level 1 by default. ' +
+              'Error details: ' + error
+            );
+            this.set('level', 1);
+          }
+        },
+
+        /**
+         * Update the geohash property with geohashes for the current
+         * altitude/precision and bounding box.
+         */
+        setGeohashes: function () {
+          try {
+            const bb = this.get('bounds')
+            const precision = this.get('level')
+            // Get all the geohash tiles contained in the current bounds
+            var geohashID = nGeohash.bboxes(
+              bb['south'], bb['west'], bb['north'], bb['east'], precision
+            )
+            var geohashes = []
+            geohashID.forEach(function (id) {
+              geohashes[id] = nGeohash.decode_bbox(id)
+
+            })
+            this.set('geohashes', geohashes)
+            console.log(geohashes)
           }
           catch (error) {
             console.log(
@@ -102,52 +288,6 @@ define(
               '. Error details: ' + error
             );
           }
-        },
-
-        /**
-         * Default attributes for Geohash models
-         * @name CesiumGeohash#defaults
-         * @type {Object}
-         * @property {number} geohashLevel The level of geohash currently used by this Cesium Map Asset
-         * @property {number[]|string[]} geohashCounts An array of geohash strings followed by their associated count. e.g. ["a", 123, "f", 8]
-           */
-        defaults: function (){ return Object.assign(MapAsset.prototype.defaults(), {
-                type: "CesiumGeohash",
-                status: "",
-                hue: 205, //blue
-                geohashLevel: 2,
-                geohashCounts: [],
-                totalCount: 0
-            })
-        },
-
-        /**
-         * 
-         * Creates a Cesium `CustomDataSource` {@link https://cesium.com/learn/cesiumjs/ref-doc/CustomDataSource.html} object 
-         * that is used to add entities to the Cesium map. It is set on the `cesiumModel` attribute of the attached `CesiumGeohash` model.
-         */
-        createCesiumModel: function(){
-             // If the cesium model already exists, don't create it again unless specified
-             if (this.get('cesiumModel')) {
-                return this.get('cesiumModel')
-            }
-
-            let cesiumModel = new Cesium.CustomDataSource('geohashes');
-            this.set('cesiumModel', cesiumModel);
-
-            let model = this;
-
-        },
-
-        /**
-         * Executed when a new Geohash model is created.
-         * @param {Object} [attributes] The initial values of the attributes, which
-           will
-         * be set on the model.
-         * @param {Object} [options] Options for the initialize function.
-           */
-        initialize: function (attributes, options) {
-            this.createCesiumModel();
         },
 
         // /**
