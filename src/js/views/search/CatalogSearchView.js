@@ -384,20 +384,13 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
      * @since 2.22.0
      */
     createMap: function(){
-        let mapOptions = Object.assign({}, MetacatUI.appModel.get("catalogSearchMapOptions") || {});
-        let map = new Map(mapOptions);
+        const mapOptions = Object.assign({}, MetacatUI.appModel.get("catalogSearchMapOptions") || {});
+        const map = new Map(mapOptions);
 
-        //Add a CesiumGeohash layer to the map
-       /* let geohashLayer = new CesiumGeohash();
-        geohashLayer.
-        let assets = map.get("layers");
-        assets.add(geohashLayer);
-*/
-
-        let geohashLayer = map.get("layers").findWhere({type: "CesiumGeohash"})
+        const geohashLayer = map.get("layers").findWhere({isGeohashLayer: true})
 
         //Connect the CesiumGeohash to the SolrResults
-        let connector = new GeohashSearchConnector({
+        const connector = new GeohashSearchConnector({
             cesiumGeohash: geohashLayer,
             searchResults: this.searchResultsView.searchResults
         });
@@ -405,10 +398,12 @@ function($, Backbone, MapAssets, FilterGroup, FiltersSearchConnector, GeohashSea
         this.geohashSearchConnector = connector;
 
         //Set the geohash level for the search
-        if( Array.isArray(this.searchResultsView.searchResults.facet) ) 
-            this.searchResultsView.searchResults.facet.push("geohash_" + geohashLayer.get("geohashLevel"));
+        const searchFacet = this.searchResultsView.searchResults.facet
+        const newLevel = "geohash_" + geohashLayer.get("level")
+        if( Array.isArray(searchFacet) ) 
+            searchFacet.push(newLevel);
         else
-            this.searchResultsView.searchResults.facet = "geohash_" + geohashLayer.get("geohashLevel");
+            searchFacet = newLevel;
         
         //Create the Map model and view
         this.mapView = new MapView({ model: map });

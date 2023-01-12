@@ -79,7 +79,7 @@ define(
          * specific to each type of asset.
         */
         defaults: function () {
-          return _.extend(
+          return Object.assign(
             this.constructor.__super__.defaults(),
             {
               type: 'GeoJsonDataSource',
@@ -123,12 +123,12 @@ define(
 
         /**
          * Creates a Cesium.DataSource model and sets it to this model's
-         * 'cesiumModel' attribute. This cesiumModel contains all the information required
-         * for Cesium to render the vector data. See
+         * 'cesiumModel' attribute. This cesiumModel contains all the
+         * information required for Cesium to render the vector data. See
          * {@link https://cesium.com/learn/cesiumjs/ref-doc/DataSource.html?classFilter=DataSource}
-         * @param {Boolean} recreate - Set recreate to true to force the function create
-         * the Cesium Model again. Otherwise, if a cesium model already exists, that is
-         * returned instead.
+         * @param {Boolean} [recreate = false]  - Set recreate to true to force
+         * the function create the Cesium Model again. Otherwise, if a cesium
+         * model already exists, that is returned instead.
          */
         createCesiumModel: function (recreate = false) {
 
@@ -140,9 +140,19 @@ define(
             const label = model.get('label') || ''
             const dataSourceFunction = Cesium[type]
 
+
             // If the cesium model already exists, don't create it again unless specified
-            if (!recreate && model.get('cesiumModel')) {
-              return model.get('cesiumModel')
+            let dataSource = model.get('cesiumModel')
+            if (dataSource) {
+              if (!recreate) {
+                return dataSource
+              } else {
+                // If we are recreating the model, remove all entities first.
+                // see https://stackoverflow.com/questions/31426796/loading-updated-data-with-geojsondatasource-in-cesium-js
+                dataSource.entities.removeAll();
+                // Make sure the CesiumWidgetView re-renders the data
+                model.set('displayReady', false);
+              }
             }
 
             model.resetStatus();
@@ -154,7 +164,10 @@ define(
             }
 
             if (dataSourceFunction && typeof dataSourceFunction === 'function') {
-              let dataSource = new dataSourceFunction(label)
+
+              if (!recreate) {
+                dataSource = new dataSourceFunction(label)
+              }
 
               const data = cesiumOptions.data;
               delete cesiumOptions.data
@@ -162,7 +175,9 @@ define(
               dataSource.load(data, cesiumOptions)
                 .then(function (loadedData) {
                   model.set('cesiumModel', loadedData)
-                  model.setListeners()
+                  if (!recreate) {
+                    model.setListeners()
+                  }
                   model.updateFeatureVisibility()
                   model.updateAppearance()
                   model.set('status', 'ready')
@@ -393,7 +408,7 @@ define(
             }
 
             cesiumModel.entities.resumeEvents()
-            
+
             // Let the map and/or other parent views know that a change has been made that
             // requires the map to be re-rendered
             model.trigger('appearanceChanged')
