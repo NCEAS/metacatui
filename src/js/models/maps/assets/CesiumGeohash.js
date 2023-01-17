@@ -176,7 +176,7 @@ define(
             // Format for geohashes:
             // { geohashID: [minlat, minlon, maxlat, maxlon] }.
             for (const [id, bb] of Object.entries(geohashes)) {
-              const minlat = bb[0]
+              const minlat = bb[0] <= -90 ? -89.99999 : bb[0]
               const minlon = bb[1]
               const maxlat = bb[2]
               const maxlon = bb[3]
@@ -187,9 +187,9 @@ define(
                   "coordinates": [
                     [
                       [minlon, minlat],
-                      [maxlon, minlat],
-                      [maxlon, maxlat],
                       [minlon, maxlat],
+                      [maxlon, maxlat],
+                      [maxlon, minlat],
                       [minlon, minlat]
                     ]
                   ]
