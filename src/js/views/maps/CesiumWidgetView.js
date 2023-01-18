@@ -505,7 +505,9 @@ define(
                   attrs.mapAsset &&
                   typeof attrs.mapAsset.getPropertiesFromFeature === 'function'
                 ) {
-                  attrs.properties = attrs.mapAsset.getPropertiesFromFeature(attrs.featureObject)
+                  attrs.properties = attrs.mapAsset.getPropertiesFromFeature(
+                    attrs.featureObject
+                  )
                 }
 
                 featuresAttrs.push(attrs)
@@ -707,7 +709,8 @@ define(
         /**
          * Update the 'currentViewExtent' attribute in the Map model with the north,
          * south, east, and west-most lat/long that define a bounding box around the
-         * currently visible area of the map.
+         * currently visible area of the map. Also gives the height/altitude of the
+         * camera in meters.
          */
         updateViewExtent: function () {
           try {
@@ -715,8 +718,13 @@ define(
             const camera = view.camera;
             const scene = view.scene;
 
+            // Get the height in meters
+            const height = camera.positionCartographic.height
+
             // This will be the bounding box of the visible area
-            let coords = { north: null, south: null, east: null, west: null }
+            let coords = {
+              north: null, south: null, east: null, west: null, height: height
+            }
 
             // First try getting the visible bounding box using the simple method
             if (!view.scratchRectangle) {

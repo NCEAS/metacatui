@@ -158,7 +158,8 @@ define(
          * equal the number of meters on the map/globe.
          * @property {Object} [currentViewExtent={ north: null, east: null, south: null, west: null }]
          * An object updated by the map widget that gives the extent of the current
-         * visible area as a bounding box in longitude/latitude coordinates.
+         * visible area as a bounding box in longitude/latitude coordinates, as well
+         * as the height/altitude in meters.
         */
         defaults: function () {
           return {
@@ -193,7 +194,8 @@ define(
               north: null,
               east: null,
               south: null,
-              west: null
+              west: null,
+              height: null
             }
           };
         },

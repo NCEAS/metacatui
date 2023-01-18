@@ -70,11 +70,12 @@ define(
               label: 'Geohashes',
               isGeohashLayer: true,
               precisionAltMap: {
-                1: 6000000,
-                2: 4000000,
-                3: 1000000,
-                4: 100000,
-                5: 0
+                1: 6800000,
+                2: 2400000,
+                3: 550000,
+                4: 120000,
+                5: 7000,
+                6: 0
               },
               altitude: null,
               level: 1,
@@ -121,13 +122,18 @@ define(
             const model = this
 
             // Update the geohashes when the bounds or altitude change
-            model.stopListening(model,
-              'change:level change:bounds change:altitude change:geohashes')
-            model.listenTo(model, 'change:altitude', model.setGeohashLevel)
-            model.listenTo(model, 'change:bounds change:level', model.setGeohashes)
-            model.listenTo(model, 'change:geohashes', function () {
-              model.createCesiumModel(true)
-            })
+
+            // TODO: Determine best way to set listeners, without re-creating
+            // the cesium model twice when both bounds and altitude change
+            // simultaneously
+            
+            // model.stopListening(model,
+            //   'change:level change:bounds change:altitude change:geohashes')
+            // model.listenTo(model, 'change:altitude', model.setGeohashLevel)
+            // model.listenTo(model, 'change:bounds change:level', model.setGeohashes)
+            // model.listenTo(model, 'change:geohashes', function () {
+            //   model.createCesiumModel(true)
+            // })
 
             // Connect this layer to the map to get current bounds and altitude
             function setMapListeners() {
@@ -135,15 +141,15 @@ define(
               if (!mapModel) { return }
               model.listenTo(mapModel, 'change:currentViewExtent',
                 function (map, newExtent) {
+                  const altitude = newExtent.height
+                  delete newExtent.height
                   model.set('bounds', newExtent)
-                })
-              model.listenTo(mapModel, 'change:currentPosition',
-                function (model, newPosition) {
-                  // TODO: This is the estimated elevation at the cursor.
-                  // Get calculation for "camera" altitude instead.
-                  // const alt = newPosition['height']
-                  // model.set('altitude', alt)
-              })
+                  model.set('altitude', altitude)
+                  model.setGeohashLevel()
+                  model.setGeohashes()
+                  model.createCesiumModel(true)
+                }
+              )
             }
             setMapListeners.call(model)
             model.stopListening(model, 'change:mapModel', setMapListeners)
@@ -227,7 +233,9 @@ define(
             // Set the GeoJSON representing geohashes on the model
             const cesiumOptions = model.get('cesiumOptions')
             cesiumOptions['data'] = model.toGeoJSON()
-            cesiumOptions['clampToGround'] = true
+            // TODO: outlines don't work when features are clamped to ground
+            // cesiumOptions['clampToGround'] = true
+            cesiumOptions['height'] = 0
             model.set('cesiumOptions', cesiumOptions)
             // Create the model like a regular GeoJSON data source
             CesiumVectorData.prototype.createCesiumModel.call(this, recreate)
@@ -268,19 +276,41 @@ define(
          */
         setGeohashes: function () {
           try {
-            const bb = this.get('bounds')
+            const bounds = this.get('bounds')
             const precision = this.get('level')
-            // Get all the geohash tiles contained in the current bounds
-            var geohashID = nGeohash.bboxes(
-              bb['south'], bb['west'], bb['north'], bb['east'], precision
-            )
-            var geohashes = []
-            geohashID.forEach(function (id) {
-              geohashes[id] = nGeohash.decode_bbox(id)
+            const all_bounds = []
+            let geohashIDs = []
 
+            // Get all the geohash tiles contained in the current bounds. 
+            if (bounds.east < bounds.west) {
+              // If the bounding box crosses the prime meridian, then we need to
+              // search for geohashes on both sides. Otherwise nGeohash returns
+              // 0 geohashes.
+              all_bounds.push({
+                north: bounds.north,
+                south: bounds.south,
+                east: 180,
+                west: bounds.west
+              })
+              all_bounds.push({
+                north: bounds.north,
+                south: bounds.south,
+                east: bounds.east,
+                west: -180
+              })
+            } else {
+              all_bounds.push(bounds)
+            }
+            all_bounds.forEach(function (bb) {
+              geohashIDs = geohashIDs.concat(nGeohash.bboxes(
+                bb.south, bb.west, bb.north, bb.east, precision
+              ))
+            })
+            const geohashes = []
+            geohashIDs.forEach(function (id) {
+              geohashes[id] = nGeohash.decode_bbox(id)
             })
             this.set('geohashes', geohashes)
-            console.log(geohashes)
           }
           catch (error) {
             console.log(
