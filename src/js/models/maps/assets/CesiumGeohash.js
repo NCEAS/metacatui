@@ -48,6 +48,13 @@ define(
          * search results.
          * @property {object} precisionAltMap Map of precision integer to
          * minimum altitude (m)
+         * @property {Number} maxNumGeohashes The maximum number of geohashes
+         * allowed. Set to null to remove the limit. If the given bounds +
+         * altitude/level result in more geohashes than the max limit, then the
+         * level will be reduced by one until the number of geohashes is under
+         * the limit. This improves rendering performance, especially when the
+         * map is focused on either pole, or is tilted in a "street view" like
+         * perspective.
          * @property {Number} altitude The current distance from the surface of
          * the earth in meters
          * @property {Number} level The geohash level, an integer between 0 and
@@ -77,6 +84,7 @@ define(
                 5: 7000,
                 6: 0
               },
+              maxNumGeohashes: 1000,
               altitude: null,
               level: 1,
               bounds: {
@@ -276,10 +284,14 @@ define(
          */
         setGeohashes: function () {
           try {
+
             const bounds = this.get('bounds')
             const precision = this.get('level')
+            const limit = this.get('maxNumGeohashes')
+
             const all_bounds = []
             let geohashIDs = []
+            const geohashes = []
 
             // Get all the geohash tiles contained in the current bounds. 
             if (bounds.east < bounds.west) {
@@ -306,7 +318,18 @@ define(
                 bb.south, bb.west, bb.north, bb.east, precision
               ))
             })
-            const geohashes = []
+
+            // When the map is centered on the poles or is zoomed in and tilted,
+            // the bounds + level result in too many geohashes. Reduce the
+            // number of geohashes to the model's limit by reducing the
+            // precision.
+            if (limit && geohashIDs.length > limit && precision > 1) {
+              this.set('level', (precision - 1))
+              this.setGeohashes(limit=limit)
+              return
+            }
+
+            // Get the bounds for each of the geohashes
             geohashIDs.forEach(function (id) {
               geohashes[id] = nGeohash.decode_bbox(id)
             })
