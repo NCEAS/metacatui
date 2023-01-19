@@ -72,7 +72,6 @@ define([
                     this.memberId	= options.memberId	 || null;
                     this.attributes = options.attributes || null;
                     this.dataPackage = options.dataPackage || new DataPackage();
-                    this.metadataViewClassName += options.metadataViewClassName  || "";
                     this.currentlyViewing = options.currentlyViewing || null;
                     this.numVisible = options.numVisible || 4;
                     this.parentEditorView = options.parentView || null;

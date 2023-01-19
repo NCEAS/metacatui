@@ -890,7 +890,7 @@ define(['jquery',
 
           //Insert the package table HTML
           $(tableContainer).append(tableView.render().el);
-          $(this.tableContainer).children(".loading").remove();
+          $(this.tableContainer).find(".loading").remove();
 
           $(tableContainer).find(".tooltip-this").tooltip();
 
