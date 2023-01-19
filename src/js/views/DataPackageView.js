@@ -178,6 +178,7 @@ define([
                     return false; // Don't double render
 
                 }
+
                 dataItemView = new DataItemView({
                     model: item,
                     mode: this.mode,

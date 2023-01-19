@@ -1,9 +1,16 @@
 <!-- Icon column -->
-<% if ( typeof type !== "undefined" && type !== null && type == "Metadata" ) { %>
+<% if ( viewType === "edit" && typeof type !== "undefined" && type !== null && type == "Metadata" ) { %>
     <% var indentFolder = nodeLevel * 40; %>
     <td class="type-icon">
         <i class="icon icon-chevron-down open toggle-rows" style="padding-left:<%=indentFolder %>px"></i>
         <i class="icon-large icon-folder-open"></i></td>
+
+<% } else if (viewType === "view" && icon !== "undefined") { %>
+	<% if ( type !== "Metadata" ) { %>
+		<td class="type-icon"><i class="<%= icon %>" style="padding-left:<%=indentFile %>px"></i></td>
+	<% } else { %>
+		<td class="type-icon"><i class="icon-file" style="padding-left:<%=indentFile %>px"></i></td>
+	<% } %>
 
 <% } else { %>
     <% var indentFile = (nodeLevel + 1) * 40; %>
@@ -50,11 +57,12 @@
 
 <% } %>
 <!-- Type column -->
-<% if (type && type != "Metadata") { %>
+<% if (viewType === "edit" && type && type != "Metadata") { %>
     <td class="type"><%= type %></td>
+<% } else if (viewType === "view" && fileType) { %>
+    <td class="type"><%= fileType %></td>
 <% } else { %>
-    <td class="type"></td>
-
+	<td class="type"></td>
 <% } %>
 
 

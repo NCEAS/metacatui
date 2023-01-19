@@ -373,6 +373,22 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                   });
                 }
                 else {
+
+                  attributes.fileType = this.model.getFormat();
+                  //Determine the icon type based on format type
+                  if(this.model.getFormat() == "program")
+                    attributes.icon = "icon-code";
+                  else if(this.model.getFormat() == "data")
+                    attributes.icon = "icon-table";
+                  else if(this.model.getFormat() == "metadata")
+                    attributes.icon = "icon-file-text";
+                  else if (this.model.getFormat() == "image")
+                    attributes.icon = "icon-picture";
+                  else if (this.model.getFormat() == "pdf")
+                    attributes.icon = "icon-file pdf";
+                  else
+                    attributes.icon = "icon-table";
+
                   this.$el.html( this.template(attributes) );
                 }
 
