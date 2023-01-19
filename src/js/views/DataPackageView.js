@@ -181,6 +181,7 @@ define([
 
                 dataItemView = new DataItemView({
                     model: item,
+                    memberRowMetrics: this.getMemberRowMetrics(item.get("id"), item.get("formatType")),
                     mode: this.mode,
                     parentEditorView: this.parentEditorView
                 });

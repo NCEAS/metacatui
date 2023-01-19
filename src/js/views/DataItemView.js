@@ -67,6 +67,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
               if(typeof options == "undefined") var options = {};
 
                 this.model = options.model || new DataONEObject();
+                this.memberRowMetrics = options.memberRowMetrics || null;
                 this.mode = options.mode || "edit";
                 this.id = this.model.get("id");
                 this.canWrite = false; // Default. Updated in render()
@@ -388,6 +389,13 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     attributes.icon = "icon-file pdf";
                   else
                     attributes.icon = "icon-table";
+
+                  // insert metrics for this item
+                  attributes.id = this.model.get("id");
+                  attributes.memberRowMetrics = null;
+                  if (this.memberRowMetrics !== null) {
+                    attributes.memberRowMetrics = this.memberRowMetrics;
+                  }
 
                   this.$el.html( this.template(attributes) );
                 }
