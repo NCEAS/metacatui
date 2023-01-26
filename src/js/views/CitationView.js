@@ -8,7 +8,8 @@ define(["jquery", "underscore", "backbone", "models/SolrResult"], function (
 
   /**
    * @class CitationView
-   * @classdesc The CitationView
+   * @classdesc The CitationView shows a formatted citation for a package,
+   * including title, authors, year, UUID/DOI, etc.
    * @classcategory Views
    * @extends Backbone.View
    * @screenshot views/CitationView.png
@@ -78,87 +79,120 @@ define(["jquery", "underscore", "backbone", "models/SolrResult"], function (
         }
       },
 
+      /**
+       * Format an individual author for display within a citation.
+       * @param {string|EMLParty} author The author to format
+       * @returns {string} Returns the author as a string if it was an EMLParty
+       * with any incorrectly escaped characters corrected.
+       */
+      formatAuthor: function (author) {
+        try {
+          // If author is an EMLParty model, then convert it to a string with
+          // given name + sur name, or organization name
+          if (typeof author.getName === "function") {
+            author = author.getName();
+          }
+
+          // Checking for incorrectly escaped characters
+          if (/&amp;[A-Za-z0-9]/.test(author)) {
+            // initializing the DOM parser
+            var parser = new DOMParser();
+
+            // parsing the incorrectly escaped `&amp;`
+            var unescapeAmpersand = parser.parseFromString(author, "text/html");
+
+            // unescaping the & and retrieving the actual character
+            var unescapedString = parser.parseFromString(
+              unescapeAmpersand.body.textContent,
+              "text/html"
+            );
+
+            // saving the correct author text before displaying
+            author = unescapedString.body.textContent;
+          }
+          return author;
+        } catch (error) {
+          console.log(
+            "There was an error formatting an author, returning " +
+              "the author input as is.",
+            error
+          );
+          return author;
+        }
+      },
+
+      /**
+       * Given a list of authors, format them as a single string for display in
+       * a citation.
+       * @param {string|EMLParty[]} authors - An array of strings or EMLParty
+       * models representing the list of authors
+       * @param {number} [maxAuthors=5] - The maximum number of authors to
+       * display. The string will be truncated with et al. if there are more
+       * authors than this limit.
+       * @returns string
+       */
+      getAuthorString: function (authors, maxAuthors = 5) {
+        try {
+          let str = "";
+
+          const numAuthors = authors.length;
+          maxAuthors = maxAuthors || numAuthors;
+          const displayAuthors = authors.slice(0, maxAuthors);
+          // const extraAuthors = authors.slice(maxAuthors)
+
+          displayAuthors.forEach(function (author, i) {
+            // Convert EML parties to strings & check for incorrectly escaped
+            // characters
+            author = this.formatAuthor(author);
+            // Add separator between this author and the previous one
+            if (i > 0) {
+              if (numAuthors > 2) str += ",";
+              if (i + 1 == numAuthors) str += " and";
+              if (numAuthors > 1) str += " ";
+            }
+            // Append the author to the string
+            str += author;
+          }, this);
+
+          // Add et al if needed, plus period and space.
+          if (numAuthors > maxAuthors) str += ", et al";
+          str += ". ";
+
+          return str;
+        } catch (error) {
+          console.log(
+            "There was an error formatting the authors. " +
+              "Authors will not be shown in the citation",
+            error
+          );
+        }
+      },
+
       /*
        * Creates a Citation View
        */
       render: function () {
-        if (!this.model && !this.metadata && !this.id) return this;
-        else if (!this.model && !this.metadata && this.id) {
-          // Create a model
-          this.metadata = new SolrResult({ id: this.id });
-          this.model = this.metadata;
 
-          // Retrieve the citation info for this model and render once we have it
-          var view = this;
-          this.model.on("change", function () {
-            view.render.call(view);
-          });
-          this.model.getCitationInfo();
-          return;
-        }
-        // If the model is retreived from the Metrics Service and of type
-        // CitationModel, simply set the fields as retrieved from the response
-        else if (this.model.type == "CitationModel") {
-          var authorText = this.model.get("origin") || "",
-            datasource = this.model.get("journal"),
-            dateUploaded = this.model.get("year_of_publishing"),
-            sourceUrl = this.model.get("source_url"),
-            sourceId = this.model.get("source_id"),
-            title = this.model.get("title"),
-            journal = this.model.get("publisher"),
-            volume = this.model.get("volume"),
-            page = this.model.get("page"),
-            citationMetadata = this.model.get("citationMetadata");
+        // Don't render until we have a model or metadata model
+        if (!this.model && !this.metadata) {
+          if (!this.id) {
+            return this
+          } else {
+            // Create a model
+            this.metadata = new SolrResult({ id: this.id });
+            this.model = this.metadata;
 
-          // Format the Author textarea        else if (this.model.type ==
-          // "CitationModel") {
-          if (authorText.length > 0) {
-            var authors = authorText.split(", "),
-              count = 0,
-              authorText = "";
-
-            _.each(authors, function (author) {
-              count++;
-
-              if (count == 6) {
-                authorText += ", et al. ";
-                return;
-              } else if (count > 6) return;
-
-              if (count > 1) {
-                if (authors.length > 2) authorText += ",";
-
-                if (count == authors.length) authorText += " and";
-
-                if (authors.length > 1) authorText += " ";
-              }
-
-              // Checking for incorrectly escaped characters
-              if (/&amp;[A-Za-z0-9]/.test(author)) {
-                // initializing the DOM parser
-                var parser = new DOMParser();
-
-                // parsing the incorrectly escaped `&amp;`
-                var unescapeAmpersand = parser.parseFromString(
-                  author,
-                  "text/html"
-                );
-
-                // unescaping the & and retrieving the actual character
-                var unescapedString = parser.parseFromString(
-                  unescapeAmpersand.body.textContent,
-                  "text/html"
-                );
-
-                // saving the correct author text before displaying
-                author = unescapedString.body.textContent;
-              }
-              authorText += author;
-
-              if (count == authors.length) authorText += ". ";
+            // Retrieve the citation info for this model and render once we have it
+            var view = this;
+            this.model.on("change", function () {
+              view.render.call(view);
             });
+            this.model.getCitationInfo();
+            return this;
           }
-        } else if (
+        }
+
+        if (
           this.metadata &&
           this.metadata.get("archived") &&
           !MetacatUI.appModel.get("archivedContentIsIndexed")
@@ -173,6 +207,28 @@ define(["jquery", "underscore", "backbone", "models/SolrResult"], function (
 
           return this;
         }
+
+        // If the model is retrieved from the Metrics Service and of type
+        // CitationModel, simply set the fields as retrieved from the response
+        if (this.model.type == "CitationModel") {
+          var str = this.model.get("origin") || "",
+            datasource = this.model.get("journal"),
+            dateUploaded = this.model.get("year_of_publishing"),
+            sourceUrl = this.model.get("source_url"),
+            sourceId = this.model.get("source_id"),
+            title = this.model.get("title"),
+            journal = this.model.get("publisher"),
+            volume = this.model.get("volume"),
+            page = this.model.get("page"),
+            citationMetadata = this.model.get("citationMetadata");
+
+          // Format the Author textarea
+          if (authorText.length > 0) {
+            const authors = str.split(", ");
+            str = this.getAuthorString(authors);
+          }
+        }
+
         // Create the citation from the metadata doc if we have one
         else if (this.metadata) {
           // If this object is in progress of saving, don't RErender this view.
@@ -194,64 +250,11 @@ define(["jquery", "underscore", "backbone", "models/SolrResult"], function (
 
           // Format the author text
           if (this.metadata.type == "EML") {
-            var authors = this.metadata.get("creator"),
-              count = 0,
-              authorText = "";
-
-            _.each(authors, function (author) {
-              count++;
-
-              if (count == 6) {
-                authorText += ", et al. ";
-                return;
-              } else if (count > 6) return;
-
-              // Get the individual's name, or position name, or organization
-              // name, in that order
-              var name = author.get("individualName")
-                ? _.flatten([
-                    author.get("individualName").givenName,
-                    author.get("individualName").surName,
-                  ]).join(" ")
-                : author.get("positionName") || author.get("organizationName");
-
-              if (count > 1) {
-                if (authors.length > 2) authorText += ",";
-
-                if (count == authors.length) authorText += " and";
-
-                if (authors.length > 1) authorText += " ";
-              }
-
-              authorText += name;
-
-              if (count == authors.length) authorText += ". ";
-            });
+            var authors = this.metadata.get("creator");
+            authorText = this.getAuthorString(authors);
           } else {
             var authors = this.metadata.get("origin"),
-              count = 0,
-              authorText = "";
-
-            _.each(authors, function (author) {
-              count++;
-
-              if (count == 6) {
-                authorText += ", et al. ";
-                return;
-              } else if (count > 6) return;
-
-              if (count > 1) {
-                if (authors.length > 2) authorText += ",";
-
-                if (count == authors.length) authorText += " and";
-
-                if (authors.length > 1) authorText += " ";
-              }
-
-              authorText += author;
-
-              if (count == authors.length) authorText += ". ";
-            });
+              authorText = this.getAuthorString(authors);
           }
         }
         // If there is no metadata doc, then this is probably a data doc without
