@@ -135,6 +135,10 @@ define(["jquery", "underscore", "backbone", "models/SolrResult"], function (
         try {
           let str = "";
 
+          if (!authors) {
+            return str
+          }
+
           const numAuthors = authors.length;
           maxAuthors = maxAuthors || numAuthors;
           const displayAuthors = authors.slice(0, maxAuthors);
@@ -165,6 +169,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult"], function (
               "Authors will not be shown in the citation",
             error
           );
+          return ""
         }
       },
 
@@ -211,7 +216,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult"], function (
         // If the model is retrieved from the Metrics Service and of type
         // CitationModel, simply set the fields as retrieved from the response
         if (this.model.type == "CitationModel") {
-          var str = this.model.get("origin") || "",
+          var authorText = this.model.get("origin") || "",
             datasource = this.model.get("journal"),
             dateUploaded = this.model.get("year_of_publishing"),
             sourceUrl = this.model.get("source_url"),
@@ -224,8 +229,8 @@ define(["jquery", "underscore", "backbone", "models/SolrResult"], function (
 
           // Format the Author textarea
           if (authorText.length > 0) {
-            const authors = str.split(", ");
-            str = this.getAuthorString(authors);
+            const authors = authorText.split(", ");
+            authorText = this.getAuthorString(authors);
           }
         }
 
