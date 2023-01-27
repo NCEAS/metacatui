@@ -1,9 +1,11 @@
-define(["jquery", "underscore", "backbone", "models/SolrResult"], function (
-  $,
-  _,
-  Backbone,
-  SolrResult
-) {
+define([
+  "jquery",
+  "underscore",
+  "backbone",
+  "models/SolrResult",
+  "text!templates/citationView.html",
+  "text!templates/citationArchived.html",
+], function ($, _, Backbone, SolrResult, Template, ArchivedTemplate) {
   "use strict";
 
   /**
@@ -36,21 +38,91 @@ define(["jquery", "underscore", "backbone", "models/SolrResult"], function (
       className: "citation",
 
       /**
+       * Reference to the main templates for this view. HTML files are converted to
+       * Underscore.js templates
+       * @type {Underscore.Template}
+       */
+      template: _.template(Template),
+
+      /**
+       * Reference to templates that is used for this view when the object being
+       * cited has been archived.
+       * @type {Underscore.Template}
+       */
+      archivedTemplate: _.template(ArchivedTemplate),
+
+      /**
+       * The message to display in place of a citation when the object is
+       * archived.
+       * @type {string}
+       */
+      archivedMessage: "This content has been archived.",
+
+      /**
+       * The ID for the object to be cited. If this is provided and neither a
+       * metadata model nor model is provided, then a query will be performed to
+       * find the object given the ID. If a model or metadata model is provided,
+       * then the ID will be overwritten with the ID of the object to cite (e.g.
+       * DOI or UUID).
+       * @type {string}
+       */
+      id: null,
+
+      /**
+       * A model to get citation info from
+       * Option used by CitationListView, MDQRun, MetadataView, ProvChart, EML211EditorView
+       * @type {Package...}
+       */
+      model: null,
+
+      /**
+       * A model to get citation info from
+       * Option used by SearchResultsView
+       * @type {SolrResult, Package ..., collection, portal}
+       */
+      metadata: null,
+
+      /**
+       * A default title for when there isn't one (e.g. a new document being edited)
+       * Option used by EML211EditorView
+       * @type {string}
+       */
+      title: null,
+
+      /**
+       * TODO
+       * Used by CitationListView, MDQRun, MetadataView, ProvChart, EML211EditorView
+       * @type {boolean}
+       */
+      createLink: true,
+
+      /**
+       * TODO
+       * Used by MDQRun, EML211EditorView
+       * @type {boolean}
+       */
+      createTitleLink: true,
+
+      /**
        * Is executed when a new CitationView is created
-       * @param {Object} options - A literal object with options to pass to the view
+       * @param {Object} options - A literal object with options to pass to the
+       * view
        */
       initialize: function (options) {
-        if (options === undefined || !options) var options = {};
+        // Get all the options and apply them to this view
+        if (!options || typeof options != "object") {
+          options = {};
+        }
+        Object.keys(options).forEach(function (key) {
+          this[key] = options[key];
+        }, this);
 
-        this.id = options.id || null;
-        this.attributes = options.attributes || null;
-        this.className += options.className || "";
-        this.model = options.model || null;
-        this.metadata = options.metadata || null;
-        this.title = options.title || null;
-        this.createLink = options.createLink === false ? false : true;
-        this.createTitleLink = options.createTitleLink === false ? false : true;
+        this.setUpModel();
 
+        // this.setUpListeners();
+      },
+
+      setUpModel: function () {
         // If a metadata doc was passed but no data or package model, then save
         // the metadata as our model, too
         if (!this.model && this.metadata) this.model = this.metadata;
@@ -77,6 +149,14 @@ define(["jquery", "underscore", "backbone", "models/SolrResult"], function (
         if (!this.metadata) {
           this.metadata = this.model;
         }
+
+        // If we don't have a model or metadata model yet, then do a query given
+        // the provided ID
+        // if (!this.model && !this.metadata && this.id) {
+        //   this.metadata = this.model = new SolrResult({ id: this.id });
+        //   this.model.getCitationInfo();
+        //   return;
+        // }
       },
 
       /**
@@ -136,7 +216,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult"], function (
           let str = "";
 
           if (!authors) {
-            return str
+            return str;
           }
 
           const numAuthors = authors.length;
@@ -169,7 +249,55 @@ define(["jquery", "underscore", "backbone", "models/SolrResult"], function (
               "Authors will not be shown in the citation",
             error
           );
-          return ""
+          return "";
+        }
+      },
+
+      /**
+       * Render the template for when the document/object being cited is
+       * archived
+       * @returns {CitationView} the citation view
+       */
+      showArchived() {
+        try {
+          this.$el.html(
+            this.archivedTemplate({
+              message: this.archivedMessage,
+              id: this.createIDElement(), // TODO!!!
+            })
+          );
+          return this;
+        } catch (error) {
+          console.log(
+            "There was an error showing a citation for an archived document " +
+              "in a CitationView. Error details: ".error
+          );
+        }
+      },
+
+      findAuthors: function () {
+        const model = this.model;
+        const metadata = this.metadata;
+        // Find the author text and create a string
+        let authors = [];
+        // i. citation
+        if (model.type == "CitationModel") {
+          const authorStr = model.get("origin") || "";
+          if (authorStr.length > 0) {
+            authors = authorText.split(", ");
+          }
+        } else if (metadata) {
+          // ii. metadata
+          if (metadata.type == "EML") {
+            authors = metadata.get("creator");
+          } else {
+            // ii. other metadata
+            authors = metadata.get("origin");
+          }
+          // iv. other: If there is no metadata doc, then this is probably a data doc without
+          // science metadata. So create the citation from the index values
+        } else {
+          authors = [model.get("rightsHolder") || model.get("submitter") || ""];
         }
       },
 
@@ -177,158 +305,141 @@ define(["jquery", "underscore", "backbone", "models/SolrResult"], function (
        * Creates a Citation View
        */
       render: function () {
+        let model = this.model;
+        let metadata = this.metadata;
+        const view = this;
 
-        // Don't render until we have a model or metadata model
-        if (!this.model && !this.metadata) {
+        if (metadata) {
+          // If this object is in progress of saving, don't RErender this view.
+          if (
+            metadata.get("uploadStatus") == "p" &&
+            view.$el.children().length
+          ) {
+            return;
+          }
+          // If the content has been archived and is not index, show a warning
+          // and stop rendering.
+          if (
+            metadata.get("archived") &&
+            !MetacatUI.appModel.get("archivedContentIsIndexed")
+          ) {
+            this.showArchived();
+            return;
+          }
+        } else if (!model) {
+          // No metadata and no model. Don't render until we have at least one.
           if (!this.id) {
-            return this
+            return this;
           } else {
-            // Create a model
-            this.metadata = new SolrResult({ id: this.id });
-            this.model = this.metadata;
-
-            // Retrieve the citation info for this model and render once we have it
-            var view = this;
-            this.model.on("change", function () {
-              view.render.call(view);
-            });
-            this.model.getCitationInfo();
+            // Create a model, retrieve the citation info for this model and
+            // then render
+            this.metadata = metadata = new SolrResult({ id: this.id });
+            this.model = model = metadata;
+            view.stopListening(view.model, "change");
+            view.listenTo(view.model, "change", view.render);
+            model.getCitationInfo();
             return this;
           }
         }
 
-        if (
-          this.metadata &&
-          this.metadata.get("archived") &&
-          !MetacatUI.appModel.get("archivedContentIsIndexed")
-        ) {
-          this.$el.append(
-            '<span class="danger">This content has been archived. </span>'
-          );
+        // Clear the element in case we are re-rendering...
+        this.$el.html("");
 
-          // The ID
-          var idEl = this.createIDElement();
-          this.$el.append(idEl);
-
-          return this;
+        // Collections will get the collection class added
+        if (this.isCollection) {
+          this.el.classList.add("collection");
+        } else {
+          this.el.classList.remove("collection");
         }
 
+        // 1. AUTHOR ===========================================================
+        const authorText = this.getAuthorString(this.findAuthors());
+
+        // 2. OTHER ATTRIBUTES =================================================
         // If the model is retrieved from the Metrics Service and of type
         // CitationModel, simply set the fields as retrieved from the response
-        if (this.model.type == "CitationModel") {
-          var authorText = this.model.get("origin") || "",
-            datasource = this.model.get("journal"),
-            dateUploaded = this.model.get("year_of_publishing"),
-            sourceUrl = this.model.get("source_url"),
-            sourceId = this.model.get("source_id"),
-            title = this.model.get("title"),
-            journal = this.model.get("publisher"),
-            volume = this.model.get("volume"),
-            page = this.model.get("page"),
-            citationMetadata = this.model.get("citationMetadata");
+        if (model.type == "CitationModel") {
+          var datasource = model.get("journal");
+          var dateUploaded = model.get("year_of_publishing");
+          var title = model.get("title");
+          var volume = model.get("volume");
+          var page = model.get("page");
+          var citationMetadata = model.get("citationMetadata");
 
-          // Format the Author textarea
-          if (authorText.length > 0) {
-            const authors = authorText.split(", ");
-            authorText = this.getAuthorString(authors);
-          }
+          // Not used:
+          // var sourceId = model.get("source_id");
+          // var journal = model.get("publisher");
         }
 
-        // Create the citation from the metadata doc if we have one
-        else if (this.metadata) {
-          // If this object is in progress of saving, don't RErender this view.
-          if (
-            this.metadata.get("uploadStatus") == "p" &&
-            this.$el.children().length
-          )
-            return;
-
-          // Clear the element
-          this.$el.html("");
-
-          var pubDate = this.metadata.get("pubDate"),
-            dateUploaded = this.metadata.get("dateUploaded"),
-            title = Array.isArray(this.metadata.get("title"))
-              ? this.metadata.get("title")[0] || this.title || ""
-              : this.metadata.get("title") || this.title || "",
-            datasource = this.metadata.get("datasource");
-
-          // Format the author text
-          if (this.metadata.type == "EML") {
-            var authors = this.metadata.get("creator");
-            authorText = this.getAuthorString(authors);
-          } else {
-            var authors = this.metadata.get("origin"),
-              authorText = this.getAuthorString(authors);
-          }
+        // META DATA DOC
+        // Get pubDate, dateUploaded, datasource, title
+        else if (metadata) {
+          var pubDate = metadata.get("pubDate");
+          var dateUploaded = metadata.get("dateUploaded");
+          var datasource = metadata.get("datasource");
+          let title = metadata.get("title");
+          title = Array.isArray(title) ? title[0] : title;
+          title = title ? title : this.title || "";
         }
+        // DATA DOC
         // If there is no metadata doc, then this is probably a data doc without
         // science metadata. So create the citation from the index values
         else {
-          var authorText =
-              this.model.get("rightsHolder") ||
-              this.model.get("submitter") ||
-              "",
-            dateUploaded = this.model.get("dateUploaded"),
-            datasource = this.model.get("datasource");
+          var dateUploaded = model.get("dateUploaded"),
+            datasource = model.get("datasource");
         }
 
+        // ===========================================================
+        // Get the publish date and publisher if this is not a collection or
+        // portal (Why not for portals or collections??? - TODO)
         if (!this.isCollection) {
-          // The author
-          var authorEl = $(document.createElement("span"))
-            .addClass("author")
-            .text(authorText);
+          // PUB DATE TEXT
+          const pubDateText =
+            new Date(pubDate).getUTCFullYear() || dateUploaded || "";
 
-          // The publication date
-          var pubDateText = "";
-          if (typeof pubDate !== "undefined" && pubDate) {
-            var pubDateFormatted = new Date(pubDate).getUTCFullYear();
-            if (!isNaN(pubDateFormatted)) pubDateText += pubDateFormatted;
+          // PUBLISHER
+          let publisherText = "";
+
+          if (datasource) {
+            console.log(datasource);
+            const datasourceMember = MetacatUI.nodeModel.getMember(datasource);
+            const isCurrentNode =
+              datasource == MetacatUI.appModel.get("nodeId");
+            const repoName = MetacatUI.appModel.get("repositoryName");
+            if (datasourceMember) {
+              publisherText = datasourceMember.name;
+            } else if (isCurrentNode) {
+              publisherText = repoName;
+            } else {
+              publisherText = datasource;
+            }
+          } else if (currentMNMember) {
+            const currentMN = MetacatUI.nodeModel.get("currentMemberNode");
+            if (currentMN) {
+              publisherText = MetacatUI.nodeModel.getMember(currentMN).name;
+            }
           }
-          if (dateUploaded && (isNaN(pubDateFormatted) || !pubDate)) {
-            var dateUploadedFormatted = dateUploaded;
-            if (!isNaN(dateUploadedFormatted))
-              pubDateText += dateUploadedFormatted;
-          }
-          var pubDateEl = $(document.createElement("span")).addClass("pubdate");
+          publisherText = publisherText ? publisherText + ". " : "";
 
-          // Only set text if we have a non-zero-length pubDate string
-          if (pubDateText.length > 0) {
-            pubDateEl.text(pubDateText + ". ");
-          }
+          // ELEMENTS
+          const authorEl = (this.authorEl = document.createElement("span"));
+          authorEl.classList.add("author");
+          if (authorText) authorEl.textContent = authorText;
 
-          // The publisher (source member node)
-          var publisherText = "";
-          if (typeof datasource !== "undefined" && datasource) {
-            var memberNode = MetacatUI.nodeModel.getMember(datasource);
+          const pubDateEl = (this.pubDateEl = document.createElement("span"));
+          pubDateEl.classList.add("pubdate");
+          if (pubDateText) pubDateEl.textContent = pubDateText + ". ";
 
-            if (memberNode) publisherText = memberNode.name + ". ";
-            else if (datasource == MetacatUI.appModel.get("nodeId"))
-              publisherText = MetacatUI.appModel.get("repositoryName");
-            else publisherText = datasource + ". ";
-          } else {
-            var memberNode = MetacatUI.nodeModel.getMember(
-              MetacatUI.nodeModel.get("currentMemberNode")
-            );
-
-            if (memberNode) publisherText = memberNode.name + ". ";
-          }
-
-          var publisherEl = $(document.createElement("span")).addClass(
-            "publisher"
-          );
-
-          // Only set text if we have a non-zero-length publisherText string
-          if (publisherText) {
-            publisherEl.text(publisherText);
-          }
-        }
-        // Collections will get the collection class added
-        else {
-          this.$el.addClass("collection");
+          const publisherEl = (this.publisherEl =
+            document.createElement("span"));
+          publisherEl.classList.add("publisher");
+          if (publisherText) publisherEl.textContent = publisherText;
         }
 
-        if (this.model.type == "CitationModel") {
+        // ADD ID ==============================================================
+        // ⭐️ CITATION MODEL-SPECIFIC ID
+        if (model.type == "CitationModel") {
+          // Make the ID element different for a Citation Model - WHY?
           // displaying decoded source url
           var idEl = $(document.createElement("span")).addClass("publisher-id");
           idEl.append(
@@ -340,260 +451,253 @@ define(["jquery", "underscore", "backbone", "models/SolrResult"], function (
           var idEl = this.createIDElement();
         }
 
-        var model = this.metadata || this.model,
-          id = model.get("id"),
-          seriesId = model.get("seriesId");
-
-        if (typeof title !== "undefined" && title) {
+        // ADD TITLE ===========================================================
+        // Make the title HTML element
+        let titleEl = document.createElement("span");
+        if (title) {
+          // Format Title
           if (title.trim().charAt(title.length - 1) != ".")
             title = title.trim() + ". ";
           else title = title.trim() + " ";
 
-          if (this.model.type == "CitationModel") {
+          // ⭐️ CITATION MODEL-SPECIFIC ID TITLE FORMATTING
+          if (model.type == "CitationModel") {
             // Appending the title as a link
-            var titleEl = $(document.createElement("a"))
+            titleEl = $(document.createElement("a"))
               .addClass("metrics-route-to-metadata")
-              .attr("data-id", id)
+              .attr("data-id", model.get("id"))
               .attr("href", sourceUrl)
               .attr("target", "_blank")
               .append(title);
+            // ALL OTHER TITLE FORMATTING
           } else {
-            var titleEl = $(document.createElement("span"))
+            // Don't make the title a link for all other models.
+            titleEl = $(document.createElement("span"))
               .addClass("title")
-              .attr("data-id", this.metadata.get("id"))
+              .attr("data-id", metadata.get("id"))
               .text(title);
           }
-        } else var titleEl = document.createElement("span");
+        }
 
         // Create a link and put all the citation parts together
         if (this.createLink) {
-          if (this.model.type == "CitationModel") {
-            // Creating a volume element to display in Citations Modal Window
-            if (volume === "NULL") {
-              var volumeText = "";
-            } else {
-              var volumeText = "Vol. " + volume + ". ";
-            }
-            var volumeEl = $(document.createElement("span"))
-              .addClass("publisher")
-              .text(volumeText);
-
-            // Creating a 'pages' element to display in Citations Modal Window
-            if (page === "NULL") {
-              var pageText = "";
-            } else {
-              var pageText = "pp. " + page + ". ";
-            }
-            var pageEl = $(document.createElement("span"))
-              .addClass("publisher")
-              .text(pageText);
-
-            var datasetLinkEl = $(document.createElement("span")).text(
-              "Cites Data: "
-            );
-
-            // Generate links for the cited datasets
-            var citationMetadataCounter = 0;
-            if (citationMetadata != undefined) {
-              for (var key in citationMetadata) {
-                citationMetadataCounter += 1;
-
-                var commaSeperator =
-                  citationMetadataCounter < Object.keys(citationMetadata).length
-                    ? ","
-                    : ".";
-
-                var mdPID = key,
-                  mdAuthorText = "",
-                  additionalAuthors = "",
-                  mdText = "",
-                  mdDateText = "";
-
-                // Display first author in the dataset link
-                if (
-                  citationMetadata[key]["origin"] != undefined &&
-                  Array.isArray(citationMetadata[key]["origin"])
-                ) {
-                  mdAuthorText = citationMetadata[key]["origin"][0];
-                  additionalAuthors =
-                    citationMetadata[key]["origin"].length > 1 ? " et al." : "";
-
-                  mdText = "(" + mdAuthorText + additionalAuthors + " ";
-                }
-
-                // save the date
-                if (citationMetadata[key]["datePublished"] != undefined) {
-                  mdDateText = citationMetadata[key]["datePublished"].slice(
-                    0,
-                    4
-                  );
-                  if (mdText.length == 0) {
-                    mdText = "(";
-                  }
-                  mdText += mdDateText;
-                } else if (citationMetadata[key]["dateUpdated"] != undefined) {
-                  mdDateText = citationMetadata[key]["dateUpdated"].slice(0, 4);
-                  if (mdText.length == 0) {
-                    mdText = "(";
-                  }
-                  mdText += mdDateText;
-                } else if (citationMetadata[key]["dateModified"] != undefined) {
-                  mdDateText = citationMetadata[key]["dateModified"].slice(
-                    0,
-                    4
-                  );
-                  if (mdText.length == 0) {
-                    mdText = "(";
-                  }
-                  mdText += mdDateText;
-                }
-
-                // retrieve the PID
-                if (citationMetadata[key]["id"] != undefined) {
-                  mdPID = citationMetadata[key]["id"];
-                } else if (key.startsWith("10.")) {
-                  mdPID = "doi:" + key;
-                }
-
-                if (mdText.length > 0) {
-                  mdText += ")" + commaSeperator + " ";
-
-                  var targetLinkEl = $(document.createElement("a"))
-                    .addClass("metrics-route-to-metadata")
-                    .attr("data-id", key)
-                    .attr(
-                      "href",
-                      MetacatUI.root + "/view/" + encodeURIComponent(mdPID)
-                    )
-                    .attr("target", "_blank")
-                    .text(mdText);
-
-                  datasetLinkEl.append(targetLinkEl);
-                }
-              }
-            }
-
-            // creating citation display string
-            var linkEl = $(document.createElement("span")).append(
-              authorEl,
-              pubDateEl,
-              titleEl,
-              publisherEl,
-              volumeEl,
-              pageEl,
-              idEl
-            );
+          // ⭐️ CITATION MODEL-SPECIFIC LINK
+          if (model.type == "CitationModel") {
+            this.createCitationModelLink();
           } else {
+            // ALL OTHER LINKS
             var linkEl = $(document.createElement("a"))
               .addClass("route-to-metadata")
-              .attr("data-id", id)
-              .attr("href", this.metadata.createViewURL())
-              .append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
+              .attr("data-id", model.get("id"))
+              .attr("href", metadata.createViewURL())
+              .append(
+                this.authorEl,
+                this.pubDateEl,
+                titleEl,
+                this.publisherEl,
+                idEl
+              );
           }
-
           this.$el.append(linkEl);
+        }
 
-          // Only append the citation link when we have non-zero datasets Append
-          // the cited dataset text to the link element
-          if (datasetLinkEl !== "undefined" && citationMetadataCounter > 0) {
-            // Displaying the cites data on the new line
-            this.$el.append("<br>");
-            this.$el.append(datasetLinkEl);
-          }
-        } else if (this.createTitleLink) {
+        // Only append the citation link when we have non-zero dataset. Append
+        // the cited dataset text to the link element
+        if (this.createTitleLink) {
           var linkEl = $(document.createElement("a"))
             .addClass("route-to-metadata")
-            .attr("data-id", seriesId)
-            .attr("href", this.metadata.createViewURL())
+            .attr("data-id", model.get("seriesId"))
+            .attr("href", metadata.createViewURL())
             .append(titleEl);
-          this.$el.append(authorEl, pubDateEl, linkEl, publisherEl, idEl);
+          this.$el.append(
+            this.authorEl,
+            this.pubDateEl,
+            linkEl,
+            this.publisherEl,
+            idEl
+          );
         } else {
           this.$el.append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
         }
 
+        // TODO: should we set these listeners before render?
         this.setUpListeners();
 
         return this;
       },
 
       /**
-       * Create the HTML element that holds the unique ID for the object being
-       * cited.
-       * @returns {HTMLElement} Returns a span element containing the ID as text 
+       * Create a link element specifically for a citation model TODO - why does
+       * this differ so much from how we create citations for all the other
+       * models?
+       * @returns {HTMLElement}
        */
-      createIDElement: function () {
-        var model = this.metadata || this.model,
-          id = model.get("id"),
-          seriesId = model.get("seriesId"),
-          datasource = model.get("datasource");
+      createCitationModelLink: function () {
+        // Creating a volume element to display in Citations Modal Window
+        if (volume === "NULL") {
+          var volumeText = "";
+        } else {
+          var volumeText = "Vol. " + volume + ". ";
+        }
+        var volumeEl = $(document.createElement("span"))
+          .addClass("publisher")
+          .text(volumeText);
 
-        var idEl = $(document.createElement("span")).addClass("id");
-        if (seriesId) {
-          // Create a link for the identifier if it is a DOI
-          if (model.isDOI(seriesId) && !this.createLink) {
-            var doiURL = this.createDoiUrl(seriesId),
-              doiLink = $(document.createElement("a"))
-                .attr("href", doiURL)
-                .text(seriesId);
+        // Creating a 'pages' element to display in Citations Modal Window
+        if (page === "NULL") {
+          var pageText = "";
+        } else {
+          var pageText = "pp. " + page + ". ";
+        }
+        var pageEl = $(document.createElement("span"))
+          .addClass("publisher")
+          .text(pageText);
 
-            // Begin PANGAEA-specific override 1 (this is temporary) If this is
-            // a PENGAEA dataset with a seriesId, then don't show the pid.
+        var datasetLinkEl = $(document.createElement("span")).text(
+          "Cites Data: "
+        );
+
+        // Generate links for the cited datasets
+        var citationMetadataCounter = 0;
+        if (citationMetadata != undefined) {
+          for (var key in citationMetadata) {
+            citationMetadataCounter += 1;
+
+            var commaSeperator =
+              citationMetadataCounter < Object.keys(citationMetadata).length
+                ? ","
+                : ".";
+
+            var mdPID = key,
+              mdAuthorText = "",
+              additionalAuthors = "",
+              mdText = "",
+              mdDateText = "";
+
+            // Display first author in the dataset link
             if (
-              typeof datasource !== "undefined" &&
-              datasource === "urn:node:PANGAEA"
+              citationMetadata[key]["origin"] != undefined &&
+              Array.isArray(citationMetadata[key]["origin"])
             ) {
-              idEl.append(
-                doiLink,
-                $(document.createElement("span")).text(". ")
-              );
+              mdAuthorText = citationMetadata[key]["origin"][0];
+              additionalAuthors =
+                citationMetadata[key]["origin"].length > 1 ? " et al." : "";
+
+              mdText = "(" + mdAuthorText + additionalAuthors + " ";
             }
-            // End PANGAEA-specific override 1
-            else {
-              idEl.append(
-                doiLink,
-                $(document.createElement("span")).text(", version: ")
-              );
+
+            // save the date
+            if (citationMetadata[key]["datePublished"] != undefined) {
+              mdDateText = citationMetadata[key]["datePublished"].slice(0, 4);
+              if (mdText.length == 0) {
+                mdText = "(";
+              }
+              mdText += mdDateText;
+            } else if (citationMetadata[key]["dateUpdated"] != undefined) {
+              mdDateText = citationMetadata[key]["dateUpdated"].slice(0, 4);
+              if (mdText.length == 0) {
+                mdText = "(";
+              }
+              mdText += mdDateText;
+            } else if (citationMetadata[key]["dateModified"] != undefined) {
+              mdDateText = citationMetadata[key]["dateModified"].slice(0, 4);
+              if (mdText.length == 0) {
+                mdText = "(";
+              }
+              mdText += mdDateText;
             }
-          } else {
-            // Begin PANGAEA-specific override 2 (this is temporary) If this is
-            // a PENGAEA dataset with a seriesId, then don't show the pid.
-            if (
-              typeof datasource !== "undefined" &&
-              datasource === "urn:node:PANGAEA"
-            ) {
-              idEl.html(
-                $(document.createElement("span")).text(seriesId + ". ")
-              );
+
+            // retrieve the PID
+            if (citationMetadata[key]["id"] != undefined) {
+              mdPID = citationMetadata[key]["id"];
+            } else if (key.startsWith("10.")) {
+              mdPID = "doi:" + key;
             }
-            // End PANGAEA-specific override 2
-            else {
-              idEl.html(
-                $(document.createElement("span")).text(seriesId + ", version: ")
-              );
+
+            if (mdText.length > 0) {
+              mdText += ")" + commaSeperator + " ";
+
+              var targetLinkEl = $(document.createElement("a"))
+                .addClass("metrics-route-to-metadata")
+                .attr("data-id", key)
+                .attr(
+                  "href",
+                  MetacatUI.root + "/view/" + encodeURIComponent(mdPID)
+                )
+                .attr("target", "_blank")
+                .text(mdText);
+
+              datasetLinkEl.append(targetLinkEl);
             }
           }
         }
 
-        // Begin PANGAEA-specific override 3 (this is temporary) If this is a
-        // PENGAEA dataset with a seriesId, then don't show the pid. Return now.
-        if (
-          typeof datasource !== "undefined" &&
-          datasource === "urn:node:PANGAEA" &&
-          seriesId
-        ) {
-          return idEl;
-        }
-        // End PANGAEA-specific override 3
-        else if (model.isDOI(id) && !this.createLink) {
-          var doiURL = this.createDoiUrl(id),
-            doiLink = $(document.createElement("a"))
-              .attr("href", doiURL)
-              .text(id);
+        // creating citation display string
+        var linkEl = $(document.createElement("span")).append(
+          authorEl,
+          pubDateEl,
+          titleEl,
+          publisherEl,
+          volumeEl,
+          pageEl,
+          idEl
+        );
 
-          idEl.append(doiLink, $(document.createElement("span")).text(". "));
-        } else {
-          idEl.append($(document.createElement("span")).text(id + ". "));
+        if (datasetLinkEl !== "undefined" && citationMetadataCounter > 0) {
+          // Displaying the cites data on the new line
+          linkEl.prepend("<br>");
         }
+
+        return linkEl;
+      },
+
+      /**
+       * Create the HTML element that holds the unique ID for the object being
+       * cited.
+       * @returns {HTMLElement} Returns a span element containing the ID as text
+       */
+      createIDElement: function () {
+        const model = this.metadata || this.model;
+        const id = model.get("id");
+        const seriesId = model.get("seriesId");
+        const datasource = model.get("datasource");
+        const isPANGAEA = datasource && datasource === "urn:node:PANGAEA";
+
+        const idEl = document.createElement("span");
+        idEl.classList.add("id");
+        const seriesIDEl = document.createElement("span");
+        const separatorEl = document.createElement("span");
+        const pidEl = document.createElement("span");
+        const suffixEl = document.createElement("span");
+
+        // Series ID
+        if (seriesId) {
+          idEl.append(seriesIDEl, separatorEl);
+
+          // Create a link for the identifier if it is a DOI
+          if (model.isDOI(seriesId) && !this.createLink) {
+            seriesIDEl.innerHTML = this.createDoiLink(seriesId);
+          } else {
+            seriesIDEl.textContent = seriesId;
+          }
+          // If this is a PANGAEA dataset with a seriesId, then don't show the
+          // pid. Return now.
+          if (isPANGAEA) {
+            separatorEl.textContent = ". ";
+            return idEl;
+          } else {
+            separatorEl.textContent = ", version: ";
+          }
+        }
+
+        // PID
+        idEl.append(pidEl, suffixEl);
+        if (model.isDOI(id) && !this.createLink) {
+          pidEl.innerHTML = this.createDoiLink(id);
+        } else {
+          pidEl.textContent = id;
+        }
+        suffixEl.textContent = ". ";
 
         return idEl;
       },
@@ -612,6 +716,11 @@ define(["jquery", "underscore", "backbone", "models/SolrResult"], function (
         } else {
           return "https://doi.org/" + doi;
         }
+      },
+
+      createDoiLink: function (doi) {
+        const url = this.createDoiUrl(doi);
+        return document.createElement("a").attr("href", url).textContent(doi);
       },
 
       /**

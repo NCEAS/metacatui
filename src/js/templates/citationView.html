@@ -1,0 +1,17 @@
+<span class="id">
+  <span class="author"><%=author%></span>
+
+
+  <% if(doiURL){ %>
+    <a href="<%=doiURL%>"><%=doi%></a>
+  <% } else { %>
+    <span>
+      <%=id%>
+      <% if(seriesId){ %>
+        , version:
+      <% } else { %>
+       .
+      <% } %>
+    </span>
+  <% } %>
+</span>
