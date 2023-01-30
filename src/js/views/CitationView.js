@@ -284,7 +284,7 @@ define([
         if (model.type == "CitationModel") {
           const authorStr = model.get("origin") || "";
           if (authorStr.length > 0) {
-            authors = authorText.split(", ");
+            authors = authorStr.split(", ");
           }
         } else if (metadata) {
           // ii. metadata
@@ -299,6 +299,7 @@ define([
         } else {
           authors = [model.get("rightsHolder") || model.get("submitter") || ""];
         }
+        return authors;
       },
 
       /*
@@ -356,17 +357,18 @@ define([
         const authorText = this.getAuthorString(this.findAuthors());
 
         // 2. OTHER ATTRIBUTES =================================================
+        let title = "";
         // If the model is retrieved from the Metrics Service and of type
         // CitationModel, simply set the fields as retrieved from the response
         if (model.type == "CitationModel") {
           var datasource = model.get("journal");
           var dateUploaded = model.get("year_of_publishing");
-          var title = model.get("title");
-          var volume = model.get("volume");
-          var page = model.get("page");
-          var citationMetadata = model.get("citationMetadata");
+          title = model.get("title");
 
           // Not used:
+          // var volume = model.get("volume");
+          // var page = model.get("page");``
+          // var citationMetadata = model.get("citationMetadata");
           // var sourceId = model.get("source_id");
           // var journal = model.get("publisher");
         }
@@ -377,7 +379,7 @@ define([
           var pubDate = metadata.get("pubDate");
           var dateUploaded = metadata.get("dateUploaded");
           var datasource = metadata.get("datasource");
-          let title = metadata.get("title");
+          title = metadata.get("title");
           title = Array.isArray(title) ? title[0] : title;
           title = title ? title : this.title || "";
         }
@@ -392,6 +394,15 @@ define([
         // ===========================================================
         // Get the publish date and publisher if this is not a collection or
         // portal (Why not for portals or collections??? - TODO)
+        const authorEl = (this.authorEl = document.createElement("span"));
+        authorEl.classList.add("author");
+
+        const pubDateEl = (this.pubDateEl = document.createElement("span"));
+        pubDateEl.classList.add("pubdate");
+
+        const publisherEl = (this.publisherEl = document.createElement("span"));
+        publisherEl.classList.add("publisher");
+
         if (!this.isCollection) {
           // PUB DATE TEXT
           const pubDateText =
@@ -399,9 +410,9 @@ define([
 
           // PUBLISHER
           let publisherText = "";
+          const currentMN = MetacatUI.nodeModel.get("currentMemberNode");
 
           if (datasource) {
-            console.log(datasource);
             const datasourceMember = MetacatUI.nodeModel.getMember(datasource);
             const isCurrentNode =
               datasource == MetacatUI.appModel.get("nodeId");
@@ -413,26 +424,14 @@ define([
             } else {
               publisherText = datasource;
             }
-          } else if (currentMNMember) {
-            const currentMN = MetacatUI.nodeModel.get("currentMemberNode");
-            if (currentMN) {
-              publisherText = MetacatUI.nodeModel.getMember(currentMN).name;
-            }
+          } else if (currentMN) {
+            publisherText = MetacatUI.nodeModel.getMember(currentMN).name;
           }
           publisherText = publisherText ? publisherText + ". " : "";
 
-          // ELEMENTS
-          const authorEl = (this.authorEl = document.createElement("span"));
-          authorEl.classList.add("author");
+          // ADD TEXT TO ELEMENTS
           if (authorText) authorEl.textContent = authorText;
-
-          const pubDateEl = (this.pubDateEl = document.createElement("span"));
-          pubDateEl.classList.add("pubdate");
           if (pubDateText) pubDateEl.textContent = pubDateText + ". ";
-
-          const publisherEl = (this.publisherEl =
-            document.createElement("span"));
-          publisherEl.classList.add("publisher");
           if (publisherText) publisherEl.textContent = publisherText;
         }
 
@@ -441,6 +440,7 @@ define([
         if (model.type == "CitationModel") {
           // Make the ID element different for a Citation Model - WHY?
           // displaying decoded source url
+          const sourceUrl = this.model.get("source_url");
           var idEl = $(document.createElement("span")).addClass("publisher-id");
           idEl.append(
             decodeURIComponent(sourceUrl),
@@ -462,6 +462,7 @@ define([
 
           // ⭐️ CITATION MODEL-SPECIFIC ID TITLE FORMATTING
           if (model.type == "CitationModel") {
+            const sourceUrl = this.model.get("source_url");
             // Appending the title as a link
             titleEl = $(document.createElement("a"))
               .addClass("metrics-route-to-metadata")
@@ -489,7 +490,7 @@ define([
             var linkEl = $(document.createElement("a"))
               .addClass("route-to-metadata")
               .attr("data-id", model.get("id"))
-              .attr("href", metadata.createViewURL())
+              // .attr("href", metadata.createViewURL())
               .append(
                 this.authorEl,
                 this.pubDateEl,
@@ -507,7 +508,7 @@ define([
           var linkEl = $(document.createElement("a"))
             .addClass("route-to-metadata")
             .attr("data-id", model.get("seriesId"))
-            .attr("href", metadata.createViewURL())
+            // .attr("href", metadata.createViewURL())
             .append(titleEl);
           this.$el.append(
             this.authorEl,
@@ -533,6 +534,26 @@ define([
        * @returns {HTMLElement}
        */
       createCitationModelLink: function () {
+        const model = this.model;
+        var volume = model.get("volume");
+        var page = model.get("page");
+        const sourceUrl = this.model.get("source_url");
+
+        var idEl = $(document.createElement("span")).addClass("publisher-id");
+        idEl.append(
+          decodeURIComponent(sourceUrl),
+          $(document.createElement("span")).text(". ")
+        );
+
+        const authorEl = (this.authorEl = document.createElement("span"));
+        authorEl.classList.add("author");
+        const pubDateEl = (this.pubDateEl = document.createElement("span"));
+        pubDateEl.classList.add("pubdate");
+        const publisherEl = (this.publisherEl = document.createElement("span"));
+        publisherEl.classList.add("publisher");
+        const titleEl = document.createElement("span");
+
+        var citationMetadata = model.get("citationMetadata");
         // Creating a volume element to display in Citations Modal Window
         if (volume === "NULL") {
           var volumeText = "";
@@ -718,9 +739,13 @@ define([
         }
       },
 
+      /**
+       * Create an HTML link for the DOI
+       * @param {string} doi The DOI string with or without the "doi:" prefix
+       * @returns {string} The DOI link as an HTML string
+       */
       createDoiLink: function (doi) {
-        const url = this.createDoiUrl(doi);
-        return document.createElement("a").attr("href", url).textContent(doi);
+        return `<a href="${this.createDoiUrl(doi)}">${doi}</a>`;
       },
 
       /**
