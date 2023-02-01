@@ -77,10 +77,8 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
 
     /**
      * Initialize the Citation model
-     * @param {*} attrs
-     * @param {*} options
      */
-    initialize: function (attrs) {
+    initialize: function () {
       try {
         // Keep the origin array and origin string in sync with one another.
         // Since a change event won't be triggered if the origin string is set
@@ -234,11 +232,12 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         // Set the sourceModel with the regular backbone set (not the custom
         // setSourceModel method), so that we don't trigger a change event on
         // the sourceModel attribute and cause an infinite loop.
-        Backbone.Model.prototype.set.call(this, "sourceModel", sourceModel);
         delete newAttrs.sourceModel;
+        Backbone.Model.prototype.set.call(this, "sourceModel", sourceModel);
 
+        // If there is no sourceModel, then set the defaults on the model and
+        // stop here
         if (!sourceModel) {
-          // If there is no sourceModel, then set the new attributes and return
           this.set(newAttrs);
           return;
         }
@@ -246,23 +245,19 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         const year = this.getYearFromSourceModel(sourceModel);
         const title = this.getTitleFromSourceModel(sourceModel);
         const journal = this.getJournalFromSourceModel(sourceModel);
-
         const pid = this.getPidFromSourceModel(sourceModel);
         const seriesId = this.getSeriesIdFromSourceModel(sourceModel);
-
+        const originArray = this.getOriginArrayFromSourceModel(sourceModel);
         // Make the origin string as well, since both the string and array
         // should be in sync
-        const originArray = this.getOriginArrayFromSourceModel(sourceModel);
         const origin = this.originArrayToString(originArray);
 
         // Match the citation model attributes to the source model attributes
         if (year) newAttrs.year_of_publishing = year;
         if (title) newAttrs.title = title;
         if (journal) newAttrs.journal = journal;
-
         if (pid) newAttrs.pid = pid;
         if (seriesId) newAttrs.seriesId = seriesId;
-
         if (originArray) newAttrs.originArray = originArray;
         if (origin) newAttrs.origin = origin;
 
@@ -414,7 +409,8 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      */
     getPidFromSourceModel(sourceModel) {
       try {
-        const pid = sourceModel.get("id") || model.get("identifier") || null;
+        const pid =
+          sourceModel.get("id") || sourceModel.get("identifier") || null;
         return pid;
       } catch (error) {
         console.log(
@@ -662,17 +658,19 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
     },
 
     /**
-     * Checks if the citation has a DOI in the seriesId or pid attributes.
+     * Checks if the citation has a DOI in the seriesId or pid attributes. Must
+     * have a source model set on this model that has a isDOI function.
      * @returns {string} - The DOI of the seriesID, if it is a DOI, or the DOI
      * of the pid, if it is a DOI. Otherwise, returns null.
      * @since x.x.x
      */
     findDOI: function () {
       try {
+        if (!this.sourceModel || !this.sourceModel.isDOI) return null;
         const seriesID = this.get("seriesId");
         const pid = this.get("pid");
-        if (isDOI(seriesID)) return seriesID;
-        if (isDOI(pid)) return pid;
+        if (this.sourceModel.isDOI(seriesID)) return seriesID;
+        if (this.sourceModel.isDOI(pid)) return pid;
         return null;
       } catch (error) {
         console.log(
@@ -715,6 +713,19 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         );
         return null;
       }
+    },
+
+    /**
+     * If this citation has a source model, and if that source model is a
+     * DataONEObject, then return the results of the DataONEObject's
+     * `getUploadStatus` function
+     * @returns {string} - The upload status of the source model, if it is a
+     * DataONEObject, or null if it is not.
+     * @since x.x.x
+     * @see DataONEObject#getUploadStatus
+     */
+    getUploadStatus: function () {
+      return this.sourceModel ? this.sourceModel.get("uploadStatus") : null;
     },
   });
 
