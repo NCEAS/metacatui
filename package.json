@@ -4,7 +4,7 @@
   "description": "MetacatUI: A client-side web interface for DataONE data repositories",
   "main": "server.js",
   "dependencies": {
-    "@actions/core": "^1.8.2",
+    "@actions/core": "^1.9.1",
     "cheerio": "^1.0.0-rc.11",
     "express": "^4.17.1",
     "puppeteer": "^14.1.1"
