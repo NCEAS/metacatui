@@ -10,7 +10,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
    * those models.
    * @classcategory Models
    * @extends Backbone.Model
-   * @see https://app.swaggerhub.com/apis/nenuji/data-metrics/1.0.0.3
+   * @see https://app.swaggerhub.com/apis/nenuji/data-metrics
    */
   var Citation = Backbone.Model.extend({
     /**
@@ -49,11 +49,19 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      * @property {Backbone.Model} citationMetadata - TODO - what is this?
      * @property {Backbone.Model} sourceModel - The model to use to populate
      * this citation model. This can be a SolrResultsModel, a
-     * DataONEObjectModel, or an extension of either of those models. When this
-     * attribute is set, then the Citation model will be re-populated and all
-     * other attributes will be overwritten.
+     * DataONEObjectModel, or an extension of either of those models. Do not set
+     * this attribute directly. Instead, use the setSourceModel() method.
      * @property {string} pid - The pid of the object being cited
      * @property {string} seriesId - The seriesId of the object being cited
+     * @property {string} view_url - For citations that are in the local
+     * MetacatUI repository, this is the URL to the metadata view page for the
+     * object being cited.
+     * @property {string} pid_url - If the pid is a DOI, then this is the URL to
+     * the DOI landing page for the object being cited. This will automatically
+     * be set when the pid attribute is set.
+     * @property {string} seriesId_url - If the seriesId is a DOI, then this is
+     * the URL to the DOI landing page for the object being cited. This will
+     * automatically be set when the seriesId attribute is set.
      */
     defaults: function () {
       return {
@@ -72,51 +80,35 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         sourceModel: null,
         pid: null,
         seriesId: null,
+        view_url: null,
+        pid_url: null,
+        seriesId_url: null,
       };
     },
 
-    /**
-     * Initialize the Citation model
-     */
-    initialize: function () {
-      try {
-        // Keep the origin array and origin string in sync with one another.
-        // Since a change event won't be triggered if the origin string is set
-        // to the same value, we don't need to worry about an infinite loop.
-
-        // Make sure that the origin and the originArray are in sync to start
-        const originArray = this.originToArray(this.get("origin"));
-        this.set("originArray", originArray);
-        const origin = this.originArrayToString(this.get("originArray"));
-        this.set("origin", origin);
-
-        this.stopListening(this, "change:origin", this.originToArray);
-        this.listenTo(this, "change:origin", function (m, newOrigin) {
-          const newOriginArray = this.originToArray(newOrigin);
-          this.set("originArray", newOriginArray);
-        });
-
-        this.stopListening(
-          this,
-          "change:originArray",
-          this.originArrayToString
-        );
-        this.listenTo(this, "change:originArray", function (m, newOriginArray) {
-          const newOrigin = this.originArrayToString(newOriginArray);
-          this.set("origin", newOrigin);
-        });
-      } catch (error) {
-        console.log("CitationModel.initialize() Error: ", error);
-      }
-    },
+    // /**
+    //  * Initialize the Citation model
+    //  */
+    // initialize: function () {
+    //   try {
+    //   } catch (error) {
+    //     console.log("CitationModel.initialize() Error: ", error);
+    //   }
+    // },
 
     /**
-     * Reset this citation model's attributes to the default values. By default,
-     * this will not trigger a change event on the sourceModel attribute. If you
-     * want to trigger a change event on the sourceModel attribute, then pass
-     * true as the first argument.
-     * @param {boolean} [triggerSourceModelChange = false] If true, then trigger
-     * a change event on the sourceModel attribute
+     * Override the default Backbone.Model.set() method to format the title,
+     * page, and volume attributes before setting them, and ensure that
+     * attributes that are different formats of the same value are in sync,
+     * including: origin and originArray; pid and pid_url; seriesId and
+     * seriesId_url. This method will prevent the sourceModel attribute from
+     * being set here.
+     *
+     * @param {string|Object} key - The attribute name to set, or an object of
+     * attribute names and values to set.
+     * @param {string|number|Object} val - The value to set the attribute to.
+     * @param {Object} options - Options to pass to the set() method.
+     * @see https://backbonejs.org/#Model-set
      * @since x.x.x
      */
     set: function (key, val, options) {
@@ -132,29 +124,73 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           (attrs = {})[key] = val;
         }
 
-        // Set all attributes in the regular Backbone way, except for
-        // sourceModel. Set this attribute last, using the setSourceModel
-        // method. This must happen AFTER setting all the other attributes,
-        // because we want to populate the Citation Model with sourceModel
-        // attributes, and not have them overwritten by the other attributes
-        // being set during this call to set().
-        const sourceModel = attrs.sourceModel;
-        let setSourceModel = false;
-        if (Object.keys(attrs).includes("sourceModel")) {
-          setSourceModel = true;
-          delete attrs.sourceModel;
+        // Don't allow setting the sourceModel attribute here.
+        // TODO: how to handle this better?
+        delete attrs.sourceModel;
+
+        // If the title attribute is being set, then format it first
+        if (Object.keys(attrs).includes("title")) {
+          attrs.title = this.formatTitle(attrs.title);
         }
+        // If the page attribute is being set, then format it first
+        if (Object.keys(attrs).includes("page")) {
+          attrs.page = this.formatMetricsServiceString(attrs.page);
+        }
+        // If the volume attribute is being set, then format it first
+        if (Object.keys(attrs).includes("volume")) {
+          attrs.volume = this.formatMetricsServiceString(attrs.volume);
+        }
+
+        // Ensure origin and originArray contain the same data, with preference
+        // given to originArray. If originArray has content, then overwrite
+        // origin with the a string created from originArray. If *only* origin
+        // has content, then overwrite originArray with an array created from
+        // origin.
+        if (
+          Object.keys(attrs).includes("originArray") ||
+          Object.keys(attrs).includes("origin")
+        ) {
+          const strToArray = this.originToArray(attrs.origin);
+          const arrayToStr = this.originArrayToString(attrs.originArray);
+          if (!!arrayToStr) {
+            attrs.origin = arrayToStr;
+          } else {
+            attrs.originArray = strToArray;
+          }
+        }
+
+        // Ensure that the pid_url and seriesId_url attributes match the pid and
+        // seriesId attributes being set, and vice versa. If they don't match,
+        // then set them to the correct values. Prefer the content of the IDs
+        // over the URLs.
+        const idProperties = [
+          { id: "pid", url: "pid_url" },
+          { id: "seriesId", url: "seriesId_url" },
+        ];
+
+        idProperties.forEach(({ id, url }) => {
+          if (
+            Object.keys(attrs).includes(id) ||
+            Object.keys(attrs).includes(url)
+          ) {
+            if (!!attrs[id] && !attrs[url]) {
+              attrs[url] = this.DOItoURL(attrs[id]);
+            } else if (!!attrs[url] && !attrs[id]) {
+              attrs[id] = this.URLtoDOI(attrs[url]);
+            } else if (!!attrs[id] && !!attrs[url]) {
+              attrs[url] = this.DOItoURL(attrs[id]);
+            }
+          }
+        });
+
+        // Set modified attributes in the regular Backbone way
         Backbone.Model.prototype.set.call(this, attrs, options);
-        if (setSourceModel) {
-          this.setSourceModel(sourceModel);
-        }
       } catch (error) {
         console.log(
-          "Error running the custom set() method on CitationModel." +
-            `The arguments passed to set() were: KEY: ${key}, VAL: ${val}, ` +
-            `OPTIONS: ${options}. The error was:` +
-            error,
-          "Will attempt to set using the default set() method."
+          "Error in custom set() method on CitationModel. Will attempt to set" +
+            " using with Backbone set(). Attributes and error stack trace:",
+          { key, val, options },
+          error
         );
         Backbone.Model.prototype.set.call(this, key, val, options);
       }
@@ -164,108 +200,89 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      * Sets the sourceModel attribute and calls the method to populate the
      * Citation Model with the sourceModel attributes. Also removes any existing
      * listeners on the previous sourceModel and readds them to the new
-     * sourceModel.
+     * sourceModel. Use this method to set or change the sourceModel attribute.
      * @param {Backbone.Model} newSourceModel - The new sourceModel
      * @since x.x.x
      */
     setSourceModel(newSourceModel) {
       try {
-        // If the model is a Package, then get the metadata doc in this package
-        if (newSourceModel && newSourceModel.type == "Package") {
-          newSourceModel = newSourceModel.getMetadata();
-        }
-
         const EMLPartyAttrs =
           "change:individualName change:organizationName change:positionName";
+        newSourceModel =
+          newSourceModel && newSourceModel.type == "Package"
+            ? newSourceModel.getMetadata()
+            : newSourceModel;
 
-        // Stop listening to the old sourceModel and any old EMLParty models in
-        // the creators array
         if (this.sourceModel) {
           this.stopListening(this.sourceModel, "change");
-          const oldCreators = this.sourceModel.get("creators");
-          if (oldCreators && Array.isArray(oldCreators)) {
-            oldCreators.forEach((creator) => {
-              this.stopListening(creator, EMLPartyAttrs);
-            });
-          }
+          this.sourceModel
+            .get("creators")
+            .filter(Array.isArray)
+            .forEach((creator) => this.stopListening(creator, EMLPartyAttrs));
         }
 
-        // Set new listeners
         if (newSourceModel) {
-          // If any of the attributes on the sourceModel change, call the
-          // populateFromModel method again to update the citation.
           this.listenTo(newSourceModel, "change", this.populateFromModel);
-
-          // Listen for changes to the attributes on EMLParty models in the
-          // creators array. If any of those change, then update the citation.
-          const creators = newSourceModel.get("creators");
-          if (creators && Array.isArray(creators)) {
-            creators.forEach((creator) => {
-              this.listenTo(creator, EMLPartyAttrs, function () {
-                this.populateFromModel(newSourceModel);
-              });
-            });
-          }
+          newSourceModel
+            .get("creators")
+            .filter(Array.isArray)
+            .forEach((creator) =>
+              this.listenTo(creator, EMLPartyAttrs, () =>
+                this.populateFromModel(newSourceModel)
+              )
+            );
         }
 
-        // Populate this model from the new sourceModel
         this.populateFromModel(newSourceModel);
       } catch (error) {
-        console.log("Error setting sourceModel in a CitationModel: ", error);
+        console.log("Error in CitationModel.setSourceModel(). Error:", error);
       }
     },
 
     /**
-     * Populate this citation model's attributes from another model, such as a
+     * Do not call this method directly. Instead, call setSourceModel(), which
+     * will update listeners and then call this method. This method will
+     * populate this citation model's attributes from another model, such as a
      * SolrResult model or a DataONEObject model. This will reset and overwrite
      * any existing attributes on this model.
      * @param {Backbone.Model} model - The model to populate from, accepts
      * SolrResult or a model that is a DataONEObject or an extended
-     * DataONEObject
+     * DataONEObject. If no model is passed, then the model will be reset to the
+     * default attributes.
      * @since x.x.x
      */
-    populateFromModel: function (sourceModel) {
+    populateFromModel: function (newSourceModel) {
       try {
-        // Start with the default attributes so that we reset any attributes
-        // that are no longer in the sourceModel.
-        const newAttrs = this.defaults();
-        // Set the sourceModel with the regular backbone set (not the custom
-        // setSourceModel method), so that we don't trigger a change event on
-        // the sourceModel attribute and cause an infinite loop.
-        delete newAttrs.sourceModel;
-        Backbone.Model.prototype.set.call(this, "sourceModel", sourceModel);
+        // Populate this model from the new sourceModel
 
-        // If there is no sourceModel, then set the defaults on the model and
-        // stop here
-        if (!sourceModel) {
+        const newAttrs = this.defaults();
+        newAttrs.sourceModel = newSourceModel;
+
+        if (!newSourceModel) {
           this.set(newAttrs);
           return;
         }
 
-        const year = this.getYearFromSourceModel(sourceModel);
-        const title = this.getTitleFromSourceModel(sourceModel);
-        const journal = this.getJournalFromSourceModel(sourceModel);
-        const pid = this.getPidFromSourceModel(sourceModel);
-        const seriesId = this.getSeriesIdFromSourceModel(sourceModel);
-        const originArray = this.getOriginArrayFromSourceModel(sourceModel);
-        // Make the origin string as well, since both the string and array
-        // should be in sync
-        const origin = this.originArrayToString(originArray);
+        const attrGetters = {
+          year_of_publishing: this.getYearFromSourceModel,
+          title: this.getTitleFromSourceModel,
+          journal: this.getJournalFromSourceModel,
+          pid: this.getPidFromSourceModel,
+          seriesId: this.getSeriesIdFromSourceModel,
+          originArray: this.getOriginArrayFromSourceModel,
+          view_url: this.getViewUrlFromSourceModel,
+        };
 
-        // Match the citation model attributes to the source model attributes
-        if (year) newAttrs.year_of_publishing = year;
-        if (title) newAttrs.title = title;
-        if (journal) newAttrs.journal = journal;
-        if (pid) newAttrs.pid = pid;
-        if (seriesId) newAttrs.seriesId = seriesId;
-        if (originArray) newAttrs.originArray = originArray;
-        if (origin) newAttrs.origin = origin;
+        Object.entries(attrGetters).forEach(([attrName, getter]) => {
+          const attrValue = getter.call(this, newSourceModel);
+          if (attrValue) newAttrs[attrName] = attrValue;
+        });
 
         this.set(newAttrs);
       } catch (error) {
         console.log(
           "Error populating a CitationModel from the model: ",
-          sourceModel,
+          newSourceModel,
           " Error: ",
           error
         );
@@ -274,14 +291,13 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
 
     /**
      * Get the year from the sourceModel. First look for pubDate, then
-     * dateUploaded (both in SolrResult & ScienceMetadata/EML models). Lasly
+     * dateUploaded (both in SolrResult & ScienceMetadata/EML models). Lastly
      * check datePublished (found in ScienceMetadata/EML models only.)
      * @param {Backbone.Model} sourceModel - The model to get the year from
      * @returns {Number} - The year
      * @since x.x.x
      */
     getYearFromSourceModel(sourceModel) {
-      // get
       try {
         const year =
           this.yearFromDate(sourceModel.get("pubDate")) ||
@@ -290,9 +306,8 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         return year;
       } catch (error) {
         console.log(
-          "Error getting the year from the sourceModel: ",
+          "Error getting year from the sourceModel. Model and error:",
           sourceModel,
-          " Error: ",
           error
         );
         return this.defaults().year_of_publishing;
@@ -312,9 +327,8 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         return title;
       } catch (error) {
         console.log(
-          "Error getting the title from the sourceModel: ",
+          "Error getting title from the sourceModel. Model and error:",
           sourceModel,
-          " Error: ",
           error
         );
         return this.defaults().title;
@@ -352,9 +366,8 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         return journal;
       } catch (error) {
         console.log(
-          "Error getting the journal from the sourceModel: ",
+          "Error getting journal from the sourceModel. Model and error:",
           sourceModel,
-          " Error: ",
           error
         );
         return this.defaults().journal;
@@ -392,9 +405,8 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         return authors;
       } catch (error) {
         console.log(
-          "Error getting the originArray from the sourceModel: ",
+          "Error getting originArray from the sourceModel. Model and error:",
           sourceModel,
-          " Error: ",
           error
         );
         return this.defaults().originArray;
@@ -414,9 +426,8 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         return pid;
       } catch (error) {
         console.log(
-          "Error getting the pid from the sourceModel: ",
+          "Error getting the pid from the sourceModel. Model and error:",
           sourceModel,
-          " Error: ",
           error
         );
         return this.defaults().pid;
@@ -436,12 +447,38 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         return seriesId;
       } catch (error) {
         console.log(
-          "Error getting the seriesId from the sourceModel: ",
+          "Error getting the seriesId from the sourceModel. Model and error:",
           sourceModel,
-          " Error: ",
           error
         );
         return this.defaults().seriesId;
+      }
+    },
+
+    /**
+     * Use the sourceModel's createViewURL() method to get the viewUrl for the
+     * citation. This method is built into DataONEObject models, SolrResult models,
+     * as  well as Portal models. If the sourceModel doesn't have a createViewURL()
+     * method, then use the default viewUrl (null)
+     * @param {Backbone.Model} sourceModel - The model to get the viewUrl from
+     * @returns {String} - The viewUrl, or null if the sourceModel doesn't have
+     * a createViewURL() method.
+     * @since x.x.x
+     */
+    getViewUrlFromSourceModel(sourceModel) {
+      try {
+        if (sourceModel && sourceModel.createViewURL) {
+          return sourceModel.createViewURL();
+        } else {
+          return this.defaults().viewUrl;
+        }
+      } catch (error) {
+        console.log(
+          "Error getting the viewUrl from the sourceModel. Model and error:",
+          sourceModel,
+          error
+        );
+        return this.defaults().viewUrl;
       }
     },
 
@@ -488,6 +525,34 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
     },
 
     /**
+     * Cleans up the title for display within a citation. Removes a period from
+     * the end of the title if it exists and trims whitespace.This method is
+     * called any time a title is set on the Citation model.
+     * @param {string} title The title to format
+     * @returns {string} Returns the title with a period removed from the end if
+     * it exists.
+     * @since x.x.x
+     */
+    formatTitle: function (title) {
+      if (!title) return "";
+      return title.replace(/\.+$/, "").trim();
+    },
+
+    /**
+     * Cleans up the metrics service string for display within a citation. Used
+     * for volume and page numbers. Replaces "NULL" with an empty string.
+     * @param {string} str The metrics service string to format
+     * @returns {string} Returns the metrics service string with "NULL" replaced
+     * with an empty string.
+     * @since x.x.x
+     */
+    formatMetricsServiceString: function (str) {
+      if (!str) return "";
+      str = str === "NULL" ? "" : str;
+      return str;
+    },
+
+    /**
      * Given a date, extract the year as a number.
      * @param {Date|String|Number} date The date to extract the year from
      * @returns {Number} Returns the year as a number, or null if the date is
@@ -529,11 +594,12 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      */
     isFromNode: function (node) {
       try {
+        const sourceModel = this.get("sourceModel");
         return (
-          this.sourceModel &&
-          this.sourceModel.get &&
-          this.sourceModel.get("datasource") &&
-          this.sourceModel.get("datasource") === node
+          sourceModel &&
+          sourceModel.get &&
+          sourceModel.get("datasource") &&
+          sourceModel.get("datasource") === node
         );
       } catch (error) {
         console.log(
@@ -580,8 +646,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         if (!originArray) {
           return this.defaults().origin;
         }
-        const originStr = originArray ? originArray.join(", ") : "";
-        return originStr;
+        return originArray.join(", ");
       } catch (error) {
         console.log(
           "There was an error converting the origin array to a string.",
@@ -638,28 +703,78 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
     },
 
     /**
-     * Checks if a string is a DOI.
-     * @param {string} str - The string to check
-     * @returns {boolean} - True if the string is a DOI
-     * @see DataONEObject#isDOI
-     * @see SolrResult#isDOI
+     * Remove all DOI prefixes from a DOI string, including https, http, doi.org,
+     * dx.doi.org, and doi:.
+     * @param {string} str - The DOI string to remove prefixes from.
+     * @returns {string} - The DOI string without any prefixes.
      * @since x.x.x
      */
-    isDOI(str) {
+    removeAllDOIPrefixes: function (str) {
+      if (!str) return "";
+      // Remove https and http prefixes
+      str = str.replace(/^(https?:\/\/)?/, "");
+      // Remove domain prefixes, like doi.org and dx.doi.org
+      str = str.replace(/^(doi\.org\/|dx\.doi\.org\/)/, "");
+      // Remove doi: prefix
+      str = str.replace(/^doi:/, "");
+      return str;
+    },
+
+    /**
+     * Check if a string is a valid DOI.
+     * @param {string} doi - The string to check.
+     * @returns {boolean} - True if the string is a valid DOI, false otherwise.
+     * @since x.x.x
+     */
+    isDOI: function (str) {
       try {
         if (!str) return false;
-        // isDOI is a function available in both the SolrResult and
-        // DataONEObject models
-        return this.sourceModel.isDOI(str);
+        str = this.removeAllDOIPrefixes(str);
+        const doiRegex = /^10\.[0-9]{4,}(?:[.][0-9]+)*\/[^\s"<>]+$/;
+        return doiRegex.test(str);
       } catch (e) {
-        console.log(`Error checking if ${str} is a DOI. Returning false.`, e);
+        console.error("Error checking if string is a DOI", e);
         return false;
       }
     },
 
     /**
-     * Checks if the citation has a DOI in the seriesId or pid attributes. Must
-     * have a source model set on this model that has a isDOI function.
+     * Get the URL for the online location of the object being cited when it has
+     * a DOI. If the DOI is not passed to the function, or if the string is not
+     * a DOI, then an empty string is returned.
+     * @param {string} [str] - The DOI string with or without the "doi:" prefix.
+     * It may already be a URL, or it may be a DOI string. It also handles the
+     * case where the DOI is already a URL.
+     * @returns {string} - The DOI URL
+     * @since x.x.x
+     */
+    DOItoURL: function (str) {
+      if (!str) return "";
+      str = this.removeAllDOIPrefixes(str);
+      if (!this.isDOI(str)) return "";
+      return "https://doi.org/" + str;
+    },
+
+    /**
+     * Get the DOI from a DOI URL. The URL can be http or https, can include the
+     * "doi:" prefix or not, and can use "dx.doi.org" or "doi.org" as the
+     * domain. If a string is not passed to the function, or if the string is
+     * not for a DOI URL, then an empty string is returned.
+     * @param {string} url - The DOI URL
+     * @returns {string} - The DOI string, including the "doi:" prefix
+     * @since x.x.x
+     */
+    URLtoDOI: function (url) {
+      if (!url) return "";
+      const doiURLRegex =
+        /https?:\/\/(dx\.)?doi\.org\/(doi:)?(10\.[0-9]{4,}(?:[.][0-9]+)*\/[^\s"<>]+)/;
+      const doiURLMatch = url.match(doiURLRegex);
+      if (doiURLMatch) return "doi:" + doiURLMatch[3];
+      return "";
+    },
+
+    /**
+     * Checks if the citation has a DOI in the seriesId or pid attributes.
      * @returns {string} - The DOI of the seriesID, if it is a DOI, or the DOI
      * of the pid, if it is a DOI. Otherwise, returns null.
      * @since x.x.x
@@ -688,31 +803,6 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      */
     hasDOI: function () {
       return this.findDOI() ? true : false;
-    },
-
-    /**
-     * Get the URL for the online location of the object being cited when it has
-     * a DOI. If the DOI is not passed to the function, it will try to get the
-     * DOI from the seriesId first, then the PID.
-     * @param {string} [doi] - The DOI string with or without the "doi:" prefix
-     * @returns {string} - The DOI URL
-     * @since x.x.x
-     */
-    getDoiUrl: function (doi) {
-      try {
-        doi = doi || this.findDOI();
-        if (!doi) return null;
-
-        return doi.indexOf("http") == 0
-          ? doi
-          : "https://doi.org/" + doi.replace(/^doi:/, "");
-      } catch (e) {
-        console.log(
-          "Error getting the DOI URL for the citation. Returning null.",
-          e
-        );
-        return null;
-      }
     },
 
     /**
