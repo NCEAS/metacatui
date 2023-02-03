@@ -13,7 +13,8 @@
     "@jsdoc/util": "^0.2.4",
     "code-prettify": "^0.1.0",
     "common-path-prefix": "^3.0.0",
-    "jsdoc": "^3.6.6",
+    "jsdoc": "^4.0.0",
+    "@jsdoc/salty": "^0.2.3",
     "open-sans-fonts": "^1.6.2"
   },
   "scripts": {
