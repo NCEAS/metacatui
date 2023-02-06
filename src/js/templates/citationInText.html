@@ -1,0 +1,5 @@
+<%
+const originHTML = origin ? `${origin}. ` : '';
+const pubHTML = year_of_publishing ? `<time datetime="${year_of_publishing}">${year_of_publishing}</time>` : '';
+%>
+(<%= originHTML + pubHTML %>)

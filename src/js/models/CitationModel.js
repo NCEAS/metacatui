@@ -86,6 +86,54 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
       };
     },
 
+    /**
+     * Override the default Backbone.Model.parse() method to convert the
+     * citationMetadata object into a nested collection of CitationModels.
+     * @param {Object} response - The response from the metrics-service API
+     * @param {Object} options - Options to pass to the parse() method.
+     * @returns {Object} The parsed response
+     */
+    parse(response, options) {
+      try {
+        const cm = response.citationMetadata;
+        if (cm) {
+          // MUST import Citations collection using the inline require syntax to
+          // avoid circular dependencies. CitationModel requires Citations and
+          // Citations requires CitationModel. See
+          // https://requirejs.org/docs/api.html#circular
+          const Citations = require("collections/Citations");
+          if (cm && !(cm instanceof Citations)) {
+            const citationMetadata = Object.entries(cm).map(([pid, data]) => {
+              // Convert format from {id: {data}} to {data, id}
+              const item = { ...data, pid };
+              // Origin returned by metrics-service is actually an array, not a
+              // string
+              item.originArray = item.origin;
+              delete item.origin;
+              // Get the publish year from one the three dates returned by the
+              // metrics-service
+              const date =
+                item.datePublished || item.dateUpdated || item.dateModified;
+              item.year_of_publishing = date
+                ? new Date(date).getFullYear()
+                : null;
+
+              return item;
+            });
+            const citations = new Citations(citationMetadata);
+            response.citationMetadata = citations;
+          }
+        }
+        return response;
+      } catch (error) {
+        console.log(
+          "Error parsing a CitationModel. Returning response as-is.",
+          error
+        );
+        return response;
+      }
+    },
+
     // /**
     //  * Initialize the Citation model
     //  */
@@ -215,22 +263,22 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
 
         if (this.sourceModel) {
           this.stopListening(this.sourceModel, "change");
-          this.sourceModel
-            .get("creators")
-            .filter(Array.isArray)
-            .forEach((creator) => this.stopListening(creator, EMLPartyAttrs));
+          this.sourceModel.get("creators") ||
+            []
+              .filter(Array.isArray)
+              .forEach((creator) => this.stopListening(creator, EMLPartyAttrs));
         }
 
         if (newSourceModel) {
           this.listenTo(newSourceModel, "change", this.populateFromModel);
-          newSourceModel
-            .get("creators")
-            .filter(Array.isArray)
-            .forEach((creator) =>
-              this.listenTo(creator, EMLPartyAttrs, () =>
-                this.populateFromModel(newSourceModel)
-              )
-            );
+          newSourceModel.get("creators") ||
+            []
+              .filter(Array.isArray)
+              .forEach((creator) =>
+                this.listenTo(creator, EMLPartyAttrs, () =>
+                  this.populateFromModel(newSourceModel)
+                )
+              );
         }
 
         this.populateFromModel(newSourceModel);
