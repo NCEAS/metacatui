@@ -38,11 +38,12 @@ if (pid) {
   }
 }
 
-
-
 const idHTML = seriesIdHTML || pidHTML ? `<span class="id">${seriesIdHTML}${pidHTML}</span>` : '';
+
+const beginAnchor = view_url && !title ? `<a href="${view_url}">` : '';
+const endAnchor = view_url && !title ? '</a>' : '';
 %>
-<%= originHTML + pubHTML + titleHTML + journalHTML + volumeHTML + pageHTML + idHTML %>
+<%= beginAnchor + originHTML + pubHTML + titleHTML + journalHTML + volumeHTML + pageHTML + endAnchor + idHTML %>
 <%if(citationMetadata){%>
 <br>
 <span>Cites Data: </span>

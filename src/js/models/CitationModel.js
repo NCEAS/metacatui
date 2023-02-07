@@ -46,7 +46,13 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      * document was published
      * @property {number} page - The page of the journal where the document was
      * published
-     * @property {Backbone.Model} citationMetadata - TODO - what is this?
+     * @property {Citations} citationMetadata - A collection of nested Citation
+     * Models for DataONE data packages which are cited by main source dataset /
+     * document / article. For example, in the Portals view, we display a list
+     * of external publications that cite the portal data. In this case, each
+     * publication's citationMetadata is the list of local MetacatUI data
+     * packages cited in the publication. This property is set by the metrics
+     * service.
      * @property {Backbone.Model} sourceModel - The model to use to populate
      * this citation model. This can be a SolrResultsModel, a
      * DataONEObjectModel, or an extension of either of those models. Do not set
@@ -110,13 +116,22 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
               // string
               item.originArray = item.origin;
               delete item.origin;
-              // Get the publish year from one the three dates returned by the
-              // metrics-service
+              // Get the publish year
               const date =
                 item.datePublished || item.dateUpdated || item.dateModified;
               item.year_of_publishing = date
-                ? new Date(date).getFullYear()
+                ? new Date(date).getUTCFullYear()
                 : null;
+
+              // Because the citation metadata is always referencing an object
+              // in the local MetacatUI repository, we assume that the view_url
+              // exists for the given PID.
+              // DOIs from the metrics service are not prefixed with "doi:"
+              if (this.isDOI(pid) && !pid.startsWith("doi:")) {
+                pid = "doi:" + pid;
+              }
+              item.view_url =
+                MetacatUI.root + "/view/" + encodeURIComponent(pid);
 
               return item;
             });
@@ -372,6 +387,20 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
       try {
         let title = sourceModel.get("title");
         title = Array.isArray(title) ? title[0] : title;
+        // If this is a Data object, there may not be a title, so try to get the
+        // title from the file name
+        if (!title && sourceModel.get("fileName")) {
+          let fn = sourceModel.get("fileName");
+          const extRegex = /\.[^/.]+$/;
+          // Save the extension
+          let ext = fn ? fn.match(extRegex) : null;
+          // remove the period and make it all uppercase
+          ext = ext ? ext[0].replace(".", "").toUpperCase() : ext;
+          // Remove the extension and replace underscores with spaces
+          fn = fn.replace(extRegex, "").replace(/_+/g, " ");
+          title = fn ? fn : title;
+          title = title && ext ? title + " [" + ext + "]" : title;
+        }
         return title;
       } catch (error) {
         console.log(
@@ -440,9 +469,14 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           sourceModel.get("creator") ||
           // If it's a science metadata model or solr results, use origin
           sourceModel.get("origin") ||
-          // otherwise, this is probably a base D1 object model
-          sourceModel.get("rightsHolder") ||
-          sourceModel.get("submitter");
+          "";
+
+        // otherwise, this is probably a base D1 object model. Don't use
+        // rightsHolder or submitter for now, because it might not always be the
+        // author.
+
+        // sourceModel.get("rightsHolder") ||
+        // sourceModel.get("submitter");
 
         // Convert EML parties to strings & check for incorrectly escaped
         // characters
@@ -505,9 +539,9 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
 
     /**
      * Use the sourceModel's createViewURL() method to get the viewUrl for the
-     * citation. This method is built into DataONEObject models, SolrResult models,
-     * as  well as Portal models. If the sourceModel doesn't have a createViewURL()
-     * method, then use the default viewUrl (null)
+     * citation. This method is built into DataONEObject models, SolrResult
+     * models, as  well as Portal models. If the sourceModel doesn't have a
+     * createViewURL() method, then use the default viewUrl (null)
      * @param {Backbone.Model} sourceModel - The model to get the viewUrl from
      * @returns {String} - The viewUrl, or null if the sourceModel doesn't have
      * a createViewURL() method.
@@ -543,6 +577,9 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         if (typeof author.getName === "function") {
           author = author.getName();
         }
+
+        // Update the origin array asynchonously if the author is an ORCID
+        if (this.isOrcid(author)) this.originArrayFromOrcid(author);
 
         // Checking for incorrectly escaped characters
         if (/&amp;[A-Za-z0-9]/.test(author)) {
@@ -633,6 +670,61 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
     },
 
     /**
+     * Check if a string is a valid ORCID.
+     * @param {string} orcid The ORCID to check
+     * @returns {boolean} Returns true if the ORCID is valid, false otherwise
+     */
+    isOrcid: function (orcid) {
+      try {
+        if (!orcid) return false;
+        const regex = new RegExp(
+          "^https?:\\/\\/orcid.org\\/(\\d{4}-){3}(\\d{3}[0-9X])$"
+        );
+        return regex.test(orcid);
+      } catch {
+        return false;
+      }
+    },
+
+    /**
+     * Use the App Lookup model's get Accounts method to get the name of the
+     * author from their ORCID, then asynchronously set the originArray to
+     * contain that name.
+     * @param {string} orcid The ORCID to get the name for
+     */
+    originArrayFromOrcid: function (orcid) {
+      try {
+        const request = { term: orcid };
+        const model = this;
+
+        const callback = function (response) {
+          let name = null;
+          if (response) {
+            if (Array.isArray(response)) {
+              const label = response[0].label;
+              if (label) {
+                // Name is the format "Min Liew
+                // (http://orcid.org/0000-0002-5156-4610)" We want to return
+                // "Min Liew". It will always be two spaces and a "("
+                name = label.split("  (")[0];
+              }
+            }
+          }
+          if (name) {
+            console.log("Setting originArray to ", [name]);
+            model.set("originArray", [name]);
+          }
+        };
+        MetacatUI.appLookupModel.getAccountsAutocomplete(request, callback);
+      } catch (error) {
+        console.log(
+          "There was an error getting the name from the orcid.",
+          error
+        );
+      }
+    },
+
+    /**
      * Checks if the citation is for a DataONE object from a specific node (e.g.
      * PANGAEA)
      * @param {string} node - The node id to check, e.g. "urn:node:PANGAEA"
@@ -713,15 +805,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      * @since x.x.x
      */
     isArchivedAndNotIndexed: function () {
-      try {
-        return this.isArchived() && !this.archivedContentIsIndexed();
-      } catch (error) {
-        console.log(
-          "There was an error checking if the citation is archived and not " +
-            "indexed. The error was: ",
-          error
-        );
-      }
+      return this.isArchived() && !this.archivedContentIsIndexed();
     },
 
     /**

@@ -3,17 +3,19 @@ define([
   "underscore",
   "backbone",
   "models/CitationModel",
-  "text!templates/citationView.html",
-  "text!templates/citationInText.html",
-  "text!templates/citationArchived.html",
+  "text!templates/citations/citationFull.html",
+  "text!templates/citations/citationInText.html",
+  "text!templates/citations/citationFullArchived.html",
+  "text!templates/citations/citationInTextArchived.html",
 ], function (
   $,
   _,
   Backbone,
   CitationModel,
-  Template,
+  FullTemplate,
   InTextTemplate,
-  ArchivedTemplate
+  FullArchivedTemplate,
+  InTextArchivedTemplate
 ) {
   "use strict";
 
@@ -47,18 +49,22 @@ define([
       className: "citation",
 
       /**
-       * The templates for this view. HTML files are converted to Underscore.js
-       * templates
-       * @type {Underscore.Template}
+       * The CitationModel that this view is displaying. The view can be
+       * instantiated by passing in a CitationModel, or a SolrResult,
+       * DataONEObject, or an extension of those, and the view will create a
+       * CitationModel from it. To change the model after the view has been
+       * instantiated, use the {@link CitationView#setModel} method.
+       * @type {CitationModel}
        */
-      template: _.template(Template),
+      model: null,
 
       /**
        * @typedef {Object} StyleOption
        * @property {number} maxAuthors - The maximum number of authors to
        * display. See {@link CitationModel#maxAuthors}
        * @property {Underscore.Template} template - The Underscore.js template
-       * to use. See {@link CitationView#template}
+       * to use. HTML files are converted to Underscore.js templates. See
+       * {@link CitationView#template}
        * @property {boolean} default - Whether this is the default style
        * @property {Underscore.Template} archivedTemplate - The Underscore.js
        * template to use when the object is archived. See
@@ -82,54 +88,15 @@ define([
         inText: {
           maxAuthors: 1,
           template: _.template(InTextTemplate),
+          archivedTemplate: _.template(InTextArchivedTemplate),
         },
         full: {
           maxAuthors: 5,
-          template: _.template(Template),
-          archivedTemplate: _.template(ArchivedTemplate),
+          template: _.template(FullTemplate),
+          archivedTemplate: _.template(FullArchivedTemplate),
           default: true,
         },
       },
-
-      /**
-       * The CitationModel that this view is displaying. The view can be
-       * instantiated by passing in a CitationModel, or a SolrResult,
-       * DataONEObject, or an extension of those, and the view will create a
-       * CitationModel from it. To change the model after the view has been
-       * instantiated, use the {@link CitationView#setModel} method.
-       * @type {CitationModel}
-       */
-      model: null,
-
-      /**
-       * A default title for when there isn't one (e.g. a new document being edited)
-       * TODO: Option used by EML211EditorView. Rename to defaultTitle?
-       * @type {string}
-       */
-      title: null,
-
-      /**
-       * TODO
-       * Used by CitationListView, MDQRun, MetadataView, ProvChart, EML211EditorView
-       * @type {boolean}
-       */
-      createLink: true,
-
-      /**
-       * TODO
-       * Used by MDQRun, EML211EditorView
-       * @type {boolean}
-       */
-      createTitleLink: true,
-
-      /**
-       * The maximum number of authors to show in a full citation. Any authors
-       * after this will be shown as "et al." (e.g. "Smith, J., Jones, K., et
-       * al."). Set to any falsy value to show all authors.
-       * @type {number}
-       * @since x.x.x
-       */
-      maxAuthors: null,
 
       /**
        * The layout and style of the citation. Set this when instantiating the
@@ -138,9 +105,55 @@ define([
        * defined, then the default style will be used.
        * @type {string}
        * @since x.x.x
-       * @default "full"
        */
       style: null,
+
+      /**
+       * The templates for this view. HTML files are converted to Underscore.js
+       * templates. Configure this in the {@link CitationView#styles} property,
+       * and set it using the {@link CitationView#setStyle} method.
+       * @type {Underscore.Template}
+       */
+      template: null,
+
+      /**
+       * The maximum number of authors to show in a full citation. Any authors
+       * after this will be shown as "et al." (e.g. "Smith, J., Jones, K., et
+       * al."). Any falsy value will show all authors. Configure this in the
+       * {@link CitationView#styles} property, and set it using the
+       * {@link CitationView#setStyle} method.
+       * @type {number}
+       * @since x.x.x
+       */
+      maxAuthors: null,
+
+      /** A default title for when the Citation Model does not have a title.
+       * @type {string}
+       * @since x.x.x
+       */
+      defaultTitle: null,
+
+      /**
+       * Use {@link CitationView#defaultTitle} instead. Can be set with other
+       * init options for backwards compatibility.
+       * @type {string}
+       * @deprecated
+       */
+      title: null,
+
+      /**
+       * Set this to false to in order to never make the title element a link to
+       * the object, even if a view_url exists in the CitationModel.
+       * @type {boolean}
+       */
+      createTitleLink: true,
+
+      /**
+       * TODO - defaults to true in old CV...
+       * Used by CitationListView, MDQRun, MetadataView, ProvChart, EML211EditorView
+       * @type {boolean}
+       */
+      createLink: true,
 
       /**
        * Is executed when a new CitationView is created.
@@ -160,27 +173,37 @@ define([
        * model or metadata model is provided, then the ID will be ignored.
        */
       initialize: function (options) {
-        // Get all the options and apply them to this view, excluding the model
-        // and ID options, as well as style option, which we will set using
-        // special methods.
-        options = !options || typeof options != "object" ? {} : options;
+        try {
+          // Get all the options and apply them to this view, excluding the model
+          // and ID options, as well as style option, which we will set using
+          // special methods. For backwards compatibility, if a title is provided,
+          // set it as the default title.
+          options = !options || typeof options != "object" ? {} : options;
 
-        const style = options.style;
-        const modelOpt = options.model;
-        const metadataOpt = options.metadata;
-        const idOpt = options.id;
+          const style = options.style;
+          const modelOpt = options.model;
+          const metadataOpt = options.metadata;
+          const idOpt = options.id;
+          const optKeys = Object.keys(options);
+          if (optKeys.includes("title") && !optKeys.includes("defaultTitle")) {
+            options.defaultTitle = options.title;
+          }
 
-        delete options.style;
-        delete options.model;
-        delete options.metadata;
-        delete options.id;
+          delete options.style;
+          delete options.model;
+          delete options.metadata;
+          delete options.id;
+          delete options.title;
 
-        Object.keys(options).forEach(function (key) {
-          this[key] = options[key];
-        }, this);
-        this.setStyle(style, false);
-        this.setModel(modelOpt, metadataOpt, idOpt, false);
-        this.render();
+          Object.keys(options).forEach(function (key) {
+            this[key] = options[key];
+          }, this);
+          this.setStyle(style, false);
+          this.setModel(modelOpt, metadataOpt, idOpt, false);
+          this.render();
+        } catch (error) {
+          console.log("Error initializing CitationView", error);
+        }
       },
 
       /**
@@ -237,12 +260,12 @@ define([
       },
 
       /**
-       *
+       * Use this method to set the style for this view, and re-render.
        * @param {string} style - The style to set. If the style is not provided
        * or not defined in the {@link CitationView#styles} property, then the
        * default style will be used.
-       * @param {*} [render=true] - Whether to re-render the view after setting
-       * the style.
+       * @param {*} [render=true] - Whether to automatically re-render the view
+       * after setting the style.
        * @since x.x.x
        */
       setStyle: function (style, render = true) {
@@ -251,15 +274,19 @@ define([
           return allStyles[key].default;
         });
         style = style || defaultStyle;
-        // style = "inText"
         if (style && allStyles[style]) {
           Object.keys(allStyles[style]).forEach(function (key) {
             if (key != "default") {
               this[key] = allStyles[style][key];
             }
           }, this);
+          if (render) this.render();
+        } else {
+          console.log(
+            `The style "${style}" is not defined in the CitationView and no ` +
+              `default style is defined. The style will not be set.`
+          );
         }
-        if (render) this.render();
       },
 
       /**
@@ -267,66 +294,88 @@ define([
        * @return {CitationView} Returns the view.
        */
       render: function () {
-        // TODO - needed or not?
-        if (this.isCollection) this.el.classList.add("collection");
-        else this.el.classList.remove("collection");
+        try {
 
-        // Cases where we don't want to render.
-        // TODO - start with a skeleton/loading template, so that if we have no
-        // data, we don't show an empty citation
-        if (!this.model) {
-          this.$el.html("");
-          return;
-        }
-        if (this.model.isArchivedAndNotIndexed()) {
-          // TODO set template options?
-          this.showArchived();
-          return;
-        }
-        if (this.$el.children().length && this.model.getUploadStatus() == "p") {
-          // If the model is still uploading, then don't re-render.
-          return;
-        }
+          // TODO - needed or not?
+          if (this.isCollection) this.el.classList.add("collection");
+          else this.el.classList.remove("collection");
 
-        // Options to pass to the template
-        const options = this.model.toJSON();
-
-        // PANGAEA specific override. If this is a PANGAEA object, then do not
-        // show the UUID if the seriesId is a DOI.
-        if (
-          this.model.isFromNode("urn:node:PANGAEA") &&
-          this.model.isDOI(options.seriesId)
-        ) {
-          options.pid = "";
-        }
-
-        // Format the authors for display
-        options.origin = this.getAuthorString(options.originArray);
-
-        // Render the template
-        this.$el.html(this.template(options));
-
-        // If there are citationMetadata, as well as an element in the current
-        // template where they should be inserted, then show them inline.
-        if (options.citationMetadata) {
-          const citationMetaEl = this.el.querySelector(".citation-metadata");
-          if (citationMetaEl) {
-            // Render a CitationView for each citationMetadata
-            options.citationMetadata.forEach(function (citationMetadata, i) {
-              const citationView = new CitationView({
-                model: citationMetadata,
-                style: "inText",
-              });
-              citationMetaEl.appendChild(citationView.el);
-              // Put a comma after each citationMetadata except the last one
-              if (i < options.citationMetadata.length - 1) {
-                citationMetaEl.appendChild(document.createTextNode(", "));
-              }
-            });
+          // Cases where we don't want to render.
+          // TODO - start with a skeleton/loading template, so that if we have no
+          // data, we don't show an empty citation
+          if (!this.model) {
+            this.$el.html("");
+            return;
           }
-        }
+          if (
+            this.$el.children().length &&
+            this.model.getUploadStatus() == "p"
+          ) {
+            // If the model is still uploading, then don't re-render.
+            return;
+          }
 
-        return this;
+          // Switch to archived template if the object is archived & not indexed.
+          const template = this.model.isArchivedAndNotIndexed()
+            ? this.archivedTemplate
+            : this.template;
+
+          // If for some reason there is no template, then render an empty view
+          if (!template) {
+            this.$el.html("");
+            return;
+          }
+
+          // Options to pass to the template
+          const options = this.model.toJSON();
+          // PANGAEA specific override. If this is a PANGAEA object, then do not
+          // show the UUID if the seriesId is a DOI.
+          if (
+            this.model.isFromNode("urn:node:PANGAEA") &&
+            this.model.isDOI(options.seriesId)
+          ) {
+            options.pid = "";
+          }
+          // Format the authors for display
+          options.origin = this.getAuthorString(options.originArray);
+
+          if (!options.title) {
+            options.title = this.defaultTitle;
+          }
+
+          if (!this.createTitleLink) {
+            options.view_url = "";
+          }
+
+          // Render the template
+          this.$el.html(template(options));
+
+          // If there are citationMetadata, as well as an element in the current
+          // template where they should be inserted, then show them inline.
+          if (options.citationMetadata) {
+            const citationMetaEl = this.el.querySelector(".citation-metadata");
+            if (citationMetaEl) {
+              // Render a CitationView for each citationMetadata
+              options.citationMetadata.forEach(function (citationMetadata, i) {
+                const citationView = new CitationView({
+                  model: citationMetadata,
+                  style: "inText",
+                });
+                citationMetaEl.appendChild(citationView.el);
+                // Put a comma after each citationMetadata except the last one
+                if (i < options.citationMetadata.length - 1) {
+                  citationMetaEl.appendChild(document.createTextNode(", "));
+                }
+              });
+            }
+          }
+
+          return this;
+        } catch {
+          console.log("Error rendering the CitationView: ", error);
+          this.$el.html("");
+          return this;
+        }
       },
 
       /**
@@ -366,30 +415,6 @@ define([
             error
           );
           return "";
-        }
-      },
-
-      /**
-       * Render the template for when the document/object being cited is
-       * archived
-       * @returns {CitationView} the citation view
-       */
-      showArchived() {
-        try {
-          // Check if there is an archived template for this style
-          if (this.archivedTemplate) {
-            // If there is, then render it
-            this.$el.html(this.archivedTemplate());
-          }
-          // If there is no archived template, then render an empty view
-          else {
-            this.$el.html("");
-          }
-        } catch (error) {
-          console.log(
-            "There was an error showing a citation for an archived document " +
-              "in a CitationView. Error details: ".error
-          );
         }
       },
     }
