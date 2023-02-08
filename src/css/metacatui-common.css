@@ -2461,19 +2461,6 @@ button.modal-btn.btn.btn-default {
     all: unset;
     cursor: pointer;
 }
-.metrics-route-to-metadata > span.author {
-    color: #888;
-    font-weight: normal;
-}
-
-.metrics-route-to-metadata > span.pubdate {
-    color: #888;
-    font-weight: normal;
-}
-
-.metrics-route-to-metadata > span.publisher {
-    color: #888;
-}
 
 /***********
 Non-clickable (Disabled) button styling for metrics views

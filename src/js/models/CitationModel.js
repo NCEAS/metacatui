@@ -5,9 +5,10 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
   /**
    * @class Citation
    * @classdesc A Citation Model represents a single Citation Object returned by
-   * the metrics-service. A citation model can alternatively be populated with
-   * a SolrResultsModel or a DataONEObjectModel, or an extension of either of
-   * those models.
+   * the metrics-service. A citation model can alternatively be populated with a
+   * SolrResultsModel or a DataONEObjectModel, or an extension of either of
+   * those models. A Citation Model can represent a citation to a local
+   * MetacatUI object, or an external document or publication.
    * @classcategory Models
    * @extends Backbone.Model
    * @see https://app.swaggerhub.com/apis/nenuji/data-metrics
@@ -33,11 +34,13 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      * @property {number} year_of_publishing - Year in which the source dataset
      * / document / article was published
      * @property {string} source_url - URL to the source dataset / document /
-     * article
-     * @property {string} source_id - Unique identifier to the source dataset /
-     * document / article that cited the target dataset
+     * article. This is usually an external publication that cites one or more
+     * DataONE datasets.
+     * @property {string} source_id - Unique identifier for the source dataset /
+     * document / article that cited the target dataset. This is usually an
+     * external publication that cites one or more DataONE datasets.
      * @property {string} target_id - Unique identifier to the target DATAONE
-     * dataset. This is the dataset that was cited.
+     * dataset. This is the dataset that was cited by the "source" document.
      * @property {string} publisher - Publisher for the source dataset /
      * document / article
      * @property {string} journal - The journal where the the document was
@@ -46,18 +49,20 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      * document was published
      * @property {number} page - The page of the journal where the document was
      * published
-     * @property {Citations} citationMetadata - A collection of nested Citation
-     * Models for DataONE data packages which are cited by main source dataset /
-     * document / article. For example, in the Portals view, we display a list
-     * of external publications that cite the portal data. In this case, each
-     * publication's citationMetadata is the list of local MetacatUI data
-     * packages cited in the publication. This property is set by the metrics
-     * service.
+     * @property {Citations} citationMetadata - When this Citation Model refers
+     * to an external document, citationMetadata is a collection of DataONE
+     * datasets that the external document cites. This info is retrieved by the
+     * metrics service, then parsed and stored as a collection of Citation
+     * Models. This attribute is used in the Portals view, for example, where we
+     * display a list of external publications that cite the portal data. In
+     * this case, each publication's citationMetadata is the list of local
+     * MetacatUI data packages cited in the publication.
      * @property {Backbone.Model} sourceModel - The model to use to populate
      * this citation model. This can be a SolrResultsModel, a
      * DataONEObjectModel, or an extension of either of those models. Do not set
      * this attribute directly. Instead, use the setSourceModel() method.
-     * @property {string} pid - The pid of the object being cited
+     * @property {string} pid - The pid or unique identifier of the object being
+     * cited.
      * @property {string} seriesId - The seriesId of the object being cited
      * @property {string} view_url - For citations that are in the local
      * MetacatUI repository, this is the URL to the metadata view page for the
@@ -101,7 +106,13 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      */
     parse(response, options) {
       try {
+        // cm = DataONE datasets cited by this citation (external document)
         const cm = response.citationMetadata;
+        // strings that need formatting when coming from the metrics-service:
+        const toFormat = ["journal", "page", "volume", "publisher"];
+        toFormat.forEach((attr) => {
+          response[attr] = this.formatMetricsServiceString(response[attr]);
+        });
         if (cm) {
           // MUST import Citations collection using the inline require syntax to
           // avoid circular dependencies. CitationModel requires Citations and
@@ -195,14 +206,6 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         if (Object.keys(attrs).includes("title")) {
           attrs.title = this.formatTitle(attrs.title);
         }
-        // If the page attribute is being set, then format it first
-        if (Object.keys(attrs).includes("page")) {
-          attrs.page = this.formatMetricsServiceString(attrs.page);
-        }
-        // If the volume attribute is being set, then format it first
-        if (Object.keys(attrs).includes("volume")) {
-          attrs.volume = this.formatMetricsServiceString(attrs.volume);
-        }
 
         // Ensure origin and originArray contain the same data, with preference
         // given to originArray. If originArray has content, then overwrite
@@ -295,7 +298,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
                 )
               );
         }
-
+        Backbone.Model.prototype.set.call(this, "sourceModel", newSourceModel);
         this.populateFromModel(newSourceModel);
       } catch (error) {
         console.log("Error in CitationModel.setSourceModel(). Error:", error);
@@ -319,7 +322,6 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         // Populate this model from the new sourceModel
 
         const newAttrs = this.defaults();
-        newAttrs.sourceModel = newSourceModel;
 
         if (!newSourceModel) {
           this.set(newAttrs);
@@ -624,8 +626,9 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
     },
 
     /**
-     * Cleans up the metrics service string for display within a citation. Used
-     * for volume and page numbers. Replaces "NULL" with an empty string.
+     * Cleans up the metrics service string for display within a citation.
+     * Replaces "NULL" with an empty string, removes a period from the end of
+     * the string if it exists, removes curly braces, and trims whitespace.
      * @param {string} str The metrics service string to format
      * @returns {string} Returns the metrics service string with "NULL" replaced
      * with an empty string.
@@ -633,7 +636,14 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      */
     formatMetricsServiceString: function (str) {
       if (!str) return "";
+      // The metrics service returns "NULL" if there is no data
       str = str === "NULL" ? "" : str;
+      // Replace period at the end of the string
+      str = str.replace(/\.+$/, "");
+      // Remove curly braces
+      str = str.replace(/{|}/g, "");
+      // Remove any leading or trailing whitespace
+      str = str.trim();
       return str;
     },
 

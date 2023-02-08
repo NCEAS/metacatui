@@ -5,11 +5,11 @@ const dataID = pid ? ` data-id="${pid}"` : '';
 
 let titleHTML = title || '';
 if (title) {
-  if (view_url) {
-    titleHTML = `<span class="title"${dataID}><a href="${view_url}">${title}</a>. </span>`;
-  } else {
-    titleHTML = `<span class="title"${dataID}>${title}. </span>`;
-  }
+  const url = view_url || source_url || '';
+  const target = url && url.startsWith('http') ? ' target="_blank"' : '';
+  const titleA = url ? `<a href="${url}"${target}>` : '';
+  const titleAEnd = url ?'</a>' : '';
+  titleHTML = `${titleA}<span class="title"${dataID}>${title}</span>${titleAEnd}. `;
 }
 
 let journalHTML = journal ? `<span class="publisher">${journal}. </span>` : '';
@@ -29,7 +29,7 @@ if (seriesId) {
   }
 }
 
-let pidHTML = pid || '';
+let pidHTML = pid || source_id || '';
 if (pid) {
   if (pid_url) {
     pidHTML = `<span><a href="${pid_url}">${pid}</a>.</span>`;
