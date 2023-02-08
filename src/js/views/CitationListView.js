@@ -134,7 +134,6 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
                     function(model) {
                         var citationView = new CitationView({
                             model: model,
-                            createLink: true
                         });
                         var $tableRow = $(document.createElement("tr"));
                         var $tableCell = $(document.createElement("td"));

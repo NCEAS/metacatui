@@ -89,12 +89,26 @@ define([
           maxAuthors: 1,
           template: _.template(InTextTemplate),
           archivedTemplate: _.template(InTextArchivedTemplate),
+          render: "renderInText",
         },
         full: {
           maxAuthors: 5,
           template: _.template(FullTemplate),
           archivedTemplate: _.template(FullArchivedTemplate),
           default: true,
+          render: "renderFull",
+        },
+        fullLink: {
+          maxAuthors: 5,
+          template: _.template(FullTemplate),
+          archivedTemplate: _.template(FullArchivedTemplate),
+          render: "renderFullLink",
+        },
+        fullNoLink: {
+          maxAuthors: 5,
+          template: _.template(FullTemplate),
+          archivedTemplate: _.template(FullArchivedTemplate),
+          render: "renderFullNoLink",
         },
       },
 
@@ -134,28 +148,6 @@ define([
       defaultTitle: null,
 
       /**
-       * Use {@link CitationView#defaultTitle} instead. Can be set with other
-       * init options for backwards compatibility.
-       * @type {string}
-       * @deprecated
-       */
-      title: null,
-
-      /**
-       * Set this to false to in order to never make the title element a link to
-       * the object, even if a view_url exists in the CitationModel.
-       * @type {boolean}
-       */
-      createTitleLink: true,
-
-      /**
-       * TODO - defaults to true in old CV...
-       * Used by CitationListView, MDQRun, MetadataView, ProvChart, EML211EditorView
-       * @type {boolean}
-       */
-      createLink: true,
-
-      /**
        * Is executed when a new CitationView is created.
        * @param {Object} options - A literal object with options to pass to the
        * view.
@@ -167,40 +159,68 @@ define([
        * @param {Backbone.Model} [options.metadata] - This option is allowed for
        * backwards compatibility, but it is recommended to use the model option
        * instead. This will be ignored if a model is set. A model passed in this
-       * option will be used to populate a CitationModel.
+       * option will be used to populate a CitationModel. Using the metadata
+       * option will also set the style to "fullLink", unless another style is
+       * specified.
+       * @param {string} [options.createLink] - Allowed for backwards
+       * compatibility. Setting this option to true will set the style to
+       * "fullLink", unless another style is specified. The preferred method
+       * is to set the style option directly.
+       * @param {string} [options.createTitleLink] - Allowed for backwards
+       * compatibility. Setting this option to false will set the style to
+       * "fullNoLink", unless another style is specified. The preferred method
+       * is to set the style option directly.
+       * @param {string} [options.title] - Allowed for backwards compatibility.
+       * Setting this option will set the default title for this view, on the
+       * {@link CitationView#defaultTitle} property. The preferred method is to
+       * set the defaultTitle property directly.
        * @param {string} [options.id] - When no model and no metadata are
        * provided, this option can be used to query for an object to cite. If a
        * model or metadata model is provided, then the ID will be ignored.
        */
       initialize: function (options) {
         try {
-          // Get all the options and apply them to this view, excluding the model
-          // and ID options, as well as style option, which we will set using
-          // special methods. For backwards compatibility, if a title is provided,
-          // set it as the default title.
-          options = !options || typeof options != "object" ? {} : options;
 
-          const style = options.style;
+          options = !options || typeof options != "object" ? {} : options;
+          const optKeys = Object.keys(options);
+
+          // Identify the model from the options, for backwards compatibility.
           const modelOpt = options.model;
           const metadataOpt = options.metadata;
           const idOpt = options.id;
-          const optKeys = Object.keys(options);
+          
+          // Convert deprecated options to the new options.
           if (optKeys.includes("title") && !optKeys.includes("defaultTitle")) {
             options.defaultTitle = options.title;
           }
+          let style = options.style;
+          if (
+            (options.createLink === true && !optKeys.includes("style")) ||
+            (options.metadata && !optKeys.includes("style"))
+          ) {
+            style = "fullLink";
+          }
+          if (options.createTitleLink === false && !optKeys.includes("style")) {
+            style = "fullNoLink";
+          }
 
-          delete options.style;
+          // Don't set any of the deprecated on the the model.
           delete options.model;
           delete options.metadata;
           delete options.id;
           delete options.title;
+          delete options.createLink;
+          delete options.createTitleLink;
+          // The style is set with the setStyle() method.
+          delete options.style;
 
+          // Get all the options and apply them to this view.
           Object.keys(options).forEach(function (key) {
             this[key] = options[key];
           }, this);
+
           this.setStyle(style, false);
-          this.setModel(modelOpt, metadataOpt, idOpt, false);
-          this.render();
+          this.setModel(modelOpt, metadataOpt, idOpt, true);
         } catch (error) {
           console.log("Error initializing CitationView", error);
         }
@@ -269,24 +289,43 @@ define([
        * @since x.x.x
        */
       setStyle: function (style, render = true) {
+        // Find the attributes configured for the style, or the default style
         const allStyles = this.styles;
         const defaultStyle = Object.keys(allStyles).find(function (key) {
           return allStyles[key].default;
         });
         style = style || defaultStyle;
-        if (style && allStyles[style]) {
-          Object.keys(allStyles[style]).forEach(function (key) {
-            if (key != "default") {
-              this[key] = allStyles[style][key];
-            }
-          }, this);
-          if (render) this.render();
-        } else {
+        let styleAttrs = style ? allStyles[style] : null;
+
+        if (!styleAttrs) {
           console.log(
             `The style "${style}" is not defined in the CitationView and no ` +
-              `default style is defined. The style will not be set.`
+              `default style is defined. The style will not be set and no ` +
+              `attributes will be updated.`
           );
+          return
         }
+
+        // make a copy of the style attributes so that they can be modified
+        // without affecting the original. Use spread.
+        styleAttrs = { ...styleAttrs };
+        // Set the style attributes on this view, except for the default, which
+        // is only used to determine the default style, and the render method,
+        // which is used to find and set the render method separately.
+        Object.keys(styleAttrs).forEach(function (key) {
+          if (key != "default" && key != "render") {
+            this[key] = styleAttrs[key];
+          }
+        }, this);
+        // Find and set the render method for this style
+        const renderMethod = styleAttrs.render ? this[styleAttrs.render] : null;
+        if (typeof renderMethod == "function") {
+          this.renderStyle = renderMethod;
+        } else {
+          this.renderStyle = null;
+        }
+        this.style = style;
+        if (render) this.render();
       },
 
       /**
@@ -295,7 +334,6 @@ define([
        */
       render: function () {
         try {
-
           // TODO - needed or not?
           if (this.isCollection) this.el.classList.add("collection");
           else this.el.classList.remove("collection");
@@ -336,46 +374,110 @@ define([
           ) {
             options.pid = "";
           }
-          // Format the authors for display
-          options.origin = this.getAuthorString(options.originArray);
 
           if (!options.title) {
             options.title = this.defaultTitle;
           }
 
-          if (!this.createTitleLink) {
-            options.view_url = "";
+          // Find the name of the render method to use that is in the style
+          // definition
+          if (typeof this.renderStyle == "function") {
+            this.renderStyle(options, template);
           }
-
-          // Render the template
-          this.$el.html(template(options));
-
-          // If there are citationMetadata, as well as an element in the current
-          // template where they should be inserted, then show them inline.
-          if (options.citationMetadata) {
-            const citationMetaEl = this.el.querySelector(".citation-metadata");
-            if (citationMetaEl) {
-              // Render a CitationView for each citationMetadata
-              options.citationMetadata.forEach(function (citationMetadata, i) {
-                const citationView = new CitationView({
-                  model: citationMetadata,
-                  style: "inText",
-                });
-                citationMetaEl.appendChild(citationView.el);
-                // Put a comma after each citationMetadata except the last one
-                if (i < options.citationMetadata.length - 1) {
-                  citationMetaEl.appendChild(document.createTextNode(", "));
-                }
-              });
-            }
-          }
-
           return this;
-        } catch {
+        } catch (error) {
           console.log("Error rendering the CitationView: ", error);
           this.$el.html("");
           return this;
         }
+      },
+
+      /**
+       * The render method for the "full" style. Renders the complete citation,
+       * including the title, authors, and publication information. Includes a
+       * link around the title that points to the view page for the object.
+       * @param {Object} options - The options to pass to the template.
+       * @param {function} template - The template associated with this style,
+       * or it's archive template if the object is archived and not indexed.
+       * @since x.x.x
+       */
+      renderFull: function (options, template) {
+        // Format the authors for display
+        options.origin = this.getAuthorString(options.originArray);
+        this.el.innerHTML = template(options);
+        // If there are citationMetadata, as well as an element in the current
+        // template where they should be inserted, then show them inline.
+        if (options.citationMetadata) {
+          const citationMetaEl = this.el.querySelector(".citation-metadata");
+          if (citationMetaEl) {
+            // Render a CitationView for each citationMetadata
+            options.citationMetadata.forEach(function (citationMetadata, i) {
+              const citationView = new CitationView({
+                model: citationMetadata,
+                style: "inText",
+              });
+              // citationMetaEl.appendChild(citationView.render().el);
+              // citationMetaEl.app
+              citationMetaEl.appendChild(citationView.el);
+              // Put a comma after each citationMetadata except the last one
+              if (i < options.citationMetadata.length - 1) {
+                citationMetaEl.appendChild(document.createTextNode(", "));
+              }
+            });
+          }
+        }
+      },
+
+      /**
+       * The render method for the "fullLink" style. Identical to the "full"
+       * style, except that it includes a link around all the content that
+       * points to the view page for the object.
+       * @param {Object} options - The options to pass to the template.
+       * @param {function} template - The template associated with this style,
+       * or it's archive template if the object is archived and not indexed.
+       * @since x.x.x
+       */
+      renderFullLink: function (options, template) {
+        this.renderFullNoLink(options, template);
+        // Add a link around all the content and update the html
+        const url = options.view_url || "";
+        if (url) {
+          const id = options.pid || options.seriesId || "";
+          const dataId = id ? ` data-id="${id}" ` : "";
+          const content = this.el.innerHTML;
+          const aClass = "route-to-metadata";
+          this.el.innerHTML = `<a class="${aClass}"${dataId}href="${url}">${content}</a>`;
+        }
+      },
+
+      /**
+       * The render method for the "fullNoLink" style. Identical to the "full"
+       * style, except that it removes any links in the content (e.g. the link
+       * around the title).
+       * @param {Object} options - The options to pass to the template.
+       * @param {function} template - The template associated with this style,
+       * or it's archive template if the object is archived and not indexed.
+       * @since x.x.x
+       */
+      renderFullNoLink: function (options, template) {
+        this.renderFull(options, template);
+        // Remove any <a> tags that are already in the HTML
+        this.el.querySelectorAll("a").forEach(function (aTag) {
+          aTag.outerHTML = aTag.innerHTML;
+        });
+      },
+
+      /**
+       * The render method for the "inText" style. Renders the citation in the
+       * format of a parenthetical citation, including the authors and year.
+       * @param {Object} options - The options to pass to the template.
+       * @param {function} template - The template associated with this style,
+       * or it's archive template if the object is archived and not indexed.
+       * @since x.x.x
+       */
+      renderInText: function (options, template) {
+        options.origin = this.getAuthorString(options.originArray);
+        this.el.innerHTML = template(options);
       },
 
       /**
@@ -384,7 +486,6 @@ define([
        * @param {string[]} authors - An array of author names. The string will
        * be truncated with et al. if there are more authors than this limit set
        * on this view.
-       *
        * @returns {string} The formatted author string or an empty string if
        * there are no authors
        */

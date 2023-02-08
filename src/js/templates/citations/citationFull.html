@@ -6,9 +6,9 @@ const dataID = pid ? ` data-id="${pid}"` : '';
 let titleHTML = title || '';
 if (title) {
   if (view_url) {
-    titleHTML = `<span class="title"${dataID}}><a href="${view_url}">${title}</a>. </span>`;
+    titleHTML = `<span class="title"${dataID}><a href="${view_url}">${title}</a>. </span>`;
   } else {
-    titleHTML = `<span class="title"${dataID}}>${title}. </span>`;
+    titleHTML = `<span class="title"${dataID}>${title}. </span>`;
   }
 }
 
@@ -23,18 +23,18 @@ let seriesIdHTML = seriesId || '';
 if (seriesId) {
   const idSep = pid ? ', version: ' : '.';
   if (seriesId_url) {
-    seriesIdHTML = `<span class="seriesId"><a href="${seriesId_url}">${seriesId}</a>${idSep}</span>`;
+    seriesIdHTML = `<span><a href="${seriesId_url}">${seriesId}</a>${idSep}</span>`;
   } else {
-    seriesIdHTML = `<span class="seriesId">${seriesId}${idSep}</span>`;
+    seriesIdHTML = `<span>${seriesId}${idSep}</span>`;
   }
 }
 
 let pidHTML = pid || '';
 if (pid) {
   if (pid_url) {
-    pidHTML = `<span class="pid"><a href="${pid_url}">${pid}</a>.</span>`;
+    pidHTML = `<span><a href="${pid_url}">${pid}</a>.</span>`;
   } else {
-    pidHTML = `<span class="pid">${pid}.</span>`;
+    pidHTML = `<span>${pid}.</span>`;
   }
 }
 
