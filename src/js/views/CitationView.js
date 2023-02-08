@@ -180,7 +180,6 @@ define([
        */
       initialize: function (options) {
         try {
-
           options = !options || typeof options != "object" ? {} : options;
           const optKeys = Object.keys(options);
 
@@ -188,7 +187,7 @@ define([
           const modelOpt = options.model;
           const metadataOpt = options.metadata;
           const idOpt = options.id;
-          
+
           // Convert deprecated options to the new options.
           if (optKeys.includes("title") && !optKeys.includes("defaultTitle")) {
             options.defaultTitle = options.title;
@@ -220,7 +219,7 @@ define([
           }, this);
 
           this.setStyle(style, false);
-          this.setModel(modelOpt, metadataOpt, idOpt, true);
+          this.setModel(modelOpt, metadataOpt, idOpt, false);
         } catch (error) {
           console.log("Error initializing CitationView", error);
         }
@@ -262,15 +261,6 @@ define([
             model.setSourceModel(sourceModel);
           }
           this.model = model;
-
-          // TODO - needed or not?
-          this.isCollection = false;
-          if (sourceModel && sourceModel.getType) {
-            const type = sourceModel.getType();
-            if (type == "collection" || type == "portal") {
-              this.isCollection = true;
-            }
-          }
           // Set up listeners to re-render when there are any changes to the model
           this.listenTo(this.model, "change", this.render);
           if (render) this.render();
@@ -303,7 +293,7 @@ define([
               `default style is defined. The style will not be set and no ` +
               `attributes will be updated.`
           );
-          return
+          return;
         }
 
         // make a copy of the style attributes so that they can be modified
@@ -334,10 +324,6 @@ define([
        */
       render: function () {
         try {
-          // TODO - needed or not?
-          if (this.isCollection) this.el.classList.add("collection");
-          else this.el.classList.remove("collection");
-
           // Cases where we don't want to render.
           // TODO - start with a skeleton/loading template, so that if we have no
           // data, we don't show an empty citation
@@ -418,7 +404,7 @@ define([
               });
               // citationMetaEl.appendChild(citationView.render().el);
               // citationMetaEl.app
-              citationMetaEl.appendChild(citationView.el);
+              citationMetaEl.appendChild(citationView.render().el);
               // Put a comma after each citationMetadata except the last one
               if (i < options.citationMetadata.length - 1) {
                 citationMetaEl.appendChild(document.createTextNode(", "));

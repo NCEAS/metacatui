@@ -249,6 +249,21 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           }
         });
 
+        // If citationMetadata is being changed, remove old listeners and add
+        // new ones
+        if (Object.keys(attrs).includes("citationMetadata")) {
+          if (this.citationMetadata) {
+            this.stopListening(this.citationMetadata);
+          }
+          if (attrs.citationMetadata && attrs.citationMetadata.length) {
+            this.listenTo(
+              attrs.citationMetadata,
+              "update",
+              this.trigger.bind(this, "change")
+            );
+          }
+        }
+
         // Set modified attributes in the regular Backbone way
         Backbone.Model.prototype.set.call(this, attrs, options);
       } catch (error) {
