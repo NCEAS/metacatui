@@ -110,6 +110,13 @@ define([
           archivedTemplate: _.template(FullArchivedTemplate),
           render: "renderFullNoLink",
         },
+        copiable: {
+          // className: "citation copiable",
+          maxAuthors: 5,
+          template: _.template(FullTemplate),
+          archivedTemplate: _.template(FullArchivedTemplate),
+          render: "renderCopiable",
+        },
       },
 
       /**
@@ -247,6 +254,7 @@ define([
       setModel: function (newModel, metadata, id, render = true) {
         try {
           this.stopListening(this.model);
+          const view = this;
 
           let model = newModel;
           let sourceModel = newModel || metadata;
@@ -255,10 +263,12 @@ define([
             if (!sourceModel && id) {
               require(["models/SolrResult"], function (SolrResult) {
                 sourceModel = new SolrResult({ id: id });
+                sourceModel.getCitationInfo();
+                model.setSourceModel(sourceModel);
               });
-              sourceModel.getCitationInfo();
+            } else {
+              model.setSourceModel(sourceModel);
             }
-            model.setSourceModel(sourceModel);
           }
           this.model = model;
           // Set up listeners to re-render when there are any changes to the model
@@ -482,11 +492,11 @@ define([
           const numAuthors = authors.length;
           // If the maxAuthors is not set then allow all authors to be shown
           const maxAuthors = this.maxAuthors || numAuthors;
-          const displayAuthors = authors.slice(0, maxAuthors);
+          const authorsGrp1 = authors.slice(0, maxAuthors);
           const separator = numAuthors > 2 ? ", " : " ";
           const conjunction = numAuthors > 2 ? ", and " : " and ";
 
-          const authorString = displayAuthors.reduce((str, author, i) => {
+          const authorString = authorsGrp1.reduce((str, author, i) => {
             if (i === 0) return author;
             if (i + 1 === numAuthors) return `${str}${conjunction}${author}`;
             return `${str}${separator}${author}`;

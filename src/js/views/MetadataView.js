@@ -19,7 +19,7 @@ define(['jquery',
   'views/ExpandCollapseListView',
   'views/ProvStatementView',
   'views/PackageTableView',
-  'views/CitationView',
+  'views/CitationHeaderView',
   'views/AnnotationView',
   'views/MarkdownView',
   'text!templates/metadata/metadata.html',
@@ -40,7 +40,7 @@ define(['jquery',
 ],
   function ($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
     MetricsModel, Utilities, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
-    CitationView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
+    CitationHeaderView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
     VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
     MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
     'use strict';
@@ -1034,13 +1034,9 @@ define(['jquery',
 
         insertCitation: function () {
           if (!this.model) return false;
-
           //Create a citation element from the model attributes
-          var citation = new CitationView({
-            model: this.model,
-            createLink: false
-          }).render().el;
-          this.$(this.citationContainer).html(citation);
+          var header = new CitationHeaderView({ model: this.model });
+          this.$(this.citationContainer).html(header.render().el);
         },
 
         insertDataSource: function () {
@@ -1361,6 +1357,7 @@ define(['jquery',
           }
 
           //Create clickable "Copy" buttons to copy text (e.g. citation) to the user's clipboard
+
           var copyBtns = $(this.controlsContainer).find(".copy");
           _.each(copyBtns, function (btn) {
             //Create a copy citation button
