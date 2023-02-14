@@ -672,6 +672,7 @@ represents 1 unit of the given distance measurement. */
 
 .layer-detail--no-header .layer-detail__content {
   margin-top: 0;
+  justify-self: center;
 }
 
 .layer-detail__toggle {
