@@ -48,44 +48,62 @@ define([
       template: _.template(MetricModalTemplate),
 
       /**
-       * The name of the metric currently being displayed
-       * @type {string}
-       */
-      metricName: null,
-
-      /**
        * The model that contains the metrics data
        * @type {MetricsModel}
        */
       metricsModel: null,
 
       /**
-       * The name of the metrics to display in the modal. These will be
-       * displayed as a circular queue, so the first metric will be displayed
-       * after the last metric.
-       * @type {string[]}
+       * A metric option is an object with properties that define how to display
+       * a metric in the modal.
+       * @typedef {Object} MetricOption
+       * @property {string} name - The name of the metric, as it will be
+       * displayed in the modal.
+       * @property {string} icon - The font awesome icon class for the metric
+       * @property {string} metricValue - The name of the property in the
+       * metrics model that contains the value for this metric. This will be
+       * displayed in the title of the modal.
+       * @property {string} render - The name of the method within this view
+       * that will render the metric. This method will be called after the
+       * basic modal template has been rendered.
        */
-      metrics: ["Citations", "Downloads", "Views"],
 
       /**
-       * The index of the current metric in the metrics array
-       * @type {number}
+       * The metrics to include in the modal, in the order they will be
+       * displayed.
+       * @type {MetricOption[]}
        */
-      metricIndex: null,
+      metrics: [
+        {
+          name: "Downloads",
+          icon: "icon-cloud-download",
+          metricValue: "totalDownloads",
+          render: "drawMetricsChart",
+        },
+        {
+          name: "Citations",
+          icon: "icon-quote-left",
+          metricValue: "totalCitations",
+          render: "showCitations",
+        },
+        {
+          name: "Views",
+          icon: "icon-eye-open",
+          metricValue: "totalViews",
+          render: "drawMetricsChart",
+        },
+      ],
 
       /**
-       * The name of the metric that comes before the current metric in the
-       * circular queue
+       * The name of the metric currently being displayed
        * @type {string}
        */
-      prevMetricName: null,
+      metricName: null,
 
       /**
-       * The name of the metric that comes after the current metric in the
-       * circular queue
-       * @type {string}
+       * Views that are subviews of this view
+       * @type {Backbone.View[]}
        */
-      nextMetricName: null,
       subviews: [],
 
       /**
@@ -124,59 +142,6 @@ define([
       },
 
       /**
-       * Get the previous metric name in the circular queue
-       * @param {string} currentMetricName - The name of the metric currently
-       * being displayed
-       * @returns {string} The name of the previous metric
-       */
-      getPreviousMetric: function (currentMetricName) {
-        if (currentMetricName != "undefined") {
-          this.metricIndex = this.metrics.indexOf(currentMetricName);
-        }
-
-        // Implementing a circular queue to get the previous metric
-        return this.metrics[
-          (this.metricIndex + this.metrics.length - 1) % this.metrics.length
-        ];
-      },
-
-      /**
-       * Get the next metric name in the circular queue
-       * @param {string} currentMetricName - The name of the metric currently
-       * being displayed
-       * @returns {string} The name of the next metric
-       */
-      getNextMetric: function (currentMetricName) {
-        if (currentMetricName != "undefined") {
-          this.metricIndex = this.metrics.indexOf(currentMetricName);
-        }
-
-        // Implementing a circular queue to get the next metric
-        return this.metrics[
-          (this.metricIndex + this.metrics.length + 1) % this.metrics.length
-        ];
-      },
-
-      /**
-       * Make the modal visible
-       */
-      show: function () {
-        this.$el.modal("show");
-      },
-
-      /**
-       * Remove the modal from the DOM
-       */
-      teardown: function () {
-        this.$el.modal("hide");
-        this.$el.data("modal", null);
-
-        _.invoke(this.subviews, "onClose");
-
-        this.remove();
-      },
-
-      /**
        * Set a listener that will render the view when the modal is shown
        */
       render: function () {
@@ -184,7 +149,6 @@ define([
 
         this.$el.on("shown", function () {
           thisView.renderView();
-          thisView.drawMetricsChart();
           thisView.trigger("renderComplete");
         });
 
@@ -199,161 +163,144 @@ define([
        */
       renderView: function () {
         try {
-          this.metricNameLemma = this.metricName
-            .toLowerCase()
-            .substring(0, this.metricName.length - 1);
+          // Get the current metric name and associated options
+          const metric = this.metricName || this.metrics[0].name;
+          const metricOpts = this.metrics.find(
+            (metric) => metric.name === this.metricName
+          );
 
-          if (this.metricName === "Citations") {
-            var resultDetails = this.metricsModel.get("resultDetails"),
-              citationCollection;
+          // Get the name in the singular form in lower case.
+          this.metricNameLemma = metric.slice(0, -1).toLowerCase();
 
-            if (resultDetails) {
-              citationCollection = new Citations(resultDetails["citations"], {
-                parse: true,
-              });
-            } else {
-              citationCollection = new Citations();
-            }
+          // Render the template
+          this.el.innerHTML = this.template({
+            metricName: this.metricName,
+            metricNameLemma: this.metricNameLemma,
+            nextMetric: this.getNextMetric() || "",
+            prevMetric: this.getPreviousMetric() || "",
+            metricIcon: metricOpts.icon,
+            metricValue: this.metricsModel.get(metricOpts.metricValue),
+          });
 
-            this.citationCollection = citationCollection;
-
-            // Checking if there are any citations available for the List display.
-            if (this.metricsModel.get("totalCitations") == 0) {
-              var citationList = new CitationList({
-                citationsForDataCatalogView: true,
-                pid: this.pid,
-              });
-            } else {
-              var citationList = new CitationList({
-                citations: this.citationCollection,
-                citationsForDataCatalogView: true,
-                pid: this.pid,
-              });
-            }
-
-            this.citationList = citationList;
-
-            this.$el.html(
-              this.template({
-                metricName: this.metricName,
-                metricNameLemma: this.metricNameLemma,
-                metricValue: this.metricsModel.get("totalCitations"),
-                metricBody: "",
-                hideReportCitationButton: MetacatUI.appModel.get(
-                  "hideReportCitationButton"
-                ),
-              })
-            );
-            // Find the modal-body
-            var modalBody = this.$el.find(".modal-body");
-            // Insert the citation list
-            modalBody.append(this.citationList.render().$el);
-          } else {
-            if (this.metricName === "Views") {
-              this.$el.html(
-                this.template({
-                  metricName: this.metricName,
-                  metricNameLemma: this.metricNameLemma,
-                  metricValue: this.metricsModel.get("totalViews"),
-                  metricBody: "<div class='metric-chart'></div>",
-                })
-              );
-            }
-            if (this.metricName === "Downloads") {
-              this.$el.html(
-                this.template({
-                  metricName: this.metricName,
-                  metricNameLemma: this.metricNameLemma,
-                  metricValue: this.metricsModel.get("totalDownloads"),
-                  metricBody: "<div class='metric-chart'></div>",
-                })
-              );
-            }
+          // Call the specific render function for the metric
+          if (typeof this[metricOpts.render] === "function") {
+            this[metricOpts.render]();
           }
         } catch (e) {
           console.error("Failed to render the MetricModelView: ", e);
-
-          let errorMessage = MetacatUI.appView.showAlert({
+          MetacatUI.appView.showAlert({
             message:
-              "Something went wrong while displaying the " +
-              this.metricNameLemma +
-              "s for this dataset.",
+              `Something went wrong displaying the ${this.metricNameLemma}s ` +
+              `for this dataset.`,
             classes: "alert-info",
             container: this.$el,
             replaceContents: true,
             includeEmail: true,
           });
         } finally {
-          this.$el.modal({ show: false }); // dont show modal on instantiation
+          this.$el.modal({ show: false }); // don't show modal on instantiation
         }
+      },
+
+      /**
+       * Get the previous metric name in the circular queue
+       * @returns {string} The name of the previous metric
+       */
+      getNextMetric: function () {
+        return this.getMetricAtOffset(1);
+      },
+
+      /**
+       * Get the next metric name in the circular queue
+       * @returns {string} The name of the next metric
+       */
+      getPreviousMetric: function () {
+        return this.getMetricAtOffset(-1);
+      },
+
+      /**
+       * Get the metric name at the given offset from the current metric
+       * @param {number} n - The offset from the current metric
+       * @returns {string} The name of the metric at the given offset
+       * @since x.x.x
+       */
+      getMetricAtOffset: function (n) {
+        const currentMetricName = this.metricName || this.metrics[0].name;
+        const currentMetricIndex = this.metrics.findIndex(
+          (metric) => metric.name === currentMetricName
+        );
+        let metricIndex = (currentMetricIndex + n) % this.metrics.length;
+        if (metricIndex < 0) {
+          metricIndex = this.metrics.length + metricIndex;
+        }
+        return this.metrics[metricIndex].name;
+      },
+
+      /**
+       * Make the modal visible
+       */
+      show: function () {
+        this.$el.modal("show");
       },
 
       /**
        * Show the previous metric in the modal
        */
       showPreviousMetricModal: function () {
-        this.nextMetricName = this.metricName;
-        this.metricName = this.getPreviousMetric(this.metricName);
-        this.nextMetricName = this.getPreviousMetric(this.metricName);
+        this.metricName = this.getPreviousMetric();
+        this.renderView();
+      },
 
-        this.metricNameLemma = this.metricName
-          .toLowerCase()
-          .substring(0, this.metricName.length - 1);
-        if (this.metricName === "Citations") {
-          var resultDetails = this.metricsModel.get("resultDetails");
-          var citationCollection = new Citations(resultDetails["citations"], {
+      /**
+       * Show the next metric in the modal
+       */
+      showNextMetricModal: function () {
+        this.metricName = this.getNextMetric();
+        this.renderView();
+      },
+
+      /**
+       * Show the citations in the modal. Replace current content.
+       */
+      showCitations: function () {
+        var resultDetails = this.metricsModel.get("resultDetails");
+        let citationCollection;
+
+        if (resultDetails) {
+          citationCollection = new Citations(resultDetails["citations"], {
             parse: true,
           });
-
-          this.citationCollection = citationCollection;
-
-          // Checking if there are any citations available for the List display.
-          if (this.metricsModel.get("totalCitations") == 0) {
-            var citationList = new CitationList({
-              citationsForDataCatalogView: true,
-              pid: this.pid,
-            });
-          } else {
-            var citationList = new CitationList({
-              citations: this.citationCollection,
-              citationsForDataCatalogView: true,
-              pid: this.pid,
-            });
-          }
-
-          this.citationList = citationList;
-
-          this.$el.html(
-            this.template({
-              metricName: this.metricName,
-              metricNameLemma: this.metricNameLemma,
-              metricValue: this.metricsModel.get("totalCitations"),
-              metricBody: this.citationList.render().$el.html(),
-            })
-          );
+        } else {
+          citationCollection = new Citations();
         }
-        if (this.metricName === "Views") {
-          this.$el.html(
-            this.template({
-              metricName: this.metricName,
-              metricNameLemma: this.metricNameLemma,
-              metricValue: this.metricsModel.get("totalViews"),
-              metricBody: "<div class='metric-chart'></div>",
-            })
-          );
-          this.drawMetricsChart();
+
+        this.citationCollection = citationCollection;
+
+        // Checking if there are any citations available for the List display.
+        if (this.metricsModel.get("totalCitations") == 0) {
+          var citationList = new CitationList({
+            citationsForDataCatalogView: true,
+            pid: this.pid,
+          });
+        } else {
+          var citationList = new CitationList({
+            citations: this.citationCollection,
+            citationsForDataCatalogView: true,
+            pid: this.pid,
+          });
         }
-        if (this.metricName === "Downloads") {
-          this.$el.html(
-            this.template({
-              metricName: this.metricName,
-              metricNameLemma: this.metricNameLemma,
-              metricValue: this.metricsModel.get("totalDownloads"),
-              metricBody: "<div class='metric-chart'></div>",
-            })
-          );
-          this.drawMetricsChart();
-        }
+
+        this.citationList = citationList;
+        this.subviews.push(citationList);
+
+        // TODO - update citation count?
+
+        // Find the modal-body and insert the citation list, rather than
+        // inserting the HTML from the citationList directly into the modal
+        // template. This way, when the citation List is updated, the modal
+        // will display the updated list.
+        var modalBody = this.$el.find(".modal-body");
+        modalBody.append(this.citationList.render().$el);
       },
 
       /**
@@ -418,77 +365,14 @@ define([
       },
 
       /**
-       * Show the next metric in the modal
-       */
-      showNextMetricModal: function () {
-        this.prevMetricName = this.metricName;
-        this.metricName = this.getNextMetric(this.metricName);
-        this.nextMetricName = this.getNextMetric(this.metricName);
-
-        this.metricNameLemma = this.metricName
-          .toLowerCase()
-          .substring(0, this.metricName.length - 1);
-        if (this.metricName === "Citations") {
-          var resultDetails = this.metricsModel.get("resultDetails");
-          var citationCollection = new Citations(resultDetails["citations"], {
-            parse: true,
-          });
-
-          this.citationCollection = citationCollection;
-
-          // Checking if there are any citations available for the List display.
-          if (this.metricsModel.get("totalCitations") == 0) {
-            var citationList = new CitationList({
-              citationsForDataCatalogView: true,
-              pid: this.pid,
-            });
-          } else {
-            var citationList = new CitationList({
-              citations: this.citationCollection,
-              citationsForDataCatalogView: true,
-              pid: this.pid,
-            });
-          }
-
-          this.citationList = citationList;
-
-          this.$el.html(
-            this.template({
-              metricName: this.metricName,
-              metricNameLemma: this.metricNameLemma,
-              metricValue: this.metricsModel.get("totalCitations"),
-              metricBody: this.citationList.render().$el.html(),
-            })
-          );
-        }
-        if (this.metricName === "Views") {
-          this.$el.html(
-            this.template({
-              metricName: this.metricName,
-              metricNameLemma: this.metricNameLemma,
-              metricValue: this.metricsModel.get("totalViews"),
-              metricBody: "<div class='metric-chart'></div>",
-            })
-          );
-          this.drawMetricsChart();
-        }
-        if (this.metricName === "Downloads") {
-          this.$el.html(
-            this.template({
-              metricName: this.metricName,
-              metricNameLemma: this.metricNameLemma,
-              metricValue: this.metricsModel.get("totalDownloads"),
-              metricBody: "<div class='metric-chart'></div>",
-            })
-          );
-          this.drawMetricsChart();
-        }
-      },
-
-      /**
        * Draw the metrics chart
        */
       drawMetricsChart: function () {
+        // Create <div class='metric-chart'></div>
+        const chartContainer = document.createElement("div");
+        chartContainer.className = "metric-chart";
+        // Prepend to modal-body
+        this.$el.find(".modal-body").prepend(chartContainer);
         var metricCount = MetacatUI.appView.currentView.metricsModel.get(
           this.metricName.toLowerCase()
         );
@@ -509,6 +393,18 @@ define([
         modalMetricChart.render();
 
         this.subviews.push(modalMetricChart);
+      },
+
+      /**
+       * Remove the modal from the DOM
+       */
+      teardown: function () {
+        this.$el.modal("hide");
+        this.$el.data("modal", null);
+
+        _.invoke(this.subviews, "onClose");
+
+        this.remove();
       },
 
       /**
