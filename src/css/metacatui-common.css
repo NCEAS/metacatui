@@ -8914,3 +8914,15 @@ CSS library fixes
 body > #extension-is-installed{
   display: none;
 }
+
+
+#data-package-table-head > .file-header > th:not(:first-child, :last-child) {
+	border-right: 1px solid #E3E3E3;
+	height: 30px;
+}
+
+
+.file-table-container {
+	height: 21em;
+	overflow: scroll;
+}
