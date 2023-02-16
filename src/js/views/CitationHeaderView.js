@@ -9,11 +9,13 @@ define([
 
   /**
    * @class CitationHeaderView
-   * @classdesc The CitationHeaderView shows a formatted citation for a package,
-   * including title, authors, year, UUID/DOI, etc.
+   * @classdesc The CitationHeaderView shows a citation information displayed as
+   * a header, with expandable author list (if there are more than a certain
+   * number of authors).
    * @classcategory Views
-   * @extends Backbone.View
+   * @extends CitationView
    * @screenshot views/CitationHeaderView.png
+   * @since x.x.x
    * @constructor
    */
   var CitationHeaderView = CitationView.extend(
@@ -34,8 +36,20 @@ define([
        * will always be displayed, and the rest will be viewable with a click.
        * The last author will always be displayed.
        * @type {number}
+       * @default 20
        */
-      maxAuthors: 15,
+      maxAuthors: 20,
+
+      /**
+       * See {@link CitationView#styles}. This view only uses the header style.
+       * @type {Object}
+       */
+      styles: {
+        header: {
+          template: _.template(HeaderTemplate),
+          render: "renderHeader",
+        },
+      },
 
       /**
        * IDs used in the template to identify the elements that will be
@@ -58,18 +72,20 @@ define([
       },
 
       /**
-       * See {@link CitationView#initialize}. Override some options to make sure
-       * the header style is used.
+       * Tracks whether the list of authors is open or closed. This will be set
+       * automatically when the button is clicked. Set to true when initializing
+       * the view to initially render the list open.
+       * @type {boolean}
+       */
+      authorListIsOpen: false,
+
+      /**
+       * See {@link CitationView#initialize}. Override the style option to make
+       * sure the header style is used.
        */
       initialize: function (options) {
+        if (!options || typeof options !== "object") options = {};
         options.style = "header";
-        this.styles = {
-          header: {
-            maxAuthors: options.maxAuthors || 15,
-            template: _.template(HeaderTemplate),
-            render: "renderHeader",
-          },
-        };
         CitationView.prototype.initialize.call(this, options);
       },
 
@@ -79,7 +95,6 @@ define([
        * @param {string} options.style - The style to use for rendering
        */
       renderHeader: function (options, template) {
-        console.log("renderHeader", options);
         // Split the authors into two groups, one with the maximum number of
         // authors configured (including the last author), and one with the
         // rest.
@@ -137,16 +152,22 @@ define([
           els[key] = this.el.querySelector(`#${options.elIDs[key]}`);
         });
 
+        // If there are fewer than maxAuthors, then the template will not render
+        // a button or ellipsis. Otherwise, set the open/close behavior
         if (els.btn) {
-          // Toggle the list when the button is clicked, need this view as the
-          // context.
           els.btn.addEventListener("click", this.toggleList.bind(this));
         }
         if (els.ellipsis) {
           els.ellipsis.addEventListener("click", this.openList.bind(this));
         }
         if (els.ellipsis || els.btn) {
-          this.closeList();
+          // Set the list to be open or closed based on the initial setting of
+          // in the view
+          if (this.authorListIsOpen) {
+            this.openList();
+          } else {
+            this.closeList();
+          }
         }
       },
 
@@ -154,52 +175,66 @@ define([
        * Open the list of authors, showing all authors.
        */
       openList: function () {
-        const els = this.els;
-        els.grp2.style.display = "";
-        els.btn.innerHTML = "- Show fewer authors";
-        els.ellipsis.style.display = "none";
-        // Reorder the elements
-        els.btn.parentNode.append(
-          els.grp1,
-          els.grp2,
-          els.last,
-          els.btn,
-          els.ellipsis
-        );
+        try {
+          const els = this.els;
+          els.grp2.style.display = "";
+          els.btn.innerHTML = "- Show fewer authors";
+          els.ellipsis.style.display = "none";
+          // Reorder the elements
+          els.btn.parentNode.append(
+            els.grp1,
+            els.grp2,
+            els.last,
+            els.btn,
+            els.ellipsis
+          );
+          this.authorListIsOpen = true;
+        } catch (error) {
+          console.log(
+            "Failed to expand an author list in the citation view.",
+            error
+          );
+        }
       },
 
       /**
-       * Close the list of authors, showing only the first group of authors.
-       * The last author will always be shown.
+       * Close the list of authors, showing only the first group of authors. The
+       * last author will always be shown.
        */
       closeList: function () {
-        const els = this.els;
-        els.grp2.style.display = "none";
-        els.btn.innerHTML = `+ Show ${this.numAuthorsGrp2} more authors`;
-        els.ellipsis.style.display = "";
-        // Reorder elements
-        els.btn.parentNode.append(
-          els.grp1,
-          els.ellipsis,
-          els.last,
-          els.btn,
-          els.grp2
-        );
+        try {
+          const els = this.els;
+          els.grp2.style.display = "none";
+          els.btn.innerHTML = `+ Show ${this.numAuthorsGrp2} more authors`;
+          els.ellipsis.style.display = "";
+          // Reorder elements
+          els.btn.parentNode.append(
+            els.grp1,
+            els.ellipsis,
+            els.last,
+            els.btn,
+            els.grp2
+          );
+          this.authorListIsOpen = false;
+        } catch (error) {
+          console.log(
+            "Failed to collapse an author list in the citation view.",
+            error
+          );
+        }
       },
 
       /**
-       * Toggle the visibility of the second group of authors.
-       * If the second group is visible, then it will be hidden.
-       * If the second group is hidden, then it will be shown.
+       * Toggle the visibility of the second group of authors. If the second
+       * group is visible, then it will be hidden. If the second group is
+       * hidden, then it will be shown.
        */
       toggleList: function () {
         const els = this.els;
-        if (els.grp2) {
-          if (els.grp2.style.display === "none") {
-            this.openList();
-          } else {
-            this.closeList();
-          }
+        if (this.authorListIsOpen) {
+          this.closeList();
+        } else {
+          this.openList();
         }
       },
     }

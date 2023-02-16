@@ -81,7 +81,9 @@ define([
       /**
        * The format and layout options that are available for this view. The
        * `default` option is used when no format is specified in the options.
-       * @type {StyleOption}
+       * @type {Object}
+       * @property {StyleOption} styleName - Each property in the styles object
+       * maps a style name to a StyleOption object.
        * @since x.x.x
        */
       styles: {
