@@ -1,10 +1,10 @@
 /* global define */
 define([
-      'underscore', 
-      'jquery', 
+      'underscore',
+      'jquery',
       'backbone',
       'models/DataONEObject',
-      'models/metadata/eml211/EML211', 
+      'models/metadata/eml211/EML211',
       'models/metadata/eml211/EMLOtherEntity',
       'views/DownloadButtonView',
       'text!templates/dataItem.html'],
@@ -130,7 +130,7 @@ define([
                   // Restrict item sharing depending on access
                   this.canShare = this.canShareItem();
                   attributes.canShare = this.canShare;
-                
+
 
                   //Get the number of attributes for this item
                   if(this.model.type != "EML"){
@@ -409,8 +409,11 @@ define([
                   if (this.model.get("type") == "Metadata") {
                     attributes.isMetadata = true;
                   }
+                  else {
+                    this.$el.addClass("collapse");
+                  }
 
-                  //Download button 
+                  //Download button
                   if (this.model.get("dataUrl") !== undefined || this.model.get("url") !== undefined) {
                     if (this.model.get("dataUrl") !== undefined) {
                       attributes.downloadUrl = this.model.get("dataUrl");
@@ -427,10 +430,10 @@ define([
                     infoLink = MetacatUI.root + "/view/" + encodeURIComponent(metadataId) + "#" + encodeURIComponent(id)
                     attributes.moreInfoLink = infoLink;
                   }
-                  
+
                   this.$el.html( this.template(attributes) );
 
-                  
+
                 }
 
                 this.$el.data({

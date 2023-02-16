@@ -1,4 +1,4 @@
-﻿/* global define */
+/* global define */
 define([
     'jquery',
     'underscore',
@@ -7,7 +7,7 @@ define([
     'collections/DataPackage',
     'models/DataONEObject',
     'models/metadata/ScienceMetadata',
-    'models/metadata/eml211/EML211', 
+    'models/metadata/eml211/EML211',
     'models/PackageModel',
     'views/DataItemView',
     'text!templates/dataPackage.html',
@@ -178,7 +178,7 @@ define([
                     return false; // Don't double render
 
                 }
-                
+
                 dataItemView = new DataItemView({
                     model: item,
                     memberRowMetrics: this.getMemberRowMetrics(item.get("id"), item.get("formatType")),
@@ -286,34 +286,34 @@ define([
             renderDataPackage: function () {
 
                 var view = this;
-    
+
                 if(MetacatUI.rootDataPackage.packageModel.isNew()){
                 view.renderMember(this.model);
                 };
-    
+
                 // As the root collection is updated with models, render the UI
                 this.listenTo(MetacatUI.rootDataPackage, "add", function (model) {
-    
+
                 if (!model.get("synced") && model.get('id'))
                     this.listenTo(model, "sync", view.renderMember);
                 else if (model.get("synced"))
                     view.renderMember(model);
-    
+
                 //Listen for changes on this member
                 model.on("change:fileName", model.addToUploadQueue);
                 });
-    
+
                 //Render the Data Package view
                 this.dataPackageView = new DataPackageView({
                 edit: true,
                 dataPackage: MetacatUI.rootDataPackage,
                 parentEditorView: this
                 });
-    
+
                 //Render the view
                 var $packageTableContainer = this.$("#data-package-container");
                 $packageTableContainer.html(this.dataPackageView.render().el);
-    
+
                 //Make the view resizable on the bottom
                 var handle = $(document.createElement("div"))
                 .addClass("ui-resizable-handle ui-resizable-s")
@@ -328,10 +328,10 @@ define([
                     view.emlView.resizeTOC();
                 }
                 });
-    
+
                 var tableHeight = ($(window).height() - $("#Navbar").height()) * .40;
                 $packageTableContainer.css("height", tableHeight + "px");
-    
+
                 var table = this.dataPackageView.$el;
                 this.listenTo(this.dataPackageView, "addOne", function () {
                 if (table.outerHeight() > $packageTableContainer.outerHeight() && table.outerHeight() < 220) {
@@ -340,13 +340,13 @@ define([
                     this.emlView.resizeTOC();
                 }
                 });
-    
+
                 if (this.emlView)
                 this.emlView.resizeTOC();
-    
+
                 //Save the view as a subview
                 this.subviews.push(this.dataPackageView);
-    
+
                 this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:childPackages", this.renderChildren);
             },
 
@@ -475,14 +475,14 @@ define([
                     //If this model doesn't have members, return an empty array or a falsey value
                     if(!models) return models;
                 }
-    
+
                 // One == already sorted!
                 if(models.length == 1) return models;
                 //If there are too many models to sort (takes too much time) then just get the metadata to display first
                 else if(models.length > 150){
                     var view = this;
-    
-    
+
+
                     //Find the metadata doc we are currently viewing
                     var currentMetadata = _.find(models, function(m){ return (m.get("id") == view.currentlyViewing) });
                     //Add it to the front
@@ -490,28 +490,28 @@ define([
                         models = _.without(models, currentMetadata);
                         models.unshift(currentMetadata);
                     }
-    
+
                     //Return the newly sorted array
                     return models;
                 }
-    
-    
+
+
                 var view = this,
                     metadataView = this.onMetadataView? this.parentView : null;
-    
+
                 //** If this is not a nested package AND the parent view is the metadata view, then sort by order of appearance in the metadata **/
                 if(!this.nested && (metadataView && !_.findWhere(metadataView.subviews, {type: "MetadataIndex"}))){
                     if(metadataView.hasEntityDetails()){
-    
+
                         //If we are currently viewing a metadata document, find it
                         if(this.currentlyViewing)
                             var currentMetadata = _.find(models, function(m){ return (m.get("id") == view.currentlyViewing) });
-    
+
                         //For each model, find its position on the Metadata View page
                         var numNotFound = 0;
                         _.each(models, function(model){
                             if(currentMetadata == model) return;
-    
+
                             var container = view.parentView.findEntityDetailsContainer(model);
                             if(container) model.offsetTop = $(container)[0].offsetTop;
                             else{
@@ -519,27 +519,27 @@ define([
                                 numNotFound++;
                             }
                         });
-    
+
                         //Continue only if we found the entity details section for at least one model, if not, sort by the default method later
                         if(numNotFound < models.length-1){ //Minus 1 since we don't count the metadata
                             //Sort the models by this position
                             models = _.sortBy(models, "offsetTop");
-    
+
                             //Move the metadata model that we are currently viewing in the Metadata view to the top
                             if(currentMetadata){
                                 models = _.without(models, currentMetadata);
                                 models.unshift(currentMetadata);
                             }
-    
+
                             //Flatten the array in case we have nesting
                             models = _.flatten(models);
-    
+
                             //Return the sorted array
                             return models;
                         }
                     }
                 }
-    
+
                 //** For tables with no accompanying metadata (nested or not on the Metadata View), default to sorting by group then alpha by name**/
                 //Split the members of this package into groups based on their format type (metaata, data, image, code, etc)
                 var groupedModels = _.groupBy(models, function(m){
@@ -548,9 +548,9 @@ define([
                         return m.get("type");
                     }),
                     sortedModels = [];
-    
+
                 var rowOrder = ["metadata", "image", "PDF", "program", "data", "annotation"];
-    
+
                 for(var i=0; i<rowOrder.length; i++){
                     //Sort the members/rows alphabetically within each group
                     /*models = _.sortBy(models, function(m){
@@ -563,22 +563,22 @@ define([
                     });
                     sortedModels.push(group);
                 }
-    
+
                 models = _.flatten(sortedModels);
-    
+
                 return models;
             },
-    
+
             // Member row metrics for the package table
             // Retrieving information from the Metrics Model's result details
             getMemberRowMetrics: function(id, formatType) {
-    
+
                 if(typeof this.metricsModel !== "undefined"){
                     var metricsResultDetails = this.metricsModel.get("resultDetails");
-    
+
                     if( typeof metricsResultDetails !== "undefined" && metricsResultDetails ){
                           var metricsPackageDetails = metricsResultDetails["metrics_package_counts"];
-    
+
                           var objectLevelMetrics = metricsPackageDetails[id];
                           if(typeof objectLevelMetrics !== "undefined") {
                               if(formatType == "METADATA") {
@@ -595,9 +595,9 @@ define([
                     else{
                           var reads = 0;
                     }
-    
+
                 }
-    
+
                 if((typeof reads !== "undefined") && reads){
                     // giving labels
                     if(formatType == "METADATA" && reads == 1)
@@ -613,77 +613,63 @@ define([
                     // returning an empty string if the metrics are 0
                     reads = "";
                 }
-    
+
                 return reads;
             },
-    
+
             expand: function(e){
                 //Don't do anything...
                 e.preventDefault();
-    
+
                 var view = this;
-    
-                //If this is a nested dataset, we need to actually draw the remaining rows
-                if(!this.rowsComplete){
-                    var tbody = this.$("tbody");
-    
-                    //Create the HTML for each row
-                    var members = this.sortedMembers.slice(this.numVisible);
-                    _.each(members, function(solrResult){
-                        //Append the row element
-                        $(tbody).append(view.getMemberRow(solrResult, { collapsable: true }));
-                    });
-    
-                    //Make the view as complete so we don't do this again
-                    this.rowsComplete = true;
-                }
-    
+
+                // TODO: Add logic to handle nested datasets
                 this.$("tr.collapse").fadeIn();
                 this.$(".expand-control").fadeOut(function(){
                     view.$(".collapse-control").fadeIn("fast");
                     view.$(".tooltip-this").tooltip();
                 });
             },
-    
+
             collapse: function(e){
                 //Don't do anything...
                 e.preventDefault();
-    
+
                 var view = this;
-    
+
                 this.$("tr.collapse").fadeOut();
                 this.$(".collapse-control").fadeOut(function(){
                     view.$(".expand-control").fadeIn();
                 });
             },
-    
+
             checkForPrivateMembers: function(){
                 try{
                     var packageModel      = this.model,
                         packageCollection = this.dataPackageCollection;
-        
+
                     if( !packageModel || !packageCollection ){
                         return;
                     }
-        
+
                     //Get the number of package members found in Solr and parsed from the RDF XML
                     var numMembersFromSolr = packageModel.get("members").length,
                         numMembersFromRDF  = packageCollection.length;
-        
+
                     //If there are more package members in the RDF XML tthan found in SOlr, we
                     // can assume that those objects are private.
                     if( numMembersFromRDF > numMembersFromSolr ){
                         var downloadButtons = this.$(".btn.download");
-            
+
                         for( var i=0; i<downloadButtons.length; i++){
-            
+
                             var btn = downloadButtons[i];
-            
+
                             //Find the Download All button for the package
                             var downloadURL = $(btn).attr("href");
                             if( downloadURL.indexOf(packageModel.get("id")) > -1 ||
                                 downloadURL.indexOf( encodeURIComponent(packageModel.get("id"))) > -1 ){
-            
+
                             //Disable this download button
                             $(btn).attr("disabled", "disabled")
                                     .addClass("disabled")
@@ -694,7 +680,7 @@ define([
                                     delay: 500,
                                     title: "This dataset may contain private data, so each data file should be downloaded individually."
                                     });
-            
+
                             i = downloadButtons.length;
                             }
                         }
@@ -704,16 +690,16 @@ define([
                     console.error(e);
                 }
             }
-    
+
             /*showDownloadProgress: function(e){
                 e.preventDefault();
-    
+
                 var button = $(e.target);
                 button.addClass("in-progress");
                 button.html("Downloading... <i class='icon icon-on-right icon-spinner icon-spin'></i>");
-    
+
                 return true;
-    
+
             }*/
 
         });
