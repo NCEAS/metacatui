@@ -26,14 +26,32 @@
       <!-- icon column -->
       <th id="data-package-table-icon"></th>
       <!-- Files column -->
-      <th id="data-package-table-files">Files and Folders</th>
+      <th id="data-package-table-files">
+        
+        Files and Folders
+
+        <i class="icon icon-solid icon-arrow-up"></i>
+        <a class="btn" data-id="<%= id %>">
+          <i class="icon icon-large icon-filter"></i>
+          Filter
+        </a>
+      </th>
       <!-- Size column -->
-      <th id="data-package-table-size">Size</th>
+      <th id="data-package-table-size">
+        Size
+        <i class="icon icon-solid icon-arrow-up"></i>
+      </th>
       <!-- Type column -->
-      <th id="data-package-table-type">Type</th>
+      <th id="data-package-table-type">
+        Type
+        <i class="icon icon-solid icon-arrow-up"></i>
+      </th>
       <!-- Metrics column -->
       <% if( MetacatUI.appModel.get("displayDatasetMetrics") ){ %>
-        <th id="data-package-table-metrics">Metrics</th>
+        <th id="data-package-table-metrics">
+          Metrics
+          <i class="icon icon-solid icon-arrow-up"></i>
+        </th>
       <% } %>
       <!-- Button column -->
       <th id="data-package-table-actions">Actions</i--></th>
