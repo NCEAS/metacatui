@@ -9,11 +9,10 @@ define([
     'models/metadata/ScienceMetadata',
     'models/metadata/eml211/EML211', 
     'models/PackageModel',
-    'views/DownloadButtonView',
     'views/DataItemView',
     'text!templates/dataPackage.html',
     'text!templates/dataPackageStart.html'],
-    function($, _, Backbone, LocalForage, DataPackage, DataONEObject, ScienceMetadata, EML211, Package, DownloadButtonView, DataItemView,
+    function($, _, Backbone, LocalForage, DataPackage, DataONEObject, ScienceMetadata, EML211, Package, DataItemView,
     		DataPackageTemplate, DataPackageStartTemplate) {
         'use strict';
 

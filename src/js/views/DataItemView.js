@@ -1,8 +1,14 @@
 /* global define */
-define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
-        'models/metadata/eml211/EML211', 'models/metadata/eml211/EMLOtherEntity',
-        'text!templates/dataItem.html'],
-    function(_, $, Backbone, DataONEObject, EML, EMLOtherEntity, DataItemTemplate){
+define([
+      'underscore', 
+      'jquery', 
+      'backbone',
+      'models/DataONEObject',
+      'models/metadata/eml211/EML211', 
+      'models/metadata/eml211/EMLOtherEntity',
+      'views/DownloadButtonView',
+      'text!templates/dataItem.html'],
+    function(_, $, Backbone, DataONEObject, EML, EMLOtherEntity, DownloadButtonView, DataItemTemplate){
 
         /**
         * @class DataItemView
@@ -83,9 +89,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 //Prevent duplicate listeners
                 this.stopListening();
 
-              // Set the data-id for identifying events to model ids
-              this.$el.attr("data-id", this.model.get("id"));
-              this.$el.attr("data-category", "entities-" + this.model.get("id"));
+                // Set the data-id for identifying events to model ids
+                this.$el.attr("data-id", this.model.get("id"));
+                this.$el.attr("data-category", "entities-" + this.model.get("id"));
 
                 //Destroy the old tooltip
                 this.$(".status .icon, .status .progress").tooltip("hide").tooltip("destroy");
@@ -409,8 +415,13 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     attributes.moreInfoLink = infoLink;
                   }
                   
-
                   this.$el.html( this.template(attributes) );
+
+                  //Download button cell
+                  var downloadButton = new DownloadButtonView({ id: this.model.get("id"), view: "PackageTable" });
+                  downloadButton.render();
+
+                  this.$el.append(downloadButton.el);
                 }
 
                 this.$el.data({

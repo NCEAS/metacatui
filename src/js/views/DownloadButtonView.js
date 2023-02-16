@@ -10,8 +10,16 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
 		initialize: function(options){
 			if(!options) var options = {}
+      this.view = options.view || null;
+      this.id = options.id || null;
 
-			this.model = options.model || new SolrResult();
+      if (this.view == "PackageTable" && this.id !== null) {
+        this.model = new SolrResult({id: this.id});
+      }
+      else{
+			  this.model = options.model || new SolrResult();
+      }
+      
 		},
 
 		events: {
