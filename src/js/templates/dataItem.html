@@ -146,8 +146,11 @@
 	<td class="metrics-count downloads" data-id="<%= id %>">
 		<%= memberRowMetrics %>
 	</td>
-	<td class="file-actions" data-id="<%= id %>">
-		<a class="btn preview"><i class="icon icon-info"></i></a>
+	<td class="file-actions">
+		<% if (isMetadata !== undefined && !isMetadata) { %>
+			<a class="btn preview" href="<%= moreInfoLink %>" data-id="<%= id %>"><i class="icon icon-info"></i></a>
+		<% } %>
+
 		<a class="btn"><i class="icon icon-cloud-download"></i></a>
 	</td>
 <% } %>

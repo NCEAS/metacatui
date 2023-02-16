@@ -397,6 +397,19 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     attributes.memberRowMetrics = this.memberRowMetrics;
                   }
 
+                  // set up attributes for more info
+                  attributes.isMetadata = false;
+                  if (this.model.get("type") == "Metadata") {
+                    attributes.isMetadata = true;
+                  }
+                  if (this.model.get("isDocumentedBy") !== undefined) {
+                    metadataId = this.model.get("isDocumentedBy");
+                    id = this.model.get("id");
+                    infoLink = MetacatUI.root + "/view/" + encodeURIComponent(metadataId) + "#" + encodeURIComponent(id)
+                    attributes.moreInfoLink = infoLink;
+                  }
+                  
+
                   this.$el.html( this.template(attributes) );
                 }
 

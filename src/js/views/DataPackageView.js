@@ -179,7 +179,7 @@ define([
                     return false; // Don't double render
 
                 }
-
+                
                 dataItemView = new DataItemView({
                     model: item,
                     memberRowMetrics: this.getMemberRowMetrics(item.get("id"), item.get("formatType")),
