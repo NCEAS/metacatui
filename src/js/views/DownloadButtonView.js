@@ -13,7 +13,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       this.view = options.view || null;
       this.id = options.id || null;
 
-      if (this.view == "PackageTable" && this.id !== null) {
+      if (this.view == "actionsView" && this.id !== null) {
         this.model = new SolrResult({id: this.id});
       }
       else{
@@ -46,31 +46,38 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       }
 
 			//For packages
-			if(this.model.type == "Package"){
-				this.$el.text("Download All")
-						.addClass("btn-primary");
+      if (this.view == "actionsView") {
+        this.$el.append( $(document.createElement("i")).addClass("icon icon-cloud-download") );
+        this.$el.addClass("btn-rounded");
+        this.$el.addClass("action");
+      }
+      else {
+        if(this.model.type == "Package"){
+          this.$el.text("Download All")
+              .addClass("btn-primary");
 
-        //if the Package Model has no Solr index document associated with it, then we
-        // can assume the resource map object is private. So disable the download button.
-        if( !this.model.get("indexDoc") ){
-          this.$el.attr("disabled", "disabled")
-                  .addClass("disabled")
-                  .attr("href", "")
-                  .tooltip({
-                    trigger: "hover",
-                    placement: "top",
-                    delay: 500,
-                    title: "This dataset may contain private data, so each data file should be downloaded individually."
-                  });
+          //if the Package Model has no Solr index document associated with it, then we
+          // can assume the resource map object is private. So disable the download button.
+          if( !this.model.get("indexDoc") ){
+            this.$el.attr("disabled", "disabled")
+                    .addClass("disabled")
+                    .attr("href", "")
+                    .tooltip({
+                      trigger: "hover",
+                      placement: "top",
+                      delay: 500,
+                      title: "This dataset may contain private data, so each data file should be downloaded individually."
+                    });
+          }
         }
-			}
-			//For individual DataONEObjects
-			else{
-				this.$el.text("Download");
-			}
+        //For individual DataONEObjects
+        else{
+          this.$el.text("Download");
+        }
 
-			//Add a download icon
-			this.$el.append( $(document.createElement("i")).addClass("icon icon-cloud-download") );
+        //Add a download icon
+        this.$el.append( $(document.createElement("i")).addClass("icon icon-cloud-download") );
+      }
 
 			//If this is a Download All button for a package but it's too large, then disable the button with a message
 			if(this.model.type == "Package" && this.model.getTotalSize() > MetacatUI.appModel.get("maxDownloadSize")){

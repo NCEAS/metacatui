@@ -418,7 +418,7 @@ define([
                   this.$el.html( this.template(attributes) );
 
                   //Download button cell
-                  var downloadButton = new DownloadButtonView({ id: this.model.get("id"), view: "PackageTable" });
+                  var downloadButton = new DownloadButtonView({ id: this.model.get("id"), view: "actionsView" });
                   downloadButton.render();
 
                   this.$el.append(downloadButton.el);
