@@ -148,7 +148,13 @@
 	</td>
 	<td class="file-actions">
 		<% if (isMetadata !== undefined && !isMetadata) { %>
-			<a class="btn btn-rounded action" href="<%= moreInfoLink %>" data-id="<%= id %>"><i class="icon icon-large icon-info icon-stack-top"></i></a>
+			<a class="btn btn-rounded action" href="<%= moreInfoLink %>" data-id="<%= id %>"><i class="icon icon-large icon-info"></i></a>
 		<% } %>
+
+		<% if (downloadUrl !== undefined ) { %>
+			<a class="btn btn-rounded action downloadAction" href="<%= downloadUrl %>" data-id="<%= id %>"><i class="icon icon-large icon-cloud-download"></i></a>
+		<% } %>
+
+
 	</td>
 <% } %>

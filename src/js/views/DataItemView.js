@@ -65,7 +65,8 @@ define([
                 "change: percentLoaded": "updateLoadProgress", // Update the file read progress bar
                 "mouseover .remove"    : "previewRemove",
                 "mouseout  .remove"    : "previewRemove",
-                "change .public"       : "changeAccessPolicy"
+                "change .public"       : "changeAccessPolicy",
+                "click .downloadAction": "downloadFile"
             },
 
             /** Initialize the object - post constructor */
@@ -408,6 +409,18 @@ define([
                   if (this.model.get("type") == "Metadata") {
                     attributes.isMetadata = true;
                   }
+
+                  //Download button 
+                  if (this.model.get("dataUrl") !== undefined || this.model.get("url") !== undefined) {
+                    if (this.model.get("dataUrl") !== undefined) {
+                      attributes.downloadUrl = this.model.get("dataUrl");
+                    }
+                    else {
+                      attributes.downloadUrl = this.model.get("url");
+                    }
+                  }
+                  this.downloadButtonView = new DownloadButtonView({ id: this.model.get("id"), view: "actionsView" });
+
                   if (this.model.get("isDocumentedBy") !== undefined) {
                     metadataId = this.model.get("isDocumentedBy");
                     id = this.model.get("id");
@@ -417,11 +430,7 @@ define([
                   
                   this.$el.html( this.template(attributes) );
 
-                  //Download button cell
-                  var downloadButton = new DownloadButtonView({ id: this.model.get("id"), view: "actionsView" });
-                  downloadButton.render();
-
-                  this.$el.append(downloadButton.el);
+                  
                 }
 
                 this.$el.data({
@@ -1231,7 +1240,13 @@ define([
                   }
                 }
               }
+            },
+
+            downloadFile: function(e) {
+              e.preventDefault();
+              this.downloadButtonView.download(e);
             }
+
         });
 
         return DataItemView;
