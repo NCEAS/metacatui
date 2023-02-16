@@ -8926,3 +8926,9 @@ body > #extension-is-installed{
 	height: 21em;
 	overflow: scroll;
 }
+
+.btn.btn-rounded.action {
+    border-radius: 50%;
+	height: 15px;
+	width: 15px;
+} 
