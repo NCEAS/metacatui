@@ -123,6 +123,7 @@ define([
              *  Render the DataPackage HTML
              */
             render: function() {
+                this.$el.addClass("download-contents table-condensed");
                 this.$el.append(this.template({
                     edit: this.edit,
                 	loading: MetacatUI.appView.loadingTemplate({msg: "Loading files table... "}),
