@@ -7,8 +7,40 @@
 %>
 
 <% if (!edit) {%>
-<table class="<%=classes%>">
-<% } %>
+  <thead id="data-package-table-head">
+    <% if(nested && metadata){ %>
+      <tr class="table-header title">
+        <th colspan="<%=colspan%>" class="table-header">
+          <a href="<%= MetacatUI.root %>/view/<%=encodeURIComponent(metadata.get('id'))%>"><strong><%=metadata.get("title")%></strong></a>
+        </th>
+      </tr>
+    <% } %>
+
+    <tr class="table-header">
+      <th colspan="<%=colspan%>" class="table-header"> 
+        <%=title%>
+      </th>
+    </tr>
+    
+    <tr class="file-header">
+      <!-- icon column -->
+      <th id="data-package-table-icon"></th>
+      <!-- Files column -->
+      <th id="data-package-table-files">Files and Folders</th>
+      <!-- Size column -->
+      <th id="data-package-table-size">Size</th>
+      <!-- Type column -->
+      <th id="data-package-table-type">Type</th>
+      <!-- Metrics column -->
+      <% if( MetacatUI.appModel.get("displayDatasetMetrics") ){ %>
+        <th id="data-package-table-metrics">Metrics</th>
+      <% } %>
+      <!-- Button column -->
+      <th id="data-package-table-actions">Actions</i--></th>
+    </tr>
+  </thead>
+  <tbody id="data-package-table-body" class="data-package-file-table"><%=loading%></tbody>
+<% } else { %>
 
   <thead id="data-package-table-head">
 
@@ -30,20 +62,10 @@
     <% if( edit && MetacatUI.appModel.get("allowAccessPolicyChanges") ){ %>
       <th id="data-package-table-share">Share</th>
     <% } %>
-    <% if (edit) {%>
-      <!-- Guide or Status column -->
-      <th id="data-package-table-guide-status">Status</th>
-      <!-- Button column -->
-      <th id="data-package-table-button"><!--i class="icon-large icon-pencil"></i--></th>
-    <% } else { %>
-      <!-- Metrics column -->
-      <th id="data-package-table-metrics">Metrics</th>
-      <!-- Button column -->
-      <th id="data-package-table-button"><!--i class="icon-large icon-pencil"></i--></th>
-    <% } %>
+    <!-- Guide or Status column -->
+    <th id="data-package-table-guide-status">Status</th>
+    <!-- Button column -->
+    <th id="data-package-table-button"><!--i class="icon-large icon-pencil"></i--></th>
   </thead>
   <tbody id="data-package-table-body"><%=loading%></tbody>
-
-<% if (!edit) {%>
-</table>
 <% } %>
