@@ -1,6 +1,6 @@
 <%
-const originHTML = origin ? `<span class="author">${origin}. </span>` : '';
-const pubHTML = year_of_publishing ? `<time class="pubdate" datetime="${year_of_publishing}">${year_of_publishing}. </time>` : '';
+const originHTML = origin ? `<span class="author">${origin.replace(/\.$/, '')}. </span>` : '';
+const pubHTML = year_of_publishing ? `<time class="pubdate" datetime="${year_of_publishing}">(${year_of_publishing}). </time>` : '';
 const dataID = pid ? ` data-id="${pid}"` : '';
 
 let titleHTML = title || '';
@@ -9,7 +9,7 @@ if (title) {
   const target = url && url.startsWith('http') ? ' target="_blank"' : '';
   const titleA = url ? `<a href="${url}"${target}>` : '';
   const titleAEnd = url ?'</a>' : '';
-  titleHTML = `${titleA}<span class="title"${dataID}>${title}</span>${titleAEnd}. `;
+  titleHTML = `${titleA}<span class="title"${dataID}><i>${title}</i></span>${titleAEnd}. `;
 }
 
 let journalHTML = journal ? `<span class="publisher">${journal}. </span>` : '';

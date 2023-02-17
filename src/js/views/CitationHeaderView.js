@@ -95,17 +95,16 @@ define([
        * @param {string} options.style - The style to use for rendering
        */
       renderHeader: function (options, template) {
+        const authors = options.originArray.map((author) => {
+          return this.CSLNameToFullNameStr(author);
+        });
         // Split the authors into two groups, one with the maximum number of
         // authors configured (including the last author), and one with the
         // rest.
-        const numAuthors = (this.numAuthors = options.originArray.length);
+        const numAuthors = (this.numAuthors = authors.length);
         const maxAuthors = (this.maxAuthors = this.maxAuthors || numAuthors);
-        const authorsGrp1 = (this.authorsGrp1 = options.originArray.slice(
-          0,
-          maxAuthors
-        ));
-        const authorsGrp2 = (this.authorsGrp2 =
-          options.originArray.slice(maxAuthors));
+        const authorsGrp1 = (this.authorsGrp1 = authors.slice(0, maxAuthors));
+        const authorsGrp2 = (this.authorsGrp2 = authors.slice(maxAuthors));
         const numAuthorsGrp2 = (this.numAuthorsGrp2 = authorsGrp2.length);
 
         // Create a text string for both groups of authors.

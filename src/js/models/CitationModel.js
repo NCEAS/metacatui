@@ -98,21 +98,52 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
     },
 
     /**
+     * Get the attribute getters for this model. "Attribute getters" are
+     * functions that return the value of an attribute for this Citation Model
+     * given a source model. The source model can be a SolrResultsModel, a
+     * DataONEObjectModel, or an extension of either of those models.
+     * @returns {Object} - An object that maps the name of the CitationModel
+     * attribute to the function that returns the value for that attribute.
+     */
+    attrGetters: function () {
+      return {
+        year_of_publishing: this.getYearFromSourceModel,
+        title: this.getTitleFromSourceModel,
+        journal: this.getJournalFromSourceModel,
+        pid: this.getPidFromSourceModel,
+        seriesId: this.getSeriesIdFromSourceModel,
+        originArray: this.getOriginArrayFromSourceModel,
+        view_url: this.getViewUrlFromSourceModel,
+      };
+    },
+
+    /**
      * Override the default Backbone.Model.parse() method to convert the
      * citationMetadata object into a nested collection of CitationModels.
      * @param {Object} response - The response from the metrics-service API
      * @param {Object} options - Options to pass to the parse() method.
      * @returns {Object} The parsed response
      */
-    parse(response, options) {
+    parse(response) {
       try {
-        // cm = DataONE datasets cited by this citation (external document)
-        const cm = response.citationMetadata;
         // strings that need formatting when coming from the metrics-service:
         const toFormat = ["journal", "page", "volume", "publisher"];
         toFormat.forEach((attr) => {
           response[attr] = this.formatMetricsServiceString(response[attr]);
-        });
+        }, this);
+
+        // Turn the author strings into CSL JSON objects
+        if (response.origin) {
+          const or = this.originToArray(response.origin);
+          response.originArray = or.map((author) => {
+            author = this.formatMetricsServiceString(author);
+            return this.nameStrToCSLJSON(author);
+          });
+        }
+
+        // Format the citation metadata = DataONE datasets cited by this
+        // citation (external document)
+        const cm = response.citationMetadata;
         if (cm) {
           // MUST import Citations collection using the inline require syntax to
           // avoid circular dependencies. CitationModel requires Citations and
@@ -127,13 +158,17 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
               // string
               item.originArray = item.origin;
               delete item.origin;
+              // Format the authors in the origin array
+              item.originArray = item.originArray.map((author) => {
+                author = this.formatMetricsServiceString(author);
+                return this.nameStrToCSLJSON(author);
+              });
               // Get the publish year
               const date =
                 item.datePublished || item.dateUpdated || item.dateModified;
               item.year_of_publishing = date
                 ? new Date(date).getUTCFullYear()
                 : null;
-
               // Because the citation metadata is always referencing an object
               // in the local MetacatUI repository, we assume that the view_url
               // exists for the given PID.
@@ -159,16 +194,6 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         return response;
       }
     },
-
-    // /**
-    //  * Initialize the Citation model
-    //  */
-    // initialize: function () {
-    //   try {
-    //   } catch (error) {
-    //     console.log("CitationModel.initialize() Error: ", error);
-    //   }
-    // },
 
     /**
      * Override the default Backbone.Model.set() method to format the title,
@@ -229,12 +254,12 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         // seriesId attributes being set, and vice versa. If they don't match,
         // then set them to the correct values. Prefer the content of the IDs
         // over the URLs.
-        const idProperties = [
+        const idToUrlAttrs = [
           { id: "pid", url: "pid_url" },
           { id: "seriesId", url: "seriesId_url" },
         ];
 
-        idProperties.forEach(({ id, url }) => {
+        idToUrlAttrs.forEach(({ id, url }) => {
           if (
             Object.keys(attrs).includes(id) ||
             Object.keys(attrs).includes(url)
@@ -343,15 +368,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           return;
         }
 
-        const attrGetters = {
-          year_of_publishing: this.getYearFromSourceModel,
-          title: this.getTitleFromSourceModel,
-          journal: this.getJournalFromSourceModel,
-          pid: this.getPidFromSourceModel,
-          seriesId: this.getSeriesIdFromSourceModel,
-          originArray: this.getOriginArrayFromSourceModel,
-          view_url: this.getViewUrlFromSourceModel,
-        };
+        const attrGetters = this.attrGetters();
 
         Object.entries(attrGetters).forEach(([attrName, getter]) => {
           const attrValue = getter.call(this, newSourceModel);
@@ -589,32 +606,17 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      */
     formatAuthor: function (author) {
       try {
-        // If author is an EMLParty model, then convert it to a string with
-        // given name + sur name, or organization name
-        if (typeof author.getName === "function") {
-          author = author.getName();
-        }
-
         // Update the origin array asynchonously if the author is an ORCID
         if (this.isOrcid(author)) this.originArrayFromOrcid(author);
 
-        // Checking for incorrectly escaped characters
-        if (/&amp;[A-Za-z0-9]/.test(author)) {
-          // initializing the DOM parser
-          var parser = new DOMParser();
-
-          // parsing the incorrectly escaped `&amp;`
-          var unescapeAmpersand = parser.parseFromString(author, "text/html");
-
-          // unescaping the & and retrieving the actual character
-          var unescapedString = parser.parseFromString(
-            unescapeAmpersand.body.textContent,
-            "text/html"
-          );
-
-          // saving the correct author text before displaying
-          author = unescapedString.body.textContent;
+        // If author is an EMLParty model, then convert it to a string with
+        // given name + sur name, or organization name
+        if (typeof author.toCSLJSON === "function") {
+          author = author.toCSLJSON();
+        } else if (typeof author === "string") {
+          author = this.nameStrToCSLJSON(author);
         }
+
         return author;
       } catch (error) {
         console.log(
@@ -659,7 +661,56 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
       str = str.replace(/{|}/g, "");
       // Remove any leading or trailing whitespace
       str = str.trim();
+      // Check for incorrectly escaped characters, like &amp;
+      const doc = new DOMParser().parseFromString(str, "text/html");
+      str = doc.body.textContent || "";
       return str;
+    },
+
+    /**
+     * Convert the author string that is returned from the metrics service into
+     * CSL JSON format. Author strings that come from the metrics service take
+     * many formats, which might include full given and last names, middle
+     * initials, first initials, etc. Here are a few example strings: "Chelsea
+     * Wegner Koch", "Lee W. Cooper", "J. Wiktor", "Sei-Ichi Saitoh", "William
+     * K. W. Li", "J.R. Lovvorn". Last name prefixes like "van" or "de" are
+     * stored as a "non-dropping particle". See:
+     * {@link https://citeproc-js.readthedocs.io/en/latest/csl-json/markup.html#name-variables}
+     *
+     * @param {str} author The author string to convert
+     * @returns {Object} Returns an object with the author's name in CSL JSON
+     * format.
+     * @since x.x.x
+     */
+    nameStrToCSLJSON: function (str) {
+      if (!str) return null;
+      const name = {};
+      str = this.formatMetricsServiceString(str);
+      const parts = str.trim().split(/\s+/);
+
+      if (parts.length === 1) {
+        name.literal = str;
+        return name;
+      }
+
+      // Assume the last word is the family name
+      name.family = parts.pop();
+
+      // Any remaining lowercase words are assumed to be non-dropping particles
+      const nonDroppingParticles = parts.filter((part) =>
+        part.match(/^[a-z]+$/)
+      );
+      if (nonDroppingParticles.length > 0) {
+        name["non-dropping-particle"] = nonDroppingParticles.join(" ");
+      }
+
+      // Any remaining words are assumed to be given names
+      const givenNames = parts.filter((part) => !part.match(/^[a-z]+$/));
+      if (givenNames.length > 0) {
+        name.given = givenNames.join(" ");
+      }
+
+      return name;
     },
 
     /**
@@ -667,6 +718,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      * @param {Date|String|Number} date The date to extract the year from
      * @returns {Number} Returns the year as a number, or null if the date is
      * invalid.
+     * @since x.x.x
      */
     yearFromDate: function (date) {
       try {
@@ -698,6 +750,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      * Check if a string is a valid ORCID.
      * @param {string} orcid The ORCID to check
      * @returns {boolean} Returns true if the ORCID is valid, false otherwise
+     * @since x.x.x
      */
     isOrcid: function (orcid) {
       try {
@@ -716,6 +769,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      * author from their ORCID, then asynchronously set the originArray to
      * contain that name.
      * @param {string} orcid The ORCID to get the name for
+     * @since x.x.x
      */
     originArrayFromOrcid: function (orcid) {
       try {
@@ -808,10 +862,25 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      */
     originArrayToString: function (originArray) {
       try {
-        if (!originArray) {
+        if (!originArray || !originArray.length) {
           return this.defaults().origin;
         }
-        return originArray.join(", ");
+        // Each author in the array is a CSL JSON object. Map it to a string
+        // with the author's name in the format First Particle Last or Literal.
+        // Separate each author name with a comma and a space.
+        const origin = originArray
+          .map((a) => {
+            if (!a) return null;
+            const ndp = a["non-dropping-particle"];
+            let name = a.family;
+            name = ndp && name ? `${ndp} ${name}` : name;
+            name = a.given && name ? `${a.given} ${name}` : a.given;
+            name = name || a.literal;
+            return name;
+          })
+          .filter((a) => a)
+          .join(", ");
+        return origin;
       } catch (error) {
         console.log(
           "There was an error converting the origin array to a string.",

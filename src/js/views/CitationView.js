@@ -3,10 +3,10 @@ define([
   "underscore",
   "backbone",
   "models/CitationModel",
-  "text!templates/citations/citationFull.html",
-  "text!templates/citations/citationInText.html",
+  "text!templates/citations/citationAPA.html",
+  "text!templates/citations/citationAPAInText.html",
   "text!templates/citations/citationFullArchived.html",
-  "text!templates/citations/citationInTextArchived.html",
+  "text!templates/citations/citationAPAInTextArchived.html",
 ], function (
   $,
   _,
@@ -91,33 +91,26 @@ define([
           maxAuthors: 1,
           template: _.template(InTextTemplate),
           archivedTemplate: _.template(InTextArchivedTemplate),
-          render: "renderInText",
+          render: "renderAPAInText",
         },
         full: {
-          maxAuthors: 5,
+          maxAuthors: 20,
           template: _.template(FullTemplate),
           archivedTemplate: _.template(FullArchivedTemplate),
           default: true,
-          render: "renderFull",
+          render: "renderAPA",
         },
         fullLink: {
-          maxAuthors: 5,
+          maxAuthors: 20,
           template: _.template(FullTemplate),
           archivedTemplate: _.template(FullArchivedTemplate),
-          render: "renderFullLink",
+          render: "renderAPALink",
         },
         fullNoLink: {
-          maxAuthors: 5,
+          maxAuthors: 20,
           template: _.template(FullTemplate),
           archivedTemplate: _.template(FullArchivedTemplate),
-          render: "renderFullNoLink",
-        },
-        copiable: {
-          // className: "citation copiable",
-          maxAuthors: 5,
-          template: _.template(FullTemplate),
-          archivedTemplate: _.template(FullArchivedTemplate),
-          render: "renderCopiable",
+          render: "renderAPANoLink",
         },
       },
 
@@ -399,9 +392,9 @@ define([
        * or it's archive template if the object is archived and not indexed.
        * @since x.x.x
        */
-      renderFull: function (options, template) {
+      renderAPA: function (options, template) {
         // Format the authors for display
-        options.origin = this.getAuthorString(options.originArray);
+        options.origin = this.CSLNamesToAPA(options.originArray);
         this.el.innerHTML = template(options);
         // If there are citationMetadata, as well as an element in the current
         // template where they should be inserted, then show them inline.
@@ -435,8 +428,8 @@ define([
        * or it's archive template if the object is archived and not indexed.
        * @since x.x.x
        */
-      renderFullLink: function (options, template) {
-        this.renderFullNoLink(options, template);
+      renderAPALink: function (options, template) {
+        this.renderAPANoLink(options, template);
         // Add a link around all the content and update the html
         const url = options.view_url || "";
         if (url) {
@@ -457,8 +450,8 @@ define([
        * or it's archive template if the object is archived and not indexed.
        * @since x.x.x
        */
-      renderFullNoLink: function (options, template) {
-        this.renderFull(options, template);
+      renderAPANoLink: function (options, template) {
+        this.renderAPA(options, template);
         // Remove any <a> tags that are already in the HTML
         this.el.querySelectorAll("a").forEach(function (aTag) {
           aTag.outerHTML = aTag.innerHTML;
@@ -473,48 +466,133 @@ define([
        * or it's archive template if the object is archived and not indexed.
        * @since x.x.x
        */
-      renderInText: function (options, template) {
-        options.origin = this.getAuthorString(options.originArray);
+      renderAPAInText: function (options, template) {
+        options.origin = this.CSLNamesToAPAInText(options.originArray);
         this.el.innerHTML = template(options);
       },
 
       /**
-       * Given a list of authors, format them as a single string for display in
-       * a citation.
-       * @param {string[]} authors - An array of author names. The string will
-       * be truncated with et al. if there are more authors than this limit set
-       * on this view.
+       * Given a list of authors in CSL JSON, merge them all into a single
+       * string for display in an APA citation.
+       * @param {object[]} authors - An array of CSL JSON name objects
        * @returns {string} The formatted author string or an empty string if
        * there are no authors
        */
-      getAuthorString: function (authors) {
-        try {
-          if (!authors) return "";
+      CSLNamesToAPA: function (authors) {
+        // Format authors as a proper APA style citation:
+        if (!authors) return "";
 
-          const numAuthors = authors.length;
-          // If the maxAuthors is not set then allow all authors to be shown
-          const maxAuthors = this.maxAuthors || numAuthors;
-          const authorsGrp1 = authors.slice(0, maxAuthors);
-          const separator = numAuthors > 2 ? ", " : " ";
-          const conjunction = numAuthors > 2 ? ", and " : " and ";
+        authors = authors.map(this.CSLNameToAPA);
 
-          const authorString = authorsGrp1.reduce((str, author, i) => {
-            if (i === 0) return author;
-            if (i + 1 === numAuthors) return `${str}${conjunction}${author}`;
-            return `${str}${separator}${author}`;
-          }, "");
+        const numAuthors = authors.length;
+        const maxAuthors = this.maxAuthors || numAuthors;
+        const lastAuthor = authors[numAuthors - 1];
 
-          return numAuthors > maxAuthors
-            ? `${authorString}, et al`
-            : authorString;
-        } catch (error) {
-          console.log(
-            "There was an error formatting the authors. " +
-              "Authors will not be shown in the citation",
-            error
-          );
-          return "";
+        if (numAuthors === 1) return authors[0];
+        // Two authors: Separate author names with a comma. Use the ampersand.
+        if (numAuthors === 2) return authors.join(", & ");
+        // Two to maxAuthors: commas separate author names, while the last
+        // author name is preceded again by ampersand.
+        if (numAuthors > 2 && numAuthors <= maxAuthors) {
+          const authorsGrp1 = authors.slice(0, numAuthors - 1);
+          return `${authorsGrp1.join(", ")}, & ${lastAuthor}`;
         }
+        // More than maxAuthors: "After the first 19 authors’ names, use an
+        // ellipsis in place of the remaining author names. Then, end with the
+        // final author's name (do not place an ampersand before it). There
+        // should be no more than twenty names in the citation in total."
+        if (numAuthors > maxAuthors) {
+          const authorsGrp1 = authors.slice(0, maxAuthors);
+          return `${authorsGrp1.join(", ")}, ... ${lastAuthor}`;
+        }
+      },
+
+      /**
+       * Given one name object in CSL-JSON format, return the author's name in
+       * the format required for a full APA citation: Last name first, followed
+       * by author initials with a period after each initial. See
+       * {@link EMLParty#toCSLJSON}
+       * @param {object} cslJSON - A CSL-JSON name object
+       * @since x.x.x
+       */
+      CSLNameToAPA: function (cslJSON) {
+        const {
+          family,
+          given,
+          literal,
+          "non-dropping-particle": nonDropPart,
+        } = cslJSON;
+
+        // Literal is the organization or position name
+        if (!family && !given) return literal || "";
+
+        let familyName = family;
+        // If there is a non-dropping-particle, add it to the family name
+        familyName =
+          family && nonDropPart ? `${nonDropPart} ${family}` : family;
+
+        // If there is no given name, just return the family name, if there is
+        // one.
+        if (!given) return familyName;
+
+        // Handle full given names or just initials with or without periods.
+        // SPlit on spaces and periods, then filter out empty strings.
+        const initials = given
+          .split(/[\s.]+/)
+          .filter((str) => str.length > 0)
+          .map((str) => str[0] + ".")
+          .join("");
+
+        // If there is no family name, just return the initials
+        if (!familyName) return initials;
+
+        // If there is a family name and initials, return the family name first,
+        // followed by the initials
+        return `${familyName}, ${initials}`;
+      },
+
+      /**
+       * Given a list of authors in CSL JSON, merge them all into a single
+       * string for display in an In-Text APA citation.
+       * @param {object[]} authors - An array of CSL JSON name objects
+       * @returns {string} The formatted author string or an empty string if
+       * there are no authors
+       * @since x.x.x
+       */
+      CSLNamesToAPAInText: function (authors) {
+        if (!authors || !authors.length) return "";
+        // In the in-text citation provide the surname of the author. When there
+        // are two authors, use the ampersand. When there are three or more
+        // authors, list only the first author’s name followed by "et al."
+        const nAuthors = authors.length;
+        // Convert the authors to a string, either non-drop-particle + family
+        // name, or literal
+        const authorStr = authors.map((a) => {
+          const { family, literal, "non-dropping-particle": ndp } = a;
+          let name = family;
+          name = family && ndp ? `${ndp} ${family}` : family;
+          return name || literal;
+        });
+        if (nAuthors === 1) return authorStr[0];
+        if (nAuthors === 2) return authorStr.join(" & ");
+        return `${authorStr[0]} et al`;
+      },
+
+      /**
+       * Given a list of authors in CSL JSON, merge them all into a single
+       * string where authors full names are separated by commas.
+       * @param {object[]} authors - An array of CSL JSON name objects
+       * @returns {string} The formatted author string or an empty string if
+       * there are no authors
+       * @since x.x.x
+       */
+      CSLNameToFullNameStr: function (author) {
+        if (!author) return "";
+        const { given, family, literal, "non-dropping-particle": ndp } = author;
+        let name = family;
+        name = family && ndp ? `${ndp} ${family}` : family;
+        name = name && given ? `${given} ${name}` : name;
+        return name || literal;
       },
     }
   );

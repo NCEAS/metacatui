@@ -94,7 +94,7 @@ define([
        */
       text: {
         title: "Cite this Dataset",
-        copyButton: "Copy Citation",
+        copyButton: "Copy To Clipboard",
         copySuccess: "Copied!",
       },
 
