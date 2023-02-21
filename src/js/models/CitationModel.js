@@ -312,31 +312,33 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      */
     setSourceModel(newSourceModel) {
       try {
-        const EMLPartyAttrs =
-          "change:individualName change:organizationName change:positionName";
         newSourceModel =
           newSourceModel && newSourceModel.type == "Package"
             ? newSourceModel.getMetadata()
             : newSourceModel;
 
+        // Remove any existing listeners on the previous sourceModel
         if (this.sourceModel) {
-          this.stopListening(this.sourceModel, "change");
-          this.sourceModel.get("creators") ||
-            []
-              .filter(Array.isArray)
-              .forEach((creator) => this.stopListening(creator, EMLPartyAttrs));
+          this.stopListening(this.sourceModel);
+          const creators = this.sourceModel.get("creator") || [];
+          creators.forEach((creator) => this.stopListening(creator));
         }
 
+        // Add listeners to the new sourceModel
         if (newSourceModel) {
-          this.listenTo(newSourceModel, "change", this.populateFromModel);
-          newSourceModel.get("creators") ||
-            []
-              .filter(Array.isArray)
-              .forEach((creator) =>
-                this.listenTo(creator, EMLPartyAttrs, () =>
-                  this.populateFromModel(newSourceModel)
-                )
-              );
+          const creatorEvents =
+            "change:individualName change:organizationName change:positionName";
+          const sourceModelEvents =
+            "change:origin change:creator change:pubDate change:dateUploaded change:title change:seriesId change:id change:datasource";
+          const creators = newSourceModel.get("creator") || [];
+          this.listenTo(newSourceModel, sourceModelEvents, () => {
+            this.setSourceModel(newSourceModel);
+          });
+          creators.forEach((creator) => {
+            this.listenTo(creator, creatorEvents, () => {
+              this.setSourceModel(newSourceModel);
+            });
+          });
         }
         Backbone.Model.prototype.set.call(this, "sourceModel", newSourceModel);
         this.populateFromModel(newSourceModel);
