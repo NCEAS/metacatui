@@ -531,12 +531,11 @@ define([
         familyName =
           family && nonDropPart ? `${nonDropPart} ${family}` : family;
 
-        // If there is no given name, just return the family name, if there is
-        // one.
+        // If there is no given name, just return the family name.
         if (!given) return familyName;
 
         // Handle full given names or just initials with or without periods.
-        // SPlit on spaces and periods, then filter out empty strings.
+        // Split on spaces and periods, then filter out empty strings.
         const initials = given
           .split(/[\s.]+/)
           .filter((str) => str.length > 0)

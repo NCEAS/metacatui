@@ -318,10 +318,11 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
             : newSourceModel;
 
         // Remove any existing listeners on the previous sourceModel
-        if (this.sourceModel) {
-          this.stopListening(this.sourceModel);
-          const creators = this.sourceModel.get("creator") || [];
-          creators.forEach((creator) => this.stopListening(creator));
+        const currentSourceModel = this.get("sourceModel");
+        if (currentSourceModel) {
+          this.stopListening(currentSourceModel);
+          const creators = currentSourceModel.get("creator") || [];
+          creators.forEach((creator) => this.stopListening(creator), this);
         }
 
         // Add listeners to the new sourceModel
@@ -874,11 +875,11 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           .map((a) => {
             if (!a) return null;
             const ndp = a["non-dropping-particle"];
-            let name = a.family;
-            name = ndp && name ? `${ndp} ${name}` : name;
-            name = a.given && name ? `${a.given} ${name}` : a.given;
-            name = name || a.literal;
-            return name;
+            let name =
+              (a.given ? a.given + " " : "") +
+              (ndp ? ndp + " " : "") +
+              (a.family ? a.family : "");
+            return (name || a.literal).trim();
           })
           .filter((a) => a)
           .join(", ");
