@@ -728,6 +728,11 @@ text-shadow: none;
   width: auto;
   max-width: 100px;
 }
+
+/* Don't italicize the title in the citation in search results */
+.result-row .title i {
+	font-style: normal;
+}
 /******************************************
 ** Provenance flow-charts ***
 ******************************************/

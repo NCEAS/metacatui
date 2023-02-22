@@ -574,7 +574,7 @@ define([
         });
         if (nAuthors === 1) return authorStr[0];
         if (nAuthors === 2) return authorStr.join(" & ");
-        return `${authorStr[0]} et al`;
+        return `${authorStr[0]} et al.`;
       },
 
       /**

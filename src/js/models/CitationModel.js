@@ -136,9 +136,18 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         if (response.origin) {
           const or = this.originToArray(response.origin);
           response.originArray = or.map((author) => {
-            author = this.formatMetricsServiceString(author);
             return this.nameStrToCSLJSON(author);
           });
+        }
+        let sID = response.source_id;
+        if(this.isDOI(sID)){
+          if (sID.startsWith("http")) {
+            sID = this.URLtoDOI(sID);
+          }
+          if (!sID.startsWith("doi:")) {
+            sID = "doi:" + sID;
+          }
+          response.source_id = sID;
         }
 
         // Format the citation metadata = DataONE datasets cited by this
@@ -181,8 +190,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
 
               return item;
             });
-            const citations = new Citations(citationMetadata);
-            response.citationMetadata = citations;
+            response.citationMetadata = new Citations(citationMetadata);
           }
         }
         return response;
@@ -689,7 +697,18 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
       if (!str) return null;
       const name = {};
       str = this.formatMetricsServiceString(str);
-      const parts = str.trim().split(/\s+/);
+
+      // If the string contains one comma, then assume it is in the format "last
+      // name, first name". Move the first name to the front of the string.
+      if (str.split(",").length == 2) {
+        const parts = str.split(",");
+        str = parts[1].trim() + " " + parts[0].trim();
+      }
+
+      const parts = str
+        .trim()
+        .split(/\s+|\./)
+        .filter((part) => part !== "");
 
       if (parts.length === 1) {
         name.literal = str;

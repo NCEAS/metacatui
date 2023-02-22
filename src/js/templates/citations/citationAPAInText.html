@@ -1,6 +1,6 @@
 <%
 pid = pid || '';
-const originHTML = origin ? `${origin}. ` : '';
+const originHTML = origin ? `${origin} ` : '';
 const pubHTML = year_of_publishing ? `<time datetime="${year_of_publishing}">${year_of_publishing}</time>` : '';
 const anchorStart = view_url ? `<a href="${view_url}" target="_blank" data-id="${pid}">` : '';
 const anchorEnd = view_url ? '</a>' : '';
