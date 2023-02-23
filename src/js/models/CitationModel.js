@@ -1,7 +1,12 @@
 /* global define */
 "use strict";
 
-define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
+define(["jquery", "underscore", "backbone", "collections/Citations"], function (
+  $,
+  _,
+  Backbone,
+  Citations
+) {
   /**
    * @class Citation
    * @classdesc A Citation Model represents a single Citation Object returned by
@@ -154,11 +159,6 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         // citation (external document)
         const cm = response.citationMetadata;
         if (cm) {
-          // MUST import Citations collection using the inline require syntax to
-          // avoid circular dependencies. CitationModel requires Citations and
-          // Citations requires CitationModel. See
-          // https://requirejs.org/docs/api.html#circular
-          const Citations = require("collections/Citations");
           if (cm && !(cm instanceof Citations)) {
             const citationMetadata = Object.entries(cm).map(([pid, data]) => {
               // Convert format from {id: {data}} to {data, id}

@@ -52,6 +52,7 @@ define([
        * The HTML classes to use for the title element. This will be passed to
        * the template and will be used to identify the title element if the
        * createTitleLink option is set to true.
+       * @since x.x.x
        * @type {string}
        */
       titleClass: "title",
@@ -61,6 +62,7 @@ define([
        * metadata. The citation metadata are the citations that cite the main
        * citation. This class will be passed to the template and will be used to
        * identify the container element.
+       * @since x.x.x
        * @type {string}
        */
       citationMetadataClass: "citation-metadata",
@@ -358,6 +360,7 @@ define([
       /**
        * Remove all HTML from the view.
        * @returns {CitationView} Returns the view.
+       * @since x.x.x
        */
       clear: function () {
         this.el.innerHTML = "";
@@ -472,6 +475,7 @@ define([
        * @param {object[]} authors - An array of CSL JSON name objects
        * @returns {string} The formatted author string or an empty string if
        * there are no authors
+       * @since x.x.x
        */
       CSLNamesToAPA: function (authors) {
         // Format authors as a proper APA style citation:
