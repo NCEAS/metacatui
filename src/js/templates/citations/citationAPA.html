@@ -1,23 +1,18 @@
 <%
+
 const originHTML = origin ? `<span class="author">${origin.replace(/\.$/, '')}. </span>` : '';
+
 const pubHTML = year_of_publishing ? `<time class="pubdate" datetime="${year_of_publishing}">(${year_of_publishing}). </time>` : '';
+
 const dataID = pid ? ` data-id="${pid}"` : '';
 
-let titleHTML = title || '';
-if (title) {
-  const url = view_url || source_url || '';
-  const target = url && url.startsWith('http') ? ' target="_blank"' : '';
-  const titleA = url ? `<a href="${url}"${target}>` : '';
-  const titleAEnd = url ?'</a>' : '';
-  titleHTML = `${titleA}<span class="title"${dataID}><i>${title}</i></span>${titleAEnd}. `;
-}
+let titleHTML = title ? `<span class="${titleClass}"${dataID}><i>${title}</i></span>. ` : '';
 
 let journalHTML = journal ? `<span class="publisher">${journal}. </span>` : '';
 
 let volumeHTML = volume ? `<span class="publisher">Vol. ${volume}. </span>` : '';
 
 let pageHTML = page ? `<span class="publisher">pp. ${page}. </span>` : '';
-
 
 let seriesIdHTML = seriesId || '';
 if (seriesId) {
@@ -28,7 +23,6 @@ if (seriesId) {
     seriesIdHTML = `<span>${seriesId}${idSep}</span>`;
   }
 }
-
 let pidHTML = pid || source_id || '';
 if (pid) {
   if (pid_url) {
@@ -37,16 +31,13 @@ if (pid) {
     pidHTML = `<span>${pid}.</span>`;
   }
 }
-
 const idHTML = seriesIdHTML || pidHTML ? `<span class="id">${seriesIdHTML}${pidHTML}</span>` : '';
 
-const beginAnchor = view_url && !title ? `<a href="${view_url}">` : '';
-const endAnchor = view_url && !title ? '</a>' : '';
 %>
-<%= beginAnchor + originHTML + pubHTML + titleHTML + journalHTML + volumeHTML + pageHTML + endAnchor + idHTML %>
+<%= originHTML + pubHTML + titleHTML + journalHTML + volumeHTML + pageHTML + idHTML %>
 <%if(citationMetadata){%>
-<br>
-<span>Cites Data: </span>
-<span class="citation-metadata"></span>
+  <br>
+  <span>Cites Data: </span>
+  <span class="<%= citationMetadataClass %>"></span>
 <%}%>
 

@@ -44,19 +44,19 @@ const idHTML = seriesIdHTML || pidHTML ? `<span class="id">${seriesIdHTML}${pidH
 // --- Elements for the expandable list of authors ---
 
 // Group of authors that will always be shown
-const authorsGrp1HTML = authorsGrp1 ? `<span id="${elIDs.grp1}">${authorsGrp1}</span>` : '';
+const authorsGrp1HTML = authorsGrp1 ? `<span class="${classes.grp1}">${authorsGrp1}</span>` : '';
 
 // Group of authors that will be hidden by default
-const authorsGrp2HTML = authorsGrp2 ? `<span id="${elIDs.grp2}" style="display:none">${authorsGrp2}</span>` : '';
+const authorsGrp2HTML = authorsGrp2 ? `<span class="${classes.grp2}" style="display:none">${authorsGrp2}</span>` : '';
 
 // The last author, which will always be shown
-const lastAuthorHTML = lastAuthor ? `<span id="${elIDs.last}">${lastAuthor}</span>` : '';
+const lastAuthorHTML = lastAuthor ? `<span class="${classes.last}">${lastAuthor}</span>` : '';
 
 // The ellipsis between the first group and the last author, when the second group is hidden
-const ellipsisHTML = authorsGrp2 ? `<span id="${elIDs.ellipsis}" class="show-authors">...</span>` : '';
+const ellipsisHTML = authorsGrp2 ? `<span class="${classes.ellipsis} show-authors">...</span>` : '';
 
 // The button to expand the list of authors
-const expandTag = authorsGrp2 ? ` <button id="${elIDs.btn}" class="show-authors">+ More Authors</button>` : '';
+const expandTag = authorsGrp2 ? ` <button class="${classes.btn} show-authors">+ More Authors</button>` : '';
 
 // --- Elements for the expandable list of authors, combined ---
 const originHTML = authorsGrp1HTML || authorsGrp2HTML ? `<div class="authors">${authorsGrp1HTML}${ellipsisHTML}${lastAuthorHTML}${expandTag}${authorsGrp2HTML}</div>` : '';

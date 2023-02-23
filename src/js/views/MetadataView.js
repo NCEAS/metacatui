@@ -1364,7 +1364,7 @@ define(['jquery',
             citeButton.addEventListener('click', () => {
               this.citationModal = new CitationModalView({
                 model: this.model,
-                style: "fullNoLink"
+                createLink: true
               })
               this.subviews.push(this.citationModal);
               this.citationModal.render();

@@ -276,31 +276,27 @@ define([
 
         this.citationCollection = citationCollection;
 
+        var modalBody = this.el.querySelector(".modal-body");
+
         // Checking if there are any citations available for the List display.
         if (this.metricsModel.get("totalCitations") == 0) {
           var citationList = new CitationList({
             citationsForDataCatalogView: true,
             pid: this.pid,
+            el: modalBody,
           });
         } else {
           var citationList = new CitationList({
             citations: this.citationCollection,
             citationsForDataCatalogView: true,
             pid: this.pid,
+            el: modalBody,
           });
         }
-
+        citationList.render();
         this.citationList = citationList;
         this.subviews.push(citationList);
 
-        // TODO - update citation count?
-
-        // Find the modal-body and insert the citation list, rather than
-        // inserting the HTML from the citationList directly into the modal
-        // template. This way, when the citation List is updated, the modal
-        // will display the updated list.
-        var modalBody = this.$el.find(".modal-body");
-        modalBody.append(this.citationList.render().$el);
       },
 
       /**

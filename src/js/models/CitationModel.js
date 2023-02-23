@@ -124,7 +124,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      * @param {Object} options - Options to pass to the parse() method.
      * @returns {Object} The parsed response
      */
-    parse(response) {
+    parse: function (response) {
       try {
         // strings that need formatting when coming from the metrics-service:
         const toFormat = ["journal", "page", "volume", "publisher"];
@@ -140,7 +140,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           });
         }
         let sID = response.source_id;
-        if(this.isDOI(sID)){
+        if (this.isDOI(sID)) {
           if (sID.startsWith("http")) {
             sID = this.URLtoDOI(sID);
           }
@@ -1064,6 +1064,39 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
      */
     getUploadStatus: function () {
       return this.sourceModel ? this.sourceModel.get("uploadStatus") : null;
+    },
+
+    /**
+     * Get the URL for the citation. This will check the model for the following
+     * attributes and return the first that is not empty: view_url, source_url,
+     * sid_url, pid_url.
+     * @returns {string} Returns the URL for the citation or an empty string.
+     * @since x.x.x
+     */
+    getURL: function () {
+      const urlSources = ["view_url", "source_url", "sid_url", "pid_url"];
+      for (let i = 0; i < urlSources.length; i++) {
+        const url = this.get(urlSources[i]);
+        if (url) return url;
+      }
+      return "";
+    },
+
+    /**
+     * Get the main identifier for the citation. This will check the model for
+     * the following attributes and return the first that is not empty: pid,
+     * seriesId, source_url.
+     * @returns {string} Returns the main identifier for the citation or an
+     * empty string.
+     * @since x.x.x
+     */
+    getID: function () {
+      const idSources = ["pid", "seriesId", "source_url"];
+      for (let i = 0; i < idSources.length; i++) {
+        const id = this.get(idSources[i]);
+        if (id) return id;
+      }
+      return "";
     },
   });
 

@@ -49,6 +49,14 @@ define([
       model: null,
 
       /**
+       * The citation style to use
+       * @type {string}
+       * @default "apa"
+       * @see {@link CitationView#styles}
+       */
+      style: "apa",
+
+      /**
        * The events this view will listen for
        * @type {Object} See {@link https://backbonejs.org/#View-events}
        */
@@ -189,7 +197,8 @@ define([
         // Create a new CitationView
         var citationView = new CitationView({
           model: this.model,
-          style: this.style, // The citation style to use
+          style: this.style,
+          createTitleLink: false,
         });
 
         // Render the CitationView

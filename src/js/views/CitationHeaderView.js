@@ -46,10 +46,36 @@ define([
        */
       styles: {
         header: {
-          template: _.template(HeaderTemplate),
-          render: "renderHeader",
+          full: {
+            template: _.template(HeaderTemplate), //
+            render: "renderHeader",
+          },
         },
       },
+
+      /**
+       * Override the CitationView style to use the header style.
+       * @see {@link CitationView#style}
+       */
+      style: "header",
+
+      /**
+       * Override the CitationView context to use the full context.
+       * @see {@link CitationView#context}
+       */
+      context: "full",
+
+      /**
+       * Never create a link for the citation header.
+       * See {@link CitationView#createLink}
+       */
+      createLink: false,
+
+      /**
+       * Never create a link for the citation header title.
+       * See {@link CitationView#createTitleLink}
+       */
+      createTitleLink: false,
 
       /**
        * IDs used in the template to identify the elements that will be
@@ -63,7 +89,7 @@ define([
        * @property {string} ellipsis - The ID of the ellipsis that will be
        * displayed when the second group of authors is hidden
        */
-      elIDs: {
+      classes: {
         grp1: "CV_authors1",
         grp2: "CV_authors2",
         btn: "CV_show-authors",
@@ -78,16 +104,6 @@ define([
        * @type {boolean}
        */
       authorListIsOpen: false,
-
-      /**
-       * See {@link CitationView#initialize}. Override the style option to make
-       * sure the header style is used.
-       */
-      initialize: function (options) {
-        if (!options || typeof options !== "object") options = {};
-        options.style = "header";
-        CitationView.prototype.initialize.call(this, options);
-      },
 
       /**
        * Render the citation header. Called by {@link CitationView#render}.
@@ -139,16 +155,16 @@ define([
         options.authorsGrp2 = grp2Str;
         options.lastAuthor = lastAuthStr;
 
-        // Pass IDs that we can use to refer to all the elements we need to
+        // Pass classes that we can use to refer to all the elements we need to
         // manipulate.
-        options.elIDs = this.elIDs;
+        options.classes = this.classes;
 
         this.el.innerHTML = template(options);
 
         // Select all the elements
         const els = (this.els = {});
-        Object.keys(options.elIDs).forEach((key) => {
-          els[key] = this.el.querySelector(`#${options.elIDs[key]}`);
+        Object.keys(options.classes).forEach((key) => {
+          els[key] = this.el.querySelector(`.${options.classes[key]}`);
         });
 
         // If there are fewer than maxAuthors, then the template will not render
@@ -203,8 +219,9 @@ define([
       closeList: function () {
         try {
           const els = this.els;
+          const no = this.numAuthorsGrp2 || "";
           els.grp2.style.display = "none";
-          els.btn.innerHTML = `+ Show ${this.numAuthorsGrp2} more authors`;
+          els.btn.innerHTML = `+ Show ${no} more authors`;
           els.ellipsis.style.display = "";
           // Reorder elements
           els.btn.parentNode.append(
@@ -229,7 +246,6 @@ define([
        * hidden, then it will be shown.
        */
       toggleList: function () {
-        const els = this.els;
         if (this.authorListIsOpen) {
           this.closeList();
         } else {

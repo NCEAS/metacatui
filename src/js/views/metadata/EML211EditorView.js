@@ -659,7 +659,7 @@ define(['underscore',
           // Create a citation view and render it
           var citationView = new CitationView({
             model: model,
-            title: "Untitled dataset",
+            defaultTitle: "Untitled dataset",
             createLink: false,
             createTitleLink: !model.isNew()
           });
