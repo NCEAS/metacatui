@@ -4,17 +4,17 @@ define([
   "backbone",
   "models/CitationModel",
   "text!templates/citations/citationAPA.html",
-  "text!templates/citations/citationAPAInText.html",
   "text!templates/citations/citationFullArchived.html",
+  "text!templates/citations/citationAPAInText.html",
   "text!templates/citations/citationAPAInTextArchived.html",
 ], function (
   $,
   _,
   Backbone,
   CitationModel,
-  FullTemplate,
-  InTextTemplate,
-  FullArchivedTemplate,
+  APATemplate,
+  ArchivedTemplate,
+  APAInTextTemplate,
   InTextArchivedTemplate
 ) {
   "use strict";
@@ -121,12 +121,12 @@ define([
       styles: {
         apa: {
           full: {
-            template: _.template(FullTemplate),
-            archivedTemplate: _.template(FullArchivedTemplate),
+            template: _.template(APATemplate),
+            archivedTemplate: _.template(ArchivedTemplate),
             render: "renderAPA",
           },
           inText: {
-            template: _.template(InTextTemplate),
+            template: _.template(APAInTextTemplate),
             archivedTemplate: _.template(InTextArchivedTemplate),
             render: "renderAPAInText",
           },
@@ -210,7 +210,6 @@ define([
 
           // Convert deprecated options to the new options.
           if (optKeys.includes("title") && !optKeys.includes("defaultTitle")) {
-            console.log('setting default title to', options.title);
             options.defaultTitle = options.title;
           }
 
@@ -311,19 +310,16 @@ define([
 
           // Get the template for this style. If object is archived & not
           // indexed, use the archived template.
-          const template = this.model.isArchivedAndNotIndexed()
-            ? styleAttrs.archivedTemplate
-            : styleAttrs.template;
+          let template = styleAttrs.template;
+          if (
+            this.model.isArchivedAndNotIndexed() &&
+            styleAttrs.archivedTemplate
+          ) {
+            template = styleAttrs.archivedTemplate;
+          }
 
           // If for some reason there is no template, then render an empty view
           if (!template) return this.clear();
-
-          // Find the render method to use that is in the style definition
-          let renderMethod = styleAttrs.render ? this[styleAttrs.render] : null;
-
-          // Find the name of the render method to use that is in the style
-          // definition
-          if (typeof renderMethod != "function") return this.clear();
 
           // Options to pass to the template
           const options = {
@@ -331,7 +327,7 @@ define([
             citationMetadataClass: this.citationMetadataClass,
             ...this.model.toJSON(),
           };
-          if(!options.title) options.title = this.defaultTitle || '';
+          if (!options.title) options.title = this.defaultTitle || "";
 
           // PANGAEA specific override. If this is a PANGAEA object, then do not
           // show the UUID if the seriesId is a DOI.
@@ -342,7 +338,18 @@ define([
             options.pid = "";
           }
 
-          renderMethod.call(this, options, template);
+          // Find the render method to use that is in the style definition
+          let renderMethod = styleAttrs.render;
+
+          // Run the render method, if it exists
+          if (typeof renderMethod == "function") {
+            renderMethod.call(this, options, template);
+          } else if (typeof this[renderMethod] == "function") {
+            this[renderMethod](options, template);
+          } else {
+            // Default to just passing the options to the template
+            this.el.innerHTML = template(options);
+          }
 
           if (this.createLink) {
             this.addLink();
@@ -418,7 +425,7 @@ define([
               style: this.style,
               context: "inText",
               createLink: true,
-              openLinkInNewTab: true
+              openLinkInNewTab: true,
             });
             citationMetaEl.appendChild(citationView.render().el);
             // Put a comma after each citationMetadata except the last one
