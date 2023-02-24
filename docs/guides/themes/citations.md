@@ -4,43 +4,29 @@ title: Customizing citations content & style
 id: customizing-citations
 ---
 
-This guide will show an example of how to customize the content and style of
-citations within a [custom MetacatUI theme]({{ site.url
-}}/install/configuration/index.html). This guide assumes that you have already
-set up a custom theme and have a basic understanding of how to customize the
-theme.
+This guide provides an example of how to customize the content and style of citations in a [custom MetacatUI theme]({{ site.url
+}}/install/configuration/index.html). It assumes that you have already set up a custom theme and have a basic understanding of how to customize it.
 
 # Background
 
 ## The Citation Model
 
-All Citation content is stored in the [Citation
-Model]({{site.url}}/docs/Citation.html). The Citation Model can be populated
-from metrics service results, a SOLR model, a DataONE Object, an EML model, or
-any extension of these models. How each attribute in the model is populated is
-defined by a set of methods set by the `attrGetters` property.
+All citation content is stored in the [Citation Model]({{site.url}}/docs/CitationModel.html). The Citation Model can be populated from various sources such as metrics service results, a SOLR model, a DataONE Object, an EML model, or any extension of these models. The methods that define how each attribute in the model is populated are set by the `attrGetters` property.
 
 ## The Citation View
 
-The Citation View is responsible for rendering the Citation Model. It is
-currently set to render citations in APA format, but can be extended to render
-citations in other formats. Eventually, we will likely use a library like
-[citation.js](https://citation.js.org/) to handle citation formatting. See
-[issue #567](https://github.com/NCEAS/metacatui/issues/567).
+The [Citation View]({{site.url}}/docs/CitationView.html) is responsible for rendering the Citation Model. It is currently set to render citations in APA format, but can be extended to render citations in other formats. In the future, a library such as [`citation.js`](https://citation.js.org/) may be used to handle citation formatting (see [issue #567](https://github.com/NCEAS/metacatui/issues/567)).
 
 ## Links
 
 * [Planned Enhancements for Citations](https://github.com/NCEAS/metacatui/issues?q=is%3Aissue+is%3Aopen+label%3Acitations)
-* [Citation Model]({{site.url}}/docs/Citation.html)
+* [Citation Model]({{site.url}}/docs/CitationModel.html)
 * [Citation View]({{site.url}}/docs/CitationView.html)
 # Customization
 
 ## Extending the Citation Model
 
-In your theme's config.js file, define the current Citation Model as the "Base"
-Citation Model and create a path to an extended version of that model within
-your theme's models folder. This will allow you to extend the Citation Model
-without having to copy the entire Citation Model file into your theme.
+To extend the Citation Model without copying the entire Citation Model file into your theme, define the current Citation Model as the "Base" Citation Model in your theme's config.js file. Then, create a path to an extended version of that model within your theme's models folder.
 
 ```js
 // config.js
@@ -55,7 +41,7 @@ MetacatUI.themeMap = {
 };
 ```
 
-Create your theme's extended Citation Model file in the location: `src/js/themes/{YOUR-THEME-NAME}/models/CitationModel.js`
+Create your theme's extended Citation Model file in the following location: `src/js/themes/{YOUR-THEME-NAME}/models/CitationModel.js`
 
 ```js
 // src/js/themes/{YOUR-THEME-NAME}/models/CitationModel.js
@@ -209,11 +195,11 @@ define([
             "my-style": {
                 full: {
                     template: _.template(MyStyleTemplate),
-                    render: renderMyStyle,
+                    render: "renderMyStyle",
                 },
                 inText: {
                     template: _.template(MyStyleInTextTemplate),
-                    render: renderMyStyleInText,
+                    render: "renderMyStyleInText",
                 },
             },
         }),
