@@ -2094,7 +2094,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               eml.append(document.createElement("dataset"));
               eml.find("dataset").append(document.createElement("title"));
 
-              emlString = $(document.createElement("div")).append(eml.clone()).html();
+              var emlString = $(document.createElement("div")).append(eml.clone()).html();
 
               return emlString;
       },
@@ -2182,7 +2182,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           var referencesParentEl;  // The parent of the given references element
           var referencedEl; // The referenced DOM to be copied
 
-          xmlDOM = $.parseXML(xmlString);
+          var xmlDOM = $.parseXML(xmlString);
           referencesList = xmlDOM.getElementsByTagName("references");
 
           if (referencesList.length) {
