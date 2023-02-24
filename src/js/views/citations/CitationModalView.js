@@ -121,7 +121,7 @@ define([
         }
 
         this.model = options.model || new Citation();
-        this.style = options.style;
+        this.style = options.style || this.style;
       },
 
       /**

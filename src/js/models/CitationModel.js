@@ -140,9 +140,6 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
         // Turn the author strings into CSL JSON objects
         if (response.origin) {
           const or = this.originToArray(response.origin);
-          response.originArray = or.map((author) => {
-            return this.nameStrToCSLJSON(author);
-          });
         }
         let sID = response.source_id;
         if (this.isDOI(sID)) {
@@ -168,10 +165,9 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
               item.originArray = item.origin;
               delete item.origin;
               // Format the authors in the origin array
-              item.originArray = item.originArray.map((author) => {
-                author = this.formatMetricsServiceString(author);
-                return this.nameStrToCSLJSON(author);
-              });
+              item.originArray = item.originArray.map((author) =>
+                this.formatAuthor(author)
+              );
               // Get the publish year
               const date =
                 item.datePublished || item.dateUpdated || item.dateModified;
@@ -185,6 +181,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
               if (this.isDOI(pid) && !pid.startsWith("doi:")) {
                 pid = "doi:" + pid;
               }
+              item.pid = pid;
               item.view_url =
                 MetacatUI.root + "/view/" + encodeURIComponent(pid);
 
@@ -865,8 +862,8 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
         if (!origin) {
           return this.defaults().originArray;
         }
-        const originArray = origin ? origin.split(", ") : [];
-        return originArray;
+        let originArray = origin ? origin.split(", ") : [];
+        return originArray.map((author) => this.formatAuthor(author));
       } catch (error) {
         console.log(
           "There was an error converting the origin string to an array.",
@@ -898,7 +895,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
               (a.given ? a.given + " " : "") +
               (ndp ? ndp + " " : "") +
               (a.family ? a.family : "");
-            return (name || a.literal).trim();
+            return (name || a.literal || "").trim();
           })
           .filter((a) => a)
           .join(", ");
