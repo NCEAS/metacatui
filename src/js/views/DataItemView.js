@@ -99,9 +99,21 @@ define([
 
                 var attributes = this.model.toJSON();
 
+                // check if this data item is a metadata object
+                attributes.isMetadata = false;
+                if (this.model.get("type") == "Metadata") {
+                  attributes.isMetadata = true;
+                }
+
                 //Format the title
-                if(Array.isArray(attributes.title))
+                if(Array.isArray(attributes.title)) {
                   attributes.title  = attributes.title[0];
+                }
+
+                // format metadata object title
+                if (this.mode == "view" && attributes.isMetadata) {
+                  attributes.title  = "Metadata: " + this.model.get("fileName");
+                }
 
                 //Set some defaults
                 attributes.numAttributes = 0;
@@ -404,12 +416,8 @@ define([
                     attributes.memberRowMetrics = this.memberRowMetrics;
                   }
 
-                  // set up attributes for more info
-                  attributes.isMetadata = false;
-                  if (this.model.get("type") == "Metadata") {
-                    attributes.isMetadata = true;
-                  }
-                  else {
+                  // add collapse class
+                  if (!attributes.isMetadata){
                     this.$el.addClass("collapse");
                   }
 
