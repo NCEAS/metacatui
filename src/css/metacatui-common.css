@@ -8932,3 +8932,7 @@ body > #extension-is-installed{
 	height: 15px;
 	width: 15px;
 } 
+
+.btn.btn-rounded.action.downloadAction > i{
+	margin-left: 0px;
+}
