@@ -432,12 +432,19 @@ define([
 
                   //Download button
                   attributes.downloadUrl = undefined;
-                  if (this.model.get("dataUrl") !== undefined || this.model.get("url") !== undefined) {
+                  if (this.model.get("dataUrl") !== undefined || 
+                      this.model.get("url") !== undefined     || 
+                      this.model.url() !== undefined) {
                     if (this.model.get("dataUrl") !== undefined) {
                       attributes.downloadUrl = this.model.get("dataUrl");
                     }
-                    else {
+                    else if (this.model.get("dataUrl") !== undefined) {
                       attributes.downloadUrl = this.model.get("url");
+                    }
+                    else if (this.model.url() !== undefined) {
+                      var downloadUrl = this.model.url();
+                      downloadUrl.replace("meta", "object");
+                      attributes.downloadUrl = downloadUrl;
                     }
                   }
                   this.downloadButtonView = new DownloadButtonView({ id: this.model.get("id"), view: "actionsView" });
