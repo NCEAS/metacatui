@@ -1795,31 +1795,31 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
            * Converts the number of bytes into a human readable format and updates the `sizeStr` attribute
            */
           bytesToSize: function(){
-              var kilobyte = 1024;
-              var megabyte = kilobyte * 1024;
-              var gigabyte = megabyte * 1024;
-              var terabyte = gigabyte * 1024;
+              var kibibyte = 1024;
+              var mebibyte = kibibyte * 1024;
+              var gibibyte = mebibyte * 1024;
+              var tebibyte = gibibyte * 1024;
               var precision = 0;
 
               var bytes = this.get("size");
 
-              if ((bytes >= 0) && (bytes < kilobyte)) {
+              if ((bytes >= 0) && (bytes < kibibyte)) {
                   this.set("sizeStr", bytes + ' B');
 
-              } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
-                  this.set("sizeStr", (bytes / kilobyte).toFixed(precision) + ' KB');
+              } else if ((bytes >= kibibyte) && (bytes < mebibyte)) {
+                  this.set("sizeStr", (bytes / kibibyte).toFixed(precision) + ' KiB');
 
-              } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+              } else if ((bytes >= mebibyte) && (bytes < gibibyte)) {
                   precision = 2;
-                  this.set("sizeStr", (bytes / megabyte).toFixed(precision) + ' MB');
+                  this.set("sizeStr", (bytes / mebibyte).toFixed(precision) + ' MiB');
 
-              } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+              } else if ((bytes >= gibibyte) && (bytes < tebibyte)) {
                   precision = 2;
-                  this.set("sizeStr", (bytes / gigabyte).toFixed(precision) + ' GB');
+                  this.set("sizeStr", (bytes / gibibyte).toFixed(precision) + ' GiB');
 
-              } else if (bytes >= terabyte) {
+              } else if (bytes >= tebibyte) {
                   precision = 2;
-                  this.set("sizeStr", (bytes / terabyte).toFixed(precision) + ' TB');
+                  this.set("sizeStr", (bytes / tebibyte).toFixed(precision) + ' TiB');
 
               } else {
                   this.set("sizeStr", bytes + ' B');
