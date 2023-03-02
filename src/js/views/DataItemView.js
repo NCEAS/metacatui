@@ -412,8 +412,17 @@ define([
                   // insert metrics for this item
                   attributes.id = this.model.get("id");
                   attributes.memberRowMetrics = null;
+                  var metricToolTip = null;
                   if (this.memberRowMetrics !== null) {
-                    attributes.memberRowMetrics = this.memberRowMetrics;
+                    metricToolTip = this.memberRowMetrics;
+                    attributes.memberRowMetrics = this.memberRowMetrics.split(" ")[0];
+                  }
+                  attributes.metricIcon = undefined;
+                  if (attributes.isMetadata) {
+                    attributes.metricIcon = "icon-eye-open";
+                  }
+                  else {
+                    attributes.metricIcon = "icon-cloud-download";
                   }
 
                   // add collapse class
@@ -422,6 +431,7 @@ define([
                   }
 
                   //Download button
+                  attributes.downloadUrl = undefined;
                   if (this.model.get("dataUrl") !== undefined || this.model.get("url") !== undefined) {
                     if (this.model.get("dataUrl") !== undefined) {
                       attributes.downloadUrl = this.model.get("dataUrl");
@@ -440,6 +450,15 @@ define([
                   }
 
                   this.$el.html( this.template(attributes) );
+
+                  // add tooltip for metrics in package table
+                  this.$('.packageTable-resultItem').tooltip({
+                                          placement: "top",
+                                          trigger: "hover",
+                                          delay: 800,
+                                          container: this.$el,
+                                          title: metricToolTip
+                                        });
 
 
                 }

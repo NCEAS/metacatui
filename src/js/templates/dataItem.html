@@ -150,10 +150,18 @@
 			<% } %>
 	</td>
 
-<% } else if (viewType == "view" && memberRowMetrics !== undefined) { %>
-	<td class="metrics-count downloads" data-id="<%= id %>">
-		<%= memberRowMetrics %>
-	</td>
+<% } else if (viewType == "view") { %>
+	<% if (memberRowMetrics !== undefined) { %>
+		<td class="metrics-count downloads" data-id="<%= id %>">
+			<span class="packageTable-resultItem badge ">
+				<i class='catalog-metric-icon <%= metricIcon %>'></i> <%= memberRowMetrics %> 
+			</span>	
+		</td>
+	<% } else { %>
+		<td class="metrics-count downloads" data-id="<%= id %>">
+			
+		</td>
+	<% } %>
 	<td class="file-actions">
 		<% if (isMetadata !== undefined && !isMetadata) { %>
 			<a class="btn btn-rounded action preview" href="<%= moreInfoLink %>" data-id="<%= id %>"><i class="icon icon-large icon-info"></i></a>
