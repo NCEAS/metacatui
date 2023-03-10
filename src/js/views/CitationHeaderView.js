@@ -128,7 +128,9 @@ define([
         let grp2Str = "";
         let lastAuthStr = "";
 
-        if (numAuthors === 1) {
+        if (numAuthors === 0) {
+          // Keep the strings empty if there are no authors.
+        } else if (numAuthors === 1) {
           // If there is only one author, just show the name.
           grp1Str = authorsGrp1[0];
         } else if (numAuthors === 2) {
