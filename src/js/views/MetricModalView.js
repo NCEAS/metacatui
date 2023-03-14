@@ -107,9 +107,9 @@ define([
       subviews: [],
 
       /**
-       * The events this view will listen for
+       * The events this view will listen for. See
+       * {@link https://backbonejs.org/#View-events}
        * @type {Object}
-       * See {@link https://backbonejs.org/#View-events}
        */
       events: {
         hidden: "teardown",
@@ -296,7 +296,6 @@ define([
         citationList.render();
         this.citationList = citationList;
         this.subviews.push(citationList);
-
       },
 
       /**

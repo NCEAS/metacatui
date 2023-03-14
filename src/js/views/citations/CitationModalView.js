@@ -57,8 +57,9 @@ define([
       style: "apa",
 
       /**
-       * The events this view will listen for
-       * @type {Object} See {@link https://backbonejs.org/#View-events}
+       * The events this view will listen for. See
+       * {@link https://backbonejs.org/#View-events}
+       * @type {Object}
        */
       events: {
         hidden: "teardown",
