@@ -15,7 +15,7 @@ define([
    * @classcategory Views
    * @extends CitationView
    * @screenshot views/CitationHeaderView.png
-   * @since x.x.x
+   * @since 2.23.0
    * @constructor
    */
   var CitationHeaderView = CitationView.extend(

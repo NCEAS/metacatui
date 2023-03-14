@@ -222,7 +222,7 @@ define([
        * Get the metric name at the given offset from the current metric
        * @param {number} n - The offset from the current metric
        * @returns {string} The name of the metric at the given offset
-       * @since x.x.x
+       * @since 2.23.0
        */
       getMetricAtOffset: function (n) {
         const currentMetricName = this.metricName || this.metrics[0].name;

@@ -214,7 +214,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @param {string|number|Object} val - The value to set the attribute to.
        * @param {Object} options - Options to pass to the set() method.
        * @see https://backbonejs.org/#Model-set
-       * @since x.x.x
+       * @since 2.23.0
        */
       set: function (key, val, options) {
         try {
@@ -314,7 +314,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * listeners on the previous sourceModel and readds them to the new
        * sourceModel. Use this method to set or change the sourceModel attribute.
        * @param {Backbone.Model} newSourceModel - The new sourceModel
-       * @since x.x.x
+       * @since 2.23.0
        */
       setSourceModel(newSourceModel) {
         try {
@@ -368,7 +368,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * SolrResult or a model that is a DataONEObject or an extended
        * DataONEObject. If no model is passed, then the model will be reset to the
        * default attributes.
-       * @since x.x.x
+       * @since 2.23.0
        */
       populateFromModel: function (newSourceModel) {
         try {
@@ -405,7 +405,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * check datePublished (found in ScienceMetadata/EML models only.)
        * @param {Backbone.Model} sourceModel - The model to get the year from
        * @returns {Number} - The year
-       * @since x.x.x
+       * @since 2.23.0
        */
       getYearFromSourceModel(sourceModel) {
         try {
@@ -428,7 +428,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * Get the title from the sourceModel
        * @param {Backbone.Model} sourceModel - The model to get the title from
        * @returns {String} - The title
-       * @since x.x.x
+       * @since 2.23.0
        */
       getTitleFromSourceModel(sourceModel) {
         try {
@@ -468,7 +468,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * attribute, then use the current member node's name.
        * @param {Backbone.Model} sourceModel - The model to get the journal from
        * @returns {String} - The journal
-       * @since x.x.x
+       * @since 2.23.0
        */
       getJournalFromSourceModel(sourceModel) {
         try {
@@ -506,7 +506,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @param {Backbone.Model} sourceModel - The model to get the originArray
        * from
        * @returns {Array} - The originArray
-       * @since x.x.x
+       * @since 2.23.0
        */
       getOriginArrayFromSourceModel(sourceModel) {
         try {
@@ -546,7 +546,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * Get the pid from the sourceModel. First look for id, then identifier.
        * @param {Backbone.Model} sourceModel - The model to get the pid from
        * @returns {String} - The pid
-       * @since x.x.x
+       * @since 2.23.0
        */
       getPidFromSourceModel(sourceModel) {
         try {
@@ -568,7 +568,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * attribute.
        * @param {Backbone.Model} sourceModel - The model to get the seriesId from
        * @returns {String} - The seriesId
-       * @since x.x.x
+       * @since 2.23.0
        */
       getSeriesIdFromSourceModel(sourceModel) {
         try {
@@ -592,7 +592,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @param {Backbone.Model} sourceModel - The model to get the viewUrl from
        * @returns {String} - The viewUrl, or null if the sourceModel doesn't have
        * a createViewURL() method.
-       * @since x.x.x
+       * @since 2.23.0
        */
       getViewUrlFromSourceModel(sourceModel) {
         try {
@@ -648,7 +648,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @param {string} title The title to format
        * @returns {string} Returns the title with a period removed from the end if
        * it exists.
-       * @since x.x.x
+       * @since 2.23.0
        */
       formatTitle: function (title) {
         if (!title) return "";
@@ -662,7 +662,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @param {string} str The metrics service string to format
        * @returns {string} Returns the metrics service string with "NULL" replaced
        * with an empty string.
-       * @since x.x.x
+       * @since 2.23.0
        */
       formatMetricsServiceString: function (str) {
         if (!str) return "";
@@ -693,7 +693,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @param {str} author The author string to convert
        * @returns {Object} Returns an object with the author's name in CSL JSON
        * format.
-       * @since x.x.x
+       * @since 2.23.0
        */
       nameStrToCSLJSON: function (str) {
         if (!str) return null;
@@ -742,7 +742,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @param {Date|String|Number} date The date to extract the year from
        * @returns {Number} Returns the year as a number, or null if the date is
        * invalid.
-       * @since x.x.x
+       * @since 2.23.0
        */
       yearFromDate: function (date) {
         try {
@@ -774,7 +774,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * Check if a string is a valid ORCID.
        * @param {string} orcid The ORCID to check
        * @returns {boolean} Returns true if the ORCID is valid, false otherwise
-       * @since x.x.x
+       * @since 2.23.0
        */
       isOrcid: function (orcid) {
         try {
@@ -793,7 +793,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * author from their ORCID, then asynchronously set the originArray to
        * contain that name.
        * @param {string} orcid The ORCID to get the name for
-       * @since x.x.x
+       * @since 2.23.0
        */
       originArrayFromOrcid: function (orcid) {
         try {
@@ -833,7 +833,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @param {string} node - The node id to check, e.g. "urn:node:PANGAEA"
        * @returns {boolean} - True if the citation is for a DataONE object from
        * the given node
-       * @since x.x.x
+       * @since 2.23.0
        */
       isFromNode: function (node) {
         try {
@@ -860,7 +860,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * falsy value is passed in, then the default originArray attribute of the
        * model is returned.
        * @returns {Array} - An array of authors
-       * @since x.x.x
+       * @since 2.23.0
        */
       originToArray: function (origin) {
         try {
@@ -882,7 +882,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * Convert the origin array to a string.
        * @returns {string} - The origin string. If a falsy value is passed in,
        * then the default origin attribute of the model is returned.
-       * @since x.x.x
+       * @since 2.23.0
        */
       originArrayToString: function (originArray) {
         try {
@@ -920,7 +920,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @returns {boolean} - True if the citation has no content because it is
        * archived and archived content is not indexed.
        * @see AppModel#archivedContentIsIndexed
-       * @since x.x.x
+       * @since 2.23.0
        */
       isArchivedAndNotIndexed: function () {
         return this.isArchived() && !this.archivedContentIsIndexed();
@@ -931,7 +931,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * attribute of the source model.
        * @returns {boolean} - True if the source model has an `archived` attribute
        * that is true.
-       * @since x.x.x
+       * @since 2.23.0
        */
       isArchived: function () {
         return (
@@ -946,7 +946,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @see AppModel#archivedContentIsIndexed
        * @returns {boolean} - True if archived content is available in the search
        * index.
-       * @since x.x.x
+       * @since 2.23.0
        */
       archivedContentIsIndexed: function () {
         return MetacatUI.appModel.get("archivedContentIsIndexed");
@@ -957,7 +957,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * dx.doi.org, and doi:.
        * @param {string} str - The DOI string to remove prefixes from.
        * @returns {string} - The DOI string without any prefixes.
-       * @since x.x.x
+       * @since 2.23.0
        */
       removeAllDOIPrefixes: function (str) {
         if (!str) return "";
@@ -974,7 +974,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * Check if a string is a valid DOI.
        * @param {string} doi - The string to check.
        * @returns {boolean} - True if the string is a valid DOI, false otherwise.
-       * @since x.x.x
+       * @since 2.23.0
        */
       isDOI: function (str) {
         try {
@@ -996,7 +996,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * It may already be a URL, or it may be a DOI string. It also handles the
        * case where the DOI is already a URL.
        * @returns {string} - The DOI URL
-       * @since x.x.x
+       * @since 2.23.0
        */
       DOItoURL: function (str) {
         if (!str) return "";
@@ -1012,7 +1012,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * not for a DOI URL, then an empty string is returned.
        * @param {string} url - The DOI URL
        * @returns {string} - The DOI string, including the "doi:" prefix
-       * @since x.x.x
+       * @since 2.23.0
        */
       URLtoDOI: function (url) {
         if (!url) return "";
@@ -1027,7 +1027,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * Checks if the citation has a DOI in the seriesId or pid attributes.
        * @returns {string} - The DOI of the seriesID, if it is a DOI, or the DOI
        * of the pid, if it is a DOI. Otherwise, returns null.
-       * @since x.x.x
+       * @since 2.23.0
        */
       findDOI: function () {
         try {
@@ -1049,7 +1049,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
       /**
        * Checks if the citation has a DOI in the seriesId or pid attributes.
        * @returns {boolean} - True if the citation has a DOI
-       * @since x.x.x
+       * @since 2.23.0
        */
       hasDOI: function () {
         return this.findDOI() ? true : false;
@@ -1061,7 +1061,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * `getUploadStatus` function
        * @returns {string} - The upload status of the source model, if it is a
        * DataONEObject, or null if it is not.
-       * @since x.x.x
+       * @since 2.23.0
        * @see DataONEObject#getUploadStatus
        */
       getUploadStatus: function () {
@@ -1073,7 +1073,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * attributes and return the first that is not empty: view_url, source_url,
        * sid_url, pid_url.
        * @returns {string} Returns the URL for the citation or an empty string.
-       * @since x.x.x
+       * @since 2.23.0
        */
       getURL: function () {
         const urlSources = ["view_url", "source_url", "sid_url", "pid_url"];
@@ -1090,7 +1090,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * seriesId, source_url.
        * @returns {string} Returns the main identifier for the citation or an
        * empty string.
-       * @since x.x.x
+       * @since 2.23.0
        */
       getID: function () {
         const idSources = ["pid", "seriesId", "source_url"];

@@ -52,7 +52,7 @@ define([
        * The HTML classes to use for the title element. This will be passed to
        * the template and will be used to identify the title element if the
        * createTitleLink option is set to true.
-       * @since x.x.x
+       * @since 2.23.0
        * @type {string}
        */
       titleClass: "title",
@@ -62,7 +62,7 @@ define([
        * metadata. The citation metadata are the citations that cite the main
        * citation. This class will be passed to the template and will be used to
        * identify the container element.
-       * @since x.x.x
+       * @since 2.23.0
        * @type {string}
        */
       citationMetadataClass: "citation-metadata",
@@ -89,7 +89,7 @@ define([
        * to render the citation. This method will be passed the template (or
        * archived template if the object is archived), as well as the template
        * options.
-       * @since x.x.x
+       * @since 2.23.0
        * @example
        * {
        *  inText: {
@@ -107,7 +107,7 @@ define([
        * format.
        * @property {CitationView#ContextDefinition} inText - The in-text
        * citation format.
-       * @since x.x.x
+       * @since 2.23.0
        */
 
       /**
@@ -116,7 +116,7 @@ define([
        * @type {Object}
        * @property {CitationView#StyleDefinition} styleName - Each property in
        * the styles object maps a style name to a StyleOption object.
-       * @since x.x.x
+       * @since 2.23.0
        */
       styles: {
         apa: {
@@ -138,7 +138,7 @@ define([
        * {@link CitationView#styles} property can be used. If the style is not
        * defined then the view will not render.
        * @type {string}
-       * @since x.x.x
+       * @since 2.23.0
        */
       style: "apa",
 
@@ -147,7 +147,7 @@ define([
        * "inText" or "full". Configure this in the {@link CitationView#styles}
        * property.
        * @type {string}
-       * @since x.x.x
+       * @since 2.23.0
        */
       context: "full",
 
@@ -172,13 +172,13 @@ define([
        * in a new tab. When this option is true, then relative URLs will also
        * open in a new tab.
        * @type {boolean}
-       * @since x.x.x
+       * @since 2.23.0
        */
       openLinkInNewTab: false,
 
       /** A default title for when the Citation Model does not have a title.
        * @type {string}
-       * @since x.x.x
+       * @since 2.23.0
        */
       defaultTitle: null,
 
@@ -247,7 +247,7 @@ define([
        * option can be used to query for an object to cite.
        * @param {boolean} [render=true] - Whether to re-render the view after
        * setting the model.
-       * @since x.x.x
+       * @since 2.23.0
        */
       setModel: function (newModel, metadata, id, render = true) {
         try {
@@ -367,7 +367,7 @@ define([
       /**
        * Remove all HTML from the view.
        * @returns {CitationView} Returns the view.
-       * @since x.x.x
+       * @since 2.23.0
        */
       clear: function () {
         this.el.innerHTML = "";
@@ -379,7 +379,7 @@ define([
        * @param {Object} options - The options to pass to the template.
        * @param {function} template - The template associated with this style,
        * or it's archive template if the object is archived and not indexed.
-       * @since x.x.x
+       * @since 2.23.0
        */
       renderAPA: function (options, template) {
         // Format the authors for display
@@ -397,7 +397,7 @@ define([
        * @param {Object} options - The options to pass to the template.
        * @param {function} template - The template associated with this style,
        * or it's archive template if the object is archived and not indexed.
-       * @since x.x.x
+       * @since 2.23.0
        */
       renderAPAInText: function (options, template) {
         options.origin = this.CSLNamesToAPAInText(options.originArray);
@@ -411,7 +411,7 @@ define([
        * from the model's citationMetadata attribute.
        * @param {Object[]} citationMetadata - The citationMetadata to render.
        * See {@link CitationModel#defaults}.
-       * @since x.x.x
+       * @since 2.23.0
        */
       addCitationMetadata: function (citationMetadata) {
         const citationMetaEl = this.el.querySelector(
@@ -438,7 +438,7 @@ define([
 
       /**
        * Make the entire citation a link to the view page or the source URL.
-       * @since x.x.x
+       * @since 2.23.0
        */
       addLink: function () {
         const url = this.model.getURL();
@@ -462,7 +462,7 @@ define([
 
       /**
        * Make the title a link to the view page or the source URL.
-       * @since x.x.x
+       * @since 2.23.0
        */
       addTitleLink: function () {
         const url = this.model.getURL();
@@ -482,7 +482,7 @@ define([
        * @param {object[]} authors - An array of CSL JSON name objects
        * @returns {string} The formatted author string or an empty string if
        * there are no authors
-       * @since x.x.x
+       * @since 2.23.0
        */
       CSLNamesToAPA: function (authors) {
         // Format authors as a proper APA style citation:
@@ -524,7 +524,7 @@ define([
        * by author initials with a period after each initial. See
        * {@link EMLParty#toCSLJSON}
        * @param {object} cslJSON - A CSL-JSON name object
-       * @since x.x.x
+       * @since 2.23.0
        */
       CSLNameToAPA: function (cslJSON) {
         const {
@@ -567,7 +567,7 @@ define([
        * @param {object[]} authors - An array of CSL JSON name objects
        * @returns {string} The formatted author string or an empty string if
        * there are no authors
-       * @since x.x.x
+       * @since 2.23.0
        */
       CSLNamesToAPAInText: function (authors) {
         if (!authors || !authors.length) return "";
@@ -594,7 +594,7 @@ define([
        * @param {object[]} authors - An array of CSL JSON name objects
        * @returns {string} The formatted author string or an empty string if
        * there are no authors
-       * @since x.x.x
+       * @since 2.23.0
        */
       CSLNameToFullNameStr: function (author) {
         if (!author) return "";

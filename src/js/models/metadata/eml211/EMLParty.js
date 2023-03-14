@@ -891,7 +891,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
      * Return the EML Party as a CSL JSON object. See
      * {@link https://citeproc-js.readthedocs.io/en/latest/csl-json/markup.html#names}.
      * @return {object} The CSL JSON object
-     * @since x.x.x
+     * @since 2.23.0
      */
     toCSLJSON: function () {
       const name = this.get("individualName");
