@@ -488,7 +488,12 @@ define([
         // Format authors as a proper APA style citation:
         if (!authors) return "";
 
-        authors = authors.map(this.CSLNameToAPA);
+        // authors = authors.map(this.CSLNameToAPA);
+        // Uncomment the line above, and remove the line below, in order to
+        // make the author names follow the APA format. For now, we are showing
+        // full author names to avoid organization names getting mangled. See
+        // https://github.com/NCEAS/metacatui/issues/2106
+        authors = authors.map(this.CSLNameToFullNameStr);
 
         const numAuthors = authors.length;
         const maxAuthors = 20;
