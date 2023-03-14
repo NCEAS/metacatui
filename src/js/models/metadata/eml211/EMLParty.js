@@ -885,12 +885,35 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
     return this.get("individualName") ?
       this.get("individualName").givenName + " " + this.get("individualName").surName :
       this.get("organizationName") || this.get("positionName") || "";
-  },
+      },
+      
+    /**
+     * Return the EML Party as a CSL JSON object. See
+     * {@link https://citeproc-js.readthedocs.io/en/latest/csl-json/markup.html#names}.
+     * @return {object} The CSL JSON object
+     * @since x.x.x
+     */
+    toCSLJSON: function () {
+      const name = this.get("individualName");
+      const csl= {
+        family: name?.surName || null,
+        given: name?.givenName || null,
+        literal: this.get("organizationName") || this.get("positionName") || "",
+        "dropping-particle": name?.salutation || null,
+      }
+      // If any of the fields are arrays, join them with a space
+      for (const key in csl) {
+        if (Array.isArray(csl[key])) {
+          csl[key] = csl[key].join(" ");
+        }
+      }
+      return csl;
+    },
 
     /*
-    * function nameIsEmpty - Returns true if the individualName set on this model contains
-    * only empty values. Otherwise, returns false. This is just a shortcut for manually checking
-    * each name field individually.
+    * function nameIsEmpty - Returns true if the individualName set on this
+    * model contains only empty values. Otherwise, returns false. This is just a
+    * shortcut for manually checking each name field individually.
     *
     * @return {boolean}
     */

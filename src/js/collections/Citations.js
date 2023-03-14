@@ -1,7 +1,7 @@
 /* global define */
 "use strict";
 
-define(['jquery', 'underscore', 'backbone','models/CitationModel'],
+define(['jquery', 'underscore', 'backbone', 'models/CitationModel'],
     function($, _, Backbone, CitationModel) {
 
     /**
@@ -17,7 +17,13 @@ define(['jquery', 'underscore', 'backbone','models/CitationModel'],
     var Citations = Backbone.Collection.extend(
       /** @lends Citations.prototype */{
 
-        model: CitationModel,
+        model: function (attrs, options) {
+            // We use the inline require here in addition to the define above to
+            // avoid an issue caused by the circular dependency between
+            // CitationModel and Citations
+            var CitationModel = require('models/CitationModel');
+            return new CitationModel(attrs, options)
+        },
 
         //The name of this type of collection
         type: "Citations",

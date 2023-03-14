@@ -1,14 +1,7 @@
-<% if(metricName != 'undefined') {
-        var metrics = ['Citations', 'Downloads', 'Views'];
-        var metricIndex = metrics.indexOf(metricName);
-        var iconArrays = ['icon-quote-right', 'icon-cloud-download', 'icon-eye-open'];
-        var metricIcon = iconArrays[metricIndex];
-        // Implementing a circular queue for the modal footer
-        var prevMetricName = metrics[((metricIndex + metrics.length - 1) % metrics.length)];
-        var nextMetricName = metrics[((metricIndex + metrics.length + 1) % metrics.length)];
-}
+<%
+// If metric Value is 1, remove the s from the metric Name
+metricName = metricValue == 1 ? metricName.slice(0, -1) : metricName;
 %>
-
 <div class="modal-dialog">
   <div class="modal-content">
     <div class="modal-header">
@@ -24,8 +17,6 @@
     </div>
     <div class="modal-body">
 
-      <%=metricBody%>
-
       <% if (metricNameLemma != "citation") { %>
           <div class="modal-description">
               <p>For all versions of this data set, the number of times that all or part of this data set was <%=metricNameLemma%>ed over time.</p>
@@ -39,12 +30,12 @@
       <div class="left-modal-footer" style="float:left">
             <button type="button" class="modal-btn btn btn-default" >
                 <i class='icon icon-chevron-left'></i>
-                <%=prevMetricName%>
+                <%=prevMetric%>
             </button>
       </div>
       <div class="right-modal-footer" style="float:right" >
             <button type="button" class="modal-btn btn btn-default">
-                <%=nextMetricName%>
+                <%=nextMetric%>
                 <i class='icon icon-chevron-right'></i>
             </button>
       </div>

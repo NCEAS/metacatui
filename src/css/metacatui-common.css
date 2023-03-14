@@ -728,6 +728,11 @@ text-shadow: none;
   width: auto;
   max-width: 100px;
 }
+
+/* Don't italicize the title in the citation in search results */
+.result-row .title i {
+	font-style: normal;
+}
 /******************************************
 ** Provenance flow-charts ***
 ******************************************/
@@ -2460,19 +2465,6 @@ i.catalog-metric-icon {
 button.modal-btn.btn.btn-default {
     all: unset;
     cursor: pointer;
-}
-.metrics-route-to-metadata > span.author {
-    color: #888;
-    font-weight: normal;
-}
-
-.metrics-route-to-metadata > span.pubdate {
-    color: #888;
-    font-weight: normal;
-}
-
-.metrics-route-to-metadata > span.publisher {
-    color: #888;
 }
 
 /***********
@@ -8914,3 +8906,86 @@ CSS library fixes
 body > #extension-is-installed{
   display: none;
 }
+
+/* TODO: Move citation CSS into its own file */
+
+.citation.copiable {
+	font-size: 12px;
+	background-color: #fbfbfb;
+	border: 1px solid #e3e3e3;
+	padding: 4px 15px;
+	font-weight: 100;
+	border-radius: 8px;
+	/* Make it a 2x2 grid */
+	display: grid;
+	grid-template-columns: 1fr 84px;
+	grid-template-rows: auto 1fr;
+	grid-gap: 0px;
+	/* vertically center everything*/
+	align-items: center;
+
+}
+
+.cite-text {
+	font-size: 12px;
+	font-weight: 900;
+	letter-spacing: 0.01em;
+	margin-bottom: 3px;
+}
+
+.citation.header .top-info {
+  text-transform: uppercase;
+	font-size: 13px;
+	letter-spacing: 0.02em;
+	line-height: 1;
+	margin-top: 20px;
+}
+
+.citation.header .type {
+  color: #146660;
+  font-weight: 700;
+	letter-spacing: 0.035em;
+}
+
+.citation.header .title {
+	margin-top: 20px;
+	font-size: 29px;
+	color: #333333;
+	line-height: 1.26;
+}
+
+.citation.header .separator {
+	color: #e3e3e3;
+	padding: 0 5px;
+}
+
+.citation.header .authors {
+	color: #202424;
+	font-weight: 100;
+	font-size: 15px;
+}
+
+.citation.header .show-authors{
+	background: none;
+	border: 0;
+	border-radius: 15px;
+	color: #313d90;
+	text-decoration: none;
+	text-transform: uppercase;
+	font-weight: bold;
+	line-height: 15px;
+	font-size: 13px;
+	/* vertical-align: text-bottom; */
+	cursor: pointer;
+	padding: 0 5px;
+	letter-spacing: 0.02em;
+}
+.citation.header .show-authors:hover{
+	color: #166760;
+	background-color: #e4faf8;
+}
+.citation.header button.show-authors{
+	margin-left: 5px;
+}
+
+

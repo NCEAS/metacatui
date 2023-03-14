@@ -1,0 +1,30 @@
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <i class="icon icon-on-left <%=icons.title%>"></i> <b><%=text.title%></b>
+      <button
+        type="button"
+        class="close"
+        data-dismiss="modal">
+        &times;
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div
+        class="citation-container"
+        id="<%=ids.citationContainer%>"></div>
+    </div>
+
+    <div class="modal-footer">
+      <a
+        id="<%=ids.copyButton%>"
+        class="btn"
+        data-clipboard-target="#<%=ids.citationContainer%>">
+        <%=buttonInnerHTML%>
+      </a>
+    </div>
+  </div>
+  <!-- /.modal-content -->
+</div>
+<!-- /.modal-dialog -->
