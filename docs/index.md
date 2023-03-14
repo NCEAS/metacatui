@@ -18,6 +18,12 @@ MetacatUI is a client-side web interface for Metacat science data repositories a
 
 MetacatUI is an open source, community project.  We [welcome contributions](https://github.com/NCEAS/metacatui/blob/main/CONTRIBUTING.md) in many forms, including code, graphics, documentation, bug reports, testing, etc.  Use the [Github discussion list](https://github.com/NCEAS/metacatui/issues) to discuss these contributions with us.
 
+## Citation
+
+Cite this software as:
+
+> Matthew B. Jones, Chris Jones, Lauren Walker, Robyn Thiessen-Bock, Ben Leinfelder, Peter Slaughter, Bryce Mecum, Rushiraj Nenuji, Hesham Elbashandy, Val Hendrix. 2022. MetacatUI: A client-side web interface for DataONE data repositories (version 2.22.0). Arctic Data Center. [doi:10.18739/A25M6282K](https://doi.org/10.18739/A25M6282K)
+
 ## Related Projects
 
 {% include projects.html %}
