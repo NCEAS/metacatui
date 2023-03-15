@@ -387,7 +387,7 @@ define(['jquery', 'underscore', 'backbone', 'promise'],
         }
 
         var queryData = new FormData();
-        queryData.append("q", query);
+        queryData.append("q", decodeURIComponent(query));
         queryData.append("fq", filterQuery);
         queryData.append("stats", stats);
         queryData.append("stats.field", statsField);
@@ -573,7 +573,7 @@ define(['jquery', 'underscore', 'backbone', 'promise'],
         }
 
         var queryData = new FormData();
-        queryData.append("q", query);
+        queryData.append("q", decodeURIComponent(query));
         queryData.append("fq", filterQuery);
         queryData.append("stats", stats);
         queryData.append("stats.field", statsField);
@@ -751,7 +751,7 @@ define(['jquery', 'underscore', 'backbone', 'promise'],
           if( model.get("usePOST") ){
 
             var queryData = new FormData();
-            queryData.append("q", query);
+            queryData.append("q", decodeURIComponent(query));
             queryData.append("rows", rows);
             queryData.append("sort", sort);
             queryData.append("fl", fl);
@@ -811,7 +811,7 @@ define(['jquery', 'underscore', 'backbone', 'promise'],
         }
 
         var queryData = new FormData();
-        queryData.append("q", query);
+        queryData.append("q", decodeURIComponent(query));
         queryData.append("rows", rows);
         queryData.append("sort", sort);
         queryData.append("fl", fl);
@@ -925,7 +925,7 @@ define(['jquery', 'underscore', 'backbone', 'promise'],
         }
 
         var queryData = new FormData();
-        queryData.append("q", query);
+        queryData.append("q", decodeURIComponent(query));
         queryData.append("rows", rows);
         queryData.append("sort", sort);
         queryData.append("fl", fl);

@@ -126,21 +126,14 @@ define(
         },
 
         /**
-         * Trigger an event for the parent view to tell the map widget to zoom to the full
-         * extent of this layer or other asset. Also make sure that the layer is visible.
-         * If it's not visible after the user clicks the "zoom" button, that could be
+         * Trigger an event from the Map Asset model that tells the Map Widget to zoom to
+         * the full extent of this layer. Also make sure that the layer is visible. If
+         * it's not visible after the user clicks the "zoom" button, that could be
          * confusing.
          */
         flyToExtent : function(){
           try {
-            // If the opacity is very low, set it to 50%
-            if (this.model.get('opacity') < 0.05) {
-              this.model.set('opacity', 0.5)
-            }
-            // Make sure the layer is visible
-            if (this.model.get('visible') === false) {
-              this.model.set('visible', true)
-            }
+            this.model.show()
             this.model.trigger('flyToExtent', this.model)
           }
           catch (error) {

@@ -44,7 +44,7 @@ define(
          * Default attributes for MapAsset models
          * @name MapAsset#defaults
          * @type {Object}
-         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'WebMapTileServiceImageryProvider'|'CesiumTerrainProvider')} type
+         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'WebMapTileServiceImageryProvider'|'TileMapServiceImageryProvider'|'CesiumTerrainProvider')} type
          * The format of the data. Must be one of the supported types.
          * @property {string} label A user friendly name for this asset, to be displayed
          * in a map.
@@ -122,10 +122,14 @@ define(
          * description.
          * @typedef {Object} MapAssetConfig
          * @name MapConfig#MapAssetConfig
-         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'WebMapTileServiceImageryProvider'|'CesiumTerrainProvider'|'GeoJsonDataSource')} type -
+         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'WebMapTileServiceImageryProvider'|'WebMapServiceImageryProvider'|'TileMapServiceImageryProvider'|'NaturalEarthII'|'CesiumTerrainProvider'|'GeoJsonDataSource'|'USGSImageryTopo')} type - 
          * A string indicating the format of the data. Some of these types correspond
-         * directly to Cesium classes.
-         * @property {(Cesium3DTileset#cesiumOptions|CesiumImagery#cesiumOptions|CesiumTerrain#cesiumOptions|CesiumVectorData#cesiumOptions)} [cesiumOptions] -
+         * directly to Cesium classes. The NaturalEarthII type is a special imagery layer
+         * that automatically sets the cesiumOptions to load the Natural Earth II imagery
+         * that is shipped with Cesium/MetacatUI. If this type is set, then no other
+         * cesiumOptions are required. The same is true for USGSImageryTopo, which pulls
+         * imagery directly from USGS.
+         * @property {(Cesium3DTileset#cesiumOptions|CesiumImagery#cesiumOptions|CesiumTerrain#cesiumOptions|CesiumVectorData#cesiumOptions)} [cesiumOptions] - 
          * For MapAssets that are configured for Cesium, like
          * Cesium3DTilesets, an object with options to pass to the Cesium constructor
          * function that creates the Cesium model. Options are specific to each type of
@@ -288,7 +292,7 @@ define(
          * of the layer: "new", "under development", etc.
          * @typedef {Object} Notification
          * @name MapConfig#Notification
-         * @since x.x.x
+         * @since 2.22.0
          * @property {'yellow'|'green'|'blue'|'contrast'} [style] - The badge and message
          * color. If none is set, then notification elements will be similar to the
          * background colour (subtle).
@@ -306,8 +310,12 @@ define(
 
             const model = this;
 
+            if (!assetConfig || typeof assetConfig !== 'object') {
+              assetConfig = {}
+            }
+
             // Set the color palette
-            if (assetConfig && assetConfig.colorPalette) {
+            if (assetConfig.colorPalette) {
               this.set('colorPalette', new AssetColorPalette(assetConfig.colorPalette))
             }
 
@@ -325,7 +333,7 @@ define(
             })
 
             // Fetch the icon, if there is one
-            if (assetConfig && assetConfig.icon) {
+            if (assetConfig.icon) {
               if (model.isSVG(assetConfig.icon)) {
                 model.updateIcon(assetConfig.icon)
               } else {
@@ -722,6 +730,21 @@ define(
          */
         isVisible: function () {
           return this.get('visible') && this.get('opacity') > 0
+        },
+
+        /**
+         * Make sure the layer is visible. Sets visibility to true if false, and sets
+         * opacity to 0.5 if it's less than 0.05.
+         */
+        show: function () {
+          // If the opacity is very low, set it to 50%
+          if (this.get('opacity') < 0.05) {
+            this.set('opacity', 0.5)
+          }
+          // Make sure the layer is visible
+          if (this.get('visible') === false) {
+            this.set('visible', true)
+          }
         },
 
         // /**

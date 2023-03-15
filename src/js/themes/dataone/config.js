@@ -21,7 +21,7 @@ MetacatUI.AppConfig = Object.assign({
 
   //Searching
   displayRepoLogosInSearchResults: true,
-  disableQueryPOSTs: true,
+  disableQueryPOSTs: false,
   enableSolrJoins: true,
   defaultSearchFilters: ["all", "attribute", "annotation", "documents", "dataSource", "creator", "dataYear", "pubYear", "id", "taxon", "spatial", "isPrivate"],
   bioportalAPIKey: "",
@@ -116,6 +116,11 @@ MetacatUI.AppConfig = Object.assign({
     seriesId: "urn:uuid:138ff35b-f1e7-4b12-88e2-3a57bbaab073",
     datasource: "urn:node:mnUCSB1",
     label: "polderdemo"
+  },
+  {
+    seriesId: "urn:uuid:5f4c470c-fcf8-481e-8ddb-3b08108504b0",
+    datasource: "urn:node:mnUCSB1",
+    label: "9434702"
   }],
 
   //Dataset landing pages

@@ -672,6 +672,7 @@ represents 1 unit of the given distance measurement. */
 
 .layer-detail--no-header .layer-detail__content {
   margin-top: 0;
+  justify-self: center;
 }
 
 .layer-detail__toggle {
@@ -849,10 +850,11 @@ other class: .ui-slider-range */
   justify-self: end;
 }
 
-.feature-info__layer-details-button {
+.feature-info__buttons {
   grid-column: 1 / 3;
+  display: grid;
+  gap: 0.5rem;
 }
-
 
 /* styles for the (default) table template */
 

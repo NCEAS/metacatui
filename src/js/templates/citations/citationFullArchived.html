@@ -1,0 +1,7 @@
+<%
+const idSep = pid ? ', version: ' : '.';
+const seriesIdHTML = seriesId ? `<span class="seriesId">${seriesId}${idSep}</span>` : '';
+const pidHTML = pid ? `<span class="pid">${pid}.</span>` : '';
+const idHTML = seriesIdHTML || pidHTML ? `<span class="id">${seriesIdHTML}${pidHTML}</span>` : '';
+%>
+<span class="danger">This content has been archived.</span> <%= idHTML %>

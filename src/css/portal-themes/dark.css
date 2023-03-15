@@ -313,3 +313,12 @@ select, .uneditable-input, input[type=text], input[type=password], input[type=da
 .notification.loading p, .notification.loading .icon, .stripe .notification.loading i {
   color: var(--portal-col-text-subtle)
 }
+
+/* data page search results */
+
+#results-container {
+  background-color: var(--portal-col-bkg);
+}
+.map-toggle-container {
+  background-color: var(--portal-col-bkg-lighter);
+}

@@ -12,7 +12,8 @@ define(
     'views/maps/LayerDetailView',
     'views/maps/LayerOpacityView',
     'views/maps/LayerInfoView',
-    'views/maps/LayerNavigationView'
+    'views/maps/LayerNavigationView',
+    'views/maps/LegendView'
   ],
   function (
     $,
@@ -24,7 +25,8 @@ define(
     LayerDetailView,
     LayerOpacityView,
     LayerInfoView,
-    LayerNavigationView
+    LayerNavigationView,
+    LegendView
   ) {
 
     /**
@@ -121,6 +123,13 @@ define(
             view: LayerNavigationView,
             collapsible: false,
             showTitle: false,
+            hideIfError: true
+          },
+          {
+            label: "Legend",
+            view: LegendView,
+            collapsible: false,
+            showTitle: true,
             hideIfError: true
           },
           {
