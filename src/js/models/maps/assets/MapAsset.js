@@ -292,7 +292,7 @@ define(
          * of the layer: "new", "under development", etc.
          * @typedef {Object} Notification
          * @name MapConfig#Notification
-         * @since x.x.x
+         * @since 2.22.0
          * @property {'yellow'|'green'|'blue'|'contrast'} [style] - The badge and message
          * color. If none is set, then notification elements will be similar to the
          * background colour (subtle).

@@ -835,7 +835,7 @@ define(['jquery', 'underscore', 'backbone'],
      * provided, the fields set on the model will be used.
      * @returns {Boolean} Returns true if every field is a field that specifies latitude or
      * longitude
-     * @since x.x.x
+     * @since 2.21.0
     */
     isCoordinateQuery: function (fields) {
       try {
@@ -860,7 +860,7 @@ define(['jquery', 'underscore', 'backbone'],
      * @param {string[]} [fields] A list of fields to check for coordinate fields. If not
      * provided, the fields set on the model will be used.
      * @returns {Boolean} Returns true if every field is a field that specifies latitude
-     * @since x.x.x
+     * @since 2.21.0
     */
     isLatitudeQuery: function (fields) {
       try {
@@ -883,7 +883,7 @@ define(['jquery', 'underscore', 'backbone'],
      * @param {string[]} [fields] A list of fields to check for longitude fields. If not
      * provided, the fields set on the model will be used.
      * @returns {Boolean} Returns true if every field is a field that specifies longitude
-     * @since x.x.x
+     * @since 2.21.0
     */
     isLongitudeQuery: function (fields) {
       try {

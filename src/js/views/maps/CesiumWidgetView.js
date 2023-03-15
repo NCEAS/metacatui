@@ -1227,7 +1227,7 @@ define(
         /**
          * Arranges the imagery that is rendered the Map according to the order
          * that the imagery is arranged in the layers collection.
-         * @since x.x.x
+         * @since 2.21.0
          */
         sortImagery() {
           try {

@@ -1950,7 +1950,7 @@ define(['jquery', 'underscore', 'backbone'],
       enableMeasurementTypeView: false,
 
       /**
-       * As of 2.X, the {@link DataCatalogView} is being soft-deprecated and replaced with the new {@link CatalogSearchView}.
+       * As of 2.22.0, the {@link DataCatalogView} is being soft-deprecated and replaced with the new {@link CatalogSearchView}.
        * To give MetacatUI operators time to transition to the new {@link CatalogSearchView}, this configuration option can be
        * enabled (by setting to `true`) and will tell MetacatUI to use the legacy {@link DataCatalogView}. It is highly suggested
        * that MetacatUI operators switch to supporting the new {@link CatalogSearchView} as soon as possible as the legacy {@link DataCatalogView}

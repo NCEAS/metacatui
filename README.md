@@ -1,6 +1,7 @@
 ## MetacatUI: A client-side web interface for DataONE data repositories
 
 - **Author**: Matthew B. Jones, Chris Jones, Lauren Walker, Robyn Thiessen-Bock, Ben Leinfelder, Peter Slaughter, Bryce Mecum, Rushiraj Nenuji ([NCEAS](https://www.nceas.ucsb.edu)), Hesham Elbashandy, Val Hendrix 
+- **DOI**: [doi:10.18739/A25M6282K](https://doi.org/10.18739/A25M6282K)
 - **License**: [Apache 2](http://opensource.org/licenses/Apache-2.0)
 - [Package source code on Github](https://github.com/NCEAS/metacatui)
 - [**Submit Bugs and feature requests**](https://github.com/NCEAS/metacatui/issues/new/choose)
@@ -11,6 +12,12 @@
 MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API.  Currently, it is used as the basis for the [KNB Data Repository](http://knb.ecoinformatics.org), the [NSF Arctic Data Center](https://arcticdata.io/catalog/), the [DataONE federation](https://search.dataone.org), and other repositories.
 
 MetacatUI is an open source, community project.  We [welcome contributions](https://github.com/NCEAS/metacatui/blob/main/CONTRIBUTING.md) in many forms, including code, graphics, documentation, bug reports, testing, etc.  Use the [discussion list](https://github.com/NCEAS/metacatui/issues) to discuss these contributions with us.
+
+## Citation
+
+Cite this software as:
+
+> Matthew B. Jones, Chris Jones, Lauren Walker, Robyn Thiessen-Bock, Ben Leinfelder, Peter Slaughter, Bryce Mecum, Rushiraj Nenuji, Hesham Elbashandy, Val Hendrix. 2022. MetacatUI: A client-side web interface for DataONE data repositories (version 2.23.0). Arctic Data Center. [doi:10.18739/A25M6282K](https://doi.org/10.18739/A25M6282K)
 
 ## Screenshots
 

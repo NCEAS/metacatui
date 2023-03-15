@@ -2461,3 +2461,15 @@ a.d1_footer__sitemap-link {
 	fill: var(--portal-primary-color);
 	font-size: xx-large;
 }
+
+.citation.header .title {
+  font-size: var(--fs-x-large, 29rem);
+  color: var(--c-neutral-7, black);
+  font-family: var(--ff-title);
+  font-weight:var(--fw-xx-bold, 900);
+  line-height: 1.45;
+}
+.citation.header .authors {
+  font-weight: 400;
+  line-height: 1.9;
+}
