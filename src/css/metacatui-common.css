@@ -547,15 +547,22 @@ text-shadow: none;
 /******************************************
 ** CatalogSearchView ***
 ******************************************/
-.catalog-search-view .catalog-search-inner{
+
+.catalog-search-view {
+	height: 100%;
+}
+.catalog-search-inner{
+	height: 100%;
 	display: grid;
 	justify-content: stretch;
 	align-items: stretch;
 	grid-template-columns: auto 1fr 1fr;
+	grid-template-rows: 100%;
 }
 .catalog-search-view .filter-groups-container {
 	width: 215px;
-	padding: var(--pad)
+	padding: var(--pad);
+	overflow: scroll;
 }	
 .catalog-search-view .search-results-container,
 .catalog-search-view .map-container {
@@ -569,17 +576,16 @@ text-shadow: none;
 	justify-content: stretch;
 	overflow: hidden;
 }
-.catalog-search-body.mapMode #Content{
-	padding: 40px 0px 0px 0px;
+.catalog-search-body #Content{
+	padding: 0;
+
 }
-.catalog-search-body.mapMode .search-results-view .result-row:last-child{
-	margin-bottom: 100px;
-}
-.catalog-search-body.mapMode .search-results-view {
+.search-results-container {
 	overflow-y: scroll;
-	height: 100vh;
-	padding-bottom: 200px; /* Leaving room for the last row to show */
-	padding-right: 15px; /* Padding for the scrollbar */
+	height: 100%;
+}
+.search-results-panel-container{
+	display: grid;
 }
 .catalog-search-body.mapMode .search-results-panel-container .map-toggle-container{
     display: none;

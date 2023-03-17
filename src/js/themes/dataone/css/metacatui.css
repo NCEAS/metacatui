@@ -97,6 +97,17 @@ article, aside, figure, footer, header, hgroup, menu, nav, section {
   margin-bottom: 0px;
 }
 
+/* Hide the footer in the new data catalog view when in map mode */
+.catalog-search-body.mapMode #Footer,
+.catalog-search-body.mapMode #map-mode-extra-padding.auto-height-member {
+  display: none;
+}
+
+/* when NOTE in map mode, add padding for the footer */
+.catalog-search-body:not(.mapMode) .search-results-panel-container {
+  margin-bottom: 15rem;
+}
+
 .container {
   width: 100%;
 }
