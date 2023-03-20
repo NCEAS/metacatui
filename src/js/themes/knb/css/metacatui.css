@@ -354,6 +354,16 @@
     	padding-top: 3px;
     }
 
+    .DataCatalog #Content {
+      padding-top: 0;
+    }
+    .DataCatalog:not(.mapMode) #Content {
+      padding-top: 2rem;
+    }
+    .catalog-search-body #Content {
+      padding-top: 0;
+    }
+
     footer#Footer div#FooterHeading {
       max-width: 490px;
     }
