@@ -19,7 +19,8 @@ define(['jquery',
   'views/MetadataIndexView',
   'views/ExpandCollapseListView',
   'views/ProvStatementView',
-  'views/CitationView',
+  'views/CitationHeaderView',
+  'views/citations/CitationModalView',
   'views/AnnotationView',
   'views/MarkdownView',
   'text!templates/metadata/metadata.html',
@@ -39,8 +40,8 @@ define(['jquery',
   'views/MetricView',
 ],
   function ($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
-    MetricsModel, Utilities, DataPackageView, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement,
-    CitationView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
+    MetricsModel, Utilities, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement,
+    CitationHeaderView, CitationModalView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
     VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
     MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
     'use strict';
@@ -1050,13 +1051,9 @@ define(['jquery',
 
         insertCitation: function () {
           if (!this.model) return false;
-
-          //Create a citation element from the model attributes
-          var citation = new CitationView({
-            model: this.model,
-            createLink: false
-          }).render().el;
-          this.$(this.citationContainer).html(citation);
+          //Create a citation header element from the model attributes
+          var header = new CitationHeaderView({ model: this.model });
+          this.$(this.citationContainer).html(header.render().el);
         },
 
         insertDataSource: function () {
@@ -1364,7 +1361,6 @@ define(['jquery',
 
           $(this.controlsContainer).html(controlsContainer);
 
-          var view = this;
 
           //Insert the info icons
           var metricsWell = this.$(".metrics-container");
@@ -1376,60 +1372,21 @@ define(['jquery',
             this.createWholeTaleButton();
           }
 
-          //Create clickable "Copy" buttons to copy text (e.g. citation) to the user's clipboard
-          var copyBtns = $(this.controlsContainer).find(".copy");
-          _.each(copyBtns, function (btn) {
-            //Create a copy citation button
+          // Show the citation modal with the ability to copy the citation text
+          // when the "Copy Citation" button is clicked
+          const citeButton = this.el.querySelector('#cite-this-dataset-btn');
+          if (citeButton) {
+            citeButton.removeEventListener('click', this.citationModal);
+            citeButton.addEventListener('click', () => {
+              this.citationModal = new CitationModalView({
+                model: this.model,
+                createLink: true
+              })
+              this.subviews.push(this.citationModal);
+              this.citationModal.render();
+            }, false);
+          }
 
-            var clipboard = new Clipboard(btn);
-
-            clipboard.on("success", function (e) {
-
-              var originalWidth = $(e.trigger).width();
-
-              $(e.trigger).html($(document.createElement("span")).addClass("icon icon-ok success"))
-                .append(" Copied")
-                .addClass("success")
-                .css("width", originalWidth + "px");
-
-              setTimeout(function () {
-                $(e.trigger).html("<i class='icon icon-copy icon-on-left'></i> Copy Citation")
-                  .removeClass("success")
-                  .css("width", "auto");
-              }, 500)
-
-            });
-
-            clipboard.on("error", function (e) {
-
-              if (!$(e.trigger).prev("input.copy").length) {
-                var textarea = $(document.createElement("input")).val($(e.trigger).attr("data-clipboard-text")).addClass("copy").css("width", "0");
-                textarea.tooltip({
-                  title: "Press Ctrl+c to copy",
-                  placement: "top"
-                });
-                $(e.trigger).before(textarea);
-              }
-              else {
-                var textarea = $(e.trigger).prev("input.copy");
-              }
-
-              textarea.animate({ width: "100px" }, {
-                duration: "slow",
-                complete: function () {
-                  textarea.trigger("focus");
-                  textarea.tooltip("show");
-                }
-              });
-
-              textarea.focusout(function () {
-                textarea.animate({ width: "0px" }, function () {
-                  textarea.remove();
-                })
-              });
-            });
-          });
-          this.$(".tooltip-this").tooltip();
         },
 
         /**

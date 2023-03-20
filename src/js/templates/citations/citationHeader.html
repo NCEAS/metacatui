@@ -1,0 +1,68 @@
+<%
+// The separator between items in the top line of the header (date, journal)
+const sep = `<span class="separator"> | </span>`
+
+// The year
+const pubHTML = year_of_publishing ? `<time class="pubdate" datetime="${year_of_publishing}">Published ${year_of_publishing}</time>${sep}` : '';
+
+// The volume and page
+let volumeHTML = volume ? ` Vol. ${volume}. ` : '';
+let pageHTML = page ? ` pp. ${page}.` : '';
+
+// The journal / publisher
+const journalHTML = journal ? `<span class="publisher">${journal}${volumeHTML}${pageHTML}</span>${sep}` : '';
+
+// The ID attribute for the title
+const dataID = pid ? ` data-id="${pid}"` : '';
+
+// Title
+let titleHTML = title || '';
+if (title) {
+  titleHTML = `<h1 class="title"${dataID}>${title}</h1>`;
+}
+
+// Series ID and PID
+let seriesIdHTML = seriesId || '';
+if (seriesId) {
+  const idSep = pid ? ', version: ' : '';
+  if (seriesId_url) {
+    seriesIdHTML = `<span><a href="${seriesId_url}">${seriesId}</a>${idSep}</span>`;
+  } else {
+    seriesIdHTML = `<span>${seriesId}${idSep}</span>`;
+  }
+}
+let pidHTML = pid || source_id || '';
+if (pid) {
+  if (pid_url) {
+    pidHTML = `<span><a href="${pid_url}">${pid}</a></span>`;
+  } else {
+    pidHTML = `<span>${pid}</span>`;
+  }
+}
+const idHTML = seriesIdHTML || pidHTML ? `<span class="id">${seriesIdHTML}${pidHTML}</span>` : '';
+
+// --- Elements for the expandable list of authors ---
+
+// Group of authors that will always be shown
+const authorsGrp1HTML = authorsGrp1 ? `<span class="${classes.grp1}">${authorsGrp1}</span>` : '';
+
+// Group of authors that will be hidden by default
+const authorsGrp2HTML = authorsGrp2 ? `<span class="${classes.grp2}" style="display:none">${authorsGrp2}</span>` : '';
+
+// The last author, which will always be shown
+const lastAuthorHTML = lastAuthor ? `<span class="${classes.last}">${lastAuthor}</span>` : '';
+
+// The ellipsis between the first group and the last author, when the second group is hidden
+const ellipsisHTML = authorsGrp2 ? `<span class="${classes.ellipsis} show-authors">...</span>` : '';
+
+// The button to expand the list of authors
+const expandTag = authorsGrp2 ? ` <button class="${classes.btn} show-authors">+ More Authors</button>` : '';
+
+// --- Elements for the expandable list of authors, combined ---
+const originHTML = authorsGrp1HTML || authorsGrp2HTML ? `<div class="authors">${authorsGrp1HTML}${ellipsisHTML}${lastAuthorHTML}${expandTag}${authorsGrp2HTML}</div>` : '';
+%>
+<div class="top-info">
+  <span class="type">DATASET</span>
+  <%= sep + pubHTML + idHTML %>
+</div>
+<%= titleHTML + originHTML %>

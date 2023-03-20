@@ -152,7 +152,7 @@ define(
          * The general type of asset to filter the collection by.
          * @returns {MapAsset[]} - Returns an array of MapAsset models that are
          * instances of the given asset type.
-         * @since x.x.x
+         * @since 2.22.0
          */
         getAll: function (assetType) {
           try {

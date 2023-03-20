@@ -1,0 +1,43 @@
+<%
+
+const originHTML = origin ? `<span class="author">${origin.replace(/\.$/, '')}. </span>` : '';
+
+const pubHTML = year_of_publishing ? `<time class="pubdate" datetime="${year_of_publishing}">(${year_of_publishing}). </time>` : '';
+
+const dataID = pid ? ` data-id="${pid}"` : '';
+
+let titleHTML = title ? `<span class="${titleClass}"${dataID}><i>${title}</i></span>. ` : '';
+
+let journalHTML = journal ? `<span class="publisher">${journal}. </span>` : '';
+
+let volumeHTML = volume ? `<span class="publisher">Vol. ${volume}. </span>` : '';
+
+let pageHTML = page ? `<span class="publisher">pp. ${page}. </span>` : '';
+
+let seriesIdHTML = seriesId || '';
+if (seriesId) {
+  const idSep = pid ? ', version: ' : '.';
+  if (seriesId_url) {
+    seriesIdHTML = `<span><a href="${seriesId_url}">${seriesId}</a>${idSep}</span>`;
+  } else {
+    seriesIdHTML = `<span>${seriesId}${idSep}</span>`;
+  }
+}
+let pidHTML = pid || source_id || '';
+if (pid) {
+  if (pid_url) {
+    pidHTML = `<span><a href="${pid_url}">${pid}</a>.</span>`;
+  } else {
+    pidHTML = `<span>${pid}.</span>`;
+  }
+}
+const idHTML = seriesIdHTML || pidHTML ? `<span class="id">${seriesIdHTML}${pidHTML}</span>` : '';
+
+%>
+<%= originHTML + pubHTML + titleHTML + journalHTML + volumeHTML + pageHTML + idHTML %>
+<%if(citationMetadata){%>
+  <br>
+  <span>Cites Data: </span>
+  <span class="<%= citationMetadataClass %>"></span>
+<%}%>
+
