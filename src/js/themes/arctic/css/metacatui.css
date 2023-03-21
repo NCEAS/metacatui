@@ -61,6 +61,7 @@
 
 :root {
   --footer-height: 320px;
+	--header-height: 112px;
 }
 
 /* Body CSS
@@ -941,13 +942,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       white-space: nowrap;
     }
     #Content{
-    	padding-top: 118px;
-    	/* margin-left: auto;
-    	margin-right: auto; */
-    }
-    .catalog-search-body.mapMode #Content,
-		.mapMode #Content{
-    	padding-top: 112px;
+    	padding-top: var(--header-height);
     }
     .navbar .nav {
       margin-top: 8px;

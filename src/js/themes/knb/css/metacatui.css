@@ -4,6 +4,7 @@
 /* Footer height when it is fixed in place in the data catalog */
 :root {
   --fixed-footer-height: 1.2em;
+  --header-height: 0;
 }
 
 @font-face {

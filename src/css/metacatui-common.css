@@ -123,7 +123,7 @@ article.container {
 	width: 96%;
 }
 #Content{
-  padding: 40px 40px 40px 40px;
+  padding: 2.5rem;
   min-height: 200px;
 }
 .DataCatalog #Content{
@@ -131,8 +131,9 @@ article.container {
 }
 .mapMode #Content{
 	width: 100%;
-  margin: 0px;
-	padding: 0px;
+  margin: 0;
+	padding: 0;
+	padding-top: var(--header-height, 0);
 }
 footer{
 	background-color: #FFFFFF;
@@ -562,12 +563,10 @@ text-shadow: none;
 .catalog-search-view .filter-groups-container {
 	width: 215px;
 	padding: var(--pad);
-	padding-bottom: 60px;
+	padding-bottom: 3rem;
 	overflow: scroll;
 }	
-/* .catalog-search-view .search-results-container,
-.catalog-search-view .map-container {
-} */
+
 .catalog-search-body.mapMode{
 	height: 100vh;
 	width: 100vw;
@@ -577,11 +576,9 @@ text-shadow: none;
 	justify-content: stretch;
 	overflow: hidden;
 }
-.mapMode #Content{
-	padding: 40px 0 0 0;
-}
-.catalog-search-body #Content {
-	padding-top: 0;
+
+.catalog-search-body.mapMode .search-results-view .result-row:last-child{
+	margin-bottom: 100px;
 }
 
 .search-results-container {
