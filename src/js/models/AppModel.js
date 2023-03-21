@@ -1672,7 +1672,7 @@ define(['jquery', 'underscore', 'backbone'],
       */
       defaultFilterGroups: [
         {
-          label: "Search for: ",
+          label: "",
           filters: [
             {
               fields: ["attribute"],
@@ -1691,9 +1691,9 @@ define(['jquery', 'underscore', 'backbone'],
             {
               filterType: "ToggleFilter",
               fields: ["documents"],
-              label: "Show only results with data",
-              trueLabel: null,
-              falseLabel: null,
+              label: "Only results with data files",
+              trueLabel: "True",
+              falseLabel: "False",
               trueValue: "*",
               matchSubstring: false,
               icon: "table",

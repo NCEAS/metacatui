@@ -6663,7 +6663,7 @@ body.mapMode{
   padding-right: 0px;
   min-width: 0px;
   max-width: 100%;
-  margin-bottom: 10px;
+  margin-bottom: 1rem;
 }
 .filter-groups .filter .btn:not(.btn-filter-editor){
 	box-shadow: none;
@@ -6684,9 +6684,12 @@ body.mapMode{
 }
 .filter-groups .filter label{
 	cursor: default;
-	margin-bottom: 13px;
 	display: flex;
 	align-items: center;
+}
+.filter-groups .filter > label{
+	font-weight: bold;
+	margin-bottom: 0.5rem;
 }
 .filter-group-links{
   border-top: 1px solid #DDD;
@@ -6791,6 +6794,7 @@ body.mapMode{
   font-weight: normal;
   padding: 5px;
   margin-right: 10px;
+	line-height: 1.1;
 }
 .filter-groups.vertical .applied-filters .applied-filter{
   display: block;
@@ -6859,8 +6863,9 @@ body.mapMode{
 }
 .filter.boolean input{
   height: auto;
-  font-size: 3em;
+  font-size: 3.2em;
   margin-right: 10px;
+	margin-top: 0;
 }
 .filter.boolean span{
 	display: inline;
@@ -6926,7 +6931,7 @@ body.mapMode{
 .filter-groups.vertical .filters-header{
   margin: 0px;
   border-bottom: 1px dashed #CCC;
-  margin-bottom: 10px;
+	margin-bottom: 1.5rem;
   padding-bottom: 10px;
 }
 #portal-filters{
