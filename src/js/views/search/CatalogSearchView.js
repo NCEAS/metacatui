@@ -297,7 +297,7 @@ define([
           console.log(
             "There was an error setting up the CatalogSearchView:" + e
           );
-          this.this.renderError();
+          this.renderError();
         }
       },
 

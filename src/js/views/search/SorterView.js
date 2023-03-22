@@ -1,21 +1,24 @@
 /*global define */
 define(["backbone"], function (Backbone) {
   "use strict";
-/**
-  * @class SorterView
-  * @classdesc A view that displays a sort controller and sets the sort order on the attached {@link SolrResults} collection.
-  * @name SorterView
-  * @extends Backbone.View
-  * @constructor
-  * @since 2.22.0
-  * @classcategory Views/Search
-  * */
+  /**
+   * @class SorterView
+   * @classdesc A view that displays a sort controller and sets the sort order
+   * on the attached {@link SolrResults} collection.
+   * @name SorterView
+   * @extends Backbone.View
+   * @constructor
+   * @since 2.22.0
+   * @classcategory Views/Search
+   * TODO: Add screenshot
+   */
   return Backbone.View.extend(
     /**
      * @lends SorterView.prototype
      */ {
       /**
-       * A reference to the {@link SolrResults} collection that this sorter displays and controls.
+       * A reference to the {@link SolrResults} collection that this sorter
+       * displays and controls.
        * @type {SolrResults}
        */
       searchResults: null,
@@ -23,8 +26,10 @@ define(["backbone"], function (Backbone) {
       /**
        * A list of sort order options to display in this view.
        * @typedef {Object} SearchSortOptions
-       * @property {string} value The sort value that will be sent directly to the search index in the query string.
-       * @property {string} label The name of the sort option that will be shown to the user.
+       * @property {string} value The sort value that will be sent directly to
+       * the search index in the query string.
+       * @property {string} label The name of the sort option that will be shown
+       * to the user.
        * @since 2.22.0
        */
       sortOptions: [
@@ -34,9 +39,23 @@ define(["backbone"], function (Backbone) {
         { value: "authorSurNameSort+asc", label: "Author (a-z)" },
       ],
 
+      /**
+       * The HTML tag to use for this view's element
+       * @type {string}
+       */
       tagName: "div",
+
+      /**
+       * The HTML classes to use for this view's element
+       * @type {string}
+       */
       className: "sorter-view",
 
+      /**
+       * The events this view will listen to and the associated function to
+       * call.
+       * @type {Object}
+       */
       events: {
         change: "setSort",
       },
@@ -59,7 +78,8 @@ define(["backbone"], function (Backbone) {
       },
 
       /**
-       * Sets the sort order on the {@link SolrResults} when the sort is changed in the UI.
+       * Sets the sort order on the {@link SolrResults} when the sort is changed
+       * in the UI.
        * @param {Event} e
        */
       setSort: function (e) {

@@ -1,178 +1,192 @@
 /*global define */
-define(["backbone",
-        "collections/SolrResults",
-        "views/search/SearchResultView"
-    ],
-function(Backbone, SearchResults, SearchResultView){
+define([
+  "backbone",
+  "collections/SolrResults",
+  "views/search/SearchResultView",
+], function (Backbone, SearchResults, SearchResultView) {
+  "use strict";
 
-    "use strict";
-
+  /**
+   * @class SearchResultsView
+   * @name SearchResultsView
+   * @classcategory Views/Search
+   * @extends Backbone.View
+   * @since 2.22.0
+   * @constructor
+   * TODO: Add screenshot and description
+   */
+  return Backbone.View.extend(
     /**
-    * @class SearchResultsView
-    * @name SearchResultsView
-    * @classcategory Views/Search
-    * @extends Backbone.View
-    * @since 2.22.0
-    * @constructor
-    */
-    return Backbone.View.extend(
-      /** @lends SearchResultsView.prototype */ {
+     * @lends SearchResultsView.prototype
+     */ {
+      /**
+       * The type of View this is
+       * @type {string}
+       */
+      type: "SearchResults",
 
-    /**
-    * The type of View this is
-    * @type {string}
-    */
-    type: "SearchResults",
+      /**
+       * The HTML tag to use for this view's element
+       * @type {string}
+       */
+      tagName: "div",
 
-    /**
-    * The HTML tag to use for this view's element
-    * @type {string}
-    */
-    tagName: "div",
+      /**
+       * The HTML classes to use for this view's element
+       * @type {string}
+       */
+      className: "search-results-view",
 
-    /**
-    * The HTML classes to use for this view's element
-    * @type {string}
-    */
-    className: "search-results-view",
+      /**
+       * The events this view will listen to and the associated function to
+       * call.
+       * @type {Object}
+       */
+      events: {},
 
-     /**
-    * The events this view will listen to and the associated function to call.
-    * @type {Object}
-    */
-    events: {
-    },
+      /**
+       * The SolrResults collection that fetches and parses the searches.
+       * @type {SolrResults}
+       */
+      searchResults: null,
 
-    /**
-     * The SolrResults collection that fetches and parses the searches.
-     * @type {SolrResults}
-     */
-    searchResults: null,
+      /**
+       * The HTML to display when no search results are found.
+       * @since 2.22.0
+       * @type {string}
+       */
+      noResultsTemplate: `<div class="no-search-results">No results found.</div>`,
 
-    /**
-     * The HTML to display when no search results are found.
-     * @since 2.22.0
-     * @type {string}
-     */
-    noResultsTemplate: `<div class="no-search-results">No results found.</div>`,
+      /**
+       * Render the view.
+       */
+      render: function () {
+        try {
+          if (!this.searchResults) {
+            this.setSearchResults();
+          }
 
-    render: function(){
+          this.loading();
 
-      if( !this.searchResults ){
-        this.setSearchResults();
-      }
+          this.addResultCollection();
 
-      this.loading();
-    
-      this.addResultCollection();
+          this.startListening();
+        } catch (e) {
+          console.log("Failed to render the search results: ", e);
+          // TODO: Add error handling
+        }
+      },
 
-      this.startListening();
+      /**
+       * Removes listeners set by the {@link SearchResultsView#startListening}
+       * method. This is important to prevent zombie listeners from being
+       * created.
+       */
+      removeListeners: function () {
+        this.stopListening(this.searchResults, "add");
+        this.stopListening(this.searchResults, "reset");
+        this.stopListening(this.searchResults, "request");
+      },
 
-    },
+      /**
+       * Sets listeners on the {@link SearchResultsView#searchResults} to change
+       * what is displayed in this view.
+       */
+      startListening: function () {
+        this.stopListening();
+        this.listenTo(this.searchResults, "add", this.addResultModel);
+        this.listenTo(this.searchResults, "reset", this.addResultCollection);
+        this.listenTo(this.searchResults, "request", this.loading);
+      },
 
-    /**
-     * Sets listeners on the {@link SearchResultsView#searchResults} to change what is displayed in this view.
-     */
-    startListening: function(){
-      this.listenTo(this.searchResults, "add", this.addResultModel);
-      this.listenTo(this.searchResults, "reset", this.addResultCollection);
-      this.listenTo(this.searchResults, "request", this.loading);
-    },
+      /**
+       * Creates and sets the {@link SearchResultsView#searchResults} property.
+       * @returns {SolrResults}
+       */
+      setSearchResults: function () {
+        this.searchResults = new SearchResults();
+        return this.searchResults;
+      },
 
-    /**
-     * Creates and sets the {@link SearchResultsView#searchResults} property.
-     * @returns {SolrResults}
-     */
-    setSearchResults: function(){
-      this.searchResults = new SearchResults();
-      return this.searchResults;
-    },
+      /**
+       * Renders the given {@link SolrResult} model inside this view.
+       * @param {SolrResult} searchResult
+       */
+      addResultModel: function (searchResult) {
+        try {
+          let view = this.createSearchResultView();
+          view.model = searchResult;
+          this.addResultView(view);
+        } catch (e) {
+          console.error("Failed to add a search result to the page: ", e);
+        }
+      },
 
-    /**
-     * Renders the given {@link SolrResult} model inside this view.
-     * @param {SolrResult} searchResult 
-     */
-    addResultModel: function(searchResult){
-      try{
-        let view = this.createSearchResultView();
-        view.model = searchResult;
-        this.addResultView(view);
-      }
-      catch(e){
-        console.error("Failed to add a search result to the page: ", e);
-      }
-    },
+      /**
+       * Renders all {@link SolrResult}s from the
+       * {@link SearchResultsView#searchResults} collection.
+       */
+      addResultCollection: function () {
+        if (!this.searchResults) return;
+        else if (this.searchResults?.header?.get("numFound") == 0) {
+          this.showNoResults();
+          return;
+        }
 
-    /**
-     * Renders all {@link SolrResult}s from the {@link SearchResultsView#searchResults} collection.
-     */
-    addResultCollection: function(){
-      if( !this.searchResults )
-        return;
-      else if( this.searchResults?.header?.get("numFound") == 0){
-        this.showNoResults();
-        return;
-      }
+        this.empty();
 
-      this.empty();
+        this.searchResults.models.forEach((result) => {
+          this.addResultModel(result);
+        });
+      },
 
-      this.searchResults.models.forEach( result => {
-        this.addResultModel(result);
-      });
-    },
+      /**
+       * Adds a Search Result View to the page
+       * @param {SearchResultView} view
+       */
+      addResultView: function (view) {
+        this.el.append(view.el);
+        view.render();
+      },
 
-    /**
-     * Adds a Search Result View to the page
-     * @param {SearchResultView} view
-     */
-    addResultView: function(view) {
-      this.el.append(view.el);
-      view.render();
-    },
+      /**
+       * Creates a Search Result View
+       */
+      createSearchResultView: function () {
+        return new SearchResultView();
+      },
 
-    /** 
-     * Creates a Search Result View
-    */
-    createSearchResultView: function(){
-      return new SearchResultView();
-    },
+      /**
+       * Shows a message when no search results have been found.
+       */
+      showNoResults: function () {
+        // TODO: this is not working
+        this.empty();
 
-    /**
-     * Shows a message when no search results have been found.
-     */
-    showNoResults: function(){
+        this.el.replaceChildren(this.noResultsTemplate);
+      },
 
-      this.empty();
+      empty: function () {
+        this.el.innerHTML = "";
+      },
 
-      this.el.replaceChildren(this.noResultsTemplate);
+      /**
+       * Renders a skeleton of this view that communicates to the user that it
+       * is loading.
+       */
+      loading: function () {
+        this.empty();
 
-    },
+        let rows = this.searchResults.rows,
+          i = 0;
 
-    empty: function(){
-      this.el.innerHTML = "";
-    },
-
-    /**
-     * Renders a skeleton of this view that communicates to the user that it is loading.
-     */
-    loading: function(){
-
-      this.empty();
-      
-      let rows = this.searchResults.rows,
-          i=0;
-
-      while(i < rows){
-        let view = this.createSearchResultView();
-        this.addResultView(view);
-        view.loading();
-        i++;
-      }
-
+        while (i < rows) {
+          let view = this.createSearchResultView();
+          this.addResultView(view);
+          view.loading();
+          i++;
+        }
+      },
     }
-
-    
-
-    });
-
+  );
 });
