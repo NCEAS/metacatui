@@ -135,11 +135,11 @@ define([
       searchModel: null,
 
       /**
-       * An array of Filter models, outside of their parent FilterGroup,
-       * that can be used to filter the search results. These models are passed
-       * to the {@link FiltersSearchConnector} to be used in the search. This
-       * property is added to the view by the {@link CatalogSearchView#setupSearch}
-       * method.
+       * An array of Filter models, outside of their parent FilterGroup, that
+       * can be used to filter the search results. These models are passed to
+       * the {@link FiltersSearchConnector} to be used in the search. This
+       * property is added to the view by the
+       * {@link CatalogSearchView#setupSearch} method.
        * @type {Filter[]}
        * @since 2.22.0
        */
@@ -237,7 +237,7 @@ define([
         // Set up the view for styling and layout
         this.setupView();
 
-        // Set up the search and search result models
+        // Set up the search and search result models, as well as the map
         this.setupSearch();
 
         // Render the search components
@@ -265,8 +265,8 @@ define([
             this.mode = "map";
           }
 
-          // Use map mode on tablets and browsers only
-          // TODO: should we set a listener for window resize?
+          // Use map mode on tablets and browsers only. TODO: should we set a
+          // listener for window resize?
           if ($(window).outerWidth() <= 600) {
             this.mode = "list";
           }
@@ -284,9 +284,9 @@ define([
        */
       setupView: function () {
         try {
-          document
-            .querySelector("body")
-            .classList.add(this.bodyClass, `${this.mode}Mode`);
+          document.querySelector("body").classList.add(this.bodyClass);
+
+          this.toggleMode(this.mode);
 
           // Add LinkedData to the page
           this.addLinkedData();
@@ -455,23 +455,22 @@ define([
        */
       titleTemplate: function (start, end, numFound) {
         try {
-          let html = `
-          <div id="statcounts">
-            <h5 class="result-header-count bold-header" id="countstats">
-              <span>
-              ${MetacatUI.appView.commaSeparateNumber(start)}
-              </span> to <span>
-              ${MetacatUI.appView.commaSeparateNumber(end)}
-              </span>`;
+          let content = "";
+          const csn = MetacatUI.appView.commaSeparateNumber;
+          if (numFound < end) end = numFound;
 
-          if (typeof numFound == "number") {
-            html += ` of <span>
-              ${MetacatUI.appView.commaSeparateNumber(numFound)}
-            </span>`;
+          if (numFound > 0) {
+            content = `<span>${csn(start)}</span> to <span>${csn(end)}</span>`;
+            if (typeof numFound == "number") {
+              content += ` of <span>${csn(numFound)}</span>`;
+            }
           }
-
-          html += `</h5></div>`;
-          return html;
+          return `
+            <div id="statcounts">
+              <h5 class="result-header-count bold-header" id="countstats">
+              ${content}
+              </h5>
+            </div>`;
         } catch (e) {
           console.log("There was an error creating the title template:" + e);
           return "";
@@ -485,6 +484,7 @@ define([
        */
       renderTitle: function () {
         try {
+          const searchResults = this.searchResultsView.searchResults;
           let titleEl = this.el.querySelector(this.titleContainer);
 
           if (!titleEl) {
@@ -496,9 +496,9 @@ define([
           titleEl.innerHTML = "";
 
           let title = this.titleTemplate(
-            this.searchResultsView.searchResults.getStart() + 1,
-            this.searchResultsView.searchResults.getEnd() + 1,
-            this.searchResultsView.searchResults.getNumFound()
+            searchResults.getStart() + 1,
+            searchResults.getEnd() + 1,
+            searchResults.getNumFound()
           );
 
           titleEl.insertAdjacentHTML("beforeend", title);
@@ -549,11 +549,12 @@ define([
       createFilterGroups: function (filterGroupsJSON = this.filterGroupsJSON) {
         try {
           try {
-            // Start an array for the FilterGroups and the individual Filter models
+            // Start an array for the FilterGroups and the individual Filter
+            // models
             let filterGroups = [];
 
-            // Iterate over each default FilterGroup in the app config and create a
-            // FilterGroup model
+            // Iterate over each default FilterGroup in the app config and
+            // create a FilterGroup model
             (
               filterGroupsJSON || MetacatUI.appModel.get("defaultFilterGroups")
             ).forEach((filterGroupJSON) => {
@@ -661,9 +662,9 @@ define([
             $.extend(elJSON, conditionalData);
           }
 
-          // Check if the jsonld already exists from the previous data view If not
-          // create a new script tag and append otherwise replace the text for the
-          // script
+          // Check if the jsonld already exists from the previous data view If
+          // not create a new script tag and append otherwise replace the text
+          // for the script
           if (!document.getElementById("jsonld")) {
             var el = document.createElement("script");
             el.type = "application/ld+json";
@@ -690,8 +691,8 @@ define([
         try {
           let classList = document.querySelector("body").classList;
 
-          // If the new mode is not provided, the new mode is the opposite of the
-          // current mode
+          // If the new mode is not provided, the new mode is the opposite of
+          // the current mode
           newMode = newMode != "map" && newMode != "list" ? null : newMode;
           newMode = newMode || (this.mode == "map" ? "list" : "map");
 

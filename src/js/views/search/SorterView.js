@@ -64,6 +64,9 @@ define(["backbone"], function (Backbone) {
        * Renders the view
        */
       render: function () {
+        this.stopListening(this.searchResults, "error reset");
+        this.listenTo(this.searchResults, "error reset", this.hideIfNoResults);
+
         let select = document.createElement("select");
         select.setAttribute("id", "sortOrder");
 
@@ -77,6 +80,19 @@ define(["backbone"], function (Backbone) {
         this.el.replaceChildren(select);
       },
 
+      hideIfNoResults: function () {
+        if (
+          !this.searchResults ||
+          !this.searchResults.header ||
+          !this.searchResults.getNumFound()
+        ) {
+          this.hide();
+        } else {
+          this.show();
+          this.render();
+        }
+      },
+
       /**
        * Sets the sort order on the {@link SolrResults} when the sort is changed
        * in the UI.
@@ -84,6 +100,22 @@ define(["backbone"], function (Backbone) {
        */
       setSort: function (e) {
         this.searchResults.setSort(e.target.value);
+      },
+
+      /**
+       * Hides the view
+       * @since x.x.x
+       */
+      hide: function () {
+        this.el.style.visibility = "hidden";
+      },
+
+      /**
+       * Shows the view
+       * @since x.x.x
+       */
+      show: function () {
+        this.el.style.visibility = "visible";
       },
     }
   );

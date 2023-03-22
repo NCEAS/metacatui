@@ -373,6 +373,7 @@ define([
        * @property {boolean} [options.remove] If true, the user will be able to remove the alert with a "close" icon.
        * @property {boolean} [options.includeEmail] If true, the alert will include a link to the {@link AppConfig#emailContact}
        * @property {string} [options.emailBody] Specify an email body to use in the email link.
+       * @returns {Element} The alert element
        */
       showAlert: function () {
         if (arguments.length > 1) {
@@ -443,6 +444,7 @@ define([
             $(options.container).prepend(alert);
           }
         }
+        return alert;
       },
 
       /**

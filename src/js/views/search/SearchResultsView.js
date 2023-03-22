@@ -62,13 +62,13 @@ define([
        */
       render: function () {
         try {
-          if (!this.searchResults) {
-            this.setSearchResults();
-          }
+          if (!this.searchResults) this.setSearchResults();
 
           this.loading();
 
-          this.addResultCollection();
+          if (typeof this.searchResults.getNumFound() == "number") {
+            this.addResultCollection();
+          }
 
           this.startListening();
         } catch (e) {
@@ -86,6 +86,7 @@ define([
         this.stopListening(this.searchResults, "add");
         this.stopListening(this.searchResults, "reset");
         this.stopListening(this.searchResults, "request");
+        this.listenTo(this.searchResults, "error");
       },
 
       /**
@@ -93,10 +94,35 @@ define([
        * what is displayed in this view.
        */
       startListening: function () {
-        this.stopListening();
+        this.removeListeners();
         this.listenTo(this.searchResults, "add", this.addResultModel);
         this.listenTo(this.searchResults, "reset", this.addResultCollection);
         this.listenTo(this.searchResults, "request", this.loading);
+        this.listenTo(this.searchResults, "error", this.showError);
+      },
+
+      showError: function (searchResults, response) {
+        console.log("Failed to fetch search results.");
+        if (response) console.log(response);
+
+        const thisRepo = MetacatUI.appModel.get("repositoryName") || "DataONE";
+        const responseText = encodeURIComponent(response.responseText);
+
+        const alert = MetacatUI.appView.showAlert({
+          message: `Oops! It looks like there was a problem retrieving your
+            search results. Please try your search again and contact support
+            if the issue persists.<br><br>`,
+          classes: `alert-warning`,
+          container: this.el,
+          replaceContents: true,
+          delay: false,
+          remove: false,
+          includeEmail: true,
+          emailBody: `I'm having trouble searching ${thisRepo}.
+            Here is the error message I received: ${responseText}`,
+        });
+        // alert is an HTMLDivElement, add a margin to the left and right:
+        alert[0].style.margin = "0 1rem";
       },
 
       /**
@@ -128,7 +154,7 @@ define([
        */
       addResultCollection: function () {
         if (!this.searchResults) return;
-        else if (this.searchResults?.header?.get("numFound") == 0) {
+        if (this.searchResults.getNumFound() == 0) {
           this.showNoResults();
           return;
         }
@@ -160,12 +186,13 @@ define([
        * Shows a message when no search results have been found.
        */
       showNoResults: function () {
-        // TODO: this is not working
         this.empty();
-
-        this.el.replaceChildren(this.noResultsTemplate);
+        this.el.innerHTML = this.noResultsTemplate;
       },
 
+      /**
+       * Removes all child elements from this view.
+       */
       empty: function () {
         this.el.innerHTML = "";
       },

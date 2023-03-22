@@ -126,6 +126,8 @@ define(["backbone"], function (Backbone) {
         if (this.searchResults) {
           this.renderPages();
           this.listenTo(this.searchResults, "reset", this.renderPages);
+          // Hide the pager if there is an error with the search results
+          this.listenTo(this.searchResults, "error", this.hide);
         }
       },
 
@@ -135,7 +137,14 @@ define(["backbone"], function (Backbone) {
       renderPages: function () {
         // Only show pages if the search results have been retrieved (by
         // checking for the header property which is set during parse())
-        if (this.searchResults?.header) {
+        if (!this.searchResults || !this.searchResults.header) return;
+        if (this.searchResults.getNumPages() < 2) {
+          this.hide();
+          return;
+        }
+
+        try {
+          this.show();
           this.removeLoading();
 
           let container = this.el.querySelector("ul"),
@@ -216,6 +225,9 @@ define(["backbone"], function (Backbone) {
               this.linkTemplate({ page: currentPage + 1, pageDisplay: ">" })
             );
           }
+        } catch (e) {
+          console.log("There was an error rendering the pager: ", e);
+          this.hide();
         }
       },
 
@@ -244,7 +256,24 @@ define(["backbone"], function (Backbone) {
        * Shows the loading version of the pager
        */
       loading: function () {
+        this.show();
         this.el.classList.add("loading");
+      },
+
+      /**
+       * Hides the pager
+       * @since x.x.x
+       */
+      hide: function () {
+        this.el.style.visibility = "hidden";
+      },
+
+      /**
+       * Shows the pager
+       * @since x.x.x
+       */
+      show: function () {
+        this.el.style.visibility = "visible";
       },
 
       /**
