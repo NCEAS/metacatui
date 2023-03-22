@@ -2,31 +2,29 @@
 define([
   "jquery",
   "backbone",
-  "collections/maps/MapAssets",
   "models/filters/FilterGroup",
   "models/connectors/Filters-Search",
   "models/connectors/Geohash-Search",
-  "models/maps/assets/CesiumGeohash",
   "models/maps/Map",
   "views/search/SearchResultsView",
   "views/filters/FilterGroupsView",
   "views/maps/MapView",
   "views/search/SearchResultsPagerView",
   "views/search/SorterView",
+  "text!templates/search/catalogSearch.html",
 ], function (
   $,
   Backbone,
-  MapAssets,
   FilterGroup,
   FiltersSearchConnector,
   GeohashSearchConnector,
-  CesiumGeohash,
   Map,
   SearchResultsView,
   FilterGroupsView,
   MapView,
   PagerView,
-  SorterView
+  SorterView,
+  Template
 ) {
   "use strict";
 
@@ -37,50 +35,48 @@ define([
    * @extends Backbone.View
    * @constructor
    * @since 2.22.0
+   * TODO: Add screenshot and description
    */
   return Backbone.View.extend(
     /** @lends CatalogSearchView.prototype */ {
       /**
        * The type of View this is
        * @type {string}
+       * @since 2.22.0
        */
       type: "CatalogSearch",
 
       /**
        * The HTML tag to use for this view's element
        * @type {string}
+       * @since 2.22.0
        */
       tagName: "section",
 
       /**
        * The HTML classes to use for this view's element
        * @type {string}
+       * @since 2.22.0
        */
       className: "catalog-search-view",
 
-      template: `
-        <section class="catalog-search-inner">
-            <div class="filter-groups-container"></div>
-            <div class="search-results-panel-container">
-                <div class="map-toggle-container">
-                  <a class="toggle-map">
-                    <i class="icon icon-double-angle-left"></i> Show Map
-                  </a></div>
-                <div class="title-container"></div>
-                <div class="pager-container"></div>
-                <div class="sorter-container"></div>
-                <div class="search-results-container"></div>
-            </div>
-            <div class="map-panel-container">
-                <div class="map-toggle-container">
-                  <a class="toggle-map">
-                    Hide Map <i class="icon icon-double-angle-right"></i>
-                  </a>
-                </div>
-                <div class="map-container"></div>
-            </div>
-        </section>
-    `,
+      /**
+       * The template to use for this view's element
+       * @type {underscore.template}
+       * @since 2.22.0
+       */
+      template: _.template(Template),
+
+      /**
+       * The template to use in case there is a major error in rendering the
+       * view.
+       * @type {string}
+       * @since 2.x.x
+       */
+      errorTemplate: `<div class="error" role="alert">
+        <h2>There was an error loading the search results.</h2>
+        <p>Please try again later.</p>
+        </div>`,
 
       /**
        * The search mode to use. This can be set to either `map` or `list`. List
@@ -91,24 +87,74 @@ define([
        */
       mode: "map",
 
-      searchResults: null,
+      /**
+       * The View that displays the search results. The render method will be
+       * attach the search results view to the
+       * {@link CatalogSearchView#searchResultsContainer} element and will add
+       * the view reference to this property.
+       * @type {SearchResultsView}
+       * @since 2.22.0
+       */
+      searchResultsView: null,
 
+      /**
+       * The view that shows the search filters. The render method will attach
+       * the filter groups view to the
+       * {@link CatalogSearchView#filterGroupsContainer} element and will add
+       * the view reference to this property.
+       * @type {FilterGroupsView}
+       * @since 2.22.0
+       */
       filterGroupsView: null,
 
       /**
+       * The view that shows the number of pages and allows the user to navigate
+       * between them. The render method will attach the pager view to the
+       * {@link CatalogSearchView#pagerContainer} element and will add the view
+       * reference to this property.
        * @type {PagerView}
+       * @since 2.22.0
        */
       pagerView: null,
 
       /**
+       * The view that handles sorting the search results. The render method
+       * will attach the sorter view to the
+       * {@link CatalogSearchView#sorterContainer} element and will add the view
+       * reference to this property.
        * @type {SorterView}
+       * @since 2.22.0
        */
       sorterView: null,
 
+      /**
+       * The model that retrieves the search results.
+       * @type {SearchModel}
+       * @since 2.22.0
+       */
       searchModel: null,
 
+      /**
+       * An array of Filter models, outside of their parent FilterGroup,
+       * that can be used to filter the search results. These models are passed
+       * to the {@link FiltersSearchConnector} to be used in the search. This
+       * property is added to the view by the {@link CatalogSearchView#setupSearch}
+       * method.
+       * @type {Filter[]}
+       * @since 2.22.0
+       */
       allFilters: null,
 
+      /**
+       * An array of FilterGroup models created by the
+       * {@link CatalogSearchView#createFilterGroups} method, using the
+       * {@link CatalogSearchView#filterGroupsJSON} property. These FilterGroups
+       * will be displayed in this view and used for searching. This property is
+       * added to the view by the {@link CatalogSearchView#createFilterGroups}
+       * method.
+       * @type {FilterGroup[]}
+       * @since 2.22.0
+       */
       filterGroups: null,
 
       /**
@@ -116,42 +162,57 @@ define([
        * FilterGroups will be displayed in this view and used for searching. If
        * not provided, the {@link AppConfig#defaultFilterGroups} will be used.
        * @type {FilterGroup#defaults[]}
+       * @since 2.22.0
        */
       filterGroupsJSON: null,
 
       /**
+       * The CSS class to add to the body of the CatalogSearch.
+       * @type {string}
+       * @since 2.22.0
+       * @default "catalog-search-body"
+       */
+      bodyClass: "catalog-search-body",
+
+      /**
        * The jQuery selector for the FilterGroupsView container
        * @type {string}
+       * @since 2.22.0
        */
       filterGroupsContainer: ".filter-groups-container",
 
       /**
        * The query selector for the SearchResultsView container
        * @type {string}
+       * @since 2.22.0
        */
       searchResultsContainer: ".search-results-container",
 
       /**
        * The query selector for the CesiumWidgetView container
        * @type {string}
+       * @since 2.22.0
        */
       mapContainer: ".map-container",
 
       /**
        * The query selector for the PagerView container
        * @type {string}
+       * @since 2.22.0
        */
       pagerContainer: ".pager-container",
 
       /**
        * The query selector for the SorterView container
        * @type {string}
+       * @since 2.22.0
        */
       sorterContainer: ".sorter-container",
 
       /**
        * The query selector for the title container
        * @type {string}
+       * @since 2.22.0
        */
       titleContainer: ".title-container",
 
@@ -159,11 +220,16 @@ define([
        * The events this view will listen to and the associated function to
        * call.
        * @type {Object}
+       * @since 2.22.0
        */
       events: {
         "click .map-toggle-container": "toggleMode",
       },
 
+      /**
+       * Initializes the view
+       * @since 2.22.0
+       */
       render: function () {
         // Set the search mode - either map or list
         this.setMode();
@@ -179,17 +245,10 @@ define([
       },
 
       /**
-       * Sets up the basic components of this view
+       * Indicates that there was a problem rendering this view.
        */
-      setupView: function () {
-        document
-          .querySelector("body")
-          .classList.add(`catalog-search-body`, `${this.mode}Mode`);
-
-        // Add LinkedData to the page
-        this.addLinkedData();
-
-        this.$el.html(this.template);
+      renderError: function () {
+        this.$el.html(this.errorTemplate);
       },
 
       /**
@@ -197,42 +256,85 @@ define([
        * @since 2.22.0
        */
       setMode: function () {
-        // Get the search mode - either "map" or "list"
-        if (
-          (typeof this.mode === "undefined" || !this.mode) &&
-          MetacatUI.appModel.get("enableCesium")
-        ) {
-          this.mode = "map";
-        }
+        try {
+          // Get the search mode - either "map" or "list"
+          if (
+            (typeof this.mode === "undefined" || !this.mode) &&
+            MetacatUI.appModel.get("enableCesium")
+          ) {
+            this.mode = "map";
+          }
 
-        // Use map mode on tablets and browsers only
-        if ($(window).outerWidth() <= 600) {
+          // Use map mode on tablets and browsers only
+          // TODO: should we set a listener for window resize?
+          if ($(window).outerWidth() <= 600) {
+            this.mode = "list";
+          }
+        } catch (e) {
+          console.error(
+            "Error setting the search mode, defaulting to list:" + e
+          );
           this.mode = "list";
         }
       },
 
+      /**
+       * Sets up the basic components of this view
+       * @since 2.22.0
+       */
+      setupView: function () {
+        try {
+          document
+            .querySelector("body")
+            .classList.add(this.bodyClass, `${this.mode}Mode`);
+
+          // Add LinkedData to the page
+          this.addLinkedData();
+
+          // Render the template
+          this.$el.html(this.template({}));
+        } catch (e) {
+          console.log(
+            "There was an error setting up the CatalogSearchView:" + e
+          );
+          this.this.renderError();
+        }
+      },
+
+      /**
+       * Calls other methods that insert the sub-views into the DOM and render
+       * them.
+       * @since 2.22.0
+       */
       renderComponents: function () {
-        this.renderFilters();
+        try {
+          this.renderFilters();
 
-        // Render the list of search results
-        this.renderSearchResults();
+          // Render the list of search results
+          this.renderSearchResults();
 
-        // Render the Title
-        this.renderTitle();
-        this.listenTo(
-          this.searchResultsView.searchResults,
-          "reset",
-          this.renderTitle
-        );
+          // Render the Title
+          this.renderTitle();
+          this.listenTo(
+            this.searchResultsView.searchResults,
+            "reset",
+            this.renderTitle
+          );
 
-        // Render Pager
-        this.renderPager();
+          // Render Pager
+          this.renderPager();
 
-        // Render Sorter
-        this.renderSorter();
+          // Render Sorter
+          this.renderSorter();
 
-        // Render Cesium
-        this.renderMap();
+          // Render Cesium
+          this.renderMap();
+        } catch (e) {
+          console.log(
+            "There was an error rendering the CatalogSearchView:" + e
+          );
+          this.renderError();
+        }
       },
 
       /**
@@ -240,19 +342,23 @@ define([
        * @since 2.22.0
        */
       renderFilters: function () {
-        // Render FilterGroups
-        this.filterGroupsView = new FilterGroupsView({
-          filterGroups: this.filterGroups,
-          filters: this.connector?.get("filters"),
-          vertical: true,
-          parentView: this,
-        });
+        try {
+          // Render FilterGroups
+          this.filterGroupsView = new FilterGroupsView({
+            filterGroups: this.filterGroups,
+            filters: this.connector?.get("filters"),
+            vertical: true,
+            parentView: this,
+          });
 
-        // Add the FilterGroupsView element to this view
-        this.$(this.filterGroupsContainer).html(this.filterGroupsView.el);
+          // Add the FilterGroupsView element to this view
+          this.$(this.filterGroupsContainer).html(this.filterGroupsView.el);
 
-        // Render the FilterGroupsView
-        this.filterGroupsView.render();
+          // Render the FilterGroupsView
+          this.filterGroupsView.render();
+        } catch (e) {
+          console.log("There was an error rendering the FilterGroupsView:" + e);
+        }
       },
 
       /**
@@ -261,11 +367,15 @@ define([
        * @since 2.22.0
        */
       createSearchResults: function () {
-        this.searchResultsView = new SearchResultsView();
+        try {
+          this.searchResultsView = new SearchResultsView();
 
-        if (this.connector) {
-          this.searchResultsView.searchResults =
-            this.connector.get("searchResults");
+          if (this.connector) {
+            this.searchResultsView.searchResults =
+              this.connector.get("searchResults");
+          }
+        } catch (e) {
+          console.log("There was an error creating the SearchResultsView:" + e);
         }
       },
 
@@ -274,13 +384,19 @@ define([
        * @since 2.22.0
        */
       renderSearchResults: function () {
-        if (!this.searchResultsView) return;
+        try {
+          if (!this.searchResultsView) return;
 
-        // Add the view element to this view
-        this.$(this.searchResultsContainer).html(this.searchResultsView.el);
+          // Add the view element to this view
+          this.$(this.searchResultsContainer).html(this.searchResultsView.el);
 
-        // Render the view
-        this.searchResultsView.render();
+          // Render the view
+          this.searchResultsView.render();
+        } catch (e) {
+          console.log(
+            "There was an error rendering the SearchResultsView:" + e
+          );
+        }
       },
 
       /**
@@ -288,18 +404,22 @@ define([
        * @since 2.22.0
        */
       renderPager: function () {
-        this.pagerView = new PagerView();
+        try {
+          this.pagerView = new PagerView();
 
-        // Give the PagerView the SearchResults to listen to and update
-        this.pagerView.searchResults = this.searchResultsView.searchResults;
+          // Give the PagerView the SearchResults to listen to and update
+          this.pagerView.searchResults = this.searchResultsView.searchResults;
 
-        // Add the pager view to the page
-        this.el
-          .querySelector(this.pagerContainer)
-          .replaceChildren(this.pagerView.el);
+          // Add the pager view to the page
+          this.el
+            .querySelector(this.pagerContainer)
+            .replaceChildren(this.pagerView.el);
 
-        // Render the pager view
-        this.pagerView.render();
+          // Render the pager view
+          this.pagerView.render();
+        } catch (e) {
+          console.log("There was an error rendering the PagerView:" + e);
+        }
       },
 
       /**
@@ -307,18 +427,22 @@ define([
        * @since 2.22.0
        */
       renderSorter: function () {
-        this.sorterView = new SorterView();
+        try {
+          this.sorterView = new SorterView();
 
-        // Give the SorterView the SearchResults to listen to and update
-        this.sorterView.searchResults = this.searchResultsView.searchResults;
+          // Give the SorterView the SearchResults to listen to and update
+          this.sorterView.searchResults = this.searchResultsView.searchResults;
 
-        // Add the sorter view to the page
-        this.el
-          .querySelector(this.sorterContainer)
-          .replaceChildren(this.sorterView.el);
+          // Add the sorter view to the page
+          this.el
+            .querySelector(this.sorterContainer)
+            .replaceChildren(this.sorterView.el);
 
-        // Render the sorter view
-        this.sorterView.render();
+          // Render the sorter view
+          this.sorterView.render();
+        } catch (e) {
+          console.log("There was an error rendering the SorterView:" + e);
+        }
       },
 
       /**
@@ -330,7 +454,8 @@ define([
        * @since 2.22.0
        */
       titleTemplate: function (start, end, numFound) {
-        let html = `
+        try {
+          let html = `
           <div id="statcounts">
             <h5 class="result-header-count bold-header" id="countstats">
               <span>
@@ -339,14 +464,18 @@ define([
               ${MetacatUI.appView.commaSeparateNumber(end)}
               </span>`;
 
-        if (typeof numFound == "number") {
-          html += ` of <span>
+          if (typeof numFound == "number") {
+            html += ` of <span>
               ${MetacatUI.appView.commaSeparateNumber(numFound)}
             </span>`;
-        }
+          }
 
-        html += `</h5></div>`;
-        return html;
+          html += `</h5></div>`;
+          return html;
+        } catch (e) {
+          console.log("There was an error creating the title template:" + e);
+          return "";
+        }
       },
 
       /**
@@ -355,23 +484,27 @@ define([
        * @since 2.22.0
        */
       renderTitle: function () {
-        let titleEl = this.el.querySelector(this.titleContainer);
+        try {
+          let titleEl = this.el.querySelector(this.titleContainer);
 
-        if (!titleEl) {
-          titleEl = document.createElement("div");
-          titleEl.classList.add("title-container");
-          this.el.prepend(titleEl);
+          if (!titleEl) {
+            titleEl = document.createElement("div");
+            titleEl.classList.add("title-container");
+            this.el.prepend(titleEl);
+          }
+
+          titleEl.innerHTML = "";
+
+          let title = this.titleTemplate(
+            this.searchResultsView.searchResults.getStart() + 1,
+            this.searchResultsView.searchResults.getEnd() + 1,
+            this.searchResultsView.searchResults.getNumFound()
+          );
+
+          titleEl.insertAdjacentHTML("beforeend", title);
+        } catch (e) {
+          console.log("There was an error rendering the title:" + e);
         }
-
-        titleEl.innerHTML = "";
-
-        let title = this.titleTemplate(
-          this.searchResultsView.searchResults.getStart() + 1,
-          this.searchResultsView.searchResults.getEnd() + 1,
-          this.searchResultsView.searchResults.getNumFound()
-        );
-
-        titleEl.insertAdjacentHTML("beforeend", title);
       },
 
       /**
@@ -380,21 +513,27 @@ define([
        * @since 2.22.0
        */
       setupSearch: function () {
-        // Get an array of all Filter models
-        let allFilters = [];
-        this.filterGroups = this.createFilterGroups();
-        this.filterGroups.forEach((group) => {
-          allFilters = allFilters.concat(group.get("filters")?.models);
-        });
+        try {
+          // Get an array of all Filter models
+          let allFilters = [];
+          this.filterGroups = this.createFilterGroups();
+          this.filterGroups.forEach((group) => {
+            allFilters = allFilters.concat(group.get("filters")?.models);
+          });
 
-        // Connect the filters to the search and search results
-        let connector = new FiltersSearchConnector({ filtersList: allFilters });
-        this.connector = connector;
-        connector.startListening();
+          // Connect the filters to the search and search results
+          let connector = new FiltersSearchConnector({
+            filtersList: allFilters,
+          });
+          this.connector = connector;
+          connector.startListening();
 
-        this.createSearchResults();
+          this.createSearchResults();
 
-        this.createMap();
+          this.createMap();
+        } catch (e) {
+          console.log("There was an error setting up the search:" + e);
+        }
       },
 
       /**
@@ -409,19 +548,23 @@ define([
        */
       createFilterGroups: function (filterGroupsJSON = this.filterGroupsJSON) {
         try {
-          // Start an array for the FilterGroups and the individual Filter models
-          let filterGroups = [];
+          try {
+            // Start an array for the FilterGroups and the individual Filter models
+            let filterGroups = [];
 
-          // Iterate over each default FilterGroup in the app config and create a
-          // FilterGroup model
-          (
-            filterGroupsJSON || MetacatUI.appModel.get("defaultFilterGroups")
-          ).forEach((filterGroupJSON) => {
-            // Create the FilterGroup model Add to the array
-            filterGroups.push(new FilterGroup(filterGroupJSON));
-          });
+            // Iterate over each default FilterGroup in the app config and create a
+            // FilterGroup model
+            (
+              filterGroupsJSON || MetacatUI.appModel.get("defaultFilterGroups")
+            ).forEach((filterGroupJSON) => {
+              // Create the FilterGroup model Add to the array
+              filterGroups.push(new FilterGroup(filterGroupJSON));
+            });
 
-          return filterGroups;
+            return filterGroups;
+          } catch (e) {
+            console.error("Couldn't create Filter Groups in search. ", e);
+          }
         } catch (e) {
           console.error("Couldn't create Filter Groups in search. ", e);
         }
@@ -432,32 +575,37 @@ define([
        * @since 2.22.0
        */
       createMap: function () {
-        const mapOptions = Object.assign(
-          {},
-          MetacatUI.appModel.get("catalogSearchMapOptions") || {}
-        );
-        const map = new Map(mapOptions);
+        try {
+          const mapOptions = Object.assign(
+            {},
+            MetacatUI.appModel.get("catalogSearchMapOptions") || {}
+          );
+          const map = new Map(mapOptions);
 
-        const geohashLayer = map
-          .get("layers")
-          .findWhere({ isGeohashLayer: true });
+          const geohashLayer = map
+            .get("layers")
+            .findWhere({ isGeohashLayer: true });
 
-        // Connect the CesiumGeohash to the SolrResults
-        const connector = new GeohashSearchConnector({
-          cesiumGeohash: geohashLayer,
-          searchResults: this.searchResultsView.searchResults,
-        });
-        connector.startListening();
-        this.geohashSearchConnector = connector;
+          // Connect the CesiumGeohash to the SolrResults
+          const connector = new GeohashSearchConnector({
+            cesiumGeohash: geohashLayer,
+            searchResults: this.searchResultsView.searchResults,
+          });
+          connector.startListening();
+          this.geohashSearchConnector = connector;
 
-        // Set the geohash level for the search
-        const searchFacet = this.searchResultsView.searchResults.facet;
-        const newLevel = "geohash_" + geohashLayer.get("level");
-        if (Array.isArray(searchFacet)) searchFacet.push(newLevel);
-        else searchFacet = newLevel;
+          // Set the geohash level for the search
+          const searchFacet = this.searchResultsView.searchResults.facet;
+          const newLevel = "geohash_" + geohashLayer.get("level");
+          if (Array.isArray(searchFacet)) searchFacet.push(newLevel);
+          else searchFacet = newLevel;
 
-        // Create the Map model and view
-        this.mapView = new MapView({ model: map });
+          // Create the Map model and view
+          this.mapView = new MapView({ model: map });
+        } catch (e) {
+          console.error("Couldn't create map in search. ", e);
+          this.toggleMode("list");
+        }
       },
 
       /**
@@ -465,88 +613,117 @@ define([
        * @since 2.22.0
        */
       renderMap: function () {
-        // Add the map to the page and render it
-        this.$(this.mapContainer).empty().append(this.mapView.el);
-        this.mapView.render();
+        try {
+          // Add the map to the page and render it
+          this.$(this.mapContainer).empty().append(this.mapView.el);
+          this.mapView.render();
+        } catch (e) {
+          console.error("Couldn't render map in search. ", e);
+          this.toggleMode("list");
+        }
       },
 
       /**
        * Linked Data Object for appending the jsonld into the browser DOM
        * @since 2.22.0
-       * */
+       */
       addLinkedData: function () {
-        // JSON Linked Data Object
-        let elJSON = {
-          "@context": {
-            "@vocab": "http://schema.org/",
-          },
-          "@type": "DataCatalog",
-        };
-
-        // Find the MN info from the CN Node list
-        let members = MetacatUI.nodeModel.get("members"),
-          nodeModelObject;
-
-        for (let i = 0; i < members.length; i++) {
-          if (
-            members[i].identifier ==
-            MetacatUI.nodeModel.get("currentMemberNode")
-          ) {
-            nodeModelObject = members[i];
-          }
-        }
-        if (nodeModelObject) {
-          // "keywords": "", "provider": "",
-          let conditionalData = {
-            description: nodeModelObject.description,
-            identifier: nodeModelObject.identifier,
-            image: nodeModelObject.logo,
-            name: nodeModelObject.name,
-            url: nodeModelObject.url,
+        try {
+          // JSON Linked Data Object
+          let elJSON = {
+            "@context": {
+              "@vocab": "http://schema.org/",
+            },
+            "@type": "DataCatalog",
           };
-          $.extend(elJSON, conditionalData);
-        }
 
-        // Check if the jsonld already exists from the previous data view If not
-        // create a new script tag and append otherwise replace the text for the
-        // script
-        if (!document.getElementById("jsonld")) {
-          var el = document.createElement("script");
-          el.type = "application/ld+json";
-          el.id = "jsonld";
-          el.text = JSON.stringify(elJSON);
-          document.querySelector("head").appendChild(el);
-        } else {
-          var script = document.getElementById("jsonld");
-          script.text = JSON.stringify(elJSON);
+          // Find the MN info from the CN Node list
+          let members = MetacatUI.nodeModel.get("members"),
+            nodeModelObject;
+
+          for (let i = 0; i < members.length; i++) {
+            if (
+              members[i].identifier ==
+              MetacatUI.nodeModel.get("currentMemberNode")
+            ) {
+              nodeModelObject = members[i];
+            }
+          }
+          if (nodeModelObject) {
+            // "keywords": "", "provider": "",
+            let conditionalData = {
+              description: nodeModelObject.description,
+              identifier: nodeModelObject.identifier,
+              image: nodeModelObject.logo,
+              name: nodeModelObject.name,
+              url: nodeModelObject.url,
+            };
+            $.extend(elJSON, conditionalData);
+          }
+
+          // Check if the jsonld already exists from the previous data view If not
+          // create a new script tag and append otherwise replace the text for the
+          // script
+          if (!document.getElementById("jsonld")) {
+            var el = document.createElement("script");
+            el.type = "application/ld+json";
+            el.id = "jsonld";
+            el.text = JSON.stringify(elJSON);
+            document.querySelector("head").appendChild(el);
+          } else {
+            var script = document.getElementById("jsonld");
+            script.text = JSON.stringify(elJSON);
+          }
+        } catch (e) {
+          console.error("Couldn't add linked data to search. ", e);
         }
       },
 
       /**
        * Toggles between map and list search mode
+       * @param {string} newMode - Optionally provide the desired new mode to
+       * switch to. If not provided, the opposite of the current mode will be
+       * used.
        * @since 2.22.0
        */
-      toggleMode: function () {
-        let classList = document.querySelector("body").classList;
+      toggleMode: function (newMode) {
+        try {
+          let classList = document.querySelector("body").classList;
 
-        if (this.mode == "map") {
-          this.mode = "list";
-          classList.remove("mapMode");
-          classList.add("listMode");
-        } else {
-          this.mode = "map";
-          classList.remove("listMode");
-          classList.add("mapMode");
+          // If the new mode is not provided, the new mode is the opposite of the
+          // current mode
+          newMode = newMode != "map" && newMode != "list" ? null : newMode;
+          newMode = newMode || (this.mode == "map" ? "list" : "map");
+
+          if (newMode == "list") {
+            this.mode = "list";
+            classList.remove("mapMode");
+            classList.add("listMode");
+          } else {
+            this.mode = "map";
+            classList.remove("listMode");
+            classList.add("mapMode");
+          }
+        } catch (e) {
+          console.error("Couldn't toggle search mode. ", e);
         }
       },
 
+      /**
+       * Tasks to perform when the view is closed
+       * @since 2.22.0
+       */
       onClose: function () {
-        document
-          .querySelector("body")
-          .classList.remove(`catalog-search-body`, `${this.mode}Mode`);
+        try {
+          document
+            .querySelector("body")
+            .classList.remove(this.bodyClass, `${this.mode}Mode`);
 
-        // Remove the JSON-LD from the page
-        document.getElementById("jsonld")?.remove();
+          // Remove the JSON-LD from the page
+          document.getElementById("jsonld")?.remove();
+        } catch (e) {
+          console.error("Couldn't close search view. ", e);
+        }
       },
     }
   );
