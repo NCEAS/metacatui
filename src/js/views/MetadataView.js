@@ -40,7 +40,7 @@ define(['jquery',
   'views/MetricView',
 ],
   function ($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
-    MetricsModel, Utilities, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement,
+    MetricsModel, Utilities, DataPackageView, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement,
     CitationHeaderView, CitationModalView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
     VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
     MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
