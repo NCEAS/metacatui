@@ -48,6 +48,7 @@ define([
        * @since 2.22.0
        */
       startListening: function () {
+        const view = this;
         // Listen to changes in the Filters to trigger a search
         this.stopListening(
           this.get("filters"),
@@ -56,7 +57,11 @@ define([
         this.listenTo(
           this.get("filters"),
           "add remove update reset change",
-          this.triggerSearch
+          function () {
+            // Start at the first page when the filters change
+            MetacatUI.appModel.set("page", 0);
+            view.triggerSearch();
+          }
         );
 
         // Listen to the sort order changing

@@ -34,13 +34,13 @@ define(["backbone"], function (Backbone) {
        * @type {string}
        */
       template: `
-      <ul>
-        <li><a class="unactive"></a></li>
-        <li><a class="unactive"></a></li>
-        <li><a class="unactive"></a></li>
-        <li><a class="unactive">...</a></li>
-        <li><a class="unactive"></a></li>
-      </ul>`,
+        <ul>
+          <li><a class="unactive"></a></li>
+          <li><a class="unactive"></a></li>
+          <li><a class="unactive"></a></li>
+          <li><a class="unactive">...</a></li>
+          <li><a class="unactive"></a></li>
+        </ul>`,
 
       /**
        * Constructs and returns a URL string to use for the given page in this
@@ -125,6 +125,7 @@ define(["backbone"], function (Backbone) {
 
         if (this.searchResults) {
           this.renderPages();
+          this.stopListening(this.searchResults, "reset error");
           this.listenTo(this.searchResults, "reset", this.renderPages);
           // Hide the pager if there is an error with the search results
           this.listenTo(this.searchResults, "error", this.hide);
@@ -247,7 +248,6 @@ define(["backbone"], function (Backbone) {
         if (this.searchResults) {
           this.searchResults.toPage(page);
           MetacatUI.appModel.set("page", page);
-          console.log("nav to ", this.url(page));
           MetacatUI.uiRouter.navigate(this.url(page), { trigger: false });
         }
       },
