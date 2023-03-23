@@ -456,15 +456,21 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                   ORE =     this.rdf.Namespace(this.namespaces.ORE),
                   DCTERMS = this.rdf.Namespace(this.namespaces.DCTERMS),
                   CITO =    this.rdf.Namespace(this.namespaces.CITO),
+                  PROV =    this.rdf.Namespace(this.namespaces.PROV),
                   XSD =     this.rdf.Namespace(this.namespaces.XSD);
 
               var memberStatements = [],
+                  atLocationStatements = [],
                   memberURIParts,
                   memberPIDStr,
                   memberPID,
                   memberPIDs = [],
                   memberModel,
                   documentsStatements,
+                  objectParts,
+                  objectPIDStr,
+                  objectPID,
+                  objectAtLocationValue,
                   scimetaID, // documentor
                   scidataID, // documentee
                   models = []; // the models returned by parse()
@@ -568,6 +574,23 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
                 //Save the list of science metadata pids
                 this.sciMetaPids = sciMetaPids;
+
+                // Parse atLocation
+                var atLocationObject = {};
+                atLocationStatements = this.dataPackageGraph.statementsMatching(
+                  undefined, PROV("atLocation"), undefined, undefined);
+
+                // Get system metadata for each member to eval the formatId
+                _.each(atLocationStatements, function(atLocationStatement){
+                    objectParts = atLocationStatement.subject.value.split("/");
+                    objectPIDStr = _.last(objectParts);
+                    objectPID = decodeURIComponent(objectPIDStr);
+                    objectAtLocationValue = atLocationStatement.object.value;
+
+                    atLocationObject[objectPID] = objectAtLocationValue;
+                }, this);
+
+                this.atLocationObject = atLocationObject;
 
                 //Put the science metadata pids first
                 memberPIDs = _.difference(memberPIDs, sciMetaPids);
