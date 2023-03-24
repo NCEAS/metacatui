@@ -139,6 +139,16 @@ define(["backbone"], function (Backbone) {
         // Only show pages if the search results have been retrieved (by
         // checking for the header property which is set during parse())
         if (!this.searchResults || !this.searchResults.header) return;
+
+        // Ensure that we don't navigate to a page that doesn't exist
+        const numPages = this.searchResults.getNumPages();
+        const currentPage = MetacatUI.appModel.get("page");
+        if (currentPage > numPages) {
+          MetacatUI.appModel.set("page", numPages);
+          this.searchResults.toPage(numPages);
+          return;
+        }
+
         if (this.searchResults.getNumPages() < 2) {
           this.hide();
           return;
