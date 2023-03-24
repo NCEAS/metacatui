@@ -228,6 +228,17 @@ define([
 
       /**
        * Initializes the view
+       * @param {Object} options
+       * @param {string} options.initialQuery - The initial text query to run
+       * when the view is rendered.
+       * @since x.x.x
+       */
+      initialize: function (options) {
+        this.initialQuery = options?.initialQuery;
+      },
+
+      /**
+       * Renders the view
        * @since 2.22.0
        */
       render: function () {
@@ -355,6 +366,7 @@ define([
             filters: this.connector?.get("filters"),
             vertical: true,
             parentView: this,
+            initialQuery: this.initialQuery,
           });
 
           // Add the FilterGroupsView element to this view

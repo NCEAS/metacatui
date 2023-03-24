@@ -111,47 +111,36 @@ function ($, _, Backbone) {
 
 		renderData: function (mode, query, page) {
 			this.routeHistory.push("data");
+			// Check for a page URL parameter
+			if(!page) MetacatUI.appModel.set("page", 0);
+			else MetacatUI.appModel.set('page', page - 1);
 
-			///Check for a page URL parameter
-			if((typeof page === "undefined") || !page)
-				MetacatUI.appModel.set("page", 0);
-			else if(page == 0)
-				MetacatUI.appModel.set('page', 0);
-			else
-				MetacatUI.appModel.set('page', page - 1);
-			
-			//Check if we are using the new CatalogSearchView
+			// Check if we are using the new CatalogSearchView
 			if(!MetacatUI.appModel.get("useDeprecatedDataCatalogView")){
 				require(["views/search/CatalogSearchView"], function(CatalogSearchView){
-						MetacatUI.appView.catalogSearchView = new CatalogSearchView();
-						MetacatUI.appView.showView(MetacatUI.appView.catalogSearchView);
+					MetacatUI.appView.catalogSearchView = new CatalogSearchView({
+						initialQuery: query,
+					});
+					MetacatUI.appView.showView(MetacatUI.appView.catalogSearchView);
 				});
 				return;
 			}
 
-			//Check for a query URL parameter
-			if((typeof query !== "undefined") && query){;
+			// Check for a query URL parameter
+			if ((typeof query !== "undefined") && query) {
 				MetacatUI.appSearchModel.set('additionalCriteria', [query]);
 			}
 
-			if(!MetacatUI.appView.dataCatalogView){
-				require(['views/DataCatalogView'], function(DataCatalogView){
+			// Check for a search mode URL parameter
+			if((typeof mode !== "undefined") && mode)
+				MetacatUI.appView.dataCatalogView.mode = mode;
+
+			require(['views/DataCatalogView'], function(DataCatalogView){
+				if(!MetacatUI.appView.dataCatalogView)
 					MetacatUI.appView.dataCatalogView = new DataCatalogView();
 
-					//Check for a search mode URL parameter
-					if((typeof mode !== "undefined") && mode)
-						MetacatUI.appView.dataCatalogView.mode = mode;
-
-					MetacatUI.appView.showView(MetacatUI.appView.dataCatalogView);
-				});
-			}
-			else{
-				//Check for a search mode URL parameter
-				if((typeof mode !== "undefined") && mode)
-					MetacatUI.appView.dataCatalogView.mode = mode;
-
 				MetacatUI.appView.showView(MetacatUI.appView.dataCatalogView);
-			}
+			});
 		},
 
 		renderMyData: function(page){
