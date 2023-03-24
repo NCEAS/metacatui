@@ -242,6 +242,12 @@ define([
 
         // Render the search components
         this.renderComponents();
+
+        // When everything is ready, run the initial search and then start
+        // listening for changes. Wait for components to render first because
+        // when filters are added, they trigger a search unnecessarily.
+        this.connector.triggerSearch();
+        this.connector.startListening();
       },
 
       /**
@@ -526,7 +532,6 @@ define([
             filtersList: allFilters,
           });
           this.connector = connector;
-          connector.startListening();
 
           this.createSearchResults();
 

@@ -101,6 +101,12 @@ define([
         this.listenTo(this.searchResults, "error", this.showError);
       },
 
+      /**
+       * When there is an error fetching the search results, show an alert
+       * message to the user.
+       * @param {SolrResults} searchResults - The collection of search results
+       * @param {Object} response - The response from the server
+       */
       showError: function (searchResults, response) {
         console.log("Failed to fetch search results.");
         if (response) console.log(response);
