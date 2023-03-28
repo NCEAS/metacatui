@@ -40,6 +40,7 @@ define([
         if (this.get("filtersList")?.length) {
           this.get("filters").add(this.get("filtersList"));
         }
+        // TODO: Set a listeners for changes to filters?
       },
 
       /**
@@ -48,7 +49,7 @@ define([
        * @since 2.22.0
        */
       startListening: function () {
-        const view = this;
+        const model = this;
         // Listen to changes in the Filters to trigger a search
         this.stopListening(
           this.get("filters"),
@@ -60,7 +61,7 @@ define([
           function () {
             // Start at the first page when the filters change
             MetacatUI.appModel.set("page", 0);
-            view.triggerSearch();
+            model.triggerSearch();
           }
         );
 

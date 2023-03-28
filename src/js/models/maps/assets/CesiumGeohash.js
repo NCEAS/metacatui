@@ -81,7 +81,6 @@ define([
             south: null,
             west: null,
           },
-          level: 1,
           counts: [],
           totalCount: 0,
           geohashes: [],
@@ -136,19 +135,15 @@ define([
             if (!mapModel) {
               return;
             }
-            model.listenTo(
-              mapModel,
-              "change:currentViewExtent",
-              function (map, newExtent) {
-                const altitude = newExtent.height;
-                delete newExtent.height;
-                model.set("bounds", newExtent);
-                model.set("altitude", altitude);
-                model.setGeohashLevel();
-                model.setGeohashes();
-                model.createCesiumModel(true);
-              }
-            );
+            // model.listenTo(
+            //   mapModel,
+            //   "change:currentViewExtent",
+            //   function (map, newExtent) {
+            //     const newAltitude = newExtent.height;
+            //     delete newExtent.height;
+            //     model.updateData(newAltitude, newExtent);
+            //   }
+            // );
           }
           setMapListeners.call(model);
           model.stopListening(model, "change:mapModel", setMapListeners);

@@ -2,11 +2,13 @@ define([
   "jquery", "underscore", "backbone",
   "models/filters/Filter", "models/filters/BooleanFilter", "models/filters/ChoiceFilter",
   "models/filters/DateFilter", "models/filters/NumericFilter", "models/filters/ToggleFilter",
+  "models/filters/SpatialFilter"
 ],
   function (
     $, _, Backbone,
     Filter, BooleanFilter, ChoiceFilter,
     DateFilter, NumericFilter, ToggleFilter,
+    SpatialFilter
   ) {
     "use strict";
 
@@ -114,6 +116,9 @@ define([
 
             case "togglefilter":
               return new ToggleFilter(attrs, options);
+            
+            case "spatialfilter":
+              return new SpatialFilter(attrs, options);
 
             default:
               return new Filter(attrs, options);

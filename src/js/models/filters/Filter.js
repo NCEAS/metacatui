@@ -570,9 +570,9 @@ define(['jquery', 'underscore', 'backbone'],
       try {
         var fields      =   this.get("fields"),
             values      =   this.get("values"),
-            noFields    =   !fields || fields.length == 0;
+            noFields    =   !fields || fields.length == 0,
             fieldsEmpty =   _.every(fields, function(item) { return item == "" }),
-            noValues    =   !values || values.length == 0;
+            noValues    =   !values || values.length == 0,
             valuesEmpty =   _.every(values, function(item) { return item == "" });
 
         var noMinNoMax = _.every(

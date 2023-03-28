@@ -2,9 +2,11 @@
 define([
   "jquery",
   "backbone",
+  "collections/Filters",
   "models/filters/FilterGroup",
   "models/connectors/Filters-Search",
   "models/connectors/Geohash-Search",
+  "models/connectors/Filters-Map",
   "models/maps/Map",
   "views/search/SearchResultsView",
   "views/filters/FilterGroupsView",
@@ -15,9 +17,11 @@ define([
 ], function (
   $,
   Backbone,
+  Filters,
   FilterGroup,
   FiltersSearchConnector,
   GeohashSearchConnector,
+  FiltersMapConnector,
   Map,
   SearchResultsView,
   FilterGroupsView,
@@ -538,6 +542,7 @@ define([
           this.filterGroups.forEach((group) => {
             allFilters = allFilters.concat(group.get("filters")?.models);
           });
+          this.allFilters = allFilters;
 
           // Connect the filters to the search and search results
           let connector = new FiltersSearchConnector({
@@ -600,23 +605,35 @@ define([
           );
           const map = new Map(mapOptions);
 
-          const geohashLayer = map
-            .get("layers")
-            .findWhere({ isGeohashLayer: true });
+          // TODO: Make a CatalogSearchModel of a SearchFiltersMap connector
+          // that coordiantes all of the sub-connectors, (SolrResults <->
+          // Filters, SolrResults <-> Map, Filters <-> Map)
+
+          // const geohashLayer = map
+          //   .get("layers")
+          //   .findWhere({ isGeohashLayer: true });
+
+          // if (!geohashLayer) {
+          //   this.listenTo(map, "change:layers", (map, layers) => {
+          //     const geohashLayer = layers.findWhere({ isGeohashLayer: true });
+          //     if (geohashLayer) this.createMap();
+          //   });
+          //   return;
+          // }
 
           // Connect the CesiumGeohash to the SolrResults
-          const connector = new GeohashSearchConnector({
-            cesiumGeohash: geohashLayer,
-            searchResults: this.searchResultsView.searchResults,
+          // const connector = new GeohashSearchConnector({
+          //   cesiumGeohash: geohashLayer,
+          //   searchResults: this.searchResultsView.searchResults,
+          // });
+          // connector.startListening();
+          // this.geohashSearchConnector = connector;
+
+          const connector = new FiltersMapConnector({
+            map: map,
+            filters: new Filters(this.allFilters),
           });
           connector.startListening();
-          this.geohashSearchConnector = connector;
-
-          // Set the geohash level for the search
-          const searchFacet = this.searchResultsView.searchResults.facet;
-          const newLevel = "geohash_" + geohashLayer.get("level");
-          if (Array.isArray(searchFacet)) searchFacet.push(newLevel);
-          else searchFacet = newLevel;
 
           // Create the Map model and view
           this.mapView = new MapView({ model: map });
