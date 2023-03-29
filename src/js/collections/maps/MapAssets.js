@@ -172,6 +172,7 @@ define([
             CesiumVectorData: CesiumVectorData,
             CesiumImagery: CesiumImagery,
             CesiumTerrain: CesiumTerrain,
+            CesiumGeohash: CesiumGeohash,
           };
           if (assetType) {
             return this.filter(function (assetModel) {
@@ -180,15 +181,33 @@ define([
           } else {
             return this.models;
           }
-        } catch (error) {
+        } catch (e) {
           console.log(
-            "Failed to get all of the MapAssets in a MapAssets collection" +
-              ". Error details: " +
-              error +
-              "\n\n" +
-              "Returning all models in the asset collection."
+            "Failed to get all of the MapAssets in a MapAssets collection." +
+              " Returning all models in the asset collection." +
+              e
           );
           return this.models;
+        }
+      },
+
+      /**
+       * Add a new Geohash layer to the collection.
+       * @param {MapConfig#MapAssetConfig} assetConfig - Configuration object
+       * for the Geohash layer (optional).
+       */
+      addGeohashLayer: function (assetConfig) {
+        try {
+          const config = Object.assign({}, assetConfig, {
+            type: "CesiumGeohash",
+          });
+          return this.add(config);
+        } catch (error) {
+          console.log(
+            "Failed to add a geohash layer to a MapAssets collection" +
+              ". Error details: " +
+              error
+          );
         }
       },
     }

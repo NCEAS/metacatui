@@ -402,6 +402,47 @@ define([
         return currentFilters;
       },
 
+      /**
+       * Get all filters in this collection that are of a given filter type.
+       * @param {string} type - The filter type to get, e.g. "BooleanFilter". If
+       * not set, all filters will be returned.
+       * @returns {Filter[]} An array of filter models
+       */
+      getAllOfType: function (type) {
+        if (!type) {
+          return this.models;
+        }
+        return this.filter(function (filterModel) {
+          return filterModel.get("filterType") == type;
+        });
+      },
+
+      /**
+       * Returns the geohash levels that are set on any SpatialFilter models in
+       * this collection. If no SpatialFilter models are found, or no geohash
+       * levels are set, an empty array is returned.
+       * @returns {string[]} An array of geohash levels in the format
+       * ["geohash_1", "geohash_2", ...]
+       */
+      getGeohashLevels: function () {
+        const spFilters = this.getAllOfType("SpatialFilter");
+        if (!spFilters.length) {
+          return [];
+        }
+        return _.uniq(
+          _.flatten(
+            _.map(spFilters, function (spFilter) {
+              const fields = spFilter.get("fields");
+              if (fields && fields.length) {
+                return _.filter(fields, function (field) {
+                  return field.indexOf("geohash") > -1;
+                });
+              }
+            })
+          )
+        );
+      },
+
       /*
        * Clear the values of all geohash-related models in the collection
        */
@@ -599,23 +640,6 @@ define([
           );
         }
       },
-
-      /*
-        hasGeohashFilter: function() {
-
-            var currentFilters = this.getCurrentFilters();
-            var geohashFilter = _.find(currentFilters, function(filterModel){
-                return (_.intersection(filterModel.get("fields"),
-                    ["geohashes", "geohash"]).length > 0);
-            });
-
-            if(geohashFilter) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        */
     }
   );
   return Filters;

@@ -83,20 +83,29 @@ define([
       startListening: function () {
         this.stopListeners();
         const model = this;
+        const filters = this.get("filters");
+        const searchResults = this.get("searchResults");
         // Listen to changes in the Filters to trigger a search
 
         this.listenTo(
-          this.get("filters"),
+          filters,
           "add remove update reset change",
           function () {
             // Start at the first page when the filters change
             MetacatUI.appModel.set("page", 0);
-            model.triggerSearch();
+            // If there is a spatial filter, update the facets in the SolrResults
+            // The setFacet method will trigger a search.
+            const facets = filters.getGeohashLevels();
+            if (facets && facets.length) {
+              searchResults.setFacet(facets);
+            } else {
+              searchResults.setFacet(null);
+            }
           }
         );
 
         this.listenTo(
-          this.get("searchResults"),
+          searchResults,
           "change:sort change:facet",
           this.triggerSearch
         );

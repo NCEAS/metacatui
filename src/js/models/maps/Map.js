@@ -280,6 +280,17 @@ define([
           );
         }
       },
+
+      /**
+       * Reset the layers to the default layers. This will set a new MapAssets
+       * collection on the layer attribute.
+       * @returns {MapAssets} The new layers collection.
+       */
+      resetLayers: function () {
+        const newLayers = this.defaults()?.layers || new MapAssets();
+        this.set("layers", newLayers);
+        return newLayers;
+      },
     }
   );
 

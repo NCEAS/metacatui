@@ -14,6 +14,7 @@ define([
   "views/search/SearchResultsPagerView",
   "views/search/SorterView",
   "text!templates/search/catalogSearch.html",
+  "models/connectors/Map-Search"
 ], function (
   $,
   Backbone,
@@ -28,7 +29,8 @@ define([
   MapView,
   PagerView,
   SorterView,
-  Template
+  Template,
+  MapSearchConnector
 ) {
   "use strict";
 
@@ -634,6 +636,12 @@ define([
             filters: this.allFilters,
           });
           connector.startListening();
+
+          const otherConnector = new MapSearchConnector({
+            map: map,
+            searchResults: this.searchResultsView.searchResults,
+          });
+          otherConnector.startListening();
 
           // Create the Map model and view
           this.mapView = new MapView({ model: map });

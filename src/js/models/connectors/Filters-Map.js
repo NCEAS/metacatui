@@ -129,9 +129,6 @@ define([
         const spatialFilters = this.get("spatialFilters");
         if (!spatialFilters?.length && add) {
           this.get("filters").add(new SpatialFilter());
-          // 🐛🐛🐛 TODO: When a new SpatialFilter is added, the SolrResults are
-          // not hearing changes. Do we need to add a listener somewhere to the
-          // filters collection for updates?
         }
       },
 

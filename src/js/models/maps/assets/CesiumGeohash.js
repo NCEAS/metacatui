@@ -33,10 +33,6 @@ define([
        * @extends CesiumVectorData#defaults
        * @property {'CesiumGeohash'} type The format of the data. Must be
        * 'CesiumGeohash'.
-       * @property {boolean} isGeohashLayer A flag to indicate that this is a
-       * Geohash layer, since we change the type to CesiumVectorData. Used by
-       * the Catalog Search View to find this layer so it can be connected to
-       * search results.
        * @property {string[]} counts An array of geohash strings followed by
        * their associated count. e.g. ["a", 123, "f", 8]
        * @property {Number} totalCount The total number of results that were
@@ -49,8 +45,9 @@ define([
         return Object.assign(CesiumVectorData.prototype.defaults(), {
           type: "GeoJsonDataSource",
           label: "Geohashes",
-          isGeohashLayer: true,
           counts: [],
+          // TODO: split this into geohashIDs and counts. Maybe make totalCount
+          // optional, so we can calculate from counts if needed.
           totalCount: 0,
           geohashes: [],
         });
@@ -111,13 +108,14 @@ define([
           const geohashes = [];
           for (let i = 0; i < counts.length; i += 2) {
             const id = counts[i];
-            geohashes.append({
+            geohashes.push({
               id: id,
               count: counts[i + 1],
               bounds: nGeohash.decode_bbox(id),
             });
           }
           this.set("geohashes", geohashes);
+          this.createCesiumModel(true);
         } catch (error) {
           console.log("Failed to update geohashes in CesiumGeohash", error);
         }
@@ -140,8 +138,11 @@ define([
           }
           const features = [];
           // Format for geohashes:
-          // { geohashID: [minlat, minlon, maxlat, maxlon] }.
-          for (const [id, bb] of Object.entries(geohashes)) {
+          // [{ counts, id, bounds}]
+          geohashes.forEach((geohash) => {
+            const bb = geohash.bounds;
+            const id = geohash.id;
+            const count = geohash.count;
             const minlat = bb[0] <= -90 ? -89.99999 : bb[0];
             const minlon = bb[1];
             const maxlat = bb[2];
@@ -161,12 +162,12 @@ define([
                 ],
               },
               properties: {
-                // "count": 0, // TODO - add counts
+                "count": count,
                 geohash: id,
               },
             };
             features.push(feature);
-          }
+          })
           geojson["features"] = features;
           return geojson;
         } catch (error) {
