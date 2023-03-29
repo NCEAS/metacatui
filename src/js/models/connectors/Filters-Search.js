@@ -22,25 +22,57 @@ define([
     /** @lends FiltersSearchConnector.prototype */ {
       /**
        * @type {object}
-       * @property {Filter[]} filtersList An array of Filter models to
-       * optionally add to the Filters collection
        * @property {Filters} filters A Filters collection to use for this search
        * @property {SolrResults} searchResults The SolrResults collection that
        * the search results will be stored in
+       * @property {boolean} isListening Whether or not the model has listeners
+       * set between the Filters and SearchResults. Set this with the
+       * startListening and stopListeners methods.
        */
       defaults: function () {
         return {
-          filtersList: [],
           filters: new Filters([], { catalogSearch: true }),
           searchResults: new SearchResults(),
+          isListening: false,
         };
       },
 
-      initialize: function () {
-        if (this.get("filtersList")?.length) {
-          this.get("filters").add(this.get("filtersList"));
+      /**
+       * Swap out the Filters and SearchResults models with new ones. Do not
+       * set the models directly, as this will not remove the listeners from
+       * the old models.
+       * (TODO: Create custom set methods for the Filters and SearchResults)
+       * @param {SolrResults|Filters[]} models - A model or array of models to
+       * update in this connector.
+       */
+      updateModels(models) {
+        if (!models) return;
+        models = Array.isArray(models) ? models : [models];
+
+        const wasListening = this.get("isListening");
+        this.stopListeners();
+
+        const attrClassMap = {
+          filters: Filters,
+          searchResults: SearchResults,
+        };
+
+        models.forEach((model) => {
+          try {
+            for (const [attr, ModelClass] of Object.entries(attrClassMap)) {
+              if (model instanceof ModelClass) {
+                this.set(attr, model);
+                break; // If a match is found, no need to check other entries in attrClassMap
+              }
+            }
+          } catch (e) {
+            console.log("Error updating model", model, e);
+          }
+        });
+
+        if (wasListening) {
+          this.startListening();
         }
-        // TODO: Set a listeners for changes to filters?
       },
 
       /**
@@ -49,12 +81,10 @@ define([
        * @since 2.22.0
        */
       startListening: function () {
+        this.stopListeners();
         const model = this;
         // Listen to changes in the Filters to trigger a search
-        this.stopListening(
-          this.get("filters"),
-          "add remove update reset change"
-        );
+
         this.listenTo(
           this.get("filters"),
           "add remove update reset change",
@@ -65,11 +95,6 @@ define([
           }
         );
 
-        // Listen to the sort order changing
-        this.stopListening(
-          this.get("searchResults"),
-          "change:sort change:facet"
-        );
         this.listenTo(
           this.get("searchResults"),
           "change:sort change:facet",
@@ -82,6 +107,26 @@ define([
           "change:loggedIn",
           this.triggerSearch
         );
+        this.set("isListening", true);
+      },
+
+      /**
+       * Stops listening to changes in the Filters and SearchResults
+       * @since x.x.x
+       */
+      stopListeners: function () {
+        const model = this;
+        this.stopListening(MetacatUI.appUserModel, "change:loggedIn");
+        this.stopListening(
+          this.get("filters"),
+          "add remove update reset change"
+        );
+        // Listen to the sort order changing
+        this.stopListening(
+          this.get("searchResults"),
+          "change:sort change:facet"
+        );
+        this.set("isListening", false);
       },
 
       /**
@@ -92,8 +137,8 @@ define([
        * @since 2.22.0
        */
       triggerSearch: function () {
-        let filters = this.get("filters"),
-          searchResults = this.get("searchResults");
+        const filters = this.get("filters");
+        const searchResults = this.get("searchResults");
 
         // Get the Solr query string from the Search filter collection
         let query = filters.getQuery();

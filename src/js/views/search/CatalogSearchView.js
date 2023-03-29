@@ -542,11 +542,11 @@ define([
           this.filterGroups.forEach((group) => {
             allFilters = allFilters.concat(group.get("filters")?.models);
           });
-          this.allFilters = allFilters;
+          this.allFilters = new Filters(allFilters, { catalogSearch: true });
 
           // Connect the filters to the search and search results
           let connector = new FiltersSearchConnector({
-            filtersList: allFilters,
+            filters: this.allFilters,
           });
           this.connector = connector;
 
@@ -631,7 +631,7 @@ define([
 
           const connector = new FiltersMapConnector({
             map: map,
-            filters: new Filters(this.allFilters),
+            filters: this.allFilters,
           });
           connector.startListening();
 
