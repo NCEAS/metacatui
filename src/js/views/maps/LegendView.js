@@ -139,6 +139,10 @@ define(
 
           try {
 
+            if (!this.model) {
+              return;
+            }
+
             // Save a reference to this view
             var view = this;
 

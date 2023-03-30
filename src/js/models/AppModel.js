@@ -96,11 +96,14 @@ define(['jquery', 'underscore', 'backbone'],
       dataCatalogMap: "google",
 
       /**
-       * The default options for the Cesium map used in the {@link CatalogSearchView} for searching the data
-       * catalog. Add custom layers, a default home position (for example, zoom into your area of research),
-       * and enable/disable map widgets. See {@link MapConfig} for the full suite of options. Keep the `CesiumGeohash`
-       * layer here in order to show the search results in the map as geohash boxes. Use any satellite imagery
-       * layer of your choice, such as a self-hosted imagery layer or hosted on Cesium Ion.
+       * The default options for the Cesium map used in the
+       * {@link CatalogSearchView} for searching the data catalog. Add custom
+       * layers, a default home position (for example, zoom into your area of
+       * research), and enable/disable map widgets. See {@link MapConfig} for
+       * the full suite of options. Use any satellite imagery layer of your
+       * choice, such as a self-hosted imagery layer or hosted on Cesium Ion. If
+       * no layer of type `CesiumGeohash` is included, a geohash layer will be
+       * added automatically in order to show the search results on the map.
        * @type {MapConfig}
        * @since 2.22.0
        */

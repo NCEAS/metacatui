@@ -31,10 +31,24 @@ define([
       },
 
       /**
-       * @inheritdoc
+       * Initialize the model.
+       * @param {Object} attrs - The attributes for this model.
+       * @param {SolrResults | Object} [attributes.searchResults] - The
+       * SolrResults model to use for this connector or a JSON object with
+       * options to create a new SolrResults model. If not provided, a new
+       * SolrResults model will be created.
+       * @param {Map | Object} [attributes.map] - The Map model to use for this
+       * connector or a JSON object with options to create a new Map model. If
+       * not provided, a new Map model will be created.
+       * @param {Object} [options] - The options for this model.
+       * @param {boolean} [addGeohashLayer=true] - If true, a Geohash layer will
+       * be added to the Map model if there is not already a Geohash layer in
+       * the Map model's Layers collection. If false, no Geohash layer will be
+       * added. A geohash layer is required for this connector to work.
        */
-      initialize: function () {
-        this.findAndSetGeohashLayer();
+      initialize: function (attrs, options) {
+        const add = options?.addGeohashLayer ?? true;
+        this.findAndSetGeohashLayer(add);
       },
 
       /**
@@ -92,23 +106,28 @@ define([
        * Find the Geohash layer in the Map model's layers collection and
        * optionally create one if it doesn't exist. This will also create and
        * set a map and a layers collection from that map if they don't exist.
-       * @param {boolean} [add=false] - If true, create a new Geohash layer if
+       * @param {boolean} [add=true] - If true, create a new Geohash layer if
        * one doesn't exist.
        * @returns {CesiumGeohash} The Geohash layer in the Map model's layers
        * collection or null if there is no Layers collection set on this model
        * and `add` is false.
        * @fires Layers#add
        */
-      findAndSetGeohashLayer: function (add = false) {
+      findAndSetGeohashLayer: function (add = true) {
         const wasConnected = this.get("isConnected");
         this.disconnect();
-        let map = this.get("map") || this.set("map", new Map()).get("map");
         const layers = this.findLayers() || this.createLayers();
         this.set("layers", layers);
         let geohash = this.findGeohash() || (add ? this.createGeohash() : null);
         this.set("geohashLayer", geohash);
         if (wasConnected) {
           this.connect();
+        }
+        // If there is still no Geohash layer, then we should wait for one to
+        // be added to the Layers collection, then try to find it again.
+        if (!geohash) {
+          this.listenToOnce(layers, "add", this.findAndSetGeohashLayer);
+          return
         }
         return geohash;
       },
@@ -143,6 +162,9 @@ define([
       updateGeohashCounts: function () {
         const geohashLayer = this.get("geohashLayer");
         const searchResults = this.get("searchResults");
+
+        if(!geohashLayer || !searchResults) return;
+
         const facetCounts = searchResults.facetCounts;
 
         // Get every facet that begins with "geohash_"

@@ -49,18 +49,51 @@ define([
       },
 
       /**
-       * @inheritdoc
+       * Initialize the model.
+       * @param {Object} options - The options for this model.
+       * @param {Map | Object} [options.map] - The Map model to use for this
+       * connector or a JSON object with options to create a new Map model. If
+       * not provided, the default from the appModel will be used. See
+       * {@link AppModel#catalogSearchMapOptions}.
+       * @param {SolrResults | Object} [options.searchResults] - The SolrResults
+       * model to use for this connector or a JSON object with options to create
+       * a new SolrResults model. If not provided, a new SolrResults model will
+       * be created.
+       * @param {FilterGroup[] | FilterGroup} [options.filterGroups] - An array
+       * of FilterGroup models or JSON objects with options to create new
+       * FilterGroup models. If a single FilterGroup is passed, it will be
+       * wrapped in an array. If not provided, the default from the appModel
+       * will be used. See {@link AppModel#defaultFilterGroups}.
+       * @param {boolean} [addGeohashLayer=true] - If set to true, a Geohash
+       * layer will be added to the Map model if one is not already present. If
+       * set to false, no Geohash layer will be added. A geohash layer is
+       * required for the Search-Map connector to work.
+       * @param {boolean} [addSpatialFilter=true] - If set to true, a spatial
+       * filter will be added to the Filters model if one is not already
+       * present. If set to false, no spatial filter will be added. A spatial
+       * filter is required for the Filters-Map connector to work.
+       * @param {boolean} [options.catalogSearch=false] - If set to true, a
+       * catalog search phrase in the Filters will be appended to the search
+       * query that limits the results to un-obsoleted metadata. See
+       * {@link Filters#createCatalogSearchQuery}.If set to true, a catalog
+       * search phrase will be appended to the search query that limits the
+       * results to un-obsoleted metadata.
        */
-      initialize: function () {
+      initialize: function (attrs, options = {}) {
         // TODO: allow setting these with args here
-        const filterGroupsJSON = MetacatUI.appModel.get("defaultFilterGroups");
-        const mapOptions = MetacatUI.appModel.get("catalogSearchMapOptions");
-        this.setMap(mapOptions);
-        this.setSearchResults();
-        this.setFilters(filterGroupsJSON);
-        this.setConnectors();
-        // TODO: Listen to change:map, change:filters, etc. and update the
-        // connectors
+        if (!options) options = {};
+        const app = MetacatUI.appModel;
+        const map = options.map || app.get("catalogSearchMapOptions");
+        const searchResults = options.searchResults || null;
+        const filterGroups =
+          options.filterGroups || app.get("defaultFilterGroups");
+        const catalogSearch = options.catalogSearch !== true;
+        const addGeohashLayer = options.addGeohashLayer !== false;
+        const addSpatialFilter = options.addGeohashLayer !== false;
+        this.setMap(map);
+        this.setSearchResults(searchResults);
+        this.setFilters(filterGroups, catalogSearch);
+        this.setConnectors(addGeohashLayer, addSpatialFilter);
       },
 
       /**
@@ -69,7 +102,7 @@ define([
        * a JSON object with options to create a new Map model.
        */
       setMap: function (map) {
-        let mapModel = map instanceof Map ? map : new Map(map || {});
+        const mapModel = map instanceof Map ? map : new Map(map || null);
         this.set("map", mapModel);
       },
 
@@ -123,15 +156,26 @@ define([
       /**
        * Set all the connectors required to connect the Map, SearchResults, and
        * Filters. This does not connect them (see connect()).
+       * @param {boolean} [addGeohashLayer=true] - If set to true, a Geohash
+       * layer will be added to the Map model if one is not already present. If
+       * set to false, no Geohash layer will be added. A geohash layer is
+       * required for the Search-Map connector to work.
+       * @param {boolean} [addSpatialFilter=true] - If set to true, a spatial
+       * filter will be added to the Filters model if one is not already
+       * present. If set to false, no spatial filter will be added. A spatial
+       * filter is required for the Filters-Map connector to work.
        */
-      setConnectors: function () {
+      setConnectors: function (
+        addGeohashLayer = true,
+        addSpatialFilter = true
+      ) {
         const map = this.get("map");
         const searchResults = this.get("searchResults");
         const filters = this.get("filters");
 
         this.set(
           "mapSearchConnector",
-          new MapSearchConnector({ map, searchResults })
+          new MapSearchConnector({ map, searchResults }, { addGeohashLayer })
         );
         this.set(
           "filtersSearchConnector",
@@ -139,7 +183,7 @@ define([
         );
         this.set(
           "filtersMapConnector",
-          new FiltersMapConnector({ filters, map })
+          new FiltersMapConnector({ filters, map }, { addSpatialFilter })
         );
       },
 

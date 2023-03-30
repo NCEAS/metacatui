@@ -208,7 +208,7 @@ define([
        */
       initialize: function (config) {
         try {
-          if (config) {
+          if (config && config instanceof Object) {
             function isNonEmptyArray(a) {
               return a && a.length && Array.isArray(a);
             }

@@ -50,6 +50,7 @@ define([
           // optional, so we can calculate from counts if needed.
           totalCount: 0,
           geohashes: [],
+          opacity: 0.5,
         });
       },
 
