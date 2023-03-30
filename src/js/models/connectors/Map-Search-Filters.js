@@ -50,6 +50,7 @@ define([
 
       /**
        * Initialize the model.
+       * @param {Object} attrs - The attributes for this model.
        * @param {Object} options - The options for this model.
        * @param {Map | Object} [options.map] - The Map model to use for this
        * connector or a JSON object with options to create a new Map model. If
@@ -64,11 +65,11 @@ define([
        * FilterGroup models. If a single FilterGroup is passed, it will be
        * wrapped in an array. If not provided, the default from the appModel
        * will be used. See {@link AppModel#defaultFilterGroups}.
-       * @param {boolean} [addGeohashLayer=true] - If set to true, a Geohash
+       * @param {boolean} [options.addGeohashLayer=true] - If set to true, a Geohash
        * layer will be added to the Map model if one is not already present. If
        * set to false, no Geohash layer will be added. A geohash layer is
        * required for the Search-Map connector to work.
-       * @param {boolean} [addSpatialFilter=true] - If set to true, a spatial
+       * @param {boolean} [options.addSpatialFilter=true] - If set to true, a spatial
        * filter will be added to the Filters model if one is not already
        * present. If set to false, no spatial filter will be added. A spatial
        * filter is required for the Filters-Map connector to work.
@@ -80,7 +81,6 @@ define([
        * results to un-obsoleted metadata.
        */
       initialize: function (attrs, options = {}) {
-        // TODO: allow setting these with args here
         if (!options) options = {};
         const app = MetacatUI.appModel;
         const map = options.map || app.get("catalogSearchMapOptions");
@@ -133,7 +133,6 @@ define([
       setFilters: function (filtersArray, catalogSearch = true) {
         const filterGroups = [];
         const filters = new Filters(null, { catalogSearch: catalogSearch });
-        // TODO: catalogSearch should be an option set in initialize
 
         filtersArray = Array.isArray(filtersArray)
           ? filtersArray

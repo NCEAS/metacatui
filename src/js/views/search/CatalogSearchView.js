@@ -182,26 +182,41 @@ define([
       },
 
       /**
-       * Initializes the view
-       * @param {Object} options
-       * @param {string} options.initialQuery - The initial text query to run
+       * Initialize the view. In addition to the options described below, any
+       * option that is available in the
+       * {@link MapSearchFiltersConnector#initialize} method can be passed to
+       * this view, such as Map, SolrResult, and FilterGroup models, and whether
+       * to create a geohash layer or spatial filter if they are not present.
+       * @param {Object} options - The options for this view.
+       * @param {string} [options.initialQuery] - The initial text query to run
        * when the view is rendered.
+       * @param {MapSearchFiltersConnector} [options.model] - A
+       * MapSearchFiltersConnector model to use for this view. If not provided,
+       * a new one will be created. If one is provided, then other options that
+       * would be passed to the MapSearchFiltersConnector model will be ignored
+       * (such as map, searchResults, filterGroups, catalogSearch, etc.)
        * @since x.x.x
        */
       initialize: function (options) {
-        this.initialQuery = options?.initialQuery;
-        // TODO: allow for initial models/filters to be passed in, as well as
-        // options like, whether or not to create a SpatialFilter or Geohash
-        // layer if not present, etc.
+        if (!options) options = {};
 
-        // const mapOptions = Object.assign(
-        //   {},
-        //   MetacatUI.appModel.get("catalogSearchMapOptions") || {}
-        // );
-        // Create the Map model and view
+        this.initialQuery = options.initialQuery || null;
 
-        this.model = new MapSearchFiltersConnector();
-        this.model.connect();
+        let model = options.model;
+        if (!model) {
+          const app = MetacatUI.appModel;
+          model = new MapSearchFiltersConnector({
+            map: options.map || app.get("catalogSearchMapOptions"),
+            searchResults: options.searchResults || null,
+            filterGroups:
+              options.filterGroups || app.get("defaultFilterGroups"),
+            catalogSearch: options.catalogSearch !== false,
+            addGeohashLayer: options.addGeohashLayer !== false,
+            addSpatialFilter: options.addSpatialFilter !== false,
+          });
+        }
+        model.connect();
+        this.model = model;
       },
 
       /**
