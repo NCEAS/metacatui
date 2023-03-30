@@ -443,8 +443,7 @@ define([
                     }
                     else if (this.model.url() !== undefined) {
                       var downloadUrl = this.model.url();
-                      downloadUrl.replace("meta", "object");
-                      attributes.downloadUrl = downloadUrl;
+                      attributes.downloadUrl = downloadUrl.replace("/meta/", "/object/");
                     }
                   }
                   this.downloadButtonView = new DownloadButtonView({ id: this.model.get("id"), view: "actionsView" });
@@ -1280,7 +1279,6 @@ define([
             },
 
             downloadFile: function(e) {
-              e.preventDefault();
               this.downloadButtonView.download(e);
             }
 

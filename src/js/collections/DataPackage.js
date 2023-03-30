@@ -3147,6 +3147,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                   }
                 });
               }
+            },
+
+
+            getAtLocation: function() {
+              return this.atLocationObject;
             }
         });
 

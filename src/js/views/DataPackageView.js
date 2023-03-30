@@ -356,6 +356,8 @@ define([
             addAll: function() {
                 this.$el.find('#data-package-table-body').html(''); // clear the table first
                 this.dataPackage.sort();
+                var atLocationObj = this.dataPackage.getAtLocation();
+                this.atLocationObj = atLocationObj;
                 this.dataPackage.each(this.addOne, this);
 
             },
