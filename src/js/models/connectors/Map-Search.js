@@ -100,15 +100,15 @@ define([
        * @fires Layers#add
        */
       findAndSetGeohashLayer: function (add = false) {
-        const wasListening = this.get("isListening");
-        this.stopListeners();
+        const wasConnected = this.get("isConnected");
+        this.disconnect();
         let map = this.get("map") || this.set("map", new Map()).get("map");
         const layers = this.findLayers() || this.createLayers();
         this.set("layers", layers);
         let geohash = this.findGeohash() || (add ? this.createGeohash() : null);
         this.set("geohashLayer", geohash);
-        if (wasListening) {
-          this.startListening();
+        if (wasConnected) {
+          this.connect();
         }
         return geohash;
       },
@@ -117,21 +117,21 @@ define([
        * Connect the Map to the Search. When a new search is performed, the
        * Search will set the new facet counts on the GeoHash layer in the Map.
        */
-      startListening: function () {
-        this.stopListeners();
+      connect: function () {
+        this.disconnect();
         const searchResults = this.get("searchResults");
         this.listenTo(searchResults, "reset", this.updateGeohashCounts);
-        this.set("isListening", true);
+        this.set("isConnected", true);
       },
 
       /**
        * Disconnect the Map from the Search. Stops listening to the Search
        * results collection.
        */
-      stopListeners: function () {
+      disconnect: function () {
         const searchResults = this.get("searchResults");
         this.stopListening(searchResults, "reset");
-        this.set("isListening", false);
+        this.set("isConnected", false);
       },
 
       /**

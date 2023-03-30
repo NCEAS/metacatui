@@ -25,15 +25,15 @@ define([
        * @property {Filters} filters A Filters collection to use for this search
        * @property {SolrResults} searchResults The SolrResults collection that
        * the search results will be stored in
-       * @property {boolean} isListening Whether or not the model has listeners
+       * @property {boolean} isConnected Whether or not the model has listeners
        * set between the Filters and SearchResults. Set this with the
-       * startListening and stopListeners methods.
+       * connect and disconnect methods.
        */
       defaults: function () {
         return {
           filters: new Filters([], { catalogSearch: true }),
           searchResults: new SearchResults(),
-          isListening: false,
+          isConnected: false,
         };
       },
 
@@ -49,8 +49,8 @@ define([
         if (!models) return;
         models = Array.isArray(models) ? models : [models];
 
-        const wasListening = this.get("isListening");
-        this.stopListeners();
+        const wasConnected = this.get("isConnected");
+        this.disconnect();
 
         const attrClassMap = {
           filters: Filters,
@@ -70,8 +70,8 @@ define([
           }
         });
 
-        if (wasListening) {
-          this.startListening();
+        if (wasConnected) {
+          this.connect();
         }
       },
 
@@ -80,8 +80,8 @@ define([
        * when the search changes
        * @since 2.22.0
        */
-      startListening: function () {
-        this.stopListeners();
+      connect: function () {
+        this.disconnect();
         const model = this;
         const filters = this.get("filters");
         const searchResults = this.get("searchResults");
@@ -116,14 +116,14 @@ define([
           "change:loggedIn",
           this.triggerSearch
         );
-        this.set("isListening", true);
+        this.set("isConnected", true);
       },
 
       /**
        * Stops listening to changes in the Filters and SearchResults
        * @since x.x.x
        */
-      stopListeners: function () {
+      disconnect: function () {
         const model = this;
         this.stopListening(MetacatUI.appUserModel, "change:loggedIn");
         this.stopListening(
@@ -135,7 +135,7 @@ define([
           this.get("searchResults"),
           "change:sort change:facet"
         );
-        this.set("isListening", false);
+        this.set("isConnected", false);
       },
 
       /**

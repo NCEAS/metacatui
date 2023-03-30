@@ -2,35 +2,23 @@
 define([
   "jquery",
   "backbone",
-  "collections/Filters",
-  "models/filters/FilterGroup",
-  "models/connectors/Filters-Search",
-  "models/connectors/Geohash-Search",
-  "models/connectors/Filters-Map",
-  "models/maps/Map",
   "views/search/SearchResultsView",
   "views/filters/FilterGroupsView",
   "views/maps/MapView",
   "views/search/SearchResultsPagerView",
   "views/search/SorterView",
   "text!templates/search/catalogSearch.html",
-  "models/connectors/Map-Search"
+  "models/connectors/Map-Search-Filters",
 ], function (
   $,
   Backbone,
-  Filters,
-  FilterGroup,
-  FiltersSearchConnector,
-  GeohashSearchConnector,
-  FiltersMapConnector,
-  Map,
   SearchResultsView,
   FilterGroupsView,
   MapView,
   PagerView,
   SorterView,
   Template,
-  MapSearchConnector
+  MapSearchFiltersConnector
 ) {
   "use strict";
 
@@ -134,45 +122,6 @@ define([
       sorterView: null,
 
       /**
-       * The model that retrieves the search results.
-       * @type {SearchModel}
-       * @since 2.22.0
-       */
-      searchModel: null,
-
-      /**
-       * An array of Filter models, outside of their parent FilterGroup, that
-       * can be used to filter the search results. These models are passed to
-       * the {@link FiltersSearchConnector} to be used in the search. This
-       * property is added to the view by the
-       * {@link CatalogSearchView#setupSearch} method.
-       * @type {Filter[]}
-       * @since 2.22.0
-       */
-      allFilters: null,
-
-      /**
-       * An array of FilterGroup models created by the
-       * {@link CatalogSearchView#createFilterGroups} method, using the
-       * {@link CatalogSearchView#filterGroupsJSON} property. These FilterGroups
-       * will be displayed in this view and used for searching. This property is
-       * added to the view by the {@link CatalogSearchView#createFilterGroups}
-       * method.
-       * @type {FilterGroup[]}
-       * @since 2.22.0
-       */
-      filterGroups: null,
-
-      /**
-       * An array of literal objects to transform into FilterGroup models. These
-       * FilterGroups will be displayed in this view and used for searching. If
-       * not provided, the {@link AppConfig#defaultFilterGroups} will be used.
-       * @type {FilterGroup#defaults[]}
-       * @since 2.22.0
-       */
-      filterGroupsJSON: null,
-
-      /**
        * The CSS class to add to the body of the CatalogSearch.
        * @type {string}
        * @since 2.22.0
@@ -241,6 +190,18 @@ define([
        */
       initialize: function (options) {
         this.initialQuery = options?.initialQuery;
+        // TODO: allow for initial models/filters to be passed in, as well as
+        // options like, whether or not to create a SpatialFilter or Geohash
+        // layer if not present, etc.
+
+        // const mapOptions = Object.assign(
+        //   {},
+        //   MetacatUI.appModel.get("catalogSearchMapOptions") || {}
+        // );
+        // Create the Map model and view
+
+        this.model = new MapSearchFiltersConnector();
+        this.model.connect();
       },
 
       /**
@@ -254,17 +215,8 @@ define([
         // Set up the view for styling and layout
         this.setupView();
 
-        // Set up the search and search result models, as well as the map
-        this.setupSearch();
-
         // Render the search components
         this.renderComponents();
-
-        // When everything is ready, run the initial search and then start
-        // listening for changes. Wait for components to render first because
-        // when filters are added, they trigger a search unnecessarily.
-        this.connector.triggerSearch();
-        this.connector.startListening();
       },
 
       /**
@@ -331,6 +283,10 @@ define([
        */
       renderComponents: function () {
         try {
+          this.createSearchResults();
+
+          this.createMap();
+
           this.renderFilters();
 
           // Render the list of search results
@@ -339,7 +295,7 @@ define([
           // Render the Title
           this.renderTitle();
           this.listenTo(
-            this.searchResultsView.searchResults,
+            this.model.get("searchResults"),
             "reset",
             this.renderTitle
           );
@@ -368,8 +324,8 @@ define([
         try {
           // Render FilterGroups
           this.filterGroupsView = new FilterGroupsView({
-            filterGroups: this.filterGroups,
-            filters: this.connector?.get("filters"),
+            filterGroups: this.model.get("filterGroups"),
+            filters: this.model.get("filters"),
             vertical: true,
             parentView: this,
             initialQuery: this.initialQuery,
@@ -393,11 +349,8 @@ define([
       createSearchResults: function () {
         try {
           this.searchResultsView = new SearchResultsView();
-
-          if (this.connector) {
-            this.searchResultsView.searchResults =
-              this.connector.get("searchResults");
-          }
+          this.searchResultsView.searchResults =
+            this.model.get("searchResults");
         } catch (e) {
           console.log("There was an error creating the SearchResultsView:" + e);
         }
@@ -432,7 +385,7 @@ define([
           this.pagerView = new PagerView();
 
           // Give the PagerView the SearchResults to listen to and update
-          this.pagerView.searchResults = this.searchResultsView.searchResults;
+          this.pagerView.searchResults = this.model.get("searchResults");
 
           // Add the pager view to the page
           this.el
@@ -455,7 +408,7 @@ define([
           this.sorterView = new SorterView();
 
           // Give the SorterView the SearchResults to listen to and update
-          this.sorterView.searchResults = this.searchResultsView.searchResults;
+          this.sorterView.searchResults = this.model.get("searchResults");
 
           // Add the sorter view to the page
           this.el
@@ -508,7 +461,7 @@ define([
        */
       renderTitle: function () {
         try {
-          const searchResults = this.searchResultsView.searchResults;
+          const searchResults = this.model.get("searchResults");
           let titleEl = this.el.querySelector(this.titleContainer);
 
           if (!titleEl) {
@@ -532,119 +485,12 @@ define([
       },
 
       /**
-       * Creates the Filter models and SolrResults that will be used for
-       * searches
-       * @since 2.22.0
-       */
-      setupSearch: function () {
-        try {
-          // Get an array of all Filter models
-          let allFilters = [];
-          this.filterGroups = this.createFilterGroups();
-          this.filterGroups.forEach((group) => {
-            allFilters = allFilters.concat(group.get("filters")?.models);
-          });
-          this.allFilters = new Filters(allFilters, { catalogSearch: true });
-
-          // Connect the filters to the search and search results
-          let connector = new FiltersSearchConnector({
-            filters: this.allFilters,
-          });
-          this.connector = connector;
-
-          this.createSearchResults();
-
-          this.createMap();
-        } catch (e) {
-          console.log("There was an error setting up the search:" + e);
-        }
-      },
-
-      /**
-       * Creates UI Filter Groups. UI Filter Groups are custom, interactive
-       * search filter elements, grouped together in one panel, section, tab,
-       * etc.
-       * @param {FilterGroup#defaults[]} filterGroupsJSON An array of literal
-       * objects to transform into FilterGroup models. These FilterGroups will
-       * be displayed in this view and used for searching. If not provided, the
-       * {@link AppConfig#defaultFilterGroups} will be used.
-       * @since 2.22.0
-       */
-      createFilterGroups: function (filterGroupsJSON = this.filterGroupsJSON) {
-        try {
-          try {
-            // Start an array for the FilterGroups and the individual Filter
-            // models
-            let filterGroups = [];
-
-            // Iterate over each default FilterGroup in the app config and
-            // create a FilterGroup model
-            (
-              filterGroupsJSON || MetacatUI.appModel.get("defaultFilterGroups")
-            ).forEach((filterGroupJSON) => {
-              // Create the FilterGroup model Add to the array
-              filterGroups.push(new FilterGroup(filterGroupJSON));
-            });
-
-            return filterGroups;
-          } catch (e) {
-            console.error("Couldn't create Filter Groups in search. ", e);
-          }
-        } catch (e) {
-          console.error("Couldn't create Filter Groups in search. ", e);
-        }
-      },
-
-      /**
        * Create the models and views associated with the map and map search
        * @since 2.22.0
        */
       createMap: function () {
         try {
-          const mapOptions = Object.assign(
-            {},
-            MetacatUI.appModel.get("catalogSearchMapOptions") || {}
-          );
-          const map = new Map(mapOptions);
-
-          // TODO: Make a CatalogSearchModel of a SearchFiltersMap connector
-          // that coordiantes all of the sub-connectors, (SolrResults <->
-          // Filters, SolrResults <-> Map, Filters <-> Map)
-
-          // const geohashLayer = map
-          //   .get("layers")
-          //   .findWhere({ isGeohashLayer: true });
-
-          // if (!geohashLayer) {
-          //   this.listenTo(map, "change:layers", (map, layers) => {
-          //     const geohashLayer = layers.findWhere({ isGeohashLayer: true });
-          //     if (geohashLayer) this.createMap();
-          //   });
-          //   return;
-          // }
-
-          // Connect the CesiumGeohash to the SolrResults
-          // const connector = new GeohashSearchConnector({
-          //   cesiumGeohash: geohashLayer,
-          //   searchResults: this.searchResultsView.searchResults,
-          // });
-          // connector.startListening();
-          // this.geohashSearchConnector = connector;
-
-          const connector = new FiltersMapConnector({
-            map: map,
-            filters: this.allFilters,
-          });
-          connector.startListening();
-
-          const otherConnector = new MapSearchConnector({
-            map: map,
-            searchResults: this.searchResultsView.searchResults,
-          });
-          otherConnector.startListening();
-
-          // Create the Map model and view
-          this.mapView = new MapView({ model: map });
+          this.mapView = new MapView({ model: this.model.get("map") });
         } catch (e) {
           console.error("Couldn't create map in search. ", e);
           this.toggleMode("list");

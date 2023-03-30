@@ -31,7 +31,7 @@ define([
        * @property {SpatialFilter[]} spatialFilters An array of SpatialFilter
        * models present in the Filters collection.
        * @property {Map} map The Map model that will update the spatial filters
-       * @property {boolean} isListening Whether the connector is currently
+       * @property {boolean} isConnected Whether the connector is currently
        * listening to the Map model for changes. Set automatically when the
        * connector is started or stopped.
        * @since x.x.x
@@ -42,7 +42,7 @@ define([
           filters: new Filters([], { catalogSearch: true }),
           spatialFilters: [],
           map: new Map(),
-          isListening: false,
+          isConnected: false,
         };
       },
 
@@ -85,13 +85,13 @@ define([
        * are found in the collection.
        */
       findAndSetSpatialFilters: function (add = false) {
-        const wasListening = this.get("isListening");
-        this.stopListeners();
+        const wasConnected = this.get("isConnected");
+        this.disconnect();
         this.setSpatialFilters();
         this.listenOnceToFiltersUpdates();
         this.addSpatialFilterIfNeeded(add);
-        if (wasListening) {
-          this.startListening();
+        if (wasConnected) {
+          this.connect();
         }
       },
 
@@ -128,7 +128,9 @@ define([
       addSpatialFilterIfNeeded: function (add) {
         const spatialFilters = this.get("spatialFilters");
         if (!spatialFilters?.length && add) {
-          this.get("filters").add(new SpatialFilter());
+          this.get("filters").add(new SpatialFilter({
+            isInvisible: true,
+          }));
         }
       },
 
@@ -136,11 +138,11 @@ define([
        * Stops all Filter-Map listeners, including listeners on the Filters
        * collection and the Map model.
        */
-      stopListeners: function () {
+      disconnect: function () {
         try {
           this.stopListening(this.get("filters"), "add remove");
           this.stopListening(this.get("map"), "change:currentViewExtent");
-          this.set("isListening", false);
+          this.set("isConnected", false);
         } catch (e) {
           console.log("Error stopping Filter-Map listeners: ", e);
         }
@@ -152,15 +154,15 @@ define([
        * function when changes are detected. This method needs to be called for
        * the connector to work.
        */
-      startListening: function () {
+      connect: function () {
         try {
-          this.stopListeners();
+          this.disconnect();
           this.listenTo(
             this.get("map"),
             "change:currentViewExtent",
             this.updateSpatialFilters
           );
-          this.set("isListening", true);
+          this.set("isConnected", true);
         } catch (e) {
           console.log("Error starting Filter-Map listeners: ", e);
         }
