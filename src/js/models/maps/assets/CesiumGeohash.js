@@ -5,9 +5,11 @@ define([
   "underscore",
   "backbone",
   "cesium",
-  "nGeohash",
   "models/maps/assets/CesiumVectorData",
-], function ($, _, Backbone, Cesium, nGeohash, CesiumVectorData) {
+  "models/maps/Geohash",
+  "collections/maps/Geohashes"
+
+], function ($, _, Backbone, Cesium, CesiumVectorData, Geohash, Geohashes) {
   /**
    * @classdesc A Geohash Model represents a geohash layer in a map.
    * @classcategory Models/Maps/Assets
@@ -45,11 +47,7 @@ define([
         return Object.assign(CesiumVectorData.prototype.defaults(), {
           type: "GeoJsonDataSource",
           label: "Geohashes",
-          counts: [],
-          // TODO: split this into geohashIDs and counts. Maybe make totalCount
-          // optional, so we can calculate from counts if needed.
-          totalCount: 0,
-          geohashes: [],
+          geohashes: new Geohashes(),
           opacity: 0.5,
         });
       },
@@ -73,13 +71,17 @@ define([
         }
       },
 
+      limitToMapExtent: function () {
+        // TODO
+      },
+
       /**
        * Stop the model from listening to itself for changes in the counts or
        * geohashes.
        */
       stopListeners: function () {
-        this.stopListening(this, "change:counts");
         this.stopListening(this, "change:geohashes");
+        this.stopListening(this.get("geohashes"), "change");
       },
 
       /**
@@ -88,8 +90,12 @@ define([
       startListening: function () {
         try {
           this.stopListeners();
-          this.listenTo(this, "change:counts", this.updateGeohashes);
           this.listenTo(this, "change:geohashes", function () {
+            this.stopListeners();
+            this.startListening();
+            this.createCesiumModel(true);
+          });
+          this.listenTo(this.get("geohashes"), "change", function () {
             this.createCesiumModel(true);
           });
         } catch (error) {
@@ -97,88 +103,88 @@ define([
         }
       },
 
-      /**
-       * Get the counts currently set on this model and create the geohash array
-       * [{ counts, id, bounds}]. Set this array on the model, which will
-       * trigger the cesiumModel to re-render.
-       */
-      updateGeohashes: function () {
-        try {
-          // Counts are formatted as [geohash, count, geohash, count, ...]
-          const counts = this.get("counts");
-          const geohashes = [];
-          for (let i = 0; i < counts.length; i += 2) {
-            const id = counts[i];
-            geohashes.push({
-              id: id,
-              count: counts[i + 1],
-              bounds: nGeohash.decode_bbox(id),
-            });
-          }
-          this.set("geohashes", geohashes);
-          this.createCesiumModel(true);
-        } catch (error) {
-          console.log("Failed to update geohashes in CesiumGeohash", error);
-        }
-      },
+      // /**
+      //  * Get the counts currently set on this model and create the geohash array
+      //  * [{ counts, id, bounds}]. Set this array on the model, which will
+      //  * trigger the cesiumModel to re-render.
+      //  */
+      // updateGeohashes: function () {
+      //   try {
+      //     // Counts are formatted as [geohash, count, geohash, count, ...]
+      //     // const counts = this.get("counts");
+      //     const geohashes = [];
+      //     for (let i = 0; i < counts.length; i += 2) {
+      //       const id = counts[i];
+      //       geohashes.push({
+      //         id: id,
+      //         count: counts[i + 1],
+      //         bounds: nGeohash.decode_bbox(id),
+      //       });
+      //     }
+      //     this.set("geohashes", geohashes);
+      //     this.createCesiumModel(true);
+      //   } catch (error) {
+      //     console.log("Failed to update geohashes in CesiumGeohash", error);
+      //   }
+      // },
 
-      /**
-       * Given the geohashes set on the model, return as geoJSON
-       * @returns {object} GeoJSON representing the geohashes with counts
-       */
-      toGeoJSON: function () {
-        try {
-          // The base GeoJSON format
-          const geojson = {
-            type: "FeatureCollection",
-            features: [],
-          };
-          const geohashes = this.get("geohashes");
-          if (!geohashes) {
-            return geojson;
-          }
-          const features = [];
-          // Format for geohashes:
-          // [{ counts, id, bounds}]
-          geohashes.forEach((geohash) => {
-            const bb = geohash.bounds;
-            const id = geohash.id;
-            const count = geohash.count;
-            const minlat = bb[0] <= -90 ? -89.99999 : bb[0];
-            const minlon = bb[1];
-            const maxlat = bb[2];
-            const maxlon = bb[3];
-            const feature = {
-              type: "Feature",
-              geometry: {
-                type: "Polygon",
-                coordinates: [
-                  [
-                    [minlon, minlat],
-                    [minlon, maxlat],
-                    [maxlon, maxlat],
-                    [maxlon, minlat],
-                    [minlon, minlat],
-                  ],
-                ],
-              },
-              properties: {
-                "count": count,
-                geohash: id,
-              },
-            };
-            features.push(feature);
-          })
-          geojson["features"] = features;
-          return geojson;
-        } catch (error) {
-          console.log(
-            "There was an error converting geohashes to GeoJSON " +
-              "in a CesiumGeohash model. Error details: ",
-            error
-          );
-        }
-      },
+      // /**
+      //  * Given the geohashes set on the model, return as geoJSON
+      //  * @returns {object} GeoJSON representing the geohashes with counts
+      //  */
+      // toGeoJSON: function () {
+      //   try {
+      //     // The base GeoJSON format
+      //     const geojson = {
+      //       type: "FeatureCollection",
+      //       features: [],
+      //     };
+      //     const geohashes = this.get("geohashes");
+      //     if (!geohashes) {
+      //       return geojson;
+      //     }
+      //     const features = [];
+      //     // Format for geohashes:
+      //     // [{ counts, id, bounds}]
+      //     geohashes.forEach((geohash) => {
+      //       const bb = geohash.bounds;
+      //       const id = geohash.id;
+      //       const count = geohash.count;
+      //       const minlat = bb[0] <= -90 ? -89.99999 : bb[0];
+      //       const minlon = bb[1];
+      //       const maxlat = bb[2];
+      //       const maxlon = bb[3];
+      //       const feature = {
+      //         type: "Feature",
+      //         geometry: {
+      //           type: "Polygon",
+      //           coordinates: [
+      //             [
+      //               [minlon, minlat],
+      //               [minlon, maxlat],
+      //               [maxlon, maxlat],
+      //               [maxlon, minlat],
+      //               [minlon, minlat],
+      //             ],
+      //           ],
+      //         },
+      //         properties: {
+      //           "count": count,
+      //           geohash: id,
+      //         },
+      //       };
+      //       features.push(feature);
+      //     })
+      //     geojson["features"] = features;
+      //     return geojson;
+      //   } catch (error) {
+      //     console.log(
+      //       "There was an error converting geohashes to GeoJSON " +
+      //         "in a CesiumGeohash model. Error details: ",
+      //       error
+      //     );
+      //   }
+      // },
 
       /**
        * Creates a Cesium.DataSource model and sets it to this model's
@@ -194,7 +200,7 @@ define([
           const model = this;
           // Set the GeoJSON representing geohashes on the model
           const cesiumOptions = model.get("cesiumOptions");
-          cesiumOptions["data"] = model.toGeoJSON();
+          cesiumOptions["data"] = this.get("geohashes")?.toGeoJSON();
           // TODO: outlines don't work when features are clamped to ground
           // cesiumOptions['clampToGround'] = true
           cesiumOptions["height"] = 0;

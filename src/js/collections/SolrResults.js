@@ -121,6 +121,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
       //Get the facet counts and store them in this model
       if( solr.facet_counts ){
         this.facetCounts = solr.facet_counts.facet_fields;
+      } else {
+        this.facetCounts = "nothing";
       }
 
       //Cache this set of results

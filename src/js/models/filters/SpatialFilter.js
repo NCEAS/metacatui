@@ -2,9 +2,10 @@ define([
   "underscore",
   "jquery",
   "backbone",
-  "nGeohash",
   "models/filters/Filter",
-], function (_, $, Backbone, nGeohash, Filter) {
+  "models/maps/Geohash",
+  "collections/maps/Geohashes",
+], function (_, $, Backbone, Filter, Geohash, Geohashes) {
   /**
    * @classdesc A SpatialFilter represents a spatial constraint on the query to be executed,
    * and stores the geohash strings for all of the geohash tiles that coincide with the
@@ -23,6 +24,7 @@ define([
       type: "SpatialFilter",
 
       /**
+       * TODO: Fix these docs
        * Inherits all default properties of {@link Filter}
        * @property {string[]} geohashes - The array of geohashes used to spatially constrain the search
        * @property {object} groupedGeohashes -The same geohash values, grouped by geohash level (e.g. 1,2,3...). Complete geohash groups (of 32) are consolidated to the level above.
@@ -42,23 +44,12 @@ define([
           north: null,
           south: null,
           height: null,
-          level: null,
-          maxGeohashes: 1000,
-          // groupedGeohashes: {},
           fields: ["geohash_1"],
           label: "Limit search to the map area",
           icon: "globe",
           operator: "OR",
           fieldsOperator: "OR",
           matchSubstring: false,
-          levelHeightMap: {
-            1: 6800000,
-            2: 2400000,
-            3: 550000,
-            4: 120000,
-            5: 7000,
-            6: 0,
-          },
         });
       },
 
@@ -67,10 +58,39 @@ define([
        */
       initialize: function (attributes, options) {
         Filter.prototype.initialize.call(this, attributes, options);
+        this.setUpGeohashCollection();
+        this.update();
+        this.setListeners();
+      },
+
+      setUpGeohashCollection: function () {
+        this.set("geohashCollection", new Geohashes());
+      },
+
+      setListeners: function () {
         this.listenTo(
           this,
-          "change:height change:north change:south change:east",
-          this.updateGeohashes
+          "change:height change:north change:south change:east change:west",
+          this.update
+        );
+      },
+
+      update: function () {
+        this.updateGeohashCollection();
+        this.updateFilter();
+      },
+
+      updateGeohashCollection: function () {
+        const gCollection = this.get("geohashCollection");
+        gCollection.addGeohashesByExtent(
+          (bounds = {
+            north: this.get("north"),
+            south: this.get("south"),
+            east: this.get("east"),
+            west: this.get("west"),
+          }),
+          (height = this.get("height")),
+          (overwrite = true)
         );
       },
 
@@ -78,90 +98,27 @@ define([
        * Update the level, fields, geohashes, and values on the model, according
        * to the current height, north, south and east attributes.
        */
-      updateGeohashes: function () {
+      updateFilter: function () {
         try {
-          const height = this.get("height");
-          const limit = this.get("maxGeohashes");
-          const bounds = {
-            north: this.get("north"),
-            south: this.get("south"),
-            east: this.get("east"),
-            west: this.get("west"),
-          };
-          let level = this.getGeohashLevel(height);
-          let geohashIDs = this.getGeohashIDs(bounds, level);
-          if (limit && geohashIDs.length > limit && level > 1) {
-            while (geohashIDs.length > limit && level > 1) {
-              level--;
-              geohashIDs = this.getGeohashIDs(bounds, level);
-            }
-          }
-          this.set("level", level);
-          this.set("fields", ["geohash_" + level]);
-          this.set("geohashes", geohashIDs);
-          this.set("values", geohashIDs);
+          const levels = this.getGeohashLevels().forEach((lvl) => {
+            return "geohash_" + lvl;
+          });
+          const IDs = this.getGeohashIDs();
+          this.set("fields", levels);
+          this.set("values", IDs);
         } catch (e) {
           console.log("Failed to update geohashes" + e);
         }
       },
 
-      /**
-       * Get the geohash level to use for a given height.
-       * 
-       * @param {number} [height] - Altitude to use to calculate the geohash
-       * level/precision.
-       */
-      getGeohashLevel: function (height) {
-        try {
-          const levelHeightMap = this.get("levelHeightMap");
-          return Object.keys(levelHeightMap).find(
-            (key) => height >= levelHeightMap[key]
-          );
-        } catch (e) {
-          console.log("Failed to get geohash level, returning 1" + e);
-          return 1;
-        }
+      getGeohashLevels: function () {
+        const gCollection = this.get("geohashCollection");
+        return gCollection.getLevels();
       },
 
-      /**
-       * Retrieves the geohash IDs for the provided bounding boxes and level.
-       *
-       * @param {Object} bounds - Bounding box with north, south, east, and west
-       * properties.
-       * @param {number} level - Geohash level.
-       * @returns {string[]} Array of geohash IDs.
-       */
-      getGeohashIDs: function (bounds, level) {
-        let geohashIDs = [];
-        bounds = this.splitBoundingBox(bounds);
-        bounds.forEach(function (bb) {
-          geohashIDs = geohashIDs.concat(
-            nGeohash.bboxes(bb.south, bb.west, bb.north, bb.east, level)
-          );
-        });
-        return geohashIDs;
-      },
-
-      /**
-       * Splits the bounding box if it crosses the prime meridian. Returns an
-       * array of bounding boxes.
-       *
-       * @param {Object} bounds - Bounding box object with north, south, east,
-       * and west properties.
-       * @returns {Array<Object>} Array of bounding box objects.
-       * @since x.x.x
-       */
-      splitBoundingBox: function (bounds) {
-        const { north, south, east, west } = bounds;
-
-        if (east < west) {
-          return [
-            { north, south, east: 180, west },
-            { north, south, east, west: -180 },
-          ];
-        } else {
-          return [{ north, south, east, west }];
-        }
+      getGeohashIDs: function () {
+        const gCollection = this.get("geohashCollection");
+        return gCollection.getGeohashIDs();
       },
 
       // TODO: Use the `groupGeohashes` function to consolidate geohashes into

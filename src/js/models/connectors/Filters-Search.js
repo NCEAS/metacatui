@@ -82,7 +82,6 @@ define([
        */
       connect: function () {
         this.disconnect();
-        const model = this;
         const filters = this.get("filters");
         const searchResults = this.get("searchResults");
         // Listen to changes in the Filters to trigger a search

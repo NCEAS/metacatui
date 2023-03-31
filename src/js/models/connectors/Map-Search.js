@@ -74,7 +74,6 @@ define([
        * there is no Map model set on this model.
        */
       findLayers: function () {
-        const model = this;
         const map = this.get("map");
         if (!map) return null;
         return map.get("layers");
@@ -97,9 +96,8 @@ define([
        * @fires Layers#add
        */
       createGeohash() {
-        const layers = this.get("layers");
-        if (!layers) return null;
-        return layers.addGeohashLayer();
+        const map = this.get("map");
+        return map.addLayer({ type: "CesiumGeohash" });
       },
 
       /**
@@ -140,6 +138,9 @@ define([
         this.disconnect();
         const searchResults = this.get("searchResults");
         this.listenTo(searchResults, "reset", this.updateGeohashCounts);
+        // TODO: ‼️ The map needs to send the height/geohash level to the search.
+        // and set the facet (so that the results include counts for each
+        // geohash at the current level). ‼️
         this.set("isConnected", true);
       },
 

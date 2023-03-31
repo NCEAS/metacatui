@@ -249,6 +249,13 @@ define([
         const connectors = this.getConnectors();
         return connectors.every((connector) => connector.get("isConnected"));
       },
+
+      /**
+       * Remove the spatial filter from the Filters model.
+       */
+      removeSpatialFilter: function () {
+        this.get("filtersMapConnector").removeSpatialFilter();
+      }
     }
   );
 });

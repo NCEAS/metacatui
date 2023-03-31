@@ -192,22 +192,24 @@ define([
       },
 
       /**
-       * Add a new Geohash layer to the collection.
-       * @param {MapConfig#MapAssetConfig} assetConfig - Configuration object
-       * for the Geohash layer (optional).
+       * Add a new MapAsset model to this collection. This is useful if adding
+       * the collection from a Map model, since this method will attach the Map
+       * model to the MapAsset model.
+       * @param {MapConfig#MapAssetConfig | MapAsset } asset - The configuration
+       * object for the MapAsset model, or the MapAsset model itself.
+       * @param {MapModel} [mapModel] - The Map model that contains this
+       * collection. This is optional, but if provided, it will be attached to
+       * the MapAsset model.
+       * @returns {MapAsset} - Returns the MapAsset model that was added to the
+       * collection.
        */
-      addGeohashLayer: function (assetConfig) {
+      addAsset: function (asset, mapModel) {
         try {
-          const config = Object.assign({}, assetConfig, {
-            type: "CesiumGeohash",
-          });
-          return this.add(config);
-        } catch (error) {
-          console.log(
-            "Failed to add a geohash layer to a MapAssets collection" +
-              ". Error details: " +
-              error
-          );
+          const newModel = this.add(asset);
+          if (mapModel) newModel.set("mapModel", mapModel);
+          return newModel;
+        } catch (e) {
+          console.log("Failed to add a layer to a MapAssets collection", e);
         }
       },
     }

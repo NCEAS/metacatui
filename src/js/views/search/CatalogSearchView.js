@@ -82,6 +82,15 @@ define([
       mode: "map",
 
       /**
+       * Whether to limit the search to the extent of the map. If true, the
+       * search will update when the user pans or zooms the map.
+       * @type {boolean}
+       * @since x.x.x
+       * @default true
+       */
+      limitSearchToMapArea: true,
+
+      /**
        * The View that displays the search results. The render method will be
        * attach the search results view to the
        * {@link CatalogSearchView#searchResultsContainer} element and will add
@@ -179,6 +188,7 @@ define([
        */
       events: {
         "click .map-toggle-container": "toggleMode",
+        "click .toggle-map-filter": "toggleMapFilter",
       },
 
       /**
@@ -611,6 +621,36 @@ define([
         } catch (e) {
           console.error("Couldn't toggle search mode. ", e);
         }
+      },
+
+      /**
+       * Toggles the map filter on and off
+       * @param {boolean} newSetting - Optionally provide the desired new mode
+       * to switch to. true = limit search to map area, false = do not limit
+       * search to map area. If not provided, the opposite of the current mode
+       * will be used.
+       */
+      toggleMapFilter: function (newSetting) {
+        // Make sure the new setting is a boolean
+        newSetting =
+          typeof newSetting != "boolean"
+            ? !this.limitSearchToMapArea // the opposite of the current mode
+            : newSetting; // the provided new mode if it is a boolean
+
+        if (newSetting) {
+          // If true, then the filter should be ON
+          // this.model.connectMap();
+          // TODO
+        } else {
+          // If false, then the filter should be OFF
+          // this.model.disconnectMap();
+          this.model.removeSpatialFilter();
+          // TODO: We still need to set the facet (current geohash level) on
+          // the SolrResults model before we send the query. This is how we
+          // get the resulting counts to display on the map.
+        }
+
+        this.limitSearchToMapArea = newSetting;
       },
 
       /**

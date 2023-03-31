@@ -2,9 +2,8 @@
 define([
   "backbone",
   "collections/Filters",
-  "models/filters/SpatialFilter",
   "models/maps/Map",
-], function (Backbone, Filters, SpatialFilter, Map) {
+], function (Backbone, Filters, Map) {
   "use strict";
 
   /**
@@ -38,7 +37,6 @@ define([
        */
       defaults: function () {
         return {
-          filtersList: [],
           filters: new Filters([], { catalogSearch: true }),
           spatialFilters: [],
           map: new Map(),
@@ -59,21 +57,10 @@ define([
        */
       initialize: function (attr, options) {
         try {
-          this.addFiltersList();
           const add = options?.addSpatialFilter ?? true;
           this.findAndSetSpatialFilters(add);
         } catch (e) {
           console.log("Error initializing Filters-Map connector: ", e);
-        }
-      },
-
-      /**
-       * Adds the filter models from filtersList to the Filters collection if
-       * filtersList is not empty.
-       */
-      addFiltersList: function () {
-        if (this.get("filtersList")?.length) {
-          this.get("filters").add(this.get("filtersList"));
         }
       },
 
@@ -128,10 +115,26 @@ define([
       addSpatialFilterIfNeeded: function (add) {
         const spatialFilters = this.get("spatialFilters");
         if (!spatialFilters?.length && add) {
-          this.get("filters").add(new SpatialFilter({
+          this.get("filters").add({
+            filterType: "SpatialFilter",
             isInvisible: true,
-          }));
+          });
         }
+      },
+
+      /**
+       * Removes all SpatialFilter models from the Filters collection and
+       * destroys them.
+       */
+      removeSpatialFilter: function () {
+        const spatialFilters = this.get("spatialFilters");
+        if (spatialFilters?.length) {
+          spatialFilters.forEach((filter) => {
+            filter.collection.remove(filter);
+            filter.destroy();
+          });
+        }
+        this.set("spatialFilters", []);
       },
 
       /**
