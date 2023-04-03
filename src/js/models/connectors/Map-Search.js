@@ -97,7 +97,7 @@ define([
        */
       createGeohash() {
         const map = this.get("map");
-        return map.addLayer({ type: "CesiumGeohash" });
+        return map.addAsset({ type: "CesiumGeohash" });
       },
 
       /**
@@ -125,7 +125,7 @@ define([
         // be added to the Layers collection, then try to find it again.
         if (!geohash) {
           this.listenToOnce(layers, "add", this.findAndSetGeohashLayer);
-          return
+          return;
         }
         return geohash;
       },
@@ -137,10 +137,9 @@ define([
       connect: function () {
         this.disconnect();
         const searchResults = this.get("searchResults");
+        const map = this.get("map");
         this.listenTo(searchResults, "reset", this.updateGeohashCounts);
-        // TODO: ‼️ The map needs to send the height/geohash level to the search.
-        // and set the facet (so that the results include counts for each
-        // geohash at the current level). ‼️
+        this.listenTo(map, "change:currentViewExtent", this.updateFacet);
         this.set("isConnected", true);
       },
 
@@ -149,9 +148,61 @@ define([
        * results collection.
        */
       disconnect: function () {
+        const map = this.get("map");
         const searchResults = this.get("searchResults");
         this.stopListening(searchResults, "reset");
+        this.stopListening(map, "change:currentViewExtent");
         this.set("isConnected", false);
+      },
+
+      /**
+       * Given the counts results in the format returned by the SolrResults
+       * model, return an array of objects with a geohash and a count property,
+       * formatted for the CesiumGeohash layer.
+       * @param {Array} counts - The facet counts from the SolrResults model.
+       * Given as an array of alternating keys and values.
+       * @returns {Array} An array of objects with a geohash and a count
+       * property.
+       */
+      facetCountsToGeohashAttrs: function (counts) {
+        if (!counts) return [];
+        const props = [];
+        for (let i = 0; i < counts.length; i += 2) {
+          props.push({
+            geohash: counts[i],
+            properties: {
+              count: counts[i + 1],
+            },
+          });
+        }
+        return props;
+      },
+
+      /**
+       * Look in the Search results for the facet counts for the Geohash layer.
+       * @returns {Array} An array of objects with a geohash and a count
+       * property or null if there are no Search results or no facet counts.
+       */
+      getGeohashCounts: function () {
+        const searchResults = this.get("searchResults");
+        const facetCounts = searchResults?.facetCounts;
+        if (!facetCounts) return null;
+        const geohashFacets = Object.keys(facetCounts).filter((key) =>
+          key.startsWith("geohash_")
+        );
+        return geohashFacets.flatMap((key) => facetCounts[key]);
+      },
+
+      /**
+       * Get the total number of results from the Search results.
+       * @returns {number} The total number of results or null if there are no
+       * Search results.
+       * TODO: This is not currently used, but it could be used to set a
+       * totalCount property on the Geohash layer, and scale the colors based
+       * on this max.
+       */
+      getTotalNumberOfResults: function () {
+        return this.get("searchResults")?.getNumFound();
       },
 
       /**
@@ -162,25 +213,26 @@ define([
        */
       updateGeohashCounts: function () {
         const geohashLayer = this.get("geohashLayer");
+        const counts = this.getGeohashCounts();
+        const modelAttrs = this.facetCountsToGeohashAttrs(counts);
+        // const totalCount = this.getTotalNumberOfResults(); // TODO
+        geohashLayer.resetGeohashes(modelAttrs);
+      },
+
+      /**
+       * Update the facet on the Search results to match the current Geohash
+       * level.
+       * @fires SolrResults#change:facet
+       */
+      updateFacet: function () {
         const searchResults = this.get("searchResults");
-
-        if(!geohashLayer || !searchResults) return;
-
-        const facetCounts = searchResults.facetCounts;
-
-        // Get every facet that begins with "geohash_"
-        const geohashFacets = Object.keys(facetCounts).filter((key) =>
-          key.startsWith("geohash_")
-        );
-
-        // Flatten counts from geohashFacets
-        const allCounts = geohashFacets.flatMap((key) => facetCounts[key]);
-
-        const totalFound = searchResults.getNumFound();
-
-        // Set the new geohash facet counts on the Map MapAsset
-        geohashLayer.set("counts", allCounts);
-        geohashLayer.set("totalCount", totalFound);
+        const geohashLayer = this.get("geohashLayer");
+        const geohashLevels = geohashLayer.getLevels();
+        if (geohashLevels && geohashLevels.length) {
+          searchResults.setFacet(`geohash_${geohashLevels[0]}`);
+        } else {
+          searchResults.setFacet(null);
+        }
       },
     }
   );

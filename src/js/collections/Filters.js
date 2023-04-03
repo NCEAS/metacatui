@@ -344,11 +344,9 @@ define([
           else {
             return "";
           }
-        } catch (error) {
+        } catch (e) {
           console.log(
-            "Error creating a group query, returning a blank string. " +
-              " Error details: " +
-              error
+            "Error creating a group query, returning a blank string. ", e
           );
           return "";
         }

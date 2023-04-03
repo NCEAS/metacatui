@@ -30,6 +30,21 @@ define([
        */
       model: Geohash,
 
+      /**
+       * Add a comparator to sort the geohashes by length.
+       * @param {Geohash} model - Geohash model to compare.
+       * @returns {number} Length of the geohash.
+       */
+      comparator: function (model) {
+        return model.get("geohash")?.length || 0;
+      },
+
+      /**
+       * Get the geohash level to use for a given height.
+       * @param {number} [height] - Altitude to use to calculate the geohash
+       * level/precision, in meters.
+       * @returns {number} Geohash level.
+       */
       getLevelHeightMap: function () {
         return {
           1: 6800000,
@@ -128,12 +143,85 @@ define([
       },
 
       /**
+       * Get a subset of geohashes from this collection that are within the
+       * provided bounding box.
+       * @param {Object} bounds - Bounding box with north, south, east, and west
+       * properties.
+       * @returns {Geohashes} Subset of geohashes.
+       */
+      getSubsetByBounds: function (bounds) {
+        const levels = this.getLevels();
+        const hashes = [];
+        levels.forEach((level) => {
+          hashes = hashes.concat(this.getGeohashIDs(bounds, level));
+        });
+        const geohashes = this.filter((geohash) => {
+          return hashes.includes(geohash.get("geohash"));
+        });
+        return new Geohashes(geohashes);
+      },
+
+      /**
+       * Check if a geohash is in the collection. This will only consider
+       * geohash IDs, not properties or any other attributes on the Geohash
+       * models.
+       * @param {Geohash} target - Geohash model or geohash hashstring.
+       * @returns {boolean} Whether the geohash is in the collection.
+       */
+      includes: function (geohash) {
+        const allHashes = this.getGeohashIDs();
+        const geohashID =
+          geohash instanceof Geohash ? geohash.get("geohash") : geohash;
+        return allHashes.includes(geohashID);
+      },
+
+      /**
+       * Determine if a set of geohashes can be merged into a single geohash.
+       * They can be merged if all of the child geohashes are in the collection.
+       * @param {Geohashes} geohashes - Geohashes collection.
+       * @param {Geohash} target - Geohash model.
+       * @returns {boolean} Whether the geohashes can be merged.
+       */
+      canMerge: function (geohashes, target) {
+        const children = target.getChildGeohashes();
+        return children.every((child) => geohashes.includes(child));
+      },
+
+      /**
+       * Reduce the set of Geohashes to the minimal set of Geohashes that
+       * completely cover the same area as the current set. Warning: this will
+       * remove any properties or attributes from the returned Geohash models.
+       * @returns {Geohashes} A new Geohashes collection.
+       */
+      getMerged: function () {
+        // We will merge recursively, so we need to make a copy of the
+        // collection.
+        const geohashes = this.clone();
+        let changed = true;
+        while (changed) {
+          changed = false;
+          geohashes.sort();
+          for (let i = 0; i < geohashes.length; i++) {
+            const target = geohashes.at(i);
+            if (this.canMerge(geohashes, target)) {
+              const parent = target.getParentGeohash();
+              const children = target.getChildGeohashes();
+              geohashes.remove(children);
+              geohashes.add(parent);
+              changed = true;
+              break;
+            }
+          }
+        }
+        return geohashes;
+      },
+
+      /**
        * Get the unique geohash levels for all geohashes in the collection.
        */
       getLevels: function () {
-        return _.uniq(this.pluck("level"));
+        return Array.from(new Set(this.map((geohash) => geohash.get("level"))));
       },
-
       /**
        * Return the geohashes as a GeoJSON FeatureCollection, where each
        * geohash is represented as a GeoJSON Polygon (rectangle).
