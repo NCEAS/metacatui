@@ -357,8 +357,43 @@ define([
                 this.$el.find('#data-package-table-body').html(''); // clear the table first
                 this.dataPackage.sort();
                 var atLocationObj = this.dataPackage.getAtLocation();
+                var filePathObj;
                 this.atLocationObj = atLocationObj;
-                this.dataPackage.each(this.addOne, this);
+
+                // form path to D1 object dictionary
+                if (this.atLocationObj !== undefined) {
+                    var filePathObj = new Object();
+                    
+                    for (let key of Object.keys(this.atLocationObj)) {
+                        // console.log(key, this.atLocationObj[key]);
+                        var path = this.atLocationObj[key];
+                        var pathArray = path.split('/');
+                        pathArray.pop();
+                        var parentPath = pathArray.join("/");
+                        if (filePathObj.hasOwnProperty(parentPath)) {
+                            filePathObj[parentPath].push(key);
+                        }
+                        else {
+                            filePathObj[parentPath] = new Array();
+                            filePathObj[parentPath].push(key);
+                        }
+                    }
+                }
+
+                if (this.atLocationObj !== undefined && filePathObj !== undefined) {
+                    // sort the filePath by length
+                    var sortedFilePathObj = Object.keys(filePathObj).sort().reduce(
+                        (obj, key) => { 
+                          obj[key] = filePathObj[key]; 
+                          return obj;
+                        }, 
+                        {}
+                    );
+                }
+                else {
+                    this.dataPackage.each(this.addOne, this);
+                }
+                
 
             },
 
