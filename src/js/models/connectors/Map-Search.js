@@ -95,7 +95,7 @@ define([
        * Layers collection set on this model.
        * @fires Layers#add
        */
-      createGeohash() {
+      createGeohash: function() {
         const map = this.get("map");
         return map.addAsset({ type: "CesiumGeohash" });
       },
@@ -216,7 +216,7 @@ define([
         const counts = this.getGeohashCounts();
         const modelAttrs = this.facetCountsToGeohashAttrs(counts);
         // const totalCount = this.getTotalNumberOfResults(); // TODO
-        geohashLayer.resetGeohashes(modelAttrs);
+        geohashLayer.replaceGeohashes(modelAttrs);
       },
 
       /**
@@ -227,9 +227,9 @@ define([
       updateFacet: function () {
         const searchResults = this.get("searchResults");
         const geohashLayer = this.get("geohashLayer");
-        const geohashLevels = geohashLayer.getLevels();
-        if (geohashLevels && geohashLevels.length) {
-          searchResults.setFacet(`geohash_${geohashLevels[0]}`);
+        const precision = geohashLayer.getPrecision();
+        if (precision && typeof Number(precision) === "number") {
+          searchResults.setFacet([`geohash_${precision}`]);
         } else {
           searchResults.setFacet(null);
         }

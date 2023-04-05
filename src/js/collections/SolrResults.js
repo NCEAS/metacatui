@@ -119,7 +119,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
       this.header.set({"rows" : solr.responseHeader.params.rows});
 
       //Get the facet counts and store them in this model
-      if( solr.facet_counts ){
+      if (solr.facet_counts) {
         this.facetCounts = solr.facet_counts.facet_fields;
       } else {
         this.facetCounts = "nothing";
@@ -233,7 +233,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
       this.trigger("change:sort");
     },
 
-    setFacet: function(fields) {
+    setFacet: function (fields) {
+      if (!Array.isArray(fields)) {
+        fields = [fields];
+      }
       this.facet = fields;
       this.trigger("change:facet");
     },

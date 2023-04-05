@@ -185,7 +185,8 @@ define([
           }
 
           spatialFilters.forEach((spFilter) => {
-            spFilter.set(extent);
+            spFilter.set(extent, { silent: true });
+            spFilter.trigger("change:height");
           });
         } catch (e) {
           console.log("Error updating spatial filters: ", e);

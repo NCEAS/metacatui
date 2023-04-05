@@ -7,8 +7,7 @@ define([
   "cesium",
   "models/maps/assets/CesiumVectorData",
   "models/maps/Geohash",
-  "collections/maps/Geohashes"
-
+  "collections/maps/Geohashes",
 ], function ($, _, Backbone, Cesium, CesiumVectorData, Geohash, Geohashes) {
   /**
    * @classdesc A Geohash Model represents a geohash layer in a map.
@@ -33,11 +32,12 @@ define([
        * @name CesiumGeohash#defaults
        * @type {Object}
        * @extends CesiumVectorData#defaults
-       * @property {'CesiumGeohash'} type The format of the data. Must be
-       * 'CesiumGeohash'.
-       * // TODO
+       * @property {'CesiumGeohash'} type The format of the data.
+       * @property {string} label The label for the layer.
+       * @property {Geohashes} geohashes The collection of geohashes to display
+       * on the map.
+       * @property {number} opacity The opacity of the layer.
        */
-
       defaults: function () {
         return Object.assign(CesiumVectorData.prototype.defaults(), {
           type: "GeoJsonDataSource",
@@ -66,11 +66,29 @@ define([
         }
       },
 
-      getLevels: function () {
-        return this.get("geohashes").getLevels();
+      /**
+       * Get the associated precision level for the current camera height.
+       * Required that a mapModel be set on the model. If one is not set, then
+       * the minimum precision from the geohash collection will be returned.
+       * @returns {number} The precision level.
+       */
+      getPrecision: function () {
+        try {
+          const height = this.get("mapModel").get("currentViewExtent").height;
+          return this.get("geohashes").heightToPrecision(height);
+        } catch (e) {
+          const precisions = this.get("geohashes").getPrecisions();
+          return Math.min(...precisions);
+        }
       },
 
-      resetGeohashes: function (geohashes) {
+      /**
+       * Replace the collection of geohashes to display on the map with a new
+       * set.
+       * @param {Geohash[]|Object[]} geohashes The new set of geohash models to
+       * display or attributes for the new geohash models.
+       */
+      replaceGeohashes: function (geohashes) {
         this.get("geohashes").reset(geohashes);
       },
 
@@ -97,9 +115,13 @@ define([
           this.listenTo(this.get("geohashes"), "change", function () {
             this.createCesiumModel(true);
           });
-          this.listenTo(this.get("mapModel"), "change:currentExtent", function () {
-            this.createCesiumModel(true);
-          });
+          this.listenTo(
+            this.get("mapModel"),
+            "change:currentExtent",
+            function () {
+              this.createCesiumModel(true);
+            }
+          );
         } catch (error) {
           console.log("Failed to set listeners in CesiumGeohash", error);
         }
@@ -107,11 +129,11 @@ define([
 
       /**
        * Returns the GeoJSON representation of the geohashes.
-       * @param {Boolean} [limitToExtent = true] - Set to false to return
-       * the GeoJSON for all geohashes, not just those in the current extent.
+       * @param {Boolean} [limitToExtent = true] - Set to false to return the
+       * GeoJSON for all geohashes, not just those in the current extent.
        * @returns {Object} The GeoJSON representation of the geohashes.
        */
-      getGeoJson: function (limitToExtent = true) {
+      getGeoJSON: function (limitToExtent = true) {
         if (!limitToExtent) {
           return this.get("geohashes")?.toGeoJSON();
         }
@@ -119,17 +141,17 @@ define([
         // copy it and delete the height attr
         const bounds = Object.assign({}, extent);
         delete bounds.height;
-        return this.get("geohashes")?.getSubsetByBounds(bounds)?.toGeoJSON()
+        return this.get("geohashes")?.getSubsetByBounds(bounds)?.toGeoJSON();
       },
 
       /**
        * Creates a Cesium.DataSource model and sets it to this model's
-       * 'cesiumModel' attribute. This cesiumModel contains all the
-       * information required for Cesium to render the vector data. See
+       * 'cesiumModel' attribute. This cesiumModel contains all the information
+       * required for Cesium to render the vector data. See
        * {@link https://cesium.com/learn/cesiumjs/ref-doc/DataSource.html?classFilter=DataSource}
-       * @param {Boolean} [recreate = false] - Set recreate to true to force
-       * the function create the Cesium Model again. Otherwise, if a cesium
-       * model already exists, that is returned instead.
+       * @param {Boolean} [recreate = false] - Set recreate to true to force the
+       * function create the Cesium Model again. Otherwise, if a cesium model
+       * already exists, that is returned instead.
        */
       createCesiumModel: function (recreate = false) {
         try {
@@ -145,7 +167,7 @@ define([
           }
           // Set the GeoJSON representing geohashes on the model
           const cesiumOptions = model.get("cesiumOptions");
-          cesiumOptions["data"] = this.getGeoJson();
+          cesiumOptions["data"] = this.getGeoJSON();
           // TODO: outlines don't work when features are clamped to ground
           // cesiumOptions['clampToGround'] = true
           cesiumOptions["height"] = 0;
@@ -163,3 +185,11 @@ define([
     }
   );
 });
+
+// TODO: consider adding this back in to optionally limit the number of
+// geohashes const limit = this.get("maxGeohashes"); if (limit &&
+// hashStrings.length > limit && level > 1) { while (hashStrings.length > limit
+// && level > 1) { level--; hashStrings = this.getHashStringsByExtent(bounds,
+// level);
+//   }
+// }

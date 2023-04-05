@@ -24,23 +24,25 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
       type: "Geohash",
 
       /**
-       * Default attributes for Geohash models
+       * Default attributes for Geohash models. Note that attributes like
+       * precision, bounds, etc. are all calculated on the fly during the get
+       * method.
        * @name Geohash#defaults
        * @type {Object}
-       * @property {string} geohash The geohash value/ID.
+       * @property {string} hashString The hashString of the geohash.
        * @property {Object} [properties] An object containing arbitrary
        * properties associated with the geohash. (e.g. count values from
        * SolrResults)
        */
       defaults: function () {
         return {
-          geohash: "", // TODO: the proper name for a geohash ID is hashstring or hash. Rename this in all places it is used. Also rename "level" to precision.
+          hashString: "",
           properties: {},
         };
       },
 
       /**
-       * Overwrite the get method to calculate bounds, point, level, and
+       * Overwrite the get method to calculate bounds, point, precision, and
        * arbitrary properties on the fly.
        * @param {string} attr The attribute to get the value of.
        * @returns {*} The value of the attribute.
@@ -48,19 +50,21 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
       get: function (attr) {
         if (attr === "bounds") return this.getBounds();
         if (attr === "point") return this.getPoint();
-        if (attr === "level") return this.getLevel();
+        if (attr === "precision") return this.getPrecision();
         if (attr === "geojson") return this.toGeoJSON();
+        if (attr === "groupID") return this.getGroupID();
         if (this.isProperty(attr)) return this.getProperty(attr);
         return Backbone.Model.prototype.get.call(this, attr);
       },
 
       /**
-       * Checks if the geohash is empty. it is empty if it has no ID set.
-       * @returns {boolean} True if the geohash is empty, false otherwise.
+       * Checks if the geohash is empty. It is considered empty if it has no
+       * hashString set.
+       * @returns {boolean} true if the geohash is empty, false otherwise.
        */
       isEmpty: function () {
-        const geohash = this.get("geohash");
-        return !geohash || geohash.length === 0;
+        const hashString = this.get("hashString");
+        return !hashString || hashString.length === 0;
       },
 
       /**
@@ -82,9 +86,7 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
        */
       getProperty: function (key) {
         if (!key) return null;
-        if (!this.isProperty(key)) {
-          return null;
-        }
+        if (!this.isProperty(key)) return null;
         return this.get("properties")[key];
       },
 
@@ -117,7 +119,7 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
        */
       getBounds: function () {
         if (this.isEmpty()) return null;
-        return nGeohash.decode_bbox(this.get("geohash"));
+        return nGeohash.decode_bbox(this.get("hashString"));
       },
 
       /**
@@ -126,16 +128,16 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
        */
       getPoint: function () {
         if (this.isEmpty()) return null;
-        return nGeohash.decode(this.get("geohash"));
+        return nGeohash.decode(this.get("hashString"));
       },
 
       /**
-       * Get the level of the geohash.
-       * @returns {number|null} The level of the geohash.
+       * Get the precision of the geohash.
+       * @returns {number|null} The precision of the geohash.
        */
-      getLevel: function () {
+      getPrecision: function () {
         if (this.isEmpty()) return null;
-        return this.get("geohash").length;
+        return this.get("hashString").length;
       },
 
       /**
@@ -147,12 +149,14 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
       getChildGeohashes: function (keepProperties = false) {
         if (this.isEmpty()) return null;
         const geohashes = [];
-        const geohash = this.get("geohash");
+        const hashString = this.get("hashString");
         for (let i = 0; i < 32; i++) {
-          geohashes.push(new Geohash({
-            geohash: geohash + i.toString(32),
-            properties: keepProperties ? this.get("properties") : {}
-          }));
+          geohashes.push(
+            new Geohash({
+              hashString: hashString + i.toString(32),
+              properties: keepProperties ? this.get("properties") : {},
+            })
+          );
         }
         return geohashes;
       },
@@ -164,13 +168,32 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
        * @returns {Geohash|null} A Geohash model or null if the geohash is empty.
        */
       getParentGeohash: function (keepProperties = false) {
-        if (this.isEmpty()) return null;
-        const geohash = this.get("geohash");
-        if (geohash.length === 0) return null;
         return new Geohash({
-          geohash: geohash.slice(0, -1),
-          properties: keepProperties ? this.get("properties") : {}
+          hashString: this.getGroupID(),
+          properties: keepProperties ? this.get("properties") : {},
         });
+      },
+
+      /**
+       * Get all geohashes that belong in the same complete group of
+       * 32 geohashes.
+       */
+      getGeohashGroup: function () {
+        if (this.isEmpty()) return null;
+        const parent = this.getParentGeohash();
+        if (!parent) return null;
+        return parent.getChildGeohashes();
+      },
+
+      /**
+       * Get the group ID of the geohash. The group ID is the hashString of the
+       * geohash without the last character, i.e. the hashString of the "parent"
+       * geohash.
+       * @returns {string} The group ID of the geohash.
+       */
+      getGroupID: function () {
+        if (this.isEmpty()) return "";
+        return this.get("hashString").slice(0, -1);
       },
 
       /**
@@ -179,6 +202,8 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
        */
       toGeoJSON: function () {
         const bounds = this.getBounds();
+        const properties = this.get("properties");
+        properties["hashString"] = this.get("hashString");
         if (!bounds) return null;
         return {
           type: "Feature",
@@ -194,7 +219,7 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
               ],
             ],
           },
-          properties: this.get("properties"),
+          properties: properties,
         };
       },
     }

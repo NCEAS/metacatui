@@ -3,13 +3,11 @@ define([
   "jquery",
   "backbone",
   "models/filters/Filter",
-  "collections/Filters",
   "collections/maps/Geohashes",
-], function (_, $, Backbone, Filter, Filters, Geohashes) {
+], function (_, $, Backbone, Filter, Geohashes) {
   /**
-   * @classdesc A SpatialFilter represents a spatial constraint on the query to be executed,
-   * and stores the geohash strings for all of the geohash tiles that coincide with the
-   * search bounding box at the given zoom level.
+   * @classdesc A SpatialFilter represents a spatial constraint on the query to
+   * be executed.
    * @class SpatialFilter
    * @classcategory Models/Filters
    * @name SpatialFilter
@@ -24,27 +22,24 @@ define([
       type: "SpatialFilter",
 
       /**
-       * TODO: Fix these docs
        * Inherits all default properties of {@link Filter}
-       * @property {string[]} geohashes - The array of geohashes used to spatially constrain the search
-       * @property {object} groupedGeohashes -The same geohash values, grouped by geohash level (e.g. 1,2,3...). Complete geohash groups (of 32) are consolidated to the level above.
-       * @property {number} east The easternmost longitude of the represented bounding box
-       * @property {number} west The westernmost longitude of the represented bounding box
-       * @property {number} north The northernmost latitude of the represented bounding box
-       * @property {number} south The southernmost latitude of the represented bounding box
-       * @property {number} geohashLevel The default precision level of the geohash-based search
-       * // TODO update the above
+       * @property {number} east The easternmost longitude of the search area
+       * @property {number} west The westernmost longitude of the search area
+       * @property {number} north The northernmost latitude of the search area
+       * @property {number} south The southernmost latitude of the search area
+       * @property {number} height The height at which to calculate the geohash
+       * precision for the search area
        */
       defaults: function () {
         return _.extend(Filter.prototype.defaults(), {
-          geohashes: [],
           filterType: "SpatialFilter",
-          east: null,
-          west: null,
-          north: null,
-          south: null,
-          height: null,
-          fields: ["geohash_1"],
+          east: 180,
+          west: -180,
+          north: 90,
+          south: -90,
+          height: Infinity,
+          fields: [],
+          values: [],
           label: "Limit search to the map area",
           icon: "globe",
           operator: "OR",
@@ -58,92 +53,187 @@ define([
        */
       initialize: function (attributes, options) {
         Filter.prototype.initialize.call(this, attributes, options);
-        this.setUpGeohashCollection();
-        this.update();
+        if (this.hasCoordinates()) this.updateFilterFromExtent();
         this.setListeners();
       },
 
-      setUpGeohashCollection: function () {
-        this.set("geohashCollection", new Geohashes());
-      },
-
-      setListeners: function () {
-        this.listenTo(
-          this,
-          "change:height change:north change:south change:east change:west",
-          this.update
-        );
-      },
-
-      update: function () {
-        this.updateGeohashCollection();
-        this.updateFilter();
-      },
-
-      updateGeohashCollection: function () {
-        const gCollection = this.get("geohashCollection");
-        gCollection.addGeohashesByExtent(
-          (bounds = {
-            north: this.get("north"),
-            south: this.get("south"),
-            east: this.get("east"),
-            west: this.get("west"),
-          }),
-          (height = this.get("height")),
-          (overwrite = true)
+      /**
+       * Returns true if the filter has a valid set of coordinates
+       * @returns {boolean} True if the filter has coordinates
+       */
+      hasCoordinates: function () {
+        return (
+          typeof this.get("east") === "number" &&
+          typeof this.get("west") === "number" &&
+          typeof this.get("north") === "number" &&
+          typeof this.get("south") === "number"
         );
       },
 
       /**
-       * Update the level, fields, geohashes, and values on the model, according
-       * to the current height, north, south and east attributes.
+       * Validate the coordinates, ensuring that the east and west are not
+       * greater than 180 and that the north and south are not greater than 90.
+       * Coordinates will be adjusted if they are out of bounds.
        */
-      updateFilter: function () {
-        try {
-          const levels = this.getGeohashLevels().forEach((lvl) => {
-            return "geohash_" + lvl;
-          });
-          const IDs = this.getGeohashIDs();
-          this.set("fields", levels);
-          this.set("values", IDs);
-        } catch (e) {
-          console.log("Failed to update geohashes", e);
+      validateCoordinates: function () {
+        if (!this.hasCoordinates()) return;
+        if (this.get("east") > 180) {
+          this.set("east", 180);
+        }
+        if (this.get("west") < -180) {
+          this.set("west", -180);
+        }
+        if (this.get("north") > 90) {
+          this.set("north", 90);
+        }
+        if (this.get("south") < -90) {
+          this.set("south", -90);
+        }
+        if (this.get("east") < this.get("west")) {
+          this.set("east", this.get("west"));
+        }
+        if (this.get("north") < this.get("south")) {
+          this.set("north", this.get("south"));
         }
       },
 
-      getGeohashLevels: function () {
-        const gCollection = this.get("geohashCollection");
-        return gCollection.getLevels();
+      /**
+       * Set a listener that updates the filter when the coordinates & height
+       * change
+       */
+      setListeners: function () {
+        const extentEvents =
+          "change:height change:north change:south change:east change:west";
+        this.stopListening(this, extentEvents);
+        this.listenTo(this, extentEvents, this.updateFilterFromExtent);
       },
 
-      getGeohashIDs: function () {
-        const gCollection = this.get("geohashCollection");
-        return gCollection.getGeohashIDs();
+      /**
+       * Given the current coordinates and height set on the model, update the
+       * fields and values to match the geohashes that cover the area. This will
+       * set a consolidated set of geohashes that cover the area at the
+       * appropriate precision. It will also validate the coordinates to ensure
+       * that they are within the bounds of the map.
+       * @since x.x.x
+       */
+      updateFilterFromExtent: function () {
+        try {
+          this.validateCoordinates();
+          const geohashes = new Geohashes();
+          geohashes.addGeohashesByExtent(
+            (bounds = {
+              north: this.get("north"),
+              south: this.get("south"),
+              east: this.get("east"),
+              west: this.get("west"),
+            }),
+            (height = this.get("height")),
+            (overwrite = true)
+          );
+          geohashes.consolidate();
+          this.set({
+            fields: this.precisionsToFields(geohashes.getPrecisions()),
+            values: geohashes.getAllHashStrings(),
+          });
+        } catch (e) {
+          console.log("Error updating filter from extent", e);
+        }
+      },
+
+      /**
+       * Coverts a geohash precision level to a field name for Solr
+       * @param {number} precision The geohash precision level, e.g. 4
+       * @returns {string} The corresponding field name, e.g. "geohash_4"
+       * @since x.x.x
+       */
+      precisionToField: function (precision) {
+        return precision && !isNaN(precision) ? "geohash_" + precision : null;
+      },
+
+      /**
+       * Converts an array of geohash precision levels to an array of field
+       * names for Solr
+       * @param {number[]} precisions The geohash precision levels, e.g. [4, 5]
+       * @returns {string[]} The corresponding field names, e.g. ["geohash_4",
+       * "geohash_5"]
+       * @since x.x.x
+       */
+      precisionsToFields: function (precisions) {
+        let fields = [];
+        if (precisions && precisions.length) {
+          fields = precisions
+            .map((lvl) => this.precisionToField(lvl))
+            .filter((f) => f);
+        }
+        return fields;
       },
 
       /**
        * Builds a query string that represents this spatial filter
        * @return {string} The query fragment
+       * @since x.x.x
        */
       getQuery: function () {
-        const subset = this.get("geohashCollection").getMerged();
-        const levels = subset.getLevels();
-        if (levels.length <= 1) {
-          // We can use the prototype getQuery method if only one level of
-          // geohash is set on the fields
-          return Filter.prototype.getQuery.call(this);
-        }
-        // Otherwise, we will get a query from a collection of filters, each
-        // one representing a single level of geohash
-        const filters = new Filters();
-        levels.forEach((lvl) => {
-          const filter = new SpatialFilter({
-            fields: ["geohash_" + lvl],
-            values: subset[lvl],
+        try {
+          // Methods in the geohash collection allow us make efficient queries
+          const hashes = this.get("values");
+          const geohashes = new Geohashes(hashes.map((h) => ({ hashString: h })));
+
+          // Don't spatially constrain the search if the geohahes covers the world
+          // or if there are no geohashes
+          if (geohashes.coversEarth() || geohashes.length === 0) {
+            return "";
+          }
+
+          // Merge into the minimal num. of geohashes to reduce query size
+          geohashes.consolidate();
+          const precisions = geohashes.getPrecisions();
+
+          // Just use a regular Filter if there is only one level of geohash
+          if (precisions.length === 1) {
+            return this.createBaseFilter(
+              precisions,
+              geohashes.getAllHashStrings()
+            ).getQuery();
+          }
+
+          // Make a query fragment that ORs together all the geohashes at each
+          // precision level
+          const Filters = require("collections/Filters");
+          const filters = new Filters();
+          precisions.forEach((precision) => {
+            if (precision) {
+              filters.add(
+                this.createBaseFilter(
+                  [precision],
+                  geohashes.getAllHashStrings(precision)
+                )
+              );
+            }
           });
-          filters.add(filter);
+          return filters.getQuery("OR");
+        } catch (e) {
+          console.log("Error in SpatialFilter.getQuery", e);
+          return "";
+        }
+      },
+
+      /**
+       * Creates a Filter model that represents the geohashes at a given
+       * precision level for a specific set of geohashes
+       * @param {number[]} precisions The geohash precision levels, e.g. [4, 5]
+       * @param {string[]} hashStrings The geohashes, e.g. ["9q8yy", "9q8yz"]
+       * @returns {Filter} The filter model
+       * @since x.x.x
+       */
+      createBaseFilter: function (precisions = [], hashStrings = []) {
+        return new Filter({
+          fields: this.precisionsToFields(precisions),
+          values: hashStrings,
+          operator: this.get("operator"),
+          fieldsOperator: this.get("fieldsOperator"),
+          matchSubstring: this.get("matchSubstring"),
         });
-        return filters.getQuery();
       },
 
       /**
@@ -183,11 +273,20 @@ define([
       },
 
       /**
+       * // TODO: Do we need this?
        * @inheritdoc
        */
       resetValue: function () {
-        this.set("fields", this.defaults().fields);
-        this.set("values", this.defaults().values);
+        const df = this.defaults();
+        this.set({
+          fields: df.fields,
+          values: df.values,
+          east: df.east,
+          west: df.west,
+          north: df.north,
+          south: df.south,
+          height: df.height,
+        });
       },
     }
   );
