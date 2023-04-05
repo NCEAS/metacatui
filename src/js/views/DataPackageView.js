@@ -389,12 +389,42 @@ define([
                         }, 
                         {}
                     );
+                    this.addFilesAndFolders(sortedFilePathObj);
                 }
                 else {
                     this.dataPackage.each(this.addOne, this);
                 }
                 
+                // this.dataPackage.each(this.addOne, this);
+            },
 
+            /**
+             * Add all the files and folders
+             */
+            addFilesAndFolders: function(sortedFilePathObj) {
+            	if(!sortedFilePathObj) return false;
+                var insertedPath = new Array();
+
+                for (let key of Object.keys(sortedFilePathObj)) {
+                    // add folder
+                    var pathArray = key.split("/");
+                    for (let i = 0; i < pathArray.length; i++) {
+                        if (!insertedPath.includes(pathArray[i])) {
+                            // insert path
+                            
+                            insertedPath.push(pathArray[i])
+                        }
+                    }
+
+                    // add files in the folder
+                    var itemArray = sortedFilePathObj[key];
+
+                    for (let i = 0; i < itemArray.length; i++) {
+                        let item = itemArray[i];
+                        console.log(this.dataPackage.get(item));
+                        this.addOne(this.dataPackage.get(item));
+                    }
+                }
             },
 
             /**
