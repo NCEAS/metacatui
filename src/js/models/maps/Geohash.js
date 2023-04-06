@@ -201,27 +201,26 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
        * @returns {Object} A GeoJSON Feature representing the geohash.
        */
       toGeoJSON: function () {
+        if (this.isEmpty()) return null;
         const bounds = this.getBounds();
+        if (!bounds) return null;
+        let [south, west, north, east] = bounds;
+        if (!south && !west && !north && !east) return null;
         const properties = this.get("properties");
         properties["hashString"] = this.get("hashString");
-        if (!bounds) return null;
-
-        // TODO: Where should this be done?
-        // Set min latitude to -89.99999 for Geohashes, Cesium throws an error when the latitude is -90
-        // Compare to https://github.com/NCEAS/metacatui/commit/af7a432c5cb296a2e36a5ceb13eef51f55c33e30
-        if (bounds[1] === -90) bounds[1] = -89.99999;
-
+        // Set min latitude to -89.99999 for Geohashes. This is for Cesium.
+        if (south === -90) south = -89.99999;
         return {
           type: "Feature",
           geometry: {
             type: "Polygon",
             coordinates: [
               [
-                [bounds[0], bounds[1]],
-                [bounds[2], bounds[1]],
-                [bounds[2], bounds[3]],
-                [bounds[0], bounds[3]],
-                [bounds[0], bounds[1]],
+                [west, south],
+                [east, south],
+                [east, north],
+                [west, north],
+                [west, south],
               ],
             ],
           },

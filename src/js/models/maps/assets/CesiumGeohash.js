@@ -124,17 +124,15 @@ define([
        * GeoJSON for all geohashes, not just those in the current extent.
        * @returns {Object} The GeoJSON representation of the geohashes.
        */
-      getGeoJSON: function (limitToExtent = false) {
-        return this.get("geohashes")?.toGeoJSON();
-
-        // TODO fix limitToExtent
+      getGeoJSON: function (limitToExtent = true) {
         if (!limitToExtent) {
           return this.get("geohashes")?.toGeoJSON();
         }
-        const extent = this.get("mapModel").get("currentExtent");
+        const extent = this.get("mapModel").get("currentViewExtent");
         let bounds = Object.assign({}, extent);
         delete bounds.height;
-        return this.get("geohashes")?.getSubsetByBounds(bounds)?.toGeoJSON();
+        const subset = this.get("geohashes")?.getSubsetByBounds(bounds);
+        return subset?.toGeoJSON();
       },
 
       /**

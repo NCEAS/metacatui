@@ -79,7 +79,8 @@ define([
        * the case where the coordinates are adjusted
        * 
        */
-      validateCoordinates: function (silent=true) {
+      validateCoordinates: function (silent = true) {
+        
         if (!this.hasCoordinates()) return;
         if (this.get("east") > 180) {
           this.set("east", 180, { silent: silent });
@@ -92,12 +93,6 @@ define([
         }
         if (this.get("south") < -90) {
           this.set("south", -90), { silent: silent };
-        }
-        if (this.get("east") < this.get("west")) {
-          this.set("east", this.get("west", { silent: silent }));
-        }
-        if (this.get("north") < this.get("south")) {
-          this.set("north", this.get("south", { silent: silent }));
         }
       },
 

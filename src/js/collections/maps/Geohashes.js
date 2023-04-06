@@ -211,10 +211,10 @@ define([
             this.getHashStringsByExtent(bounds, precision)
           );
         });
-        const geohashes = this.filter((geohash) => {
+        const subsetModels = this.filter((geohash) => {
           return hashes.includes(geohash.get("hashString"));
         });
-        return new Geohashes(geohashes);
+        return new Geohashes(subsetModels);
       },
 
       /**
