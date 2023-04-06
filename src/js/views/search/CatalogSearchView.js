@@ -639,17 +639,11 @@ define([
 
         if (newSetting) {
           // If true, then the filter should be ON
-          // this.model.connectMap();
-          // TODO
+          this.model.connectFiltersMap();
         } else {
           // If false, then the filter should be OFF
-          // this.model.disconnectMap();
-          this.model.removeSpatialFilter();
-          // TODO: We still need to set the facet (current geohash level) on
-          // the SolrResults model before we send the query. This is how we
-          // get the resulting counts to display on the map.
+          this.model.disconnectFiltersMap(true);
         }
-
         this.limitSearchToMapArea = newSetting;
       },
 

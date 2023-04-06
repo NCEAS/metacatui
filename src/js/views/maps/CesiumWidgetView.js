@@ -35,6 +35,12 @@ define(
     * @screenshot views/maps/CesiumWidgetView.png
     * @since 2.18.0
     * @constructs
+    * @fires CesiumWidgetView#moved
+    * @fires CesiumWidgetView#moveEnd
+    * @fires CesiumWidgetView#moveStart
+    * @fires Map#moved
+    * @fires Map#moveEnd
+    * @fires Map#moveStart
     */
     var CesiumWidgetView = Backbone.View.extend(
       /** @lends CesiumWidgetView.prototype */{
@@ -228,6 +234,8 @@ define(
 
             // Set listeners for when the Cesium camera changes a significant amount.
             view.camera.changed.addEventListener(function () {
+              view.trigger('moved')
+              view.model.trigger('moved')
               // Update the bounding box for the visible area in the Map model
               view.updateViewExtent()
               // If the scale bar is showing, update the pixel to meter scale on the map
@@ -235,6 +243,15 @@ define(
               if (view.model.get('showScaleBar')) {
                 view.updateCurrentScale()
               }
+            })
+
+            view.camera.moveEnd.addEventListener(function () {
+              view.trigger('moveEnd')
+              view.model.trigger('moveEnd')
+            })
+            view.camera.moveStart.addEventListener(function () {
+              view.trigger('moveStart')
+              view.model.trigger('moveStart')
             })
 
             // Sets listeners for when the mouse moves, depending on the value of the map

@@ -82,28 +82,19 @@ define([
        */
       connect: function () {
         this.disconnect();
-        // const filters = this.get("filters");
-        const searchResults = this.get("searchResults");
-        // Listen to changes in the Filters to trigger a search
+        const filters = this.get("filters");
+        const search = this.get("searchResults");
 
-        this.listenTo(this.get("filters"), "add remove reset", function () {
-          // Reset listeners so that we are not listening to the old filters
-          this.connect();
-          MetacatUI.appModel.set("page", 0);
-          this.triggerSearch();
+        // Start results at first page and recreate query when the filters change
+        this.listenTo(filters, "update", this.triggerSearch, true);
+
+        // "changing" event triggers when the query is about to change, but
+        // before it has been sent. Useful for showing a loading indicator.
+        this.listenTo(filters, "changing", function () {
+          search.trigger("changing");
         });
 
-        this.listenTo(this.get("filters"), "change update", function () {
-          // Start at the first page when the filters change
-          MetacatUI.appModel.set("page", 0);
-          this.triggerSearch();
-        });
-
-        this.listenTo(
-          searchResults,
-          "change:sort change:facet",
-          this.triggerSearch
-        );
+        this.listenTo(search, "change:sort change:facet", this.triggerSearch);
 
         // If the logged-in status changes, send a new search
         this.listenTo(
@@ -111,6 +102,7 @@ define([
           "change:loggedIn",
           this.triggerSearch
         );
+
         this.set("isConnected", true);
       },
 
@@ -119,17 +111,11 @@ define([
        * @since x.x.x
        */
       disconnect: function () {
-        const model = this;
+        const filters = this.get("filters");
+        const searchResults = this.get("searchResults");
         this.stopListening(MetacatUI.appUserModel, "change:loggedIn");
-        this.stopListening(
-          this.get("filters"),
-          "add remove update reset change"
-        );
-        // Listen to the sort order changing
-        this.stopListening(
-          this.get("searchResults"),
-          "change:sort change:facet"
-        );
+        this.stopListening(filters, "update changing");
+        this.stopListening(searchResults, "change:sort change:facet");
         this.set("isConnected", false);
       },
 
@@ -137,10 +123,14 @@ define([
        * Get Results from the Solr index by combining the Filter query string
        * fragments in each Filter instance in the Search collection and querying
        * Solr.
+       * @param {boolean} resetPage - Whether or not to reset the page number
+       * to 0. Defaults to false.
        * @fires SolrResults#toPage
        * @since 2.22.0
        */
-      triggerSearch: function () {
+      triggerSearch: function (resetPage = false) {
+        if (resetPage) MetacatUI.appModel.set("page", 0);
+
         const filters = this.get("filters");
         const searchResults = this.get("searchResults");
 

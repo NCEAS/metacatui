@@ -97,7 +97,7 @@ define([
         this.removeListeners();
         this.listenTo(this.searchResults, "add", this.addResultModel);
         this.listenTo(this.searchResults, "reset", this.addResultCollection);
-        this.listenTo(this.searchResults, "request", this.loading);
+        this.listenTo(this.searchResults, "changing request", this.loading);
         this.listenTo(this.searchResults, "error", this.showError);
       },
 

@@ -95,7 +95,7 @@ define([
        * Layers collection set on this model.
        * @fires Layers#add
        */
-      createGeohash: function() {
+      createGeohash: function () {
         const map = this.get("map");
         return map.addAsset({ type: "CesiumGeohash" });
       },
@@ -133,14 +133,64 @@ define([
       /**
        * Connect the Map to the Search. When a new search is performed, the
        * Search will set the new facet counts on the GeoHash layer in the Map.
+       * When the view extent on the map has changed, the geohash facet on the
+       * search will be updated to reflect the new height/altitude of the view.
+       * This will trigger a new search, which will update the counts on the
+       * GeoHash layer in the Map. When connected, the Geohash layer will also
+       * be hidden during search requests, and while the user is panning/zooming
+       * the map.
        */
       connect: function () {
         this.disconnect();
+
         const searchResults = this.get("searchResults");
         const map = this.get("map");
-        this.listenTo(searchResults, "reset", this.updateGeohashCounts);
-        this.listenTo(map, "change:currentViewExtent", this.updateFacet);
+
+        // Pass the facet counts to the GeoHash layer when the search results
+        // are returned.
+        this.listenTo(searchResults, "update reset", function () {
+          this.updateGeohashCounts();
+          this.showGeoHashLayer();
+        });
+
+        // When the user is panning/zooming in the map, hide the GeoHash layer
+        // to indicate that the map is not up to date with the search results,
+        // which are about to be updated.
+        this.listenTo(map, "moveStart", this.hideGeoHashLayer);
+
+        // When the user is done panning/zooming in the map, show the GeoHash
+        // layer again and update the search results (thereby updating the
+        // facet counts on the GeoHash layer)
+        this.listenTo(map, "moveEnd", function () {
+          this.showGeoHashLayer();
+          this.updateFacet();
+          searchResults.trigger("reset");
+        });
+
+        // When a new search is being performed, hide the GeoHash layer to
+        // indicate that the map is not up to date with the search results,
+        // which are about to be updated.
+        this.listenTo(searchResults, "request", function () {
+          this.hideGeoHashLayer();
+        });
+
         this.set("isConnected", true);
+      },
+
+      /**
+       * Make the geoHashLayer invisible.
+       * @fires CesiumGeohash#change:visible
+       */
+      hideGeoHashLayer: function () {
+        this.get("geohashLayer")?.set("visible", false);
+      },
+
+      /**
+       * Make the geoHashLayer visible.
+       * @fires CesiumGeohash#change:visible
+       */
+      showGeoHashLayer: function () {
+        this.get("geohashLayer")?.set("visible", true);
       },
 
       /**
@@ -151,7 +201,7 @@ define([
         const map = this.get("map");
         const searchResults = this.get("searchResults");
         this.stopListening(searchResults, "reset");
-        this.stopListening(map, "change:currentViewExtent");
+        this.stopListening(map, "moveStart moveEnd");
         this.set("isConnected", false);
       },
 
@@ -169,7 +219,7 @@ define([
         const props = [];
         for (let i = 0; i < counts.length; i += 2) {
           props.push({
-            geohash: counts[i],
+            hashString: counts[i],
             properties: {
               count: counts[i + 1],
             },

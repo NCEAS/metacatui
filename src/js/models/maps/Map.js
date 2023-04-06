@@ -293,14 +293,15 @@ define([
       },
 
       /**
-       * Add a layer to the map. This is the best way to add a layer to the map
-       * because it will ensure that this map model is set on the layer model.
+       * Add a layer or other asset to the map. This is the best way to add a
+       * layer to the map because it will ensure that this map model is set on
+       * the layer model.
        * @param {Object | MapAsset} layer - A map asset model or object with
        * attributes to set on a new map asset model.
        * @returns {MapAsset} The new layer model.
        * @since x.x.x
        */
-      addLayer: function (layer) {
+      addAsset: function (layer) {
         const layers = this.get("layers") || this.resetLayers();
         return layers.addAsset(layer, this);
       },

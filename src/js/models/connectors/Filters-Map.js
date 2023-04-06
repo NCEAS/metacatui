@@ -1,9 +1,9 @@
 /*global define */
-define([
-  "backbone",
-  "collections/Filters",
-  "models/maps/Map",
-], function (Backbone, Filters, Map) {
+define(["backbone", "collections/Filters", "models/maps/Map"], function (
+  Backbone,
+  Filters,
+  Map
+) {
   "use strict";
 
   /**
@@ -138,13 +138,32 @@ define([
       },
 
       /**
+       * Reset the spatial filter values to their defaults. This will remove
+       * any spatial constraints from the search.
+       */
+      resetSpatialFilter: function () {
+        const spatialFilters = this.get("spatialFilters");
+        if (spatialFilters?.length) {
+          spatialFilters.forEach((filter) => {
+            filter.resetValue();
+          });
+        }
+      },
+
+      /**
        * Stops all Filter-Map listeners, including listeners on the Filters
        * collection and the Map model.
+       * @param {boolean} [resetSpatialFilter=false] - Whether to reset the
+       * spatial filter values to their defaults. This will remove any spatial
+       * constraints from the search.
        */
-      disconnect: function () {
+      disconnect: function (resetSpatialFilter = false) {
         try {
+          if (resetSpatialFilter) {
+            this.resetSpatialFilter();
+          }
           this.stopListening(this.get("filters"), "add remove");
-          this.stopListening(this.get("map"), "change:currentViewExtent");
+          this.stopListening(this.get("map"), "moveEnd moveStart");
           this.set("isConnected", false);
         } catch (e) {
           console.log("Error stopping Filter-Map listeners: ", e);
@@ -160,11 +179,15 @@ define([
       connect: function () {
         try {
           this.disconnect();
-          this.listenTo(
-            this.get("map"),
-            "change:currentViewExtent",
-            this.updateSpatialFilters
-          );
+          const map = this.get("map");
+          // Constrain the spatial filter to the current map extent right away
+          this.updateSpatialFilters();
+          // Trigger a 'changing' event on the filters collection to
+          // indicate that the spatial filter is being updated
+          this.listenTo(map, "moveStart", function () {
+            this.get("filters").trigger("changing");
+          });
+          this.listenTo(map, "moveEnd", this.updateSpatialFilters);
           this.set("isConnected", true);
         } catch (e) {
           console.log("Error starting Filter-Map listeners: ", e);
@@ -183,10 +206,9 @@ define([
           if (!spatialFilters?.length) {
             return;
           }
-
           spatialFilters.forEach((spFilter) => {
             spFilter.set(extent, { silent: true });
-            spFilter.trigger("change:height");
+            spFilter.trigger("change:height"); // Only trigger one change event
           });
         } catch (e) {
           console.log("Error updating spatial filters: ", e);

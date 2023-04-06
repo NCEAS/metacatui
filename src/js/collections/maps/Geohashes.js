@@ -205,7 +205,7 @@ define([
        */
       getSubsetByBounds: function (bounds) {
         const precisions = this.getPrecisions();
-        const hashes = [];
+        let hashes = [];
         precisions.forEach((precision) => {
           hashes = hashes.concat(
             this.getHashStringsByExtent(bounds, precision)

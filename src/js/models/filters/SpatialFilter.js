@@ -4,7 +4,8 @@ define([
   "backbone",
   "models/filters/Filter",
   "collections/maps/Geohashes",
-], function (_, $, Backbone, Filter, Geohashes) {
+  "collections/Filters",
+], function (_, $, Backbone, Filter, Geohashes, Filters) {
   /**
    * @classdesc A SpatialFilter represents a spatial constraint on the query to
    * be executed.
@@ -74,26 +75,29 @@ define([
        * Validate the coordinates, ensuring that the east and west are not
        * greater than 180 and that the north and south are not greater than 90.
        * Coordinates will be adjusted if they are out of bounds.
+       * @param {boolean} [silent=true] - Whether to trigger a change event in
+       * the case where the coordinates are adjusted
+       * 
        */
-      validateCoordinates: function () {
+      validateCoordinates: function (silent=true) {
         if (!this.hasCoordinates()) return;
         if (this.get("east") > 180) {
-          this.set("east", 180);
+          this.set("east", 180, { silent: silent });
         }
         if (this.get("west") < -180) {
-          this.set("west", -180);
+          this.set("west", -180, { silent: silent });
         }
         if (this.get("north") > 90) {
-          this.set("north", 90);
+          this.set("north", 90, { silent: silent });
         }
         if (this.get("south") < -90) {
-          this.set("south", -90);
+          this.set("south", -90), { silent: silent };
         }
         if (this.get("east") < this.get("west")) {
-          this.set("east", this.get("west"));
+          this.set("east", this.get("west", { silent: silent }));
         }
         if (this.get("north") < this.get("south")) {
-          this.set("north", this.get("south"));
+          this.set("north", this.get("south", { silent: silent }));
         }
       },
 
@@ -273,13 +277,11 @@ define([
       },
 
       /**
-       * // TODO: Do we need this?
        * @inheritdoc
        */
       resetValue: function () {
         const df = this.defaults();
         this.set({
-          fields: df.fields,
           values: df.values,
           east: df.east,
           west: df.west,

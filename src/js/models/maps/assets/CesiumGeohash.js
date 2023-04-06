@@ -97,8 +97,7 @@ define([
        * geohashes.
        */
       stopListeners: function () {
-        this.stopListening(this, "change:geohashes");
-        this.stopListening(this.get("geohashes"), "change");
+        this.stopListening(this.get("geohashes"), "add remove update reset");
       },
 
       /**
@@ -107,17 +106,9 @@ define([
       startListening: function () {
         try {
           this.stopListeners();
-          this.listenTo(this, "change:geohashes", function () {
-            this.stopListeners();
-            this.startListening();
-            this.createCesiumModel(true);
-          });
-          this.listenTo(this.get("geohashes"), "change", function () {
-            this.createCesiumModel(true);
-          });
           this.listenTo(
-            this.get("mapModel"),
-            "change:currentExtent",
+            this.get("geohashes"),
+            "add remove update reset",
             function () {
               this.createCesiumModel(true);
             }
@@ -133,13 +124,15 @@ define([
        * GeoJSON for all geohashes, not just those in the current extent.
        * @returns {Object} The GeoJSON representation of the geohashes.
        */
-      getGeoJSON: function (limitToExtent = true) {
+      getGeoJSON: function (limitToExtent = false) {
+        return this.get("geohashes")?.toGeoJSON();
+
+        // TODO fix limitToExtent
         if (!limitToExtent) {
           return this.get("geohashes")?.toGeoJSON();
         }
         const extent = this.get("mapModel").get("currentExtent");
-        // copy it and delete the height attr
-        const bounds = Object.assign({}, extent);
+        let bounds = Object.assign({}, extent);
         delete bounds.height;
         return this.get("geohashes")?.getSubsetByBounds(bounds)?.toGeoJSON();
       },

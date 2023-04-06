@@ -219,25 +219,35 @@ define([
 
       /**
        * Disconnect all listeners between the Map, SearchResults, and Filters.
+       * @param {boolean} [resetSpatialFilter=false] - If true, the spatial
+       * filter will be reset to the default value, which will effectively
+       * remove any spatial constraints from the search.
        */
-      disconnect: function () {
-        this.getConnectors().forEach((connector) => connector.disconnect());
+      disconnect: function (resetSpatialFilter = false) {
+        this.get("filtersMapConnector").disconnect(resetSpatialFilter);
+        this.get("filtersSearchConnector").disconnect();
+        this.get("mapSearchConnector").disconnect();
       },
 
       /**
-       * Disconnect all listeners associated with the Map. This disconnects
-       * both the search and filters from the map.
+       * Disconnect the filters from the map. This stops the map from updating
+       * any spatial filters in the filters collection with the extent of the
+       * map view.
+       * @param {boolean} [resetSpatialFilter=false] - If true, the spatial
+       * filter will be reset to the default value, which will effectively
+       * remove any spatial constraints from the search.
        */
-      disconnectMap: function () {
-        this.getMapConnectors().forEach((connector) => connector.disconnect());
+      disconnectFiltersMap: function (resetSpatialFilter = false) {
+        this.get("filtersMapConnector").disconnect(resetSpatialFilter);
       },
 
       /**
-       * Connect all listeners associated with the Map. This connects both the
-       * search and filters to the map.
+       * Connect or re-connect the filters to the map. This will enable the map
+       * to start updating any spatial filters in the filters collection with
+       * the extent of the map view.
        */
-      connectMap: function () {
-        this.getMapConnectors().forEach((connector) => connector.connect());
+      connectFiltersMap: function () {
+        this.get("filtersMapConnector").connect();
       },
 
       /**

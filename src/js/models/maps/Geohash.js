@@ -205,6 +205,12 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
         const properties = this.get("properties");
         properties["hashString"] = this.get("hashString");
         if (!bounds) return null;
+
+        // TODO: Where should this be done?
+        // Set min latitude to -89.99999 for Geohashes, Cesium throws an error when the latitude is -90
+        // Compare to https://github.com/NCEAS/metacatui/commit/af7a432c5cb296a2e36a5ceb13eef51f55c33e30
+        if (bounds[1] === -90) bounds[1] = -89.99999;
+
         return {
           type: "Feature",
           geometry: {
