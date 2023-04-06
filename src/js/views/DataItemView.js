@@ -76,6 +76,9 @@ define([
                 this.model = options.model || new DataONEObject();
                 this.memberRowMetrics = options.memberRowMetrics || null;
                 this.mode = options.mode || "edit";
+                this.itemName = options.itemName || null;
+                this.pathName = options.pathName || null;
+                this.itemType = options.itemType || "file";
                 this.id = this.model.get("id");
                 this.canWrite = false; // Default. Updated in render()
                 this.canShare = false; // Default. Updated in render()
@@ -90,383 +93,405 @@ define([
                 //Prevent duplicate listeners
                 this.stopListening();
 
-                // Set the data-id for identifying events to model ids
-                this.$el.attr("data-id", this.model.get("id"));
-                this.$el.attr("data-category", "entities-" + this.model.get("id"));
+                if (this.itemType === "folder") {
+                    var attributes = new Object();
+                    attributes.fileType = "folder";
+                    attributes.type = undefined;
+                    attributes.icon = "icon-folder";
+                    attributes.id = this.itemName;
+                    attributes.size = undefined;
+                    attributes.memberRowMetrics = undefined;
+                    attributes.isMetadata = false;
+                    attributes.downloadUrl = undefined;
+                    attributes.moreInfoLink = undefined;
+                    // attributes.isMetadata = false;
+                    attributes.viewType = this.mode;
+                    attributes.fileName = this.itemName;
+                    attributes.nodeLevel = this.pathName.split("/").length;
 
-                //Destroy the old tooltip
-                this.$(".status .icon, .status .progress").tooltip("hide").tooltip("destroy");
-
-                var attributes = this.model.toJSON();
-
-                // check if this data item is a metadata object
-                attributes.isMetadata = false;
-                if (this.model.get("type") == "Metadata") {
-                  attributes.isMetadata = true;
-                }
-
-                //Format the title
-                if(Array.isArray(attributes.title)) {
-                  attributes.title  = attributes.title[0];
-                }
-
-                // format metadata object title
-                if (this.mode == "view" && attributes.isMetadata) {
-                  attributes.title  = "Metadata: " + this.model.get("fileName");
-                }
-
-                //Set some defaults
-                attributes.numAttributes = 0;
-                attributes.entityIsValid = true;
-                attributes.hasInvalidAttribute = false;
-                attributes.viewType = this.mode;
-
-                if (this.mode === "edit") {
-                  // Restrict item replacement and renaming depending on access policy
-                  //
-                  // Note: .canWrite is set here (at render) instead of at init
-                  // because render will get called a few times during page load
-                  // as the app updates what it knows about the object
-                  let accessPolicy = this.model.get("accessPolicy");
-                  if( accessPolicy ){
-                    attributes.canWrite  = accessPolicy.isAuthorized("write");
-                    this.canWrite        = attributes.canWrite;
-                    attributes.canRename = accessPolicy.isAuthorizedUpdateSysMeta();
-                  }
-                  else{
-                    attributes.canWrite  = false;
-                    this.canWrite        = false;
-                    attributes.canRename = false;
-                  }
-
-                  // Restrict item sharing depending on access
-                  this.canShare = this.canShareItem();
-                  attributes.canShare = this.canShare;
-
-
-                  //Get the number of attributes for this item
-                  if(this.model.type != "EML"){
-
-                    //Get the parent EML model
-                    if( this.parentEML ){
-                      var parentEML = this.parentEML;
-                    }
-                    else{
-                      var parentEML = MetacatUI.rootDataPackage.where({
-                          id: Array.isArray(this.model.get("isDocumentedBy")) ?
-                              this.model.get("isDocumentedBy")[0] : null
-                      });
-                    }
-
-                    if( Array.isArray(parentEML) )
-                      parentEML = parentEML[0];
-
-                    //If we found a parent EML model
-                    if(parentEML && parentEML.type == "EML"){
-
-                      this.parentEML = parentEML;
-
-                      //Find the EMLEntity model for this data item
-                      var entity = this.model.get("metadataEntity") || parentEML.getEntity(this.model);
-
-                      //If we found an EMLEntity model
-                      if(entity){
-
-                        this.entity = entity;
-
-                        //Get the file name from the metadata if it is not in the model
-                        if( !this.model.get("fileName") ){
-
-                          var fileName = "";
-
-                          if( entity.get("physicalObjectName") )
-                            fileName = entity.get("physicalObjectName");
-                          else if( entity.get("entityName") )
-                            fileName = entity.get("entityName");
-
-                          if( fileName )
-                            attributes.fileName = fileName;
-                            this.model.set("fileName", fileName);
-                        }
-
-                        //Get the number of attributes for this entity
-                        attributes.numAttributes = entity.get("attributeList").length;
-                        //Determine if the entity model is valid
-                        attributes.entityIsValid = entity.isValid();
-
-                        //Listen to changes to certain attributes of this EMLEntity model
-                        // to re-render this view
-                        this.stopListening(entity);
-                        this.listenTo(entity, "change:entityType, change:entityName", this.render);
-
-                        //Check if there are any invalid attribute models
-                        //Also listen to each attribute model
-                        _.each( entity.get("attributeList"), function(attr){
-
-                          var isValid = attr.isValid();
-
-                          //Mark that this entity has at least one invalid attribute
-                          if( !attributes.hasInvalidAttribute && !isValid )
-                            attributes.hasInvalidAttribute = true;
-
-                          this.stopListening(attr);
-
-                          //Listen to when the validation status changes and rerender
-                          if(isValid)
-                            this.listenTo( attr, "invalid", this.render);
-                          else
-                            this.listenTo( attr, "valid",   this.render);
-
-
-                        }, this);
-
-                        //If there are no attributes now, rerender when one is added
-                        this.listenTo(entity, "change:attributeList", this.render);
-
-                      }
-                      else{
-                        //Rerender when an entity is added
-                        this.listenTo(this.model, "change:entities", this.render);
-                      }
-                    }
-                    else{
-                      //When the package is complete, rerender
-                      this.listenTo(MetacatUI.rootDataPackage, "add:EML", this.render);
-                    }
-                  }
-
-                  this.$el.html( this.template(attributes) );
-
-                  //Initialize dropdowns
-                  this.$el.find(".dropdown-toggle").dropdown();
-
-                  //Render the Share button
-                  this.renderShareControl();
-
-                  if(this.model.get("type") == "Metadata"){
-                    //Add the title data-attribute attribute to the name cell
-                    this.$el.find(".name").attr("data-attribute", "title");
-                    this.$el.addClass("folder");
-                  }
-                  else{
-                      this.$el.addClass("data");
-                  }
-
-                  // Add tooltip to a disabled Replace link
-                  $(this.$el).find(".replace.disabled").tooltip({
-                      title: "You don't have sufficient privileges to replace this item.",
-                      placement: "left",
-                      trigger: "hover",
-                      delay: { show: 400 },
-                      container: "body"
-                    });
-
-                  //Check if the data package is in progress of being uploaded
-                  this.toggleSaving();
-
-                  //Create tooltips based on the upload status
-                  var uploadStatus = this.model.get("uploadStatus"),
-                      errorMessage = this.model.get("errorMessage");
-
-                  // Use a friendlier message for 401 errors (the one returned is a little hard to understand)
-                  if(this.model.get("sysMetaErrorCode") == 401){
-
-                      // If the user at least has write permission, they cannot update the system metadata only, so show this message
-                      /** @todo Do an object update when someone has write permission but not changePermission and is trying to change the system metadata (but not the access policy)  */
-                      if(accessPolicy && accessPolicy.isAuthorized("write")){
-                          errorMessage = "The owner of this data file has not given you permission to rename it or change the " + MetacatUI.appModel.get("accessPolicyName") + "."
-                      // Otherwise, assume they only have read access
-                      } else {
-                          errorMessage = "The owner of this data file has not given you permission to edit this data file or change the " + MetacatUI.appModel.get("accessPolicyName") + ".";
-                      }
-                  }
-
-                  // When there's an error or a warninig
-                  if(uploadStatus == "e" && errorMessage){
-
-                      var tooltipClass = uploadStatus == "e" ? "error" : "";
-
-                    this.$(".status .icon").tooltip({
-                      placement: "top",
-                      trigger: "hover",
-                      html: true,
-                      title: "<div class='status-tooltip " + tooltipClass + "'><h6>Issue saving:</h6><div>" + errorMessage + "</div></div>",
-                      container: "body"
-                    });
-
-                    this.$el.removeClass("loading");
-                  }
-                  else if (( !uploadStatus || uploadStatus == "c" || uploadStatus == "q") && attributes.numAttributes == 0){
-
-                    this.$(".status .icon").tooltip({
-                      placement: "top",
-                      trigger: "hover",
-                      html: true,
-                      title: "<div class='status-tooltip'>This file needs to be described - Click 'Describe'</div>",
-                      container: "body"
-                    });
-
-                  this.$el.removeClass("loading");
-
-                }
-                  else if( attributes.hasInvalidAttribute || !attributes.entityIsValid ){
-
-                    this.$(".status .icon").tooltip({
-                      placement: "top",
-                      trigger: "hover",
-                      html: true,
-                      title: "<div class='status-tooltip'>There is missing information about this file. Click 'Describe'</div>",
-                      container: "body"
-                    });
-
-                    this.$el.removeClass("loading");
-
-                  }
-                  else if(uploadStatus == "c"){
-
-                  this.$(".status .icon").tooltip({
-                      placement: "top",
-                      trigger: "hover",
-                      html: true,
-                      title: "<div class='status-tooltip'>Complete</div>",
-                      container: "body"
-                    });
-
-                    this.$el.removeClass("loading");
-                  }
-                  else if(uploadStatus == "l"){
-                    this.$(".status .icon").tooltip({
-                      placement: "top",
-                      trigger: "hover",
-                      html: true,
-                      title: "<div class='status-tooltip'>Reading file...</div>",
-                      container: "body"
-                    });
-
-                    this.$el.addClass("loading");
-                  }
-                  else if(uploadStatus == "p"){
-                    var model = this.model;
-
-                    this.$(".status .progress").tooltip({
-                      placement: "top",
-                      trigger: "hover",
-                      html: true,
-                      title: function(){
-                        if(model.get("numSaveAttempts") > 0){
-                          return "<div class='status-tooltip'>Something went wrong during upload. <br/> Trying again... (attempt " + (model.get("numSaveAttempts") + 1) + " of 3)</div>";
-                        }
-                        else if(model.get("uploadProgress")){
-                          var percentDone = model.get("uploadProgress").toString();
-                          if(percentDone.indexOf(".") > -1)
-                            percentDone = percentDone.substring(0, percentDone.indexOf("."));
-                        }
-                        else
-                          var percentDone = "0";
-
-                        return "<div class='status-tooltip'>Uploading: " + percentDone + "%</div>";
-                      },
-                      container: "body"
-                    });
-
-                    this.$el.addClass("loading");
-                  }
-                  else{
-                    this.$el.removeClass("loading");
-                  }
-
-                  //Listen to changes to the upload progress of this object
-                  this.listenTo(this.model, "change:uploadProgress", this.showUploadProgress);
-
-                  //Listen to changes to the upload status of the entire package
-                  this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:uploadStatus", this.toggleSaving);
-
-                  //listen for changes to rerender the view
-                  this.listenTo(this.model, "change:fileName change:title change:id change:formatType " +
-                      "change:formatId change:type change:resourceMap change:documents change:isDocumentedBy " +
-                      "change:size change:nodeLevel change:uploadStatus", this.render); // render changes to the item
-
-                  var view = this;
-                  this.listenTo(this.model, "replace", function(newModel){
-                    view.model = newModel;
-                    view.render();
-                  });
+                    this.$el.html( this.template(attributes) );
                 }
                 else {
+                  
 
-                  attributes.fileType = this.model.getFormat();
-                  //Determine the icon type based on format type
-                  if(this.model.getFormat() == "program")
-                    attributes.icon = "icon-code";
-                  else if(this.model.getFormat() == "data")
-                    attributes.icon = "icon-table";
-                  else if(this.model.getFormat() == "metadata")
-                    attributes.icon = "icon-file-text";
-                  else if (this.model.getFormat() == "image")
-                    attributes.icon = "icon-picture";
-                  else if (this.model.getFormat() == "pdf")
-                    attributes.icon = "icon-file pdf";
-                  else
-                    attributes.icon = "icon-table";
+                  // Set the data-id for identifying events to model ids
+                  this.$el.attr("data-id", this.model.get("id"));
+                  this.$el.attr("data-category", "entities-" + this.model.get("id"));
 
-                  // insert metrics for this item
-                  attributes.id = this.model.get("id");
-                  attributes.memberRowMetrics = null;
-                  var metricToolTip = null;
-                  if (this.memberRowMetrics !== null) {
-                    metricToolTip = this.memberRowMetrics;
-                    attributes.memberRowMetrics = this.memberRowMetrics.split(" ")[0];
+                  //Destroy the old tooltip
+                  this.$(".status .icon, .status .progress").tooltip("hide").tooltip("destroy");
+
+                  var attributes = this.model.toJSON();
+
+                  // check if this data item is a metadata object
+                  attributes.isMetadata = false;
+                  if (this.model.get("type") == "Metadata") {
+                    attributes.isMetadata = true;
                   }
-                  attributes.metricIcon = undefined;
-                  if (attributes.isMetadata) {
-                    attributes.metricIcon = "icon-eye-open";
+
+                  //Format the title
+                  if(Array.isArray(attributes.title)) {
+                    attributes.title  = attributes.title[0];
+                  }
+
+                  // format metadata object title
+                  if (this.mode == "view" && attributes.isMetadata) {
+                    attributes.title  = "Metadata: " + this.model.get("fileName");
+                  }
+
+                  //Set some defaults
+                  attributes.numAttributes = 0;
+                  attributes.entityIsValid = true;
+                  attributes.hasInvalidAttribute = false;
+                  attributes.viewType = this.mode;
+
+                  if (this.mode === "edit") {
+                    // Restrict item replacement and renaming depending on access policy
+                    //
+                    // Note: .canWrite is set here (at render) instead of at init
+                    // because render will get called a few times during page load
+                    // as the app updates what it knows about the object
+                    let accessPolicy = this.model.get("accessPolicy");
+                    if( accessPolicy ){
+                      attributes.canWrite  = accessPolicy.isAuthorized("write");
+                      this.canWrite        = attributes.canWrite;
+                      attributes.canRename = accessPolicy.isAuthorizedUpdateSysMeta();
+                    }
+                    else{
+                      attributes.canWrite  = false;
+                      this.canWrite        = false;
+                      attributes.canRename = false;
+                    }
+
+                    // Restrict item sharing depending on access
+                    this.canShare = this.canShareItem();
+                    attributes.canShare = this.canShare;
+
+
+                    //Get the number of attributes for this item
+                    if(this.model.type != "EML"){
+
+                      //Get the parent EML model
+                      if( this.parentEML ){
+                        var parentEML = this.parentEML;
+                      }
+                      else{
+                        var parentEML = MetacatUI.rootDataPackage.where({
+                            id: Array.isArray(this.model.get("isDocumentedBy")) ?
+                                this.model.get("isDocumentedBy")[0] : null
+                        });
+                      }
+
+                      if( Array.isArray(parentEML) )
+                        parentEML = parentEML[0];
+
+                      //If we found a parent EML model
+                      if(parentEML && parentEML.type == "EML"){
+
+                        this.parentEML = parentEML;
+
+                        //Find the EMLEntity model for this data item
+                        var entity = this.model.get("metadataEntity") || parentEML.getEntity(this.model);
+
+                        //If we found an EMLEntity model
+                        if(entity){
+
+                          this.entity = entity;
+
+                          //Get the file name from the metadata if it is not in the model
+                          if( !this.model.get("fileName") ){
+
+                            var fileName = "";
+
+                            if( entity.get("physicalObjectName") )
+                              fileName = entity.get("physicalObjectName");
+                            else if( entity.get("entityName") )
+                              fileName = entity.get("entityName");
+
+                            if( fileName )
+                              attributes.fileName = fileName;
+                              this.model.set("fileName", fileName);
+                          }
+
+                          //Get the number of attributes for this entity
+                          attributes.numAttributes = entity.get("attributeList").length;
+                          //Determine if the entity model is valid
+                          attributes.entityIsValid = entity.isValid();
+
+                          //Listen to changes to certain attributes of this EMLEntity model
+                          // to re-render this view
+                          this.stopListening(entity);
+                          this.listenTo(entity, "change:entityType, change:entityName", this.render);
+
+                          //Check if there are any invalid attribute models
+                          //Also listen to each attribute model
+                          _.each( entity.get("attributeList"), function(attr){
+
+                            var isValid = attr.isValid();
+
+                            //Mark that this entity has at least one invalid attribute
+                            if( !attributes.hasInvalidAttribute && !isValid )
+                              attributes.hasInvalidAttribute = true;
+
+                            this.stopListening(attr);
+
+                            //Listen to when the validation status changes and rerender
+                            if(isValid)
+                              this.listenTo( attr, "invalid", this.render);
+                            else
+                              this.listenTo( attr, "valid",   this.render);
+
+
+                          }, this);
+
+                          //If there are no attributes now, rerender when one is added
+                          this.listenTo(entity, "change:attributeList", this.render);
+
+                        }
+                        else{
+                          //Rerender when an entity is added
+                          this.listenTo(this.model, "change:entities", this.render);
+                        }
+                      }
+                      else{
+                        //When the package is complete, rerender
+                        this.listenTo(MetacatUI.rootDataPackage, "add:EML", this.render);
+                      }
+                    }
+
+                    this.$el.html( this.template(attributes) );
+
+                    //Initialize dropdowns
+                    this.$el.find(".dropdown-toggle").dropdown();
+
+                    //Render the Share button
+                    this.renderShareControl();
+
+                    if(this.model.get("type") == "Metadata"){
+                      //Add the title data-attribute attribute to the name cell
+                      this.$el.find(".name").attr("data-attribute", "title");
+                      this.$el.addClass("folder");
+                    }
+                    else{
+                        this.$el.addClass("data");
+                    }
+
+                    // Add tooltip to a disabled Replace link
+                    $(this.$el).find(".replace.disabled").tooltip({
+                        title: "You don't have sufficient privileges to replace this item.",
+                        placement: "left",
+                        trigger: "hover",
+                        delay: { show: 400 },
+                        container: "body"
+                      });
+
+                    //Check if the data package is in progress of being uploaded
+                    this.toggleSaving();
+
+                    //Create tooltips based on the upload status
+                    var uploadStatus = this.model.get("uploadStatus"),
+                        errorMessage = this.model.get("errorMessage");
+
+                    // Use a friendlier message for 401 errors (the one returned is a little hard to understand)
+                    if(this.model.get("sysMetaErrorCode") == 401){
+
+                        // If the user at least has write permission, they cannot update the system metadata only, so show this message
+                        /** @todo Do an object update when someone has write permission but not changePermission and is trying to change the system metadata (but not the access policy)  */
+                        if(accessPolicy && accessPolicy.isAuthorized("write")){
+                            errorMessage = "The owner of this data file has not given you permission to rename it or change the " + MetacatUI.appModel.get("accessPolicyName") + "."
+                        // Otherwise, assume they only have read access
+                        } else {
+                            errorMessage = "The owner of this data file has not given you permission to edit this data file or change the " + MetacatUI.appModel.get("accessPolicyName") + ".";
+                        }
+                    }
+
+                    // When there's an error or a warninig
+                    if(uploadStatus == "e" && errorMessage){
+
+                        var tooltipClass = uploadStatus == "e" ? "error" : "";
+
+                      this.$(".status .icon").tooltip({
+                        placement: "top",
+                        trigger: "hover",
+                        html: true,
+                        title: "<div class='status-tooltip " + tooltipClass + "'><h6>Issue saving:</h6><div>" + errorMessage + "</div></div>",
+                        container: "body"
+                      });
+
+                      this.$el.removeClass("loading");
+                    }
+                    else if (( !uploadStatus || uploadStatus == "c" || uploadStatus == "q") && attributes.numAttributes == 0){
+
+                      this.$(".status .icon").tooltip({
+                        placement: "top",
+                        trigger: "hover",
+                        html: true,
+                        title: "<div class='status-tooltip'>This file needs to be described - Click 'Describe'</div>",
+                        container: "body"
+                      });
+
+                    this.$el.removeClass("loading");
+
+                  }
+                    else if( attributes.hasInvalidAttribute || !attributes.entityIsValid ){
+
+                      this.$(".status .icon").tooltip({
+                        placement: "top",
+                        trigger: "hover",
+                        html: true,
+                        title: "<div class='status-tooltip'>There is missing information about this file. Click 'Describe'</div>",
+                        container: "body"
+                      });
+
+                      this.$el.removeClass("loading");
+
+                    }
+                    else if(uploadStatus == "c"){
+
+                    this.$(".status .icon").tooltip({
+                        placement: "top",
+                        trigger: "hover",
+                        html: true,
+                        title: "<div class='status-tooltip'>Complete</div>",
+                        container: "body"
+                      });
+
+                      this.$el.removeClass("loading");
+                    }
+                    else if(uploadStatus == "l"){
+                      this.$(".status .icon").tooltip({
+                        placement: "top",
+                        trigger: "hover",
+                        html: true,
+                        title: "<div class='status-tooltip'>Reading file...</div>",
+                        container: "body"
+                      });
+
+                      this.$el.addClass("loading");
+                    }
+                    else if(uploadStatus == "p"){
+                      var model = this.model;
+
+                      this.$(".status .progress").tooltip({
+                        placement: "top",
+                        trigger: "hover",
+                        html: true,
+                        title: function(){
+                          if(model.get("numSaveAttempts") > 0){
+                            return "<div class='status-tooltip'>Something went wrong during upload. <br/> Trying again... (attempt " + (model.get("numSaveAttempts") + 1) + " of 3)</div>";
+                          }
+                          else if(model.get("uploadProgress")){
+                            var percentDone = model.get("uploadProgress").toString();
+                            if(percentDone.indexOf(".") > -1)
+                              percentDone = percentDone.substring(0, percentDone.indexOf("."));
+                          }
+                          else
+                            var percentDone = "0";
+
+                          return "<div class='status-tooltip'>Uploading: " + percentDone + "%</div>";
+                        },
+                        container: "body"
+                      });
+
+                      this.$el.addClass("loading");
+                    }
+                    else{
+                      this.$el.removeClass("loading");
+                    }
+
+                    //Listen to changes to the upload progress of this object
+                    this.listenTo(this.model, "change:uploadProgress", this.showUploadProgress);
+
+                    //Listen to changes to the upload status of the entire package
+                    this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:uploadStatus", this.toggleSaving);
+
+                    //listen for changes to rerender the view
+                    this.listenTo(this.model, "change:fileName change:title change:id change:formatType " +
+                        "change:formatId change:type change:resourceMap change:documents change:isDocumentedBy " +
+                        "change:size change:nodeLevel change:uploadStatus", this.render); // render changes to the item
+
+                    var view = this;
+                    this.listenTo(this.model, "replace", function(newModel){
+                      view.model = newModel;
+                      view.render();
+                    });
                   }
                   else {
-                    attributes.metricIcon = "icon-cloud-download";
-                  }
 
-                  // add collapse class
-                  if (!attributes.isMetadata){
-                    this.$el.addClass("collapse");
-                  }
+                    attributes.fileType = this.model.getFormat();
+                    //Determine the icon type based on format type
+                    if(this.model.getFormat() == "program")
+                      attributes.icon = "icon-code";
+                    else if(this.model.getFormat() == "data")
+                      attributes.icon = "icon-table";
+                    else if(this.model.getFormat() == "metadata")
+                      attributes.icon = "icon-file-text";
+                    else if (this.model.getFormat() == "image")
+                      attributes.icon = "icon-picture";
+                    else if (this.model.getFormat() == "pdf")
+                      attributes.icon = "icon-file pdf";
+                    else
+                      attributes.icon = "icon-table";
 
-                  //Download button
-                  attributes.downloadUrl = undefined;
-                  if (this.model.get("dataUrl") !== undefined || 
-                      this.model.get("url") !== undefined     || 
-                      this.model.url() !== undefined) {
-                    if (this.model.get("dataUrl") !== undefined) {
-                      attributes.downloadUrl = this.model.get("dataUrl");
+                    // insert metrics for this item
+                    attributes.id = this.model.get("id");
+                    attributes.memberRowMetrics = null;
+                    var metricToolTip = null;
+                    if (this.memberRowMetrics !== null) {
+                      metricToolTip = this.memberRowMetrics;
+                      attributes.memberRowMetrics = this.memberRowMetrics.split(" ")[0];
                     }
-                    else if (this.model.get("dataUrl") !== undefined) {
-                      attributes.downloadUrl = this.model.get("url");
+                    attributes.metricIcon = undefined;
+                    if (attributes.isMetadata) {
+                      attributes.metricIcon = "icon-eye-open";
                     }
-                    else if (this.model.url() !== undefined) {
-                      var downloadUrl = this.model.url();
-                      attributes.downloadUrl = downloadUrl.replace("/meta/", "/object/");
+                    else {
+                      attributes.metricIcon = "icon-cloud-download";
                     }
+
+                    // add collapse class
+                    if (!attributes.isMetadata){
+                      this.$el.addClass("collapse");
+                    }
+
+                    //Download button
+                    attributes.downloadUrl = undefined;
+                    if (this.model.get("dataUrl") !== undefined || 
+                        this.model.get("url") !== undefined     || 
+                        this.model.url() !== undefined) {
+                      if (this.model.get("dataUrl") !== undefined) {
+                        attributes.downloadUrl = this.model.get("dataUrl");
+                      }
+                      else if (this.model.get("dataUrl") !== undefined) {
+                        attributes.downloadUrl = this.model.get("url");
+                      }
+                      else if (this.model.url() !== undefined) {
+                        var downloadUrl = this.model.url();
+                        attributes.downloadUrl = downloadUrl.replace("/meta/", "/object/");
+                      }
+                    }
+                    this.downloadButtonView = new DownloadButtonView({ id: this.model.get("id"), view: "actionsView" });
+
+                    if (this.model.get("isDocumentedBy") !== undefined) {
+                      metadataId = this.model.get("isDocumentedBy");
+                      id = this.model.get("id");
+                      infoLink = MetacatUI.root + "/view/" + encodeURIComponent(metadataId) + "#" + encodeURIComponent(id)
+                      attributes.moreInfoLink = infoLink;
+                    }
+
+                    this.$el.html( this.template(attributes) );
+
+                    // add tooltip for metrics in package table
+                    this.$('.packageTable-resultItem').tooltip({
+                                            placement: "top",
+                                            trigger: "hover",
+                                            delay: 800,
+                                            container: this.$el,
+                                            title: metricToolTip
+                                          });
+
+
                   }
-                  this.downloadButtonView = new DownloadButtonView({ id: this.model.get("id"), view: "actionsView" });
-
-                  if (this.model.get("isDocumentedBy") !== undefined) {
-                    metadataId = this.model.get("isDocumentedBy");
-                    id = this.model.get("id");
-                    infoLink = MetacatUI.root + "/view/" + encodeURIComponent(metadataId) + "#" + encodeURIComponent(id)
-                    attributes.moreInfoLink = infoLink;
-                  }
-
-                  this.$el.html( this.template(attributes) );
-
-                  // add tooltip for metrics in package table
-                  this.$('.packageTable-resultItem').tooltip({
-                                          placement: "top",
-                                          trigger: "hover",
-                                          delay: 800,
-                                          container: this.$el,
-                                          title: metricToolTip
-                                        });
-
-
                 }
 
                 this.$el.data({

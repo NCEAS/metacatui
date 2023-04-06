@@ -411,17 +411,30 @@ define([
                     for (let i = 0; i < pathArray.length; i++) {
                         if (!insertedPath.includes(pathArray[i])) {
                             // insert path
-                            
+                            var dataItemView;
+
+                            dataItemView = new DataItemView({
+                                mode: this.mode,
+                                itemName: pathArray[i],
+                                pathName: key,
+                                itemType: "folder",
+                                parentEditorView: this.parentEditorView
+                            });
+
+                            this.subviews[pathArray[i]] = dataItemView; // keep track of all views
+
+                            this.$el.append(dataItemView.render().el);
+
+                            this.trigger("addOne");
+
                             insertedPath.push(pathArray[i])
                         }
                     }
 
                     // add files in the folder
                     var itemArray = sortedFilePathObj[key];
-
                     for (let i = 0; i < itemArray.length; i++) {
                         let item = itemArray[i];
-                        console.log(this.dataPackage.get(item));
                         this.addOne(this.dataPackage.get(item));
                     }
                 }
