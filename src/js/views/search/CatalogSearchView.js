@@ -9,6 +9,7 @@ define([
   "views/search/SorterView",
   "text!templates/search/catalogSearch.html",
   "models/connectors/Map-Search-Filters",
+  "text!" + MetacatUI.root + "/css/catalog-search-view.css"
 ], function (
   $,
   Backbone,
@@ -18,7 +19,8 @@ define([
   PagerView,
   SorterView,
   Template,
-  MapSearchFiltersConnector
+  MapSearchFiltersConnector,
+  CatalogSearchViewCSS
 ) {
   "use strict";
 
@@ -181,14 +183,25 @@ define([
       titleContainer: ".title-container",
 
       /**
+       * The query selector for button that is used to either show or hide the
+       * map.
+       * @type {string}
+       * @since 2.22.0
+       */
+      showHideMapButton: ".show-hide-map-button",
+
+      /**
        * The events this view will listen to and the associated function to
        * call.
        * @type {Object}
        * @since 2.22.0
        */
-      events: {
-        "click .map-toggle-container": "toggleMode",
-        "click .toggle-map-filter": "toggleMapFilter",
+      events: function () {
+        const e = {
+          "click .spatial-filter": "toggleMapFilter",
+        }
+        e[`click ${this.showHideMapButton}`] = "toggleMode";
+        return e;
       },
 
       /**
@@ -208,6 +221,10 @@ define([
        * @since x.x.x
        */
       initialize: function (options) {
+
+        this.cssID = "catalogSearchView";
+        MetacatUI.appModel.addCSS(CatalogSearchViewCSS, this.cssID);
+
         if (!options) options = {};
 
         this.initialQuery = options.initialQuery || null;
@@ -602,7 +619,7 @@ define([
        */
       toggleMode: function (newMode) {
         try {
-          let classList = document.querySelector("body").classList;
+          const classList = document.querySelector("body").classList;
 
           // If the new mode is not provided, the new mode is the opposite of
           // the current mode
@@ -618,8 +635,27 @@ define([
             classList.remove("listMode");
             classList.add("mapMode");
           }
+          this.updateShowHideMapButton();
         } catch (e) {
           console.error("Couldn't toggle search mode. ", e);
+        }
+      },
+
+      /**
+       * Change the content of the map toggle button to indicate whether
+       * clicking it will show or hide the map.
+       */
+      updateShowHideMapButton: function () {
+        try {
+          const mapToggle = this.el.querySelector(this.showHideMapButton);
+          if(!mapToggle) return;
+          if (this.mode == "map") {
+            mapToggle.innerHTML = 'Hide Map <i class="icon icon-angle-right"></i>'
+          } else {
+            mapToggle.innerHTML = '<i class="icon icon-angle-left"></i> Show Map <i class="icon icon-globe"></i>'
+          }
+        } catch (e) {
+          console.log("Couldn't update map toggle. ", e);
         }
       },
 
@@ -653,6 +689,7 @@ define([
        */
       onClose: function () {
         try {
+          MetacatUI.appModel.removeCSS(this.cssID);
           document
             .querySelector("body")
             .classList.remove(this.bodyClass, `${this.mode}Mode`);
