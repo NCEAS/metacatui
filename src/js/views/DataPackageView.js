@@ -360,12 +360,17 @@ define([
                 var filePathObj;
                 this.atLocationObj = atLocationObj;
 
+                this.dataPackage.each (function(item) {
+                    if (!(Object.keys(this.atLocationObj).includes(item.id))) {
+                        this.atLocationObj[item.id] = "/";
+                    }
+                }, this);
+
                 // form path to D1 object dictionary
                 if (this.atLocationObj !== undefined) {
                     var filePathObj = new Object();
                     
                     for (let key of Object.keys(this.atLocationObj)) {
-                        // console.log(key, this.atLocationObj[key]);
                         var path = this.atLocationObj[key];
                         var pathArray = path.split('/');
                         pathArray.pop();
@@ -408,7 +413,8 @@ define([
                 for (let key of Object.keys(sortedFilePathObj)) {
                     // add folder
                     var pathArray = key.split("/");
-                    for (let i = 0; i < pathArray.length; i++) {
+                    //skip the first empty value
+                    for (let i = 1; i < pathArray.length; i++) {
                         if (!insertedPath.includes(pathArray[i])) {
                             // insert path
                             var dataItemView;
