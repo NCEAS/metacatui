@@ -1,0 +1,69 @@
+<!-- Icon column -->
+<% if (viewType === "view" && icon !== "undefined") { %>
+	<% if ( type !== "Metadata" ) {
+		indentFile = (nodeLevel + 1) * 25;
+		%>
+		<td class="type-icon">
+			<i class="<%= icon %>" style="padding-left:<%=indentFile %>px"></i>
+		</td>
+	<% } else { %>
+		<td class="type-icon">
+			<a class="expand-control control" ><i class="icon icon-caret-right"></i></a>
+			<a class="collapse-control control" ><i class="icon icon-caret-down"></i></a>
+			<i class="icon-file" style="padding-left:<%=indentFile %>px"></i>
+		</td>
+	<% } %>
+<% } else { %>
+    <% var indentFile = (nodeLevel + 1) * 40; %>
+    <td class="type-icon"><i class="icon-large icon-file" style="padding-left:<%=indentFile %>px"></i></td>
+<% } %>
+
+<!-- Files column -->
+<td >
+	<span>
+		<% if (typeof title != "undefined" && title && title.length) { %>
+			<%= title %>
+		<% } else if ( typeof fileName != "undefined" && fileName) { %>
+			<%= fileName %>
+		<% } else { %>
+			<%= id %>
+		<% } %>
+	</span>
+</td>
+
+<!-- Size column -->
+<% if ( typeof sizeStr != "undefined" && sizeStr ) { %>
+    <td class="size"><%= sizeStr %></td>
+
+<% } else {%>
+    <td class="size"><%= size %></td>
+<% } %>
+
+<!-- Type column -->
+<% if (viewType === "view" && fileType) { %>
+    <td class="type"><%= fileType %></td>
+<% } else { %>
+	<td class="type"></td>
+<% } %>
+
+<% if (memberRowMetrics !== undefined && memberRowMetrics > 0) { %>
+	<td class="metrics-count downloads" data-id="<%= id %>">
+		<span class="packageTable-resultItem badge ">
+			<i class='catalog-metric-icon <%= metricIcon %>'></i> <%= memberRowMetrics %> 
+		</span>	
+	</td>
+<% } else { %>
+	<td class="metrics-count downloads" data-id="<%= id %>">
+		
+	</td>
+<% } %>
+
+<td class="file-actions">
+	<% if (isMetadata !== undefined && !isMetadata) { %>
+		<a class="btn btn-rounded action preview" href="<%= moreInfoLink %>" data-id="<%= id %>"><i class="icon icon-large icon-info"></i></a>
+	<% } %>
+
+	<% if (downloadUrl !== undefined ) { %>
+		<a class="btn btn-rounded action downloadAction" href="<%= downloadUrl %>" data-id="<%= id %>"><i class="icon icon-large icon-cloud-download"></i></a>
+	<% } %>
+</td>

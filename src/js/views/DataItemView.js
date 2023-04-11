@@ -7,8 +7,9 @@ define([
       'models/metadata/eml211/EML211',
       'models/metadata/eml211/EMLOtherEntity',
       'views/DownloadButtonView',
-      'text!templates/dataItem.html'],
-    function(_, $, Backbone, DataONEObject, EML, EMLOtherEntity, DownloadButtonView, DataItemTemplate){
+      'text!templates/dataItem.html',
+      'text!templates/dataItemHierarchy.html'],
+    function(_, $, Backbone, DataONEObject, EML, EMLOtherEntity, DownloadButtonView, DataItemTemplate, DataItemHierarchy){
 
         /**
         * @class DataItemView
@@ -32,6 +33,10 @@ define([
 
             /** The HTML template for a data item */
             template: _.template(DataItemTemplate),
+
+
+            /** The HTML template for a data item */
+            dataItemHierarchyTemplate: _.template(DataItemHierarchy),
 
             /**
             * The DataONEObject model to display in this view
@@ -109,7 +114,7 @@ define([
                     attributes.fileName = this.itemName;
                     attributes.nodeLevel = this.pathName.split("/").length;
 
-                    this.$el.html( this.template(attributes) );
+                    this.$el.html( this.dataItemHierarchyTemplate(attributes) );
                 }
                 else {
                   
@@ -479,7 +484,7 @@ define([
                       attributes.moreInfoLink = infoLink;
                     }
 
-                    this.$el.html( this.template(attributes) );
+                    this.$el.html( this.dataItemHierarchyTemplate(attributes) );
 
                     // add tooltip for metrics in package table
                     this.$('.packageTable-resultItem').tooltip({
