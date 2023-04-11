@@ -1,25 +1,21 @@
-<!-- Icon column -->
-<% if (viewType === "view" && icon !== "undefined") { %>
-	<% if ( type !== "Metadata" ) {
-		indentFile = (nodeLevel + 1) * 25;
-		%>
-		<td class="type-icon">
-			<i class="<%= icon %>" style="padding-left:<%=indentFile %>px"></i>
-		</td>
-	<% } else { %>
-		<td class="type-icon">
-			<a class="expand-control control" ><i class="icon icon-caret-right"></i></a>
-			<a class="collapse-control control" ><i class="icon icon-caret-down"></i></a>
-			<i class="icon-file" style="padding-left:<%=indentFile %>px"></i>
-		</td>
-	<% } %>
-<% } else { %>
-    <% var indentFile = (nodeLevel + 1) * 40; %>
-    <td class="type-icon"><i class="icon-large icon-file" style="padding-left:<%=indentFile %>px"></i></td>
-<% } %>
-
-<!-- Files column -->
+<!-- Icon & Files column -->
 <td >
+	<span>
+		<% if (icon !== "undefined") { 
+			if ( fileType !== "Metadata" ) {
+				indentFile = (nodeLevel + 1) * 15;
+			%>
+				<i class="<%= icon %>" style="padding-left:<%=indentFile %>px"></i>
+			<% } else { %>
+				<a class="expand-control control" ><i class="icon icon-caret-right" style="display:none"></i></a>
+				<a class="collapse-control control" ><i class="icon icon-caret-down"></i></a>
+				<i class="icon-file" style="padding-left:<%=indentFile %>px"></i>
+			<% } %>
+		<% } else { %>
+			<% var indentFile = (nodeLevel + 1) * 40; %>
+			<i class="icon-large icon-file" style="padding-left:<%=indentFile %>px"></i>
+		<% } %>
+	</span>
 	<span>
 		<% if (typeof title != "undefined" && title && title.length) { %>
 			<%= title %>
@@ -40,7 +36,7 @@
 <% } %>
 
 <!-- Type column -->
-<% if (viewType === "view" && fileType) { %>
+<% if (fileType) { %>
     <td class="type"><%= fileType %></td>
 <% } else { %>
 	<td class="type"></td>
@@ -59,7 +55,7 @@
 <% } %>
 
 <td class="file-actions">
-	<% if (isMetadata !== undefined && !isMetadata) { %>
+	<% if (isMetadata !== undefined && !isMetadata && moreInfoLink !== undefined) { %>
 		<a class="btn btn-rounded action preview" href="<%= moreInfoLink %>" data-id="<%= id %>"><i class="icon icon-large icon-info"></i></a>
 	<% } %>
 

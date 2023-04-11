@@ -82,7 +82,7 @@ define([
                 this.memberRowMetrics = options.memberRowMetrics || null;
                 this.mode = options.mode || "edit";
                 this.itemName = options.itemName || null;
-                this.pathName = options.pathName || null;
+                this.itemPath = options.itemPath || null;
                 this.itemType = options.itemType || "file";
                 this.id = this.model.get("id");
                 this.canWrite = false; // Default. Updated in render()
@@ -99,10 +99,15 @@ define([
                 this.stopListening();
 
                 if (this.itemType === "folder") {
+
+                    // Set the data-id for identifying events to model ids
+                    this.$el.attr("data-id", this.itemName);
+                    this.$el.attr("data-category", "entities-" + this.itemName);
+
                     var attributes = new Object();
-                    attributes.fileType = "folder";
+                    attributes.fileType = undefined;
                     attributes.type = undefined;
-                    attributes.icon = "icon-folder";
+                    attributes.icon = "icon-folder-open";
                     attributes.id = this.itemName;
                     attributes.size = undefined;
                     attributes.memberRowMetrics = undefined;
@@ -112,13 +117,14 @@ define([
                     // attributes.isMetadata = false;
                     attributes.viewType = this.mode;
                     attributes.fileName = this.itemName;
-                    attributes.nodeLevel = this.pathName.split("/").length;
-
+                    var itemPathParts = new Array();
+                    if (this.itemPath) {
+                      itemPathParts = this.itemPath.split("/");
+                    }
+                    attributes.nodeLevel = itemPathParts.length;
                     this.$el.html( this.dataItemHierarchyTemplate(attributes) );
                 }
                 else {
-                  
-
                   // Set the data-id for identifying events to model ids
                   this.$el.attr("data-id", this.model.get("id"));
                   this.$el.attr("data-category", "entities-" + this.model.get("id"));
@@ -130,18 +136,13 @@ define([
 
                   // check if this data item is a metadata object
                   attributes.isMetadata = false;
-                  if (this.model.get("type") == "Metadata") {
+                  if (this.model.get("type") == "Metadata" || this.model.get("formatType") == "METADATA") {
                     attributes.isMetadata = true;
                   }
 
                   //Format the title
                   if(Array.isArray(attributes.title)) {
                     attributes.title  = attributes.title[0];
-                  }
-
-                  // format metadata object title
-                  if (this.mode == "view" && attributes.isMetadata) {
-                    attributes.title  = "Metadata: " + this.model.get("fileName");
                   }
 
                   //Set some defaults
@@ -423,18 +424,22 @@ define([
                   }
                   else {
 
+                    // format metadata object title
+                    if (attributes.isMetadata || this.model.getFormat() == "metadata") {
+                      attributes.title  = "Metadata: " + this.model.get("fileName");
+                      attributes.icon = "icon-file-text";
+                    }
+
                     attributes.fileType = this.model.getFormat();
                     //Determine the icon type based on format type
                     if(this.model.getFormat() == "program")
                       attributes.icon = "icon-code";
                     else if(this.model.getFormat() == "data")
                       attributes.icon = "icon-table";
-                    else if(this.model.getFormat() == "metadata")
-                      attributes.icon = "icon-file-text";
-                    else if (this.model.getFormat() == "image")
+                    else if (this.model.getFormat() == "image/jpeg")
                       attributes.icon = "icon-picture";
-                    else if (this.model.getFormat() == "pdf")
-                      attributes.icon = "icon-file pdf";
+                    else if (this.model.getFormat() == "PDF")
+                      attributes.icon = "icon-file";
                     else
                       attributes.icon = "icon-table";
 
@@ -454,9 +459,17 @@ define([
                       attributes.metricIcon = "icon-cloud-download";
                     }
 
-                    // add collapse class
                     if (!attributes.isMetadata){
+                      // add collapse class
                       this.$el.addClass("collapse");
+
+                      // add nodeLevel for displaying indented filename
+                      attributes.nodeLevel = 0;
+                      if (this.itemPath !== undefined) {
+                        itemPathParts = this.itemPath.split("/");
+                        itemPathParts.shift();
+                        attributes.nodeLevel = itemPathParts.length;
+                      }
                     }
 
                     //Download button

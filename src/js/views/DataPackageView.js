@@ -179,9 +179,15 @@ define([
 
                 }
 
+                var itemPath;
+                if (this.atLocationObj) {
+                    itemPath = this.atLocationObj[item.get("id")];
+                }
+
                 dataItemView = new DataItemView({
                     model: item,
                     memberRowMetrics: this.getMemberRowMetrics(item.get("id"), item.get("formatType")),
+                    itemPath: itemPath,
                     mode: this.mode,
                     parentEditorView: this.parentEditorView
                 });
@@ -409,6 +415,7 @@ define([
             addFilesAndFolders: function(sortedFilePathObj) {
             	if(!sortedFilePathObj) return false;
                 var insertedPath = new Array();
+                insertedPath.push("");
 
                 for (let key of Object.keys(sortedFilePathObj)) {
                     // add folder
@@ -418,11 +425,12 @@ define([
                         if (!insertedPath.includes(pathArray[i])) {
                             // insert path
                             var dataItemView;
+                            var itemPath = insertedPath.join("/");
 
                             dataItemView = new DataItemView({
                                 mode: this.mode,
                                 itemName: pathArray[i],
-                                pathName: key,
+                                itemPath: itemPath,
                                 itemType: "folder",
                                 parentEditorView: this.parentEditorView
                             });
