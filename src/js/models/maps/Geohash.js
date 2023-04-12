@@ -75,7 +75,7 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
        */
       isProperty: function (key) {
         // Must use prototype.get to avoid infinite loop
-        const properties = Backbone.Model.prototype.get.call(this, key);
+        const properties = Backbone.Model.prototype.get.call(this, "properties");
         return properties?.hasOwnProperty(key);
       },
 
@@ -201,6 +201,7 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
        * @returns {Object} A GeoJSON Feature representing the geohash.
        */
       toGeoJSON: function () {
+        // return this.toGeoJSONPoint();
         if (this.isEmpty()) return null;
         const bounds = this.getBounds();
         if (!bounds) return null;
@@ -227,6 +228,22 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
           properties: properties,
         };
       },
+
+      toGeoJSONPoint: function () {
+        if (this.isEmpty()) return null;
+        const point = this.getPoint();
+        if (!point) return null;
+        const properties = this.get("properties");
+        properties["hashString"] = this.get("hashString");
+        return {
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [point.longitude, point.latitude],
+          },
+          properties: properties,
+        };
+      }
     }
   );
 

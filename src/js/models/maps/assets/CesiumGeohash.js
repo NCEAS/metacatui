@@ -6,9 +6,21 @@ define([
   "backbone",
   "cesium",
   "models/maps/assets/CesiumVectorData",
+  "models/maps/AssetColorPalette",
+  "models/maps/AssetColor",
   "models/maps/Geohash",
   "collections/maps/Geohashes",
-], function ($, _, Backbone, Cesium, CesiumVectorData, Geohash, Geohashes) {
+], function (
+  $,
+  _,
+  Backbone,
+  Cesium,
+  CesiumVectorData,
+  AssetColorPalette,
+  AssetColor,
+  Geohash,
+  Geohashes
+) {
   /**
    * @classdesc A Geohash Model represents a geohash layer in a map.
    * @classcategory Models/Maps/Assets
@@ -43,8 +55,55 @@ define([
           type: "GeoJsonDataSource",
           label: "Geohashes",
           geohashes: new Geohashes(),
-          opacity: 0.5,
+          opacity: 0.8,
+          colorPalette: new AssetColorPalette({
+            paletteType: "continuous",
+            property: "count",
+            colors: [
+              {
+                value: 0,
+                color: "#FFFFFF00"
+              },
+              {
+                value: 1,
+                color: "#1BFAC44C"
+              },
+              {
+                value: "max",
+                color: "#1BFA8FFF"
+              },
+            ],
+          }),
+          outlineColor: new AssetColor({
+            color: "#DFFAFAED",
+          })
         });
+      },
+
+      /**
+       * Get the property that we want the geohashes to display, e.g. count.
+       * @returns {string} The property of interest.
+       */
+      getPropertyOfInterest: function () {
+        return this.get("colorPalette")?.get("property");
+      },
+
+      /**
+       * For the property of interest (e.g. count) Get the min and max values
+       * from the geohashes collection and update the color palette. These 
+       */
+      updateColorRangeValues: function () {
+        const colorPalette = this.get("colorPalette");
+        const geohashes = this.get("geohashes");
+        if (!geohashes || !colorPalette) {
+          return;
+        }
+        const vals = geohashes.getAttr(this.getPropertyOfInterest());
+        if (!vals || vals.length === 0) {
+          return;
+        }
+        colorPalette.set("minVal", Math.min(...vals));
+        colorPalette.set("maxVal", Math.max(...vals));
       },
 
       /**
@@ -93,15 +152,15 @@ define([
       },
 
       /**
-       * Stop the model from listening to itself for changes in the counts or
-       * geohashes.
+       * Stop the model from listening to itself for changes.
        */
       stopListeners: function () {
         this.stopListening(this.get("geohashes"), "add remove update reset");
       },
 
       /**
-       * Update and re-render the geohashes when the counts change.
+       * Update and re-render the geohashes when the collection of geohashes
+       * changes.
        */
       startListening: function () {
         try {
@@ -110,6 +169,7 @@ define([
             this.get("geohashes"),
             "add remove update reset",
             function () {
+              this.updateColorRangeValues();
               this.createCesiumModel(true);
             }
           );

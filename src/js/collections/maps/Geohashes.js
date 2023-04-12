@@ -145,6 +145,16 @@ define([
       },
 
       /**
+       * Get an array of all the values for a given property in the geohash
+       * models in this collection.
+       * @param {string} attr The key of the property in the properties object
+       * in each geohash model.
+       */
+      getAttr(attr) {
+        return this.models.map((geohash) => geohash.get(attr));
+      },
+
+      /**
        * Splits a given bounding box if it crosses the prime meridian. Returns
        * an array of bounding boxes.
        * @param {Object} bounds - Bounding box object with north, south, east,

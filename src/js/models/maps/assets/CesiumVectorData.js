@@ -77,6 +77,10 @@ define(
          * @property {CesiumVectorData#cesiumOptions} cesiumOptions options are passed to
          * the function that creates the Cesium model. The properties of options are
          * specific to each type of asset.
+         * @property {outlineColor} [outlineColor=null] The color of the outline of the
+         * features. If null, the outline will not be shown. If a string, it should be a
+         * valid CSS color string. If an object, it should be an AssetColor object, or
+         * a set of RGBA values.
         */
         defaults: function () {
           return Object.assign(
@@ -87,7 +91,8 @@ define(
               cesiumModel: null,
               cesiumOptions: {},
               colorPalette: new AssetColorPalette(),
-              icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M384 352h-1l-39-65a64 64 0 0 0 0-62l39-65h1a64 64 0 1 0-55-96H119a64 64 0 1 0-87 87v210a64 64 0 1 0 87 87h210a64 64 0 0 0 119-32c0-35-29-64-64-64zm-288 9V151a64 64 0 0 0 23-23h208l-38 64h-1a64 64 0 1 0 0 128h1l38 64H119a64 64 0 0 0-23-23zm176-105a16 16 0 1 1 32 0 16 16 0 0 1-32 0zM400 96a16 16 0 1 1-32 0 16 16 0 0 1 32 0zM64 80a16 16 0 1 1 0 32 16 16 0 0 1 0-32zM48 416a16 16 0 1 1 32 0 16 16 0 0 1-32 0zm336 16a16 16 0 1 1 0-32 16 16 0 0 1 0 32z"/></svg>'
+              icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M384 352h-1l-39-65a64 64 0 0 0 0-62l39-65h1a64 64 0 1 0-55-96H119a64 64 0 1 0-87 87v210a64 64 0 1 0 87 87h210a64 64 0 0 0 119-32c0-35-29-64-64-64zm-288 9V151a64 64 0 0 0 23-23h208l-38 64h-1a64 64 0 1 0 0 128h1l38 64H119a64 64 0 0 0-23-23zm176-105a16 16 0 1 1 32 0 16 16 0 0 1-32 0zM400 96a16 16 0 1 1-32 0 16 16 0 0 1 32 0zM64 80a16 16 0 1 1 0 32 16 16 0 0 1 0-32zM48 416a16 16 0 1 1 32 0 16 16 0 0 1-32 0zm336 16a16 16 0 1 1 0-32 16 16 0 0 1 0 32z"/></svg>',
+              outlineColor: null,
             }
           );
         },
@@ -110,6 +115,10 @@ define(
             // rendered. The map will set it to true when the data is ready to be
             // rendered. Used to know when it's safe to calculate a bounding sphere.
             this.set('displayReady', false)
+
+            if (assetConfig.outlineColor && !assetConfig.outlineColor instanceof AssetColor) {
+              this.set('outlineColor', new AssetColor(assetConfig.outlineColor))
+            }
 
             this.createCesiumModel();
           }
@@ -215,10 +224,10 @@ define(
          */
         setListeners: function () {
           try {
-            this.stopListening(this, 'change:visible change:opacity change:color')
-            this.listenTo(
-              this, 'change:visible change:opacity change:color', this.updateAppearance
-            )
+            const appearEvents =
+              'change:visible change:opacity change:color change:outlineColor';
+            this.stopListening(this, appearEvents)
+            this.listenTo(this, appearEvents, this.updateAppearance)
             this.stopListening(this.get('filters'), 'update')
             this.listenTo(this.get('filters'), 'update', this.updateFeatureVisibility)
           }
@@ -331,12 +340,31 @@ define(
                   outlineColor = Cesium.Color.WHITE
                   lineWidth = 7
                   markerSize = 34
+                } else {
+                  outlineColor = model.get("outlineColor")?.get("color");
+                  if(outlineColor) {
+                    outline = true;
+                    console.log(outlineColor);
+                    outlineColor = new Cesium.Color(
+                      outlineColor.red, outlineColor.green, outlineColor.blue, outlineColor.alpha
+                    );
+                  }
                 }
 
-                const rgb = model.getColor(properties)
-                const color = new Cesium.Color(
-                  rgb.red, rgb.green, rgb.blue, featureOpacity
-                )
+                const rgba = model.getColor(properties)
+                const alpha = rgba.alpha * featureOpacity
+
+                // If alpha is 0 then the feature is hidden, don't bother setting up
+                // colors.
+                let color = null
+                if (alpha === 0) {
+                  entity.show = false
+                } else {
+                  entity.show = true
+                  color = new Cesium.Color(
+                    rgba.red, rgba.green, rgba.blue, alpha
+                  )
+                }
 
                 if (entity.polygon) {
                   entity.polygon.material = color

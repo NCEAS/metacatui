@@ -111,10 +111,6 @@ define(['jquery', 'underscore', 'backbone'],
         showToolbar: false,
         layers: [
           {
-              "type": "CesiumGeohash",
-              "opacity": 0.7,
-          },
-          {
               "label": "Satellite imagery",
               "icon": "urn:uuid:4177c2e1-3037-4964-bf00-5f13182308d9",
               "type": "IonImageryProvider",
