@@ -415,18 +415,27 @@ define([
             addFilesAndFolders: function(sortedFilePathObj) {
             	if(!sortedFilePathObj) return false;
                 var insertedPath = new Array();
-                insertedPath.push("");
+                let pathMap = new Object();
+                pathMap[""] = "";
 
                 for (let key of Object.keys(sortedFilePathObj)) {
                     // add folder
                     var pathArray = key.split("/");
                     //skip the first empty value
                     for (let i = 1; i < pathArray.length; i++) {
-                        if (!insertedPath.includes(pathArray[i])) {
+                        if (!(pathArray[i] in pathMap)) {
                             // insert path
-                            var dataItemView;
-                            var itemPath = insertedPath.join("/");
+                            var dataItemView,
+                                itemPath;
 
+                            // root
+                            if (i == 1) {
+                                itemPath = "";
+                            }
+                            else {
+                                itemPath = pathMap[pathArray[i - 1]];
+                            }
+                            
                             dataItemView = new DataItemView({
                                 mode: this.mode,
                                 itemName: pathArray[i],
@@ -441,7 +450,7 @@ define([
 
                             this.trigger("addOne");
 
-                            insertedPath.push(pathArray[i])
+                            pathMap[pathArray[i]] = itemPath + "/" + pathArray[i];
                         }
                     }
 

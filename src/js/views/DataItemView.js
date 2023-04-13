@@ -120,8 +120,12 @@ define([
                     var itemPathParts = new Array();
                     if (this.itemPath) {
                       itemPathParts = this.itemPath.split("/");
+                      attributes.nodeLevel = itemPathParts.length - 1;
                     }
-                    attributes.nodeLevel = itemPathParts.length;
+                    else {
+                      attributes.nodeLevel = 0;
+                    }
+                    
                     this.$el.html( this.dataItemHierarchyTemplate(attributes) );
                 }
                 else {
@@ -468,7 +472,7 @@ define([
                       if (this.itemPath !== undefined) {
                         itemPathParts = this.itemPath.split("/");
                         itemPathParts.shift();
-                        attributes.nodeLevel = itemPathParts.length;
+                        attributes.nodeLevel = itemPathParts.length - 1;
                       }
                     }
 

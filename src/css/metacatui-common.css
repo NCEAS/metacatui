@@ -8989,11 +8989,14 @@ body > #extension-is-installed{
 }
 
 
-#data-package-table-head > .file-header > th:not(:first-child, :last-child) {
+#data-package-table-head > .file-header > th:not(:last-child) {
 	border-right: 1px solid #E3E3E3;
 	height: 30px;
 }
 
+#data-package-table-body > tr > td:first-child {
+	cursor: default;
+}
 
 .file-table-container {
 	height: 21em;
@@ -9006,6 +9009,12 @@ body > #extension-is-installed{
 	width: 15px;
 }
 
+.btn.btn-rounded.action.downloadAction{
+	border: none;
+}
 .btn.btn-rounded.action.downloadAction > i{
 	margin-left: 0px;
+}
+.data-package-item {
+	height: 38px;
 }

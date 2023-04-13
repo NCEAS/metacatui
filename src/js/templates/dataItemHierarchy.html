@@ -2,15 +2,9 @@
 <td >
 	<span>
 		<% if (icon !== "undefined") { 
-			if ( fileType !== "Metadata" ) {
-				indentFile = (nodeLevel + 1) * 15;
+			indentFile = (nodeLevel) * 15;
 			%>
-				<i class="<%= icon %>" style="padding-left:<%=indentFile %>px"></i>
-			<% } else { %>
-				<a class="expand-control control" ><i class="icon icon-caret-right" style="display:none"></i></a>
-				<a class="collapse-control control" ><i class="icon icon-caret-down"></i></a>
 				<i class="icon-file" style="padding-left:<%=indentFile %>px"></i>
-			<% } %>
 		<% } else { %>
 			<% var indentFile = (nodeLevel + 1) * 40; %>
 			<i class="icon-large icon-file" style="padding-left:<%=indentFile %>px"></i>
