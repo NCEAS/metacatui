@@ -1,13 +1,27 @@
 <!-- Icon & Files column -->
-<td >
+<% if (isFolder) { %>
+	<td data-level="parent-<%=nodeLevel %>">
+<% } else { %>
+	<td data-level="child-<%=nodeLevel %>">
+<% } %>
 	<span>
 		<% if (icon !== "undefined") { 
-			indentFile = (nodeLevel) * 15;
 			%>
-				<i class="icon-file" style="padding-left:<%=indentFile %>px"></i>
+				<% if (isFolder) { 
+					indentFile = (nodeLevel) * 15;
+					%>
+					<a class="expand-control control" data-level="parent-<%=nodeLevel %>" style="padding-left:<%=indentFile %>px"><i class="icon icon-caret-right"></i></a>
+					<a class="collapse-control control" data-level="parent-<%=nodeLevel %>" style="padding-left:<%=indentFile %>px;display:none"><i class="icon icon-caret-down"></i></a>
+					<i class="<%= icon %>"></i>
+				<% } else { 
+					indentFile = (nodeLevel) * 30;
+					%>
+					<i class="<%= icon %>" style="padding-left:<%=indentFile %>px"></i>
+				<% } %>
+
 		<% } else { %>
 			<% var indentFile = (nodeLevel + 1) * 40; %>
-			<i class="icon-large icon-file" style="padding-left:<%=indentFile %>px"></i>
+			<i class="icon-file" style="padding-left:<%=indentFile %>px"></i>
 		<% } %>
 	</span>
 	<span>

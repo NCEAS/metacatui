@@ -725,9 +725,13 @@ define([
                 e.preventDefault();
 
                 var view = this;
+                var appliedFilterEl = $(e.target).parents("td");
+                var hierarchyLevel = parseInt((appliedFilterEl.data("level")).split("-")[1]) + 1;
+                var children = "tr." + "child-" + hierarchyLevel;
+                var parent = "tr." + "parent-" + hierarchyLevel;
 
-                // TODO: Add logic to handle nested datasets
-                this.$("tr.collapse").fadeIn();
+                this.$(children).fadeIn();
+                this.$(parent).fadeIn();
                 this.$(".expand-control").fadeOut(function(){
                     view.$(".collapse-control").fadeIn("fast");
                     view.$(".tooltip-this").tooltip();
@@ -739,10 +743,19 @@ define([
                 e.preventDefault();
 
                 var view = this;
+                var appliedFilterEl = $(e.target).parents("td");
+                var hierarchyLevel = parseInt((appliedFilterEl.data("level")).split("-")[1]) + 1;
 
-                this.$("tr.collapse").fadeOut();
+                for (var i = hierarchyLevel; i < 25; i++) {
+                    var parent = "tr." + "parent-" + i;
+                    var children = "tr." + "child-" + i;
+                    
+                    this.$(children).fadeOut();
+                    this.$(parent).fadeOut();
+                }
                 this.$(".collapse-control").fadeOut(function(){
                     view.$(".expand-control").fadeIn();
+                    view.$(".tooltip-this").tooltip();
                 });
             },
 

@@ -106,7 +106,7 @@ define([
 
                     var attributes = new Object();
                     attributes.fileType = undefined;
-                    attributes.type = undefined;
+                    attributes.isFolder = true;
                     attributes.icon = "icon-folder-open";
                     attributes.id = this.itemName;
                     attributes.size = undefined;
@@ -121,6 +121,8 @@ define([
                     if (this.itemPath) {
                       itemPathParts = this.itemPath.split("/");
                       attributes.nodeLevel = itemPathParts.length - 1;
+                      parentClass = "parent-" + attributes.nodeLevel;
+                      this.$el.addClass(parentClass);
                     }
                     else {
                       attributes.nodeLevel = 0;
@@ -132,7 +134,7 @@ define([
                   // Set the data-id for identifying events to model ids
                   this.$el.attr("data-id", this.model.get("id"));
                   this.$el.attr("data-category", "entities-" + this.model.get("id"));
-
+                  
                   //Destroy the old tooltip
                   this.$(".status .icon, .status .progress").tooltip("hide").tooltip("destroy");
 
@@ -435,6 +437,7 @@ define([
                     }
 
                     attributes.fileType = this.model.getFormat();
+                    attributes.isFolder = false;
                     //Determine the icon type based on format type
                     if(this.model.getFormat() == "program")
                       attributes.icon = "icon-code";
@@ -461,11 +464,7 @@ define([
                     }
                     else {
                       attributes.metricIcon = "icon-cloud-download";
-                    }
-
-                    if (!attributes.isMetadata){
-                      // add collapse class
-                      this.$el.addClass("collapse");
+                      this.$el.addClass();
 
                       // add nodeLevel for displaying indented filename
                       attributes.nodeLevel = 0;
@@ -473,6 +472,8 @@ define([
                         itemPathParts = this.itemPath.split("/");
                         itemPathParts.shift();
                         attributes.nodeLevel = itemPathParts.length - 1;
+                        childClass = "child-" + attributes.nodeLevel;
+                        this.$el.addClass(childClass);
                       }
                     }
 
