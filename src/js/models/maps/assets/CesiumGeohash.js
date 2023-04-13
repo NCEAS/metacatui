@@ -49,10 +49,14 @@ define([
        * @property {Geohashes} geohashes The collection of geohashes to display
        * on the map.
        * @property {number} opacity The opacity of the layer.
+       * @property {AssetColorPalette} colorPalette The color palette for the
+       * layer.
+       * @property {AssetColor} outlineColor The outline color for the layer.
+       * @property {boolean} showLabels Whether to show labels for the layer.
        */
       defaults: function () {
         return Object.assign(CesiumVectorData.prototype.defaults(), {
-          type: "GeoJsonDataSource",
+          type: "CZMLDataSource",
           label: "Geohashes",
           geohashes: new Geohashes(),
           opacity: 0.8,
@@ -62,22 +66,46 @@ define([
             colors: [
               {
                 value: 0,
-                color: "#FFFFFF00"
+                color: "#FFFFFF00",
               },
               {
                 value: 1,
-                color: "#1BFAC44C"
+                color: "#1BFAC44C",
               },
               {
                 value: "max",
-                color: "#1BFA8FFF"
+                color: "#1BFA8FFF",
               },
             ],
           }),
           outlineColor: new AssetColor({
             color: "#DFFAFAED",
-          })
+          }),
+          showLabels: true,
         });
+      },
+
+      /**
+       * Executed when a new CesiumGeohash model is created.
+       * @param {MapConfig#MapAssetConfig} [assetConfig] The initial values of
+       * the attributes, which will be set on the model.
+       */
+      initialize: function (assetConfig) {
+        try {
+          if (this.get("showLabels")) {
+            this.set("type", "CzmlDataSource");
+          } else {
+            this.set("type", "GeoJsonDataSource");
+          }
+          this.startListening();
+          CesiumVectorData.prototype.initialize.call(this, assetConfig);
+        } catch (error) {
+          console.log(
+            "There was an error initializing a CesiumVectorData model" +
+              ". Error details: " +
+              error
+          );
+        }
       },
 
       /**
@@ -90,7 +118,7 @@ define([
 
       /**
        * For the property of interest (e.g. count) Get the min and max values
-       * from the geohashes collection and update the color palette. These 
+       * from the geohashes collection and update the color palette. These
        */
       updateColorRangeValues: function () {
         const colorPalette = this.get("colorPalette");
@@ -104,25 +132,6 @@ define([
         }
         colorPalette.set("minVal", Math.min(...vals));
         colorPalette.set("maxVal", Math.max(...vals));
-      },
-
-      /**
-       * Executed when a new CesiumGeohash model is created.
-       * @param {MapConfig#MapAssetConfig} [assetConfig] The initial values of
-       * the attributes, which will be set on the model.
-       */
-      initialize: function (assetConfig) {
-        try {
-          this.set("type", "GeoJsonDataSource");
-          this.startListening();
-          CesiumVectorData.prototype.initialize.call(this, assetConfig);
-        } catch (error) {
-          console.log(
-            "There was an error initializing a CesiumVectorData model" +
-              ". Error details: " +
-              error
-          );
-        }
       },
 
       /**
@@ -179,6 +188,17 @@ define([
       },
 
       /**
+       * Get the geohashes that are currently in the map's extent.
+       * @returns {Geohashes} The geohashes in the current extent.
+       */
+      getGeohashesForExtent: function () {
+        const extent = this.get("mapModel")?.get("currentViewExtent");
+        const bounds = Object.assign({}, extent);
+        delete bounds.height;
+        return this.get("geohashes")?.getSubsetByBounds(bounds);
+      },
+
+      /**
        * Returns the GeoJSON representation of the geohashes.
        * @param {Boolean} [limitToExtent = true] - Set to false to return the
        * GeoJSON for all geohashes, not just those in the current extent.
@@ -188,21 +208,27 @@ define([
         if (!limitToExtent) {
           return this.get("geohashes")?.toGeoJSON();
         }
-        const extent = this.get("mapModel").get("currentViewExtent");
-        let bounds = Object.assign({}, extent);
-        delete bounds.height;
-        const subset = this.get("geohashes")?.getSubsetByBounds(bounds);
-        return subset?.toGeoJSON();
+        return this.getGeohashesForExtent()?.toGeoJSON();
       },
 
       /**
-       * Creates a Cesium.DataSource model and sets it to this model's
-       * 'cesiumModel' attribute. This cesiumModel contains all the information
-       * required for Cesium to render the vector data. See
-       * {@link https://cesium.com/learn/cesiumjs/ref-doc/DataSource.html?classFilter=DataSource}
-       * @param {Boolean} [recreate = false] - Set recreate to true to force the
-       * function create the Cesium Model again. Otherwise, if a cesium model
-       * already exists, that is returned instead.
+       * Returns the CZML representation of the geohashes.
+       * @param {Boolean} [limitToExtent = true] - Set to false to return the
+       * CZML for all geohashes, not just those in the current extent.
+       * @returns {Object} The CZML representation of the geohashes.
+       */
+      getCZML: function (limitToExtent = true) {
+        if (!limitToExtent) {
+          return this.get("geohashes")?.toCZML();
+        }
+        const label = this.getPropertyOfInterest();
+        return this.getGeohashesForExtent()?.toCZML(label);
+      },
+
+      /**
+       * Create the Cesium model for the geohashes.
+       * @param {Boolean} [recreate = false] - Set to true to recreate the
+       * Cesium model.
        */
       createCesiumModel: function (recreate = false) {
         try {
@@ -218,9 +244,9 @@ define([
           }
           // Set the GeoJSON representing geohashes on the model
           const cesiumOptions = model.get("cesiumOptions");
-          cesiumOptions["data"] = this.getGeoJSON();
-          // TODO: outlines don't work when features are clamped to ground
-          // cesiumOptions['clampToGround'] = true
+          const type = model.get("type");
+          const data = type === "geojson" ? this.getGeoJSON() : this.getCZML();
+          cesiumOptions["data"] = data;
           cesiumOptions["height"] = 0;
           model.set("cesiumOptions", cesiumOptions);
           // Create the model like a regular GeoJSON data source

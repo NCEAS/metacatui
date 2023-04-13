@@ -52,6 +52,7 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
         if (attr === "point") return this.getPoint();
         if (attr === "precision") return this.getPrecision();
         if (attr === "geojson") return this.toGeoJSON();
+        if (attr === "czml") return this.toCZML();
         if (attr === "groupID") return this.getGroupID();
         if (this.isProperty(attr)) return this.getProperty(attr);
         return Backbone.Model.prototype.get.call(this, attr);
@@ -75,7 +76,10 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
        */
       isProperty: function (key) {
         // Must use prototype.get to avoid infinite loop
-        const properties = Backbone.Model.prototype.get.call(this, "properties");
+        const properties = Backbone.Model.prototype.get.call(
+          this,
+          "properties"
+        );
         return properties?.hasOwnProperty(key);
       },
 
@@ -197,44 +201,69 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
       },
 
       /**
+       * Get the data from this model that is needed to create geometries for various
+       * formats of geospacial data, like GeoJSON and CZML.
+       * @param {string} geometry The type of geometry to get. Can be "rectangle",
+       * "point", or "both".
+       * @returns {Object|null} An object with the keys "rectangle", "point", and
+       * "properties".
+       */
+      getGeoData: function (geometry="both") {
+        if (this.isEmpty()) return null;
+
+        const geoData = {};
+
+        const properties = this.get("properties");
+        properties["hashString"] = this.get("hashString");
+        geoData["properties"] = properties;
+
+        if (geometry === "rectangle" || geometry === "both") {
+          const bounds = this.getBounds();
+          if (bounds) {
+            let [south, west, north, east] = bounds;
+            // Set min latitude to -89.99999 for Geohashes. This is for Cesium.
+            if (south && west && north && east) {
+              if (south === -90) south = -89.99999;
+            }
+            geoData["rectangle"] = [
+              [west, south],
+              [east, south],
+              [east, north],
+              [west, north],
+              [west, south],
+            ];
+          }
+        }
+        if (geometry === "point" || geometry === "both") {
+          geoData["point"] = this.getPoint();
+        }
+
+        return geoData;
+      },
+
+      /**
        * Get the geohash as a GeoJSON Feature.
        * @returns {Object} A GeoJSON Feature representing the geohash.
        */
       toGeoJSON: function () {
-        // return this.toGeoJSONPoint();
-        if (this.isEmpty()) return null;
-        const bounds = this.getBounds();
-        if (!bounds) return null;
-        let [south, west, north, east] = bounds;
-        if (!south && !west && !north && !east) return null;
-        const properties = this.get("properties");
-        properties["hashString"] = this.get("hashString");
-        // Set min latitude to -89.99999 for Geohashes. This is for Cesium.
-        if (south === -90) south = -89.99999;
+        const geoData = this.getGeoData("rectangle");
+        if (!geoData) return null;
+        const { rectangle, properties } = geoData;
+        if (!rectangle) return null;
         return {
           type: "Feature",
           geometry: {
             type: "Polygon",
-            coordinates: [
-              [
-                [west, south],
-                [east, south],
-                [east, north],
-                [west, north],
-                [west, south],
-              ],
-            ],
+            coordinates: [rectangle],
           },
           properties: properties,
         };
       },
 
       toGeoJSONPoint: function () {
-        if (this.isEmpty()) return null;
-        const point = this.getPoint();
-        if (!point) return null;
-        const properties = this.get("properties");
-        properties["hashString"] = this.get("hashString");
+        const geoData = this.getGeoData("point");
+        if (!geoData) return null;
+        const { point, properties } = geoData;
         return {
           type: "Feature",
           geometry: {
@@ -243,7 +272,109 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
           },
           properties: properties,
         };
-      }
+      },
+
+      /**
+       * Get the geohash as a CZML Feature.
+       * @param {*} label The key for the property to display as a label.
+       * @returns {Object} A CZML Feature representing the geohash, including
+       * a polygon of the geohash area and a label with the value of the
+       * property specified by the label parameter.
+       */
+      toCZML: function (label) {
+        const geoData = this.getGeoData("both");
+        if (!geoData) return null;
+        const { rectangle, point, properties } = geoData;
+        const id = properties["hashString"];
+        const features = [this.createCZMLPolygon(id, properties, rectangle)];
+        if (label) {
+          const text = properties[label];
+          const czmlLabel = this.createCZMLLabel(id, text, point);
+          features.push(czmlLabel);
+        }
+        // TODO: determine if label and rectangle can share id & position
+        return features;
+      },
+
+      /**
+       * Create a CZML polygon object.
+       * @param {string} id The ID of the CZML object.
+       * @param {Object} properties The properties of the CZML object.
+       * @param {Array} coordinates The coordinates of the polygon
+       * @returns {Object} A CZML polygon object.
+       */
+      createCZMLPolygon: function (id, properties, coordinates) {
+        const ecefCoordinates = coordinates.map((coord) =>
+          this.geodeticToECEF(coord)
+        );
+        return {
+          id: id,
+          polygon: {
+            positions: {
+              cartesian: ecefCoordinates.flat(),
+            },
+            height: 0,
+          },
+          properties: properties,
+        };
+      },
+
+      /**
+       * Create a CZML label object.
+       * @param {string} id The ID of the CZML object.
+       * @param {string} text The text of the label.
+       * @param {Array} position The position of the label.
+       * @returns {Object} A CZML label object.
+       */
+      createCZMLLabel: function (id, text, position) {
+        const ecefPosition = this.geodeticToECEF([
+          position.longitude, position.latitude,
+        ]);
+
+        return {
+          id: id + "label",
+          position: {
+            cartesian: ecefPosition,
+          },
+          label: {
+            // ensure text is a string and not undefined or null
+            text: text ? text.toString() : "",
+            show: true,
+            // fillColor: {
+            //   rgba: [255, 255, 255, 255],
+            // },
+            // font: "50pt Lucida Console",
+          },
+        };
+      },
+
+      /**
+       * Convert geodetic coordinates to Earth-Centered, Earth-Fixed (ECEF)
+       * coordinates.
+       * @param {Object} coord The geodetic coordinates, an array of longitude
+       * and latitude.
+       * @returns {Array} The ECEF coordinates.
+       */
+      geodeticToECEF: function (coord) {
+        const a = 6378137; // WGS-84 semi-major axis (meters)
+        const f = 1 / 298.257223563; // WGS-84 flattening
+        const e2 = 2 * f - f * f; // Square of eccentricity
+
+        const lon = coord[0] * (Math.PI / 180); // Convert longitude to radians
+        const lat = coord[1] * (Math.PI / 180); // Convert latitude to radians
+        const alt = 10000;
+        const sinLon = Math.sin(lon);
+        const cosLon = Math.cos(lon);
+        const sinLat = Math.sin(lat);
+        const cosLat = Math.cos(lat);
+
+        const N = a / Math.sqrt(1 - e2 * sinLat * sinLat); // Prime vertical radius of curvature
+        const x = (N + alt) * cosLat * cosLon;
+        const y = (N + alt) * cosLat * sinLon;
+        const z = (N * (1 - e2) + alt) * sinLat;
+
+        return [x, y, z];
+      },
     }
   );
 

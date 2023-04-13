@@ -319,6 +319,29 @@ define([
           }),
         };
       },
+
+      /**
+       * Return the geohashes as a CZML document, where each geohash is
+       * represented as a CZML Polygon (rectangle) and a CZML Label.
+       * @param {string} [label] - The key for the property that should be
+       * displayed with a label for each geohash, e.g. "count"
+       * @returns {Array} CZML document.
+       */
+      toCZML: function (label) {
+        const czmlHeader = [
+          {
+            id: "document",
+            version: "1.0",
+            name: "Geohashes"
+          },
+        ];
+
+        const czmlData = this.models.flatMap(function (geohash) {
+          return geohash.toCZML(label);
+        });
+
+        return czmlHeader.concat(czmlData);
+      },
     }
   );
 

@@ -88,7 +88,7 @@ define(
             renderFunction: 'add3DTileset'
           },
           {
-            types: ['GeoJsonDataSource'],
+            types: ['GeoJsonDataSource', 'CzmlDataSource'],
             renderFunction: 'addVectorData'
           },
           {

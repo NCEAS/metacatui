@@ -22,14 +22,14 @@ define(
     VectorFilters
   ) {
     /**
-     * @classdesc A CesiumVectorData Model is a vector layer (excluding Cesium3DTilesets)
-     * that can be used in Cesium maps. This model corresponds to "DataSource" models in
-     * Cesium. For example, this could represent vectors rendered from a Cesium
-     * GeoJSONDataSource.
-     * {@link https://cesium.com/learn/cesiumjs/ref-doc/GeoJsonDataSource.html}. Note:
-     * GeoJsonDataSource is the only supported DataSource so far, eventually this model
-     * could be used to support Cesium's CzmlDataSource and KmlDataSource (and perhaps a
-     * Cesium CustomDataSource).
+     * @classdesc A CesiumVectorData Model is a vector layer (excluding
+     * Cesium3DTilesets) that can be used in Cesium maps. This model corresponds
+     * to "DataSource" models in Cesium. For example, this could represent
+     * vectors rendered from a Cesium GeoJSONDataSource.
+     * {@link https://cesium.com/learn/cesiumjs/ref-doc/GeoJsonDataSource.html}.
+     * Note: The GeoJsonDataSource and CzmlDataSource are the only supported
+     * DataSources so far, but eventually this model could be used to support
+     * the KmlDataSource (and perhaps a Cesium CustomDataSource).
      * @classcategory Models/Maps/Assets
      * @class CesiumVectorData
      * @name CesiumVectorData
@@ -64,7 +64,7 @@ define(
          * @extends MapAsset#defaults
          * @type {Object}
          * @property {'GeoJsonDataSource'} type The format of the data. Must be
-         * 'GeoJsonDataSource'. (The only Cesium DataSource supported so far.)
+         * 'GeoJsonDataSource' or 'CzmlDataSource'.
          * @property {VectorFilters} [filters=new VectorFilters()] A set of conditions
          * used to show or hide specific features of this vector data.
          * @property {AssetColorPalette} [colorPalette=new AssetColorPalette()] The color
@@ -149,7 +149,6 @@ define(
             const label = model.get('label') || ''
             const dataSourceFunction = Cesium[type]
 
-
             // If the cesium model already exists, don't create it again unless specified
             let dataSource = model.get('cesiumModel')
             if (dataSource) {
@@ -168,7 +167,7 @@ define(
 
             if (!cesiumOptions || !cesiumOptions.data) {
               model.set('status', 'error');
-              model.set('statusDetails', 'Vector data source is missing: A URL or GeoJSON/TopoJson object is required')
+              model.set('statusDetails', 'Vector data source is missing: A URL or data object is required')
               return
             }
 
@@ -344,7 +343,6 @@ define(
                   outlineColor = model.get("outlineColor")?.get("color");
                   if(outlineColor) {
                     outline = true;
-                    console.log(outlineColor);
                     outlineColor = new Cesium.Color(
                       outlineColor.red, outlineColor.green, outlineColor.blue, outlineColor.alpha
                     );
@@ -391,6 +389,9 @@ define(
                 if (entity.polyline) {
                   entity.polyline.material = color
                   entity.polyline.width = lineWidth
+                }
+                if (entity.label) {
+                  // TODO...
                 }
 
               }

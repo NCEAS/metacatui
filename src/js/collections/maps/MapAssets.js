@@ -55,7 +55,7 @@ define([
               model: Cesium3DTileset,
             },
             {
-              types: ["GeoJsonDataSource"],
+              types: ["GeoJsonDataSource", "CzmlDataSource"],
               model: CesiumVectorData,
             },
             {
