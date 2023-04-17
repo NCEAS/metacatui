@@ -442,8 +442,13 @@ define(
             // event to update styling of map assets with selected features, and tells the
             // parent map view to open the feature details panel.
             view.inputHandler.setInputAction(function (movement) {
-              var pickedFeature = scene.pick(movement.position);
-              view.updateSelectedFeatures([pickedFeature])
+              const pickedFeature = scene.pick(movement.position);
+              const action = view.model.get('clickFeatureAction');
+              if (action === 'showDetails') {
+                view.model.selectFeatures([pickedFeature])
+              } else if (action === 'zoom') {
+                view.flyTo(pickedFeature)
+              }
             }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
           }
@@ -451,96 +456,6 @@ define(
             console.log(
               'There was an error initializing picking in a CesiumWidgetView' +
               '. Error details: ' + error
-            );
-          }
-        },
-
-        /**
-         * Given a feature from a vector layer (e.g. a Cesium3DTileFeature), gets any
-         * properties that are associated with that feature, the MapAsset model that
-         * contains the feature, and the ID that Cesium uses to identify it, and updates
-         * the Features collection that is set on the Map's `selectedFeatures` attribute
-         * with a new Feature model. NOTE: This currently only works with 3D tile
-         * features.
-         * @param {Cesium.Cesium3DTileFeature[]} features - An array of Cesium3DTileFeatures to
-         * select
-        */
-        updateSelectedFeatures: function (features) {
-
-          try {
-            const view = this
-            const layers = view.model.get('layers')
-
-            // Don't update the selected features collection if the newly selected
-            // features are identical
-            const oldFeatures = view.model.get('selectedFeatures').getFeatureObjects()
-            const noChange = _.isEqual(_.sortBy(features), _.sortBy(oldFeatures))
-            if (noChange) {
-              return;
-            }
-
-            // Properties of the selected features to pass to the Map model's
-            // selectFeatures function. Passing null will empty the map's selectedFeatures
-            // collection
-            let featuresAttrs = features ? [] : null
-            if (!features || !Array.isArray(features)) {
-              features = []
-            }
-
-            features.forEach(function (feature) {
-              if (feature) {
-                // To find corresponding MapAsset model in the layers collection
-                let cesiumModel = null
-                // Attributes to make a new Feature model
-                const attrs = {
-                  properties: {},
-                  mapAsset: null,
-                  featureID: null,
-                  featureObject: feature,
-                  label: null,
-                }
-                if (feature instanceof Cesium.Cesium3DTileFeature) {
-                  // Cesium.Cesium3DTileFeature.primitive gives the Cesium.Cesium3DTileset
-                  cesiumModel = feature.primitive
-                  attrs.featureID = feature.pickId ? feature.pickId.key : null
-                  // Search for a property to use as a label
-                  attrs.label = feature.getProperty('name') || feature.getProperty('label') || null
-                } else {
-                  // TODO: Test - does feature.id give the entity this work for all datasources ?
-                  // A picked feature object's ID gives the Cesium.Entity
-                  attrs.featureObject = feature.id
-                  // Gives the parent DataSource
-                  cesiumModel = attrs.featureObject.entityCollection.owner
-                  attrs.featureID = attrs.featureObject.id
-                  attrs.label = attrs.featureObject.name
-                }
-
-                attrs.mapAsset = layers.findWhere({
-                  cesiumModel: cesiumModel
-                })
-
-                if (
-                  attrs.mapAsset &&
-                  typeof attrs.mapAsset.getPropertiesFromFeature === 'function'
-                ) {
-                  attrs.properties = attrs.mapAsset.getPropertiesFromFeature(
-                    attrs.featureObject
-                  )
-                }
-
-                featuresAttrs.push(attrs)
-              }
-            })
-
-            // Pass the new information to the Map's selectFeatures function, which will
-            // update the selectFeatures collection set on the Map model
-            view.model.selectFeatures(featuresAttrs)
-
-          }
-          catch (error) {
-            console.log(
-              'There was an error updating the selected features collection from a ' +
-              'CesiumWidgetView. Error details: ' + error
             );
           }
         },
@@ -595,9 +510,8 @@ define(
           try {
 
             const view = this;
-            if (typeof options !== 'object') {
-              options = {}
-            }
+            if (typeof options !== 'object') options = {}
+
 
             // A target is required
             if (!target) {
@@ -633,17 +547,24 @@ define(
             // There's no native way of getting the bounding sphere or location from a
             // 3DTileFeature!
             if (target instanceof Feature) {
-              // If the target is a Feature, get the Bounding Sphere for the Feature
-              // and call this function again.
-              const feature = target.get('featureObject')
-              let featureBoundingSphere = new Cesium.BoundingSphere();
+              // If the object saved in the Feature is an Entity, then this
+              // function will get the bounding sphere for the entity on the
+              // next run.
+              view.flyTo(target.get('featureObject'), options)
+              return
+            }
+
+            // If the target is a Cesium Entity, then get the bounding sphere for the
+            // entity and call this function again.
+            const entity = target instanceof Cesium.Entity ? target : target.id;
+            if (entity instanceof Cesium.Entity) {
+              let entityBoundingSphere = new Cesium.BoundingSphere();
               view.dataSourceDisplay.getBoundingSphere(
-                feature, false, featureBoundingSphere
+                entity, false, entityBoundingSphere
               )
               setTimeout(() => {
-                view.flyTo(featureBoundingSphere, options)
+                view.flyTo(entityBoundingSphere, options)
               }, 0);
-
               return
             }
 
@@ -654,11 +575,8 @@ define(
             }
 
           }
-          catch (error) {
-            console.log(
-              'There was an error navigating to a target position in a CesiumWidgetView' +
-              '. Error details: ' + error
-            );
+          catch (e) {
+            console.log('Failed to navigate to a target in Cesium.', e);
           }
         },
 

@@ -49,7 +49,7 @@ define([
        * scale bar. If true, the {@link MapView} will render a
        * {@link ScaleBarView}.
        * @property {Boolean} [showFeatureInfo=true] - Whether or not to allow
-       * users to click on map features to show more information about them.  If
+       * users to click on map features to show more information about them. If
        * true, the {@link MapView} will render a {@link FeatureInfoView} and
        * will initialize "picking" in the {@link CesiumWidgetView}.
        *
@@ -158,6 +158,10 @@ define([
        * extent of the current visible area as a bounding box in
        * longitude/latitude coordinates, as well as the height/altitude in
        * meters.
+       * @property {String} [clickFeatureAction="showDetails"] - The default
+       * action to take when a user clicks on a feature on the map. The
+       * available options are "showDetails" (show the feature details in the
+       * sidebar) or "zoom" (zoom to the feature's location).
        */
       defaults: function () {
         return {
@@ -197,6 +201,7 @@ define([
             west: null,
             height: null,
           },
+          clickFeatureAction: "showDetails",
         };
       },
 
@@ -231,9 +236,9 @@ define([
       },
 
       /**
-       * Set or unset the selected Features on the map model. A selected feature
-       * is a polygon, line, point, or other element of vector data that is in
-       * focus on the map (e.g. because a user clicked it to show more details.)
+       * Set or unset the selected Features. A selected feature is a polygon,
+       * line, point, or other element of vector data that is in focus on the
+       * map (e.g. because a user clicked it to show more details.)
        * @param {(Feature|Object[])} features - An array of Feature models or
        * objects with attributes to set on new Feature models. If no features
        * argument is passed to this function, then any currently selected
@@ -243,42 +248,61 @@ define([
        * then the newly selected features will be added to any that are
        * currently selected.
        */
-      selectFeatures(features, replace = true) {
+      selectFeatures: function (features, replace = true) {
         try {
           const model = this;
-          const defaults = new Feature().defaults();
 
+          // Create a features collection if one doesn't already exist
           if (!model.get("selectedFeatures")) {
             model.set("selectedFeatures", new Features());
           }
 
-          // If no feature is passed to this function (and replace is true),
-          // then empty the Features collection
-          if (!features || !Array.isArray(features)) {
-            features = [];
+          // Don't update the selected features collection if the newly selected
+          // features are identical.
+          const currentFeatures = model.get("selectedFeatures");
+          if (
+            currentFeatures.length === features.length &&
+            currentFeatures.containsFeatures(features)
+          ) {
+            return;
           }
 
-          // If feature is a Feature model, get the attributes to update the
-          // model.
-          features.forEach(function (feature, i) {
-            if (feature instanceof Feature) {
-              feature = feature.attributes;
-            }
-            features[i] = _.extend(_.clone(defaults), feature);
-          });
+          // If no feature is passed to this function (and replace is true),
+          // then empty the Features collection
+          features = !features || !Array.isArray(features) ? [] : features;
+
+          // Convert the feature objects that are types specific to the map view
+          // (Cesium) to a generic Feature model
+          features = model.convertFeatures(features);
 
           // Update the Feature model with the new selected feature information.
-          const options = {
-            remove: replace,
-          };
-          model.get("selectedFeatures").set(features, options);
-        } catch (error) {
-          console.log(
-            "Failed to select a Feature in a Map model" +
-              ". Error details: " +
-              error
-          );
+          const newAttrs = features.map(function (feature) {
+            return Object.assign(
+              {},
+              new Feature().defaults(),
+              feature.attributes
+            );
+          });
+          model.get("selectedFeatures").set(newAttrs, { remove: replace });
+        } catch (e) {
+          console.log("Failed to select a Feature in a Map model.", e);
         }
+      },
+
+      /**
+       * Convert an array of feature objects to an array of Feature models.
+       * @param {Cesium.Entity|Cesium.Cesium3DTileFeature|[]} features - An
+       * array of feature objects selected directly from the map view.
+       * @returns {Feature[]} An array of Feature models.
+       * @since x.x.x
+       */
+      convertFeatures: function (features) {
+        const attrs = features.map(function (feature) {
+          if (!feature) return null;
+          if (feature instanceof Feature) return feature.attributes;
+          return this.get("layers").getFeatureAttributes(features)?.[0];
+        });
+        return attrs.map((attr) => new Feature(attr));
       },
 
       /**

@@ -92,12 +92,8 @@ define([
             // Return a generic MapAsset as a default
             return new MapAsset(assetConfig);
           }
-        } catch (error) {
-          console.log(
-            "Failed to add a new model to a MapAssets collection" +
-              ". Error details: " +
-              error
-          );
+        } catch (e) {
+          console.log("Failed to add a new model to a MapAssets collection", e);
         }
       },
 
@@ -211,6 +207,36 @@ define([
         } catch (e) {
           console.log("Failed to add a layer to a MapAssets collection", e);
         }
+      },
+
+      /**
+       * Find the map asset model that contains a feature selected directly from
+       * the map view widget.
+       * @param {Cesium.Entity|Cesium.Cesium3DTilesetFeature} feature - The
+       * feature selected from the map view widget.
+       * @returns {MapAsset} - Returns the MapAsset model that contains the
+       * feature.
+       * @since x.x.x
+       */
+      findAssetWithFeature: function (feature) {
+        return this.models.find((model) => {
+          return model.containsFeature(feature);
+        });
+      },
+
+      /**
+       * Given features selected from the map view widget, get the attributes
+       * required to create new Feature models.
+       * @param {Cesium.Entity|Cesium.Cesium3DTilesetFeature[]} features - The
+       * feature selected from the map view widget.
+       * @returns {Object[]} - Returns an array of attributes that can be used
+       * to create new Feature models.
+       */
+      getFeatureAttributes: function (features) {
+        return features.map((feature) => {
+          const asset = this.findAssetWithFeature(feature);
+          return asset?.getFeatureAttributes(feature);
+        });
       },
     }
   );

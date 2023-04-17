@@ -122,7 +122,8 @@ define(['jquery', 'underscore', 'backbone'],
               "ionAssetId": "2"
               }
           }
-        ]
+        ],
+        clickFeatureAction: "zoom"
        },
 
       /**

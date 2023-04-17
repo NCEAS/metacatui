@@ -93,6 +93,7 @@ define(
               colorPalette: new AssetColorPalette(),
               icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M384 352h-1l-39-65a64 64 0 0 0 0-62l39-65h1a64 64 0 1 0-55-96H119a64 64 0 1 0-87 87v210a64 64 0 1 0 87 87h210a64 64 0 0 0 119-32c0-35-29-64-64-64zm-288 9V151a64 64 0 0 0 23-23h208l-38 64h-1a64 64 0 1 0 0 128h1l38 64H119a64 64 0 0 0-23-23zm176-105a16 16 0 1 1 32 0 16 16 0 0 1-32 0zM400 96a16 16 0 1 1-32 0 16 16 0 0 1 32 0zM64 80a16 16 0 1 1 0 32 16 16 0 0 1 0-32zM48 416a16 16 0 1 1 32 0 16 16 0 0 1-32 0zm336 16a16 16 0 1 1 0-32 16 16 0 0 1 0 32z"/></svg>',
               outlineColor: null,
+              featureType: Cesium.Entity
             }
           );
         },
@@ -264,6 +265,20 @@ define(
         },
 
         /**
+         * Try to find Entity object that comes from an object passed from the
+         * Cesium map. This is useful when the map is clicked and the map
+         * returns an object that may or may not be an Entity.
+         * @param {Object} mapObject - An object returned from the Cesium map
+         * @returns {Cesium.Entity} - The Entity object if found, otherwise null.
+         */
+        getEntityFromMapObject(mapObject) {
+          const entityType = this.get("featureType")
+          if (mapObject instanceof entityType) return mapObject
+          if (mapObject.id instanceof entityType) return mapObject.id
+          return null
+        },
+
+        /**
          * Given a feature from a Cesium Vector Data source, returns any properties that are set
          * on the feature, similar to an attributes table.
          * @param {Cesium.Entity} feature A Cesium Entity
@@ -271,23 +286,51 @@ define(
          * properties.
         */
         getPropertiesFromFeature(feature) {
-          try {
-            const featureProps = feature.properties
-            let properties = {}
-            if (featureProps) {
-              properties = feature.properties.getValue(new Date())
-            }
-            properties = this.addCustomProperties(properties)
-            return properties
+          feature = this.getEntityFromMapObject(feature)
+          if (!feature) return null
+          const featureProps = feature.properties
+          let properties = {}
+          if (featureProps) {
+            properties = feature.properties.getValue(new Date())
           }
-          catch (error) {
-            console.log(
-              'There was an error getting properties from a Cesium Entity' +
-              '. Error details: ' + error +
-              '. Returning an empty object.'
-            );
-            return {}
-          }
+          properties = this.addCustomProperties(properties)
+          return properties
+        },
+
+        /**
+         * Return the label for a feature from a DataSource model
+         * @param {Cesium.Entity} feature A Cesium Entity
+         * @returns {string} The label
+         */
+        getLabelFromFeature: function (feature) {
+          feature = this.getEntityFromMapObject(feature)
+          if (!feature) return null
+          return feature.name
+        },
+
+        /**
+         * Return the DataSource model for a feature from a Cesium DataSource
+         * model
+         * @param {Cesium.Entity} feature A Cesium Entity
+         * @returns {Cesium.GeoJsonDataSource|Cesium.CzmlDataSource} The model
+         */
+        getCesiumModelFromFeature: function (feature) {
+          feature = this.getEntityFromMapObject(feature)
+          if (!feature) return null
+          // TODO: Test - does feature.id give the entity this work for all datasources ?
+          // A picked feature object's ID gives the Cesium.Entity
+          return feature.entityCollection.owner
+        },
+
+        /**
+         * Return the ID used by Cesium for a feature from a DataSource model
+         * @param {Cesium.Entity} feature A Cesium Entity
+         * @returns {string} The ID
+         */
+        getIDFromFeature: function (feature) {
+          feature = this.getEntityFromMapObject(feature)
+          if (!feature) return null
+          return feature.id
         },
 
         /**
