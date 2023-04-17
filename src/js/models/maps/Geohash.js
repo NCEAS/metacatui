@@ -208,7 +208,7 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
        * @returns {Object|null} An object with the keys "rectangle", "point", and
        * "properties".
        */
-      getGeoData: function (geometry="both") {
+      getGeoData: function (geometry = "both") {
         if (this.isEmpty()) return null;
 
         const geoData = {};
@@ -286,28 +286,15 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
         if (!geoData) return null;
         const { rectangle, point, properties } = geoData;
         const id = properties["hashString"];
-        const features = [this.createCZMLPolygon(id, properties, rectangle)];
-        if (label) {
-          const text = properties[label];
-          const czmlLabel = this.createCZMLLabel(id, text, point);
-          features.push(czmlLabel);
-        }
-        // TODO: determine if label and rectangle can share id & position
-        return features;
-      },
 
-      /**
-       * Create a CZML polygon object.
-       * @param {string} id The ID of the CZML object.
-       * @param {Object} properties The properties of the CZML object.
-       * @param {Array} coordinates The coordinates of the polygon
-       * @returns {Object} A CZML polygon object.
-       */
-      createCZMLPolygon: function (id, properties, coordinates) {
-        const ecefCoordinates = coordinates.map((coord) =>
+        const ecefCoordinates = rectangle.map((coord) =>
           this.geodeticToECEF(coord)
         );
-        return {
+        const ecefPosition = this.geodeticToECEF([
+          point.longitude,
+          point.latitude,
+        ]);
+        const feature = {
           id: id,
           polygon: {
             positions: {
@@ -317,35 +304,28 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
           },
           properties: properties,
         };
-      },
-
-      /**
-       * Create a CZML label object.
-       * @param {string} id The ID of the CZML object.
-       * @param {string} text The text of the label.
-       * @param {Array} position The position of the label.
-       * @returns {Object} A CZML label object.
-       */
-      createCZMLLabel: function (id, text, position) {
-        const ecefPosition = this.geodeticToECEF([
-          position.longitude, position.latitude,
-        ]);
-
-        return {
-          id: id + "label",
-          position: {
-            cartesian: ecefPosition,
-          },
-          label: {
-            // ensure text is a string and not undefined or null
-            text: text ? text.toString() : "",
+        if (label) {
+          (feature["label"] = {
+            text: properties[label].toString(),
             show: true,
-            // fillColor: {
-            //   rgba: [255, 255, 255, 255],
-            // },
-            // font: "50pt Lucida Console",
-          },
-        };
+            fillColor: {
+              rgba: [255, 255, 255, 255],
+            },
+            outlineColor: {
+              rgba: [0, 0, 0, 255],
+            },
+            outlineWidth: 1,
+            style: "FILL_AND_OUTLINE",
+            font: "14pt Helvetica",
+            horizontalOrigin: "CENTER",
+            verticalOrigin: "CENTER",
+            heightReference: "CLAMP_TO_GROUND",
+            disableDepthTestDistance: 10000000,
+
+          }),
+            (feature["position"] = { cartesian: ecefPosition });
+        }
+        return [feature];
       },
 
       /**

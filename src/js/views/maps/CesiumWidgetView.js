@@ -176,6 +176,7 @@ define(
               // We will add a base imagery layer after initialization
               imageryProvider: false,
               terrain: false,
+              useBrowserRecommendedResolution: false,
               // Use explicit rendering to make the widget must faster.
               // See https://cesium.com/blog/2018/01/24/cesium-scene-rendering-performance
               requestRenderMode: true,
@@ -224,7 +225,7 @@ define(
             })
 
             // Go to the home position, if one is set.
-            view.flyHome()
+            view.flyHome(0)
 
             // If users are allowed to click on features for more details, initialize
             // picking behavior on the map.
@@ -663,8 +664,9 @@ define(
 
         /**
          * Navigate to the homePosition that's set on the Map.
+         * @param {number} duration The duration of the flight in seconds.
          */
-        flyHome: function () {
+        flyHome: function (duration) {
           try {
             var position = this.model.get('homePosition')
 
@@ -692,6 +694,9 @@ define(
                   pitch: Cesium.Math.toRadians(position.pitch),
                   roll: Cesium.Math.toRadians(position.roll)
                 }
+              }
+              if (Cesium.defined(duration)) {
+                target.duration = duration
               }
 
               this.flyTo(target);
