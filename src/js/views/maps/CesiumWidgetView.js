@@ -512,7 +512,6 @@ define(
             const view = this;
             if (typeof options !== 'object') options = {}
 
-
             // A target is required
             if (!target) {
               return
@@ -550,7 +549,9 @@ define(
               // If the object saved in the Feature is an Entity, then this
               // function will get the bounding sphere for the entity on the
               // next run.
-              view.flyTo(target.get('featureObject'), options)
+              setTimeout(() => {
+                view.flyTo(target.get('featureObject'), options)
+              }, 0);
               return
             }
 

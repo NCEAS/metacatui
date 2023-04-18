@@ -279,6 +279,14 @@ define(
         },
 
         /**
+         * @inheritdoc
+         */
+        usesFeatureType: function (feature) {
+          const entity = this.getEntityFromMapObject(feature)
+          return this.constructor.__super__.usesFeatureType.call(this, entity)
+        },
+
+        /**
          * Given a feature from a Cesium Vector Data source, returns any properties that are set
          * on the feature, similar to an attributes table.
          * @param {Cesium.Entity} feature A Cesium Entity
@@ -317,8 +325,6 @@ define(
         getCesiumModelFromFeature: function (feature) {
           feature = this.getEntityFromMapObject(feature)
           if (!feature) return null
-          // TODO: Test - does feature.id give the entity this work for all datasources ?
-          // A picked feature object's ID gives the Cesium.Entity
           return feature.entityCollection.owner
         },
 
@@ -447,11 +453,8 @@ define(
             model.trigger('appearanceChanged')
 
           }
-          catch (error) {
-            console.log(
-              'There was an error updating CesiumVectorData model styles' +
-              '. Error details: ' + error
-            );
+          catch (e) {
+            console.log('Failed to update CesiumVectorData model styles.', e);
           }
         },
 

@@ -425,7 +425,7 @@ define(
           if (!this.getCesiumModelFromFeature) return false
           const cesiumModel = this.getCesiumModelFromFeature(feature)
           if (!cesiumModel) return false
-          if (this === cesiumModel) return true
+          if (this.get('cesiumModel') == cesiumModel) return true
           return false
         },
 
@@ -749,17 +749,13 @@ define(
           try {
             const model = this
             const colorPalette = model.get('colorPalette')
-            if (colorPalette) {
-              return colorPalette.getColor(properties)
-            } else {
-              return new AssetColorPalette().getDefaultColor()
-            }
+            return (
+              colorPalette?.getColor(properties) ||
+              new AssetColorPalette().getDefaultColor()
+            )
           }
-          catch (error) {
-            console.log(
-              'There was an error getting a color for a MapAsset model' +
-              '. Error details: ' + error
-            );
+          catch (e) {
+            console.log('Failed to a color in a MapAsset model', e);
           }
         },
 

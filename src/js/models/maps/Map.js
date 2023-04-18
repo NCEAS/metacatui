@@ -297,10 +297,11 @@ define([
        * @since x.x.x
        */
       convertFeatures: function (features) {
+        const model = this;
         const attrs = features.map(function (feature) {
           if (!feature) return null;
           if (feature instanceof Feature) return feature.attributes;
-          return this.get("layers").getFeatureAttributes(features)?.[0];
+          return model.get("layers").getFeatureAttributes(features)?.[0];
         });
         return attrs.map((attr) => new Feature(attr));
       },

@@ -158,7 +158,8 @@ define([
         const colorPalette = this;
 
         // As a backup, use the default color
-        let color = this.getDefaultColor();
+        const defaultColor = colorPalette.getDefaultColor();
+        let color = defaultColor;
 
         // The name of the property to conditionally color the features by
         const prop = colorPalette.get("property");
@@ -180,6 +181,7 @@ define([
         } else if (type === "continuous") {
           color = this.getContinuousColor(propValue);
         }
+        color = color || defaultColor;
         return color;
       },
 
@@ -193,11 +195,11 @@ define([
         // just needs to match one of the values in the list of color
         // conditions. If it matches, then return the color associated with that
         // value.
-        const colorMatch = colors.findWhere({ value: propValue });
+        const colors = this.get("colors");
+        const colorMatch = colors.findWhere({ value: value });
         if (colorMatch) {
-          color = colorMatch.get("color");
+          return colorMatch.get("color");
         }
-        return color;
       },
 
       /**
