@@ -474,6 +474,7 @@ define([
                         attributes.nodeLevel = itemPathParts.length - 1;
                         childClass = "child-" + attributes.nodeLevel;
                         this.$el.addClass(childClass);
+                        this.$el.css("display", "none");
                       }
                     }
 
