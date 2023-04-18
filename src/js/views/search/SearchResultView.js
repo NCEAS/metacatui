@@ -68,6 +68,8 @@ define([
       events: {
         "click .result-selection": "toggleSelected",
         "click .download": "download",
+        "mouseover .open-marker": "toggleShowOnMap",
+        "mouseout .open-marker": "toggleShowOnMap",
       },
 
       /**
@@ -373,6 +375,15 @@ define([
        */
       toggleSelected: function () {
         this.model.toggle();
+      },
+
+      /**
+       * Toggles the showOnMap state of the model when the user hovers over
+       * or leaves the map marker icon
+       * @param {Event} e - The mouseover or mouseout event
+       */
+      toggleShowOnMap: function (e) {
+        this.model.set("showOnMap", e.type === "mouseover")
       },
 
       /**

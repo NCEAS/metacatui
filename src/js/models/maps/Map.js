@@ -261,6 +261,8 @@ define([
           // features are identical.
           const currentFeatures = model.get("selectedFeatures");
           if (
+            features &&
+            currentFeatures &&
             currentFeatures.length === features.length &&
             currentFeatures.containsFeatures(features)
           ) {
@@ -291,8 +293,8 @@ define([
 
       /**
        * Convert an array of feature objects to an array of Feature models.
-       * @param {Cesium.Entity|Cesium.Cesium3DTileFeature|[]} features - An
-       * array of feature objects selected directly from the map view.
+       * @param {Cesium.Entity|Cesium.Cesium3DTileFeature|Feature[]} features - An
+       * array of feature objects selected directly from the map view, or 
        * @returns {Feature[]} An array of Feature models.
        * @since x.x.x
        */
@@ -301,6 +303,14 @@ define([
         const attrs = features.map(function (feature) {
           if (!feature) return null;
           if (feature instanceof Feature) return feature.attributes;
+          // if this is already an object with feature attributes, return it
+          if (
+            feature.hasOwnProperty("mapAsset") &&
+            feature.hasOwnProperty("properties")
+          ) {
+            return feature;
+          }
+          // Otherwise, assume it's a Cesium object and get the feature attributes
           return model.get("layers").getFeatureAttributes(features)?.[0];
         });
         return attrs.map((attr) => new Feature(attr));
@@ -330,6 +340,7 @@ define([
         const layers = this.get("layers") || this.resetLayers();
         return layers.addAsset(layer, this);
       },
+
     }
   );
 

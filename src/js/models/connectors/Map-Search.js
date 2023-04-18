@@ -153,6 +153,10 @@ define([
           this.showGeoHashLayer();
         });
 
+        // When the search result should be shown on the map (e.g. a user hovers
+        // over the map icon), highlight the GeoHash on the map.
+        this.listenTo(searchResults, "change:showOnMap", this.selectGeohash);
+
         // When the user is panning/zooming in the map, hide the GeoHash layer
         // to indicate that the map is not up to date with the search results,
         // which are about to be updated.
@@ -200,8 +204,10 @@ define([
       disconnect: function () {
         const map = this.get("map");
         const searchResults = this.get("searchResults");
-        this.stopListening(searchResults, "reset");
+        this.stopListening(searchResults, "update reset");
+        this.stopListening(searchResults, "change:showOnMap");
         this.stopListening(map, "moveStart moveEnd");
+        this.stopListening(searchResults, "request");
         this.set("isConnected", false);
       },
 
@@ -283,6 +289,23 @@ define([
         } else {
           searchResults.setFacet(null);
         }
+      },
+
+      /**
+       * Highlight the geohashes for the given search result on the map, or
+       * remove highlighting if the search result is not selected.
+       * @param {SolrResult} searchResult - The search result to highlight.
+       */
+      selectGeohash: function (searchResult) {
+        // remove highlighting on geohashes by clearing all selected features
+        if (!searchResult.get("showOnMap")) {
+          this.get("map").selectFeatures(null);
+          return;
+        }
+        // Get the highest precision geohashes for the given search result
+        // and pass them to the geohash layer to highlight them.
+        const geohashes9 = searchResult.get("geohash_9");
+        this.get("geohashLayer").selectGeohashes(geohashes9);
       },
     }
   );

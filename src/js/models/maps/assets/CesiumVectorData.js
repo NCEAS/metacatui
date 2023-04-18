@@ -122,6 +122,7 @@ define(
             }
 
             this.createCesiumModel();
+
           }
           catch (error) {
             console.log(
@@ -280,10 +281,26 @@ define(
 
         /**
          * @inheritdoc
+         * @since x.x.x
+         */
+        getFeatureAttributes: function (feature) {
+          feature = this.getEntityFromMapObject(feature)
+          return MapAsset.prototype.getFeatureAttributes.call(this, feature)
+        },
+
+        /**
+         * @inheritdoc
          */
         usesFeatureType: function (feature) {
-          const entity = this.getEntityFromMapObject(feature)
-          return this.constructor.__super__.usesFeatureType.call(this, entity)
+          // This method could be passed the entity directly, or the object
+          // returned from Cesium on a click event (where the entity is in the
+          // id property).
+          if(!feature) return false
+          const baseMethod = MapAsset.prototype.usesFeatureType
+          let result = baseMethod.call(this, feature)
+          if (result) return result
+          result = baseMethod.call(this, feature.id)
+          return result
         },
 
         /**
@@ -348,113 +365,203 @@ define(
 
             const model = this;
             const cesiumModel = this.get('cesiumModel')
-            const opacity = this.get('opacity')
             const entities = cesiumModel.entities.values
 
             // Suspending events while updating a large number of entities helps
             // performance.
             cesiumModel.entities.suspendEvents()
 
-            // If the asset isn't visible at all, don't bother setting up colors. Just set
-            // every feature to hidden.
+            // If the asset isn't visible, just hide all entities and update the
+            // visibility property to indicate that layer is hidden
             if (!model.isVisible()) {
               cesiumModel.entities.show = false
-              // Indicate that the layer is hidden if the opacity is zero by updating the
-              // visibility property
-              if (model.get('opacity') === 0) {
-                model.set('visible', false);
-              }
+              if (model.get('opacity') === 0) model.set('visible', false);
             } else {
               cesiumModel.entities.show = true
-              for (var i = 0; i < entities.length; i++) {
-
-                const entity = entities[i];
-                const properties = model.getPropertiesFromFeature(entity)
-
-                let outlineColor = null
-                let featureOpacity = opacity
-                let outline = false
-                // For polylines
-                let lineWidth = 3
-                // For billboard pins and points. We could make size configurable. Size
-                // could also be set according to a vector property
-                let markerSize = 25
-
-                // If the feature is selected, set the opacity to 1, and add an outline
-                if (model.featureIsSelected(entity)) {
-                  featureOpacity = 1
-                  outline = true
-                  // TODO: This colour should be configurable in the Map model
-                  outlineColor = Cesium.Color.WHITE
-                  lineWidth = 7
-                  markerSize = 34
-                } else {
-                  outlineColor = model.get("outlineColor")?.get("color");
-                  if(outlineColor) {
-                    outline = true;
-                    outlineColor = new Cesium.Color(
-                      outlineColor.red, outlineColor.green, outlineColor.blue, outlineColor.alpha
-                    );
-                  }
-                }
-
-                const rgba = model.getColor(properties)
-                const alpha = rgba.alpha * featureOpacity
-
-                // If alpha is 0 then the feature is hidden, don't bother setting up
-                // colors.
-                let color = null
-                if (alpha === 0) {
-                  entity.show = false
-                } else {
-                  entity.show = true
-                  color = new Cesium.Color(
-                    rgba.red, rgba.green, rgba.blue, alpha
-                  )
-                }
-
-                if (entity.polygon) {
-                  entity.polygon.material = color
-                  entity.polygon.outline = outline;
-                  entity.polygon.outlineColor = outlineColor
-                  entity.polygon.outlineWidth = outline ? 2 : 0
-                }
-                if (entity.billboard) {
-                  if (!model.pinBuilder) {
-                    model.pinBuilder = new Cesium.PinBuilder()
-                  }
-                  entity.billboard.image = model.pinBuilder.fromColor(color, markerSize).toDataURL()
-                  // To convert the automatically created billboards to points instead:
-                  // entity.billboard = undefined;
-                  // entity.point = new Cesium.PointGraphics();
-                }
-                if (entity.point) {
-                  entity.point.color = color
-                  entity.point.outlineColor = outlineColor
-                  entity.point.outlineWidth = outline ? 2 : 0
-                  // Points look better a little smaller than billboards
-                  entity.point.pixelSize = (markerSize * 0.5);
-                }
-                if (entity.polyline) {
-                  entity.polyline.material = color
-                  entity.polyline.width = lineWidth
-                }
-                if (entity.label) {
-                  // TODO...
-                }
-
-              }
+              this.styleEntities(entities)
             }
 
             cesiumModel.entities.resumeEvents()
 
-            // Let the map and/or other parent views know that a change has been made that
-            // requires the map to be re-rendered
+            // Let the map and/or other parent views know that a change has been
+            // made that requires the map to be re-rendered
             model.trigger('appearanceChanged')
 
           }
           catch (e) {
             console.log('Failed to update CesiumVectorData model styles.', e);
+          }
+        },
+
+        /**
+         * Update the styles for a set of entities
+         * @param {Array} entities - The entities to update
+         * @since x.x.x
+         */
+        styleEntities: function (entities) {
+
+          // Map of entity types to style functions
+          const entityStyleMap = {
+            polygon: this.stylePolygon,
+            polyline: this.stylePolyline,
+            billboard: this.styleBillboard,
+            point: this.stylePoint,
+          };
+  
+          entities.forEach(entity => {
+            const styles = this.getStyles(entity);
+            if (!styles) {
+              entity.show = false;
+              return;
+            }
+            entity.show = true;
+            for (const [type, styleFunction] of Object.entries(entityStyleMap)) {
+              if (entity[type]) {
+                styleFunction.call(this, entity, styles);
+              }
+            }
+          }, this);
+        },
+
+        /**
+         * Update the styles for a polygon entity
+         * @param {Cesium.Entity} entity - The entity to update
+         * @param {Object} styles - Styles to apply, as returned by getStyles
+         * @since x.x.x
+         */
+        stylePolygon: function (entity, styles) {
+          entity.polygon.material = styles.color
+          entity.polygon.outline = styles.outline;
+          entity.polygon.outlineColor = styles.outlineColor
+          entity.polygon.outlineWidth = styles.outline ? 2 : 0
+        },
+
+        /**
+         * Update the styles for a point entity
+         * @param {Cesium.Entity} entity - The entity to update
+         * @param {Object} styles - Styles to apply, as returned by getStyles
+         * @since x.x.x
+         */
+        stylePoint: function (entity, styles) {
+          entity.point.color = styles.color
+          entity.point.outlineColor = styles.outlineColor
+          entity.point.outlineWidth = styles.outline ? 2 : 0
+          entity.point.pixelSize = styles.pointSize
+        },
+
+        /**
+         * Update the styles for a polyline entity
+         * @param {Cesium.Entity} entity - The entity to update
+         * @param {Object} styles - Styles to apply, as returned by getStyles
+         * @since x.x.x
+         */
+        stylePolyline: function (entity, styles) {
+          entity.polyline.material = styles.color
+          entity.polyline.width = styles.lineWidth
+        },
+
+        /**
+         * Update the styles for a billboard entity
+         * @param {Cesium.Entity} entity - The entity to update
+         * @param {Object} styles - Styles to apply, as returned by getStyles
+         * @since x.x.x
+         */
+        styleBillboard: function (entity, styles) {
+          if (!this.pinBuilder) {
+            this.pinBuilder = new Cesium.PinBuilder()
+          }
+          entity.billboard.image = this.pinBuilder.fromColor(
+            styles.color, styles.markerSize).toDataURL()
+          // To convert the automatically created billboards to points instead:
+          // entity.billboard = undefined;
+          // entity.point = new Cesium.PointGraphics();
+        },
+
+        /**
+         * Update the styles for a label entity
+         * @param {Cesium.Entity} entity - The entity to update
+         * @param {Object} styles - Styles to apply, as returned by getStyles
+         * @since x.x.x
+         */
+        styleLabel: function (entity, styles) {
+          // TODO...
+        },
+
+        /**
+         * Covert a Color model to a Cesium Color
+         * @param {Color} color A Color model
+         * @returns {Cesium.Color|null} A Cesium Color or null if the color is
+         * invalid
+         * @since x.x.x
+         */
+        colorToCesiumColor: function (color) {
+          color = color?.get ? color.get("color") : color;
+          if(!color) return null
+          return new Cesium.Color(
+            color.red, color.green, color.blue, color.alpha
+          )
+        },
+
+        /**
+         * Return the color for a feature based on the colorPalette and filters
+         * attributes.
+         * @param {Cesium.Entity} entity A Cesium Entity
+         * @returns {Cesium.Color|null} A Cesium Color or null if the color is
+         * invalid or alpha is 0
+         * @since x.x.x
+         */
+        colorForEntity: function (entity) {
+          const properties = this.getPropertiesFromFeature(entity);
+          const color = this.colorToCesiumColor(this.getColor(properties));
+          const alpha = color.alpha * this.get("opacity");
+          if (alpha === 0) return null;
+          color.alpha = alpha;
+          return this.colorToCesiumColor(color);
+        },
+
+        /**
+         * Return the styles for a selected feature
+         * @param {Cesium.Entity} entity A Cesium Entity
+         * @returns {Object} An object containing the styles for the feature
+         * @since x.x.x
+         */
+        getSelectedStyles: function (entity) {
+          const highlightColor = this.colorToCesiumColor(
+            this.get("highlightColor")
+          );
+          return {
+            "color": highlightColor || this.colorForEntity(entity),
+            "outlineColor": Cesium.Color.WHITE,
+            "outline": true,
+            "lineWidth": 7,
+            "markerSize": 34,
+            "pointSize": 17
+          }
+        },
+
+        /**
+         * Return the styles for a feature
+         * @param {Cesium.Entity} entity A Cesium Entity
+         * @returns {Object} An object containing the styles for the feature
+         * @since x.x.x
+         */
+        getStyles: function (entity) {
+          if(!entity) return null
+          if (this.featureIsSelected(entity)) {
+            return this.getSelectedStyles(entity)
+          } 
+          const color = this.colorForEntity(entity);
+          if (!color) { return null }
+          const outlineColor = this.colorToCesiumColor(
+            this.get("outlineColor")?.get("color")
+          );
+          return {
+            "color": color,
+            "outlineColor": outlineColor,
+            "outline": outlineColor ? true : false,
+            "lineWidth": 3,
+            "markerSize": 25,
+            "pointSize": 13,
           }
         },
 

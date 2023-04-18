@@ -201,6 +201,16 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
       },
 
       /**
+       * Checks if this geohash contains the given geohash
+       * @param {string} hashString The hashString of the geohash to check.
+       */
+      isParentOf: function (hashString) {
+        if (this.isEmpty()) return false;
+        if (hashString.length < this.get("hashString").length) return false;
+        return hashString.startsWith(this.get("hashString"));
+      },
+
+      /**
        * Get the data from this model that is needed to create geometries for various
        * formats of geospacial data, like GeoJSON and CZML.
        * @param {string} geometry The type of geometry to get. Can be "rectangle",

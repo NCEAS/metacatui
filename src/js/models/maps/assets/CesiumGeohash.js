@@ -52,6 +52,8 @@ define([
        * @property {AssetColorPalette} colorPalette The color palette for the
        * layer.
        * @property {AssetColor} outlineColor The outline color for the layer.
+       * @property {AssetColor} highlightColor The color to use for features
+       * that are selected/highlighted.
        * @property {boolean} showLabels Whether to show labels for the layer.
        */
       defaults: function () {
@@ -80,6 +82,9 @@ define([
           }),
           outlineColor: new AssetColor({
             color: "#DFFAFAED",
+          }),
+          highlightColor: new AssetColor({
+            color: "#f3e227",
           }),
           showLabels: true,
         });
@@ -258,6 +263,27 @@ define([
             error
           );
         }
+      },
+
+      /**
+       * Find the geohash Entity on the map and add it to the selected
+       * features.
+       * @param {*} geohash 
+       */
+      selectGeohashes: function (geohashes) {
+        const toSelect = [...new Set(geohashes.map((geohash) => {
+          const parent = this.get("geohashes").findParentByHashString(geohash);
+          return parent?.get("hashString");
+        }, this))];
+        const entities = this.get("cesiumModel").entities.values;
+        const selected = entities.filter((entity) => {
+          const hashString = this.getPropertiesFromFeature(entity).hashString;
+          return toSelect.includes(hashString);
+        });
+        const featureAttrs = selected.map((feature) => {
+          return this.getFeatureAttributes(feature);
+        });
+        this.get("mapModel").selectFeatures(featureAttrs);
       },
     }
   );

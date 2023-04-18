@@ -321,6 +321,20 @@ define([
       },
 
       /**
+       * Return the geohashes as a GeoJSON FeatureCollection, where each geohash
+       * is represented as a GeoJSON Point.
+       * @returns {Object} GeoJSON FeatureCollection.
+       */
+      toGeoJSONPoints: function () {
+        return {
+          type: "FeatureCollection",
+          features: this.map(function (geohash) {
+            return geohash.toGeoJSONPoint();
+          }),
+        };
+      },
+
+      /**
        * Return the geohashes as a CZML document, where each geohash is
        * represented as a CZML Polygon (rectangle) and a CZML Label.
        * @param {string} [label] - The key for the property that should be
@@ -341,6 +355,25 @@ define([
         });
 
         return czmlHeader.concat(czmlData);
+      },
+
+      /**
+       * Find the parent geohash from this collection that contains the provided
+       * geohash hashString. If the hashString is already in the collection,
+       * return that geohash. Otherwise, find the geohash that contains the
+       * hashString.
+       * @param {string} hashString - Geohash hashString.
+       * @returns {Geohash} Parent geohash.
+       */
+      findParentByHashString: function (hashString) {
+        if (!hashString || hashString.length === 0) return null;
+        // First check if the hashString is already in the collection
+        let geohash = this.findWhere({ hashString: hashString });
+        if (geohash) return geohash;
+        geohash = this.find((gh) => {
+          return gh.isParentOf(hashString);
+        });
+        return geohash;
       },
     }
   );

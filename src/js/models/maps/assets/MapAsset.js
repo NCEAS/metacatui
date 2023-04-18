@@ -439,8 +439,8 @@ define(
          * for this asset model.
          */
         getFeatureAttributes: function (feature) {
-          if (!this.usesFeatureType(feature)) return null
-          if (!this.getCesiumModelFromFeature) return null
+          if (!this.usesFeatureType(feature)) return null;
+          if (!this.getCesiumModelFromFeature) return null;
           return {
             properties: this.getPropertiesFromFeature(feature),
             mapAsset: this,
