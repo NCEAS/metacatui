@@ -300,6 +300,42 @@ define([
       },
 
       /**
+       * Reduce the precision of the geohashes in the collection by a certain
+       * number of levels. This will remove geohashes from the collection and
+       * add new geohashes with lower precision. The properties of the
+       * geohashes will be summarized using the provided propertySummaries.
+       * @param {Number} by - Number of levels to reduce precision by.
+       * @param {Object} propertySummaries - To keep properties in the resulting
+       * geohashes, provide methods to summarize the properties of the child
+       * geohashes. The keys of this object should be the names of the
+       * properties to keep, and the values should be functions that take an
+       * array of values and return a single value.
+       */
+      reducePrecision: function (by = 1, propertySummaries = {}) {
+        // Group the geohashes by their parent geohash.
+        const groups = this.getGroups();
+        // Combine the geohashes in each group into a single geohash with lower
+        // precision.
+        const reduced = Object.keys(groups).map((groupID) => {
+          const parent = new Geohash({ hashString: groupID });
+          const children = groups[groupID];
+          const properties = {};
+          Object.keys(propertySummaries).forEach((key) => {
+            const values = children.map((child) => {
+              return child.get(key);
+            });
+            // log("values", values);
+            properties[key] = propertySummaries[key](values);
+          });
+          parent.set("properties", properties);
+          return parent;
+        });
+        // Remove the original geohashes and add the new ones.
+        this.reset(reduced);
+        return this;
+      },
+
+      /**
        * Get the unique geohash precision levels present in the collection.
        */
       getPrecisions: function () {

@@ -168,7 +168,7 @@ define([
         this.listenTo(map, "moveEnd", function () {
           this.showGeoHashLayer();
           this.updateFacet();
-          searchResults.trigger("reset");
+          // searchResults.trigger("reset");
         });
 
         // When a new search is being performed, hide the GeoHash layer to

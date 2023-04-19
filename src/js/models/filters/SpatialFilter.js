@@ -30,6 +30,10 @@ define([
        * @property {number} south The southernmost latitude of the search area
        * @property {number} height The height at which to calculate the geohash
        * precision for the search area
+       * @property {number} maxGeohashValues The maximum number of geohash
+       * values to use in the filter. If the number of geohashes exceeds this
+       * value, the precision will be reduced until the number of geohashes is
+       * less than or equal to this value.
        */
       defaults: function () {
         return _.extend(Filter.prototype.defaults(), {
@@ -46,6 +50,7 @@ define([
           operator: "OR",
           fieldsOperator: "OR",
           matchSubstring: false,
+          maxGeohashValues: 100,
         });
       },
 
@@ -118,7 +123,7 @@ define([
       updateFilterFromExtent: function () {
         try {
           this.validateCoordinates();
-          const geohashes = new Geohashes();
+          let geohashes = new Geohashes();
           geohashes.addGeohashesByExtent(
             (bounds = {
               north: this.get("north"),
@@ -130,6 +135,14 @@ define([
             (overwrite = true)
           );
           geohashes.consolidate();
+          // If there are too many geohashes, reduce the precision so that the
+          // search string is not too long
+          const limit = this.get("maxGeohashValues")
+          if (typeof limit === "number") {
+            while (geohashes.length > limit) {
+              geohashes = geohashes.reducePrecision(1)
+            }
+          }
           this.set({
             fields: this.precisionsToFields(geohashes.getPrecisions()),
             values: geohashes.getAllHashStrings(),

@@ -55,6 +55,10 @@ define([
        * @property {AssetColor} highlightColor The color to use for features
        * that are selected/highlighted.
        * @property {boolean} showLabels Whether to show labels for the layer.
+       * @property {number} maxGeoHashes The maximum number of geohashes to
+       * render at a time for performance reasons. If the number of geohashes
+       * exceeds this number, then the precision will be decreased until the
+       * number of geohashes is less than or equal to this number.
        */
       defaults: function () {
         return Object.assign(CesiumVectorData.prototype.defaults(), {
@@ -87,6 +91,7 @@ define([
             color: "#f3e227",
           }),
           showLabels: true,
+          maxGeoHashes: 1000,
         });
       },
 
@@ -193,6 +198,45 @@ define([
       },
 
       /**
+       * Get the geohash collection and optionally reduce it to only those
+       * geohashes that are within the current map extent, and to no more than
+       * the specified amount.
+       * @param {boolean} [limitToExtent=true] Whether to limit the geohashes
+       * to those that are within the current map extent.
+       * @returns {Geohashes} The geohashes to display.
+       */
+      getGeohashes(limitToExtent = true) {
+        let geohashes = this.get("geohashes");
+        if (limitToExtent) {
+          geohashes = this.getGeohashesForExtent();
+        }
+        const limit = this.get("maxGeoHashes");
+        if(typeof limit === 'number' && geohashes.length > limit) {
+          geohashes = this.reduceGeohashes(geohashes, limit);
+        }
+        return geohashes;
+      },
+
+      /**
+       * Reduce the number of geohashes to no more than the specified number.
+       * @param {Geohashes} geohashes The geohashes to reduce.
+       * @param {number} limitToNum The maximum number of geohashes to return.
+       * @returns {Geohashes} The reduced geohashes.
+       */
+      reduceGeohashes: function (geohashes, limitToNum = 1000) {
+        // For now assume that we will want to summarize the combined property
+        // of interest by summing the values.
+        const propertySummaries = {};
+        propertySummaries[this.getPropertyOfInterest()] = function (vals) {
+          return vals.reduce((a, b) => a + b, 0);
+        }
+        while (geohashes.length > limitToNum) {
+          geohashes = geohashes.clone().reducePrecision(1, propertySummaries);
+        }
+        return geohashes;
+      },
+
+      /**
        * Get the geohashes that are currently in the map's extent.
        * @returns {Geohashes} The geohashes in the current extent.
        */
@@ -210,10 +254,8 @@ define([
        * @returns {Object} The GeoJSON representation of the geohashes.
        */
       getGeoJSON: function (limitToExtent = true) {
-        if (!limitToExtent) {
-          return this.get("geohashes")?.toGeoJSON();
-        }
-        return this.getGeohashesForExtent()?.toGeoJSON();
+        const geohashes = this.getGeohashes(limitToExtent);
+        return geohashes.toGeoJSON();
       },
 
       /**
@@ -223,11 +265,9 @@ define([
        * @returns {Object} The CZML representation of the geohashes.
        */
       getCZML: function (limitToExtent = true) {
-        if (!limitToExtent) {
-          return this.get("geohashes")?.toCZML();
-        }
+        const geohashes = this.getGeohashes(limitToExtent);
         const label = this.getPropertyOfInterest();
-        return this.getGeohashesForExtent()?.toCZML(label);
+        return geohashes.toCZML(label);
       },
 
       /**
@@ -288,11 +328,3 @@ define([
     }
   );
 });
-
-// TODO: consider adding this back in to optionally limit the number of
-// geohashes const limit = this.get("maxGeohashes"); if (limit &&
-// hashStrings.length > limit && level > 1) { while (hashStrings.length > limit
-// && level > 1) { level--; hashStrings = this.getHashStringsByExtent(bounds,
-// level);
-//   }
-// }
