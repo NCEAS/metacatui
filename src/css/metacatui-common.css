@@ -545,11 +545,11 @@ text-shadow: none;
 .data-tag-icon.crimson g{
   fill: #800000;
 }
-
 /******************************************
 ** Results and Result Rows ***
 ******************************************/
 .result-row{
+	box-sizing: border-box;
 	padding: 10px 20px;
 	 width: auto;
 	 border-top: 1px solid #EEE;
@@ -6850,7 +6850,7 @@ body.mapMode{
 .filter-groups.vertical .filters-header{
   margin: 0px;
   border-bottom: 1px dashed #CCC;
-	margin-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
   padding-bottom: 10px;
 }
 #portal-filters{

@@ -54,7 +54,7 @@ define([
        * @type {string}
        * @since 2.22.0
        */
-      className: "catalog-search-view",
+      className: "catalog",
 
       /**
        * The template to use for this view's element
@@ -133,54 +133,54 @@ define([
       sorterView: null,
 
       /**
-       * The CSS class to add to the body of the CatalogSearch.
+       * The CSS class to add to the body element when this view is rendered.
        * @type {string}
        * @since 2.22.0
-       * @default "catalog-search-body"
+       * @default "catalog-search-view-body",
        */
-      bodyClass: "catalog-search-body",
+      bodyClass: "catalog-search-view-body",
 
       /**
        * The jQuery selector for the FilterGroupsView container
        * @type {string}
        * @since 2.22.0
        */
-      filterGroupsContainer: ".filter-groups-container",
+      filterGroupsContainer: ".catalog__filters",
 
       /**
        * The query selector for the SearchResultsView container
        * @type {string}
        * @since 2.22.0
        */
-      searchResultsContainer: ".search-results-container",
+      searchResultsContainer: ".catalog__results-list",
 
       /**
        * The query selector for the CesiumWidgetView container
        * @type {string}
        * @since 2.22.0
        */
-      mapContainer: ".map-container",
+      mapContainer: ".catalog__map",
 
       /**
        * The query selector for the PagerView container
        * @type {string}
        * @since 2.22.0
        */
-      pagerContainer: ".pager-container",
+      pagerContainer: ".catalog__pager",
 
       /**
        * The query selector for the SorterView container
        * @type {string}
        * @since 2.22.0
        */
-      sorterContainer: ".sorter-container",
+      sorterContainer: ".catalog__sorter",
 
       /**
        * The query selector for the title container
        * @type {string}
        * @since 2.22.0
        */
-      titleContainer: ".title-container",
+      titleContainer: ".catalog__summary",
 
       /**
        * The query selector for button that is used to either show or hide the
@@ -188,7 +188,12 @@ define([
        * @type {string}
        * @since 2.22.0
        */
-      showHideMapButton: ".show-hide-map-button",
+      toggleMapButton: ".catalog__map-toggle",
+
+      mapFilterToggle: ".catalog__map-filter-toggle",
+
+      mapModeClass: "catalog--map-mode",
+      listModeClass: "catalog--list-mode",
 
       /**
        * The events this view will listen to and the associated function to
@@ -197,10 +202,9 @@ define([
        * @since 2.22.0
        */
       events: function () {
-        const e = {
-          "click .spatial-filter": "toggleMapFilter",
-        }
-        e[`click ${this.showHideMapButton}`] = "toggleMode";
+        const e = {}
+        e[`click ${this.mapFilterToggle}`] = "toggleMapFilter";
+        e[`click ${this.toggleMapButton}`] = "toggleMode";
         return e;
       },
 
@@ -546,7 +550,7 @@ define([
       renderMap: function () {
         try {
           // Add the map to the page and render it
-          this.$(this.mapContainer).empty().append(this.mapView.el);
+          this.$(this.mapContainer).append(this.mapView.el);
           this.mapView.render();
         } catch (e) {
           console.error("Couldn't render map in search. ", e);
@@ -625,17 +629,19 @@ define([
           // the current mode
           newMode = newMode != "map" && newMode != "list" ? null : newMode;
           newMode = newMode || (this.mode == "map" ? "list" : "map");
+          const mapClass = this.mapModeClass;
+          const listClass = this.listModeClass;
 
           if (newMode == "list") {
             this.mode = "list";
-            classList.remove("mapMode");
-            classList.add("listMode");
+            classList.remove(mapClass);
+            classList.add(listClass);
           } else {
             this.mode = "map";
-            classList.remove("listMode");
-            classList.add("mapMode");
+            classList.remove(listClass);
+            classList.add(mapClass);
           }
-          this.updateShowHideMapButton();
+          this.updateToggleMapButton();
         } catch (e) {
           console.error("Couldn't toggle search mode. ", e);
         }
@@ -645,9 +651,9 @@ define([
        * Change the content of the map toggle button to indicate whether
        * clicking it will show or hide the map.
        */
-      updateShowHideMapButton: function () {
+      updateToggleMapButton: function () {
         try {
-          const mapToggle = this.el.querySelector(this.showHideMapButton);
+          const mapToggle = this.el.querySelector(this.toggleMapButton);
           if(!mapToggle) return;
           if (this.mode == "map") {
             mapToggle.innerHTML = 'Hide Map <i class="icon icon-angle-right"></i>'

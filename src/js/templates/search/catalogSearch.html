@@ -1,27 +1,19 @@
-<section class="catalog-search-inner">
-  <div class="filter-groups-container"></div>
-  <div class="search-results-panel-container">
-    <div class="title-container"></div>
-    <div class="pager-container"></div>
-    <div class="sorter-container"></div>
-    <div class="search-results-container"></div>
+<div class="catalog__filters"></div>
+<div class="catalog__results">
+  <div class="catalog__summary"></div>
+  <div class="catalog__pager"></div>
+  <div class="catalog__sorter"></div>
+  <div class="catalog__results-list"></div>
+  <button class="catalog__map-toggle"> Hide Map <i class="icon icon-angle-right"></i> </button>
+</div>
+<div class="catalog__map">
+  <div class="catalog__map-filter-toggle">
+    <label class="map-filter-toggle__label" for="toggle-spatial-filter">Limit my search to the map area</label>
+    <input
+      id="toggle-spatial-filter"
+      type="checkbox"
+      name="map"
+      checked="true"
+      class="map-filter-toggle__checkbox" />
   </div>
-  <div class="map-panel-container">
-    <div class="map-controls">
-      <a class="show-hide-map-button">
-        Hide Map
-        <i class="icon icon-angle-right"></i>
-      </a>
-      <div class="spatial-filter">
-        <label class="spatial-filter-label" for="toggle-spatial-filter">Limit my search to the map area</label>
-        <input
-          id="toggle-spatial-filter"
-          type="checkbox"
-          name="map"
-          checked="true"
-          class="spatial-filter-checkbox" />
-      </div>
-    </div>
-    <div class="map-container"></div>
-  </div>
-</section>
+</div>

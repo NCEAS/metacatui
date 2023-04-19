@@ -1,156 +1,81 @@
-/******************************************
-** CatalogSearchView ***
-******************************************/
-
-/*
-TODO:
- - transfer over any other styles specific to this component
- - make sure there are not conflicts with the old data catalog view
- - see if there are any theme-specific overrides for this search view that we can eliminate.
- - switch what we can to CSS variables
- */
-
-.catalog-search-view {
-  height: 100%;
+/* ------ CSS VARS ------ */
+/* variables for the catalog search view ("cs") only */
+:root {
+  --cs-panel-shadow: 0px 0px 14px rgba(67, 68, 87, 0.35);
+  --cs-padding-top-bottom: 0.8rem;
+  --cs-padding-left-right: 1rem;
+  --cs-panel-padding: var(--cs-padding-top-bottom) var(--cs-padding-left-right);
 }
 
-.catalog-search-inner {
-  height: 100%;
+/* ------ CATALOG ELEMENTS ------ */
+
+.catalog {
   display: grid;
-  justify-content: stretch;
-  align-items: stretch;
-  grid-template-columns: auto 1fr 1fr;
+  grid-template-columns: min-content 1fr 1fr;
+  grid-template-areas:
+    "filters results map";
   grid-template-rows: 100%;
-}
-
-.catalog-search-view .filter-groups-container {
-  width: 215px;
-  padding: var(--pad);
-  padding-bottom: 3rem;
-  overflow: scroll;
-}
-
-.catalog-search-body.mapMode {
-  height: 100vh;
-  width: 100vw;
-  padding-bottom: 0px;
-  display: grid;
-  align-items: stretch;
-  justify-content: stretch;
+  height: 100%;
   overflow: hidden;
 }
 
-.catalog-search-body.mapMode .search-results-view .result-row:last-child {
-  margin-bottom: 100px;
+.catalog__filters {
+  box-sizing: border-box;
+  grid-area: filters;
+  overflow: scroll;
+  padding: var(--cs-panel-padding);
+  box-shadow: var(--cs-panel-shadow);
 }
 
-.search-results-container {
-  overflow-y: scroll;
-  height: 100%;
-}
-
-.search-results-panel-container {
+.catalog__results {
+  box-sizing: border-box;
+  grid-area: results;
+  overflow: scroll;
+  padding: var(--cs-panel-padding);
+  /* so that absolutely positioned map toggle is placed relative to this */
+  position: relative;
+  /* position children */
   display: grid;
-  grid-auto-columns: 1fr;
-  grid-template-columns: max-content 1fr;
-  grid-template-rows: min-content min-content min-content 1fr;
-  gap: 0px 0px;
+  width: 100%;
+  grid-template-columns: auto min-content;
+  grid-template-rows: min-content min-content 1fr;
   grid-template-areas:
-    "map-toggle-container map-toggle-container"
-    "title-container title-container"
-    "pager-container sorter-container"
-    "search-results-container search-results-container";
+    "summary summary"
+    "pager sorter"
+    "results results";
 }
-
-.search-results-container {
-  grid-area: search-results-container;
+.catalog__summary{
+  grid-area: summary;
 }
-
-.pager-container {
-  grid-area: pager-container;
+.catalog__pager{
+  grid-area: pager;
 }
-
-.sorter-container {
-  grid-area: sorter-container;
-  justify-self: end;
-  padding-right: var(--pad);
+.catalog_sorter{
+  grid-area: sorter;
 }
-
-.title-container {
-  grid-area: title-container;
-}
-
-.map-toggle-container {
-  grid-area: map-toggle-container;
-}
-
-.catalog-search-body.mapMode .search-results-panel-container .map-toggle-container {
-  display: none;
-}
-
-.catalog-search-body.listMode .catalog-search-inner {
-  grid-template-columns: auto 1fr 0;
-}
-
-.catalog-search-view .cesium-widget-view {
-  width: inherit;
-  margin-left: 0;
-}
-
-.search-results-view .result-row {
-  padding: var(--pad);
-}
-
-.catalog-search-view .no-search-results {
-  padding: var(--pad);
-  text-align: center;
+.catalog__results-list{
+  grid-area: results;
 }
 
 
-
-.map-panel-container {
-  position: relative;
-}
-
-/* When map is hidden... */
-.listMode .map-panel-container {
-  position: unset;
-}
-
-.listMode .catalog-search-inner {
-  position: relative;
-}
-
-.catalog-search-body.listMode .map-panel-container {
-  display: block;
-}
-
-.listMode .map-container {
-  display: none;
-}
-
-
-
-/* map controls */
-
-.map-controls {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  z-index: 1;
+.catalog__map {
+  grid-area: map;
   display: grid;
-  grid-template-columns: auto auto;
-  gap: 1rem;
-  align-items: center;
-}
-.listMode .map-controls {
-  right: 1.1rem;
-  left: auto;
-  top: 0.3rem;
-  gap: 0;
+  box-shadow: var(--cs-panel-shadow);
+  /* so that .catalog__map-filter-toggle is positioned relative to map */
+  position: relative;
 }
 
-.show-hide-map-button {
+/* MAP CONTROLS */
+
+.catalog__map-toggle {
+  position: absolute;
+  right: var(--cs-padding-top-bottom);
+  top: var(--cs-padding-left-right);
+  /* remove button styles */
+  border: none;
+  outline: none;
+  /* TODO: clean up styles and use vars */
   background-color: #19B36A;
   color: white;
   padding: 0.3rem 0.5rem;
@@ -160,39 +85,102 @@ TODO:
   letter-spacing: 0.02em;
 }
 
-.show-hide-map-button:hover {
+.catalog__map-toggle:hover {
   background-color: #1E9E5A;
   color: white;
   /* make a smaller darker box shadow than in the non-hover state */
   box-shadow: 0 1px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 5px -2px rgba(0, 0, 0, 0.3);
 }
 
-/* Spatial Filter Toggle */
-.spatial-filter{
-  display: grid;
-  grid-template-columns: auto auto;
-  background: var(--map-col-bkg, black);
-  color: var(--map-col-text, white);
-  border-radius: 0.5rem;
-  opacity: 0.8;
-  top: 0.5rem;
-  padding: 0.3rem 0.5rem;
-  box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.15), 0 1px 14px -6px rgba(0, 0, 0, 0.28);
+.catalog__map-filter-toggle{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 1rem;
+  display: flex;
+  z-index: 1;
 }
-.listMode .spatial-filter {
-  display: none;
+
+.map-filter-toggle__label {
+  color: white;
 }
-.spatial-filter-label{
-  margin: 0;
-}
-/* rule is specific to overwrite bootstrap */
-input[type=checkbox].spatial-filter-checkbox{ 
+
+.catalog__map-filter-toggle input[type=checkbox]{ 
   margin: 0;
   margin-right: 0.5rem;
-  /* make it look nicer */
   transform: scale(1.2);
-  /* put it to the left of the label */
   order: -1;
   margin-right: 0.5rem;
+}
 
+/* ------ PAGE LAYOUT ------ */
+/* organize the page elements that are outside of the catalog search view */
+
+/*body*/
+.catalog-search-view-body {
+  display: grid;
+  grid-template-columns: 100vw;
+  grid-template-rows: min-content 1fr;
+  grid-template-areas:
+    "nav-header"
+    "content";
+  overflow: hidden;
+  height: 100vh;
+  padding: 0;
+  margin: 0;
+}
+
+.catalog-search-view-body #Navbar {
+  grid-area: nav-header;
+  position: relative;
+  z-index: 100;
+}
+
+.catalog-search-view-body #HeaderContainer,
+.catalog-search-view-body #Navbar {
+  box-shadow: var(--cs-panel-shadow);
+}
+
+.catalog-search-view-body .navbar-inner {
+  margin: 0;
+}
+
+.catalog-search-view-body #HeaderContainer {
+  grid-area: nav-header;
+}
+
+.catalog-search-view-body #Content {
+  grid-area: content;
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 100%;
+}
+
+.catalog-search-view-body #Footer {
+  display: none;
+  position: relative;
+}
+
+/* ------ LIST MODE ------ */
+/* catalog is styled as map mode by default. Modifications needed for list-mode
+(map hidden) are below */
+
+.catalog-search-view-body.catalog--list-mode {
+  overflow: scroll;
+  height: auto;
+}
+
+.catalog--list-mode #Footer {
+  display: block;
+}
+
+.catalog--list-mode .catalog__map {
+  display: none;
+}
+
+.catalog--list-mode .catalog {
+  grid-template-columns: min-content auto;
+  grid-template-areas:
+    "filters results";
+  overflow: scroll;
 }
