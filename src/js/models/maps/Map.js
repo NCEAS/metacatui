@@ -42,6 +42,11 @@ define([
        * @property {Boolean} [showToolbar=true] - Whether or not to show the
        * side bar with layer list, etc. If true, the {@link MapView} will render
        * a {@link ToolbarView}.
+       * @property {Boolean} [showLayerList=true] - Whether or not to show the
+       * layer list in the toolbar. If true, the {@link ToolbarView} will
+       * render a {@link LayerListView}.
+       * @property {Boolean} [showHomeButton=true] - Whether or not to show the
+       * home button in the toolbar.
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
@@ -136,7 +141,11 @@ define([
        * (cesium) with a Feature model when a user selects a geographical
        * feature on the map (e.g. by clicking)
        * @property {Boolean} [showToolbar=true] - Whether or not to show the
-       * side bar with layer list, etc. True by default.
+       * side bar with layer list and other tools. True by default.
+       * @property {Boolean} [showLayerList=true] - Whether or not to include
+       * the layer list in the toolbar. True by default.
+       * @property {Boolean} [showHomeButton=true] - Whether or not to show the
+       * home button in the toolbar. True by default.
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
@@ -182,6 +191,8 @@ define([
           terrains: new MapAssets(),
           selectedFeatures: new Features(),
           showToolbar: true,
+          showLayerList: true,
+          showHomeButton: true,
           toolbarOpen: false,
           showScaleBar: true,
           showFeatureInfo: true,

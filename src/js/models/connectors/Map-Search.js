@@ -168,7 +168,7 @@ define([
         this.listenTo(map, "moveEnd", function () {
           this.showGeoHashLayer();
           this.updateFacet();
-          // searchResults.trigger("reset");
+          searchResults.trigger("reset");
         });
 
         // When a new search is being performed, hide the GeoHash layer to
@@ -271,7 +271,6 @@ define([
         const geohashLayer = this.get("geohashLayer");
         const counts = this.getGeohashCounts();
         const modelAttrs = this.facetCountsToGeohashAttrs(counts);
-        // const totalCount = this.getTotalNumberOfResults(); // TODO
         geohashLayer.replaceGeohashes(modelAttrs);
       },
 

@@ -108,7 +108,7 @@ define(['jquery', 'underscore', 'backbone'],
        * @since 2.22.0
        */
       catalogSearchMapOptions: {
-        showToolbar: false,
+        showLayerList: false,
         layers: [
           {
               "label": "Satellite imagery",
