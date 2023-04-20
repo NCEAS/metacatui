@@ -9,7 +9,7 @@ define([
   "views/search/SorterView",
   "text!templates/search/catalogSearch.html",
   "models/connectors/Map-Search-Filters",
-  "text!" + MetacatUI.root + "/css/catalog-search-view.css"
+  "text!" + MetacatUI.root + "/css/catalog-search-view.css",
 ], function (
   $,
   Backbone,
@@ -26,12 +26,14 @@ define([
 
   /**
    * @class CatalogSearchView
+   * @classdesc The data catalog search view for the repository. This view
+   * displays a Cesium map, search results, and search filters.
    * @name CatalogSearchView
    * @classcategory Views
    * @extends Backbone.View
    * @constructor
    * @since 2.22.0
-   * TODO: Add screenshot and description
+   * TODO: Add screenshot
    */
   return Backbone.View.extend(
     /** @lends CatalogSearchView.prototype */ {
@@ -136,9 +138,9 @@ define([
        * The CSS class to add to the body element when this view is rendered.
        * @type {string}
        * @since 2.22.0
-       * @default "catalog-search-view-body",
+       * @default "catalog-search-body",
        */
-      bodyClass: "catalog-search-view-body",
+      bodyClass: "catalog-search-body",
 
       /**
        * The jQuery selector for the FilterGroupsView container
@@ -190,9 +192,28 @@ define([
        */
       toggleMapButton: ".catalog__map-toggle",
 
+      /**
+       * The query selector for the button that is used to turn on or off
+       * spatial filtering by map extent.
+       * @type {string}
+       * @since x.x.x
+       */
       mapFilterToggle: ".catalog__map-filter-toggle",
 
+      /**
+       * The CSS class (not selector) to add to the body element when the map is
+       * visible.
+       * @type {string}
+       * @since x.x.x
+       */
       mapModeClass: "catalog--map-mode",
+
+      /**
+       * The CSS class (not selector) to add to the body element when the map is
+       * hidden.
+       * @type {string}
+       * @since x.x.x
+       */
       listModeClass: "catalog--list-mode",
 
       /**
@@ -202,7 +223,7 @@ define([
        * @since 2.22.0
        */
       events: function () {
-        const e = {}
+        const e = {};
         e[`click ${this.mapFilterToggle}`] = "toggleMapFilter";
         e[`click ${this.toggleMapButton}`] = "toggleMode";
         return e;
@@ -225,7 +246,6 @@ define([
        * @since x.x.x
        */
       initialize: function (options) {
-
         this.cssID = "catalogSearchView";
         MetacatUI.appModel.addCSS(CatalogSearchViewCSS, this.cssID);
 
@@ -305,7 +325,14 @@ define([
        */
       setupView: function () {
         try {
-          document.querySelector("body").classList.add(this.bodyClass);
+          // The body class modifies the entire page layout to accommodate the
+          // catalog search view
+          if (!this.isSubView) {
+            MetacatUI.appModel.set("headerType", "default");
+            document.querySelector("body").classList.add(this.bodyClass);
+          } else {
+            // TODO: Set up styling for sub-view version of the catalog
+          }
 
           this.toggleMode(this.mode);
 
@@ -654,11 +681,13 @@ define([
       updateToggleMapButton: function () {
         try {
           const mapToggle = this.el.querySelector(this.toggleMapButton);
-          if(!mapToggle) return;
+          if (!mapToggle) return;
           if (this.mode == "map") {
-            mapToggle.innerHTML = 'Hide Map <i class="icon icon-angle-right"></i>'
+            mapToggle.innerHTML =
+              'Hide Map <i class="icon icon-angle-right"></i>';
           } else {
-            mapToggle.innerHTML = '<i class="icon icon-angle-left"></i> Show Map <i class="icon icon-globe"></i>'
+            mapToggle.innerHTML =
+              '<i class="icon icon-angle-left"></i> Show Map <i class="icon icon-globe"></i>';
           }
         } catch (e) {
           console.log("Couldn't update map toggle. ", e);

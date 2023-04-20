@@ -131,14 +131,11 @@ function ($, _, Backbone) {
 				MetacatUI.appSearchModel.set('additionalCriteria', [query]);
 			}
 
-			// Check for a search mode URL parameter
-			if((typeof mode !== "undefined") && mode)
-				MetacatUI.appView.dataCatalogView.mode = mode;
-
 			require(['views/DataCatalogView'], function(DataCatalogView){
-				if(!MetacatUI.appView.dataCatalogView)
+				if (!MetacatUI.appView.dataCatalogView) {
 					MetacatUI.appView.dataCatalogView = new DataCatalogView();
-
+				}
+				if (mode) MetacatUI.appView.dataCatalogView.mode = mode;
 				MetacatUI.appView.showView(MetacatUI.appView.dataCatalogView);
 			});
 		},

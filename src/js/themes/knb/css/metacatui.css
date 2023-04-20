@@ -1,12 +1,3 @@
-/* KNB CSS vars
--------------------------------------------------- */
-
-/* Footer height when it is fixed in place in the data catalog */
-:root {
-  --fixed-footer-height: 1.2em;
-  --header-height: 0;
-}
-
 @font-face {
 	font-family: "Lato";
   	src: url('../../../../font/Lato-Light.ttf')  format('truetype'); /* Safari, Android, iOS */
@@ -47,9 +38,6 @@
     }
     .mapMode > section > article{
     	padding-bottom: 0px;
-    }
-    .catalog-search-body #Content {
-      height: calc(100% - var(--fixed-footer-height));
     }
 
     a {
@@ -340,29 +328,18 @@
       height: 250px; /* Keeps footer down */
     }
 
-    .catalog-search-body #Footer{
+    .mapMode #Footer{
     	position: fixed;
     	bottom: 0;
     	background-color: #3F3F3F;
     	color: #FFF;
-      min-height: var(--fixed-footer-height);
-    	height: var(--fixed-footer-height);
+    	height: 1.2em;
     	transition: min-height 1s ease-out;
     	-webkit-transition: min-height 1s ease-out;
     	transition-delay: .5s;
     	-webkit-transition-delay: .5s;
     	z-index: 10;
     	padding-top: 3px;
-    }
-
-    .DataCatalog #Content {
-      padding-top: 0;
-    }
-    .DataCatalog:not(.mapMode) #Content {
-      padding-top: 2rem;
-    }
-    .catalog-search-body #Content {
-      padding-top: 0;
     }
 
     footer#Footer div#FooterHeading {

@@ -1,10 +1,16 @@
 /* ------ CSS VARS ------ */
 /* variables for the catalog search view ("cs") only */
 :root {
+  --cs-button-bkg: #19B36A;
+  --cs-button-text: white;
   --cs-panel-shadow: 0px 0px 14px rgba(67, 68, 87, 0.35);
-  --cs-padding-top-bottom: 0.8rem;
-  --cs-padding-left-right: 1rem;
-  --cs-panel-padding: var(--cs-padding-top-bottom) var(--cs-padding-left-right);
+  --cs-element-shadow: 0px 0px 5px rgba(67, 68, 87, 0.2);
+  --cs-padding-xsmall: 0.2rem;
+  --cs-padding-small: 0.5rem;
+  --cs-padding-medium: 0.8rem;
+  --cs-padding-large: 1.1rem;
+  --cs-panel-padding: var(--cs-padding-medium) var(--cs-padding-large);
+  --cs-border-radius: 0.5rem;
 }
 
 /* ------ CATALOG ELEMENTS ------ */
@@ -25,6 +31,7 @@
   overflow: scroll;
   padding: var(--cs-panel-padding);
   box-shadow: var(--cs-panel-shadow);
+  padding-top: 2.1rem;
 }
 
 .catalog__results {
@@ -44,16 +51,20 @@
     "pager sorter"
     "results results";
 }
-.catalog__summary{
+
+.catalog__summary {
   grid-area: summary;
 }
-.catalog__pager{
+
+.catalog__pager {
   grid-area: pager;
 }
-.catalog_sorter{
+
+.catalog_sorter {
   grid-area: sorter;
 }
-.catalog__results-list{
+
+.catalog__results-list {
   grid-area: results;
 }
 
@@ -70,46 +81,51 @@
 
 .catalog__map-toggle {
   position: absolute;
-  right: var(--cs-padding-top-bottom);
-  top: var(--cs-padding-left-right);
-  /* remove button styles */
+  right: var(--cs-padding-medium);
+  top: var(--cs-padding-large);
   border: none;
   outline: none;
-  /* TODO: clean up styles and use vars */
-  background-color: #19B36A;
-  color: white;
-  padding: 0.3rem 0.5rem;
-  cursor: pointer;
-  box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.15), 0 1px 14px -6px rgba(0, 0, 0, 0.28);
-  border-radius: 0.5rem;
+  background-color: var(--cs-button-bkg);
+  color: var(--cs-button-text);
+  padding: var(--cs-padding-xsmall) var(--cs-padding-small);
+  box-shadow: var(--cs-element-shadow);
+  border-radius: var(--cs-border-radius);
   letter-spacing: 0.02em;
 }
 
 .catalog__map-toggle:hover {
-  background-color: #1E9E5A;
-  color: white;
-  /* make a smaller darker box shadow than in the non-hover state */
-  box-shadow: 0 1px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 5px -2px rgba(0, 0, 0, 0.3);
+  filter: brightness(0.9);
 }
 
-.catalog__map-filter-toggle{
+.catalog__map-filter-toggle {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
   bottom: 1rem;
-  display: flex;
   z-index: 1;
+  display: flex;
+  background: var(--map-col-bkg-lighter, black);
+  opacity: 0.8;
+  padding: var(--cs-padding-small) var(--cs-padding-medium);
+  border-radius: var(--map-border-radius, --cs-border-radius);
+  align-items: center;
 }
 
 .map-filter-toggle__label {
-  color: white;
+  color: var(--map-col-text, white);
+  margin: 0;
+  line-height: 1;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
-.catalog__map-filter-toggle input[type=checkbox]{ 
+/* the rule has high specificity to override bootstrap rules */
+.catalog__map-filter-toggle input[type=checkbox] {
   margin: 0;
-  margin-right: 0.5rem;
-  transform: scale(1.2);
   order: -1;
+  transform: scale(1.35);
   margin-right: 0.5rem;
 }
 
@@ -117,7 +133,7 @@
 /* organize the page elements that are outside of the catalog search view */
 
 /*body*/
-.catalog-search-view-body {
+.catalog-search-body {
   display: grid;
   grid-template-columns: 100vw;
   grid-template-rows: min-content 1fr;
@@ -130,33 +146,33 @@
   margin: 0;
 }
 
-.catalog-search-view-body #Navbar {
+.catalog-search-body #Navbar {
   grid-area: nav-header;
   position: relative;
   z-index: 100;
 }
 
-.catalog-search-view-body #HeaderContainer,
-.catalog-search-view-body #Navbar {
+.catalog-search-body #HeaderContainer,
+.catalog-search-body #Navbar {
   box-shadow: var(--cs-panel-shadow);
 }
 
-.catalog-search-view-body .navbar-inner {
+.catalog-search-body .navbar-inner {
   margin: 0;
 }
 
-.catalog-search-view-body #HeaderContainer {
+.catalog-search-body #HeaderContainer {
   grid-area: nav-header;
 }
 
-.catalog-search-view-body #Content {
+.catalog-search-body #Content {
   grid-area: content;
   padding: 0 !important;
   margin: 0 !important;
   height: 100%;
 }
 
-.catalog-search-view-body #Footer {
+.catalog-search-body #Footer {
   display: none;
   position: relative;
 }
@@ -165,7 +181,7 @@
 /* catalog is styled as map mode by default. Modifications needed for list-mode
 (map hidden) are below */
 
-.catalog-search-view-body.catalog--list-mode {
+.catalog-search-body.catalog--list-mode {
   overflow: scroll;
   height: auto;
 }

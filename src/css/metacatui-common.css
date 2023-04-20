@@ -131,9 +131,8 @@ article.container {
 }
 .mapMode #Content{
 	width: 100%;
-  margin: 0;
-	padding: 0;
-	padding-top: var(--header-height, 0);
+  margin: 0px;
+	padding: 0px;
 }
 footer{
 	background-color: #FFFFFF;
@@ -6667,7 +6666,8 @@ body.mapMode{
 }
 .filter .ui-slider-handle{
   width: 7px;
-  height: 16px;
+  height: 15px;
+	margin-top: -1px;
 }
 .filters-title{
 	text-transform: uppercase;
