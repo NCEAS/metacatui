@@ -1691,7 +1691,7 @@ define(['jquery', 'underscore', 'backbone'],
             {
               filterType: "ToggleFilter",
               fields: ["documents"],
-              label: "Only results with data files",
+              label: "Only results with data",
               trueLabel: "True",
               falseLabel: "False",
               trueValue: "*",

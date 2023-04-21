@@ -6326,6 +6326,9 @@ body.mapMode{
 .filter.btn{
 	margin-bottom: 0px;
 }
+.filter-groups.vertical .filter-input-contain {
+	margin-bottom: 0;
+}
 .filter-contain > label{
    	font-size: 13px;
    	font-weight: bold;
@@ -6576,12 +6579,17 @@ body.mapMode{
   padding-right: 20px;
   max-width: 350px;
   min-width: 200px;
+  box-sizing: border-box;
 }
-.filter-groups.vertical .filter-group .filter{
-  padding-right: 0px;
-  min-width: 0px;
-  max-width: 100%;
-  margin-bottom: 1rem;
+
+.filter-groups.vertical .filter-group .filter:not(.annotation-filter),
+.filter-groups.vertical .filters-header {
+  margin: 0;
+  border-bottom: 1px solid #dfdfdf;
+  padding: 1.2rem 0;
+}
+.filter-groups.vertical .filter {
+	padding-right: 0;
 }
 .filter-groups .filter .btn:not(.btn-filter-editor){
 	box-shadow: none;
@@ -6608,6 +6616,16 @@ body.mapMode{
 .filter-groups .filter > label{
 	font-weight: bold;
 	margin-bottom: 0.5rem;
+}
+.filter-groups.vertical .filter > label {
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.015em;
+	color: #1d1d1d;
+}
+.filter-groups.vertical .filter > label .icon {
+	font-size: 1.1rem;
+	margin-right: 0.55rem;
 }
 .filter-group-links{
   border-top: 1px solid #DDD;
@@ -6658,16 +6676,18 @@ body.mapMode{
 }
 .filter .ui-slider{
 	position: relative;
-	height: 5px;
-	margin-top: 20px;
-	margin-bottom: 20px;
-	width: 90%;
-	width: calc(100% - 20px);
+	height: 6px;
+	margin-top: 15px;
+	margin-bottom: 17px;
+	border-radius: 4px;
+	border: 0px;
+	background: #CCC;
+	width: calc(100% - 10px);
 }
 .filter .ui-slider-handle{
   width: 7px;
   height: 15px;
-	margin-top: -1px;
+  margin-top: -1px;
 }
 .filters-title{
 	text-transform: uppercase;
@@ -6676,6 +6696,25 @@ body.mapMode{
 	font-weight: normal;
 	margin-top: 0px;
 }
+
+.catalog h5.result-header-count{
+	letter-spacing: 0.015em;
+	margin-left: 0.6rem;
+	margin-bottom: 1rem;
+}
+
+/* vertical filter groups */
+.filter-groups.vertical {
+	display: grid;
+	width: 100%;
+	box-sizing: border-box;
+}
+.filter-groups.vertical .filters-container {
+	display: grid;
+	grid-auto-rows: min-content;
+	width: 100%;
+}
+
 .filter-groups:not(.vertical) .filters-title{
   display: none;
 }
@@ -6764,21 +6803,18 @@ body.mapMode{
 	width: calc(40% - 50px);
 	text-align: center;
 	display: inline-block;
+	vertical-align: middle;
+	color: #7c7a7a;
 }
 .filter.date .min,
 .filter.numeric .min{
 	float: left;
+	margin-right: 0.7rem;
 }
 .filter.date .max,
 .filter.numeric .max{
 	float: right;
 	margin-left: 10px;
-}
-.filter .ui-slider{
-	min-height: 6px;
-  border-radius: 4px;
-  border: 0px;
-  background: #CCC;
 }
 .filter.boolean input{
   height: auto;
@@ -6816,7 +6852,7 @@ body.mapMode{
 	font-size: 100%;
 	box-sizing: border-box;
 	border-color: #ccc;
-	border-radius: 2px;
+	border-radius: 3px;
 }
 
 .filter-groups .filter.annotation-filter .dropdown.multiple.ui {
@@ -6851,7 +6887,6 @@ body.mapMode{
   margin: 0px;
   border-bottom: 1px dashed #CCC;
   margin-bottom: 1.5rem;
-  padding-bottom: 10px;
 }
 #portal-filters{
 	border: 1px solid #CCC;
@@ -7045,6 +7080,7 @@ body.mapMode{
 }
 .can-toggle.can-toggle-small label {
   font-size: 1em;
+  margin-bottom: 0;
 }
 .can-toggle.can-toggle-small label .can-toggle-switch {
   height: 2.5em;

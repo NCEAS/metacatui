@@ -7,8 +7,8 @@
   --cs-element-shadow: 0px 0px 5px rgba(67, 68, 87, 0.2);
   --cs-padding-xsmall: 0.2rem;
   --cs-padding-small: 0.5rem;
-  --cs-padding-medium: 0.8rem;
-  --cs-padding-large: 1.1rem;
+  --cs-padding-medium: 0.9rem;
+  --cs-padding-large: 1.6rem;
   --cs-panel-padding: var(--cs-padding-medium) var(--cs-padding-large);
   --cs-border-radius: 0.5rem;
 }
@@ -31,7 +31,7 @@
   overflow: scroll;
   padding: var(--cs-panel-padding);
   box-shadow: var(--cs-panel-shadow);
-  padding-top: 2.1rem;
+  margin-left: -5px;
 }
 
 .catalog__results {
