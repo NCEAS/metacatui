@@ -101,7 +101,8 @@ define([
                 if (this.itemType === "folder") {
 
                     // Set the data-id for identifying events to model ids
-                    this.$el.attr("data-id", this.itemName);
+                    this.$el.attr("data-id", (this.itemPath ? this.itemPath : "") + "/" + this.itemName);
+                    this.$el.attr("data-parent", this.itemPath ? this.itemPath : "");
                     this.$el.attr("data-category", "entities-" + this.itemName);
 
                     var attributes = new Object();
@@ -126,8 +127,7 @@ define([
                     }
                     else {
                       attributes.nodeLevel = 0;
-                    }
-                    
+                    }              
                     this.$el.html( this.dataItemHierarchyTemplate(attributes) );
                 }
                 else {
@@ -470,11 +470,16 @@ define([
                       attributes.nodeLevel = 0;
                       if (this.itemPath !== undefined) {
                         itemPathParts = this.itemPath.split("/");
+
+                        // var parent = itemPathParts[itemPathParts.length - 2];
+                        var parentPath = (itemPathParts.slice(0, -1)).join("/");
+
+                        if (parentPath !== undefined) {
+                          this.$el.attr("data-parent", parentPath);
+                        }
+
                         itemPathParts.shift();
                         attributes.nodeLevel = itemPathParts.length - 1;
-                        childClass = "child-" + attributes.nodeLevel;
-                        this.$el.addClass(childClass);
-                        this.$el.css("display", "none");
                       }
                     }
 

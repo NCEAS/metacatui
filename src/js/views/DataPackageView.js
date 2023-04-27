@@ -400,6 +400,7 @@ define([
                         }, 
                         {}
                     );
+                    this.sortedFilePathObj = sortedFilePathObj;
                     this.addFilesAndFolders(sortedFilePathObj);
                 }
                 else {
@@ -726,12 +727,13 @@ define([
 
                 var view = this;
                 var eventEl = $(e.target).parents("td");
-                var hierarchyLevel = parseInt((eventEl.data("level")).split("-")[1]) + 1;
-                var children = "tr." + "child-" + hierarchyLevel;
-                var parent = "tr." + "parent-" + hierarchyLevel;
+                var rowEl = $(e.target).parents("tr");
+
+                var parentId = rowEl.data("id");
+                var children = "tr[data-parent='" + parentId + "']";
 
                 this.$(children).fadeIn();
-                this.$(parent).fadeIn();
+                
                 this.$(eventEl).children().children(".expand-control").fadeOut(function(){
                     view.$(eventEl).children().children(".collapse-control").fadeIn("fast");
                     view.$(".tooltip-this").tooltip();
@@ -744,15 +746,12 @@ define([
 
                 var view = this;
                 var eventEl = $(e.target).parents("td");
-                var hierarchyLevel = parseInt((eventEl.data("level")).split("-")[1]) + 1;
+                var rowEl = $(e.target).parents("tr");
 
-                for (var i = hierarchyLevel; i < 25; i++) {
-                    var parent = "tr." + "parent-" + i;
-                    var children = "tr." + "child-" + i;
-                    
-                    this.$(children).fadeOut();
-                    this.$(parent).fadeOut();
-                }
+                var parentId = rowEl.data("id");
+                var children = "tr[data-parent^='" + parentId + "']";
+                this.$(children).fadeOut();
+                
                 this.$(eventEl).children().children(".collapse-control").fadeOut(function(){
                     view.$(eventEl).children().children(".expand-control").fadeIn();
                     view.$(".tooltip-this").tooltip();
