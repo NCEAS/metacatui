@@ -648,104 +648,123 @@ define(
         },
 
         /**
-         * Update the 'currentViewExtent' attribute in the Map model with the north,
-         * south, east, and west-most lat/long that define a bounding box around the
-         * currently visible area of the map. Also gives the height/altitude of the
-         * camera in meters.
+         * Update the 'currentViewExtent' attribute in the Map model with the
+         * bounding box of the currently visible area of the map.
          */
         updateViewExtent: function () {
-          try {
-            const view = this;
-            const camera = view.camera;
-            const scene = view.scene;
+          try { this.model.set('currentViewExtent', this.getViewExtent()) }
+          catch (e) { console.log('Failed to update the Map view extent.', e) }
+        },
 
-            // Get the height in meters
-            const height = camera.positionCartographic.height
+        /**
+         * Get the north, south, east, and west-most lat/long that define a
+         * bounding box around the currently visible area of the map. Also gives
+         * the height/ altitude of the camera in meters.
+         * @returns {MapConfig#ViewExtent} The current view extent.
+         */
+        getViewExtent: function () {
+          const view = this;
+          const scene = view.scene;
+          const camera = view.camera;
+          // Get the height in meters
+          const height = camera.positionCartographic.height
 
-            // This will be the bounding box of the visible area
-            let coords = {
-              north: null, south: null, east: null, west: null, height: height
-            }
+          // This will be the bounding box of the visible area
+          let coords = {
+            north: null, south: null, east: null, west: null, height: height
+          }
 
-            // First try getting the visible bounding box using the simple method
-            if (!view.scratchRectangle) {
-              // Store the rectangle that we use for the calculation (reduces pressure on
-              // garbage collector system since this function is called often).
-              view.scratchRectangle = new Cesium.Rectangle();
-            }
-            var rect = camera.computeViewRectangle(
-              scene.globe.ellipsoid, view.scratchRectangle
-            );
-            coords.north = Cesium.Math.toDegrees(rect.north)
-            coords.east = Cesium.Math.toDegrees(rect.east)
-            coords.south = Cesium.Math.toDegrees(rect.south)
-            coords.west = Cesium.Math.toDegrees(rect.west)
+          // First try getting the visible bounding box using the simple method
+          if (!view.scratchRectangle) {
+            // Store the rectangle that we use for the calculation (reduces pressure on
+            // garbage collector system since this function is called often).
+            view.scratchRectangle = new Cesium.Rectangle();
+          }
+          var rect = camera.computeViewRectangle(
+            scene.globe.ellipsoid, view.scratchRectangle
+          );
+          coords.north = Cesium.Math.toDegrees(rect.north)
+          coords.east = Cesium.Math.toDegrees(rect.east)
+          coords.south = Cesium.Math.toDegrees(rect.south)
+          coords.west = Cesium.Math.toDegrees(rect.west)
 
-            // Check if the resulting coordinates cover the entire globe (happens if some of
-            // the sky is visible)
+          // Check if the resulting coordinates cover the entire globe (happens
+          // if some of the sky is visible). If so, limit the bounding box to a
+          // smaller extent
+          if (view.coversGlobe(coords)) {
 
-            const fullGlobeCoverage = coords.west === -180 && coords.east === 180 &&
-              coords.south === -90 && coords.north === 90
+            // Find points at the top, bottom, right, and left corners of the globe
+            const edges = view.findEdges()
 
-            // See if we can limit the bounding box to a smaller extent
-            if (fullGlobeCoverage) {
+            // Get the midPoint between the top and bottom points on the globe. Use this
+            // to decide if the northern or southern hemisphere is more in view.
+            let midPoint = view.findMidpoint(edges.top, edges.bottom)
+            if (midPoint) {
 
-              // Find points at the top, bottom, right, and left corners of the globe
-              const edges = view.findEdges()
+              // Get the latitude of the mid point
+              const midPointLat = view.getDegreesFromCartesian(midPoint).latitude
 
-              // Get the midPoint between the top and bottom points on the globe. Use this
-              // to decide if the northern or southern hemisphere is more in view.
-              let midPoint = view.findMidpoint(edges.top, edges.bottom)
-              if (midPoint) {
-
-                // Get the latitude of the mid point
-                const midPointLat = view.getDegreesFromCartesian(midPoint).latitude
-
-                // Get the latitudes of all the edge points so that we can calculate the
-                // southern and northern most coordinate
-                const edgeLatitudes = []
-                Object.values(edges).forEach(function (point) {
-                  if (point) {
-                    edgeLatitudes.push(
-                      view.getDegreesFromCartesian(point).latitude
-                    )
-                  }
-                })
-
-                if (midPointLat > 0) {
-                  // If the midPoint is in the northern hemisphere, limit the southern part
-                  // of the bounding box to the southern most edge point latitude
-                  coords.south = Math.min(...edgeLatitudes)
-                } else {
-                  // Vice versa for the southern hemisphere
-                  coords.north = Math.max(...edgeLatitudes)
+              // Get the latitudes of all the edge points so that we can calculate the
+              // southern and northern most coordinate
+              const edgeLatitudes = []
+              Object.values(edges).forEach(function (point) {
+                if (point) {
+                  edgeLatitudes.push(
+                    view.getDegreesFromCartesian(point).latitude
+                  )
                 }
-              }
+              })
 
-              // If not focused directly on one of the poles, then also limit the east and
-              // west sides of the bounding box
-              const northPointLat = view.getDegreesFromCartesian(edges.top).latitude
-              const southPointLat = view.getDegreesFromCartesian(edges.bottom).latitude
-
-              if (northPointLat > 25 && southPointLat < -25) {
-                if (edges.right) {
-                  coords.east = view.getDegreesFromCartesian(edges.right).longitude
-                }
-                if (edges.left) {
-                  coords.west = view.getDegreesFromCartesian(edges.left).longitude
-                }
+              if (midPointLat > 0) {
+                // If the midPoint is in the northern hemisphere, limit the southern part
+                // of the bounding box to the southern most edge point latitude
+                coords.south = Math.min(...edgeLatitudes)
+              } else {
+                // Vice versa for the southern hemisphere
+                coords.north = Math.max(...edgeLatitudes)
               }
             }
 
-            view.model.set('currentViewExtent', coords)
+            // If not focused directly on one of the poles, then also limit the east and
+            // west sides of the bounding box
+            const northPointLat = view.getDegreesFromCartesian(edges.top).latitude
+            const southPointLat = view.getDegreesFromCartesian(edges.bottom).latitude
 
+            if (northPointLat > 25 && southPointLat < -25) {
+              if (edges.right) {
+                coords.east = view.getDegreesFromCartesian(edges.right).longitude
+              }
+              if (edges.left) {
+                coords.west = view.getDegreesFromCartesian(edges.left).longitude
+              }
+            }
           }
-          catch (error) {
-            console.log(
-              'Failed to update the Map view extent from a CesiumWidgetView' +
-              '. Error details: ' + error
-            );
-          }
+
+          return coords
+        },
+
+        /**
+         * Check if a given bounding box covers the entire globe.
+         * @param {Object} coords - An object with the north, south, east, and
+         * west coordinates of a bounding box
+         * @param {Number} latAllowance - The number of degrees latitude to
+         * allow as a buffer. If the north and south coords range from -90 to
+         * 90, minus this buffer * 2, then it is considered to cover the globe.
+         * @param {Number} lonAllowance - The number of degrees longitude to
+         * allow as a buffer.
+         * @returns {Boolean} Returns true if the bounding box covers the entire
+         * globe, false otherwise.
+         */ 
+        coversGlobe: function (coords, latAllowance = 0.5, lonAllowance = 1) {
+          const maxLat = 90 - latAllowance;
+          const minLat = -90 + latAllowance;
+          const maxLon = 180 - lonAllowance;
+          const minLon = -180 + lonAllowance;
+
+          return coords.west <= minLon &&
+            coords.east >= maxLon &&
+            coords.south <= minLat &&
+            coords.north >= maxLat
         },
 
         /**

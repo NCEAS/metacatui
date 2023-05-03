@@ -190,14 +190,15 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
       },
 
       /**
-       * Get the group ID of the geohash. The group ID is the hashString of the
-       * geohash without the last character, i.e. the hashString of the "parent"
-       * geohash.
-       * @returns {string} The group ID of the geohash.
+       * Get the group ID of the geohash at the specified level.
+       * @param {number} level - The number of levels to go up from the current geohash.
+       * @returns {string} The group ID of the geohash at the specified level.
        */
-      getGroupID: function () {
+      getGroupID: function (level = 1) {
         if (this.isEmpty()) return "";
-        return this.get("hashString").slice(0, -1);
+        const hashString = this.get("hashString");
+        const newLength = Math.max(0, hashString.length - level);
+        return hashString.slice(0, newLength);
       },
 
       /**
@@ -331,7 +332,6 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
             verticalOrigin: "CENTER",
             heightReference: "CLAMP_TO_GROUND",
             disableDepthTestDistance: 10000000,
-
           }),
             (feature["position"] = { cartesian: ecefPosition });
         }

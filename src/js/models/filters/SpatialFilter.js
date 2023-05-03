@@ -82,10 +82,9 @@ define([
        * Coordinates will be adjusted if they are out of bounds.
        * @param {boolean} [silent=true] - Whether to trigger a change event in
        * the case where the coordinates are adjusted
-       * 
+       *
        */
       validateCoordinates: function (silent = true) {
-        
         if (!this.hasCoordinates()) return;
         if (this.get("east") > 180) {
           this.set("east", 180, { silent: silent });
@@ -113,6 +112,20 @@ define([
       },
 
       /**
+       * Convert the coordinate attributes to a bounds object
+       * @returns {object} An object with north, south, east, and west props
+       * @since x.x.x
+       */
+      getBounds: function () {
+        return {
+          north: this.get("north"),
+          south: this.get("south"),
+          east: this.get("east"),
+          west: this.get("west"),
+        };
+      },
+
+      /**
        * Given the current coordinates and height set on the model, update the
        * fields and values to match the geohashes that cover the area. This will
        * set a consolidated set of geohashes that cover the area at the
@@ -124,25 +137,7 @@ define([
         try {
           this.validateCoordinates();
           let geohashes = new Geohashes();
-          geohashes.addGeohashesByExtent(
-            (bounds = {
-              north: this.get("north"),
-              south: this.get("south"),
-              east: this.get("east"),
-              west: this.get("west"),
-            }),
-            (height = this.get("height")),
-            (overwrite = true)
-          );
-          geohashes.consolidate();
-          // If there are too many geohashes, reduce the precision so that the
-          // search string is not too long
-          const limit = this.get("maxGeohashValues")
-          if (typeof limit === "number") {
-            while (geohashes.length > limit) {
-              geohashes = geohashes.reducePrecision(1)
-            }
-          }
+          geohashes.addGeohashesByBounds(this.getBounds(), true, 5000, true);
           this.set({
             fields: this.precisionsToFields(geohashes.getPrecisions()),
             values: geohashes.getAllHashStrings(),
@@ -189,7 +184,7 @@ define([
         try {
           // Methods in the geohash collection allow us make efficient queries
           const hashes = this.get("values");
-          const geohashes = new Geohashes(hashes.map((h) => ({ hashString: h })));
+          let geohashes = new Geohashes(hashes.map((h) => ({ hashString: h })));
 
           // Don't spatially constrain the search if the geohahes covers the world
           // or if there are no geohashes
@@ -198,7 +193,9 @@ define([
           }
 
           // Merge into the minimal num. of geohashes to reduce query size
-          geohashes.consolidate();
+          // TODO: we may still want this option for when spatial filters are
+          // built other than with the current view extent from the map.
+          // geohashes = geohashes.consolidate();
           const precisions = geohashes.getPrecisions();
 
           // Just use a regular Filter if there is only one level of geohash
