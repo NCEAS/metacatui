@@ -41,38 +41,48 @@ define([
       },
 
       /**
-       * Get the precision height map.
-       * @returns {Object} Precision height map, where the key is the geohash
-       * precision level and the value is the height in meters.
+       * Initialize the collection and set the min and max precision levels.
+       * @param {Geohash[]} models - Array of Geohash models.
+       * @param {Object} options - Options to pass to the collection.
+       * @param {number} [options.maxPrecision=9] - The maximum precision level
+       * to use when adding geohashes to the collection.
+       * @param {number} [options.minPrecision=1] - The minimum precision level
+       * to use when adding geohashes to the collection.
        */
-      getPrecisionHeightMap: function () {
-        return {
-          1: 6800000,
-          2: 2400000,
-          3: 550000,
-          4: 120000,
-          5: 7000,
-          6: 0,
-        };
+      initialize: function (models, options) {
+        // Set the absolute min and max precision levels. Min should not be
+        // lower than 1. Max must be greater than or equal to min.
+        this.MAX_PRECISION = options?.maxPrecision || 9;
+        this.MIN_PRECISION = options?.minPrecision || 1;
+        if (this.MIN_PRECISION < 1) this.MIN_PRECISION = 1;
+        if (this.MAX_PRECISION < this.MIN_PRECISION) {
+          this.MAX_PRECISION = this.MIN_PRECISION;
+        }
       },
 
       /**
-       * Get the geohash precision level to use for a given height.
-       * @param {number} [height] - Altitude to use to calculate the geohash
-       * precision, in meters.
-       * @returns {number} Geohash precision level.
+       * Ensure that a precision or list of precisions is valid. A valid precision
+       * is a positive number in the range of the MIN_PRECISION and MAX_PRECISION
+       * set on the collection.
+       * @param {number|number[]} precision - Precision level or array of
+       * precision levels.
+       * @param {boolean} [fix=true] - Whether to fix the precision by setting it
+       * to the min or max precision if it is out of range. If false, then the function
+       * will throw an error if the precision is invalid.
+       * @returns {number|number[]} The precision level or array of precision
+       * levels, corrected if needed and if fix is true.
        */
-      heightToPrecision: function (height) {
-        try {
-          const precisionHeightMap = this.getPrecisionHeightMap();
-          let precision = Object.keys(precisionHeightMap).find(
-            (key) => height >= precisionHeightMap[key]
-          );
-          return precision ? parseInt(precision) : 1;
-        } catch (e) {
-          console.log("Failed to get geohash precision, returning 1" + e);
-          return 1;
-        }
+      validatePrecision: function (p, fix = true) {
+        if (Array.isArray(p)) p.map((pr) => this.validatePrecision(pr, fix));
+        const min = this.MIN_PRECISION;
+        const max = this.MAX_PRECISION;
+        const isValid = typeof p === "number" && p >= min && p <= max;
+        if (isValid) return p;
+        if (fix) return p < min ? min : max;
+        throw new Error(
+          `Precision must be a number between ${min} and ${max}` +
+            ` (inclusive), but got ${p}`
+        );
       },
 
       /**
@@ -119,9 +129,7 @@ define([
        * @returns {string[]} Array of geohash hashStrings.
        */
       getHashStringsForBounds: function (bounds, precision) {
-        if (precision < 1) {
-          throw new Error("Precision must be greater than or equal to 1");
-        }
+        this.validatePrecision(precision, false);
         if (!this.boundsAreValid(bounds)) {
           throw new Error("Bounds are invalid");
         }
@@ -144,6 +152,7 @@ define([
       getAllHashStrings: function (precision) {
         const hashes = this.map((geohash) => geohash.get("hashString"));
         if (precision) {
+          this.validatePrecision(precision, false);
           return hashes.filter((hash) => hash.length === precision);
         } else {
           return hashes;
@@ -193,20 +202,23 @@ define([
        * the geohashes for larger bounding boxes. Depending on constraints such
        * as the min and max precision, and the size of the bounding box, the
        * actual number of geohashes added may sometimes exceed this number.
-       * @param {number} [minPrecision=1] - The minimum precision of the
-       * geohashes to add to the collection.
-       * @param {number} [maxPrecision=6] - The maximum precision of the
-       * geohashes to add to the collection.
        * @param {boolean} [overwrite=false] - Whether to overwrite the current
        * collection.
+       * @param {number} [minPrecision] - The minimum precision of the
+       * geohashes to add to the collection, defaults to the min precision
+       * level set on the collection.
+       * @param {number} [maxPrecision] - The maximum precision of the
+       * geohashes to add to the collection, defaults to the max precision
+       * level set on the collection.
+       *
        */
       addGeohashesByBounds: function (
         bounds,
         consolidate = false,
         maxGeohashes = Infinity,
-        minPrecision = 1,
-        maxPrecision = 6,
-        overwrite = false
+        overwrite = false,
+        minPrecision = this.MIN_PRECISION,
+        maxPrecision = this.MAX_PRECISION
       ) {
         let hashStrings = [];
         if (consolidate) {
@@ -217,7 +229,7 @@ define([
             maxGeohashes
           );
         } else {
-          const area = this.getArea(bounds);
+          const area = this.getBoundingBoxArea(bounds);
           const precision = this.getMaxPrecision(
             area,
             maxGeohashes,
@@ -237,6 +249,7 @@ define([
        * @returns {number} The area in degrees squared.
        */
       getGeohashArea: function (precision) {
+        precision = this.validatePrecision(precision);
         // Number of bits used for encoding both coords
         const totalBits = precision * 5;
         const lonBits = Math.floor(totalBits / 2);
@@ -251,13 +264,20 @@ define([
        * For a range of precisions levels, get the area in degrees squared for
        * geohash "tiles" at each precision level. See {@link getGeohashArea}.
        * @param {Number} minPrecision - The minimum precision level for which to
-       * calculate the area.
+       * calculate the area, defaults to the min precision level set on the
+       * collection.
        * @param {Number} maxPrecision - The maximum precision level for which to
-       * calculate the area.
+       * calculate the area, defaults to the max precision level set on the
+       * collection.
        * @returns {Object} An object with the precision level as the key and the
        * area in degrees as the value.
        */
-      getGeohashAreas: function (minPrecision = 1, maxPrecision = 6) {
+      getGeohashAreas: function (
+        minPrecision = this.MIN_PRECISION,
+        maxPrecision = this.MAX_PRECISION
+      ) {
+        minPrecision = this.validatePrecision(minPrecision);
+        maxPrecision = this.validatePrecision(maxPrecision);
         if (!this.precisionAreas) this.precisionAreas = {};
         for (let i = minPrecision; i <= maxPrecision; i++) {
           if (!this.precisionAreas[i]) {
@@ -274,10 +294,21 @@ define([
        * @returns {Number} The area of the bounding box in degrees.
        */
       getBoundingBoxArea: function (bounds) {
+        if (!this.boundsAreValid(bounds)) {
+          console.warn(
+            `Bounds are invalid: ${JSON.stringify(bounds)}. ` +
+              `Returning the globe's area for the given bounding box.`
+          );
+          return 360 * 180;
+        }
         const { north, south, east, west } = bounds;
-        const latDiff = north - south;
-        const lonDiff = east - west;
-        return latDiff * lonDiff;
+
+        // Account for cases where east < west or north < south (because of
+        // ability to rotate globe and pan across the dateline in a 3D globe)
+        const latDiff = north < south ? 180 - (south - north) : north - south;
+        const lonDiff = east < west ? 360 - (west - east) : east - west;
+
+        return Math.abs(latDiff * lonDiff);
       },
 
       /**
@@ -288,13 +319,20 @@ define([
        * @returns {boolean} Whether the bounds object is valid.
        */
       boundsAreValid: function (bounds) {
-        // For now just check that there is a coordinate for each direction.
         return (
           bounds &&
-          bounds.north !== undefined &&
-          bounds.south !== undefined &&
-          bounds.east !== undefined &&
-          bounds.west !== undefined
+          typeof bounds.north === "number" &&
+          typeof bounds.south === "number" &&
+          typeof bounds.east === "number" &&
+          typeof bounds.west === "number" &&
+          bounds.north <= 90 &&
+          bounds.north >= -90 &&
+          bounds.south >= -90 &&
+          bounds.south <= 90 &&
+          bounds.east <= 180 &&
+          bounds.east >= -180 &&
+          bounds.west >= -180 &&
+          bounds.west <= 180
         );
       },
 
@@ -306,14 +344,21 @@ define([
        * @param {Number} area - The area of the bounding box in degrees squared.
        * @param {Number} maxGeohashes - The maximum number of geohashes that can
        * be used to cover the area.
-       * @param {Number} absMin - The absolute minimum precision level to
-       * consider (optional, default: 1).
-       * @param {Number} absMax - The absolute maximum precision level to
-       * consider (optional, default: 6).
+       * @param {Number} [absMin] - The absolute minimum precision level to
+       * consider. Defaults to the min set on the collection).
+       * @param {Number} [absMax] - The absolute maximum precision level to
+       * consider. Defaults to the max set on the collection.
        * @returns {Number} The maximum precision level that can be used to cover
        * the area without surpassing the given number of geohashes.
        */
-      getMaxPrecision: function (area, maxGeohashes, absMin = 1, absMax = 6) {
+      getMaxPrecision: function (
+        area,
+        maxGeohashes,
+        absMin = this.MIN_PRECISION,
+        absMax = this.MAX_PRECISION
+      ) {
+        absMin = this.validatePrecision(absMin);
+        absMax = this.validatePrecision(absMax);
         const ghAreas = this.getGeohashAreas(absMin, absMax);
 
         // Start from the most precise level
@@ -347,13 +392,19 @@ define([
        * geohash "tiles" larger than a given area.
        * @param {Number} area - The area of the bounding box in degrees squared.
        * @param {Number} absMin - The absolute minimum precision level to
-       * consider (optional, default: 1).
+       * consider. Defaults to the min set on the collection.
        * @param {Number} absMax - The absolute maximum precision level to
-       * consider (optional, default: 6).
+       * consider. Defaults to the max set on the collection.
        * @returns {Number} The minimum precision level that can be used to cover
        * the area with a single geohash.
        */
-      getMinPrecision: function (area, absMin = 1, absMax = 6) {
+      getMinPrecision: function (
+        area,
+        absMin = this.MIN_PRECISION,
+        absMax = this.MAX_PRECISION
+      ) {
+        absMin = this.validatePrecision(absMin);
+        absMax = this.validatePrecision(absMax);
         const ghAreas = this.getGeohashAreas(absMin, absMax);
 
         // If area is a huge number and is larger than the largest geohash area,
@@ -380,33 +431,63 @@ define([
        * @param {Number} maxGeohashes - The maximum number of geohashes that can
        * be used to cover the area.
        * @param {Number} absMin - The absolute minimum precision level to
-       * consider (optional, default: 1).
+       * consider. Defaults to the min set on the collection.
        * @param {Number} absMax - The absolute maximum precision level to
-       * consider (optional, default: 6).
+       * consider. Defaults to the max set on the collection.
        * @returns {Array} An array with the min and max precision levels to
        * consider.
        */
       getOptimalPrecisionRange: function (
         bounds,
         maxGeohashes = Infinity,
-        absMin = 1,
-        absMax = 6
+        absMin = this.MIN_PRECISION,
+        absMax = this.MAX_PRECISION
       ) {
+        if (!this.boundsAreValid(bounds)) {
+          console.warn(
+            `Bounds are invalid: ${JSON.stringify(bounds)}. ` +
+              `Returning the min and max allowable precision levels.`
+          );
+          return [absMin, absMax];
+        }
+        absMin = this.validatePrecision(absMin);
+        absMax = this.validatePrecision(absMax);
         const area = this.getBoundingBoxArea(bounds);
         const minP = this.getMinPrecision(area, absMin, absMax);
         if (minP === absMax || maxGeohashes === Infinity) return [minP, absMax];
         return [minP, this.getMaxPrecision(area, maxGeohashes, minP, absMax)];
       },
 
+      /**
+       * Get the fewest number of geohashes that can be used to cover a given
+       * bounding box. This will return the optimal set of potentially
+       * mixed-precision geohashes that cover the bounding box at the highest
+       * precision possible without exceeding the maximum number of geohashes.
+       * @param {Object} bounds - Bounding box with north, south, east, and west
+       * properties.
+       * @param {Number} [minPrecision] - The minimum precision level to
+       * consider when calculating the optimal set of geohashes. Defaults to the
+       * min precision level set on the collection.
+       * @param {Number} [maxPrecision] - The maximum precision level to
+       * consider when calculating the optimal set of geohashes. Defaults to the
+       * max precision level set on the collection.
+       * @param {Number} [maxGeohashes=Infinity] - The maximum number of
+       * geohashes to add to the collection. This will limit the precision of
+       * the geohashes for larger bounding boxes. Depending on constraints such
+       * as the min and max precision, and the size of the bounding box, the
+       * actual number of geohashes added may sometimes exceed this number.
+       * @returns {string[]} Array of geohash hashStrings.
+       */
       getFewestHashStringsForBounds: function (
         bounds,
-        minPrecision = 1,
-        maxPrecision = 6, // 6 because we only index up to 6 (I think, TODO)
+        minPrecision = this.MIN_PRECISION,
+        maxPrecision = this.MAX_PRECISION,
         maxGeohashes = Infinity
       ) {
         // Check the inputs
-        if (!bounds || !this.boundsAreValid(bounds)) return [];
-        if (minPrecision < 1) minPrecision = 1;
+        if (!this.boundsAreValid(bounds)) return [];
+        minPrecision = this.validatePrecision(minPrecision);
+        maxPrecision = this.validatePrecision(maxPrecision);
         if (minPrecision > maxPrecision) minPrecision = maxPrecision;
 
         // Skip precision levels that result in too many geohashes or that have
@@ -508,6 +589,13 @@ define([
        * @returns {Geohashes} Subset of geohashes.
        */
       getSubsetByBounds: function (bounds) {
+        if (!this.boundsAreValid(bounds)) {
+          console.warn(
+            `Bounds are invalid: ${JSON.stringify(bounds)}. ` +
+              `Returning an empty Geohashes collection.`
+          );
+          return new Geohashes();
+        }
         const precisions = this.getPrecisions();
         let hashes = [];
         precisions.forEach((precision) => {
@@ -614,52 +702,6 @@ define([
             this.add(toAdd, { silent: true });
           }
         } while (Object.keys(toMerge).length > 0);
-
-        return this;
-      },
-
-      /**
-       * TODO: Given the more efficient ways to calculate geohashes for a
-       * bounding box, I think this method is redundant.
-       *
-       * Reduce the precision of the geohashes in the collection by a certain
-       * number of levels. This will remove geohashes from the collection and
-       * add new geohashes with lower precision. The properties of the geohashes
-       * will be summarized using the provided propertySummaries.
-       * @param {Number} by - Number of levels to reduce precision by.
-       * @param {Object} propertySummaries - To keep properties in the resulting
-       * geohashes, provide methods to summarize the properties of the child
-       * geohashes. The keys of this object should be the names of the
-       * properties to keep, and the values should be functions that take an
-       * array of values and return a single value.
-       */
-      reducePrecision: function (by = 1, propertySummaries = {}) {
-        const groups = this.getGroups(by);
-
-        // Combine the geohashes in each group into a single geohash with lower
-        // precision.
-        const reduced = [];
-
-        Object.keys(groups).forEach((groupID) => {
-          const parent = new Geohash({ hashString: groupID });
-          const children = groups[groupID];
-          const properties = {};
-
-          Object.keys(propertySummaries).forEach((key) => {
-            const values = children.map((child) => {
-              return child.get(key);
-            });
-            properties[key] = propertySummaries[key](values);
-          });
-
-          parent.set("properties", properties);
-          reduced.push(parent);
-        });
-
-        // Remove the original geohashes and add the new ones.
-        if (reduced.length > 0) {
-          this.reset(reduced);
-        }
 
         return this;
       },

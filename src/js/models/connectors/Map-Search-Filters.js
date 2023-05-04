@@ -214,6 +214,7 @@ define([
        * so that they work together.
        */
       connect: function () {
+        this.coordinateMoveEndSearch();
         this.getConnectors().forEach((connector) => connector.connect());
       },
 
@@ -227,6 +228,54 @@ define([
         this.get("filtersMapConnector").disconnect(resetSpatialFilter);
         this.get("filtersSearchConnector").disconnect();
         this.get("mapSearchConnector").disconnect();
+        this.resetMoveEndSearch();
+      },
+
+      /**
+       * Coordinate behaviour between the two map related sub-connectors when
+       * the map extent changes. This is necessary to reduce the number of
+       * search queries. We keep the moveEnd behaviour within the sub-connectors
+       * so that each sub-connector still functions independently from this
+       * coordinating connector.
+       */
+      coordinateMoveEndSearch: function () {
+        // Undo any previous coordination, if any
+        this.resetMoveEndSearch();
+
+        const map = this.get("map");
+        const mapConnectors = this.getMapConnectors();
+
+        // Stop the sub-connectors from doing anything on moveEnd by setting
+        // their method they call on moveEnd to null
+        mapConnectors.forEach((connector) => {
+          connector.set("onMoveEnd", null);
+        });
+
+        // Set the single moveEnd listener here, and run the default moveEnd
+        // behaviour for each sub-connector. This effectively triggers only one
+        // search per moveEnd.
+        this.listenTo(map, "moveEnd", function () {
+          mapConnectors.forEach((connector) => {
+            const moveEndFunc = connector.defaults().onMoveEnd;
+            if (typeof moveEndFunc === "function") {
+              moveEndFunc.call(connector);
+            }
+          });
+        });
+      },
+
+      /**
+       * Undo the coordination of the two map related sub-connectors when the
+       * map extent changes. Reset the moveEnd behaviour of the sub-connectors
+       * to their defaults.
+       * @see coordinateMoveEndSearch
+       */
+      resetMoveEndSearch: function () {
+        this.stopListening(this.get("map"), "moveEnd");
+        const mapConnectors = this.getMapConnectors();
+        mapConnectors.forEach((connector) => {
+          connector.set("onMoveEnd", connector.defaults().onMoveEnd);
+        });
       },
 
       /**
@@ -238,7 +287,14 @@ define([
        * remove any spatial constraints from the search.
        */
       disconnectFiltersMap: function (resetSpatialFilter = false) {
-        this.get("filtersMapConnector").disconnect(resetSpatialFilter);
+        const [mapSearch, filtersMap] = this.getMapConnectors();
+
+        if (mapSearch.get("isConnected")) {
+          this.resetMoveEndSearch();
+          mapSearch.set("onMoveEnd", mapSearch.defaults().onMoveEnd);
+        }
+
+        filtersMap.disconnect(resetSpatialFilter);
       },
 
       /**
@@ -247,7 +303,12 @@ define([
        * the extent of the map view.
        */
       connectFiltersMap: function () {
-        this.get("filtersMapConnector").connect();
+        const [mapSearch, filtersMap] = this.getMapConnectors();
+
+        if (mapSearch.get("isConnected")) {
+          this.coordinateMoveEndSearch();
+        }
+        filtersMap.connect();
       },
 
       /**
@@ -265,7 +326,7 @@ define([
        */
       removeSpatialFilter: function () {
         this.get("filtersMapConnector").removeSpatialFilter();
-      }
+      },
     }
   );
 });

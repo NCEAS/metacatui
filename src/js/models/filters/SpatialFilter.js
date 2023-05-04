@@ -50,7 +50,9 @@ define([
           operator: "OR",
           fieldsOperator: "OR",
           matchSubstring: false,
-          maxGeohashValues: 100,
+          // 1024 is the default limit in Solr for boolean clauses, limit even
+          // more to allow for other filters
+          maxGeohashValues: 900,
         });
       },
 
@@ -126,6 +128,20 @@ define([
       },
 
       /**
+       * Returns true if the bounds set on the filter covers the entire earth
+       * @returns {boolean}
+       */
+      coversEarth: function () {
+        const bounds = this.getBounds();
+        return (
+          bounds.north === 90 &&
+          bounds.south === -90 &&
+          bounds.east === 180 &&
+          bounds.west === -180
+        );
+      },
+
+      /**
        * Given the current coordinates and height set on the model, update the
        * fields and values to match the geohashes that cover the area. This will
        * set a consolidated set of geohashes that cover the area at the
@@ -136,8 +152,17 @@ define([
       updateFilterFromExtent: function () {
         try {
           this.validateCoordinates();
-          let geohashes = new Geohashes();
-          geohashes.addGeohashesByBounds(this.getBounds(), true, 5000, true);
+
+          // If the bounds are global there is no spatial constraint
+          if (this.coversEarth()) {
+            this.set({ fields: [], values: [] });
+            return;
+          }
+
+          const geohashes = new Geohashes();
+          const bounds = this.getBounds();
+          const limit = this.get("maxGeohashValues");
+          geohashes.addGeohashesByBounds(bounds, true, limit, true);
           this.set({
             fields: this.precisionsToFields(geohashes.getPrecisions()),
             values: geohashes.getAllHashStrings(),
@@ -192,10 +217,10 @@ define([
             return "";
           }
 
-          // Merge into the minimal num. of geohashes to reduce query size
           // TODO: we may still want this option for when spatial filters are
           // built other than with the current view extent from the map.
           // geohashes = geohashes.consolidate();
+
           const precisions = geohashes.getPrecisions();
 
           // Just use a regular Filter if there is only one level of geohash

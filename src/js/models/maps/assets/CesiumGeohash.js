@@ -91,7 +91,7 @@ define([
             color: "#f3e227",
           }),
           showLabels: true,
-          maxGeoHashes: 1000,
+          maxGeoHashes: 4000,
         });
       },
 
@@ -151,13 +151,11 @@ define([
        * @returns {number} The precision level.
        */
       getPrecision: function () {
-        try {
-          const height = this.get("mapModel").get("currentViewExtent").height;
-          return this.get("geohashes").heightToPrecision(height);
-        } catch (e) {
-          const precisions = this.get("geohashes").getPrecisions();
-          return Math.min(...precisions);
-        }
+        const limit = this.get("maxGeoHashes");
+        const geohashes = this.get("geohashes")
+        const bounds = this.get("mapModel").get("currentViewExtent");
+        const area = geohashes.getBoundingBoxArea(bounds);
+        return this.get("geohashes").getMaxPrecision(area, limit);
       },
 
       /**
@@ -209,29 +207,6 @@ define([
         let geohashes = this.get("geohashes");
         if (limitToExtent) {
           geohashes = this.getGeohashesForExtent();
-        }
-        const limit = this.get("maxGeoHashes");
-        if(typeof limit === 'number' && geohashes.length > limit) {
-          geohashes = this.reduceGeohashes(geohashes, limit);
-        }
-        return geohashes;
-      },
-
-      /**
-       * Reduce the number of geohashes to no more than the specified number.
-       * @param {Geohashes} geohashes The geohashes to reduce.
-       * @param {number} limitToNum The maximum number of geohashes to return.
-       * @returns {Geohashes} The reduced geohashes.
-       */
-      reduceGeohashes: function (geohashes, limitToNum = 1000) {
-        // For now assume that we will want to summarize the combined property
-        // of interest by summing the values.
-        const propertySummaries = {};
-        propertySummaries[this.getPropertyOfInterest()] = function (vals) {
-          return vals.reduce((a, b) => a + b, 0);
-        }
-        while (geohashes.length > limitToNum) {
-          geohashes = geohashes.clone().reducePrecision(1, propertySummaries);
         }
         return geohashes;
       },
@@ -296,12 +271,8 @@ define([
           model.set("cesiumOptions", cesiumOptions);
           // Create the model like a regular GeoJSON data source
           CesiumVectorData.prototype.createCesiumModel.call(this, recreate);
-        } catch (error) {
-          console.log(
-            "There was an error creating a CesiumGeohash model" +
-              ". Error details: ",
-            error
-          );
+        } catch (e) {
+          console.log("Error creating a CesiumGeohash model. ", e);
         }
       },
 

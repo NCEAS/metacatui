@@ -144,6 +144,9 @@ define([
         // do anything. This function may have been triggered by a change event
         // on a filter that doesn't affect the query at all
         if (!searchResults.hasChanged()) {
+          // Trigger a reset event to indicate the search is complete (e.g. for
+          // the UI)
+          searchResults.trigger("reset");
           return;
         }
 

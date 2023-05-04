@@ -22,11 +22,15 @@ define([
        * @type {object}
        * @property {SolrResults} searchResults
        * @property {Map} map
+       * @property {function} onMoveEnd A function to call when the map is
+       * finished moving. This function will be called with the connector as
+       * 'this'.
        */
       defaults: function () {
         return {
           searchResults: null,
           map: null,
+          onMoveEnd: this.onMoveEnd
         };
       },
 
@@ -166,9 +170,10 @@ define([
         // layer again and update the search results (thereby updating the
         // facet counts on the GeoHash layer)
         this.listenTo(map, "moveEnd", function () {
-          this.showGeoHashLayer();
-          this.updateFacet();
-          searchResults.trigger("reset");
+          const moveEndFunc = this.get("onMoveEnd");
+          if (typeof moveEndFunc === "function") {
+            moveEndFunc.call(this);
+          }
         });
 
         // When a new search is being performed, hide the GeoHash layer to
@@ -179,6 +184,18 @@ define([
         });
 
         this.set("isConnected", true);
+      },
+
+      /**
+       * Functions to perform when the map has finished moving. This is separated into its own method
+       * so that external models can manipulate the behavior of this function.
+       * See {@link MapSearchFiltersConnector#onMoveEnd}
+       */
+      onMoveEnd: function () {
+        const searchResults = this.get("searchResults");
+        const map = this.get("map");
+        this.showGeoHashLayer();
+        this.updateFacet();
       },
 
       /**

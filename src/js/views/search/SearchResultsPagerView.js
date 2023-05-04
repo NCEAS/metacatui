@@ -149,7 +149,7 @@ define(["backbone"], function (Backbone) {
           return;
         }
 
-        if (this.searchResults.getNumPages() < 2) {
+        if (this.searchResults.getNumPages() < 1) {
           this.hide();
           return;
         }

@@ -33,6 +33,9 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
        * @property {boolean} isConnected Whether the connector is currently
        * listening to the Map model for changes. Set automatically when the
        * connector is started or stopped.
+       * @property {function} onMoveEnd A function to call when the map is
+       * finished moving. This function will be called with the connector as
+       * 'this'.
        * @since x.x.x
        */
       defaults: function () {
@@ -41,6 +44,7 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
           spatialFilters: [],
           map: new Map(),
           isConnected: false,
+          onMoveEnd: this.updateSpatialFilters,
         };
       },
 
@@ -187,7 +191,12 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
           this.listenTo(map, "moveStart", function () {
             this.get("filters").trigger("changing");
           });
-          this.listenTo(map, "moveEnd", this.updateSpatialFilters);
+          this.listenTo(map, "moveEnd", function () {
+            const moveEndFunc = this.get("onMoveEnd");
+            if (typeof moveEndFunc === "function") {
+              moveEndFunc.call(this);
+            }
+          });
           this.set("isConnected", true);
         } catch (e) {
           console.log("Error starting Filter-Map listeners: ", e);
