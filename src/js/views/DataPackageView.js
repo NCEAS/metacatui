@@ -738,6 +738,10 @@ define([
                     view.$(eventEl).children().children(".collapse-control").fadeIn("fast");
                     view.$(".tooltip-this").tooltip();
                 });
+
+                this.$(children).children().children().children(".collapse-control").fadeOut(function(){
+                    view.$(children).children().children().children(".expand-control").fadeIn("fast");
+                });
             },
 
             collapse: function(e){

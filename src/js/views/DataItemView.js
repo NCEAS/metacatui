@@ -122,8 +122,6 @@ define([
                     if (this.itemPath) {
                       itemPathParts = this.itemPath.split("/");
                       attributes.nodeLevel = itemPathParts.length - 1;
-                      parentClass = "parent-" + attributes.nodeLevel;
-                      this.$el.addClass(parentClass);
                     }
                     else {
                       attributes.nodeLevel = 0;
