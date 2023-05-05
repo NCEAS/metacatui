@@ -135,9 +135,9 @@ define([
         }
         let hashStrings = [];
         bounds = this.splitBoundingBox(bounds);
-        bounds.forEach(function (bb) {
+        bounds.forEach(function (b) {
           hashStrings = hashStrings.concat(
-            nGeohash.bboxes(bb.south, bb.west, bb.north, bb.east, precision)
+            nGeohash.bboxes(b.south, b.west, b.north, b.east, precision)
           );
         });
         return hashStrings;
@@ -302,12 +302,10 @@ define([
           return 360 * 180;
         }
         const { north, south, east, west } = bounds;
-
-        // Account for cases where east < west or north < south (because of
-        // ability to rotate globe and pan across the dateline in a 3D globe)
-        const latDiff = north < south ? 180 - (south - north) : north - south;
+        // Account for cases where east < west, due to the bounds crossing the
+        // prime meridian
         const lonDiff = east < west ? 360 - (west - east) : east - west;
-
+        const latDiff = north - south;
         return Math.abs(latDiff * lonDiff);
       },
 
@@ -499,38 +497,49 @@ define([
           maxPrecision
         );
 
+        // Base32 is the set of characters used to encode geohashes
         const base32 = [..."0123456789bcdefghjkmnpqrstuvwxyz"];
-        const { north, south, east, west } = bounds;
-        const optimalSet = new Set();
+
+        // In case the bounding box crosses the prime meridian, split it in two
+        const allBounds = this.splitBoundingBox(bounds);
 
         // If the bounds cover the world, return the base set of geohashes
-        if (north >= 90 && south <= -90 && east >= 180 && west <= -180) {
+        if (bounds.north >= 90 && bounds.south <= -90 && bounds.east >= 180 && bounds.west <= -180) {
           return base32;
         }
 
         // Checks if the given bounds are fully within the bounding box
-        function isFullyContained(n, e, s, w) {
+        function fullyContained(n, e, s, w, north, east, south, west) {
           return s >= south && w >= west && n <= north && e <= east;
         }
 
-        // Checks if the given bounds are fully outside the bounding box
-        function isFullyOutside(n, e, s, w) {
-          return s > north || w > east || n < south || e < west;
+        // Checks if the given bounds are fully outside the bounding box, assuming that
+        function fullyOutside(n, e, s, w, north, east, south, west) {
+          return n < south || s > north || e < west || w > east;
         }
 
         // Checks if a hash is fully contained, fully outside, or overlapping
         // the bounding box
         function hashPlacement(hash) {
           let [s, w, n, e] = nGeohash.decode_bbox(hash);
-          if (isFullyOutside(n, e, s, w)) return "outside";
-          else if (isFullyContained(n, e, s, w)) return "inside";
-          else return "overlap";
+          let outside = [];
+          for (const b of allBounds) {
+            if (fullyContained(n, e, s, w, b.north, b.east, b.south, b.west)) {
+              return "inside";
+            } else if (
+              fullyOutside(n, e, s, w, b.north, b.east, b.south, b.west)
+            ) {
+              outside.push(true);
+            }
+          }
+          if (outside.length === allBounds.length) return "outside";
+          return "overlap";
         }
 
         // Start with all hashes at minPrecision
         let precision = minPrecision;
-
         let hashes = this.getHashStringsForBounds(bounds, precision);
+        const optimalSet = new Set();
 
         while (precision < maxPrecision && hashes.length > 0) {
           // If hash is part overlapping but not fully contained, check the
@@ -558,8 +567,9 @@ define([
         // bounding box.
         if (precision == maxPrecision) {
           for (const hash of hashes) {
-            let placement = hashPlacement(hash);
-            if (placement == "inside") optimalSet.add(hash);
+            if (hashPlacement(hash) != "outside") {
+              optimalSet.add(hash);
+            }
           }
         }
 
