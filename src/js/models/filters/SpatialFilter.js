@@ -52,7 +52,7 @@ define([
           matchSubstring: false,
           // 1024 is the default limit in Solr for boolean clauses, limit even
           // more to allow for other filters
-          maxGeohashValues: 900,
+          maxGeohashValues: 500,
         });
       },
 

@@ -25,21 +25,24 @@ define([
 
       template: _.template(Template),
 
-      events: {
-        "click input[type='checkbox']": "updateModel",
-      },
-
-      initialize: function (options) {
-        if (!options || typeof options != "object") {
-          var options = {};
+      /**
+       * @inheritdoc
+       */
+      events: function(){
+        try {
+          const events = FilterView.prototype.events.call(this);
+          events["click input[type='checkbox']"] = "updateModel";
+          return events
         }
-
-        this.model = options.model || new BooleanFilter();
+        catch (e) {
+          console.log('Failed to create events for BooleanFilterView: ' + e);
+          return {};
+        }
       },
 
-      render: function () {
-        this.$el.html(this.template(this.model.toJSON()));
-
+      render: function (templateVars) {
+        FilterView.prototype.render.call(this, templateVars);
+        this.stopListening(this.model, "change:values");
         this.listenTo(this.model, "change:values", this.updateCheckbox);
       },
 

@@ -434,6 +434,7 @@ define([
             vertical: true,
             parentView: this,
             initialQuery: this.initialQuery,
+            collapsible: true,
           });
 
           // Add the FilterGroupsView element to this view

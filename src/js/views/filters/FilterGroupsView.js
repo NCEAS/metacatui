@@ -69,6 +69,15 @@ define(['jquery', 'underscore', 'backbone',
      * @since 2.17.0
      */
     edit: false,
+    
+    /**
+     * If set to true, then all filters within this group will be collapsible.
+     * See {@link FilterView#collapsible}
+     * @type {boolean}
+     * @since x.x.x
+     * @default false
+     */
+    collapsible: false,
 
     /**
      * The initial query to use when the view is first rendered. This is a text value
@@ -117,6 +126,10 @@ define(['jquery', 'underscore', 'backbone',
 
       if (options.initialQuery) {
         this.initialQuery = options.initialQuery;
+      }
+
+      if (options.collapsible && typeof options.collapsible === "boolean") {
+        this.collapsible = options.collapsible;
       }
 
     },
@@ -229,7 +242,8 @@ define(['jquery', 'underscore', 'backbone',
         var filterGroupView = new FilterGroupView({
           model: filterGroup,
           edit: this.edit,
-          editorView: this.editorView
+          editorView: this.editorView,
+          collapsible: this.collapsible
         });
 
         //Render the FilterGroupView

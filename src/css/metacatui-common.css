@@ -6586,7 +6586,7 @@ body.mapMode{
 .filter-groups.vertical .filters-header {
   margin: 0;
   border-bottom: 1px solid #dfdfdf;
-  padding: 1.2rem 0;
+  padding: 0.95rem 0;
 }
 .filter-groups.vertical .filter {
 	padding-right: 0;
@@ -6835,6 +6835,41 @@ body.mapMode{
 }
 .filter input[type='text']{
 	width: 80%;
+}
+
+/**** collapsible filter components ****/
+
+/* the button to show/hide the filter */
+.collapse-toggle {
+	/* make a size variable */
+	--size: 1.55rem;
+	display: flex;
+	margin-left: auto;
+	padding: 0;
+	height: var(--size);
+	width: var(--size);
+	border: none;
+	background: #ebeff3;
+	border-radius: 50%;
+	justify-content: center;
+	align-items: center;
+}
+
+.collapse-toggle > .icon {
+	font-size: 1.3rem !important;
+	margin: 0 !important;
+	transition: transform 0.1s ease-in-out;
+	height: 100%;
+}
+.filter.collapsed {
+	padding-bottom: 0.4rem !important;
+}
+.filter.collapsed label ~ div {
+	display: none;
+}
+.filter.collapsed .collapse-toggle > .icon {
+	/* flip it around */
+	transform: rotate(180deg);
 }
 
 /*

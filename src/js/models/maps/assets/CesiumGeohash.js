@@ -91,7 +91,7 @@ define([
             color: "#f3e227",
           }),
           showLabels: true,
-          maxGeoHashes: 3000,
+          maxGeoHashes: 900,
         });
       },
 

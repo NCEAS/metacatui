@@ -37,7 +37,8 @@ define(['jquery', 'underscore', 'backbone',
     events: function () {
       try {
         var events = FilterView.prototype.events.call(this);
-        events["change input.toggle-checkbox"] = "updateModel";
+        events["click input[type='checkbox']"] = "updateModel";
+        
         return events
       }
       catch (error) {
@@ -49,13 +50,14 @@ define(['jquery', 'underscore', 'backbone',
     /**
     * @inheritdoc
     */
-    render: function () {
+      render: function (templateVars = {}) {
 
       try {
-        var templateVars = this.model.toJSON();
+        templateVars = _.extend(this.model.toJSON(), templateVars);
         templateVars.id = this.model.cid;
 
-        if( !this.model.get("falseLabel") ){
+        if (!this.model.get("falseLabel")) {
+          console.log("No falseLabel set on this ToggleFilter model");
           //If the value is the same as the trueValue, the checkbox should be checked
           templateVars.checked = (this.model.get("values")[0] == this.model.get("trueValue"))? true : false;
 
@@ -170,7 +172,7 @@ define(['jquery', 'underscore', 'backbone',
     * The filter value is grabbed from the checkbox element in this view.
     *
     */
-    updateModel: function(){
+      updateModel: function () {
 
       //Check if the checkbox is checked
       var isChecked = this.$("input").prop("checked");

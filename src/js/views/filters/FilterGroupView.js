@@ -47,7 +47,16 @@ define(['jquery', 'underscore', 'backbone',
      * @type {boolean}
      * @since 2.17.0
      */
-    edit: false,
+      edit: false,
+    
+    /**
+     * If set to true, then all filters within this group will be collapsible.
+     * See {@link FilterView#collapsible}
+     * @type {boolean}
+     * @since x.x.x
+     * @default false
+     */
+    collapsible: false,
 
     initialize: function (options) {
 
@@ -63,6 +72,10 @@ define(['jquery', 'underscore', 'backbone',
 
       if(options.edit === true){
         this.edit = true
+      }
+
+      if (options.collapsible && typeof options.collapsible === "boolean") {
+        this.collapsible = options.collapsible;
       }
 
     },
@@ -94,7 +107,8 @@ define(['jquery', 'underscore', 'backbone',
         var viewOptions = {
           model: filter,
           mode: filterMode,
-          editorView: this.editorView
+          editorView: this.editorView,
+          collapsible: this.collapsible
         }
 
         //Some filters are handled specially
@@ -121,7 +135,7 @@ define(['jquery', 'underscore', 'backbone',
               break;
             case "BooleanFilter":
               // TODO: Set up "edit" and "uiBuilder" mode for BooleanFilters
-              var filterView = new BooleanFilterView({ model: filter });
+              var filterView = new BooleanFilterView(viewOptions);
               break;
             case "ChoiceFilter":
               var filterView = new ChoiceFilterView(viewOptions);
