@@ -57,7 +57,6 @@ define(['jquery', 'underscore', 'backbone',
         templateVars.id = this.model.cid;
 
         if (!this.model.get("falseLabel")) {
-          console.log("No falseLabel set on this ToggleFilter model");
           //If the value is the same as the trueValue, the checkbox should be checked
           templateVars.checked = (this.model.get("values")[0] == this.model.get("trueValue"))? true : false;
 

@@ -478,6 +478,14 @@ define([
             values: ["METADATA"],
             matchSubstring: false,
           },
+          // If we need to exclude portals and collections, use this filter:
+          // {
+          //   fields: ["formatId"],
+          //   values: ["dataone.org/collections", "dataone.org/portals"],
+          //   exclude: true,
+          //   matchSubstring: true,
+          //   operator: "OR",
+          // }
         ]);
         var query = catalogFilters.getGroupQuery(catalogFilters.models, "AND");
         return query;

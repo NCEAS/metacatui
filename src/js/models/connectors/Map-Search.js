@@ -51,6 +51,12 @@ define([
        * added. A geohash layer is required for this connector to work.
        */
       initialize: function (attrs, options) {
+        if (!this.map || !options.map) {
+          this.set("map", new Map());
+        }
+        if (!this.searchResults || !options.searchResults) {
+          this.set("searchResults", new SearchResults());
+        }
         const add = options?.addGeohashLayer ?? true;
         this.findAndSetGeohashLayer(add);
       },
