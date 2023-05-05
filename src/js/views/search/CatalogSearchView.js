@@ -77,13 +77,20 @@ define([
         </div>`,
 
       /**
-       * The search mode to use. This can be set to either `map` or `list`. List
-       * mode will hide all map features.
-       * @type string
-       * @since 2.22.0
-       * @default "map"
+       * Whether the map is displayed or hidden.
+       * @type boolean
+       * @since x.x.x
+       * @default true
        */
-      mode: "map",
+      mapVisible: true,
+
+      /**
+       * Whether the filters are displayed or hidden.
+       * @type boolean
+       * @since x.x.x
+       * @default true
+       */
+      filtersVisible: true,
 
       /**
        * Whether to limit the search to the extent of the map. If true, the
@@ -193,6 +200,32 @@ define([
       toggleMapButton: ".catalog__map-toggle",
 
       /**
+       * The query selector for the label that is used to describe the
+       * {@link CatalogSearchView#toggleMapButton}.
+       * @type {string}
+       * @since x.x.x
+       * @default "#toggle-map-label"
+       */
+      toggleMapLabel: "#toggle-map-label",
+
+      /**
+       * The query selector for the button that is used to either show or hide
+       * the filters.
+       * @type {string}
+       * @since x.x.x
+       */
+      toggleFiltersButton: ".catalog__filters-toggle",
+
+      /**
+       * The query selector for the label that is used to describe the
+       * {@link CatalogSearchView#toggleFiltersButton}.
+       * @type {string}
+       * @since x.x.x
+       * @default "#toggle-map-label"
+       */
+      toggleFiltersLabel: "#toggle-filters-label",
+
+      /**
        * The query selector for the button that is used to turn on or off
        * spatial filtering by map extent.
        * @type {string}
@@ -202,19 +235,19 @@ define([
 
       /**
        * The CSS class (not selector) to add to the body element when the map is
-       * visible.
-       * @type {string}
-       * @since x.x.x
-       */
-      mapModeClass: "catalog--map-mode",
-
-      /**
-       * The CSS class (not selector) to add to the body element when the map is
        * hidden.
        * @type {string}
        * @since x.x.x
        */
-      listModeClass: "catalog--list-mode",
+      hideMapClass: "catalog--map-hidden",
+
+      /**
+       * The CSS class (not selector) to add to the body element when the
+       * filters are hidden.
+       * @type {string}
+       * @since x.x.x
+       */
+      hideFiltersClass: "catalog--filters-hidden",
 
       /**
        * The events this view will listen to and the associated function to
@@ -225,7 +258,8 @@ define([
       events: function () {
         const e = {};
         e[`click ${this.mapFilterToggle}`] = "toggleMapFilter";
-        e[`click ${this.toggleMapButton}`] = "toggleMode";
+        e[`click ${this.toggleMapButton}`] = "toggleMapVisibility";
+        e[`click ${this.toggleFiltersButton}`] = "toggleFiltersVisibility";
         return e;
       },
 
@@ -276,7 +310,7 @@ define([
        */
       render: function () {
         // Set the search mode - either map or list
-        this.setMode();
+        this.setMapVisibility();
 
         // Set up the view for styling and layout
         this.setupView();
@@ -296,27 +330,27 @@ define([
        * Sets the search mode (map or list)
        * @since 2.22.0
        */
-      setMode: function () {
+      setMapVisibility: function () {
         try {
-          // Get the search mode - either "map" or "list"
           if (
-            (typeof this.mode === "undefined" || !this.mode) &&
+            typeof this.mapVisible === "undefined" &&
             MetacatUI.appModel.get("enableCesium")
           ) {
-            this.mode = "map";
+            this.mapVisible = true;
           }
 
           // Use map mode on tablets and browsers only. TODO: should we set a
           // listener for window resize?
           if ($(window).outerWidth() <= 600) {
-            this.mode = "list";
+            this.mapVisible = false;
           }
         } catch (e) {
           console.error(
             "Error setting the search mode, defaulting to list:" + e
           );
-          this.mode = "list";
+          this.mapVisible = false;
         }
+        this.toggleMapVisibility(this.mapVisible);
       },
 
       /**
@@ -333,8 +367,6 @@ define([
           } else {
             // TODO: Set up styling for sub-view version of the catalog
           }
-
-          this.toggleMode(this.mode);
 
           // Add LinkedData to the page
           this.addLinkedData();
@@ -566,7 +598,7 @@ define([
           this.mapView = new MapView({ model: this.model.get("map") });
         } catch (e) {
           console.error("Couldn't create map in search. ", e);
-          this.toggleMode("list");
+          this.toggleMapVisibility(false);
         }
       },
 
@@ -581,7 +613,7 @@ define([
           this.mapView.render();
         } catch (e) {
           console.error("Couldn't render map in search. ", e);
-          this.toggleMode("list");
+          this.toggleMapVisibility(false);
         }
       },
 
@@ -642,55 +674,127 @@ define([
       },
 
       /**
-       * Toggles between map and list search mode
-       * @param {string} newMode - Optionally provide the desired new mode to
-       * switch to. If not provided, the opposite of the current mode will be
-       * used.
-       * @since 2.22.0
+       * Shows or hide the filters
+       * @param {boolean} show - Optionally provide the desired choice of
+       * whether the filters should be shown (true) or hidden (false). If not
+       * provided, the opposite of the current mode will be used.
+       * @since x.x.x
        */
-      toggleMode: function (newMode) {
+      toggleFiltersVisibility: function (show) {
         try {
           const classList = document.querySelector("body").classList;
 
           // If the new mode is not provided, the new mode is the opposite of
           // the current mode
-          newMode = newMode != "map" && newMode != "list" ? null : newMode;
-          newMode = newMode || (this.mode == "map" ? "list" : "map");
-          const mapClass = this.mapModeClass;
-          const listClass = this.listModeClass;
+          show = typeof show == "boolean" ? show : !this.filtersVisible;
+          const hideFiltersClass = this.hideFiltersClass;
 
-          if (newMode == "list") {
-            this.mode = "list";
-            classList.remove(mapClass);
-            classList.add(listClass);
+          if (show) {
+            this.filtersVisible = true;
+            classList.remove(hideFiltersClass);
           } else {
-            this.mode = "map";
-            classList.remove(listClass);
-            classList.add(mapClass);
+            this.filtersVisible = false;
+            classList.add(hideFiltersClass);
           }
-          this.updateToggleMapButton();
+          this.updateToggleFiltersLabel();
+        } catch (e) {
+          console.error("Couldn't toggle filter visibility. ", e);
+        }
+      },
+
+      /**
+       * Show or hide the map
+       * @param {boolean} show - Optionally provide the desired choice of
+       * whether the filters should be shown (true) or hidden (false). If not
+       * provided, the opposite of the current mode will be used. (Set to true
+       * to show map, false to hide it.)
+       * @since x.x.x
+       */
+      toggleMapVisibility: function (show) {
+        try {
+          // If the new mode is not provided, the new mode is the opposite of
+          // the current mode
+          show = typeof show == "boolean" ? show : !this.mapVisible;
+          const classList = document.querySelector("body").classList;
+          const hideMapClass = this.hideMapClass;
+
+          if (show) {
+            this.mapVisible = true;
+            classList.remove(hideMapClass);
+          } else {
+            this.mapVisible = false;
+            classList.add(hideMapClass);
+          }
+          this.updateToggleMapLabel();
         } catch (e) {
           console.error("Couldn't toggle search mode. ", e);
         }
       },
 
       /**
-       * Change the content of the map toggle button to indicate whether
-       * clicking it will show or hide the map.
+       * Change the content of the map toggle label to indicate whether
+       * clicking the button will show or hide the map.
        */
-      updateToggleMapButton: function () {
+      updateToggleMapLabel: function () {
         try {
-          const mapToggle = this.el.querySelector(this.toggleMapButton);
-          if (!mapToggle) return;
-          if (this.mode == "map") {
-            mapToggle.innerHTML =
-              'Hide Map <i class="icon icon-angle-right"></i>';
+          const toggleMapLabel = this.el.querySelector(this.toggleMapLabel);
+          const toggleMapButton = this.el.querySelector(this.toggleMapButton);
+          if (this.mapVisible) {
+            if (toggleMapLabel) {
+              toggleMapLabel.innerHTML =
+                'Hide Map <i class="icon icon-angle-right"></i>';
+            }
+            if (toggleMapButton) {
+              toggleMapButton.innerHTML =
+                '<i class="icon icon-double-angle-right"></i>';
+            }
           } else {
-            mapToggle.innerHTML =
-              '<i class="icon icon-angle-left"></i> Show Map <i class="icon icon-globe"></i>';
+            if (toggleMapLabel) {
+              toggleMapLabel.innerHTML =
+                '<i class="icon icon-globe"></i> Show Map <i class="icon icon-angle-left"></i>';
+            }
+            if (toggleMapButton) {
+              toggleMapButton.innerHTML = '<i class="icon icon-globe"></i>';
+            }
           }
         } catch (e) {
           console.log("Couldn't update map toggle. ", e);
+        }
+      },
+
+      /**
+       * Change the content of the filters toggle label to indicate whether
+       * clicking the button will show or hide the filters.
+       */
+      updateToggleFiltersLabel: function () {
+        try {
+          const toggleFiltersLabel = this.el.querySelector(
+            this.toggleFiltersLabel
+          );
+          const toggleFiltersButton = this.el.querySelector(
+            this.toggleFiltersButton
+          );
+          if (this.filtersVisible) {
+            if (toggleFiltersLabel) {
+              toggleFiltersLabel.innerHTML =
+                'Hide Filters <i class="icon icon-angle-left"></i>';
+            }
+            if (toggleFiltersButton) {
+              toggleFiltersButton.innerHTML =
+                '<i class="icon icon-double-angle-left"></i>';
+            }
+          } else {
+            if (toggleFiltersLabel) {
+              toggleFiltersLabel.innerHTML =
+                '<i class="icon icon-filter"></i> Show Filters <i class="icon icon-angle-right"></i>';
+            }
+            if (toggleFiltersButton) {
+              toggleFiltersButton.innerHTML =
+                '<i class="icon icon-filter"></i>';
+            }
+          }
+        } catch (e) {
+          console.log("Couldn't update filters toggle. ", e);
         }
       },
 
@@ -727,7 +831,7 @@ define([
           MetacatUI.appModel.removeCSS(this.cssID);
           document
             .querySelector("body")
-            .classList.remove(this.bodyClass, `${this.mode}Mode`);
+            .classList.remove(this.bodyClass, this.hideMapClass);
 
           // Remove the JSON-LD from the page
           document.getElementById("jsonld")?.remove();
