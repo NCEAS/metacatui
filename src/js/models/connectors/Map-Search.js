@@ -3,8 +3,7 @@ define([
   "backbone",
   "models/maps/Map",
   "collections/SolrResults",
-  "models/maps/assets/CesiumGeohash",
-], function (Backbone, Map, SearchResults, Geohash) {
+], function (Backbone, Map, SearchResults) {
   "use strict";
 
   /**
@@ -51,10 +50,10 @@ define([
        * added. A geohash layer is required for this connector to work.
        */
       initialize: function (attrs, options) {
-        if (!this.map || !options.map) {
+        if (!this.get("map")) {
           this.set("map", new Map());
         }
-        if (!this.searchResults || !options.searchResults) {
+        if (!this.get("searchResults")) {
           this.set("searchResults", new SearchResults());
         }
         const add = options?.addGeohashLayer ?? true;
