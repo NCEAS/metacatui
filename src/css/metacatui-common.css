@@ -8432,6 +8432,33 @@ textarea.medium{
 .taxon-rank-value{
 	width: calc(100% - 50px);
 }
+
+/* quick add box */
+.taxa-quick-add{
+	background-color: #ddf3f6;
+	display: grid;
+	padding: 0.5rem 1rem 1rem 1rem;
+	border-radius: 4px;
+	border: 1px solid #c4deea;
+}
+.taxa-quick-add__controls{
+	display: grid;
+	grid-template-columns: auto max-content;
+	gap: 1rem;
+	align-items: end;
+}
+.taxa-quick-add__selects{
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+	gap: 1rem;
+}
+.taxa-quick-add__button{
+	height: min-content;
+}
+.taxa-quick-add__text{
+	margin: 0
+}
+
 /* ---- Methods ---- */
 .metadata-container .sampling{
 	margin-top: 20px;

@@ -1055,6 +1055,10 @@ define(['underscore', 'jquery', 'backbone',
           for (var i = 0; i < taxaNums.length; i++) {
             $(taxaNums[i]).text(i + 1);
           }
+
+          // Insert the quick-add taxon options, if any are configured for this
+          // theme. See {@link AppModel#quickAddTaxa}
+          this.renderTaxaQuickAdd();
         },
 
         /*
@@ -2065,14 +2069,125 @@ define(['underscore', 'jquery', 'backbone',
           }
         },
 
+        /**
+         * Insert the "quick add" interface for adding common taxa to the
+         * taxonomic coverage section. Only renders if there is a list of taxa
+         * configured in the appModel.
+         */
+        renderTaxaQuickAdd: function () {
+          try {
+
+            const view = this;
+
+            // To render the taxon select, the view must be in editor mode and we
+            // need a list of taxa configured for the theme
+            if (!view.edit) return
+            const quickAddTaxa = MetacatUI.appModel.get("quickAddTaxa")
+            if (!quickAddTaxa) { return }
+
+            // Create & insert the basic HTML for the taxon select interface
+            const template = `<div class="taxa-quick-add">
+              <p class="taxa-quick-add__text">
+                <b>⭐️ Quick Add Taxa:</b> Select one or more common taxa. Click "Add" to add them to the list.
+              </p>
+              <div class="taxa-quick-add__controls">
+              <div class="taxa-quick-add__selects"></div>
+              <button class="btn btn-primary taxa-quick-add__button">Add Taxa</button>
+              </div>
+            </div>`
+            const parser = new DOMParser()
+            const doc = parser.parseFromString(template, "text/html")
+            const html = doc.body.firstChild
+            const button = html.querySelector("button")
+            const container = html.querySelector(".taxa-quick-add__selects")
+            const rowSelector = ".root-taxonomic-classification-container"
+            const firstRow = document.querySelector(rowSelector)
+            firstRow.parentNode.insertBefore(doc.body.firstChild, firstRow)
+
+            // Update the taxon coverage when the button is clicked
+            const onButtonClick = () => {
+              const taxonSelects = view.taxonSelects
+              if (!taxonSelects || !taxonSelects.length) return
+              const selectedItems = taxonSelects.map(select => select.selected).flat()
+              if (!selectedItems || !selectedItems.length) return
+              const selectedItemObjs = selectedItems.map(item => JSON.parse(decodeURIComponent(item)))
+              view.addTaxa(selectedItemObjs)
+              taxonSelects.forEach(select => select.changeSelection([], true))
+            }
+            button.removeEventListener("click", onButtonClick)
+            button.addEventListener("click", onButtonClick);
+
+            // Create the search selects
+            view.taxonSelects = []
+            const componentPath = 'views/searchSelect/SearchableSelectView'
+            require([componentPath], function (SearchSelect) {
+              quickAddTaxa.forEach((taxaList, i) => {
+                try {
+                  const options = taxaList.taxa.map(view.taxonOptionToSearchSelectItem)
+                  const taxaInput = new SearchSelect({
+                    options: options,
+                    placeholderText: taxaList.placeholder,
+                    inputLabel: taxaList.label,
+                    allowMulti: true,
+                    allowAdditions: true,
+                    separatorTextOptions: false,
+                    selected: []
+                  })
+                  container.appendChild(taxaInput.el)
+                  taxaInput.render()
+                  view.taxonSelects.push(taxaInput)
+                } catch (e) {
+                  console.log("Failed to create taxon select: ", e)
+                }
+              
+              })
+            })
+            
+          }catch(e){
+            console.log("Failed to render taxon select: ", e)
+          }
+        },
+
+        /**
+         * Reformats a taxon option, as provided in the appModel
+         * {@link AppModel#quickAddTaxa}, as a search select item.
+         * @param {Object} option A single taxon classification with at least a
+         * taxonRankValue and taxonRankName. It may also have a taxonId (object
+         * with provider and value) and a commonName.
+         * @returns {Object} A search select item with label, value, and
+         * description properties.
+         */
+        taxonOptionToSearchSelectItem: function (option) {
+          try {
+            // option must have a taxonRankValue and taxonRankName or it is invalid
+            if (!option.taxonRankValue || !option.taxonRankName) {
+              console.log("Invalid taxon option: ", option);
+              return null;
+            }
+            // Create a description
+            let description = option.taxonRankName + ": " + option.taxonRankValue
+            if (option.taxonId) {
+              description += " (" + option.taxonId.provider + ": " + option.taxonId.value + ")"
+            }
+            // search select doesn't work with some of the json characters
+            const val = encodeURIComponent(JSON.stringify(option));
+            return {
+              label: option.commonName || option.taxonRankValue,
+              value: val,
+              description: description
+            }
+          } catch (e) {
+            console.log("Failed to reformat taxon option as search select item: ", e);
+            return null;
+          }
+        },
         
       /**
-       * Adds a new taxon to the EML model and re-renders the taxa section. The
-       * new taxon will be added to the first <taxonomicCoverage> element in the
-       * EML model. If there is no <taxonomicCoverage> element, one will be
-       * created.
-       * @param {Object} newClassification - An object with any of the following
-       * properties:
+       * Add new taxa to the EML model and re-render the taxa section. The new
+       * taxa will be added to the first <taxonomicCoverage> element in the EML
+       * model. If there is no <taxonomicCoverage> element, one will be created.
+       * @param {Object[]} newClassifications - An array of objects with any of
+       * the following properties:
        *  - taxonRankName: (sting) The name of the taxonomic rank, e.g.
        *    "Kingdom"
        *  - taxonRankValue: (string) The value of the taxonomic rank, e.g.
@@ -2084,17 +2199,18 @@ define(['underscore', 'jquery', 'backbone',
        *    classifications
        * @since x.x.x
        * @example
-       * this.addTaxon({
+       * this.addTaxon([{
        *  taxonRankName: "Kingdom",
        *  taxonRankValue: "Animalia",
        *  commonName: "Animals",
        *  taxonId: {
        *    provider: "https://www.itis.gov/",
        *    value: "202423"
-       *  });
+       *  }]);
        */
-      addTaxon: function (newClassification) {
+      addTaxa: function (newClassifications) {
         try {
+          // TODO: validate the new taxon before adding it to the model?
           const taxonCoverages = this.model.get("taxonCoverage");
           // We expect that there is already a taxonCoverage array on the model.
           // If the EML was made in the editor, there can only be one
@@ -2104,14 +2220,14 @@ define(['underscore', 'jquery', 'backbone',
           if (taxonCoverages && taxonCoverages.length >= 1){
               const taxonCoverage = taxonCoverages[0];
               const classifications = taxonCoverage.get("taxonomicClassification");
-              classifications.push(newClassification);
+              classifications.push(...newClassifications);
               taxonCoverage.set("taxonomicClassification", classifications);
           } else {
             // If there is no <taxonomicCoverage> element for some reason,
             // create one and add the new taxon to its <taxonomicClassification>
             // array.
             const newCov = new EMLTaxonCoverage({
-              taxonomicClassification: [newClassification],
+              taxonomicClassification: newClassifications,
               parentModel: this.model,
             });
             this.model.set("taxonCoverage", [newCov]);
