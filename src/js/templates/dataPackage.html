@@ -1,21 +1,12 @@
 ﻿<% 
   if (!edit){
     if(!title) var title = "Files in this dataset";
-    if(nested) var classes = "nested";
     if(!colspan) var colspan = 7;  
   }
 %>
 
 <% if (!edit) {%>
   <thead id="data-package-table-head">
-    <% if(nested && metadata){ %>
-      <tr class="table-header title">
-        <th colspan="<%=colspan%>" class="table-header">
-          <a href="<%= MetacatUI.root %>/view/<%=encodeURIComponent(metadata.get('id'))%>"><strong><%=metadata.get("title")%></strong></a>
-        </th>
-      </tr>
-    <% } %>
-
     <tr class="table-header">
       <th colspan="<%=colspan%>" class="table-header"> 
         <%=title%>

@@ -741,23 +741,10 @@ define(['jquery',
             if (nestedPckgsToDisplay.length > 0) {
 
               if (!(!this.model.get("archived") && packageModel.get("archived") == true)) {
-                var title = 'Current Data Set (1 of ' + (nestedPckgsToDisplay.length + 1) + ') <span class="subtle">Package: ' + packageModel.get("id") + '</span>';
-                this.insertPackageTable(packageModel, { title: title });
+                var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
+                title = "Files in this dataset " + title;
+                this.insertPackageTable(packageModel, { title: title, nested: true });
               }
-
-              _.each(nestedPckgsToDisplay, function (nestedPackage, i, list) {
-                if (!(!this.model.get("archived") && nestedPackage.get("archived") == true)) {
-
-                  var title = 'Nested Data Set (' + (i + 2) + ' of ' +
-                    (list.length + 1) + ') <span class="subtle">Package: ' +
-                    nestedPackage.get("id") + '</span> <a href="' + MetacatUI.root +
-                    '/view/' + encodeURIComponent(nestedPackage.get("id")) +
-                    '" class="table-header-link">(View <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
-
-                  this.insertPackageTable(nestedPackage, { title: title, nested: true });
-
-                }
-              }, this);
             }
             else {
               //If this metadata is not archived, then don't display archived packages
@@ -772,29 +759,6 @@ define(['jquery',
             $("#downloadPackage").remove();
 
           }, this);
-
-          //Collapse the table list after the first table
-          var additionalTables = $(this.$("#additional-tables-for-" + this.cid)),
-            numTables = additionalTables.children(".download-contents").length,
-            item = (numTables == 1) ? "dataset" : "datasets";
-          if (numTables > 0) {
-            var expandIcon = $(document.createElement("i")).addClass("icon icon-level-down"),
-              expandLink = $(document.createElement("a"))
-                .attr("href", "#")
-                .addClass("toggle-slide toggle-display-on-slide")
-                .attr("data-slide-el", "additional-tables-for-" + this.cid)
-                .text("Show " + numTables + " nested " + item)
-                .prepend(expandIcon),
-              collapseLink = $(document.createElement("a"))
-                .attr("href", "#")
-                .addClass("toggle-slide toggle-display-on-slide")
-                .attr("data-slide-el", "additional-tables-for-" + this.cid)
-                .text("Hide nested " + item)
-                .hide(),
-              expandControl = $(document.createElement("div")).addClass("expand-collapse-control").append(expandLink, collapseLink);
-
-            additionalTables.before(expandControl);
-          }
 
           //If this metadata doc is not in a package, but is just a lonely metadata doc...
           if (!packages.length) {
@@ -859,8 +823,6 @@ define(['jquery',
           }
           else
             var title = "", nested = false;
-
-          if (typeof packageModel === "undefined") return;
 
           //** Draw the package table **//
           var tableView = new DataPackageView({

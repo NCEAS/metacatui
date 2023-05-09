@@ -6,13 +6,14 @@ define([
     'localforage',
     'collections/DataPackage',
     'models/DataONEObject',
+    'models/PackageModel',
     'models/metadata/ScienceMetadata',
     'models/metadata/eml211/EML211',
     'models/PackageModel',
     'views/DataItemView',
     'text!templates/dataPackage.html',
     'text!templates/dataPackageStart.html'],
-    function($, _, Backbone, LocalForage, DataPackage, DataONEObject, ScienceMetadata, EML211, Package, DataItemView,
+    function($, _, Backbone, LocalForage, DataPackage, DataONEObject, PackageModel, ScienceMetadata, EML211, Package, DataItemView,
     		DataPackageTemplate, DataPackageStartTemplate) {
         'use strict';
 
@@ -72,30 +73,13 @@ define([
                     this.attributes = options.attributes || null;
                     this.dataPackage = options.dataPackage || new DataPackage();
                     this.currentlyViewing = options.currentlyViewing || null;
-                    this.numVisible = options.numVisible || 4;
                     this.parentEditorView = options.parentView || null;
                     this.title = options.title || "";
                     this.nested = (typeof options.nested === "undefined")? false : options.nested;
 
-                    //Set up the Package model
-                    if((typeof options.model === "undefined") || !options.model){
-                        this.model = new Package();
-                        this.model.set("memberId", this.memberId);
-                        this.model.set("packageId", this.packageId);
-                    }
-
-                    if(!(typeof options.metricsModel == "undefined")){
-                        this.metricsModel = options.metricsModel;
-                    }
-
-                    //Get the members
-                    if(this.packageId)    this.model.getMembers();
-                    else if(this.memberId) this.model.getMembersByMemberID(this.memberId);
-
-                    this.onMetadataView = (this.parentView && this.parentView.type == "Metadata");
-                    this.hasEntityDetails = (this.onMetadataView && (this.model.get("members") && this.model.get("members").length < 150))? this.parentView.hasEntityDetails() : false;
-
-                    this.listenTo(this.model, "changeAll", this.render);
+                    // set the package model
+                    this.packageModel = this.dataPackage.packageModel;
+                    this.listenTo(this.packageModel, "changeAll", this.render);
                 }
                 else {
                     //Get the options sent to this view
@@ -129,8 +113,6 @@ define([
                 	id: this.dataPackage.get("id"),
                     title   : this.title || "Files in this dataset",
                     classes: "download-contents table-striped table-condensed table",
-                    metadata : this.nested ? metadata : null,
-                    nested : this.nested
                 }));
 
                 if (this.edit) {
@@ -157,6 +139,13 @@ define([
 
                     //Render the Share control(s)
                     this.renderShareControl();
+                }
+                else {
+                    // check for nessted datasets
+
+                    if (this.nested) {
+                        this.getNestedPackages();
+                    }
                 }
 
                 return this;
@@ -807,6 +796,23 @@ define([
                 }
                 catch(e){
                     console.error(e);
+                }
+            },
+
+            getNestedPackages: function() {
+                var nestedPackages = new Array();
+                this.nestedPackages = nestedPackages;
+                var childPackages = this.packageModel.get("childPackages");
+                if (Object.keys(childPackages).length > 0) {
+                    for (var childPkg in childPackages) {
+                        var nestedPackage = new PackageModel();
+                        nestedPackage.set("id", childPkg);
+                        nestedPackage.getMembers();
+                        nestedPackages.push(nestedPackage);
+                        
+                        // TODO parse each member and add to the package table in MetadataView
+                        
+                    }
                 }
             }
 
