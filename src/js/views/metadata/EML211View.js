@@ -1026,14 +1026,18 @@ define(['underscore', 'jquery', 'backbone',
            * Renders the Taxa section of the page
            */
         renderTaxa: function () {
-          this.$(".section.taxa").html($(document.createElement("h2")).text("Taxa"));
+
+          const taxaSectionEl = this.$(".section.taxa");
+          if (!taxaSectionEl) return;
+
+          taxaSectionEl.html($(document.createElement("h2")).text("Taxa"));
 
           var taxonomy = this.model.get('taxonCoverage');
 
           // Render a set of tables for each taxonomicCoverage
           if (typeof taxonomy !== "undefined" && (Array.isArray(taxonomy) && taxonomy.length)) {
             for (var i = 0; i < taxonomy.length; i++) {
-              this.$(".section.taxa").append(this.createTaxonomicCoverage(taxonomy[i]));
+              taxaSectionEl.append(this.createTaxonomicCoverage(taxonomy[i]));
             }
           } else {
             // Create a new one
@@ -1043,7 +1047,7 @@ define(['underscore', 'jquery', 'backbone',
 
             this.model.set('taxonCoverage', [taxonCov], { silent: true });
 
-            this.$(".section.taxa").append(this.createTaxonomicCoverage(taxonCov));
+            taxaSectionEl.append(this.createTaxonomicCoverage(taxonCov));
           }
 
           // updating the indexes of taxa-tables before rendering the information on page(view).
@@ -2060,6 +2064,64 @@ define(['underscore', 'jquery', 'backbone',
             $(e.target).parents("tr").removeClass("new").after(newRow);
           }
         },
+
+        
+      /**
+       * Adds a new taxon to the EML model and re-renders the taxa section. The
+       * new taxon will be added to the first <taxonomicCoverage> element in the
+       * EML model. If there is no <taxonomicCoverage> element, one will be
+       * created.
+       * @param {Object} newClassification - An object with any of the following
+       * properties:
+       *  - taxonRankName: (sting) The name of the taxonomic rank, e.g.
+       *    "Kingdom"
+       *  - taxonRankValue: (string) The value of the taxonomic rank, e.g.
+       *    "Animalia"
+       *  - commonName: (string) The common name of the taxon, e.g. "Animals"
+       *  - taxonId: (object) The official ID of the taxon, including "provider"
+       *    and "value".
+       *  - taxonomicClassification: (array) An array of nested taxonomic
+       *    classifications
+       * @since x.x.x
+       * @example
+       * this.addTaxon({
+       *  taxonRankName: "Kingdom",
+       *  taxonRankValue: "Animalia",
+       *  commonName: "Animals",
+       *  taxonId: {
+       *    provider: "https://www.itis.gov/",
+       *    value: "202423"
+       *  });
+       */
+      addTaxon: function (newClassification) {
+        try {
+          const taxonCoverages = this.model.get("taxonCoverage");
+          // We expect that there is already a taxonCoverage array on the model.
+          // If the EML was made in the editor, there can only be one
+          // <taxonomicCoverage> element. Add the new taxon to its
+          // <taxonomicClassification> array. If there is more than one, then the
+          // new taxon will be added to the first <taxonomicCoverage> element.
+          if (taxonCoverages && taxonCoverages.length >= 1){
+              const taxonCoverage = taxonCoverages[0];
+              const classifications = taxonCoverage.get("taxonomicClassification");
+              classifications.push(newClassification);
+              taxonCoverage.set("taxonomicClassification", classifications);
+          } else {
+            // If there is no <taxonomicCoverage> element for some reason,
+            // create one and add the new taxon to its <taxonomicClassification>
+            // array.
+            const newCov = new EMLTaxonCoverage({
+              taxonomicClassification: [newClassification],
+              parentModel: this.model,
+            });
+            this.model.set("taxonCoverage", [newCov]);
+          }
+          // Re-render the taxa section
+          this.renderTaxa();
+        } catch (e) {
+          console.log("Error adding taxon to EML model: ", e);
+        }
+      },
 
         removeTaxonRank: function (e) {
           var row = $(e.target).parents(".taxonomic-coverage-row"),
