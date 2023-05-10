@@ -1841,18 +1841,20 @@ define(['underscore', 'jquery', 'backbone',
 
           // Makes a table... for the root level
           for (var i = 0; i < classifications.length; i++) {
-            coverageEl.append(this.createTaxonomicClassifcationTable(classifications[i]));
+            coverageEl.append(
+              this.createTaxonomicClassificationTable(classifications[i])
+            );
           }
 
           // Create a new, blank table for another taxonomicClassification
-          var newTableEl = this.createTaxonomicClassifcationTable();
+          var newTableEl = this.createTaxonomicClassificationTable();
 
           coverageEl.append(newTableEl);
 
           return finishedEls;
         },
 
-        createTaxonomicClassifcationTable: function (classification) {
+        createTaxonomicClassificationTable: function (classification) {
 
           // updating the taxonomic table indexes before adding a new table to the page.
           var taxaNums = this.$(".editor-header-index");
@@ -1886,12 +1888,8 @@ define(['underscore', 'jquery', 'backbone',
             if (typeof cur === "undefined") {
               continue;
             }
-
-            rows.push({
-              'taxonRankName': cur.taxonRankName.toLowerCase(),
-              'taxonRankValue': cur.taxonRankValue
-            });
-
+            cur.taxonRankName = cur.taxonRankName?.toLowerCase()
+            rows.push(cur);
             if (cur.taxonomicClassification) {
               for (var i = 0; i < cur.taxonomicClassification.length; i++) {
                 queue.push(cur.taxonomicClassification[i]);
@@ -1900,15 +1898,11 @@ define(['underscore', 'jquery', 'backbone',
           }
 
           for (var j = 0; j < rows.length; j++) {
-            tableBodyEl.append(this.taxonomicClassificationRowTemplate(rows[j]));
+            tableBodyEl.append(this.makeTaxonomicClassificationRow(rows[j]));
           }
 
-          var newRowEl = $(this.taxonomicClassificationRowTemplate({
-            taxonRankName: '',
-            taxonRankValue: ''
-          }));
+          var newRowEl = this.makeNewTaxonomicClassificationRow();
 
-          $(newRowEl).addClass("new");
           $(tableBodyEl).append(newRowEl);
           $(tableEl).append(tableBodyEl);
 
@@ -1920,6 +1914,55 @@ define(['underscore', 'jquery', 'backbone',
           $(finishedEl).append(tableEl);
 
           return finishedEl;
+        },
+
+        /**
+         * Create the HTML for a single row in a taxonomicClassification table
+         * @param {EMLTaxonCoverage#taxonomicClassification} classification A
+         * classification object from an EMLTaxonCoverage model, may include
+         * a taxonRank, taxonValue, taxonId, commonName, and nested
+         * taxonomicClassification objects
+         * @returns {jQuery} A jQuery object containing the HTML for a single
+         * row in a taxonomicClassification table
+         * @since x.x.x
+         */
+        makeTaxonomicClassificationRow: function (classification) {
+          try {
+            if (!classification) classification = {};
+            var finishedEl = $(this.taxonomicClassificationRowTemplate({
+              taxonRankName: classification.taxonRankName || '',
+              taxonRankValue: classification.taxonRankValue || ''
+            }));
+
+            // If there is a taxonId or commonName, save that to the DOM as data
+            if (classification.taxonId) {
+              console.log("taxonId: " + classification.taxonId);
+            
+              $(finishedEl).data("taxonId", classification.taxonId);
+            }
+            if (classification.commonName) {
+              console.log("commonName: " + classification.commonName);
+              $(finishedEl).data("commonName", classification.commonName);
+            }
+
+            $(finishedEl).data("test", "aaaaa hello");
+
+            return finishedEl;
+          } catch (e) {
+            console.log("Error making taxonomic classification row: ", e);
+          }
+        },
+
+        /**
+         * Create the HTML for a new row in a taxonomicClassification table
+         * @returns {jQuery} A jQuery object containing the HTML for a new row
+         * in a taxonomicClassification table
+         * @since x.x.x
+         */
+        makeNewTaxonomicClassificationRow: function () {
+          const row = this.makeTaxonomicClassificationRow({});
+          $(row).addClass("new");
+          return row;
         },
 
         /* Update the underlying model and DOM for an EML TaxonomicCoverage
@@ -1995,15 +2038,21 @@ define(['underscore', 'jquery', 'backbone',
 
             for (var j = 0; j < rows.length; j++) {
 
-              currentRank = this.model.cleanXMLText($(rows[j]).find("select").val()) || "";
-              currentValue = this.model.cleanXMLText($(rows[j]).find("input").val()) || "";
+              const thisRow = rows[j];
+
+              currentRank = this.model.cleanXMLText($(thisRow).find("select").val()) || "";
+              currentValue = this.model.cleanXMLText($(thisRow).find("input").val()) || "";
+
+              // Maintain classification attributes that exist in the EML but are not visible in the editor
+              const taxonId = $(thisRow).data("taxonId")
+              const commonName = $(thisRow).data("commonName")
 
               // Skip over rows with empty Rank or Value
               if (!currentRank.length || !currentValue.length) {
                 continue;
               }
 
-              //After the first row, start nesting taxonomicClassification objectss
+              //After the first row, start nesting taxonomicClassification objects
               if (j > 0) {
                 classification.taxonomicClassification = [{}];
                 classification = classification.taxonomicClassification[0];
@@ -2012,6 +2061,9 @@ define(['underscore', 'jquery', 'backbone',
               // Add it to the classification object
               classification.taxonRankName = currentRank;
               classification.taxonRankValue = currentValue;
+              classification.taxonId = taxonId;
+              classification.commonName = commonName;
+
 
             }
 
@@ -2031,11 +2083,7 @@ define(['underscore', 'jquery', 'backbone',
           if (value) {
             // Add a new row if this is itself a new row
             if ($(e.target).parents("tr").first().is(".new")) {
-              var newRowEl = $(this.taxonomicClassificationRowTemplate({
-                taxonRankName: '',
-                taxonRankValue: ''
-              })).addClass("new");
-
+              var newRowEl = this.makeNewTaxonomicClassificationRow();
               $(e.target).parents("tbody").first().append(newRowEl);
               $(e.target).parents("tr").first().removeClass("new");
             }
@@ -2044,7 +2092,7 @@ define(['underscore', 'jquery', 'backbone',
             if ($(classificationEl).is(".new")) {
               $(classificationEl).removeClass("new");
               $(classificationEl).append(this.createRemoveButton('taxonCoverage', 'taxonomicClassification', '.root-taxonomic-classification-container', '.taxonomic-coverage'));
-              $(coverage).append(this.createTaxonomicClassifcationTable());
+              $(coverage).append(this.createTaxonomicClassificationTable());
             }
           }
         },
@@ -2058,12 +2106,7 @@ define(['underscore', 'jquery', 'backbone',
 
           // If the row is new, add a new row to the table
           if ($(e.target).parents("tr").is(".new")) {
-            var newRow = $(this.taxonomicClassificationRowTemplate({
-              taxonRankName: '',
-              taxonRankValue: ''
-            }))
-              .addClass("new");
-
+            var newRow = this.makeNewTaxonomicClassificationRow();
             //Append the new row and remove the new class from the old row
             $(e.target).parents("tr").removeClass("new").after(newRow);
           }
@@ -2084,6 +2127,12 @@ define(['underscore', 'jquery', 'backbone',
             if (!view.edit) return
             const quickAddTaxa = MetacatUI.appModel.get("quickAddTaxa")
             if (!quickAddTaxa) { return }
+
+            // remove any existing quick add interface:
+            const existingQuickAdd = document.querySelector(".taxa-quick-add")
+            if (existingQuickAdd) {
+              existingQuickAdd.remove()
+            }
 
             // Create & insert the basic HTML for the taxon select interface
             const template = `<div class="taxa-quick-add">
@@ -2134,7 +2183,9 @@ define(['underscore', 'jquery', 'backbone',
             require([componentPath], function (SearchSelect) {
               quickAddTaxa.forEach((taxaList, i) => {
                 try {
-                  const options = taxaList.taxa.map(view.taxonOptionToSearchSelectItem)
+                  // const filteredTaxa = view.filterExistingTaxa(taxaList.taxa)
+                  const filteredTaxa = taxaList.taxa
+                  const options = filteredTaxa.map(view.taxonOptionToSearchSelectItem)
                   const taxaInput = new SearchSelect({
                     options: options,
                     placeholderText: taxaList.placeholder,
@@ -2157,6 +2208,33 @@ define(['underscore', 'jquery', 'backbone',
           }catch(e){
             console.log("Failed to render taxon select: ", e)
           }
+        },
+
+        /**
+         * Remove taxa that are already in the EML model from the list of taxa
+         * that can be added from the Quick Add interface.
+         */
+        filterExistingTaxa: function (taxa) {
+          const coverages = this.model.get("taxonCoverage")
+          if (!coverages || !coverages.length) return taxa
+
+          // merge the "taxonomicClassification" objects from all taxonCoverages
+          // into one array
+          const classifications = coverages.map((coverage) => {
+            return coverage.get("taxonomicClassification")
+          }).flat()
+
+          // if at least the rank and value match, consider it a match
+          const isMatch = (a, b) => {
+            return a.taxonRankName === b.taxonRankName && a.taxonRankValue === b.taxonRankValue
+          }
+
+          // filter out any taxa that are already in the model
+          return taxa.filter((taxon) => {
+            return !classifications.some((classification) => {
+              return isMatch(taxon, classification)
+            })
+          })
         },
 
         /**
@@ -2219,7 +2297,7 @@ define(['underscore', 'jquery', 'backbone',
        *    value: "202423"
        *  }]);
        */
-      addTaxa: function (newClassifications) {
+        addTaxa: function (newClassifications) {
         try {
           // TODO: validate the new taxon before adding it to the model?
           const taxonCoverages = this.model.get("taxonCoverage");

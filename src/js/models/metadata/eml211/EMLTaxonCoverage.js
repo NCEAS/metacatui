@@ -5,7 +5,41 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
   Backbone,
   DataONEObject
 ) {
+
+  /**
+   * @name taxonomicClassification
+   * @type {Object}
+   * @property {string} taxonRankName - The name of the taxonomic rank, for
+   * example, Domain, Kingdom, etc.
+   * @property {string} taxonRankValue - The value for the given taxonomic rank,
+   * for example, Animalia, Chordata, etc.
+   * @property {string[]} commonName - Common name(s) for the taxon, for example
+   * ["Animal"]
+   * @property {Object[]} taxonId - A taxon identifier from a controlled
+   * vocabulary, for example, ITIS, NCBI, etc.
+   * @property {string} taxonId.provider - The provider of the taxon identifier,
+   * given as a URI, for example http://www.itis.gov
+   * @property {string} taxonId.value - The identifier from the provider, for
+   * example, 180092
+   * @property {Object[]} taxonomicClassification - A nested taxonomic
+   * classification, since taxonomy is represented as a hierarchy in EML.
+   */
+
+
   var EMLTaxonCoverage = Backbone.Model.extend({
+
+    /**
+     * Returns the default properties for this model. Defined here.
+     * @type {Object}
+     * @property {string} objectXML - The XML string for this model
+     * @property {Element} objectDOM - The XML DOM for this model
+     * @property {EML211} parentModel - The parent EML211 model
+     * @property {taxonomicClassification[]} taxonomicClassification - An array
+     * of taxonomic classifications, defining the taxonomic coverage of the
+     * dataset
+     * @property {string} generalTaxonomicCoverage - A general description of the
+     * taxonomic coverage of the dataset
+     */
     defaults: {
       objectXML: null,
       objectDOM: null,
