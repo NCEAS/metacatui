@@ -1933,20 +1933,14 @@ define(['underscore', 'jquery', 'backbone',
               taxonRankName: classification.taxonRankName || '',
               taxonRankValue: classification.taxonRankValue || ''
             }));
-
-            // If there is a taxonId or commonName, save that to the DOM as data
+            // Save a reference to other taxon attributes that we need to keep
+            // when serializing the model
             if (classification.taxonId) {
-              console.log("taxonId: " + classification.taxonId);
-            
               $(finishedEl).data("taxonId", classification.taxonId);
             }
             if (classification.commonName) {
-              console.log("commonName: " + classification.commonName);
               $(finishedEl).data("commonName", classification.commonName);
             }
-
-            $(finishedEl).data("test", "aaaaa hello");
-
             return finishedEl;
           } catch (e) {
             console.log("Error making taxonomic classification row: ", e);

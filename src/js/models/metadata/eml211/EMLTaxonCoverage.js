@@ -5,7 +5,6 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
   Backbone,
   DataONEObject
 ) {
-
   /**
    * @name taxonomicClassification
    * @type {Object}
@@ -25,9 +24,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
    * classification, since taxonomy is represented as a hierarchy in EML.
    */
 
-
   var EMLTaxonCoverage = Backbone.Model.extend({
-
     /**
      * Returns the default properties for this model. Defined here.
      * @type {Object}
@@ -298,6 +295,9 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
             "Every classification row should have a rank and value.";
       }
 
+      // Check for and remove duplicate classifications
+      this.removeDuplicateClassifications();
+
       if (Object.keys(errors).length) return errors;
     },
 
@@ -329,6 +329,107 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
           taxonomicClassification.taxonomicClassification
         );
       else return true;
+    },
+
+    /**
+     * Returns true if the given classification is a duplicate of another
+     * classification in this model. Duplicates are considered those that have
+     * all values identical, including rankName, rankValue, commonName, and
+     * taxonId. If there are any nested classifications, then they too must
+     * be identical for the classification to be considered a duplicate, this
+     * this function is recursive. Only checks one classification at a time.
+     * @param {taxonomicClassification} classification
+     */
+    isDuplicate: function (classification) {
+      for (let c of this.get("taxonomicClassification")) {
+        if (this.classificationsAreEqual(c, classification)) {
+          return true;
+        }
+      }
+      return false;
+    },
+
+    /**
+     * Check if two classifications are equal. Two classifications are equal if
+     * they have the same rankName, rankValue, commonName, and taxonId, as well
+     * as the same nested classifications. This function is recursive.
+     * @param {taxonomicClassification} c1
+     * @param {taxonomicClassification} c2
+     */
+    classificationsAreEqual: function (c1, c2) {
+      if (!c1 && !c2) return true;
+      if (!c1 && c2) return false;
+      if (c1 && !c2) return false;
+
+      // stringify the two classifications for
+      const stringKeys = ["taxonRankName", "taxonRankValue", "commonName"];
+
+      // Recursively stringify the nested classifications for comparison
+      stringifyClassification = function (c) {
+        const stringified = {};
+        for (let key of stringKeys) {
+          if (c[key]) stringified[key] = c[key];
+        }
+        if (c.taxonId) stringified.taxonId = c.taxonId;
+        if (c.taxonomicClassification) {
+          stringified.taxonomicClassification = stringifyClassification(
+            c.taxonomicClassification
+          );
+        }
+        return JSON.stringify(stringified);
+      };
+
+      return stringifyClassification(c1) === stringifyClassification(c2);
+    },
+
+    /**
+     * Returns true if the given classification is a duplicate of another
+     * classification in this model. Duplicates are considered those that have
+     * all values identical, including rankName, rankValue, commonName, and
+     * taxonId. If there are any nested classifications, then they too must
+     * be identical for the classification to be considered a duplicate, this
+     * this function is recursive. Only checks one classification at a time.
+     * @param {taxonomicClassification} classification
+     * @param {number} indexToSkip - The index of the classification to skip
+     * when checking for duplicates. This is useful when checking if a
+     * classification is a duplicate of another classification in the same
+     * model, but not itself.
+     */
+    isDuplicate: function (classification, indexToSkip) {
+      const classifications = this.get("taxonomicClassification");
+      for (let i = 0; i < classifications.length; i++) {
+        if (typeof indexToSkip === "number" && i === indexToSkip) continue;
+        if (this.classificationsAreEqual(classifications[i], classification)) {
+          return true;
+        }
+      }
+      return false;
+    },
+
+    /**
+     * Remove any duplicated classifications from this model. See
+     * {@link isDuplicate} for more information on what is considered a
+     * duplicate. If any classifications are removed, then a
+     * "duplicateClassificationsRemoved" event is triggered, passing the
+     * removed classifications as an argument.
+     * @fires duplicateClassificationsRemoved
+     * @since x.x.x
+     */
+    removeDuplicateClassifications: function () {
+      const classifications = this.get("taxonomicClassification");
+      const removed = [];
+      for (let i = 0; i < classifications.length; i++) {
+        const classification = classifications[i];
+        if (this.isDuplicate(classification, i)) {
+          classifications.splice(i, 1);
+          this.set("taxonomicClassification", classifications);
+          removed.push(classification);
+          i--;
+        }
+      }
+      if (removed.length) {
+        this.trigger("duplicateClassificationsRemoved", removed);
+      }
     },
 
     /*
