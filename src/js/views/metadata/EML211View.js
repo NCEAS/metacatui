@@ -2110,7 +2110,18 @@ define(['underscore', 'jquery', 'backbone',
               if (!taxonSelects || !taxonSelects.length) return
               const selectedItems = taxonSelects.map(select => select.selected).flat()
               if (!selectedItems || !selectedItems.length) return
-              const selectedItemObjs = selectedItems.map(item => JSON.parse(decodeURIComponent(item)))
+              const selectedItemObjs = selectedItems.map((item) => {
+                try {
+                  // It will be encoded JSON if it's a pre-defined taxon
+                  return JSON.parse(decodeURIComponent(item))
+                } catch (e) {
+                  // Otherwise it will be a string a user typed in
+                  return {
+                    taxonRankName: "",
+                    taxonRankValue: item
+                  }
+                }
+              })
               view.addTaxa(selectedItemObjs)
               taxonSelects.forEach(select => select.changeSelection([], true))
             }
