@@ -332,29 +332,13 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
     },
 
     /**
-     * Returns true if the given classification is a duplicate of another
-     * classification in this model. Duplicates are considered those that have
-     * all values identical, including rankName, rankValue, commonName, and
-     * taxonId. If there are any nested classifications, then they too must
-     * be identical for the classification to be considered a duplicate, this
-     * this function is recursive. Only checks one classification at a time.
-     * @param {taxonomicClassification} classification
-     */
-    isDuplicate: function (classification) {
-      for (let c of this.get("taxonomicClassification")) {
-        if (this.classificationsAreEqual(c, classification)) {
-          return true;
-        }
-      }
-      return false;
-    },
-
-    /**
      * Check if two classifications are equal. Two classifications are equal if
      * they have the same rankName, rankValue, commonName, and taxonId, as well
      * as the same nested classifications. This function is recursive.
      * @param {taxonomicClassification} c1
      * @param {taxonomicClassification} c2
+     * @returns {boolean} - True if the two classifications are equal
+     * @since x.x.x
      */
     classificationsAreEqual: function (c1, c2) {
       if (!c1 && !c2) return true;
@@ -376,7 +360,9 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
             c.taxonomicClassification
           );
         }
-        return JSON.stringify(stringified);
+        const st = JSON.stringify(stringified);
+        // convert all to uppercase for comparison
+        return st.toUpperCase();
       };
 
       return stringifyClassification(c1) === stringifyClassification(c2);
@@ -394,6 +380,8 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
      * when checking for duplicates. This is useful when checking if a
      * classification is a duplicate of another classification in the same
      * model, but not itself.
+     * @returns {boolean} - True if the given classification is a duplicate
+     * @since x.x.x
      */
     isDuplicate: function (classification, indexToSkip) {
       const classifications = this.get("taxonomicClassification");
@@ -433,7 +421,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
     },
 
     /*
-     * Climbs up the model heirarchy until it finds the EML model
+     * Climbs up the model hierarchy until it finds the EML model
      *
      * @return {EML211 or false} - Returns the EML 211 Model or false if not
      * found

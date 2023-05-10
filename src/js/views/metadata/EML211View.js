@@ -1026,6 +1026,7 @@ define(['underscore', 'jquery', 'backbone',
            * Renders the Taxa section of the page
            */
         renderTaxa: function () {
+          const view = this;
 
           const taxaSectionEl = this.$(".section.taxa");
           if (!taxaSectionEl) return;
@@ -1058,7 +1059,19 @@ define(['underscore', 'jquery', 'backbone',
 
           // Insert the quick-add taxon options, if any are configured for this
           // theme. See {@link AppModel#quickAddTaxa}
-          this.renderTaxaQuickAdd();
+          view.renderTaxaQuickAdd();
+
+          // If duplicates are removed while saving, make sure to re-render the taxa
+          view.model.get("taxonCoverage").forEach(function (taxonCov) {
+            view.model.stopListening(taxonCov);
+            view.model.listenTo(
+              taxonCov,
+              "duplicateClassificationsRemoved",
+              function () {
+                view.renderTaxa();
+              }
+            )
+          }, view);
         },
 
         /*
@@ -1974,6 +1987,13 @@ define(['underscore', 'jquery', 'backbone',
         updateTaxonCoverage: function (options) {
 
           if (options.target) {
+
+            // Ignore the event if the target is a quick add taxon UI element.
+            const quickAddEl = $(this.taxonQuickAddEl)
+            if (quickAddEl && quickAddEl.has(options.target).length) {
+              return
+            }
+            
             var e = options;
 
             /*  Getting `model` here is different than in other places because
@@ -2089,6 +2109,24 @@ define(['underscore', 'jquery', 'backbone',
               $(coverage).append(this.createTaxonomicClassificationTable());
             }
           }
+
+          // update the quick add interface
+          this.updateQuickAddTaxa()
+        },
+
+        /**
+         * Update the options for the quick add taxon select interface. This
+         * ensures that only taxonomic classifications that are not already
+         * included in the taxonomic coverage are available for selection.
+         * @since x.x.x
+         */
+        updateQuickAddTaxa: function () {
+          const selects = this.taxonSelects
+          if (!selects || !selects.length) return
+          const taxa = this.getTaxonQuickAddOptions()
+          selects.forEach((select, i) => {
+            select.updateOptions(taxa[i].options)
+          })
         },
 
         /*
@@ -2118,15 +2156,9 @@ define(['underscore', 'jquery', 'backbone',
 
             // To render the taxon select, the view must be in editor mode and we
             // need a list of taxa configured for the theme
-            if (!view.edit) return
-            const quickAddTaxa = MetacatUI.appModel.get("quickAddTaxa")
-            if (!quickAddTaxa) { return }
-
+            if (!view.edit || !MetacatUI.appModel.get("quickAddTaxa")) return
             // remove any existing quick add interface:
-            const existingQuickAdd = document.querySelector(".taxa-quick-add")
-            if (existingQuickAdd) {
-              existingQuickAdd.remove()
-            }
+            if (view.taxonQuickAddEl) view.taxonQuickAddEl.remove()
 
             // Create & insert the basic HTML for the taxon select interface
             const template = `<div class="taxa-quick-add">
@@ -2140,12 +2172,13 @@ define(['underscore', 'jquery', 'backbone',
             </div>`
             const parser = new DOMParser()
             const doc = parser.parseFromString(template, "text/html")
-            const html = doc.body.firstChild
-            const button = html.querySelector("button")
-            const container = html.querySelector(".taxa-quick-add__selects")
+            const quickAddEl = doc.body.firstChild
+            const button = quickAddEl.querySelector("button")
+            const container = quickAddEl.querySelector(".taxa-quick-add__selects")
             const rowSelector = ".root-taxonomic-classification-container"
             const firstRow = document.querySelector(rowSelector)
-            firstRow.parentNode.insertBefore(doc.body.firstChild, firstRow)
+            firstRow.parentNode.insertBefore(quickAddEl, firstRow)
+            view.taxonQuickAddEl = quickAddEl
 
             // Update the taxon coverage when the button is clicked
             const onButtonClick = () => {
@@ -2173,15 +2206,13 @@ define(['underscore', 'jquery', 'backbone',
 
             // Create the search selects
             view.taxonSelects = []
+            const quickAddTaxa = view.getTaxonQuickAddOptions()
             const componentPath = 'views/searchSelect/SearchableSelectView'
             require([componentPath], function (SearchSelect) {
               quickAddTaxa.forEach((taxaList, i) => {
                 try {
-                  // const filteredTaxa = view.filterExistingTaxa(taxaList.taxa)
-                  const filteredTaxa = taxaList.taxa
-                  const options = filteredTaxa.map(view.taxonOptionToSearchSelectItem)
                   const taxaInput = new SearchSelect({
-                    options: options,
+                    options: taxaList.options,
                     placeholderText: taxaList.placeholder,
                     inputLabel: taxaList.label,
                     allowMulti: true,
@@ -2195,7 +2226,6 @@ define(['underscore', 'jquery', 'backbone',
                 } catch (e) {
                   console.log("Failed to create taxon select: ", e)
                 }
-              
               })
             })
             
@@ -2205,30 +2235,32 @@ define(['underscore', 'jquery', 'backbone',
         },
 
         /**
-         * Remove taxa that are already in the EML model from the list of taxa
-         * that can be added from the Quick Add interface.
+         * Get the list of options for the taxon quick add interface. Filter
+         * out any that have already been added to the taxonomic coverage.
+         * @returns {Object[]} An array of search select options
+         * @since x.x.x
          */
-        filterExistingTaxa: function (taxa) {
+        getTaxonQuickAddOptions: function () {
+          const quickAddTaxa = MetacatUI.appModel.get("quickAddTaxa")
           const coverages = this.model.get("taxonCoverage")
-          if (!coverages || !coverages.length) return taxa
-
-          // merge the "taxonomicClassification" objects from all taxonCoverages
-          // into one array
-          const classifications = coverages.map((coverage) => {
-            return coverage.get("taxonomicClassification")
-          }).flat()
-
-          // if at least the rank and value match, consider it a match
-          const isMatch = (a, b) => {
-            return a.taxonRankName === b.taxonRankName && a.taxonRankValue === b.taxonRankValue
+          for (const taxaList of quickAddTaxa) {
+            const opts = []
+            for (const taxon of taxaList.taxa) {
+              // check that it is not a duplicate in any coverages
+              let isDuplicate = false
+              for (cov of coverages) {
+                if (cov.isDuplicate(taxon)) {
+                  isDuplicate = true
+                  break
+                }
+              }
+              if (!isDuplicate) {
+                opts.push(this.taxonOptionToSearchSelectItem(taxon))
+              }
+            }
+            taxaList.options = opts
           }
-
-          // filter out any taxa that are already in the model
-          return taxa.filter((taxon) => {
-            return !classifications.some((classification) => {
-              return isMatch(taxon, classification)
-            })
-          })
+          return quickAddTaxa
         },
 
         /**
@@ -2576,7 +2608,7 @@ define(['underscore', 'jquery', 'backbone',
             container = $(e.target).data('container'), // Selector to find the parent container so we can remove by index
             parentEl, // Element we'll remove
             model; // Specific sub-model we're removing
-
+          
           if (!attribute) return;
           if (!container) return;
 
@@ -2672,6 +2704,11 @@ define(['underscore', 'jquery', 'backbone',
           var tableNums = this.$(".editor-header-index");
           for (var i = 0; i < tableNums.length; i++) {
             $(tableNums[i]).text(i + 1);
+          }
+
+          // If this was a taxon, update the quickAdd interface
+          if (submodel === "taxonCoverage"){
+            this.updateQuickAddTaxa();
           }
         },
 
