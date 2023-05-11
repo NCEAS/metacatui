@@ -236,7 +236,8 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
         );
       }
 
-      if (taxonId && taxonId.length > 0) {
+      if (taxonId) {
+        if (!Array.isArray(taxonId)) taxonId = [taxonId];
         _.each(taxonId, function (el) {
           var taxonIdEl = $(document.createElement("taxonId")).text(el.value);
 

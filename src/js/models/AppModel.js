@@ -2318,7 +2318,6 @@ define(['jquery', 'underscore', 'backbone'],
         })
         .then((response) => response.json())
         .then((data) => {
-          console.log("Successfully fetched taxa", data);
           this.set("quickAddTaxa", data);
         })
         .catch((error) => {
