@@ -518,6 +518,63 @@ define(['jquery', 'underscore', 'backbone'],
       * @since 2.19.0
       */
       customEMLMethods: [],
+      
+      /**
+       * Configuration options for a drop down list of taxa.
+       * @typedef {object} AppConfig#quickAddTaxaList
+       * @type {Object}
+       * @property {string} label - The label for the dropdown menu
+       * @property {string} placeholder - The placeholder text for the input field
+       * @property {EMLTaxonCoverage#taxonomicClassification[]} taxa - The list of taxa to show in the dropdown menu
+       * @example
+       * {
+       *  label: "Primates",
+       *  placeholder: "Select one or more primates",
+       *  taxa: [
+       *    {
+       *     commonName: "Bonobo",
+       *     taxonRankName: "Species",
+       *     taxonRankValue: "Pan paniscus",
+       *     taxonId: {
+       *        provider: "ncbi",
+       *        value: "9597"
+       *     }
+       *   },
+       *   {
+       *     commonName: "Chimpanzee",
+       *     ...
+       *   },
+       *   ...
+       * }
+       * @since x.x.x
+       */
+
+      /**
+       * A list of taxa to show in the Taxa Quick Add section of the EML editor.
+       * This can be used to expedite entry of taxa that are common in the
+       * repository's domain. The quickAddTaxa is a list of objects, each
+       * defining a separate dropdown interface. This way, common taxa can
+       * be grouped together.
+       * Alternative, provide a SID for a JSON data object that is stored in the
+       * repository. The JSON must be in the same format as required for this
+       * configuration option.
+       * @since x.x.x
+       * @type {AppConfig#quickAddTaxaList[] | string}
+       * @example
+       * [
+       *   {
+       *     label: "Bats"
+       *     placeholder: "Select one or more bats",
+       *     taxa: [ ... ]
+       *   },
+       *   {
+       *     label: "Birds"
+       *     placeholder: "Select one or more birds",
+       *     taxa: [ ... ]
+       *   }
+       * ]
+       */
+      quickAddTaxa: [],
 
       /**
       * The base URL for the repository. This only needs to be changed if the repository
@@ -2240,6 +2297,33 @@ define(['jquery', 'underscore', 'backbone'],
       if( !defaultAltRepo ){
         this.set("activeAlternateRepositoryId", altRepos[0].identifier);
       }
+      },
+
+      /**
+       * Get the config options for the Taxa Quick Add feature. IF a SID is
+       * configured, this will fetch the taxa from the repository. Otherwise,
+       * it will return the object set on the quickAddTaxa attribute.
+       */
+      getQuickAddTaxa: function () {
+        var taxa = this.get("quickAddTaxa");
+        if (typeof taxa === "object") return taxa;
+        if (typeof taxa !== "string") return null;
+
+        // Otherwise, fetch the DataONE Object
+        fetch(this.get("objectServiceUrl") + encodeURIComponent(taxa), {
+          method: "get",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Successfully fetched taxa", data);
+          this.set("quickAddTaxa", data);
+        })
+        .catch((error) => {
+          console.log("Error fetching taxa", error);
+        });
       },
 
       /**

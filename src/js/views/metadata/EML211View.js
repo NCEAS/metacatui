@@ -2124,6 +2124,7 @@ define(['underscore', 'jquery', 'backbone',
           const selects = this.taxonSelects
           if (!selects || !selects.length) return
           const taxa = this.getTaxonQuickAddOptions()
+          if (!taxa || !taxa.length) return
           selects.forEach((select, i) => {
             select.updateOptions(taxa[i].options)
           })
@@ -2153,12 +2154,23 @@ define(['underscore', 'jquery', 'backbone',
           try {
 
             const view = this;
-
             // To render the taxon select, the view must be in editor mode and we
             // need a list of taxa configured for the theme
-            if (!view.edit || !MetacatUI.appModel.get("quickAddTaxa")) return
+            if (!view.edit) return
             // remove any existing quick add interface:
             if (view.taxonQuickAddEl) view.taxonQuickAddEl.remove()
+
+            const quickAddTaxa = view.getTaxonQuickAddOptions()
+            if (!quickAddTaxa || !quickAddTaxa.length) {
+              // If the taxa are configured as SID for a dataObject, then wait
+              // for the dataObject to be loaded
+              this.listenToOnce(
+                MetacatUI.appModel,
+                "change:quickAddTaxa",
+                this.renderTaxaQuickAdd
+              )
+              return
+            }
 
             // Create & insert the basic HTML for the taxon select interface
             const template = `<div class="taxa-quick-add">
@@ -2206,7 +2218,6 @@ define(['underscore', 'jquery', 'backbone',
 
             // Create the search selects
             view.taxonSelects = []
-            const quickAddTaxa = view.getTaxonQuickAddOptions()
             const componentPath = 'views/searchSelect/SearchableSelectView'
             require([componentPath], function (SearchSelect) {
               quickAddTaxa.forEach((taxaList, i) => {
@@ -2241,7 +2252,8 @@ define(['underscore', 'jquery', 'backbone',
          * @since x.x.x
          */
         getTaxonQuickAddOptions: function () {
-          const quickAddTaxa = MetacatUI.appModel.get("quickAddTaxa")
+          const quickAddTaxa = MetacatUI.appModel.getQuickAddTaxa()
+          if (!quickAddTaxa || !quickAddTaxa.length) return
           const coverages = this.model.get("taxonCoverage")
           for (const taxaList of quickAddTaxa) {
             const opts = []
