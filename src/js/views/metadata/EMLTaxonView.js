@@ -52,11 +52,11 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLTaxonCove
 
 			// Makes a table... for the root level
 			for (var i = 0; i < classifications.length; i++) {
-				$(finishedEl).append(this.createTaxonomicClassifcationTable(classifications[i]));
+				$(finishedEl).append(this.createTaxonomicClassificationTable(classifications[i]));
 			}
 
 			// Create a new, blank table for another taxonomicClassification
-			var newTableEl = this.createTaxonomicClassifcationTable();
+			var newTableEl = this.createTaxonomicClassificationTable();
 
 			$(finishedEl).append(newTableEl);
 
