@@ -457,16 +457,15 @@ define([
                       attributes.memberRowMetrics = this.memberRowMetrics.split(" ")[0];
                     }
                     attributes.metricIcon = undefined;
+                    // add nodeLevel for displaying indented filename
+                    attributes.nodeLevel = 0;
                     if (attributes.isMetadata) {
                       attributes.metricIcon = "icon-eye-open";
                     }
                     else {
                       attributes.metricIcon = "icon-cloud-download";
                       this.$el.addClass();
-
-                      // add nodeLevel for displaying indented filename
-                      attributes.nodeLevel = 0;
-                      if (this.itemPath !== undefined) {
+                      if (this.itemPath && this.itemPath !== undefined) {
                         itemPathParts = this.itemPath.split("/");
 
                         // var parent = itemPathParts[itemPathParts.length - 2];
@@ -489,7 +488,7 @@ define([
                       if (this.model.get("dataUrl") !== undefined) {
                         attributes.downloadUrl = this.model.get("dataUrl");
                       }
-                      else if (this.model.get("dataUrl") !== undefined) {
+                      else if (this.model.get("url") !== undefined) {
                         attributes.downloadUrl = this.model.get("url");
                       }
                       else if (this.model.url() !== undefined) {

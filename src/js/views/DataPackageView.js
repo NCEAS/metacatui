@@ -161,6 +161,11 @@ define([
                 if(this.$(".data-package-item[data-id='" + item.id + "']").length)
                 	return;
 
+                // Don't add data package
+                if ((item.get("formatType") == "RESOURCE") || (item.get("type") == "DataPackage")) {
+                    return;
+                }
+
                 var dataItemView, scimetaParent, parentRow, delayed_models;
 
                 if ( _.contains(Object.keys(this.subviews), item.id) ) {
@@ -168,8 +173,8 @@ define([
 
                 }
 
-                var itemPath;
-                if (this.atLocationObj) {
+                var itemPath = null;
+                if (!(_.isEmpty(this.atLocationObj))) {
                     itemPath = this.atLocationObj[item.get("id")];
                 }
 
@@ -349,21 +354,21 @@ define([
              * Add all rows to the DataPackageView
              */
             addAll: function() {
+
                 this.$el.find('#data-package-table-body').html(''); // clear the table first
                 this.dataPackage.sort();
                 var atLocationObj = this.dataPackage.getAtLocation();
-                var filePathObj;
                 this.atLocationObj = atLocationObj;
 
-                this.dataPackage.each (function(item) {
-                    if (!(Object.keys(this.atLocationObj).includes(item.id))) {
-                        this.atLocationObj[item.id] = "/";
-                    }
-                }, this);
-
                 // form path to D1 object dictionary
-                if (this.atLocationObj !== undefined) {
+                if (this.atLocationObj !== undefined && !(_.isEmpty(this.atLocationObj))) {
                     var filePathObj = new Object();
+
+                    this.dataPackage.each (function(item) {
+                        if (!(Object.keys(this.atLocationObj).includes(item.id))) {
+                            this.atLocationObj[item.id] = "/";
+                        }
+                    }, this);
                     
                     for (let key of Object.keys(this.atLocationObj)) {
                         var path = this.atLocationObj[key];
@@ -801,20 +806,37 @@ define([
 
             getNestedPackages: function() {
                 var nestedPackages = new Array();
+                var nestedPackageIds = new Array();
                 this.nestedPackages = nestedPackages;
                 var childPackages = this.packageModel.get("childPackages");
                 if (Object.keys(childPackages).length > 0) {
                     for (var childPkg in childPackages) {
-                        var nestedPackage = new PackageModel();
-                        nestedPackage.set("id", childPkg);
-                        nestedPackage.getMembers();
-                        nestedPackages.push(nestedPackage);
-                        
-                        // TODO parse each member and add to the package table in MetadataView
-                        
+                        if (!nestedPackageIds.includes(childPkg)) {
+                            var nestedPackage = new PackageModel();
+                            nestedPackage.set("id", childPkg);
+                            nestedPackage.getMembers();
+                            nestedPackages.push(nestedPackage);
+                            nestedPackageIds.push(childPkg);
+
+                            this.listenToOnce(nestedPackage, 'change:members', this.addNestedPackages, nestedPackage);
+                        }
                     }
                 }
-            }
+            },
+
+            addNestedPackages: function(dataPackage) {
+                // TODO parse each member and add to the package table in MetadataView            
+                
+                var members = dataPackage.get("members");
+                var view = this;
+                // Filter out the packages from the member list
+                members = _.filter(members, function(m){ return(m.type != "Package") });
+
+                //add each member to the package table view
+                _.each(members, function(m){ 
+                    view.addOne(m);
+                });
+            },
 
             /*showDownloadProgress: function(e){
                 e.preventDefault();
