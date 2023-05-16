@@ -385,6 +385,23 @@ define([
                     }
                 }
 
+                // add top level data package row to the package table
+                var tableRow = $(document.createElement("tr"))
+                                .addClass("data-package-item"),
+                fileCell = $(document.createElement("td")),
+                sizeCell = $(document.createElement("td")),
+                typeCell = $(document.createElement("td")),
+                metricsCell = $(document.createElement("td")),
+                actionsCell = $(document.createElement("td"));
+                
+                var id = this.dataPackage.get("id");
+                var nameEl = $(document.createElement("span")).text(this.dataPackage.id);
+                console.log(id);
+                $(fileCell).html(nameEl);
+                
+                $(tableRow).append(fileCell, sizeCell, typeCell, metricsCell, actionsCell);
+                this.$el.append(tableRow);
+
                 if (this.atLocationObj !== undefined && filePathObj !== undefined) {
                     // sort the filePath by length
                     var sortedFilePathObj = Object.keys(filePathObj).sort().reduce(
@@ -809,6 +826,7 @@ define([
                 var nestedPackageIds = new Array();
                 this.nestedPackages = nestedPackages;
                 var childPackages = this.packageModel.get("childPackages");
+
                 if (Object.keys(childPackages).length > 0) {
                     for (var childPkg in childPackages) {
                         if (!nestedPackageIds.includes(childPkg)) {
@@ -825,6 +843,23 @@ define([
             },
 
             addNestedPackages: function(dataPackage) {
+                // add top level data package row to the package table
+                var tableRow = $(document.createElement("tr"))
+                            .addClass("data-package-item"),
+                fileCell = $(document.createElement("td")),
+                sizeCell = $(document.createElement("td")),
+                typeCell = $(document.createElement("td")),
+                metricsCell = $(document.createElement("td")),
+                actionsCell = $(document.createElement("td"));
+
+                var id = this.dataPackage.get("id");
+                var nameEl = $(document.createElement("span")).text(dataPackage.id);
+                console.log(id);
+                $(fileCell).html(nameEl);
+
+                $(tableRow).append(fileCell, sizeCell, typeCell, metricsCell, actionsCell);
+                this.$el.append(tableRow);
+
                 // TODO parse each member and add to the package table in MetadataView            
                 
                 var members = dataPackage.get("members");
