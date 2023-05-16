@@ -458,7 +458,7 @@ define([
         /**
          * Change the options available in the dropdown menu and re-render.
          * @param {SearchableSelectView#options} options - The new options
-         * @since x.x.x
+         * @since 2.24.0
          */
         updateOptions: function (options) {
           this.options = options;

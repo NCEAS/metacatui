@@ -546,7 +546,7 @@ define(['jquery', 'underscore', 'backbone'],
        *   },
        *   ...
        * }
-       * @since x.x.x
+       * @since 2.24.0
        */
 
       /**
@@ -558,7 +558,7 @@ define(['jquery', 'underscore', 'backbone'],
        * Alternative, provide a SID for a JSON data object that is stored in the
        * repository. The JSON must be in the same format as required for this
        * configuration option.
-       * @since x.x.x
+       * @since 2.24.0
        * @type {AppConfig#quickAddTaxaList[] | string}
        * @example
        * [

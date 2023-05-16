@@ -1937,7 +1937,7 @@ define(['underscore', 'jquery', 'backbone',
          * taxonomicClassification objects
          * @returns {jQuery} A jQuery object containing the HTML for a single
          * row in a taxonomicClassification table
-         * @since x.x.x
+         * @since 2.24.0
          */
         makeTaxonomicClassificationRow: function (classification) {
           try {
@@ -1964,7 +1964,7 @@ define(['underscore', 'jquery', 'backbone',
          * Create the HTML for a new row in a taxonomicClassification table
          * @returns {jQuery} A jQuery object containing the HTML for a new row
          * in a taxonomicClassification table
-         * @since x.x.x
+         * @since 2.24.0
          */
         makeNewTaxonomicClassificationRow: function () {
           const row = this.makeTaxonomicClassificationRow({});
@@ -2118,7 +2118,7 @@ define(['underscore', 'jquery', 'backbone',
          * Update the options for the quick add taxon select interface. This
          * ensures that only taxonomic classifications that are not already
          * included in the taxonomic coverage are available for selection.
-         * @since x.x.x
+         * @since 2.24.0
          */
         updateQuickAddTaxa: function () {
           const selects = this.taxonSelects
@@ -2249,7 +2249,7 @@ define(['underscore', 'jquery', 'backbone',
          * Get the list of options for the taxon quick add interface. Filter
          * out any that have already been added to the taxonomic coverage.
          * @returns {Object[]} An array of search select options
-         * @since x.x.x
+         * @since 2.24.0
          */
         getTaxonQuickAddOptions: function () {
           const quickAddTaxa = MetacatUI.appModel.getQuickAddTaxa()
@@ -2324,7 +2324,7 @@ define(['underscore', 'jquery', 'backbone',
        *    and "value".
        *  - taxonomicClassification: (array) An array of nested taxonomic
        *    classifications
-       * @since x.x.x
+       * @since 2.24.0
        * @example
        * this.addTaxon([{
        *  taxonRankName: "Kingdom",

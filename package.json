@@ -1,6 +1,6 @@
 {
   "name": "metacatui",
-  "version": "2.23.0",
+  "version": "2.24.0",
   "description": "MetacatUI: A client-side web interface for DataONE data repositories",
   "main": "server.js",
   "dependencies": {

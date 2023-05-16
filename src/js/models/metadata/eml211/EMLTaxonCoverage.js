@@ -339,7 +339,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
      * @param {taxonomicClassification} c1
      * @param {taxonomicClassification} c2
      * @returns {boolean} - True if the two classifications are equal
-     * @since x.x.x
+     * @since 2.24.0
      */
     classificationsAreEqual: function (c1, c2) {
       if (!c1 && !c2) return true;
@@ -382,7 +382,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
      * classification is a duplicate of another classification in the same
      * model, but not itself.
      * @returns {boolean} - True if the given classification is a duplicate
-     * @since x.x.x
+     * @since 2.24.0
      */
     isDuplicate: function (classification, indexToSkip) {
       const classifications = this.get("taxonomicClassification");
@@ -402,7 +402,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
      * "duplicateClassificationsRemoved" event is triggered, passing the
      * removed classifications as an argument.
      * @fires duplicateClassificationsRemoved
-     * @since x.x.x
+     * @since 2.24.0
      */
     removeDuplicateClassifications: function () {
       const classifications = this.get("taxonomicClassification");

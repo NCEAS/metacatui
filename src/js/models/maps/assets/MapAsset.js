@@ -648,7 +648,7 @@ define(
         /**
          * Resets the Map Asset's status and statusDetails attributes to their default
          * values.
-         * @since X.X.X
+         * @since 2.21.0
          */
         resetStatus: function () {
           const defaults = this.defaults()
