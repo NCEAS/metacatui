@@ -8999,9 +8999,22 @@ body > #extension-is-installed{
 }
 
 .file-table-container {
-	height: 21em;
-	overflow: scroll;
+	height: 25.5em;
+	overflow-y: scroll;
+	border: 1px solid #E3E3E3;
+    border-radius: 4px 4px 4px 4px;
 }
+
+.file-table-container::-webkit-scrollbar {
+	-webkit-appearance: none;
+	width: 10px;
+  }
+  
+.file-table-container::-webkit-scrollbar-thumb {
+	border-radius: 5px;
+	background-color: rgba(0,0,0,.5);
+	-webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
+  }
 
 .btn.btn-rounded.action {
     border-radius: 50%;
