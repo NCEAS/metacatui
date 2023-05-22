@@ -283,7 +283,7 @@ define([
        */
       selectGeohashes: function (geohashes) {
         const toSelect = [...new Set(geohashes.map((geohash) => {
-          const parent = this.get("geohashes").findParentByHashString(geohash);
+          const parent = this.get("geohashes").getContainingGeohash(geohash);
           return parent?.get("hashString");
         }, this))];
         const entities = this.get("cesiumModel").entities.values;

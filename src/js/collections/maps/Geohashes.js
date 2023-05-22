@@ -73,7 +73,9 @@ define([
        * levels, corrected if needed and if fix is true.
        */
       validatePrecision: function (p, fix = true) {
-        if (Array.isArray(p)) p.map((pr) => this.validatePrecision(pr, fix));
+        if (Array.isArray(p)) {
+          return p.map((p) => this.validatePrecision(p, fix));
+        }
         const min = this.MIN_PRECISION;
         const max = this.MAX_PRECISION;
         const isValid = typeof p === "number" && p >= min && p <= max;
@@ -775,14 +777,14 @@ define([
       },
 
       /**
-       * Find the parent geohash from this collection that contains the provided
+       * Find the geohash from this collection that contains the provided
        * geohash hashString. If the hashString is already in the collection,
        * return that geohash. Otherwise, find the geohash that contains the
        * hashString.
        * @param {string} hashString - Geohash hashString.
        * @returns {Geohash} Parent geohash.
        */
-      findParentByHashString: function (hashString) {
+      getContainingGeohash: function (hashString) {
         if (!hashString || hashString.length === 0) return null;
         // First check if the hashString is already in the collection
         let geohash = this.findWhere({ hashString: hashString });
