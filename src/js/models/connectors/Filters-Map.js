@@ -133,9 +133,13 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
       removeSpatialFilter: function () {
         const spatialFilters = this.get("spatialFilters");
         if (spatialFilters?.length) {
+          this.stopListening(
+            this.get("filters"),
+            "add remove",
+            this.findAndSetSpatialFilters
+          );
           spatialFilters.forEach((filter) => {
             filter.collection.remove(filter);
-            filter.destroy();
           });
         }
         this.set("spatialFilters", []);
