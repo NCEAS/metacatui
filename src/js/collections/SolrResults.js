@@ -15,6 +15,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
             
     // Reference to this collection's model.
     model: SolrResult,
+      
+    /**
+     * The name of this type of collection.
+     * @type {string}
+     * @default "SolrResults"
+     * @since x.x.x
+     */
+    type: "SolrResults",
 
     initialize: function(models, options) {
 

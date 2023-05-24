@@ -106,6 +106,8 @@ define(
         initialize: function (assetConfig) {
           try {
 
+            if(!assetConfig) assetConfig = {};
+
             MapAsset.prototype.initialize.call(this, assetConfig);
 
             if (assetConfig.filters) {
@@ -125,10 +127,7 @@ define(
 
           }
           catch (error) {
-            console.log(
-              'There was an error initializing a CesiumVectorData model' +
-              '. Error details: ' + error
-            );
+            console.log('Wrror initializing a CesiumVectorData model.', error);
           }
         },
 

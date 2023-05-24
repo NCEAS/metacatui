@@ -119,7 +119,15 @@ define([
        *  pitch: -90,
        *  roll: 0
        * }
+      */
+      
+      /**
+       * The type of model this is.
+       * @type {String}
+       * @default "MapModel"
+       * @since x.x.x
        */
+      type: "MapModel",
 
       /**
        * Overrides the default Backbone.Model.defaults() function to specify

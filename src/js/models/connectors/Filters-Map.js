@@ -23,6 +23,13 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
   return Backbone.Model.extend(
     /** @lends FiltersMapConnector.prototype */ {
       /**
+       * The type of Backbone.Model this is.
+       * @type {string}
+       * @since x.x.x
+       * @default "FiltersMapConnector"
+       */
+      type: "FiltersMapConnector",
+      /**
        * @type {object}
        * @property {Filter[]} filtersList An array of Filter models to
        * optionally add to the Filters collection

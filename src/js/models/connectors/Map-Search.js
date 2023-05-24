@@ -17,6 +17,15 @@ define([
    */
   return Backbone.Model.extend(
     /** @lends MapSearchConnector.prototype */ {
+
+      /**
+       * The type of Backbone.Model this is.
+       * @type {string}
+       * @since x.x.x
+       * @default "MapSearchConnector"
+      */
+      type: "MapSearchConnector",
+
       /**
        * @type {object}
        * @property {SolrResults} searchResults

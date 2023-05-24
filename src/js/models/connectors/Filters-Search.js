@@ -21,6 +21,14 @@ define([
   return Backbone.Model.extend(
     /** @lends FiltersSearchConnector.prototype */ {
       /**
+       * The type of Backbone.Model this is.
+       * @type {string}
+       * @since x.x.x
+       * @default "FiltersSearchConnector
+       */
+      type: "FiltersSearchConnector",
+
+      /**
        * @type {object}
        * @property {Filters} filters A Filters collection to use for this search
        * @property {SolrResults} searchResults The SolrResults collection that
@@ -35,44 +43,6 @@ define([
           searchResults: new SearchResults(),
           isConnected: false,
         };
-      },
-
-      /**
-       * Swap out the Filters and SearchResults models with new ones. Do not
-       * set the models directly, as this will not remove the listeners from
-       * the old models.
-       * (TODO: Create custom set methods for the Filters and SearchResults)
-       * @param {SolrResults|Filters[]} models - A model or array of models to
-       * update in this connector.
-       */
-      updateModels(models) {
-        if (!models) return;
-        models = Array.isArray(models) ? models : [models];
-
-        const wasConnected = this.get("isConnected");
-        this.disconnect();
-
-        const attrClassMap = {
-          filters: Filters,
-          searchResults: SearchResults,
-        };
-
-        models.forEach((model) => {
-          try {
-            for (const [attr, ModelClass] of Object.entries(attrClassMap)) {
-              if (model instanceof ModelClass) {
-                this.set(attr, model);
-                break; // If a match is found, no need to check other entries in attrClassMap
-              }
-            }
-          } catch (e) {
-            console.log("Error updating model", model, e);
-          }
-        });
-
-        if (wasConnected) {
-          this.connect();
-        }
       },
 
       /**

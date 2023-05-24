@@ -110,11 +110,7 @@ define([
           this.startListening();
           CesiumVectorData.prototype.initialize.call(this, assetConfig);
         } catch (error) {
-          console.log(
-            "There was an error initializing a CesiumVectorData model" +
-              ". Error details: " +
-              error
-          );
+          console.log("Error initializing a CesiumVectorData model", error);
         }
       },
 
@@ -279,7 +275,7 @@ define([
       /**
        * Find the geohash Entity on the map and add it to the selected
        * features.
-       * @param {*} geohash 
+       * @param {string} geohash The geohash to select.
        */
       selectGeohashes: function (geohashes) {
         const toSelect = [...new Set(geohashes.map((geohash) => {

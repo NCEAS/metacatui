@@ -33,6 +33,15 @@ define([
    */
   var Filters = Backbone.Collection.extend(
     /** @lends Filters.prototype */ {
+
+      /**
+       * The name of this type of collection
+       * @type {string}
+       * @since x.x.x
+       * @default "Filters"
+       */
+      type: "Filters",
+
       /**
        * If the search results must always match one of the ids in the id
        * filters, then the id filters will be added to the query with an AND
