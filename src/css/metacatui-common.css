@@ -6586,7 +6586,7 @@ body.mapMode{
 .filter-groups.vertical .filters-header {
   margin: 0;
   border-bottom: 1px solid #dfdfdf;
-  padding: 0.95rem 0;
+  padding: 0.65rem 0 1rem;
 }
 .filter-groups.vertical .filter {
 	padding-right: 0;
@@ -6862,7 +6862,7 @@ body.mapMode{
 	height: 100%;
 }
 .filter.collapsed {
-	padding-bottom: 0.4rem !important;
+	padding-bottom: 0rem !important;
 }
 .filter.collapsed label ~ div {
 	display: none;
