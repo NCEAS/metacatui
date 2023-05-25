@@ -78,16 +78,18 @@ define([
             initialize: function(options) {
               if(typeof options == "undefined") var options = {};
 
-                this.model = options.model || new DataONEObject();
-                this.memberRowMetrics = options.memberRowMetrics || null;
-                this.mode = options.mode || "edit";
-                this.itemName = options.itemName || null;
-                this.itemPath = options.itemPath || null;
-                this.itemType = options.itemType || "file";
-                this.id = this.model.get("id");
-                this.canWrite = false; // Default. Updated in render()
-                this.canShare = false; // Default. Updated in render()
-                this.parentEditorView = options.parentEditorView || null;
+              this.model = options.model || new DataONEObject();
+              this.memberRowMetrics = options.memberRowMetrics || null;
+              this.currentlyViewing = options.currentlyViewing || null;
+              this.mode = options.mode || "edit";
+              this.itemName = options.itemName || null;
+              this.itemPath = options.itemPath || null;
+              this.itemType = options.itemType || "file";
+              this.id = this.model.get("id");
+              this.canWrite = false; // Default. Updated in render()
+              this.canShare = false; // Default. Updated in render()
+              this.parentEditorView = options.parentEditorView || null;
+              this.dataPackageId = options.dataPackageId || null;
             },
 
             /** Renders a DataItemView for the given DataONEObject
@@ -121,10 +123,11 @@ define([
                     var itemPathParts = new Array();
                     if (this.itemPath) {
                       itemPathParts = this.itemPath.split("/");
-                      attributes.nodeLevel = itemPathParts.length - 1;
+                      attributes.nodeLevel = itemPathParts.length;
                     }
                     else {
-                      attributes.nodeLevel = 0;
+                      attributes.nodeLevel = 1;
+                      this.$el.attr("data-packageId", this.dataPackageId);
                     }              
                     this.$el.html( this.dataItemHierarchyTemplate(attributes) );
                 }
@@ -429,9 +432,11 @@ define([
                   else {
 
                     // format metadata object title
-                    if (attributes.isMetadata || this.model.getFormat() == "metadata") {
+                    if (attributes.isMetadata || this.model.getFormat() == "metadata" || this.model.get("id") == this.currentlyViewing) {
                       attributes.title  = "Metadata: " + this.model.get("fileName");
                       attributes.icon = "icon-file-text";
+                      attributes.metricIcon = "icon-eye-open";
+                      this.$el.attr("data-packageId", this.dataPackageId);
                     }
 
                     attributes.fileType = this.model.getFormat();
@@ -458,11 +463,8 @@ define([
                     }
                     attributes.metricIcon = undefined;
                     // add nodeLevel for displaying indented filename
-                    attributes.nodeLevel = 0;
-                    if (attributes.isMetadata) {
-                      attributes.metricIcon = "icon-eye-open";
-                    }
-                    else {
+                    attributes.nodeLevel = 1;
+                    if (!(attributes.isMetadata || this.model.getFormat() == "metadata" || this.model.get("id") == this.currentlyViewing)) {
                       attributes.metricIcon = "icon-cloud-download";
                       this.$el.addClass();
                       if (this.itemPath && this.itemPath !== undefined) {
@@ -476,8 +478,12 @@ define([
                         }
 
                         itemPathParts.shift();
-                        attributes.nodeLevel = itemPathParts.length - 1;
+                        attributes.nodeLevel = itemPathParts.length;
                       }
+                    }
+
+                    if (attributes.nodeLevel == 1) {
+                      this.$el.attr("data-packageId", this.dataPackageId);
                     }
 
                     //Download button
@@ -498,12 +504,9 @@ define([
                     }
                     this.downloadButtonView = new DownloadButtonView({ id: this.model.get("id"), view: "actionsView" });
 
-                    if (this.model.get("isDocumentedBy") !== undefined) {
-                      metadataId = this.model.get("isDocumentedBy");
-                      id = this.model.get("id");
-                      infoLink = MetacatUI.root + "/view/" + encodeURIComponent(metadataId) + "#" + encodeURIComponent(id)
-                      attributes.moreInfoLink = infoLink;
-                    }
+                    let id = this.model.get("id");
+                    let infoLink = MetacatUI.root + "/view/" + encodeURIComponent(this.currentlyViewing) + "#" + encodeURIComponent(id)
+                    attributes.moreInfoLink = infoLink;
 
                     this.$el.html( this.dataItemHierarchyTemplate(attributes) );
 

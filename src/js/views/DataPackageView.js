@@ -39,7 +39,9 @@ define([
                 "click .toggle-rows" 		   : "toggleRows", // Show/hide rows associated with event's metadata row
                 "click .message-row .addFiles" : "handleAddFiles",
                 "click .expand-control"   : "expand",
-			    "click .collapse-control" : "collapse"
+			    "click .collapse-control" : "collapse",
+                "click .d1package-expand"   : "expandAll",
+			    "click .d1package-collapse" : "collapseAll"
             },
 
             subviews: {},
@@ -109,6 +111,8 @@ define([
                 this.$el.addClass("download-contents table-condensed");
                 this.$el.append(this.template({
                     edit: this.edit,
+                    dataPackageFiltering: MetacatUI.appModel.get("dataPackageFiltering") || "false",
+                    dataPackageSorting: MetacatUI.appModel.get("dataPackageSorting") || "false",
                 	loading: MetacatUI.appView.loadingTemplate({msg: "Loading files table... "}),
                 	id: this.dataPackage.get("id"),
                     title   : this.title || "Files in this dataset",
@@ -122,6 +126,8 @@ define([
                 }
 
                 // Render the current set of models in the DataPackage
+                var countg = 0;
+                this.countg = countg;
                 this.addAll();
 
                 if (this.edit) {
@@ -155,7 +161,10 @@ define([
              * Add a single DataItemView row to the DataPackageView
              */
             addOne: function(item) {
+                this.countg++;
+
             	if(!item) return false;
+                console.log(this.countg, item.id);
 
                 //Don't add duplicate rows
                 if(this.$(".data-package-item[data-id='" + item.id + "']").length)
@@ -182,8 +191,10 @@ define([
                     model: item,
                     memberRowMetrics: this.getMemberRowMetrics(item.get("id"), item.get("formatType")),
                     itemPath: itemPath,
+                    currentlyViewing: this.currentlyViewing,
                     mode: this.mode,
-                    parentEditorView: this.parentEditorView
+                    parentEditorView: this.parentEditorView,
+                    dataPackageId: this.dataPackage.id
                 });
                 this.subviews[item.id] = dataItemView; // keep track of all views
 
@@ -357,68 +368,84 @@ define([
 
                 this.$el.find('#data-package-table-body').html(''); // clear the table first
                 this.dataPackage.sort();
-                var atLocationObj = this.dataPackage.getAtLocation();
-                this.atLocationObj = atLocationObj;
 
-                // form path to D1 object dictionary
-                if (this.atLocationObj !== undefined && !(_.isEmpty(this.atLocationObj))) {
-                    var filePathObj = new Object();
+                if (!this.edit) {
+                    var atLocationObj = this.dataPackage.getAtLocation();
+                    this.atLocationObj = atLocationObj;
 
-                    this.dataPackage.each (function(item) {
-                        if (!(Object.keys(this.atLocationObj).includes(item.id))) {
-                            this.atLocationObj[item.id] = "/";
-                        }
-                    }, this);
-                    
-                    for (let key of Object.keys(this.atLocationObj)) {
-                        var path = this.atLocationObj[key];
-                        var pathArray = path.split('/');
-                        pathArray.pop();
-                        var parentPath = pathArray.join("/");
-                        if (filePathObj.hasOwnProperty(parentPath)) {
-                            filePathObj[parentPath].push(key);
-                        }
-                        else {
-                            filePathObj[parentPath] = new Array();
-                            filePathObj[parentPath].push(key);
+                    // form path to D1 object dictionary
+                    if (this.atLocationObj !== undefined && !(_.isEmpty(this.atLocationObj))) {
+                        var filePathObj = new Object();
+
+                        this.dataPackage.each (function(item) {
+                            if (!(Object.keys(this.atLocationObj).includes(item.id))) {
+                                this.atLocationObj[item.id] = "/";
+                            }
+                        }, this);
+                        
+                        for (let key of Object.keys(this.atLocationObj)) {
+                            var path = this.atLocationObj[key];
+                            var pathArray = path.split('/');
+                            pathArray.pop();
+                            var parentPath = pathArray.join("/");
+                            if (filePathObj.hasOwnProperty(parentPath)) {
+                                filePathObj[parentPath].push(key);
+                            }
+                            else {
+                                filePathObj[parentPath] = new Array();
+                                filePathObj[parentPath].push(key);
+                            }
                         }
                     }
-                }
 
-                // add top level data package row to the package table
-                var tableRow = $(document.createElement("tr"))
-                                .addClass("data-package-item"),
-                fileCell = $(document.createElement("td")),
-                sizeCell = $(document.createElement("td")),
-                typeCell = $(document.createElement("td")),
-                metricsCell = $(document.createElement("td")),
-                actionsCell = $(document.createElement("td"));
-                
-                var id = this.dataPackage.get("id");
-                var nameEl = $(document.createElement("span")).text(this.dataPackage.id);
-                console.log(id);
-                $(fileCell).html(nameEl);
-                
-                $(tableRow).append(fileCell, sizeCell, typeCell, metricsCell, actionsCell);
-                this.$el.append(tableRow);
+                    // add top level data package row to the package table
+                    var tableRow = $(document.createElement("tr"))
+                                    .addClass("data-package-item"),
+                    fileCell = $(document.createElement("td")),
+                    sizeCell = $(document.createElement("td")),
+                    typeCell = $(document.createElement("td")),
+                    metricsCell = $(document.createElement("td")),
+                    actionsCell = $(document.createElement("td")),
+                    view = this;
 
-                if (this.atLocationObj !== undefined && filePathObj !== undefined) {
-                    // sort the filePath by length
-                    var sortedFilePathObj = Object.keys(filePathObj).sort().reduce(
-                        (obj, key) => { 
-                          obj[key] = filePathObj[key]; 
-                          return obj;
-                        }, 
-                        {}
-                    );
-                    this.sortedFilePathObj = sortedFilePathObj;
-                    this.addFilesAndFolders(sortedFilePathObj);
+                    let metadataObj  = _.filter(this.dataPackage.models, function(m){ return(m.get("id") == view.currentlyViewing) });
+                    var title = metadataObj[0].get("title");
+                    if (title.length > 150) {
+                        let newTitle = title.slice(0,75) + "..." + title.slice(title.length - 75, title.length);
+                        title = newTitle;
+                    }
+                    var expandEl = $(document.createElement("a")).addClass("d1package-expand control").css("display", "none");
+                    expandEl.append($(document.createElement("i")).addClass("icon icon-caret-right"));
+                    var collapseEl = $(document.createElement("a")).addClass("d1package-collapse control");
+                    collapseEl.append($(document.createElement("i")).addClass("icon icon-caret-down"));
+                    var nameEl = $(document.createElement("span")).text(title);
+                    $(fileCell).html(expandEl);
+                    $(fileCell).append(collapseEl);
+                    $(fileCell).append(nameEl);
+                    
+                    $(tableRow).append(fileCell, sizeCell, typeCell, metricsCell, actionsCell);
+                    $(tableRow).attr("data-id", this.dataPackage.id);
+                    this.$el.append(tableRow);
+
+                    if (this.atLocationObj !== undefined && filePathObj !== undefined) {
+                        // sort the filePath by length
+                        var sortedFilePathObj = Object.keys(filePathObj).sort().reduce(
+                            (obj, key) => { 
+                            obj[key] = filePathObj[key]; 
+                            return obj;
+                            }, 
+                            {}
+                        );
+                        this.sortedFilePathObj = sortedFilePathObj;
+                        this.addFilesAndFolders(sortedFilePathObj);
+                    }
+                    else {
+                        this.dataPackage.each(this.addOne, this);
+                    }
                 }
                 else {
                     this.dataPackage.each(this.addOne, this);
                 }
-                
-                // this.dataPackage.each(this.addOne, this);
             },
 
             /**
@@ -453,7 +480,8 @@ define([
                                 itemName: pathArray[i],
                                 itemPath: itemPath,
                                 itemType: "folder",
-                                parentEditorView: this.parentEditorView
+                                parentEditorView: this.parentEditorView,
+                                dataPackageId: this.dataPackage.id
                             });
 
                             this.subviews[pathArray[i]] = dataItemView; // keep track of all views
@@ -773,6 +801,54 @@ define([
                 });
             },
 
+            expandAll: function(e){
+                //Don't do anything...
+                e.preventDefault();
+
+                var view = this;
+                var eventEl = $(e.target).parents("td");
+                var rowEl = $(e.target).parents("tr");
+
+                var parentId = rowEl.data("id");
+                var children = "tr[data-packageid='" + parentId + "']";
+
+                this.$(children).fadeIn();
+                
+                this.$(eventEl).children(".d1package-expand").fadeOut(function(){
+                    view.$(eventEl).children(".d1package-collapse").fadeIn("fast");
+                    view.$(".tooltip-this").tooltip();
+                });
+
+                this.$(children).children().children().children(".collapse-control").fadeOut(function(){
+                    view.$(children).children().children().children(".expand-control").fadeIn("fast");
+                });
+            },
+
+            collapseAll: function(e){
+                //Don't do anything...
+                e.preventDefault();
+
+                var view = this;
+                var eventEl = $(e.target).parents("td");
+                var rowEl = $(e.target).parents("tr");
+
+                var parentId = rowEl.data("id");
+                var children = "tr[data-packageid='" + parentId + "']";
+
+                this.$(children).each(function() {
+                    $(this).fadeOut();
+                    let childId = $(this).data("id");
+                    let grandchildren = "tr[data-parent^='" + childId + "']";
+
+                    $(grandchildren).fadeOut();
+                });
+                
+                this.$(eventEl).children(".d1package-collapse").fadeOut(function(){
+                    view.$(eventEl).children(".d1package-expand").fadeIn();
+                    view.$(".tooltip-this").tooltip();
+                });
+            },
+
             checkForPrivateMembers: function(){
                 try{
                     var packageModel      = this.model,
@@ -852,17 +928,22 @@ define([
                 metricsCell = $(document.createElement("td")),
                 actionsCell = $(document.createElement("td"));
 
-                var id = this.dataPackage.get("id");
-                var nameEl = $(document.createElement("span")).text(dataPackage.id);
-                console.log(id);
-                $(fileCell).html(nameEl);
+                var members = dataPackage.get("members");
+                let metadataObj  = _.filter(members, function(m){ return(m.get("type") == "Metadata" || m.get("type") == "metadata") });
+
+                var title = metadataObj[0].get("title");
+                var expandEl = $(document.createElement("a")).addClass("icon icon-caret-right d1package-expand control").css("display", "none");
+                var collapseEl = $(document.createElement("a")).addClass("icon icon-caret-down d1package-collapse control");
+                var nameEl = $(document.createElement("span")).text(title);
+                $(fileCell).html(expandEl);
+                $(fileCell).append(collapseEl);
+                $(fileCell).append(nameEl);
 
                 $(tableRow).append(fileCell, sizeCell, typeCell, metricsCell, actionsCell);
                 this.$el.append(tableRow);
 
                 // TODO parse each member and add to the package table in MetadataView            
                 
-                var members = dataPackage.get("members");
                 var view = this;
                 // Filter out the packages from the member list
                 members = _.filter(members, function(m){ return(m.type != "Package") });
