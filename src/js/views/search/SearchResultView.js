@@ -9,10 +9,15 @@ define([
 ], function ($, _, Backbone, Package, CitationView, ResultItemTemplate) {
   "use strict";
 
-  // SearchResult View
-  // --------------
-
-  // The DOM element for a SearchResult item...
+  /**
+   * @class SearchResultView
+   * @classdesc A single result item view
+   * @name SearchResultView
+   * @classcategory Views
+   * @extends Backbone.View
+   * @constructor
+   * @screenshot views/search/SearchResultView.png
+   */
   return Backbone.View.extend(
     /**
      * @lends SearchResultView.prototype

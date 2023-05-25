@@ -10,7 +10,7 @@ define(["backbone"], function (Backbone) {
    * @constructor
    * @since 2.22.0
    * @classcategory Views/Search
-   * TODO: Add screenshot
+   * @screenshot views/search/SorterView.png
    */
   return Backbone.View.extend(
     /**

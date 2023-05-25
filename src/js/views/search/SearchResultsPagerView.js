@@ -10,7 +10,7 @@ define(["backbone"], function (Backbone) {
    * @description Renders a simple pager element for a SolrResults collection.
    * @constructor
    * @since 2.22.0
-   * TODO: Add screenshot
+   * @screenshots views/search/SearchResultsPagerView.png
    */
   return Backbone.View.extend(
     /** @lends SearchResultsPagerView.prototype */ {

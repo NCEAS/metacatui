@@ -33,7 +33,7 @@ define([
    * @extends Backbone.View
    * @constructor
    * @since 2.22.0
-   * TODO: Add screenshot
+   * @screenshot views/search/CatalogSearchView.png
    */
   return Backbone.View.extend(
     /** @lends CatalogSearchView.prototype */ {

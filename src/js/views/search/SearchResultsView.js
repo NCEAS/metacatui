@@ -8,12 +8,13 @@ define([
 
   /**
    * @class SearchResultsView
+   * @classdesc A view of search results.
    * @name SearchResultsView
    * @classcategory Views/Search
    * @extends Backbone.View
    * @since 2.22.0
    * @constructor
-   * TODO: Add screenshot and description
+   * @screenshots views/search/SearchResultsView.png
    */
   return Backbone.View.extend(
     /**
