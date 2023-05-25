@@ -80,6 +80,10 @@ define(["backbone"], function (Backbone) {
         this.el.replaceChildren(select);
       },
 
+      /**
+       * Hides the view if there are no search results.
+       * @since x.x.x
+       */
       hideIfNoResults: function () {
         if (
           !this.searchResults ||

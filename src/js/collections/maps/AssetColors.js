@@ -38,6 +38,7 @@ define(
          * Add custom sort functionality such that values are sorted
          * numerically, but keep the special value key words "min" and "max" at
          * the beginning or end of the collection, respectively.
+         * @since x.x.x
          */
         comparator: function (color) {
           let value = color.get('value');
@@ -68,6 +69,7 @@ define(
          * array of the values for that attribute.
          * @param {string} attr - The attribute to get the values for.
          * @return {Array}
+         * @since x.x.x
          */
         getAttr: function(attr) {
           return this.map(function (model) {

@@ -139,7 +139,6 @@ define([
           : [filtersArray];
 
         filtersArray.forEach((filterGroup) => {
-          // filterGroupJSON.isUIFilterType = true; // TODO - do we need this?
           const filterGroupModel =
             filterGroup instanceof FilterGroup
               ? filterGroup

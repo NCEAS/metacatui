@@ -73,8 +73,10 @@ define([
 
           this.startListening();
         } catch (e) {
-          console.log("Failed to render the search results: ", e);
-          // TODO: Add error handling
+          console.log("Failed to render search results view.", e);
+          const emailMsg =
+            "There was an error rendering the search results view. " + e;
+          this.showError(null, { responseText: emailMsg });
         }
       },
 

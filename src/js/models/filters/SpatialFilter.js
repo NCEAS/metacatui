@@ -68,6 +68,7 @@ define([
       /**
        * Returns true if the filter has a valid set of coordinates
        * @returns {boolean} True if the filter has coordinates
+       * @since x.x.x
        */
       hasCoordinates: function () {
         return (
@@ -84,7 +85,7 @@ define([
        * Coordinates will be adjusted if they are out of bounds.
        * @param {boolean} [silent=true] - Whether to trigger a change event in
        * the case where the coordinates are adjusted
-       *
+       * @since x.x.x
        */
       validateCoordinates: function (silent = true) {
         if (!this.hasCoordinates()) return;
@@ -105,6 +106,7 @@ define([
       /**
        * Set a listener that updates the filter when the coordinates & height
        * change
+       * @since x.x.x
        */
       setListeners: function () {
         const extentEvents =
@@ -130,6 +132,7 @@ define([
       /**
        * Returns true if the bounds set on the filter covers the entire earth
        * @returns {boolean}
+       * @since x.x.x
        */
       coversEarth: function () {
         const bounds = this.getBounds();
@@ -202,10 +205,15 @@ define([
 
       /**
        * Builds a query string that represents this spatial filter
+       * @param {boolean} [consolidate=false] Whether to consolidate the set of
+       * geohashes to the smallest set that covers the same area (i.e. merges
+       * geohashes together when there are complete groups of 32). This is false
+       * by default because geohashes are already consolidated when they are
+       * added as the spatial filter is used right now.
        * @return {string} The query fragment
        * @since x.x.x
        */
-      getQuery: function () {
+      getQuery: function (consolidate = false) {
         try {
           // Methods in the geohash collection allow us make efficient queries
           const hashes = this.get("values");
@@ -213,13 +221,11 @@ define([
 
           // Don't spatially constrain the search if the geohahes covers the world
           // or if there are no geohashes
-          if (geohashes.coversEarth() || geohashes.length === 0) {
+          if (geohashes.length === 0 || geohashes.coversEarth()) {
             return "";
           }
 
-          // TODO: we may still want this option for when spatial filters are
-          // built other than with the current view extent from the map.
-          // geohashes = geohashes.consolidate();
+          if (consolidate) geohashes = geohashes.consolidate();
 
           const precisions = geohashes.getPrecisions();
 

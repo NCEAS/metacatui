@@ -117,6 +117,7 @@ define([
       /**
        * Get the property that we want the geohashes to display, e.g. count.
        * @returns {string} The property of interest.
+       * @since x.x.x
        */
       getPropertyOfInterest: function () {
         return this.get("colorPalette")?.get("property");
@@ -124,7 +125,9 @@ define([
 
       /**
        * For the property of interest (e.g. count) Get the min and max values
-       * from the geohashes collection and update the color palette. These
+       * from the geohashes collection and update the color palette.
+       * @since x.x.x
+       * 
        */
       updateColorRangeValues: function () {
         const colorPalette = this.get("colorPalette");
@@ -145,6 +148,7 @@ define([
        * Required that a mapModel be set on the model. If one is not set, then
        * the minimum precision from the geohash collection will be returned.
        * @returns {number} The precision level.
+       * @since x.x.x
        */
       getPrecision: function () {
         const limit = this.get("maxGeoHashes");
@@ -159,6 +163,7 @@ define([
        * set.
        * @param {Geohash[]|Object[]} geohashes The new set of geohash models to
        * display or attributes for the new geohash models.
+       * @since x.x.x
        */
       replaceGeohashes: function (geohashes) {
         this.get("geohashes").reset(geohashes);
@@ -166,6 +171,7 @@ define([
 
       /**
        * Stop the model from listening to itself for changes.
+       * @since x.x.x
        */
       stopListeners: function () {
         this.stopListening(this.get("geohashes"), "add remove update reset");
@@ -174,6 +180,7 @@ define([
       /**
        * Update and re-render the geohashes when the collection of geohashes
        * changes.
+       * @since x.x.x
        */
       startListening: function () {
         try {
@@ -199,7 +206,7 @@ define([
        * to those that are within the current map extent.
        * @returns {Geohashes} The geohashes to display.
        */
-      getGeohashes(limitToExtent = true) {
+      getGeohashes: function(limitToExtent = true) {
         let geohashes = this.get("geohashes");
         if (limitToExtent) {
           geohashes = this.getGeohashesForExtent();
@@ -210,6 +217,7 @@ define([
       /**
        * Get the geohashes that are currently in the map's extent.
        * @returns {Geohashes} The geohashes in the current extent.
+       * @since x.x.x
        */
       getGeohashesForExtent: function () {
         const extent = this.get("mapModel")?.get("currentViewExtent");
@@ -223,6 +231,7 @@ define([
        * @param {Boolean} [limitToExtent = true] - Set to false to return the
        * GeoJSON for all geohashes, not just those in the current extent.
        * @returns {Object} The GeoJSON representation of the geohashes.
+       * @since x.x.x
        */
       getGeoJSON: function (limitToExtent = true) {
         const geohashes = this.getGeohashes(limitToExtent);
@@ -234,6 +243,7 @@ define([
        * @param {Boolean} [limitToExtent = true] - Set to false to return the
        * CZML for all geohashes, not just those in the current extent.
        * @returns {Object} The CZML representation of the geohashes.
+       * @since x.x.x
        */
       getCZML: function (limitToExtent = true) {
         const geohashes = this.getGeohashes(limitToExtent);
@@ -276,6 +286,7 @@ define([
        * Find the geohash Entity on the map and add it to the selected
        * features.
        * @param {string} geohash The geohash to select.
+       * @since x.x.x
        */
       selectGeohashes: function (geohashes) {
         const toSelect = [...new Set(geohashes.map((geohash) => {

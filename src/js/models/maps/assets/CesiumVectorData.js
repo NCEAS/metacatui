@@ -270,6 +270,7 @@ define(
          * returns an object that may or may not be an Entity.
          * @param {Object} mapObject - An object returned from the Cesium map
          * @returns {Cesium.Entity} - The Entity object if found, otherwise null.
+         * @since x.x.x
          */
         getEntityFromMapObject(mapObject) {
           const entityType = this.get("featureType")
@@ -289,6 +290,7 @@ define(
 
         /**
          * @inheritdoc
+         * @since x.x.x
          */
         usesFeatureType: function (feature) {
           // This method could be passed the entity directly, or the object

@@ -335,6 +335,7 @@ define(
          * Return the label for a feature from a Cesium 3D tileset
          * @param {Cesium.Cesium3DTileFeature} feature A Cesium 3D Tile feature
          * @returns {string} The label
+         * @since x.x.x
          */
         getLabelFromFeature: function (feature) {
           if (!this.usesFeatureType(feature)) return null
@@ -345,6 +346,7 @@ define(
          * Return the Cesium3DTileset model for a feature from a Cesium 3D tileset
          * @param {Cesium.Cesium3DTileFeature} feature A Cesium 3D Tile feature
          * @returns {Cesium3DTileset} The model
+         * @since x.x.x
          */
         getCesiumModelFromFeature: function (feature) {
           if (!this.usesFeatureType(feature)) return null
@@ -355,6 +357,7 @@ define(
          * Return the ID used by Cesium for a feature from a Cesium 3D tileset
          * @param {Cesium.Cesium3DTileFeature} feature A Cesium 3D Tile feature
          * @returns {string} The ID
+         * @since x.x.x
          */
         getIDFromFeature: function (feature) {
           if (!this.usesFeatureType(feature)) return null

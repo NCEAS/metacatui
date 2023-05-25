@@ -321,6 +321,7 @@ define([
 
       /**
        * Indicates that there was a problem rendering this view.
+       * @since x.x.x
        */
       renderError: function () {
         this.$el.html(this.errorTemplate);
@@ -735,6 +736,7 @@ define([
       /**
        * Change the content of the map toggle label to indicate whether
        * clicking the button will show or hide the map.
+       * @since x.x.x
        */
       updateToggleMapLabel: function () {
         try {
@@ -766,6 +768,7 @@ define([
       /**
        * Change the content of the filters toggle label to indicate whether
        * clicking the button will show or hide the filters.
+       * @since x.x.x
        */
       updateToggleFiltersLabel: function () {
         try {
@@ -805,6 +808,7 @@ define([
        * to switch to. true = limit search to map area, false = do not limit
        * search to map area. If not provided, the opposite of the current mode
        * will be used.
+       * @since x.x.x
        */
       toggleMapFilter: function (newSetting) {
         // Make sure the new setting is a boolean

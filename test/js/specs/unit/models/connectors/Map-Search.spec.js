@@ -68,20 +68,5 @@ define([
       });
     });
 
-    describe("Total Number of Results", function () {
-      it("should get the total number of results", function () {
-        expect(this.mapSearch.getTotalNumberOfResults() === null);
-      });
-
-      it("should get the total number of results", function () {
-        var searchResults = {
-          getNumFound: function () {
-            return 10;
-          },
-        };
-        this.mapSearch.set("searchResults", searchResults);
-        this.mapSearch.getTotalNumberOfResults().should.equal(10);
-      });
-    });
   });
 });

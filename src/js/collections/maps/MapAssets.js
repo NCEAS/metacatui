@@ -198,6 +198,7 @@ define([
        * the MapAsset model.
        * @returns {MapAsset} - Returns the MapAsset model that was added to the
        * collection.
+       * @since x.x.x
        */
       addAsset: function (asset, mapModel) {
         try {
@@ -231,6 +232,7 @@ define([
        * feature selected from the map view widget.
        * @returns {Object[]} - Returns an array of attributes that can be used
        * to create new Feature models.
+       * @since x.x.x
        */
       getFeatureAttributes: function (features) {
         return features.map((feature) => {

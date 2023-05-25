@@ -281,18 +281,6 @@ define([
       },
 
       /**
-       * Get the total number of results from the Search results.
-       * @returns {number} The total number of results or null if there are no
-       * Search results.
-       * TODO: This is not currently used, but it could be used to set a
-       * totalCount property on the Geohash layer, and scale the colors based
-       * on this max.
-       */
-      getTotalNumberOfResults: function () {
-        return this.get("searchResults")?.getNumFound();
-      },
-
-      /**
        * Update the Geohash layer in the Map model with the new facet counts
        * from the Search results.
        * @fires CesiumGeohash#change:counts
