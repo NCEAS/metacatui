@@ -96,6 +96,18 @@ define(['jquery', 'underscore', 'backbone'],
       dataCatalogMap: "google",
 
       /**
+      * Set this option to true to display the filtering button for data package table
+      * @type {boolean}
+      */
+      dataPackageFiltering: false,
+
+      /**
+      * Set this option to true to display the sorting button for data package table
+      * @type {boolean}
+      */
+      dataPackageSorting: false,
+
+      /**
        * The default options for the Cesium map used in the {@link CatalogSearchView} for searching the data
        * catalog. Add custom layers, a default home position (for example, zoom into your area of research),
        * and enable/disable map widgets. See {@link MapConfig} for the full suite of options. Keep the `CesiumGeohash`
