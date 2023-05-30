@@ -36,7 +36,7 @@ define(['jquery', 'underscore', 'backbone',
       try {
         var events = FilterView.prototype.events.call(this);
         events["change input.max"] = "updateYearRange";
-        events["change input.min"] = "updateYearRange"
+        events["change input.min"] = "updateYearRange";
         return events
       }
       catch (error) {
@@ -98,6 +98,15 @@ define(['jquery', 'underscore', 'backbone',
         //When the rangeReset event is triggered, reset the slider
         this.listenTo(view.model, "rangeReset", this.resetSlider);
 
+      },
+
+    /**
+     * Override the base view which is triggered when the user types in the
+     * input and presses "Enter". The DateFilterView handles updating the model
+     * already and we do not want to clear the input value at any time.
+     */
+    handleChange: function () {
+      return
     },
 
     /**
