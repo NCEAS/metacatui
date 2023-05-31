@@ -8988,6 +8988,20 @@ body > #extension-is-installed{
 	margin-left: 5px;
 }
 
+#data-package-table-head {
+	position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+#data-package-table-head > .file-header > th {
+	background-color: #FDFDFD;
+	border-bottom: 1px solid #E3E3E3;
+	height: 32px;
+	position: sticky;
+    top: 0;
+    z-index: -2;
+}
 
 #data-package-table-head > .file-header > th:not(:last-child) {
 	border-right: 1px solid #E3E3E3;
@@ -8999,7 +9013,7 @@ body > #extension-is-installed{
 }
 
 .file-table-container {
-	height: 25.5em;
+	height: 25em;
 	overflow-y: scroll;
 	border: 1px solid #E3E3E3;
     border-radius: 4px 4px 4px 4px;
