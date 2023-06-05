@@ -69,7 +69,7 @@ define([
        * The template to use in case there is a major error in rendering the
        * view.
        * @type {string}
-       * @since 2.x.x
+       * @since x.x.x
        */
       errorTemplate: `<div class="error" role="alert">
         <h2>There was an error loading the search results.</h2>

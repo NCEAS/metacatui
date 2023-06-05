@@ -109,20 +109,6 @@ define(['jquery', 'underscore', 'backbone'],
        */
       catalogSearchMapOptions: {
         showLayerList: false,
-        layers: [
-          {
-              "label": "Satellite imagery",
-              "icon": "urn:uuid:4177c2e1-3037-4964-bf00-5f13182308d9",
-              "type": "IonImageryProvider",
-              "description": "Global satellite imagery down to 15 cm resolution in urban areas",
-              "attribution": "Data provided by Bing Maps © 2021 Microsoft Corporation",
-              "moreInfoLink": "https://www.microsoft.com/maps",
-              "opacity": 1,
-              "cesiumOptions": {
-              "ionAssetId": "2"
-              }
-          }
-        ],
         clickFeatureAction: "zoom"
        },
 
@@ -1737,7 +1723,9 @@ define(['jquery', 'underscore', 'backbone'],
               label: "Taxon",
               placeholder: "Class, family, etc.",
               icon: "sitemap",
-              description: "Find data about any taxonomic rank"
+              description: "Find data about any taxonomic rank",
+              matchSubstring: true,
+              fieldsOperator: "OR"
             },
             {
               fields: ["siteText"],

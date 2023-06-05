@@ -3,7 +3,8 @@ define([
   "backbone",
   "collections/SolrResults",
   "views/search/SearchResultView",
-], function (Backbone, SearchResults, SearchResultView) {
+  "models/MetricsModel",
+], function (Backbone, SearchResults, SearchResultView, MetricsModel) {
   "use strict";
 
   /**
@@ -59,11 +60,20 @@ define([
       noResultsTemplate: `<div class="no-search-results">No results found.</div>`,
 
       /**
+       * The metrics model that will be passed to the search result view
+       * @type {MetricsModel}
+       * @since x.x.x
+       */
+      metricsModel: null,
+
+      /**
        * Render the view.
        */
       render: function () {
         try {
           if (!this.searchResults) this.setSearchResults();
+
+          if (!this.metricsModel) this.setUpMetrics();
 
           this.loading();
 
@@ -102,6 +112,7 @@ define([
         this.listenTo(this.searchResults, "reset", this.addResultCollection);
         this.listenTo(this.searchResults, "changing request", this.loading);
         this.listenTo(this.searchResults, "error", this.showError);
+        this.listenTo(this.searchResults, "add reset", this.updateMetrics);
       },
 
       /**
@@ -188,7 +199,41 @@ define([
        * Creates a Search Result View
        */
       createSearchResultView: function () {
-        return new SearchResultView();
+        const options = {
+          metricsModel: this.metricsModel,
+        };
+        return new SearchResultView(options);
+      },
+
+      /**
+       * Creates a new MetricsModel if the app is configured to display metrics.
+       * Sets the metrics model on this view. The metrics model is used to
+       * display views, citations, and downloads for each search result.
+       * @since x.x.x
+       * @returns {MetricsModel}
+       */
+      setUpMetrics: function () {
+        if (!MetacatUI.appModel.get("displayDatasetMetrics")) {
+          this.metricsModel = null;
+          return;
+        }
+        this.metricsModel = new MetricsModel({
+          type: "catalog",
+        });
+        return this.metricsModel;
+      },
+
+      /**
+       * Updates the metrics model with the PIDs of the search results and
+       * fetches the metrics.
+       * @since x.x.x
+       * @returns {MetricsModel}
+       */
+      updateMetrics: function () {
+        if (!this.metricsModel) return;
+        this.metricsModel.set("pid_list", this.searchResults.getPIDs());
+        this.metricsModel.fetch();
+        return this.metricsModel;
       },
 
       /**

@@ -394,6 +394,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
     getLastUrl: function(){
         return this.lastUrl || "";
     },
+    
+    /**
+     * Get the list of PIDs for the search results
+     * @returns {string[]} - The list of PID strings for the search results
+     * @since x.x.x
+     */
+    getPIDs: function () {
+      return this.pluck("id");
+    },
 
     /**
      * Determines whether the search parameters have changed since the last fetch. Returns true the next URL

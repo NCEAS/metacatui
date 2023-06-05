@@ -2105,9 +2105,13 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 	color: #666;
   min-width: 47px;
   text-align: center;
+	display: block;
 }
 i.catalog-metric-icon {
 	margin-right: 3px;
+}
+.catalog-stat{
+	display: inline-block;
 }
 
 /**********************************************************
