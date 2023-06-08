@@ -1,17 +1,13 @@
 /*global define */
 define(["jquery",
-        "jqueryui",
         "underscore",
         "backbone",
-        "bioportal",
         "collections/SolrResults",
         "models/Search",
-        "models/Stats",
         "models/MetricsModel",
         "common/Utilities",
         "views/SearchResultView",
         "views/searchSelect/AnnotationFilterView",
-        "views/maps/CesiumWidgetView",
         "text!templates/search.html",
         "text!templates/statCounts.html",
         "text!templates/pager.html",
@@ -22,8 +18,8 @@ define(["jquery",
         "nGeohash"
     ],
     function(
-      $, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel,
-        MetricsModel, Utilities, SearchResultView, AnnotationFilter, CesiumWidgetView,
+      $, _, Backbone, SearchResults, SearchModel,
+        MetricsModel, Utilities, SearchResultView, AnnotationFilter,
         CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate,
         CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash
     ) {

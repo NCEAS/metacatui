@@ -6,7 +6,6 @@ define(
     'jquery',
     'underscore',
     'backbone',
-    'collections/maps/MapAssets',
     'text!templates/maps/layer-list.html',
     // Sub-views
     'views/maps/LayerItemView'
@@ -15,7 +14,6 @@ define(
     $,
     _,
     Backbone,
-    MapAssets,
     Template,
     // Sub-views
     LayerItemView
