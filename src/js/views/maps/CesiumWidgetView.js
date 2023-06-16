@@ -92,7 +92,7 @@ define(
             renderFunction: 'addVectorData'
           },
           {
-            types: ['BingMapsImageryProvider', 'IonImageryProvider', 'TileMapServiceImageryProvider', 'WebMapTileServiceImageryProvider', 'WebMapServiceImageryProvider'],
+            types: ['BingMapsImageryProvider', 'IonImageryProvider', 'TileMapServiceImageryProvider', 'WebMapTileServiceImageryProvider', 'WebMapServiceImageryProvider', 'OpenStreetMapImageryProvider'],
             renderFunction: 'addImagery'
           },
           {
@@ -289,6 +289,8 @@ define(
             if (terrainModel) {
               view.addAsset(terrainModel)
             }
+
+
 
             return this
 

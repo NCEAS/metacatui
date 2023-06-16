@@ -192,7 +192,7 @@ define([
           },
           layers: new MapAssets([
             {
-              type: "NaturalEarthII",
+              type: "OpenStreetMapImageryProvider",
               label: "Base layer",
             },
           ]),

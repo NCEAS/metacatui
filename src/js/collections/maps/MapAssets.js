@@ -67,6 +67,7 @@ define([
                 "WebMapServiceImageryProvider",
                 "NaturalEarthII",
                 "USGSImageryTopo",
+                "OpenStreetMapImageryProvider",
               ],
               model: CesiumImagery,
             },
