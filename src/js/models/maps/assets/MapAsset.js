@@ -786,6 +786,7 @@ define(
          * @returns {boolean} Returns true if the MapAsset has opacity > 0 and is visible.
          */
         isVisible: function () {
+          if(this.get('temporarilyHidden') === true) return false
           return this.get('visible') && this.get('opacity') > 0
         },
 

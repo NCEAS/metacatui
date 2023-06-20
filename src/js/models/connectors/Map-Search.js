@@ -213,19 +213,22 @@ define([
       },
 
       /**
-       * Make the geoHashLayer invisible.
+       * Make the geoHashLayer invisible temporarily. This will override the
+       * visible property on the layer until the showGeoHashLayer method is
+       * called.
        * @fires CesiumGeohash#change:visible
        */
       hideGeoHashLayer: function () {
-        this.get("geohashLayer")?.set("visible", false);
+        this.get("geohashLayer")?.set("temporarilyHidden", true);
       },
 
       /**
-       * Make the geoHashLayer visible.
+       * Make the geoHashLayer visible again after hiding it with the
+       * hideGeoHashLayer method.
        * @fires CesiumGeohash#change:visible
        */
       showGeoHashLayer: function () {
-        this.get("geohashLayer")?.set("visible", true);
+        this.get("geohashLayer")?.set("temporarilyHidden", false);
       },
 
       /**

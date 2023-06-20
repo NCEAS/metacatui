@@ -225,7 +225,8 @@ define(
         setListeners: function () {
           try {
             const appearEvents =
-              'change:visible change:opacity change:color change:outlineColor';
+              'change:visible change:opacity change:color change:outlineColor' +
+              ' change:temporarilyHidden'
             this.stopListening(this, appearEvents)
             this.listenTo(this, appearEvents, this.updateAppearance)
             this.stopListening(this.get('filters'), 'update')
