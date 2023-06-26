@@ -831,7 +831,7 @@ define(['jquery',
             model: packageModel,
             currentlyViewing: this.pid,
             parentView: this,
-            title: title,
+            title: this.model.get("title"),
             nested: nested,
             metricsModel: this.metricsModel
           });
@@ -852,6 +852,7 @@ define(['jquery',
             var tableContainer = tablesContainer;
 
           //Insert the package table HTML
+          $(tableContainer).empty();
           $(tableContainer).append(tableView.render().el);
           $(this.tableContainer).find(".loading").remove();
 

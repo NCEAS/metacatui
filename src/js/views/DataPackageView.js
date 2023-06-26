@@ -126,8 +126,6 @@ define([
                 }
 
                 // Render the current set of models in the DataPackage
-                var countg = 0;
-                this.countg = countg;
                 this.addAll();
 
                 if (this.edit) {
@@ -161,10 +159,7 @@ define([
              * Add a single DataItemView row to the DataPackageView
              */
             addOne: function(item) {
-                this.countg++;
-
             	if(!item) return false;
-                console.log(this.countg, item.id);
 
                 //Don't add duplicate rows
                 if(this.$(".data-package-item[data-id='" + item.id + "']").length)
@@ -406,10 +401,18 @@ define([
                     typeCell = $(document.createElement("td")),
                     metricsCell = $(document.createElement("td")),
                     actionsCell = $(document.createElement("td")),
-                    view = this;
+                    view = this,
+                    title = this.title;
 
-                    let metadataObj  = _.filter(this.dataPackage.models, function(m){ return(m.get("id") == view.currentlyViewing) });
-                    var title = metadataObj[0].get("title");
+                    if (title === ""){
+                        let metadataObj  = _.filter(this.dataPackage.models, function(m){ return(m.get("id") == view.currentlyViewing) });
+                        if (metadataObj.length > 0){
+                            title = metadataObj[0].get("title");
+                        }
+                        else{
+                            title = this.dataPackage.get("id" );
+                        }
+                    }
                     if (title.length > 150) {
                         let newTitle = title.slice(0,75) + "..." + title.slice(title.length - 75, title.length);
                         title = newTitle;
