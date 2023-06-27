@@ -35,7 +35,6 @@
  	  } %>
     </div>
 
-    <% if(typeof MetacatUI.mapKey == "string" && MetacatUI.mapKey.length){ %>
       <div class="on-map icons  ">
   		<% if (typeof geohash_9 !== "undefined" && geohash_9 !== null){
           	print('<i class="icon icon-map-marker on-map open-marker " data-id="'+id+'" data-geohash="' + geohash_9  + '" title="This data set has ' + geohash_9.length + ' geographic regions on the map"></i>');
@@ -45,7 +44,6 @@
           }
            %>
       </div>
-    <% } %>
 
     <% if(hasProv){
   			print('<div class="icons provenance active ">');

@@ -96,34 +96,20 @@ define(['jquery', 'underscore', 'backbone'],
       dataCatalogMap: "google",
 
       /**
-       * The default options for the Cesium map used in the {@link CatalogSearchView} for searching the data
-       * catalog. Add custom layers, a default home position (for example, zoom into your area of research),
-       * and enable/disable map widgets. See {@link MapConfig} for the full suite of options. Keep the `CesiumGeohash`
-       * layer here in order to show the search results in the map as geohash boxes. Use any satellite imagery
-       * layer of your choice, such as a self-hosted imagery layer or hosted on Cesium Ion.
+       * The default options for the Cesium map used in the
+       * {@link CatalogSearchView} for searching the data catalog. Add custom
+       * layers, a default home position (for example, zoom into your area of
+       * research), and enable/disable map widgets. See {@link MapConfig} for
+       * the full suite of options. Use any satellite imagery layer of your
+       * choice, such as a self-hosted imagery layer or hosted on Cesium Ion. If
+       * no layer of type `CesiumGeohash` is included, a geohash layer will be
+       * added automatically in order to show the search results on the map.
        * @type {MapConfig}
        * @since 2.22.0
        */
       catalogSearchMapOptions: {
-        showToolbar: false,
-        layers: [
-            {
-                "type": "CesiumGeohash",
-                "opacity": 1,
-                "hue": 205 //blue
-            },
-        {
-            "label": "Satellite imagery",
-            "icon": "urn:uuid:4177c2e1-3037-4964-bf00-5f13182308d9",
-            "type": "IonImageryProvider",
-            "description": "Global satellite imagery down to 15 cm resolution in urban areas",
-            "attribution": "Data provided by Bing Maps © 2021 Microsoft Corporation",
-            "moreInfoLink": "https://www.microsoft.com/maps",
-            "opacity": 1,
-            "cesiumOptions": {
-            "ionAssetId": "2"
-            }
-         }]
+        showLayerList: false,
+        clickFeatureAction: "zoom"
        },
 
       /**
@@ -1729,7 +1715,7 @@ define(['jquery', 'underscore', 'backbone'],
       */
       defaultFilterGroups: [
         {
-          label: "Search for: ",
+          label: "",
           filters: [
             {
               fields: ["attribute"],
@@ -1748,8 +1734,9 @@ define(['jquery', 'underscore', 'backbone'],
             {
               filterType: "ToggleFilter",
               fields: ["documents"],
-              label: "Show only results with data",
-              trueLabel: null,
+              label: "Contains Data Files",
+              placeholder: "Only results with data",
+              trueLabel: "Required",
               falseLabel: null,
               trueValue: "*",
               matchSubstring: false,
@@ -1793,7 +1780,9 @@ define(['jquery', 'underscore', 'backbone'],
               label: "Taxon",
               placeholder: "Class, family, etc.",
               icon: "sitemap",
-              description: "Find data about any taxonomic rank"
+              description: "Find data about any taxonomic rank",
+              matchSubstring: true,
+              fieldsOperator: "OR"
             },
             {
               fields: ["siteText"],

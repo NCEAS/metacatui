@@ -858,7 +858,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     #Navbar{
     	position: fixed;
     	width: 100%;
-    	z-index: 1;
+    	z-index: 3;
     	background-color: #FFF;
     }
     .center {
@@ -941,12 +941,12 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       white-space: nowrap;
     }
     #Content{
-    	padding-top: 118px;
-    	/* margin-left: auto;
-    	margin-right: auto; */
-    }
-    .mapMode #Content{
-    	padding-top: 112px;
+		padding-top: 118px;
+		/* margin-left: auto;
+		margin-right: auto; */
+	}
+	.mapMode #Content{
+		padding-top: 112px;
     }
     .navbar .nav {
       margin-top: 8px;
@@ -3082,4 +3082,30 @@ a {
 }
 .has-temporary-message.PortalView #Content{
   padding-top: 0px;
+}
+
+/******************************************
+* Catalog Search View
+********************************************/
+
+/* Free up more real estate for the catalog */
+
+.catalog-search-body .header .border-image {
+	display: none;
+}
+.catalog-search-body .header .nav {
+	margin-bottom: 0;
+	display: flex;
+	align-self: center;
+}
+
+.catalog-search-body .brand {
+	height: 45px;
+}
+
+.catalog-search-body #inner-header {
+	height: 55px;
+	align-items: center;
+	margin-left: 12px;
+	margin-right: 12px;
 }

@@ -64,7 +64,41 @@ define(['jquery', 'underscore', 'backbone',
      * @type {string}
      * @since 2.17.0
      */
-    uiBuilderClass: "ui-build",
+      uiBuilderClass: "ui-build",
+    
+    /**
+     * Whether the filter is collapsible. If true, the filter will have a button that
+     * toggles the collapsed state.
+     * @type {boolean}
+     * @since x.x.x
+     */
+    collapsible: false,
+
+    /**
+     * The class to add to the filter when it is collapsed.
+     * @type {string}
+     * @since x.x.x
+     * @default "collapsed"
+     */
+    collapsedClass: "collapsed",
+
+    /**
+     * The class used for the button that toggles the collapsed state of the filter.
+     * @type {string}
+     * @since x.x.x
+     * @default "collapse-toggle"
+     */
+    collapseToggleClass: "collapse-toggle",
+    
+    /**
+     * The current state of the filter, if it is {@link FilterView#collapsible}.
+     * Whatever this value is set to at initialization, will be how the filter is
+     * initially rendered.
+     * @type {boolean}
+     * @since x.x.x
+     * @default true
+     */
+    collapsed: true,
 
     /**
      * The class used for input elements where the user can change UI attributes when this
@@ -86,20 +120,21 @@ define(['jquery', 'underscore', 'backbone',
           "click .btn": "handleChange",
           "keydown input": "handleTyping"
         }
-        events["change ." + this.uiInputClass] = "updateUIAttribute"
+        events["change ." + this.uiInputClass] = "updateUIAttribute";
+        events[`click .${this.collapseToggleClass}`] = "toggleCollapse";
         return events
       }
       catch (error) {
         console.log( 'There was an error setting the events object in a FilterView' +
           ' Error details: ' + error );
       }
-    },
+      },
 
     /**
      * Function executed whenever a new FilterView is created.
      * @param {Object} [options] - A literal object of options to set on this View
      */
-    initialize: function (options) {
+      initialize: function (options) {
 
       try {
         if (!options || typeof options != "object") {
@@ -132,6 +167,10 @@ define(['jquery', 'underscore', 'backbone',
 
         this.model = options.model || new this.modelClass();
 
+        if (options.collapsible && typeof options.collapsible === "boolean") {
+          this.collapsible = options.collapsible;
+        }
+
       }
 
       catch (error) {
@@ -155,8 +194,14 @@ define(['jquery', 'underscore', 'backbone',
           var templateVars = this.model.toJSON()
         }
 
-        // Pass the mode (e.g. "edit", "uiBuilder") to the template
-        templateVars = _.extend(templateVars, { mode: this.mode } )
+        // Pass the mode (e.g. "edit", "uiBuilder") to the template, as well
+        // as the variables related to collapsibility.
+        const viewVars = {
+          mode: this.mode,
+          collapsible: this.collapsible,
+          collapseToggleClass: this.collapseToggleClass
+        }
+        templateVars = _.extend(templateVars, viewVars)
 
         // Render the filter HTML (without label or icon)
         this.$el.html( this.template( templateVars ) );
@@ -183,6 +228,11 @@ define(['jquery', 'underscore', 'backbone',
         // a filter in edit or build mode.
         if(["edit", "uiBuilder"].includes(this.mode)){
           this.$el.find("input").addClass("ignore-changes")
+        }
+
+        // If the filter is collapsible, set the initial collapsed state
+        if(this.collapsible && typeof this.collapsed === "boolean"){
+          this.toggleCollapse(this.collapsed)
         }
         
       }
@@ -371,7 +421,35 @@ define(['jquery', 'underscore', 'backbone',
             '. Error details: ' + error
           );
         }
-      }
+      },
+
+      /**
+       * Toggle the collapsed state of the filter. If collapse is a boolean, then set the
+       * collapsed state to that value. Otherwise, set it to the opposite of whichever
+       * state is currently set.
+       * @param {boolean} [collapse] Whether to collapse the filter. If not provided, the
+       * filter will be collapsed if it is currently expanded, and vice versa.
+       * @since x.x.x
+       */
+      toggleCollapse: function (collapse) {
+        try {
+          // If collapse is a boolean, then set the collapsed state to that value.
+          // Otherwise, set it to the opposite of whichever state is currently set.
+          if (typeof collapse !== "boolean") {
+            collapse = !this.collapsed
+          }
+          if (collapse) {
+            this.el.classList.add(this.collapsedClass)
+            this.collapsed = true
+          } else {
+            this.el.classList.remove(this.collapsedClass)
+            this.collapsed = false
+          }
+        }
+        catch (e) {
+          console.log("Could not un/collapse filter.", e);
+        }
+      },
     
     
 

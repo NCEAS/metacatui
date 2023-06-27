@@ -8,4 +8,7 @@
   } else { 
     print(label)
   } %>
+  <% if(collapsible){
+    print(`<button class="${collapseToggleClass}" aria-label="collapse or show the filter"><i class="icon icon-angle-up"></i></button>`);
+  } %>
 </label>

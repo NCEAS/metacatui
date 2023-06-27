@@ -91,13 +91,29 @@ define(
         /**
          * Checks if a given feature object is an attribute in one of the Feature models
          * in this collection.
-         * @param {*} featureObject 
+         * @param {Feature|Cesium.Cesium3DTilesetFeature|Cesium.Entity} featureObject 
          * @returns {boolean} Returns true if the given feature object is in this
          * collection, false otherwise.
+         * @since x.x.x
          */
         containsFeature: function (featureObject) {
-          const match = this.findWhere({ featureObject: featureObject })
-          return match ? true : false
+          if (!featureObject) return false;
+          featureObject = featureObject instanceof Feature ? featureObject.get('featureObject') : featureObject;
+          return this.findWhere({ featureObject: featureObject }) ? true : false;
+        },
+
+        /**
+         * Checks if a given array of feature objects are attributes in one of the
+         * Feature models in this collection.
+         * @param {Array} featureObjects An array of feature objects to check if they are
+         * in this collection.
+         * @returns {boolean} Returns true if all of the given feature objects are in this
+         * collection, false otherwise.
+         */
+        containsFeatures: function (featureObjects) {
+          if (!featureObjects || !featureObjects.length) return false;
+          return featureObjects.every(
+            (featureObject) => this.containsFeature(featureObject));
         },
 
       }

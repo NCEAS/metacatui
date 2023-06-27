@@ -5,9 +5,6 @@
   <% } else { %>
     <input type="checkbox" />
   <% } %>
-    <% if(icon){
-         print('<i class="icon icon-on-left icon-' + icon + '"></i>');
-       } %>
-    <span><%=label%></span>
+    <span><%=placeholder || label%></span>
   </label>
 </div>

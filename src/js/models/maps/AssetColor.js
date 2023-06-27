@@ -76,6 +76,8 @@ define(
          * red in this color.
          * @property {number} [green=1] A number between 0 and 1 indicating the intensity of
          * red in this color.
+         * @property {number} [alpha=1] A number between 0 and 1 indicating the opacity of
+         * this color.
          */
 
         /**
@@ -97,7 +99,8 @@ define(
             color: {
               red: 1,
               blue: 1,
-              green: 1
+              green: 1,
+              alpha: 1
             }
           }
         },
@@ -112,15 +115,23 @@ define(
             // If the color is a hex code instead of an object with RGB values, then
             // convert it.
             if (colorConfig && colorConfig.color && typeof colorConfig.color === 'string') {
-              // Assume the string is an hex color code and convert it to RGB
-              var rgb = this.hexToRGB(colorConfig.color)
-              if (rgb) {
-                this.set('color', rgb)
-              } else {
-                // Otherwise, the color is invalid, set it to the default
-                this.set('color', this.defaults().color)
-              }
+              // Assume the string is an hex color code and convert it to RGBA,
+              // otherwise use the default color
+              this.set('color',
+                this.hexToRGBA(colorConfig.color) ||
+                this.defaults().color
+              )
             }
+            // Set missing RGB values to 0, and alpha to 1
+            let color = this.get('color');
+            color.red = color.red || 0;
+            color.green = color.green || 0;
+            color.blue = color.blue || 0;
+            if (!color.alpha && color.alpha !== 0) {
+              color.alpha = 1;
+            }
+            this.set('color', color)
+
           }
           catch (error) {
             console.log(
@@ -130,85 +141,22 @@ define(
           }
         },
 
+
         /**
-         * Converts hex color values to RGB values between 0 and 1
-         *
-         * @param {string} hex a color in hexadecimal format
-         * @return {Color} a color in RGB format
-        */
-        hexToRGB: function (hex) {
-          var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+         * Converts an 6 to 8 digit hex color value to RGBA values between 0 and 1
+         * @param {string} hex - A hex color code, e.g. '#44A96A' or '#44A96A88'
+         * @return {Color} - The RGBA values of the color
+         * @since x.x.x
+         */
+        hexToRGBA: function (hex) {
+          var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(hex);
           return result ? {
             red: parseInt(result[1], 16) / 255,
             green: parseInt(result[2], 16) / 255,
-            blue: parseInt(result[3], 16) / 255
+            blue: parseInt(result[3], 16) / 255,
+            alpha: parseInt(result[4], 16) / 255
           } : null;
         },
-
-        // /** 
-        //  * Parses the given input into a JSON object to be set on the model.
-        //  *
-        //  * @param {TODO} input - The raw response object
-        //  * @return {TODO} - The JSON object of all the AssetColor attributes
-        //  */
-        // parse: function (input) {
-
-        //   try {
-        //     // var modelJSON = {};
-
-        //     // return modelJSON
-
-        //   }
-        //   catch (error) {
-        //     console.log(
-        //       'There was an error parsing a AssetColor model' +
-        //       '. Error details: ' + error
-        //     );
-        //   }
-
-        // },
-
-        // /**
-        //  * Overrides the default Backbone.Model.validate.function() to check if this if
-        //  * the values set on this model are valid.
-        //  * 
-        //  * @param {Object} [attrs] - A literal object of model attributes to validate.
-        //  * @param {Object} [options] - A literal object of options for this validation
-        //  * process
-        //  * 
-        //  * @return {Object} - Returns a literal object with the invalid attributes and
-        //  * their corresponding error message, if there are any. If there are no errors,
-        //  * returns nothing.
-        //  */
-        // validate: function (attrs, options) {
-        //   try {
-
-        //   }
-        //   catch (error) {
-        //     console.log(
-        //       'There was an error validating a AssetColor model' +
-        //       '. Error details: ' + error
-        //     );
-        //   }
-        // },
-
-        // /**
-        //  * Creates a string using the values set on this model's attributes.
-        //  * @return {string} The AssetColor string
-        //  */
-        // serialize: function () {
-        //   try {
-        //     var serializedAssetColor = "";
-
-        //     return serializedAssetColor;
-        //   }
-        //   catch (error) {
-        //     console.log(
-        //       'There was an error serializing a AssetColor model' +
-        //       '. Error details: ' + error
-        //     );
-        //   }
-        // },
 
       });
 
