@@ -119,15 +119,31 @@ define(
             // rendered. Used to know when it's safe to calculate a bounding sphere.
             this.set('displayReady', false)
 
-            if (assetConfig.outlineColor && !assetConfig.outlineColor instanceof AssetColor) {
-              this.set('outlineColor', new AssetColor(assetConfig.outlineColor))
+            if (
+              assetConfig.outlineColor &&
+              !(assetConfig.outlineColor instanceof AssetColor)
+            ) {
+              this.set(
+                "outlineColor",
+                new AssetColor({ color: assetConfig.outlineColor })
+              );
+            }
+  
+            if (
+              assetConfig.highlightColor &&
+              !(assetConfig.highlightColor instanceof AssetColor)
+            ) {
+              this.set(
+                "highlightColor",
+                new AssetColor({ color: assetConfig.highlightColor })
+              );
             }
 
             this.createCesiumModel();
 
           }
           catch (error) {
-            console.log('Wrror initializing a CesiumVectorData model.', error);
+            console.log('Error initializing a CesiumVectorData model.', error);
           }
         },
 
