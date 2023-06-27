@@ -356,18 +356,18 @@ define([
               title: viewToolTip,
             });
 
-          // Removing Citation metric if the citationCount is 0
-          if (citationCount === 0) {
+          // Removing Citation metric if the citationCount is 0 or undefined
+          if (!citationCount) {
             this.$(".resultItem-CitationCount").css("visibility", "hidden");
           }
 
           // Removing Download metric if the downloadCount is 0
-          if (downloadCount === 0) {
+          if (!downloadCount) {
             this.$(".resultItem-DownloadCount").css("visibility", "hidden");
           }
 
           // Removing View metric if the viewCount is 0
-          if (viewCount === 0) {
+          if (!viewCount) {
             this.$(".resultItem-ViewCount").css("visibility", "hidden");
           }
         } catch (e) {
