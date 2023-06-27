@@ -325,9 +325,9 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
             outlineColor: {
               rgba: [0, 0, 0, 255],
             },
-            outlineWidth: 1,
+            outlineWidth: 1.5,
             style: "FILL_AND_OUTLINE",
-            font: "14pt Helvetica",
+            font: "bold 14pt Helvetica",
             horizontalOrigin: "CENTER",
             verticalOrigin: "CENTER",
             heightReference: "CLAMP_TO_GROUND",
