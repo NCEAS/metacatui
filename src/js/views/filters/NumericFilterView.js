@@ -178,10 +178,8 @@ define(['jquery', 'underscore', 'backbone',
         this.$( ".slider" ).slider( "option", "values", [ minVal, maxVal ] );
       }
 
-      //Send this event to Google Analytics
-      if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
-        ga("send", "event", "portal search", "filter, Data Year", minVal + " to " + maxVal);
-      }
+      //Track this event
+      MetacatUI.analytics?.trackEvent("portal search", "filter, Data Year", minVal + " to " + maxVal);
 
     },
 

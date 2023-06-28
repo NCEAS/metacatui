@@ -134,8 +134,7 @@ define([
         $("head")
           .append(
             this.appHeadTemplate({
-              theme: MetacatUI.theme,
-              googleAnalyticsKey: MetacatUI.appModel.get("googleAnalyticsKey"),
+              theme: MetacatUI.theme
             })
           )
           //Add the JSON-LD to the head element
@@ -271,22 +270,9 @@ define([
 
         // track the current view
         this.currentView = view;
-        this.sendAnalytics();
+        MetacatUI.analytics?.trackPageView();
 
         this.trigger("appRenderComplete");
-      },
-
-      sendAnalytics: function () {
-        if (
-          !MetacatUI.appModel.get("googleAnalyticsKey") ||
-          typeof ga === "undefined"
-        )
-          return;
-
-        var page = window.location.pathname || "/";
-        page = page.replace("#", ""); //remove the leading pound sign
-
-        ga("send", "pageview", { page: page });
       },
 
       routeToMetadata: function (e) {

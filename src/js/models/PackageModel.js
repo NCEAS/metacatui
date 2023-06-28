@@ -1269,10 +1269,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 					a.remove();
 			   }
 
-         //Send this exception to Google Analytics
-         if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
-           ga("send", "event", "download", "Download Package", model.get("id"));
-         }
+          // Track this event
+          MetacatUI.analytics?.trackEvent("download", "Download Package", model.get("id"))
 
 			    model.trigger("downloadComplete");
 			};
@@ -1284,19 +1282,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			    }
 			};
 
-      xhr.onerror = function(e){
-        model.trigger("downloadError");
+			xhr.onerror = function (e) {
+				model.trigger("downloadError");
 
-        //Send this exception to Google Analytics
-        if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
-          ga("send", "exception", {
-            "exDescription": "Download package error: " + (e || "") +
-              " | Id: " + model.get("id") + " | v. " + MetacatUI.metacatUIVersion,
-            "exFatal": true
-          });
-        }
-      };
-
+				// Track this event
+				MetacatUI.analytics?.trackEvent(
+					"download",
+					"Download Package",
+					model.get("id")
+				);
+				
+			};
 			//Open and send the request with the user's auth token
 			xhr.open('GET', url);
 			xhr.responseType = "blob";

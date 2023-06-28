@@ -438,14 +438,8 @@ define([
         this.allowSearch = true;
         google.maps.event.trigger(this.mapModel.get("map"), "idle");
 
-        // Send this event to Google Analytics
-        if (
-          MetacatUI.appModel.get("googleAnalyticsKey") &&
-          typeof ga !== "undefined"
-        ) {
-          var action = isOn ? "on" : "off";
-          ga("send", "event", "map", action);
-        }
+        // Track this event
+        MetacatUI.analytics?.trackEvent("map", (isOn ? "on" : "off"));
       },
 
       /**

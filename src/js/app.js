@@ -155,6 +155,7 @@ MetacatUI.mapModel = MetacatUI.mapModel || {};
 MetacatUI.appLookupModel = MetacatUI.appLookupModel || {};
 MetacatUI.nodeModel = MetacatUI.nodeModel || {};
 MetacatUI.appUserModel = MetacatUI.appUserModel || {};
+MetacatUI.analytics = MetacatUI.analytics || {};
 
 /* Setup the application scaffolding first  */
 require(['bootstrap', 'views/AppView', 'models/AppModel'],
@@ -192,6 +193,10 @@ function(Bootstrap, AppView, AppModel) {
 		MetacatUI.nodeModel = new NodeModel();
 
 		MetacatUI.appUserModel = new UserModel();
+
+		require(['models/analytics/GoogleAnalytics'], function (Analytics) {
+			MetacatUI.analytics = new Analytics();
+		});
 
         /* Create a general event dispatcher to enable
            communication across app components

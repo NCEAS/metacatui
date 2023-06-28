@@ -121,10 +121,8 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
                   this.subviews = [modalView];
                 }
 
-                //Send this event to Google Analytics
-                if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
-                  ga("send", "event", "metrics", "Click metric", this.metricName);
-                }
+                //Track this event
+                MetacatUI.analytics?.trackEvent("metrics", "Click metric", this.metricName);
             }
         },
 

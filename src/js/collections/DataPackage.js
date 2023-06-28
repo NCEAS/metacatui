@@ -1377,15 +1377,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     m.set("uploadStatus", m.defaults().uploadStatus);
                   });
 
-                  //Send this exception to Google Analytics
-                  if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
-                    ga("send", "exception", {
-                      "exDescription": "DataPackage save error: " + data.responseText +
-                        " | Id: " + collection.packageModel.get("id") + " | v. " + MetacatUI.metacatUIVersion,
-                      "exFatal": true
-                    });
-                  }
-
                   //When there is no network connection (status == 0), there will be no response text
                   if( data.status == 408 || data.status == 0 ){
                     var parsedResponse = "There was a network issue that prevented this file from uploading. " +
@@ -1402,6 +1393,13 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                   collection.packageModel.set("uploadStatus", "e");
 
                   collection.trigger("errorSaving", parsedResponse);
+
+                  // Track this error in our analytics
+                  MetacatUI.analytics?.trackException(
+                    `DataPackage save error: ${parsedResponse}`,
+                    collection.packageModel.get("id"),
+                    true
+                  );
                 }
             }
             $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
