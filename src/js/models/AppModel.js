@@ -41,6 +41,13 @@ define(['jquery', 'underscore', 'backbone'],
       title: MetacatUI.themeTitle || "Metacat Data Catalog",
 
       /**
+       * The default page description.
+       * @type {string}
+       * @since x.x.x
+       */
+      description: "A research data catalog and repository that provides access to scientific data, metadata, and more.",
+
+      /**
       * The name of this repository. This is used throughout the interface in different
       * messages and page content.
       * @type {string}
@@ -2373,7 +2380,23 @@ define(['jquery', 'underscore', 'backbone'],
             '. Error details: ' + error
           );
         }
-      }
+      },
+
+      /**
+       * Reset the web document's title to the default
+       * @since x.x.x
+       */
+      resetTitle: function () {
+        this.set("title", this.defaults.title);
+      },
+
+      /**
+       * Reset the web document's description to the default
+       * @since x.x.x
+       */
+      resetDescription: function () {
+        this.set("description", this.defaults.description);
+      },
 
   });
   return AppModel;

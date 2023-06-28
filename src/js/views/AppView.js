@@ -82,6 +82,7 @@ define([
 
         //Change the document title when the app changes the MetacatUI.appModel title at any time
         this.listenTo(MetacatUI.appModel, "change:title", this.changeTitle);
+        this.listenTo(MetacatUI.appModel, "change:description", this.changeDescription);
 
         this.checkIncompatibility();
       },
@@ -103,9 +104,22 @@ define([
         return this.el.querySelector(this.contentSelector);
       },
 
-      //Changes the web document's title
+      /**
+       * Change the web document's title
+       */
       changeTitle: function () {
         document.title = MetacatUI.appModel.get("title");
+      },
+
+      /**
+       * Change the web document's description
+       * @since x.x.x
+       */
+      changeDescription: function () {
+        $("meta[name=description]").attr(
+          "content",
+          MetacatUI.appModel.get("description")
+        );
       },
 
       /** Render the main view and/or re-render subviews. Delegate rendering
