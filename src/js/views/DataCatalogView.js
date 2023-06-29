@@ -776,10 +776,8 @@ define(["jquery",
                 // Trigger a new search
                 this.triggerSearch();
 
-                // Send this event to Google Analytics
-                if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
-                    ga("send", "event", "search", "filter, " + category, value);
-                }
+                // Track this event
+                MetacatUI.analytics?.trackEvent("search", "filter, " + category, value)
             },
 
             // Update the UI year slider and input values
@@ -976,10 +974,8 @@ define(["jquery",
                                 replace: true
                             });
 
-                            // Send this event to Google Analytics
-                            if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
-                                ga("send", "event", "search", "filter, Data Year", minVal + " to " + maxVal);
-                            }
+                            // Track this event
+                            MetacatUI.analytics?.trackEvent("search", "filter, Data Year", minVal + " to " + maxVal);
 
                         } else {
                             // Add the filter elements
@@ -988,10 +984,9 @@ define(["jquery",
                                     replace: true
                                 });
 
-                                // Send this event to Google Analytics
-                                if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
-                                    ga("send", "event", "search", "filter, Publication Year", minVal + " to " + maxVal);
-                                }
+                                // Track this event
+                                MetacatUI.analytics?.trackEvent("search", "filter, Publication Year", minVal + " to " + maxVal);
+
                             } else {
                                 this.hideFilter($("#publish_year").attr("data-category"), true);
                             }
@@ -1001,10 +996,9 @@ define(["jquery",
                                     replace: true
                                 });
 
-                                // Send this event to Google Analytics
-                                if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
-                                    ga("send", "event", "search", "filter, Data Year", minVal + " to " + maxVal);
-                                }
+                                // Track this event
+                                MetacatUI.analytics?.trackEvent("search", "filter, Data Year", minVal + " to " + maxVal);
+
                             } else {
                                 this.hideFilter($("#data_year").attr("data-category"), true);
                             }
@@ -1118,10 +1112,9 @@ define(["jquery",
                 // Trigger a new search
                 this.triggerSearch();
 
-                // Send this event to Google Analytics
-                if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
-                    ga("send", "event", "search", "filter, " + category, term);
-                }
+                // Track this event
+                MetacatUI.analytics?.trackEvent("search", "filter, " + category, term);
+
             },
 
             // Removes a specific filter term from the searchModel
@@ -2014,11 +2007,9 @@ define(["jquery",
 
                 google.maps.event.trigger(this.mapModel.get("map"), "idle");
 
-                // Send this event to Google Analytics
-                if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
-                    var action = isOn ? "on" : "off";
-                    ga("send", "event", "map", action);
-                }
+                // Track this event
+                MetacatUI.analytics?.trackEvent("map", (isOn ? "on" : "off"));
+
             },
 
             /**
@@ -2455,10 +2446,9 @@ define(["jquery",
                         myFitBounds(viewRef.map, tileBounds);
 
 
-                        // Send this event to Google Analytics
-                        if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
-                            ga("send", "event", "map", "clickTile", "geohash : " + tileObject.geohash);
-                        }
+                        // Track this event
+                        MetacatUI.analytics?.trackEvent("map", "clickTile", "geohash : " + tileObject.geohash);
+
                     });
                 }
 

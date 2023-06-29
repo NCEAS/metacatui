@@ -1401,14 +1401,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             //Save the EML plain text copy
             copy.save();
 
-            //Send this exception to Google Analytics
-            if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
-              ga('send', 'exception', {
-                'exDescription': "EML save error: " + errorMsg + " | Id: " + model.get("id") +
-                  " | v. " + MetacatUI.metacatUIVersion + " | EML draft: " + copy.get("id"),
-                'exFatal': true
-              });
-            }
+            // Track the error
+            MetacatUI.analytics?.trackException(
+              `EML save error: ${errorMsg}, EML draft: ${copy.get("id")}`,
+              model.get("id"),
+              true
+            );
           }
         }
      }, MetacatUI.appUserModel.createAjaxSettings());
