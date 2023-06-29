@@ -258,7 +258,7 @@ MetacatUI.AppConfig = Object.assign(
     datasetMapFillColor: "",
 
     //Google Analytics
-    googleAnalyticsKey: "UA-75482301-1",
+    googleAnalyticsKey: "G-12EKQM14SH",
   },
   MetacatUI.AppConfig || {}
 );

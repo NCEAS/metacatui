@@ -123,7 +123,7 @@ MetacatUI.AppConfig = Object.assign({
     label: "9434702"
     }],
   
-  googleAnalyticsKey: "UA-15017327-17",
+  googleAnalyticsKey: "G-CR31GM016V",
 
   //Dataset landing pages
   displayDatasetEditButton: false,
