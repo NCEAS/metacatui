@@ -12,7 +12,7 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
    * @class Geohash
    * @name Geohash
    * @extends Backbone.Model
-   * @since x.x.x
+   * @since 2.25.0
    * @constructor
    */
   var Geohash = Backbone.Model.extend(

@@ -403,7 +403,7 @@ define(
          * @param {Cesium.Cesium3DTilesetFeature|Cesium.Entity} feature 
          * @returns {boolean} true if the feature is an instance of the feature
          * type set on the asset model, false otherwise.
-         * @since x.x.x
+         * @since 2.25.0
          */
         usesFeatureType: function(feature) {
           const ft = this.get("featureType");
@@ -420,7 +420,7 @@ define(
          * in the map, e.g. a Cesium.Entity or a Cesium.Cesium3DTileFeature
          * @returns {boolean} Returns true if the given feature is part of the
          * selectedFeatures collection in this asset
-         * @since x.x.x
+         * @since 2.25.0
          */
         containsFeature: function (feature) {
           if (!this.usesFeatureType(feature)) return false

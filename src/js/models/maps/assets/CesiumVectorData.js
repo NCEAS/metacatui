@@ -287,7 +287,7 @@ define(
          * returns an object that may or may not be an Entity.
          * @param {Object} mapObject - An object returned from the Cesium map
          * @returns {Cesium.Entity} - The Entity object if found, otherwise null.
-         * @since x.x.x
+         * @since 2.25.0
          */
         getEntityFromMapObject(mapObject) {
           const entityType = this.get("featureType")
@@ -298,7 +298,7 @@ define(
 
         /**
          * @inheritdoc
-         * @since x.x.x
+         * @since 2.25.0
          */
         getFeatureAttributes: function (feature) {
           feature = this.getEntityFromMapObject(feature)
@@ -307,7 +307,7 @@ define(
 
         /**
          * @inheritdoc
-         * @since x.x.x
+         * @since 2.25.0
          */
         usesFeatureType: function (feature) {
           // This method could be passed the entity directly, or the object
@@ -414,7 +414,7 @@ define(
         /**
          * Update the styles for a set of entities
          * @param {Array} entities - The entities to update
-         * @since x.x.x
+         * @since 2.25.0
          */
         styleEntities: function (entities) {
 
@@ -445,7 +445,7 @@ define(
          * Update the styles for a polygon entity
          * @param {Cesium.Entity} entity - The entity to update
          * @param {Object} styles - Styles to apply, as returned by getStyles
-         * @since x.x.x
+         * @since 2.25.0
          */
         stylePolygon: function (entity, styles) {
           entity.polygon.material = styles.color
@@ -458,7 +458,7 @@ define(
          * Update the styles for a point entity
          * @param {Cesium.Entity} entity - The entity to update
          * @param {Object} styles - Styles to apply, as returned by getStyles
-         * @since x.x.x
+         * @since 2.25.0
          */
         stylePoint: function (entity, styles) {
           entity.point.color = styles.color
@@ -471,7 +471,7 @@ define(
          * Update the styles for a polyline entity
          * @param {Cesium.Entity} entity - The entity to update
          * @param {Object} styles - Styles to apply, as returned by getStyles
-         * @since x.x.x
+         * @since 2.25.0
          */
         stylePolyline: function (entity, styles) {
           entity.polyline.material = styles.color
@@ -482,7 +482,7 @@ define(
          * Update the styles for a billboard entity
          * @param {Cesium.Entity} entity - The entity to update
          * @param {Object} styles - Styles to apply, as returned by getStyles
-         * @since x.x.x
+         * @since 2.25.0
          */
         styleBillboard: function (entity, styles) {
           if (!this.pinBuilder) {
@@ -499,7 +499,7 @@ define(
          * Update the styles for a label entity
          * @param {Cesium.Entity} entity - The entity to update
          * @param {Object} styles - Styles to apply, as returned by getStyles
-         * @since x.x.x
+         * @since 2.25.0
          */
         styleLabel: function (entity, styles) {
           // TODO...
@@ -510,7 +510,7 @@ define(
          * @param {Color} color A Color model
          * @returns {Cesium.Color|null} A Cesium Color or null if the color is
          * invalid
-         * @since x.x.x
+         * @since 2.25.0
          */
         colorToCesiumColor: function (color) {
           color = color?.get ? color.get("color") : color;
@@ -526,7 +526,7 @@ define(
          * @param {Cesium.Entity} entity A Cesium Entity
          * @returns {Cesium.Color|null} A Cesium Color or null if the color is
          * invalid or alpha is 0
-         * @since x.x.x
+         * @since 2.25.0
          */
         colorForEntity: function (entity) {
           const properties = this.getPropertiesFromFeature(entity);
@@ -541,7 +541,7 @@ define(
          * Return the styles for a selected feature
          * @param {Cesium.Entity} entity A Cesium Entity
          * @returns {Object} An object containing the styles for the feature
-         * @since x.x.x
+         * @since 2.25.0
          */
         getSelectedStyles: function (entity) {
           const highlightColor = this.colorToCesiumColor(
@@ -561,7 +561,7 @@ define(
          * Return the styles for a feature
          * @param {Cesium.Entity} entity A Cesium Entity
          * @returns {Object} An object containing the styles for the feature
-         * @since x.x.x
+         * @since 2.25.0
          */
         getStyles: function (entity) {
           if(!entity) return null

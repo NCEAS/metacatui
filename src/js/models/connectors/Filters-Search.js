@@ -23,7 +23,7 @@ define([
       /**
        * The type of Backbone.Model this is.
        * @type {string}
-       * @since x.x.x
+       * @since 2.25.0
        * @default "FiltersSearchConnector
        */
       type: "FiltersSearchConnector",
@@ -78,7 +78,7 @@ define([
 
       /**
        * Stops listening to changes in the Filters and SearchResults
-       * @since x.x.x
+       * @since 2.25.0
        */
       disconnect: function () {
         const filters = this.get("filters");

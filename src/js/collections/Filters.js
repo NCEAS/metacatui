@@ -37,7 +37,7 @@ define([
       /**
        * The name of this type of collection
        * @type {string}
-       * @since x.x.x
+       * @since 2.25.0
        * @default "Filters"
        */
       type: "Filters",

@@ -272,7 +272,7 @@ define(["backbone"], function (Backbone) {
 
       /**
        * Hides the pager
-       * @since x.x.x
+       * @since 2.25.0
        */
       hide: function () {
         this.el.style.visibility = "hidden";
@@ -280,7 +280,7 @@ define(["backbone"], function (Backbone) {
 
       /**
        * Shows the pager
-       * @since x.x.x
+       * @since 2.25.0
        */
       show: function () {
         this.el.style.visibility = "visible";

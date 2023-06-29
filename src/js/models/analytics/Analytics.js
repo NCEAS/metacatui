@@ -8,7 +8,7 @@ define(["backbone"], function (Backbone) {
    * @classcategory Models/Analytics
    * @extends Backbone.Model
    * @constructs
-   * @since x.x.x
+   * @since 2.25.0
    */
   var Analytics = Backbone.Model.extend(
     /** @lends Analytics.prototype */

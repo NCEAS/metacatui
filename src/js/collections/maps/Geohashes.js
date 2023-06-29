@@ -14,7 +14,7 @@ define([
    * @class Geohashes
    * @name Geohashes
    * @extends Backbone.Collection
-   * @since x.x.x
+   * @since 2.25.0
    * @constructor
    */
   var Geohashes = Backbone.Collection.extend(

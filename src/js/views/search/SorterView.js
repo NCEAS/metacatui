@@ -82,7 +82,7 @@ define(["backbone"], function (Backbone) {
 
       /**
        * Hides the view if there are no search results.
-       * @since x.x.x
+       * @since 2.25.0
        */
       hideIfNoResults: function () {
         if (
@@ -108,7 +108,7 @@ define(["backbone"], function (Backbone) {
 
       /**
        * Hides the view
-       * @since x.x.x
+       * @since 2.25.0
        */
       hide: function () {
         this.el.style.visibility = "hidden";
@@ -116,7 +116,7 @@ define(["backbone"], function (Backbone) {
 
       /**
        * Shows the view
-       * @since x.x.x
+       * @since 2.25.0
        */
       show: function () {
         this.el.style.visibility = "visible";

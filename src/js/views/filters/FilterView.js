@@ -70,14 +70,14 @@ define(['jquery', 'underscore', 'backbone',
      * Whether the filter is collapsible. If true, the filter will have a button that
      * toggles the collapsed state.
      * @type {boolean}
-     * @since x.x.x
+     * @since 2.25.0
      */
     collapsible: false,
 
     /**
      * The class to add to the filter when it is collapsed.
      * @type {string}
-     * @since x.x.x
+     * @since 2.25.0
      * @default "collapsed"
      */
     collapsedClass: "collapsed",
@@ -85,7 +85,7 @@ define(['jquery', 'underscore', 'backbone',
     /**
      * The class used for the button that toggles the collapsed state of the filter.
      * @type {string}
-     * @since x.x.x
+     * @since 2.25.0
      * @default "collapse-toggle"
      */
     collapseToggleClass: "collapse-toggle",
@@ -95,7 +95,7 @@ define(['jquery', 'underscore', 'backbone',
      * Whatever this value is set to at initialization, will be how the filter is
      * initially rendered.
      * @type {boolean}
-     * @since x.x.x
+     * @since 2.25.0
      * @default true
      */
     collapsed: true,
@@ -429,7 +429,7 @@ define(['jquery', 'underscore', 'backbone',
        * state is currently set.
        * @param {boolean} [collapse] Whether to collapse the filter. If not provided, the
        * filter will be collapsed if it is currently expanded, and vice versa.
-       * @since x.x.x
+       * @since 2.25.0
        */
       toggleCollapse: function (collapse) {
         try {

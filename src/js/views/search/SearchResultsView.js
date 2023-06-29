@@ -62,7 +62,7 @@ define([
       /**
        * The metrics model that will be passed to the search result view
        * @type {MetricsModel}
-       * @since x.x.x
+       * @since 2.25.0
        */
       metricsModel: null,
 
@@ -209,7 +209,7 @@ define([
        * Creates a new MetricsModel if the app is configured to display metrics.
        * Sets the metrics model on this view. The metrics model is used to
        * display views, citations, and downloads for each search result.
-       * @since x.x.x
+       * @since 2.25.0
        * @returns {MetricsModel}
        */
       setUpMetrics: function () {
@@ -226,7 +226,7 @@ define([
       /**
        * Updates the metrics model with the PIDs of the search results and
        * fetches the metrics.
-       * @since x.x.x
+       * @since 2.25.0
        * @returns {MetricsModel}
        */
       updateMetrics: function () {

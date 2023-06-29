@@ -125,7 +125,7 @@ define([
        * The type of model this is.
        * @type {String}
        * @default "MapModel"
-       * @since x.x.x
+       * @since 2.25.0
        */
       type: "MapModel",
 
@@ -315,7 +315,7 @@ define([
        * @param {Cesium.Entity|Cesium.Cesium3DTileFeature|Feature[]} features - An
        * array of feature objects selected directly from the map view, or 
        * @returns {Feature[]} An array of Feature models.
-       * @since x.x.x
+       * @since 2.25.0
        */
       convertFeatures: function (features) {
         const model = this;
@@ -339,7 +339,7 @@ define([
        * Reset the layers to the default layers. This will set a new MapAssets
        * collection on the layer attribute.
        * @returns {MapAssets} The new layers collection.
-       * @since x.x.x
+       * @since 2.25.0
        */
       resetLayers: function () {
         const newLayers = this.defaults()?.layers || new MapAssets();
@@ -354,7 +354,7 @@ define([
        * @param {Object | MapAsset} layer - A map asset model or object with
        * attributes to set on a new map asset model.
        * @returns {MapAsset} The new layer model.
-       * @since x.x.x
+       * @since 2.25.0
        */
       addAsset: function (layer) {
         const layers = this.get("layers") || this.resetLayers();

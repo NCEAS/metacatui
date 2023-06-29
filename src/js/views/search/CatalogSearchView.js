@@ -69,7 +69,7 @@ define([
        * The template to use in case there is a major error in rendering the
        * view.
        * @type {string}
-       * @since x.x.x
+       * @since 2.25.0
        */
       errorTemplate: `<div class="error" role="alert">
         <h2>There was an error loading the search results.</h2>
@@ -79,7 +79,7 @@ define([
       /**
        * Whether the map is displayed or hidden.
        * @type boolean
-       * @since x.x.x
+       * @since 2.25.0
        * @default true
        */
       mapVisible: true,
@@ -87,7 +87,7 @@ define([
       /**
        * Whether the filters are displayed or hidden.
        * @type boolean
-       * @since x.x.x
+       * @since 2.25.0
        * @default true
        */
       filtersVisible: true,
@@ -96,7 +96,7 @@ define([
        * Whether to limit the search to the extent of the map. If true, the
        * search will update when the user pans or zooms the map.
        * @type {boolean}
-       * @since x.x.x
+       * @since 2.25.0
        * @default true
        */
       limitSearchToMapArea: true,
@@ -203,7 +203,7 @@ define([
        * The query selector for the label that is used to describe the
        * {@link CatalogSearchView#toggleMapButton}.
        * @type {string}
-       * @since x.x.x
+       * @since 2.25.0
        * @default "#toggle-map-label"
        */
       toggleMapLabel: "#toggle-map-label",
@@ -212,7 +212,7 @@ define([
        * The query selector for the button that is used to either show or hide
        * the filters.
        * @type {string}
-       * @since x.x.x
+       * @since 2.25.0
        */
       toggleFiltersButton: ".catalog__filters-toggle",
 
@@ -220,7 +220,7 @@ define([
        * The query selector for the label that is used to describe the
        * {@link CatalogSearchView#toggleFiltersButton}.
        * @type {string}
-       * @since x.x.x
+       * @since 2.25.0
        * @default "#toggle-map-label"
        */
       toggleFiltersLabel: "#toggle-filters-label",
@@ -229,7 +229,7 @@ define([
        * The query selector for the button that is used to turn on or off
        * spatial filtering by map extent.
        * @type {string}
-       * @since x.x.x
+       * @since 2.25.0
        */
       mapFilterToggle: ".catalog__map-filter-toggle",
 
@@ -237,7 +237,7 @@ define([
        * The CSS class (not selector) to add to the body element when the map is
        * hidden.
        * @type {string}
-       * @since x.x.x
+       * @since 2.25.0
        */
       hideMapClass: "catalog--map-hidden",
 
@@ -245,7 +245,7 @@ define([
        * The CSS class (not selector) to add to the body element when the
        * filters are hidden.
        * @type {string}
-       * @since x.x.x
+       * @since 2.25.0
        */
       hideFiltersClass: "catalog--filters-hidden",
 
@@ -277,7 +277,7 @@ define([
        * a new one will be created. If one is provided, then other options that
        * would be passed to the MapSearchFiltersConnector model will be ignored
        * (such as map, searchResults, filterGroups, catalogSearch, etc.)
-       * @since x.x.x
+       * @since 2.25.0
        */
       initialize: function (options) {
         this.cssID = "catalogSearchView";
@@ -321,7 +321,7 @@ define([
 
       /**
        * Indicates that there was a problem rendering this view.
-       * @since x.x.x
+       * @since 2.25.0
        */
       renderError: function () {
         this.$el.html(this.errorTemplate);
@@ -680,7 +680,7 @@ define([
        * @param {boolean} show - Optionally provide the desired choice of
        * whether the filters should be shown (true) or hidden (false). If not
        * provided, the opposite of the current mode will be used.
-       * @since x.x.x
+       * @since 2.25.0
        */
       toggleFiltersVisibility: function (show) {
         try {
@@ -710,7 +710,7 @@ define([
        * whether the filters should be shown (true) or hidden (false). If not
        * provided, the opposite of the current mode will be used. (Set to true
        * to show map, false to hide it.)
-       * @since x.x.x
+       * @since 2.25.0
        */
       toggleMapVisibility: function (show) {
         try {
@@ -736,7 +736,7 @@ define([
       /**
        * Change the content of the map toggle label to indicate whether
        * clicking the button will show or hide the map.
-       * @since x.x.x
+       * @since 2.25.0
        */
       updateToggleMapLabel: function () {
         try {
@@ -768,7 +768,7 @@ define([
       /**
        * Change the content of the filters toggle label to indicate whether
        * clicking the button will show or hide the filters.
-       * @since x.x.x
+       * @since 2.25.0
        */
       updateToggleFiltersLabel: function () {
         try {
@@ -808,7 +808,7 @@ define([
        * to switch to. true = limit search to map area, false = do not limit
        * search to map area. If not provided, the opposite of the current mode
        * will be used.
-       * @since x.x.x
+       * @since 2.25.0
        */
       toggleMapFilter: function (newSetting) {
         // Make sure the new setting is a boolean

@@ -74,7 +74,7 @@ define(['jquery', 'underscore', 'backbone',
      * If set to true, then all filters within this group will be collapsible.
      * See {@link FilterView#collapsible}
      * @type {boolean}
-     * @since x.x.x
+     * @since 2.25.0
      * @default false
      */
     collapsible: false,
@@ -83,7 +83,7 @@ define(['jquery', 'underscore', 'backbone',
      * The initial query to use when the view is first rendered. This is a text value
      * that will be set on the general `text` Solr field.
      * @type {string}
-     * @since x.x.x
+     * @since 2.25.0
      */
     initialQuery: undefined,
 

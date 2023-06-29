@@ -94,7 +94,7 @@ define(
          * @param {Feature|Cesium.Cesium3DTilesetFeature|Cesium.Entity} featureObject 
          * @returns {boolean} Returns true if the given feature object is in this
          * collection, false otherwise.
-         * @since x.x.x
+         * @since 2.25.0
          */
         containsFeature: function (featureObject) {
           if (!featureObject) return false;

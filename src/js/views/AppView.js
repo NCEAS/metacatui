@@ -113,7 +113,7 @@ define([
 
       /**
        * Change the web document's description
-       * @since x.x.x
+       * @since 2.25.0
        */
       changeDescription: function () {
         $("meta[name=description]").attr(

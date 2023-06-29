@@ -18,14 +18,14 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
    * @extends Backbone.Model
    * @constructor
    * @classcategory Models/Connectors
-   * @since x.x.x
+   * @since 2.25.0
    */
   return Backbone.Model.extend(
     /** @lends FiltersMapConnector.prototype */ {
       /**
        * The type of Backbone.Model this is.
        * @type {string}
-       * @since x.x.x
+       * @since 2.25.0
        * @default "FiltersMapConnector"
        */
       type: "FiltersMapConnector",
@@ -43,7 +43,7 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
        * @property {function} onMoveEnd A function to call when the map is
        * finished moving. This function will be called with the connector as
        * 'this'.
-       * @since x.x.x
+       * @since 2.25.0
        */
       defaults: function () {
         return {

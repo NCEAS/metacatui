@@ -68,7 +68,7 @@ define([
       /**
        * Returns true if the filter has a valid set of coordinates
        * @returns {boolean} True if the filter has coordinates
-       * @since x.x.x
+       * @since 2.25.0
        */
       hasCoordinates: function () {
         return (
@@ -85,7 +85,7 @@ define([
        * Coordinates will be adjusted if they are out of bounds.
        * @param {boolean} [silent=true] - Whether to trigger a change event in
        * the case where the coordinates are adjusted
-       * @since x.x.x
+       * @since 2.25.0
        */
       validateCoordinates: function (silent = true) {
         if (!this.hasCoordinates()) return;
@@ -106,7 +106,7 @@ define([
       /**
        * Set a listener that updates the filter when the coordinates & height
        * change
-       * @since x.x.x
+       * @since 2.25.0
        */
       setListeners: function () {
         const extentEvents =
@@ -118,7 +118,7 @@ define([
       /**
        * Convert the coordinate attributes to a bounds object
        * @returns {object} An object with north, south, east, and west props
-       * @since x.x.x
+       * @since 2.25.0
        */
       getBounds: function () {
         return {
@@ -132,7 +132,7 @@ define([
       /**
        * Returns true if the bounds set on the filter covers the entire earth
        * @returns {boolean}
-       * @since x.x.x
+       * @since 2.25.0
        */
       coversEarth: function () {
         const bounds = this.getBounds();
@@ -150,7 +150,7 @@ define([
        * set a consolidated set of geohashes that cover the area at the
        * appropriate precision. It will also validate the coordinates to ensure
        * that they are within the bounds of the map.
-       * @since x.x.x
+       * @since 2.25.0
        */
       updateFilterFromExtent: function () {
         try {
@@ -179,7 +179,7 @@ define([
        * Coverts a geohash precision level to a field name for Solr
        * @param {number} precision The geohash precision level, e.g. 4
        * @returns {string} The corresponding field name, e.g. "geohash_4"
-       * @since x.x.x
+       * @since 2.25.0
        */
       precisionToField: function (precision) {
         return precision && !isNaN(precision) ? "geohash_" + precision : null;
@@ -191,7 +191,7 @@ define([
        * @param {number[]} precisions The geohash precision levels, e.g. [4, 5]
        * @returns {string[]} The corresponding field names, e.g. ["geohash_4",
        * "geohash_5"]
-       * @since x.x.x
+       * @since 2.25.0
        */
       precisionsToFields: function (precisions) {
         let fields = [];
@@ -211,7 +211,7 @@ define([
        * by default because geohashes are already consolidated when they are
        * added as the spatial filter is used right now.
        * @return {string} The query fragment
-       * @since x.x.x
+       * @since 2.25.0
        */
       getQuery: function (consolidate = false) {
         try {
@@ -264,7 +264,7 @@ define([
        * @param {number[]} precisions The geohash precision levels, e.g. [4, 5]
        * @param {string[]} hashStrings The geohashes, e.g. ["9q8yy", "9q8yz"]
        * @returns {Filter} The filter model
-       * @since x.x.x
+       * @since 2.25.0
        */
       createBaseFilter: function (precisions = [], hashStrings = []) {
         return new Filter({

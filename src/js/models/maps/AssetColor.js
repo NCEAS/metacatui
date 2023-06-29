@@ -146,7 +146,7 @@ define(
          * Converts an 6 to 8 digit hex color value to RGBA values between 0 and 1
          * @param {string} hex - A hex color code, e.g. '#44A96A' or '#44A96A88'
          * @return {Color} - The RGBA values of the color
-         * @since x.x.x
+         * @since 2.25.0
          */
         hexToRGBA: function (hex) {
           var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(hex);

@@ -53,7 +53,7 @@ define(['jquery', 'underscore', 'backbone',
      * If set to true, then all filters within this group will be collapsible.
      * See {@link FilterView#collapsible}
      * @type {boolean}
-     * @since x.x.x
+     * @since 2.25.0
      * @default false
      */
     collapsible: false,

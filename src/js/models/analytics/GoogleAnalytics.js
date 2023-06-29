@@ -8,7 +8,7 @@ define(["models/analytics/Analytics"], function (Analytics) {
    * @extends Backbone.Model
    * @constructs
    * @extends Analytics
-   * @since x.x.x
+   * @since 2.25.0
    */
   var GoogleAnalytics = Analytics.extend(
     /** @lends GoogleAnalytics.prototype */

@@ -21,7 +21,7 @@ define([
       /**
        * The type of Backbone.Model this is.
        * @type {string}
-       * @since x.x.x
+       * @since 2.25.0
        * @default "MapSearchConnector"
       */
       type: "MapSearchConnector",

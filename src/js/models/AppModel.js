@@ -43,7 +43,7 @@ define(['jquery', 'underscore', 'backbone'],
       /**
        * The default page description.
        * @type {string}
-       * @since x.x.x
+       * @since 2.25.0
        */
       description: "A research data catalog and repository that provides access to scientific data, metadata, and more.",
 
@@ -2384,7 +2384,7 @@ define(['jquery', 'underscore', 'backbone'],
 
       /**
        * Reset the web document's title to the default
-       * @since x.x.x
+       * @since 2.25.0
        */
       resetTitle: function () {
         this.set("title", this.defaults.title);
@@ -2392,7 +2392,7 @@ define(['jquery', 'underscore', 'backbone'],
 
       /**
        * Reset the web document's description to the default
-       * @since x.x.x
+       * @since 2.25.0
        */
       resetDescription: function () {
         this.set("description", this.defaults.description);

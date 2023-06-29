@@ -28,7 +28,7 @@ define([
    * @extends Backbone.Model
    * @constructor
    * @classcategory Models/Connectors
-   * @since x.x.x
+   * @since 2.25.0
    */
   return Backbone.Model.extend(
     /** @lends  MapSearchFiltersConnector.prototype */ {

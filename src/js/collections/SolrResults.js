@@ -20,7 +20,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
      * The name of this type of collection.
      * @type {string}
      * @default "SolrResults"
-     * @since x.x.x
+     * @since 2.25.0
      */
     type: "SolrResults",
 
@@ -398,7 +398,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
     /**
      * Get the list of PIDs for the search results
      * @returns {string[]} - The list of PID strings for the search results
-     * @since x.x.x
+     * @since 2.25.0
      */
     getPIDs: function () {
       return this.pluck("id");
