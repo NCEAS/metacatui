@@ -63,7 +63,7 @@ define([
       defaults: function () {
         return Object.assign(CesiumVectorData.prototype.defaults(), {
           type: "CZMLDataSource",
-          label: "Geohashes",
+          label: "Dataset counts",
           geohashes: new Geohashes(),
           opacity: 0.8,
           colorPalette: new AssetColorPalette({

@@ -115,7 +115,6 @@ MetacatUI.AppConfig = Object.assign(
       layers: [
         {
           type: "CesiumGeohash",
-          label: "Geohashes",
           visible: true,
           colorPalette: {
             paletteType: "continuous",
