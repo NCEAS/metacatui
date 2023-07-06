@@ -180,6 +180,7 @@ define(['jquery',
             return
           }
 
+          this.stopListening(this.dataPackage, "complete");
           this.listenToOnce(this.dataPackage, "complete", function () {
             this.dataPackageSynced = true;
             this.trigger("changed:dataPackageSynced");
