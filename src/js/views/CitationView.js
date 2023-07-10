@@ -111,8 +111,7 @@ define([
        */
 
       /**
-       * The format and layout options that are available for this view. The
-       * `default` option is used when no format is specified in the options.
+       * The format and layout options that are available for this view.
        * @type {Object}
        * @property {CitationView#StyleDefinition} styleName - Each property in
        * the styles object maps a style name to a StyleOption object.
@@ -124,6 +123,18 @@ define([
             template: _.template(APATemplate),
             archivedTemplate: _.template(ArchivedTemplate),
             render: "renderAPA",
+          },
+          inText: {
+            template: _.template(APAInTextTemplate),
+            archivedTemplate: _.template(InTextArchivedTemplate),
+            render: "renderAPAInText",
+          },
+        },
+        apaAllAuthors: {
+          full: {
+            template: _.template(APATemplate),
+            archivedTemplate: _.template(ArchivedTemplate),
+            render: "renderAPAAllAuthors",
           },
           inText: {
             template: _.template(APAInTextTemplate),
@@ -379,11 +390,16 @@ define([
        * @param {Object} options - The options to pass to the template.
        * @param {function} template - The template associated with this style,
        * or it's archive template if the object is archived and not indexed.
+       * @param {number} [maxAuthors=20] - The maximum number of authors to
+       * display. If there are more than this number of authors, then the
+       * remaining authors will be replaced with an ellipsis. The default is 20
+       * since that is the maximum that APA allows. Set to a falsy value to
+       * display all authors.
        * @since 2.23.0
        */
-      renderAPA: function (options, template) {
+      renderAPA: function (options, template, maxAuthors=20) {
         // Format the authors for display
-        options.origin = this.CSLNamesToAPA(options.originArray);
+        options.origin = this.CSLNamesToAPA(options.originArray, maxAuthors);
         this.el.innerHTML = template(options);
         // If there are citationMetadata, as well as an element in the current
         // template where they should be inserted, then show them inline.
@@ -402,6 +418,17 @@ define([
       renderAPAInText: function (options, template) {
         options.origin = this.CSLNamesToAPAInText(options.originArray);
         this.el.innerHTML = template(options);
+      },
+
+      /**
+       * Render a complete APA style citation with all authors listed.
+       * @param {Object} options - The options to pass to the template.
+       * @param {function} template - The template associated with this style,
+       * or it's archive template if the object is archived and not indexed.
+       * @since x.x.x
+       */
+      renderAPAAllAuthors: function (options, template) {
+        this.renderAPA(options, template, false);
       },
 
       /**
@@ -481,10 +508,15 @@ define([
        * string for display in an APA citation.
        * @param {object[]} authors - An array of CSL JSON name objects
        * @returns {string} The formatted author string or an empty string if
-       * there are no authors
+       * there are no authors 
+       * @param {number} [maxAuthors=20] - The maximum number of authors to
+       * display. If there are more than this number of authors, then the
+       * remaining authors will be replaced with an ellipsis. The default is 20
+       * since that is the maximum that APA allows. Set to a falsy value to
+       * display all authors.
        * @since 2.23.0
        */
-      CSLNamesToAPA: function (authors) {
+      CSLNamesToAPA: function (authors, maxAuthors=20) {
         // Format authors as a proper APA style citation:
         if (!authors) return "";
 
@@ -496,8 +528,10 @@ define([
         authors = authors.map(this.CSLNameToFullNameStr);
 
         const numAuthors = authors.length;
-        const maxAuthors = 20;
         const lastAuthor = authors[numAuthors - 1];
+
+        // Set maxAuthors to the number of authors if it is a falsy value.
+        maxAuthors = maxAuthors || numAuthors;
 
         if (numAuthors === 1) return authors[0];
         // Two authors: Separate author names with a comma. Use the ampersand.

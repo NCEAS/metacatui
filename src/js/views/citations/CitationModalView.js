@@ -54,7 +54,7 @@ define([
        * @default "apa"
        * @see {@link CitationView#styles}
        */
-      style: "apa",
+      style: "apaAllAuthors",
 
       /**
        * The events this view will listen for. See
@@ -191,6 +191,9 @@ define([
         }
       },
 
+      /**
+       * Insert the citation view into the modal
+       */
       insertCitation: function () {
         const container = this.citationContainer;
         if (!container) return;

@@ -960,11 +960,8 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 term = term.replace(/%2F/g, "%5C%2F");
               
               if (escapeSquareBrackets) {
-                console.log("Escaping square brackets in term: ", term);
                 term = term.replace(/%5B/g, "%5C%5B");
                 term = term.replace(/%5D/g, "%5C%5D");
-              } else {
-                console.log("Not escaping square brackets in term: ", term);
               }
 
                 return term;
