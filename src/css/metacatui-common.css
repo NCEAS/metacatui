@@ -8983,7 +8983,7 @@ body > #extension-is-installed{
 	margin-bottom: 3px;
 }
 
-.citation.header .top-info {
+.citation.header .top-info > *:not(.id) {
   text-transform: uppercase;
 	font-size: 13px;
 	letter-spacing: 0.02em;
