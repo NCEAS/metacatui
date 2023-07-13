@@ -1782,9 +1782,14 @@ h5.result-header-count {
 }
 
 /*-- Pagination widget --*/
+#results-container .pagination {
+  z-index: 1000;
+  position: relative;
+
+}
 .pagination {
   padding-left: 10px;
-  margin: 0px 0px 10px;
+  margin: 0px 0px 30px;
 }
 
 .pagination ul {
