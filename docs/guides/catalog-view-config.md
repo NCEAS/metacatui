@@ -9,7 +9,7 @@ This page provides instructions on how to customize a the main search page for a
 
 The 3D map uses the `cesium.js` library. For more information about Cesium and how to configure a Cesium Map model in general, see the general [Cesium guide](/guides/maps/cesium.html).
 
-With the x.x.x release, MetacatUI introduced a new [`CatalogSearchView`](/docs/CatalogSearchView.html) that renders the main search page. This new view replaces the `DataCatalogView` that used Google Maps. The `DataCatalogView` will be deprecated in a future release, but to give time for repositories to migrate to the new `CatalogSearchView`, the `DataCatalogView` will remain the default view for the time being.
+With the 2.25.0 release, MetacatUI introduced a new [`CatalogSearchView`](/docs/CatalogSearchView.html) that renders the main search page. This new view replaces the `DataCatalogView` that used Google Maps. The `DataCatalogView` will be deprecated in a future release, but to give time for repositories to migrate to the new `CatalogSearchView`, the `DataCatalogView` will remain the default view for the time being.
 
 To enable the new `CatalogSearchView`, set the following properties in your [configuration file](/docs/AppConfig.html):
 
