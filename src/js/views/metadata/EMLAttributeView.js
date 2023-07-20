@@ -64,7 +64,7 @@ define([
        * attribute
        */
       initialize: function (options) {
-        if (!options || options != "object") options = {};
+        if (!options || typeof options != "object") options = {};
         this.isNew =
           options.isNew == true ? true : options.model ? false : true;
         this.model =
