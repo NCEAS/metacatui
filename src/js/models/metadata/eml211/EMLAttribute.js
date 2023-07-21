@@ -481,25 +481,27 @@ define(["jquery", "underscore", "backbone", "uuid",
             		errors.measurementScale = "Choose a measurement scale category for this attribute.";
             	}
             	else{
-            		var measurementScaleIsValid = measurementScaleModel.isValid();
-
-            		// If there is a measurement scale model and it is valid and there are no other
-            		// errors, then trigger this model as valid and exit.
-                	if( measurementScaleIsValid && !Object.keys(errors).length ){
-
-            			this.trigger("valid", this);
-            			return;
-
-                	}
-                	else if( !measurementScaleIsValid ){
+                    if( !measurementScaleModel.isValid() ){
                 		errors.measurementScale = "More information is needed.";
                 	}
-            	}
+                }
+                
+                // Validate the missing value codes
+                var missingValueCodesErrors = this.get("missingValueCodes")?.validate();
+                if (missingValueCodesErrors) {
+                    // Just display the first error message
+                    errors.missingValueCodes = Object.values(missingValueCodesErrors)[0]
+                }
 
-            	//If there is at least one error, then return the errors object
-            	if(Object.keys(errors).length)
-            		return errors;
-
+                // If there is a measurement scale model and it is valid and there are no other
+                // errors, then trigger this model as valid and exit.
+                if (!Object.keys(errors).length) {
+                    this.trigger("valid", this);
+                    return;
+                } else {
+                    //If there is at least one error, then return the errors object
+                    return errors;
+                }
             },
 
             /*

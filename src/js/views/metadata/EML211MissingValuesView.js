@@ -19,7 +19,7 @@ define([
    * "Remove" button next to the code. A new row of inputs will automatically be
    * added to the view when the user starts typing in the last row of inputs.
    * @classcategory Views/Metadata
-   * @screenshot views/metadata/EMLMissingValuesView.png // <- TODO
+   * @screenshot views/metadata/EMLMissingValuesView.png
    * @extends Backbone.View
    * @since x.x.x
    */
@@ -101,6 +101,7 @@ define([
         }
         this.setListeners();
         this.el.innerHTML = "";
+        this.el.setAttribute("data-category", "missingValueCodes");
         this.renderText();
         this.renderRows();
 
@@ -125,7 +126,6 @@ define([
 
         this.notification = document.createElement("p");
         this.notification.classList.add(this.classes.notification);
-        this.notification.setAttribute("data-category", "missingValueCodes");
         this.el.appendChild(this.notification);
 
       },

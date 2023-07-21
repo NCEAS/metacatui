@@ -12,7 +12,7 @@ define([
    * collection, the view will also provide a button to remove the model from
    * the collection.
    * @classcategory Views/Metadata
-   * @screenshot views/metadata/EMLMissingValueView.png // <- TODO
+   * @screenshot views/metadata/EMLMissingValueView.png
    * @extends Backbone.View
    * @since x.x.x
    */
