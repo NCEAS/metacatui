@@ -44,12 +44,10 @@ define(["backbone", "models/metadata/eml211/EMLMissingValueCode"], function (
 
       /**
        * Update the DOM with the current model state for each model in the
-       * collection, then return the set of updated DOMs. Warning: this will
-       * remove any empty models from the collection.
+       * collection, then return the set of updated DOMs.
        * @returns {Element[]} An array of updated DOM elements
        */
       updateDOM: function () {
-        this.removeEmptyModels();
         const objectDOMs = this.map((model) => model.updateDOM());
         return objectDOMs;
       },
@@ -67,7 +65,6 @@ define(["backbone", "models/metadata/eml211/EMLMissingValueCode"], function (
        * @returns {Array} An array of error messages
        */
       validate: function () {
-        this.removeEmptyModels();
         const errors = [];
         this.forEach((model) => {
           if (!model.isValid()) {

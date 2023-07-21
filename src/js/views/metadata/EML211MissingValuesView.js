@@ -28,10 +28,52 @@ define([
       tagName: "div",
 
       /**
+       * The type of View this is
+       * @type {string}
+       */
+      type: "EMLMissingValueCodesView",
+
+      /**
        * The className to add to the view container
        * @type {string}
        */
       className: "eml-missing-values",
+
+      /**
+       * The classes to add to the HTML elements in this view
+       * @type {Object}
+       * @property {string} title - The class to add to the title element
+       * @property {string} description - The class to add to the description
+       * paragraph element
+       * @property {string} notification - The class to add to the validation
+       * message container element
+       * @property {string} rows - The class to add to the container element for
+       * the missing value code rows
+       */
+      classes: {
+        title: "",
+        description: "subtle",
+        notification: "notification",
+        rows: "eml-missing-value-rows",
+      },
+
+      /**
+       * User-facing text strings that will be displayed in this view.
+       * @type {Object}
+       * @property {string} title - The title text for this view
+       * @property {string[]} description - The description text for this view.
+       * Each string in the array will be rendered as a separate paragraph.
+       */
+      text: {
+        title: "Missing Value Codes",
+        description: [
+          `Specify the symbols or codes used to denote missing or
+          unavailable data in this attribute. Enter the symbol or number
+          representing the missing data along with a brief description
+          of why this code is used.`,
+          `Examples: "-9999, Sensor down time" or "NA, record not available"`,
+        ]
+      },
 
       /**
        * Creates a new EMLMissingValuesView
@@ -59,14 +101,50 @@ define([
         }
         this.setListeners();
         this.el.innerHTML = "";
-        // TODO: add description & title (use template?)
+        this.renderText();
+        this.renderRows();
+
+        return this;
+      },
+
+      /**
+       * Add the title, description, and placeholder for a validation message.
+       */
+      renderText: function () {
+
+        this.title = document.createElement("h5");
+        this.title.innerHTML = this.text.title;
+        this.el.appendChild(this.title);
+
+        this.text.description.forEach(descText => {
+          this.description = document.createElement("p");
+          this.description.classList.add(this.classes.description);
+          this.description.innerHTML = descText;
+          this.el.appendChild(this.description);
+        });
+
+        this.notification = document.createElement("p");
+        this.notification.classList.add(this.classes.notification);
+        this.notification.setAttribute("data-category", "missingValueCodes");
+        this.el.appendChild(this.notification);
+
+      },
+
+      /**
+       * Renders the rows for each missing value code in the collection, and
+       * adds a new row for entry of a new missing value code.
+       */
+      renderRows: function () {
+        // Create the div to hold each row
+        this.rows = document.createElement("div");
+        this.rows.classList.add(this.classes.rows);
+        this.el.appendChild(this.rows);
+
         this.collection.each((model) => {
           this.addRow(model);
         });
         // For entry of new values
         this.addNewRow();
-
-        return this;
       },
 
       /**
@@ -84,6 +162,8 @@ define([
         this.removeListeners();
         // Add a row to the view when a model is added to the collection
         this.listenTo(this.collection, "add", this.addRow);
+        // Make sure that removed models are removed from the view
+        this.listenTo(this.collection, "remove", this.removeRow);
       },
 
       /**
@@ -91,6 +171,7 @@ define([
        */
       removeListeners: function () {
         this.stopListening(this.collection, "add");
+        this.stopListening(this.collection, "remove");
       },
 
       /**
@@ -126,12 +207,32 @@ define([
           isNew: isNew,
         }).render();
 
+        // Add the model ID to the row view so we can match it to the model
+        // Used by this.removeRow()
+        rowView.el.setAttribute("data-model-id", model.cid);
+
         // Insert the row into the view
-        this.el.append(rowView.el);
+        this.rows.append(rowView.el);
 
         // If a user types in the last row, add a new row
         if (isNew) {
           this.listenToOnce(rowView, "change:isNew", this.addNewRow);
+        }
+      },
+
+      /**
+       * Removes a row view from this view
+       * @param {EMLMissingValueCode} model - The model to remove a row for
+       * @returns {EML211MissingValueView} The row view that was removed
+       */
+      removeRow: function (model) {
+        if (!model instanceof EMLMissingValueCode) return;
+        const rowView = this.el.querySelector(
+          `[data-model-id="${model.cid}"]`
+        );
+        if (rowView) {
+          rowView.remove();
+          return rowView;
         }
       },
 

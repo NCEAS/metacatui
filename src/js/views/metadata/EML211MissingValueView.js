@@ -1,8 +1,9 @@
 /* global define */
-define(["backbone", "models/metadata/eml211/EMLMissingValueCode"], function (
-  Backbone,
-  EMLMissingValueCode
-) {
+define([
+  "jquery",
+  "backbone",
+  "models/metadata/eml211/EMLMissingValueCode",
+], function ($, Backbone, EMLMissingValueCode) {
   /**
    * @class EMLMissingValueView
    * @classdesc An EMLMissingValueView provides an editing interface for a
@@ -20,10 +21,16 @@ define(["backbone", "models/metadata/eml211/EMLMissingValueCode"], function (
       tagName: "div",
 
       /**
+       * The type of View this is
+       * @type {string}
+       */
+      type: "EMLMissingValueCodeView",
+
+      /**
        * The className to add to the view container
        * @type {string}
        */
-      className: "eml-missing-values",
+      className: "eml-missing-value",
 
       /**
        * The classes to add to the HTML elements in this view
@@ -31,7 +38,7 @@ define(["backbone", "models/metadata/eml211/EMLMissingValueCode"], function (
        * @property {string} removeButton - The class to add to the remove button
        */
       classes: {
-        removeButton: "remove",
+        removeButton: "reset-btn-styles",
         codeInput: "code",
         codeExplanationInput: "codeExplanation",
       },
@@ -43,11 +50,21 @@ define(["backbone", "models/metadata/eml211/EMLMissingValueCode"], function (
        * input
        * @property {string} codeExplanationPlaceholder - The placeholder text
        * for the code explanation input
+       * @property {string} removeButton - The text for the remove button
        */
       text: {
         codePlaceholder: "Missing Value Code",
         codeExplanationPlaceholder: "Missing Value Code Explanation",
+        removeButton: "Remove",
       },
+
+      /**
+       * The HTML for the remove button
+       * @type {string}
+       */
+      buttonHTML: `<button type="button">
+          <i class="icon icon-remove remove"></i>
+        </button>`,
 
       /**
        * Set this to true if this row is for a blank input row. This will
@@ -130,9 +147,9 @@ define(["backbone", "models/metadata/eml211/EMLMissingValueCode"], function (
         if (this.isNew) {
           this.trigger("change:isNew");
           this.isNew = false;
-          if (!this.removeButton) {
-            this.renderRemoveButton();
-          }
+        }
+        if (!this.removeButton) {
+          this.renderRemoveButton();
         }
         // Update the model with the new value in whichever input was typed in
         this.updateModelFromInput(e.target.name);
@@ -168,17 +185,53 @@ define(["backbone", "models/metadata/eml211/EMLMissingValueCode"], function (
        */
       renderRemoveButton: function () {
         // The model must be part of a collection to remove it from anything
-        if (!this.model.collection) return;
-        if (this.button) this.button.remove();
-        const button = document.createElement("button");
-        button.setAttribute("type", "button");
+        if (!this.model.collection) {
+          console.warn(
+            "The model must be part of a collection to render a remove button."
+          );
+          return;
+        }
+        if (this.removeButton) this.removeButton.remove();
+
+        const buttonHTML = this.buttonHTML || `<button>X</button>`;
+        const $button = $(buttonHTML).tooltip({
+          title: this.text.removeButton || "Remove",
+          placement: "top",
+          trigger: "hover",
+        });
+        const button = $button[0];
+
         button.classList.add(this.classes.removeButton);
-        button.textContent = "Remove";
+        button.setAttribute("type", "button");
         this.el.appendChild(button);
-        this.button = button;
+
         // remove self when the button is clicked
         button.addEventListener("click", this.removeSelf.bind(this));
+        // Show a preview of what will happen when the button is clicked
+        button.addEventListener("mouseover", this.previewRemove.bind(this));
+        // Undo the preview when the mouse leaves the button
+        button.addEventListener("mouseout", this.undoPreviewRemove.bind(this));
+
+        this.removeButton = button;
         return button;
+      },
+
+      /**
+       * When the button is hovered over, indicate visually that the row will
+       * be removed when the button is clicked
+       */
+      previewRemove: function () {
+        this.codeInput.style.opacity = 0.5;
+        this.codeExplanationInput.style.opacity = 0.5;
+      },
+
+      /**
+       * When the button is no longer hovered over, undo the visual indication
+       * that the row will be removed when the button is clicked
+       */
+      undoPreviewRemove: function () {
+        this.codeInput.style.opacity = 1;
+        this.codeExplanationInput.style.opacity = 1;
       },
 
       /**

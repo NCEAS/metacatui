@@ -86,7 +86,12 @@ define(["backbone"], function (Backbone) {
           }
         });
 
-        return $objectDOM[0];
+        if (this.isEmpty()) {
+          return null;
+        } else {
+          return $objectDOM[0];
+        }
+        
       },
 
       /**
