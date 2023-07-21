@@ -194,10 +194,6 @@ define(
             // raised.
             view.camera.percentChanged = 0.1
 
-            // Zoom functions executed after each scene render
-            view.scene.postRender.addEventListener(function () {
-              view.postRender();
-            });
 
             // Disable HDR lighting for better performance and to avoid changing imagery colors.
             view.scene.highDynamicRange = false;
@@ -224,73 +220,17 @@ define(
               view.updateDataSourceDisplay.call(view)
             })
 
+            view.setListeners();
+            view.addLayers();
+
             // Go to the home position, if one is set.
             view.flyHome(0)
 
-            // If users are allowed to click on features for more details, initialize
-            // picking behavior on the map.
+            // If users are allowed to click on features for more details,
+            // initialize picking behavior on the map.
             if (view.model.get('showFeatureInfo')) {
               view.initializePicking()
             }
-
-            // Set listeners for when the Cesium camera changes a significant amount.
-            view.camera.changed.addEventListener(function () {
-              view.trigger('moved')
-              view.model.trigger('moved')
-              // Update the bounding box for the visible area in the Map model
-              view.updateViewExtent()
-              // If the scale bar is showing, update the pixel to meter scale on the map
-              // model when the camera angle/zoom level changes
-              if (view.model.get('showScaleBar')) {
-                view.updateCurrentScale()
-              }
-            })
-
-            view.camera.moveEnd.addEventListener(function () {
-              view.trigger('moveEnd')
-              view.model.trigger('moveEnd')
-            })
-            view.camera.moveStart.addEventListener(function () {
-              view.trigger('moveStart')
-              view.model.trigger('moveStart')
-            })
-
-            // Sets listeners for when the mouse moves, depending on the value of the map
-            // model's showScaleBar and showFeatureInfo attributes
-            view.setMouseMoveListeners()
-
-            // When the appearance of a layer has been updated, then tell Cesium to
-            // re-render the scene. Each layer model triggers the 'appearanceChanged'
-            // function whenever the color, opacity, etc. has been updated in the
-            // associated Cesium model.
-            view.stopListening(view.model.get('layers'), 'appearanceChanged')
-            view.listenTo(view.model.get('layers'), 'appearanceChanged', view.requestRender)
-
-            // Other views may trigger an event on the layer/asset model that indicates
-            // that the map should navigate to the extent of the data, or on the Map model
-            // to navigate to the home position.
-            view.stopListening(view.model.get('layers'), 'flyToExtent')
-            view.listenTo(view.model.get('layers'), 'flyToExtent', view.flyTo)
-            view.stopListening(view.model, 'flyHome')
-            view.listenTo(view.model, 'flyHome', view.flyHome)
-
-            // Add each layer from the Map model to the Cesium widget. Render using the
-            // function configured in the View's mapAssetRenderFunctions property. Add in
-            // reverse order for layers to appear in the correct order on the map.
-            const layers = view.model.get('layers')
-            _.each(layers.last(layers.length).reverse(), function (mapAsset) {
-              view.addAsset(mapAsset)
-            });
-
-            // The Cesium Widget will support just one terrain option to start. Later,
-            // we'll allow users to switch between terrains if there is more than one.
-            var terrains = view.model.get('terrains')
-            var terrainModel = terrains ? terrains.first() : false;
-            if (terrainModel) {
-              view.addAsset(terrainModel)
-            }
-
-
 
             return this
 
@@ -299,6 +239,129 @@ define(
             console.log(
               'Failed to render a CesiumWidgetView. Error details: ' + error
             );
+          }
+        },
+
+        /**
+         * Set all of the listeners for the CesiumWidgetView. This function is
+         * called during the render function.
+         * @since x.x.x
+         */
+        setListeners: function () {
+
+          const view = this;
+
+          // Zoom functions executed after each scene render
+          view.scene.postRender.addEventListener(function () {
+            view.postRender();
+          });
+
+          // When the user first interacts with the map, update the model.
+          // Ignore the event where the user just moves the mouse over the map.
+          view.listenOnceForInteraction(function () {
+            view.model.set('firstInteraction', true);
+          }, ["MOUSE_MOVE"]);
+
+          // Set listeners for when the Cesium camera changes a significant
+          // amount.
+          view.camera.changed.addEventListener(function () {
+            view.trigger('moved')
+            view.model.trigger('moved')
+            // Update the bounding box for the visible area in the Map model
+            view.updateViewExtent()
+            // If the scale bar is showing, update the pixel to meter scale on
+            // the map model when the camera angle/zoom level changes
+            if (view.model.get('showScaleBar')) {
+              view.updateCurrentScale()
+            }
+          })
+
+          view.camera.moveEnd.addEventListener(function () {
+            view.trigger('moveEnd')
+            view.model.trigger('moveEnd')
+          })
+          view.camera.moveStart.addEventListener(function () {
+            view.trigger('moveStart')
+            view.model.trigger('moveStart')
+          })
+
+          // Sets listeners for when the mouse moves, depending on the value
+          // of the map model's showScaleBar and showFeatureInfo attributes
+          view.setMouseMoveListeners()
+
+          // When the appearance of a layer has been updated, then tell Cesium
+          // to re-render the scene. Each layer model triggers the
+          // 'appearanceChanged' function whenever the color, opacity, etc.
+          // has been updated in the associated Cesium model.
+          view.stopListening(view.model.get('layers'), 'appearanceChanged')
+          view.listenTo(view.model.get('layers'), 'appearanceChanged', view.requestRender)
+
+          // Other views may trigger an event on the layer/asset model that
+          // indicates that the map should navigate to the extent of the data,
+          // or on the Map model to navigate to the home position.
+          view.stopListening(view.model.get('layers'), 'flyToExtent')
+          view.listenTo(view.model.get('layers'), 'flyToExtent', view.flyTo)
+          view.stopListening(view.model, 'flyHome')
+          view.listenTo(view.model, 'flyHome', view.flyHome)
+        },
+
+        /**
+         * Listen for any user interaction with the map. Once an interaction has
+         * occurred, run the callback function and stop listening for
+         * interactions. Useful for detecting the first user interaction with the
+         * map.
+         * @param {function} callback - The function to run once the interaction
+         * has occurred.
+         * @param {string[]} ignore - An array of Cesium.ScreenSpaceEventType
+         * labels to ignore. See
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/ScreenSpaceEventType.html}
+         * @since x.x.x
+         */
+        listenOnceForInteraction: function (
+          callback,
+          ignore = []
+        ) {
+          const view = this;
+          const events = Cesium.ScreenSpaceEventType;
+          const inputHandler = new Cesium.ScreenSpaceEventHandler(
+            view.scene.canvas
+          );
+          if (!ignore || !Array.isArray(ignore)) ignore = [];
+
+          Object.entries(events).forEach(function ([label, value]) {
+            if (ignore.includes(label)) return;
+            inputHandler.setInputAction(function () {
+              callback();
+              inputHandler.destroy();
+            }, value);
+          });
+        },
+
+        /**
+         * Add all of the model's layers to the map. This function is called
+         * during the render function.
+         * @since x.x.x
+         */
+        addLayers: function () {
+
+          const view = this;
+
+          // Add each layer from the Map model to the Cesium widget. Render
+          // using the function configured in the View's mapAssetRenderFunctions
+          // property. Add in reverse order for layers to appear in the correct
+          // order on the map.
+          const layers = view.model.get('layers')
+          _.each(layers.last(layers.length).reverse(), function (mapAsset) {
+            view.addAsset(mapAsset)
+          });
+
+          // The Cesium Widget will support just one terrain option to start.
+          // Later, we'll allow users to switch between terrains if there is
+          // more than one.
+          var terrains = view.model.get('terrains')
+          var terrainModel = terrains ? terrains.first() : false;
+          if (terrainModel) {
+            view.addAsset(terrainModel)
           }
         },
 
