@@ -260,21 +260,6 @@ define([
         // Remove the view from the DOM
         this.remove();
       },
-
-      /**
-       * Shows validation errors on this view
-       */
-      showValidation: function () {
-        //TODO
-      },
-
-      /**
-       * Hides validation errors on this view
-       * @param {Event} e - The event that was triggered by the user
-       */
-      hideValidation: function () {
-        // TODO
-      },
     }
   );
 

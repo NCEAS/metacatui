@@ -72,7 +72,7 @@ define([
           representing the missing data along with a brief description
           of why this code is used.`,
           `Examples: "-9999, Sensor down time" or "NA, record not available"`,
-        ]
+        ],
       },
 
       /**
@@ -112,12 +112,11 @@ define([
        * Add the title, description, and placeholder for a validation message.
        */
       renderText: function () {
-
         this.title = document.createElement("h5");
         this.title.innerHTML = this.text.title;
         this.el.appendChild(this.title);
 
-        this.text.description.forEach(descText => {
+        this.text.description.forEach((descText) => {
           this.description = document.createElement("p");
           this.description.classList.add(this.classes.description);
           this.description.innerHTML = descText;
@@ -127,7 +126,6 @@ define([
         this.notification = document.createElement("p");
         this.notification.classList.add(this.classes.notification);
         this.el.appendChild(this.notification);
-
       },
 
       /**
@@ -227,28 +225,11 @@ define([
        */
       removeRow: function (model) {
         if (!model instanceof EMLMissingValueCode) return;
-        const rowView = this.el.querySelector(
-          `[data-model-id="${model.cid}"]`
-        );
+        const rowView = this.el.querySelector(`[data-model-id="${model.cid}"]`);
         if (rowView) {
           rowView.remove();
           return rowView;
         }
-      },
-
-      /**
-       * Shows validation errors on this view
-       */
-      showValidation: function () {
-        //TODO
-      },
-
-      /**
-       * Hides validation errors on this view
-       * @param {Event} e - The event that was triggered by the user
-       */
-      hideValidation: function () {
-        // TODO
       },
     }
   );
