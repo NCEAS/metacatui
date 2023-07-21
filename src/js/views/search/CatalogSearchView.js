@@ -93,13 +93,25 @@ define([
       filtersVisible: true,
 
       /**
-       * Whether to limit the search to the extent of the map. If true, the
-       * search will update when the user pans or zooms the map.
+       * Whether to limit the search to the extent of the map. When true, the
+       * search will update when the user pans or zooms the map. This property
+       * will be updated when the user clicks the map filter toggle. Whatever is
+       * set during the initial render will be the default.
        * @type {boolean}
        * @since 2.25.0
+       * @default false
+       */
+      limitSearchToMapArea: false,
+
+      /**
+       * Whether to limit the search to the extent the first time the user
+       * interacts with the map. This only applies if limitSearchToMapArea is
+       * initially set to false.
+       * @type {boolean}
+       * @since x.x.x
        * @default true
        */
-      limitSearchToMapArea: true,
+      limitSearchToMapOnInteraction: true,
 
       /**
        * The View that displays the search results. The render method will be
@@ -300,8 +312,9 @@ define([
             addSpatialFilter: options.addSpatialFilter !== false,
           });
         }
-        model.connect();
+
         this.model = model;
+        this.model.connect();
       },
 
       /**
@@ -317,6 +330,9 @@ define([
 
         // Render the search components
         this.renderComponents();
+
+        // Set up the initial map toggle state
+        this.setMapToggleState();
       },
 
       /**
@@ -355,6 +371,27 @@ define([
       },
 
       /**
+       * Sets the initial state of the map filter toggle. Optionally listens
+       * for the first user interaction with the map before turning on the
+       * spatial filter.
+       * @since x.x.x
+       */
+      setMapToggleState: function () {
+        // Set the initial state of the spatial filter
+        this.toggleMapFilter(this.limitSearchToMapArea);
+
+        if (this.limitSearchToMapOnInteraction && !this.limitSearchToMapArea) {
+          this.listenToOnce(
+            this.model.get("map"),
+            "change:firstInteraction",
+            function () {
+              this.toggleMapFilter(true);
+            }
+          );
+        }
+      },
+
+      /**
        * Sets up the basic components of this view
        * @since 2.22.0
        */
@@ -373,7 +410,11 @@ define([
           this.addLinkedData();
 
           // Render the template
-          this.$el.html(this.template({}));
+          this.$el.html(
+            this.template({
+              mapFilterOn: this.limitSearchToMapArea === true,
+            })
+          );
         } catch (e) {
           console.log(
             "There was an error setting up the CatalogSearchView:" + e
@@ -817,12 +858,25 @@ define([
             ? !this.limitSearchToMapArea // the opposite of the current mode
             : newSetting; // the provided new mode if it is a boolean
 
+        // Select the map filter toggle checkbox so that we can keep it in sync
+        // with the new setting
+        let mapFilterToggle = this.el.querySelector(this.mapFilterToggle);
+        // If it's not a checkbox input, find the child checkbox input
+        if (mapFilterToggle && mapFilterToggle.tagName != "INPUT") {
+          mapFilterToggle = mapFilterToggle.querySelector("input");
+        }
         if (newSetting) {
           // If true, then the filter should be ON
           this.model.connectFiltersMap();
+          if (mapFilterToggle) {
+            mapFilterToggle.checked = true;
+          }
         } else {
           // If false, then the filter should be OFF
           this.model.disconnectFiltersMap(true);
+          if (mapFilterToggle) {
+            mapFilterToggle.checked = false;
+          }
         }
         this.limitSearchToMapArea = newSetting;
       },
