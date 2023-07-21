@@ -29,12 +29,15 @@ define(["backbone", "models/metadata/eml211/EMLMissingValueCode"], function (
         if (!objectDOM) return;
         const $objectDOM = $(objectDOM);
 
+        // Get all of the missingValueCode nodes
+        const nodeName = "missingvaluecode";
+        const nodes = $objectDOM.filter(nodeName);
         // Loop through each missingValueCode node
         const opts = { parse: true };
-        for (var i = 0; i < $objectDOM.length; i++) {
-          const missingValueCodeNode = $objectDOM[i];
+        for (let i = 0; i < nodes.length; i++) {
+          const node = nodes[i];
           // Create a new missingValueCode model & add it to the collection
-          const attrs = { objectDOM: missingValueCodeNode };
+          const attrs = { objectDOM: node };
           const missingValueCode = new EMLMissingValueCode(attrs, opts);
           collection.add(missingValueCode);
         }
@@ -71,7 +74,9 @@ define(["backbone", "models/metadata/eml211/EMLMissingValueCode"], function (
             errors.push(model.validationError);
           }
         });
-        return errors.length ? errors : null;
+        // return errors.length ? errors : null;
+        // For now, if there is at least one error, just return the first one
+        return errors.length ? errors[0] : null;
       },
     }
   );

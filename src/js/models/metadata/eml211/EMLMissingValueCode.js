@@ -48,12 +48,14 @@ define(["backbone"], function (Backbone) {
        * @return {string} The XML string
        */
       serialize: function () {
-        const xml = this.updateDOM().outerHTML;
-        const nodes = this.get("nodeOrder");
+        let xml = this.updateDOM().outerHTML;
+        const elNames = this.get("nodeOrder");
+        elNames.push(this.get("type"));
         // replace lowercase node names with camelCase
-        nodes.forEach((node) => {
-          xml.replace(`<${node.toLowerCase()}>`, `<${node}>`);
-          xml.replace(`</${node.toLowerCase()}>`, `</${node}>`);
+        elNames.forEach((elName) => {
+          let elNameLower = elName.toLowerCase();
+          xml = xml.replace(`<${elNameLower}>`, `<${elName}>`);
+          xml = xml.replace(`</${elNameLower}>`, `</${elName}>`);
         });
         return xml;
       },
@@ -91,7 +93,6 @@ define(["backbone"], function (Backbone) {
         } else {
           return $objectDOM[0];
         }
-        
       },
 
       /**
@@ -104,39 +105,27 @@ define(["backbone"], function (Backbone) {
 
       /**
        * Validate the model attributes
-       * @return {object} The validation errors, if any
+       * @return {object|undefined} The validation errors, if any
        */
-      validate: function () {
+      validate() {
         if (this.isEmpty()) return undefined;
 
-        const errors = [];
+        const errors = {};
 
         // Need a code and an explanation. Both must be non-empty strings.
-        let code = this.get("code");
-        let codeExplanation = this.get("codeExplanation");
-        if (
-          !code ||
-          !codeExplanation ||
-          typeof code !== "string" ||
-          typeof codeExplanation !== "string"
-        ) {
-          errors.missingValueCode =
-            "Missing value code and explanation are required.";
-          return errors;
-        }
-        code = code.trim();
-        codeExplanation = codeExplanation.trim();
+        let code = this.get("code")?.trim();
+        let codeExplanation = this.get("codeExplanation")?.trim();
+
         this.set("code", code);
         this.set("codeExplanation", codeExplanation);
 
-        // Code must be a non-empty string
         if (!code || !codeExplanation) {
           errors.missingValueCode =
-            "Missing value code and explanation are required.";
+            "Both a missing value code and explanation are required.";
           return errors;
         }
 
-        return errors.length > 0 ? errors : undefined;
+        return Object.keys(errors).length > 0 ? errors : undefined;
       },
     }
   );
