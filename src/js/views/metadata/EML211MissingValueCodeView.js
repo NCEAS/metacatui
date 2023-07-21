@@ -5,19 +5,19 @@ define([
   "models/metadata/eml211/EMLMissingValueCode",
 ], function ($, Backbone, EMLMissingValueCode) {
   /**
-   * @class EMLMissingValueView
-   * @classdesc An EMLMissingValueView provides an editing interface for a
+   * @class EMLMissingValueCodeView
+   * @classdesc An EMLMissingValueCodeView provides an editing interface for a
    * single EML Missing Value Code. The view provides two inputs, one of the
    * code and one for the code explanation. If the model is part of a
    * collection, the view will also provide a button to remove the model from
    * the collection.
    * @classcategory Views/Metadata
-   * @screenshot views/metadata/EMLMissingValueView.png
+   * @screenshot views/metadata/EMLMissingValueCodeView.png
    * @extends Backbone.View
    * @since x.x.x
    */
-  var EMLMissingValueView = Backbone.View.extend(
-    /** @lends EMLMissingValueView.prototype */ {
+  var EMLMissingValueCodeView = Backbone.View.extend(
+    /** @lends EMLMissingValueCodeView.prototype */ {
       tagName: "div",
 
       /**
@@ -76,7 +76,7 @@ define([
       isNew: false,
 
       /**
-       * Creates a new EMLMissingValueView
+       * Creates a new EMLMissingValueCodeView
        * @param {Object} options - A literal object with options to pass to the
        * view
        * @param {EMLAttribute} [options.model] - The EMLMissingValueCode model
@@ -90,13 +90,13 @@ define([
 
       /**
        * Renders this view
-       * @return {EMLMissingValueView} A reference to this view
+       * @return {EMLMissingValueCodeView} A reference to this view
        */
       render: function () {
         try {
           if (!this.model) {
             console.warn(
-              "An EMLMissingValueView model is required to render this view."
+              "An EMLMissingValueCodeView model is required to render this view."
             );
             return this;
           }
@@ -116,7 +116,7 @@ define([
 
           return this;
         } catch (error) {
-          console.log("Error rendering EMLMissingValueView", error);
+          console.log("Error rendering EMLMissingValueCodeView", error);
         }
       },
 
@@ -278,5 +278,5 @@ define([
     }
   );
 
-  return EMLMissingValueView;
+  return EMLMissingValueCodeView;
 });

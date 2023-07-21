@@ -3,28 +3,28 @@ define([
   "backbone",
   "models/metadata/eml211/EMLMissingValueCode",
   "collections/metadata/eml/EMLMissingValueCodes",
-  "views/metadata/EML211MissingValueView",
+  "views/metadata/EML211MissingValueCodeView",
 ], function (
   Backbone,
   EMLMissingValueCode,
   EMLMissingValueCodes,
-  EML211MissingValueView
+  EML211MissingValueCodeView
 ) {
   /**
-   * @class EMLMissingValuesView
-   * @classdesc An EMLMissingValuesView provides an editing interface for an EML
+   * @class EMLMissingValueCodesView
+   * @classdesc An EMLMissingValueCodesView provides an editing interface for an EML
    * Missing Value Codes collection. For each missing value code, the view
    * provides two inputs, one of the code and one for the code explanation. Each
    * missing value code can be removed from the collection by clicking the
    * "Remove" button next to the code. A new row of inputs will automatically be
    * added to the view when the user starts typing in the last row of inputs.
    * @classcategory Views/Metadata
-   * @screenshot views/metadata/EMLMissingValuesView.png
+   * @screenshot views/metadata/EMLMissingValueCodesView.png
    * @extends Backbone.View
    * @since x.x.x
    */
-  var EMLMissingValuesView = Backbone.View.extend(
-    /** @lends EMLMissingValuesView.prototype */ {
+  var EMLMissingValueCodesView = Backbone.View.extend(
+    /** @lends EMLMissingValueCodesView.prototype */ {
       tagName: "div",
 
       /**
@@ -76,7 +76,7 @@ define([
       },
 
       /**
-       * Creates a new EMLMissingValuesView
+       * Creates a new EMLMissingValueCodesView
        * @param {Object} options - A literal object with options to pass to the
        * view
        * @param {EMLAttribute} [options.collection] - The EMLMissingValueCodes
@@ -89,12 +89,12 @@ define([
 
       /**
        * Renders this view
-       * @return {EMLMissingValuesView} A reference to this view
+       * @return {EMLMissingValueCodesView} A reference to this view
        */
       render: function () {
         if (!this.collection) {
           console.warn(
-            `The EMLMissingValuesView requires a MissingValueCodes collection` +
+            `The EMLMissingValueCodesView requires a MissingValueCodes collection` +
               ` to render.`
           );
           return;
@@ -193,7 +193,7 @@ define([
        * Creates a new row view for a missing value code model and inserts it
        * into this view at the end.
        * @param {EMLMissingValueCode} model - The model to create a row for
-       * @returns {EML211MissingValueView} The row view that was created
+       * @returns {EML211MissingValueCodeView} The row view that was created
        */
       addRow: function (model) {
         if (!model instanceof EMLMissingValueCode) return;
@@ -202,7 +202,7 @@ define([
         const isNew = this.modelIsNew(model);
 
         // Create and render the row view
-        const rowView = new EML211MissingValueView({
+        const rowView = new EML211MissingValueCodeView({
           model: model,
           isNew: isNew,
         }).render();
@@ -223,7 +223,7 @@ define([
       /**
        * Removes a row view from this view
        * @param {EMLMissingValueCode} model - The model to remove a row for
-       * @returns {EML211MissingValueView} The row view that was removed
+       * @returns {EML211MissingValueCodeView} The row view that was removed
        */
       removeRow: function (model) {
         if (!model instanceof EMLMissingValueCode) return;
@@ -253,5 +253,5 @@ define([
     }
   );
 
-  return EMLMissingValuesView;
+  return EMLMissingValueCodesView;
 });

@@ -7,7 +7,7 @@ define([
   "models/metadata/eml211/EMLAttribute",
   "models/metadata/eml211/EMLMeasurementScale",
   "views/metadata/EMLMeasurementScaleView",
-  "views/metadata/EML211MissingValuesView",
+  "views/metadata/EML211MissingValueCodesView",
   "text!templates/metadata/eml-attribute.html",
 ], function (
   _,
@@ -17,7 +17,7 @@ define([
   EMLAttribute,
   EMLMeasurementScale,
   EMLMeasurementScaleView,
-  EML211MissingValuesView,
+  EML211MissingValueCodesView,
   EMLAttributeTemplate
 ) {
   /**
@@ -116,12 +116,12 @@ define([
         this.measurementScaleView = measurementScaleView;
 
         // Create and insert a missing values view
-        const missingValuesView = new EML211MissingValuesView({
+        const MissingValueCodesView = new EML211MissingValueCodesView({
           collection: this.model.get("missingValueCodes"),
         });
-        missingValuesView.render();
-        this.$(".missing-values-container").append(missingValuesView.el);
-        this.missingValuesView = missingValuesView;
+        MissingValueCodesView.render();
+        this.$(".missing-values-container").append(MissingValueCodesView.el);
+        this.MissingValueCodesView = MissingValueCodesView;
 
         // Mark this view DOM as new if it is a new attribute
         if (this.isNew) {
