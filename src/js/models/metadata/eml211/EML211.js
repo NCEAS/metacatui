@@ -55,8 +55,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               keywordSets: [], //array of EMLKeywordSet objects
               additionalInfo: [],
               intellectualRights: "This work is dedicated to the public domain under the Creative Commons Universal 1.0 Public Domain Dedication. To view a copy of this dedication, visit https://creativecommons.org/publicdomain/zero/1.0/.",
-              onlineDist: [], // array of EMLOnlineDist objects
-              offlineDist: [], // array of EMLOfflineDist objects
+              distribution: [], // array of EMLDistribution objects
               geoCoverage : [], //an array for EMLGeoCoverages
               temporalCoverage : [], //an array of EMLTempCoverage models
               taxonCoverage : [], //an array of EMLTaxonCoverages
@@ -515,13 +514,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               }));
             }
             //EML Distribution modules are stored in EMLDistribution models
-            else if(_.contains(emlDistribution, thisNode.localName)){
+            else if(_.contains(emlDistribution, thisNode.localName)) {
               if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
 
               modelJSON[thisNode.localName].push(new EMLDistribution({
                 objectDOM: thisNode,
                 parentModel: model
-              }));
+              }, { parse: true }));
             }
             //The EML Project is stored in the EMLProject model
             else if(thisNode.localName == "project"){
@@ -1027,6 +1026,24 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               $(document.createElement("intellectualRights"))
                 .html("<para>" + this.get("intellectualRights") + "</para>"));
         }
+      }
+        
+      // Serialize the distribution
+      const distributions = this.get('distribution');
+        if (distributions && distributions.length > 0) {
+        // Remove existing nodes
+        datasetNode.children('distribution').remove();
+        // Get the updated DOMs
+          const distributionDOMs = distributions.map(d => d.updateDOM());
+        // Insert the updated DOMs in their correct positions
+        distributionDOMs.forEach((dom, i) => {
+          const insertAfter = this.getEMLPosition(eml, 'distribution');
+          if (insertAfter) {
+            insertAfter.after(dom);
+          } else {
+            datasetNode.append(dom);
+          }
+        });
       }
 
       //Detach the project elements from the DOM
