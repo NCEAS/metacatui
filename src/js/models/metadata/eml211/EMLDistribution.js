@@ -5,24 +5,61 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
   Backbone,
   DataONEObject
 ) {
+  /**
+   * @class EMLDistribution
+   * @classdesc Information on how the resource is distributed online and offline
+   * @classcategory Models/Metadata/EML211
+   * @see https://eml.ecoinformatics.org/schema/eml-resource_xsd.html#DistributionType
+   * @extends Backbone.Model
+   * @constructor
+   */
   var EMLDistribution = Backbone.Model.extend({
     defaults: {
+      type: "distribution",
       objectXML: null,
       objectDOM: null,
       mediumName: null,
       mediumVolume: null,
       mediumFormat: null,
       mediumNote: null,
+      url: null,
       onlineDescription: null,
       parentModel: null,
     },
 
-    initialize: function (attributes) {
-      if (attributes.objectDOM) this.parse(attributes.objectDOM);
+    /**
+     * The direct children of the <distribution> node that can have values, and
+     * that are supported by this model. "inline" is not supported yet. A
+     * distribution may have ONE of these nodes.
+     * @type {string[]}
+     * @since x.x.x
+     */
+    distLocations: ["offline", "online"],
 
-      this.on(
-        "change:mediumName change:mediumVolume change:mediumFormat " +
-          "change:mediumNote change:onlineDescription",
+    /**
+     * lower-case EML node names that belong within the <offline> node. These must be in the correct order.
+     * @type {string[]}
+     * @since x.x.x
+     */
+    offlineNodes: ["mediumname", "mediumvolume", "mediumformat", "mediumnote"],
+
+    /**
+     * lower-case EML node names that belong within the <online> node. These must be in the correct order.
+     * @type {string[]}
+     * @since x.x.x
+     */
+    onlineNodes: ["url"],
+
+    /**
+     * Initializes this EMLDistribution object
+     * @param {Object} options - A literal object with options to pass to the
+     * model
+     */
+    initialize: function (attributes, options) {
+      const nodeAttr = Object.values(this.nodeNameMap());
+      this.listenTo(
+        this,
+        "change:" + nodeAttr.join(" change:"),
         this.trickleUpChange
       );
     },
@@ -41,47 +78,64 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
         mediumname: "mediumName",
         mediumnote: "mediumNote",
         mediumvolume: "mediumVolume",
-        onlinedescription: "onlineDescription",
+        url: "url",
       };
     },
 
-    parse: function (objectDOM) {
-      if (!objectDOM) var xml = this.get("objectDOM");
+    /**
+     * Parses the given XML node or object and sets the model's attributes
+     * @param {Object} attributes - the attributes passed in when the model is
+     * instantiated. Should include objectDOM or objectXML to be parsed.
+     */
+    parse: function (attributes) {
+      if (!attributes) attributes = {};
+      const objectDOM = attributes.objectDOM || attributes.objectXML;
+      if (!objectDOM) return attributes;
+      const $objectDOM = $(objectDOM);
 
-      var offline = $(xml).find("offline"),
-        online = $(xml).find("online");
+      const nodeNameMap = this.nodeNameMap();
+      this.distLocations.forEach((distLocation) => {
+        const location = $objectDOM.find(distLocation);
+        if (location.length) {
+          this[`${distLocation}Nodes`].forEach((nodeName) => {
+            const value = location.children(nodeName)?.text()?.trim();
+            if (value.length) {
+              attributes[nodeNameMap[nodeName]] = value;
+            }
+          });
+        }
+      });
 
-      if (offline.length) {
-        if ($(offline).children("mediumname").length)
-          this.parseNode($(offline).children("mediumname"));
-        if ($(offline).children("mediumvolume").length)
-          this.parseNode($(offline).children("mediumvolume"));
-        if ($(offline).children("mediumformat").length)
-          this.parseNode($(offline).children("mediumformat"));
-        if ($(offline).children("mediumnote").length)
-          this.parseNode($(offline).children("mediumnote"));
-      }
-
-      if (online.length) {
-        if ($(online).children("onlinedescription").length)
-          this.parseNode($(online).children("onlinedescription"));
-      }
+      return attributes;
     },
 
-    parseNode: function (node) {
-      if (!node || (Array.isArray(node) && !node.length)) return;
-
-      this.set($(node)[0].localName, $(node).text());
-    },
-
+    /**
+     * Returns the XML string representation of this model
+     * @returns {string}
+     */
     serialize: function () {
-      var objectDOM = this.updateDOM(),
-        xmlString = objectDOM.outerHTML;
+      const objectDOM = this.updateDOM();
+      const xmlString = objectDOM.outerHTML;
 
-      //Camel-case the XML
+      // Camel-case the XML
       xmlString = this.formatXML(xmlString);
 
       return xmlString;
+    },
+
+    /**
+     * Check if the model has values for the given distribution location.
+     * @param {string} location - one of the names of the direct children of the
+     * <distribution> node, i.e. any of the values in this.distLocations.
+     * @returns {boolean} - true if the model has values for the given location,
+     * false otherwise.
+     * @since x.x.x
+     */
+    hasValuesForDistributionLocation(location) {
+      const nodeNameMap = this.nodeNameMap();
+      return this[`${location}Nodes`].some((nodeName) => {
+        return this.get(nodeNameMap[nodeName]);
+      });
     },
 
     /*
@@ -89,21 +143,102 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
      * from the model.
      */
     updateDOM: function () {
-      var objectDOM = this.get("objectDOM").cloneNode(true);
+      const objectDOM =
+        this.get("objectDOM") || document.createElement(this.get("type"));
+      const $objectDOM = $(objectDOM);
 
       // Remove empty (zero-length or whitespace-only) nodes
-      $(objectDOM)
+      $objectDOM
         .find("*")
         .filter(function () {
-          return $.trim(this.innerHTML) === "";
+          return !$.trim($(this).text());
         })
         .remove();
 
+      const nodeNameMap = this.nodeNameMap();
+
+      // Determine if this is an online, offline, or inline distribution
+      const distLocation = this.distLocations.find((location) => {
+        return this.hasValuesForDistributionLocation(location);
+      });
+
+      // Remove all other distribution locations
+      this.distLocations.forEach((location) => {
+        if (location !== distLocation) {
+          $objectDOM.find(location).remove();
+        }
+      });
+
+      // Add the distribution location if it doesn't exist
+      if (!$objectDOM.find(distLocation).length) {
+        $objectDOM.append(`<${distLocation}></${distLocation}>`);
+      }
+
+      // For each node in the distribution location, add the value from the
+      // model. If the model value is empty, remove the node. Make sure that we
+      // don't replace any existing nodes, since not all nodes are supported by
+      // this model yet. We also need to ensure that the nodes are in the
+      // correct order.
+      this[`${distLocation}Nodes`].forEach((nodeName) => {
+        const nodeValue = this.get(nodeNameMap[nodeName]);
+        if (nodeValue) {
+          const node = $objectDOM.find(`${distLocation} > ${nodeName}`);
+          if (node.length) {
+            node.text(nodeValue);
+          } else {
+            const newNode = $(`<${nodeName}>${nodeValue}</${nodeName}>`);
+            const position = this.getEMLPosition(objectDOM, nodeName);
+            if (position) {
+              newNode.insertAfter(position);
+            } else {
+              $objectDOM.children(distLocation).append(newNode);
+            }
+          }
+        } else {
+          $objectDOM.find(`${distLocation} > ${nodeName}`).remove();
+        }
+      });
       return objectDOM;
     },
 
     /*
-     * Climbs up the model heirarchy until it finds the EML model
+     * Returns the node in the object DOM that the given node type should be
+     * inserted after.
+     * @param {string} nodeName - The name of the node to find the position for
+     * @return {jQuery} - The jQuery object of the node that the given node
+     * should be inserted after, or false if the node is not supported by this
+     * model.
+     * @since x.x.x
+     */
+    getEMLPosition: function (objectDOM, nodeName) {
+      // If this is a top level node, return false since it should be inserted
+      // within the <distribution> node, and there must only be one.
+      if (this.distLocations.includes(nodeName)) return false;
+
+      // Handle according to whether it's an online or offline node
+      const nodeNameMap = this.nodeNameMap();
+      this.distLocations.forEach((distLocation) => {
+        const nodeOrder = this[`${distLocation}Nodes`];
+        const siblingNodes = $(objectDOM).find(distLocation).children();
+        let position = nodeOrder.indexOf(nodeName);
+        if (position > -1) {
+          // Go through each node in the node list and find the position where this
+          // node will be inserted after
+          for (var i = position - 1; i >= 0; i--) {
+            const checkNode = siblingNodes.filter(nodeOrder[i]);
+            if (checkNode.length) {
+              return checkNode.last();
+            }
+          }
+        }
+      });
+
+      // If we get here, the node is not supported by this model
+      return false;
+    },
+
+    /*
+     * Climbs up the model hierarchy until it finds the EML model
      *
      * @return {EML211 or false} - Returns the EML 211 Model or false if not
      * found
