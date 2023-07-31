@@ -169,6 +169,9 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
         }
       });
 
+      // If there is no distribution location, return the DOM
+      if (!distLocation) return objectDOM;
+
       // Add the distribution location if it doesn't exist
       if (!$objectDOM.find(distLocation).length) {
         $objectDOM.append(`<${distLocation}></${distLocation}>`);
@@ -257,7 +260,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
     },
 
     trickleUpChange: function () {
-      MetacatUI.rootDataPackage.packageModel.set("changed", true);
+      MetacatUI.rootDataPackage?.packageModel?.set("changed", true);
     },
 
     formatXML: function (xmlString) {
