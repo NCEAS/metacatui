@@ -6,15 +6,6 @@ define([
   var expect = chai.expect;
 
   describe("EMLDistribution Test Suite", function () {
-    /* Set up */
-    beforeEach(function () {
-      this.emlDistribution = new EMLDistribution();
-    });
-
-    /* Tear down */
-    afterEach(function () {
-      delete this.emlDistribution;
-    });
 
     describe("Initialization", function () {
       it("should create a EMLDistribution instance", function () {
@@ -67,6 +58,26 @@ define([
         emlDistribution.get("mediumVolume").should.equal("1");
         emlDistribution.get("mediumFormat").should.equal("ISO9660");
         emlDistribution.get("mediumNote").should.equal("Some notes");
+      });
+
+      it("should parse the url function attribute", function () {
+        var objectDOM = new DOMParser().parseFromString(
+          "<distribution>" +
+            "  <online>" +
+            "    <url function='information'>http://www.dataone.org</url>" +
+            "  </online>" +
+            "</distribution>",
+          "text/xml"
+        ).documentElement;
+
+        var emlDistribution = new EMLDistribution(
+          {
+            objectDOM: objectDOM,
+          },
+          { parse: true }
+        );
+
+        emlDistribution.get("urlFunction").should.equal("information");
       });
     });
 
@@ -183,6 +194,52 @@ define([
         expect(updatedDOM.getAttribute("id")).to.equal("123");
         expect(updatedDOM.getAttribute("system")).to.equal("eml");
         expect(updatedDOM.getAttribute("scope")).to.equal("system");
+      });
+
+      it("should add the url function attribute", function () {
+        var objectDOM = new DOMParser().parseFromString(
+          "<distribution>" +
+            "  <online>" +
+            "    <url>http://www.dataone.org</url>" +
+            "  </online>" +
+            "</distribution>",
+          "text/xml"
+        ).documentElement;
+
+        var emlDistribution = new EMLDistribution(
+          {
+            objectDOM: objectDOM,
+          },
+          { parse: true }
+        );
+
+        emlDistribution.set("urlFunction", "information");
+
+        var updatedDOM = emlDistribution.updateDOM();
+        updatedDOM.querySelector("url").getAttribute("function").should.equal("information");
+      });
+
+      it("should remove the url function attribute if the value is empty", function () {
+        var objectDOM = new DOMParser().parseFromString(
+          "<distribution>" +
+            "  <online>" +
+            "    <url function='information'>http://www.dataone.org</url>" +
+            "  </online>" +
+            "</distribution>",
+          "text/xml"
+        ).documentElement;
+
+        var emlDistribution = new EMLDistribution(
+          {
+            objectDOM: objectDOM,
+          },
+          { parse: true }
+        );
+
+        emlDistribution.set("urlFunction", "");
+
+        var updatedDOM = emlDistribution.updateDOM();
+        expect(updatedDOM.querySelector("url").getAttribute("function")).to.equal(null);
       });
     });
   });
