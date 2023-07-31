@@ -36,7 +36,7 @@ define(['jquery', 'underscore', 'backbone',
       try {
         var events = FilterView.prototype.events.call(this);
         events["change input.max"] = "updateYearRange";
-        events["change input.min"] = "updateYearRange"
+        events["change input.min"] = "updateYearRange";
         return events
       }
       catch (error) {
@@ -98,6 +98,15 @@ define(['jquery', 'underscore', 'backbone',
         //When the rangeReset event is triggered, reset the slider
         this.listenTo(view.model, "rangeReset", this.resetSlider);
 
+      },
+
+    /**
+     * Override the base view which is triggered when the user types in the
+     * input and presses "Enter". The DateFilterView handles updating the model
+     * already and we do not want to clear the input value at any time.
+     */
+    handleChange: function () {
+      return
     },
 
     /**
@@ -136,10 +145,8 @@ define(['jquery', 'underscore', 'backbone',
       //Update the UI slider to match the new min and max
       this.$( ".slider" ).slider( "option", "values", [ minVal, maxVal ] );
 
-      //Send this event to Google Analytics
-      if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
-        ga("send", "event", "portal search", "filter, Data Year", minVal + " to " + maxVal);
-      }
+      //Track this event
+      MetacatUI.analytics?.trackEvent("portal search", "filter, Data Year", minVal + " to " + maxVal);
 
     },
 

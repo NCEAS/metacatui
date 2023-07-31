@@ -332,25 +332,23 @@ define(['jquery', 'underscore', 'backbone'],
 				    a.remove();
 			   }
 
-			    model.trigger("downloadComplete");
+					model.trigger("downloadComplete");
 
-          //Send this event to Google Analytics
-          if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
-            ga("send", "event", "download", "Download DataONEObject", model.get("id"));
-          }
+					// Track this event
+					MetacatUI.analytics?.trackEvent(
+						"download",
+						"Download DataONEObject", 
+						model.get("id")
+					);
 			};
 
 			xhr.onerror = function(e){
         model.trigger("downloadError");
 
-        //Send this exception to Google Analytics
-        if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
-          ga("send", "exception", {
-            "exDescription": "Download DataONEObject error: " + (e || "") +
-              " | Id: " + model.get("id") + " | v. " + MetacatUI.metacatUIVersion,
-            "exFatal": true
-          });
-        }
+				// Track the error
+				MetacatUI.analytics?.trackException(
+					`Download DataONEObject error: ${e || ""}`, model.get("id"), true
+				);
 			};
 
 			xhr.onprogress = function(e){

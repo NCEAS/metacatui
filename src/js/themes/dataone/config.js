@@ -121,7 +121,9 @@ MetacatUI.AppConfig = Object.assign({
     seriesId: "urn:uuid:5f4c470c-fcf8-481e-8ddb-3b08108504b0",
     datasource: "urn:node:mnUCSB1",
     label: "9434702"
-  }],
+    }],
+  
+  googleAnalyticsKey: "G-CR31GM016V",
 
   //Dataset landing pages
   displayDatasetEditButton: false,

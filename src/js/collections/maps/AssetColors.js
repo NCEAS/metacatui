@@ -35,6 +35,23 @@ define(
         model: AssetColor,
 
         /**
+         * Add custom sort functionality such that values are sorted
+         * numerically, but keep the special value key words "min" and "max" at
+         * the beginning or end of the collection, respectively.
+         * @since 2.25.0
+         */
+        comparator: function (color) {
+          let value = color.get('value');
+          if (value === 'min') {
+            return -Infinity;
+          } else if (value === 'max') {
+            return Infinity;
+          } else {
+            return value
+          }
+        },
+
+        /**
          * Finds the last color model in the collection. If there are no colors in the
          * collection, returns the default color set in a new Asset Color model.
          * @return {AssetColor}
@@ -45,7 +62,21 @@ define(
             defaultColor = new AssetColor();
           }
           return defaultColor
+        },
+
+        /**
+         * For any attribute that exists in the models in this collection, return an
+         * array of the values for that attribute.
+         * @param {string} attr - The attribute to get the values for.
+         * @return {Array}
+         * @since 2.25.0
+         */
+        getAttr: function(attr) {
+          return this.map(function (model) {
+            return model.get(attr);
+          });
         }
+
       }
     );
 

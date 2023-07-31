@@ -1376,11 +1376,11 @@ li.ui-menu-item > a:hover,
 
 /* SEARCH PAGE CSS
 -------------------------------------------------- */
-	.mapMode #Content{
-		max-width: 100%;
-		padding-top: 57px;
-		padding-left: 0px;
-	}
+.mapMode #Content{
+max-width: 100%;
+padding-top: 57px;
+padding-left: 0px;
+}
 
     /*-- Results header --*/
     .result-header{

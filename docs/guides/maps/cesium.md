@@ -8,44 +8,22 @@ toc: true
 <div style="display:grid; grid-template-columns:1fr 2fr">
 
   <div>
-    MetacatUI uses <a src="https://github.com/CesiumGS/cesium">CesiumJS</a> to create map visualization sections in Portals. Eventually, Cesium will also be used to optionally replace Google Maps in other parts of MetacatUI (follow progress in <a src="https://github.com/NCEAS/metacatui/issues/1720">GitHub issue #1720</a>). This guide summarizes the models, views, and collections that create and control the Cesium widget and the surrounding UI. This page also includes instructions on how to configure a Cesium Map in a Portal document.
+  <p>MetacatUI uses <a href="https://github.com/CesiumGS/cesium">CesiumJS</a> to create map visualization sections in <a href="https://www.dataone.org/plus/">Portals</a> and in the <a href="/docs/CatalogSearchView.html">Catalog Search</a>. This guide summarizes the models, views, and collections that create and control the Cesium widget and the surrounding UI.</p>
+  
+  <p>For information on how to configure the Cesium map in portals, see <a href="{{site.url}}/guides/maps/cesium-for-portals">Cesium map for Portals</a>.</p>
+  
+  <p>For information on how to configure the Cesium map in the Catalog Search, see <a href="{{site.url}}/guides/catalog-view-config">Catalog Search View Guide</a>.</p>
   </div>
-
-  <figure style="margin-top:-50px;">
+  <figure style="margin-top:-50px; ">
     <img src="{{site.url}}/screenshots/views/maps/MapView.png" style="width:100%; max-width:800px;"/>
     <figcaption>A screenshot of the <code>MapView</code>, which uses the <code>CesiumJS</code> library</figcaption>
   </figure>
 
 </div>
 
-## Views, models & collections
+## Enabling Cesium
 
-In the [API Docs]({{site.url}}/docs/), views, models, and collections for the map are categorized under `Views/Maps`, `Models/Maps`, `Collections/Maps`, respectively. Models that contain information about map layers and terrain data are further grouped under `Models/Maps/Assets`.
-
-### Views
-
-Generally, the Map views are organized such that the `CesiumWidgetView` could be easily interchanged with some other map widget: The UI views like the `LayerDetailsView`, `ScalebarView`, etc., receive data from and send updates to the Map models independent of the `CesiumWidgetView`. For example, rather than `Cesium` directly updating the longitude and latitude in the `scaleBarView`, it instead updates the `Map` model's `currentPosition` attribute. The `MapView` listens to changes in `Map`'s `currentPosition` and then updates the `ScaleBarView` accordingly. If in the future the `CesiumWidgetView` is replaced with a new map widget, it would simply need to update the `Map.currentPosition` attribute and the `ScaleBarView` would work as it did before.
-
-<figure>
-  <a href="https://github.com/NCEAS/metacatui-design/raw/main/cesium/images/cesium-view.png"><img src="https://github.com/NCEAS/metacatui-design/raw/main/cesium/images/cesium-view.png" style="width:100%; max-width:1300px"/></a>
-  <figcaption>The views that build the CesiumWidget and the the UI surrounding it. From the <a href="https://github.com/NCEAS/metacatui-design">MetacatUI Design repo</a>.</figcaption>
-</figure>
-
-
-### Models & collections
-
-All layer and and terrain models are extensions of the more generic `MapAsset` model, which comprises attributes that are common to most of the layer/terrain models. As with the views, models and collections are designed to be as independent from the `Cesium` widget as possible, with the exception of some of the terrain and layer models.
-
-#### Cesium asset models
-
-The [`Cesium3DTileset`]({{site.url}}/docs/Cesium3DTileset), [`CesiumVectorData`]({{site.url}}/docs/CesiumVectorData), [`CesiumImagery`]({{site.url}}/docs/CesiumImagery), and [`CesiumTerrain`]({{site.url}}/docs/CesiumTerrain) asset models are very closely tied to the `Cesium` architecture. Separating these `Cesium` assets from the `CesiumWidgetView` makes it easier to write new assets in the future, and keeps the `CesiumWidgetView` from becoming too expansive.
-
-All three of these Cesium asset models have the common `createCesiumModel()` function, which constructs the appropriate `cesiumModel` for the type, given the `cesiumOptions` set on the model. The `cesiumModel` is then used by the `CesiumWidgetView` to render the data on the map. In addition, the `type` attribute used in each of these asset models directly corresponds to the Cesium constructor function that creates the `cesiumModel`.
-
-<figure>
-  <a href="https://github.com/NCEAS/metacatui-design/raw/main/cesium/images/cesium-model.png"><img src="https://github.com/NCEAS/metacatui-design/raw/main/cesium/images/cesium-model.png" style="width:100%; max-width:1300px"/></a>
-  <figcaption>The models and collections that control the cesium map. From the <a href="https://github.com/NCEAS/metacatui-design">MetacatUI Design repo</a>.</figcaption>
-</figure>
+To enable Cesium for portals and/or for the data catalog, set the `enableCesium` property to true in your configuration file. To enable displaying [layers from Cesium Ion](https://cesium.com/learn/ion/global-base-layers/) in maps, the `cesiumToken` property must also be set to a Cesium Ion token. Sign up for a token [here](https://ion.cesium.com/signup/). This is optional, and by default, `NaturalEarthII` imagery will be displayed, even without a Cesium token.
 
 ## Configuration
 
@@ -267,42 +245,41 @@ Below is an example of a detailed map configuration (descriptions have been shor
 }
 ```
 
-### Configuring a Cesium Map section in a portal document
+## Views, models & collections
 
-To add a Cesium map visualization section to a portal document, cesium config json is added as an `option` within a `cesium` visualization section. Note that the JSON should be wrapped in `CDATA` tags.
+In the [API Docs]({{site.url}}/docs/), views, models, and collections for the map are categorized under `Views/Maps` , `Models/Maps` , `Collections/Maps` , respectively. Models that contain information about map layers and terrain data are further grouped under `Models/Maps/Assets` .
 
-Example:
+### Views
 
-```xml
-<section>
-  <label>My Cesium Map</label>
-  <title>My Cesium Map</title>
-  <option>
-    <optionName>sectionType</optionName>
-    <optionValue>visualization</optionValue>
-  </option>
-  <option>
-    <optionName>visualizationType</optionName>
-    <optionValue>cesium</optionValue>
-  </option>
-  <option>
-    <optionName>mapConfig</optionName>
-    <optionValue>
-<![CDATA[{
-  "homePosition": {...}
-      ..... 
-  "showFeatureInfo": false
-}]]>
-      </optionValue>
-    </option>
-  </section>
-```
+Generally, the Map views are organized such that the `CesiumWidgetView` could be easily interchanged with some other map widget: The UI views like the `LayerDetailsView` , `ScalebarView` , etc., receive data from and send updates to the Map models independent of the `CesiumWidgetView` . For example, rather than `Cesium` directly updating the longitude and latitude in the `scaleBarView`, it instead updates the `Map` model's `currentPosition` attribute. The `MapView` listens to changes in `Map` 's `currentPosition` and then updates the `ScaleBarView` accordingly. If in the future the `CesiumWidgetView` is replaced with a new map widget, it would simply need to update the `Map.currentPosition` attribute and the `ScaleBarView` would work as it did before.
+
+<figure>
+  <a href="https://github.com/NCEAS/metacatui-design/raw/main/cesium/images/cesium-view.png"><img src="https://github.com/NCEAS/metacatui-design/raw/main/cesium/images/cesium-view.png" style="width:100%; max-width:1300px"/></a>
+  <figcaption>The views that build the CesiumWidget and the the UI surrounding it. From the <a href="https://github.com/NCEAS/metacatui-design">MetacatUI Design repo</a>.</figcaption>
+</figure>
+
+### Models & collections
+
+All layer and and terrain models are extensions of the more generic `MapAsset` model, which comprises attributes that are common to most of the layer/terrain models. As with the views, models and collections are designed to be as independent from the `Cesium` widget as possible, with the exception of some of the terrain and layer models.
+
+#### Cesium asset models
+
+The [ `Cesium3DTileset` ]({{site.url}}/docs/Cesium3DTileset), [ `CesiumVectorData` ]({{site.url}}/docs/CesiumVectorData), [ `CesiumImagery` ]({{site.url}}/docs/CesiumImagery), and [ `CesiumTerrain` ]({{site.url}}/docs/CesiumTerrain) asset models are very closely tied to the `Cesium` architecture. Separating these `Cesium` assets from the `CesiumWidgetView` makes it easier to write new assets in the future, and keeps the `CesiumWidgetView` from becoming too expansive.
+
+All three of these Cesium asset models have the common `createCesiumModel()` function, which constructs the appropriate `cesiumModel` for the type, given the `cesiumOptions` set on the model. The `cesiumModel` is then used by the `CesiumWidgetView` to render the data on the map. In addition, the `type` attribute used in each of these asset models directly corresponds to the Cesium constructor function that creates the `cesiumModel` .
+
+<figure>
+  <a href="https://github.com/NCEAS/metacatui-design/raw/main/cesium/images/cesium-model.png"><img src="https://github.com/NCEAS/metacatui-design/raw/main/cesium/images/cesium-model.png" style="width:100%; max-width:1300px"/></a>
+  <figcaption>The models and collections that control the cesium map. From the <a href="https://github.com/NCEAS/metacatui-design">MetacatUI Design repo</a>.</figcaption>
+</figure>
+
+
 
 ## Useful links
 
-- [CesiumJS on GitHub](https://github.com/CesiumGS/cesium)
-- [CesiumJS website](https://cesium.com/platform/cesiumjs/) - Overview of Cesium, including information about Cesium Ion
-- [Cesium documentation](https://cesium.com/learn/cesiumjs/ref-doc/)
-- [Cesium sandcastle](https://sandcastle.cesium.com/) - For experimenting with Cesium, includes helpful examples and demos
-- [TerriaJS on GitHub](https://github.com/TerriaJS/terriajs) - a large application that also uses the CesiumWidget. Although Terria uses a customized and older version of Cesium, it can serve as a good reference.
-- [Planned features & known issues related to the Cesium Map in MetacatUI](https://github.com/NCEAS/metacatui/issues?q=is%3Aopen+is%3Aissue+label%3Acesium)
+* [CesiumJS on GitHub](https://github.com/CesiumGS/cesium)
+* [CesiumJS website](https://cesium.com/platform/cesiumjs/) - Overview of Cesium, including information about Cesium Ion
+* [Cesium documentation](https://cesium.com/learn/cesiumjs/ref-doc/)
+* [Cesium sandcastle](https://sandcastle.cesium.com/) - For experimenting with Cesium, includes helpful examples and demos
+* [TerriaJS on GitHub](https://github.com/TerriaJS/terriajs) - a large application that also uses the CesiumWidget. Although Terria uses a customized and older version of Cesium, it can serve as a good reference.
+* [Planned features & known issues related to the Cesium Map in MetacatUI](https://github.com/NCEAS/metacatui/issues?q=is%3Aopen+is%3Aissue+label%3Acesium)

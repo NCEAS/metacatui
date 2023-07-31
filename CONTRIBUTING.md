@@ -50,7 +50,7 @@ In short:
 
 Development is managed through the git repository at https://github.com/NCEAS/metacatui.  The repository is organized into several branches, each with a specific purpose.  
 
-**main**. Releases are merged from the `develop` branch to the `main` branch, and the resulting commit is tagged with the release tag (e.g., `2.4.0`). The tip of the `main` branch always reflects the most recent release of the software. The version number in all configuration files and the README on the main branch follows [semantic versioning](https://semver.org/) and should always be set to the current release version, for example, `2.8.5`.
+**main**. Releases are merged from the `develop` branch to the `main` branch, and the resulting commit is tagged with the release tag (e.g., `2.4.0`). The tip of the `main` branch always reflects the most recent release of the software. The version number in all configuration files and the README on the `main` branch follows [semantic versioning](https://semver.org/) and should always be set to the current release version, for example, `2.8.5`.
 
 **develop**. The `develop` branch is a stable branch that is constantly maintained in a state ready for release. Commits should only be pushed to this branch once they are ready to be deployed to production immediately after being pushed. Any unreleased code changes on the develop branch represent changes that have been tested and staged for the next release. The tip of the develop branch always represents the set of features that have been staged for the next release. Commits are added to the develop branch via a pull request or after consultation with the designated MetacatUI product owner.
 
@@ -67,8 +67,40 @@ particular release.
 **dev-X.X**. Development branches named after their minor version number can be used when a patch release
 needs to be created that is behind the main **develop** branch.
 
+**bugfix**. A final branch type are `bugfix` branches, which work the same as feature branches, but fix bugs rather than adding new functionality. Bugfix branches are named similarly, following the pattern: `bugfix-` + `{issue}` +  `-{short-description}`, with `{issue}` being the GitHub issue number related to that bug. e.g. `bugfix-83-fix-name-display`.
+
 ### Development flow overview
-![](https://github.com/NCEAS/metacat/raw/dev-2.14/docs/dev/images/nceas-dev-flow.png)
+```mermaid
+%%{init: {  'theme': 'base', 
+            'gitGraph': {
+                'rotateCommitLabel': false,
+                'showCommitLabel': false
+            },            
+            'themeVariables': {
+              'commitLabelColor': '#ffffffff',
+              'commitLabelBackground': '#000000'
+            }
+}}%%
+gitGraph
+    commit id: "1" tag: "v1.0.0"
+    branch develop
+    checkout develop
+    commit id: "2"
+    branch feature-A
+    commit id: "3"
+    commit id: "4"
+    checkout develop
+    merge feature-A id: "5"
+    commit id: "6"
+    commit id: "7"
+    branch feature-B
+    commit id: "8"
+    commit id: "9"
+    checkout develop
+    merge feature-B  id: "10" type: NORMAL
+    checkout main
+    merge develop id: "11" tag: "v1.1.0"
+```
 
 ## Release process
 
@@ -86,7 +118,7 @@ integration tests in the `tests` subdirectory.
 Any new code developed should include a robust set of unit tests for each public
 method, as well as integration tests from new feature sets.  Tests should fully
 exercise the feature to ensure that it responds correctly to both good data inputs
-as well as various classes of corrupt or bad data.  All tests should pass before submitting a PR
+and various classes of corrupt or bad data.  All tests should pass before submitting a PR
 or merging to `develop`.
 
 Tests are automatically run via GitHub Actions. Check the root `README.md` file
@@ -99,7 +131,7 @@ Read more documentation about how tests are run and viewed in [/test/README.md](
 ## Code style
 
 Code should be written to professional standards to enable clean, well-documented,
-readable, and maintainable software.  While there has been significant variablility
+readable, and maintainable software.  While there has been significant variability
 in the coding styles applied historically, new contributions should strive for
 clean code formatting.  Some of the guidelines we follow include:
 

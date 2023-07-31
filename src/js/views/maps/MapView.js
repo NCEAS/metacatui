@@ -162,7 +162,10 @@ define(
             if (this.model.get('showScaleBar')) {
               this.renderScaleBar();
             }
-            if (this.model.get('showFeatureInfo')) {
+            if (
+              this.model.get('showFeatureInfo') &
+              this.model.get('clickFeatureAction') === 'showDetails'
+            ) {
               this.renderFeatureInfo();
             }
 

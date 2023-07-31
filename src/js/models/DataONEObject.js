@@ -668,14 +668,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                       //Trigger a custom event for the model save error
                       model.trigger("errorSaving", parsedResponse);
 
-                      //Send this exception to Google Analytics
-                      if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
-                        ga("send", "exception", {
-                          "exDescription": "DataONEObject save error: " + parsedResponse +
-                            " | Id: " + model.get("id") + " | v. " + MetacatUI.metacatUIVersion,
-                          "exFatal": true
-                        });
-                      }
+                      // Track this error in our analytics
+                      MetacatUI.analytics?.trackException(
+                        `DataONEObject save error: ${parsedResponse}`,
+                        model.get("id"),
+                        true
+                      );
                     }
                   }
               };
@@ -820,14 +818,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                         // errored
                         model.trigger("sysMetaUpdateError");
 
-                        //Send this exception to Google Analytics
-                        if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
-                            ga("send", "exception", {
-                                "exDescription": "DataONEObject update system metadata error: " + parsedResponse +
-                                    " | Id: " + model.get("id") + " | v. " + MetacatUI.metacatUIVersion,
-                                "exFatal": true
-                            });
-                        }
+                        // Track this error in our analytics
+                        MetacatUI.analytics?.trackException(
+                          `DataONEObject update system metadata ` +
+                            `error: ${parsedResponse}`,
+                          model.get("id"),
+                          true
+                        );
                     }
                 }
             }
@@ -944,14 +941,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               //Log an error to the console
               console.error("Couldn't check the authority for this user: ", e);
 
-              //Send this exception to Google Analytics
-              if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
-                  ga("send", "exception", {
-                      "exDescription": "Couldn't check the authority for the user " + MetacatUI.appModel.get("username") +
-                          " | Object Id: " + this.get("id") + " | v. " + MetacatUI.metacatUIVersion,
-                      "exFatal": true
-                  });
-              }
+              // Track this error in our analytics
+              const name = MetacatUI.appModel.get('username')
+              MetacatUI.analytics?.trackException(
+                `Couldn't check the authority for the user ${name}: ${e}`,
+                this.get("id"),
+                true
+              );
 
               //Set the user as unauthorized
               model.set("isAuthorized_" + action, false);

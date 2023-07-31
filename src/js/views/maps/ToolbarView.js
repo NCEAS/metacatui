@@ -7,6 +7,7 @@ define(
     'underscore',
     'backbone',
     'text!templates/maps/toolbar.html',
+    'models/maps/Map',
     // Sub-views
     'views/maps/LayerListView'
   ],
@@ -15,6 +16,7 @@ define(
     _,
     Backbone,
     Template,
+    Map,
     // Sub-views
     LayerListView
   ) {
@@ -193,8 +195,21 @@ define(
                 this[key] = value;
               }
             }
-            if(this.model && this.model.get('toolbarOpen') === true) {
+            if (!this.model || !(this.model instanceof Map)) {
+              this.model = new Map();
+            }
+            if(this.model.get('toolbarOpen') === true) {
               this.isOpen = true;
+            }
+            if (this.model.get("showLayerList") === false) {
+              this.sections = this.sections.filter(
+                (section) => section.label !== "Layers"
+              );
+            }
+            if (this.model.get("showHomeButton") === false) {
+              this.sections = this.sections.filter(
+                (section) => section.label !== "Home"
+              );
             }
           } catch (e) {
             console.log('A ToolbarView failed to initialize. Error message: ' + e);

@@ -15,6 +15,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
             
     // Reference to this collection's model.
     model: SolrResult,
+      
+    /**
+     * The name of this type of collection.
+     * @type {string}
+     * @default "SolrResults"
+     * @since 2.25.0
+     */
+    type: "SolrResults",
 
     initialize: function(models, options) {
 
@@ -119,8 +127,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
       this.header.set({"rows" : solr.responseHeader.params.rows});
 
       //Get the facet counts and store them in this model
-      if( solr.facet_counts ){
+      if (solr.facet_counts) {
         this.facetCounts = solr.facet_counts.facet_fields;
+      } else {
+        this.facetCounts = "nothing";
       }
 
       //Cache this set of results
@@ -231,7 +241,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
       this.trigger("change:sort");
     },
 
-    setFacet: function(fields) {
+    setFacet: function (fields) {
+      if (!Array.isArray(fields)) {
+        fields = [fields];
+      }
       this.facet = fields;
       this.trigger("change:facet");
     },
@@ -380,6 +393,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
      */
     getLastUrl: function(){
         return this.lastUrl || "";
+    },
+    
+    /**
+     * Get the list of PIDs for the search results
+     * @returns {string[]} - The list of PID strings for the search results
+     * @since 2.25.0
+     */
+    getPIDs: function () {
+      return this.pluck("id");
     },
 
     /**

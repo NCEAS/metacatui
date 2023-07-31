@@ -41,6 +41,13 @@ define(['jquery', 'underscore', 'backbone'],
       title: MetacatUI.themeTitle || "Metacat Data Catalog",
 
       /**
+       * The default page description.
+       * @type {string}
+       * @since 2.25.0
+       */
+      description: "A research data catalog and repository that provides access to scientific data, metadata, and more.",
+
+      /**
       * The name of this repository. This is used throughout the interface in different
       * messages and page content.
       * @type {string}
@@ -84,7 +91,7 @@ define(['jquery', 'underscore', 'backbone'],
       * DataCatalog). This can be set to either "google" (the default), or "cesium". To
       * use Google maps, the {@link AppConfig#googleAnalyticsKey} must be set. To use
       * Cesium maps, the {@link AppConfig#enableCesium} property must be set to true, and
-      * the {@link AppConfig#cesiumToken} must be set. DEPRECATION NOTE: This configuration 
+      * the {@link AppConfig#cesiumToken} must be set. DEPRECATION NOTE: This configuration
       * is deprecated along with the {@link DataCatalogView} and {@link DataCatalogViewWithFilters}
       * views and Google Maps. The {@link CatalogSearchView} will replace these as the primary search view and will only
       * support Cesium, not Google Maps.
@@ -117,25 +124,8 @@ define(['jquery', 'underscore', 'backbone'],
        * @since 2.22.0
        */
       catalogSearchMapOptions: {
-        showToolbar: false,
-        layers: [
-            {
-                "type": "CesiumGeohash",
-                "opacity": 1,
-                "hue": 205 //blue
-            },
-        {
-            "label": "Satellite imagery",
-            "icon": "urn:uuid:4177c2e1-3037-4964-bf00-5f13182308d9",
-            "type": "IonImageryProvider",
-            "description": "Global satellite imagery down to 15 cm resolution in urban areas",
-            "attribution": "Data provided by Bing Maps © 2021 Microsoft Corporation",
-            "moreInfoLink": "https://www.microsoft.com/maps",
-            "opacity": 1,
-            "cesiumOptions": {
-            "ionAssetId": "2"
-            }
-         }]
+        showLayerList: false,
+        clickFeatureAction: "zoom"
        },
 
       /**
@@ -378,25 +368,25 @@ define(['jquery', 'underscore', 'backbone'],
         contact: true
       },
 
-      /** 
-       * A list of required fields for each EMLParty (People) in the dataset editor. 
+      /**
+       * A list of required fields for each EMLParty (People) in the dataset editor.
        * This is a literal object where the keys are the EML Party type (e.g. creator, principalInvestigator) {@link see EMLParty.partytypes}
        * and the values are arrays of field names.
        * By default, EMLPartys are *always* required to have an individual's name, position name, or organization name.
        * @type {object}
        * @since 2.21.0
-       * @example 
+       * @example
        *   {
        *      contact: ["email"],
        *      creator: ["email", "address", "phone"]
        *      principalInvestigator: ["organizationName"]
        *   }
-       * @default 
+       * @default
        *  {
        *  }
       */
       emlEditorRequiredFields_EMLParty: {
-       
+
       },
 
       /**
@@ -530,6 +520,63 @@ define(['jquery', 'underscore', 'backbone'],
       * @since 2.19.0
       */
       customEMLMethods: [],
+
+      /**
+       * Configuration options for a drop down list of taxa.
+       * @typedef {object} AppConfig#quickAddTaxaList
+       * @type {Object}
+       * @property {string} label - The label for the dropdown menu
+       * @property {string} placeholder - The placeholder text for the input field
+       * @property {EMLTaxonCoverage#taxonomicClassification[]} taxa - The list of taxa to show in the dropdown menu
+       * @example
+       * {
+       *  label: "Primates",
+       *  placeholder: "Select one or more primates",
+       *  taxa: [
+       *    {
+       *     commonName: "Bonobo",
+       *     taxonRankName: "Species",
+       *     taxonRankValue: "Pan paniscus",
+       *     taxonId: {
+       *        provider: "ncbi",
+       *        value: "9597"
+       *     }
+       *   },
+       *   {
+       *     commonName: "Chimpanzee",
+       *     ...
+       *   },
+       *   ...
+       * }
+       * @since 2.24.0
+       */
+
+      /**
+       * A list of taxa to show in the Taxa Quick Add section of the EML editor.
+       * This can be used to expedite entry of taxa that are common in the
+       * repository's domain. The quickAddTaxa is a list of objects, each
+       * defining a separate dropdown interface. This way, common taxa can
+       * be grouped together.
+       * Alternative, provide a SID for a JSON data object that is stored in the
+       * repository. The JSON must be in the same format as required for this
+       * configuration option.
+       * @since 2.24.0
+       * @type {AppConfig#quickAddTaxaList[] | string}
+       * @example
+       * [
+       *   {
+       *     label: "Bats"
+       *     placeholder: "Select one or more bats",
+       *     taxa: [ ... ]
+       *   },
+       *   {
+       *     label: "Birds"
+       *     placeholder: "Select one or more birds",
+       *     taxa: [ ... ]
+       *   }
+       * ]
+       */
+      quickAddTaxa: [],
 
       /**
       * The base URL for the repository. This only needs to be changed if the repository
@@ -1641,14 +1688,14 @@ define(['jquery', 'underscore', 'backbone'],
        * @since 2.17.0
        */
       queryIdentifierFields: ["id", "identifier", "seriesId", "isPartOf"],
-      
+
       /**
        * The name of the query fields that specify latitude. Filter models that these
        * fields are handled specially, since they must be a float value and have a
        * pre-determined minRange and maxRange (-90 to 90).
        */
       queryLatitudeFields: ["northBoundCoord", "southBoundCoord"],
-      
+
       /**
        * The name of the query fields that specify longitude. Filter models that these
        * fields are handled specially, since they must be a float value and have a
@@ -1684,7 +1731,7 @@ define(['jquery', 'underscore', 'backbone'],
       */
       defaultFilterGroups: [
         {
-          label: "Search for: ",
+          label: "",
           filters: [
             {
               fields: ["attribute"],
@@ -1703,8 +1750,9 @@ define(['jquery', 'underscore', 'backbone'],
             {
               filterType: "ToggleFilter",
               fields: ["documents"],
-              label: "Show only results with data",
-              trueLabel: null,
+              label: "Contains Data Files",
+              placeholder: "Only results with data",
+              trueLabel: "Required",
               falseLabel: null,
               trueValue: "*",
               matchSubstring: false,
@@ -1748,7 +1796,9 @@ define(['jquery', 'underscore', 'backbone'],
               label: "Taxon",
               placeholder: "Class, family, etc.",
               icon: "sitemap",
-              description: "Find data about any taxonomic rank"
+              description: "Find data about any taxonomic rank",
+              matchSubstring: true,
+              fieldsOperator: "OR"
             },
             {
               fields: ["siteText"],
@@ -1761,8 +1811,8 @@ define(['jquery', 'underscore', 'backbone'],
         }
       ],
 
-      /** 
-       * The document fields to return when conducting a search. This is the list of fields returned by the main catalog search view. 
+      /**
+       * The document fields to return when conducting a search. This is the list of fields returned by the main catalog search view.
        * @type {string[]}
        * @since 2.22.0
        * @example ["id", "title", "obsoletedBy"]
@@ -2255,6 +2305,32 @@ define(['jquery', 'underscore', 'backbone'],
       },
 
       /**
+       * Get the config options for the Taxa Quick Add feature. IF a SID is
+       * configured, this will fetch the taxa from the repository. Otherwise,
+       * it will return the object set on the quickAddTaxa attribute.
+       */
+      getQuickAddTaxa: function () {
+        var taxa = this.get("quickAddTaxa");
+        if (typeof taxa === "object") return taxa;
+        if (typeof taxa !== "string") return null;
+
+        // Otherwise, fetch the DataONE Object
+        fetch(this.get("objectServiceUrl") + encodeURIComponent(taxa), {
+          method: "get",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          this.set("quickAddTaxa", data);
+        })
+        .catch((error) => {
+          console.log("Error fetching taxa", error);
+        });
+      },
+
+      /**
        * Given a string of CSS and an associated unique ID, check whether that CSS file
        * was already added to the document head, and add it if not. Prevents adding the
        * CSS file multiple times if the view is loaded more than once. The first time each
@@ -2313,7 +2389,23 @@ define(['jquery', 'underscore', 'backbone'],
             '. Error details: ' + error
           );
         }
-      }
+      },
+
+      /**
+       * Reset the web document's title to the default
+       * @since 2.25.0
+       */
+      resetTitle: function () {
+        this.set("title", this.defaults.title);
+      },
+
+      /**
+       * Reset the web document's description to the default
+       * @since 2.25.0
+       */
+      resetDescription: function () {
+        this.set("description", this.defaults.description);
+      },
 
   });
   return AppModel;

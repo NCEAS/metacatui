@@ -69,6 +69,23 @@ define(['jquery', 'underscore', 'backbone',
      * @since 2.17.0
      */
     edit: false,
+    
+    /**
+     * If set to true, then all filters within this group will be collapsible.
+     * See {@link FilterView#collapsible}
+     * @type {boolean}
+     * @since 2.25.0
+     * @default false
+     */
+    collapsible: false,
+
+    /**
+     * The initial query to use when the view is first rendered. This is a text value
+     * that will be set on the general `text` Solr field.
+     * @type {string}
+     * @since 2.25.0
+     */
+    initialQuery: undefined,
 
     /**
     * @inheritdoc
@@ -105,6 +122,14 @@ define(['jquery', 'underscore', 'backbone',
 
       if(options.edit === true){
         this.edit = true
+      }
+
+      if (options.initialQuery) {
+        this.initialQuery = options.initialQuery;
+      }
+
+      if (options.collapsible && typeof options.collapsible === "boolean") {
+        this.collapsible = options.collapsible;
       }
 
     },
@@ -217,7 +242,8 @@ define(['jquery', 'underscore', 'backbone',
         var filterGroupView = new FilterGroupView({
           model: filterGroup,
           edit: this.edit,
-          editorView: this.editorView
+          editorView: this.editorView,
+          collapsible: this.collapsible
         });
 
         //Render the FilterGroupView
@@ -272,8 +298,9 @@ define(['jquery', 'underscore', 'backbone',
         //Render the applied filters
         this.renderAppliedFiltersSection();
 
-        //Render an "All" filter
-        this.renderAllFilter();
+        // Render an "All" filter. If the view was initialized with an initial
+        // query, set it on this filter. 
+        this.renderAllFilter(this.initialQuery);
       }
 
       if(this.edit){
@@ -366,7 +393,12 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    renderAllFilter: function(){
+    /**
+     * Renders an "All" filter that will search the general `text` Solr field
+     * @param {string} searchFor - The initial value of the "All" filter. This
+     * will get set on the filter model and trigger a change event. Optional.
+     */
+    renderAllFilter: function (searchFor="") {
 
       //Create an "All" filter that will search the general `text` Solr field
       var filter = new Filter({
@@ -387,6 +419,9 @@ define(['jquery', 'underscore', 'backbone',
       filterView.render();
       this.$(".filters-header").prepend(filterView.el);
 
+      if (searchFor && searchFor.length) {
+        filter.set('values', [searchFor]);
+      }
     },
 
     postRender: function(){

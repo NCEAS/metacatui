@@ -260,7 +260,9 @@ define(["jquery",
           // create a portal model for repository
           this.model = new Portal({
             seriesId: this.portalId,
-            label: view.label
+            label: view.label,
+            name: this.nodeInfo.name,
+            description: this.nodeInfo.description,
           });
 
           // remove the members section directly from the model
@@ -286,6 +288,10 @@ define(["jquery",
          * Render the Portal view
          */
         renderPortal: function () {
+
+          // Set the document title to the portal name
+          MetacatUI.appModel.set("title", this.model.get("name"))
+          MetacatUI.appModel.set("description", this.model.get("description"))
 
           // Getting the correct portal label and seriesID
           this.label = this.model.get("label");
@@ -1051,6 +1057,9 @@ define(["jquery",
          * Any clean-up or housekeeping happens at this time.
          */
         onClose: function () {
+
+          MetacatUI.appModel.resetTitle();
+          MetacatUI.appModel.resetDescription();
           //Remove each subview from the DOM and remove listeners
           _.invoke(this.subviews, "remove");
 

@@ -1,0 +1,277 @@
+/* ------ CSS VARS ------ */
+/* variables for the catalog search view ("cs") only */
+:root {
+  --cs-button-bkg: #212429;
+  --cs-button-text: white;
+
+  --cs-panel-shadow: 0px 0px 14px rgba(67, 68, 87, 0.35);
+  --cs-element-shadow: 0px 0px 5px rgba(67, 68, 87, 0.4);
+
+  --cs-padding-xsmall: 0.2rem;
+  --cs-padding-small: 0.5rem;
+  --cs-padding-medium: 0.9rem;
+  --cs-padding-large: 1.6rem;
+  --cs-panel-padding: var(--cs-padding-medium) var(--cs-padding-large);
+
+  --cs-toggle-width: 1.9rem;
+  --cs-toggle-height: 2.5rem;
+  --cs-border-radius: 0.5rem;
+}
+
+
+/* ------ PAGE LAYOUT ------ */
+/* organize the page elements that are outside of the catalog search view */
+
+/*body*/
+.catalog-search-body {
+  display: grid;
+  grid-template-columns: 100vw;
+  grid-template-rows: min-content 1fr;
+  grid-template-areas:
+    "nav-header"
+    "content";
+  overflow: hidden;
+  height: 100vh;
+  padding: 0;
+  margin: 0;
+}
+
+.catalog-search-body #Navbar {
+  grid-area: nav-header;
+  position: relative;
+  z-index: 100;
+}
+
+.catalog-search-body #HeaderContainer,
+.catalog-search-body #Navbar {
+  box-shadow: var(--cs-panel-shadow);
+}
+
+.catalog-search-body .navbar-inner {
+  margin: 0;
+}
+
+.catalog-search-body #HeaderContainer {
+  grid-area: nav-header;
+}
+
+.catalog-search-body #Content {
+  grid-area: content;
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 100%;
+}
+
+.catalog-search-body #Footer {
+  display: none;
+  position: relative;
+}
+
+/* ------ CATALOG ELEMENTS ------ */
+
+.catalog {
+  display: grid;
+  grid-template-columns: min-content 1fr 1fr;
+  grid-template-areas:
+    "filters results map";
+  grid-template-rows: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.catalog__filters {
+  box-sizing: border-box;
+  grid-area: filters;
+  overflow: scroll;
+  padding: var(--cs-panel-padding);
+  box-shadow: var(--cs-panel-shadow);
+  margin-left: -5px;
+}
+
+.catalog__results {
+  box-sizing: border-box;
+  grid-area: results;
+  overflow: scroll;
+  padding: var(--cs-panel-padding);
+  /* so that absolutely positioned map toggle is placed relative to this */
+  position: relative;
+  /* position children */
+  display: grid;
+  width: 100%;
+  grid-template-columns: auto min-content;
+  grid-template-rows: min-content min-content 1fr;
+  grid-template-areas:
+    "summary summary"
+    "pager sorter"
+    "results results";
+}
+
+.catalog__summary {
+  grid-area: summary;
+  margin-left: var(--cs-padding-medium);
+}
+
+.catalog__pager {
+  grid-area: pager;
+  margin-left: var(--cs-padding-medium);
+}
+
+.catalog_sorter {
+  grid-area: sorter;
+}
+
+.catalog__results-list {
+  grid-area: results;
+}
+
+.catalog__map {
+  grid-area: map;
+  display: grid;
+  box-shadow: var(--cs-panel-shadow);
+  /* so that .catalog__map-filter-toggle is positioned relative to map */
+  position: relative;
+}
+
+/* ------ MAP CONTROLS ------ */
+
+/* the toggle buttons and their labels */
+.catalog__map-toggle, .catalog__filters-toggle,
+.catalog__toggle-map-label, .catalog__toggle-filters-label {
+  position: absolute;
+  top: var(--cs-padding-large);
+  box-shadow: var(--cs-element-shadow);
+  letter-spacing: 0.02em;
+}
+
+/* buttons */
+.catalog__map-toggle, .catalog__filters-toggle {
+  top: var(--cs-padding-small);
+  height: var(--cs-toggle-height, 2.5rem);
+  width: var(--cs-toggle-width, 1.9rem);
+  border: none;
+  outline: none;
+  background: white;
+  font-size: 1.5rem;
+}
+
+.catalog__map-toggle {
+  right: -1px;
+  border-radius: var(--cs-border-radius) 0 0 var(--cs-border-radius);
+}
+
+.catalog__filters-toggle {
+  left: -1px;
+  text-indent: -1px;
+  border-radius: 0 var(--cs-border-radius) var(--cs-border-radius) 0;
+}
+
+.catalog__map-toggle:hover, .catalog__filters-toggle:hover {
+  filter: brightness(0.9);
+}
+
+/* labels */
+.catalog__toggle-map-label, .catalog__toggle-filters-label {
+  display: none;
+  /* show on hover only */
+  top: 0.9rem;
+  background-color: var(--cs-button-bkg);
+  color: var(--cs-button-text);
+  padding: var(--cs-padding-xsmall) var(--cs-padding-small);
+  border-radius: var(--cs-border-radius);
+}
+
+.catalog__toggle-map-label {
+  right: calc(var(--cs-padding-small) + var(--cs-toggle-width));
+
+}
+
+.catalog__toggle-filters-label {
+  left: calc(var(--cs-padding-small) + var(--cs-toggle-width));
+}
+
+.catalog__map-toggle:hover~.catalog__toggle-map-label,
+.catalog__filters-toggle:hover~.catalog__toggle-filters-label {
+  display: block;
+}
+
+/* Spatial filter toggle: The toggle to search by map extent or not */
+.catalog__map-filter-toggle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 1rem;
+  z-index: 1;
+  display: flex;
+  background: var(--map-col-bkg-lighter, black);
+  opacity: 0.8;
+  padding: var(--cs-padding-small) var(--cs-padding-medium);
+  border-radius: var(--map-border-radius, --cs-border-radius);
+  align-items: center;
+}
+
+.map-filter-toggle__label {
+  color: var(--map-col-text, white);
+  margin: 0;
+  line-height: 1;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* the rule has high specificity to override bootstrap rules */
+.catalog__map-filter-toggle input[type=checkbox] {
+  margin: 0;
+  order: -1;
+  transform: scale(1.35);
+  margin-right: 0.5rem;
+}
+
+
+/* ------ MAP HIDDEN (formerly "LIST MODE") ------ */
+/* catalog is styled as map mode by default. Modifications needed for list-mode
+(map hidden) are below */
+
+.catalog-search-body.catalog--map-hidden {
+  overflow: scroll;
+  height: auto;
+}
+
+.catalog--map-hidden #Footer {
+  display: block;
+}
+
+.catalog--map-hidden .catalog__map {
+  display: none;
+}
+
+.catalog--map-hidden .catalog {
+  grid-template-columns: min-content auto;
+  grid-template-areas:
+    "filters results";
+  overflow: scroll;
+}
+
+/* ------ FILTERS HIDDEN ------ */
+/* catalog is styled with filters hidden by default. Modifications needed for
+filters visible are below */
+
+.catalog--filters-hidden .catalog__filters {
+  display: none;
+}
+
+.catalog--filters-hidden .catalog {
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "results map";
+}
+
+/* ------ FILTERS HIDDEN, MAP HIDDEN ------ */
+/* when both filters and map are hidden, the results panel should take up the
+entire width of the page */
+
+.catalog--map-hidden.catalog--filters-hidden .catalog {
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "results";
+}

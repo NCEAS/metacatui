@@ -221,6 +221,8 @@ define(
             delete cesiumOptions.ionAssetId
             cesiumOptions.accessToken =
               cesiumOptions.cesiumToken || MetacatUI.appModel.get('cesiumToken');
+          } else if (type === 'OpenStreetMapImageryProvider') {
+            cesiumOptions.url = cesiumOptions.url || 'https://a.tile.openstreetmap.org/'
           }
           if (cesiumOptions && cesiumOptions.tilingScheme) {
             const ts = cesiumOptions.tilingScheme

@@ -10,7 +10,7 @@ MetacatUI.AppConfig = Object.assign({
   baseUrl: "https://knb.ecoinformatics.org",
   metacatContext: "knb",
   mapKey: "AIzaSyCFcgRnv0TwBEdAnTsG5rBbD6Hprrv_Yic",
-  googleAnalyticsKey: "UA-1588494-14",
+  googleAnalyticsKey: "G-JK039KFNBC",
   repositoryName: "KNB",
   nodeId: "urn:node:KNB",
   enableLdapSignIn: true,

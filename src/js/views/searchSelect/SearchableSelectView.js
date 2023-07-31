@@ -166,6 +166,7 @@ define([
          * single option. To create category headings, provide an object containing named
          * objects, where the key for each object is the category title to display, and
          * the value of each object comprises the option properties.
+         * @name SearchableSelectView#options
          * @type {Object[]|Object}
          * @property {string} icon - The name of a Font Awesome 3.2.1 icon to display to
          * the left of the label (e.g. "lemon", "heart")
@@ -452,6 +453,16 @@ define([
           } catch (e) {
             console.log("Error rendering the search select, error message: ", e);
           }
+        },
+
+        /**
+         * Change the options available in the dropdown menu and re-render.
+         * @param {SearchableSelectView#options} options - The new options
+         * @since 2.24.0
+         */
+        updateOptions: function (options) {
+          this.options = options;
+          this.render();
         },
 
         /**

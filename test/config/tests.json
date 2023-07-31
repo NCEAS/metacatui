@@ -1,10 +1,10 @@
 {
   "unit": [
-    "./js/specs/unit/collections/SolrResults.js",
-    "./js/specs/unit/models/Search.js",
-    "./js/specs/unit/models/filters/Filter.js",
-    "./js/specs/unit/models/filters/NumericFilter.js",
-    "./js/specs/unit/models/CitationModel.js",
+    "./js/specs/unit/collections/SolrResults.spec.js",
+    "./js/specs/unit/models/Search.spec.js",
+    "./js/specs/unit/models/filters/Filter.spec.js",
+    "./js/specs/unit/models/filters/NumericFilter.spec.js",
+    "./js/specs/unit/models/CitationModel.spec.js",
     "./js/specs/unit/collections/ProjectList.spec.js",
     "./js/specs/unit/models/project/Project.spec.js",
     "./js/specs/unit/models/metadata/eml211/EML211.spec.js",
@@ -18,11 +18,16 @@
     "./js/specs/unit/models/metadata/eml211/EMLOtherEntity.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLParty.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLTemporalCoverage.spec.js",
-    "./js/specs/unit/models/maps/assets/CesiumGeohash.js",
-    "./js/specs/unit/models/maps/assets/CesiumImagery.js",
+    "./js/specs/unit/models/maps/assets/CesiumImagery.spec.js",
+    "./js/specs/unit/collections/maps/Geohashes.spec.js",
+    "./js/specs/unit/models/connectors/Filters-Map.spec.js",
+    "./js/specs/unit/models/connectors/Filters-Search.spec.js",
+    "./js/specs/unit/models/connectors/Map-Search-Filters.spec.js",
+    "./js/specs/unit/models/connectors/Map-Search.spec.js",
+    "./js/specs/unit/models/filters/SpatialFilter.spec.js",
+    "./js/specs/unit/models/maps/Geohash.spec.js",
+    "./js/specs/unit/models/maps/assets/CesiumGeohash.spec.js",
     "./js/specs/unit/common/Utilities.spec.js"
   ],
-  "integration": [
-    "./js/specs/integration/collections/SolrResults.js"
-  ]
+  "integration": ["./js/specs/integration/collections/SolrResults.spec.js"]
 }

@@ -2497,7 +2497,7 @@ define(['jquery',
           this.$loading = null;
 
           //Put the document title back to the default
-          MetacatUI.appModel.set("title", MetacatUI.appModel.defaults.title);
+          MetacatUI.appModel.resetTitle();
 
           //Remove view-specific classes
           this.$el.removeClass("container no-stylesheet");

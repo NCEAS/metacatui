@@ -80,6 +80,9 @@ define(
          * @property {MapConfig#FeatureTemplate} [featureTemplate] Configuration for
          * content and layout of the Feature Info panel - the panel that shows information
          * about a selected feature from a vector asset ({@link FeatureInfoView}).
+         * @property {Cesium.Entity|Cesium.3DTilesetFeature} [featureType] For vector
+         * and 3d tileset assets, the object type that cesium uses to represent features
+         * from the asset. Null for imagery and terrain assets.
          * @property {MapConfig#CustomProperties} [customProperties] Configuration that
          * allows for the definition of custom feature properties, potentially based on
          * other properties. For example, a custom property could be a formatted version
@@ -109,6 +112,7 @@ define(
             colorPalette: null,
             customProperties: {},
             featureTemplate: {},
+            featureType: null,
             notification: {},
             status: null,
             statusDetails: null
@@ -122,7 +126,7 @@ define(
          * description.
          * @typedef {Object} MapAssetConfig
          * @name MapConfig#MapAssetConfig
-         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'WebMapTileServiceImageryProvider'|'WebMapServiceImageryProvider'|'TileMapServiceImageryProvider'|'NaturalEarthII'|'CesiumTerrainProvider'|'GeoJsonDataSource'|'USGSImageryTopo')} type - 
+         * @property {('Cesium3DTileset'|'BingMapsImageryProvider'|'IonImageryProvider'|'WebMapTileServiceImageryProvider'|'WebMapServiceImageryProvider'|'TileMapServiceImageryProvider'|'NaturalEarthII'|'CesiumTerrainProvider'|'GeoJsonDataSource'|'USGSImageryTopo'|'OpenStreetMapImageryProvider')} type - 
          * A string indicating the format of the data. Some of these types correspond
          * directly to Cesium classes. The NaturalEarthII type is a special imagery layer
          * that automatically sets the cesiumOptions to load the Natural Earth II imagery
@@ -348,7 +352,6 @@ define(
             if (typeof this.updateAppearance === 'function') {
 
               const setSelectFeaturesListeners = function () {
-
                 const mapModel = this.get('mapModel')
                 if (!mapModel) { return }
                 const selectedFeatures = mapModel.get('selectedFeatures')
@@ -364,7 +367,7 @@ define(
 
               }
               setSelectFeaturesListeners.call(this)
-              this.listenTo(this, 'change:mapModel', setSelectFeaturesListeners)
+              this.stopListening(this, 'change:mapModel', setSelectFeaturesListeners)
               this.listenTo(this, 'change:mapModel', setSelectFeaturesListeners)
             }
           }
@@ -379,7 +382,7 @@ define(
         /**
          * Given a feature object from a Feature model, checks if it is part of the
          * selectedFeatures collection. See featureObject property from
-         * {@link Feature#defaults}.
+         * {@link Feature#defaults}. For vector and 3d tile models only.
          * @param {*} feature - An object that a Map widget uses to represent this feature
          * in the map, e.g. a Cesium.Entity or a Cesium.Cesium3DTileFeature
          * @returns {boolean} Returns true if the given feature is part of the
@@ -389,6 +392,64 @@ define(
           const map = this.get('mapModel')
           if (!map) { return false }
           return map.get('selectedFeatures').containsFeature(feature)
+        },
+
+        /**
+         * Checks if a feature from the map (a Cesium object) is the type of
+         * feature that this map asset model contains. For example, if a
+         * Cesium3DTilesetFeature is passed to this function, this function
+         * will return true if it is a Cesium3DTileset model, and false if it
+         * is a CesiumVectorData model.
+         * @param {Cesium.Cesium3DTilesetFeature|Cesium.Entity} feature 
+         * @returns {boolean} true if the feature is an instance of the feature
+         * type set on the asset model, false otherwise.
+         * @since 2.25.0
+         */
+        usesFeatureType: function(feature) {
+          const ft = this.get("featureType");
+          if (!feature || !ft) return false
+          if (!feature instanceof ft) return false
+          return true
+        },
+
+        /**
+         * Given a feature object from a Feature model, checks if it is part of the
+         * selectedFeatures collection. See featureObject property from
+         * {@link Feature#defaults}. For vector and 3d tile models only.
+         * @param {*} feature - An object that a Map widget uses to represent this feature
+         * in the map, e.g. a Cesium.Entity or a Cesium.Cesium3DTileFeature
+         * @returns {boolean} Returns true if the given feature is part of the
+         * selectedFeatures collection in this asset
+         * @since 2.25.0
+         */
+        containsFeature: function (feature) {
+          if (!this.usesFeatureType(feature)) return false
+          if (!this.getCesiumModelFromFeature) return false
+          const cesiumModel = this.getCesiumModelFromFeature(feature)
+          if (!cesiumModel) return false
+          if (this.get('cesiumModel') == cesiumModel) return true
+          return false
+        },
+
+        /**
+         * Given a feature object from a Feature model, returns the attributes
+         * needed to create a Feature model. For vector and 3d tile models only.
+         * @param {*} feature - An object that a Map widget uses to represent this feature
+         * in the map, e.g. a Cesium.Entity or a Cesium.Cesium3DTileFeature
+         * @returns {Object} An object with properties, mapAsset, featureID, featureObject,
+         * and label properties. Returns null if the feature is not the correct type
+         * for this asset model.
+         */
+        getFeatureAttributes: function (feature) {
+          if (!this.usesFeatureType(feature)) return null;
+          if (!this.getCesiumModelFromFeature) return null;
+          return {
+            properties: this.getPropertiesFromFeature(feature),
+            mapAsset: this,
+            featureID: this.getIDFromFeature(feature),
+            featureObject: feature,
+            label: this.getLabelFromFeature(feature),
+          }
         },
 
         /**
@@ -648,7 +709,7 @@ define(
         /**
          * Resets the Map Asset's status and statusDetails attributes to their default
          * values.
-         * @since X.X.X
+         * @since 2.21.0
          */
         resetStatus: function () {
           const defaults = this.defaults()
@@ -690,17 +751,13 @@ define(
           try {
             const model = this
             const colorPalette = model.get('colorPalette')
-            if (colorPalette) {
-              return colorPalette.getColor(properties)
-            } else {
-              return new AssetColorPalette().getDefaultColor()
-            }
+            return (
+              colorPalette?.getColor(properties) ||
+              new AssetColorPalette().getDefaultColor()
+            )
           }
-          catch (error) {
-            console.log(
-              'There was an error getting a color for a MapAsset model' +
-              '. Error details: ' + error
-            );
+          catch (e) {
+            console.log('Failed to a color in a MapAsset model', e);
           }
         },
 
@@ -729,6 +786,7 @@ define(
          * @returns {boolean} Returns true if the MapAsset has opacity > 0 and is visible.
          */
         isVisible: function () {
+          if(this.get('temporarilyHidden') === true) return false
           return this.get('visible') && this.get('opacity') > 0
         },
 

@@ -88,13 +88,10 @@ define(['jquery', 'underscore', 'backbone'],
           //Log the error to the console
           console.error("Couldn't get the DataONE Node info document: ", textStatus, errorThrown);
 
-          //Send this exception to Google Analytics
-          if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
-            ga("send", "exception", {
-              "exDescription": "Couldn't get the DataONE Node info document: " + textStatus + ", " + errorThrown + " | v. " + MetacatUI.metacatUIVersion,
-              "exFatal": false
-            });
-          }
+          // Track the error
+          const message = `Couldn't get the DataONE Node info document: ` +
+            `${textStatus}, ${errorThrown}`;
+          MetacatUI.analytics?.trackException(message, null, false);
 
           //Trigger an error on this model
           thisModel.set("error", true);

@@ -35,6 +35,12 @@ define(
     * @screenshot views/maps/CesiumWidgetView.png
     * @since 2.18.0
     * @constructs
+    * @fires CesiumWidgetView#moved
+    * @fires CesiumWidgetView#moveEnd
+    * @fires CesiumWidgetView#moveStart
+    * @fires Map#moved
+    * @fires Map#moveEnd
+    * @fires Map#moveStart
     */
     var CesiumWidgetView = Backbone.View.extend(
       /** @lends CesiumWidgetView.prototype */{
@@ -82,20 +88,16 @@ define(
             renderFunction: 'add3DTileset'
           },
           {
-            types: ['GeoJsonDataSource'],
+            types: ['GeoJsonDataSource', 'CzmlDataSource'],
             renderFunction: 'addVectorData'
           },
           {
-            types: ['BingMapsImageryProvider', 'IonImageryProvider', 'TileMapServiceImageryProvider', 'WebMapTileServiceImageryProvider', 'WebMapServiceImageryProvider'],
+            types: ['BingMapsImageryProvider', 'IonImageryProvider', 'TileMapServiceImageryProvider', 'WebMapTileServiceImageryProvider', 'WebMapServiceImageryProvider', 'OpenStreetMapImageryProvider'],
             renderFunction: 'addImagery'
           },
           {
             types: ['CesiumTerrainProvider'],
             renderFunction: 'updateTerrain'
-          },
-          {
-            types: ['CesiumGeohash'],
-            renderFunction: 'addGeohashes'
           }
         ],
 
@@ -174,6 +176,7 @@ define(
               // We will add a base imagery layer after initialization
               imageryProvider: false,
               terrain: false,
+              useBrowserRecommendedResolution: false,
               // Use explicit rendering to make the widget must faster.
               // See https://cesium.com/blog/2018/01/24/cesium-scene-rendering-performance
               requestRenderMode: true,
@@ -191,10 +194,6 @@ define(
             // raised.
             view.camera.percentChanged = 0.1
 
-            // Zoom functions executed after each scene render
-            view.scene.postRender.addEventListener(function () {
-              view.postRender();
-            });
 
             // Disable HDR lighting for better performance and to avoid changing imagery colors.
             view.scene.highDynamicRange = false;
@@ -221,59 +220,16 @@ define(
               view.updateDataSourceDisplay.call(view)
             })
 
-            // Go to the home position, if one is set.
-            view.flyHome()
+            view.setListeners();
+            view.addLayers();
 
-            // If users are allowed to click on features for more details, initialize
-            // picking behavior on the map.
+            // Go to the home position, if one is set.
+            view.flyHome(0)
+
+            // If users are allowed to click on features for more details,
+            // initialize picking behavior on the map.
             if (view.model.get('showFeatureInfo')) {
               view.initializePicking()
-            }
-
-            // Set listeners for when the Cesium camera changes a significant amount.
-            view.camera.changed.addEventListener(function () {
-              // Update the bounding box for the visible area in the Map model
-              view.updateViewExtent()
-              // If the scale bar is showing, update the pixel to meter scale on the map
-              // model when the camera angle/zoom level changes
-              if (view.model.get('showScaleBar')) {
-                view.updateCurrentScale()
-              }
-            })
-
-            // Sets listeners for when the mouse moves, depending on the value of the map
-            // model's showScaleBar and showFeatureInfo attributes
-            view.setMouseMoveListeners()
-
-            // When the appearance of a layer has been updated, then tell Cesium to
-            // re-render the scene. Each layer model triggers the 'appearanceChanged'
-            // function whenever the color, opacity, etc. has been updated in the
-            // associated Cesium model.
-            view.stopListening(view.model.get('layers'), 'appearanceChanged')
-            view.listenTo(view.model.get('layers'), 'appearanceChanged', view.requestRender)
-
-            // Other views may trigger an event on the layer/asset model that indicates
-            // that the map should navigate to the extent of the data, or on the Map model
-            // to navigate to the home position.
-            view.stopListening(view.model.get('layers'), 'flyToExtent')
-            view.listenTo(view.model.get('layers'), 'flyToExtent', view.flyTo)
-            view.stopListening(view.model, 'flyHome')
-            view.listenTo(view.model, 'flyHome', view.flyHome)
-
-            // Add each layer from the Map model to the Cesium widget. Render using the
-            // function configured in the View's mapAssetRenderFunctions property. Add in
-            // reverse order for layers to appear in the correct order on the map.
-            const layers = view.model.get('layers')
-            _.each(layers.last(layers.length).reverse(), function (mapAsset) {
-              view.addAsset(mapAsset)
-            });
-
-            // The Cesium Widget will support just one terrain option to start. Later,
-            // we'll allow users to switch between terrains if there is more than one.
-            var terrains = view.model.get('terrains')
-            var terrainModel = terrains ? terrains.first() : false;
-            if (terrainModel) {
-              view.addAsset(terrainModel)
             }
 
             return this
@@ -283,6 +239,129 @@ define(
             console.log(
               'Failed to render a CesiumWidgetView. Error details: ' + error
             );
+          }
+        },
+
+        /**
+         * Set all of the listeners for the CesiumWidgetView. This function is
+         * called during the render function.
+         * @since x.x.x
+         */
+        setListeners: function () {
+
+          const view = this;
+
+          // Zoom functions executed after each scene render
+          view.scene.postRender.addEventListener(function () {
+            view.postRender();
+          });
+
+          // When the user first interacts with the map, update the model.
+          // Ignore the event where the user just moves the mouse over the map.
+          view.listenOnceForInteraction(function () {
+            view.model.set('firstInteraction', true);
+          }, ["MOUSE_MOVE"]);
+
+          // Set listeners for when the Cesium camera changes a significant
+          // amount.
+          view.camera.changed.addEventListener(function () {
+            view.trigger('moved')
+            view.model.trigger('moved')
+            // Update the bounding box for the visible area in the Map model
+            view.updateViewExtent()
+            // If the scale bar is showing, update the pixel to meter scale on
+            // the map model when the camera angle/zoom level changes
+            if (view.model.get('showScaleBar')) {
+              view.updateCurrentScale()
+            }
+          })
+
+          view.camera.moveEnd.addEventListener(function () {
+            view.trigger('moveEnd')
+            view.model.trigger('moveEnd')
+          })
+          view.camera.moveStart.addEventListener(function () {
+            view.trigger('moveStart')
+            view.model.trigger('moveStart')
+          })
+
+          // Sets listeners for when the mouse moves, depending on the value
+          // of the map model's showScaleBar and showFeatureInfo attributes
+          view.setMouseMoveListeners()
+
+          // When the appearance of a layer has been updated, then tell Cesium
+          // to re-render the scene. Each layer model triggers the
+          // 'appearanceChanged' function whenever the color, opacity, etc.
+          // has been updated in the associated Cesium model.
+          view.stopListening(view.model.get('layers'), 'appearanceChanged')
+          view.listenTo(view.model.get('layers'), 'appearanceChanged', view.requestRender)
+
+          // Other views may trigger an event on the layer/asset model that
+          // indicates that the map should navigate to the extent of the data,
+          // or on the Map model to navigate to the home position.
+          view.stopListening(view.model.get('layers'), 'flyToExtent')
+          view.listenTo(view.model.get('layers'), 'flyToExtent', view.flyTo)
+          view.stopListening(view.model, 'flyHome')
+          view.listenTo(view.model, 'flyHome', view.flyHome)
+        },
+
+        /**
+         * Listen for any user interaction with the map. Once an interaction has
+         * occurred, run the callback function and stop listening for
+         * interactions. Useful for detecting the first user interaction with the
+         * map.
+         * @param {function} callback - The function to run once the interaction
+         * has occurred.
+         * @param {string[]} ignore - An array of Cesium.ScreenSpaceEventType
+         * labels to ignore. See
+         * {@link https://cesium.com/learn/cesiumjs/ref-doc/ScreenSpaceEventType.html}
+         * @since x.x.x
+         */
+        listenOnceForInteraction: function (
+          callback,
+          ignore = []
+        ) {
+          const view = this;
+          const events = Cesium.ScreenSpaceEventType;
+          const inputHandler = new Cesium.ScreenSpaceEventHandler(
+            view.scene.canvas
+          );
+          if (!ignore || !Array.isArray(ignore)) ignore = [];
+
+          Object.entries(events).forEach(function ([label, value]) {
+            if (ignore.includes(label)) return;
+            inputHandler.setInputAction(function () {
+              callback();
+              inputHandler.destroy();
+            }, value);
+          });
+        },
+
+        /**
+         * Add all of the model's layers to the map. This function is called
+         * during the render function.
+         * @since x.x.x
+         */
+        addLayers: function () {
+
+          const view = this;
+
+          // Add each layer from the Map model to the Cesium widget. Render
+          // using the function configured in the View's mapAssetRenderFunctions
+          // property. Add in reverse order for layers to appear in the correct
+          // order on the map.
+          const layers = view.model.get('layers')
+          _.each(layers.last(layers.length).reverse(), function (mapAsset) {
+            view.addAsset(mapAsset)
+          });
+
+          // The Cesium Widget will support just one terrain option to start.
+          // Later, we'll allow users to switch between terrains if there is
+          // more than one.
+          var terrains = view.model.get('terrains')
+          var terrainModel = terrains ? terrains.first() : false;
+          if (terrainModel) {
+            view.addAsset(terrainModel)
           }
         },
 
@@ -332,6 +411,7 @@ define(
         updateDataSourceDisplay: function () {
           try {
             const view = this;
+            const layers = view.model.get('layers')
 
             var dataSources = view.dataSourceDisplay.dataSources;
             if (!dataSources || !dataSources.length) {
@@ -347,7 +427,7 @@ define(
               const dataSource = dataSources.get(i);
               const visualizers = dataSource._visualizers;
 
-              const assetModel = view.model.get('layers').findWhere({
+              const assetModel = layers.findWhere({
                 cesiumModel: dataSource
               })
               const displayReadyBefore = assetModel.get('displayReady')
@@ -427,8 +507,13 @@ define(
             // event to update styling of map assets with selected features, and tells the
             // parent map view to open the feature details panel.
             view.inputHandler.setInputAction(function (movement) {
-              var pickedFeature = scene.pick(movement.position);
-              view.updateSelectedFeatures([pickedFeature])
+              const pickedFeature = scene.pick(movement.position);
+              const action = view.model.get('clickFeatureAction');
+              if (action === 'showDetails') {
+                view.model.selectFeatures([pickedFeature])
+              } else if (action === 'zoom') {
+                view.flyTo(pickedFeature)
+              }
             }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
           }
@@ -436,94 +521,6 @@ define(
             console.log(
               'There was an error initializing picking in a CesiumWidgetView' +
               '. Error details: ' + error
-            );
-          }
-        },
-
-        /**
-         * Given a feature from a vector layer (e.g. a Cesium3DTileFeature), gets any
-         * properties that are associated with that feature, the MapAsset model that
-         * contains the feature, and the ID that Cesium uses to identify it, and updates
-         * the Features collection that is set on the Map's `selectedFeatures` attribute
-         * with a new Feature model. NOTE: This currently only works with 3D tile
-         * features.
-         * @param {Cesium.Cesium3DTileFeature[]} features - An array of Cesium3DTileFeatures to
-         * select
-        */
-        updateSelectedFeatures: function (features) {
-
-          try {
-            const view = this
-            const layers = view.model.get('layers')
-
-            // Don't update the selected features collection if the newly selected
-            // features are identical
-            const oldFeatures = view.model.get('selectedFeatures').getFeatureObjects()
-            const noChange = _.isEqual(_.sortBy(features), _.sortBy(oldFeatures))
-            if (noChange) {
-              return;
-            }
-
-            // Properties of the selected features to pass to the Map model's
-            // selectFeatures function. Passing null will empty the map's selectedFeatures
-            // collection
-            let featuresAttrs = features ? [] : null
-            if (!features || !Array.isArray(features)) {
-              features = []
-            }
-
-            features.forEach(function (feature) {
-              if (feature) {
-                // To find corresponding MapAsset model in the layers collection
-                let cesiumModel = null
-                // Attributes to make a new Feature model
-                const attrs = {
-                  properties: {},
-                  mapAsset: null,
-                  featureID: null,
-                  featureObject: feature,
-                  label: null,
-                }
-                if (feature instanceof Cesium.Cesium3DTileFeature) {
-                  // Cesium.Cesium3DTileFeature.primitive gives the Cesium.Cesium3DTileset
-                  cesiumModel = feature.primitive
-                  attrs.featureID = feature.pickId ? feature.pickId.key : null
-                  // Search for a property to use as a label
-                  attrs.label = feature.getProperty('name') || feature.getProperty('label') || null
-                } else {
-                  // TODO: Test - does feature.id give the entity this work for all datasources ?
-                  // A picked feature object's ID gives the Cesium.Entity
-                  attrs.featureObject = feature.id
-                  // Gives the parent DataSource
-                  cesiumModel = attrs.featureObject.entityCollection.owner
-                  attrs.featureID = attrs.featureObject.id
-                  attrs.label = attrs.featureObject.name
-                }
-
-                attrs.mapAsset = layers.findWhere({
-                  cesiumModel: cesiumModel
-                })
-
-                if (
-                  attrs.mapAsset &&
-                  typeof attrs.mapAsset.getPropertiesFromFeature === 'function'
-                ) {
-                  attrs.properties = attrs.mapAsset.getPropertiesFromFeature(attrs.featureObject)
-                }
-
-                featuresAttrs.push(attrs)
-              }
-            })
-
-            // Pass the new information to the Map's selectFeatures function, which will
-            // update the selectFeatures collection set on the Map model
-            view.model.selectFeatures(featuresAttrs)
-
-          }
-          catch (error) {
-            console.log(
-              'There was an error updating the selected features collection from a ' +
-              'CesiumWidgetView. Error details: ' + error
             );
           }
         },
@@ -578,9 +575,7 @@ define(
           try {
 
             const view = this;
-            if (typeof options !== 'object') {
-              options = {}
-            }
+            if (typeof options !== 'object') options = {}
 
             // A target is required
             if (!target) {
@@ -616,17 +611,26 @@ define(
             // There's no native way of getting the bounding sphere or location from a
             // 3DTileFeature!
             if (target instanceof Feature) {
-              // If the target is a Feature, get the Bounding Sphere for the Feature
-              // and call this function again.
-              const feature = target.get('featureObject')
-              let featureBoundingSphere = new Cesium.BoundingSphere();
+              // If the object saved in the Feature is an Entity, then this
+              // function will get the bounding sphere for the entity on the
+              // next run.
+              setTimeout(() => {
+                view.flyTo(target.get('featureObject'), options)
+              }, 0);
+              return
+            }
+
+            // If the target is a Cesium Entity, then get the bounding sphere for the
+            // entity and call this function again.
+            const entity = target instanceof Cesium.Entity ? target : target.id;
+            if (entity instanceof Cesium.Entity) {
+              let entityBoundingSphere = new Cesium.BoundingSphere();
               view.dataSourceDisplay.getBoundingSphere(
-                feature, false, featureBoundingSphere
+                entity, false, entityBoundingSphere
               )
               setTimeout(() => {
-                view.flyTo(featureBoundingSphere, options)
+                view.flyTo(entityBoundingSphere, options)
               }, 0);
-
               return
             }
 
@@ -637,18 +641,16 @@ define(
             }
 
           }
-          catch (error) {
-            console.log(
-              'There was an error navigating to a target position in a CesiumWidgetView' +
-              '. Error details: ' + error
-            );
+          catch (e) {
+            console.log('Failed to navigate to a target in Cesium.', e);
           }
         },
 
         /**
          * Navigate to the homePosition that's set on the Map.
+         * @param {number} duration The duration of the flight in seconds.
          */
-        flyHome: function () {
+        flyHome: function (duration) {
           try {
             var position = this.model.get('homePosition')
 
@@ -677,6 +679,9 @@ define(
                   roll: Cesium.Math.toRadians(position.roll)
                 }
               }
+              if (Cesium.defined(duration)) {
+                target.duration = duration
+              }
 
               this.flyTo(target);
             }
@@ -697,18 +702,7 @@ define(
         */
         getCameraPosition: function () {
           try {
-            var camera = this.camera
-            var cameraPosition = Cesium.Cartographic.fromCartesian(camera.position)
-
-            return {
-              longitude: Cesium.Math.toDegrees(cameraPosition.longitude),
-              latitude: Cesium.Math.toDegrees(cameraPosition.latitude),
-              height: cameraPosition.height,
-              heading: Cesium.Math.toDegrees(camera.heading),
-              pitch: Cesium.Math.toDegrees(camera.pitch),
-              roll: Cesium.Math.toDegrees(camera.roll)
-            }
-
+            return this.getDegreesFromCartesian(this.camera.position)
           }
           catch (error) {
             console.log(
@@ -719,98 +713,123 @@ define(
         },
 
         /**
-         * Update the 'currentViewExtent' attribute in the Map model with the north,
-         * south, east, and west-most lat/long that define a bounding box around the
-         * currently visible area of the map.
+         * Update the 'currentViewExtent' attribute in the Map model with the
+         * bounding box of the currently visible area of the map.
          */
         updateViewExtent: function () {
-          try {
-            const view = this;
-            const camera = view.camera;
-            const scene = view.scene;
+          try { this.model.set('currentViewExtent', this.getViewExtent()) }
+          catch (e) { console.log('Failed to update the Map view extent.', e) }
+        },
 
-            // This will be the bounding box of the visible area
-            let coords = { north: null, south: null, east: null, west: null }
+        /**
+         * Get the north, south, east, and west-most lat/long that define a
+         * bounding box around the currently visible area of the map. Also gives
+         * the height/ altitude of the camera in meters.
+         * @returns {MapConfig#ViewExtent} The current view extent.
+         */
+        getViewExtent: function () {
+          const view = this;
+          const scene = view.scene;
+          const camera = view.camera;
+          // Get the height in meters
+          const height = camera.positionCartographic.height
 
-            // First try getting the visible bounding box using the simple method
-            if (!view.scratchRectangle) {
-              // Store the rectangle that we use for the calculation (reduces pressure on
-              // garbage collector system since this function is called often).
-              view.scratchRectangle = new Cesium.Rectangle();
-            }
-            var rect = camera.computeViewRectangle(
-              scene.globe.ellipsoid, view.scratchRectangle
-            );
-            coords.north = Cesium.Math.toDegrees(rect.north)
-            coords.east = Cesium.Math.toDegrees(rect.east)
-            coords.south = Cesium.Math.toDegrees(rect.south)
-            coords.west = Cesium.Math.toDegrees(rect.west)
+          // This will be the bounding box of the visible area
+          let coords = {
+            north: null, south: null, east: null, west: null, height: height
+          }
 
-            // Check if the resulting coordinates cover the entire globe (happens if some of
-            // the sky is visible)
+          // First try getting the visible bounding box using the simple method
+          if (!view.scratchRectangle) {
+            // Store the rectangle that we use for the calculation (reduces pressure on
+            // garbage collector system since this function is called often).
+            view.scratchRectangle = new Cesium.Rectangle();
+          }
+          var rect = camera.computeViewRectangle(
+            scene.globe.ellipsoid, view.scratchRectangle
+          );
+          coords.north = Cesium.Math.toDegrees(rect.north)
+          coords.east = Cesium.Math.toDegrees(rect.east)
+          coords.south = Cesium.Math.toDegrees(rect.south)
+          coords.west = Cesium.Math.toDegrees(rect.west)
 
-            const fullGlobeCoverage = coords.west === -180 && coords.east === 180 &&
-              coords.south === -90 && coords.north === 90
+          // Check if the resulting coordinates cover the entire globe (happens
+          // if some of the sky is visible). If so, limit the bounding box to a
+          // smaller extent
+          if (view.coversGlobe(coords)) {
 
-            // See if we can limit the bounding box to a smaller extent
-            if (fullGlobeCoverage) {
+            // Find points at the top, bottom, right, and left corners of the globe
+            const edges = view.findEdges()
 
-              // Find points at the top, bottom, right, and left corners of the globe
-              const edges = view.findEdges()
+            // Get the midPoint between the top and bottom points on the globe. Use this
+            // to decide if the northern or southern hemisphere is more in view.
+            let midPoint = view.findMidpoint(edges.top, edges.bottom)
+            if (midPoint) {
 
-              // Get the midPoint between the top and bottom points on the globe. Use this
-              // to decide if the northern or southern hemisphere is more in view.
-              let midPoint = view.findMidpoint(edges.top, edges.bottom)
-              if (midPoint) {
+              // Get the latitude of the mid point
+              const midPointLat = view.getDegreesFromCartesian(midPoint).latitude
 
-                // Get the latitude of the mid point
-                const midPointLat = view.getDegreesFromCartesian(midPoint).latitude
-
-                // Get the latitudes of all the edge points so that we can calculate the
-                // southern and northern most coordinate
-                const edgeLatitudes = []
-                Object.values(edges).forEach(function (point) {
-                  if (point) {
-                    edgeLatitudes.push(
-                      view.getDegreesFromCartesian(point).latitude
-                    )
-                  }
-                })
-
-                if (midPointLat > 0) {
-                  // If the midPoint is in the northern hemisphere, limit the southern part
-                  // of the bounding box to the southern most edge point latitude
-                  coords.south = Math.min(...edgeLatitudes)
-                } else {
-                  // Vice versa for the southern hemisphere
-                  coords.north = Math.max(...edgeLatitudes)
+              // Get the latitudes of all the edge points so that we can calculate the
+              // southern and northern most coordinate
+              const edgeLatitudes = []
+              Object.values(edges).forEach(function (point) {
+                if (point) {
+                  edgeLatitudes.push(
+                    view.getDegreesFromCartesian(point).latitude
+                  )
                 }
-              }
+              })
 
-              // If not focused directly on one of the poles, then also limit the east and
-              // west sides of the bounding box
-              const northPointLat = view.getDegreesFromCartesian(edges.top).latitude
-              const southPointLat = view.getDegreesFromCartesian(edges.bottom).latitude
-
-              if (northPointLat > 25 && southPointLat < -25) {
-                if (edges.right) {
-                  coords.east = view.getDegreesFromCartesian(edges.right).longitude
-                }
-                if (edges.left) {
-                  coords.west = view.getDegreesFromCartesian(edges.left).longitude
-                }
+              if (midPointLat > 0) {
+                // If the midPoint is in the northern hemisphere, limit the southern part
+                // of the bounding box to the southern most edge point latitude
+                coords.south = Math.min(...edgeLatitudes)
+              } else {
+                // Vice versa for the southern hemisphere
+                coords.north = Math.max(...edgeLatitudes)
               }
             }
 
-            view.model.set('currentViewExtent', coords)
+            // If not focused directly on one of the poles, then also limit the east and
+            // west sides of the bounding box
+            const northPointLat = view.getDegreesFromCartesian(edges.top).latitude
+            const southPointLat = view.getDegreesFromCartesian(edges.bottom).latitude
 
+            if (northPointLat > 25 && southPointLat < -25) {
+              if (edges.right) {
+                coords.east = view.getDegreesFromCartesian(edges.right).longitude
+              }
+              if (edges.left) {
+                coords.west = view.getDegreesFromCartesian(edges.left).longitude
+              }
+            }
           }
-          catch (error) {
-            console.log(
-              'Failed to update the Map view extent from a CesiumWidgetView' +
-              '. Error details: ' + error
-            );
-          }
+
+          return coords
+        },
+
+        /**
+         * Check if a given bounding box covers the entire globe.
+         * @param {Object} coords - An object with the north, south, east, and
+         * west coordinates of a bounding box
+         * @param {Number} latAllowance - The number of degrees latitude to
+         * allow as a buffer. If the north and south coords range from -90 to
+         * 90, minus this buffer * 2, then it is considered to cover the globe.
+         * @param {Number} lonAllowance - The number of degrees longitude to
+         * allow as a buffer.
+         * @returns {Boolean} Returns true if the bounding box covers the entire
+         * globe, false otherwise.
+         */ 
+        coversGlobe: function (coords, latAllowance = 0.5, lonAllowance = 1) {
+          const maxLat = 90 - latAllowance;
+          const minLat = -90 + latAllowance;
+          const maxLon = 180 - lonAllowance;
+          const minLon = -180 + lonAllowance;
+
+          return coords.west <= minLon &&
+            coords.east >= maxLon &&
+            coords.south <= minLat &&
+            coords.north >= maxLat
         },
 
         /**
@@ -821,11 +840,16 @@ define(
          */
         getDegreesFromCartesian: function (cartesian) {
           const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
-          return {
-            longitude: Cesium.Math.toDegrees(cartographic.longitude),
-            latitude: Cesium.Math.toDegrees(cartographic.latitude),
+          const degrees = {
             height: cartographic.height
           }
+          const coordinates = ['longitude', 'latitude', 'heading', 'pitch', 'roll']
+          coordinates.forEach(function (coordinate) {
+            if (Cesium.defined(cartographic[coordinate])) {
+              degrees[coordinate] = Cesium.Math.toDegrees(cartographic[coordinate])
+            }
+          });
+          return degrees
         },
 
         /**
@@ -1005,13 +1029,7 @@ define(
               var pickRay = view.camera.getPickRay(mousePosition);
               var cartesian = view.scene.globe.pick(pickRay, view.scene);
               if (cartesian) {
-                // Use globe.ellipsoid.cartesianToCartographic ?
-                var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
-                view.model.set('currentPosition', {
-                  latitude: Cesium.Math.toDegrees(cartographic.latitude),
-                  longitude: Cesium.Math.toDegrees(cartographic.longitude),
-                  height: cartographic.height,
-                })
+                view.model.set('currentPosition', view.getDegreesFromCartesian(cartesian))
               }
             }
 
@@ -1139,7 +1157,7 @@ define(
          * @param {MapAsset} mapAsset A MapAsset layer to render in the map, such as a
          * Cesium3DTileset or a CesiumImagery model.
          */
-        addAsset: function(mapAsset) {
+        addAsset: function (mapAsset) {
           try {
             if (!mapAsset) {
               return
@@ -1223,28 +1241,9 @@ define(
         },
 
         /**
-         * Renders a CesiumGeohash map asset on the map
-         * */
-        addGeohashes: function () {
-            let view = this;
-            
-            require(["views/maps/CesiumGeohashes"], (CesiumGeohashes)=>{
-                //Create a CesiumGeohashes view
-                let cg = new CesiumGeohashes();
-                cg.cesiumViewer = view;
-
-                //Get the CesiumGeohash MapAsset and save a reference in the view
-                let cesiumGeohashAsset = view.model.get('layers').find(mapAsset => mapAsset.get("type") == "CesiumGeohash");
-                cg.cesiumGeohash = cesiumGeohashAsset;
-
-                cg.render();
-            })
-        },
-
-        /**
          * Renders imagery in the Map.
          * @param {Cesium.ImageryLayer} cesiumModel The Cesium imagery model to render
-        */
+         */
         addImagery: function (cesiumModel) {
           this.scene.imageryLayers.add(cesiumModel)
           this.sortImagery()

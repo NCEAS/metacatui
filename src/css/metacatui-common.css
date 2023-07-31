@@ -123,7 +123,7 @@ article.container {
 	width: 96%;
 }
 #Content{
-  padding: 40px 40px 40px 40px;
+  padding: 2.5rem;
   min-height: 200px;
 }
 .DataCatalog #Content{
@@ -606,9 +606,9 @@ text-shadow: none;
 ** Results and Result Rows ***
 ******************************************/
 .result-row{
+	box-sizing: border-box;
 	padding: 10px 20px;
-	 width: 95%;
-	 width: calc(100% - 15px);
+	 width: auto;
 	 border-top: 1px solid #EEE;
 }
 .result-row-loading .citation-loading{
@@ -2163,9 +2163,13 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 	color: #666;
   min-width: 47px;
   text-align: center;
+	display: block;
 }
 i.catalog-metric-icon {
 	margin-right: 3px;
+}
+.catalog-stat{
+	display: inline-block;
 }
 
 /**********************************************************
@@ -6384,6 +6388,9 @@ body.mapMode{
 .filter.btn{
 	margin-bottom: 0px;
 }
+.filter-groups.vertical .filter-input-contain {
+	margin-bottom: 0;
+}
 .filter-contain > label{
    	font-size: 13px;
    	font-weight: bold;
@@ -6634,12 +6641,17 @@ body.mapMode{
   padding-right: 20px;
   max-width: 350px;
   min-width: 200px;
+  box-sizing: border-box;
 }
-.filter-groups.vertical .filter-group .filter{
-  padding-right: 0px;
-  min-width: 0px;
-  max-width: 100%;
-  margin-bottom: 10px;
+
+.filter-groups.vertical .filter-group .filter:not(.annotation-filter),
+.filter-groups.vertical .filters-header {
+  margin: 0;
+  border-bottom: 1px solid #dfdfdf;
+  padding: 0.65rem 0 1rem;
+}
+.filter-groups.vertical .filter {
+	padding-right: 0;
 }
 .filter-groups .filter .btn:not(.btn-filter-editor){
 	box-shadow: none;
@@ -6660,9 +6672,22 @@ body.mapMode{
 }
 .filter-groups .filter label{
 	cursor: default;
-	margin-bottom: 13px;
 	display: flex;
 	align-items: center;
+}
+.filter-groups .filter > label{
+	font-weight: bold;
+	margin-bottom: 0.5rem;
+}
+.filter-groups.vertical .filter > label {
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.015em;
+	color: #1d1d1d;
+}
+.filter-groups.vertical .filter > label .icon {
+	font-size: 1.1rem;
+	margin-right: 0.55rem;
 }
 .filter-group-links{
   border-top: 1px solid #DDD;
@@ -6713,15 +6738,18 @@ body.mapMode{
 }
 .filter .ui-slider{
 	position: relative;
-	height: 5px;
-	margin-top: 20px;
-	margin-bottom: 20px;
-	width: 90%;
-	width: calc(100% - 20px);
+	height: 6px;
+	margin-top: 15px;
+	margin-bottom: 17px;
+	border-radius: 4px;
+	border: 0px;
+	background: #CCC;
+	width: calc(100% - 10px);
 }
 .filter .ui-slider-handle{
   width: 7px;
-  height: 16px;
+  height: 15px;
+  margin-top: -1px;
 }
 .filters-title{
 	text-transform: uppercase;
@@ -6730,6 +6758,25 @@ body.mapMode{
 	font-weight: normal;
 	margin-top: 0px;
 }
+
+.catalog h5.result-header-count{
+	letter-spacing: 0.015em;
+	margin-left: 0.6rem;
+	margin-bottom: 1rem;
+}
+
+/* vertical filter groups */
+.filter-groups.vertical {
+	display: grid;
+	width: 100%;
+	box-sizing: border-box;
+}
+.filter-groups.vertical .filters-container {
+	display: grid;
+	grid-auto-rows: min-content;
+	width: 100%;
+}
+
 .filter-groups:not(.vertical) .filters-title{
   display: none;
 }
@@ -6767,6 +6814,7 @@ body.mapMode{
   font-weight: normal;
   padding: 5px;
   margin-right: 10px;
+	line-height: 1.1;
 }
 .filter-groups.vertical .applied-filters .applied-filter{
   display: block;
@@ -6817,26 +6865,24 @@ body.mapMode{
 	width: calc(40% - 50px);
 	text-align: center;
 	display: inline-block;
+	vertical-align: middle;
+	color: #7c7a7a;
 }
 .filter.date .min,
 .filter.numeric .min{
 	float: left;
+	margin-right: 0.7rem;
 }
 .filter.date .max,
 .filter.numeric .max{
 	float: right;
 	margin-left: 10px;
 }
-.filter .ui-slider{
-	min-height: 6px;
-  border-radius: 4px;
-  border: 0px;
-  background: #CCC;
-}
 .filter.boolean input{
   height: auto;
-  font-size: 3em;
+  font-size: 3.2em;
   margin-right: 10px;
+	margin-top: 0;
 }
 .filter.boolean span{
 	display: inline;
@@ -6851,6 +6897,41 @@ body.mapMode{
 }
 .filter input[type='text']{
 	width: 80%;
+}
+
+/**** collapsible filter components ****/
+
+/* the button to show/hide the filter */
+.collapse-toggle {
+	/* make a size variable */
+	--size: 1.55rem;
+	display: flex;
+	margin-left: auto;
+	padding: 0;
+	height: var(--size);
+	width: var(--size);
+	border: none;
+	background: #ebeff3;
+	border-radius: 50%;
+	justify-content: center;
+	align-items: center;
+}
+
+.collapse-toggle > .icon {
+	font-size: 1.3rem !important;
+	margin: 0 !important;
+	transition: transform 0.1s ease-in-out;
+	height: 100%;
+}
+.filter.collapsed {
+	padding-bottom: 0rem !important;
+}
+.filter.collapsed label ~ div {
+	display: none;
+}
+.filter.collapsed .collapse-toggle > .icon {
+	/* flip it around */
+	transform: rotate(180deg);
 }
 
 /*
@@ -6868,7 +6949,7 @@ body.mapMode{
 	font-size: 100%;
 	box-sizing: border-box;
 	border-color: #ccc;
-	border-radius: 2px;
+	border-radius: 3px;
 }
 
 .filter-groups .filter.annotation-filter .dropdown.multiple.ui {
@@ -6902,8 +6983,7 @@ body.mapMode{
 .filter-groups.vertical .filters-header{
   margin: 0px;
   border-bottom: 1px dashed #CCC;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
+  margin-bottom: 1.5rem;
 }
 #portal-filters{
 	border: 1px solid #CCC;
@@ -7097,6 +7177,7 @@ body.mapMode{
 }
 .can-toggle.can-toggle-small label {
   font-size: 1em;
+  margin-bottom: 0;
 }
 .can-toggle.can-toggle-small label .can-toggle-switch {
   height: 2.5em;
@@ -8432,6 +8513,33 @@ textarea.medium{
 .taxon-rank-value{
 	width: calc(100% - 50px);
 }
+
+/* quick add box */
+.taxa-quick-add{
+	background-color: #ddf3f6;
+	display: grid;
+	padding: 0.5rem 1rem 1rem 1rem;
+	border-radius: 4px;
+	border: 1px solid #c4deea;
+}
+.taxa-quick-add__controls{
+	display: grid;
+	grid-template-columns: auto max-content;
+	gap: 1rem;
+	align-items: end;
+}
+.taxa-quick-add__selects{
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+	gap: 1rem;
+}
+.taxa-quick-add__button{
+	height: min-content;
+}
+.taxa-quick-add__text{
+	margin: 0
+}
+
 /* ---- Methods ---- */
 .metadata-container .sampling{
 	margin-top: 20px;
@@ -8933,7 +9041,7 @@ body > #extension-is-installed{
 	margin-bottom: 3px;
 }
 
-.citation.header .top-info {
+.citation.header .top-info > *:not(.id) {
   text-transform: uppercase;
 	font-size: 13px;
 	letter-spacing: 0.02em;
@@ -9023,7 +9131,7 @@ body > #extension-is-installed{
 	-webkit-appearance: none;
 	width: 10px;
   }
-  
+
 .file-table-container::-webkit-scrollbar-thumb {
 	border-radius: 5px;
 	background-color: rgba(0,0,0,.5);

@@ -38,6 +38,8 @@ Adding new tests
 ----------------
 The test suite to be run is defined in `test/config/tests.json`. Paths to new spec test files are added to the `unit` or `integration` array. Tests are run in order, so add the new test in the position that makes most sense.
 
+⭐️⭐️⭐️ 🆕 **The script `test/scripts/generate-tests.py` can be used to generate new test files with the basic elements set up to start creating unit tests. See the [README](scripts/README.md) for more information.** ⭐️⭐️⭐️
+
 Running tests
 -------------
 

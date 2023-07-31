@@ -82,6 +82,7 @@ define([
 
         //Change the document title when the app changes the MetacatUI.appModel title at any time
         this.listenTo(MetacatUI.appModel, "change:title", this.changeTitle);
+        this.listenTo(MetacatUI.appModel, "change:description", this.changeDescription);
 
         this.checkIncompatibility();
       },
@@ -103,9 +104,22 @@ define([
         return this.el.querySelector(this.contentSelector);
       },
 
-      //Changes the web document's title
+      /**
+       * Change the web document's title
+       */
       changeTitle: function () {
         document.title = MetacatUI.appModel.get("title");
+      },
+
+      /**
+       * Change the web document's description
+       * @since 2.25.0
+       */
+      changeDescription: function () {
+        $("meta[name=description]").attr(
+          "content",
+          MetacatUI.appModel.get("description")
+        );
       },
 
       /** Render the main view and/or re-render subviews. Delegate rendering
@@ -134,8 +148,7 @@ define([
         $("head")
           .append(
             this.appHeadTemplate({
-              theme: MetacatUI.theme,
-              googleAnalyticsKey: MetacatUI.appModel.get("googleAnalyticsKey"),
+              theme: MetacatUI.theme
             })
           )
           //Add the JSON-LD to the head element
@@ -271,22 +284,9 @@ define([
 
         // track the current view
         this.currentView = view;
-        this.sendAnalytics();
+        MetacatUI.analytics?.trackPageView();
 
         this.trigger("appRenderComplete");
-      },
-
-      sendAnalytics: function () {
-        if (
-          !MetacatUI.appModel.get("googleAnalyticsKey") ||
-          typeof ga === "undefined"
-        )
-          return;
-
-        var page = window.location.pathname || "/";
-        page = page.replace("#", ""); //remove the leading pound sign
-
-        ga("send", "pageview", { page: page });
       },
 
       routeToMetadata: function (e) {
@@ -373,6 +373,7 @@ define([
        * @property {boolean} [options.remove] If true, the user will be able to remove the alert with a "close" icon.
        * @property {boolean} [options.includeEmail] If true, the alert will include a link to the {@link AppConfig#emailContact}
        * @property {string} [options.emailBody] Specify an email body to use in the email link.
+       * @returns {Element} The alert element
        */
       showAlert: function () {
         if (arguments.length > 1) {
@@ -443,6 +444,7 @@ define([
             $(options.container).prepend(alert);
           }
         }
+        return alert;
       },
 
       /**

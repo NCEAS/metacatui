@@ -502,11 +502,16 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                           query += " AND ";
                         }
 
+                      var value = "[" + yearMin + "-01-01T00:00:00Z TO " + yearMax + "-12-31T00:00:00Z]";
+                      var opts = {
+                        forPOST: forPOST,
+                        escapeSquareBrackets: false
+                      }
+
                         //Add to the query if we are searching publication year
-                        query += this.getMultiFieldQuery(this.fieldNameMap["pubYear"], "[" + yearMin + "-01-01T00:00:00Z TO " + yearMax + "-12-31T00:00:00Z]",
-                                                          {
-                                                            forPOST: forPOST
-                                                          });
+                      query += this.getMultiFieldQuery(
+                        this.fieldNameMap["pubYear"], value, opts
+                      );
                     }
                 }
 
@@ -929,10 +934,10 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                     return true;
                 }
 
-                return false;
+              return false;
             },
 
-            escapeSpecialChar: function(term) {
+            escapeSpecialChar: function(term, escapeSquareBrackets=true) {
                 term = term.replace(/%7B/g, "%5C%7B");
                 term = term.replace(/%7D/g, "%5C%7D");
                 term = term.replace(/%3A/g, "%5C%3A");
@@ -948,17 +953,19 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 term = term.replace(/%21/g, "%5C%21");
                 term = term.replace(/%28/g, "%5C%28");
                 term = term.replace(/%29/g, "%5C%29");
-                term = term.replace(/%5B/g, "%5C%5B");
-                term = term.replace(/%5D/g, "%5C%5D");
                 term = term.replace(/%5E/g, "%5C%5E");
                 term = term.replace(/%22/g, "%5C%22");
                 term = term.replace(/~/g, "%5C~");
                 term = term.replace(/-/g, "%5C-");
                 term = term.replace(/%2F/g, "%5C%2F");
+              
+              if (escapeSquareBrackets) {
+                term = term.replace(/%5B/g, "%5C%5B");
+                term = term.replace(/%5D/g, "%5C%5D");
+              }
 
                 return term;
-            },
-
+              },
             /*
              * Makes a Solr syntax grouped query using the field name, the field values to search for, and the operator.
              * Example:  title:(resistance OR salmon OR "pink salmon")
@@ -1090,6 +1097,8 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                         subtext  = options.subtext,
                         forPOST  = options.forPOST;
                 }
+                var esb = (typeof options.escapeSquareBrackets == "boolean") ?
+                  options.escapeSquareBrackets : true;
 
                 //Default to the OR operator
                 if ((typeof operator === "undefined") || !operator ||
@@ -1121,26 +1130,26 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                             valueString += "("
                         }
 
-                        if (model.needsQuotes(v) || _.contains(fieldNames, "id")) {
+                      if (model.needsQuotes(v) || _.contains(fieldNames, "id")) {
                           if( forPOST ){
-                            valueString += '"' + this.escapeSpecialChar(v.trim()) + '"';
+                            valueString += '"' + this.escapeSpecialChar(v.trim(), esb) + '"';
                           }
                           else{
-                            valueString += '"' + this.escapeSpecialChar(encodeURIComponent(v.trim())) + '"';
+                            valueString += '"' + this.escapeSpecialChar(encodeURIComponent(v.trim()), esb) + '"';
                           }
-                        } else if (subtext) {
+                      } else if (subtext) {
                           if( forPOST ){
-                            valueString += "*" + this.escapeSpecialChar(v.trim()) + "*";
+                            valueString += "*" + this.escapeSpecialChar(v.trim(), esb) + "*";
                           }
                           else{
-                            valueString += "*" + this.escapeSpecialChar(encodeURIComponent(v.trim())) + "*";
+                            valueString += "*" + this.escapeSpecialChar(encodeURIComponent(v.trim()), esb) + "*";
                           }
                         } else {
-                          if( forPOST ){
-                            valueString += this.escapeSpecialChar(v.trim());
+                        if (forPOST) {
+                            valueString += this.escapeSpecialChar(v.trim(), esb);
                           }
-                          else{
-                            valueString += this.escapeSpecialChar(encodeURIComponent(v.trim()));
+                        else {
+                          valueString += this.escapeSpecialChar(encodeURIComponent(v.trim()), esb);
                           }
                         }
 
