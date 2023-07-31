@@ -1814,6 +1814,22 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           createViewURL: function(){
             return MetacatUI.root + "/view/" + encodeURIComponent((this.get("seriesId") || this.get("id")));
           },
+          
+          /**
+           * Check if the seriesID or PID matches a DOI regex, and if so, return
+           * a canonical IRI for the DOI.
+           * @return {string|null} - The canonical IRI for the DOI, or null if
+           * neither the seriesId nor the PID match a DOI regex.
+           * @since x.x.x
+           */
+          getCanonicalDOIIRI: function () {
+            const id = this.get("id");
+            const seriesId = this.get("seriesId");
+            let DOI = null;
+            if (this.isDOI(seriesId)) DOI = seriesId;
+            else if (this.isDOI(id)) DOI = id;
+            return MetacatUI.appModel.DOItoURL(DOI);
+          },
 
           /**
           * Converts the identifier string to a string safe to use in an XML id attribute
@@ -2132,43 +2148,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
            * @returns {boolean} True if it is a DOI
            */
           isDOI: function(customString) {
-          var DOI_PREFIXES = ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10.", "http://doi.org/doi:10.",
-            "https://dx.doi.org/10.", "https://doi.org/10.", "https://doi.org/doi:10."],
-              DOI_REGEX = new RegExp(/^10.\d{4,9}\/[-._;()/:A-Z0-9]+$/i);;
-
-          //If a custom string is given, then check that instead of the seriesId and id from the model
-          if( typeof customString == "string" ){
-            for (var i=0; i < DOI_PREFIXES.length; i++) {
-              if (customString.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
-                return true;
-            }
-
-            //If there is no DOI prefix, check for a DOI without the prefix using a regular expression
-            if( DOI_REGEX.test(customString) ){
-              return true;
-            }
-
-          }
-          else{
-            var seriesId = this.get("seriesId"),
-                pid      = this.get("id");
-
-            for (var i=0; i < DOI_PREFIXES.length; i++) {
-              if (seriesId && seriesId.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
-                return true;
-              else if (pid && pid.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
-                return true;
-            }
-
-            //If there is no DOI prefix, check for a DOI without the prefix using a regular expression
-            if( DOI_REGEX.test(seriesId) || DOI_REGEX.test(pid) ){
-              return true;
-            }
-
-          }
-
-          return false;
-        },
+            return isDOI(customString) ||
+              isDOI(this.get("id")) ||
+              isDOI(this.get("seriesId"));
+          },
 
         /**
         * Creates an array of objects that represent Member Nodes that could possibly be this

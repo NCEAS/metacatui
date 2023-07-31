@@ -977,15 +977,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @since 2.23.0
        */
       isDOI: function (str) {
-        try {
-          if (!str) return false;
-          str = this.removeAllDOIPrefixes(str);
-          const doiRegex = /^10\.[0-9]{4,}(?:[.][0-9]+)*\/[^\s"<>]+$/;
-          return doiRegex.test(str);
-        } catch (e) {
-          console.error("Error checking if string is a DOI", e);
-          return false;
-        }
+        return MetacatUI.appModel.isDOI(str);
       },
 
       /**
@@ -999,10 +991,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @since 2.23.0
        */
       DOItoURL: function (str) {
-        if (!str) return "";
-        str = this.removeAllDOIPrefixes(str);
-        if (!this.isDOI(str)) return "";
-        return "https://doi.org/" + str;
+        return MetacatUI.appModel.DOItoURL(str);
       },
 
       /**
@@ -1015,12 +1004,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @since 2.23.0
        */
       URLtoDOI: function (url) {
-        if (!url) return "";
-        const doiURLRegex =
-          /https?:\/\/(dx\.)?doi\.org\/(doi:)?(10\.[0-9]{4,}(?:[.][0-9]+)*\/[^\s"<>]+)/;
-        const doiURLMatch = url.match(doiURLRegex);
-        if (doiURLMatch) return "doi:" + doiURLMatch[3];
-        return "";
+        return MetacatUI.appModel.URLtoDOI(url);
       },
 
       /**

@@ -2905,15 +2905,9 @@ define(['jquery',
          * Note: Really could be generalized to more identifier schemes.
          */
         getCanonicalDOIIRI: function (identifier) {
-          var pattern = /(10\.\d{4,9}\/[-\._;()\/:A-Z0-9]+)$/,
-            match = identifier.match(pattern);
-
-          if (match === null || match.length !== 2 || match[1].length <= 0) {
-            return null;
-          }
-
-          return "https://doi.org/" + match[1];
+          return MetacatUI.appModel.DOItoURL(identifier) || null;
         },
+
         /**
              * Insert citation information as meta tags into the head of the page
              *
