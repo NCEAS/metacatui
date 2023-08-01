@@ -1287,6 +1287,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           formData.append("newPid", this.get("id"));
           formData.append("pid", this.get("oldPid"));
         }
+         
+        // Add the distribution URL to the EML (if the repository is configured
+        // to do so). Only do this once the pid has been updated.
+        if (MetacatUI.appModel.get("autoAddDistributionURL")) {
+          this.addDatasetDistributionURL();
+        }
 
         //Serialize the EML XML
         var xml = this.serialize();
@@ -1429,6 +1435,87 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
      }, MetacatUI.appUserModel.createAjaxSettings());
 
       return Backbone.Model.prototype.save.call(this, attributes, saveOptions);
+    },
+    
+    /**
+     * Adds a new EMLDistribution model to the distribution array
+     * @param {object} attributes - The attributes to set on the new
+     * EMLDistribution model
+     * @param {object} options - Options to pass to the new EMLDistribution
+     * model
+     */
+    addDistribution: function (attributes, options) {
+      try {
+        const distributions = this.get('distribution') || [];
+        const newDistribution = new EMLDistribution(attributes, options);
+        distributions.push(newDistribution);
+        this.set('distribution', distributions);
+      } catch (e) {
+        console.log("Couldn't add a distribution to the EML model", e);
+      }
+    },
+    
+    /**
+     * Find the distribution that has all of the matching attributes. This will
+     * return true if the distribution has all of the attributes, even if it
+     * has more attributes than the ones passed in.
+     * @param {object} attributes - The attributes to match
+     * @param {boolean} partialMatch - If true, then the attributes only need
+     * to partially match. If false, then the attributes must match exactly.
+     */
+    findDistribution: function (attributes, partialMatch = false) {
+      const distributions = this.get('distribution') || [];
+      return distributions.find(d => {
+        return Object.keys(attributes).every(key => {
+          const val = d.get(key);
+          if (partialMatch) {
+            return val.includes(attributes[key]);
+          }
+          return val === attributes[key];
+        });
+      });
+    },
+    
+    /**
+     * Make sure that the EML dataset element has a distribution node with the
+     * location where the data package can be viewed. This will be either the
+     * view URL for the member node being used or the DOI.org URL if the dataset
+     * has one. This method will look for the old distribution URL and update it
+     * if it exists, or add a new distribution node if it doesn't.
+     */
+    addDatasetDistributionURL: function () {
+      const model = this;
+      const oldPid = this.get('oldPid');
+      const newPid = this.get('id');
+      const seriesId = this.get('seriesId');
+      const IDs = [oldPid, newPid, seriesId]
+
+      // Remove any distribution models with the old PID, seriesId, or current
+      // PID in the URL (only if the URL function is "information")
+      const distributions = this.get('distribution') || [];
+      IDs.forEach(id => {
+        const distributions = model.get('distribution');
+        if(!distributions || !distributions.length) return;
+        const dist = this.findDistribution(
+          { url: id, urlFunction: 'information' }, true);
+        if (dist) {
+          // Remove the distribution model from the array
+          distributions.splice(distributions.indexOf(dist), 1);
+        }
+      });
+      
+
+      // Add a new distribution node with the view URL
+      const viewURL = this.getCanonicalDOIIRI() || this.createViewURL();
+      if (viewURL) {
+        this.addDistribution({
+          url: viewURL,
+          urlFunction: 'information'
+        });
+      } else {
+        console.log('Could not add a distribution node with the view URL');
+      }
+
     },
 
 

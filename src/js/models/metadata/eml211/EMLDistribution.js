@@ -183,6 +183,48 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
       });
     },
 
+    /**
+     * Adds a URL for an online distribution to the model. If the model already
+     * has offline distribution info, this method will remove all of the offline
+     * nodes and replace them with a <url> node when overwrite is true.
+     * @param {string} url - The URL to add to the model
+     * @param {string} urlFunction - Optional, the purpose of the URL. May be
+     * either "information" or "download".
+     * @param {boolean} overwrite - Optional, if true, will overwrite any
+     * existing URL or offline distribution.
+     */
+    addURL: function (url, urlFunction = null, overwrite = false) {
+      if (this.hasValuesForDistributionLocation("offline") && !overwrite) {
+        console.log(
+          "Cannot add a URL to a distribution that already has an offline  " +
+            "distribution. Create a new distribution instead, or set overwrite " +
+            "to true."
+        );
+        return;
+      }
+
+      if (!url) {
+        console.log("Cannot add a URL to a distribution without a URL value");
+        return;
+      }
+
+      if (this.get("url") && !overwrite) {
+        console.log(
+          "Cannot add a URL to a distribution that already has a URL. " +
+            "Set overwrite to true to overwrite the existing URL."
+        );
+        return;
+      }
+
+      this.set("url", url);
+      if (urlFunction) this.set("urlFunction", urlFunction);
+
+      // Remove all of the offline node values
+      this.offlineNodes.forEach((nodeName) => {
+        this.set(nodeName, null);
+      });
+    },
+
     /*
      * Makes a copy of the original XML DOM and updates it with the new values
      * from the model.
@@ -249,7 +291,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
 
       // Add the urlFunction attribute if one is set in the model. Remove it if
       // it's not set.
-      const url = $objectDOM.find("url")
+      const url = $objectDOM.find("url");
       if (url) {
         const urlFunction = this.get("urlFunction");
         if (urlFunction) {
@@ -258,7 +300,6 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
           url.removeAttr("function");
         }
       }
-      
 
       return objectDOM;
     },

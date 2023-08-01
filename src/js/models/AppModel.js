@@ -570,6 +570,19 @@ define(['jquery', 'underscore', 'backbone'],
       quickAddTaxa: [],
 
       /**
+       * Whether or not documents saved in the Editor should automatically have
+       * the online URL of the dataset landing page added to the EML within a
+       * <distribution> element. The URL will be the view service for whatever
+       * member node is being used, or if the dataset has DOI, it should use
+       * doi.org. Setting this to true will also update the <distribution> url
+       * when the dataset is updated, or when it is published with a DOI.
+       * @since x.x.x
+       * @type {boolean}
+       * @default false
+       */
+      autoAddDistributionURL: false,
+
+      /**
       * The base URL for the repository. This only needs to be changed if the repository
       * is hosted at a different origin than the MetacatUI origin. This URL is used to contruct all
       * of the DataONE REST API URLs. If you are testing MetacatUI against a development repository
