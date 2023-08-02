@@ -12,9 +12,10 @@ define([
     'models/PackageModel',
     'views/DataItemView',
     'text!templates/dataPackage.html',
-    'text!templates/dataPackageStart.html'],
+    'text!templates/dataPackageStart.html',
+    'text!templates/dataPackageHeader.html'],
     function($, _, Backbone, LocalForage, DataPackage, DataONEObject, PackageModel, ScienceMetadata, EML211, Package, DataItemView,
-    		DataPackageTemplate, DataPackageStartTemplate) {
+    		DataPackageTemplate, DataPackageStartTemplate, DataPackageHeaderTemplate) {
         'use strict';
 
         /**
@@ -55,6 +56,7 @@ define([
 
             template: _.template(DataPackageTemplate),
             startMessageTemplate: _.template(DataPackageStartTemplate),
+            dataPackageHeaderTemplate: _.template(DataPackageHeaderTemplate),
 
             // Models waiting for their parent folder to be rendered, hashed by parent id:
             // {'parentid': [model1, model2, ...]}
@@ -394,15 +396,10 @@ define([
                     }
 
                     // add top level data package row to the package table
-                    var tableRow = $(document.createElement("tr"))
-                                    .addClass("data-package-item"),
-                    fileCell = $(document.createElement("td")),
-                    sizeCell = $(document.createElement("td")),
-                    typeCell = $(document.createElement("td")),
-                    metricsCell = $(document.createElement("td")),
-                    actionsCell = $(document.createElement("td")),
-                    view = this,
-                    title = this.title;
+                    var tableRow = null, 
+                        view = this,
+                        title = this.title,
+                        packageUrl = null;
 
                     if (title === ""){
                         let metadataObj  = _.filter(this.dataPackage.models, function(m){ return(m.get("id") == view.currentlyViewing) });
@@ -417,17 +414,12 @@ define([
                         let newTitle = title.slice(0,75) + "..." + title.slice(title.length - 75, title.length);
                         title = newTitle;
                     }
-                    var expandEl = $(document.createElement("a")).addClass("d1package-expand control").css("display", "none");
-                    expandEl.append($(document.createElement("i")).addClass("icon icon-caret-right"));
-                    var collapseEl = $(document.createElement("a")).addClass("d1package-collapse control");
-                    collapseEl.append($(document.createElement("i")).addClass("icon icon-caret-down"));
-                    var nameEl = $(document.createElement("span")).text(title);
-                    $(fileCell).html(expandEl);
-                    $(fileCell).append(collapseEl);
-                    $(fileCell).append(nameEl);
                     
-                    $(tableRow).append(fileCell, sizeCell, typeCell, metricsCell, actionsCell);
-                    $(tableRow).attr("data-id", this.dataPackage.id);
+                    // set the package URL
+                    if(MetacatUI.appModel.get("packageServiceUrl"))
+                        packageUrl = MetacatUI.appModel.get("packageServiceUrl") + encodeURIComponent(view.dataPackage.id);
+
+                    tableRow = this.dataPackageHeaderTemplate({id:view.dataPackage.id, title: title, downloadUrl: packageUrl});
                     this.$el.append(tableRow);
 
                     if (this.atLocationObj !== undefined && filePathObj !== undefined) {
@@ -923,26 +915,22 @@ define([
 
             addNestedPackages: function(dataPackage) {
                 // add top level data package row to the package table
-                var tableRow = $(document.createElement("tr"))
-                            .addClass("data-package-item"),
-                fileCell = $(document.createElement("td")),
-                sizeCell = $(document.createElement("td")),
-                typeCell = $(document.createElement("td")),
-                metricsCell = $(document.createElement("td")),
-                actionsCell = $(document.createElement("td"));
+                
+                var tableRow = null, 
+                    view = this,
+                    title = null,
+                    packageUrl = null;
 
                 var members = dataPackage.get("members");
                 let metadataObj  = _.filter(members, function(m){ return(m.get("type") == "Metadata" || m.get("type") == "metadata") });
 
-                var title = metadataObj[0].get("title");
-                var expandEl = $(document.createElement("a")).addClass("icon icon-caret-right d1package-expand control").css("display", "none");
-                var collapseEl = $(document.createElement("a")).addClass("icon icon-caret-down d1package-collapse control");
-                var nameEl = $(document.createElement("span")).text(title);
-                $(fileCell).html(expandEl);
-                $(fileCell).append(collapseEl);
-                $(fileCell).append(nameEl);
+                title = metadataObj[0].get("title");
+                
+                // set the package URL
+                if(MetacatUI.appModel.get("packageServiceUrl"))
+                    packageUrl = MetacatUI.appModel.get("packageServiceUrl") + encodeURIComponent(dataPackage.id);
 
-                $(tableRow).append(fileCell, sizeCell, typeCell, metricsCell, actionsCell);
+                tableRow = this.dataPackageHeaderTemplate({id:dataPackage.id, title: title, downloadUrl: packageUrl});
                 this.$el.append(tableRow);
 
                 // TODO parse each member and add to the package table in MetadataView            
