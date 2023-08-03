@@ -96,6 +96,21 @@ define(['jquery',
 
         objectIds: [],
 
+        /**
+         * Text to display in the help tooltip for the alternative identifier field,
+         * if the field is present.
+         * @type {string}
+         * @since x.x.x
+         */
+        alternativeIdentifierHelpText: `
+         An identifier used to reference this dataset in the past or in another
+         system. This could be a link to the original dataset or an old 
+         identifier that was replaced. The referenced dataset may be the same 
+         or different from the one you are currently viewing, and its
+         accessibility may vary. It may provide additional context about the
+         history and evolution of the dataset.
+        `,
+
         // Delegated events for creating new items, and clearing completed ones.
         events: {
           "click #publish": "publish",
@@ -686,6 +701,51 @@ define(['jquery',
 
           //Mark the first row in each attribute list table as active since the first attribute is displayed at first
           this.$(".attributeListTable tr:first-child()").addClass("active");
+
+          // Add explanation text to the alternate identifier
+          this.renderAltIdentifierHelpText();
+        },
+
+        /**
+         * Inserts an info icon next to the alternate identifier field, if it
+         * exists. The icon will display a tooltip with the help text for the
+         * field.
+         * @returns {jQuery} The jQuery object for the icon element.
+         * @since x.x.x
+         */
+        renderAltIdentifierHelpText: function () {
+          try {
+            // Find the HTML element that contains the alternate identifier.
+            const altIdentifierLabel = this
+              .$(".control-label:contains('Alternate Identifier')");
+
+            // It may not exist for all datasets.
+            if (!altIdentifierLabel.length) return;
+            
+            const text = this.alternativeIdentifierHelpText;
+
+            if(!text) return;
+
+            // Create the tooltip
+            const icon = $(document.createElement("i"))
+              .addClass("tooltip-this icon icon-info-sign")
+              .css("margin-left", "4px");
+            
+            // Activate the jQuery tooltip plugin
+            icon.tooltip({
+              title: text,
+              placement: "top",
+              container: "body"
+            });
+
+            // Add the icon to the label.
+            altIdentifierLabel.append(icon);
+
+            return icon;
+          } catch (e) {
+            console.log("Error adding help text to alternate identifier", e);
+          }
+
         },
 
         /*
