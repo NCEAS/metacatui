@@ -9148,8 +9148,30 @@ body > #extension-is-installed{
 	border: none;
 }
 .btn.btn-rounded.action.downloadAction > i{
-	margin-left: 0px;
+	margin-left: -4px;
 }
 .data-package-item {
 	height: 38px;
 }
+
+.data-package-file-table > .data-package-item > .file-actions > .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
+	font-weight: 400;
+	background-image: none;
+	background-repeat: no-repeat;
+	background-color: transparent;
+	border: 1px solid #146660;
+	text-shadow: none;
+	box-shadow: none;
+	color: #146660;
+	padding: .5em;
+  }
+
+.data-package-file-table > .data-package-item > .file-actions >
+  .btn:hover, .btn:focus,
+  .header .nav li .btn:hover, .header nav li .btn:focus{
+	  background-color: #146660;
+	  color: #FFF;
+	  border: 0px;
+	  box-shadow: none;
+	  border: 1px solid #146660;
+  }
