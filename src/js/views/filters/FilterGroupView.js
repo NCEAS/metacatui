@@ -123,7 +123,7 @@ define(['jquery', 'underscore', 'backbone',
           //Create a ToggleView
           var filterView = new ToggleFilterView(viewOptions);
         }
-        else if (view.areAllFieldsSemantic(filter.get("fields")) && MetacatUI.appModel.get("bioportalAPIKey")) {
+        else if (view.areAllFieldsSemantic(filter.get("fields")) && MetacatUI.appModel.get("bioportalAPIKey") && filter.type === "Filter") {
           var filterView = new SemanticFilterView(viewOptions);
         }
         else{
