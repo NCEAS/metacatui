@@ -421,6 +421,21 @@ define(['jquery', 'underscore', 'backbone'],
       * @since 2.13.0
       */
       editorSchemaLocation: "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd",
+      
+      /**
+       * The text to use for the eml system attribute. The system attribute
+       * indicates the data management system within which an identifier is in
+       * scope and therefore unique. This is typically a URL (Uniform Resource
+       * Locator) that indicates a data management system.  All identifiers that
+       * share a system must be unique. In other words, if the same identifier
+       * is used in two locations with identical systems, then by definition the
+       * objects at which they point are in fact the same object.
+       * @type {string}
+       * @since x.x.x
+       * @link https://eml.ecoinformatics.org/schema/eml-resource_xsd#SystemType
+       * @link https://eml.ecoinformatics.org/schema/eml_xsd
+       */
+      emlSystem: "knb",
 
       /**
       * This error message is displayed when the Editor encounters an error saving
