@@ -387,7 +387,7 @@ define(
          * returned object will not affect the original cesiumOptions object.
          * @returns {Object} A copy of the cesiumOptions object, or null if there
          * are no cesiumOptions.
-         * @since x.x.x
+         * @since 2.26.0
          */
         getCesiumOptions: function () {
           const cesiumOptions = this.get('cesiumOptions')

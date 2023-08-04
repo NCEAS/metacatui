@@ -108,7 +108,7 @@ define([
        * interacts with the map. This only applies if limitSearchToMapArea is
        * initially set to false.
        * @type {boolean}
-       * @since x.x.x
+       * @since 2.26.0
        * @default true
        */
       limitSearchToMapOnInteraction: true,
@@ -374,7 +374,7 @@ define([
        * Sets the initial state of the map filter toggle. Optionally listens
        * for the first user interaction with the map before turning on the
        * spatial filter.
-       * @since x.x.x
+       * @since 2.26.0
        */
       setMapToggleState: function () {
         // Set the initial state of the spatial filter

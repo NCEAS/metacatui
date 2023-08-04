@@ -21,7 +21,7 @@ define([
    * @classcategory Views/Metadata
    * @screenshot views/metadata/EMLMissingValueCodesView.png
    * @extends Backbone.View
-   * @since x.x.x
+   * @since 2.26.0
    */
   var EMLMissingValueCodesView = Backbone.View.extend(
     /** @lends EMLMissingValueCodesView.prototype */ {

@@ -5,7 +5,7 @@ define(["backbone"], function (Backbone) {
    * that a value is missing from the data.
    * @see https://eml.ecoinformatics.org/schema/eml-attribute_xsd.html
    * @classcategory Models/Metadata/EML211
-   * @since x.x.x
+   * @since 2.26.0
    */
   var EMLMissingValueCode = Backbone.Model.extend(
     /** @lends EMLMissingValueCode.prototype */ {

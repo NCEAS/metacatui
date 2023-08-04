@@ -1820,7 +1820,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
            * a canonical IRI for the DOI.
            * @return {string|null} - The canonical IRI for the DOI, or null if
            * neither the seriesId nor the PID match a DOI regex.
-           * @since x.x.x
+           * @since 2.26.0
            */
           getCanonicalDOIIRI: function () {
             const id = this.get("id");

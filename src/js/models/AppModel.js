@@ -431,7 +431,7 @@ define(['jquery', 'underscore', 'backbone'],
        * is used in two locations with identical systems, then by definition the
        * objects at which they point are in fact the same object.
        * @type {string}
-       * @since x.x.x
+       * @since 2.26.0
        * @link https://eml.ecoinformatics.org/schema/eml-resource_xsd#SystemType
        * @link https://eml.ecoinformatics.org/schema/eml_xsd
        */
@@ -2418,7 +2418,7 @@ define(['jquery', 'underscore', 'backbone'],
        * dx.doi.org, and doi:.
        * @param {string} str - The DOI string to remove prefixes from.
        * @returns {string} - The DOI string without any prefixes.
-       * @since x.x.x
+       * @since 2.26.0
        */
       removeAllDOIPrefixes: function (str) {
         if (!str) return "";
@@ -2435,7 +2435,7 @@ define(['jquery', 'underscore', 'backbone'],
        * Check if a string is a valid DOI.
        * @param {string} doi - The string to check.
        * @returns {boolean} - True if the string is a valid DOI, false otherwise.
-       * @since x.x.x
+       * @since 2.26.0
        */
       isDOI: function (str) {
         try {
@@ -2472,7 +2472,7 @@ define(['jquery', 'underscore', 'backbone'],
        * not for a DOI URL, then an empty string is returned.
        * @param {string} url - The DOI URL
        * @returns {string} - The DOI string, including the "doi:" prefix
-       * @since x.x.x
+       * @since 2.26.0
        */
       URLtoDOI: function (url) {
         if (!url) return "";

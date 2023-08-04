@@ -62,7 +62,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
      * that are supported by this model. "inline" is not supported yet. A
      * distribution may have ONE of these nodes.
      * @type {string[]}
-     * @since x.x.x
+     * @since 2.26.0
      */
     distLocations: ["offline", "online"],
 
@@ -70,7 +70,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
      * lower-case EML node names that belong within the <offline> node. These
      * must be in the correct order.
      * @type {string[]}
-     * @since x.x.x
+     * @since 2.26.0
      */
     offlineNodes: ["mediumname", "mediumvolume", "mediumformat", "mediumnote"],
 
@@ -78,14 +78,14 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
      * lower-case EML node names that belong within the <online> node. These
      * must be in the correct order.
      * @type {string[]}
-     * @since x.x.x
+     * @since 2.26.0
      */
     onlineNodes: ["url"],
 
     /**
      * the allowed values for the urlFunction attribute
      * @type {string[]}
-     * @since x.x.x
+     * @since 2.26.0
      */
     urlFunctionTypes: ["information", "download"],
 
@@ -174,7 +174,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
      * <distribution> node, i.e. any of the values in this.distLocations.
      * @returns {boolean} - true if the model has values for the given location,
      * false otherwise.
-     * @since x.x.x
+     * @since 2.26.0
      */
     hasValuesForDistributionLocation(location) {
       const nodeNameMap = this.nodeNameMap();
@@ -268,7 +268,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
      * inserted after. @param {string} nodeName - The name of the node to find
      * the position for @return {jQuery} - The jQuery object of the node that
      * the given node should be inserted after, or false if the node is not
-     * supported by this model. @since x.x.x
+     * supported by this model. @since 2.26.0
      */
     getEMLPosition: function (objectDOM, nodeName) {
       // If this is a top level node, return false since it should be inserted

@@ -425,7 +425,7 @@ define([
        * @param {Object} options - The options to pass to the template.
        * @param {function} template - The template associated with this style,
        * or it's archive template if the object is archived and not indexed.
-       * @since x.x.x
+       * @since 2.26.0
        */
       renderAPAAllAuthors: function (options, template) {
         this.renderAPA(options, template, false);

@@ -100,7 +100,7 @@ define(['jquery',
          * Text to display in the help tooltip for the alternative identifier field,
          * if the field is present.
          * @type {string}
-         * @since x.x.x
+         * @since 2.26.0
          */
         alternativeIdentifierHelpText: `
          An identifier used to reference this dataset in the past or in another
@@ -711,7 +711,7 @@ define(['jquery',
          * exists. The icon will display a tooltip with the help text for the
          * field.
          * @returns {jQuery} The jQuery object for the icon element.
-         * @since x.x.x
+         * @since 2.26.0
          */
         renderAltIdentifierHelpText: function () {
           try {
