@@ -104,7 +104,7 @@ define(
         createCesiumModel: function (recreate = false) {
 
           var model = this;
-          var cesiumOptions = this.get('cesiumOptions');
+          var cesiumOptions = model.getCesiumOptions();
           var type = this.get('type')
           var terrainFunction = Cesium[type]
 
@@ -145,7 +145,7 @@ define(
         setCesiumURL: function () {
           try {
 
-            var cesiumOptions = this.get('cesiumOptions')
+            var cesiumOptions = this.getCesiumOptions();
 
             // Set the asset URL if this is a Cesium Ion 3D tileset or terrain
             if (cesiumOptions && cesiumOptions.ionAssetId) {

@@ -109,11 +109,8 @@ define(
 
             this.getThumbnail();
           }
-          catch (error) {
-            console.log(
-              'There was an error initializing a CesiumImagery model' +
-              '. Error details: ' + error
-            );
+          catch (e) {
+            console.log('Error initializing a CesiumImagery model: ', e);
           }
         },
 
@@ -196,7 +193,7 @@ define(
         createCesiumModel: function (recreate = false) {
 
           var model = this;
-          var cesiumOptions = this.get('cesiumOptions');
+          const cesiumOptions = this.getCesiumOptions();
           var type = this.get('type')
           var providerFunction = Cesium[type]
 

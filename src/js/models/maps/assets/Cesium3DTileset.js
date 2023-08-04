@@ -126,7 +126,7 @@ define(
           try {
 
             var model = this;
-            var cesiumOptions = model.get('cesiumOptions')
+            var cesiumOptions = this.getCesiumOptions();
             var cesiumModel = null
 
             // If the cesium model already exists, don't create it again unless specified
@@ -183,7 +183,7 @@ define(
         setCesiumURL: function () {
           try {
 
-            var cesiumOptions = this.get('cesiumOptions')
+            var cesiumOptions = this.getCesiumOptions();
 
             // Set the asset URL if this is a Cesium Ion 3D tileset or terrain
             if (cesiumOptions && cesiumOptions.ionAssetId) {

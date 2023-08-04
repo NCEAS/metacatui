@@ -161,7 +161,7 @@ define(
           try {
 
             const model = this;
-            const cesiumOptions = model.get('cesiumOptions')
+            const cesiumOptions = this.getCesiumOptions();
             const type = model.get('type')
             const label = model.get('label') || ''
             const dataSourceFunction = Cesium[type]
