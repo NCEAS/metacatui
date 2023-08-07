@@ -211,6 +211,8 @@ function ($, _, Backbone) {
 				//Send the id(s) to the view
 				MetacatUI.appView.metadataView.seriesId = seriesId;
 				MetacatUI.appView.metadataView.pid = pid;
+				MetacatUI.appView.metadataView.dataPackage = null;
+				MetacatUI.appView.metadataView.dataPackageSynced = false;
 
 				MetacatUI.appView.showView(MetacatUI.appView.metadataView);
 			}

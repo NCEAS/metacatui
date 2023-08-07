@@ -1753,8 +1753,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
           });
 
           //If there are any models that are not synced yet, the collection is not complete
-          if( notSynced.length > 0 )
+          if( notSynced.length > 0 ) {
+            var view = this;
+              this.listenToOnce(notSynced[0], "sync", this.triggerComplete, notSynced[0]);
               return;
+          }
 
           //If the number of models in this collection does not equal the number of objects referenced in the RDF XML, the collection is not complete
           if(this.originalMembers.length > this.length)

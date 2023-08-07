@@ -112,6 +112,8 @@ define(['jquery',
 
           this.pid = options.pid || options.id || MetacatUI.appModel.get("pid") || null;
 
+          this.dataPackage = null;
+
           if (typeof options.el !== "undefined")
             this.setElement(options.el);
 
@@ -173,14 +175,17 @@ define(['jquery',
           this.dataPackage = new DataPackage([dataOneObject], { id: pid });
 
           this.dataPackage.mergeModels([this.model]);
-
+          
           // If there is no resource map
           if (!pid) {
+            // mark the data package as synced, 
+            // since there are no other models to fetch
+            this.dataPackageSynced = true;
+            this.trigger("changed:dataPackageSynced");
             this.checkWritePermissions();
             return
           }
 
-          this.stopListening(this.dataPackage, "complete");
           this.listenToOnce(this.dataPackage, "complete", function () {
             this.dataPackageSynced = true;
             this.trigger("changed:dataPackageSynced");
@@ -700,7 +705,6 @@ define(['jquery',
          * Inserts a table with all the data package member information and sends the call to display annotations
          */
         insertPackageDetails: function (packages) {
-
           //Don't insert the package details twice
           var tableEls = this.$(this.tableContainer).children().not(".loading");
           if (tableEls.length > 0) return;
@@ -794,8 +798,9 @@ define(['jquery',
                 mostRecentPackage = packages[packages.length - 1];
               }
 
-              //Get the data package
-              this.getDataPackage(mostRecentPackage.get("id"));
+              //Get the data package only if it is not the same as the previously fetched package
+              if (mostRecentPackage.get("id") != packages[0].get("id"))
+                this.getDataPackage(mostRecentPackage.get("id"));
             }
           }
           catch (e) {
@@ -810,7 +815,7 @@ define(['jquery',
 
         insertPackageTable: function (packageModel, options) {
           var view  = this;
-          if (!this.dataPackageSynced) {
+          if (this.dataPackage == null || !this.dataPackageSynced) {
             this.listenToOnce(this, "changed:dataPackageSynced", function(){
               view.insertPackageTable(packageModel, options);
             });
@@ -2492,6 +2497,7 @@ define(['jquery',
           this.packageModels = new Array();
           this.model.set(this.model.defaults);
           this.pid = null;
+          this.dataPackage = null;
           this.seriesId = null;
           this.$detached = null;
           this.$loading = null;
