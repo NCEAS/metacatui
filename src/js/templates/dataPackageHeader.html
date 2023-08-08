@@ -31,7 +31,9 @@
 
   <!-- actions cell -->
   <td class="file-actions">
-    <a class="btn btn-rounded action downloadAction" href="<%= downloadUrl %>" data-id="<%= id %>"><i class="icon icon-large icon-cloud-download"></i></a>
+    <% if (!disablePackageDownloads) { %>
+      <a class="btn btn-rounded action downloadAction" href="<%= downloadUrl %>" data-id="<%= id %>"><i class="icon icon-large icon-cloud-download"></i></a>
+    <% } %>
   </td>
 
 </tr>

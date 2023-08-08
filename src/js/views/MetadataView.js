@@ -641,7 +641,7 @@ define(['jquery',
             var thisPackage = new Package({ id: null, members: [this.model] });
             thisPackage.flagComplete();
             this.packageModels = [thisPackage];
-            this.insertPackageDetails(thisPackage);
+            this.insertPackageDetails(thisPackage, {disablePackageDownloads: true});
           }
           else {
             _.each(packageIDs, function (thisPackageID, i) {
@@ -704,15 +704,21 @@ define(['jquery',
         /*
          * Inserts a table with all the data package member information and sends the call to display annotations
          */
-        insertPackageDetails: function (packages) {
+        insertPackageDetails: function (packages, options) {
+          if (typeof options === 'undefined') {
+            var options = {}
+          }
           //Don't insert the package details twice
-          var tableEls = this.$(this.tableContainer).children().not(".loading");
+          var view = this;
+          var tableEls = this.$(view.tableContainer).children().not(".loading");
           if (tableEls.length > 0) return;
 
           //wait for the metadata to load
-          var metadataEls = this.$(this.metadataContainer).children();
+          var metadataEls = this.$(view.metadataContainer).children();
           if (!metadataEls.length || metadataEls.first().is(".loading")) {
-            this.once("metadataLoaded", this.insertPackageDetails);
+            this.once("metadataLoaded", function(){
+              view.insertPackageDetails(this.packageModels, options);
+            });
             return;
           }
 
@@ -726,38 +732,11 @@ define(['jquery',
             //If the package model is not complete, don't do anything
             if (!packageModel.complete) return;
 
-            //Insert a package table for each package in viewRef dataset
-            var nestedPckgs = packageModel.getNestedPackages(),
-              nestedPckgsToDisplay = [];
-
-            //If this metadata is not archived, filter out archived packages
-            if (!this.model.get("archived")) {
-
-              nestedPckgsToDisplay = _.reject(nestedPckgs, function (pkg) {
-                return (pkg.get("archived"))
-              });
-
-            }
-            else {
-              //Display all packages is this metadata is archived
-              nestedPckgsToDisplay = nestedPckgs;
-            }
-
-            if (nestedPckgsToDisplay.length > 0) {
-
-              if (!(!this.model.get("archived") && packageModel.get("archived") == true)) {
-                var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
-                title = "Files in this dataset " + title;
-                this.insertPackageTable(packageModel, { title: title, nested: true });
-              }
-            }
-            else {
-              //If this metadata is not archived, then don't display archived packages
-              if (!(!this.model.get("archived") && packageModel.get("archived") == true)) {
-                var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
-                title = "Files in this dataset " + title;
-                this.insertPackageTable(packageModel, { title: title });
-              }
+            //If this metadata is not archived, then don't display archived packages
+            if (!(!this.model.get("archived") && packageModel.get("archived") == true)) {
+              var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
+              options.title = "Files in this dataset " + title;
+              this.insertPackageTable(options);
             }
 
             //Remove the extra download button returned from the XSLT since the package table will have all the download links
@@ -771,7 +750,9 @@ define(['jquery',
               members: [this.model],
             });
             packageModel.complete = true;
-            this.insertPackageTable(packageModel);
+            options.title = "Files in this dataset";
+            options.disablePackageDownloads = true;
+            this.insertPackageTable(options);
           }
 
           //Insert the data details sections
@@ -813,11 +794,11 @@ define(['jquery',
           return this;
         },
 
-        insertPackageTable: function (packageModel, options) {
+        insertPackageTable: function (options) {
           var view  = this;
           if (this.dataPackage == null || !this.dataPackageSynced) {
             this.listenToOnce(this, "changed:dataPackageSynced", function(){
-              view.insertPackageTable(packageModel, options);
+              view.insertPackageTable(options);
             });
             return;
           }
@@ -825,19 +806,21 @@ define(['jquery',
 
           if (options) {
             var title = options.title || "";
+            var disablePackageDownloads = options.disablePackageDownloads || false;
             var nested = (typeof options.nested === "undefined") ? false : options.nested;
           }
           else
-            var title = "", nested = false;
+            var title = "", nested = false, disablePackageDownloads = false;
 
           //** Draw the package table **//
           var tableView = new DataPackageView({
             edit: false,
             dataPackage: this.dataPackage,
-            model: packageModel,
             currentlyViewing: this.pid,
+            disablePackageDownloads: disablePackageDownloads,
             parentView: this,
-            title: this.model.get("title"),
+            title: title,
+            packageTitle: this.model.get("title"),
             nested: nested,
             metricsModel: this.metricsModel
           });
@@ -2295,7 +2278,7 @@ define(['jquery',
           this.insertDataSource();
 
           //Insert a table of contents
-          this.insertPackageTable(solrResultModel);
+          this.insertPackageTable();
 
           this.renderMetadataFromIndex();
 

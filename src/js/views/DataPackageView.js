@@ -76,9 +76,11 @@ define([
                     this.memberId	= options.memberId	 || null;
                     this.attributes = options.attributes || null;
                     this.dataPackage = options.dataPackage || new DataPackage();
+                    this.disablePackageDownloads = options.disablePackageDownloads || false;
                     this.currentlyViewing = options.currentlyViewing || null;
                     this.parentEditorView = options.parentView || null;
                     this.title = options.title || "";
+                    this.packageTitle = options.packageTitle || "";
                     this.nested = (typeof options.nested === "undefined")? false : options.nested;
 
                     // set the package model
@@ -398,7 +400,7 @@ define([
                     // add top level data package row to the package table
                     var tableRow = null, 
                         view = this,
-                        title = this.title,
+                        title = this.packageTitle,
                         packageUrl = null;
 
                     if (title === ""){
@@ -419,7 +421,8 @@ define([
                     if(MetacatUI.appModel.get("packageServiceUrl"))
                         packageUrl = MetacatUI.appModel.get("packageServiceUrl") + encodeURIComponent(view.dataPackage.id);
 
-                    tableRow = this.dataPackageHeaderTemplate({id:view.dataPackage.id, title: title, downloadUrl: packageUrl});
+                    var disablePackageDownloads = this.disablePackageDownloads;
+                    tableRow = this.dataPackageHeaderTemplate({id:view.dataPackage.id, title: title, downloadUrl: packageUrl, disablePackageDownloads: disablePackageDownloads});
                     this.$el.append(tableRow);
 
                     if (this.atLocationObj !== undefined && filePathObj !== undefined) {
