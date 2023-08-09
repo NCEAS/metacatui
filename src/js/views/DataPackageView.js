@@ -918,7 +918,7 @@ define([
 
             addNestedPackages: function(dataPackage) {
                 // add top level data package row to the package table
-                
+
                 var tableRow = null, 
                     view = this,
                     title = null,
@@ -933,7 +933,7 @@ define([
                 if(MetacatUI.appModel.get("packageServiceUrl"))
                     packageUrl = MetacatUI.appModel.get("packageServiceUrl") + encodeURIComponent(dataPackage.id);
 
-                tableRow = this.dataPackageHeaderTemplate({id:dataPackage.id, title: title, downloadUrl: packageUrl});
+                tableRow = this.dataPackageHeaderTemplate({id:dataPackage.id, title: title, disablePackageDownloads:false, downloadUrl: packageUrl});
                 this.$el.append(tableRow);
 
                 // TODO parse each member and add to the package table in MetadataView            

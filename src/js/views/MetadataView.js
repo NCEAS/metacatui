@@ -732,11 +732,40 @@ define(['jquery',
             //If the package model is not complete, don't do anything
             if (!packageModel.complete) return;
 
-            //If this metadata is not archived, then don't display archived packages
-            if (!(!this.model.get("archived") && packageModel.get("archived") == true)) {
-              var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
-              options.title = "Files in this dataset " + title;
-              this.insertPackageTable(options);
+            //Insert a package table for each package in viewRef dataset
+            var nestedPckgs = packageModel.getNestedPackages(),
+              nestedPckgsToDisplay = [];
+
+            //If this metadata is not archived, filter out archived packages
+            if (!this.model.get("archived")) {
+
+              nestedPckgsToDisplay = _.reject(nestedPckgs, function (pkg) {
+                return (pkg.get("archived"))
+              });
+
+            }
+            else {
+              //Display all packages is this metadata is archived
+              nestedPckgsToDisplay = nestedPckgs;
+            }
+
+            if (nestedPckgsToDisplay.length > 0) {
+
+              if (!(!this.model.get("archived") && packageModel.get("archived") == true)) {
+                var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
+                options.title = "Files in this dataset " + title;
+                options.nested = true;
+                this.insertPackageTable(options);
+              }
+            }
+            else {
+
+              //If this metadata is not archived, then don't display archived packages
+              if (!(!this.model.get("archived") && packageModel.get("archived") == true)) {
+                var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
+                options.title = "Files in this dataset " + title;
+                this.insertPackageTable(options);
+              }
             }
 
             //Remove the extra download button returned from the XSLT since the package table will have all the download links
@@ -811,6 +840,8 @@ define(['jquery',
           }
           else
             var title = "", nested = false, disablePackageDownloads = false;
+
+          console.log(options);
 
           //** Draw the package table **//
           var tableView = new DataPackageView({
