@@ -23,6 +23,7 @@ define(['jquery',
   'views/citations/CitationModalView',
   'views/AnnotationView',
   'views/MarkdownView',
+  'views/EntityModalView',
   'text!templates/metadata/metadata.html',
   'text!templates/dataSource.html',
   'text!templates/publishDOI.html',
@@ -41,7 +42,7 @@ define(['jquery',
 ],
   function ($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
     MetricsModel, Utilities, DataPackageView, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement,
-    CitationHeaderView, CitationModalView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
+    CitationHeaderView, CitationModalView, AnnotationView, MarkdownView, EntityModalView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
     VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
     MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
     'use strict';
@@ -840,8 +841,6 @@ define(['jquery',
           }
           else
             var title = "", nested = false, disablePackageDownloads = false;
-
-          console.log(options);
 
           //** Draw the package table **//
           var tableView = new DataPackageView({
@@ -2387,29 +2386,38 @@ define(['jquery',
          * we want to scroll to the anchor tag of this data object within the page instead of navigating
          * to the metadata page again, which refreshes the page and re-renders (more loading time)
          **/
+        // previewData: function (e) {
+        //   //Don't go anywhere yet...
+        //   e.preventDefault();
+
+        //   //Get the target and id of the click
+        //   var link = $(e.target);
+        //   if (!$(link).hasClass("preview"))
+        //     link = $(link).parents("a.preview");
+
+        //   if (link) {
+        //     var id = $(link).attr("data-id");
+        //     if ((typeof id === "undefined") || !id)
+        //       return false; //This will make the app defualt to the child view previewData function
+        //   }
+        //   else
+        //     return false;
+
+        //   // If we are on the Metadata view, update the  URL and scroll to the
+        //   // anchor
+        //   window.location.hash = encodeURIComponent(id);
+        //   MetacatUI.appView.scrollTo(this.findEntityDetailsContainer(id));
+
+        //   return true;
+        // },
+
         previewData: function (e) {
           //Don't go anywhere yet...
           e.preventDefault();
 
-          //Get the target and id of the click
-          var link = $(e.target);
-          if (!$(link).hasClass("preview"))
-            link = $(link).parents("a.preview");
-
-          if (link) {
-            var id = $(link).attr("data-id");
-            if ((typeof id === "undefined") || !id)
-              return false; //This will make the app defualt to the child view previewData function
-          }
-          else
-            return false;
-
-          // If we are on the Metadata view, update the  URL and scroll to the
-          // anchor
-          window.location.hash = encodeURIComponent(id);
-          MetacatUI.appView.scrollTo(this.findEntityDetailsContainer(id));
-
-          return true;
+          this.entityModal = new EntityModalView({})
+          this.subviews.push(this.entityModal);
+          this.entityModal.render();
         },
 
         /**
