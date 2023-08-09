@@ -944,6 +944,10 @@ define([
 
                 //add each member to the package table view
                 _.each(members, function(m){ 
+                    // update the size to bytes format
+                    m.set({ size : m.bytesToSize(m.get("size"))});
+
+                    // add each item of this nested package to the package table view
                     view.addOne(m);
                 });
             },
