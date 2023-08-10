@@ -416,6 +416,7 @@ define(['jquery',
                   // store entity details from the response
                   var entityDetails = $(response).find(".control-group.entity");
                   this.entityDetails = entityDetails;
+                  console.log(this.entityDetails);
 
                   //Now show the response from the view service
                   viewRef.$(viewRef.metadataContainer).html(responseObj);
@@ -2423,7 +2424,20 @@ define(['jquery',
           //Don't go anywhere yet...
           e.preventDefault();
 
-          this.entityModal = new EntityModalView({})
+          //Get the target and id of the click
+          var link = $(e.target);
+          if (!$(link).hasClass("preview"))
+            link = $(link).parents("a.preview");
+
+          if (link) {
+            var id = $(link).attr("data-id");
+            if ((typeof id === "undefined") || !id)
+              return false; //This will make the app defualt to the child view previewData function
+          }
+          else
+            return false;
+
+          this.entityModal = new EntityModalView({id: id});
           this.subviews.push(this.entityModal);
           this.entityModal.render();
         },
