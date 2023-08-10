@@ -123,10 +123,10 @@ define([
                     var itemPathParts = new Array();
                     if (this.itemPath) {
                       itemPathParts = this.itemPath.split("/");
-                      attributes.nodeLevel = itemPathParts.length;
+                      attributes.nodeLevel = itemPathParts.length + 1;
                     }
                     else {
-                      attributes.nodeLevel = 1;
+                      attributes.nodeLevel = 2;
                       this.$el.attr("data-packageId", this.dataPackageId);
                     }              
                     this.$el.html( this.dataItemHierarchyTemplate(attributes) );
@@ -466,9 +466,17 @@ define([
                     attributes.nodeLevel = 1;
                     if (!(attributes.isMetadata || this.model.getFormat() == "metadata" || this.model.get("id") == this.currentlyViewing)) {
                       attributes.metricIcon = "icon-cloud-download";
+                      
                       this.$el.addClass();
-                      if (this.itemPath && this.itemPath !== undefined) {
+                      if (this.itemPath && (typeof this.itemPath !== undefined) && this.itemPath != "/") {
                         itemPathParts = this.itemPath.split("/");
+
+                        if (itemPathParts[0].length > 0) {
+                          attributes.nodeLevel = itemPathParts.length + 1; 
+                        }
+                        else {
+                          attributes.nodeLevel = itemPathParts.length;
+                        }
 
                         // var parent = itemPathParts[itemPathParts.length - 2];
                         var parentPath = (itemPathParts.slice(0, -1)).join("/");
@@ -478,7 +486,10 @@ define([
                         }
 
                         itemPathParts.shift();
-                        attributes.nodeLevel = itemPathParts.length;
+                      }
+                      else {
+                        attributes.nodeLevel = 1;
+                        this.$el.attr("data-packageId", this.dataPackageId);
                       }
                     }
 

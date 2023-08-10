@@ -841,8 +841,6 @@ define(['jquery',
           else
             var title = "", nested = false, disablePackageDownloads = false;
 
-          console.log(options);
-
           //** Draw the package table **//
           var tableView = new DataPackageView({
             edit: false,
