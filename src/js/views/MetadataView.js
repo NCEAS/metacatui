@@ -409,8 +409,16 @@ define(['jquery',
                     }
                   }
 
+                  // remove entity details from the response
+                  var responseObj = $(response);
+                  responseObj.find(".control-group.entity").remove();
+
+                  // store entity details from the response
+                  var entityDetails = $(response).find(".control-group.entity");
+                  this.entityDetails = entityDetails;
+
                   //Now show the response from the view service
-                  viewRef.$(viewRef.metadataContainer).html(response);
+                  viewRef.$(viewRef.metadataContainer).html(responseObj);
 
                   //If there is no info from the index and there is no metadata doc rendered either, then display a message
                   if (viewRef.$el.is(".no-stylesheet") && viewRef.model.get("archived") && !viewRef.model.get("indexed"))
