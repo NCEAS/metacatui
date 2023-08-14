@@ -162,7 +162,7 @@ define([
             /**
              * Add a single DataItemView row to the DataPackageView
              */
-            addOne: function(item) {
+            addOne: function(item, dataPackage) {
             	if(!item) return false;
 
                 //Don't add duplicate rows
@@ -184,7 +184,17 @@ define([
                 var itemPath = null;
                 if (!(_.isEmpty(this.atLocationObj))) {
                     itemPath = this.atLocationObj[item.get("id")];
+                    if (itemPath[0] != "/") {
+                        itemPath = "/" + itemPath;
+                    }
                 }
+
+                // get the data package id
+                if(typeof dataPackage !== 'undefined') {
+                    var dataPackageId = dataPackage.id;
+                }
+                if (typeof dataPackageId === 'undefined')
+                    dataPackageId = this.dataPackage.id;
 
                 dataItemView = new DataItemView({
                     model: item,
@@ -193,7 +203,7 @@ define([
                     currentlyViewing: this.currentlyViewing,
                     mode: this.mode,
                     parentEditorView: this.parentEditorView,
-                    dataPackageId: this.dataPackage.id
+                    dataPackageId: dataPackageId
                 });
                 this.subviews[item.id] = dataItemView; // keep track of all views
 
@@ -438,7 +448,7 @@ define([
                         this.addFilesAndFolders(sortedFilePathObj);
                     }
                     else {
-                        this.dataPackage.each(this.addOne, this);
+                        this.dataPackage.each(this.addOne, this, this.dataPackage);
                     }
                 }
                 else {
@@ -459,14 +469,18 @@ define([
                     // add folder
                     var pathArray = key.split("/");
                     //skip the first empty value
-                    for (let i = 1; i < pathArray.length; i++) {
+                    for (let i = 0; i < pathArray.length; i++) {
+
+                        if (pathArray[i].length < 1) 
+                            continue;
+
                         if (!(pathArray[i] in pathMap)) {
                             // insert path
                             var dataItemView,
                                 itemPath;
 
                             // root
-                            if (i == 1) {
+                            if (i == 0) {
                                 itemPath = "";
                             }
                             else {
@@ -948,7 +962,7 @@ define([
                     m.set({ size : m.bytesToSize(m.get("size"))});
 
                     // add each item of this nested package to the package table view
-                    view.addOne(m);
+                    view.addOne(m, dataPackage);
                 });
             },
 
