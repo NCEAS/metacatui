@@ -228,6 +228,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
     /*
      * Makes a copy of the original XML DOM and updates it with the new values
      * from the model.
+     * @return {Element} The updated XML DOM
      */
     updateDOM: function () {
       const objectDOM =
@@ -357,10 +358,18 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
       else return false;
     },
 
+    /*
+     * Trigger a change event on the parent EML model
+     */
     trickleUpChange: function () {
       MetacatUI.rootDataPackage?.packageModel?.set("changed", true);
     },
 
+    /*
+     * Formats the given XML string to be human-readable
+     * @param {string} xmlString - The XML string to format
+     * @return {string} - The formatted XML string
+     */
     formatXML: function (xmlString) {
       return DataONEObject.prototype.formatXML.call(this, xmlString);
     },

@@ -7,7 +7,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/eml211/EMLKeywordSet',
         'models/metadata/eml211/EMLTaxonCoverage',
         'models/metadata/eml211/EMLTemporalCoverage',
-        'models/metadata/eml211/EMLDistribution',
+        'collections/metadata/eml/EMLDistributions',
         'models/metadata/eml211/EMLEntity',
         'models/metadata/eml211/EMLDataTable',
         'models/metadata/eml211/EMLOtherEntity',
@@ -19,7 +19,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/eml211/EMLAnnotation'],
     function($, _, Backbone, uuid, Units, ScienceMetadata, DataONEObject,
         EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage,
-        EMLDistribution, EMLEntity, EMLDataTable, EMLOtherEntity, EMLParty,
+        EMLDistributions, EMLEntity, EMLDataTable, EMLOtherEntity, EMLParty,
             EMLProject, EMLText, EMLMethods, EMLAnnotations, EMLAnnotation) {
 
       /**
@@ -55,7 +55,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               keywordSets: [], //array of EMLKeywordSet objects
               additionalInfo: [],
               intellectualRights: "This work is dedicated to the public domain under the Creative Commons Universal 1.0 Public Domain Dedication. To view a copy of this dedication, visit https://creativecommons.org/publicdomain/zero/1.0/.",
-              distribution: [], // array of EMLDistribution objects
+              distributions: new EMLDistributions(), // EMLDistribution collection
               geoCoverage : [], //an array for EMLGeoCoverages
               temporalCoverage : [], //an array of EMLTempCoverage models
               taxonCoverage : [], //an array of EMLTaxonCoverages
@@ -513,14 +513,18 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 type: attributeName
               }));
             }
-            //EML Distribution modules are stored in EMLDistribution models
-            else if(_.contains(emlDistribution, thisNode.localName)) {
-              if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
-
-              modelJSON[thisNode.localName].push(new EMLDistribution({
-                objectDOM: thisNode,
-                parentModel: model
-              }, { parse: true }));
+            //EML Distribution info is stored in an EMLDistribution collection
+            else if (_.contains(emlDistribution, thisNode.localName)) {
+              // Create the collection if it doesn't exist
+              const distName = thisNode.localName
+              let distCollection = modelJSON[distName]
+              if (!distCollection) {
+                modelJSON[distName] = distCollection = new EMLDistributions();
+              }
+              // Add the distribution to the collection
+              const distAttrs = { objectDOM: thisNode, parentModel: model }
+              const distOpts = { parse: true }
+              distCollection.add(distAttrs, distOpts);
             }
             //The EML Project is stored in the EMLProject model
             else if(thisNode.localName == "project"){
@@ -1029,21 +1033,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
       }
         
       // Serialize the distribution
-      const distributions = this.get('distribution');
-        if (distributions && distributions.length > 0) {
-        // Remove existing nodes
-        datasetNode.children('distribution').remove();
-        // Get the updated DOMs
-          const distributionDOMs = distributions.map(d => d.updateDOM());
-        // Insert the updated DOMs in their correct positions
-        distributionDOMs.forEach((dom, i) => {
-          const insertAfter = this.getEMLPosition(eml, 'distribution');
-          if (insertAfter) {
-            insertAfter.after(dom);
-          } else {
-            datasetNode.append(dom);
-          }
-        });
+      datasetNode.children('distribution').remove();
+      const distributionDOMs = this.getDistributions().updateDOMs();
+      if (distributionDOMs.length) {
+        const insertAfter = this.getEMLPosition(eml, 'distribution');
+        if (insertAfter) {
+          insertAfter.after(distributionDOMs);
+        } else {
+          datasetNode.append(distributionDOMs);
+        }
       }
 
       //Detach the project elements from the DOM
@@ -1438,42 +1436,22 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
     },
     
     /**
-     * Adds a new EMLDistribution model to the distribution array
-     * @param {object} attributes - The attributes to set on the new
-     * EMLDistribution model
-     * @param {object} options - Options to pass to the new EMLDistribution
-     * model
+     * Get the distribution model collection on this EML model. If there is no
+     * distribution collection, then one is created, set on the EML model, and
+     * returned.
+     * @return {EMLDistributions} The distribution collection on this EML model
      */
-    addDistribution: function (attributes, options) {
+    getDistributions: function () {
       try {
-        const distributions = this.get('distribution') || [];
-        const newDistribution = new EMLDistribution(attributes, options);
-        distributions.push(newDistribution);
-        this.set('distribution', distributions);
+        let distributions = this.get('distribution');
+        if (!distributions) {
+          distributions = new EMLDistributions();
+          this.set('distribution', distributions);
+        }
+        return distributions;
       } catch (e) {
-        console.log("Couldn't add a distribution to the EML model", e);
+        console.log("Couldn't get the distributions from the EML model", e);
       }
-    },
-    
-    /**
-     * Find the distribution that has all of the matching attributes. This will
-     * return true if the distribution has all of the attributes, even if it
-     * has more attributes than the ones passed in.
-     * @param {object} attributes - The attributes to match
-     * @param {boolean} partialMatch - If true, then the attributes only need
-     * to partially match. If false, then the attributes must match exactly.
-     */
-    findDistribution: function (attributes, partialMatch = false) {
-      const distributions = this.get('distribution') || [];
-      return distributions.find(d => {
-        return Object.keys(attributes).every(key => {
-          const val = d.get(key);
-          if (partialMatch) {
-            return val.includes(attributes[key]);
-          }
-          return val === attributes[key];
-        });
-      });
     },
     
     /**
@@ -1484,38 +1462,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
      * if it exists, or add a new distribution node if it doesn't.
      */
     addDatasetDistributionURL: function () {
-      const model = this;
-      const oldPid = this.get('oldPid');
-      const newPid = this.get('id');
-      const seriesId = this.get('seriesId');
-      const IDs = [oldPid, newPid, seriesId]
-
-      // Remove any distribution models with the old PID, seriesId, or current
-      // PID in the URL (only if the URL function is "information")
-      const distributions = this.get('distribution') || [];
-      IDs.forEach(id => {
-        const distributions = model.get('distribution');
-        if(!distributions || !distributions.length) return;
-        const dist = this.findDistribution(
-          { url: id, urlFunction: 'information' }, true);
-        if (dist) {
-          // Remove the distribution model from the array
-          distributions.splice(distributions.indexOf(dist), 1);
-        }
-      });
-      
-
-      // Add a new distribution node with the view URL
-      const viewURL = this.getCanonicalDOIIRI() || this.createViewURL();
-      if (viewURL) {
-        this.addDistribution({
-          url: viewURL,
-          urlFunction: 'information'
-        });
-      } else {
-        console.log('Could not add a distribution node with the view URL');
+      try {
+        // Old distribution URLs could exist for any of the old or current
+        const IDs = [ this.get('oldPid'), this.get('id'), this.get('seriesId')]
+        // The new distribution URL will be the view URL or DOI URL
+        const viewURL = this.getCanonicalDOIIRI() || this.createViewURL();
+        // Add the new distribution URL to the collection
+        this.getDistributions().addDatasetDistributionURL(viewURL, IDs);
+      } catch (e) {
+        console.log("Couldn't add the distribution URL to the EML model", e);
       }
-
     },
 
 
