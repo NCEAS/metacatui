@@ -1,7 +1,9 @@
 define(["jquery", "underscore", "backbone", "uuid",
         "models/metadata/eml211/EMLMeasurementScale", "models/metadata/eml211/EMLAnnotation",
+        "collections/metadata/eml/EMLMissingValueCodes",
         "models/DataONEObject"],
-    function($, _, Backbone, uuid, EMLMeasurementScale, EMLAnnotation,
+    function ($, _, Backbone, uuid, EMLMeasurementScale, EMLAnnotation,
+        EMLMissingValueCodes,
         DataONEObject) {
 
         /**
@@ -25,7 +27,7 @@ define(["jquery", "underscore", "backbone", "uuid",
 	                storageType: [], // Zero or more storage types
 	                typeSystem: [], // Zero or more system types for storage type
 	                measurementScale: null, // An EML{Non}NumericDomain or EMLDateTimeDomain object
-	                missingValueCode: [], // Zero or more {code: value, definition: value} objects
+	                missingValueCodes: new EMLMissingValueCodes(), // An EMLMissingValueCodes collection
 	                accuracy: null, // An EMLAccuracy object
 	                coverage: null, // an EMLCoverage object
 	                methods: [], // Zero or more EMLMethods objects
@@ -72,14 +74,33 @@ define(["jquery", "underscore", "backbone", "uuid",
 
             /* Initialize an EMLAttribute object */
             initialize: function(attributes, options) {
+                
+                if (!attributes) {
+                    var attributes = {};
+                }
 
+                // If initialized with missingValueCode as an array, convert it to a collection
+                if (
+                    attributes.missingValueCodes &&
+                    attributes.missingValueCodes instanceof Array
+                ) {
+                    this.missingValueCodes =
+                        new EMLMissingValueCodes(attributes.missingValueCode);
+                }   
+
+                this.stopListening(this.get("missingValueCodes"));
+                this.listenTo(
+                    this.get("missingValueCodes"),
+                    "update",
+                    this.trickleUpChange
+                )
                 this.on(
                     "change:attributeName " +
                     "change:attributeLabel " +
                     "change:attributeDefinition " +
                     "change:storageType " +
                     "change:measurementScale " +
-                    "change:missingValueCode " +
+                    "change:missingValueCodes " +
                     "change:accuracy " +
                     "change:coverage " +
                     "change:methods " +
@@ -130,7 +151,6 @@ define(["jquery", "underscore", "backbone", "uuid",
                     attributes.typeSystem.push(type || null);
                 });
 
-
                 var measurementScale = $objectDOM.find("measurementscale")[0];
                 if ( measurementScale ) {
                     attributes.measurementScale =
@@ -150,6 +170,12 @@ define(["jquery", "underscore", "backbone", "uuid",
 
                     attributes.annotation.push(annotation);
                 }, this);
+
+                // Add the missingValueCodes as a collection
+                attributes.missingValueCodes = new EMLMissingValueCodes();
+                attributes.missingValueCodes.parse(
+                    $objectDOM.children("missingvaluecode")
+                );
 
                 attributes.objectDOM = $objectDOM[0];
 
@@ -187,7 +213,6 @@ define(["jquery", "underscore", "backbone", "uuid",
                 // This is new, create it
                 } else {
                     objectDOM = document.createElement(type);
-
                 }
 
                 // update the id attribute
@@ -291,7 +316,7 @@ define(["jquery", "underscore", "backbone", "uuid",
                         }
                     }
                 }
-                //If there is no attirbute definition, then return an empty String
+                // If there is no attribute definition, then return an empty String
                 // because it is invalid
                 else{
                   return "";
@@ -390,6 +415,22 @@ define(["jquery", "underscore", "backbone", "uuid",
                     $(after).after(anno.updateDOM());
                 }, this);
 
+                // Update the missingValueCodes
+                nodeToInsertAfter = undefined;
+                var missingValueCodes = this.get("missingValueCodes");
+                $(objectDOM).children("missingvaluecode").remove();
+                if (missingValueCodes) {
+                    var missingValueCodeNodes = missingValueCodes.updateDOM();
+                    if (missingValueCodeNodes) {
+                        nodeToInsertAfter = this.getEMLPosition(objectDOM, "missingValueCode");
+                        if (typeof nodeToInsertAfter === "undefined") {
+                            $(objectDOM).append(missingValueCodeNodes);
+                        } else {
+                            $(nodeToInsertAfter).after(missingValueCodeNodes);
+                        }
+                    }
+                }
+
                 return objectDOM;
             },
 
@@ -440,25 +481,27 @@ define(["jquery", "underscore", "backbone", "uuid",
             		errors.measurementScale = "Choose a measurement scale category for this attribute.";
             	}
             	else{
-            		var measurementScaleIsValid = measurementScaleModel.isValid();
-
-            		// If there is a measurement scale model and it is valid and there are no other
-            		// errors, then trigger this model as valid and exit.
-                	if( measurementScaleIsValid && !Object.keys(errors).length ){
-
-            			this.trigger("valid", this);
-            			return;
-
-                	}
-                	else if( !measurementScaleIsValid ){
+                    if( !measurementScaleModel.isValid() ){
                 		errors.measurementScale = "More information is needed.";
                 	}
-            	}
+                }
+                
+                // Validate the missing value codes
+                var missingValueCodesErrors = this.get("missingValueCodes")?.validate();
+                if (missingValueCodesErrors) {
+                    // Just display the first error message
+                    errors.missingValueCodes = Object.values(missingValueCodesErrors)[0]
+                }
 
-            	//If there is at least one error, then return the errors object
-            	if(Object.keys(errors).length)
-            		return errors;
-
+                // If there is a measurement scale model and it is valid and there are no other
+                // errors, then trigger this model as valid and exit.
+                if (!Object.keys(errors).length) {
+                    this.trigger("valid", this);
+                    return;
+                } else {
+                    //If there is at least one error, then return the errors object
+                    return errors;
+                }
             },
 
             /*

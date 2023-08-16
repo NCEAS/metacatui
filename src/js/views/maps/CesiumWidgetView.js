@@ -245,7 +245,7 @@ define(
         /**
          * Set all of the listeners for the CesiumWidgetView. This function is
          * called during the render function.
-         * @since x.x.x
+         * @since 2.26.0
          */
         setListeners: function () {
 
@@ -315,7 +315,7 @@ define(
          * @param {string[]} ignore - An array of Cesium.ScreenSpaceEventType
          * labels to ignore. See
          * {@link https://cesium.com/learn/cesiumjs/ref-doc/ScreenSpaceEventType.html}
-         * @since x.x.x
+         * @since 2.26.0
          */
         listenOnceForInteraction: function (
           callback,
@@ -340,7 +340,7 @@ define(
         /**
          * Add all of the model's layers to the map. This function is called
          * during the render function.
-         * @since x.x.x
+         * @since 2.26.0
          */
         addLayers: function () {
 

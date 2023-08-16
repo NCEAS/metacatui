@@ -2182,6 +2182,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
       /* Initialize the object XML for brand spankin' new EML objects */
       createXML: function() {
+        
+          let emlSystem = MetacatUI.appModel.get("emlSystem");
+          emlSystem = (!emlSystem || typeof emlSystem != "string") ? "knb" : emlSystem;
+
           var xml = "<eml:eml xmlns:eml=\"https://eml.ecoinformatics.org/eml-2.2.0\"></eml:eml>",
               eml = $($.parseHTML(xml));
 
@@ -2190,7 +2194,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               eml.attr("xmlns:stmml", "http://www.xml-cml.org/schema/stmml-1.1");
               eml.attr("xsi:schemaLocation", "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd");
               eml.attr("packageId", this.get("id"));
-              eml.attr("system", "knb"); // We could make this configurable at some point
+              eml.attr("system", emlSystem);
 
               // Add the dataset
               eml.append(document.createElement("dataset"));

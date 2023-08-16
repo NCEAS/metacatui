@@ -104,7 +104,7 @@ define(
         createCesiumModel: function (recreate = false) {
 
           var model = this;
-          var cesiumOptions = this.get('cesiumOptions');
+          var cesiumOptions = model.getCesiumOptions();
           var type = this.get('type')
           var terrainFunction = Cesium[type]
 
@@ -115,9 +115,9 @@ define(
 
           model.resetStatus();
 
-          // Check if this tileset is a Cesium Ion resource, and if it is, set the url
-          // from the asset Id
-          this.setCesiumURL()
+          // If this tileset is a Cesium Ion resource, set the url from the
+          // asset Id
+          cesiumOptions.url = this.getCesiumURL(cesiumOptions) || cesiumOptions.url;
 
           if (terrainFunction && typeof terrainFunction === 'function') {
             let terrain = new terrainFunction(cesiumOptions)
@@ -138,32 +138,29 @@ define(
         },
 
         /**
-         * Checks whether there is an asset ID for a Cesium Ion resource set in the cesium
-         * asset options. If there is, then adds or replaces the URL property the cesium
-         * asset options with a URL created by Cesium.
+         * Checks whether there is an asset ID for a Cesium Ion resource and if
+         * so, return the URL to the resource.
+         * @returns {string} The URL to the Cesium Ion resource
+         * @since 2.26.0
          */
-        setCesiumURL: function () {
+        getCesiumURL: function () {
           try {
-
-            var cesiumOptions = this.get('cesiumOptions')
-
-            // Set the asset URL if this is a Cesium Ion 3D tileset or terrain
-            if (cesiumOptions && cesiumOptions.ionAssetId) {
-              // The Cesium Ion ID of the resource to access
-              var assetId = Number(cesiumOptions.ionAssetId)
-              // Options to pass to Cesium's fromAssetId function
-              var ionResourceOptions = {}
-              // Access token needs to be set before requesting cesium ion resources
-              ionResourceOptions.accessToken =
-                cesiumOptions.cesiumToken || MetacatUI.appModel.get('cesiumToken');
-              // Create the new URL and set it on the model options
-              cesiumOptions.url = Cesium.IonResource.fromAssetId(assetId, ionResourceOptions)
-
+            const cesiumOptions = this.getCesiumOptions();
+            if (!cesiumOptions || !cesiumOptions.ionAssetId) return null
+            // The Cesium Ion ID of the resource to access
+            const assetId = Number(cesiumOptions.ionAssetId)
+            // Options to pass to Cesium's fromAssetId function. Access token
+            // needs to be set before requesting cesium ion resources
+            const ionResourceOptions = {
+              accessToken: cesiumOptions.cesiumToken ||
+                MetacatUI.appModel.get('cesiumToken')
             }
+            // Create the new URL and set it on the model options
+            return Cesium.IonResource.fromAssetId(assetId, ionResourceOptions);
           }
           catch (error) {
             console.log(
-              'There was an error settings a Cesium URL in a 3DTileset' +
+              'There was an error settings a Cesium URL in a Cesium3DTileset' +
               '. Error details: ' + error
             );
           }
