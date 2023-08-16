@@ -19,6 +19,14 @@ define(["backbone", "models/metadata/eml211/EMLDistribution"], function (
        */
       model: EMLDistribution,
 
+      /*
+       * Maps the lower-case EML node names (valid in HTML DOM) to the camel-cased
+       * EML node names (valid in EML). Used during parse() and serialize().
+       */
+      nodeNameMap: function () {
+        return EMLDistribution.prototype.nodeNameMap();
+      },
+
       /**
        * Find the distribution that has all of the matching attributes. This
        * will return true if the distribution has all of the attributes, even if
@@ -86,13 +94,13 @@ define(["backbone", "models/metadata/eml211/EMLDistribution"], function (
         // Remove any distribution models with the old PID, seriesId, or current
         // PID in the URL (only if the URL function is "information")
         if (dists.length && oldIDs.length) {
-          oldIDs.forEach((url) => {
+          oldIDs.forEach((id) => {
             dists.removeByAttributes({ url: id, urlFunction: func }, true);
           });
         }
 
         // Add a new distribution with the view URL
-        return dists.add({ url: url, urlFunction: urlFunction });
+        return dists.add({ url: url, urlFunction: func });
       },
 
       /**

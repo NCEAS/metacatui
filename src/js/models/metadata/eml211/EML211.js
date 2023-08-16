@@ -143,7 +143,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         nodeNameMap: function(){
           return _.extend(
               this.constructor.__super__.nodeNameMap(),
-              EMLDistribution.prototype.nodeNameMap(),
+              EMLDistributions.prototype.nodeNameMap(),
               EMLGeoCoverage.prototype.nodeNameMap(),
               EMLKeywordSet.prototype.nodeNameMap(),
               EMLParty.prototype.nodeNameMap(),
@@ -1464,9 +1464,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
     addDatasetDistributionURL: function () {
       try {
         // Old distribution URLs could exist for any of the old or current
-        const IDs = [ this.get('oldPid'), this.get('id'), this.get('seriesId')]
+        let IDs = [this.get('oldPid'), this.get('id'), this.get('seriesId')]
+        // Append the URL-encoded IDs to the list of IDs
+        const encodedIDs = IDs.map(id => encodeURIComponent(id));
+        IDs = IDs.concat(encodedIDs);
         // The new distribution URL will be the view URL or DOI URL
-        const viewURL = this.getCanonicalDOIIRI() || this.createViewURL();
+        const viewURL = this.getCanonicalDOIIRI() || this.createViewURL(true);
         // Add the new distribution URL to the collection
         this.getDistributions().addDatasetDistributionURL(viewURL, IDs);
       } catch (e) {

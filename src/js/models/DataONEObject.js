@@ -1809,10 +1809,18 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
           /**
           * Creates a URL for viewing more information about this object
-          * @return {string}
+          * @param {boolean} [absolute=false] - Set to true to return an
+          * absoloute URL. This will use whatever is configured in the
+          * AppModel as the base URL.
+          * @return {string} The URL to view this object
           */
-          createViewURL: function(){
-            return MetacatUI.root + "/view/" + encodeURIComponent((this.get("seriesId") || this.get("id")));
+          createViewURL: function (absolute = false) {
+            const ID = encodeURIComponent((this.get("seriesId") || this.get("id")));
+            let viewURL = MetacatUI.root + "/view/" + ID;
+            if (absolute) {
+              viewURL = MetacatUI.appModel.get("baseUrl") + viewURL;
+            }
+            return viewURL;
           },
           
           /**
@@ -2148,9 +2156,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
            * @returns {boolean} True if it is a DOI
            */
           isDOI: function(customString) {
-            return isDOI(customString) ||
-              isDOI(this.get("id")) ||
-              isDOI(this.get("seriesId"));
+            return MetacatUI.appModel.isDOI(customString) ||
+              MetacatUI.appModel.isDOI(this.get("id")) ||
+              MetacatUI.appModel.isDOI(this.get("seriesId"));
           },
 
         /**
