@@ -310,7 +310,7 @@ define(['jquery',
 			return finalResult;
 		},
 
-		insertDataDetails: function(){
+		getDataDetails: function(pid){
 			var view = this;
 
 			//Get the Package Model - it is attached with the parent Metadata View
@@ -324,6 +324,8 @@ define(['jquery',
 
 			_.each(pkg.get("members"), function(solrResult, i){
 				if(solrResult.get("formatType") != "DATA") return;
+
+				if(solrResult.get("id") != pid) return;
 
 				solrResult.set("formattedSize", solrResult.bytesToSize());
 
@@ -366,12 +368,8 @@ define(['jquery',
 				$(html).append(entityDetailsSection);
 			});
 
-			//Glue together the header and attribute info section
-			var header = $(document.createElement("h4")).text("Data Table, Image, and Other Data Details");
-			var section = $(html).prepend(header);
-
-			//Insert into the DOM right after the "general" information
-			this.$(".General").after(section);
+			//Return the html element
+			return html;
 		},
 
     //Shows a message to the user that indicates this object has not been indexed

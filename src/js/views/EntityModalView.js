@@ -19,7 +19,7 @@ define([
          * Classes to add to the modal
          * @type {string}
          */
-        className: "modal fade hide",
+        className: "entity modal fade hide",
   
         /**
          * The underscore template for the main part of this view (modal)
@@ -45,6 +45,10 @@ define([
           if (typeof options === "undefined") {
             var options = {};
           }
+          this.id = options.id || undefined;
+          this.entityEl = options.entityEl || "";
+          this.entityName = options.entityName || "";
+          this.downloadEl = options.downloadEl || "";
         },
   
         /**
@@ -64,11 +68,17 @@ define([
          */
         renderView: function () {
           try {
-  
+            var view = this;
             // Render the modal
             this.el.innerHTML = this.template({
-              
+
             });
+
+            this.$(".entity-name").text(this.entityName);
+
+            this.$(".entity-container").html(this.entityEl);
+
+            this.$(".download-button-container").html(this.downloadEl);
 
           } catch (e) {
             console.error("Failed to render the Entity Modal View: ", e);

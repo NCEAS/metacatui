@@ -9175,3 +9175,14 @@ body > #extension-is-installed{
 	  box-shadow: none;
 	  border: 1px solid #146660;
   }
+
+.entity.modal {
+	width: calc(100% - 215px); /* 100% - prov-chart width - (padding + borders)*/
+	left: 20%;
+}
+.entityDetails > .modal-body {
+	height: calc(100% - 215px);
+}
+.entity.modal > .form-horizontal > .entityDetails > .modal-dialog > .modal-content > .modal-body {
+	max-height: 750px;
+}

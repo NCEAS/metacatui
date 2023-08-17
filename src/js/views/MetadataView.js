@@ -79,6 +79,7 @@ define(['jquery',
         parentLinkContainer: "#parent-link-container",
         dataSourceContainer: "#data-source-container",
         articleContainer: "#article-container",
+		    viewedEntities: new Array(),
 
         type: "Metadata",
 
@@ -412,11 +413,12 @@ define(['jquery',
                   // remove entity details from the response
                   var responseObj = $(response);
                   responseObj.find(".control-group.entity").remove();
+                  responseObj.find('h4:contains("Data Table, Image, and Other Data Details")').remove()
 
                   // store entity details from the response
                   var entityDetails = $(response).find(".control-group.entity");
-                  this.entityDetails = entityDetails;
-                  console.log(this.entityDetails);
+                  viewRef.entityDetails = entityDetails;
+                  viewRef.storeEntityDetails(entityDetails);
 
                   //Now show the response from the view service
                   viewRef.$(viewRef.metadataContainer).html(responseObj);
@@ -453,6 +455,17 @@ define(['jquery',
           }
 
           this.insertCitationMetaTags();
+        },
+
+        storeEntityDetails: function (entityDetails) {
+          this.entityDetails = new Object();
+          var view = this;
+          
+          _.each(entityDetails, function(entity) {
+            var entityId = $(entity).find(".entitydetails").data("id");
+            view.entityDetails[entityId] = entity;
+          });
+          return;
         },
 
         /* If there is no view service available, then display the metadata fields from the index */
@@ -793,9 +806,6 @@ define(['jquery',
             options.disablePackageDownloads = true;
             this.insertPackageTable(options);
           }
-
-          //Insert the data details sections
-          this.insertDataDetails();
 
           // Get data package, if there is one, before checking write permissions
           if (packages.length) {
@@ -2063,20 +2073,20 @@ define(['jquery',
         },
 
         /*
-         * Inserts new image elements into the DOM via the image template. Use for displaying images that are part of this metadata's resource map.
+         * Returns new image elements into the DOM via the image template. Use for displaying images that are part of this metadata's resource map.
          */
-        insertDataDetails: function () {
+        getDataDetails: function (pid, entityEl) {
 
           //If there is a metadataIndex subview, render from there.
           var metadataFromIndex = _.findWhere(this.subviews, { type: "MetadataIndex" });
           if (typeof metadataFromIndex !== "undefined") {
             _.each(this.packageModels, function (packageModel) {
-              metadataFromIndex.insertDataDetails(packageModel);
+              return metadataFromIndex.getDataDetails();
             });
-            return;
           }
 
-          var viewRef = this;
+          var viewRef = this,
+              container = entityEl;
 
           _.each(this.packageModels, function (packageModel) {
 
@@ -2084,9 +2094,6 @@ define(['jquery',
               images = [],
               other = [],
               packageMembers = packageModel.get("members");
-
-            //Don't do this for large packages
-            if (packageMembers.length > 150) return;
 
             //==== Loop over each visual object and create a dataDisplay template for it to attach to the DOM ====
             _.each(packageMembers, function (solrResult, i) {
@@ -2098,17 +2105,13 @@ define(['jquery',
               if (objID == viewRef.pid)
                 return;
 
+              if (objID != pid)
+                return;
+
               //Is this a visual object (image)?
               var type = solrResult.type == "SolrResult" ? solrResult.getType() : "Data set";
               if (type == "image")
                 images.push(solrResult);
-
-              //Find the part of the HTML Metadata view that describes this data object
-              var anchor = $(document.createElement("a")).attr("id", objID.replace(/[^A-Za-z0-9]/g, "-")),
-                container = viewRef.findEntityDetailsContainer(objID);
-
-              var downloadButton = new DownloadButtonView({ model: solrResult });
-              downloadButton.render();
 
               //Insert the data display HTML and the anchor tag to mark this spot on the page
               if (container) {
@@ -2148,13 +2151,6 @@ define(['jquery',
                     xhr.send();
                   }
 
-                }
-
-                $(container).prepend(anchor);
-
-                var nameLabel = $(container).find("label:contains('Entity Name')");
-                if (nameLabel.length) {
-                  $(nameLabel).parent().after(downloadButton.el);
                 }
               }
 
@@ -2219,6 +2215,8 @@ define(['jquery',
               var imgIntervalID = window.setInterval(initializeImgLightboxes, 500);
             }
           });
+
+          return container;
         },
 
         replaceEcoGridLinks: function () {
@@ -2437,8 +2435,59 @@ define(['jquery',
           else
             return false;
 
-          this.entityModal = new EntityModalView({id: id});
-          this.subviews.push(this.entityModal);
+          var entityEl = undefined;
+
+          Object.entries(this.entityDetails).forEach(([key, value]) => {
+            if (key == id) {
+              console.log("match found");
+              console.log(value);
+              entityEl = value;
+            }
+            else if (key.startsWith("urn-uuid-") && key.slice(9) == id.slice(9)) {
+              entityEl = value;
+            }
+          });
+
+          var anotherEl = undefined;
+          if (this.viewedEntities.indexOf(id) < 0) {
+            anotherEl = this.getDataDetails(id, entityEl);
+            this.viewedEntities.push(id);
+          }
+          else {
+            anotherEl = entityEl;
+          }
+
+          var downloadButton = undefined,
+              entityName = undefined,
+              viewRef = this;
+          
+          _.each(this.packageModels, function (packageModel) {
+
+            var packageMembers = packageModel.get("members");
+
+            //==== Generate download button ====
+            _.each(packageMembers, function (solrResult, i) {
+              if (solrResult.type == "Package") return;
+
+              var objID = solrResult.get("id");
+
+              if (objID == viewRef.pid)
+                return;
+
+              if (objID != id)
+                return;
+
+              downloadButton = new DownloadButtonView({ model: solrResult });
+              downloadButton.render();
+            });
+          });
+
+          entityName = this.getEntityName(anotherEl);
+          $(anotherEl).find(".control-label:contains('Entity Name') + .controls-well").parent().remove();
+
+
+          this.entityModal = new EntityModalView({id: id, entityEl: anotherEl, entityName: entityName, downloadEl: downloadButton.el});
+          this.subviews.push(this.entityModal, );
           this.entityModal.render();
         },
 
