@@ -115,8 +115,8 @@ define([
                 this.$el.addClass("download-contents table-condensed");
                 this.$el.append(this.template({
                     edit: this.edit,
-                    dataPackageFiltering: MetacatUI.appModel.get("dataPackageFiltering") || "false",
-                    dataPackageSorting: MetacatUI.appModel.get("dataPackageSorting") || "false",
+                    dataPackageFiltering: MetacatUI.appModel.get("dataPackageFiltering") || false,
+                    dataPackageSorting: MetacatUI.appModel.get("dataPackageSorting") || false,
                 	loading: MetacatUI.appView.loadingTemplate({msg: "Loading files table... "}),
                 	id: this.dataPackage.get("id"),
                     title   : this.title || "Files in this dataset",

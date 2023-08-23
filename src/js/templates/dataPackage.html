@@ -19,7 +19,9 @@
         
         Files and Folders
 
-        <i class="icon icon-solid icon-arrow-up"></i>
+        <% if (dataPackageSorting) {%>
+          <i class="icon icon-solid icon-arrow-up"></i>
+        <% } %>
         <% if (dataPackageFiltering) {%>
           <a class="btn" data-id="<%= id %>">
             <i class="icon icon-large icon-filter"></i>
