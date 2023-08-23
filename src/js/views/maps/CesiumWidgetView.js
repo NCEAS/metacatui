@@ -1149,6 +1149,21 @@ define(
         },
 
         /**
+         * Add a new asset (layer) to the map model and render it on the map
+         * @param {Object} mapAsset - The properties of the map model to create
+         * and add to the map
+         * @returns {MapAsset} Returns the newly created MapAsset model
+         * @since x.x.x
+         */
+        addNewAsset: function (mapAsset) {
+          // TODO: Set a listener on the layers collection for add events, and
+          // call this function when a new layer is added
+          const newAsset = this.model.addAsset(mapAsset);
+          this.addAsset(newAsset);
+          return newAsset
+        },
+
+        /**
          * Finds the function that is configured for the given asset model type in the
          * {@link CesiumWidgetView#mapAssetRenderFunctions} array, then renders the asset
          * in the map. If there is a problem rendering the asset (e.g. it is an
@@ -1212,12 +1227,38 @@ define(
         },
 
         /**
+         * Remove an asset (layer) from the map model and remove it from the map
+         * @param {MapAsset} mapAsset - The MapAsset model to remove from the map
+         * @since x.x.x
+         */
+        removeAsset: function (mapAsset) {
+          // TODO: Set a listener on the layers collection for remove events, and
+          // call this function when a new layer is removed
+          try {
+            if (!mapAsset) {
+              return
+            }
+            // TODO: Implement this!
+            // this.model.removeAsset(mapAsset)
+            // Remove the layer from the map
+            // ...
+          }
+          catch (error) {
+            console.log(
+              'There was an error removing an asset from a CesiumWidgetView' +
+              '. Error details: ' + error
+            );
+          }
+        },
+
+        /**
          * Renders peaks and valleys in the 3D version of the map, given a terrain model.
          * If a terrain model has already been set on the map, this will replace it.
          * @param {Cesium.TerrainProvider} cesiumModel a Cesium Terrain Provider model to
          * use for the map
         */
         updateTerrain: function (cesiumModel) {
+          // TODO: Add listener to the map model for when the terrain changes
           this.scene.terrainProvider = cesiumModel
           this.requestRender();
         },
