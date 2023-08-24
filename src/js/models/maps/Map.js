@@ -351,15 +351,30 @@ define([
        * Add a layer or other asset to the map. This is the best way to add a
        * layer to the map because it will ensure that this map model is set on
        * the layer model.
-       * @param {Object | MapAsset} layer - A map asset model or object with
+       * @todo Enable adding a terrain asset.
+       * @param {Object | MapAsset} asset - A map asset model or object with
        * attributes to set on a new map asset model.
        * @returns {MapAsset} The new layer model.
        * @since 2.25.0
        */
-      addAsset: function (layer) {
+      addAsset: function (asset) {
         const layers = this.get("layers") || this.resetLayers();
-        return layers.addAsset(layer, this);
+        return layers.addAsset(asset, this);
       },
+
+      /**
+       * Remove a layer from the map.
+       * @param {MapAsset} asset - The layer model to remove from the map.
+       * @since x.x.x
+       */
+      removeAsset: function (asset) {
+        if(!asset) return;
+        const layers = this.get("layers");
+        if(!layers) return;
+        // Remove by ID because the model is passed directly. Not sure if this
+        // is a bug in the MapAssets collection or Backbone?
+        if (layers) layers.remove(asset.cid);
+      }
 
     }
   );

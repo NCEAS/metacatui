@@ -81,23 +81,30 @@ define(
          * @property {string} renderFunction The name of the function in the view that
          * will add the asset to the map and render it, when passed the cesiumModel
          * attribute from the MapAsset model
+         * @property {string} removeFunction The name of the function in the view that
+         * will remove the asset from the map, when passed the cesiumModel attribute from
+         * the MapAsset model
          */
         mapAssetRenderFunctions: [
           {
             types: ['Cesium3DTileset'],
-            renderFunction: 'add3DTileset'
+            renderFunction: 'add3DTileset',
+            removeFunction: 'remove3DTileset'
           },
           {
             types: ['GeoJsonDataSource', 'CzmlDataSource'],
-            renderFunction: 'addVectorData'
+            renderFunction: 'addVectorData',
+            removeFunction: 'removeVectorData'
           },
           {
             types: ['BingMapsImageryProvider', 'IonImageryProvider', 'TileMapServiceImageryProvider', 'WebMapTileServiceImageryProvider', 'WebMapServiceImageryProvider', 'OpenStreetMapImageryProvider'],
-            renderFunction: 'addImagery'
+            renderFunction: 'addImagery',
+            removeFunction: 'removeImagery'
           },
           {
             types: ['CesiumTerrainProvider'],
-            renderFunction: 'updateTerrain'
+            renderFunction: 'updateTerrain',
+            removeFunction: null
           }
         ],
 
@@ -194,7 +201,6 @@ define(
             // raised.
             view.camera.percentChanged = 0.1
 
-
             // Disable HDR lighting for better performance and to avoid changing imagery colors.
             view.scene.highDynamicRange = false;
             view.scene.globe.enableLighting = false;
@@ -250,6 +256,14 @@ define(
         setListeners: function () {
 
           const view = this;
+
+          // Listen for addition or removal of layers
+          // TODO: Add similar listeners for terrain
+          const layers = view.model.get('layers')
+          view.stopListening(layers, 'add');
+          view.listenTo(layers, 'add', view.addAsset);
+          view.stopListening(layers, 'remove');
+          view.listenTo(layers, 'remove', view.removeAsset);
 
           // Zoom functions executed after each scene render
           view.scene.postRender.addEventListener(function () {
@@ -1156,10 +1170,10 @@ define(
          * @since x.x.x
          */
         addNewAsset: function (mapAsset) {
-          // TODO: Set a listener on the layers collection for add events, and
-          // call this function when a new layer is added
+          if(!mapAsset) return
           const newAsset = this.model.addAsset(mapAsset);
-          this.addAsset(newAsset);
+          // The add event on the layers collection will trigger the addAsset
+          // function below, which will render the asset in the map
           return newAsset
         },
 
@@ -1227,27 +1241,25 @@ define(
         },
 
         /**
-         * Remove an asset (layer) from the map model and remove it from the map
-         * @param {MapAsset} mapAsset - The MapAsset model to remove from the map
+         * When an asset is removed from the map model, remove it from the map.
+         * @param {MapAsset} mapAsset - The MapAsset model removed from the map
          * @since x.x.x
          */
-        removeAsset: function (mapAsset) {
-          // TODO: Set a listener on the layers collection for remove events, and
-          // call this function when a new layer is removed
-          try {
-            if (!mapAsset) {
-              return
-            }
-            // TODO: Implement this!
-            // this.model.removeAsset(mapAsset)
-            // Remove the layer from the map
-            // ...
-          }
-          catch (error) {
-            console.log(
-              'There was an error removing an asset from a CesiumWidgetView' +
-              '. Error details: ' + error
-            );
+        removeAsset: function (mapAsset, b, c) {
+          if (!mapAsset) return
+          // Get the cesium model from the asset
+          const cesiumModel = mapAsset.get('cesiumModel')
+          if (!cesiumModel) return
+          // Find the remove function for this type of asset
+          const removeFunctionName = this.mapAssetRenderFunctions.find(function (option) {
+            return option.types.includes(mapAsset.get('type'))
+          })?.removeFunction
+          const removeFunction = this[removeFunctionName]
+          // If there is a function for this type of asset, call it
+          if (removeFunction && typeof removeFunction === 'function') {
+            removeFunction.call(this, cesiumModel)
+          } else {
+            console.log('No remove function found for this type of asset', mapAsset);
           }
         },
 
@@ -1273,12 +1285,32 @@ define(
         },
 
         /**
+         * Remove a 3D tileset from the map.
+         * @param {Cesium.Cesium3DTileset} cesiumModel The Cesium 3D tileset model to
+         * remove from the map
+         * @since x.x.x
+         */
+        remove3DTileset: function (cesiumModel) {
+          this.scene.primitives.remove(cesiumModel)
+        },
+
+        /**
          * Renders vector data (excluding 3D tilesets) in the Map.
          * @param {Cesium.GeoJsonDataSource} cesiumModel - The Cesium data source
          * model to render on the map
          */
         addVectorData: function (cesiumModel) {
           this.dataSourceCollection.add(cesiumModel)
+        },
+
+        /**
+         * Remove vector data (excluding 3D tilesets) from the Map.
+         * @param {Cesium.GeoJsonDataSource} cesiumModel - The Cesium data source
+         * model to remove from the map
+         * @since x.x.x
+         */
+        removeVectorData: function (cesiumModel) {
+          this.dataSourceCollection.remove(cesiumModel)
         },
 
         /**
@@ -1291,11 +1323,23 @@ define(
         },
 
         /**
+         * Remove imagery from the Map.
+         * @param {Cesium.ImageryLayer} cesiumModel The Cesium imagery model to remove
+         * from the map
+         * @since x.x.x
+         */
+        removeImagery: function (cesiumModel) {
+          console.log('Removing imagery from map', cesiumModel);
+          console.log('Imagery layers', this.scene.imageryLayers);
+          this.scene.imageryLayers.remove(cesiumModel)
+        },
+
+        /**
          * Arranges the imagery that is rendered the Map according to the order
          * that the imagery is arranged in the layers collection.
          * @since 2.21.0
          */
-        sortImagery() {
+        sortImagery: function() {
           try {
             const imageryInMap = this.scene.imageryLayers
             const imageryModels = this.model.get('layers').getAll('CesiumImagery')

@@ -206,8 +206,6 @@ define([
        * See {@link MapSearchFiltersConnector#onMoveEnd}
        */
       onMoveEnd: function () {
-        const searchResults = this.get("searchResults");
-        const map = this.get("map");
         this.showGeoHashLayer();
         this.updateFacet();
       },

@@ -79,10 +79,40 @@ define(
                 this[key] = value;
               }
             }
+            this.setListeners();
           } catch (e) {
             console.log('A LayerListView failed to initialize. Error message: ' + e);
           }
 
+        },
+
+        /**
+         * Remove any event listeners on the collection
+         * @since x.x.x
+         */
+        removeListeners: function () {
+          try {
+            if (this.collection) {
+              this.stopListening(this.collection);
+            }
+          } catch (e) {
+            console.log('Failed to remove listeners:', e);
+          }
+        },
+
+        /**
+         * Add or remove items from the list when the collection changes
+         * @since x.x.x
+         */
+        setListeners: function () {
+          try {
+            if (this.collection) {
+              this.listenTo(this.collection, 'add', this.render);
+              this.listenTo(this.collection, 'remove', this.render);
+            }
+          } catch (e) {
+            console.log('Failed to set listeners:', e);
+          }
         },
 
         /**
