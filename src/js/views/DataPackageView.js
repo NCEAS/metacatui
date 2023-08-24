@@ -76,6 +76,7 @@ define([
                     this.memberId	= options.memberId	 || null;
                     this.attributes = options.attributes || null;
                     this.dataPackage = options.dataPackage || new DataPackage();
+                    this.dataEntities = options.dataEntities || new Array();
                     this.disablePackageDownloads = options.disablePackageDownloads || false;
                     this.currentlyViewing = options.currentlyViewing || null;
                     this.parentEditorView = options.parentView || null;
@@ -182,7 +183,8 @@ define([
 
                 }
 
-                var itemPath = null;
+                var itemPath = null,
+                    view = this;
                 if (!(_.isEmpty(this.atLocationObj))) {
                     itemPath = this.atLocationObj[item.get("id")];
                     if (itemPath[0] != "/") {
@@ -201,6 +203,7 @@ define([
                     model: item,
                     metricsModel: this.metricsModel,
                     itemPath: itemPath,
+                    insertInfoIcon: view.dataEntities.includes(item.id),
                     currentlyViewing: this.currentlyViewing,
                     mode: this.mode,
                     parentEditorView: this.parentEditorView,

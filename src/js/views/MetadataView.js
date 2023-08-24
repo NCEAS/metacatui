@@ -65,6 +65,7 @@ define(['jquery',
 
         model: new SolrResult(),
         packageModels: new Array(),
+        entities: new Array(),
         dataPackage: null,
         dataPackageSynced: false,
         el: '#Content',
@@ -410,6 +411,8 @@ define(['jquery',
 
                   //Now show the response from the view service
                   viewRef.$(viewRef.metadataContainer).html(response);
+
+                  viewRef.storeEntityPIDs(response);
 
                   //If there is no info from the index and there is no metadata doc rendered either, then display a message
                   if (viewRef.$el.is(".no-stylesheet") && viewRef.model.get("archived") && !viewRef.model.get("indexed"))
@@ -846,6 +849,7 @@ define(['jquery',
             edit: false,
             dataPackage: this.dataPackage,
             currentlyViewing: this.pid,
+            dataEntities: this.entities,
             disablePackageDownloads: disablePackageDownloads,
             parentView: this,
             title: title,
@@ -2992,8 +2996,15 @@ define(['jquery',
 
             newView.render();
           });
-        }
+        },
 
+        storeEntityPIDs: function(responseEl) {
+          var view = this;
+          _.each($(responseEl).find(".entitydetails"), function (entityEl) {
+            var entityId = $(entityEl).data("id");
+            view.entities.push(entityId.replace('urn-uuid-', 'urn:uuid:'));
+          });
+        }
       });
 
     return MetadataView;

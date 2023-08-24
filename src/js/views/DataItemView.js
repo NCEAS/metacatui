@@ -90,6 +90,7 @@ define([
               this.itemName = options.itemName || null;
               this.itemPath = options.itemPath || null;
               this.itemType = options.itemType || "file";
+              this.insertInfoIcon = options.insertInfoIcon || false;
               this.id = this.model.get("id");
               this.canWrite = false; // Default. Updated in render()
               this.canShare = false; // Default. Updated in render()
@@ -122,6 +123,7 @@ define([
                     attributes.icon = "icon-folder-open";
                     attributes.id = this.itemName;
                     attributes.size = undefined;
+                    attributes.insertInfoIcon = false;
                     attributes.memberRowMetrics = undefined;
                     attributes.isMetadata = false;
                     attributes.downloadUrl = undefined;
@@ -552,6 +554,8 @@ define([
                     let id = this.model.get("id");
                     let infoLink = MetacatUI.root + "/view/" + encodeURIComponent(this.currentlyViewing) + "#" + encodeURIComponent(id)
                     attributes.moreInfoLink = infoLink;
+
+                    attributes.insertInfoIcon = this.insertInfoIcon;
 
                     this.$el.html( this.dataItemHierarchyTemplate(attributes) );
 

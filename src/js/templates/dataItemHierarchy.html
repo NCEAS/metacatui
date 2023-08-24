@@ -69,7 +69,7 @@
 <% } %>
 
 <td class="file-actions">
-	<% if (isMetadata !== undefined && !isMetadata && moreInfoLink !== undefined) { %>
+	<% if (isMetadata !== undefined && insertInfoIcon && !isMetadata && moreInfoLink !== undefined) { %>
 		<a class="btn btn-rounded action preview" href="<%= moreInfoLink %>" data-id="<%= id %>"><i class="icon icon-large icon-info"></i></a>
 	<% } %>
 
