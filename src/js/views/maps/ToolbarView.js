@@ -8,8 +8,9 @@ define(
     'backbone',
     'text!templates/maps/toolbar.html',
     'models/maps/Map',
-    // Sub-views
-    'views/maps/LayerListView'
+    // Sub-views - TODO: import these as needed
+    'views/maps/LayerListView',
+    'views/maps/DrawToolView'
   ],
   function (
     $,
@@ -18,7 +19,8 @@ define(
     Template,
     Map,
     // Sub-views
-    LayerListView
+    LayerListView,
+    DrawTool
   ) {
 
     /**
@@ -172,6 +174,12 @@ define(
             action: function (view, model) {
               model.trigger('flyHome')
             }
+          },
+          {
+            label: 'Draw',
+            icon: 'pencil',
+            view: DrawTool,
+            viewOptions: {}
           }
         ],
 

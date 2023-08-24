@@ -528,6 +528,9 @@ define(
               } else if (action === 'zoom') {
                 view.flyTo(pickedFeature)
               }
+              // TODO: Make the click actions more configurable. On every click,
+              // add the coordinates to the map model's clickedCoordinates.
+              // (keep a history of the last 10 clicks?)
             }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
           }
@@ -1160,21 +1163,6 @@ define(
             );
             return false
           }
-        },
-
-        /**
-         * Add a new asset (layer) to the map model and render it on the map
-         * @param {Object} mapAsset - The properties of the map model to create
-         * and add to the map
-         * @returns {MapAsset} Returns the newly created MapAsset model
-         * @since x.x.x
-         */
-        addNewAsset: function (mapAsset) {
-          if(!mapAsset) return
-          const newAsset = this.model.addAsset(mapAsset);
-          // The add event on the layers collection will trigger the addAsset
-          // function below, which will render the asset in the map
-          return newAsset
         },
 
         /**

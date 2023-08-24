@@ -1,7 +1,6 @@
 "use strict";
 
-define(["backbone", "cesium"], function (Backbone, Cesium) {
-  // TODO <- Does Cesium need to be a dependency?
+define(["backbone"], function (Backbone) {
   /**
    * @class DrawTool
    * @classdesc Functionality for drawing an arbitrary polygon on a Cesium map
@@ -35,25 +34,31 @@ define(["backbone", "cesium"], function (Backbone, Cesium) {
       activated: false,
 
       /**
-       * The Cesium map view to draw on
-       * @type {CesiumWidgetView}
+       * The Cesium map model to draw on. This must be the same model that the
+       * mapWidget is using.
+       * @type {Map}
        */
-      mapView: undefined,
+      model: undefined,
 
       /**
-       * The CesiumVectorData model that we will use to store the drawn polygon
+       * The CesiumVectorData model that we will use to store the drawn
+       * polygon(s)
        * @type {
        */
-      mapData: undefined,
+      drawLayer: undefined,
 
       /**
        * Initializes the DrawTool
        * @param {Object} options
        */
       initialize: function (options) {
-        this.mapView = options.mapView;
+        this.model = this.model;
+        if (!this.model) {
+          this.handleNoMapModel();
+          return
+        }
         this.activated = options.activated || false;
-        this.makeAsset();
+        this.makeDrawLayer();
         if (this.activated) {
           this.activate();
         }
@@ -63,9 +68,13 @@ define(["backbone", "cesium"], function (Backbone, Cesium) {
        * Creates the polygon object that will be modified as a user draws on the
        * map. Saves it to the polygon property.
        */
-      makeAsset: function () {
-        this.mapData = this.mapView.addNewAsset({
+      makeDrawLayer: function () {
+        if (!this.model) return
+        this.drawLayer = this.model.addAsset({
           type: "GeoJsonDataSource",
+          hideInLayerList: true, // <- TODO: Look for this property in the
+          // layer list view. If it's true, don't show it. Document it in the
+          // map config docs.
           cesiumOptions: {
             data: {
               type: "FeatureCollection",
@@ -73,10 +82,10 @@ define(["backbone", "cesium"], function (Backbone, Cesium) {
                 {
                   type: "Feature",
                   properties: {},
-                  geometry: {
-                    coordinates: [],
-                    type: "Polygon",
-                  },
+                  "geometry": {
+                    "coordinates": [],
+                    "type": "Polygon"
+                  }
                 },
               ],
             },
@@ -87,10 +96,9 @@ define(["backbone", "cesium"], function (Backbone, Cesium) {
       /**
        * Removes the polygon object from the map
        */
-      removeAsset: function () {
-        if (this.mapData) {
-          this.mapView.removeAsset(this.mapData);
-        }
+      removeDrawLayer: function () {
+        if (!this.model) return
+        this.model.removeAsset(this.model);
       },
 
       /**
@@ -98,8 +106,8 @@ define(["backbone", "cesium"], function (Backbone, Cesium) {
        * @returns {DrawTool} Returns the view
        */
       render: function () {
-        if (!this.mapView) {
-          this.handleNoMapView();
+        if (!this.model) {
+          this.handleNoMapModel();
           return;
         }
         this.renderToolbar();
@@ -109,15 +117,31 @@ define(["backbone", "cesium"], function (Backbone, Cesium) {
       /**
        * What to do when this view doesn't have a map view to draw on
        */
-      handleNoMapView: function () {
-        console.warn("No map view provided to DrawTool");
+      handleNoMapModel: function () {
+        console.warn("No map model provided to DrawTool");
       },
 
       /**
        * Create and insert the buttons for drawing and clearing the polygon
        */
       renderToolbar: function () {
-        // TODO: At a minimum we need buttons to: Start drawing, Clear drawing
+        // TODO: At a minimum we need buttons to: Start drawing, Clear drawing.
+        // Just some place holder buttons for now:
+        const view = this;
+        const el = this.el;
+        const drawButton = document.createElement("button");
+        drawButton.innerHTML = "Draw";
+        drawButton.addEventListener("click", function () {
+          view.activate();
+        });
+        el.appendChild(drawButton);
+        const clearButton = document.createElement("button");
+        clearButton.innerHTML = "Clear";
+        clearButton.addEventListener("click", function () {
+          view.removeDrawLayer();
+        });
+        el.appendChild(clearButton);
+
       },
 
       /**
@@ -125,30 +149,28 @@ define(["backbone", "cesium"], function (Backbone, Cesium) {
        */
       startListeners: function () {
         this.stopListening();
-        // TODO: We should either make a general method in the map that gives
-        // the coordinates of the mouse click, or we should add the Cesium event
-        // handler here.
-        this.listenTo(this.mapView, "click", this.handleClick);
+        // TODO: Make a general method in the map widget that gives the
+        // coordinates of the mouse click
+        this.listenTo(this.model, "change:clickedCoordinates", this.handleClick);
       },
 
       /**
        * Stops the listeners for the draw tool
        */
       stopListeners: function () {
-        this.stopListening(this.mapView);
+        this.stopListening(this.model);
       },
 
       /**
        * Handles a click on the map. If the draw tool is active, it will add the
        * coordinates of the click to the polygon being drawn.
-       * @param {Event} event - The click event
+       * @param {Number[]} coordinates - The most recently clicked coordinates
        */
-      handleClick: function (event) {
+      handleClick: function (coordinates) {
         if (!this.activated) {
           return;
         }
-        var coords = this.mapView.getMouseCoords(event); // <- TODO: This method doesn't exist yet
-        this.addCoordinate(coords);
+        this.addCoordinate(coordinates);
       },
 
       /**
@@ -159,13 +181,19 @@ define(["backbone", "cesium"], function (Backbone, Cesium) {
         // TODO: Something like this... We may also want to add a general method
         // to the VectorData model that allows us to add a coordinate, but this
         // will be specific to the GeoJsonDataSource
-        const geoJsonDataSource = this.mapData.get("cesiumModel");
-        const geoJsonFeature = geoJsonDataSource.entities.values[0];
-        const coordinates = geoJsonFeature.geometry.coordinates;
-        coordinates.push(coords);
-        geoJsonFeature.geometry.coordinates = coordinates;
-        geoJsonDataSource.entities.values[0] = geoJsonFeature;
-        this.mapData.updateAppearance();
+        const layer = this.drawLayer;
+        const geoJSON = layer.get("cesiumOptions")?.data
+        const coordinates = geoJSON?.features[0]?.geometry?.coordinates
+        if (!coordinates) {
+          // Create new coordinates array
+          geoJSON.features[0].geometry.coordinates = [coords]
+        } else {
+          // Add to existing coordinates array
+          coordinates.push(coords)
+        }
+        layer.set("cesiumOptions", { data: geoJSON })
+        // TODO: In all MapAsset models, listen for changes to the cesiumOptions
+        // object and re-create the cesiumModel when it changes.
       },
 
       /**
