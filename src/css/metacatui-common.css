@@ -9121,7 +9121,8 @@ body > #extension-is-installed{
 }
 
 .file-table-container {
-	height: 25em;
+	height: max-content;
+	max-height: 25.4em;
 	overflow-y: scroll;
 	border: 1px solid #E3E3E3;
     border-radius: 4px 4px 4px 4px;
