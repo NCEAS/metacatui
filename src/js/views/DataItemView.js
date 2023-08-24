@@ -120,15 +120,26 @@ define([
                     // attributes.isMetadata = false;
                     attributes.viewType = this.mode;
                     attributes.fileName = this.itemName;
+
                     var itemPathParts = new Array();
                     if (this.itemPath) {
                       itemPathParts = this.itemPath.split("/");
-                      attributes.nodeLevel = itemPathParts.length + 1;
+                      attributes.nodeLevel = itemPathParts.length;
+                      if (this.itemPath.startsWith("/")) {
+                        attributes.nodeLevel -= 1;
+                      }
+                      if (this.itemPath.endsWith("/")) {
+                        attributes.nodeLevel -= 1;
+                      }
+                      if (itemPathParts[-1] == attributes.fileName) {
+                        attributes.nodeLevel -= 1;
+                      }
                     }
                     else {
-                      attributes.nodeLevel = 2;
+                      attributes.nodeLevel = 0;
+                      this.itemPath = "/";
                       this.$el.attr("data-packageId", this.dataPackageId);
-                    }              
+                    }
                     this.$el.html( this.dataItemHierarchyTemplate(attributes) );
                 }
                 else {
@@ -471,21 +482,21 @@ define([
                       if (this.itemPath && (typeof this.itemPath !== undefined) && this.itemPath != "/") {
                         itemPathParts = this.itemPath.split("/");
 
-                        if (itemPathParts[0].length > 0) {
-                          attributes.nodeLevel = itemPathParts.length + 1; 
-                        }
-                        else {
-                          attributes.nodeLevel = itemPathParts.length;
-                        }
+                        attributes.nodeLevel = itemPathParts.length;
 
+                        if (this.itemPath.startsWith("/")) {
+                          attributes.nodeLevel -= 1;
+                        }
+                        if (this.itemPath.endsWith("/")) {
+                          attributes.nodeLevel -= 1;
+                        }
+                        
                         // var parent = itemPathParts[itemPathParts.length - 2];
                         var parentPath = (itemPathParts.slice(0, -1)).join("/");
 
                         if (parentPath !== undefined) {
                           this.$el.attr("data-parent", parentPath);
                         }
-
-                        itemPathParts.shift();
                       }
                       else {
                         attributes.nodeLevel = 1;

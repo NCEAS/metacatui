@@ -1,22 +1,33 @@
 <!-- Icon & Files column -->
 <td>
-	<span>
+	<% if (nodeLevel !== "undefined") { 
+			if (isFolder) {
+				var indentFile = (nodeLevel) * 30 + 10;
+			}
+			else {
+				var indentFile = (nodeLevel) * 30;
+			}
+		}
+		else {
+			var indentFile = 30;
+		}
+	%>
+	<span style="padding-left:<%=indentFile %>px">
 		<% if (icon !== "undefined") { 
-			indentFile = (nodeLevel) * 15;
 			%>
-				<% if (isFolder) { %>
-					<a class="expand-control control" style="padding-left:<%=indentFile %>px;display:none"><i class="icon icon-caret-right"></i></a>
-					<a class="collapse-control control" style="padding-left:<%=indentFile %>px"><i class="icon icon-caret-down"></i></a>
-					<i class="<%= icon %>"></i>
-				<% } else { 
-					indentFile += 15;
+				<% if (isFolder) { 
 					%>
-					<i class="<%= icon %>" style="padding-left:<%=indentFile %>px"></i>
-				<% } %>
+					<a class="expand-control control" style="display:none"><i class="icon icon-caret-right"></i></a>
+					<a class="collapse-control control" ><i class="icon icon-caret-down"></i></a>
+					<i class="<%= icon %>" ></i>
+				<% } else { 
+					%>
+					<i class="<%= icon %>"></i>
+				<% } 
+					%>
 
 		<% } else { %>
-			<% var indentFile = (nodeLevel + 1) * 40; %>
-			<i class="icon-file" style="padding-left:<%=indentFile %>px"></i>
+			<i class="icon-file"></i>
 		<% } %>
 	</span>
 	<span>
