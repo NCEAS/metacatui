@@ -82,6 +82,7 @@ define([
                     this.title = options.title || "";
                     this.packageTitle = options.packageTitle || "";
                     this.nested = (typeof options.nested === "undefined")? false : options.nested;
+                    this.metricsModel = options.metricsModel;
 
                     // set the package model
                     this.packageModel = this.dataPackage.packageModel;
@@ -198,7 +199,7 @@ define([
 
                 dataItemView = new DataItemView({
                     model: item,
-                    memberRowMetrics: this.getMemberRowMetrics(item.get("id"), item.get("formatType")),
+                    metricsModel: this.metricsModel,
                     itemPath: itemPath,
                     currentlyViewing: this.currentlyViewing,
                     mode: this.mode,
@@ -722,54 +723,6 @@ define([
                 models = _.flatten(sortedModels);
 
                 return models;
-            },
-
-            // Member row metrics for the package table
-            // Retrieving information from the Metrics Model's result details
-            getMemberRowMetrics: function(id, formatType) {
-
-                if(typeof this.metricsModel !== "undefined"){
-                    var metricsResultDetails = this.metricsModel.get("resultDetails");
-
-                    if( typeof metricsResultDetails !== "undefined" && metricsResultDetails ){
-                          var metricsPackageDetails = metricsResultDetails["metrics_package_counts"];
-
-                          var objectLevelMetrics = metricsPackageDetails[id];
-                          if(typeof objectLevelMetrics !== "undefined") {
-                              if(formatType == "METADATA") {
-                                  var reads = objectLevelMetrics["viewCount"];
-                              }
-                              else {
-                                  var reads = objectLevelMetrics["downloadCount"];
-                              }
-                          }
-                          else{
-                              var reads = 0;
-                          }
-                    }
-                    else{
-                          var reads = 0;
-                    }
-
-                }
-
-                if((typeof reads !== "undefined") && reads){
-                    // giving labels
-                    if(formatType == "METADATA" && reads == 1)
-                        reads += " view";
-                    else if(formatType == "METADATA")
-                        reads += " views";
-                    else if(reads == 1)
-                        reads += " download";
-                    else
-                        reads += " downloads";
-                }
-                else {
-                    // returning an empty string if the metrics are 0
-                    reads = "";
-                }
-
-                return reads;
             },
 
             expand: function(e){

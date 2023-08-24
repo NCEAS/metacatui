@@ -38,6 +38,12 @@ define([
             /** The HTML template for a data item */
             dataItemHierarchyTemplate: _.template(DataItemHierarchy),
 
+            //Templates
+            metricTemplate:  _.template( "<span class='packageTable-resultItem badge '>" +
+                "<i class='catalog-metric-icon <%= metricIcon %>'>" +
+                "</i> <%= memberRowMetrics %> " +
+                "</span>"),
+
             /**
             * The DataONEObject model to display in this view
             * @type {DataONEObject}
@@ -79,7 +85,6 @@ define([
               if(typeof options == "undefined") var options = {};
 
               this.model = options.model || new DataONEObject();
-              this.memberRowMetrics = options.memberRowMetrics || null;
               this.currentlyViewing = options.currentlyViewing || null;
               this.mode = options.mode || "edit";
               this.itemName = options.itemName || null;
@@ -90,6 +95,10 @@ define([
               this.canShare = false; // Default. Updated in render()
               this.parentEditorView = options.parentEditorView || null;
               this.dataPackageId = options.dataPackageId || null;
+              
+              if(!(typeof options.metricsModel == "undefined")){
+                this.metricsModel = options.metricsModel;
+              }
             },
 
             /** Renders a DataItemView for the given DataONEObject
@@ -442,11 +451,13 @@ define([
                   }
                   else {
 
+                    this.isMetadata = false;
                     // format metadata object title
                     if (attributes.isMetadata || this.model.getFormat() == "metadata" || this.model.get("id") == this.currentlyViewing) {
                       attributes.title  = "Metadata: " + this.model.get("fileName");
                       attributes.icon = "icon-file-text";
                       attributes.metricIcon = "icon-eye-open";
+                      this.isMetadata = true;
                       this.$el.attr("data-packageId", this.dataPackageId);
                     }
 
@@ -464,15 +475,27 @@ define([
                     else
                       attributes.icon = "icon-table";
 
-                    // insert metrics for this item
                     attributes.id = this.model.get("id");
                     attributes.memberRowMetrics = null;
-                    var metricToolTip = null;
-                    if (this.memberRowMetrics !== null) {
-                      metricToolTip = this.memberRowMetrics;
-                      attributes.memberRowMetrics = this.memberRowMetrics.split(" ")[0];
+                    var metricToolTip = null,
+                        view = this;
+
+                    // Insert metrics for this item, 
+                    // if the model has already been fethced.
+                    if (this.metricsModel.get("views") !== null) {
+                      metricToolTip = this.getMemberRowMetrics(view.id);
+                      attributes.memberRowMetrics = metricToolTip.split(" ")[0];
                     }
-                    attributes.metricIcon = undefined;
+                    else {
+                      // Update the metrics later on
+                      // If the fetch() is still in progress.
+                      this.listenTo(this.metricsModel, "sync", function(){
+                        metricToolTip = this.getMemberRowMetrics(view.id);
+                        var readsCell = this.$('.metrics-count.downloads[data-id="' + view.id + '"]');
+                        readsCell.html(this.metricTemplate({metricIcon: attributes.metricIcon, memberRowMetrics: view.getMemberRowMetrics(view.id)}));
+                      });
+                    }
+                    
                     // add nodeLevel for displaying indented filename
                     attributes.nodeLevel = 1;
                     if (!(attributes.isMetadata || this.model.getFormat() == "metadata" || this.model.get("id") == this.currentlyViewing)) {
@@ -536,8 +559,7 @@ define([
                     this.$('.packageTable-resultItem').tooltip({
                                             placement: "top",
                                             trigger: "hover",
-                                            delay: 800,
-                                            container: this.$el,
+                                            delay: 300,
                                             title: metricToolTip
                                           });
 
@@ -1356,7 +1378,55 @@ define([
 
             downloadFile: function(e) {
               this.downloadButtonView.download(e);
-            }
+            },
+
+            // Member row metrics for the package table
+            // Retrieving information from the Metrics Model's result details
+            getMemberRowMetrics: function(id) {
+
+              if(typeof this.metricsModel !== "undefined"){
+                  var metricsResultDetails = this.metricsModel.get("resultDetails");
+
+                  if( typeof metricsResultDetails !== "undefined" && metricsResultDetails ){
+                        var metricsPackageDetails = metricsResultDetails["metrics_package_counts"];
+
+                        var objectLevelMetrics = metricsPackageDetails[id];
+                        if(typeof objectLevelMetrics !== "undefined") {
+                            if(this.isMetadata) {
+                                var reads = objectLevelMetrics["viewCount"];
+                            }
+                            else {
+                                var reads = objectLevelMetrics["downloadCount"];
+                            }
+                        }
+                        else{
+                            var reads = 0;
+                        }
+                  }
+                  else{
+                        var reads = 0;
+                  }
+
+              }
+
+              if((typeof reads !== "undefined") && reads){
+                  // giving labels
+                  if(this.isMetadata && reads == 1)
+                      reads += " view";
+                  else if(this.isMetadata)
+                      reads += " views";
+                  else if(reads == 1)
+                      reads += " download";
+                  else
+                      reads += " downloads";
+              }
+              else {
+                  // returning an empty string if the metrics are 0
+                  reads = "";
+              }
+
+              return reads;
+          },
 
         });
 
