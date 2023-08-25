@@ -1,4 +1,4 @@
-/* global define */
+﻿/* global define */
 define([
     'jquery',
     'underscore',
@@ -11,11 +11,12 @@ define([
     'models/metadata/eml211/EML211',
     'models/PackageModel',
     'views/DataItemView',
+    'views/DownloadButtonView',
     'text!templates/dataPackage.html',
     'text!templates/dataPackageStart.html',
     'text!templates/dataPackageHeader.html'],
     function($, _, Backbone, LocalForage, DataPackage, DataONEObject, PackageModel, ScienceMetadata, EML211, Package, DataItemView,
-    		DataPackageTemplate, DataPackageStartTemplate, DataPackageHeaderTemplate) {
+            DownloadButtonView, DataPackageTemplate, DataPackageStartTemplate, DataPackageHeaderTemplate) {
         'use strict';
 
         /**
@@ -438,6 +439,15 @@ define([
                     var disablePackageDownloads = this.disablePackageDownloads;
                     tableRow = this.dataPackageHeaderTemplate({id:view.dataPackage.id, title: title, downloadUrl: packageUrl, disablePackageDownloads: disablePackageDownloads});
                     this.$el.append(tableRow);
+                    
+                    // create an instance of DownloadButtonView to handle package downloads
+                    this.downloadButtonView = new DownloadButtonView({model: this.dataPackage.packageModel, view: "actionsView"});
+
+                    // render
+                    this.downloadButtonView.render();
+
+                    // add the downloadButtonView el to the span
+                    this.$el.find('.downloadAction').html(this.downloadButtonView.el);
 
                     if (this.atLocationObj !== undefined && filePathObj !== undefined) {
                         // sort the filePath by length
@@ -874,8 +884,10 @@ define([
                 if (Object.keys(childPackages).length > 0) {
                     for (var childPkg in childPackages) {
                         if (!nestedPackageIds.includes(childPkg)) {
+
                             var nestedPackage = new PackageModel();
                             nestedPackage.set("id", childPkg);
+                            nestedPackage.setURL();
                             nestedPackage.getMembers();
                             nestedPackages.push(nestedPackage);
                             nestedPackageIds.push(childPkg);
@@ -905,6 +917,15 @@ define([
 
                 tableRow = this.dataPackageHeaderTemplate({id:dataPackage.id, title: title, disablePackageDownloads:false, downloadUrl: packageUrl});
                 this.$el.append(tableRow);
+
+                // create an instance of DownloadButtonView to handle package downloads
+                this.downloadButtonView = new DownloadButtonView({model: dataPackage, view: "actionsView", nested: true});
+
+                // render
+                this.downloadButtonView.render();
+
+                // add the downloadButtonView el to the span
+                this.$el.find('.downloadAction').html(this.downloadButtonView.el);
 
                 // TODO parse each member and add to the package table in MetadataView            
                 

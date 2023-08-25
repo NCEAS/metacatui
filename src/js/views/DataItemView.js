@@ -560,8 +560,6 @@ define([
 
                     this.$el.html( this.dataItemHierarchyTemplate(attributes) );
 
-                    console.log(this.model);
-
                     this.$('.downloadAction').html(this.downloadButtonView.el);
 
                     // add tooltip for metrics in package table

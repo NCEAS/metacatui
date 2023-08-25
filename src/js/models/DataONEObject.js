@@ -65,6 +65,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     latestVersion: null,
                     isDocumentedBy: null,
                     documents: [],
+                    members: [],
                     resourceMap: [],
                     nodeLevel: 0, // Indicates hierarchy level in the view for indentation
                     sortOrder: 2, // Metadata: 1, Data: 2, DataPackage: 3
@@ -258,6 +259,29 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                          encodeURIComponent(this.get("seriesid")));
               }
             }
+          },
+
+          //Create the URL string that is used to download this package
+          getPackageURL: function(){
+            var url = null;
+
+            // With no id, we can't do anything
+            if( !this.get("id") && !this.get("seriesid") )
+              return url;
+
+            //If we haven't set a packageServiceURL upon app initialization and we are querying a CN, then the packageServiceURL is dependent on the MN this package is from
+            if((MetacatUI.appModel.get("d1Service").toLowerCase().indexOf("cn/") > -1) && MetacatUI.nodeModel.get("members").length){
+              var source = this.get("datasource"),
+                node   = _.find(MetacatUI.nodeModel.get("members"), {identifier: source});
+
+              //If this node has MNRead v2 services...
+              if(node && node.readv2)
+                url = node.baseURL + "/v2/packages/application%2Fbagit-097/" + encodeURIComponent(this.get("id"));
+            }
+            else if(MetacatUI.appModel.get("packageServiceUrl"))
+              url = MetacatUI.appModel.get("packageServiceUrl") + encodeURIComponent(this.get("id"));
+
+            return url;
           },
 
           /**

@@ -1,5 +1,5 @@
-define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
-	function($, _, Backbone, SolrResult, template) {
+define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/DataONEObject', 'models/PackageModel'],
+	function($, _, Backbone, SolrResult, DataONEObject, PackageModel) {
 	'use strict';
 
 	var DownloadButtonView = Backbone.View.extend({
@@ -13,6 +13,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       this.view = options.view || null;
       this.id = options.id || null;
       this.model = options.model || new SolrResult();
+      this.nested = options.nested || false;
 		},
 
 		events: {
@@ -28,13 +29,26 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       }
 
 			//Add the href and id attributes
-			this.$el.attr("href", this.model.get("url"))
+      let hrefLink = this.model.get("url");
+      if (this.model instanceof DataONEObject && 
+        ((this.model.get("formatType") == "RESOURCE") || 
+        (this.model.get("type") == "DataPackage"))) {
+        hrefLink = this.model.getPackageURL();
+      }
+      if (this.model instanceof PackageModel && 
+        this.nested &&
+        ((this.model.get("formatType") == "RESOURCE") || 
+        (this.model.get("type") == "DataPackage") ||
+        (this.model.get("type") == "Package"))) {
+        hrefLink = this.model.getURL();
+      }
+			this.$el.attr("href", hrefLink)
 					.attr("data-id", this.model.get("id"))
           .attr("download", fileName);
 
       //Check for CORS downloads. For CORS, the 'download' attribute may not work,
       // so open in a new tab.
-      if( this.model.get("url").indexOf(window.location.origin) == -1 ){
+      if( typeof hrefLink !== 'undefined' && hrefLink.indexOf(window.location.origin) == -1 ){
         this.$el.attr("target", "_blank");
       }
 
