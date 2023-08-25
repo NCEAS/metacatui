@@ -70,10 +70,10 @@
 
 <td class="file-actions">
 	<% if (isMetadata !== undefined && insertInfoIcon && !isMetadata && moreInfoLink !== undefined) { %>
-		<a class="btn btn-rounded action preview" href="<%= moreInfoLink %>" data-id="<%= id %>"><i class="icon icon-large icon-info"></i></a>
+		<span class="action" data-id="<%= id %>">
+			<a class="btn btn-rounded action preview" href="<%= moreInfoLink %>" data-id="<%= id %>"><i class="icon icon-large icon-info"></i></a>
+		</span>
 	<% } %>
 
-	<% if (downloadUrl !== undefined ) { %>
-		<a class="btn btn-rounded action downloadAction" href="<%= downloadUrl %>" data-id="<%= id %>"><i class="icon icon-large icon-cloud-download"></i></a>
-	<% } %>
+	<span class="action downloadAction" data-id="<%= id %>"></span>
 </td>

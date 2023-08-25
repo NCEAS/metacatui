@@ -1823,6 +1823,97 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               }
           },
 
+          /*
+          * This method will download this object while sending the user's auth token in the request.
+          */
+          downloadWithCredentials: function(){
+            //if(this.get("isPublic")) return;
+
+            //Get info about this object
+            var url = this.get("url"),
+              model = this;
+
+            //Create an XHR
+            var xhr = new XMLHttpRequest();
+
+            //Open and send the request with the user's auth token
+            xhr.open('GET', url);
+
+                if(MetacatUI.appUserModel.get("loggedIn"))
+                  xhr.withCredentials = true;
+
+                //When the XHR is ready, create a link with the raw data (Blob) and click the link to download
+                xhr.onload = function(){
+
+              if( this.status == 404 ){
+              this.onerror.call(this);
+              return;
+              }
+
+              //Get the file name to save this file as
+              var filename = xhr.getResponseHeader('Content-Disposition');
+
+              if(!filename){
+                filename = model.get("fileName") || model.get("title") || model.get("id") || "download";
+              }
+              else
+                filename = filename.substring(filename.indexOf("filename=")+9).replace(/"/g, "");
+
+              //Replace any whitespaces
+              filename = filename.trim().replace(/ /g, "_");
+
+              //For IE, we need to use the navigator API
+              if (navigator && navigator.msSaveOrOpenBlob) {
+                navigator.msSaveOrOpenBlob(xhr.response, filename);
+              }
+              //Other browsers can download it via a link
+              else{
+                  var a = document.createElement('a');
+                  a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
+
+                  // Set the file name.
+                  a.download = filename
+
+                  a.style.display = 'none';
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+              }
+
+                model.trigger("downloadComplete");
+
+                // Track this event
+                MetacatUI.analytics?.trackEvent(
+                  "download",
+                  "Download DataONEObject", 
+                  model.get("id")
+                );
+            };
+
+            xhr.onerror = function(e){
+              model.trigger("downloadError");
+
+              // Track the error
+              MetacatUI.analytics?.trackException(
+                `Download DataONEObject error: ${e || ""}`, model.get("id"), true
+              );
+            };
+
+            xhr.onprogress = function(e){
+                if (e.lengthComputable){
+                    var percent = (e.loaded / e.total) * 100;
+                    model.set("downloadPercent", percent);
+                }
+            };
+
+            xhr.responseType = "blob";
+
+            if(MetacatUI.appUserModel.get("loggedIn"))
+              xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
+
+            xhr.send();
+          },
+
           /**
            * Creates a file name for this DataONEObject and updates the `fileName` attribute
            */

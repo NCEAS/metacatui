@@ -9155,7 +9155,10 @@ body > #extension-is-installed{
 	height: 38px;
 }
 
-.data-package-file-table > .data-package-item > .file-actions > .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
+.data-package-file-table > .data-package-item > .file-actions > .action
+	.btn, .btn-primary, 
+	.btn-large, .btn-small, 
+	.btn-mini {
 	font-weight: 400;
 	background-image: none;
 	background-repeat: no-repeat;
@@ -9167,7 +9170,7 @@ body > #extension-is-installed{
 	padding: .5em;
   }
 
-.data-package-file-table > .data-package-item > .file-actions >
+.data-package-file-table > .data-package-item > .file-actions > .action
   .btn:hover, .btn:focus,
   .header .nav li .btn:hover, .header nav li .btn:focus{
 	  background-color: #146660;

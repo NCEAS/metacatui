@@ -549,7 +549,8 @@ define([
                         attributes.downloadUrl = downloadUrl.replace("/meta/", "/object/");
                       }
                     }
-                    this.downloadButtonView = new DownloadButtonView({ id: this.model.get("id"), view: "actionsView" });
+                    this.downloadButtonView = new DownloadButtonView({ model: this.model, view: "actionsView" });
+                    this.downloadButtonView.render();
 
                     let id = this.model.get("id");
                     let infoLink = MetacatUI.root + "/view/" + encodeURIComponent(this.currentlyViewing) + "#" + encodeURIComponent(id)
@@ -558,6 +559,10 @@ define([
                     attributes.insertInfoIcon = this.insertInfoIcon;
 
                     this.$el.html( this.dataItemHierarchyTemplate(attributes) );
+
+                    console.log(this.model);
+
+                    this.$('.downloadAction').html(this.downloadButtonView.el);
 
                     // add tooltip for metrics in package table
                     this.$('.packageTable-resultItem').tooltip({

@@ -12,14 +12,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(!options) var options = {}
       this.view = options.view || null;
       this.id = options.id || null;
-
-      if (this.view == "actionsView" && this.id !== null) {
-        this.model = new SolrResult({id: this.id});
-      }
-      else{
-			  this.model = options.model || new SolrResult();
-      }
-      
+      this.model = options.model || new SolrResult();
 		},
 
 		events: {
@@ -46,10 +39,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       }
 
 			//For packages
-      if (this.view == "actionsView") {
-        this.$el.append( $(document.createElement("i")).addClass("icon icon-cloud-download") );
+      if (typeof this.view !== 'undefined' && this.view == "actionsView") {
+        this.$el.append( $(document.createElement("i")).addClass("icon icon-large icon-cloud-download") );
         this.$el.addClass("btn-rounded");
         this.$el.addClass("action");
+        this.$el.addClass("downloadAction");
       }
       else {
         if(this.model.type == "Package"){
@@ -146,8 +140,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       //Show that the download has started
       this.$el.addClass("in-progress");
       var buttonHTML = this.$el.html();
-      this.$el.html("Downloading... <i class='icon icon-on-right icon-spinner icon-spin'></i>");
-
+      if (typeof this.view !== 'undefined' && this.view == "actionsView") {
+        this.$el.html("<i class='icon icon-on-right icon-spinner icon-spin'></i>");
+      }
+      else {
+        this.$el.html("Downloading... <i class='icon icon-on-right icon-spinner icon-spin'></i>");
+      }
+      
       //Fire the download event via the SolrResult model
       this.model.downloadWithCredentials();
 
