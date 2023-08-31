@@ -163,6 +163,7 @@ define([
 
         const searchResults = this.get("searchResults");
         const map = this.get("map");
+        const interactions = map.get("interactions");
 
         // Pass the facet counts to the GeoHash layer when the search results
         // are returned.
@@ -178,12 +179,12 @@ define([
         // When the user is panning/zooming in the map, hide the GeoHash layer
         // to indicate that the map is not up to date with the search results,
         // which are about to be updated.
-        this.listenTo(map, "moveStart", this.hideGeoHashLayer);
+        this.listenTo(interactions, "moveStart", this.hideGeoHashLayer);
 
         // When the user is done panning/zooming in the map, show the GeoHash
         // layer again and update the search results (thereby updating the
         // facet counts on the GeoHash layer)
-        this.listenTo(map, "moveEnd", function () {
+        this.listenTo(interactions, "moveEnd", function () {
           const moveEndFunc = this.get("onMoveEnd");
           if (typeof moveEndFunc === "function") {
             moveEndFunc.call(this);
@@ -235,10 +236,11 @@ define([
        */
       disconnect: function () {
         const map = this.get("map");
+        const interactions = map?.get("interactions");
         const searchResults = this.get("searchResults");
         this.stopListening(searchResults, "update reset");
         this.stopListening(searchResults, "change:showOnMap");
-        this.stopListening(map, "moveStart moveEnd");
+        this.stopListening(interactions, "moveStart moveEnd");
         this.stopListening(searchResults, "request");
         this.set("isConnected", false);
       },

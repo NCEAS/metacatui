@@ -35,14 +35,14 @@ define([
       /**
        * The default values for this model.
        * @type {object}
-       * @property {Map} map
-       * @property {SolrResults} searchResults
-       * @property {Filters} filters
+       * @property {Map} map - The Map model to use for this connector.
+       * @property {SolrResults} searchResults - The SolrResults model to use
+       * @property {Filters} filters - The Filters model to use for this
        */
       defaults: function () {
         return {
-          map: new Map(),
-          searchResults: new SearchResults(),
+          map: null,
+          searchResults: null,
           filterGroups: [],
           filters: null,
         };
@@ -83,7 +83,7 @@ define([
       initialize: function (attrs, options = {}) {
         if (!options) options = {};
         const app = MetacatUI.appModel;
-        const map = options.map || app.get("catalogSearchMapOptions");
+        const map = options.map || app.get("catalogSearchMapOptions") || {};
         const searchResults = options.searchResults || null;
         const filterGroups =
           options.filterGroups || app.get("defaultFilterGroups");
@@ -242,6 +242,7 @@ define([
         this.resetMoveEndSearch();
 
         const map = this.get("map");
+        const interactions = map.get("interactions");
         const mapConnectors = this.getMapConnectors();
 
         // Stop the sub-connectors from doing anything on moveEnd by setting
@@ -253,7 +254,7 @@ define([
         // Set the single moveEnd listener here, and run the default moveEnd
         // behaviour for each sub-connector. This effectively triggers only one
         // search per moveEnd.
-        this.listenTo(map, "moveEnd", function () {
+        this.listenTo(interactions, "moveEnd", function () {
           mapConnectors.forEach((connector) => {
             const moveEndFunc = connector.defaults().onMoveEnd;
             if (typeof moveEndFunc === "function") {
@@ -270,7 +271,7 @@ define([
        * @see coordinateMoveEndSearch
        */
       resetMoveEndSearch: function () {
-        this.stopListening(this.get("map"), "moveEnd");
+        this.stopListening(this.get("map").get("interactions"), "moveEnd");
         const mapConnectors = this.getMapConnectors();
         mapConnectors.forEach((connector) => {
           connector.set("onMoveEnd", connector.defaults().onMoveEnd);

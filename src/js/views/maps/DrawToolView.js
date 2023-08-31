@@ -192,8 +192,6 @@ define(["backbone"], function (Backbone) {
           coordinates.push(coords)
         }
         layer.set("cesiumOptions", { data: geoJSON })
-        // TODO: In all MapAsset models, listen for changes to the cesiumOptions
-        // object and re-create the cesiumModel when it changes.
       },
 
       /**

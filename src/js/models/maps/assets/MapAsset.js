@@ -325,19 +325,6 @@ define(
               this.set('colorPalette', new AssetColorPalette(assetConfig.colorPalette))
             }
 
-            // The map asset cannot be visible on the map if there was an error loading
-            // the asset
-            this.listenTo(this, 'change:status', function (model, status) {
-              if (status === 'error') {
-                this.set('visible', false)
-              }
-            })
-            this.listenTo(this, 'change:visible', function (model, visible) {
-              if (this.get('status') === 'error') {
-                this.set('visible', false)
-              }
-            })
-
             // Fetch the icon, if there is one
             if (assetConfig.icon) {
               if (model.isSVG(assetConfig.icon)) {
@@ -349,20 +336,50 @@ define(
               }
             }
 
+            this.setListeners();
+          }
+          catch (e) {
+            console.log('Error initializing a MapAsset model', e);
+          }
+        },
+
+        /**
+         * Set all of the listeners for this model
+         * @since x.x.x
+         */
+        setListeners: function () {
+          try {
+
+            // The map asset cannot be visible on the map if there was an error loading
+            // the asset
+            this.stopListening(this, 'change:status')
+            this.listenTo(this, 'change:status', function (model, status) {
+              if (status === 'error') {
+                this.set('visible', false)
+              }
+            })
+            this.stopListening(this, 'change:visible')
+            this.listenTo(this, 'change:visible', function (model, visible) {
+              if (this.get('status') === 'error') {
+                this.set('visible', false)
+              }
+            })
+
             // Update the style of the asset to highlight the selected features when
             // features from this asset are selected in the map.
             if (typeof this.updateAppearance === 'function') {
 
               const setSelectFeaturesListeners = function () {
-                const mapModel = this.get('mapModel')
+                const mapModel = this.get('mapModel');
                 if (!mapModel) { return }
-                const selectedFeatures = mapModel.get('selectedFeatures')
+                const interactions = mapModel.get('interactions');
+                const selectedFeatures = mapModel.getSelectedFeatures();
 
                 this.stopListening(selectedFeatures, 'update');
                 this.listenTo(selectedFeatures, 'update', this.updateAppearance)
 
-                this.stopListening(mapModel, 'change:selectedFeatures')
-                this.listenTo(mapModel, 'change:selectedFeatures', function () {
+                this.stopListening(interactions, 'change:selectedFeatures')
+                this.listenTo(interactions, 'change:selectedFeatures', function () {
                   this.updateAppearance()
                   setSelectFeaturesListeners()
                 })
@@ -372,13 +389,16 @@ define(
               this.stopListening(this, 'change:mapModel', setSelectFeaturesListeners)
               this.listenTo(this, 'change:mapModel', setSelectFeaturesListeners)
             }
+
+            // Listen for changes to the cesiumOptions object
+            this.stopListening(this, 'change:cesiumOptions');
+            this.listenTo(this, 'change:cesiumOptions', function () {
+              this.createCesiumModel(true)
+            })
+          } catch (e) {
+            console.log("Error setting MapAsset Listeners.", e);
           }
-          catch (error) {
-            console.log(
-              'There was an error initializing a MapAsset model' +
-              '. Error details: ' + error
-            );
-          }
+
         },
 
         /**
@@ -407,7 +427,7 @@ define(
         featureIsSelected: function (feature) {
           const map = this.get('mapModel')
           if (!map) { return false }
-          return map.get('selectedFeatures').containsFeature(feature)
+          return map.getSelectedFeatures();
         },
 
         /**
@@ -797,6 +817,16 @@ define(
         },
 
         /**
+         * Indicate that the map widget should navigate to a given feature from
+         * this MapAsset.
+         * @param {Feature} feature The feature to navigate to.
+         * @since x.x.x
+         */
+        zoomTo: function (target) {
+          this.get('mapModel')?.zoomTo(target)
+        },
+
+        /**
          * Checks that the visible attribute is set to true and that the opacity attribute
          * is greater than zero. If both conditions are met, returns true.
          * @returns {boolean} Returns true if the MapAsset has opacity > 0 and is visible.
@@ -820,72 +850,6 @@ define(
             this.set('visible', true)
           }
         },
-
-        // /**
-        //  * Parses the given input into a JSON object to be set on the model.
-        //  *
-        //  * @param {TODO} input - The raw response object
-        //  * @return {TODO} - The JSON object of all the MapAsset attributes
-        //  */
-        // parse: function (input) {
-
-        //   try {
-
-        //     var modelJSON = {};
-
-        //     return modelJSON
-
-        //   }
-        //   catch (error) {
-        //     console.log(
-        //       'There was an error parsing a MapAsset model' +
-        //       '. Error details: ' + error
-        //     );
-        //   }
-
-        // },
-
-        // /**
-        //  * Overrides the default Backbone.Model.validate.function() to check if this if
-        //  * the values set on this model are valid.
-        //  *
-        //  * @param {Object} [attrs] - A literal object of model attributes to validate.
-        //  * @param {Object} [options] - A literal object of options for this validation
-        //  * process
-        //  *
-        //  * @return {Object} - Returns a literal object with the invalid attributes and
-        //  * their corresponding error message, if there are any. If there are no errors,
-        //  * returns nothing.
-        //  */
-        // validate: function (attrs, options) {
-        //   try {
-        //     // Required attributes: type, url, label, description (all strings)
-        //   }
-        //   catch (error) {
-        //     console.log(
-        //       'There was an error validating a MapAsset model' +
-        //       '. Error details: ' + error
-        //     );
-        //   }
-        // },
-
-        // /**
-        //  * Creates a string using the values set on this model's attributes.
-        //  * @return {string} The MapAsset string
-        //  */
-        // serialize: function () {
-        //   try {
-        //     var serializedMapAsset = '';
-
-        //     return serializedMapAsset;
-        //   }
-        //   catch (error) {
-        //     console.log(
-        //       'There was an error serializing a MapAsset model' +
-        //       '. Error details: ' + error
-        //     );
-        //   }
-        // },
 
       });
 

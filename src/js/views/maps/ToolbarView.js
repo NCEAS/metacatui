@@ -172,7 +172,7 @@ define(
             label: 'Home',
             icon: 'home',
             action: function (view, model) {
-              model.trigger('flyHome')
+              model.flyHome();
             }
           },
           {

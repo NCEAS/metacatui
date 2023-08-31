@@ -153,8 +153,7 @@ define([
       getPrecision: function () {
         const limit = this.get("maxGeoHashes");
         const geohashes = this.get("geohashes")
-        const bounds = this.get("mapModel").get("currentViewExtent");
-        const area = geohashes.getBoundingBoxArea(bounds);
+        const area = this.getViewExtent().getArea();
         return this.get("geohashes").getMaxPrecision(area, limit);
       },
 
@@ -220,10 +219,17 @@ define([
        * @since 2.25.0
        */
       getGeohashesForExtent: function () {
-        const extent = this.get("mapModel")?.get("currentViewExtent");
-        const bounds = Object.assign({}, extent);
-        delete bounds.height;
+        const bounds = this.getViewExtent()?.clone();
+        if (!bounds) return this.get("geohashes");
         return this.get("geohashes")?.getSubsetByBounds(bounds);
+      },
+
+      /**
+       * Get the current map extent from the Map Interaction model.
+       * @returns {GeoBoundingBox} The current map extent
+       */
+      getViewExtent: function () {
+        return this.get("mapModel")?.get("interactions")?.get("viewExtent")
       },
 
       /**
@@ -289,19 +295,23 @@ define([
        * @since 2.25.0
        */
       selectGeohashes: function (geohashes) {
-        const toSelect = [...new Set(geohashes.map((geohash) => {
-          const parent = this.get("geohashes").getContainingGeohash(geohash);
-          return parent?.get("hashString");
-        }, this))];
-        const entities = this.get("cesiumModel").entities.values;
-        const selected = entities.filter((entity) => {
-          const hashString = this.getPropertiesFromFeature(entity).hashString;
-          return toSelect.includes(hashString);
-        });
-        const featureAttrs = selected.map((feature) => {
-          return this.getFeatureAttributes(feature);
-        });
-        this.get("mapModel").selectFeatures(featureAttrs);
+        try {
+          const toSelect = [...new Set(geohashes.map((geohash) => {
+            const parent = this.get("geohashes").getContainingGeohash(geohash);
+            return parent?.get("hashString");
+          }, this))];
+          const entities = this.get("cesiumModel").entities.values;
+          const selected = entities.filter((entity) => {
+            const hashString = this.getPropertiesFromFeature(entity).hashString;
+            return toSelect.includes(hashString);
+          });
+          const featureAttrs = selected.map((feature) => {
+            return this.getFeatureAttributes(feature);
+          });
+          this.get("mapModel").selectFeatures(featureAttrs);
+        } catch (e) {
+          console.log("Error selecting geohashes", e);
+        }
       },
     }
   );

@@ -1,11 +1,9 @@
 define([
   "underscore",
   "jquery",
-  "backbone",
   "models/filters/Filter",
-  "collections/maps/Geohashes",
-  "collections/Filters",
-], function (_, $, Backbone, Filter, Geohashes, Filters) {
+  "collections/maps/Geohashes"
+], function (_, $, Filter, Geohashes) {
   /**
    * @classdesc A SpatialFilter represents a spatial constraint on the query to
    * be executed.
@@ -117,16 +115,26 @@ define([
 
       /**
        * Convert the coordinate attributes to a bounds object
-       * @returns {object} An object with north, south, east, and west props
+       * @param {string} [as="object"] - The format to return the bounds in.
+       * Defaults to "object". Can set to GeoBoundingBox to return a Backbone
+       * model instead.
+       * @returns {object|GeoBoundingBox} An object with north, south, east, and west props or
+       * a GeoBoundingBox model
        * @since 2.25.0
        */
-      getBounds: function () {
-        return {
+      getBounds: function (as="object") {
+        const coords = {
           north: this.get("north"),
           south: this.get("south"),
           east: this.get("east"),
           west: this.get("west"),
         };
+        if (as === "GeoBoundingBox") {
+          const GeoBoundingBox = require("models/maps/GeoBoundingBox");
+          return new GeoBoundingBox(coords);
+        } else {
+          return coords;
+        }
       },
 
       /**
@@ -135,13 +143,7 @@ define([
        * @since 2.25.0
        */
       coversEarth: function () {
-        const bounds = this.getBounds();
-        return (
-          bounds.north === 90 &&
-          bounds.south === -90 &&
-          bounds.east === 180 &&
-          bounds.west === -180
-        );
+        const bounds = this.getBounds("GeoBoundingBox").coversEarth();
       },
 
       /**
@@ -163,7 +165,7 @@ define([
           }
 
           const geohashes = new Geohashes();
-          const bounds = this.getBounds();
+          const bounds = this.getBounds("GeoBoundingBox");
           const limit = this.get("maxGeohashValues");
           geohashes.addGeohashesByBounds(bounds, true, limit, true);
           this.set({

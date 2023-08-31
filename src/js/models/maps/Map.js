@@ -4,10 +4,9 @@ define([
   "jquery",
   "underscore",
   "backbone",
-  "collections/maps/Features",
-  "models/maps/Feature",
   "collections/maps/MapAssets",
-], function ($, _, Backbone, Features, Feature, MapAssets) {
+  "models/maps/MapInteraction",
+], function ($, _, Backbone, MapAssets, Interactions) {
   /**
    * @class MapModel
    * @classdesc The Map Model contains all of the settings and options for a
@@ -119,8 +118,8 @@ define([
        *  pitch: -90,
        *  roll: 0
        * }
-      */
-      
+       */
+
       /**
        * The type of model this is.
        * @type {String}
@@ -143,11 +142,6 @@ define([
        * options to show in the map.
        * @property {MapAssets} [layers = new MapAssets()] - The imagery and
        * vector data to render in the map.
-       * @property {Features} [selectedFeatures = new Features()] - Particular
-       * features from one or more layers that are highlighted/selected on the
-       * map. The 'selectedFeatures' attribute is updated by the map widget
-       * (cesium) with a Feature model when a user selects a geographical
-       * feature on the map (e.g. by clicking)
        * @property {Boolean} [showToolbar=true] - Whether or not to show the
        * side bar with layer list and other tools. True by default.
        * @property {Boolean} [showLayerList=true] - Whether or not to include
@@ -161,20 +155,6 @@ define([
        * scale bar.
        * @property {Boolean} [showFeatureInfo=true] - Whether or not to allow
        * users to click on map features to show more information about them.
-       * @property {Object} [currentPosition={ longitude: null, latitude: null,
-       * height: null}] An object updated by the map widget to show the
-       * longitude, latitude, and height (elevation) at the position of the
-       * mouse on the map. Note: The CesiumWidgetView does not yet update the
-       * height property.
-       * @property {Object} [currentScale={ meters: null, pixels: null }] An
-       * object updated by the map widget that gives two equivalent measurements
-       * based on the map's current position and zoom level: The number of
-       * pixels on the screen that equal the number of meters on the map/globe.
-       * @property {Object} [currentViewExtent={ north: null, east: null, south:
-       * null, west: null }] An object updated by the map widget that gives the
-       * extent of the current visible area as a bounding box in
-       * longitude/latitude coordinates, as well as the height/altitude in
-       * meters.
        * @property {String} [clickFeatureAction="showDetails"] - The default
        * action to take when a user clicks on a feature on the map. The
        * available options are "showDetails" (show the feature details in the
@@ -197,29 +177,12 @@ define([
             },
           ]),
           terrains: new MapAssets(),
-          selectedFeatures: new Features(),
           showToolbar: true,
           showLayerList: true,
           showHomeButton: true,
           toolbarOpen: false,
           showScaleBar: true,
           showFeatureInfo: true,
-          currentPosition: {
-            longitude: null,
-            latitude: null,
-            height: null,
-          },
-          currentScale: {
-            meters: null,
-            pixels: null,
-          },
-          currentViewExtent: {
-            north: null,
-            east: null,
-            south: null,
-            west: null,
-            height: null,
-          },
           clickFeatureAction: "showDetails",
         };
       },
@@ -245,6 +208,7 @@ define([
               this.set("terrains", new MapAssets(config.terrains));
             }
           }
+          this.setUpInteractions();
         } catch (error) {
           console.log(
             "There was an error initializing a Map model" +
@@ -255,84 +219,55 @@ define([
       },
 
       /**
-       * Set or unset the selected Features. A selected feature is a polygon,
-       * line, point, or other element of vector data that is in focus on the
-       * map (e.g. because a user clicked it to show more details.)
-       * @param {(Feature|Object[])} features - An array of Feature models or
-       * objects with attributes to set on new Feature models. If no features
-       * argument is passed to this function, then any currently selected
-       * feature will be removed (as long as replace is set to true)
-       * @param {Boolean} [replace=true] - If true, any currently selected
-       * features will be replaced with the newly selected features. If false,
-       * then the newly selected features will be added to any that are
-       * currently selected.
+       * Set or replace the MapInteraction model on the map.
+       * @returns {MapInteraction} The new interactions model.
+       * @since x.x.x
        */
-      selectFeatures: function (features, replace = true) {
-        try {
-          const model = this;
-
-          // Create a features collection if one doesn't already exist
-          if (!model.get("selectedFeatures")) {
-            model.set("selectedFeatures", new Features());
-          }
-
-          // Don't update the selected features collection if the newly selected
-          // features are identical.
-          const currentFeatures = model.get("selectedFeatures");
-          if (
-            features &&
-            currentFeatures &&
-            currentFeatures.length === features.length &&
-            currentFeatures.containsFeatures(features)
-          ) {
-            return;
-          }
-
-          // If no feature is passed to this function (and replace is true),
-          // then empty the Features collection
-          features = !features || !Array.isArray(features) ? [] : features;
-
-          // Convert the feature objects that are types specific to the map view
-          // (Cesium) to a generic Feature model
-          features = model.convertFeatures(features);
-
-          // Update the Feature model with the new selected feature information.
-          const newAttrs = features.map(function (feature) {
-            return Object.assign(
-              {},
-              new Feature().defaults(),
-              feature.attributes
-            );
-          });
-          model.get("selectedFeatures").set(newAttrs, { remove: replace });
-        } catch (e) {
-          console.log("Failed to select a Feature in a Map model.", e);
-        }
+      setUpInteractions: function () {
+        const interactions = new Interactions({
+          mapModel: this,
+        });
+        this.set("interactions", interactions);
+        return interactions;
       },
 
       /**
-       * Convert an array of feature objects to an array of Feature models.
-       * @param {Cesium.Entity|Cesium.Cesium3DTileFeature|Feature[]} features - An
-       * array of feature objects selected directly from the map view, or 
-       * @returns {Feature[]} An array of Feature models.
-       * @since 2.25.0
+       * Select features on the map. Updates the selectedFeatures attribute on
+       * the MapInteraction model.
+       * @param {Feature[]} features - An array of Feature models to select.
+       * since x.x.x
        */
-      convertFeatures: function (features) {
-        const model = this;
-        const attrs = features.map(function (feature) {
-          if (!feature) return null;
-          if (feature instanceof Feature) return feature.attributes;
-          // if this is already an object with feature attributes, return it
-          if (
-            feature.hasOwnProperty("mapAsset") &&
-            feature.hasOwnProperty("properties")
-          ) {
-            return feature;
-          }
-          // Otherwise, assume it's a Cesium object and get the feature attributes
-          return model.get("layers").getFeatureAttributes(features)?.[0];
-        });
-        return attrs.map((attr) => new Feature(attr));
+      selectFeatures: function (features) {
+        this.get("interactions")?.selectFeatures(features);
+      },
+
+      /**
+       * Get the currently selected features on the map.
+       * @returns {Features} The selected Feature collection.
+       * @since x.x.x
+       */
+      getSelectedFeatures: function () {
+        return this.get("interactions")?.get("selectedFeatures");
+      },
+
+      /**
+       * Indicate that the map widget view should navigate to a given target.
+       * This is accomplished by setting the zoom target on the MapInteraction
+       * model. The map widget listens to this change and updates the camera
+       * position accordingly.
+       * @param {Feature|MapAsset|GeoBoundingBox|Object} target The target to
+       * zoom to. See {@link CesiumWidgetView#flyTo} for more details on types
+       * of targets.
+       */
+      zoomTo: function (target) {
+        this.get("interactions")?.set("zoomTarget", target);
+      },
+
+      /**
+       * Indicate that the map widget view should navigate to the home position.
+       */
+      flyHome: function () {
+        this.zoomTo(this.get("homePosition"));
       },
 
       /**
@@ -368,14 +303,13 @@ define([
        * @since x.x.x
        */
       removeAsset: function (asset) {
-        if(!asset) return;
+        if (!asset) return;
         const layers = this.get("layers");
-        if(!layers) return;
+        if (!layers) return;
         // Remove by ID because the model is passed directly. Not sure if this
         // is a bug in the MapAssets collection or Backbone?
         if (layers) layers.remove(asset.cid);
-      }
-
+      },
     }
   );
 
