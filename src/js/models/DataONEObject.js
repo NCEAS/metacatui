@@ -1672,6 +1672,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
            * @returns {string} The formatted XML string
            */
           formatXML: function(xml){
+            var formattedXML = "";
+            var xsltProcessor;
+            var xslt;
+            var xsltDoc;
+            var xmlDoc;
+            var transformedDoc;
             var nodeNameMap = this.nodeNameMap(),
                 xmlString = "";
 
@@ -1733,7 +1739,35 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             var regEx = new RegExp("\&[0-9a-zA-Z]+\;", "g");
             xmlString = xmlString.replace(regEx, function(match){ return he.encode(he.decode(match)); });
 
-            return xmlString;
+            // Transform the xmlString into an indented XML string
+            // and preserve whitespace in text nodes
+            xslt = [
+                '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">',
+                '    <xsl:output indent="yes"/>',
+                '    <xsl:preserve-space elements="*"/>',
+                '    <xsl:template match="node()|@*">',
+                '        <xsl:copy><xsl:apply-templates select="node()|@*"/></xsl:copy>',
+                '    </xsl:template>',
+                '</xsl:stylesheet>'
+            ].join("\n");
+            
+            try {
+                xsltDoc = new DOMParser().parseFromString(xslt, "application/xml");
+                xmlDoc = new DOMParser().parseFromString(xmlString, "application/xml");
+                
+                if (window.ActiveXObject || "ActiveXObject" in window) {
+                    xsltProcessor = new ActiveXObject("Msxml2.XSLTemplate");
+                } else {
+                    xsltProcessor = new XSLTProcessor();
+                }
+                xsltProcessor.importStylesheet(xsltDoc);
+                transformedDoc = xsltProcessor.transformToDocument(xmlDoc);
+                formattedXML = new XMLSerializer().serializeToString(transformedDoc);
+                return formattedXML;
+            } catch (transformError) {
+                console.log("Could not pretty-print XML:" + transformError);
+                return xmlString;
+            }
           },
 
           /**
