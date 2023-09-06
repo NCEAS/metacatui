@@ -3,14 +3,9 @@ import re
 
 # Update these paths to those that you would like to create test files for.
 test_files = [
-    "collections/maps/Geohashes.js",
-    "models/connectors/Filters-Map.js",
-    "models/connectors/Filters-Search.js",
-    "models/connectors/Map-Search-Filters.js",
-    "models/connectors/Map-Search.js",
-    "models/filters/SpatialFilter.js",
-    "models/maps/Geohash.js",
-    "models/maps/assets/CesiumGeohash.js",
+    "models/maps/GeoPoint.js",
+    "models/maps/GeoScale.js",
+    "models/maps/MapInteraction.js",
 ]
 
 test_template = """
