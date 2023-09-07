@@ -463,6 +463,9 @@ define([
                       this.$el.attr("data-packageId", this.dataPackageId);
                     }
 
+                    var objectTitleTooltip = attributes.title || attributes.fileName || attributes.id;
+                    attributes.objectTitle = (objectTitleTooltip.length > 150) ? objectTitleTooltip.slice(0,75) + "..." + objectTitleTooltip.slice(objectTitleTooltip.length - 75, objectTitleTooltip.length) : objectTitleTooltip;
+                    
                     attributes.fileType = this.model.getFormat();
                     attributes.isFolder = false;
                     //Determine the icon type based on format type
@@ -493,8 +496,10 @@ define([
                       // If the fetch() is still in progress.
                       this.listenTo(this.metricsModel, "sync", function(){
                         metricToolTip = this.getMemberRowMetrics(view.id);
-                        var readsCell = this.$('.metrics-count.downloads[data-id="' + view.id + '"]');
-                        readsCell.html(this.metricTemplate({metricIcon: attributes.metricIcon, memberRowMetrics: view.getMemberRowMetrics(view.id)}));
+                        let readsCell = this.$('.metrics-count.downloads[data-id="' + view.id + '"]');
+                        metricToolTip = view.getMemberRowMetrics(view.id);
+                        if((typeof metricToolTip !== "undefined") && metricToolTip)
+                          readsCell.html(this.metricTemplate({metricIcon: attributes.metricIcon, memberRowMetrics: metricToolTip.split(" ")[0]}));
                       });
                     }
                     
@@ -569,6 +574,12 @@ define([
                                             delay: 300,
                                             title: metricToolTip
                                           });
+                                          
+                    this.$(".fileTitle").addClass("tooltip-this")
+                        .attr("data-placement", "top")
+                        .attr("data-trigger", "hover")
+                        .attr("data-delay", "300")
+                        .attr("data-title", objectTitleTooltip);
 
 
                   }

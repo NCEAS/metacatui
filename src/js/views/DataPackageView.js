@@ -427,17 +427,17 @@ define([
                             title = this.dataPackage.get("id" );
                         }
                     }
-                    if (title.length > 150) {
-                        let newTitle = title.slice(0,75) + "..." + title.slice(title.length - 75, title.length);
-                        title = newTitle;
-                    }
+
+                    let titleTooltip = title;
+                    title = (title.length > 150) ? title.slice(0,75) + "..." + title.slice(title.length - 75, title.length) : title;
                     
                     // set the package URL
                     if(MetacatUI.appModel.get("packageServiceUrl"))
                         packageUrl = MetacatUI.appModel.get("packageServiceUrl") + encodeURIComponent(view.dataPackage.id);
 
                     var disablePackageDownloads = this.disablePackageDownloads;
-                    tableRow = this.dataPackageHeaderTemplate({id:view.dataPackage.id, title: title, downloadUrl: packageUrl, disablePackageDownloads: disablePackageDownloads});
+                    tableRow = this.dataPackageHeaderTemplate({id:view.dataPackage.id, title: title, titleTooltip: titleTooltip, downloadUrl: packageUrl, disablePackageDownloads: disablePackageDownloads});
+
                     this.$el.append(tableRow);
                     
                     // create an instance of DownloadButtonView to handle package downloads
@@ -910,12 +910,15 @@ define([
                 let metadataObj  = _.filter(members, function(m){ return(m.get("type") == "Metadata" || m.get("type") == "metadata") });
 
                 title = metadataObj[0].get("title");
-                
+
+                let titleTooltip = title;
+                title = (title.length > 150) ? title.slice(0,75) + "..." + title.slice(title.length - 75, title.length) : title;
+                    
                 // set the package URL
                 if(MetacatUI.appModel.get("packageServiceUrl"))
                     packageUrl = MetacatUI.appModel.get("packageServiceUrl") + encodeURIComponent(dataPackage.id);
 
-                tableRow = this.dataPackageHeaderTemplate({id:dataPackage.id, title: title, disablePackageDownloads:false, downloadUrl: packageUrl});
+                tableRow = this.dataPackageHeaderTemplate({id:dataPackage.id, title: title, titleTooltip:titleTooltip, disablePackageDownloads:false, downloadUrl: packageUrl});
                 this.$el.append(tableRow);
 
                 // create an instance of DownloadButtonView to handle package downloads

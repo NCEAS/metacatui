@@ -9179,3 +9179,7 @@ body > #extension-is-installed{
 	  box-shadow: none;
 	  border: 1px solid #146660;
   }
+
+.data-package-file-table  div.tooltip{
+	text-wrap: wrap;
+  }

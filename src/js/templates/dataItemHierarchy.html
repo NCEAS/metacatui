@@ -30,14 +30,8 @@
 			<i class="icon-file"></i>
 		<% } %>
 	</span>
-	<span>
-		<% if (typeof title != "undefined" && title && title.length) { %>
-			<%= title %>
-		<% } else if ( typeof fileName != "undefined" && fileName) { %>
-			<%= fileName %>
-		<% } else { %>
-			<%= id %>
-		<% } %>
+	<span class="fileTitle">
+		<%= objectTitle %>
 	</span>
 </td>
 
