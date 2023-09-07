@@ -200,11 +200,13 @@ define([
                 if (typeof dataPackageId === 'undefined')
                     dataPackageId = this.dataPackage.id;
 
+                var insertInfoIcon = (this.edit) ? false : view.dataEntities.includes(item.id);
+
                 dataItemView = new DataItemView({
                     model: item,
                     metricsModel: this.metricsModel,
                     itemPath: itemPath,
-                    insertInfoIcon: view.dataEntities.includes(item.id),
+                    insertInfoIcon: insertInfoIcon,
                     currentlyViewing: this.currentlyViewing,
                     mode: this.mode,
                     parentEditorView: this.parentEditorView,
