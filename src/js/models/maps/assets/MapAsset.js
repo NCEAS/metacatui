@@ -338,6 +338,7 @@ define([
        * @since x.x.x
        */
       handleError: function () {
+        this.set("originalVisibility", this.get("visible"));
         this.set("visible", false);
         this.stopListening(this, "change:visible");
       },
@@ -352,17 +353,16 @@ define([
           if (status === "error") {
             this.handleError();
             return;
+          } else {
+            const vis = this.get("originalVisibility")
+            if(typeof vis === "boolean"){
+              this.set("visible", vis);
+            }
           }
           // The map asset cannot be visible on the map if there was an error
           // loading the asset
           this.stopListening(this, "change:status");
-          this.listenTo(this, "change:status", function (model, status) {
-            if (status === "error") {
-              this.handleError();
-            } else {
-              this.setListeners();
-            }
-          });
+          this.listenTo(this, "change:status", this.setListeners);
 
           // Listen for changes to the cesiumOptions object
           this.stopListening(this, "change:cesiumOptions");

@@ -197,6 +197,12 @@ define(
               const data = cesiumOptions.data;
               delete cesiumOptions.data
 
+              if(!dataSource){
+                model.set('status', 'error')
+                model.set('statusDetails', 'Failed to create a Cesium DataSource model.')
+                return
+              }
+
               dataSource.load(data, cesiumOptions)
                 .then(function (loadedData) {
                   model.set('cesiumModel', loadedData)
@@ -228,10 +234,7 @@ define(
             }
           }
           catch (error) {
-            console.log(
-              'Failed to create a Cesium Model for a CesiumVectorData model' +
-              '. Error details: ' + error
-            );
+            console.log('Failed to create a VectorData Cesium Model.', error);
           }
         },
 
@@ -240,7 +243,7 @@ define(
          */
         setListeners: function () {
           try {
-            this.constructor.__super__.setListeners.call(this);
+            MapAsset.prototype.setListeners.call(this)
             const appearEvents =
               'change:visible change:opacity change:color change:outlineColor' +
               ' change:temporarilyHidden'

@@ -407,16 +407,15 @@ define([
 
         // Listen for addition or removal of layers TODO: Add similar listeners
         // for terrain
-        view.stopListening(layers, "add");
-        view.listenTo(layers, "add", view.addAsset);
-        view.stopListening(layers, "remove");
-        view.listenTo(layers, "remove", view.removeAsset);
-
-        // Each layer fires 'appearanceChanged' whenever the color, opacity,
-        // etc. has been updated. Re-render the scene when this happens.
-        view.stopListening(layers, "appearanceChanged");
-        view.listenTo(layers, "appearanceChanged", view.requestRender);
-
+        if(layers){
+          view.stopListening(layers);
+          view.listenTo(layers, "add", view.addAsset);
+          view.listenTo(layers, "remove", view.removeAsset);
+  
+          // Each layer fires 'appearanceChanged' whenever the color, opacity,
+          // etc. has been updated. Re-render the scene when this happens.
+          view.listenTo(layers, "appearanceChanged", view.requestRender);
+        }
         // Reset asset listeners if the layers collection is replaced
         view.stopListening(model, "change:layers");
         view.listenTo(model, "change:layers", view.setAssetListeners);
@@ -620,9 +619,12 @@ define([
         // property. Add in reverse order for layers to appear in the correct
         // order on the map.
         const layers = view.model.get("layers");
-        _.each(layers.last(layers.length).reverse(), function (mapAsset) {
-          view.addAsset(mapAsset);
-        });
+        if (layers && layers.length) {
+          const layersReverse = layers.last(layers.length).reverse();
+          layersReverse.forEach(function (layer) {
+            view.addAsset(layer);
+          })
+        }
 
         // The Cesium Widget will support just one terrain option to start.
         // Later, we'll allow users to switch between terrains if there is more
