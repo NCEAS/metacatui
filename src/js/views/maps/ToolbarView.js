@@ -1,4 +1,3 @@
-
 'use strict';
 
 define(
@@ -460,10 +459,7 @@ define(
             return contentContainer
           }
           catch (error) {
-            console.log(
-              'There was an error rendering section content in a ToolbarView' +
-              '. Error details: ' + error
-            );
+            console.log('Error rendering ToolbarView section', error);
           }
         },
 
@@ -506,6 +502,7 @@ define(
          * @param {SectionElement} sectionEl The section to activate
          */
         activateSection: function (sectionEl) {
+          if(!sectionEl) return;
           try {
             if (sectionEl.action && typeof sectionEl.action === 'function') {
               const view = this;
@@ -518,10 +515,7 @@ define(
             }
           }
           catch (error) {
-            console.log(
-              'There was an error showing a toolbar section in a ToolbarView' +
-              '. Error details: ' + error
-            );
+            console.log('Failed to show a section in a ToolbarView', error);
           }
         },
 

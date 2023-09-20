@@ -43,7 +43,7 @@ define(["backbone"], function (Backbone) {
       /**
        * The CesiumVectorData model that we will use to store the drawn
        * polygon(s)
-       * @type {
+       * @type {CesiumVectorData}
        */
       drawLayer: undefined,
 
@@ -52,13 +52,13 @@ define(["backbone"], function (Backbone) {
        * @param {Object} options
        */
       initialize: function (options) {
-        this.model = this.model;
+        this.model = options.model;
         if (!this.model) {
           this.handleNoMapModel();
-          return
+          return;
         }
-        this.activated = options.activated || false;
         this.makeDrawLayer();
+        this.activated = options.activated || false;
         if (this.activated) {
           this.activate();
         }
@@ -69,7 +69,7 @@ define(["backbone"], function (Backbone) {
        * map. Saves it to the polygon property.
        */
       makeDrawLayer: function () {
-        if (!this.model) return
+        if (!this.model) return;
         this.drawLayer = this.model.addAsset({
           type: "GeoJsonDataSource",
           hideInLayerList: true, // <- TODO: Look for this property in the
@@ -82,10 +82,10 @@ define(["backbone"], function (Backbone) {
                 {
                   type: "Feature",
                   properties: {},
-                  "geometry": {
-                    "coordinates": [],
-                    "type": "Polygon"
-                  }
+                  geometry: {
+                    coordinates: [],
+                    type: "Polygon",
+                  },
                 },
               ],
             },
@@ -97,7 +97,7 @@ define(["backbone"], function (Backbone) {
        * Removes the polygon object from the map
        */
       removeDrawLayer: function () {
-        if (!this.model) return
+        if (!this.model) return;
         this.model.removeAsset(this.model);
       },
 
@@ -112,6 +112,7 @@ define(["backbone"], function (Backbone) {
         }
         this.renderToolbar();
         this.startListeners();
+        return this;
       },
 
       /**
@@ -133,65 +134,117 @@ define(["backbone"], function (Backbone) {
         drawButton.innerHTML = "Draw";
         drawButton.addEventListener("click", function () {
           view.activate();
+          // make the button green for testing
+          drawButton.style.backgroundColor = "green";
         });
         el.appendChild(drawButton);
         const clearButton = document.createElement("button");
         clearButton.innerHTML = "Clear";
         clearButton.addEventListener("click", function () {
           view.removeDrawLayer();
+          // make the button red for testing
+          drawButton.style.backgroundColor = "red";
         });
         el.appendChild(clearButton);
-
       },
 
       /**
        * Starts the listeners for the draw tool
        */
       startListeners: function () {
-        this.stopListening();
-        // TODO: Make a general method in the map widget that gives the
-        // coordinates of the mouse click
-        this.listenTo(this.model, "change:clickedCoordinates", this.handleClick);
+        this.stopListeners();
+
+        const mapModel = this.model;
+        this.interactions = mapModel?.get("interactions");
+        this.clickedPosition = this.interactions?.get("clickedPosition");
+
+        this.listenToOnce(mapModel, "change:interactions", this.startListeners);
+        this.listenToOnce(
+          this.interactions,
+          "change:clickedPosition",
+          this.startListeners
+        );
+
+        if (!this.originalClickAction) {
+          this.originalClickAction = this.model.get("clickFeatureAction");
+        }
+        this.model.set("clickFeatureAction", null);
+
+        this.listenTo(
+          this.clickedPosition,
+          "change:latitude change:longitude",
+          this.handleClick
+        );
       },
 
       /**
        * Stops the listeners for the draw tool
        */
       stopListeners: function () {
-        this.stopListening(this.model);
+        const targets = [this.model, this.interactions, this.clickedPosition];
+        targets.forEach((target) => {
+          if (target) this.stopListening(target);
+        }, this);
+        if (this.originalClickAction) {
+          this.model.set("clickFeatureAction", this.originalClickAction);
+          this.originalClickAction = null;
+        }
       },
 
       /**
        * Handles a click on the map. If the draw tool is active, it will add the
        * coordinates of the click to the polygon being drawn.
-       * @param {Number[]} coordinates - The most recently clicked coordinates
        */
-      handleClick: function (coordinates) {
+      handleClick: function () {
         if (!this.activated) {
           return;
         }
+        const coordinates = [
+          this.clickedPosition.get("longitude"),
+          this.clickedPosition.get("latitude"),
+        ];
         this.addCoordinate(coordinates);
       },
 
       /**
        * Adds a coordinate to the polygon being drawn
-       * @param {Array} coords - The coordinates to add
+       * @param {Array} coords - The coordinates to add, in the form [longitude,
+       * latitude]
        */
       addCoordinate: function (coords) {
+
         // TODO: Something like this... We may also want to add a general method
         // to the VectorData model that allows us to add a coordinate, but this
         // will be specific to the GeoJsonDataSource
         const layer = this.drawLayer;
-        const geoJSON = layer.get("cesiumOptions")?.data
-        const coordinates = geoJSON?.features[0]?.geometry?.coordinates
-        if (!coordinates) {
+        const geoJSON = layer.get("cesiumOptions")?.data;
+        const coordinates = geoJSON?.features[0]?.geometry?.coordinates?.[0];
+
+        if (!coordinates || !coordinates.length) {
           // Create new coordinates array
-          geoJSON.features[0].geometry.coordinates = [coords]
+          geoJSON.features[0].geometry.coordinates = [[]];
+          // Add the coordinate to the new array
+          geoJSON.features[0].geometry.coordinates[0].push(coords);
         } else {
-          // Add to existing coordinates array
-          coordinates.push(coords)
+          // Check if the last coordinate is the same as the first coordinate. If
+          // so, we want to add the new coordinate as the second to last. Otherwise
+          // we want to add it to the end.
+          const lastCoord = coordinates[coordinates.length - 1];
+          const firstCoord = coordinates[0];
+          if (lastCoord[0] == firstCoord[0] && lastCoord[1] == firstCoord[1]) {
+            // Add the coordinate as the second to last
+            coordinates.splice(coordinates.length - 1, 0, coords);
+          } else {
+            // Add the coordinate to the end
+            coordinates.push(coords);
+            // Make the coordinates valid for a GeoJSON polygon by adding the first
+            // coordinate to the end
+            coordinates.push(coordinates[0]);
+          }
         }
-        layer.set("cesiumOptions", { data: geoJSON })
+
+        layer.set("cesiumOptions", { data: geoJSON });
+        layer.createCesiumModel(true);
       },
 
       /**
