@@ -210,11 +210,7 @@ define([
           }
           this.setUpInteractions();
         } catch (error) {
-          console.log(
-            "There was an error initializing a Map model" +
-              ". Error details: " +
-              error
-          );
+          console.log('Failed to initialize a Map model.', error);
         }
       },
 

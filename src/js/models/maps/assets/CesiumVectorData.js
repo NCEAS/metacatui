@@ -106,7 +106,7 @@ define(
         initialize: function (assetConfig) {
           try {
 
-            if(!assetConfig) assetConfig = {};
+            if (!assetConfig) assetConfig = {};
 
             MapAsset.prototype.initialize.call(this, assetConfig);
 
@@ -240,19 +240,18 @@ define(
          */
         setListeners: function () {
           try {
+            this.constructor.__super__.setListeners.call(this);
             const appearEvents =
               'change:visible change:opacity change:color change:outlineColor' +
               ' change:temporarilyHidden'
             this.stopListening(this, appearEvents)
             this.listenTo(this, appearEvents, this.updateAppearance)
-            this.stopListening(this.get('filters'), 'update')
-            this.listenTo(this.get('filters'), 'update', this.updateFeatureVisibility)
+            const filters = this.get('filters');
+            this.stopListening(filters, 'update')
+            this.listenTo(filters, 'update', this.updateFeatureVisibility)
           }
           catch (error) {
-            console.log(
-              'There was an error setting listeners in a CesiumVectorData model' +
-              '. Error details: ' + error
-            );
+            console.log('Failed to set CesiumVectorData listeners.', error);
           }
         },
 
@@ -289,7 +288,7 @@ define(
          * @returns {Cesium.Entity} - The Entity object if found, otherwise null.
          * @since 2.25.0
          */
-        getEntityFromMapObject(mapObject) {
+        getEntityFromMapObject: function(mapObject) {
           const entityType = this.get("featureType")
           if (mapObject instanceof entityType) return mapObject
           if (mapObject.id instanceof entityType) return mapObject.id
@@ -328,7 +327,7 @@ define(
          * @returns {Object} An object containing key-value mapping of property names to
          * properties.
         */
-        getPropertiesFromFeature(feature) {
+        getPropertiesFromFeature: function(feature) {
           feature = this.getEntityFromMapObject(feature)
           if (!feature) return null
           const featureProps = feature.properties
@@ -382,7 +381,10 @@ define(
           try {
 
             const model = this;
-            const cesiumModel = this.get('cesiumModel')
+            const cesiumModel = this.get('cesiumModel');
+
+            if (!cesiumModel) return
+            
             const entities = cesiumModel.entities.values
 
             // Suspending events while updating a large number of entities helps
@@ -564,10 +566,11 @@ define(
          * @since 2.25.0
          */
         getStyles: function (entity) {
-          if(!entity) return null
+          if (!entity) return null
+          entity = this.getEntityFromMapObject(entity)
           if (this.featureIsSelected(entity)) {
             return this.getSelectedStyles(entity)
-          } 
+          }
           const color = this.colorForEntity(entity);
           if (!color) { return null }
           const outlineColor = this.colorToCesiumColor(

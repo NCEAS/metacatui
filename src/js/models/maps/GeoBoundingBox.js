@@ -84,10 +84,7 @@ define(["backbone"], function (Backbone) {
        */
       getArea: function () {
         if (!this.isValid()) {
-          console.warn(
-            `Bounds are invalid: ${JSON.stringify(bounds)}. ` +
-              `Returning the globe's area for the given bounding box.`
-          );
+          console.warn("Invalid bounding box, returning globe area");
           return 360 * 180;
         }
         const { north, south, east, west } = this.attributes;

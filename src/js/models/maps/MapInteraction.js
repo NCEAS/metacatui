@@ -123,9 +123,9 @@ define([
        * zoom) and sets the 'firstInteraction' attribute to true when it occurs.
        */
       listenForFirstInteraction: function () {
+        const model = this;
         if (model.get("firstInteraction")) return;
         const listener = new Backbone.Model();
-        const model = this;
         listener.listenTo(
           this,
           "change:previousAction",
@@ -153,8 +153,11 @@ define([
         // Clone the models in hovered features and set them as clicked features
         const hoveredFeatures = this.get("hoveredFeatures").models;
         this.setClickedFeatures(hoveredFeatures);
-        if (this.get("mapModel")?.get("clickFeatureAction") === "showDetails") {
+        const clickAction = this.get("mapModel")?.get("clickFeatureAction");
+        if (clickAction === "showDetails") {
           this.selectFeatures(hoveredFeatures);
+        } else if (clickAction === "zoom") {
+          this.set("zoomTarget", hoveredFeatures[0]);
         }
       },
 
@@ -235,6 +238,7 @@ define([
        * view.
        */
       selectFeatures: function (features) {
+        const model = this;
         this.setFeatures(features, "selectedFeatures", true);
       },
 
@@ -257,13 +261,13 @@ define([
           // Create a features collection if one doesn't already exist
           if (!model.get(type)) model.set(type, new Features());
 
-          // Remove any null or undefined features
+          // Remove any null, undefined, or empty features
           if (Array.isArray(features)) features = features.filter((f) => f);
-          // Remove any default features (which are empty models)
           if (features instanceof Features) {
             features = features.filter((f) => !f.isDefault());
           }
-          // If no feature is passed to this function (and replace is true),
+
+          // Empty collection if features array is empty (and replace is true)
           if (!features || features.length === 0) {
             if (replace) model.get(type).set([], { remove: true });
             return;
@@ -280,50 +284,16 @@ define([
             return;
           }
 
-          // Convert the feature objects, which may be types specific to the map
-          // widget (Cesium), to a generic Feature model
-          features = model.convertFeatures(features);
+          const assets = this.get("mapModel")?.get("layers");
 
-          // Update the Feature model with the new selected feature information.
-          const newAttrs = features.map(function (feature) {
-            return Object.assign(
-              {},
-              new Feature().defaults(),
-              feature.attributes
-            );
-          });
-          model.get(type).set(newAttrs, { remove: replace });
+          const newAttrs = features.map((f) => ({ featureObject: f }));
+
+          model
+            .get(type)
+            .set(newAttrs, { remove: replace, parse: true, assets: assets });
         } catch (e) {
           console.log("Failed to select a Feature in a Map model.", e);
         }
-      },
-
-      /**
-       * Convert an array of feature objects to an array of Feature models.
-       * @param {Cesium.Entity|Cesium.Cesium3DTileFeature|Feature[]} features -
-       * An array of feature objects selected directly from the map view, or
-       * @returns {Feature[]} An array of Feature models.
-       * @since 2.25.0
-       */
-      convertFeatures: function (features) {
-        if (!features) return [];
-        if (!features.map) features = [features];
-        const mapModel = this.get("mapModel");
-        const attrs = features.map(function (feature) {
-          if (!feature) return null;
-          if (feature instanceof Feature) return feature.attributes;
-          // if this is already an object with feature attributes, return it
-          if (
-            feature.hasOwnProperty("mapAsset") &&
-            feature.hasOwnProperty("properties")
-          ) {
-            return feature;
-          }
-          // Otherwise, assume it's a Cesium object and get the feature
-          // attributes
-          return mapModel.get("layers").getFeatureAttributes(features)?.[0];
-        });
-        return attrs.map((attr) => new Feature(attr));
       },
     }
   );

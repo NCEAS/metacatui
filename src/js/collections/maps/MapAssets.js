@@ -142,12 +142,8 @@ define([
           this.each(function (mapAssetModel) {
             mapAssetModel.set("mapModel", mapModel);
           });
-        } catch (error) {
-          console.log(
-            "Failed to set the map model on a MapAssets collection" +
-              ". Error details: " +
-              error
-          );
+        } catch (e) {
+          console.log("Failed to set the map model on MapAssets collection", e);
         }
       },
 
@@ -236,6 +232,7 @@ define([
        * @since 2.25.0
        */
       getFeatureAttributes: function (features) {
+        if (!Array.isArray(features)) features = [features];
         return features.map((feature) => {
           const asset = this.findAssetWithFeature(feature);
           return asset?.getFeatureAttributes(feature);

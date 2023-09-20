@@ -2,22 +2,14 @@
 
 define(
   [
-    'jquery',
-    'underscore',
-    'backbone',
     'cesium',
     'models/maps/assets/MapAsset',
-    'models/maps/AssetColor',
     'models/maps/AssetColorPalette',
     'collections/maps/VectorFilters'
   ],
   function (
-    $,
-    _,
-    Backbone,
     Cesium,
     MapAsset,
-    AssetColor,
     AssetColorPalette,
     VectorFilters
   ) {
@@ -74,7 +66,8 @@ define(
          * specific to each type of asset.
         */
         defaults: function () {
-          return _.extend(
+          return Object.assign(
+            {},
             this.constructor.__super__.defaults(),
             {
               type: 'Cesium3DTileset',
@@ -215,6 +208,9 @@ define(
         setListeners: function () {
           try {
 
+            // call the super method
+            this.constructor.__super__.setListeners.call(this);
+
             // When opacity, color, or visibility changes (will also update the filters)
             this.stopListening(this, 'change:opacity change:color change:visible')
             this.listenTo(
@@ -244,6 +240,8 @@ define(
             // The style set on the Cesium 3D tileset needs to be updated to show the
             // changes on a Cesium map.
             const cesiumModel = model.get('cesiumModel')
+
+            if(!cesiumModel) return
 
             // If the layer isn't visible at all, don't bother setting up colors or
             // filters. Just set every feature to hidden.
