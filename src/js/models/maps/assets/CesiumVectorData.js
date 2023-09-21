@@ -190,14 +190,14 @@ define(
 
             if (dataSourceFunction && typeof dataSourceFunction === 'function') {
 
-              if (!recreate) {
+              if (!recreate || !dataSource) {
                 dataSource = new dataSourceFunction(label)
               }
 
               const data = cesiumOptions.data;
               delete cesiumOptions.data
 
-              if(!dataSource){
+              if (!dataSource) {
                 model.set('status', 'error')
                 model.set('statusDetails', 'Failed to create a Cesium DataSource model.')
                 return
@@ -212,6 +212,7 @@ define(
                   model.updateFeatureVisibility()
                   model.updateAppearance()
                   model.set('status', 'ready')
+                  
                 })
                 .otherwise(function (error) {
                   // See https://cesium.com/learn/cesiumjs/ref-doc/RequestErrorEvent.html

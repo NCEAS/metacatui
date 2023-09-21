@@ -35,19 +35,38 @@ define(["backbone"], function (Backbone) {
         };
       },
 
-      // /**
-      //  * Run when a new GeoPoint is created.
-      //  * @param {Object} attrs - An object specifying configuration options for
-      //  * the GeoPoint. If any config option is not specified, the default will
-      //  * be used instead (see {@link GeoPoint#defaults}).
-      //  */
-      // initialize: function (attrs, options) {
-      //   try {
-      //     // ...
-      //   } catch (e) {
-      //     console.log("Error initializing a GeoPoint model", e);
-      //   }
-      // },
+      /**
+       * Get the long and lat of the point as an array
+       * @returns {Array} An array in the form [longitude, latitude]
+       */
+      to2DArray: function () {
+        return [this.get("longitude"), this.get("latitude")];
+      },
+
+      /**
+       * Convert the point to a GeoJSON geometry object
+       * @returns {Object} A GeoJSON geometry object with the type (Point) and
+       * coordinates of the point
+       */
+      toGeoJsonGeometry: function () {
+        return {
+          type: "Point",
+          coordinates: this.to2DArray()
+        };
+      },
+
+      /**
+       * Convert the point to a GeoJSON feature object
+       * @returns {Object} A GeoJSON feature object with the type (Feature) and
+       * geometry of the point
+       */
+      toGeoJsonFeature: function () {
+        return {
+          type: "Feature",
+          geometry: this.toGeoJsonGeometry(),
+          properties: {}
+        };
+      },
 
       /**
        * Validate the model attributes

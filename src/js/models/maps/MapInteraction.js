@@ -159,23 +159,61 @@ define([
         } else if (clickAction === "zoom") {
           this.set("zoomTarget", hoveredFeatures[0]);
         }
+        // TODO: throttle this?
+        this.setClickedPositionFromMousePosition();
       },
 
       /**
-       * Sets the position of the mouse on the map. Creates a new GeoPoint model
-       * if one doesn't already exist on the mousePosition attribute.
+       * Sets the clicked position to the current mouse position.
+       */
+      setClickedPositionFromMousePosition: function () {
+        const mousePosition = this.get("mousePosition");
+        // get just the longitude and latitude
+        const coords = {
+          longitude: mousePosition.get("longitude"),
+          latitude: mousePosition.get("latitude")
+        };
+        this.setClickedPosition(coords);
+      },
+
+      /**
+       * Set the position for either the mousePosition or clickedPosition
+       * attribute. Creates a new GeoPoint model if one doesn't already exist
+       * on the attribute.
+       * @param {'mousePosition'|'clickedPosition'} attributeName - The name of
+       * the attribute to set.
        * @param {Object} position - An object with 'longitude' and 'latitude'
        * properties.
-       * @returns {GeoPoint} The mouse position as a GeoPoint model.
+       * @returns {GeoPoint} The corresponding position as a GeoPoint model.
        */
-      setMousePosition: function (position) {
-        let mousePosition = this.get("mousePosition");
-        if (!mousePosition) {
-          mousePosition = new GeoPoint();
-          this.set("mousePosition", mousePosition);
+      setPosition: function(attributeName, position) {
+        let point = this.get(attributeName);
+        if (!point) {
+          point = new GeoPoint();
+          this.set(attributeName, point);
         }
-        mousePosition.set(position);
-        return mousePosition;
+        point.set(position);
+        return point;
+      },
+
+      /**
+       * Sets the position on the map that the user last clicked.
+       * @param {Object} position - An object with 'longitude' and 'latitude'
+       * properties.
+       * @returns {GeoPoint} The clicked position as a GeoPoint model.
+       */
+      setClickedPosition: function(position) {
+        return this.setPosition("clickedPosition", position);
+      },
+
+      /**
+      * Sets the position of the mouse on the map.
+      * @param {Object} position - An object with 'longitude' and 'latitude'
+      * properties.
+      * @returns {GeoPoint} The mouse position as a GeoPoint model.
+      */
+      setMousePosition: function(position) {
+        return this.setPosition("mousePosition", position);
       },
 
       /**
