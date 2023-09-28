@@ -131,6 +131,95 @@ define(["backbone", "models/maps/GeoPoint"], function (Backbone, GeoPoint) {
         };
       },
 
+      // TODO: Move this to a CZML model, use in GeoHash/es
+
+      /**
+       * Get the header object for a CZML document.
+       * @returns {Object} Returns a CZML header object.
+       */
+      getCZMLHeader: function () {
+        return {
+          id: "document",
+          version: "1.0",
+          name: "GeoPoints",
+        };
+      },
+
+      /**
+       * Convert the collection to a CZML document.
+       * @param {String} geometryType - The type of geometry to create.
+       * @param {Boolean} [forceAsPolygon=false] - Set to true to enforce the
+       * output as a polygon for the "Polygon" geometry type, regardless of the
+       * number of points in the collection.
+       * @returns {Object[]} Returns an array of CZML objects.
+       */
+      toCzml: function (geometryType, forceAsPolygon = false) {
+        if (!forceAsPolygon && geometryType === "Polygon" && this.length < 3) {
+          geometryType = this.length === 1 ? "Point" : "LineString";
+        }
+        const czml = [this.getCZMLHeader()];
+        switch (geometryType) {
+          case "Point":
+            czml.concat(this.toCZMLPoints());
+            break;
+          case "LineString":
+            czml.push(this.getCZMLLineString());
+            break;
+          case "Polygon":
+            czml.push(this.getCZMLPolygon());
+            break;
+          default:
+            break;
+        }
+        return czml;
+      },
+
+      /**
+       * Convert the collection to an array of CZML point objects.
+       * @returns {Object[]} Returns an array of CZML point objects.
+       */
+      toCZMLPoints: function () {
+        return this.models.map((model) => {
+          return model.toCZML();
+        })
+      },
+
+      /**
+       * Convert the collection to a CZML polygon object.
+       * @returns {Object} Returns a CZML polygon object.
+       */
+      getCZMLPolygon: function () {
+        const coords = this.toECEFArray();
+        // make a random ID:
+        const id = "polygon_" + Math.floor(Math.random() * 1000000);
+        return {
+          id: id,
+          name: "Polygon",
+          polygon: {
+            positions: {
+              cartesian: coords,
+            },
+          },
+        };
+      },
+
+      /**
+       * Convert the collection to a CZML line string object.
+       * @returns {Object} Returns a CZML line string object.
+       */
+      getCZMLLineString: function () {
+        const coords = this.toECEFArray();
+        return {
+          id: this.cid,
+          name: "LineString",
+          polyline: {
+            positions: {
+              cartesian: coords,
+            },
+          },
+        };
+      },
+
       /**
        * Convert the collection to a GeoJSON object. The output can be the
        * series of points as Point features, the points connected as a
@@ -206,6 +295,18 @@ define(["backbone", "models/maps/GeoPoint"], function (Backbone, GeoPoint) {
       to2DArray: function () {
         return this.models.map((model) => {
           return model.to2DArray();
+        });
+      },
+
+      /**
+       * Convert the collection to a cartesian array, where each every three
+       * elements represents the x, y, and z coordinates of a vertex, e.g.
+       * [x1, y1, z1, x2, y2, z2, ...].
+       * @returns {Array} Returns an array of numbers.
+       */
+      toECEFArray: function () {
+        return this.models.flatMap((model) => {
+          return model.toECEFArray();
         });
       },
     }

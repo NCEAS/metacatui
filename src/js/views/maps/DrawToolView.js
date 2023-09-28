@@ -31,9 +31,51 @@ define(["backbone", "models/connectors/GeoPoints-VectorData"], function (
       className: "draw-tool",
 
       /**
-       * The current mode of the draw tool. This could be "draw", "edit",
-       * "delete", or false to indicate that the draw tool is not active.
-       * Currently only "draw" and false are supported.
+       * Class to use for the buttons
+       * @type {string}
+       */
+      buttonClass: "map-view__button",
+
+      /**
+       * The buttons to display in the toolbar and their corresponding actions.
+       * TODO: Finish documenting this when more finalized.
+       */
+      buttons: [
+        {
+          name: "draw", // === mode
+          label: "Draw Polygon",
+          icon: "pencil",
+        },
+        {
+          name: "move",
+          label: "Move Point",
+          icon: "move",
+        },
+        {
+          name: "remove",
+          label: "Remove Point",
+          icon: "eraser",
+        },
+        {
+          name: "clear",
+          label: "Clear Polygon",
+          icon: "trash",
+          method: "clearPoints",
+        },
+        {
+          name: "save",
+          label: "Save",
+          icon: "save",
+          method: "save",
+        },
+      ],
+
+      buttonEls: {},
+
+      /**
+       * The current mode of the draw tool. This can be "draw", "move",
+       * "remove", or "add" - any of the "name" properties of the buttons array,
+       * excluding buttons like "clear" and "save" that have a method property.
        */
       mode: false,
 
@@ -106,8 +148,19 @@ define(["backbone", "models/connectors/GeoPoints-VectorData"], function (
        */
       setUpLayer: function () {
         this.layer = this.mapModel.addAsset({
-          type: "GeoJsonDataSource",
-          hideInLayerList: true, // <- TODO: Hide in LayerList, doc in mapConfig
+          type: "CzmlDataSource",
+          label: "Your Polygon",
+          description: "The polygon that you are drawing on the map",
+          hideInLayerList: true, // TODO: Hide in LayerList, doc in mapConfig
+          outlineColor: "#FF3E41", // TODO
+          opacity: 0.55, // TODO
+          colorPalette: {
+            colors: [
+              {
+                color: "#FF3E41", // TODO
+              },
+            ],
+          },
         });
         return this.layer;
       },
@@ -134,14 +187,14 @@ define(["backbone", "models/connectors/GeoPoints-VectorData"], function (
        * @returns {GeoPoint} The GeoPoint model that was added to the polygon.
        */
       addPoint: function (point) {
-        return this.points.addPoint(point);
+        return this.points?.addPoint(point);
       },
 
       /**
        * Clears the polygon that is being drawn.
        */
       clearPoints: function () {
-        this.points.reset(null);
+        this.points?.reset(null);
       },
 
       /**
@@ -180,24 +233,45 @@ define(["backbone", "models/connectors/GeoPoints-VectorData"], function (
       renderToolbar: function () {
         const view = this;
         const el = this.el;
-        const drawButton = document.createElement("button");
-        drawButton.innerHTML = "Draw";
-        drawButton.addEventListener("click", function () {
-          if (view.mode === "draw") {
-            view.setMode(false);
-          } else {
-            view.setMode("draw");
-          }
+
+        // Create the buttons
+        view.buttons.forEach(options => {
+          const button = document.createElement("button");
+          button.className = this.buttonClass;
+          button.innerHTML = `<i class="icon icon-${options.icon}"></i> ${options.label}`;
+          button.addEventListener("click", function () {
+            const method = options.method;
+            if(method) view[method]();
+            else view.toggleMode(options.name);
+          });
+          if(!view.buttonEls) view.buttonEls = {};
+          view.buttonEls[options.name + "Button"] = button;
+          el.appendChild(button);
         });
-        this.drawButton = drawButton;
-        el.appendChild(drawButton);
-        const clearButton = document.createElement("button");
-        clearButton.innerHTML = "Clear";
-        clearButton.addEventListener("click", function () {
-          view.clearPoints();
-          view.setMode(false);
-        });
-        el.appendChild(clearButton);
+      },
+
+      /**
+       * Sends the polygon coordinates to a callback function to do something
+       * with them.
+       * TODO: This is a WIP.
+       */
+      save: function () {
+        this.setMode(false);
+        this.removeClickListeners();
+        console.log(this.points.toJSON());
+        // TODO: Call a callback function to save the polygon
+      },
+
+      /**
+       * Toggles the mode of the draw tool.
+       * @param {string} mode - The mode to toggle to.
+       */
+      toggleMode: function (mode) {
+        if (this.mode === mode) {
+          this.setMode(false);
+        } else {
+          this.setMode(mode);
+        }
       },
 
       /**
@@ -209,12 +283,34 @@ define(["backbone", "models/connectors/GeoPoints-VectorData"], function (
       setMode: function (mode) {
         if (this.mode === mode) return;
         this.mode = mode;
-        if (mode === "draw") {
-          this.setClickListeners();
-          this.drawButton.style.backgroundColor = "green";
-        } else if (mode === false) {
+        if (mode) {
+          if (!this.listeningForClicks) this.setClickListeners();
+          this.activateButton(mode);
+        } else {
+          this.resetButtonStyles();
           this.removeClickListeners();
-          this.drawButton.style.backgroundColor = "grey";
+        }
+      },
+
+      /**
+       * Sets the style of the button with the given name to indicate that it is
+       * active.
+       */
+      activateButton: function (buttonName) {
+        const buttonEl = this.buttonEls[buttonName + "Button"];
+        if(!buttonEl) return;
+        this.resetButtonStyles();
+        buttonEl.style.backgroundColor = "blue"; // TODO - create active style
+      },
+
+      /**
+       * Resets the styles of all of the buttons to indicate that they are not
+       * active.
+       */
+      resetButtonStyles: function () {
+        // Iterate through the buttonEls object and reset the styles
+        for (const button in this.buttonEls) {
+          this.buttonEls[button].style.backgroundColor = "grey"; // TODO - create default style
         }
       },
 
@@ -287,12 +383,50 @@ define(["backbone", "models/connectors/GeoPoints-VectorData"], function (
         // Add the point to the polygon
         if (this.mode === "draw") {
           const point = this.interactions.get("clickedPosition");
-          console.log("Adding point", point);
           this.addPoint({
             latitude: point.get("latitude"),
             longitude: point.get("longitude"),
           });
         }
+      },
+
+      /**
+       * The action to perform when the mode is "draw" and the user clicks on
+       * the map.
+       */
+      handleDrawClick: function () {
+        if (!this.mode === "draw") return
+        const point = this.interactions.get("clickedPosition");
+        if(!point) return
+        this.addPoint({
+          latitude: point.get("latitude"),
+          longitude: point.get("longitude"),
+        });
+      },
+
+       /**
+       * The action to perform when the mode is "move" and the user clicks on
+       * the map.
+       */
+      handleMoveClick: function () {
+        if (!this.mode === "move") return
+        const feature = this.interactions.get("clickedFeature");
+        if (!feature) return
+        // TODO: Set a listener to update the point feature and coords
+        // when it is clicked and dragged
+      },
+
+      /**
+       * The action to perform when the mode is "remove" and the user clicks on
+       * the map.
+       */
+      handleRemoveClick: function () {
+        if (!this.mode === "remove") return
+        const feature = this.interactions.get("clickedFeature");
+        if (!feature) return
+        // TODO: Get the coords of the clicked feature and remove the point
+        // from the polygon
+        console.log("remove feature", feature);
       },
 
       /**

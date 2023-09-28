@@ -159,9 +159,11 @@ define([
       updateVectorLayer: function () {
         const points = this.get("points") || this.setPoints();
         const layer = this.get("vectorLayer") || this.setVectorLayer();
-        const geoJson = points.toGeoJson("Polygon");
+        const type = model.get("type");
+        const geom = "Polygon";
+        const data = type === "geojson" ? points.toGeoJson(geom) : this.toCzml(geom);
         const opts = layer.getCesiumOptions() || {};
-        opts.data = geoJson;
+        opts.data = data;
         layer.set("cesiumOptions", opts);
       },
     }

@@ -1,6 +1,6 @@
 "use strict";
 
-define(["backbone"], function (Backbone) {
+define(["backbone", "models/maps/GeoUtilities"], function (Backbone, GeoUtilities) {
   /**
    * @class GeoPoint
    * @classdesc The GeoPoint model stores geographical coordinates including
@@ -66,6 +66,43 @@ define(["backbone"], function (Backbone) {
           geometry: this.toGeoJsonGeometry(),
           properties: {}
         };
+      },
+
+      /**
+       * Convert the point to a feature in a CZML document
+       * @returns {Object} A CZML feature object with the type (Feature) and
+       * geometry of the point.
+       */
+      toCZML: function () {
+        const ecefCoord = this.toECEFArray();
+        return {
+          id: this.cid,
+          point: {
+            pixelSize: 10,
+            show: true,
+            heightReference: "CLAMP_TO_GROUND",
+          },
+          position: {
+            cartesian: ecefCoord
+          }
+        };
+      },
+
+      /**
+       * Convert the point to an array of ECEF coordinates
+       * @returns {Array} An array in the form [x, y, z]
+       */
+      toECEFArray: function () {
+        return this.geodeticToECEF(this.to2DArray());
+      },
+
+      /**
+       * Convert a given point to an array of ECEF coordinates
+       * @param {Array} coord - An array in the form [longitude, latitude]
+       * @returns {Array} An array in the form [x, y, z]
+       */
+      geodeticToECEF: function (coord) {
+        return GeoUtilities.prototype.geodeticToECEF(coord);
       },
 
       /**
