@@ -168,10 +168,11 @@ define([
        */
       setClickedPositionFromMousePosition: function () {
         const mousePosition = this.get("mousePosition");
-        // get just the longitude and latitude
         const coords = {
           longitude: mousePosition.get("longitude"),
-          latitude: mousePosition.get("latitude")
+          latitude: mousePosition.get("latitude"),
+          height: mousePosition.get("height"),
+          mapWidgetCoords: mousePosition.get("mapWidgetCoords"),
         };
         this.setClickedPosition(coords);
       },
@@ -191,7 +192,7 @@ define([
         if (!point) {
           point = new GeoPoint();
           this.set(attributeName, point);
-        }
+        } 
         point.set(position);
         return point;
       },

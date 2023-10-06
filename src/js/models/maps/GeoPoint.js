@@ -1,6 +1,9 @@
 "use strict";
 
-define(["backbone", "models/maps/GeoUtilities"], function (Backbone, GeoUtilities) {
+define(["backbone", "models/maps/GeoUtilities"], function (
+  Backbone,
+  GeoUtilities
+) {
   /**
    * @class GeoPoint
    * @classdesc The GeoPoint model stores geographical coordinates including
@@ -26,12 +29,16 @@ define(["backbone", "models/maps/GeoUtilities"], function (Backbone, GeoUtilitie
        * @property {number} longitude - The longitude of the point in degrees
        * @property {number} height - The height of the point in meters above sea
        * level
+       * @property {*} mapWidgetCoords - Optionally, Coordinates in the format
+       * provided by the map widget. For example, for Cesium, this is the Cesium
+       * Cartesian3 ECEF coordinates.
        */
       defaults: function () {
         return {
           latitude: null,
           longitude: null,
-          height: null
+          height: null,
+          mapWidgetCoords: null,
         };
       },
 
@@ -51,7 +58,7 @@ define(["backbone", "models/maps/GeoUtilities"], function (Backbone, GeoUtilitie
       toGeoJsonGeometry: function () {
         return {
           type: "Point",
-          coordinates: this.to2DArray()
+          coordinates: this.to2DArray(),
         };
       },
 
@@ -64,7 +71,7 @@ define(["backbone", "models/maps/GeoUtilities"], function (Backbone, GeoUtilitie
         return {
           type: "Feature",
           geometry: this.toGeoJsonGeometry(),
-          properties: {}
+          properties: {},
         };
       },
 
@@ -83,8 +90,8 @@ define(["backbone", "models/maps/GeoUtilities"], function (Backbone, GeoUtilitie
             heightReference: "CLAMP_TO_GROUND",
           },
           position: {
-            cartesian: ecefCoord
-          }
+            cartesian: ecefCoord,
+          },
         };
       },
 
@@ -109,11 +116,11 @@ define(["backbone", "models/maps/GeoUtilities"], function (Backbone, GeoUtilitie
        * Validate the model attributes
        * @param {Object} attrs - The model's attributes
        */
-      validate: function(attrs) {
+      validate: function (attrs) {
         if (attrs.latitude < -90 || attrs.latitude > 90) {
           return "Invalid latitude. Must be between -90 and 90.";
         }
-        
+
         if (attrs.longitude < -180 || attrs.longitude > 180) {
           return "Invalid longitude. Must be between -180 and 180.";
         }
@@ -121,10 +128,10 @@ define(["backbone", "models/maps/GeoUtilities"], function (Backbone, GeoUtilitie
         // Assuming height is in meters and can theoretically be below sea
         // level. Adjust the height constraints as needed for your specific
         // application.
-        if (typeof attrs.height !== 'number') {
+        if (typeof attrs.height !== "number") {
           return "Invalid height. Must be a number.";
         }
-      }
+      },
     }
   );
 

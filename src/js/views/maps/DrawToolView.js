@@ -1,8 +1,10 @@
 "use strict";
 
-define(["backbone", "models/connectors/GeoPoints-VectorData"], function (
+define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connectors/GeoPoints-CesiumPoints", "collections/maps/GeoPoints"], function (
   Backbone,
-  GeoPointsVectorData
+  GeoPointsVectorData,
+  GeoPointsCesiumPoints,
+  GeoPoints
 ) {
   /**
    * @class DrawTool
@@ -108,6 +110,19 @@ define(["backbone", "models/connectors/GeoPoints-VectorData"], function (
       points: undefined,
 
       /**
+       * The color of the polygon that is being drawn as a hex string.
+       * @type {string}
+       */
+      color: "#a31840",
+
+      /**
+       * The initial opacity of the polygon that is being drawn. A number
+       * between 0 and 1.
+       * @type {number}
+       */
+      opacity: 0.8,
+
+      /**
        * Initializes the DrawTool
        * @param {Object} options - A literal object with options to pass to the
        * view
@@ -126,7 +141,7 @@ define(["backbone", "models/connectors/GeoPoints-VectorData"], function (
         // points, and originalAction properties to this view
         this.setUpMapModel();
         this.setUpLayer();
-        this.setUpConnector();
+        this.setUpConnectors();
       },
 
       /**
@@ -148,21 +163,20 @@ define(["backbone", "models/connectors/GeoPoints-VectorData"], function (
        */
       setUpLayer: function () {
         this.layer = this.mapModel.addAsset({
-          type: "CzmlDataSource",
+          type: "CustomDataSource",
           label: "Your Polygon",
           description: "The polygon that you are drawing on the map",
           hideInLayerList: true, // TODO: Hide in LayerList, doc in mapConfig
-          outlineColor: "#FF3E41", // TODO
-          opacity: 0.55, // TODO
+          outlineColor: this.color,
+          opacity: this.opacity,
           colorPalette: {
             colors: [
               {
-                color: "#FF3E41", // TODO
+                color: this.color,
               },
             ],
           },
-        });
-        return this.layer;
+        })
       },
 
       /**
@@ -171,12 +185,18 @@ define(["backbone", "models/connectors/GeoPoints-VectorData"], function (
        * this view.
        * @returns {GeoPointsVectorData} The connector
        */
-      setUpConnector: function () {
-        this.connector = new GeoPointsVectorData({
-          vectorLayer: this.layer,
+      setUpConnectors: function () {
+        const points = this.points = new GeoPoints();
+        this.polygonConnector = new GeoPointsVectorData({
+          layer: this.layer,
+          geoPoints: points,
         });
-        this.points = this.connector.get("points");
-        this.connector.connect();
+        this.pointsConnector = new GeoPointsCesiumPoints({
+          layer: this.layer,
+          geoPoints: points,
+        });
+        this.polygonConnector.connect();
+        this.pointsConnector.connect();
         return this.connector;
       },
 
@@ -203,6 +223,7 @@ define(["backbone", "models/connectors/GeoPoints-VectorData"], function (
        */
       removeLayer: function () {
         if (!this.mapModel || !this.layer) return;
+        // TODO
         this.connector.disconnect();
         this.connector.set("vectorLayer", null);
         this.mapModel.removeAsset(this.layer);
@@ -386,47 +407,10 @@ define(["backbone", "models/connectors/GeoPoints-VectorData"], function (
           this.addPoint({
             latitude: point.get("latitude"),
             longitude: point.get("longitude"),
+            height: point.get("height"),
+            mapWidgetCoords: point.get("mapWidgetCoords"),
           });
         }
-      },
-
-      /**
-       * The action to perform when the mode is "draw" and the user clicks on
-       * the map.
-       */
-      handleDrawClick: function () {
-        if (!this.mode === "draw") return
-        const point = this.interactions.get("clickedPosition");
-        if(!point) return
-        this.addPoint({
-          latitude: point.get("latitude"),
-          longitude: point.get("longitude"),
-        });
-      },
-
-       /**
-       * The action to perform when the mode is "move" and the user clicks on
-       * the map.
-       */
-      handleMoveClick: function () {
-        if (!this.mode === "move") return
-        const feature = this.interactions.get("clickedFeature");
-        if (!feature) return
-        // TODO: Set a listener to update the point feature and coords
-        // when it is clicked and dragged
-      },
-
-      /**
-       * The action to perform when the mode is "remove" and the user clicks on
-       * the map.
-       */
-      handleRemoveClick: function () {
-        if (!this.mode === "remove") return
-        const feature = this.interactions.get("clickedFeature");
-        if (!feature) return
-        // TODO: Get the coords of the clicked feature and remove the point
-        // from the polygon
-        console.log("remove feature", feature);
       },
 
       /**

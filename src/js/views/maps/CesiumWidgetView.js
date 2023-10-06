@@ -86,7 +86,7 @@ define([
           removeFunction: "remove3DTileset",
         },
         {
-          types: ["GeoJsonDataSource", "CzmlDataSource"],
+          types: ["GeoJsonDataSource", "CzmlDataSource", "CustomDataSource"],
           renderFunction: "addVectorData",
           removeFunction: "removeVectorData",
         },
@@ -240,8 +240,8 @@ define([
 
       /**
        * Create a DataSourceDisplay and DataSourceCollection for the Cesium
-       * widget, and listen to the clock tick to update the display. This is
-       * required to display vector data (e.g. GeoJSON) on the map.
+       * widget. This is required to display vector data (e.g. GeoJSON) on the
+       * map.
        * @since x.x.x
        * @returns {Cesium.DataSourceDisplay} The Cesium DataSourceDisplay
        */
@@ -252,11 +252,6 @@ define([
           scene: view.scene,
           dataSourceCollection: view.dataSourceCollection,
         });
-        view.clock.onTick.removeEventListener(
-          view.updateDataSourceDisplay,
-          view
-        );
-        view.clock.onTick.addEventListener(view.updateDataSourceDisplay, view);
         return view.dataSourceDisplay;
       },
 
@@ -285,64 +280,32 @@ define([
           if (view.zoomTarget) {
             view.completeFlight(view.zoomTarget, view.zoomOptions);
           }
+          // The dataSourceDisplay must be set to 'ready' to get bounding
+          // spheres for dataSources
+          view.dataSourceDisplay._ready = true;
         } catch (e) {
           console.log("Error calling post render functions:", e);
         }
       },
 
       /**
-       * Runs on every Cesium clock tick. Updates the display of the
-       * CesiumVectorData models in the scene. Similar to
-       * Cesium.DataSourceDisplay.update function, in that it runs update() on
-       * each DataSource and each DataSource's visualizer, except that it also
-       * updates each CesiumVectorData model's 'displayReady' attribute. (Sets
-       * to true when the asset is ready to be rendered in the map, false
-       * otherwise). Also re-renders the scene when the displayReady attribute
-       * changes.
+       * Run the update method and all visualizers for each data source.
+       * @since x.x.x
        */
-      updateDataSourceDisplay: function () {
-        try {
-          const view = this;
-          const layers = view.model.get("layers");
-
-          var dataSources = view.dataSourceDisplay.dataSources;
-          if (!dataSources || !dataSources.length) {
-            return;
-          }
-
-          let allReady = true;
-          const allReadyBefore = view.dataSourceDisplay._ready;
-
-          for (let i = 0, len = dataSources.length; i < len; i++) {
-            const time = view.clock.currentTime;
-            const dataSource = dataSources.get(i);
-            const visualizers = dataSource._visualizers;
-
-            const assetModel = layers.findWhere({
-              cesiumModel: dataSource,
-            });
-            let displayReadyNow = dataSource.update(time);
-
-            for (let x = 0; x < visualizers.length; x++) {
-              displayReadyNow = visualizers[x].update(time) && displayReadyNow;
-            }
-
-            assetModel.set("displayReady", displayReadyNow);
-
-            allReady = displayReadyNow && allReady;
-          }
-
-          // If any dataSource has switched display states, then re-render the
-          // scene.
-          if (allReady !== allReadyBefore) {
-            view.scene.requestRender();
-          }
-          // The dataSourceDisplay must be set to 'ready' to get bounding
-          // spheres for dataSources
-          view.dataSourceDisplay._ready = allReady;
-        } catch (e) {
-          console.log("Error updating the data source display.", e);
+      updateAllDataSources: function () {
+        const view = this;
+        const dataSources = view.dataSourceDisplay.dataSources;
+        if (!dataSources || !dataSources.length) {
+          return;
         }
+        const time = view.clock.currentTime;
+        dataSources.forEach(function (dataSource) {
+          dataSource.update(view.clock.currentTime);
+          // for each visualizer, update it
+          dataSource._visualizers.forEach(function (visualizer) {
+            visualizer.update(time);
+          });
+        });
       },
 
       /**
@@ -554,10 +517,18 @@ define([
         let newPosition = null;
         if (cartesian) {
           newPosition = view.getDegreesFromCartesian(cartesian);
+          newPosition.mapWidgetCoords = cartesian;
         }
         view.interactions.setMousePosition(newPosition);
       },
 
+      /**
+       * Record the feature hovered over by the mouse based on position.
+       * @param {Object} position - The position of the mouse on the map
+       * @param {number} [delay=200] - The minimum number of milliseconds that
+       * must pass between calls to this function.
+       * @since x.x.x
+       */
       setHoveredFeatures: function (position, delay = 200) {
         const view = this;
         const lastCall = this.setHoveredFeaturesLastCall || 0;
@@ -568,14 +539,15 @@ define([
         view.interactions.setHoveredFeatures([pickedFeature]);
       },
 
+      /**
+       * React when the user interacts with the map.
+       * @since x.x.x
+       */
       setInteractionListeners: function () {
-        // TODO: unset listeners too
         const interactions = this.interactions;
         const hoveredFeatures = interactions.get("hoveredFeatures");
+        this.stopListening(hoveredFeatures, "change update");
         this.listenTo(hoveredFeatures, "change update", this.updateCursor);
-        // this.listenTo( interactions, "change update",
-        //   this.handleClickedFeatures
-        // );
       },
 
       /**

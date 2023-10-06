@@ -190,10 +190,8 @@ define(["backbone", "models/maps/GeoPoint"], function (Backbone, GeoPoint) {
        */
       getCZMLPolygon: function () {
         const coords = this.toECEFArray();
-        // make a random ID:
-        const id = "polygon_" + Math.floor(Math.random() * 1000000);
         return {
-          id: id,
+          id: this.cid,
           name: "Polygon",
           polygon: {
             positions: {
@@ -307,6 +305,19 @@ define(["backbone", "models/maps/GeoPoint"], function (Backbone, GeoPoint) {
       toECEFArray: function () {
         return this.models.flatMap((model) => {
           return model.toECEFArray();
+        });
+      },
+
+      /**
+       * Convert the collection to an array of coordinates in the format
+       * native to the map widget. For Cesium, this is an array of
+       * Cartesian3 objects in ECEF coordinates.
+       * @returns {Array} An array of coordinates that can be used by the map
+       * widget.
+       */
+      asMapWidgetCoords: function () {
+        return this.models.map((model) => {
+          return model.get("mapWidgetCoords");
         });
       },
     }

@@ -277,11 +277,11 @@ define([
           // Set the GeoJSON representing geohashes on the model
           const cesiumOptions = this.getCesiumOptions();
           const type = model.get("type");
-          const data = type === "geojson" ? this.getGeoJSON() : this.getCZML();
+          const data = type === "GeoJsonDataSource" ? this.getGeoJSON() : this.getCZML();
           cesiumOptions["data"] = data;
           cesiumOptions["height"] = 0;
           model.set("cesiumOptions", cesiumOptions);
-          // Create the model like a regular GeoJSON data source
+          // Create the model like a regular vector data source
           CesiumVectorData.prototype.createCesiumModel.call(this, recreate);
         } catch (e) {
           console.log("Error creating a CesiumGeohash model. ", e);

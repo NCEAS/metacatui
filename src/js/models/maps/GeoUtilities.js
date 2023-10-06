@@ -1,9 +1,6 @@
 "use strict";
 
-define(["backbone", "models/maps/GeoUtilities"], function (
-  Backbone,
-  GeoUtilities
-) {
+define(["backbone"], function (Backbone) {
   /**
    * @class GeoUtilities
    * @classdesc The GeoUtilities model has methods foe handling spatial data

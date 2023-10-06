@@ -1,11 +1,12 @@
 "use strict";
 
-define(["jquery", "underscore", "backbone", "nGeohash"], function (
-  $,
-  _,
-  Backbone,
-  nGeohash
-) {
+define([
+  "jquery",
+  "underscore",
+  "backbone",
+  "nGeohash",
+  "models/maps/GeoUtilities",
+], function ($, _, Backbone, nGeohash, GeoUtilities) {
   /**
    * @classdesc A Geohash Model represents a single geohash.
    * @classcategory Models/Geohashes
@@ -346,7 +347,7 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
        * @returns {Array} The ECEF coordinates.
        */
       geodeticToECEF: function (coord) {
-        return GeoUtilities.geodeticToECEF(coord);
+        return GeoUtilities.prototype.geodeticToECEF(coord);
       },
     }
   );

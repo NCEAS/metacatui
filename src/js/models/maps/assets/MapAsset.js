@@ -334,6 +334,37 @@ define([
       },
 
       /**
+       * Set an error status and message for this asset.
+       * @param {Object|String} error - An error object with a status code
+       * attribute or or string with details about the error.
+       * @since x.x.x
+       */
+      setError: function (error) {
+        // See https://cesium.com/learn/cesiumjs/ref-doc/RequestErrorEvent.html
+        let details = error;
+        // Write a helpful error message
+        switch (error.statusCode) {
+          case 404:
+            details = 'The resource was not found (error code 404).'
+            break;
+          case 500:
+            details = 'There was a server error (error code 500).'
+            break;
+        }
+        this.set('status', 'error');
+        this.set('statusDetails', details)
+      },
+
+      /**
+       * Set a ready status for this asset.
+       * @since x.x.x
+       */
+      setReady: function () {
+        this.set('status', 'ready')
+        this.set('statusDetails', null)
+      },
+
+      /**
        * When the asset can't be loaded, hide it from the map and show an error.
        * @since x.x.x
        */
