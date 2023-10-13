@@ -145,7 +145,7 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
        * between 0 and 1.
        * @type {number}
        */
-      opacity: 0.5,
+      opacity: 0.3,
 
       /**
        * Initializes the DrawTool
@@ -193,6 +193,7 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
           description: "The polygon that you are drawing on the map",
           hideInLayerList: true,
           outlineColor: this.color,
+          highlightColor: this.color,
           opacity: this.opacity,
           colorPalette: {
             colors: [
