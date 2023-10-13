@@ -39,8 +39,27 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
       buttonClass: "map-view__button",
 
       /**
+       * Class to use for the active button
+       * @type {string}
+       */
+      buttonClassActive: "map-view__button--active",
+
+      /**
+       * @typedef {Object} DrawToolButtonOptions
+       * @property {string} name - The name of the button. This should be the
+       * same as the mode that the button will activate (if the button is
+       * supposed to activate a mode).
+       * @property {string} label - The label to display on the button.
+       * @property {string} icon - The name of the icon to display on the
+       * button.
+       * @property {string} [method] - The name of the method to call when the
+       * button is clicked. If this is not provided, the button will toggle the
+       * mode of the draw tool.
+       */
+
+      /**
        * The buttons to display in the toolbar and their corresponding actions.
-       * TODO: Finish documenting this when more finalized.
+       * @type {DrawToolButtonOptions[]}
        */
       buttons: [
         {
@@ -48,21 +67,21 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
           label: "Draw Polygon",
           icon: "pencil",
         },
-        {
-          name: "move",
-          label: "Move Point",
-          icon: "move",
-        },
-        {
-          name: "remove",
-          label: "Remove Point",
-          icon: "eraser",
-        },
+        // {
+        //   name: "move",
+        //   label: "Move Point",
+        //   icon: "move",
+        // },
+        // {
+        //   name: "remove",
+        //   label: "Remove Point",
+        //   icon: "eraser",
+        // },
         {
           name: "clear",
           label: "Clear Polygon",
           icon: "trash",
-          method: "clearPoints",
+          method: "reset",
         },
         {
           name: "save",
@@ -72,6 +91,12 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
         },
       ],
 
+      /**
+       * The buttons that have been rendered in the toolbar. Formatted as an
+       * object with the button name as the key and the button element as the
+       * value.
+       * @type {Object}
+       */
       buttonEls: {},
 
       /**
@@ -120,7 +145,7 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
        * between 0 and 1.
        * @type {number}
        */
-      opacity: 0.8,
+      opacity: 0.5,
 
       /**
        * Initializes the DrawTool
@@ -134,7 +159,7 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
       initialize: function (options) {
         this.mapModel = options.model;
         if (!this.mapModel) {
-          this.handleNoMapModel();
+          console.warn("No map model was provided.");
           return;
         }
         // Add models & collections and add interactions, layer, connector,
@@ -166,7 +191,7 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
           type: "CustomDataSource",
           label: "Your Polygon",
           description: "The polygon that you are drawing on the map",
-          hideInLayerList: true, // TODO: Hide in LayerList, doc in mapConfig
+          hideInLayerList: true,
           outlineColor: this.color,
           opacity: this.opacity,
           colorPalette: {
@@ -218,14 +243,23 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
       },
 
       /**
+       * Resets the draw tool to its initial state.
+       */
+      reset: function () {
+        this.setMode(false);
+        this.clearPoints();
+        this.removeClickListeners();
+      },
+
+      /**
        * Removes the polygon object from the map
-       * TODO: Test this
        */
       removeLayer: function () {
         if (!this.mapModel || !this.layer) return;
-        // TODO
-        this.connector.disconnect();
-        this.connector.set("vectorLayer", null);
+        this.polygonConnector.disconnect();
+        this.polygonConnector.set("vectorLayer", null);
+        this.pointsConnector.disconnect();
+        this.pointsConnector.set("vectorLayer", null);
         this.mapModel.removeAsset(this.layer);
       },
 
@@ -234,17 +268,23 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
        * @returns {DrawTool} Returns the view
        */
       render: function () {
+        if(!this.mapModel) {
+          this.showError("No map model was provided.");
+          return this;
+        }
         this.renderToolbar();
         return this;
       },
 
       /**
-       * What to do when this view doesn't have a map view to draw on
+       * Show an error message to the user if the map model is not available
+       * or any other error occurs.
+       * @param {string} [message] - The error message to show to the user.
        */
-      handleNoMapModel: function () {
-        console.warn("No map model provided to DrawTool");
-        // TODO: Add a message to the view to let the user know that the draw
-        // tool is not available
+      showError: function (message) {
+        const str = `<i class="icon-warning-sign icon-left"></i>` +
+          `<span> The draw tool is not available. ${message}</span>`;
+        this.el.innerHTML = str;
       },
 
       /**
@@ -274,13 +314,14 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
       /**
        * Sends the polygon coordinates to a callback function to do something
        * with them.
-       * TODO: This is a WIP.
+       * @param {Function} callback - The callback function to send the polygon
+       * coordinates to.
        */
-      save: function () {
+      save: function (callback) {
         this.setMode(false);
-        this.removeClickListeners();
-        console.log(this.points.toJSON());
-        // TODO: Call a callback function to save the polygon
+        if(callback && typeof callback === "function") {
+          callback(this.points.toJSON());
+        }
       },
 
       /**
@@ -321,7 +362,7 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
         const buttonEl = this.buttonEls[buttonName + "Button"];
         if(!buttonEl) return;
         this.resetButtonStyles();
-        buttonEl.style.backgroundColor = "blue"; // TODO - create active style
+        buttonEl.classList.add(this.buttonClassActive);
       },
 
       /**
@@ -331,7 +372,10 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
       resetButtonStyles: function () {
         // Iterate through the buttonEls object and reset the styles
         for (const button in this.buttonEls) {
-          this.buttonEls[button].style.backgroundColor = "grey"; // TODO - create default style
+          if (this.buttonEls.hasOwnProperty(button)) {
+            const buttonEl = this.buttonEls[button];
+            buttonEl.classList.remove(this.buttonClassActive);
+          }
         }
       },
 
@@ -396,10 +440,10 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
        */
       handleClick: function (throttle = 50) {
         // Prevent double clicks
-        if (this.blockClick) return;
-        this.blockClick = true;
+        if (this.clickActionBlocked) return;
+        this.clickActionBlocked = true;
         setTimeout(() => {
-          this.blockClick = false;
+          this.clickActionBlocked = false;
         }, throttle);
         // Add the point to the polygon
         if (this.mode === "draw") {

@@ -519,7 +519,7 @@ define([
        */
       removeEntity: function (entity) {
         try {
-          const entities = this.getEntities();
+          const entities = this.getEntityCollection();
           if (!entities) return false;
           let removed = false;
           // if entity is a string, remove by ID

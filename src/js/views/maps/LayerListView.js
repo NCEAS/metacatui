@@ -107,8 +107,7 @@ define(
         setListeners: function () {
           try {
             if (this.collection) {
-              this.listenTo(this.collection, 'add', this.render);
-              this.listenTo(this.collection, 'remove', this.render);
+              this.listenTo(this.collection, 'add remove reset', this.render);
             }
           } catch (e) {
             console.log('Failed to set listeners:', e);
@@ -138,6 +137,10 @@ define(
 
             // Render a layer item for each layer in the collection
             this.collection.forEach(function (layerModel) {
+              if(layerModel.get('hideInLayerList') === true){
+                // skip this layer
+                return
+              }
               var layerItem = new LayerItemView({
                 model: layerModel
               })
