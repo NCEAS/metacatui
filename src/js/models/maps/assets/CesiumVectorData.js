@@ -371,7 +371,7 @@ define([
 
           // Suspending events while updating a large number of entities helps
           // performance.
-          cesiumModel.entities.suspendEvents();
+          model.suspendEvents();
 
           // If the asset isn't visible, just hide all entities and update the
           // visibility property to indicate that layer is hidden
@@ -383,13 +383,20 @@ define([
             this.styleEntities(entities);
           }
 
-          cesiumModel.entities.resumeEvents();
+          model.resumeEvents();
           this.runVisualizers();
         } catch (e) {
           console.log("Failed to update CesiumVectorData model styles.", e);
         }
       },
 
+      /**
+       * Run the Cesium visualizers for this asset. Visualizers render data
+       * associated with DataSource instances. Visualizers must be run after
+       * changes are made to the data or the appearance of the data.
+       * @since x.x.x
+       * @see {@link https://cesium.com/learn/cesiumjs/ref-doc/Visualizer.html}
+       */
       runVisualizers: function () {
         const dataSource = this.get("cesiumModel");
         const visualizers = dataSource._visualizers;
@@ -403,6 +410,12 @@ define([
           displayReadyNow = visualizers[x].update(time) && displayReadyNow;
         }
         this.set("displayReady", displayReadyNow);
+        if (!displayReadyNow) {
+          // If the display is not ready, try again. It means the visualizers
+          // are waiting for an asynchronous process to complete.
+          setTimeout(this.runVisualizers.bind(this), 10);
+          return
+        }
         this.trigger("appearanceChanged");
       },
 
@@ -412,8 +425,12 @@ define([
        * visualizers being ready. It will attempt to run the callback every
        * pingRate ms until the visualizers are ready, or until the maxPings is
        * reached.
-       * @param {*} callBack
-       * @param {*} maxPings
+       * @param {Function} callBack - The function to run when the visualizers
+       * are ready
+       * @param {Number} [pingRate=100] - The number of milliseconds to wait
+       * between pings - pings are used to check if the visualizers are ready
+       * @param {Number} [maxPings=30] - The maximum number of pings to wait
+       * before giving up
        */
       whenVisualizersReady: function (callBack, pingRate = 100, maxPings = 30) {
         const model = this;
@@ -432,26 +449,54 @@ define([
         }, pingRate);
       },
 
+      /**
+       * Get the Cesium EntityCollection for this asset
+       * @returns {Cesium.EntityCollection} The Cesium EntityCollection
+       * @since x.x.x
+       */
       getEntityCollection: function () {
         const model = this;
         const dataSource = model.get("cesiumModel");
         return dataSource?.entities;
       },
 
+      /**
+       * Get the Cesium Entities for this asset
+       * @returns {Cesium.Entity[]} The Cesium Entities
+       * @since x.x.x
+       */
       getEntities: function () {
         return this.getEntityCollection()?.values || [];
       },
 
+      /**
+       * Suspend events on the Cesium EntityCollection. This will prevent
+       * visualizers from running until resumeEvents is called.
+       * @since x.x.x
+       */
       suspendEvents: function () {
         const entities = this.getEntityCollection();
         if (entities) entities.suspendEvents();
       },
 
+      /**
+       * Resume events on the Cesium EntityCollection. This will allow
+       * visualizers to run again.
+       * @since x.x.x
+       */
       resumeEvents: function () {
         const entities = this.getEntityCollection();
         if (entities) entities.resumeEvents();
       },
 
+      /**
+       * Manually an entity to the Cesium EntityCollection.
+       * @param {Object} entity - The ConstructorOptions with properties to pass
+       * to Cesium.EntityCollection.add. See
+       * {@link https://cesium.com/learn/cesiumjs/ref-doc/EntityCollection.html?classFilter=EntityCollection#add}
+       * @returns {Cesium.Entity} The Cesium Entity that was added
+       * @since x.x.x
+       */
       addEntity: function (entity) {
         try {
           const entities = this.getEntityCollection();
@@ -465,6 +510,13 @@ define([
         }
       },
 
+      /**
+       * Manually remove an entity from the Cesium EntityCollection.
+       * @param {Cesium.Entity|string} entity - The entity or ID of the entity
+       * to remove
+       * @returns {Boolean} True if the entity was removed, false otherwise
+       * @since x.x.x
+       */
       removeEntity: function (entity) {
         try {
           const entities = this.getEntities();
@@ -472,7 +524,7 @@ define([
           let removed = false;
           // if entity is a string, remove by ID
           if (typeof entity === "string") {
-            removed =  entities.removeById(entity);
+            removed = entities.removeById(entity);
           } else {
             // Otherwise, assume it's an entity object
             removed = entities.remove(entity);
