@@ -108,9 +108,12 @@ define([
        */
       connect: function () {
         try {
+          this.disconnect();
+
           // Listen for changes to the points collection and update the layer
-          let geoPoints = this.get("geoPoints");
+          const geoPoints = this.get("geoPoints");
           const events = ["update", "reset"];
+
           events.forEach((eventName) => {
             this.listenTo(geoPoints, eventName, function (...args) {
               this.handleCollectionChange(eventName, ...args);
@@ -141,7 +144,8 @@ define([
        * Stop listening for changes to the Points collection.
        */
       disconnect: function () {
-        this.stopListening(this.get("geoPoints"));
+        const geoPoints = this.get("geoPoints");
+        if (geoPoints) this.stopListening(geoPoints);
         this.set("isConnected", false);
       },
 

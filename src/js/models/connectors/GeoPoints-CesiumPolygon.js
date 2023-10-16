@@ -48,9 +48,11 @@ define(["cesium", "models/connectors/GeoPoints-Cesium"], function (
        * the CesiumVectorData model.
        */
       addPolygon: function () {
+        const id = this.cid;
         const layer = this.get("layer") || this.setVectorLayer();
         const geoPoints = this.get("geoPoints") || this.setPoints();
         return layer.addEntity({
+          id: id, // If entity with this ID already exists, it will be updated
           polygon: {
             height: null, // <- clamp to ground
             hierarchy: new Cesium.CallbackProperty(() => {
