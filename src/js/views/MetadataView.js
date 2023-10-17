@@ -1231,10 +1231,20 @@ define(['jquery',
           }
 
           try {
-            //Determine if this metadata can be published.
+            // Determine if this metadata can be published.
             // The Publish feature has to be enabled in the app.
             // The model cannot already have a DOI
-            var canBePublished = MetacatUI.appModel.get("enablePublishDOI") && !view.model.isDOI();
+            var canBePublished;
+
+            // Check if this metadata can be published based on the "enablePublishOnAllNonPublic" Configuration.
+            // This helps in the case that a member-node publication workflow requires review of the datasets before
+            // they can be public. It also allows datasets to be reviewed for publication regardless of the DOI status,
+            // as some datasets could have a pre-assigned DOI when transferring their dataset to a member node.
+            if (MetacatUI.appModel.get("enablePublishOnAllNonPublic") && view.model.get("isPublic") === false){
+              canBePublished = true;
+            } else {
+              canBePublished = MetacatUI.appModel.get("enablePublishDOI") && !view.model.isDOI();
+            }
 
             //If publishing is enabled, check if only certain users and groups can publish metadata
             if (canBePublished) {
@@ -1242,8 +1252,9 @@ define(['jquery',
               var authorizedPublishers = MetacatUI.appModel.get("enablePublishDOIForSubjects");
               //If the logged-in user is one of the subjects in the list or is in a group that is
               // in the list, then this metadata can be published. Otherwise, it cannot.
-              if (Array.isArray(authorizedPublishers) && authorizedPublishers.length) {
-                if (MetacatUI.appUserModel.hasIdentityOverlap(authorizedPublishers)) {
+              if (Array.isArray(authorizedPublishers) && (authorizedPublishers.length ||
+						  !view.model.get("isPublic") === false)){
+                if (MetacatUI.appUserModel.hasIdentityOverlap(authorizedPublishers)){
                   canBePublished = true;
                 }
                 else {

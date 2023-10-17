@@ -1080,6 +1080,20 @@ define(['jquery', 'underscore', 'backbone'],
       isJSONLDEnabled: true,
 
       /**
+      * If true, users can see a "Publish" button in the MetadataView on all non-public datasets regardless if
+      * a DOI is assigned to the dataset
+      * If false, the default behavior would take place based on the {@link AppConfig#enablePublishDOI} config.
+      *
+      * This config helps in the case that a member-node publication workflow requires review of the datasets before
+      * they can be public. It also allows datasets to be reviewed for publication regardless of the DOI status,
+      * as some datasets could have a pre-assigned DOI when transferring their dataset to a member node.
+      * @type {boolean}
+      * @default false
+      * @since 2.27.0
+      */
+      enablePublishOnAllNonPublic: false,
+
+      /**
       * If true, users can see a "Publish" button in the MetadataView, which makes the metadata
       * document public and gives it a DOI identifier.
       * If false, the button will be hidden completely.
