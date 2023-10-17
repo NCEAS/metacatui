@@ -154,7 +154,7 @@ define([
         const limit = this.get("maxGeoHashes");
         const geohashes = this.get("geohashes")
         const area = this.getViewExtent().getArea();
-        return this.get("geohashes").getMaxPrecision(area, limit);
+        return geohashes.getMaxPrecision(area, limit);
       },
 
       /**

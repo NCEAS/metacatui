@@ -316,9 +316,9 @@ define([
           },
           properties: properties,
         };
-        if (label) {
+        if (label && (properties[label] || properties[label] === 0)) {
           (feature["label"] = {
-            text: properties[label].toString(),
+            text: properties[label]?.toString(),
             show: true,
             fillColor: {
               rgba: [255, 255, 255, 255],

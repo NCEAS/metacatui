@@ -102,14 +102,24 @@ define([
       },
 
       /**
+       * Remove the listeners.
+       * @since x.x.x
+       */
+      removeListeners: function () {
+        const extentEvents =
+          "change:height change:north change:south change:east change:west";
+        this.stopListening(this, extentEvents);
+      },
+
+      /**
        * Set a listener that updates the filter when the coordinates & height
        * change
        * @since 2.25.0
        */
       setListeners: function () {
+        this.removeListeners();
         const extentEvents =
           "change:height change:north change:south change:east change:west";
-        this.stopListening(this, extentEvents);
         this.listenTo(this, extentEvents, this.updateFilterFromExtent);
       },
 
@@ -318,7 +328,13 @@ define([
        * @inheritdoc
        */
       resetValue: function () {
-        const df = this.defaults();
+        // Need to stop listeners because otherwise changing the coords will
+        // update the filter values. This sometimes updates the values *after*
+        // the values are reset, preventing the reset from working.
+        this.removeListeners();
+
+        let df = this.defaults();
+        
         this.set({
           values: df.values,
           east: df.east,
@@ -327,6 +343,9 @@ define([
           south: df.south,
           height: df.height,
         });
+        
+        // Reset the listeners
+        this.setListeners();
       },
     }
   );

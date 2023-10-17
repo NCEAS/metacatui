@@ -1,5 +1,11 @@
 {
   "unit": [
+    "./js/specs/unit/collections/maps/GeoPoints.spec.js",
+    "./js/specs/unit/models/connectors/GeoPoints-Cesium.spec.js",
+    "./js/specs/unit/models/connectors/GeoPoints-CesiumPoints.spec.js",
+    "./js/specs/unit/models/connectors/GeoPoints-CesiumPolygon.spec.js",
+    "./js/specs/unit/models/maps/GeoBoundingBox.spec.js",
+    "./js/specs/unit/models/maps/GeoUtilities.spec.js",
     "./js/specs/unit/collections/SolrResults.spec.js",
     "./js/specs/unit/models/Search.spec.js",
     "./js/specs/unit/models/filters/Filter.spec.js",

@@ -52,7 +52,7 @@ define([
         const map = this.filtersMap.get("map");
         const spatialFilters = this.filtersMap.get("spatialFilters");
         const extent = { north: 1, south: 2, east: 3, west: 4 };
-        map.set("currentViewExtent", extent);
+        map.get("interactions").setViewExtent(extent);
         this.filtersMap.updateSpatialFilters();
         spatialFilters[0].get("north").should.equal(1);
         spatialFilters[0].get("south").should.equal(2);
@@ -80,6 +80,6 @@ define([
         const spatialFilters = this.filtersMap.get("spatialFilters");
         spatialFilters[0].get("values").should.deep.equal([]);
       });
-    });
+    }); 
   });
 });
