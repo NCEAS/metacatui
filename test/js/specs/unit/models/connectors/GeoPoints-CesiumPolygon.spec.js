@@ -7,15 +7,20 @@ define([
 
   describe("GeoPointsCesiumPolygon Test Suite", function () {
     /* Set up */
-    beforeEach(function () {});
+    beforeEach(function () {
+      this.geoPointsCesiumPolygon = new GeoPointsCesiumPolygon();
+    });
 
     /* Tear down */
-    afterEach(function () {});
+    afterEach(function () {
+      this.geoPointsCesiumPolygon.destroy();
+    });
 
     describe("Initialization", function () {
       it("should create a GeoPointsCesiumPolygon instance", function () {
         new GeoPointsCesiumPolygon().should.be.instanceof(GeoPointsCesiumPolygon);
       });
     });
+
   });
 });

@@ -71,9 +71,12 @@ define(["backbone", "models/maps/GeoPoint"], function (Backbone, GeoPoint) {
        */
       removePoint(indexOrPoint) {
         if (typeof indexOrPoint === "number") {
-          this.removePointByIndex(indexOrPoint);
+          return this.removePointByIndex(indexOrPoint);
         } else if (Array.isArray(indexOrPoint)) {
-          this.removePointByAttr(indexOrPoint);
+          return this.removePointByAttr(indexOrPoint);
+        } else {
+          // try just removing the point
+          return this.remove(indexOrPoint);
         }
       },
 
@@ -157,10 +160,10 @@ define(["backbone", "models/maps/GeoPoint"], function (Backbone, GeoPoint) {
         if (!forceAsPolygon && geometryType === "Polygon" && this.length < 3) {
           geometryType = this.length === 1 ? "Point" : "LineString";
         }
-        const czml = [this.getCZMLHeader()];
+        let czml = [this.getCZMLHeader()];
         switch (geometryType) {
           case "Point":
-            czml.concat(this.toCZMLPoints());
+            czml = czml.concat(this.toCZMLPoints());
             break;
           case "LineString":
             czml.push(this.getCZMLLineString());
