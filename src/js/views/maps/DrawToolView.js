@@ -386,12 +386,13 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
        */
       removeClickListeners: function () {
         const handler = this.clickHandler;
+        const originalAction = this.originalAction;
         if (handler) {
           handler.stopListening();
           handler.clear();
           this.clickHandler = null;
         }
-        this.mapModel.set("clickFeatureAction", this.originalClickAction);
+        this.mapModel.set("clickFeatureAction", originalAction);
         this.listeningForClicks = false;
       },
 

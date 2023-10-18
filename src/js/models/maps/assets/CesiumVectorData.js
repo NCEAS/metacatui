@@ -405,16 +405,14 @@ define([
           return;
         }
         const time = Cesium.JulianDate.now();
-        let displayReadyNow = dataSource.update(time);
+        let displayReadyNow = true
         for (let x = 0; x < visualizers.length; x++) {
           displayReadyNow = visualizers[x].update(time) && displayReadyNow;
         }
-        this.set("displayReady", displayReadyNow);
         if (!displayReadyNow) {
-          // If the display is not ready, try again. It means the visualizers
-          // are waiting for an asynchronous process to complete.
-          setTimeout(this.runVisualizers.bind(this), 10);
-          return
+          setTimeout(this.runVisualizers.bind(this), 300);
+        } else {
+          this.set("displayReady", true);
         }
         this.trigger("appearanceChanged");
       },
@@ -783,12 +781,8 @@ define([
             }
             return false;
           })
-          .catch(function (error) {
-            console.log(
-              "Failed to get the bounding sphere for a CesiumVectorData model" +
-                ". Error details: " +
-                error
-            );
+          .catch(function (e) {
+            console.log("Error getting bounding sphere.", e);
           });
       },
     }

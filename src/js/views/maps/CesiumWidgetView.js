@@ -280,9 +280,6 @@ define([
           if (view.zoomTarget) {
             view.completeFlight(view.zoomTarget, view.zoomOptions);
           }
-          // The dataSourceDisplay must be set to 'ready' to get bounding
-          // spheres for dataSources
-          view.dataSourceDisplay._ready = true;
         } catch (e) {
           console.log("Error calling post render functions:", e);
         }
@@ -290,6 +287,8 @@ define([
 
       /**
        * Run the update method and all visualizers for each data source.
+       * @return {boolean} Returns true if all data sources are ready to be
+       * displayed.
        * @since x.x.x
        */
       updateAllDataSources: function () {
@@ -299,13 +298,17 @@ define([
           return;
         }
         const time = view.clock.currentTime;
-        dataSources.forEach(function (dataSource) {
+        let displayReady = true;
+        for (let i = 0; i < dataSources.length; i++) {
+          const dataSource = dataSources.get(i);
           dataSource.update(view.clock.currentTime);
           // for each visualizer, update it
           dataSource._visualizers.forEach(function (visualizer) {
-            visualizer.update(time);
+            displayReady = displayReady && visualizer.update(time);
           });
-        });
+        }
+        view.dataSourceDisplay._ready = displayReady;
+        return displayReady;
       },
 
       /**
@@ -370,11 +373,11 @@ define([
 
         // Listen for addition or removal of layers TODO: Add similar listeners
         // for terrain
-        if(layers){
+        if (layers) {
           view.stopListening(layers);
           view.listenTo(layers, "add", view.addAsset);
           view.listenTo(layers, "remove", view.removeAsset);
-  
+
           // Each layer fires 'appearanceChanged' whenever the color, opacity,
           // etc. has been updated. Re-render the scene when this happens.
           view.listenTo(layers, "appearanceChanged", view.requestRender);
@@ -595,7 +598,7 @@ define([
           const layersReverse = layers.last(layers.length).reverse();
           layersReverse.forEach(function (layer) {
             view.addAsset(layer);
-          })
+          });
         }
 
         // The Cesium Widget will support just one terrain option to start.
@@ -662,19 +665,18 @@ define([
        */
       completeFlight: function (target, options) {
         try {
-          const view = this;
-          if (typeof options !== "object") options = {};
 
           // A target is required
-          if (!target) {
-            return;
-          }
+          if (!target) return;
+
+          const view = this;
+          if (typeof options !== "object") options = {};
+          view.resetZoomTarget();
 
           // If the target is a Bounding Sphere, use the camera's built-in
           // function
           if (target instanceof Cesium.BoundingSphere) {
             view.camera.flyToBoundingSphere(target, options);
-            view.resetZoomTarget();
             return;
           }
 
@@ -713,27 +715,31 @@ define([
             // If the object saved in the Feature is an Entity, then this
             // function will get the bounding sphere for the entity on the next
             // run.
-            setTimeout(() => {
-              // TODO check if needed
-              view.flyTo(target.get("featureObject"), options);
-            }, 0);
+            // check if the layer is displayReady
+            const layer = target.get("mapAsset");
+            const displayReady = layer.get("displayReady");
+            if (!displayReady) {
+              // Must wait for layer to be rendered in via the dataSourceDisplay
+              // before we can get the bounding sphere for the feature.
+              view.listenToOnce(layer, "change:displayReady", function () {
+                view.flyTo(target, options);
+              });
+              return
+            }
+            view.flyTo(target.get("featureObject"), options);
             return;
           }
 
           // If the target is a Cesium Entity, then get the bounding sphere for
           // the entity and call this function again.
           const entity = target instanceof Cesium.Entity ? target : target.id;
+
           if (entity instanceof Cesium.Entity) {
-            let entityBoundingSphere = new Cesium.BoundingSphere();
-            view.dataSourceDisplay.getBoundingSphere(
-              entity,
-              false,
-              entityBoundingSphere
-            );
-            setTimeout(() => {
-              // TODO check if needed
+
+            view.dataSourceDisplay._ready = true
+            view.getBoundingSphereFromEntity(entity).then(function (entityBoundingSphere) {
               view.flyTo(entityBoundingSphere, options);
-            }, 0);
+            });
             return;
           }
 
@@ -768,6 +774,65 @@ define([
         } catch (e) {
           console.log("Failed to navigate to a target in Cesium.", e);
         }
+      },
+
+      getBoundingSphereFromEntity: function (entity) {
+        const view = this
+        const entityBoundingSphere = new Cesium.BoundingSphere();
+        const readyState = Cesium.BoundingSphereState.DONE;
+        function getBS() {
+          return view.dataSourceDisplay.getBoundingSphere(
+            entity,
+            false,
+            entityBoundingSphere
+          );
+        }
+        // Return a promise that resolves to bounding box when it's ready.
+        // Keep running getBS at intervals until it's ready.
+        return new Promise(function (resolve, reject) {
+          let attempts = 0;
+          const maxAttempts = 100;
+          const interval = setInterval(function () {
+            attempts++;
+            const state = getBS();
+            if (state !== readyState) {
+              // Search for the entity again in case it was removed and
+              // re-added to the data source display.
+              entity = view.getEntityById(entity.id, entity.entityCollection);
+              if(!entity) {
+                clearInterval(interval);
+                reject("Failed to get bounding sphere for entity, entity not found.");
+              }
+
+            } else {
+              clearInterval(interval);
+              resolve(entityBoundingSphere);
+            }
+            if (attempts >= maxAttempts) {
+              clearInterval(interval);
+              reject("Failed to get bounding sphere for entity.");
+            }
+          }, 100);
+        })
+      },
+
+      /**
+       * Search an entity collection for an entity with a given id.
+       * @param {string} id - The id of the entity to find.
+       * @param {Cesium.EntityCollection} collection - The collection to search.
+       * @returns {Cesium.Entity} The entity with the given id, or null if no
+       * entity with that id exists in the collection.
+       * @since x.x.x
+       */
+      getEntityById: function (id, collection) {
+        const entities = collection.values;
+        for (let i = 0; i < entities.length; i++) {
+          const entity = entities[i];
+          if (entity.id === id) {
+            return entity;
+          }
+        }
+        return null;
       },
 
       resetZoomTarget: function () {
