@@ -130,7 +130,7 @@ define([
                     attributes.moreInfoLink = undefined;
                     // attributes.isMetadata = false;
                     attributes.viewType = this.mode;
-                    attributes.fileName = this.itemName;
+                    attributes.objectTitle = this.itemName;
 
                     var itemPathParts = new Array();
                     if (this.itemPath) {
@@ -142,7 +142,7 @@ define([
                       if (this.itemPath.endsWith("/")) {
                         attributes.nodeLevel -= 1;
                       }
-                      if (itemPathParts[-1] == attributes.fileName) {
+                      if (itemPathParts[-1] == attributes.objectTitle) {
                         attributes.nodeLevel -= 1;
                       }
                     }
