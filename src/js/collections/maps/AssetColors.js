@@ -40,14 +40,17 @@ define(
          * the beginning or end of the collection, respectively.
          * @since 2.25.0
          */
-        comparator: function (color) {
-          let value = color.get('value');
-          if (value === 'min') {
-            return -Infinity;
-          } else if (value === 'max') {
-            return Infinity;
-          } else {
-            return value
+        comparator: function (color, paletteType) {
+          // Only sort continuous and classified paletteTypes
+          if (!paletteType === 'categorical') {
+            let value = color.get('value');
+            if (value === 'min') {
+              return -Infinity;
+            } else if (value === 'max') {
+              return Infinity;
+            } else {
+              return value
+            }
           }
         },
 
