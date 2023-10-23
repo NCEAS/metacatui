@@ -124,9 +124,10 @@ define([
        * values of the attributes, which will be set on the model.
        */
       initialize: function (paletteConfig) {
+        const options = {sort: false};
         try {
           if (paletteConfig && paletteConfig.colors) {
-            this.set("colors", new AssetColors(paletteConfig.colors));
+            this.set("colors", new AssetColors(paletteConfig.colors, options));
           }
           // If a continuous palette has only 1 colour, then treat it as
           // categorical
