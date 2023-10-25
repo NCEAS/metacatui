@@ -65,85 +65,92 @@ define(['jquery',
 									encodeURIComponent(this.pid)+'")&rows=1&start=0&fl=*&wt=json';
 			var requestSettings = {
 				url: MetacatUI.appModel.get('queryServiceUrl') + query,
-				success: function(data, textStatus, xhr){
+				success: function (data, textStatus, xhr) {
 
-					if(data.response.numFound == 0){
+					try {
 
-            if( view.parentView && view.parentView.model ){
+						if (!data?.response?.numFound) {
 
-              //Show a "not indexed" message if there is system metadata but nothing in
-              // the index
-              if(view.parentView.model.get("systemMetadata")){
-                view.showNotIndexed();
-              }
-              //Show a "not found" message if there is no system metadata and no results in the index
-              else{
-                view.parentView.model.set("notFound", true);
-                view.parentView.showNotFound();
-              }
-            }
+							if (view.parentView && view.parentView.model) {
 
-						view.flagComplete();
-					}
-					else{
-						view.docs = data.response.docs;
-
-						_.each(data.response.docs, function(doc, i, list){
-
-							//If this is a data object and there is a science metadata doc that describes it, then navigate to that Metadata View.
-							if((doc.formatType == "DATA") && (doc.isDocumentedBy && doc.isDocumentedBy.length)){
-								view.onClose();
-								MetacatUI.uiRouter.navigate("view/" + doc.isDocumentedBy[0], true);
-								return;
+								//Show a "not indexed" message if there is system metadata but nothing in
+								// the index
+								if (view.parentView.model.get("systemMetadata")) {
+									view.showNotIndexed();
+								}
+								//Show a "not found" message if there is no system metadata and no results in the index
+								else {
+									view.parentView.model.set("notFound", true);
+									view.parentView.showNotFound();
+								}
 							}
 
-							var metadataEl = $(document.createElement("section")).attr("id", "metadata-index-details"),
-								id = doc.id,
-								creator = doc.origin,
-								title = doc.title,
-								pubDate = doc.pubDate,
-								dateUploaded = doc.dateUploaded,
-								keys = Object.keys(doc),
-								docModel = new SolrResult(doc);
-
-							//Extract General Info details that we want to list first
-							var generalInfoKeys = ["title", "id", "abstract", "pubDate", "keywords"];
-							keys = _.difference(keys, generalInfoKeys);
-							$(metadataEl).append(view.formatAttributeSection(docModel, generalInfoKeys, "General"));
-
-							//Extract Spatial details
-							var spatialKeys = ["site", "southBoundCoord", "northBoundCoord", "westBoundCoord", "eastBoundCoord"];
-							keys = _.difference(keys, spatialKeys);
-							$(metadataEl).append(view.formatAttributeSection(docModel, spatialKeys, "Geographic Region"));
-
-							//Extract Temporal Coverage details
-							var temporalKeys = ["beginDate", "endDate"];
-							keys = _.difference(keys, temporalKeys);
-							$(metadataEl).append(view.formatAttributeSection(docModel, temporalKeys, "Temporal Coverage"));
-
-							//Extract Taxonomic Coverage details
-							var taxonKeys = ["order", "phylum", "family", "genus", "species", "scientificName"];
-							keys = _.difference(keys, taxonKeys);
-							$(metadataEl).append(view.formatAttributeSection(docModel, taxonKeys, "Taxonomic Coverage"));
-
-							//Extract People details
-							var peopleKeys = ["origin", "investigator", "contactOrganization", "project"];
-							keys = _.difference(keys, peopleKeys);
-							$(metadataEl).append(view.formatAttributeSection(docModel, peopleKeys, "People and Associated Parties"));
-
-							//Extract Access Control details
-							var accessKeys = ["isPublic", "submitter", "rightsHolder", "writePermission", "readPermission", "changePermission", "authoritativeMN"];
-							keys = _.difference(keys, accessKeys);
-							$(metadataEl).append(view.formatAttributeSection(docModel, accessKeys, "Access Control"));
-
-							//Add the rest of the metadata
-							$(metadataEl).append(view.formatAttributeSection(docModel, keys, "Other"));
-
-							view.$el.html(metadataEl);
-
 							view.flagComplete();
-						});
+						}
+						else {
+							view.docs = data.response.docs;
 
+							_.each(data.response.docs, function (doc, i, list) {
+
+								//If this is a data object and there is a science metadata doc that describes it, then navigate to that Metadata View.
+								if ((doc.formatType == "DATA") && (doc.isDocumentedBy && doc.isDocumentedBy.length)) {
+									view.onClose();
+									MetacatUI.uiRouter.navigate("view/" + doc.isDocumentedBy[0], true);
+									return;
+								}
+
+								var metadataEl = $(document.createElement("section")).attr("id", "metadata-index-details"),
+									id = doc.id,
+									creator = doc.origin,
+									title = doc.title,
+									pubDate = doc.pubDate,
+									dateUploaded = doc.dateUploaded,
+									keys = Object.keys(doc),
+									docModel = new SolrResult(doc);
+
+								//Extract General Info details that we want to list first
+								var generalInfoKeys = ["title", "id", "abstract", "pubDate", "keywords"];
+								keys = _.difference(keys, generalInfoKeys);
+								$(metadataEl).append(view.formatAttributeSection(docModel, generalInfoKeys, "General"));
+
+								//Extract Spatial details
+								var spatialKeys = ["site", "southBoundCoord", "northBoundCoord", "westBoundCoord", "eastBoundCoord"];
+								keys = _.difference(keys, spatialKeys);
+								$(metadataEl).append(view.formatAttributeSection(docModel, spatialKeys, "Geographic Region"));
+
+								//Extract Temporal Coverage details
+								var temporalKeys = ["beginDate", "endDate"];
+								keys = _.difference(keys, temporalKeys);
+								$(metadataEl).append(view.formatAttributeSection(docModel, temporalKeys, "Temporal Coverage"));
+
+								//Extract Taxonomic Coverage details
+								var taxonKeys = ["order", "phylum", "family", "genus", "species", "scientificName"];
+								keys = _.difference(keys, taxonKeys);
+								$(metadataEl).append(view.formatAttributeSection(docModel, taxonKeys, "Taxonomic Coverage"));
+
+								//Extract People details
+								var peopleKeys = ["origin", "investigator", "contactOrganization", "project"];
+								keys = _.difference(keys, peopleKeys);
+								$(metadataEl).append(view.formatAttributeSection(docModel, peopleKeys, "People and Associated Parties"));
+
+								//Extract Access Control details
+								var accessKeys = ["isPublic", "submitter", "rightsHolder", "writePermission", "readPermission", "changePermission", "authoritativeMN"];
+								keys = _.difference(keys, accessKeys);
+								$(metadataEl).append(view.formatAttributeSection(docModel, accessKeys, "Access Control"));
+
+								//Add the rest of the metadata
+								$(metadataEl).append(view.formatAttributeSection(docModel, keys, "Other"));
+
+								view.$el.html(metadataEl);
+
+								view.flagComplete();
+							});
+
+						}
+					} catch (e) {
+						console.log("Error parsing Solr response: " + e);
+						console.log("Solr response: " + data);
+						view.parentView.showNotFound();
 					}
 				},
 				error: function(){
