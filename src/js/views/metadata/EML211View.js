@@ -2347,8 +2347,8 @@ define(['underscore', 'jquery', 'backbone',
           if (taxonCoverages && taxonCoverages.length >= 1){
               const taxonCoverage = taxonCoverages[0];
               const classifications = taxonCoverage.get("taxonomicClassification");
-              classifications.push(...newClassifications);
-              taxonCoverage.set("taxonomicClassification", classifications);
+              const allClass = classifications.concat(newClassifications);
+              taxonCoverage.set("taxonomicClassification", allClass);
           } else {
             // If there is no <taxonomicCoverage> element for some reason,
             // create one and add the new taxon to its <taxonomicClassification>
