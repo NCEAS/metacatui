@@ -386,47 +386,53 @@ define(['jquery',
             var loadSettings = {
               url: endpoint,
               success: function (response, status, xhr) {
+                try {
 
-                //If the user has navigated away from the MetadataView, then don't render anything further
-                if (MetacatUI.appView.currentView != viewRef)
-                  return;
-
-                //Our fallback is to show the metadata details from the Solr index
-                if (status == "error")
-                  viewRef.renderMetadataFromIndex();
-                else {
-                  //Check for a response that is a 200 OK status, but is an error msg
-                  if ((response.length < 250) && (response.indexOf("Error transforming document") > -1) && viewRef.model.get("indexed")) {
-                    viewRef.renderMetadataFromIndex();
+                  //If the user has navigated away from the MetadataView, then don't render anything further
+                  if (MetacatUI.appView.currentView != viewRef)
                     return;
-                  }
-                  //Mark this as a metadata doc with no stylesheet, or one that is at least different than usual EML and FGDC
-                  else if ((response.indexOf('id="Metadata"') == -1)) {
-                    viewRef.$el.addClass("container no-stylesheet");
 
-                    if (viewRef.model.get("indexed")) {
+                  //Our fallback is to show the metadata details from the Solr index
+                  if (status == "error" || !response || typeof response !== "string")
+                    viewRef.renderMetadataFromIndex();
+                  else {
+                    //Check for a response that is a 200 OK status, but is an error msg
+                    if ((response.length < 250) && (response.indexOf("Error transforming document") > -1) && viewRef.model.get("indexed")) {
                       viewRef.renderMetadataFromIndex();
                       return;
                     }
+                    //Mark this as a metadata doc with no stylesheet, or one that is at least different than usual EML and FGDC
+                    else if ((response.indexOf('id="Metadata"') == -1)) {
+                      viewRef.$el.addClass("container no-stylesheet");
+
+                      if (viewRef.model.get("indexed")) {
+                        viewRef.renderMetadataFromIndex();
+                        return;
+                      }
+                    }
+
+                    //Now show the response from the view service
+                    viewRef.$(viewRef.metadataContainer).html(response);
+
+                    //If there is no info from the index and there is no metadata doc rendered either, then display a message
+                    if (viewRef.$el.is(".no-stylesheet") && viewRef.model.get("archived") && !viewRef.model.get("indexed"))
+                      viewRef.$(viewRef.metadataContainer).prepend(viewRef.alertTemplate({ msg: "There is limited metadata about this dataset since it has been archived." }));
+
+                    viewRef.alterMarkup();
+
+                    viewRef.trigger("metadataLoaded");
+
+                    //Add a map of the spatial coverage
+                    if (gmaps) viewRef.insertSpatialCoverageMap();
+
+                    // Injects Clipboard objects into DOM elements returned from the View Service
+                    viewRef.insertCopiables();
+
                   }
-
-                  //Now show the response from the view service
-                  viewRef.$(viewRef.metadataContainer).html(response);
-
-                  //If there is no info from the index and there is no metadata doc rendered either, then display a message
-                  if (viewRef.$el.is(".no-stylesheet") && viewRef.model.get("archived") && !viewRef.model.get("indexed"))
-                    viewRef.$(viewRef.metadataContainer).prepend(viewRef.alertTemplate({ msg: "There is limited metadata about this dataset since it has been archived." }));
-
-                  viewRef.alterMarkup();
-
-                  viewRef.trigger("metadataLoaded");
-
-                  //Add a map of the spatial coverage
-                  if (gmaps) viewRef.insertSpatialCoverageMap();
-
-                  // Injects Clipboard objects into DOM elements returned from the View Service
-                  viewRef.insertCopiables();
-
+                } catch (e) {
+                  console.log("Error rendering metadata from the view service", e);
+                  console.log("Response from the view service: ", response);
+                  viewRef.renderMetadataFromIndex();
                 }
               },
               error: function (xhr, textStatus, errorThrown) {
