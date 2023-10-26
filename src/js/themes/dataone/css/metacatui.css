@@ -479,6 +479,10 @@ width: 100%;
   color: var(--c-neutral-8);
 }
 
+.toc-view + .markdown {
+  min-height: 90vh;
+}
+
 /* FORM/INPUT CUSTOMIZATIONS
 -------------------------------------------------- */
 .depth {
