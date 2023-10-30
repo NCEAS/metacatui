@@ -460,7 +460,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                   XSD =     this.rdf.Namespace(this.namespaces.XSD);
 
               var memberStatements = [],
-                  atLocationStatements = [],
+                  atLocationStatements = [], // array to store atLocation statements
                   memberURIParts,
                   memberPIDStr,
                   memberPID,
@@ -470,7 +470,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                   objectParts,
                   objectPIDStr,
                   objectPID,
-                  objectAtLocationValue,
+                  objectAtLocationValue, 
                   scimetaID, // documentor
                   scidataID, // documentee
                   models = []; // the models returned by parse()
@@ -580,7 +580,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 atLocationStatements = this.dataPackageGraph.statementsMatching(
                   undefined, PROV("atLocation"), undefined, undefined);
 
-                // Get system metadata for each member to eval the formatId
+                // Get atLocation information for each statement in the resourceMap
                 _.each(atLocationStatements, function(atLocationStatement){
                     objectParts = atLocationStatement.subject.value.split("/");
                     objectPIDStr = _.last(objectParts);
@@ -1755,8 +1755,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
           //If there are any models that are not synced yet, the collection is not complete
           if( notSynced.length > 0 ) {
             var view = this;
-              this.listenToOnce(notSynced[0], "sync", this.triggerComplete, notSynced[0]);
-              return;
+            this.listenToOnce(notSynced[0], "sync", this.triggerComplete, notSynced[0]);
+            return;
           }
 
           //If the number of models in this collection does not equal the number of objects referenced in the RDF XML, the collection is not complete
@@ -3150,7 +3150,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               }
             },
 
-
+            /**
+             * Returns atLocation information found in this resourceMap
+             * for all the PIDs in this resourceMap
+             * @returns object with PIDs as key and atLocation paths as values
+             * @since x.x.x
+             */
             getAtLocation: function() {
               return this.atLocationObject;
             }
