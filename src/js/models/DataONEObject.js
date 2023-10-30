@@ -261,7 +261,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             }
           },
 
-          //Create the URL string that is used to download this package
+          /**
+           * Create the URL string that is used to download this package
+           * @returns PackageURL string for this DataONE Object
+           * @since x.x.x
+           */
           getPackageURL: function(){
             var url = null;
 
@@ -1216,7 +1220,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
           },
 
-          //Returns a plain-english version of the specific format ID (for selected ids)
+          /**
+           * Looks up human readable format of the DataONE Object
+           * @returns format String
+           * @since x.x.x
+           */
           getFormat: function(){
             var formatMap = {
               "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : "Microsoft Excel OpenXML",
@@ -1812,7 +1820,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           },
 
           /**
-           * Converts the number of bytes into a human readable format and updates the `sizeStr` attribute
+           * Converts the number of bytes into a human readable format and 
+           * updates the `sizeStr` attribute
+           * @returns: None
+           * 
            */
           bytesToSize: function(){
               var kibibyte = 1024;
@@ -1847,8 +1858,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               }
           },
 
-          /*
-          * This method will download this object while sending the user's auth token in the request.
+          /**
+          * This method will download this object while 
+          * sending the user's auth token in the request.
+          * @returns None
+          * @since: x.x.x
           */
           downloadWithCredentials: function(){
             //if(this.get("isPublic")) return;
