@@ -208,43 +208,10 @@ define(['jquery', 'underscore', 'backbone'],
 		 * @param {string} customString - Optional. An identifier string to check instead of the id and seriesId attributes on the model
 		 * @returns {boolean} True if it is a DOI
 		 */
-		isDOI: function(customString) {
-			var DOI_PREFIXES = ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10.", "http://doi.org/doi:10.",
-				"https://dx.doi.org/10.", "https://doi.org/10.", "https://doi.org/doi:10."],
-				  DOI_REGEX = new RegExp(/^10.\d{4,9}\/[-._;()/:A-Z0-9]+$/i);;
-
-			//If a custom string is given, then check that instead of the seriesId and id from the model
-			if( typeof customString == "string" ){
-				for (var i=0; i < DOI_PREFIXES.length; i++) {
-					if (customString.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
-						return true;
-				}
-
-				//If there is no DOI prefix, check for a DOI without the prefix using a regular expression
-				if( DOI_REGEX.test(customString) ){
-					return true;
-				}
-
-			}
-			else{
-				var seriesId = this.get("seriesId"),
-						pid      = this.get("id");
-
-				for (var i=0; i < DOI_PREFIXES.length; i++) {
-					if (seriesId && seriesId.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
-						return true;
-					else if (pid && pid.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
-						return true;
-				}
-
-				//If there is no DOI prefix, check for a DOI without the prefix using a regular expression
-				if( DOI_REGEX.test(seriesId) || DOI_REGEX.test(pid) ){
-					return true;
-				}
-
-			}
-
-			return false;
+		isDOI: function (customString) {
+			return MetacatUI.appModel.isDOI(customString) ||
+			MetacatUI.appModel.isDOI(this.get("id")) ||
+			MetacatUI.appModel.isDOI(this.get("seriesId"));
 		},
 
 		/*

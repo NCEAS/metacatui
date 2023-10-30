@@ -269,7 +269,7 @@ define([
             return;
           }
           // Set the GeoJSON representing geohashes on the model
-          const cesiumOptions = model.get("cesiumOptions");
+          const cesiumOptions = this.getCesiumOptions();
           const type = model.get("type");
           const data = type === "geojson" ? this.getGeoJSON() : this.getCZML();
           cesiumOptions["data"] = data;

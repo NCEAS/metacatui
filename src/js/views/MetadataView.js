@@ -98,6 +98,21 @@ define(['jquery',
 
         objectIds: [],
 
+        /**
+         * Text to display in the help tooltip for the alternative identifier field,
+         * if the field is present.
+         * @type {string}
+         * @since 2.26.0
+         */
+        alternativeIdentifierHelpText: `
+         An identifier used to reference this dataset in the past or in another
+         system. This could be a link to the original dataset or an old
+         identifier that was replaced. The referenced dataset may be the same
+         or different from the one you are currently viewing, and its
+         accessibility may vary. It may provide additional context about the
+         history and evolution of the dataset.
+        `,
+
         // Delegated events for creating new items, and clearing completed ones.
         events: {
           "click #publish": "publish",
@@ -176,10 +191,10 @@ define(['jquery',
           this.dataPackage = new DataPackage([dataOneObject], { id: pid });
 
           this.dataPackage.mergeModels([this.model]);
-          
+
           // If there is no resource map
           if (!pid) {
-            // mark the data package as synced, 
+            // mark the data package as synced,
             // since there are no other models to fetch
             this.dataPackageSynced = true;
             this.trigger("changed:dataPackageSynced");
@@ -385,49 +400,53 @@ define(['jquery',
             var loadSettings = {
               url: endpoint,
               success: function (response, status, xhr) {
+                try {
 
-                //If the user has navigated away from the MetadataView, then don't render anything further
-                if (MetacatUI.appView.currentView != viewRef)
-                  return;
-
-                //Our fallback is to show the metadata details from the Solr index
-                if (status == "error")
-                  viewRef.renderMetadataFromIndex();
-                else {
-                  //Check for a response that is a 200 OK status, but is an error msg
-                  if ((response.length < 250) && (response.indexOf("Error transforming document") > -1) && viewRef.model.get("indexed")) {
-                    viewRef.renderMetadataFromIndex();
+                  //If the user has navigated away from the MetadataView, then don't render anything further
+                  if (MetacatUI.appView.currentView != viewRef)
                     return;
-                  }
-                  //Mark this as a metadata doc with no stylesheet, or one that is at least different than usual EML and FGDC
-                  else if ((response.indexOf('id="Metadata"') == -1)) {
-                    viewRef.$el.addClass("container no-stylesheet");
 
-                    if (viewRef.model.get("indexed")) {
+                  //Our fallback is to show the metadata details from the Solr index
+                  if (status == "error" || !response || typeof response !== "string")
+                    viewRef.renderMetadataFromIndex();
+                  else {
+                    //Check for a response that is a 200 OK status, but is an error msg
+                    if ((response.length < 250) && (response.indexOf("Error transforming document") > -1) && viewRef.model.get("indexed")) {
                       viewRef.renderMetadataFromIndex();
                       return;
                     }
+                    //Mark this as a metadata doc with no stylesheet, or one that is at least different than usual EML and FGDC
+                    else if ((response.indexOf('id="Metadata"') == -1)) {
+                      viewRef.$el.addClass("container no-stylesheet");
+
+                      if (viewRef.model.get("indexed")) {
+                        viewRef.renderMetadataFromIndex();
+                        return;
+                      }
+                    }
+
+                    //Now show the response from the view service
+                    viewRef.$(viewRef.metadataContainer).html(response);
+
+                    //If there is no info from the index and there is no metadata doc rendered either, then display a message
+                    if (viewRef.$el.is(".no-stylesheet") && viewRef.model.get("archived") && !viewRef.model.get("indexed"))
+                      viewRef.$(viewRef.metadataContainer).prepend(viewRef.alertTemplate({ msg: "There is limited metadata about this dataset since it has been archived." }));
+
+                    viewRef.alterMarkup();
+
+                    viewRef.trigger("metadataLoaded");
+
+                    //Add a map of the spatial coverage
+                    if (gmaps) viewRef.insertSpatialCoverageMap();
+
+                    // Injects Clipboard objects into DOM elements returned from the View Service
+                    viewRef.insertCopiables();
+
                   }
-
-                  //Now show the response from the view service
-                  viewRef.$(viewRef.metadataContainer).html(response);
-
-                  viewRef.storeEntityPIDs(response);
-
-                  //If there is no info from the index and there is no metadata doc rendered either, then display a message
-                  if (viewRef.$el.is(".no-stylesheet") && viewRef.model.get("archived") && !viewRef.model.get("indexed"))
-                    viewRef.$(viewRef.metadataContainer).prepend(viewRef.alertTemplate({ msg: "There is limited metadata about this dataset since it has been archived." }));
-
-                  viewRef.alterMarkup();
-
-                  viewRef.trigger("metadataLoaded");
-
-                  //Add a map of the spatial coverage
-                  if (gmaps) viewRef.insertSpatialCoverageMap();
-
-                  // Injects Clipboard objects into DOM elements returned from the View Service
-                  viewRef.insertCopiables();
-
+                } catch (e) {
+                  console.log("Error rendering metadata from the view service", e);
+                  console.log("Response from the view service: ", response);
+                  viewRef.renderMetadataFromIndex();
                 }
               },
               error: function (xhr, textStatus, errorThrown) {
@@ -702,6 +721,51 @@ define(['jquery',
 
           //Mark the first row in each attribute list table as active since the first attribute is displayed at first
           this.$(".attributeListTable tr:first-child()").addClass("active");
+
+          // Add explanation text to the alternate identifier
+          this.renderAltIdentifierHelpText();
+        },
+
+        /**
+         * Inserts an info icon next to the alternate identifier field, if it
+         * exists. The icon will display a tooltip with the help text for the
+         * field.
+         * @returns {jQuery} The jQuery object for the icon element.
+         * @since 2.26.0
+         */
+        renderAltIdentifierHelpText: function () {
+          try {
+            // Find the HTML element that contains the alternate identifier.
+            const altIdentifierLabel = this
+              .$(".control-label:contains('Alternate Identifier')");
+
+            // It may not exist for all datasets.
+            if (!altIdentifierLabel.length) return;
+
+            const text = this.alternativeIdentifierHelpText;
+
+            if(!text) return;
+
+            // Create the tooltip
+            const icon = $(document.createElement("i"))
+              .addClass("tooltip-this icon icon-info-sign")
+              .css("margin-left", "4px");
+
+            // Activate the jQuery tooltip plugin
+            icon.tooltip({
+              title: text,
+              placement: "top",
+              container: "body"
+            });
+
+            // Add the icon to the label.
+            altIdentifierLabel.append(icon);
+
+            return icon;
+          } catch (e) {
+            console.log("Error adding help text to alternate identifier", e);
+          }
+
         },
 
         /*
@@ -2907,15 +2971,9 @@ define(['jquery',
          * Note: Really could be generalized to more identifier schemes.
          */
         getCanonicalDOIIRI: function (identifier) {
-          var pattern = /(10\.\d{4,9}\/[-\._;()\/:A-Z0-9]+)$/,
-            match = identifier.match(pattern);
-
-          if (match === null || match.length !== 2 || match[1].length <= 0) {
-            return null;
-          }
-
-          return "https://doi.org/" + match[1];
+          return MetacatUI.appModel.DOItoURL(identifier) || null;
         },
+
         /**
              * Insert citation information as meta tags into the head of the page
              *

@@ -316,6 +316,8 @@ define(
 
             if (!assetConfig || typeof assetConfig !== 'object') {
               assetConfig = {}
+            } else {
+              assetConfig = JSON.parse(JSON.stringify(assetConfig))
             }
 
             // Set the color palette
@@ -377,6 +379,20 @@ define(
               '. Error details: ' + error
             );
           }
+        },
+
+        /**
+         * Get the asset config's cesiumOptions, if it has any. This will return
+         * a copy of the cesiumOptions object, so that changes made to the
+         * returned object will not affect the original cesiumOptions object.
+         * @returns {Object} A copy of the cesiumOptions object, or null if there
+         * are no cesiumOptions.
+         * @since 2.26.0
+         */
+        getCesiumOptions: function () {
+          const cesiumOptions = this.get('cesiumOptions')
+          if (!cesiumOptions) { return null }
+          return JSON.parse(JSON.stringify(cesiumOptions))
         },
 
         /**

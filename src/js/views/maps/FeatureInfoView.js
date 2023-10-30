@@ -256,6 +256,8 @@ define(
 
           try {
 
+            const view = this;
+
             // Elements to update
             const title = this.getFeatureTitle()
             const iFrame = this.elements.iFrame
@@ -275,12 +277,17 @@ define(
             this.elements.title.innerHTML = title
 
             // Update the iFrame content
-            iFrame.height = 0;
             this.getContent().then(function (html) {
               iFrameDiv.innerHTML = html;
-              const maxHeight = window.innerHeight - 275;
-              const scrollHeight = iFrame.contentWindow.document.body.scrollHeight + 5;
-              iFrame.height = scrollHeight > maxHeight ? maxHeight : scrollHeight;
+              view.updateIFrameHeight();
+              // Not the ideal solution, but check the height of the iFrame
+              // again after some time to allow external content to load. This
+              // is necessary for content that loads asynchronously, like
+              // images. Difficult to set listeners for this, since the content
+              // may be from a different domain.
+              setTimeout(function () {
+                view.updateIFrameHeight();
+              }, 850);
             })
 
             // Show or hide the layer details button, update the text
@@ -297,6 +304,29 @@ define(
               '. Error details: ' + error
             );
           }
+        },
+
+        /**
+         * Update the height of the iFrame to match the height of the content
+         * within it.
+         * @param {number} [height] The height to set the iFrame to. If no
+         * height is provided, then the height of the content within the iFrame
+         * will be used.
+         * @param {boolean} [limit=true] Whether or not to limit the height of
+         * the iFrame to the height of the window, minus 275px.
+         * @since x.x.x
+         */
+        updateIFrameHeight: function (height, limit = true) {
+          const iFrame = this.elements?.iFrame;
+          if (!iFrame) return;
+          if ((!height && height !== 0) || height < 0) {
+            height = iFrame.contentWindow.document.body.scrollHeight + 5;
+          }
+          if (limit) {
+            const maxHeight = window.innerHeight - 275;
+            height = height > maxHeight ? maxHeight : height;
+          }
+          iFrame.style.height = height + "px";
         },
 
         /**

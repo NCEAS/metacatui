@@ -55,8 +55,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               keywordSets: [], //array of EMLKeywordSet objects
               additionalInfo: [],
               intellectualRights: "This work is dedicated to the public domain under the Creative Commons Universal 1.0 Public Domain Dedication. To view a copy of this dedication, visit https://creativecommons.org/publicdomain/zero/1.0/.",
-              onlineDist: [], // array of EMLOnlineDist objects
-              offlineDist: [], // array of EMLOfflineDist objects
+              distribution: [], // array of EMLDistribution objects
               geoCoverage : [], //an array for EMLGeoCoverages
               temporalCoverage : [], //an array of EMLTempCoverage models
               taxonCoverage : [], //an array of EMLTaxonCoverages
@@ -515,13 +514,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               }));
             }
             //EML Distribution modules are stored in EMLDistribution models
-            else if(_.contains(emlDistribution, thisNode.localName)){
+            else if(_.contains(emlDistribution, thisNode.localName)) {
               if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
 
               modelJSON[thisNode.localName].push(new EMLDistribution({
                 objectDOM: thisNode,
                 parentModel: model
-              }));
+              }, { parse: true }));
             }
             //The EML Project is stored in the EMLProject model
             else if(thisNode.localName == "project"){
@@ -1027,6 +1026,24 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               $(document.createElement("intellectualRights"))
                 .html("<para>" + this.get("intellectualRights") + "</para>"));
         }
+      }
+        
+      // Serialize the distribution
+      const distributions = this.get('distribution');
+        if (distributions && distributions.length > 0) {
+        // Remove existing nodes
+        datasetNode.children('distribution').remove();
+        // Get the updated DOMs
+          const distributionDOMs = distributions.map(d => d.updateDOM());
+        // Insert the updated DOMs in their correct positions
+        distributionDOMs.forEach((dom, i) => {
+          const insertAfter = this.getEMLPosition(eml, 'distribution');
+          if (insertAfter) {
+            insertAfter.after(dom);
+          } else {
+            datasetNode.append(dom);
+          }
+        });
       }
 
       //Detach the project elements from the DOM
@@ -2078,6 +2095,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
       /* Initialize the object XML for brand spankin' new EML objects */
       createXML: function() {
+        
+          let emlSystem = MetacatUI.appModel.get("emlSystem");
+          emlSystem = (!emlSystem || typeof emlSystem != "string") ? "knb" : emlSystem;
+
           var xml = "<eml:eml xmlns:eml=\"https://eml.ecoinformatics.org/eml-2.2.0\"></eml:eml>",
               eml = $($.parseHTML(xml));
 
@@ -2086,7 +2107,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               eml.attr("xmlns:stmml", "http://www.xml-cml.org/schema/stmml-1.1");
               eml.attr("xsi:schemaLocation", "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd");
               eml.attr("packageId", this.get("id"));
-              eml.attr("system", "knb"); // We could make this configurable at some point
+              eml.attr("system", emlSystem);
 
               // Add the dataset
               eml.append(document.createElement("dataset"));

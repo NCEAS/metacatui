@@ -20,6 +20,15 @@ a:hover{
 	pointer-events: none;
 	opacity: .8;
 }
+.reset-btn-styles {
+	background: none;
+	color: inherit;
+	border: none;
+	padding: 0;
+	font: inherit;
+	cursor: pointer;
+	outline: inherit;
+}
 .footnote{
 	font-size: .7em;
 }
@@ -8732,6 +8741,24 @@ textarea.medium{
 .eml-attribute input {
     height: auto;
 }
+.eml-missing-value-rows {
+	display: grid;
+	gap: 0.7rem;
+	grid-auto-flow: row;
+	margin-bottom: 3rem;
+}
+.eml-missing-value {
+	display: grid;
+	grid-template-columns: 1fr 4fr 1.5rem;
+	gap: 0.5rem;
+}
+.eml-missing-value input {
+	margin-bottom: 0;
+	width: auto;
+}
+.eml-missing-value button {
+	font-size: 1.1rem;
+}
 .eml-measurement-scale .options{
 	box-sizing: border-box;
     padding-top: 10px;
@@ -9156,8 +9183,8 @@ body > #extension-is-installed{
 }
 
 .data-package-file-table > .data-package-item > .file-actions > .action
-	.btn, .btn-primary, 
-	.btn-large, .btn-small, 
+	.btn, .btn-primary,
+	.btn-large, .btn-small,
 	.btn-mini {
 	font-weight: 400;
 	background-image: none;

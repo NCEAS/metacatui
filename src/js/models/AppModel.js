@@ -430,6 +430,21 @@ define(['jquery', 'underscore', 'backbone'],
       * @since 2.13.0
       */
       editorSchemaLocation: "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd",
+      
+      /**
+       * The text to use for the eml system attribute. The system attribute
+       * indicates the data management system within which an identifier is in
+       * scope and therefore unique. This is typically a URL (Uniform Resource
+       * Locator) that indicates a data management system.  All identifiers that
+       * share a system must be unique. In other words, if the same identifier
+       * is used in two locations with identical systems, then by definition the
+       * objects at which they point are in fact the same object.
+       * @type {string}
+       * @since 2.26.0
+       * @link https://eml.ecoinformatics.org/schema/eml-resource_xsd#SystemType
+       * @link https://eml.ecoinformatics.org/schema/eml_xsd
+       */
+      emlSystem: "knb",
 
       /**
       * This error message is displayed when the Editor encounters an error saving
@@ -2405,6 +2420,76 @@ define(['jquery', 'underscore', 'backbone'],
        */
       resetDescription: function () {
         this.set("description", this.defaults.description);
+      },
+
+      /**
+       * Remove all DOI prefixes from a DOI string, including https, http, doi.org,
+       * dx.doi.org, and doi:.
+       * @param {string} str - The DOI string to remove prefixes from.
+       * @returns {string} - The DOI string without any prefixes.
+       * @since 2.26.0
+       */
+      removeAllDOIPrefixes: function (str) {
+        if (!str) return "";
+        // Remove https and http prefixes
+        str = str.replace(/^(https?:\/\/)?/, "");
+        // Remove domain prefixes, like doi.org and dx.doi.org
+        str = str.replace(/^(doi\.org\/|dx\.doi\.org\/)/, "");
+        // Remove doi: prefix
+        str = str.replace(/^doi:/, "");
+        return str;
+      },
+
+      /**
+       * Check if a string is a valid DOI.
+       * @param {string} doi - The string to check.
+       * @returns {boolean} - True if the string is a valid DOI, false otherwise.
+       * @since 2.26.0
+       */
+      isDOI: function (str) {
+        try {
+          if (!str) return false;
+          str = this.removeAllDOIPrefixes(str);
+          const doiRegex = /^10\.[0-9]{4,}(?:[.][0-9]+)*\/[^\s"<>]+$/;
+          return doiRegex.test(str);
+        } catch (e) {
+          console.error("Error checking if string is a DOI", e);
+          return false;
+        }
+      },
+
+      /**
+       * Get the URL for the online location of the object being cited when it
+       * has a DOI. If the DOI is not passed to the function, or if the string
+       * is not a DOI, then an empty string is returned.
+       * @param {string} str - The DOI string, handles both DOI and DOI URL,
+       * with or without prefixes
+       * @returns {string} - The DOI URL
+       * @since 2.23.0
+       */
+      DOItoURL: function (str) {
+        if (!str) return "";
+        str = this.removeAllDOIPrefixes(str);
+        if (!this.isDOI(str)) return "";
+        return "https://doi.org/" + str;
+      },
+
+      /**
+       * Get the DOI from a DOI URL. The URL can be http or https, can include the
+       * "doi:" prefix or not, and can use "dx.doi.org" or "doi.org" as the
+       * domain. If a string is not passed to the function, or if the string is
+       * not for a DOI URL, then an empty string is returned.
+       * @param {string} url - The DOI URL
+       * @returns {string} - The DOI string, including the "doi:" prefix
+       * @since 2.26.0
+       */
+      URLtoDOI: function (url) {
+        if (!url) return "";
+        const doiURLRegex =
+          /https?:\/\/(dx\.)?doi\.org\/(doi:)?(10\.[0-9]{4,}(?:[.][0-9]+)*\/[^\s"<>]+)/;
+        const doiURLMatch = url.match(doiURLRegex);
+        if (doiURLMatch) return "doi:" + doiURLMatch[3];
+        return "";
       },
 
   });
