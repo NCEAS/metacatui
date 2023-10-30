@@ -865,18 +865,18 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		 */
 		showNoActivity: function(){
 
-      if( this.model.get("metadataCount") === 0 && this.model.get("dataCount") === 0 ){
-  			this.$(".show-loading .loading").remove();
-  			this.$(".stripe").addClass("no-activity");
-				this.$(".metric-chart-loading svg animate").remove();
-				$.each($(".metric-chart-loading .message"), function(i,messageEl){
-					$(messageEl).html("No metrics to show")
-				});
-      }
+			if( this.model.get("metadataCount") === 0 && this.model.get("dataCount") === 0 ){
+					this.$(".show-loading .loading").remove();
+					this.$(".stripe").addClass("no-activity");
+						this.$(".metric-chart-loading svg animate").remove();
+						$.each($(".metric-chart-loading .message"), function(i,messageEl){
+							$(messageEl).html("No metrics to show")
+						});
+			}
 
 		},
 
-				/**
+		/**
 		 * Convert number of bytes into human readable format
 		 *
 		 * @param integer bytes     Number of bytes to convert
@@ -912,11 +912,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		},
 
 		renderUsageMetricsError: function() {
-      var message = "<p class='check-back-message'><strong>This might take some time. Check back in 24 hours to see these results.</strong></p>";
+      		var message = "<p class='check-back-message'><strong>This might take some time. Check back in 24 hours to see these results.</strong></p>";
 
 			$.each($('.views-metrics, .downloads-metrics, #user-citations'), function(i,metricEl){
-        $(metricEl).find(".check-back-message").remove();
-        $(metricEl).find(".message").append(message);
+				$(metricEl).find(".check-back-message").remove();
+				$(metricEl).find(".message").append(message);
 			});
 		},
 
