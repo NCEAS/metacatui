@@ -435,7 +435,7 @@ define([
             clearInterval(interval);
             return;
           }
-          const visualizers = model.get("cesiumModel")._visualizers;
+          const visualizers = model.get("cesiumModel")?._visualizers;
           if (visualizers && visualizers.length) {
             clearInterval(interval);
             callBack();
