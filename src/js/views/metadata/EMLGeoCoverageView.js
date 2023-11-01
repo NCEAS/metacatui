@@ -107,7 +107,6 @@ define([
        * @param {Event} e - The event that triggered this function
        */
       updateModel: function (e) {
-        console.log("updateModel", e);
         if (!e) return false;
 
         e.preventDefault();
@@ -255,8 +254,8 @@ define([
        * performs validation across the row and displays any errors. This id
        * called when the user clicks out of an edit box on to the page.
        *
-       * @param e The event
-       * @param options
+       * @param {Event} e - The event that triggered this function
+       * @param {Object} options - Validation options
        */
       validate: function (e, options) {
         //Query for the EMlGeoCoverageView element that the user is actively

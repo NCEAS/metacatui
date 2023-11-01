@@ -502,8 +502,10 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
        * Apply the change event on the parent EML model
        */
       trickleUpChange: function () {
-        this.get("parentModel").trigger("change");
-        this.get("parentModel").trigger("change:geoCoverage");
+        const parentModel = this.get("parentModel");
+        if (!parentModel) return;
+        parentModel.trigger("change");
+        parentModel.trigger("change:geoCoverage");
       },
 
       /**
