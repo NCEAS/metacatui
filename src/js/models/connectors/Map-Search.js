@@ -179,7 +179,7 @@ define([
         // When the user is panning/zooming in the map, hide the GeoHash layer
         // to indicate that the map is not up to date with the search results,
         // which are about to be updated.
-        this.listenTo(interactions, "moveStart", this.hideGeoHashLayer);
+        this.listenTo(interactions, "moveStartAndChanged", this.hideGeoHashLayer);
 
         // When the user is done panning/zooming in the map, show the GeoHash
         // layer again and update the search results (thereby updating the
@@ -240,7 +240,7 @@ define([
         const searchResults = this.get("searchResults");
         this.stopListening(searchResults, "update reset");
         this.stopListening(searchResults, "change:showOnMap");
-        this.stopListening(interactions, "moveStart moveEnd");
+        this.stopListening(interactions, "moveStartAndChanged moveEnd");
         this.stopListening(searchResults, "request");
         this.set("isConnected", false);
       },

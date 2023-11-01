@@ -455,7 +455,9 @@ define([
           // model, and runs any functions configured above.
           Object.entries(cameraEvents).forEach(function ([label, functions]) {
             const callback = function () {
-              interactions.trigger(label);
+              // Rename because 'changed' is too similar to the Backbone event
+              const eventName = label === "changed" ? "cameraChanged" : label;
+              interactions.trigger(eventName);
               functions.forEach(function (func) {
                 view[func].call(view);
               });

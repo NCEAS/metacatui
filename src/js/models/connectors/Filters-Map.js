@@ -185,7 +185,7 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
           }
           const interactions = this.get("map")?.get("interactions");
           this.stopListening(this.get("filters"), "add remove");
-          this.stopListening(interactions, "moveEnd moveStart");
+          this.stopListening(interactions, "moveEnd moveStartAndChanged");
           this.set("isConnected", false);
         } catch (e) {
           console.log("Error stopping Filter-Map listeners: ", e);
@@ -207,7 +207,7 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
           this.updateSpatialFilters();
           // Trigger a 'changing' event on the filters collection to
           // indicate that the spatial filter is being updated
-          this.listenTo(interactions, "moveStart", function () {
+          this.listenTo(interactions, "moveStartAndChanged", function () {
             this.get("filters").trigger("changing");
           });
           this.listenTo(interactions, "moveEnd", function () {

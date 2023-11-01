@@ -213,6 +213,7 @@ define([
        * so that they work together.
        */
       connect: function () {
+        this.disconnect();
         this.coordinateMoveEndSearch();
         this.getConnectors().forEach((connector) => connector.connect());
       },

@@ -32,19 +32,25 @@ define([
        * default attributes for the Map.
        * @returns {Object} The default attributes for the Map.
        * @property {GeoPoint} mousePosition - The current position of the mouse
-       * on the map.
+       * on the map. Updated by the map widget to show the longitude, latitude,
+       * and height (elevation) at the position of the mouse on the map.
        * @property {GeoPoint} clickedPosition - The position on the map that the
        * user last clicked.
        * @property {GeoScale} scale - The current scale of the map in
-       * pixels:meters.
-       * @property {GeoBoundingBox} viewExtent - The current extent of the map
-       * view.
+       * pixels:meters, i.e. The number of pixels on the screen that equal the
+       * number of meters on the map/globe. Updated by the map widget. 
+       * @property {GeoBoundingBox} viewExtent - The extent of the currently
+       * visible area in the map widget. Updated by the map widget.
        * @property {Features} hoveredFeatures - The feature that the mouse is
-       * currently hovering over.
+       * currently hovering over. Updated by the map widget with a Feature model
+       * when a user hovers over a geographical feature on the map.
        * @property {Features} clickedFeatures - The feature that the user last
-       * clicked.
-       * @property {Features} selectedFeatures - The feature that is currently
-       * selected.
+       * clicked. Updated by the map widget with a Feature model when a user
+       * clicks on a geographical feature on the map.
+       * @property {Features} selectedFeatures - Features from one or more
+       * layers that are highlighted or selected on the map. Updated by the map
+       * widget with a Feature model when a user selects a geographical feature
+       * on the map (e.g. by clicking)
        * @property {Boolean} firstInteraction - Whether or not the user has
        * interacted with the map yet. This is set to true when the user has
        * clicked, hovered, panned, or zoomed the map. The only action that is
@@ -58,28 +64,6 @@ define([
        * this property and zoom to the specified feature or map asset when this
        * property is set. The property should be cleared after the map widget
        * has zoomed to the specified feature or map asset.
-       *
-       * TODO
-       * * @property {Object} [currentPosition={ longitude: null, latitude:
-       *   null, height: null}] An object updated by the map widget to show the
-       *   longitude, latitude, and height (elevation) at the position of the
-       *   mouse on the map. Note: The CesiumWidgetView does not yet update the
-       *   height property.
-       * @property {Object} [currentScale={ meters: null, pixels: null }] An
-       * object updated by the map widget that gives two equivalent measurements
-       * based on the map's current position and zoom level: The number of
-       * pixels on the screen that equal the number of meters on the map/globe.
-       * @property {Object} [currentViewExtent={ north: null, east: null, south:
-       * null, west: null }] An object updated by the map widget that gives the
-       * extent of the current visible area as a bounding box in
-       * longitude/latitude coordinates, as well as the height/altitude in
-       * meters.
-       *
-       * * @property {Features} [selectedFeatures = new Features()] - Particular
-       *   features from one or more layers that are highlighted/selected on the
-       *   map. The 'selectedFeatures' attribute is updated by the map widget
-       *   (cesium) with a Feature model when a user selects a geographical
-       *   feature on the map (e.g. by clicking)
        */
       defaults: function () {
         return {
@@ -90,7 +74,7 @@ define([
           hoveredFeatures: new Features(),
           clickedFeatures: new Features(),
           selectedFeatures: new Features(),
-          firstInteraction: false, // <- "hasInteracted"?
+          firstInteraction: false,
           previousAction: null,
           zoomTarget: null,
         };
@@ -115,6 +99,7 @@ define([
        */
       connectEvents: function () {
         this.listenForFirstInteraction();
+        this.listenForMoveStartAndChange();
         this.listenTo(this, "change:previousAction", this.handleClick);
       },
 
@@ -137,6 +122,34 @@ define([
             }
           }
         );
+      },
+
+      /**
+       * Expands the camera events that are passed to the MapInteraction model
+       * from the map widget by creating a 'moveStartAndChanged' event. This
+       * event is triggered after the camera starts moving if and only if the
+       * camera position changes enough to trigger a 'cameraChanged' event. This
+       * event is useful for triggering actions that should only occur after the
+       * camera has moved and the camera position has changed.
+       * @since x.x.x
+       */
+      listenForMoveStartAndChange: function () {
+        if (this.moveStartChangeListener) {
+          this.moveStartChangeListener.destroy();
+        }
+        const listener = new Backbone.Model();
+        const model = this;
+        this.moveStartChangeListener = listener;
+        listener.stopListening(model, "moveStart");
+        listener.listenTo(model, "moveStart", function () {
+          listener.listenToOnce(model, "cameraChanged", function () {
+            listener.stopListening(model, "moveEnd");
+            model.trigger("moveStartAndChanged");
+          })
+          listener.listenToOnce(model, "moveEnd", function () {
+            listener.stopListening(model, "cameraChanged");
+          })
+        })
       },
 
       /**

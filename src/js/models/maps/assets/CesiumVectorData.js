@@ -360,30 +360,26 @@ define([
       updateAppearance: function () {
         try {
           const model = this;
-          const cesiumModel = this.get("cesiumModel");
+          const entities = this.getEntities();
+          const entityCollection = this.getEntityCollection();
           this.set("displayReady", false);
 
-          if (!cesiumModel) {
-            return;
+          if (entities && entities.length) {
+            if (model.isVisible()) {
+              // Suspending events while updating a large number of entities helps
+              // performance.
+              model.suspendEvents();
+              entityCollection.show = true;
+              this.styleEntities(entities);
+              model.resumeEvents();
+            } else {
+              // If the asset isn't visible, just hide all entities and update the
+              // visibility property to indicate that layer is hidden
+              entityCollection.show = false;
+              if (model.get("opacity") === 0) model.set("visible", false);
+            }
           }
 
-          const entities = cesiumModel.entities.values;
-
-          // Suspending events while updating a large number of entities helps
-          // performance.
-          model.suspendEvents();
-
-          // If the asset isn't visible, just hide all entities and update the
-          // visibility property to indicate that layer is hidden
-          if (!model.isVisible()) {
-            cesiumModel.entities.show = false;
-            if (model.get("opacity") === 0) model.set("visible", false);
-          } else {
-            cesiumModel.entities.show = true;
-            this.styleEntities(entities);
-          }
-
-          model.resumeEvents();
           this.runVisualizers();
         } catch (e) {
           console.log("Failed to update CesiumVectorData model styles.", e);
@@ -399,7 +395,7 @@ define([
        */
       runVisualizers: function () {
         const dataSource = this.get("cesiumModel");
-        const visualizers = dataSource._visualizers;
+        const visualizers = dataSource?._visualizers;
         if (!visualizers || !visualizers.length) {
           this.whenVisualizersReady(this.runVisualizers.bind(this));
           return;
