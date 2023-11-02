@@ -176,12 +176,13 @@ define(
               model.flyHome();
             }
           },
-          {
-            label: 'Draw',
-            icon: 'pencil',
-            view: DrawTool,
-            viewOptions: {}
-          },
+          // We can enable to the draw tool once we have a use case for it
+          // {
+          //   label: 'Draw',
+          //   icon: 'pencil',
+          //   view: DrawTool,
+          //   viewOptions: {}
+          // },
           {
             label: 'Help',
             icon: 'question-sign',
