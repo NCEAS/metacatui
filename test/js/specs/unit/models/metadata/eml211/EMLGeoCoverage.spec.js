@@ -109,25 +109,22 @@ define([
         );
         emlGeoCoverage.set("north", "");
         var errors = emlGeoCoverage.validate();
-        console.log(errors);
         errors.north.should.equal("Each coordinate must include a latitude AND longitude.");
       });
 
-      // it("should give an error if the north and south coordinates are reversed", function () {
-      //   var emlGeoCoverage = new EMLGeoCoverage(
-      //     { objectDOM: this.testEML },
-      //     { parse: true }
-      //   );
-      //   emlGeoCoverage.set("north", "40");
-      //   emlGeoCoverage.set("south", "50");
-      //   var errors = emlGeoCoverage.validate();
-      //   errors.north.should.equal(
-      //     "The Northwest latitude must be between -90 and 90."
-      //   );
-      //   errors.south.should.equal(
-      //     "The Southeast latitude must be between -90 and 90."
-      //   );
-      // });
+      it("should give an error if the north and south coordinates are reversed", function () {
+        var emlGeoCoverage = new EMLGeoCoverage(
+          { objectDOM: this.testEML },
+          { parse: true }
+        );
+        emlGeoCoverage.set("north", "40");
+        emlGeoCoverage.set("south", "50");
+        var errors = emlGeoCoverage.validate();
+        const msg = "The North latitude must be greater than the South latitude.";
+        errors.north.should.equal(msg);
+        errors.south.should.equal(msg);
+      });
+
     });
   });
 });

@@ -265,6 +265,9 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
           case "needPair":
             return "Each location description must have at least one coordinate pair.";
             break;
+          case "coordsReversed":
+            return "The North latitude must be greater than the South latitude.";
+            break;
           default:
             return "";
             break;
@@ -277,7 +280,9 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
        * the value is valid.
        *
        * @return {array} An array containing the current state of each
-       * coordinate box
+       * coordinate box, including: value (the value of the coordinate converted
+       * to a number), isSet (whether the coordinate has a value), and isValid
+       * (whether the value is in the correct range)
        */
       getCoordinateStatus: function () {
         var north = this.get("north"),
@@ -285,23 +290,28 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
           south = this.get("south"),
           west = this.get("west");
 
+        const isDefined = (value) =>
+          typeof value !== "undefined" && value != null && value !== "";
+
         return {
           north: {
-            isSet:
-              typeof north !== "undefined" && north != null && north !== "",
+            value: Number(north),
+            isSet: isDefined(north),
             isValid: this.validateCoordinate(north, -90, 90),
           },
           east: {
-            isSet: typeof east !== "undefined" && east != null && east !== "",
+            value: Number(east),
+            isSet: isDefined(east),
             isValid: this.validateCoordinate(east, -180, 180),
           },
           south: {
-            isSet:
-              typeof south !== "undefined" && south != null && south !== "",
+            value: Number(south),
+            isSet: isDefined(south),
             isValid: this.validateCoordinate(south, -90, 90),
           },
           west: {
-            isSet: typeof west !== "undefined" && west != null && west !== "",
+            value: Number(west),
+            isSet: isDefined(west),
             isValid: this.validateCoordinate(west, -180, 180),
           },
         };
@@ -403,6 +413,22 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
           errors.east = this.getErrorMessage("missing");
         else if (!pointStatuses.south.isSet && pointStatuses.east.isSet)
           errors.south = this.getErrorMessage("missing");
+
+        // Verify latitudes: north should be > south. For longitude, east and
+        // west can be in any order, depending on whether the location crosses
+        // the antimeridian
+        if (
+          pointStatuses.north.isSet &&
+          pointStatuses.south.isSet &&
+          pointStatuses.north.isValid &&
+          pointStatuses.south.isValid
+        ) {
+          if (pointStatuses.north.value < pointStatuses.south.value) {
+            const msg = this.getErrorMessage("coordsReversed");
+            errors.north = msg;
+            errors.south = msg;
+          }
+        }
 
         if (Object.keys(errors).length) return errors;
         else return false;

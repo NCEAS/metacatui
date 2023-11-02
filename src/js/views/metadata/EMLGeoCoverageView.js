@@ -127,10 +127,10 @@ define([
         //Are the NW and SE points the same? i.e. is this a single point and not
         //a box?
         var isSinglePoint =
-            this.model.get("north") != null &&
-            this.model.get("north") == this.model.get("south") &&
-            this.model.get("west") != null &&
-            this.model.get("west") == this.model.get("east"),
+          this.model.get("north") != null &&
+          this.model.get("north") == this.model.get("south") &&
+          this.model.get("west") != null &&
+          this.model.get("west") == this.model.get("east"),
           hasEmptyInputs =
             this.$("[data-attribute='north']").val() == "" ||
             this.$("[data-attribute='south']").val() == "" ||
@@ -205,7 +205,7 @@ define([
         } else {
           //Find out if we are missing a complete NW or SE point
           var isMissingNWPoint =
-              this.model.get("north") == null && this.model.get("west") == null,
+            this.model.get("north") == null && this.model.get("west") == null,
             isMissingSEPoint =
               this.model.get("south") == null && this.model.get("east") == null;
 
@@ -290,14 +290,19 @@ define([
         this.$el.removeClass("error");
         this.$(".notification").empty();
 
-        var errorMessages = "";
+        const errorObj = this.model.validationError;
+        // Get all of the field keys
+        const fields = Object.keys(errorObj);
+        // Get all of the error messages (values). Remove duplicates.
+        let errorMessages = [...new Set(Object.values(errorObj))];
+        // Join the error messages into a single string
+        errorMessages = errorMessages.join(" ");
 
-        for (field in this.model.validationError) {
+        // Highlight the fields that need to be fixed
+        fields.forEach((field) => {
           this.$("[data-attribute='" + field + "']").addClass("error");
-
-          errorMessages += this.model.validationError[field] + " ";
-        }
-
+        })
+        // Show the combined error message
         this.$(".notification").text(errorMessages).addClass("error");
       },
 
