@@ -17,7 +17,7 @@ define([
             <southBoundingCoordinate>50.1600</southBoundingCoordinate>
           </boundingCoordinates>
         </geographicCoverage>`;
-        // remove ALL whitespace
+      // remove ALL whitespace
       testEML = testEML.replace(/\s/g, "");
       this.testEML = testEML;
     });
@@ -35,7 +35,6 @@ define([
 
     describe("parse()", function () {
       it("should parse EML", function () {
-        
         var emlGeoCoverage = new EMLGeoCoverage(
           { objectDOM: this.testEML },
           { parse: true }
@@ -52,7 +51,6 @@ define([
     });
 
     describe("serialize()", function () {
-      
       it("should serialize to XML", function () {
         var emlGeoCoverage = new EMLGeoCoverage(
           { objectDOM: this.testEML },
@@ -86,7 +84,7 @@ define([
           { parse: true }
         );
         var status = emlGeoCoverage.getCoordinateStatus();
-        var errors = emlGeoCoverage.generateStatusErrors(status);
+        const errors = emlGeoCoverage.generateStatusErrors(status);
         expect(errors).to.be.empty;
       });
 
@@ -96,10 +94,9 @@ define([
           { parse: true }
         );
         emlGeoCoverage.set("north", "100");
-        var errors = emlGeoCoverage.validate();
-        errors.north.should.equal(
-          "The Northwest latitude must be between -90 and 90."
-        );
+        const errors = emlGeoCoverage.validate();
+        const expectedMsg = emlGeoCoverage.errorMessages.north;
+        errors.north.should.equal(expectedMsg);
       });
 
       it("should give an error if the coordinates are missing", function () {
@@ -108,8 +105,9 @@ define([
           { parse: true }
         );
         emlGeoCoverage.set("north", "");
-        var errors = emlGeoCoverage.validate();
-        errors.north.should.equal("Each coordinate must include a latitude AND longitude.");
+        const errors = emlGeoCoverage.validate();
+        const expectedMsg = emlGeoCoverage.errorMessages.missing;
+        errors.north.should.equal(expectedMsg);
       });
 
       it("should give an error if the north and south coordinates are reversed", function () {
@@ -119,10 +117,10 @@ define([
         );
         emlGeoCoverage.set("north", "40");
         emlGeoCoverage.set("south", "50");
-        var errors = emlGeoCoverage.validate();
-        const msg = "The North latitude must be greater than the South latitude.";
-        errors.north.should.equal(msg);
-        errors.south.should.equal(msg);
+        const errors = emlGeoCoverage.validate();
+        const expectedMsg = emlGeoCoverage.errorMessages.northSouthReversed;
+        errors.north.should.equal(expectedMsg);
+        errors.south.should.equal(expectedMsg);
       });
 
       it("should give an error if the bounds cross the anti-meridian", function () {
@@ -132,9 +130,10 @@ define([
         );
         emlGeoCoverage.set("west", "170");
         emlGeoCoverage.set("east", "-170");
-        var errors = emlGeoCoverage.validate();
-        errors.west.should.equal("The bounding box cannot cross the anti-meridian.");
-        errors.east.should.equal("The bounding box cannot cross the anti-meridian.");
+        const errors = emlGeoCoverage.validate();
+        const expectedMsg = emlGeoCoverage.errorMessages.crossesAntiMeridian;
+        errors.west.should.equal(expectedMsg);
+        errors.east.should.equal(expectedMsg);
       });
 
       it("should give an error if the bounds contain the north pole", function () {
@@ -143,8 +142,9 @@ define([
           { parse: true }
         );
         emlGeoCoverage.set("north", "90");
-        var errors = emlGeoCoverage.validate();
-        errors.north.should.equal("The bounding box cannot contain the North or South pole.");
+        const errors = emlGeoCoverage.validate();
+        const expectedMsg = emlGeoCoverage.errorMessages.containsPole;
+        errors.north.should.equal(expectedMsg);
       });
 
       it("should give an error if the bounds contain the south pole", function () {
@@ -153,10 +153,10 @@ define([
           { parse: true }
         );
         emlGeoCoverage.set("south", "-90");
-        var errors = emlGeoCoverage.validate();
-        errors.south.should.equal("The bounding box cannot contain the North or South pole.");
+        const errors = emlGeoCoverage.validate();
+        const expectedMsg = emlGeoCoverage.errorMessages.containsPole;
+        errors.south.should.equal(expectedMsg);
       });
-
     });
   });
 });

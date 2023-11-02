@@ -63,6 +63,44 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
       },
 
       /**
+       * The map of error keys to human-readable error messages to use for
+       * validation issues.
+       * @type {Object}
+       * @property {string} default - When the error is not in this list
+       * @property {string} north - When the Northwest latitude is not in the
+       * valid range
+       * @property {string} east - When the Southeast longitude is not in the
+       * valid range
+       * @property {string} south - When the Southeast latitude is not in the
+       * valid range
+       * @property {string} west - When the Northwest longitude is not in the
+       * valid range
+       * @property {string} missing - When a long or lat coordinate is missing
+       * @property {string} description - When a description is missing
+       * @property {string} needPair - When there are no coordinate pairs
+       * @property {string} northSouthReversed - When the North latitude is less
+       * than the South latitude
+       * @property {string} crossesAntiMeridian - When the bounding box crosses
+       * the anti-meridian
+       * @property {string} containsPole - When the bounding box contains the
+       * North or South pole
+       * @since x.x.x
+       */
+      errorMessages: {
+        "default": "Please correct the geographic coverage.",
+        "north": "Northwest latitude out of range, must be >-90 and <90. Please correct the latitude.",
+        "east": "Southeast longitude out of range (-180 to 180). Please adjust the longitude.",
+        "south": "Southeast latitude out of range, must be >-90 and <90. Please correct the latitude.",
+        "west": "Northwest longitude out of range (-180 to 180). Check and correct the longitude.",
+        "missing": "Latitude and longitude are required for each coordinate. Please complete all fields.",
+        "description": "Missing location description. Please add a brief description.",
+        "needPair": "Location requires at least one coordinate pair. Please add coordinates.",
+        "northSouthReversed": "North latitude should be greater than South. Please swap the values.",
+        "crossesAntiMeridian": "Bounding box crosses the anti-meridian. Please use multiple boxes that meet at the anti-meridian instead.",
+        "containsPole": "Coordinates include a pole. Latitudes should be >-90 and <90."
+      },
+
+      /**
        * Parses the objectDOM to populate this model with data.
        * @param {Element} objectDOM - The EML object element
        * @returns {Object} The EMLGeoCoverage data
@@ -123,7 +161,6 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
        * @returns {string} The XML string
        */
       serialize: function () {
-
         const objectDOM = this.updateDOM();
         let xmlString = objectDOM?.outerHTML;
         if (!xmlString) xmlString = objectDOM?.[0]?.outerHTML;
@@ -243,40 +280,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
        * @return {string} The error message
        */
       getErrorMessage: function (area) {
-        switch (area) {
-          case "north":
-            return "The Northwest latitude must be between -90 and 90.";
-            break;
-          case "east":
-            return "The Southeast longitude must be between -180 and 180.";
-            break;
-          case "south":
-            return "The Southeast latitude must be between -90 and 90.";
-            break;
-          case "west":
-            return "The Northwest longitude must be between -180 and 180.";
-            break;
-          case "missing":
-            return "Each coordinate must include a latitude AND longitude.";
-            break;
-          case "description":
-            return "Each location must have a description.";
-            break;
-          case "needPair":
-            return "Each location description must have at least one coordinate pair.";
-            break;
-          case "northSouthReversed":
-            return "The North latitude must be greater than the South latitude.";
-            break;
-          case "crossesAntiMeridian":
-            return "The bounding box cannot cross the anti-meridian.";
-            break;
-          case "containsPole":
-            return "The bounding box cannot contain the North or South pole.";
-          default:
-            return "";
-            break;
-        }
+        return this.errorMessages[area] || this.errorMessages.default;
       },
 
       /**
@@ -441,7 +445,6 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
             errors.west = msg;
           }
         }
-
 
         if (Object.keys(errors).length) return errors;
         else return false;
