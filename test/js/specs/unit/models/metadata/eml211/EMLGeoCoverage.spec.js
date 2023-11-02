@@ -125,6 +125,38 @@ define([
         errors.south.should.equal(msg);
       });
 
+      it("should give an error if the bounds cross the anti-meridian", function () {
+        var emlGeoCoverage = new EMLGeoCoverage(
+          { objectDOM: this.testEML },
+          { parse: true }
+        );
+        emlGeoCoverage.set("west", "170");
+        emlGeoCoverage.set("east", "-170");
+        var errors = emlGeoCoverage.validate();
+        errors.west.should.equal("The bounding box cannot cross the anti-meridian.");
+        errors.east.should.equal("The bounding box cannot cross the anti-meridian.");
+      });
+
+      it("should give an error if the bounds contain the north pole", function () {
+        var emlGeoCoverage = new EMLGeoCoverage(
+          { objectDOM: this.testEML },
+          { parse: true }
+        );
+        emlGeoCoverage.set("north", "90");
+        var errors = emlGeoCoverage.validate();
+        errors.north.should.equal("The bounding box cannot contain the North or South pole.");
+      });
+
+      it("should give an error if the bounds contain the south pole", function () {
+        var emlGeoCoverage = new EMLGeoCoverage(
+          { objectDOM: this.testEML },
+          { parse: true }
+        );
+        emlGeoCoverage.set("south", "-90");
+        var errors = emlGeoCoverage.validate();
+        errors.south.should.equal("The bounding box cannot contain the North or South pole.");
+      });
+
     });
   });
 });

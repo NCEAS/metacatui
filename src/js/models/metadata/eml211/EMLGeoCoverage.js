@@ -265,9 +265,14 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
           case "needPair":
             return "Each location description must have at least one coordinate pair.";
             break;
-          case "coordsReversed":
+          case "northSouthReversed":
             return "The North latitude must be greater than the South latitude.";
             break;
+          case "crossesAntiMeridian":
+            return "The bounding box cannot cross the anti-meridian.";
+            break;
+          case "containsPole":
+            return "The bounding box cannot contain the North or South pole.";
           default:
             return "";
             break;
@@ -370,21 +375,6 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
 
         var pointStatuses = this.getCoordinateStatus();
 
-        // if (!this.checkForPairs(pointStatuses)) {
-        //   errorMsg = this.addSpace(errorMsg);
-        //   errorMsg += this.getErrorMessage("needPair");
-        // }
-
-        // if (this.hasMissingPoint(pointStatuses)) {
-        //   errorMsg = this.addSpace(errorMsg);
-        //   errors += this.getErrorMessage("missing");
-        // }
-
-        // errorMsg += this.addSpace(
-        //   this.generateStatusErrors(pointStatuses),
-        //   true
-        // );
-
         if (
           !pointStatuses.north.isSet &&
           !pointStatuses.south.isSet &&
@@ -414,9 +404,8 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
         else if (!pointStatuses.south.isSet && pointStatuses.east.isSet)
           errors.south = this.getErrorMessage("missing");
 
-        // Verify latitudes: north should be > south. For longitude, east and
-        // west can be in any order, depending on whether the location crosses
-        // the antimeridian
+        // Verify latitudes: north should be > south. Don't allow bounding boxes
+        // to contain the north or south poles (doesn't really work)
         if (
           pointStatuses.north.isSet &&
           pointStatuses.south.isSet &&
@@ -424,11 +413,35 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
           pointStatuses.south.isValid
         ) {
           if (pointStatuses.north.value < pointStatuses.south.value) {
-            const msg = this.getErrorMessage("coordsReversed");
+            const msg = this.getErrorMessage("northSouthReversed");
+            errors.north = msg;
+            errors.south = msg;
+          }
+          if (
+            pointStatuses.north.value == 90 ||
+            pointStatuses.south.value == -90
+          ) {
+            const msg = this.getErrorMessage("containsPole");
             errors.north = msg;
             errors.south = msg;
           }
         }
+
+        // For longitudes, don't allow bounding boxes that attempt to traverse
+        // the anti-meridian
+        if (
+          pointStatuses.east.isSet &&
+          pointStatuses.west.isSet &&
+          pointStatuses.east.isValid &&
+          pointStatuses.west.isValid
+        ) {
+          if (pointStatuses.east.value < pointStatuses.west.value) {
+            const msg = this.getErrorMessage("crossesAntiMeridian");
+            errors.east = msg;
+            errors.west = msg;
+          }
+        }
+
 
         if (Object.keys(errors).length) return errors;
         else return false;
