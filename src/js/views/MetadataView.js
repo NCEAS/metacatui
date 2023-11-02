@@ -1042,11 +1042,6 @@ define(['jquery',
               return;
             }
 
-            var url = "https://maps.google.com/?ll=" + latLngCEN.lat() + "," + latLngCEN.lng() +
-              "&spn=0.003833,0.010568" +
-              "&t=m" +
-              "&z=5";
-
             //Get the map path color
             var pathColor = MetacatUI.appModel.get("datasetMapPathColor");
             if (pathColor) {
@@ -1080,6 +1075,11 @@ define(['jquery',
             //Find the spot in the DOM to insert our map image
             if (parseText) var insertAfter = ($(georegion).find('label:contains("West")').parent().parent().length) ? $(georegion).find('label:contains("West")').parent().parent() : georegion; //The last coordinate listed
             else var insertAfter = georegion;
+
+            // Get the URL to the interactive Google Maps instance
+            const url = this.getGoogleMapsUrl(latLngCEN, bounds);
+
+            // Insert the map image
             $(insertAfter).append(this.mapTemplate({
               map: mapHTML,
               url: url
@@ -1098,6 +1098,69 @@ define(['jquery',
           return true;
 
         },
+
+        /**
+         * Returns a URL to a Google Maps instance that is centered on the given
+         * coordinates and zoomed to the appropriate level to display the given
+         * bounding box.
+         * @param {LatLng} latLngCEN - The center point of the map.
+         * @param {LatLngBounds} bounds - The bounding box to display.
+         * @returns {string} The URL to the Google Maps instance.
+         * @since x.x.x
+         */
+        getGoogleMapsUrl: function (latLngCEN, bounds) {
+          // Use the window width and height as a proxy for the map dimensions
+          const mapDim = {
+            height: $(window).height(),
+            width: $(window).width()
+          };
+          const z = this.getBoundsZoomLevel(bounds, mapDim);
+          const mapLat = latLngCEN.lat();
+          const mapLng = latLngCEN.lng();
+
+          return `https://maps.google.com/?ll=${mapLat},${mapLng}&z=${zoom}`;
+        },
+
+        /**
+         * Returns the zoom level that will display the given bounding box at
+         * the given dimensions.
+         * @param {LatLngBounds} bounds - The bounding box to display.
+         * @param {Object} mapDim - The dimensions of the map.
+         * @param {number} mapDim.height - The height of the map.
+         * @param {number} mapDim.width - The width of the map.
+         * @returns {number} The zoom level.
+         * @since x.x.x
+         */
+        getBoundsZoomLevel: function(bounds, mapDim) {
+          var WORLD_DIM = { height: 256, width: 256 };
+          var ZOOM_MAX = 14;
+          // 21 is actual max, but any closer and the map is too zoomed in to be
+          // useful
+      
+          function latRad(lat) {
+            var sin = Math.sin(lat * Math.PI / 180);
+            var radX2 = Math.log((1 + sin) / (1 - sin)) / 2;
+            return Math.max(Math.min(radX2, Math.PI), -Math.PI) / 2;
+          }
+      
+          function zoom(mapPx, worldPx, fraction) {
+            return Math.floor(Math.log(mapPx / worldPx / fraction) / Math.LN2);
+          }
+      
+          var ne = bounds.getNorthEast();
+          var sw = bounds.getSouthWest();
+      
+          var latFraction = (latRad(ne.lat()) - latRad(sw.lat())) / Math.PI;
+          
+          var lngDiff = ne.lng() - sw.lng();
+          var lngFraction = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
+      
+          var latZoom = zoom(mapDim.height, WORLD_DIM.height, latFraction);
+          var lngZoom = zoom(mapDim.width, WORLD_DIM.width, lngFraction);
+      
+          return Math.min(latZoom, lngZoom, ZOOM_MAX);
+        },
+      
 
         insertCitation: function () {
           if (!this.model) return false;
