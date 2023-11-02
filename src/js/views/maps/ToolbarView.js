@@ -9,7 +9,8 @@ define(
     'models/maps/Map',
     // Sub-views - TODO: import these as needed
     'views/maps/LayerListView',
-    'views/maps/DrawToolView'
+    'views/maps/DrawToolView',
+    'views/maps/HelpPanelView'
   ],
   function (
     $,
@@ -19,7 +20,8 @@ define(
     Map,
     // Sub-views
     LayerListView,
-    DrawTool
+    DrawTool,
+    HelpPanel
   ) {
 
     /**
@@ -157,7 +159,7 @@ define(
          * 
          * @type {SectionOption[]}
          */
-        sections: [
+        sectionOptions: [
           {
             label: 'Layers',
             icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="m3.2 7.3 8.6 4.6a.5.5 0 0 0 .4 0l8.6-4.6a.4.4 0 0 0 0-.8L12.1 3a.5.5 0 0 0-.4 0L3.3 6.5a.4.4 0 0 0 0 .8Z"/><path d="M20.7 10.7 19 9.9l-6.7 3.6a.5.5 0 0 1-.4 0L5 9.9l-1.8.8a.5.5 0 0 0 0 .8l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.8Z"/><path d="m20.7 15.1-1.5-.7-7 3.8a.5.5 0 0 1-.4 0l-7-3.8-1.5.7a.5.5 0 0 0 0 .9l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.9Z"/></svg>',
@@ -179,6 +181,16 @@ define(
             icon: 'pencil',
             view: DrawTool,
             viewOptions: {}
+          },
+          {
+            label: 'Help',
+            icon: 'question-sign',
+            view: HelpPanel,
+            viewOptions: {
+              showFeedback: 'model.showFeedback',
+              feedbackText: 'model.feedbackText',
+              showNavHelp: 'model.showNavHelp',
+            }
           }
         ],
 
@@ -205,9 +217,16 @@ define(
             if (!this.model || !(this.model instanceof Map)) {
               this.model = new Map();
             }
+
             if(this.model.get('toolbarOpen') === true) {
               this.isOpen = true;
             }
+
+
+            // Deep clone the section options so that the original array is not
+            // modified
+            this.sections = _.map(this.sectionOptions, _.clone);
+
             if (this.model.get("showLayerList") === false) {
               this.sections = this.sections.filter(
                 (section) => section.label !== "Layers"
@@ -218,8 +237,13 @@ define(
                 (section) => section.label !== "Home"
               );
             }
+            if (!this.model.get("showNavHelp") && !this.model.get("showFeedback")) {
+              this.sections = this.sections.filter(
+                (section) => section.label !== "Help"
+              );
+            }
           } catch (e) {
-            console.log('A ToolbarView failed to initialize. Error message: ' + e);
+            console.log('Error initializing a ToolbarView', e);
           }
 
         },
