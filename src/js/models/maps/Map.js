@@ -42,8 +42,8 @@ define([
        * side bar with layer list, etc. If true, the {@link MapView} will render
        * a {@link ToolbarView}.
        * @property {Boolean} [showLayerList=true] - Whether or not to show the
-       * layer list in the toolbar. If true, the {@link ToolbarView} will
-       * render a {@link LayerListView}.
+       * layer list in the toolbar. If true, the {@link ToolbarView} will render
+       * a {@link LayerListView}.
        * @property {Boolean} [showHomeButton=true] - Whether or not to show the
        * home button in the toolbar.
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
@@ -56,6 +56,17 @@ define([
        * users to click on map features to show more information about them. If
        * true, the {@link MapView} will render a {@link FeatureInfoView} and
        * will initialize "picking" in the {@link CesiumWidgetView}.
+       * @property {String} [clickFeatureAction="showDetails"] - The default
+       * action to take when a user clicks on a feature on the map. The
+       * available options are "showDetails" (show the feature details in the
+       * sidebar) or "zoom" (zoom to the feature's location).
+       * @property {Boolean} [showNavHelp=true] - Whether or not to show
+       * navigation instructions in the toolbar.
+       * @property {Boolean} [showFeedback=false] - Whether or not to show a
+       * feedback section in the toolbar with the text specified in
+       * feedbackText.
+       * @property {String} [feedbackText=null] - The text to show in the
+       * feedback section. showFeedback must be true for this to be shown.
        *
        * @example
        * {
@@ -159,6 +170,12 @@ define([
        * action to take when a user clicks on a feature on the map. The
        * available options are "showDetails" (show the feature details in the
        * sidebar) or "zoom" (zoom to the feature's location).
+       * @property {Boolean} [showNavHelp=true] - Whether or not to show
+       * navigation instructions in the toolbar.
+       * @property {Boolean} [showFeedback=false] - Whether or not to show a
+       * feedback section in the toolbar.
+       * @property {String} [feedbackText=null] - The text to show in the
+       * feedback section.
        */
       defaults: function () {
         return {
@@ -184,6 +201,9 @@ define([
           showScaleBar: true,
           showFeatureInfo: true,
           clickFeatureAction: "showDetails",
+          showNavHelp: true,
+          showFeedback: false,
+          feedbackText: null
         };
       },
 
