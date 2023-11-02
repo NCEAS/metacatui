@@ -1,4 +1,3 @@
-
 'use strict';
 
 define(
@@ -8,8 +7,9 @@ define(
     'backbone',
     'text!templates/maps/toolbar.html',
     'models/maps/Map',
-    // Sub-views
-    'views/maps/LayerListView'
+    // Sub-views - TODO: import these as needed
+    'views/maps/LayerListView',
+    'views/maps/DrawToolView'
   ],
   function (
     $,
@@ -18,7 +18,8 @@ define(
     Template,
     Map,
     // Sub-views
-    LayerListView
+    LayerListView,
+    DrawTool
   ) {
 
     /**
@@ -170,8 +171,14 @@ define(
             label: 'Home',
             icon: 'home',
             action: function (view, model) {
-              model.trigger('flyHome')
+              model.flyHome();
             }
+          },
+          {
+            label: 'Draw',
+            icon: 'pencil',
+            view: DrawTool,
+            viewOptions: {}
           }
         ],
 
@@ -452,10 +459,7 @@ define(
             return contentContainer
           }
           catch (error) {
-            console.log(
-              'There was an error rendering section content in a ToolbarView' +
-              '. Error details: ' + error
-            );
+            console.log('Error rendering ToolbarView section', error);
           }
         },
 
@@ -498,6 +502,7 @@ define(
          * @param {SectionElement} sectionEl The section to activate
          */
         activateSection: function (sectionEl) {
+          if(!sectionEl) return;
           try {
             if (sectionEl.action && typeof sectionEl.action === 'function') {
               const view = this;
@@ -510,10 +515,7 @@ define(
             }
           }
           catch (error) {
-            console.log(
-              'There was an error showing a toolbar section in a ToolbarView' +
-              '. Error details: ' + error
-            );
+            console.log('Failed to show a section in a ToolbarView', error);
           }
         },
 

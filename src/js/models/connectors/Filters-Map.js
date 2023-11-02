@@ -47,9 +47,9 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
        */
       defaults: function () {
         return {
-          filters: new Filters([], { catalogSearch: true }),
+          filters: null,
           spatialFilters: [],
-          map: new Map(),
+          map: null,
           isConnected: false,
           onMoveEnd: this.updateSpatialFilters,
         };
@@ -68,6 +68,12 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
        */
       initialize: function (attr, options) {
         try {
+          if (!this.get("filters")) {
+            this.set("filters",  new Filters([], { catalogSearch: true }));
+          }
+          if (!this.get("map")) {
+            this.set("map", new Map());
+          }
           const add = options?.addSpatialFilter ?? true;
           this.findAndSetSpatialFilters(add);
         } catch (e) {
@@ -177,8 +183,9 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
           if (resetSpatialFilter) {
             this.resetSpatialFilter();
           }
+          const interactions = this.get("map")?.get("interactions");
           this.stopListening(this.get("filters"), "add remove");
-          this.stopListening(this.get("map"), "moveEnd moveStart");
+          this.stopListening(interactions, "moveEnd moveStartAndChanged");
           this.set("isConnected", false);
         } catch (e) {
           console.log("Error stopping Filter-Map listeners: ", e);
@@ -186,23 +193,24 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
       },
 
       /**
-       * Starts listening to the Map model for changes in the
-       * 'currentViewExtent' attribute, and calls the updateSpatialFilters
-       * function when changes are detected. This method needs to be called for
-       * the connector to work.
+       * Starts listening to the Map Interaction model for changes in the
+       * 'viewExtent' attribute, and calls the updateSpatialFilters function
+       * when changes are detected. This method needs to be called for the
+       * connector to work.
        */
       connect: function () {
         try {
           this.disconnect();
           const map = this.get("map");
+          const interactions = map.get("interactions");
           // Constrain the spatial filter to the current map extent right away
           this.updateSpatialFilters();
           // Trigger a 'changing' event on the filters collection to
           // indicate that the spatial filter is being updated
-          this.listenTo(map, "moveStart", function () {
+          this.listenTo(interactions, "moveStartAndChanged", function () {
             this.get("filters").trigger("changing");
           });
-          this.listenTo(map, "moveEnd", function () {
+          this.listenTo(interactions, "moveEnd", function () {
             const moveEndFunc = this.get("onMoveEnd");
             if (typeof moveEndFunc === "function") {
               moveEndFunc.call(this);
@@ -220,7 +228,12 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
       updateSpatialFilters: function () {
         try {
           const map = this.get("map");
-          const extent = map.get("currentViewExtent");
+          // TODO: If we update the spatialFilter to use the GeoBoundingBox
+          // model (instead of north, south, east, west attributes), then we can
+          // point directly to the MapInteraction model's 'viewExtent' attribute
+          // instead of getting the extent from the map. They will stay in sync
+          // automatically.
+          const extent = map.get("interactions").get("viewExtent").toJSON();
           const spatialFilters = this.get("spatialFilters");
 
           if (!spatialFilters?.length) {

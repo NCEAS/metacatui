@@ -120,6 +120,10 @@
   font-size: 1rem;
 }
 
+.map-view__button--active {
+  background-color: var(--map-col-highlight);
+}
+
 /* ---- BADGE ---- */
 
 .map-view__badge{
@@ -953,4 +957,18 @@ other class: .ui-slider-range */
   box-shadow: var(--map-shadow-md);
   /* imagery appears lighter on the map */
   filter: brightness(1.75);
+}
+
+/*****************************************************************************************
+ *
+ * Draw Tool
+ *
+ * Panel for drawing polygons in the map
+ *
+ */
+
+.draw-tool {
+  display: grid;
+  grid-auto-rows: min-content;
+  grid-gap: 1rem;
 }
