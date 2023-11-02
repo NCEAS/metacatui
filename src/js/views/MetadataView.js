@@ -1117,9 +1117,8 @@ define(['jquery',
           const z = this.getBoundsZoomLevel(bounds, mapDim);
           const mapLat = latLngCEN.lat();
           const mapLng = latLngCEN.lng();
-          const zoom = this.getBoundsZoomLevel(bounds, mapDim);
 
-          return `https://maps.google.com/?ll=${mapLat},${mapLng}&z=${zoom}`;
+          return `https://maps.google.com/?ll=${mapLat},${mapLng}&z=${z}`;
         },
 
         /**
