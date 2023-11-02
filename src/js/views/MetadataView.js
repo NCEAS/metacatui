@@ -1117,6 +1117,7 @@ define(['jquery',
           const z = this.getBoundsZoomLevel(bounds, mapDim);
           const mapLat = latLngCEN.lat();
           const mapLng = latLngCEN.lng();
+          const zoom = this.getBoundsZoomLevel(bounds, mapDim);
 
           return `https://maps.google.com/?ll=${mapLat},${mapLng}&z=${zoom}`;
         },
@@ -1133,7 +1134,7 @@ define(['jquery',
          */
         getBoundsZoomLevel: function(bounds, mapDim) {
           var WORLD_DIM = { height: 256, width: 256 };
-          var ZOOM_MAX = 14;
+          var ZOOM_MAX = 15;
           // 21 is actual max, but any closer and the map is too zoomed in to be
           // useful
       
