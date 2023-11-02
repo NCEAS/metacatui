@@ -561,7 +561,6 @@ define([
        * @param {Object|null} hoveredFeatures - The feature that the mouse is
        * hovering over or null if the mouse is not hovering over a feature.
        */
-      // When mouse moves? maybe throttle mouse move...
       updateCursor: function (hoveredFeatures) {
         const view = this;
         let cursorStyle = "default";
@@ -571,7 +570,11 @@ define([
         view.el.style.cursor = cursorStyle;
       },
 
-      // TODO
+      /**
+       * Highlight the features that are currently selected in the interactions
+       * model.
+       * @since x.x.x
+       */
       showSelectedFeatures: function () {
         // Remove highlights from previously selected 3D tiles
         view.silhouettes.selected = [];

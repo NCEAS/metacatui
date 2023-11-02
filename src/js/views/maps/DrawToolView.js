@@ -290,7 +290,6 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
 
       /**
        * Create and insert the buttons for drawing and clearing the polygon.
-       * TODO: Add all buttons and style them. This is just a WIP for now.
        */
       renderToolbar: function () {
         const view = this;

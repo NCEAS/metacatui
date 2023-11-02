@@ -40,7 +40,7 @@ define([
        * Events applied to this view's HTML elements by Backbone.
        */
       events: {
-        change: "updateModel", // <- TODO: does this work?
+        change: "updateModel",
         "mouseover .remove": "toggleRemoveClass",
         "mouseout .remove": "toggleRemoveClass",
       },
