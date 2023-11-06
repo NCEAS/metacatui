@@ -125,21 +125,22 @@ define([
        * Creates hashStrings for geohashes that are within the provided bounding
        * boxes at the given precision. The returned hashStrings are not
        * necessarily in the collection.
-       * @param {Object} bounds - Bounding box with north, south, east, and west
+       * @param {GeoBoundingBox} bounds - Bounding box with north, south, east, and west
        * properties.
        * @param {number} precision - Geohash precision level.
        * @returns {string[]} Array of geohash hashStrings.
        */
       getHashStringsForBounds: function (bounds, precision) {
         this.validatePrecision(precision, false);
-        if (!this.boundsAreValid(bounds)) {
+        if (!bounds.isValid()) {
           throw new Error("Bounds are invalid");
         }
         let hashStrings = [];
-        bounds = this.splitBoundingBox(bounds);
+        bounds = bounds.split();
         bounds.forEach(function (b) {
+          const c = b.getCoords();
           hashStrings = hashStrings.concat(
-            nGeohash.bboxes(b.south, b.west, b.north, b.east, precision)
+            nGeohash.bboxes(c.south, c.west, c.north, c.east, precision)
           );
         });
         return hashStrings;
@@ -171,29 +172,10 @@ define([
         return this.models.map((geohash) => geohash.get(attr));
       },
 
-      /**
-       * Splits a given bounding box if it crosses the prime meridian. Returns
-       * an array of bounding boxes.
-       * @param {Object} bounds - Bounding box object with north, south, east,
-       * and west properties.
-       * @returns {Object[]} Array of bounding box objects.
-       */
-      splitBoundingBox: function (bounds) {
-        if (!bounds) return [];
-        const { north, south, east, west } = bounds;
-        if (east < west) {
-          return [
-            { north, south, east: 180, west },
-            { north, south, east, west: -180 },
-          ];
-        } else {
-          return [{ north, south, east, west }];
-        }
-      },
 
       /**
        * Add geohashes to the collection based on a bounding box.
-       * @param {Object} bounds - Bounding box with north, south, east, and west
+       * @param {GeoBoundingBox} bounds - Bounding box with north, south, east, and west
        * properties.
        * @param {boolean} [consolidate=false] - Whether to consolidate the
        * geohashes into the smallest set of geohashes that cover the same area.
@@ -231,7 +213,7 @@ define([
             maxGeohashes
           );
         } else {
-          const area = this.getBoundingBoxArea(bounds);
+          const area = bounds.getArea();
           const precision = this.getMaxPrecision(
             area,
             maxGeohashes,
@@ -287,53 +269,6 @@ define([
           }
         }
         return this.precisionAreas;
-      },
-
-      /**
-       * Get the area of a bounding box in degrees.
-       * @param {Object} bounds - Bounding box with north, south, east, and west
-       * properties.
-       * @returns {Number} The area of the bounding box in degrees.
-       */
-      getBoundingBoxArea: function (bounds) {
-        if (!this.boundsAreValid(bounds)) {
-          console.warn(
-            `Bounds are invalid: ${JSON.stringify(bounds)}. ` +
-              `Returning the globe's area for the given bounding box.`
-          );
-          return 360 * 180;
-        }
-        const { north, south, east, west } = bounds;
-        // Account for cases where east < west, due to the bounds crossing the
-        // prime meridian
-        const lonDiff = east < west ? 360 - (west - east) : east - west;
-        const latDiff = north - south;
-        return Math.abs(latDiff * lonDiff);
-      },
-
-      /**
-       * Check that a bounds object is valid for the purposes of other methods
-       * in this Collection.
-       * @param {Object} bounds - Bounding box with north, south, east, and west
-       * properties.
-       * @returns {boolean} Whether the bounds object is valid.
-       */
-      boundsAreValid: function (bounds) {
-        return (
-          bounds &&
-          typeof bounds.north === "number" &&
-          typeof bounds.south === "number" &&
-          typeof bounds.east === "number" &&
-          typeof bounds.west === "number" &&
-          bounds.north <= 90 &&
-          bounds.north >= -90 &&
-          bounds.south >= -90 &&
-          bounds.south <= 90 &&
-          bounds.east <= 180 &&
-          bounds.east >= -180 &&
-          bounds.west >= -180 &&
-          bounds.west <= 180
-        );
       },
 
       /**
@@ -426,8 +361,8 @@ define([
       /**
        * Get the optimal range of precision levels to consider using for a given
        * bounding box. See {@link getMaxPrecision} and {@link getMinPrecision}.
-       * @param {Object} bounds - Bounding box with north, south, east, and west
-       * properties.
+       * @param {GeoBoundingBox} bounds - Bounding box with north, south, east,
+       * and west properties.
        * @param {Number} maxGeohashes - The maximum number of geohashes that can
        * be used to cover the area.
        * @param {Number} absMin - The absolute minimum precision level to
@@ -443,7 +378,7 @@ define([
         absMin = this.MIN_PRECISION,
         absMax = this.MAX_PRECISION
       ) {
-        if (!this.boundsAreValid(bounds)) {
+        if (!bounds.isValid()){
           console.warn(
             `Bounds are invalid: ${JSON.stringify(bounds)}. ` +
               `Returning the min and max allowable precision levels.`
@@ -452,7 +387,7 @@ define([
         }
         absMin = this.validatePrecision(absMin);
         absMax = this.validatePrecision(absMax);
-        const area = this.getBoundingBoxArea(bounds);
+        const area = bounds.getArea();
         const minP = this.getMinPrecision(area, absMin, absMax);
         if (minP === absMax || maxGeohashes === Infinity) return [minP, absMax];
         return [minP, this.getMaxPrecision(area, maxGeohashes, minP, absMax)];
@@ -463,7 +398,7 @@ define([
        * bounding box. This will return the optimal set of potentially
        * mixed-precision geohashes that cover the bounding box at the highest
        * precision possible without exceeding the maximum number of geohashes.
-       * @param {Object} bounds - Bounding box with north, south, east, and west
+       * @param {GeoBoundingBox} bounds - Bounding box with north, south, east, and west
        * properties.
        * @param {Number} [minPrecision] - The minimum precision level to
        * consider when calculating the optimal set of geohashes. Defaults to the
@@ -485,7 +420,7 @@ define([
         maxGeohashes = Infinity
       ) {
         // Check the inputs
-        if (!this.boundsAreValid(bounds)) return [];
+        if (!bounds.isValid()) return [];
         minPrecision = this.validatePrecision(minPrecision);
         maxPrecision = this.validatePrecision(maxPrecision);
         if (minPrecision > maxPrecision) minPrecision = maxPrecision;
@@ -502,35 +437,23 @@ define([
         // Base32 is the set of characters used to encode geohashes
         const base32 = [..."0123456789bcdefghjkmnpqrstuvwxyz"];
 
-        // In case the bounding box crosses the prime meridian, split it in two
-        const allBounds = this.splitBoundingBox(bounds);
-
         // If the bounds cover the world, return the base set of geohashes
-        if (bounds.north >= 90 && bounds.south <= -90 && bounds.east >= 180 && bounds.west <= -180) {
+        if (bounds.coversEarth()) {
           return base32;
         }
 
-        // Checks if the given bounds are fully within the bounding box
-        function fullyContained(n, e, s, w, north, east, south, west) {
-          return s >= south && w >= west && n <= north && e <= east;
-        }
-
-        // Checks if the given bounds are fully outside the bounding box, assuming that
-        function fullyOutside(n, e, s, w, north, east, south, west) {
-          return n < south || s > north || e < west || w > east;
-        }
-
         // Checks if a hash is fully contained, fully outside, or overlapping
-        // the bounding box
+        // the bounding box. In case the bounding box crosses the prime
+        // meridian, split it in two
+        const allBounds = bounds.split();
         function hashPlacement(hash) {
           let [s, w, n, e] = nGeohash.decode_bbox(hash);
           let outside = [];
           for (const b of allBounds) {
-            if (fullyContained(n, e, s, w, b.north, b.east, b.south, b.west)) {
+            if (bounds.boundsAreFullyContained(n, e, s, w)) {
               return "inside";
             } else if (
-              fullyOutside(n, e, s, w, b.north, b.east, b.south, b.west)
-            ) {
+              bounds.boundsAreFullyOutside(n, e, s, w)) {
               outside.push(true);
             }
           }
@@ -596,12 +519,12 @@ define([
       /**
        * Get a subset of geohashes from this collection that are within the
        * provided bounding box.
-       * @param {Object} bounds - Bounding box with north, south, east, and west
+       * @param {GeoBoundingBox} bounds - Bounding box with north, south, east, and west
        * properties.
        * @returns {Geohashes} Subset of geohashes.
        */
       getSubsetByBounds: function (bounds) {
-        if (!this.boundsAreValid(bounds)) {
+        if (!bounds || !bounds.isValid()) {
           console.warn(
             `Bounds are invalid: ${JSON.stringify(bounds)}. ` +
               `Returning an empty Geohashes collection.`

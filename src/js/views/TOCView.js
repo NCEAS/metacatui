@@ -121,7 +121,6 @@ define(["jquery",
 
           }
 
-          var view = this;
           return this;
 
         },
@@ -278,11 +277,11 @@ define(["jquery",
 
             // Add scroll spy
             $("body").off("activate");
-            $("body").on("activate", function(e){
+            $("body").on("activate", function (e) {
               view.scrollSpyExtras(e);
             });
             $(window).off("resize");
-            $(window).on("resize", function(){
+            $(window).on("resize", function () {
               $spy.scrollspy("refresh");
             });
 
@@ -294,19 +293,26 @@ define(["jquery",
 
 
         /**
-         * affixTOC - description
+         * Adds and refreshes bootstrap's affix functionality. This function
+         * should be called after the DOM has been rendered or updated. Renamed
+         * from postRender to avoid it being called automatically by Backbone.
+         * @since x.x.x
          */
-        postRender: function(){
+        setAffix: function(){
 
           try {
 
             var isVisible = this.$el.find(":visible").length > 0;
 
-            if(this.affix === true && isVisible){
+            if(!isVisible || !this.$el.offset()){
+              return;
+            }
+
+            if (this.affix === true) {
               this.$el.affix({ offset: this.$el.offset().top });
             }
 
-            if(this.addScrollspy && isVisible){
+            if(this.addScrollspy){
               this.renderScrollspy();
             }
 

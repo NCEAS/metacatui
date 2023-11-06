@@ -88,7 +88,7 @@ define([    "jquery", "underscore", "backbone",
          * render - Renders the MarkdownView; converts markdown to HTML and
          * displays it.
          */
-        render: function() {
+        render: function () {
 
             // Show a loading message while we render the markdown to HTML
             this.$el.html(this.loadingTemplate({
@@ -143,15 +143,10 @@ define([    "jquery", "underscore", "backbone",
                 this.$el.html(this.template({ markdown: htmlFromMD }));
 
                 if( this.showTOC ){
-                  this.listenToOnce(this, "TOCRendered", function(){
-                    this.trigger("mdRendered");
-                    this.postRender();
-                  });
                   this.renderTOC();
-                } else {
-                  this.trigger("mdRendered");
-                  this.postRender();
                 }
+              
+                this.trigger("mdRendered");
 
             });
 
@@ -162,15 +157,6 @@ define([    "jquery", "underscore", "backbone",
 
         },
 
-        postRender: function(){
-          if(this.tocView){
-            this.tocView.postRender();
-          } else {
-            this.listenToOnce(this, "TOCRendered", function(){
-              this.tocView.postRender();
-            });
-          }
-        },
 
         /**
          * listRequiredExtensions - test which extensions are needed, then load
@@ -378,7 +364,7 @@ define([    "jquery", "underscore", "backbone",
               view.$el.addClass("span9");
             }
 
-            view.trigger("TOCRendered");
+            view.tocView.setAffix();
 
           });
 

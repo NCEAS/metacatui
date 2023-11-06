@@ -58,44 +58,9 @@ define(["../../../../../../../../src/js/collections/maps/Geohashes"], function (
           .validatePrecision([1, 2, 3])
           .should.deep.equal([1, 2, 3]);
       });
-
-      it("should validate a valid bounding box", function () {
-        const bounds = { north: 80, south: -80, east: 170, west: 160 };
-        this.geohashes.boundsAreValid(bounds).should.be.true;
-      });
-
-      it("should invalidate a bounding box with invalid bounds", function () {
-        const bounds = { north: 80, south: -80, east: 170, west: 190 };
-        this.geohashes.boundsAreValid(bounds).should.be.false;
-      });
-
-      it("should invalidate a bounding box with missing bounds", function () {
-        const bounds = { north: 80, south: -80, east: 170 };
-        this.geohashes.boundsAreValid(bounds).should.be.false;
-      });
-
-      it("should invalidate a bounding box with non-number bounds", function () {
-        const bounds = { north: 80, south: -80, east: 170, west: "west" };
-        this.geohashes.boundsAreValid(bounds).should.be.false;
-      });
     });
 
     describe("Bounds", function () {
-      it("should split a bounding box that crosses the prime meridian", function () {
-        const bounds = { north: 80, south: -80, east: -170, west: 170 };
-        const expected = [
-          { north: 80, south: -80, east: 180, west: 170 },
-          { north: 80, south: -80, east: -170, west: -180 },
-        ];
-        this.geohashes.splitBoundingBox(bounds).should.deep.equal(expected);
-      });
-
-      it("should not split a bounding box that does not cross the prime meridian", function () {
-        const bounds = { north: 80, south: -80, east: 170, west: 160 };
-        const expected = [{ north: 80, south: -80, east: 170, west: 160 }];
-        this.geohashes.splitBoundingBox(bounds).should.deep.equal(expected);
-      });
-
       it("should get the area of a geohash tile", function () {
         const precision = 5;
         const expected = 0.0019311904907226562;
@@ -116,18 +81,6 @@ define(["../../../../../../../../src/js/collections/maps/Geohashes"], function (
         this.geohashes
           .getGeohashAreas(minPrecision, maxPrecision)
           .should.deep.equal(expected);
-      });
-
-      it("should get the area of the world", function () {
-        const bounds = { north: 90, south: -90, east: 180, west: -180 };
-        const expected = 360 * 180;
-        this.geohashes.getBoundingBoxArea(bounds).should.equal(expected);
-      });
-
-      it("should get the area of a small bounding box", function () {
-        const bounds = { north: 45, south: 44, east: 45, west: 44 };
-        const expected = 1;
-        this.geohashes.getBoundingBoxArea(bounds).should.equal(expected);
       });
     });
 

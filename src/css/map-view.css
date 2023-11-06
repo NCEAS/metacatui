@@ -120,9 +120,13 @@
   font-size: 1rem;
 }
 
+.map-view__button--active {
+  background-color: var(--map-col-highlight);
+}
+
 /* ---- BADGE ---- */
 
-.map-view__badge{
+.map-view__badge {
   padding: 0.4em 0.5em 0.3em 0.55em;
   margin: 0 -0.2rem 0 0.3rem;
   font-size: 0.62rem;
@@ -136,24 +140,25 @@
   font-weight: 500;
 }
 
-.map-view__badge--blue{
+.map-view__badge--blue {
   background-color: var(--map-col-blue);
   filter: none;
 }
 
-.map-view__badge--green{
+.map-view__badge--green {
   background-color: var(--map-col-green);
   filter: none;
 }
 
-.map-view__badge--yellow{
+.map-view__badge--yellow {
   background-color: var(--map-col-yellow);
   color: var(--map-col-bkg-lighter);
   filter: none;
   font-weight: 600;
   opacity: 0.9;
 }
-.map-view__badge--contrast{
+
+.map-view__badge--contrast {
   background-color: var(--map-col-text);
   color: var(--map-col-bkg);
   opacity: 0.8;
@@ -608,23 +613,24 @@ represents 1 unit of the given distance measurement. */
   border-radius: var(--map-border-radius);
 }
 
-.layer-details__notification--blue{
+.layer-details__notification--blue {
   background-color: var(--map-col-blue);
   filter: none;
 }
 
-.layer-details__notification--green{
+.layer-details__notification--green {
   background-color: var(--map-col-green);
   filter: none;
 }
 
-.layer-details__notification--yellow{
+.layer-details__notification--yellow {
   background-color: var(--map-col-yellow);
   color: var(--map-col-bkg-lighter);
   filter: none;
   opacity: 0.9;
 }
-.layer-details__notification--contrast{
+
+.layer-details__notification--contrast {
   background-color: var(--map-col-text);
   color: var(--map-col-bkg);
   opacity: 0.95;
@@ -953,4 +959,108 @@ other class: .ui-slider-range */
   box-shadow: var(--map-shadow-md);
   /* imagery appears lighter on the map */
   filter: brightness(1.75);
+}
+
+/*****************************************************************************************
+ *
+ * Draw Tool
+ *
+ * Panel for drawing polygons in the map
+ *
+ */
+
+.draw-tool {
+  display: grid;
+  grid-auto-rows: min-content;
+  grid-gap: 1rem;
+}
+
+/*****************************************************************************************
+ *
+ * Help panel
+ *
+ * Panel that shows navigation and other help information
+ *
+ */
+
+.map-help-panel{
+  width: 100%;
+}
+
+.nav-help {
+  background-color: var(--map-col-bkg-lighter);
+  border-radius: var(--map-border-radius);
+}
+
+.nav-help .map-view__button {
+  background-color: var(--map-col-bkg-lighter);
+  padding: 0.65rem 0.9rem;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  opacity: 0.8;
+}
+
+.nav-help .map-view__button--active {
+  background-color: var(--map-col-bkg-lightest);
+  opacity: 1;
+}
+
+.nav-help__img {
+  height: 48px;
+  width: 70px;
+}
+
+.nav-help__instructions {
+  display: grid;
+  width: 100%;
+  gap: 0.8rem;
+  padding: 0.8rem 0.4rem;
+  background-color: var(--map-col-bkg-lightest);
+  border-radius: var(--map-border-radius);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.nav-help__instructions.hidden {
+  display: none;
+}
+
+.cesium-navigation-help-pan {
+  color: #66ccff;
+  font-weight: bold;
+}
+
+.cesium-navigation-help-zoom {
+  color: #65fd00;
+  font-weight: bold;
+}
+
+.cesium-navigation-help-rotate {
+  color: #ffd800;
+  font-weight: bold;
+}
+
+.cesium-navigation-help-tilt {
+  color: #d800d8;
+  font-weight: bold;
+}
+
+.nav-help__instruction {
+  display: grid;
+  grid-template-columns: 70px auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.map-help-panel__title{
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin: 0 0 0.8rem 0;
+  line-height: normal;
+}
+
+.map-help-panel__section:not(:first-child) {
+  margin-top: 2.5rem;
 }

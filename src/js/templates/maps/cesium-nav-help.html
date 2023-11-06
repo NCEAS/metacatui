@@ -1,0 +1,107 @@
+<div class="nav-help">
+  <button
+    type="button"
+    class="map-view__button"
+    id="<%= mouseButtonId %>">
+    <img
+      src="<%= cesiumUrl %>Widgets/Images/NavigationHelp/Mouse.svg"
+      style="width: 25px; height: 25px" />
+    Mouse
+  </button>
+  <button
+    type="button"
+    class="map-view__button"
+    id="<%= touchButtonId %>">
+    <img
+      src="<%= cesiumUrl %>Widgets/Images/NavigationHelp/Touch.svg"
+      style="width: 25px; height: 25px" />
+    Touch
+  </button>
+
+  <div
+    class="nav-help__instructions"
+    id="<%= mouseSectionId %>">
+    <div class="nav-help__instruction">
+      <img
+        src="<%= cesiumUrl %>Widgets/Images/NavigationHelp/MouseLeft.svg"
+        class="nav-help__img" />
+      <div class="nav-help__text">
+        <div class="cesium-navigation-help-pan">Pan view</div>
+        <div class="cesium-navigation-help-details">Left click + drag</div>
+      </div>
+    </div>
+
+    <div class="nav-help__instruction">
+      <img
+        src="<%= cesiumUrl %>Widgets/Images/NavigationHelp/MouseRight.svg"
+        class="nav-help__img" />
+      <div class="nav-help__text">
+        <div class="cesium-navigation-help-zoom">Zoom view</div>
+        <div class="cesium-navigation-help-details">Right click + drag, or</div>
+        <div class="cesium-navigation-help-details">Mouse wheel scroll</div>
+      </div>
+    </div>
+
+    <div class="nav-help__instruction">
+      <img
+        src="<%= cesiumUrl %>Widgets/Images/NavigationHelp/MouseMiddle.svg"
+        class="nav-help__img" />
+      <div class="nav-help__text">
+        <div class="cesium-navigation-help-rotate">Rotate view</div>
+        <div class="cesium-navigation-help-details">
+          Middle click + drag, or
+        </div>
+        <div class="cesium-navigation-help-details">
+          CTRL + Left/Right click + drag
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="nav-help__instructions"
+    id="<%= touchSectionId %>">
+    <div class="nav-help__instruction">
+      <img
+        src="<%= cesiumUrl %>Widgets/Images/NavigationHelp/TouchDrag.svg"
+        class="nav-help__img" />
+      <div class="nav-help__text">
+        <div class="cesium-navigation-help-pan">Pan view</div>
+        <div class="cesium-navigation-help-details">One finger drag</div>
+      </div>
+    </div>
+
+    <div class="nav-help__instruction">
+      <img
+        src="<%= cesiumUrl %>Widgets/Images/NavigationHelp/TouchZoom.svg"
+        class="nav-help__img" />
+      <div class="nav-help__text">
+        <div class="cesium-navigation-help-zoom">Zoom view</div>
+        <div class="cesium-navigation-help-details">Two finger pinch</div>
+      </div>
+    </div>
+
+    <div class="nav-help__instruction">
+      <img
+        src="<%= cesiumUrl %>Widgets/Images/NavigationHelp/TouchTilt.svg"
+        class="nav-help__img" />
+      <div class="nav-help__text">
+        <div class="cesium-navigation-help-rotate">Tilt view</div>
+        <div class="cesium-navigation-help-details">
+          Two finger drag, same direction
+        </div>
+      </div>
+    </div>
+    <div class="nav-help__instruction">
+      <img
+        src="<%= cesiumUrl %>Widgets/Images/NavigationHelp/TouchRotate.svg"
+        class="nav-help__img" />
+      <div class="nav-help__text">
+        <div class="cesium-navigation-help-tilt">Rotate view</div>
+        <div class="cesium-navigation-help-details">
+          Two finger drag, opposite direction
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

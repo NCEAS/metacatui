@@ -386,47 +386,53 @@ define(['jquery',
             var loadSettings = {
               url: endpoint,
               success: function (response, status, xhr) {
+                try {
 
-                //If the user has navigated away from the MetadataView, then don't render anything further
-                if (MetacatUI.appView.currentView != viewRef)
-                  return;
-
-                //Our fallback is to show the metadata details from the Solr index
-                if (status == "error")
-                  viewRef.renderMetadataFromIndex();
-                else {
-                  //Check for a response that is a 200 OK status, but is an error msg
-                  if ((response.length < 250) && (response.indexOf("Error transforming document") > -1) && viewRef.model.get("indexed")) {
-                    viewRef.renderMetadataFromIndex();
+                  //If the user has navigated away from the MetadataView, then don't render anything further
+                  if (MetacatUI.appView.currentView != viewRef)
                     return;
-                  }
-                  //Mark this as a metadata doc with no stylesheet, or one that is at least different than usual EML and FGDC
-                  else if ((response.indexOf('id="Metadata"') == -1)) {
-                    viewRef.$el.addClass("container no-stylesheet");
 
-                    if (viewRef.model.get("indexed")) {
+                  //Our fallback is to show the metadata details from the Solr index
+                  if (status == "error" || !response || typeof response !== "string")
+                    viewRef.renderMetadataFromIndex();
+                  else {
+                    //Check for a response that is a 200 OK status, but is an error msg
+                    if ((response.length < 250) && (response.indexOf("Error transforming document") > -1) && viewRef.model.get("indexed")) {
                       viewRef.renderMetadataFromIndex();
                       return;
                     }
+                    //Mark this as a metadata doc with no stylesheet, or one that is at least different than usual EML and FGDC
+                    else if ((response.indexOf('id="Metadata"') == -1)) {
+                      viewRef.$el.addClass("container no-stylesheet");
+
+                      if (viewRef.model.get("indexed")) {
+                        viewRef.renderMetadataFromIndex();
+                        return;
+                      }
+                    }
+
+                    //Now show the response from the view service
+                    viewRef.$(viewRef.metadataContainer).html(response);
+
+                    //If there is no info from the index and there is no metadata doc rendered either, then display a message
+                    if (viewRef.$el.is(".no-stylesheet") && viewRef.model.get("archived") && !viewRef.model.get("indexed"))
+                      viewRef.$(viewRef.metadataContainer).prepend(viewRef.alertTemplate({ msg: "There is limited metadata about this dataset since it has been archived." }));
+
+                    viewRef.alterMarkup();
+
+                    viewRef.trigger("metadataLoaded");
+
+                    //Add a map of the spatial coverage
+                    if (gmaps) viewRef.insertSpatialCoverageMap();
+
+                    // Injects Clipboard objects into DOM elements returned from the View Service
+                    viewRef.insertCopiables();
+
                   }
-
-                  //Now show the response from the view service
-                  viewRef.$(viewRef.metadataContainer).html(response);
-
-                  //If there is no info from the index and there is no metadata doc rendered either, then display a message
-                  if (viewRef.$el.is(".no-stylesheet") && viewRef.model.get("archived") && !viewRef.model.get("indexed"))
-                    viewRef.$(viewRef.metadataContainer).prepend(viewRef.alertTemplate({ msg: "There is limited metadata about this dataset since it has been archived." }));
-
-                  viewRef.alterMarkup();
-
-                  viewRef.trigger("metadataLoaded");
-
-                  //Add a map of the spatial coverage
-                  if (gmaps) viewRef.insertSpatialCoverageMap();
-
-                  // Injects Clipboard objects into DOM elements returned from the View Service
-                  viewRef.insertCopiables();
-
+                } catch (e) {
+                  console.log("Error rendering metadata from the view service", e);
+                  console.log("Response from the view service: ", response);
+                  viewRef.renderMetadataFromIndex();
                 }
               },
               error: function (xhr, textStatus, errorThrown) {
@@ -1036,11 +1042,6 @@ define(['jquery',
               return;
             }
 
-            var url = "https://maps.google.com/?ll=" + latLngCEN.lat() + "," + latLngCEN.lng() +
-              "&spn=0.003833,0.010568" +
-              "&t=m" +
-              "&z=5";
-
             //Get the map path color
             var pathColor = MetacatUI.appModel.get("datasetMapPathColor");
             if (pathColor) {
@@ -1074,6 +1075,11 @@ define(['jquery',
             //Find the spot in the DOM to insert our map image
             if (parseText) var insertAfter = ($(georegion).find('label:contains("West")').parent().parent().length) ? $(georegion).find('label:contains("West")').parent().parent() : georegion; //The last coordinate listed
             else var insertAfter = georegion;
+
+            // Get the URL to the interactive Google Maps instance
+            const url = this.getGoogleMapsUrl(latLngCEN, bounds);
+
+            // Insert the map image
             $(insertAfter).append(this.mapTemplate({
               map: mapHTML,
               url: url
@@ -1092,6 +1098,69 @@ define(['jquery',
           return true;
 
         },
+
+        /**
+         * Returns a URL to a Google Maps instance that is centered on the given
+         * coordinates and zoomed to the appropriate level to display the given
+         * bounding box.
+         * @param {LatLng} latLngCEN - The center point of the map.
+         * @param {LatLngBounds} bounds - The bounding box to display.
+         * @returns {string} The URL to the Google Maps instance.
+         * @since x.x.x
+         */
+        getGoogleMapsUrl: function (latLngCEN, bounds) {
+          // Use the window width and height as a proxy for the map dimensions
+          const mapDim = {
+            height: $(window).height(),
+            width: $(window).width()
+          };
+          const z = this.getBoundsZoomLevel(bounds, mapDim);
+          const mapLat = latLngCEN.lat();
+          const mapLng = latLngCEN.lng();
+
+          return `https://maps.google.com/?ll=${mapLat},${mapLng}&z=${z}`;
+        },
+
+        /**
+         * Returns the zoom level that will display the given bounding box at
+         * the given dimensions.
+         * @param {LatLngBounds} bounds - The bounding box to display.
+         * @param {Object} mapDim - The dimensions of the map.
+         * @param {number} mapDim.height - The height of the map.
+         * @param {number} mapDim.width - The width of the map.
+         * @returns {number} The zoom level.
+         * @since x.x.x
+         */
+        getBoundsZoomLevel: function(bounds, mapDim) {
+          var WORLD_DIM = { height: 256, width: 256 };
+          var ZOOM_MAX = 15;
+          // 21 is actual max, but any closer and the map is too zoomed in to be
+          // useful
+      
+          function latRad(lat) {
+            var sin = Math.sin(lat * Math.PI / 180);
+            var radX2 = Math.log((1 + sin) / (1 - sin)) / 2;
+            return Math.max(Math.min(radX2, Math.PI), -Math.PI) / 2;
+          }
+      
+          function zoom(mapPx, worldPx, fraction) {
+            return Math.floor(Math.log(mapPx / worldPx / fraction) / Math.LN2);
+          }
+      
+          var ne = bounds.getNorthEast();
+          var sw = bounds.getSouthWest();
+      
+          var latFraction = (latRad(ne.lat()) - latRad(sw.lat())) / Math.PI;
+          
+          var lngDiff = ne.lng() - sw.lng();
+          var lngFraction = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
+      
+          var latZoom = zoom(mapDim.height, WORLD_DIM.height, latFraction);
+          var lngZoom = zoom(mapDim.width, WORLD_DIM.width, lngFraction);
+      
+          return Math.min(latZoom, lngZoom, ZOOM_MAX);
+        },
+      
 
         insertCitation: function () {
           if (!this.model) return false;

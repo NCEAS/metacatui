@@ -382,7 +382,7 @@ define([
 
         if (this.limitSearchToMapOnInteraction && !this.limitSearchToMapArea) {
           this.listenToOnce(
-            this.model.get("map"),
+            this.model.get("map").get("interactions"),
             "change:firstInteraction",
             function () {
               this.toggleMapFilter(true);

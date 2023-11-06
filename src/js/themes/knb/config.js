@@ -45,7 +45,6 @@ MetacatUI.AppConfig = Object.assign({
       read: true
     }],
   hiddenSubjectsInAccessPolicy: ["CN=knb-data-admins,DC=dataone,DC=org"],
-  showDatasetPublicToggleForSubjects: ["CN=knb-data-admins,DC=dataone,DC=org"],
   allowChangeRightsHolder: false,
   enableMeasurementTypeView: true,
 

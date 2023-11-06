@@ -1,8 +1,7 @@
 define([
   "../../../../../../../../src/js/models/maps/assets/CesiumGeohash",
-  "../../../../../../../../src/js/collections/maps/Geohashes",
   "../../../../../../../../src/js/models/maps/Map",
-], function (CesiumGeohash, Geohashes) {
+], function (CesiumGeohash, MapModel) {
   // Configure the Chai assertion library
   var should = chai.should();
   var expect = chai.expect;
@@ -10,7 +9,7 @@ define([
   describe("CesiumGeohash Test Suite", function () {
     /* Set up */
     beforeEach(function () {
-      this.map = new Map();
+      this.map = new MapModel();
       this.model = new CesiumGeohash();
       this.model.set("mapModel", this.map);
     });
@@ -83,7 +82,9 @@ define([
       it("should get the precision", function () {
         this.model.replaceGeohashes();
         this.model.set("maxGeoHashes", 32);
-        this.map.set("currentViewExtent", {
+        console.log(this.map.attributes);
+        console.log(this.map.get("interactions"));
+        this.map.get("interactions").setViewExtent({
           north: 90,
           south: -90,
           east: 180,
