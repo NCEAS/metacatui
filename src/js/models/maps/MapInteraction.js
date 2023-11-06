@@ -285,7 +285,7 @@ define([
 
       /**
        * Set the feature that is currently selected.
-       * @param {Cesium.Entity|Cesium.Cesium3DTileFeature|Feature[|Object[]]}
+       * @param {Cesium.Entity|Cesium.Cesium3DTileFeature|Feature|Object[]}
        * features - An array of feature objects selected directly from the map
        * view.
        */

@@ -524,7 +524,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
       /**
        * Climbs up the model hierarchy until it finds the EML model
        *
-       * @return {EML211 or false} - Returns the EML 211 Model or false if not
+       * @return {EML211|false} - Returns the EML 211 Model or false if not
        * found
        */
       getParentEML: function () {
