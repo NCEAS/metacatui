@@ -207,7 +207,7 @@ define([
 
       /**
        * Create the Cesium Widget and save a reference to it to the view
-       * @since x.x.x
+       * @since 2.27.0
        * @returns {Cesium.CesiumWidget} The Cesium Widget
        */
       renderWidget: function () {
@@ -242,7 +242,7 @@ define([
        * Create a DataSourceDisplay and DataSourceCollection for the Cesium
        * widget. This is required to display vector data (e.g. GeoJSON) on the
        * map.
-       * @since x.x.x
+       * @since 2.27.0
        * @returns {Cesium.DataSourceDisplay} The Cesium DataSourceDisplay
        */
       setUpDataSourceDisplay: function () {
@@ -289,7 +289,7 @@ define([
        * Run the update method and all visualizers for each data source.
        * @return {boolean} Returns true if all data sources are ready to be
        * displayed.
-       * @since x.x.x
+       * @since 2.27.0
        */
       updateAllDataSources: function () {
         const view = this;
@@ -337,7 +337,7 @@ define([
       /**
        * Set up the Cesium scene and set listeners and behavior that enable
        * users to click on vector features on the map to highlight them.
-       * @since x.x.x
+       * @since 2.27.0
        */
       setUpSilhouettes: function () {
         try {
@@ -364,7 +364,7 @@ define([
 
       /**
        * Listen for changes to the assets and update the map accordingly.
-       * @since x.x.x
+       * @since 2.27.0
        */
       setAssetListeners: function () {
         const view = this;
@@ -389,7 +389,7 @@ define([
 
       /**
        * Remove listeners for dynamic navigation.
-       * @since x.x.x
+       * @since 2.27.0
        */
       removeNavigationListeners: function () {
         this.stopListening(this.interactions, "change:zoomTarget", this.flyTo);
@@ -401,7 +401,7 @@ define([
        * to the extent of a layer and zooming to the home position. Note that
        * other views may trigger an event on the layer/asset model that
        * indicates that the map should navigate to a given extent.
-       * @since x.x.x
+       * @since 2.27.0
        */
       setNavigationListeners: function () {
         this.removeNavigationListeners();
@@ -420,7 +420,7 @@ define([
 
       /**
        * Remove any previously set camera listeners.
-       * @since x.x.x
+       * @since 2.27.0
        */
       removeCameraListeners: function () {
         if (!this.cameraListeners) this.cameraListeners = [];
@@ -472,7 +472,7 @@ define([
 
       /**
        * Remove any previously set mouse listeners.
-       * @since x.x.x
+       * @since 2.27.0
        */
       removeMouseListeners: function () {
         if (this.mouseEventHandler) this.mouseEventHandler.destroy();
@@ -482,7 +482,7 @@ define([
        * Set up listeners for mouse events on the map. This includes listening
        * for mouse clicks, mouse movement, and mouse hovering over features.
        * These listeners simply update the interactions model with mouse events.
-       * @since x.x.x
+       * @since 2.27.0
        */
       setMouseListeners: function () {
         const view = this;
@@ -512,7 +512,7 @@ define([
        * When the mouse is moved over the map, update the interactions model
        * with the current mouse position.
        * @param {Object} event - The event object from Cesium
-       * @since x.x.x
+       * @since 2.27.0
        */
       setMousePosition: function (position) {
         if (!position) return;
@@ -532,7 +532,7 @@ define([
        * @param {Object} position - The position of the mouse on the map
        * @param {number} [delay=200] - The minimum number of milliseconds that
        * must pass between calls to this function.
-       * @since x.x.x
+       * @since 2.27.0
        */
       setHoveredFeatures: function (position, delay = 200) {
         const view = this;
@@ -546,7 +546,7 @@ define([
 
       /**
        * React when the user interacts with the map.
-       * @since x.x.x
+       * @since 2.27.0
        */
       setInteractionListeners: function () {
         const interactions = this.interactions;
@@ -573,7 +573,7 @@ define([
       /**
        * Highlight the features that are currently selected in the interactions
        * model.
-       * @since x.x.x
+       * @since 2.27.0
        */
       showSelectedFeatures: function () {
         // Remove highlights from previously selected 3D tiles
@@ -827,7 +827,7 @@ define([
        * @param {Cesium.EntityCollection} collection - The collection to search.
        * @returns {Cesium.Entity} The entity with the given id, or null if no
        * entity with that id exists in the collection.
-       * @since x.x.x
+       * @since 2.27.0
        */
       getEntityById: function (id, collection) {
         const entities = collection.values;
@@ -1395,7 +1395,7 @@ define([
       /**
        * When an asset is removed from the map model, remove it from the map.
        * @param {MapAsset} mapAsset - The MapAsset model removed from the map
-       * @since x.x.x
+       * @since 2.27.0
        */
       removeAsset: function (mapAsset) {
         if (!mapAsset) return;
@@ -1446,7 +1446,7 @@ define([
        * Remove a 3D tileset from the map.
        * @param {Cesium.Cesium3DTileset} cesiumModel The Cesium 3D tileset model
        * to remove from the map
-       * @since x.x.x
+       * @since 2.27.0
        */
       remove3DTileset: function (cesiumModel) {
         this.scene.primitives.remove(cesiumModel);
@@ -1465,7 +1465,7 @@ define([
        * Remove vector data (excluding 3D tilesets) from the Map.
        * @param {Cesium.GeoJsonDataSource} cesiumModel - The Cesium data source
        * model to remove from the map
-       * @since x.x.x
+       * @since 2.27.0
        */
       removeVectorData: function (cesiumModel) {
         this.dataSourceCollection.remove(cesiumModel);
@@ -1485,7 +1485,7 @@ define([
        * Remove imagery from the Map.
        * @param {Cesium.ImageryLayer} cesiumModel The Cesium imagery model to
        * remove from the map
-       * @since x.x.x
+       * @since 2.27.0
        */
       removeImagery: function (cesiumModel) {
         console.log("Removing imagery from map", cesiumModel);

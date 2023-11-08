@@ -10,7 +10,7 @@ define(["backbone", "models/maps/GeoUtilities"], function (
    * latitude, longitude, and height in meters above sea level.
    * @classcategory Models/Maps
    * @name GeoPoint
-   * @since x.x.x
+   * @since 2.27.0
    * @extends Backbone.Model
    */
   var GeoPoint = Backbone.Model.extend(

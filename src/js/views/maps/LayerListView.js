@@ -88,7 +88,7 @@ define(
 
         /**
          * Remove any event listeners on the collection
-         * @since x.x.x
+         * @since 2.27.0
          */
         removeListeners: function () {
           try {
@@ -102,7 +102,7 @@ define(
 
         /**
          * Add or remove items from the list when the collection changes
-         * @since x.x.x
+         * @since 2.27.0
          */
         setListeners: function () {
           try {

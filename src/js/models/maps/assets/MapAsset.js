@@ -343,7 +343,7 @@ define([
        * Set an error status and message for this asset.
        * @param {Object|String} error - An error object with a status code
        * attribute or or string with details about the error.
-       * @since x.x.x
+       * @since 2.27.0
        */
       setError: function (error) {
         // See https://cesium.com/learn/cesiumjs/ref-doc/RequestErrorEvent.html
@@ -363,7 +363,7 @@ define([
 
       /**
        * Set a ready status for this asset.
-       * @since x.x.x
+       * @since 2.27.0
        */
       setReady: function () {
         this.set('status', 'ready')
@@ -372,7 +372,7 @@ define([
 
       /**
        * When the asset can't be loaded, hide it from the map and show an error.
-       * @since x.x.x
+       * @since 2.27.0
        */
       handleError: function () {
         this.set("originalVisibility", this.get("visible"));
@@ -382,7 +382,7 @@ define([
 
       /**
        * Set all of the listeners for this model
-       * @since x.x.x
+       * @since 2.27.0
        */
       setListeners: function () {
         try {
@@ -416,7 +416,7 @@ define([
       /**
        * Update the appearance of features from this asset when they are
        * selected or deselected in the map widget.
-       * @since x.x.x
+       * @since 2.27.0
        */
       listenToSelectedFeatures: function () {
         if (typeof this.updateAppearance !== "function") {
@@ -893,7 +893,7 @@ define([
        * Indicate that the map widget should navigate to a given feature from
        * this MapAsset.
        * @param {Feature} feature The feature to navigate to.
-       * @since x.x.x
+       * @since 2.27.0
        */
       zoomTo: function (target) {
         this.get("mapModel")?.zoomTo(target);

@@ -338,7 +338,7 @@ define(
          * Get a list of the views that this view contains.
          * @returns {Backbone.View[]} Returns an array of all of the sub-views.
          * Some may be undefined if they have not been rendered yet.
-         * @since x.x.x
+         * @since 2.27.0
          */
         getSubViews: function () {
           return [
@@ -352,7 +352,7 @@ define(
 
         /**
          * Executed when the view is closed. This will close all of the sub-views.
-         * @since x.x.x
+         * @since 2.27.0
          */
         onClose: function () {
           const subViews = this.getSubViews()

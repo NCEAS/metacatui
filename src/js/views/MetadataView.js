@@ -1106,7 +1106,7 @@ define(['jquery',
          * @param {LatLng} latLngCEN - The center point of the map.
          * @param {LatLngBounds} bounds - The bounding box to display.
          * @returns {string} The URL to the Google Maps instance.
-         * @since x.x.x
+         * @since 2.27.0
          */
         getGoogleMapsUrl: function (latLngCEN, bounds) {
           // Use the window width and height as a proxy for the map dimensions
@@ -1129,7 +1129,7 @@ define(['jquery',
          * @param {number} mapDim.height - The height of the map.
          * @param {number} mapDim.width - The width of the map.
          * @returns {number} The zoom level.
-         * @since x.x.x
+         * @since 2.27.0
          */
         getBoundsZoomLevel: function(bounds, mapDim) {
           var WORLD_DIM = { height: 256, width: 256 };

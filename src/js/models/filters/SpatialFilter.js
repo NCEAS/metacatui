@@ -103,7 +103,7 @@ define([
 
       /**
        * Remove the listeners.
-       * @since x.x.x
+       * @since 2.27.0
        */
       removeListeners: function () {
         const extentEvents =

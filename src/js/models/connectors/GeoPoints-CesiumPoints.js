@@ -15,7 +15,7 @@ define(["cesium", "models/connectors/GeoPoints-Cesium"], function (
    * @extends GeoPointsCesiumConnector
    * @constructor
    * @classcategory Models/Connectors
-   * @since x.x.x
+   * @since 2.27.0
    */
   return GeoPointsCesiumConnector.extend(
     /** @lends GeoPointsCesiumPointsConnector.prototype */ {

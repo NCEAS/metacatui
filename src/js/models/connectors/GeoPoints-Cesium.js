@@ -15,7 +15,7 @@ define([
    * @extends Backbone.Model
    * @constructor
    * @classcategory Models/Connectors
-   * @since x.x.x
+   * @since 2.27.0
    */
   return Backbone.Model.extend(
     /** @lends GeoPointsCesiumConnector.prototype */ {

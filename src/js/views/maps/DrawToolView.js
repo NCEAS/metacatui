@@ -15,7 +15,7 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
    * @name DrawTool
    * @extends Backbone.View
    * @screenshot views/maps/DrawTool.png
-   * @since x.x.x
+   * @since 2.27.0
    * @constructs DrawTool
    */
   var DrawTool = Backbone.View.extend(

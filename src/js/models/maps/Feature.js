@@ -99,7 +99,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
        * @param {MapAssets} assets - A MapAssets collection to use to extract
        * feature attributes from a feature object.
        * @returns {object} - The JSON object of all the Feature attributes
-       * @since x.x.x
+       * @since 2.27.0
        */
       attrsFromFeatureObject: function (feature, assets) {
         if (feature instanceof Feature) {

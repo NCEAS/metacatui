@@ -12,7 +12,7 @@ define(["backbone", "text!templates/maps/cesium-nav-help.html"], function (
    * @name MapHelpPanel
    * @extends Backbone.View
    * @screenshot views/maps/MapHelpPanel.png
-   * @since x.x.x
+   * @since 2.27.0
    * @constructs MapHelpPanel
    */
   var MapHelpPanel = Backbone.View.extend(

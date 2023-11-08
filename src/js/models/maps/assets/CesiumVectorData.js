@@ -390,7 +390,7 @@ define([
        * Run the Cesium visualizers for this asset. Visualizers render data
        * associated with DataSource instances. Visualizers must be run after
        * changes are made to the data or the appearance of the data.
-       * @since x.x.x
+       * @since 2.27.0
        * @see {@link https://cesium.com/learn/cesiumjs/ref-doc/Visualizer.html}
        */
       runVisualizers: function () {
@@ -446,7 +446,7 @@ define([
       /**
        * Get the Cesium EntityCollection for this asset
        * @returns {Cesium.EntityCollection} The Cesium EntityCollection
-       * @since x.x.x
+       * @since 2.27.0
        */
       getEntityCollection: function () {
         const model = this;
@@ -457,7 +457,7 @@ define([
       /**
        * Get the Cesium Entities for this asset
        * @returns {Cesium.Entity[]} The Cesium Entities
-       * @since x.x.x
+       * @since 2.27.0
        */
       getEntities: function () {
         return this.getEntityCollection()?.values || [];
@@ -466,7 +466,7 @@ define([
       /**
        * Suspend events on the Cesium EntityCollection. This will prevent
        * visualizers from running until resumeEvents is called.
-       * @since x.x.x
+       * @since 2.27.0
        */
       suspendEvents: function () {
         const entities = this.getEntityCollection();
@@ -476,7 +476,7 @@ define([
       /**
        * Resume events on the Cesium EntityCollection. This will allow
        * visualizers to run again.
-       * @since x.x.x
+       * @since 2.27.0
        */
       resumeEvents: function () {
         const entities = this.getEntityCollection();
@@ -489,7 +489,7 @@ define([
        * to Cesium.EntityCollection.add. See
        * {@link https://cesium.com/learn/cesiumjs/ref-doc/EntityCollection.html?classFilter=EntityCollection#add}
        * @returns {Cesium.Entity} The Cesium Entity that was added
-       * @since x.x.x
+       * @since 2.27.0
        */
       addEntity: function (entity) {
         try {
@@ -509,7 +509,7 @@ define([
        * @param {Cesium.Entity|string} entity - The entity or ID of the entity
        * to remove
        * @returns {Boolean} True if the entity was removed, false otherwise
-       * @since x.x.x
+       * @since 2.27.0
        */
       removeEntity: function (entity) {
         try {

@@ -84,7 +84,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
        * the anti-meridian
        * @property {string} containsPole - When the bounding box contains the
        * North or South pole
-       * @since x.x.x
+       * @since 2.27.0
        */
       errorMessages: {
         "default": "Please correct the geographic coverage.",

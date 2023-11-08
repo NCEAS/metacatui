@@ -314,7 +314,7 @@ define(
          * will be used.
          * @param {boolean} [limit=true] Whether or not to limit the height of
          * the iFrame to the height of the window, minus 275px.
-         * @since x.x.x
+         * @since 2.27.0
          */
         updateIFrameHeight: function (height, limit = true) {
           const iFrame = this.elements?.iFrame;

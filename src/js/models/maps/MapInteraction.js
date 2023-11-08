@@ -16,7 +16,7 @@ define([
    * user has clicked, as well as the current view extent of the map.
    * @classcategory Models/Maps
    * @name MapInteraction
-   * @since x.x.x
+   * @since 2.27.0
    * @extends Backbone.Model
    */
   var MapInteraction = Backbone.Model.extend(
@@ -131,7 +131,7 @@ define([
        * camera position changes enough to trigger a 'cameraChanged' event. This
        * event is useful for triggering actions that should only occur after the
        * camera has moved and the camera position has changed.
-       * @since x.x.x
+       * @since 2.27.0
        */
       listenForMoveStartAndChange: function () {
         if (this.moveStartChangeListener) {

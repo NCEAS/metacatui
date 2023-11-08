@@ -9,7 +9,7 @@ define(["backbone"], function (Backbone) {
    * optional height parameter.
    * @classcategory Models/Maps
    * @name GeoBoundingBox
-   * @since x.x.x
+   * @since 2.27.0
    * @extends Backbone.Model
    */
   var GeoBoundingBox = Backbone.Model.extend(

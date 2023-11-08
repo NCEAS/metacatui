@@ -45,14 +45,14 @@ define(
         /**
          * The model that holds the current scale of the map in pixels:meters
          * @type {GeoScale}
-         * @since x.x.x
+         * @since 2.27.0
          */
         scaleModel: null,
 
         /**
          * The model that holds the current position of the mouse on the map
          * @type {GeoPoint}
-         * @since x.x.x
+         * @since 2.27.0
          */
         pointModel: null,
 
@@ -208,7 +208,7 @@ define(
 
         /**
          * Update the scale bar when the pixel:meters ratio changes
-         * @since x.x.x
+         * @since 2.27.0
          */
         listenToScaleModel: function () {
           const view = this;
@@ -222,7 +222,7 @@ define(
 
         /**
          * Stop listening to the scale model
-         * @since x.x.x
+         * @since 2.27.0
          */
         stopListeningToScaleModel: function () {
           this.stopListening(this.scaleModel, 'change');
@@ -230,7 +230,7 @@ define(
 
         /**
          * Update the scale bar view when the lat and long change
-         * @since x.x.x
+         * @since 2.27.0
          */
         listenToPointModel: function () {
           const view = this;
@@ -403,7 +403,7 @@ define(
 
         /**
          * Function to execute when this view is removed from the DOM
-         * @since x.x.x
+         * @since 2.27.0
          */
         onClose: function () {
           this.stopListeningToScaleModel()

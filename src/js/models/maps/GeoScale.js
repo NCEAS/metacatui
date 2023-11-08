@@ -7,7 +7,7 @@ define(["backbone"], function (Backbone) {
    * meters vs. pixels. This can be used to convert between the two.
    * @classcategory Models/Maps
    * @name GeoScale
-   * @since x.x.x
+   * @since 2.27.0
    * @extends Backbone.Model
    */
   var GeoScale = Backbone.Model.extend(

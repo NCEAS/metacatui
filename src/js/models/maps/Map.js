@@ -237,7 +237,7 @@ define([
       /**
        * Set or replace the MapInteraction model on the map.
        * @returns {MapInteraction} The new interactions model.
-       * @since x.x.x
+       * @since 2.27.0
        */
       setUpInteractions: function () {
         const interactions = new Interactions({
@@ -260,7 +260,7 @@ define([
       /**
        * Get the currently selected features on the map.
        * @returns {Features} The selected Feature collection.
-       * @since x.x.x
+       * @since 2.27.0
        */
       getSelectedFeatures: function () {
         return this.get("interactions")?.get("selectedFeatures");
@@ -316,7 +316,7 @@ define([
       /**
        * Remove a layer from the map.
        * @param {MapAsset} asset - The layer model to remove from the map.
-       * @since x.x.x
+       * @since 2.27.0
        */
       removeAsset: function (asset) {
         if (!asset) return;

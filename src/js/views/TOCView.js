@@ -296,7 +296,7 @@ define(["jquery",
          * Adds and refreshes bootstrap's affix functionality. This function
          * should be called after the DOM has been rendered or updated. Renamed
          * from postRender to avoid it being called automatically by Backbone.
-         * @since x.x.x
+         * @since 2.27.0
          */
         setAffix: function(){
 

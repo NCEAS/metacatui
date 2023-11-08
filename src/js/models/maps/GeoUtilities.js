@@ -8,7 +8,7 @@ define(["backbone"], function (Backbone) {
    * belong in any one of them.
    * @classcategory Models/Maps
    * @name GeoUtilities
-   * @since x.x.x
+   * @since 2.27.0
    * @extends Backbone.Model
    */
   var GeoUtilities = Backbone.Model.extend(
