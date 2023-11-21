@@ -580,14 +580,17 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 atLocationStatements = this.dataPackageGraph.statementsMatching(
                   undefined, PROV("atLocation"), undefined, undefined);
 
+                  const ref = this;
+
                 // Get atLocation information for each statement in the resourceMap
                 _.each(atLocationStatements, function(atLocationStatement){
                     objectParts = atLocationStatement.subject.value.split("/");
                     objectPIDStr = _.last(objectParts);
                     objectPID = decodeURIComponent(objectPIDStr);
                     objectAtLocationValue = atLocationStatement.object.value;
-
-                    atLocationObject[objectPID] = objectAtLocationValue;
+                    
+                    atLocationObject[objectPID] = ref.getAbsolutePath(objectAtLocationValue);
+                    
                 }, this);
 
                 this.atLocationObject = atLocationObject;
@@ -3158,6 +3161,27 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
              */
             getAtLocation: function() {
               return this.atLocationObject;
+            },
+
+            getAbsolutePath(relativePath) {
+              // Replace ~ with an empty space
+              const fullPath = relativePath.replace(/^~(?=$|\/|\\)/, '');
+
+              // Process '..' and '.'
+              const components = fullPath.split('/');
+              const resolvedPath = components.reduce((accumulator, component) => {
+                  if (component === '..') {
+                      accumulator.pop();
+                  } else if (component !== '.') {
+                      accumulator.push(component);
+                  }
+                  return accumulator;
+              }, []);
+
+              // Join the resolved path components with '/'
+              const result = resolvedPath.join('/');
+
+              return result || '/';
             }
         });
 
