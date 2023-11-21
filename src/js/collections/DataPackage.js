@@ -3163,6 +3163,14 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               return this.atLocationObject;
             },
 
+            /**
+             * Get the absolute path from a relative path, handling '~', '..', and '.'.
+             * 
+             * @param {string} relativePath - The relative path to be converted to an absolute path.
+             * @returns {string} - The absolute path after processing '~', '..', and '.'.
+             *                    If the result is empty, returns '/'.
+             * @since x.x.x
+             */
             getAbsolutePath(relativePath) {
               // Replace ~ with an empty space
               const fullPath = relativePath.replace(/^~(?=$|\/|\\)/, '');
