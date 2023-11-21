@@ -6,6 +6,7 @@
     "./js/specs/unit/models/filters/NumericFilter.spec.js",
     "./js/specs/unit/models/CitationModel.spec.js",
     "./js/specs/unit/collections/ProjectList.spec.js",
+    "./js/specs/unit/collections/DataPackage.spec.js",
     "./js/specs/unit/models/project/Project.spec.js",
     "./js/specs/unit/models/metadata/eml211/EML211.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLAttribute.spec.js",
@@ -30,7 +31,10 @@
     "./js/specs/unit/models/filters/SpatialFilter.spec.js",
     "./js/specs/unit/models/maps/Geohash.spec.js",
     "./js/specs/unit/models/maps/assets/CesiumGeohash.spec.js",
-    "./js/specs/unit/common/Utilities.spec.js"
+    "./js/specs/unit/common/Utilities.spec.js",
+    "./js/specs/unit/models/Search.spec.js",
+    "./js/specs/unit/models/SolrResult.spec.js",
+    "./js/specs/unit/models/DataONEObject.spec.js"
   ],
   "integration": ["./js/specs/integration/collections/SolrResults.spec.js"]
 }

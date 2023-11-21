@@ -3172,7 +3172,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               const resolvedPath = components.reduce((accumulator, component) => {
                   if (component === '..') {
                       accumulator.pop();
-                  } else if (component !== '.') {
+                  } else if (component !== '.' && component !== '') {
                       accumulator.push(component);
                   }
                   return accumulator;
