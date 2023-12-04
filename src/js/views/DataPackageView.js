@@ -639,109 +639,13 @@ define([
                 event.preventDefault();
             },
 
-            sort: function(models){
-                //Default to the package model members as the models to sort
-                if(!models){
-                    var models = this.model.get("members");
-                    //If this model doesn't have members, return an empty array or a falsey value
-                    if(!models) return models;
-                }
-
-                // One == already sorted!
-                if(models.length == 1) return models;
-                //If there are too many models to sort (takes too much time) then just get the metadata to display first
-                else if(models.length > 150){
-                    var view = this;
-
-
-                    //Find the metadata doc we are currently viewing
-                    var currentMetadata = _.find(models, function(m){ return (m.get("id") == view.currentlyViewing) });
-                    //Add it to the front
-                    if(currentMetadata){
-                        models = _.without(models, currentMetadata);
-                        models.unshift(currentMetadata);
-                    }
-
-                    //Return the newly sorted array
-                    return models;
-                }
-
-
-                var view = this,
-                    metadataView = this.onMetadataView? this.parentView : null;
-
-                //** If this is not a nested package AND the parent view is the metadata view, then sort by order of appearance in the metadata **/
-                if(!this.nested && (metadataView && !_.findWhere(metadataView.subviews, {type: "MetadataIndex"}))){
-                    if(metadataView.hasEntityDetails()){
-
-                        //If we are currently viewing a metadata document, find it
-                        if(this.currentlyViewing)
-                            var currentMetadata = _.find(models, function(m){ return (m.get("id") == view.currentlyViewing) });
-
-                        //For each model, find its position on the Metadata View page
-                        var numNotFound = 0;
-                        _.each(models, function(model){
-                            if(currentMetadata == model) return;
-
-                            var container = view.parentView.findEntityDetailsContainer(model);
-                            if(container) model.offsetTop = $(container)[0].offsetTop;
-                            else{
-                                model.offsetTop = window.outerHeight;
-                                numNotFound++;
-                            }
-                        });
-
-                        //Continue only if we found the entity details section for at least one model, if not, sort by the default method later
-                        if(numNotFound < models.length-1){ //Minus 1 since we don't count the metadata
-                            //Sort the models by this position
-                            models = _.sortBy(models, "offsetTop");
-
-                            //Move the metadata model that we are currently viewing in the Metadata view to the top
-                            if(currentMetadata){
-                                models = _.without(models, currentMetadata);
-                                models.unshift(currentMetadata);
-                            }
-
-                            //Flatten the array in case we have nesting
-                            models = _.flatten(models);
-
-                            //Return the sorted array
-                            return models;
-                        }
-                    }
-                }
-
-                //** For tables with no accompanying metadata (nested or not on the Metadata View), default to sorting by group then alpha by name**/
-                //Split the members of this package into groups based on their format type (metaata, data, image, code, etc)
-                var groupedModels = _.groupBy(models, function(m){
-                        if(!m.get("type") || (typeof m.get("type") == "undefined"))
-                            return "data";
-                        return m.get("type");
-                    }),
-                    sortedModels = [];
-
-                var rowOrder = ["metadata", "image", "PDF", "program", "data", "annotation"];
-
-                for(var i=0; i<rowOrder.length; i++){
-                    //Sort the members/rows alphabetically within each group
-                    /*models = _.sortBy(models, function(m){
-                        if(m.get("type") == "metadata") return "!"; //Always display metadata first since it will have the title in the table
-                        return m.get("type");
-                    });	*/
-                    var group = groupedModels[rowOrder[i]];
-                    group = _.sortBy(group, function(m){
-                        return m.get("fileName") || m.get("id");
-                    });
-                    sortedModels.push(group);
-                }
-
-                models = _.flatten(sortedModels);
-
-                return models;
-            },
-
-            expand: function(e){
-                //Don't do anything...
+            /**
+             * Expand function to show hidden rows when a user clicks on an expand control.
+             * @param {Event} e - The event object.
+             * @since x.x.x
+             */
+            expand: function(e) {
+                // Don't do anything...
                 e.preventDefault();
 
                 var view = this;
@@ -752,19 +656,25 @@ define([
                 var children = "tr[data-parent='" + parentId + "']";
 
                 this.$(children).fadeIn();
-                
-                this.$(eventEl).children().children(".expand-control").fadeOut(function(){
+
+                this.$(eventEl).children().children(".expand-control").fadeOut(function() {
                     view.$(eventEl).children().children(".collapse-control").fadeIn("fast");
                     view.$(".tooltip-this").tooltip();
                 });
 
-                this.$(children).children().children().children(".collapse-control").fadeOut(function(){
+                this.$(children).children().children().children(".collapse-control").fadeOut(function() {
                     view.$(children).children().children().children(".expand-control").fadeIn("fast");
                 });
             },
 
-            collapse: function(e){
-                //Don't do anything...
+            /**
+             * Collapse function to hide rows when a user clicks on a collapse control.
+             * @param {Event} e - The event object.
+             * 
+             * @since x.x.x
+             */
+            collapse: function(e) {
+                // Don't do anything...
                 e.preventDefault();
 
                 var view = this;
@@ -774,15 +684,21 @@ define([
                 var parentId = rowEl.data("id");
                 var children = "tr[data-parent^='" + parentId + "']";
                 this.$(children).fadeOut();
-                
-                this.$(eventEl).children().children(".collapse-control").fadeOut(function(){
+
+                this.$(eventEl).children().children(".collapse-control").fadeOut(function() {
                     view.$(eventEl).children().children(".expand-control").fadeIn();
                     view.$(".tooltip-this").tooltip();
                 });
             },
 
-            expandAll: function(e){
-                //Don't do anything...
+            /**
+             * Expand all function to show all child rows when a user clicks on an expand-all control.
+             * @param {Event} e - The event object.
+             * 
+             * @since x.x.x
+             */
+            expandAll: function(e) {
+                // Don't do anything...
                 e.preventDefault();
 
                 var view = this;
@@ -793,19 +709,25 @@ define([
                 var children = "tr[data-packageid='" + parentId + "']";
 
                 this.$(children).fadeIn();
-                
-                this.$(eventEl).children(".d1package-expand").fadeOut(function(){
+
+                this.$(eventEl).children(".d1package-expand").fadeOut(function() {
                     view.$(eventEl).children(".d1package-collapse").fadeIn("fast");
                     view.$(".tooltip-this").tooltip();
                 });
 
-                this.$(children).children().children().children(".collapse-control").fadeOut(function(){
+                this.$(children).children().children().children(".collapse-control").fadeOut(function() {
                     view.$(children).children().children().children(".expand-control").fadeIn("fast");
                 });
             },
 
-            collapseAll: function(e){
-                //Don't do anything...
+            /**
+             * Collapse all function to hide all child rows when a user clicks on a collapse-all control.
+             * @param {Event} e - The event object.
+             * 
+             * @since x.x.x
+             */
+            collapseAll: function(e) {
+                // Don't do anything...
                 e.preventDefault();
 
                 var view = this;
@@ -822,61 +744,67 @@ define([
 
                     $(grandchildren).fadeOut();
                 });
-                
-                this.$(eventEl).children(".d1package-collapse").fadeOut(function(){
+
+                this.$(eventEl).children(".d1package-collapse").fadeOut(function() {
                     view.$(eventEl).children(".d1package-expand").fadeIn();
                     view.$(".tooltip-this").tooltip();
                 });
             },
 
-            checkForPrivateMembers: function(){
-                try{
-                    var packageModel      = this.model,
-                        packageCollection = this.dataPackageCollection;
+            /**
+             * Check for private members and disable download buttons if necessary.
+             * 
+             * @since x.x.x
+             */
+            checkForPrivateMembers: function() {
+                try {
+                    var packageModel = this.model,
+                        packageCollection = this.dataPackage;
 
-                    if( !packageModel || !packageCollection ){
+                    if (!packageModel || !packageCollection) {
                         return;
                     }
 
-                    //Get the number of package members found in Solr and parsed from the RDF XML
                     var numMembersFromSolr = packageModel.get("members").length,
-                        numMembersFromRDF  = packageCollection.length;
+                        numMembersFromRDF = packageCollection.length;
 
-                    //If there are more package members in the RDF XML tthan found in SOlr, we
-                    // can assume that those objects are private.
-                    if( numMembersFromRDF > numMembersFromSolr ){
+                    if (numMembersFromRDF > numMembersFromSolr) {
                         var downloadButtons = this.$(".btn.download");
 
-                        for( var i=0; i<downloadButtons.length; i++){
-
+                        for (var i = 0; i < downloadButtons.length; i++) {
                             var btn = downloadButtons[i];
-
-                            //Find the Download All button for the package
                             var downloadURL = $(btn).attr("href");
-                            if( downloadURL.indexOf(packageModel.get("id")) > -1 ||
-                                downloadURL.indexOf( encodeURIComponent(packageModel.get("id"))) > -1 ){
 
-                            //Disable this download button
-                            $(btn).attr("disabled", "disabled")
+                            if (
+                                downloadURL.indexOf(packageModel.get("id")) > -1 ||
+                                downloadURL.indexOf(encodeURIComponent(packageModel.get("id"))) > -1
+                            ) {
+                                $(btn)
+                                    .attr("disabled", "disabled")
                                     .addClass("disabled")
                                     .attr("href", "")
                                     .tooltip({
-                                    trigger: "hover",
-                                    placement: "top",
-                                    delay: 500,
-                                    title: "This dataset may contain private data, so each data file should be downloaded individually."
+                                        trigger: "hover",
+                                        placement: "top",
+                                        delay: 500,
+                                        title: "This dataset may contain private data, so each data file should be downloaded individually."
                                     });
 
-                            i = downloadButtons.length;
+                                i = downloadButtons.length;
                             }
                         }
                     }
-                }
-                catch(e){
+                } catch (e) {
                     console.error(e);
                 }
             },
 
+
+            /**
+             * Retrieves and processes nested packages for the current package.
+             *
+             * @since x.x.x
+             */
             getNestedPackages: function() {
                 var nestedPackages = new Array();
                 var nestedPackageIds = new Array();
@@ -900,53 +828,96 @@ define([
                 }
             },
 
+            /**
+             * Adds a nested data package to the package table.
+             *
+             * @param {Object} dataPackage - The data package to be added.
+             * @since x.x.x
+             */
             addNestedPackages: function(dataPackage) {
-                // add top level data package row to the package table
-
-                var tableRow = null, 
+                /**
+                * Generates the table row for the data package header.
+                *
+                * @type {null|Element}
+                */
+                var tableRow = null,
+                    /**
+                    * Reference to the current view.
+                    *
+                    * @type {Object}
+                    */
                     view = this,
+                    /**
+                    * The title of the data package.
+                    *
+                    * @type {null|string}
+                    */
                     title = null,
+                    /**
+                    * The URL of the data package.
+                    *
+                    * @type {null|string}
+                    */
                     packageUrl = null;
 
+                /**
+                * The members of the data package.
+                *
+                * @type {Array}
+                */
                 var members = dataPackage.get("members");
-                let metadataObj  = _.filter(members, function(m){ return(m.get("type") == "Metadata" || m.get("type") == "metadata") });
+                /**
+                * Filters out metadata objects from the members.
+                *
+                * @type {Array}
+                */
+                let metadataObj = _.filter(members, function(m) { return (m.get("type") == "Metadata" || m.get("type") == "metadata") });
 
                 title = metadataObj[0].get("title");
 
+                /**
+                * The tooltip for the title (used for long titles).
+                *
+                * @type {string}
+                */
                 let titleTooltip = title;
-                title = (title.length > 150) ? title.slice(0,75) + "..." + title.slice(title.length - 75, title.length) : title;
-                    
-                // set the package URL
-                if(MetacatUI.appModel.get("packageServiceUrl"))
+                title = (title.length > 150) ? title.slice(0, 75) + "..." + title.slice(title.length - 75, title.length) : title;
+
+                // Set the package URL
+                if (MetacatUI.appModel.get("packageServiceUrl"))
                     packageUrl = MetacatUI.appModel.get("packageServiceUrl") + encodeURIComponent(dataPackage.id);
 
-                tableRow = this.dataPackageHeaderTemplate({id:dataPackage.id, title: title, titleTooltip:titleTooltip, disablePackageDownloads:false, downloadUrl: packageUrl});
+                /**
+                * The HTML content for the data package header.
+                *
+                * @type {string}
+                */
+                tableRow = this.dataPackageHeaderTemplate({ id: dataPackage.id, title: title, titleTooltip: titleTooltip, disablePackageDownloads: false, downloadUrl: packageUrl });
                 this.$el.append(tableRow);
 
-                // create an instance of DownloadButtonView to handle package downloads
-                this.downloadButtonView = new DownloadButtonView({model: dataPackage, view: "actionsView", nested: true});
+                // Create an instance of DownloadButtonView to handle package downloads
+                this.downloadButtonView = new DownloadButtonView({ model: dataPackage, view: "actionsView", nested: true });
 
-                // render
+                // Render
                 this.downloadButtonView.render();
 
-                // add the downloadButtonView el to the span
+                // Add the downloadButtonView el to the span
                 this.$el.find('.downloadAction').html(this.downloadButtonView.el);
 
-                // TODO parse each member and add to the package table in MetadataView            
-                
-                var view = this;
                 // Filter out the packages from the member list
-                members = _.filter(members, function(m){ return(m.type != "Package") });
+                members = _.filter(members, function(m) { return (m.type != "Package") });
 
-                //add each member to the package table view
-                _.each(members, function(m){ 
-                    // update the size to bytes format
-                    m.set({ size : m.bytesToSize(m.get("size"))});
+                // Add each member to the package table view
+                var view = this;
+                _.each(members, function(m) {
+                    // Update the size to bytes format
+                    m.set({ size: m.bytesToSize(m.get("size")) });
 
-                    // add each item of this nested package to the package table view
+                    // Add each item of this nested package to the package table view
                     view.addOne(m, dataPackage);
                 });
             },
+
 
             /*showDownloadProgress: function(e){
                 e.preventDefault();
