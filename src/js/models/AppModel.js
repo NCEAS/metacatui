@@ -105,12 +105,14 @@ define(['jquery', 'underscore', 'backbone'],
       /**
       * Set this option to true to display the filtering button for data package table
       * @type {boolean}
+      * @since x.x.x
       */
       dataPackageFiltering: false,
 
       /**
       * Set this option to true to display the sorting button for data package table
       * @type {boolean}
+      * @since x.x.x
       */
       dataPackageSorting: false,
 
