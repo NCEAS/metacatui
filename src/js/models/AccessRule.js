@@ -53,46 +53,41 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 
 		/**
-		* Takes the values set on this model's attributes and creates an XML string
-		* to be inserted into a DataONEObject's system metadata access policy.
-		* @return {string} The access rule XML string
-		*/
-		serialize: function(){
+     * Takes the values set on this model's attributes and creates an XML string
+     * to be inserted into a DataONEObject's system metadata access policy.
+     * @returns {object} The access rule XML object or null if not created
+     */
+    serialize: function() {
+      // Serialize the allow rules
+      if (this.get("read") || this.get("write") || this.get("changePermission")) {
+          // Create the <allow> element
+          var allowElement = document.createElement('allow');
 
-				var xml = "";
+          // Create the <subject> element and set its text content
+          var subjectElement = document.createElement('subject');
+          subjectElement.textContent = this.get("subject");
 
-				//Serialize the allow rules
-				if( this.get("read") || this.get("write") || this.get("changePermission") ){
+          // Append the <subject> and <permission> elements to <allow>
+          allowElement.appendChild(subjectElement);
 
-					//Start the "allow" node
-					xml += '\t<allow>\n';
+          // Create the <permission> elements and set their text content
+          var permissions = ['read', 'write', 'changePermission'];
+          for (var i = 0; i < permissions.length; i++) {
+              if (this.get(permissions[i])) {
+                  var permissionElement = document.createElement('permission');
+                  permissionElement.textContent = permissions[i];
+                  allowElement.appendChild(permissionElement);
+              }
+          }
 
-					//Add the subject
-					xml += '\t\t<subject>' + this.get("subject") + '</subject>\n';
+          // Return the <allow> element
+          return allowElement;
+      }
 
-					//Add the read permission
-					if( this.get("read") ){
-						xml += '\t\t<permission>read</permission>\n';
-					}
+      // If no access rule is created, return null
+      return null;
+    },
 
-					//Add the write permission
-					if( this.get("write") ){
-						xml += '\t\t<permission>write</permission>\n';
-					}
-
-					//Add the changePermission permission
-					if( this.get("changePermission") ){
-						xml += '\t\t<permission>changePermission</permission>\n';
-					}
-
-					//Close the "allow" node
-					xml += '\t</allow>\n';
-
-				}
-
-			return xml;
-
-		},
 
     /**
     * Gets and sets the subject info for the subjects in this access policy.
