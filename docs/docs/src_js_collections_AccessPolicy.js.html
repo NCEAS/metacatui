@@ -170,28 +170,27 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
           },
 
           /**
-          * Creates an access policy XML from the values set on the member
-          * AccessRule models.
-          * @return {string} A string of the access policy XML
-          */
-          serialize: function(){
+           * Creates an access policy XML from the values set on the member
+           * AccessRule models.
+           * @returns {object} A XML object of the access policy or null if empty
+           */
+          serialize: function() {
+            if (this.length === 0) {
+                return null;
+            }
 
-            if( this.length == 0 )
-              return "";
+            // Create the access policy node which will contain all the rules
+            var accessPolicyElement = document.createElement('accesspolicy');
 
-            //Create the access policy node which will contain all the rules
-            var xml = "&lt;accessPolicy>\n";
-
-            //Serialize each AccessRule member model and add to the policy DOM
-            this.each(function(accessRule){
-              xml += accessRule.serialize();
+            // Serialize each AccessRule member model and add to the policy DOM
+            this.each(function(accessRule) {
+                var accessRuleNode = accessRule.serialize();
+                if (accessRuleNode) {
+                    accessPolicyElement.appendChild(accessRuleNode);
+                }
             });
 
-            xml += "\n&lt;/accessPolicy>"
-
-            //Convert the access policy DOM to a string and return it
-            return xml;
-
+            return accessPolicyElement;
           },
 
           /**
