@@ -28,29 +28,58 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 
 		/**
-		* Translates the access rule XML DOM into a JSON object to be set on the model.
-		* @param {Element} accessRuleXML An <allow> DOM element that contains a single access rule
-		* @return {JSON} The Access Rule values to be set on this model
-		*/
-		parse: function( accessRuleXML ){
-			//If there is no access policy, do not attempt to parse anything
-			if( typeof accessRuleXML == "undefined" || !accessRuleXML)
-				return {};
+     * Translates the access rule XML DOM into a JSON object to be set on the model.
+     * @param {Element} accessRuleXML An <allow> DOM element that contains a single access rule
+     * @return {JSON} The Access Rule values to be set on this model
+     */
+    parse: function(accessRuleXML) {
+      // If there is no access policy, do not attempt to parse anything
+      if (typeof accessRuleXML === "undefined" || !accessRuleXML) {
+        return {};
+      }
 
-			accessRuleXML = $(accessRuleXML);
+      var accessRuleXMLObj = $(accessRuleXML);
 
-			//Start an access rule object with the given subject
-			var parsedAccessRule = {
-						subject: accessRuleXML.find("subject").text()
-				  }
+      // Start an access rule object with the given subject
+      var parsedAccessRule = {
+        subject: accessRuleXMLObj.find("subject").text()
+      };
 
-			_.each( accessRuleXML.find("permission"), function( permissionNode ){
-				parsedAccessRule[ $(permissionNode).text() ] = true;
-			});
+      _.each(accessRuleXMLObj.find("permission"), function(permissionNode, idx) {
+        let permissionText = $(permissionNode).text().trim();
 
-			return parsedAccessRule;
+        // Check if the permission text is not empty
+        if (permissionText.length) {
+          // Save the parsed permission
+          parsedAccessRule[permissionText] = true;
+        } else {
+          // This is added as a workaround for malformed permission XML
+          // introduced by Chromium 120.X
+          // See https://github.com/NCEAS/metacatui/issues/2235
 
-		},
+          // Define the regular expression
+          let globalPermRegex = /<permission><\/permission>(.*)/g;
+          // Define the regular expression
+          let permRegex = /<permission><\/permission>(.*)/;
+
+          let accessRoleStr = accessRuleXMLObj.html();
+
+          let matches = accessRoleStr.match(globalPermRegex);
+
+          // Check if matches exist and have a length
+          if (matches && matches.length && idx < matches.length) {
+            let permMatch = matches[idx].match(permRegex);
+
+            // Check if permMatch exists and has a length
+            if (permMatch && permMatch.length) {
+              parsedAccessRule[permMatch[1]] = true;
+            }
+          }
+        }
+      });
+
+      return parsedAccessRule;
+    },
 
 		/**
      * Takes the values set on this model's attributes and creates an XML string
