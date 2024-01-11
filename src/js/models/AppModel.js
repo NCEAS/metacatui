@@ -722,9 +722,9 @@ define(['jquery', 'underscore', 'backbone'],
       * The URL for the NSF Award API, which can be used by the {@link LookupModel}
       * to look up award information for the dataset editor or other views
       * @type {string}
-      * @default "https://api.nsf.gov/services/v1/awards.json"
+      * @default "https://www.research.gov/awardapi-service/v1/awards.json"
       */
-      grantsUrl: "https://api.nsf.gov/services/v1/awards.json",
+      grantsUrl: "https://www.research.gov/awardapi-service/v1/awards.json",
 
       /**
       * The base URL for the ORCID REST services
