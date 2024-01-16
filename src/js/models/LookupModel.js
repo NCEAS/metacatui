@@ -375,99 +375,103 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
         });
       },
 
-      getGrantAutocomplete: function (request, response) {
-        var term = $.ui.autocomplete.escapeRegex(request.term),
-          filterBy = "";
+      /**
+       * Using the NSF Award Search API, get a list of grants that match the
+       * given term, as long as the term is at least 3 characters long and
+       * doesn't consist of only digits. Used to populate the autocomplete list
+       * for the Funding fields in the metadata editor. For this method to work,
+       * there must be a grantsUrl set in the MetacatUI.appModel.
+       * @param {jQuery} request - The jQuery UI autocomplete request object
+       * @param {function} response - The jQuery UI autocomplete response function
+       * @see {@link https://www.research.gov/common/webapi/awardapisearch-v1.htm}
+       */
+      getGrantAutocomplete: function (
+        request,
+        response,
+        beforeRequest,
+        afterRequest
+      ) {
+        // Handle errors in this function or in the findGrants function
+        function handleError(error) {
+          if (typeof afterRequest == "function") afterRequest();
+          console.log("Error fetching awards from NSF: ", error);
+          response([]);
+        }
 
-        // Only search after 3 characters or more. Don't search for digit only
-        // since it's most likely a user just entering the grant number directly
-        if (term.length < 3) return;
-        else if (term.match(/\d/))
-          return;
-        else filterBy = "keyword";
+        try {
+          let term = request.term;
 
-        var url =
-          MetacatUI.appModel.get("grantsUrl") +
-          "?" +
-          filterBy +
-          "=" +
-          term +
-          "&printFields=title,id";
+          // Only search after 3 characters or more, and not just digits
+          if (!term || term.length < 3 || /^\d+$/.test(term)) return;
 
-        // Send the AJAX request as a JSONP data type since it will be
-        // cross-origin
-        var requestSettings = {
-          url: url,
-          dataType: "jsonp",
-          success: function (data, textStatus, xhr) {
-            // Handle the response from the NSF Award Search API and transform
-            //each award query result into a jQueryUI autocomplete item
+          // If the beforeRequest function was passed, call it now
+          if (typeof beforeRequest == "function") beforeRequest();
 
-            if (!data || !data.response || !data.response.award) return [];
-
-            var list = [];
-
-            _.each(data.response.award, function (award, i) {
-              list.push({
-                value: award.id,
-                label: award.title,
-              });
+          // Search for grants
+          this.findGrants(term)
+            .then((awards) => {
+              response(this.formatFundingForAutocomplete(awards));
+            })
+            .catch(handleError)
+            .finally(() => {
+              if (typeof afterRequest == "function") afterRequest();
             });
-
-            var term = $.ui.autocomplete.escapeRegex(request.term),
-              startsWithMatcher = new RegExp("^" + term, "i"),
-              startsWith = $.grep(list, function (value) {
-                return startsWithMatcher.test(
-                  value.label || value.value || value
-                );
-              }),
-              containsMatcher = new RegExp(term, "i"),
-              contains = $.grep(list, function (value) {
-                return (
-                  $.inArray(value, startsWith) < 0 &&
-                  containsMatcher.test(value.label || value.value || value)
-                );
-              });
-
-            response(startsWith.concat(contains));
-          },
-        };
-
-        //Send the query
-        $.ajax(requestSettings);
+        } catch (error) {
+          handleError(error);
+        }
       },
 
-      getGrant: function (id, onSuccess, onError) {
-        if (
-          !id ||
-          !onSuccess ||
-          !MetacatUI.appModel.get("useNSFAwardAPI") ||
-          !MetacatUI.appModel.get("grantsUrl")
-        )
-          return;
+      /**
+       * Search the NSF Award Search API for grants that match the given term.
+       * @param {string} term - The term to search for
+       * @param {number} [offset=1] - The offset to use in the search. Defaults
+       * to 1.
+       * @returns {Promise} A promise that resolves to an array of awards in the
+       * format {id: string, title: string}
+       * @since x.x.x
+       */
+      findGrants: function (term, offset = 1) {
+        let awards = [];
+        if (!term || term.length < 3) return awards;
+        const grantsUrl = MetacatUI.appModel.get("grantsUrl");
+        if (!grantsUrl) return awards;
 
-        var requestSettings = {
-          url: MetacatUI.appModel.get("grantsUrl") + "?id=" + id,
-          success: function (data, textStatus, xhr) {
-            if (
-              !data ||
-              !data.response ||
-              !data.response.award ||
-              !data.response.award.length
-            ) {
-              if (onError) onError();
-              return;
-            }
+        term = $.ui.autocomplete.escapeRegex(term);
+        term = encodeURIComponent(term);
+        const filterBy = "keyword";
+        const url =
+          `${grantsUrl}?${filterBy}=${term}` +
+          `&printFields=title,id&offset=${offset}`;
 
-            onSuccess(data.response.award[0]);
-          },
-          error: function () {
-            if (onError) onError();
-          },
-        };
+        return fetch(url)
+          .then((response) => {
+            return response.json();
+          })
+          .then((data) => {
+            if (!data || !data.response || !data.response.award) return awards;
+            return data.response.award;
+          })
+          .catch((error) => {
+            console.error("Error fetching data: ", error);
+            return awards;
+          });
+      },
 
-        //Send the query
-        $.ajax(requestSettings);
+      /**
+       * Format awards from the NSF Award Search API for use in the jQuery UI
+       * autocomplete widget.
+       * @param {Array} awards - An array of awards in the format
+       * {id: string, title: string}
+       * @returns {Array} An array of awards in the format
+       * {value: string, label: string}
+       * @since x.x.x
+       */
+      formatFundingForAutocomplete: function (awards) {
+        if (!awards || !awards.length) return [];
+        return awards.map((award) => ({
+          value: award.id,
+          label: award.title,
+        }));
       },
 
       getAccountsAutocomplete: function (request, response) {
