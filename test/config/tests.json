@@ -42,5 +42,8 @@
     "./js/specs/unit/models/maps/assets/CesiumGeohash.spec.js",
     "./js/specs/unit/common/Utilities.spec.js"
   ],
-  "integration": ["./js/specs/integration/collections/SolrResults.spec.js"]
+  "integration": [
+    "./js/specs/integration/collections/SolrResults.spec.js",
+    "./js/specs/integration/models/LookupModel.js"
+  ]
 }
