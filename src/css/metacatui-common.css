@@ -4875,6 +4875,12 @@ i.toc-sub-item {
 * Portals
 ********************************************/
 
+.PortalView {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 40px 0px 100fr 0px;
+}
+
 .portal-view{
   width: calc(100% + 80px);
   margin-left: -40px;
@@ -5458,6 +5464,7 @@ i.toc-sub-item {
 /** The Portal Visualization View **/
 .portal-viz-section-view{
   background-color: black;
+  height: 100%;
 }
 .portal-viz-section-view iframe{
   box-sizing: border-box;
