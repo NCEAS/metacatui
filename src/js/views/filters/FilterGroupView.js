@@ -7,12 +7,10 @@ define(['jquery', 'underscore', 'backbone',
         'views/filters/DateFilterView',
         'views/filters/NumericFilterView',
         'views/filters/ToggleFilterView',
-        'views/searchSelect/AnnotationFilterView',
-        "views/searchSelect/SearchableSelectView",
         "views/filters/SemanticFilterView"
       ],
   function($, _, Backbone, FilterGroup, FilterView, BooleanFilterView, ChoiceFilterView,
-    DateFilterView, NumericFilterView, ToggleFilterView, AnnotationFilterView, SearchableSelectView, SemanticFilterView) {
+    DateFilterView, NumericFilterView, ToggleFilterView, SemanticFilterView) {
   'use strict';
 
   /**
