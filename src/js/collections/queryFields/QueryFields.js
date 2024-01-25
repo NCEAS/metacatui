@@ -131,8 +131,14 @@ define(
             }
 
             fields.forEach((newField, i) => {
-              var fieldModel = MetacatUI.queryFields.findWhere({ name: newField });
-                types.push(fieldModel.get("filterType"));
+              const fieldModel = MetacatUI.queryFields.findWhere({ name: newField });
+              const newType = fieldModel?.get("filterType");
+              if (newType) {
+                types.push(newType);
+              } else {
+                // TODO:
+                console.log("ERROR! No filter type found for field", newField);
+              }
             });
 
             // Test of all the fields are of the same type
@@ -145,8 +151,7 @@ define(
             }
 
           } catch (e) {
-            console.log("Failed to detect the required filter type in a Query Fields" +
-              " Collection, error message: " + e);
+            console.log("Failed to detect the required filter type", e);
           }
         },
 

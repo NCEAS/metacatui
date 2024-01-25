@@ -350,18 +350,11 @@ define([
                     return value !== removedValue
                   })
                 },
-                onLabelCreate: function(value, text){
-                   // Callback when a label is created *for multi-select inputs only*
+                onLabelCreate: function (value, text) {
+                  // Note: onLabelCreate event happens after onChange.
+                  let label = this;
 
-                  // Add the value to the selected array (but don't add twice). Do this in
-                  // the onLabelCreate callback instead of in the onAdd callback because
-                  // we would like to update the selected array before we create the
-                  // separator element (below).
-                  if(!view.selected.includes(value)){
-                    view.selected.push(value)
-                  }
                   // Add a separator between labels if required.
-                  var label = this;
                   if(view.separatorRequired.call(view)){
                     // Create the separator element.
                     var separator = view.createSeparator.call(view);
@@ -373,9 +366,10 @@ define([
                       label = separator.add(label);
                     }
                   }
+                  
                   return label
                 },
-                onLabelRemove(value){
+                onLabelRemove(value) {
                   // Call back when a user deletes a label *for multi-select inputs only*
                   var label = this;
                   // Remove the separator before this label if there is one.
@@ -394,53 +388,49 @@ define([
                     }
                   }
                 },
-                onChange: function(values, text, $choice){
+                onChange: function (values, text, $choice) {
+                  // Note: onChange happens before onLabelCreate
 
-                  // Callback when values change for any type of input.
+                  // Get new value from $choice element since values argument is
+                  // a string with all selected values separated by commas,
+                  // problematic when a value contains a comma.
+                  const newValue = $choice ? $choice.data("value") : null;
+                  const hasNewValue = newValue !== null && newValue !== undefined;
 
-                  // NOTE: The "values" argument is a string that contains all the
-                  // selected values separated by commas. We updated the view.selected
-                  // array with the onLabelCreate and onRemove callbacks instead of using
-                  // the values argument passed to this function in order to allow commas
-                  // within individual values. For example, if the user selected the value
-                  // "x" and the value "y,z", the values string would be "x,y,z" and it
-                  // would be difficult to see that two values were selected instead of
-                  // three.
-
-                  // Update values for single-select inputs (multi-select are updated
-                  // using the onLabelCreate and onRemove callbacks)
-                  if(!view.allowMulti){
-                    view.selected = [values]
+                  // Add the value to the selected array (but don't add twice).
+                  if (!view.selected) {
+                    view.selected = [];
+                  }
+                  if (!view.allowMulti) {
+                    view.selected = [newValue]
+                  } else if (!view.selected.includes(newValue)) {
+                    view.selected.push(newValue)
                   }
 
-                  // Trigger an event if items are selected after the UI has been rendered
-                  // (It is set as disabled until fully rendered).
-                  if(!$(this).hasClass("disabled")){
-                    var newValues = _.clone(view.selected);
-                    view.trigger('changeSelection', newValues);
-                  }
-
-                  // Refresh the tooltips on the labels/text
-
-                  // Ensure tooltips for labels are removed
-                  $(".search-select-tooltip").remove();
-
-                  // Add a tooltip for single select elements (.text) or multi-select
-                  // elements (.label). Delay so that to give time for DOM elements to be
-                  // added or removed.
-                  setTimeout(function(params) {
+                  // Add a tooltip for single select elements (.text) or
+                  // multi-select elements (.label). Delay so that to give time
+                  // for DOM elements to be added or removed. Add tooltip here
+                  // because onLabelCreate only fires for multi-select elements
+                  setTimeout(function () {
+                    $(".search-select-tooltip").remove();
                     var textEl = view.$selectUI.find(".text:not(.default),.label");
-                    // Single select text element will not have the value attribute, add
-                    // it so that we can find the matching description for the tooltip
+                    // Single select text element will not have the value
+                    // attribute, add it so that we can find the matching
+                    // description for the tooltip
                     if(!textEl.data("value") && !view.allowMulti){
-                      textEl.data("value", values)
+                      textEl.data("value", newValue)
                     }
                     if(textEl){
                       textEl.each(function(i, el){
                         view.addTooltip.call(view, el, "top");
                       })
                     }
-                  }, 50);
+                  }, 100);
+
+                  // Trigger an event if items are selected after the UI has been rendered
+                  // (It is set as disabled until fully rendered).
+                  if ($(this).hasClass("disabled")) return;
+                  view.trigger('changeSelection', _.clone(view.selected));
                 },
               });
 
@@ -723,7 +713,7 @@ define([
             }
 
           } catch (e) {
-            console.log("The searchable select post-render function failed, error message: " + e);
+            console.log("Searchable select post-render failed.", e);
           }
         },
 
@@ -825,11 +815,11 @@ define([
                 var $el = $(this);
                 // Allow time for the popup to be added to the DOM
                 setTimeout(function () {
-                  // Then add a special class to identify
-                  // these popups if they need to be removed.
+                  // Then add a special class to identify these popups if they
+                  // need to be removed.
                   $el.data('tooltip').$tip.addClass("search-select-tooltip")
                 }, 10);
-            });
+              });
 
             return $(element)
           } catch (e) {
@@ -1000,7 +990,7 @@ define([
          *
          * @param  {string[]} newValues - An array of strings to select
          */
-        changeSelection: function(newValues, silent = false) {
+        changeSelection: function (newValues, silent = false) {
           try {
             if(
               !this.$selectUI ||
@@ -1019,7 +1009,7 @@ define([
               view.enable();
             }
           } catch (e) {
-            console.log("Failed to change the selected values in a searchable select field, error message: " + e);
+            console.log("Failed to change selected values.", e);
           }
         },
 

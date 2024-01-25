@@ -1019,8 +1019,8 @@ define([
 
             // Get the current type of filter and required type given the newly selected
             // fields
-            var typeBefore = this.model.get("nodeName"),
-                typeAfter = MetacatUI.queryFields.getRequiredFilterType(newFields);
+            const typeBefore = this.model.get("nodeName");
+            const typeAfter = MetacatUI.queryFields.getRequiredFilterType(newFields);
 
             // If the type has changed, then replace the model with one of the correct
             // type, update the value and operator inputs, and do nothing else

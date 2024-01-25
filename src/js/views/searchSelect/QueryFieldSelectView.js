@@ -318,8 +318,8 @@ define([
           // Find the description in the options object, using the data-value
           // attribute set in the template. The data-value attribute is either
           // the label, or the value, depending on if a value is provided.
-          var valueOrLabel = $(element).data("value"),
-              opt = _.chain(this.options)
+          const valueOrLabel = $(element).data("value");
+          const opt = _.chain(this.options)
                           .values()
                           .flatten()
                           .find(function(option){
