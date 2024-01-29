@@ -88,6 +88,7 @@ define([
 
                     // set the package model
                     this.packageModel = this.dataPackage.packageModel;
+
                     this.listenTo(this.packageModel, "changeAll", this.render);
                 }
                 else {
@@ -422,8 +423,11 @@ define([
 
                     if (title === ""){
                         let metadataObj  = _.filter(this.dataPackage.models, function(m){ return(m.get("id") == view.currentlyViewing) });
+                        
                         if (metadataObj.length > 0){
                             title = metadataObj[0].get("title");
+                            let metaId = metadataObj[0].get("id");
+                            this.metaId = metaId;
                         }
                         else{
                             title = this.dataPackage.get("id" );
@@ -461,6 +465,7 @@ define([
                             {}
                         );
                         this.sortedFilePathObj = sortedFilePathObj;
+
                         this.addFilesAndFolders(sortedFilePathObj);
                     }
                     else {
@@ -524,6 +529,13 @@ define([
 
                     // add files in the folder
                     var itemArray = sortedFilePathObj[key];
+
+                    // Add metadata object at the top of the file table
+                    if (key == "" && this.metaId !== "undefined" && itemArray.includes(this.metaId)) {
+                        let item = this.metaId;
+                        this.addOne(this.dataPackage.get(item));
+                    }
+
                     for (let i = 0; i < itemArray.length; i++) {
                         let item = itemArray[i];
                         this.addOne(this.dataPackage.get(item));
@@ -809,21 +821,24 @@ define([
                 var nestedPackages = new Array();
                 var nestedPackageIds = new Array();
                 this.nestedPackages = nestedPackages;
-                var childPackages = this.packageModel.get("childPackages");
 
-                if (Object.keys(childPackages).length > 0) {
-                    for (var childPkg in childPackages) {
-                        if (!nestedPackageIds.includes(childPkg)) {
+                // get all the child packages for this resource map
+                var childPackages = this.dataPackage.filter(function(m){
+                    return (m.get("formatType") === "RESOURCE");
+                  });
 
-                            var nestedPackage = new PackageModel();
-                            nestedPackage.set("id", childPkg);
-                            nestedPackage.setURL();
-                            nestedPackage.getMembers();
-                            nestedPackages.push(nestedPackage);
-                            nestedPackageIds.push(childPkg);
+                // iterate over the list of child packages and add their members
+                for (var ite in childPackages) {
+                    var childPkg = childPackages[ite];
+                    if (!nestedPackageIds.includes(childPkg.get("id"))) {
+                        var nestedPackage = new PackageModel();
+                        nestedPackage.set("id", childPkg.get("id"));
+                        nestedPackage.setURL();
+                        nestedPackage.getMembers();
+                        nestedPackages.push(nestedPackage);
+                        nestedPackageIds.push(childPkg.get("id"));
 
-                            this.listenToOnce(nestedPackage, 'change:members', this.addNestedPackages, nestedPackage);
-                        }
+                        this.listenToOnce(nestedPackage, 'change:members', this.addNestedPackages, nestedPackage);
                     }
                 }
             },
