@@ -228,7 +228,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  height: 100%;
+  height: max-content;
   /* required to be placed above map widget in firefox: */
   z-index: 1;
 }
