@@ -660,6 +660,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                    console.log(error);
               }
 
+              // trigger complete if fetchModel is false and this is the only object in the package
+              if (this.fetchModels == false && models.length == 1) 
+                this.triggerComplete();
+            
               return models;
           },
 
@@ -1757,8 +1761,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
           //If there are any models that are not synced yet, the collection is not complete
           if( notSynced.length > 0 ) {
-            var view = this;
-            this.listenToOnce(notSynced[0], "sync", this.triggerComplete, notSynced[0]);
             return;
           }
 
