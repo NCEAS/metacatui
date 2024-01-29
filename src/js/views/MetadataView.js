@@ -221,7 +221,7 @@ define(['jquery',
           }
           // Fetch the data package. DataPackage.parse() triggers 'complete'
           this.dataPackage.fetch({
-            fetchModels: true
+            fetchModels: false
           });
 
         },
@@ -822,7 +822,7 @@ define(['jquery',
                 var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
                 options.title = "Files in this dataset " + title;
                 options.nested = true;
-                this.insertPackageTable(options);
+                this.insertPackageTable(packageModel, options);
               }
             }
             else {
@@ -831,7 +831,7 @@ define(['jquery',
               if (!(!this.model.get("archived") && packageModel.get("archived") == true)) {
                 var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
                 options.title = "Files in this dataset " + title;
-                this.insertPackageTable(options);
+                this.insertPackageTable(packageModel, options);
               }
             }
 
@@ -848,7 +848,7 @@ define(['jquery',
             packageModel.complete = true;
             options.title = "Files in this dataset";
             options.disablePackageDownloads = true;
-            this.insertPackageTable(options);
+            this.insertPackageTable(packageModel, options);
           }
 
           //Insert the data details sections
@@ -890,15 +890,19 @@ define(['jquery',
           return this;
         },
 
-        insertPackageTable: function (options) {
+        insertPackageTable: function (packageModel, options) {
           var view  = this;
           if (this.dataPackage == null || !this.dataPackageSynced) {
             this.listenToOnce(this, "changed:dataPackageSynced", function(){
-              view.insertPackageTable(options);
+              view.insertPackageTable(packageModel, options);
             });
             return;
           }
-          var viewRef = this;
+
+          // Merge already fetched SolrResults into the dataPackage
+            if (typeof packageModel !== "undefined" && typeof packageModel.get("members") !== "undefined") {
+                this.dataPackage.mergeModels(packageModel.get("members"));
+            }
 
           if (options) {
             var title = options.title || "";
@@ -2375,7 +2379,7 @@ define(['jquery',
           this.insertDataSource();
 
           //Insert a table of contents
-          this.insertPackageTable();
+          this.insertPackageTable(solrResultModel);
 
           this.renderMetadataFromIndex();
 
