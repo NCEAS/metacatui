@@ -233,6 +233,7 @@
   width: min-content;
   /* required to be placed above map widget in firefox: */
   z-index: 1;
+  pointer-events: none;
 }
 
 /* On large screens, the toolbar should not overlap the map, it should squish it */
@@ -385,6 +386,7 @@ represents 1 unit of the given distance measurement. */
   background-color: var(--map-col-bkg);
   border-radius: var(--map-border-radius);
   margin: var(--map-size-toolbar-inter-link-margin);
+  pointer-events: all;
 }
 
 .toolbar__all-content {
@@ -398,6 +400,7 @@ represents 1 unit of the given distance measurement. */
   toolbar is closed */
   display: none;
   overflow: hidden;
+  pointer-events: all;
 }
 
 .toolbar--open .toolbar__all-content {
