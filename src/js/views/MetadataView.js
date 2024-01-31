@@ -428,6 +428,8 @@ define(['jquery',
                     //Now show the response from the view service
                     viewRef.$(viewRef.metadataContainer).html(response);
 
+                    viewRef.storeEntityPIDs(response);
+
                     //If there is no info from the index and there is no metadata doc rendered either, then display a message
                     if (viewRef.$el.is(".no-stylesheet") && viewRef.model.get("archived") && !viewRef.model.get("indexed"))
                       viewRef.$(viewRef.metadataContainer).prepend(viewRef.alertTemplate({ msg: "There is limited metadata about this dataset since it has been archived." }));
