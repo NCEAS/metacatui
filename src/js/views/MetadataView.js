@@ -944,6 +944,17 @@ define(['jquery',
           //Insert the package table HTML
           $(tableContainer).empty();
           $(tableContainer).append(tableView.render().el);
+
+          // Add Package Download
+          // create an instance of DownloadButtonView to handle package downloads
+          this.downloadButtonView = new DownloadButtonView({id: packageModel.get("id"), model: packageModel, view: "actionsView"});
+
+          // render
+          this.downloadButtonView.render();
+
+          // add the downloadButtonView el to the span
+          $(this.tableContainer).find('.file-header .file-actions .downloadAction').html(this.downloadButtonView.el);
+
           $(this.tableContainer).find(".loading").remove();
 
           $(tableContainer).find(".tooltip-this").tooltip();

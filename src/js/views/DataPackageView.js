@@ -445,15 +445,6 @@ define([
                     tableRow = this.dataPackageHeaderTemplate({id:view.dataPackage.id, title: title, titleTooltip: titleTooltip, downloadUrl: packageUrl, disablePackageDownloads: disablePackageDownloads});
 
                     this.$el.append(tableRow);
-                    
-                    // create an instance of DownloadButtonView to handle package downloads
-                    this.downloadButtonView = new DownloadButtonView({model: this.dataPackage.packageModel, view: "actionsView"});
-
-                    // render
-                    this.downloadButtonView.render();
-
-                    // add the downloadButtonView el to the span
-                    this.$el.find('.downloadAction').html(this.downloadButtonView.el);
 
                     if (this.atLocationObj !== undefined && filePathObj !== undefined) {
                         // sort the filePath by length

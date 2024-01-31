@@ -1269,10 +1269,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 					a.remove();
 			   }
 
-          // Track this event
-          MetacatUI.analytics?.trackEvent("download", "Download Package", model.get("id"))
+                model.trigger("downloadComplete");
 
-			    model.trigger("downloadComplete");
+                // Track this event
+                MetacatUI.analytics?.trackEvent("download", "Download Package", model.get("id"))
+
 			};
 
 			xhr.onprogress = function(e){

@@ -160,40 +160,54 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/DataONE
             else {
                 this.$el.html("Downloading... <i class='icon icon-on-right icon-spinner icon-spin'></i>");
             }
-            
-            //Fire the download event via the SolrResult model
-            this.model.downloadWithCredentials();
+
+            var thisRef = this;
 
             this.listenToOnce(this.model, "downloadComplete", function(){
 
-                //Show that the download is complete
-                this.$el.html("Complete <i class='icon icon-on-right icon-ok'></i>")
-                    .addClass("complete")
-                    .removeClass("in-progress error");
+                let iconEl = "<i class='icon icon-on-right icon-ok'></i>";
+                let downloadEl = "<i class='icon icon-large icon-cloud-download'></i>"
 
-                var view = this;
+                if (thisRef.view != "actionsView") {
+                    iconEl += "Complete ";
+                    downloadEl = buttonHTML;
+                }
+
+                //Show that the download is complete
+                thisRef.$el.html(iconEl)
+                .addClass("complete")
+                .removeClass("in-progress error");
 
                 //Put the download button back to normal
                 setTimeout(function(){
-
-                //After one second, change the background color with an animation
-                view.$el.removeClass("complete")
-                    .html(buttonHTML);
+                    //After one second, change the background color with an animation
+                    thisRef.$el.removeClass("complete")
+                        .html(downloadEl);
                 }, 2000);
 
             });
 
             this.listenToOnce(this.model, "downloadError", function(){
+
+                let iconEl = "<i class='icon icon-on-right icon-warning-sign'></i>";
+
+                if (thisRef.view != "actionsView") {
+                    iconEl += "Error ";
+                }
+
                 //Show that the download failed to compelete.
-                this.$el.html("Error <i class='icon icon-on-right icon-warning-sign'></i>")
-                    .addClass("error")
-                    .removeClass("in-progress")
-                    .tooltip({
-                        trigger: "hover",
-                        placement: "top",
-                        title: "Something went wrong while trying to download. Click to try again."
-                    });
+                thisRef.$el.html(iconEl)
+                .addClass("error")
+                .removeClass("in-progress")
+                .tooltip({
+                    trigger: "hover",
+                    placement: "top",
+                    title: "Something went wrong while trying to download. Click to try again."
                 });
+            });
+
+            //Fire the download event via the SolrResult model
+            this.model.downloadWithCredentials();
 		}
 	});
 
