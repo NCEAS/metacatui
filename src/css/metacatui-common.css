@@ -8329,11 +8329,11 @@ textarea.medium{
 	position: relative;
 }
 .Editor .funding-container .icon-spinner{
+	position: absolute;
+	left: 11px;
 	top: 5px;
-	left: 45px;
-    position: absolute;
-    font-size: 1.5em;
-    display: none;
+	font-size: 1.5em;
+	display: none;
 }
 .metadata-container #funding-visible{
 	padding-left: 30px;

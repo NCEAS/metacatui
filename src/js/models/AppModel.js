@@ -720,11 +720,13 @@ define(['jquery', 'underscore', 'backbone'],
       useNSFAwardAPI: false,
       /**
       * The URL for the NSF Award API, which can be used by the {@link LookupModel}
-      * to look up award information for the dataset editor or other views
+      * to look up award information for the dataset editor or other views. The
+      * URL must point to a proxy that can make requests to the NSF Award API,
+      * since it does not support CORS.
       * @type {string}
-      * @default "https://api.nsf.gov/services/v1/awards.json"
+      * @default "/research.gov/awardapi-service/v1/awards.json"
       */
-      grantsUrl: "https://api.nsf.gov/services/v1/awards.json",
+      grantsUrl: "/research.gov/awardapi-service/v1/awards.json",
 
       /**
       * The base URL for the ORCID REST services

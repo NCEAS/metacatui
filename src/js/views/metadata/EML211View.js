@@ -1196,7 +1196,6 @@ define(['underscore', 'jquery', 'backbone',
                 fundingInput.val(value);
 
                 $(".funding .ui-helper-hidden-accessible").hide();
-                loadingSpinner.css("top", "5px");
 
                 view.updateFunding(e);
 
