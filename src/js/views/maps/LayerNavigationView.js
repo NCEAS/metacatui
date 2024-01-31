@@ -134,13 +134,10 @@ define(
         flyToExtent : function(){
           try {
             this.model.show()
-            this.model.trigger('flyToExtent', this.model)
+            this.model.zoomTo(this.model)
           }
-          catch (error) {
-            console.log(
-              'There was an error triggering a "flyToExtent" event in a LayerNavigationView' +
-              '. Error details: ' + error
-            );
+          catch (e) {
+            console.log("Error flying to extent of a layer", e);
           }
         },
 

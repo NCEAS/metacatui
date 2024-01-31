@@ -314,7 +314,7 @@ define(
          * will be used.
          * @param {boolean} [limit=true] Whether or not to limit the height of
          * the iFrame to the height of the window, minus 275px.
-         * @since x.x.x
+         * @since 2.27.0
          */
         updateIFrameHeight: function (height, limit = true) {
           const iFrame = this.elements?.iFrame;
@@ -490,7 +490,7 @@ define(
         },
 
         /**
-         * Trigger an event from the parent Map Asset model that tells the Map Widget to
+         * Trigger an event from the parent Map model that tells the Map Widget to
          * zoom to the full extent of this feature in the map. Also make sure that the Map
          * Asset layer is visible in the map.
          */
@@ -499,7 +499,7 @@ define(
             const model = this.model;
             const mapAsset = model ? model.get('mapAsset') : false;
             if (mapAsset) {
-              mapAsset.trigger('flyToExtent', model)
+              mapAsset.zoomTo(model)
             }
           }
           catch (error) {

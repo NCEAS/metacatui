@@ -1,11 +1,12 @@
 "use strict";
 
-define(["jquery", "underscore", "backbone", "nGeohash"], function (
-  $,
-  _,
-  Backbone,
-  nGeohash
-) {
+define([
+  "jquery",
+  "underscore",
+  "backbone",
+  "nGeohash",
+  "models/maps/GeoUtilities",
+], function ($, _, Backbone, nGeohash, GeoUtilities) {
   /**
    * @classdesc A Geohash Model represents a single geohash.
    * @classcategory Models/Geohashes
@@ -287,7 +288,7 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
 
       /**
        * Get the geohash as a CZML Feature.
-       * @param {*} label The key for the property to display as a label.
+       * @param {string} label The key for the property to display as a label.
        * @returns {Object} A CZML Feature representing the geohash, including
        * a polygon of the geohash area and a label with the value of the
        * property specified by the label parameter.
@@ -315,9 +316,9 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
           },
           properties: properties,
         };
-        if (label) {
+        if (label && (properties[label] || properties[label] === 0)) {
           (feature["label"] = {
-            text: properties[label].toString(),
+            text: properties[label]?.toString(),
             show: true,
             fillColor: {
               rgba: [255, 255, 255, 255],
@@ -346,24 +347,7 @@ define(["jquery", "underscore", "backbone", "nGeohash"], function (
        * @returns {Array} The ECEF coordinates.
        */
       geodeticToECEF: function (coord) {
-        const a = 6378137; // WGS-84 semi-major axis (meters)
-        const f = 1 / 298.257223563; // WGS-84 flattening
-        const e2 = 2 * f - f * f; // Square of eccentricity
-
-        const lon = coord[0] * (Math.PI / 180); // Convert longitude to radians
-        const lat = coord[1] * (Math.PI / 180); // Convert latitude to radians
-        const alt = 10000;
-        const sinLon = Math.sin(lon);
-        const cosLon = Math.cos(lon);
-        const sinLat = Math.sin(lat);
-        const cosLat = Math.cos(lat);
-
-        const N = a / Math.sqrt(1 - e2 * sinLat * sinLat); // Prime vertical radius of curvature
-        const x = (N + alt) * cosLat * cosLon;
-        const y = (N + alt) * cosLat * sinLon;
-        const z = (N * (1 - e2) + alt) * sinLat;
-
-        return [x, y, z];
+        return GeoUtilities.prototype.geodeticToECEF(coord);
       },
     }
   );

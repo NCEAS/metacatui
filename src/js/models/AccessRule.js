@@ -28,71 +28,95 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 
 		/**
-		* Translates the access rule XML DOM into a JSON object to be set on the model.
-		* @param {Element} accessRuleXML An <allow> DOM element that contains a single access rule
-		* @return {JSON} The Access Rule values to be set on this model
-		*/
-		parse: function( accessRuleXML ){
-			//If there is no access policy, do not attempt to parse anything
-			if( typeof accessRuleXML == "undefined" || !accessRuleXML)
-				return {};
+     * Translates the access rule XML DOM into a JSON object to be set on the model.
+     * @param {Element} accessRuleXML An <allow> DOM element that contains a single access rule
+     * @return {JSON} The Access Rule values to be set on this model
+     */
+    parse: function(accessRuleXML) {
+      // If there is no access policy, do not attempt to parse anything
+      if (typeof accessRuleXML === "undefined" || !accessRuleXML) {
+        return {};
+      }
 
-			accessRuleXML = $(accessRuleXML);
+      var accessRuleXMLObj = $(accessRuleXML);
 
-			//Start an access rule object with the given subject
-			var parsedAccessRule = {
-						subject: accessRuleXML.find("subject").text()
-				  }
+      // Start an access rule object with the given subject
+      var parsedAccessRule = {
+        subject: accessRuleXMLObj.find("subject").text()
+      };
 
-			_.each( accessRuleXML.find("permission"), function( permissionNode ){
-				parsedAccessRule[ $(permissionNode).text() ] = true;
-			});
+      _.each(accessRuleXMLObj.find("permission"), function(permissionNode, idx) {
+        let permissionText = $(permissionNode).text().trim();
 
-			return parsedAccessRule;
+        // Check if the permission text is not empty
+        if (permissionText.length) {
+          // Save the parsed permission
+          parsedAccessRule[permissionText] = true;
+        } else {
+          // This is added as a workaround for malformed permission XML
+          // introduced by Chromium 120.X
+          // See https://github.com/NCEAS/metacatui/issues/2235
 
-		},
+          // Define the regular expression
+          let globalPermRegex = /<permission><\/permission>(.*)/g;
+          // Define the regular expression
+          let permRegex = /<permission><\/permission>(.*)/;
+
+          let accessRoleStr = accessRuleXMLObj.html();
+
+          let matches = accessRoleStr.match(globalPermRegex);
+
+          // Check if matches exist and have a length
+          if (matches && matches.length && idx < matches.length) {
+            let permMatch = matches[idx].match(permRegex);
+
+            // Check if permMatch exists and has a length
+            if (permMatch && permMatch.length) {
+              parsedAccessRule[permMatch[1]] = true;
+            }
+          }
+        }
+      });
+
+      return parsedAccessRule;
+    },
 
 		/**
-		* Takes the values set on this model's attributes and creates an XML string
-		* to be inserted into a DataONEObject's system metadata access policy.
-		* @return {string} The access rule XML string
-		*/
-		serialize: function(){
+     * Takes the values set on this model's attributes and creates an XML string
+     * to be inserted into a DataONEObject's system metadata access policy.
+     * @returns {object} The access rule XML object or null if not created
+     */
+    serialize: function() {
+      // Serialize the allow rules
+      if (this.get("read") || this.get("write") || this.get("changePermission")) {
+          // Create the <allow> element
+          var allowElement = document.createElement('allow');
 
-				var xml = "";
+          // Create the <subject> element and set its text content
+          var subjectElement = document.createElement('subject');
+          subjectElement.textContent = this.get("subject");
 
-				//Serialize the allow rules
-				if( this.get("read") || this.get("write") || this.get("changePermission") ){
+          // Append the <subject> and <permission> elements to <allow>
+          allowElement.appendChild(subjectElement);
 
-					//Start the "allow" node
-					xml += '\t<allow>\n';
+          // Create the <permission> elements and set their text content
+          var permissions = ['read', 'write', 'changePermission'];
+          for (var i = 0; i < permissions.length; i++) {
+              if (this.get(permissions[i])) {
+                  var permissionElement = document.createElement('permission');
+                  permissionElement.textContent = permissions[i];
+                  allowElement.appendChild(permissionElement);
+              }
+          }
 
-					//Add the subject
-					xml += '\t\t<subject>' + this.get("subject") + '</subject>\n';
+          // Return the <allow> element
+          return allowElement;
+      }
 
-					//Add the read permission
-					if( this.get("read") ){
-						xml += '\t\t<permission>read</permission>\n';
-					}
+      // If no access rule is created, return null
+      return null;
+    },
 
-					//Add the write permission
-					if( this.get("write") ){
-						xml += '\t\t<permission>write</permission>\n';
-					}
-
-					//Add the changePermission permission
-					if( this.get("changePermission") ){
-						xml += '\t\t<permission>changePermission</permission>\n';
-					}
-
-					//Close the "allow" node
-					xml += '\t</allow>\n';
-
-				}
-
-			return xml;
-
-		},
 
     /**
     * Gets and sets the subject info for the subjects in this access policy.

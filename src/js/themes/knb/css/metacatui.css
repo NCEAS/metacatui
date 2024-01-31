@@ -177,6 +177,11 @@
 
 /* Portal & Editor (minimal header common to both views)
 -------------------------------------------------- */
+.PortalView {
+  /* Rows template differs from metacatui-common.css due to hiding #HeaderContainer. */
+  grid-template-rows: 40px 100fr;
+}
+
 #Navbar .navbar-inner:before, .navbar-inner:after {
 	display: none;
 }

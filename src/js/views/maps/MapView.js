@@ -234,35 +234,31 @@ define(
          */
         renderFeatureInfo: function () {
           try {
-            this.featureInfo = new FeatureInfoView({
-              el: this.subElements.featureInfoContainer,
-              model: this.model.get('selectedFeatures').at(0)
-            })
-            this.featureInfo.render()
+            const view = this;
+            const interactions = view.model.get('interactions')
+            const features = view.model.getSelectedFeatures();
 
-            // When the selectedFeatures collection changes, update the feature info view
-            function setSelectFeaturesListeners() {
-              this.stopListening(this.model.get('selectedFeatures'), 'update')
-              this.listenTo(this.model.get('selectedFeatures'), 'update', function () {
-                this.featureInfo.changeModel(this.model.get('selectedFeatures').at(-1))
-              })
-            }
-            setSelectFeaturesListeners.call(this)
+            view.featureInfo = new FeatureInfoView({
+              el: view.subElements.featureInfoContainer,
+              model: features.at(0)
+            }).render()
 
-            // If the Feature model is ever completely replaced for any reason, make the
-            // the Feature Info view gets updated.
-            this.stopListening(this.model, 'change:selectedFeatures')
-            this.listenTo(this.model, 'change:selectedFeatures', function (mapModel, featuresCollection) {
-              this.featureInfo.changeModel(featuresCollection.at(-1))
-              setSelectFeaturesListeners.call(this)
+            // When the selectedFeatures collection changes, update the feature
+            // info view
+            view.stopListening(features, 'update')
+            view.listenTo(features, 'update', function () {
+              view.featureInfo.changeModel(features.at(-1))
             })
-            return this.featureInfo
+
+            // If the Feature model is ever completely replaced for any reason,
+            // make the the Feature Info view gets updated.
+            const event = 'change:selectedFeatures'
+            view.stopListening(interactions, event)
+            view.listenTo(interactions, event, view.renderFeatureInfo);
+            return view.featureInfo
           }
-          catch (error) {
-            console.log(
-              'There was an error rendering a FeatureInfoView in a MapView' +
-              '. Error details: ' + error
-            );
+          catch (e) {
+            console.log('Error rendering a FeatureInfoView in a MapView', e);
           }
         },
 
@@ -311,23 +307,24 @@ define(
          */
         renderScaleBar: function () {
           try {
+            const interactions = this.model.get('interactions')
+            if (!interactions) {
+              this.listenToOnce(this.model, 'change:interactions', this.renderScaleBar);
+              return
+            }
             this.scaleBar = new ScaleBarView({
-              el: this.subElements.scaleBarContainer
+              el: this.subElements.scaleBarContainer,
+              scaleModel: interactions.get('scale'),
+              pointModel: interactions.get('mousePosition')
             })
-            this.scaleBar.render()
+            this.scaleBar.render();
 
-            this.stopListening(this.model, 'change:currentPosition')
-            this.listenTo(this.model, 'change:currentPosition', function (model, position) {
-              this.scaleBar.updateCoordinates(position.latitude, position.longitude)
-            })
+            // If the interaction model or relevant sub-models are ever completely
+            // replaced for any reason, re-render the scale bar.
+            this.listenToOnce(interactions, 'change:scale change:mousePosition', this.renderScaleBar);
+            this.listenToOnce(this.model, 'change:interactions', this.renderScaleBar);
 
-            this.stopListening(this.model, 'change:currentScale')
-            this.listenTo(this.model, 'change:currentScale', function (model, scale) {
-              this.scaleBar.updateScale(scale.pixels, scale.meters)
-            })
-
-
-            return this.scaleBar
+            return this.scaleBar;
           }
           catch (error) {
             console.log(
@@ -336,6 +333,35 @@ define(
             );
           }
         },
+
+        /**
+         * Get a list of the views that this view contains.
+         * @returns {Backbone.View[]} Returns an array of all of the sub-views.
+         * Some may be undefined if they have not been rendered yet.
+         * @since 2.27.0
+         */
+        getSubViews: function () {
+          return [
+            this.mapWidget,
+            this.toolbar,
+            this.featureInfo,
+            this.layerDetails,
+            this.scaleBar
+          ]
+        },
+
+        /**
+         * Executed when the view is closed. This will close all of the sub-views.
+         * @since 2.27.0
+         */
+        onClose: function () {
+          const subViews = this.getSubViews()
+          subViews.forEach(subView => {
+            if (subView && typeof subView.onClose === 'function') {
+              subView.onClose()
+            }
+          })
+        }
 
       }
     );

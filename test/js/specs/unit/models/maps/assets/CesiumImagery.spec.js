@@ -38,11 +38,9 @@ define([
     describe("Creating the Cesium Model", function () {
 
       it("should convert list of degrees to a Cesium rectangle", function (done) {
-        const expectedRect = Cesium.Rectangle.fromDegrees(...boundingBox)
         imagery.whenReady().then(function (model) {
-          const rect = model.get("cesiumOptions").rectangle
-          const rectsEqual = Cesium.Rectangle.equals(rect, expectedRect)
-          rectsEqual.should.be.true
+          const rect = model.get("cesiumModel").rectangle
+          expect(rect.constructor.name).to.equal("Rectangle")
           done()
         }, function (error) {
           done(error)

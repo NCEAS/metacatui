@@ -43,6 +43,20 @@ define(
         className: 'scale-bar',
 
         /**
+         * The model that holds the current scale of the map in pixels:meters
+         * @type {GeoScale}
+         * @since 2.27.0
+         */
+        scaleModel: null,
+
+        /**
+         * The model that holds the current position of the mouse on the map
+         * @type {GeoPoint}
+         * @since 2.27.0
+         */
+        pointModel: null,
+
+        /**
          * The primary HTML template for this view
          * @type {Underscore.template}
          */
@@ -145,7 +159,7 @@ define(
               }
             }
           } catch (e) {
-            console.log('A ScaleBarView failed to initialize. Error message: ' + e);
+            console.log('A ScaleBarView failed to initialize.', e);
           }
 
         },
@@ -177,6 +191,10 @@ define(
             this.updateCoordinates()
             this.updateScale()
 
+            // Listen for changes to the models
+            this.listenToScaleModel()
+            this.listenToPointModel()
+
             return this
 
           }
@@ -186,6 +204,49 @@ define(
               '. Error details: ' + error
             );
           }
+        },
+
+        /**
+         * Update the scale bar when the pixel:meters ratio changes
+         * @since 2.27.0
+         */
+        listenToScaleModel: function () {
+          const view = this;
+          this.listenTo(this.scaleModel, 'change', function () {
+            view.updateScale(
+              view.scaleModel.get('pixels'),
+              view.scaleModel.get('meters')
+            );
+          });
+        },
+
+        /**
+         * Stop listening to the scale model
+         * @since 2.27.0
+         */
+        stopListeningToScaleModel: function () {
+          this.stopListening(this.scaleModel, 'change');
+        },
+
+        /**
+         * Update the scale bar view when the lat and long change
+         * @since 2.27.0
+         */
+        listenToPointModel: function () {
+          const view = this;
+          this.listenTo(this.pointModel, 'change:latitude change:longitude', function () {
+            view.updateCoordinates(
+              view.pointModel.get('latitude'),
+              view.pointModel.get('longitude')
+            );
+          });
+        },
+
+        /**
+         * Stop listening to the point model
+         */
+        stopListeningToPointModel: function () {
+          this.stopListening(this.pointModel, 'change:latitude change:longitude');
         },
 
         /**
@@ -339,6 +400,15 @@ define(
             }
           }
         },
+
+        /**
+         * Function to execute when this view is removed from the DOM
+         * @since 2.27.0
+         */
+        onClose: function () {
+          this.stopListeningToScaleModel()
+          this.stopListeningToPointModel()
+        }
 
       }
     );
