@@ -7839,6 +7839,7 @@ ul.side-nav-items {
 #data-package-table {
 	margin-bottom: 0px;
 	width: calc(100% - 2px);
+	border-collapse: separate;
 }
 /* Editor package table headers */
 #data-package-table-share,

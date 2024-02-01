@@ -4,13 +4,10 @@
     if(!colspan) var colspan = 7;  
   }
 %>
-
 <% if (!edit) {%>
   <thead id="data-package-table-head">
     <tr class="table-header">
-      <th colspan="<%=colspan%>" class="table-header"> 
-        <%=title%>
-      </th>
+      <th colspan="<%=colspan%>" class="table-header"><%=title%></th>
     </tr>
     
     <tr class="file-header">
@@ -58,31 +55,25 @@
   </thead>
   <tbody id="data-package-table-body" class="data-package-file-table"><%=loading%></tbody>
 <% } else { %>
-
   <thead id="data-package-table-head">
-
-    <tr class="table-header">
-			<th colspan="<%=colspan%>" class="table-header"> 
-				<%=title%>
-			</th>
-		</tr>
-    
-    <!-- icon column -->
-    <th id="data-package-table-icon"></th>
-    <!-- Files column -->
-    <th id="data-package-table-files">Files</th>
-    <!-- Size column -->
-    <th id="data-package-table-size">Size</th>
-    <!-- Type column -->
-    <th id="data-package-table-type">Type</th>
-    <!-- Share column -->
-    <% if( edit && MetacatUI.appModel.get("allowAccessPolicyChanges") ){ %>
-      <th id="data-package-table-share">Share</th>
-    <% } %>
-    <!-- Guide or Status column -->
-    <th id="data-package-table-guide-status">Status</th>
-    <!-- Button column -->
-    <th id="data-package-table-button"><!--i class="icon-large icon-pencil"></i--></th>
+    <tr class="file-header">
+      <!-- icon column -->
+      <th id="data-package-table-icon"></th>
+      <!-- Files column -->
+      <th id="data-package-table-files">Files</th>
+      <!-- Size column -->
+      <th id="data-package-table-size">Size</th>
+      <!-- Type column -->
+      <th id="data-package-table-type">Type</th>
+      <!-- Share column -->
+      <% if( edit && MetacatUI.appModel.get("allowAccessPolicyChanges") ){ %>
+        <th id="data-package-table-share">Share</th>
+      <% } %>
+      <!-- Guide or Status column -->
+      <th id="data-package-table-guide-status">Status</th>
+      <!-- Button column -->
+      <th id="data-package-table-button"><!--i class="icon-large icon-pencil"></i--></th>
+    </tr>
   </thead>
   <tbody id="data-package-table-body"><%=loading%></tbody>
 <% } %>
