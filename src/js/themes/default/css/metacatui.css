@@ -722,6 +722,12 @@ select{
     	color: white;
     }
 
+    /* Keep logged-in nav dropdown from going off page right */
+    .navbar-inner .dropdown-menu {
+        left: unset;
+        right: 0;
+    }
+
     /** Backbone override for dropdowns so they dsplay on hover rather than click **/
     .dropdown-menu .sub-menu {
 	    left: 100%;
