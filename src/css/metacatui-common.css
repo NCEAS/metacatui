@@ -236,6 +236,9 @@ footer{
 #nav-trigger:hover{
   text-decoration: none;
 }
+#Navbar {
+	z-index: 3;
+}
 #Navbar .home{
   display: inline-block;
 }
