@@ -2,13 +2,12 @@
 @media only screen and (min-width : 768px){
 	#Navbar {
       position: absolute;
-			top:0;
-			z-index: 1;
-			left: 50%;
-		  margin-left: -450px;
-			width: 900px;
-			box-sizing: border-box;
-
+      top:0;
+      z-index: 12;
+      left: 50%;
+      margin-left: -450px;
+      width: 900px;
+      box-sizing: border-box;
     }
 
     #Header {
