@@ -433,41 +433,44 @@ define([
              *  fetching the system metadata of each model. Useful when you only need to retrieve limited information about
              *  each package member. Set query-specific parameters on the `solrResults` SolrResults set on this collection.
              */
-            fetch: function (options) {
-                //Fetch the system metadata for this resource map
+            fetch: function(options) {
+                // Fetch the system metadata for this resource map
                 this.packageModel.fetch();
-
-                if (typeof options == "object") {
-                    //If the fetchModels property is set to false,
-                    if (options.fetchModels === false) {
-                        //Save the property to the Collection itself so it is accessible in other functions
+            
+                if(typeof options == "object") {
+                    // If the fetchModels property is set to false,
+                    if(options.fetchModels === false) {
+                        // Save the property to the Collection itself so it is accessible in other functions
                         this.fetchModels = false;
-                        //Remove the property from the options Object since we don't want to send it with the XHR
+                        // Remove the property from the options Object since we don't want to send it with the XHR
                         delete options.fetchModels;
-
                         this.once("reset", this.triggerComplete);
                     }
-                    //If the fetchFromIndex property is set to true
-                    else if (options.fromIndex) {
+                    // If the fetchFromIndex property is set to true
+                    else if(options.fromIndex) {
                         this.fetchFromIndex();
                         return;
                     }
                 }
-
-                //Set some custom fetch options
+            
+                // Set some custom fetch options
                 var fetchOptions = _.extend({ dataType: "text" }, options);
-
-                //Add the authorization options
-                fetchOptions = _.extend(
-                    fetchOptions,
-                    MetacatUI.appUserModel.createAjaxSettings()
-                );
-
-                //Fetch the resource map RDF XML
-                return Backbone.Collection.prototype.fetch.call(
-                    this,
-                    fetchOptions
-                );
+            
+                // Function to retry fetching with user login details if the initial fetch fails
+                var retryFetch = function() {
+                    // Add the authorization options
+                    var authFetchOptions = _.extend({}, fetchOptions, MetacatUI.appUserModel.createAjaxSettings());
+                    
+                    // Fetch the resource map RDF XML with user login details
+                    return Backbone.Collection.prototype.fetch.call(this, authFetchOptions);
+                };
+            
+                // Fetch the resource map RDF XML
+                return Backbone.Collection.prototype.fetch.call(this, fetchOptions)
+                    .fail(function() {
+                        // If the initial fetch fails, retry with user login details
+                        return retryFetch();
+                    });
             },
 
             /*
