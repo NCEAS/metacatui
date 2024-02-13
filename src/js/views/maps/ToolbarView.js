@@ -467,7 +467,8 @@ define(
          * specified view in that container.
          * @param {SectionOption} sectionOption The view and view options that are set in
          * the Section Option are used to create the content container
-         * @returns {HTMLElement} Returns the content container with the rendered view
+         * @returns {HTMLElement, Backbone.View} Returns the content container with the rendered view,
+         * and the Backbone.View itself.
          */
         renderSectionContent: function (sectionOption) {
           try {

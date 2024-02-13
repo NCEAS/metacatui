@@ -14,7 +14,7 @@ define([
    * @name ViewfinderView
    * @extends Backbone.View
    * @screenshot views/maps/ViewfinderView.png
-   * @since 2.27.1
+   * @since x.x.x
    * @constructs ViewfinderView
    */
   var ViewfinderView = Backbone.View.extend({
@@ -25,7 +25,7 @@ define([
     type: "ViewfinderView",
 
     /**
-     * The HTML classes to use for this view's element
+     * The HTML class to use for this view's element.
      * @type {string}
      */
     className: classNames.baseClass,
@@ -60,12 +60,22 @@ define([
       this.mapModel = options.model;
     },
 
+    /**
+     * Render the view by updating the HTML of the element.
+     * The new HTML is computed from an HTML template that
+     * is passed an object with relevant view state.
+     * */
     render() {
       this.el.innerHTML = _.template(Template)(this.templateVars);
 
       this.focusInput();
     },
 
+    /**
+     * Helper function to focus input on the searh query input and ensure
+     * that the cursor is at the end of the text (as opposed to the beginning
+     * which appears to be the default jQuery behavior).
+     */
     focusInput() {
       const input = this.getInput();
       input.focus();
@@ -74,26 +84,44 @@ define([
       input.val(this.templateVars.inputValue);
     },
 
+    /**
+     * Getter function for the search query input. 
+     * @return {HTMLInputElement} Returns the search input HTML element.
+     */
     getInput() {
       return this.$el.find(`.${classNames.input}`);
     },
 
+    /**
+     * Getter function for the search button. 
+     * @return {HTMLButtonElement} Returns the search button HTML element.
+     */
     getButton() {
       return this.$el.find(`.${classNames.button}`);
     },
 
-    /** Event handler for Backbone.View configuration. */
+    /**
+     * Event handler for Backbone.View configuration that is called whenever 
+     * the user types a key.
+     */
     keyup(event) {
       if (event.key === "Enter") {
         this.search();
       }
     },
 
+    /**
+     * Event handler for Backbone.View configuration that is called whenever
+     * the user changes the value in the input field.
+     */
     valueChange() {
       this.templateVars.inputValue = this.getInput().val();
     },
 
-    /** Event handler for Backbone.View configuration. */
+    /**
+     * Event handler for Backbone.View configuration that is called whenever 
+     * the user clicks the search button or hits the Enter key.
+     */
     search() {
       this.clearError();
 
@@ -127,10 +155,12 @@ define([
       return { latitude, longitude };
     },
 
+    /** Helper function to clear the error field.  */
     clearError() {
       this.setError("");
     },
 
+    /** Helper function to set the error field and re-render the view.  */
     setError(errorMessage) {
       this.templateVars.errorMessage = errorMessage;
       this.render();
