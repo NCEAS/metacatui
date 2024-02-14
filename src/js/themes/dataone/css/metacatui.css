@@ -2486,3 +2486,9 @@ a.d1_footer__sitemap-link {
 input.form-control:focus:invalid:focus {
   border-color: var(--section-c-accent,var(--c-major-accent-on-default,grey));
 }
+
+
+#data-package-table-head > .file-header > th {
+    background-color: inherit;
+    z-index: 2;
+}
