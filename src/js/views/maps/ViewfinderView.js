@@ -25,19 +25,25 @@ define([
     type: "ViewfinderView",
 
     /**
-     * The HTML class to use for this view's element.
-     * @type {string}
+     * The HTML classes to use for this view's HTML elements.
+     * @type {Object<string,string>}
      */
-    className: classNames.baseClass,
+    classNames: {
+      baseClass: 'viewfinder',
+      button: "viewfinder__button",
+      input: "viewfinder__input",
+    },
 
     /**
     * The events this view will listen to and the associated function to call.
     * @type {Object}
     */
-    events: {
-      [`change .${classNames.input}`]: 'valueChange',
-      [`click .${classNames.button}`]: 'search',
-      [`keyup .${classNames.input}`]: 'keyup',
+    events() {
+      return {
+        [`change .${this.classNames.input}`]: 'valueChange',
+        [`click .${this.classNames.button}`]: 'search',
+        [`keyup .${this.classNames.input}`]: 'keyup',
+      };
     },
 
     /** 
@@ -48,7 +54,7 @@ define([
       // Track the input value across re-renders.
       inputValue: "",
       placeholder: "Search by latitude and longitude",
-      classNames,
+      classNames: {},
     },
 
     /**
@@ -58,6 +64,7 @@ define([
      */
     initialize(options) {
       this.mapModel = options.model;
+      this.templateVars.classNames = this.classNames;
     },
 
     /**
@@ -89,7 +96,7 @@ define([
      * @return {HTMLInputElement} Returns the search input HTML element.
      */
     getInput() {
-      return this.$el.find(`.${classNames.input}`);
+      return this.$el.find(`.${this.classNames.input}`);
     },
 
     /**
@@ -97,7 +104,7 @@ define([
      * @return {HTMLButtonElement} Returns the search button HTML element.
      */
     getButton() {
-      return this.$el.find(`.${classNames.button}`);
+      return this.$el.find(`.${this.classNames.button}`);
     },
 
     /**
@@ -175,10 +182,3 @@ const floatsRegex = /[+-]?[0-9]*[.]?[0-9]+/g;
 
 // Regular expression matching everything except numbers, periods, and commas.
 const bannedCharactersRegex = /[^0-9,.+-\s]/g;
-
-// Class names that correspond to elements in the template.
-const classNames = {
-  baseClass: 'viewfinder',
-  button: "viewfinder__button",
-  input: "viewfinder__input",
-};
