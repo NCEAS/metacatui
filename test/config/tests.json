@@ -1,5 +1,6 @@
 {
   "unit": [
+    "./js/specs/unit/views/maps/ViewfinderView.spec.js",
     "./js/specs/unit/collections/SolrResults.spec.js",
     "./js/specs/unit/models/Search.spec.js",
     "./js/specs/unit/models/filters/Filter.spec.js",

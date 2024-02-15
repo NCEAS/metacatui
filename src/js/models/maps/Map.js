@@ -46,6 +46,8 @@ define([
        * a {@link LayerListView}.
        * @property {Boolean} [showHomeButton=true] - Whether or not to show the
        * home button in the toolbar.
+       * @property {Boolean} [showViewfinder=false] - Whether or not to show the
+       * viefinder UI and viewfinder button in the toolbar.
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
@@ -159,6 +161,8 @@ define([
        * the layer list in the toolbar. True by default.
        * @property {Boolean} [showHomeButton=true] - Whether or not to show the
        * home button in the toolbar. True by default.
+       * @property {Boolean} [showViewfinder=false] - Whether or not to show the
+       * viefinder UI and viewfinder button in the toolbar. Defaults to false.
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
@@ -197,6 +201,7 @@ define([
           showToolbar: true,
           showLayerList: true,
           showHomeButton: true,
+          showViewfinder: false,
           toolbarOpen: false,
           showScaleBar: true,
           showFeatureInfo: true,
