@@ -137,6 +137,13 @@ define(["jquery",
               }
             }
   
+            if( this.model.get("visualizationType") == "cesium" ){
+              document.body.style.setProperty("height", "100%");
+            }
+            else {
+              document.body.style.removeProperty("height");
+            }
+
             if( this.model.get("visualizationType") == "fever" ){
               $(window).resize(this.adjustVizHeight);
               $(".auto-height-member").resize(this.adjustVizHeight);
