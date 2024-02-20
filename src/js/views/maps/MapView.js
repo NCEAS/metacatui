@@ -271,26 +271,28 @@ define(
           try {
             this.layerDetails = new LayerDetailsView({
               el: this.subElements.layerDetailsContainer
-            })
-            this.layerDetails.render()
+            });
+            this.layerDetails.render();
 
             // When a layer is selected, show the layer details panel. When a layer is
             // de-selected, close it. The Layer model's 'selected' attribute gets updated
             // from the Layer Item View, and also from the Layers collection.
-            this.stopListening(this.model.get('layers'))
-            this.listenTo(this.model.get('layers'), 'change:selected',
-              function (layerModel, selected) {
-                if (selected === false) {
-                  this.layerDetails.updateModel(null)
-                  this.layerDetails.close()
-                } else {
-                  this.layerDetails.updateModel(layerModel)
-                  this.layerDetails.open()
+            for (const layers of this.model.getLayerGroups()) {
+              this.stopListening(layers);
+              this.listenTo(layers, 'change:selected',
+                function (layerModel, selected) {
+                  if (selected === false) {
+                    this.layerDetails.updateModel(null);
+                    this.layerDetails.close();
+                  } else {
+                    this.layerDetails.updateModel(layerModel);
+                    this.layerDetails.open();
+                  }
                 }
-              }
-            )
+              )
+            };
 
-            return this.layerDetails
+            return this.layerDetails;
           }
           catch (error) {
             console.log(

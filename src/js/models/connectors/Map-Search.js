@@ -76,9 +76,15 @@ define([
        * model or no Geohash layer in the collection.
        */
       findGeohash: function () {
-        const layers = this.get("layers");
-        if (!layers) return null;
-        let geohashes = layers.getAll("CesiumGeohash");
+        const layerGroups = this.get("layerGroups");
+        if (!layerGroups) return null;
+
+        // TODO: Since only the first Geohash is needed, create a getFirst
+        // function in MapAssets.
+        let geohashes = _.reduce(layerGroups, (memo, layers) => {
+          memo.push(layers.getAll("CesiumGeohash"));
+          return memo;
+        }, []);
         if (!geohashes || !geohashes.length) {
           return null;
         } else {
@@ -87,24 +93,24 @@ define([
       },
 
       /**
-       * Find the Layers collection from the Map model.
-       * @returns {Layers} The Layers collection from the Map model or null if
-       * there is no Map model set on this model.
+       * Find the array of MapAssets collection from the Map model.
+       * @returns {LayerGroups} An array of MapAssets collection from the Map
+       * model or null if there is no Map model set on this model.
        */
-      findLayers: function () {
+      findLayerGroups: function () {
         const map = this.get("map");
         if (!map) return null;
-        return map.get("layers");
+        return map.getLayerGroups();
       },
 
       /**
-       * Create a new Layers collection and set it on the Map model.
-       * @returns {Layers} The new Layers collection.
+       * Create a new array of MapAssets collection and set it on the Map model.
+       * @returns {LayerGroups} The new array of MapAssets collection.
        */
-      createLayers: function () {
+      createLayerGroups: function () {
         const map = this.get("map");
         if (!map) return null;
-        return map.resetLayers();
+        return [map.resetLayerGroups()];
       },
 
       /**
@@ -132,8 +138,8 @@ define([
       findAndSetGeohashLayer: function (add = true) {
         const wasConnected = this.get("isConnected");
         this.disconnect();
-        const layers = this.findLayers() || this.createLayers();
-        this.set("layers", layers);
+        const layerGroups = this.findLayerGroups() || this.createLayerGroups();
+        this.set("layerGroups", layerGroups);
         let geohash = this.findGeohash() || (add ? this.createGeohash() : null);
         this.set("geohashLayer", geohash);
         if (wasConnected) {
@@ -142,7 +148,7 @@ define([
         // If there is still no Geohash layer, then we should wait for one to
         // be added to the Layers collection, then try to find it again.
         if (!geohash) {
-          this.listenToOnce(layers, "add", this.findAndSetGeohashLayer);
+          _.each(layerGroups, layers => this.listenToOnce(layers, "add", this.findAndSetGeohashLayer));
           return;
         }
         return geohash;
