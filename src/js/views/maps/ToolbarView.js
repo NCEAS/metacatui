@@ -7,6 +7,7 @@ define(
     'backbone',
     'text!templates/maps/toolbar.html',
     'models/maps/Map',
+    'common/IconUtilities',
     // Sub-views - TODO: import these as needed
     'views/maps/LayerListView',
     'views/maps/DrawToolView',
@@ -19,6 +20,7 @@ define(
     Backbone,
     Template,
     Map,
+    IconUtilities,
     // Sub-views
     LayerListView,
     DrawTool,
@@ -434,12 +436,8 @@ define(
 
             // iconString must be string
             if (typeof iconString === 'string') {
-
-              // Simple test to check if the string contains SVG content
-              const isSVG = iconString.toUpperCase().startsWith('<SVG');
-
               // If the icon is an SVG element
-              if (isSVG) {
+              if (IconUtilities.isSVG(iconString)) {
                 icon = new DOMParser()
                   .parseFromString(iconString, 'image/svg+xml')
                   .documentElement;
