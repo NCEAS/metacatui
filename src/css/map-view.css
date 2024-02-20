@@ -566,6 +566,53 @@ represents 1 unit of the given distance measurement. */
 
 /*****************************************************************************************
  *
+ * Layers Category List
+ *
+ * Layer category list contains a list of layer categories which can be expanded in to a list of Layer Items.
+ * This view is used as a toolbar section.
+ *
+ */
+
+ .layer-category-list {
+  width: 100%;
+ }
+
+ .layer-category-item__metadata {
+  height: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px #f1f3f4 inset;
+  cursor: pointer;
+ }
+
+ .layer-category-item__icon-and-label {
+  align-items: center;
+  display: flex;
+ }
+
+.layer-category-item__label {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.layer-category-item__icon {
+  fill: currentColor;
+  height: 24px;
+  width: 24px;
+  margin-right: 16px;
+}
+
+.layer-category-item__icon>svg {
+  height: 24px;
+}
+
+.layer-category-item__expanded, .layer-category-item__collapsed {
+  font-size: 16px;
+}
+
+/*****************************************************************************************
+ *
  * Layer Details
  *
  * A panel that shows details about a specific layer on a map
