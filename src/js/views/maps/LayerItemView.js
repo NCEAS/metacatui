@@ -7,6 +7,7 @@ define(
     'underscore',
     'backbone',
     'models/maps/assets/MapAsset',
+    'common/IconUtilities',
     'text!templates/maps/layer-item.html',
     // Sub-views
     'views/maps/LegendView'
@@ -16,6 +17,7 @@ define(
     _,
     Backbone,
     MapAsset,
+    IconUtilities,
     Template,
     // Sub-views
     Legend
@@ -227,7 +229,7 @@ define(
               return
             }
             const icon = model.get('icon')
-            if (icon && typeof icon === 'string' && model.isSVG(icon)) {
+            if (icon && typeof icon === 'string' && IconUtilities.isSVG(icon)) {
               const iconContainer = document.createElement('span')
               iconContainer.classList.add(this.classes.icon)
               iconContainer.innerHTML = icon
