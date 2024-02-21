@@ -12,13 +12,12 @@ define([
   MapAssets,
 ) {
   /**
-   * @classdesc A AssetCategories collection is a group of AssetCategory models - models
+   * @classdesc AssetCategories collection is a group of AssetCategory models - models
    * that provide the information required to render geo-spatial data in categories,
    * including people, infrastructure, permafrost, etc.
    * @classcategory Collections/Maps
    * @class AssetCategories
    * @extends Backbone.Collection
-  //  TODO: yvonneshi - update
   //  * @since x.x.x
    * @constructor
    */
@@ -38,11 +37,7 @@ define([
        * models
        */
       setMapModel(mapModel) {
-        try {
-          this.each(assetCategoryModel => assetCategoryModel.setMapModel(mapModel));
-        } catch (e) {
-          console.log("Failed to set the map model on AssetCategories collection", e);
-        }
+        this.each(assetCategoryModel => assetCategoryModel.setMapModel(mapModel));
       },
 
       getMapAssets() {

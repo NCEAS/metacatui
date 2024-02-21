@@ -32,7 +32,6 @@ define(
     * @name LayerCategoryItemView
     * @extends Backbone.View
     * @screenshot views/maps/LayerCategoryItemView.png
-    //  TODO: yvonneshi - update
     // * @since x.x.x
     * @constructs
     */
@@ -79,15 +78,7 @@ define(
         * 'function'
         */
         events() {
-          try {
-            return {[`click .${this.classNames.metadata}`]: 'toggleExpanded'};
-          }
-          catch (error) {
-            console.log(
-              'There was an error setting the events object in a LayerCategoryItemView' +
-              '. Error details: ' + error
-            );
-          }
+          return {[`click .${this.classNames.metadata}`]: 'toggleExpanded'};
         },
 
         /**
@@ -95,12 +86,8 @@ define(
         * @param {Object} options - A literal object with options to pass to the view
         */
         initialize(options) {
-          try {
-            if (options.model instanceof AssetCategory) {
-              this.model = options.model;
-            }
-          } catch (e) {
-            console.log('A LayerCategoryItemView failed to initialize. Error message: ' + e);
+          if (options.model instanceof AssetCategory) {
+            this.model = options.model;
           }
         },
 
@@ -109,52 +96,37 @@ define(
         * @return {LayerCategoryItemView} Returns the rendered view element
         */
         render() {
-          try {
-            if (!this.model) {
-              return;
-            }
-
-            // Insert the template into the view
-            this.$el.html(this.template({
-              classNames: this.classNames,
-              label: this.model.get('label'),
-            }));
-
-            // Insert the icon on the left
-            this.insertIcon();
-
-            const layerList = new LayerListView({ collection: this.model.get("mapAssets") });
-            layerList.render();
-            this.$(`.${this.classNames.layers}`).append(layerList.el);
-
-            // Show the category as expanded or collapsed depending on the model
-            // properties.
-            this.updateLayerList();
-
-            return this;
-          } catch (error) {
-            console.log(
-              'There was an error rendering a LayerCategoryItemView' +
-              '. Error details: ' + error
-            );
+          if (!this.model) {
+            return;
           }
+
+          // Insert the template into the view
+          this.$el.html(this.template({
+            classNames: this.classNames,
+            label: this.model.get('label'),
+          }));
+
+          // Insert the icon on the left
+          this.insertIcon();
+
+          const layerList = new LayerListView({ collection: this.model.get("mapAssets") });
+          layerList.render();
+          this.$(`.${this.classNames.layers}`).append(layerList.el);
+
+          // Show the category as expanded or collapsed depending on the model
+          // properties.
+          this.updateLayerList();
+
+          return this;
         },
 
         /**
          * Inserts the icon before the label.
          */
         insertIcon() {
-          try {
-            const icon = this.model.get('icon');
-            if (icon && typeof icon === 'string' && IconUtilities.isSVG(icon)) {
-              this.$(`.${this.classNames.icon}`).html(icon);
-            }
-          }
-          catch (error) {
-            console.log(
-              'There was an error inserting an icon in a LayerCategoryItemView' +
-              '. Error details: ' + error
-            );
+          const icon = this.model.get('icon');
+          if (icon && typeof icon === 'string' && IconUtilities.isSVG(icon)) {
+            this.$(`.${this.classNames.icon}`).html(icon);
           }
         },
 
@@ -164,16 +136,8 @@ define(
          * CategoryListView.
          */
         toggleExpanded() {
-          try {
-            this.model.set('expanded', !this.model.get('expanded'));
-            this.updateLayerList();
-          }
-          catch (error) {
-            console.log(
-              'There was an error expanding or collapsing a category in a LayerCategoryItemView' +
-              '. Error details: ' + error
-            );
-          }
+          this.model.set('expanded', !this.model.get('expanded'));
+          this.updateLayerList();
         },
 
         /**

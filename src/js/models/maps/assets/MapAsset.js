@@ -735,18 +735,10 @@ define([
         if (!icon) return;
 
         const model = this;
-        try {
-          IconUtilities.sanitizeIcon(icon, function (sanitizedIcon) {
-            model.set("icon", sanitizedIcon);
-            model.set("iconStatus", "success");
-          });
-        } catch (error) {
-          console.log(
-            "There was an error updating an icon in a MapAsset model" +
-              ". Error details: " +
-              error
-          );
-        }
+        IconUtilities.sanitizeIcon(icon, function (sanitizedIcon) {
+          model.set("icon", sanitizedIcon);
+          model.set("iconStatus", "success");
+        });
       },
 
       /**

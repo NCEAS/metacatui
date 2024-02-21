@@ -29,7 +29,6 @@ define(
     * @name LayerCategoryListView
     * @screenshot views/maps/LayerCategoryListView.png
     * @extends Backbone.View
-    //  TODO: yvonneshi - update
     //  * @since x.x.x
     * @constructs
     */
@@ -65,14 +64,9 @@ define(
         * @param {Object} options - A literal object with options to pass to the view
         */
         initialize(options) {
-          try {
-            if (options.collection instanceof AssetCategories) {
-              this.collection = options.collection.clone();
-            }
-          } catch (e) {
-            console.log('A LayerCategoryListView failed to initialize. Error message: ' + e);
+          if (options.collection instanceof AssetCategories) {
+            this.collection = options.collection.clone();
           }
-
         },
 
         /**
@@ -80,32 +74,24 @@ define(
         * @return {LayerCategoryListView} Returns the rendered view element
         */
         render() {
-          try {// Insert the template into the view
-            this.$el.html(this.template({}));
+          // Insert the template into the view
+          this.$el.html(this.template({}));
 
-            // Ensure the view's main element has the given class name
-            this.el.classList.add(this.className);
+          // Ensure the view's main element has the given class name
+          this.el.classList.add(this.className);
 
-            if (!this.collection) {
-              return
-            }
-
-            // Render a layer item for each layer in the collection
-            this.collection.forEach(categoryModel => {
-              const layerCategoryItemView = new LayerCategoryItemView({model: categoryModel});
-              layerCategoryItemView.render();
-              this.el.appendChild(layerCategoryItemView.el);
-            })
-
-            return this;
-
+          if (!this.collection) {
+            return
           }
-          catch (error) {
-            console.log(
-              'There was an error rendering a LayerCategoryListView' +
-              '. Error details: ' + error
-            );
-          }
+
+          // Render a layer item for each layer in the collection
+          this.collection.forEach(categoryModel => {
+            const layerCategoryItemView = new LayerCategoryItemView({model: categoryModel});
+            layerCategoryItemView.render();
+            this.el.appendChild(layerCategoryItemView.el);
+          })
+
+          return this;
         },
 
 

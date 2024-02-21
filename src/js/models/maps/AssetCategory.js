@@ -12,7 +12,6 @@ define([
    * @class AssetCategory
    * @name AssetCategory
    * @extends Backbone.Model
-   //  TODO: yvonneshi - update
    //  * @since x.x.x
    * @constructor
    */
@@ -70,22 +69,18 @@ define([
        * attributes, which will be set on the model.
        */
       initialize(categoryConfig) {
-        try {
-          if (!categoryConfig.layers) {
-            throw new Error("Category " + categoryConfig.label + " has empty layers.");
-          }
-          this.set("mapAssets", new MapAssets(categoryConfig.layers));
+        if (!categoryConfig.layers) {
+          throw new Error("Category " + categoryConfig.label + " has empty layers.");
+        }
+        this.set("mapAssets", new MapAssets(categoryConfig.layers));
 
-          this.set("label", categoryConfig.label);
+        this.set("label", categoryConfig.label);
 
-          // Fetch the icon, if there is one
-          if (categoryConfig.icon) {
-            const icon = IconUtilities.isSVG(categoryConfig.icon) ?
-              categoryConfig.icon : IconUtilities.fetchIcon(categoryConfig.icon);
-            this.updateIcon(icon);
-          }
-        } catch (e) {
-          console.log("Error initializing a AssetCategory model", e);
+        // Fetch the icon, if there is one
+        if (categoryConfig.icon) {
+          const icon = IconUtilities.isSVG(categoryConfig.icon) ?
+            categoryConfig.icon : IconUtilities.fetchIcon(categoryConfig.icon);
+          this.updateIcon(icon);
         }
       },
 
@@ -97,17 +92,9 @@ define([
       updateIcon(icon) {
         if (!icon) return;
 
-        try {
-          IconUtilities.sanitizeIcon(icon, sanitizedIcon => {
-            this.set("icon", sanitizedIcon);
-          });
-        } catch (error) {
-          console.log(
-            "There was an error updating an icon in a AssetCategory model" +
-              ". Error details: " +
-              error
-          );
-        }
+        IconUtilities.sanitizeIcon(icon, sanitizedIcon => {
+          this.set("icon", sanitizedIcon);
+        });
       },
 
       /**

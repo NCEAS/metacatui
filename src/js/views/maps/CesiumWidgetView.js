@@ -1503,39 +1503,31 @@ define([
        * @since 2.21.0
        */
       sortImagery: function () {
-        try {
-          const imageryInMap = this.scene.imageryLayers;
-          const imageryModels = _.reduce(this.model.getLayerGroups(), (models, layers) => {
-              models.push(...layers.getAll("CesiumImagery"));
-              return models;
-            }, []);
+        const imageryInMap = this.scene.imageryLayers;
+        const imageryModels = _.reduce(this.model.getLayerGroups(), (models, layers) => {
+            models.push(...layers.getAll("CesiumImagery"));
+            return models;
+          }, []);
 
-          // If there are no imagery layers, or just one, return
-          if (
-            !imageryInMap ||
-            !imageryModels ||
-            imageryInMap.length <= 1 ||
-            imageryModels.length <= 1
-          ) {
-            return;
-          }
+        // If there are no imagery layers, or just one, return
+        if (
+          !imageryInMap ||
+          !imageryModels ||
+          imageryInMap.length <= 1 ||
+          imageryModels.length <= 1
+        ) {
+          return;
+        }
 
-          // If there are more than one imagery layer, arrange them in the order
-          // that they were added to the map
-          for (let i = 0; i < imageryModels.length; i++) {
-            const cesiumModel = imageryModels[i].get("cesiumModel");
-            if (cesiumModel) {
-              if (imageryInMap.contains(cesiumModel)) {
-                imageryInMap.lowerToBottom(cesiumModel);
-              }
+        // If there are more than one imagery layer, arrange them in the order
+        // that they were added to the map
+        for (let i = 0; i < imageryModels.length; i++) {
+          const cesiumModel = imageryModels[i].get("cesiumModel");
+          if (cesiumModel) {
+            if (imageryInMap.contains(cesiumModel)) {
+              imageryInMap.lowerToBottom(cesiumModel);
             }
           }
-        } catch (error) {
-          console.log(
-            "There was an error sorting displayed imagery in a CesiumWidgetView" +
-              ". Error details: " +
-              error
-          );
         }
       },
 

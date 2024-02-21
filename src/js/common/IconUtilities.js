@@ -13,7 +13,6 @@ define([
   * MetacatUI to perform useful functions related to icons, but not used to store or
   * manipulate any state about the application.
   * @type {object}
-  //  TODO: yvonneshi - update
   * @since x.x.x
   */
 	const IconUtilities = /** @lends IconUtilities.prototype */ {
@@ -36,24 +35,18 @@ define([
      * @returns {string} The icon data.
      */
     fetchIcon(pid) {
-      try {
-        // Use the portal image model to get the correct baseURL for an image
-        const imageURL = new PortalImage({
-          identifier: pid,
-        }).get("imageURL");
+      // Use the portal image model to get the correct baseURL for an image
+      const imageURL = new PortalImage({
+        identifier: pid,
+      }).get("imageURL");
 
-        fetch(imageURL)
-          .then(response => response.text())
-          .then(data => {
-            if (this.isSVG(data)) {
-              return data;
-            }
-          });
-      } catch (error) {
-        console.log(
-          "Failed to fetch an icon. Error details: " + error
-        );
-      }
+      fetch(imageURL)
+        .then(response => response.text())
+        .then(data => {
+          if (this.isSVG(data)) {
+            return data;
+          }
+        });
     },
 
     /**
@@ -63,25 +56,22 @@ define([
      * Will pass the sanitized icon string.
      */
     sanitizeIcon(icon, callback) {
-      try {
-        const converter = new showdown.Converter({
-          extensions: ["xssfilter"],
-        });
-        let sanitizedIcon = converter.makeHtml(icon);
-        // Remove the <p></p> tags that showdown wraps the string in
-        sanitizedIcon = sanitizedIcon.replace(/^(<p>)/, "");
-        sanitizedIcon = sanitizedIcon.replace(/(<\/p>)$/, "");
-        // Call the callback
-        if (callback && typeof callback === "function") {
-          callback(sanitizedIcon);
-        }
-      } catch (error) {
-        console.log(
-          "There was an error sanitizing an SVG icon. Error details: " + error
-        );
+      const converter = new showdown.Converter({
+        extensions: ["xssfilter"],
+      });
+      let sanitizedIcon = converter.makeHtml(icon);
+      // Remove the <p></p> tags that showdown wraps the string in
+      sanitizedIcon = sanitizedIcon.replace(P_TAG_START, "");
+      sanitizedIcon = sanitizedIcon.replace(P_TAG_END, "");
+      // Call the callback
+      if (callback && typeof callback === "function") {
+        callback(sanitizedIcon);
       }
     },
   }
 
   return IconUtilities;
 });
+
+const P_TAG_START = /^(<p>)/;
+const P_TAG_END = /(<\/p>)$/;
