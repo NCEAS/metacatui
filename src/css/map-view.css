@@ -477,9 +477,23 @@ represents 1 unit of the given distance measurement. */
 
 /*****************************************************************************************
  *
+ * Layers Panel
+ *
+ * Layers panel shows information about a map's layers and supports searching. This view
+ * is used as a toolbar section.
+ *
+ */
+
+
+ .layers-panel {
+  width: 100%;
+ }
+
+/*****************************************************************************************
+ *
  * Layers List
  *
- * Layers contains information about a map's layers and is used as a toolbar section
+ * Layers contains information about a map's layers.
  *
  */
 
@@ -569,7 +583,6 @@ represents 1 unit of the given distance measurement. */
  * Layers Category List
  *
  * Layer category list contains a list of layer categories which can be expanded in to a list of Layer Items.
- * This view is used as a toolbar section.
  *
  */
 

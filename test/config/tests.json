@@ -47,7 +47,8 @@
     "./js/specs/unit/collections/maps/AssetCategories.spec.js",
     "./js/specs/unit/views/maps/LayerCategoryItemView.spec.js",
     "./js/specs/unit/models/maps/Map.spec.js",
-    "./js/specs/unit/views/maps/CesiumWidgetView.spec.js"
+    "./js/specs/unit/views/maps/CesiumWidgetView.spec.js",
+    "./js/specs/unit/views/maps/LayersPanelView.spec.js"
   ],
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",

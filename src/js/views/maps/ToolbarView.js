@@ -9,8 +9,7 @@ define(
     'models/maps/Map',
     'common/IconUtilities',
     // Sub-views - TODO: import these as needed
-    'views/maps/LayerListView',
-    'views/maps/LayerCategoryListView',
+    'views/maps/LayersPanelView',
     'views/maps/DrawToolView',
     'views/maps/HelpPanelView',
     'views/maps/ViewfinderView',
@@ -23,8 +22,7 @@ define(
     Map,
     IconUtilities,
     // Sub-views
-    LayerListView,
-    LayerCategoryListView,
+    LayersPanelView,
     DrawTool,
     HelpPanel,
     ViewfinderView,
@@ -171,26 +169,9 @@ define(
           {
             label: 'Layers',
             icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="m3.2 7.3 8.6 4.6a.5.5 0 0 0 .4 0l8.6-4.6a.4.4 0 0 0 0-.8L12.1 3a.5.5 0 0 0-.4 0L3.3 6.5a.4.4 0 0 0 0 .8Z"/><path d="M20.7 10.7 19 9.9l-6.7 3.6a.5.5 0 0 1-.4 0L5 9.9l-1.8.8a.5.5 0 0 0 0 .8l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.8Z"/><path d="m20.7 15.1-1.5-.7-7 3.8a.5.5 0 0 1-.4 0l-7-3.8-1.5.7a.5.5 0 0 0 0 .9l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.9Z"/></svg>',
-            view: LayerListView,
-            viewOptions: {
-              model: null,
-              collection: 'model.layers'
-            },
+            view: LayersPanelView,
             isVisible(model) {
-              return model.get('showLayerList') &&
-                (!model.get("layerCategories") || model.get("layerCategories").length === 0);
-            },
-          },
-          {
-            label: 'Layers',
-            icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="m3.2 7.3 8.6 4.6a.5.5 0 0 0 .4 0l8.6-4.6a.4.4 0 0 0 0-.8L12.1 3a.5.5 0 0 0-.4 0L3.3 6.5a.4.4 0 0 0 0 .8Z"/><path d="M20.7 10.7 19 9.9l-6.7 3.6a.5.5 0 0 1-.4 0L5 9.9l-1.8.8a.5.5 0 0 0 0 .8l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.8Z"/><path d="m20.7 15.1-1.5-.7-7 3.8a.5.5 0 0 1-.4 0l-7-3.8-1.5.7a.5.5 0 0 0 0 .9l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.9Z"/></svg>',
-            view: LayerCategoryListView,
-            viewOptions: {
-              model: null,
-              collection: 'model.layerCategories',
-            },
-            isVisible(model) {
-              return model.get('layerCategories') && model.get('layerCategories').length > 0;
+              return model.get('showLayerList');
             },
           },
           {
