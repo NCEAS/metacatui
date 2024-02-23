@@ -325,15 +325,15 @@ define([
 
           // Fetch the icon, if there is one
           if (assetConfig.icon) {
-            let icon;
             if (IconUtilities.isSVG(assetConfig.icon)) {
-              icon = assetConfig.icon;
+              model.updateIcon(icon);
             } else {
               try {
                 model.set("iconStatus", "fetching");
                 // If the string is not an SVG then assume it is a PID and try to fetch
                 // the SVG file.
-                icon = IconUtilities.fetchIcon(assetConfig.icon);
+                IconUtilities.fetchIcon(assetConfig.icon)
+                  .then(icon => model.updateIcon(icon));
               } catch (error) {
                 console.log(
                   "Failed to fetch an icon for a MapAsset" +
@@ -343,7 +343,6 @@ define([
                 model.set("iconStatus", "error");
               }
             }
-            model.updateIcon(icon);
           }
 
           this.setListeners();
@@ -734,11 +733,8 @@ define([
       updateIcon: function (icon) {
         if (!icon) return;
 
-        const model = this;
-        IconUtilities.sanitizeIcon(icon, function (sanitizedIcon) {
-          model.set("icon", sanitizedIcon);
-          model.set("iconStatus", "success");
-        });
+        this.set("icon", IconUtilities.sanitizeIcon(icon));
+        this.set("iconStatus", "success");
       },
 
       /**

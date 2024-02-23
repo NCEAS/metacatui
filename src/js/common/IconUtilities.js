@@ -40,7 +40,7 @@ define([
         identifier: pid,
       }).get("imageURL");
 
-      fetch(imageURL)
+      return fetch(imageURL)
         .then(response => response.text())
         .then(data => {
           if (this.isSVG(data)) {
@@ -52,8 +52,7 @@ define([
     /**
      * Takes an SVG string and returns it with only the allowed tags and attributes
      * @param {string} icon The SVG icon string to sanitize
-     * @param {function} callback Function to call once the icon has been sanitized.
-     * Will pass the sanitized icon string.
+     * @returns {string} Sanitized icon string.
      */
     sanitizeIcon(icon, callback) {
       const converter = new showdown.Converter({
@@ -63,10 +62,8 @@ define([
       // Remove the <p></p> tags that showdown wraps the string in
       sanitizedIcon = sanitizedIcon.replace(P_TAG_START, "");
       sanitizedIcon = sanitizedIcon.replace(P_TAG_END, "");
-      // Call the callback
-      if (callback && typeof callback === "function") {
-        callback(sanitizedIcon);
-      }
+
+      return sanitizedIcon;
     },
   }
 

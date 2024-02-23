@@ -82,7 +82,10 @@ define([
         // TODO: Since only the first Geohash is needed, create a getFirst
         // function in MapAssets.
         let geohashes = _.reduce(layerGroups, (memo, layers) => {
-          memo.push(layers.getAll("CesiumGeohash"));
+          const geohashes = layers.getAll("CesiumGeohash");
+          if (geohashes && geohashes.length) {
+            memo.push(geohashes);
+          }
           return memo;
         }, []);
         if (!geohashes || !geohashes.length) {
@@ -110,7 +113,7 @@ define([
       createLayerGroups: function () {
         const map = this.get("map");
         if (!map) return null;
-        return [map.resetLayerGroups()];
+        return [map.resetLayers()];
       },
 
       /**

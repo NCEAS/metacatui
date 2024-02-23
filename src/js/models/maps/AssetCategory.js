@@ -78,9 +78,12 @@ define([
 
         // Fetch the icon, if there is one
         if (categoryConfig.icon) {
-          const icon = IconUtilities.isSVG(categoryConfig.icon) ?
-            categoryConfig.icon : IconUtilities.fetchIcon(categoryConfig.icon);
-          this.updateIcon(icon);
+          if (IconUtilities.isSVG(categoryConfig.icon)) {
+            this.updateIcon(categoryConfig.icon);
+          } else {
+            IconUtilities.fetchIcon(categoryConfig.icon)
+              .then(icon => this.updateIcon(icon));
+          }
         }
       },
 
@@ -92,9 +95,7 @@ define([
       updateIcon(icon) {
         if (!icon) return;
 
-        IconUtilities.sanitizeIcon(icon, sanitizedIcon => {
-          this.set("icon", sanitizedIcon);
-        });
+        this.set("icon", IconUtilities.sanitizeIcon(icon));
       },
 
       /**

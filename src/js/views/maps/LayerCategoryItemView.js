@@ -63,7 +63,6 @@ define(
         template: _.template(Template),
 
         classNames: {
-          baseClass: 'layer-category-item',
           metadata: 'layer-category-item__metadata',
           icon: 'layer-category-item__icon',
           expanded: 'layer-category-item__expanded',
