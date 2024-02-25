@@ -119,47 +119,43 @@ define(
         * @return {LayerListView} Returns the rendered view element
         */
         render: function () {
+          this.$el.html(this.template({}));
 
-          try {
+          // Ensure the view's main element has the given class name
+          this.el.classList.add(this.className);
 
-            // Save a reference to this view
-            var view = this;
+          if (!this.collection) {
+            return;
+          }
 
-            // Insert the template into the view
-            this.$el.html(this.template({}));
-
-            // Ensure the view's main element has the given class name
-            this.el.classList.add(this.className);
-
-            if (!this.collection) {
-              return
+          // Render a layer item for each layer in the collection
+          this.layerItemViews = this.collection.reduce((memo, layerModel) => {
+            if (layerModel.get('hideInLayerList') === true){
+              // skip this layer
+              return memo;
             }
-
-            // Render a layer item for each layer in the collection
-            this.collection.forEach(function (layerModel) {
-              if(layerModel.get('hideInLayerList') === true){
-                // skip this layer
-                return
-              }
-              var layerItem = new LayerItemView({
-                model: layerModel
-              })
-              layerItem.render();
-              view.el.appendChild(layerItem.el)
+            const layerItem = new LayerItemView({
+              model: layerModel
             })
+            layerItem.render();
+            this.el.appendChild(layerItem.el);
+            memo.push(layerItem);
+            return memo;
+          }, []);
 
-            return this
-
-          }
-          catch (error) {
-            console.log(
-              'There was an error rendering a LayerListView' +
-              '. Error details: ' + error
-            );
-          }
+          return this;
         },
 
-
+        /**
+         * Searches and only dispays layers that match the text.
+         * @param {string} [text] - The search text from user input.
+         * @returns {boolean} - True if a layer item matches the text
+         */
+        search(text) {
+          return this.layerItemViews.reduce((matched, layerItem) => {
+            return layerItem.search(text) || matched;
+          }, false);
+        },
       }
     );
 

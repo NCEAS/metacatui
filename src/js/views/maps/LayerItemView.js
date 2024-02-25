@@ -90,6 +90,8 @@ define(
           legendContainer: 'layer-item__legend-container',
           selected: 'layer-item--selected',
           hidden: 'layer-item--hidden',
+          labelText: 'layer-item__label-text',
+          highlightedText: 'layer-item__highlighted-text',
           badge: 'map-view__badge',
           tooltip: 'map-tooltip',
         },
@@ -159,7 +161,8 @@ define(
 
             // Insert the template into the view
             this.$el.html(this.template({
-              label: this.model.get('label')
+              label: this.model.get('label'),
+              classes: this.classes,
             }));
             // Save a reference to the label element
             this.labelEl = this.el.querySelector('.' + this.classes.label)
@@ -486,9 +489,35 @@ define(
               '. Error details: ' + error
             );
           }
-        }
+        },
 
+        /**
+         * Searches and only dispays self if layer label matches the text. Highlights the
+         * matched text.
+         * @param {string} [text] - The search text from user input.
+         * @returns {boolean} - True if a layer label matches the text
+         */
+        search(text) {
+          let newLabel = this.model.get('label');
+          let matched;
+          if (text === '') {
+            matched = true;
+          } else if (text?.length > 0) {
+            const regex = new RegExp(text, "ig");
+            newLabel = this.model.get('label').replaceAll(regex, matchedText => {
+              matched = true;
+              return $('<span />').addClass(this.classes.highlightedText).html(matchedText).prop('outerHTML');
+            });
+          }
+          this.labelEl.querySelector(`.${this.classes.labelText}`).innerHTML = newLabel;
 
+          if (matched) {
+            this.$el.show();
+          } else {
+            this.$el.hide();
+          }
+          return matched;
+        },
       }
     );
 
