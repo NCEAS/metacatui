@@ -71,7 +71,7 @@ define(
           }
 
           // Render a layer item for each layer in the collection
-          this.collection.forEach(categoryModel => {
+          this.layerCategoryItemViews = this.collection.map(categoryModel => {
             const layerCategoryItemView = new LayerCategoryItemView({model: categoryModel});
             layerCategoryItemView.render();
             this.el.appendChild(layerCategoryItemView.el);
@@ -80,7 +80,16 @@ define(
           return this;
         },
 
-
+        /**
+         * Searches and only dispays categories and layers that match the text.
+         * @param {string} [text] - The search text from user input.
+         * @returns {boolean} - True if a layer item matches the text
+         */
+        search(text) {
+          return this.layerCategoryItemViews.reduce((matched, layerCategoryItem) => {
+            return layerCategoryItem.search(text) || matched;
+          }, false);
+        },
       }
     );
 
