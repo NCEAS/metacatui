@@ -5,11 +5,13 @@ define([
   "text!templates/maps/layers-panel.html",
   "views/maps/LayerCategoryListView",
   "views/maps/LayerListView",
+  "views/maps/SearchInputView",
 ], (
   Backbone,
   Template,
   LayerCategoryListView,
   LayerListView,
+  SearchInputView,
 ) => {
   /**
    * @class LayersPanelView
@@ -18,7 +20,6 @@ define([
    * @classcategory Views/Maps
    * @name LayersPanelView
    * @extends Backbone.View
-   // TODO: yvonne
    * @screenshot views/maps/LayersPanelView.png
    * @since x.x.x
    * @constructs LayersPanelView
@@ -41,14 +42,8 @@ define([
      * @type {Object<string,string>}
      */
     classNames: {
+      search: "layers-panel__search",
       layers: "layers-panel__layers",
-    },
-
-    /** 
-     * Values meant to be used by the rendered HTML template.
-     */
-    templateVars: {
-      classNames: {},
     },
 
     /**
@@ -57,7 +52,6 @@ define([
      */
     initialize(options) {
       this.map = options.model;
-      this.templateVars.classNames = this.classNames;
     },
 
     /**
@@ -66,7 +60,7 @@ define([
      * is passed an object with relevant view state.
      * */
     render() {
-      this.el.innerHTML = _.template(Template)(this.templateVars);
+      this.el.innerHTML = _.template(Template)({ classNames: this.classNames });
 
       if (this.map.get('layerCategories')?.length > 0) {
         this.layersView = new LayerCategoryListView({ collection: this.map.get("layerCategories") });
@@ -75,8 +69,36 @@ define([
       }
       this.layersView.render();
       this.$(`.${this.classNames.layers}`).append(this.layersView.el);
+
+      const searchInput = new SearchInputView({
+        placeholder: "Search all data layers",
+        search: text => this.search(text),
+        noMatchCallback: () => this.layersView.search(""),
+      });
+      searchInput.render();
+      this.$(`.${this.classNames.search}`).append(searchInput.el);
     },
 
+    /**
+     * Search function for the SearchInputView.
+     * @returns {SearchReturnType}
+     */
+    search(text) {
+      this.dismissLayerDetails();
+      const matched = this.layersView.search(text);
+      return {
+        matched,
+        errorText: matched ? "" : "No layers match your search",
+      };
+    },
+
+    dismissLayerDetails() {
+      this.map.getLayerGroups().forEach(mapAssets => {
+        mapAssets.forEach(layerModel => {
+          layerModel.set("selected", false);
+        });
+      });
+    },
   });
 
   return LayersPanelView;

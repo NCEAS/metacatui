@@ -38,5 +38,15 @@ define([
         expect(state.view.layersView).to.be.instanceof(LayerListView);
       });
     });
+
+    it("dismisses layer details on search", () => {
+      state.view.render();
+      const layer = state.view.layersView.collection.at(0);
+      layer.set("selected", true);
+
+      state.view.search("");
+
+      expect(layer.get("selected")).to.be.false;
+    });
   });
 });

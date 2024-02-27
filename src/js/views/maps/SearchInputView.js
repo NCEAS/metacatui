@@ -74,6 +74,8 @@ define([
      * @typedef {Object} SearchInputViewOptions
      * @property {Function} search A function that takes in a text input and returns
      * SearchReturnType.
+     * @property {Function} noMatchCallback A callback function to handle a no match
+     * situation.
      * @property {String} placeholder The placeholder text for the input box.
      */
     initialize(options) {
@@ -81,6 +83,7 @@ define([
         throw new Error("Initializing SearchInputView without a search function.");
       }
       this.search = options.search;
+      this.noMatchCallback = options.noMatchCallback;
       this.templateVars.placeholder = options.placeholder;
       this.templateVars.classNames = this.classNames;
     },
@@ -116,6 +119,9 @@ define([
         input.removeClass(this.classNames.errorInput);
       } else {
         input.addClass(this.classNames.errorInput);
+        if (typeof(this.noMatchCallback) === "function") {
+          this.noMatchCallback();
+        }
       }
 
       const errorTextEl = this.$(`.${this.classNames.errorText}`);

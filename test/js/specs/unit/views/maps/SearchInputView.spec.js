@@ -13,6 +13,7 @@ define([
     const state = cleanState(() => {
       const view = new SearchInputView({
         search: new Function(),
+        noMatchCallback: new Function(),
       });
       view.render();
       const harness = new SearchInputViewHarness(view);
@@ -112,6 +113,15 @@ define([
         state.harness.clickSearch();
   
         expect(error.css("display")).to.equal("none");
+      });
+  
+      it("calls noMatchCallback if there is no match", () => {
+        state.view.noMatchCallback = spy;
+        stub(state.view, "search").returns({ matched: false });
+  
+        state.harness.clickSearch();
+  
+        expect(spy.callCount).to.equal(1);
       });
   
       it("applies an error class to the input box if there is no match", () => {
