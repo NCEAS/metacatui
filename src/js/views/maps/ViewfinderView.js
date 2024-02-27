@@ -3,9 +3,11 @@
 define([
   "backbone",
   "text!templates/maps/viewfinder.html",
+  "views/maps/SearchInputView",
 ], (
   Backbone,
   Template,
+  SearchInputView,
 ) => {
   /**
    * @class ViewfinderView
@@ -30,31 +32,7 @@ define([
      */
     classNames: {
       baseClass: 'viewfinder',
-      button: "viewfinder__button",
-      input: "viewfinder__input",
-    },
-
-    /**
-    * The events this view will listen to and the associated function to call.
-    * @type {Object}
-    */
-    events() {
-      return {
-        [`change .${this.classNames.input}`]: 'valueChange',
-        [`click .${this.classNames.button}`]: 'search',
-        [`keyup .${this.classNames.input}`]: 'keyup',
-      };
-    },
-
-    /** 
-     * Values meant to be used by the rendered HTML template.
-     */
-    templateVars: {
-      errorMessage: "",
-      // Track the input value across re-renders.
-      inputValue: "",
-      placeholder: "Search by latitude and longitude",
-      classNames: {},
+      search: "viewfinder__form-field",
     },
 
     /**
@@ -63,8 +41,7 @@ define([
      * of panning to different locations on the map. 
      */
     initialize(options) {
-      this.mapModel = options.model;
-      this.templateVars.classNames = this.classNames;
+      this.model = options.model;
     },
 
     /**
@@ -73,9 +50,14 @@ define([
      * is passed an object with relevant view state.
      * */
     render() {
-      this.el.innerHTML = _.template(Template)(this.templateVars);
+      this.el.innerHTML = _.template(Template)({ classNames: this.classNames });
 
-      this.focusInput();
+      this.searchInput = new SearchInputView({
+        placeholder: "Search by latitude and longitude",
+        search: text => (this.search(text)),
+      });
+      this.searchInput.render();
+      this.$(`.${this.classNames.search}`).append(this.searchInput.el);
     },
 
     /**
@@ -84,93 +66,54 @@ define([
      * which appears to be the default jQuery behavior).
      */
     focusInput() {
-      const input = this.getInput();
-      input.focus();
-      // Move cursor to end of input.
-      input.val("");
-      input.val(this.templateVars.inputValue);
+      this.searchInput.focus();
     },
 
     /**
-     * Getter function for the search query input. 
-     * @return {HTMLInputElement} Returns the search input HTML element.
+     * Search function for the SearchInputView.
+     * @returns {SearchReturnType}
      */
-    getInput() {
-      return this.$el.find(`.${this.classNames.input}`);
-    },
+    search(text) {
+      if (text === "") return { matched: true };
 
-    /**
-     * Getter function for the search button. 
-     * @return {HTMLButtonElement} Returns the search button HTML element.
-     */
-    getButton() {
-      return this.$el.find(`.${this.classNames.button}`);
-    },
-
-    /**
-     * Event handler for Backbone.View configuration that is called whenever 
-     * the user types a key.
-     */
-    keyup(event) {
-      if (event.key === "Enter") {
-        this.search();
-      }
-    },
-
-    /**
-     * Event handler for Backbone.View configuration that is called whenever
-     * the user changes the value in the input field.
-     */
-    valueChange() {
-      this.templateVars.inputValue = this.getInput().val();
-    },
-
-    /**
-     * Event handler for Backbone.View configuration that is called whenever 
-     * the user clicks the search button or hits the Enter key.
-     */
-    search() {
-      this.clearError();
-
-      const coords = this.parseValue(this.templateVars.inputValue)
-      if (!coords) return;
+      const { coords, errorText } = this.parseValue(text);
+      if (!coords) return { matched: false, errorText };
 
       this.model.zoomTo({ ...coords, height: 10000 /* meters */ });
+      return { matched: true, errorText };
     },
+
+    /**
+     * @typedef {Object} ParseValueReturnType
+     * @property {{Number,Number|undefined}} coords Undefined represents an irrecoverable
+     * user input, otherwise returns a latitude, longitude pair.
+     * @property {string} errorText Error to display. This can be set even if coords are
+     * returned.
+     */
 
     /**
      * Parse the user's input as a pair of floating point numbers. Log errors to the UI
-     * @return {{Number,Number}|undefined} Undefined represents an irrecoverable user input,
-     *   otherwise returns a latitude, longitude pair.
+     * @return {ParseValueReturnType}
      */
     parseValue(value) {
       const matches = value.match(floatsRegex);
       const hasBannedChars = value.match(bannedCharactersRegex) != null;
       if (matches?.length !== 2 || isNaN(matches[0]) || isNaN(matches[1]) || hasBannedChars) {
-        this.setError("Try entering a search query with two numerical values representing a latitude and longitude (e.g. 64.84, -147.72).");
-        return;
+        return {
+          errorText: "Try entering a search query with two numerical values representing a latitude and longitude (e.g. 64.84, -147.72).",
+        };
       }
 
       const latitude = Number(matches[0]);
       const longitude = Number(matches[1]);
+      let errorText;
       if (latitude > 90 || latitude < -90) {
-        this.setError("Latitude values outside of the range of -90 to 90 may behave unexpectedly.");
+        errorText = "Latitude values outside of the range of -90 to 90 may behave unexpectedly.";
       } else if (longitude > 180 || longitude < -180) {
-        this.setError("Longitude values outside of the range of -180 to 180 may behave unexpectedly.");
+        errorText = "Longitude values outside of the range of -180 to 180 may behave unexpectedly.";
       }
 
-      return { latitude, longitude };
-    },
-
-    /** Helper function to clear the error field.  */
-    clearError() {
-      this.setError("");
-    },
-
-    /** Helper function to set the error field and re-render the view.  */
-    setError(errorMessage) {
-      this.templateVars.errorMessage = errorMessage;
-      this.render();
+      return { coords: { latitude, longitude }, errorText };
     },
   });
 

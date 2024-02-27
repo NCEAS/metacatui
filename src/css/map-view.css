@@ -481,6 +481,66 @@ represents 1 unit of the given distance measurement. */
 
 /*****************************************************************************************
  *
+ * Search Input
+ *
+ * Search Input is a shared component for searching information in the map toolbar.
+ *
+ */
+
+
+.search-input {
+  padding-bottom: 16px;
+
+  .search-input__field {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    height: 40px;
+    margin-bottom: 8px;
+  
+    .search-input__input {
+      width: 100%;
+      position: absolute;
+    
+      input[type=text]& {  /* Override bootstrap */
+        height: 100%;
+        margin: unset;
+        padding-left: 16px;
+      }
+    
+      &.search-input__error-input {
+        border-color: var(--map-input-box-border-highlight);
+        background-color: var(--map-input-box-error-background);
+      }
+    }
+  
+    .search-input__search-button, .search-input__cancel-button {
+      background-color: transparent;
+      border-color: transparent;
+      color: unset;
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+  
+      .search-input__button-icon {
+        font-size: 16px;
+      }
+    }
+  }
+
+  .search-input__error-text {
+    line-height: 16px;
+    color: var(--map-input-box-error-message);
+  }
+}
+
+/*****************************************************************************************
+ *
  * Layers Panel
  *
  * Layers panel shows information about a map's layers and supports searching. This view
@@ -491,57 +551,6 @@ represents 1 unit of the given distance measurement. */
 
 .layers-panel {
   width: 100%;
-
-  .layers-panel__search {
-    padding-bottom: 16px;
-  
-    .layers-panel__field {
-      position: relative;
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      height: 40px;
-      margin-bottom: 8px;
-    
-      .layers-panel__input {
-        width: 100%;
-        position: absolute;
-      
-        input[type=text]& {  /* Override bootstrap */
-          height: 100%;
-          margin: unset;
-          padding-left: 16px;
-        }
-      
-        &.layers-panel__error-input {
-          border-color: var(--map-input-box-border-highlight);
-          background-color: var(--map-input-box-error-background);
-        }
-      }
-    
-      .layers-panel__search-button, .layers-panel__cancel-button {
-        background-color: transparent;
-        border-color: transparent;
-        color: unset;
-        width: 24px;
-        height: 24px;
-        margin-right: 8px;
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-    
-        .layers-panel__button-icon {
-          font-size: 16px;
-        }
-      }
-    }
-  
-    .layers-panel__error-text {
-      line-height: 16px;
-      color: var(--map-input-box-error-message);
-    }
-  }
 }
 
 /*****************************************************************************************

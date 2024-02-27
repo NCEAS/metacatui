@@ -2,18 +2,5 @@
   <h2>Viewfinder</h2>
   <span>Enter a latitude and longitude pair and click search to show that point on the map.</span>
   <br /><br />
-  <div class="viewfinder__form-field">
-    <div class="viewfinder__field">
-      <input class="<%= classNames.input %>" type="text" placeholder="<%= placeholder %>" value="<%= inputValue %>" />
-      <button class="<%= classNames.button %>">
-        <i class="icon icon-search"></i>
-      </button>
-    </div>
-
-    <% if(errorMessage) { %>
-      <div class="viewfinder__error">
-        <%= errorMessage %>
-      </div>
-      <% } %>
-  </div>
+  <div class="viewfinder__form-field"></div>
 </div>
