@@ -64,16 +64,9 @@ define([
     },
 
     /**
-     * @typedef {Object} SearchReturnType
-     * @property {boolean} matched True if there is a match.
-     * @property {string} errorText Error to display. This can be set even when matched
-     * returns true.
-     */
-
-    /**
      * @typedef {Object} SearchInputViewOptions
      * @property {Function} search A function that takes in a text input and returns
-     * SearchReturnType.
+     * a boolean for whether there is a match.
      * @property {Function} noMatchCallback A callback function to handle a no match
      * situation.
      * @property {String} placeholder The placeholder text for the input box.
@@ -112,24 +105,18 @@ define([
      * the user clicks the search button or hits the Enter key.
      */
     onSearch() {
+      this.getError().hide();
+
       const input = this.getInput();
       const inputValue = input.val().toLowerCase();
-      const result = this.search(inputValue);
-      if (result?.matched) {
+      const matched = this.search(inputValue);
+      if (matched) {
         input.removeClass(this.classNames.errorInput);
       } else {
         input.addClass(this.classNames.errorInput);
         if (typeof(this.noMatchCallback) === "function") {
           this.noMatchCallback();
         }
-      }
-
-      const errorTextEl = this.$(`.${this.classNames.errorText}`);
-      if (result?.errorText) {
-        errorTextEl.html(result.errorText);
-        errorTextEl.show();
-      } else {
-        errorTextEl.hide();
       }
 
       const searchButton = this.$(`.${this.classNames.searchButton}`);
@@ -140,6 +127,20 @@ define([
       } else {
         searchButton.show();
         cancelButton.hide();
+      }
+    },
+
+    /**
+     * API for the view that conducts the search to toggle on the error message.
+     * @param {string} errorText
+     */
+    setError(errorText) {
+      const errorTextEl = this.getError();
+      if (errorText) {
+        errorTextEl.html(errorText);
+        errorTextEl.show();
+      } else {
+        errorTextEl.hide();
       }
     },
 
@@ -155,6 +156,10 @@ define([
 
     getInput() {
       return this.$(`.${this.classNames.input}`);
+    },
+
+    getError() {
+      return this.$(`.${this.classNames.errorText}`);
     },
   });
 

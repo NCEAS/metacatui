@@ -71,49 +71,41 @@ define([
 
     /**
      * Search function for the SearchInputView.
-     * @returns {SearchReturnType}
+     * @returns {boolean} True if there is a location match.
      */
     search(text) {
       if (text === "") return { matched: true };
 
-      const { coords, errorText } = this.parseValue(text);
-      if (!coords) return { matched: false, errorText };
+      const coords = this.parseValue(text);
+      if (!coords) return false;
 
       this.model.zoomTo({ ...coords, height: 10000 /* meters */ });
-      return { matched: true, errorText };
+      return true;
     },
 
     /**
-     * @typedef {Object} ParseValueReturnType
-     * @property {{Number,Number|undefined}} coords Undefined represents an irrecoverable
-     * user input, otherwise returns a latitude, longitude pair.
-     * @property {string} errorText Error to display. This can be set even if coords are
-     * returned.
-     */
-
-    /**
      * Parse the user's input as a pair of floating point numbers. Log errors to the UI
-     * @return {ParseValueReturnType}
+     * @returns {{Number,Number|undefined}} coords Undefined represents an irrecoverable
+     * user input, otherwise returns a latitude, longitude pair.
      */
     parseValue(value) {
       const matches = value.match(floatsRegex);
       const hasBannedChars = value.match(bannedCharactersRegex) != null;
       if (matches?.length !== 2 || isNaN(matches[0]) || isNaN(matches[1]) || hasBannedChars) {
-        return {
-          errorText: "Try entering a search query with two numerical values representing a latitude and longitude (e.g. 64.84, -147.72).",
-        };
+        this.searchInput.setError("Try entering a search query with two numerical values representing a latitude and longitude (e.g. 64.84, -147.72).");
+        return;
       }
 
       const latitude = Number(matches[0]);
       const longitude = Number(matches[1]);
       let errorText;
       if (latitude > 90 || latitude < -90) {
-        errorText = "Latitude values outside of the range of -90 to 90 may behave unexpectedly.";
+        this.searchInput.setError("Latitude values outside of the range of -90 to 90 may behave unexpectedly.");
       } else if (longitude > 180 || longitude < -180) {
-        errorText = "Longitude values outside of the range of -180 to 180 may behave unexpectedly.";
+        this.searchInput.setError("Longitude values outside of the range of -180 to 180 may behave unexpectedly.");
       }
 
-      return { coords: { latitude, longitude }, errorText };
+      return { latitude, longitude };
     },
   });
 

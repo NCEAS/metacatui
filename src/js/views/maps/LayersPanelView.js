@@ -70,26 +70,26 @@ define([
       this.layersView.render();
       this.$(`.${this.classNames.layers}`).append(this.layersView.el);
 
-      const searchInput = new SearchInputView({
+      this.searchInput = new SearchInputView({
         placeholder: "Search all data layers",
         search: text => this.search(text),
         noMatchCallback: () => this.layersView.search(""),
       });
-      searchInput.render();
-      this.$(`.${this.classNames.search}`).append(searchInput.el);
+      this.searchInput.render();
+      this.$(`.${this.classNames.search}`).append(this.searchInput.el);
     },
 
     /**
      * Search function for the SearchInputView.
-     * @returns {SearchReturnType}
+     * @returns {boolean} True if there is a layer match.
      */
     search(text) {
       this.dismissLayerDetails();
       const matched = this.layersView.search(text);
-      return {
-        matched,
-        errorText: matched ? "" : "No layers match your search",
-      };
+      if (!matched) {
+        this.searchInput.setError("No layers match your search");
+      }
+      return matched;
     },
 
     dismissLayerDetails() {

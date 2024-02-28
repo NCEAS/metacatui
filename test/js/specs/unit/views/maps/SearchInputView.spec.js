@@ -82,42 +82,19 @@ define([
   
         expect(state.harness.getCancelButton().css("display")).to.equal("none");
       });
+
+      it("clears error text", () => {
+        const error = state.view.getError();
+        error.css("display", "block");
   
-      it("hides error text if it's not returned", () => {
-        const error = state.harness.getError();
-        expect(error.css("display")).to.equal("none");
-        stub(state.view, "search").returns({});
-  
-        state.harness.clickSearch();
-  
-        expect(error.css("display")).to.equal("none");
-      });
-  
-      it("shows error text if it's returned", () => {
-        const error = state.harness.getError();
-        expect(error.css("display")).to.equal("none");
-        stub(state.view, "search").returns({ errorText: "ERR" });
-  
-        state.harness.clickSearch();
-  
-        expect(error.css("display")).to.not.equal("none");
-      });
-  
-      it("clears errors text after fixing input error and searching again", () => {
-        const error = state.harness.getError();
-        stub(state.view, "search").returns({ errorText: "ERR" });
-        state.harness.clickSearch();
-  
-        sandbox.restore();
-        stub(state.view, "search").returns({});
         state.harness.clickSearch();
   
         expect(error.css("display")).to.equal("none");
       });
-  
+
       it("calls noMatchCallback if there is no match", () => {
         state.view.noMatchCallback = spy;
-        stub(state.view, "search").returns({ matched: false });
+        stub(state.view, "search").returns(false);
   
         state.harness.clickSearch();
   
@@ -125,7 +102,7 @@ define([
       });
   
       it("applies an error class to the input box if there is no match", () => {
-        stub(state.view, "search").returns({ matched: false });
+        stub(state.view, "search").returns(false);
   
         state.harness.clickSearch();
   
@@ -133,11 +110,11 @@ define([
       });
   
       it("clears input error class after fixing input error and searching again", () => {
-        stub(state.view, "search").returns({ matched: false });
+        stub(state.view, "search").returns(false);
         state.harness.clickSearch();
   
         sandbox.restore();
-        stub(state.view, "search").returns({ matched: true });
+        stub(state.view, "search").returns(true);
         state.harness.clickSearch();
   
         expect(state.harness.hasErrorInput()).to.be.false;
@@ -157,6 +134,26 @@ define([
         state.harness.clickCancel();
 
         expect(spy.withArgs("").callCount).to.equal(1);
+      });
+    });
+
+    describe("setError", () => {
+      it("shows error text if it exists", () => {
+        const error = state.view.getError();
+        expect(error.css("display")).to.equal("none");
+  
+        state.view.setError("ERR");
+  
+        expect(error.css("display")).to.not.equal("none");
+      });
+
+      it("hides error text if it doesn't exist", () => {
+        const error = state.view.getError();
+        error.css("display", "block");
+  
+        state.view.setError("");
+  
+        expect(error.css("display")).to.equal("none");
       });
     });
   });

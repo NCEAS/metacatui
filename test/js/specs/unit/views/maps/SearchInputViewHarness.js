@@ -22,10 +22,6 @@ define([], function () {
       this.view.getInput().trigger({ type: "keyup", key: "Enter", });
     }
 
-    getError() {
-      return this.view.$el.find(`.${this.view.classNames.errorText}`);
-    }
-
     getSearchButton() {
       return this.view.$el.find(`.${this.view.classNames.searchButton}`);
     }
