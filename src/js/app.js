@@ -4,7 +4,7 @@
 
 MetacatUI.recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
 if( MetacatUI.mapKey ){
-	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&key=' + MetacatUI.mapKey;
+	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&libraries=places&key=' + MetacatUI.mapKey;
 	define('gmaps',
 			['async!' + gmapsURL],
 			function() {
