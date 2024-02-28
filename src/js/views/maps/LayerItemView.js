@@ -492,7 +492,7 @@ define(
         },
 
         /**
-         * Searches and only dispays self if layer label matches the text. Highlights the
+         * Searches and only displays self if layer label matches the text. Highlights the
          * matched text.
          * @param {string} [text] - The search text from user input.
          * @returns {boolean} - True if a layer label matches the text

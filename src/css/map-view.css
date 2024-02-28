@@ -37,10 +37,10 @@
   --map-col-yellow: #f8b406;
   --map-col-buttons-emphasis: var(--portal-secondary-color, var(--map-col-green));
   --map-col-highlight: var(--portal-primary-color, var(--map-col-blue));
-  --map-input-box-error-background: var(--portal-secondary-color-transparent);  /* #FFFCF4; */
-  --map-input-box-border-highlight: rgba(82, 168, 236, .8);  /* #FFDDAA; */
+  --map-input-box-error-background: var(--portal-secondary-color-transparent);  /* TODO: yvonne - Use #FFFCF4 in the UI update PR. */
+  --map-input-box-border-highlight: rgba(82, 168, 236, .8);  /* TODO: yvonne - Use #FFDDAA in the UI update PR. */
   --map-input-box-error-message: #CA6C0B;
-  --map-search-match-highlight: var(--portal-secondary-color-transparent);  /* #FDF4D6 */
+  --map-search-match-highlight: var(--portal-secondary-color-transparent);  /* TODO: yvonne - Use #FEF4D6 in the UI update PR. */
   /* SIZING: */
   --map-size-toolbar-link: 2.2rem;
   --map-size-toolbar-link-margin: 0.4rem;

@@ -147,7 +147,7 @@ define(
         },
 
         /**
-         * Searches and only dispays layers that match the text.
+         * Searches and only displays layers that match the text.
          * @param {string} [text] - The search text from user input.
          * @returns {boolean} - True if a layer item matches the text
          */
