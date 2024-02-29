@@ -181,8 +181,23 @@ define(["jquery",
           this.$("iframe").css("height", remainingHeight + "px");
         },
 
+        /**
+         * Clean up
+         */
         onClose: function() {
-          $(window).removeListener("resize", this.adjustVizHeight);
+          // Remove body height style tag
+          document.body.style.removeProperty("height");
+
+          // this is failing for Cesium pages but might be necessary in FEVer ones
+          try {
+            $(window).removeListener("resize", this.adjustVizHeight);
+          }
+          catch (error) {
+            console.log(
+              'Failed to remove resize listener in portal viz onClose function. ' +
+              'Error details: ' + error
+            );
+          }
         }
 
      });

@@ -1060,6 +1060,14 @@ define(["jquery",
 
           MetacatUI.appModel.resetTitle();
           MetacatUI.appModel.resetDescription();
+
+          // Run subView onClose functions if they exist
+          for (const subView of this.subviews) {
+            if (typeof subView?.onClose === "function") {
+              subView.onClose();
+            }
+          }
+
           //Remove each subview from the DOM and remove listeners
           _.invoke(this.subviews, "remove");
 
