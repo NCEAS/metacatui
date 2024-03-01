@@ -1,6 +1,9 @@
 define([
-  "../../../../../../../../src/js/models/maps/MapInteraction",
-], function (MapInteraction) {
+  "models/maps/MapInteraction",
+  "collections/maps/Features",
+  "models/maps/Map",
+  "collections/maps/MapAssets",
+], function (MapInteraction, Features, Map, MapAssets) {
   // Configure the Chai assertion library
   var should = chai.should();
   var expect = chai.expect;
@@ -48,5 +51,24 @@ define([
       });
     });
 
+    it("should set feature with one map assets collection", () => {
+      const model = new MapInteraction();
+      model.set("mapModel", new Map({
+        layerCategories: [
+          { layers: [{}] },
+          { layers: [{}, {}] },
+        ],
+      }));
+      const currentFeatures = new Features();
+      model.set("selectedFeatures", currentFeatures);
+      const spy = sinon.spy();
+      currentFeatures.set = spy;
+
+      model.setFeatures(new Features([{ label: "feature" }]), /* type= */ "selectedFeatures", true);
+
+      expect(spy.callCount).to.equal(1);
+      expect(spy.args[0][1].assets).to.be.instanceof(MapAssets);
+      expect(spy.args[0][1].assets.length).to.equal(3);
+    });
   });
 });

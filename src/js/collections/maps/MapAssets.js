@@ -98,6 +98,8 @@ define([
         }
       },
 
+      modelId: attrs => attrs.cid,
+
       /**
        * Executed when a new MapAssets collection is created.
        */

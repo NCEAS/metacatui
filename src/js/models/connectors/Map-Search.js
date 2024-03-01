@@ -84,7 +84,7 @@ define([
         let geohashes = _.reduce(layerGroups, (memo, layers) => {
           const geohashes = layers.getAll("CesiumGeohash");
           if (geohashes && geohashes.length) {
-            memo.push(geohashes);
+            memo.push(...geohashes);
           }
           return memo;
         }, []);
