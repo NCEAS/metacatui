@@ -78,11 +78,15 @@ define([
 
         // Fetch the icon, if there is one
         if (categoryConfig.icon) {
-          if (IconUtilities.isSVG(categoryConfig.icon)) {
-            this.updateIcon(categoryConfig.icon);
-          } else {
-            IconUtilities.fetchIcon(categoryConfig.icon)
-              .then(icon => this.updateIcon(icon));
+          try {
+            if (IconUtilities.isSVG(categoryConfig.icon)) {
+              this.updateIcon(categoryConfig.icon);
+            } else {
+              IconUtilities.fetchIcon(categoryConfig.icon)
+                .then(icon => this.updateIcon(icon));
+            }
+          } catch (error) {
+            // Do nothing. Use the default icon instead.
           }
         }
       },

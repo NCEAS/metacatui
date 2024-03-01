@@ -325,23 +325,23 @@ define([
 
           // Fetch the icon, if there is one
           if (assetConfig.icon) {
-            if (IconUtilities.isSVG(assetConfig.icon)) {
-              model.updateIcon(icon);
-            } else {
-              try {
+            try {
+              if (IconUtilities.isSVG(assetConfig.icon)) {
+                model.updateIcon(icon);
+              } else {
                 model.set("iconStatus", "fetching");
                 // If the string is not an SVG then assume it is a PID and try to fetch
                 // the SVG file.
                 IconUtilities.fetchIcon(assetConfig.icon)
                   .then(icon => model.updateIcon(icon));
-              } catch (error) {
-                console.log(
-                  "Failed to fetch an icon for a MapAsset" +
-                    ". Error details: " +
-                    error
-                );
-                model.set("iconStatus", "error");
               }
+            } catch (error) {
+              console.log(
+                "Failed to fetch an icon for a MapAsset" +
+                  ". Error details: " +
+                  error
+              );
+              model.set("iconStatus", "error");
             }
           }
 
