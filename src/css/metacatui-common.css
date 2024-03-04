@@ -4879,7 +4879,6 @@ i.toc-sub-item {
 ********************************************/
 
 .PortalView {
-  height: 100%;
   display: grid;
   grid-template-rows: 40px 0px 100fr 0px;
 }
