@@ -13,7 +13,7 @@ define(
     'views/maps/LayerCategoryListView',
     'views/maps/DrawToolView',
     'views/maps/HelpPanelView',
-    'views/maps/ViewfinderView',
+    'views/maps/viewfinder/ViewfinderView',
   ],
   function (
     $,

@@ -5,6 +5,10 @@ define([], function () {
     constructor(view) {
       this.view = view;
     }
+    
+    clickInput() {
+      this.view.getInput().click();
+    }
 
     setQuery(searchString) {
       this.view.getInput().val(searchString);
@@ -12,7 +16,7 @@ define([], function () {
     }
 
     typeQuery(searchString) {
-      this.setQuery(searchString);
+      this.view.getInput().val(searchString);
       this.view.getInput().trigger("keyup");
     }
 
@@ -22,6 +26,14 @@ define([], function () {
 
     hitEnter() {
       this.view.getInput().trigger({ type: "keyup", key: 'Enter', });
+    }
+
+    hitArrowUp() {
+      this.view.getInput().trigger({ type: "keyup", key: 'ArrowUp', });
+    }
+
+    hitArrowDown() {
+      this.view.getInput().trigger({ type: "keyup", key: 'ArrowDown', });
     }
 
     getError() {
