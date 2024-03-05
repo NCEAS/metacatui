@@ -1,4 +1,5 @@
 'use strict';
+
 define(
   [
     'underscore',
@@ -104,6 +105,46 @@ define(
         this.set('focusIndex', -1);
       },
 
+      /** 
+       * Navigate to the GeocodedLocation. 
+       * @param {GeocodedLocation} geocoding is the location that corresponds
+       * to the the selected prediction.
+       */
+      goToLocation(geocoding) {
+        if (!geocoding) return;
+
+        const coords = geocoding.get('box').getCoords();
+        this.mapModel.zoomTo({
+          destination: Cesium.Rectangle.fromDegrees(
+            coords.west,
+            coords.south,
+            coords.east,
+            coords.north,
+          )
+        });
+      },
+
+      /**
+       * Select a prediction from the list of predictions and navigate there.
+       * @param {Prediction} prediction is the user-selected Prediction that
+       * needs to be geocoded and navigated to.
+       */
+      async selectPrediction(prediction) {
+        if (!prediction) return;
+
+        const geocodings = await this.geocoderSearch.geocode(
+          prediction.get('googleMapsPlaceId')
+        );
+
+        if (geocodings.length === 0) {
+          this.set('error', NO_RESULTS_MESSAGE)
+          return;
+        }
+
+        this.trigger('selection-made', prediction.get('description'));
+        this.goToLocation(geocodings[0]);
+      },
+
       /**
        * Event handler for Backbone.View configuration that is called whenever 
        * the user clicks the search button or hits the Enter key.
@@ -135,46 +176,6 @@ define(
         } catch (e) {
           this.set('error', e.message);
         }
-      },
-
-      /** 
-       * Navigate to the GeocodedLocation. 
-       * @param {GeocodedLocation} geocoding is the location that corresponds
-       * to the the selected prediction.
-       */
-      goToLocation(geocoding) {
-        if (!geocoding) return;
-
-        const coords = geocoding.get('box').getCoords();
-        this.mapModel.zoomTo({
-          destination: Cesium.Rectangle.fromDegrees(
-            coords.west,
-            coords.south,
-            coords.east,
-            coords.north,
-          )
-        });
-      },
-
-      /**
-       * Select a prediction from the list of predictions and navigate there.
-       * @param {Prediction} prediction is the user-selected Prediction that
-       * needs to be geocoded and navigated to.
-       */
-      async selectPrediction(prediction) {
-        if (!prediction) return;
-
-        const geocodings = await this.geocoderSearch.searchByPlaceId(
-          prediction.get('googleMapsPlaceId')
-        );
-
-        if (geocodings.length === 0) {
-          this.set('error', NO_RESULTS_MESSAGE)
-          return;
-        }
-
-        this.trigger('selection-made', prediction.get('description'));
-        this.goToLocation(geocodings[0]);
       },
     });
 

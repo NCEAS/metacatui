@@ -1,199 +1,221 @@
-define([
-  "views/maps/ViewfinderView",
-  "models/maps/Map",
-  // The file extension is required for files loaded from the /test directory.
-  "/test/js/specs/unit/views/maps/ViewfinderViewHarness.js",
-  "/test/js/specs/shared/clean-state.js",
-  "/test/js/specs/shared/create-spy.js",
-], (ViewfinderView, Map, ViewfinderViewHarness, cleanState, createSpy) => {
-  const should = chai.should();
-  const expect = chai.expect;
+'use strict';
 
-  describe("ViewfinderView Test Suite", () => {
-    const state = cleanState(() => {
-      const view = new ViewfinderView({ model: new Map() });
-      const spy = createSpy();
-      view.model.zoomTo = spy;
-      const harness = new ViewfinderViewHarness(view);
+define(
+  [
+    'underscore',
+    'views/maps/viewfinder/ViewfinderView',
+    'models/maps/Map',
+    'models/geocoder/Prediction',
+    // The file extension is required for files loaded from the /test directory.
+    '/test/js/specs/unit/views/maps/viewfinder/ViewfinderViewHarness.js',
+    '/test/js/specs/unit/views/maps/viewfinder/PredictionsListViewHarness.js',
+    '/test/js/specs/shared/clean-state.js',
+    '/test/js/specs/shared/mock-gmaps-module.js',
+  ],
+  (
+    _,
+    ViewfinderView,
+    Map,
+    Prediction,
+    ViewfinderViewHarness,
+    PredictionsListViewHarness,
+    cleanState,
+    // Import for side effect, unused.
+    unusedGmapsMock,
+  ) => {
+    const should = chai.should();
+    const expect = chai.expect;
 
-      return { harness, spy, view };
-    }, beforeEach);
+    // Extract the attributes that tests care about.
+    const firstCallLatLong = spy => {
+      const geoPoint = spy.getCall(0).firstArg;
+      return {
+        latitude: geoPoint.attributes.latitude,
+        longitude: geoPoint.attributes.longitude,
+      };
+    };
 
-    it("creates a ViewfinderView instance", () => {
-      state.view.should.be.instanceof(ViewfinderView);
-    });
+    describe('ViewfinderView Test Suite', () => {
+      const state = cleanState(() => {
+        const view = new ViewfinderView({ model: new Map() });
+        const sandbox = sinon.createSandbox();
+        const zoomSpy = sandbox.stub(view.model, 'zoomTo');
+        const autocompleteSpy = sandbox.stub(view.viewfinderModel, 'autocompleteSearch');
+        const harness = new ViewfinderViewHarness(view);
+        const predictions = [
+          new Prediction({
+            description: 'Some Location',
+            googleMapsPlaceId: 'someId',
+          }),
+          new Prediction({
+            description: 'Some Location 2',
+            googleMapsPlaceId: 'someId2',
+          }),
+        ];
+        view.viewfinderModel.set('predictions', predictions);
 
-    it("has an input for the user's search query", () => {
-      state.view.render();
+        return { harness, autocompleteSpy, zoomSpy, view, sandbox };
+      }, beforeEach);
 
-      state.harness.typeQuery("123")
-
-      expect(state.view.getInput().val()).to.equal("123");
-    });
-
-    it("zooms to the specified location on clicking search button", () => {
-      state.view.render();
-
-      state.harness.typeQuery("13,37")
-      state.harness.clickSearch();
-
-      expect(state.spy.callCount).to.equal(1);
-    });
-
-    it("zooms to the specified location on hitting 'Enter' key", () => {
-      state.view.render();
-
-      state.harness.typeQuery("13,37")
-      state.harness.hitEnter();
-
-      expect(state.spy.callCount).to.equal(1);
-    });
-
-    it("zooms to the specified location on clicking search button when value is entered without using keyboard", () => {
-      state.view.render();
-
-      state.harness.typeQuery("13,37")
-      state.harness.clickSearch();
-
-      expect(state.spy.callCount).to.equal(1);
-    });
-
-    describe("good search queries", () => {
-      it("uses the user's search query when zooming", () => {
-        state.view.render();
-
-        state.harness.typeQuery("13,37")
-        state.harness.clickSearch();
-
-        // First argument of the first call.
-        expect(state.spy.callArgs[0][0]).to.include({ latitude: 13, longitude: 37 });
+      afterEach(() => {
+        state.sandbox.restore();
       });
 
-      it("accepts user input of two space-separated numbers", () => {
-        state.view.render();
-
-        state.harness.typeQuery("13 37")
-        state.harness.clickSearch();
-
-        // First argument of the first call.
-        expect(state.spy.callArgs[0][0]).to.include({ latitude: 13, longitude: 37 });
+      it('creates a ViewfinderView instance', () => {
+        state.view.should.be.instanceof(ViewfinderView);
       });
 
-      it("accepts user input of with '-' signs", () => {
+      it('has an input for the user\'s search query', () => {
         state.view.render();
 
-        state.harness.typeQuery("13,-37")
-        state.harness.clickSearch();
+        state.harness.typeQuery('123')
 
-        // First argument of the first call.
-        expect(state.spy.callArgs[0][0]).to.include({ latitude: 13, longitude: -37 });
+        expect(state.view.getInput().val()).to.equal('123');
       });
 
-      it("accepts user input of with '+' signs", () => {
+      it('zooms to the specified location on clicking search button', () => {
         state.view.render();
 
-        state.harness.typeQuery("+13,37")
+        state.harness.typeQuery('13,37')
         state.harness.clickSearch();
 
-        // First argument of the first call.
-        expect(state.spy.callArgs[0][0]).to.include({ latitude: 13, longitude: 37 });
-      });
-    });
-
-    describe("bad search queries", () => {
-      it("shows an error when only a single number is entered", () => {
-        state.view.render();
-
-        state.harness.typeQuery("13")
-        state.harness.clickSearch();
-
-        expect(state.harness.getError()).to.have.string("Try entering a search query with two numerical values");
+        expect(state.zoomSpy.callCount).to.equal(1);
       });
 
-      it("does not try to zoom to location when only a single number is entered", () => {
+      it('zooms to the specified location on hitting \'Enter\' key', () => {
         state.view.render();
 
-        state.harness.typeQuery("13")
-        state.harness.clickSearch();
+        state.harness.typeQuery('13,37')
+        state.harness.hitEnter();
 
-        expect(state.spy.callCount).to.equal(0);
+        expect(state.zoomSpy.callCount).to.equal(1);
       });
 
-      it("shows an error when non-numeric characters are entered", () => {
+      it('zooms to the specified location on clicking search button when value is entered without using keyboard', () => {
         state.view.render();
 
-        state.harness.typeQuery("13,37a")
+        state.harness.typeQuery('13,37')
         state.harness.clickSearch();
 
-        expect(state.harness.getError()).to.have.string("Try entering a search query with two numerical values");
+        expect(state.zoomSpy.callCount).to.equal(1);
       });
 
-      it("does not try to zoom to location when non-numeric characters are entered", () => {
+      it('uses the user\'s search query when zooming', () => {
         state.view.render();
 
-        state.harness.typeQuery("13,37a")
+        state.harness.typeQuery('13,37')
         state.harness.clickSearch();
 
-        expect(state.spy.callCount).to.equal(0);
+        expect(firstCallLatLong(state.zoomSpy)).to.deep.equal({
+          latitude: 13,
+          longitude: 37,
+        });
       });
 
-      it("shows an error when out of bounds latitude is entered", () => {
-        state.view.render();
+      describe('bad search queries', () => {
+        it('clears errors after fixing input error and searching again', () => {
+          state.view.render();
 
-        state.harness.typeQuery("91,37")
-        state.harness.clickSearch();
+          state.harness.typeQuery('13')
+          state.harness.clickSearch();
+          state.harness.typeQuery('13,37')
+          state.harness.clickSearch();
 
-        expect(state.harness.getError()).to.have.string("Latitude values outside of the");
+          expect(state.harness.hasError()).to.be.false;
+        });
+
+        it('zooms to the entered location after fixing input error and searching again', () => {
+          state.view.render();
+
+          state.harness.typeQuery('13')
+          state.harness.clickSearch();
+          state.harness.typeQuery('13,37')
+          state.harness.clickSearch();
+
+          expect(state.zoomSpy.callCount).to.equal(1);
+        });
       });
 
-      it("still zooms to location when out of bounds latitude is entered", () => {
+      it('shows an error when a new error is present', () => {
+        state.view.viewfinderModel.set('error', 'some error');
         state.view.render();
 
-        state.harness.typeQuery("91,37")
-        state.harness.clickSearch();
-
-        expect(state.spy.callCount).to.equal(1);
+        expect(state.harness.getError()).to.match(/some error/);
       });
 
-      it("shows an error when out of bounds longitude is entered", () => {
+      it('initially does not show a autocompletions list', () => {
         state.view.render();
 
-        state.harness.typeQuery("13,181")
-        state.harness.clickSearch();
-
-        expect(state.harness.getError()).to.have.string("Longitude values outside of the");
+        expect(state.autocompleteSpy.callCount).to.equal(0);
       });
 
-      it("still zooms to location when out of bounds longitude is entered", () => {
+      it('updates autocompletions when list is shown with updated query string', () => {
         state.view.render();
+        state.view.viewfinderModel.set('query', 'some query');
+        state.harness.clickInput();
 
-        state.harness.typeQuery("13,181")
-        state.harness.clickSearch();
-
-        expect(state.spy.callCount).to.equal(1);
+        expect(state.autocompleteSpy.callCount).to.equal(1);
       });
 
-      it("clears errors after fixing input error and searching again", () => {
+      it('shows no focused item to start', () => {
         state.view.render();
+        const predictionsListHarness = new PredictionsListViewHarness(
+          state.view.predictionsView
+        );
 
-        state.harness.typeQuery("13")
-        state.harness.clickSearch();
-        state.harness.typeQuery("13,37")
-        state.harness.clickSearch();
-
-        expect(state.harness.hasError()).to.be.false;
+        expect(predictionsListHarness.getFocusedItemIndex()).to.equal(-1);
       });
 
-      it("zooms to the entered location after fixing input error and searching again", () => {
-        state.view.render();
+      describe('as the user types', () => {
+        it('updates autocompletions as the user types', () => {
+          state.view.render();
+          state.harness.typeQuery('a');
+          state.harness.typeQuery('b');
 
-        state.harness.typeQuery("13")
-        state.harness.clickSearch();
-        state.harness.typeQuery("13,37")
-        state.harness.clickSearch();
+          expect(state.autocompleteSpy.callCount).to.equal(2);
+        });
 
-        expect(state.spy.callCount).to.equal(1);
+        it('renders a list of predictions', () => {
+          state.view.render();
+          const predictionsListHarness = new PredictionsListViewHarness(
+            state.view.predictionsView
+          );
+
+          expect(predictionsListHarness.getListItems().length).to.equal(2);
+        });
+      });
+
+      describe('arrow key interactions', () => {
+        it('changes focused element on arrow down', () => {
+          state.view.render();
+          const predictionsListHarness = new PredictionsListViewHarness(
+            state.view.predictionsView
+          );
+
+          state.harness.hitArrowDown();
+
+          expect(predictionsListHarness.getFocusedItemIndex()).to.equal(0);
+        });
+
+        it('changes focused element on arrow up', () => {
+          state.view.render();
+          const predictionsListHarness = new PredictionsListViewHarness(
+            state.view.predictionsView
+          );
+
+          state.harness.hitArrowUp();
+
+          expect(predictionsListHarness.getFocusedItemIndex()).to.equal(0);
+        });
+      });
+
+      describe('selecting a prediction', () => {
+        it('updates search query when a selection is made', () => {
+          state.view.render();
+          state.view.viewfinderModel.trigger('selection-made', 'some new query');
+
+          expect(state.harness.getInput().val()).to.equal('some new query');
+        });
       });
     });
   });
-});

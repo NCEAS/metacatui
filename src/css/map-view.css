@@ -50,7 +50,8 @@
 }
 
 /* hide the credits until we can find a better placement for them */
-.cesium-widget-credits, .cesium-credit-lightbox-overlay {
+.cesium-widget-credits,
+.cesium-credit-lightbox-overlay {
   display: none !important;
 }
 
@@ -991,7 +992,7 @@ other class: .ui-slider-range */
  *
  */
 
-.map-help-panel{
+.map-help-panel {
   width: 100%;
 }
 
@@ -1060,7 +1061,7 @@ other class: .ui-slider-range */
   align-items: center;
 }
 
-.map-help-panel__title{
+.map-help-panel__title {
   text-transform: uppercase;
   font-size: 0.95rem;
   font-weight: 600;
@@ -1071,6 +1072,10 @@ other class: .ui-slider-range */
 
 .map-help-panel__section:not(:first-child) {
   margin-top: 2.5rem;
+}
+
+.viewfinder {
+  width: 100%;
 }
 
 .viewfinder__field {
@@ -1091,6 +1096,7 @@ other class: .ui-slider-range */
     flex: 1;
     height: 100%;
     margin: 0;
+    height: 48px;
 
     &:focus {
       border: none;
@@ -1114,4 +1120,46 @@ other class: .ui-slider-range */
   color: var(--map-col-text);
   font-size: .8rem;
   padding: 4px 12px;
+}
+
+.viewfinder-predictions {
+  list-style: none;
+  margin: 0;
+
+  .viewfinder-prediction__content {
+    align-items: center;
+    background: var(--map-col-bkg);
+    border: 1px solid var(--portal-col-bkg-active);
+    border-radius: 4px;
+    box-sizing: border-box;
+    color: var(--map-col-text);
+    cursor: pointer;
+    display: flex;
+    height: 48px;
+    justify-content: flex-start;
+    margin: 4px 0;
+    padding: 12px 8px;
+
+    >* {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    i {
+      flex-grow: 0;
+      min-width: 24px;
+      max-width: 24px;
+      text-align: center;
+    }
+
+    &:hover {
+      background-color: var(--map-col-bkg-lightest);
+    }
+
+    &.viewfinder-prediction__focused {
+      background-color: var(--map-col-bkg-lighter);
+    }
+  }
 }
