@@ -1,184 +1,245 @@
-"use strict";
+'use strict';
 
-define([
-  "backbone",
-  "text!templates/maps/viewfinder.html",
-], (
-  Backbone,
-  Template,
-) => {
-  /**
-   * @class ViewfinderView
-   * @classdesc The ViewfinderView allows a user to search for a latitude and longitude in the map view.
-   * @classcategory Views/Maps
-   * @name ViewfinderView
-   * @extends Backbone.View
-   * @screenshot views/maps/ViewfinderView.png
-   * @since x.x.x
-   * @constructs ViewfinderView
-   */
-  var ViewfinderView = Backbone.View.extend({
+define(
+  [
+    'underscore',
+    'backbone',
+    'text!templates/maps/viewfinder/viewfinder.html',
+    'views/maps/viewfinder/PredictionsListView',
+    'models/maps/viewfinder/ViewfinderModel',
+  ],
+  (_, Backbone, Template, PredictionsListView, ViewfinderModel) => {
+    // The base classname to use for this View's template elements.
+    const BASE_CLASS = 'viewfinder';
+
     /**
-     * The type of View this is
-     * @type {string}
+     * @class ViewfinderView
+     * @classdesc ViewfinderView allows a user to search for
+     * a latitude and longitude in the map view, and find suggestions
+     * for places related to their search terms.
+     * @classcategory Views/Maps
+     * @name ViewfinderView
+     * @extends Backbone.View
+     * @screenshot views/maps/viewfinder/ViewfinderView.png
+     * @since x.x.x
+     * @constructs ViewfinderView
      */
-    type: "ViewfinderView",
+    var ViewfinderView = Backbone.View.extend({
+      /**
+       * The type of View this is
+       * @type {string}
+       */
+      type: 'ViewfinderView',
 
-    /**
-     * The HTML classes to use for this view's HTML elements.
-     * @type {Object<string,string>}
-     */
-    classNames: {
-      baseClass: 'viewfinder',
-      button: "viewfinder__button",
-      input: "viewfinder__input",
-    },
+      /**
+       * The HTML class to use for this view's outermost element.
+       * @type {string}
+       */
+      className: BASE_CLASS,
 
-    /**
-    * The events this view will listen to and the associated function to call.
-    * @type {Object}
-    */
-    events() {
-      return {
-        [`change .${this.classNames.input}`]: 'valueChange',
-        [`click .${this.classNames.button}`]: 'search',
-        [`keyup .${this.classNames.input}`]: 'keyup',
-      };
-    },
+      /**
+       * The HTML classes to use for this view's HTML elements.
+       * @type {Object<string,string>}
+       */
+      classNames: {
+        button: `${BASE_CLASS}__button`,
+        input: `${BASE_CLASS}__input`,
+        predictions: `${BASE_CLASS}__predictions`,
+        error: `${BASE_CLASS}__error`,
+      },
 
-    /** 
-     * Values meant to be used by the rendered HTML template.
-     */
-    templateVars: {
-      errorMessage: "",
-      // Track the input value across re-renders.
-      inputValue: "",
-      placeholder: "Search by latitude and longitude",
-      classNames: {},
-    },
+      /**
+      * The events this view will listen to and the associated function to call.
+      * @type {Object}
+      */
+      events() {
+        return {
+          [`click   .${this.classNames.button}`]: 'search',
+          [`blur    .${this.classNames.input}`]: 'hidePredictionsList',
+          [`change  .${this.classNames.input}`]: 'keyup',
+          [`click   .${this.classNames.input}`]: 'showPredictionsList',
+          [`focus   .${this.classNames.input}`]: 'showPredictionsList',
+          [`keydown .${this.classNames.input}`]: 'keydown',
+          [`keyup   .${this.classNames.input}`]: 'keyup',
+        };
+      },
 
-    /**
-     * @typedef {Object} ViewfinderViewOptions
-     * @property {Map} The Map model associated with this view allowing control
-     * of panning to different locations on the map. 
-     */
-    initialize(options) {
-      this.mapModel = options.model;
-      this.templateVars.classNames = this.classNames;
-    },
+      /** 
+       * Values meant to be used by the rendered HTML template.
+       */
+      templateVars: {
+        errorMessage: '',
+        // Track the input value across re-renders.
+        inputValue: '',
+        placeholder: 'Enter coordinates or areas of interest',
+        classNames: {},
+      },
 
-    /**
-     * Render the view by updating the HTML of the element.
-     * The new HTML is computed from an HTML template that
-     * is passed an object with relevant view state.
-     * */
-    render() {
-      this.el.innerHTML = _.template(Template)(this.templateVars);
+      /**
+       * @typedef {Object} ViewfinderViewOptions
+       * @property {Map} The Map model associated with this view allowing control
+       * of panning to different locations on the map. 
+       */
+      initialize({ model: mapModel }) {
+        this.childPredictionViews = [];
+        this.templateVars.classNames = this.classNames;
+        this.viewfinderModel = new ViewfinderModel({ mapModel });
 
-      this.focusInput();
-    },
+        this.setupListeners();
 
-    /**
-     * Helper function to focus input on the searh query input and ensure
-     * that the cursor is at the end of the text (as opposed to the beginning
-     * which appears to be the default jQuery behavior).
-     */
-    focusInput() {
-      const input = this.getInput();
-      input.focus();
-      // Move cursor to end of input.
-      input.val("");
-      input.val(this.templateVars.inputValue);
-    },
+        this.autocompleteSearch = _.debounce(() => {
+          this.viewfinderModel.autocompleteSearch(this.templateVars.inputValue);
+        }, 250 /* milliseconds */);
+      },
 
-    /**
-     * Getter function for the search query input. 
-     * @return {HTMLInputElement} Returns the search input HTML element.
-     */
-    getInput() {
-      return this.$el.find(`.${this.classNames.input}`);
-    },
+      /** Setup all event listeners on ViewfinderModel. */
+      setupListeners() {
+        this.listenTo(this.viewfinderModel, 'selection-made', (newQuery) => {
+          this.setQuery(newQuery);
+          this.getInput().blur();
+        });
 
-    /**
-     * Getter function for the search button. 
-     * @return {HTMLButtonElement} Returns the search button HTML element.
-     */
-    getButton() {
-      return this.$el.find(`.${this.classNames.button}`);
-    },
+        this.listenTo(this.viewfinderModel, 'change:error', () => {
+          this.setError(this.viewfinderModel.get('error'));
+        });
+      },
 
-    /**
-     * Event handler for Backbone.View configuration that is called whenever 
-     * the user types a key.
-     */
-    keyup(event) {
-      if (event.key === "Enter") {
-        this.search();
-      }
-    },
+      /**
+       * Helper function to focus input on the searh query input and ensure
+       * that the cursor is at the end of the text (as opposed to the beginning
+       * which appears to be the default jQuery behavior).
+       */
+      focusInput() {
+        const input = this.getInput();
+        input.focus();
+        // Move cursor to end of input.
+        input.val('');
+        input.val(this.templateVars.inputValue);
+      },
 
-    /**
-     * Event handler for Backbone.View configuration that is called whenever
-     * the user changes the value in the input field.
-     */
-    valueChange() {
-      this.templateVars.inputValue = this.getInput().val();
-    },
+      /**
+       * Getter function for the search query input. 
+       * @return {HTMLInputElement} Returns the search input HTML element.
+       */
+      getInput() {
+        return this.$el.find(`.${this.classNames.input}`);
+      },
 
-    /**
-     * Event handler for Backbone.View configuration that is called whenever 
-     * the user clicks the search button or hits the Enter key.
-     */
-    search() {
-      this.clearError();
+      /**
+       * Getter function for the error field. 
+       * @return {HTMLDivElement} Returns the error div HTML element.
+       */
+      getError() {
+        return this.$el.find(`.${this.classNames.error}`);
+      },
 
-      const coords = this.parseValue(this.templateVars.inputValue)
-      if (!coords) return;
+      /**
+       * Getter function for the search button. 
+       * @return {HTMLButtonElement} Returns the search button HTML element.
+       */
+      getButton() {
+        return this.$el.find(`.${this.classNames.button}`);
+      },
 
-      this.model.zoomTo({ ...coords, height: 10000 /* meters */ });
-    },
+      /**
+       * Getter function for the list of predictions. 
+       * @return {HTMLUListElement} Returns the predictions unordered list
+       * HTML element.
+       */
+      getList() {
+        return this.$el.find(`.${this.classNames.predictions}`);
+      },
 
-    /**
-     * Parse the user's input as a pair of floating point numbers. Log errors to the UI
-     * @return {{Number,Number}|undefined} Undefined represents an irrecoverable user input,
-     *   otherwise returns a latitude, longitude pair.
-     */
-    parseValue(value) {
-      const matches = value.match(floatsRegex);
-      const hasBannedChars = value.match(bannedCharactersRegex) != null;
-      if (matches?.length !== 2 || isNaN(matches[0]) || isNaN(matches[1]) || hasBannedChars) {
-        this.setError("Try entering a search query with two numerical values representing a latitude and longitude (e.g. 64.84, -147.72).");
-        return;
-      }
+      /**
+       * Event handler to prevent cursor from jumping to beginning
+       * of an input field (default behavior).
+       */
+      keydown(event) {
+        if (event.key === 'ArrowUp') {
+          event.preventDefault();
+        }
+      },
 
-      const latitude = Number(matches[0]);
-      const longitude = Number(matches[1]);
-      if (latitude > 90 || latitude < -90) {
-        this.setError("Latitude values outside of the range of -90 to 90 may behave unexpectedly.");
-      } else if (longitude > 180 || longitude < -180) {
-        this.setError("Longitude values outside of the range of -180 to 180 may behave unexpectedly.");
-      }
+      /** Trigger the search on the ViewfinderModel. */
+      search() {
+        this.viewfinderModel.search(this.templateVars.inputValue);
+      },
 
-      return { latitude, longitude };
-    },
+      /**
+       * Event handler for Backbone.View configuration that is called whenever 
+       * the user types a key.
+       */
+      async keyup(event) {
+        if (event.key === 'Enter') {
+          this.search();
+        } else if (event.key === 'ArrowUp') {
+          this.viewfinderModel.decrementFocusIndex();
+        } else if (event.key === 'ArrowDown') {
+          this.viewfinderModel.incrementFocusIndex();
+        } else {
+          this.templateVars.inputValue = this.getInput().val();
+          this.autocompleteSearch(this.templateVars.inputValue);
+        }
+      },
 
-    /** Helper function to clear the error field.  */
-    clearError() {
-      this.setError("");
-    },
+      /** Helper function to set the input field. */
+      setQuery(query) {
+        this.templateVars.inputValue = query;
+        this.getInput().val(query);
+      },
 
-    /** Helper function to set the error field and re-render the view.  */
-    setError(errorMessage) {
-      this.templateVars.errorMessage = errorMessage;
-      this.render();
-    },
+      /** Helper function to set the error field. */
+      setError(errorMessage) {
+        this.templateVars.errorMessage = errorMessage;
+        this.getError().text(errorMessage);
+      },
+
+      /**
+       * Show the predictions list and potentially submit a search for new
+       * Predictions to display when there is a search query.
+       */
+      showPredictionsList() {
+        this.getList().show();
+        if (this.viewfinderModel.get('query') !== this.templateVars.inputValue) {
+          this.viewfinderModel.autocompleteSearch(this.templateVars.inputValue);
+        }
+      },
+
+      /**
+       * Hide the predictions list unless user is selecting a list item.
+       * @param {FocusEvent} event Mouse event corresponding to a change in 
+       * focus.
+       */
+      hidePredictionsList(event) {
+        const clickedInList = this.getList()[0]?.contains(event.relatedTarget);
+        if (clickedInList) return;
+
+        this.getList().hide();
+      },
+
+      /**
+       * Render the Prediction sub-views. 
+       */
+      renderPredictionsList() {
+        this.predictionsView = new PredictionsListView({
+          viewfinderModel: this.viewfinderModel
+        });
+        this.getList().html(this.predictionsView.el);
+        this.predictionsView.render();
+      },
+
+      /**
+       * Render the view by updating the HTML of the element.
+       * The new HTML is computed from an HTML template that
+       * is passed an object with relevant view state.
+       * */
+      render() {
+        this.el.innerHTML = _.template(Template)(this.templateVars);
+        this.focusInput();
+
+        this.renderPredictionsList();
+      },
+    });
+
+    return ViewfinderView;
   });
-
-  return ViewfinderView;
-});
-
-// Regular expression matching a string that contains two numbers optionally separated by a comma.
-const floatsRegex = /[+-]?[0-9]*[.]?[0-9]+/g;
-
-// Regular expression matching everything except numbers, periods, and commas.
-const bannedCharactersRegex = /[^0-9,.+-\s]/g;

@@ -9,5 +9,9 @@ define([], function () {
     getListItems() {
       return this.view.$el.find('li');
     }
+
+    getFocusedItemIndex() {
+      return this.view.$el.find('.viewfinder-prediction__focused').index();
+    }
   }
 });
