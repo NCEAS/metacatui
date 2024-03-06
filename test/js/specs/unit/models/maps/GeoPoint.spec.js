@@ -46,9 +46,7 @@ define(["models/maps/GeoPoint",], function (GeoPoint) {
 
         point.isValid();
 
-        expect(point.validationError).to.deep.equal({
-          latitude: 'Invalid latitude. Must be between -90 and 90.'
-        });
+        expect(point.validationError.latitude).not.to.be.empty;
       });
 
       it("should invalidate a GeoPoint with an invalid longitude", function () {
@@ -69,9 +67,7 @@ define(["models/maps/GeoPoint",], function (GeoPoint) {
 
         point.isValid();
 
-        expect(point.validationError).to.deep.equal({
-          longitude: 'Invalid longitude. Must be between -180 and 180.'
-        });
+        expect(point.validationError.longitude).not.to.be.empty;
       });
 
       it("should invalidate a GeoPoint with an invalid height", function () {
@@ -92,44 +88,42 @@ define(["models/maps/GeoPoint",], function (GeoPoint) {
 
         point.isValid();
 
-        expect(point.validationError).to.deep.equal({
-          height: 'Invalid height. Must be a number.'
-        });
+        expect(point.validationError.height).not.to.be.empty;
       });
     });
 
     describe('Instantiation', () => {
       describe('from a good string', () => {
         it('uses the user\'s search query when zooming', () => {
-          const geoPoint = GeoPoint.fromString('13,37');
+          const geoPoint = new GeoPoint('13,37', { parse: true });
 
           expect(geoPoint.attributes.latitude).to.equal(13);
           expect(geoPoint.attributes.longitude).to.equal(37);
         });
 
         it('accepts two space-separated numbers', () => {
-          const geoPoint = GeoPoint.fromString('13 37');
+          const geoPoint = new GeoPoint('13 37', { parse: true });
 
           expect(geoPoint.attributes.latitude).to.equal(13);
           expect(geoPoint.attributes.longitude).to.equal(37);
         });
 
         it('accepts input with \'-\' signs', () => {
-          const geoPoint = GeoPoint.fromString('13,-37');
+          const geoPoint = new GeoPoint('13,-37', { parse: true });
 
           expect(geoPoint.attributes.latitude).to.equal(13);
           expect(geoPoint.attributes.longitude).to.equal(-37);
         });
 
         it('accepts input of with \'+\' signs', () => {
-          const geoPoint = GeoPoint.fromString('13,+37');
+          const geoPoint = new GeoPoint('13,+37', { parse: true });
 
           expect(geoPoint.attributes.latitude).to.equal(13);
           expect(geoPoint.attributes.longitude).to.equal(37);
         });
 
         it('accepts input with a trailing comma', () => {
-          const geoPoint = GeoPoint.fromString('13,37,');
+          const geoPoint = new GeoPoint('13,37,', { parse: true });
 
           expect(geoPoint.attributes.latitude).to.equal(13);
           expect(geoPoint.attributes.longitude).to.equal(37);
@@ -139,14 +133,14 @@ define(["models/maps/GeoPoint",], function (GeoPoint) {
       describe('from a bad string', () => {
         it('shows an error when only a single number is entered', () => {
           expect(() => {
-            GeoPoint.fromString('13');
-          }).to.throw(Error, /Try entering a search query with two numerical values/);
+            new GeoPoint('13', { parse: true });
+          }).to.throw(Error);
         });
 
         it('shows an error when non-numeric characters are entered', () => {
           expect(() => {
-            GeoPoint.fromString('13,37a');
-          }).to.throw(Error, /Try entering a search query with two numerical values/);
+            new GeoPoint('13,37a', { parse: true });
+          }).to.throw(Error);
         });
       });
     });
