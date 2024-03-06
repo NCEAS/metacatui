@@ -19,8 +19,12 @@ define(
       const state = cleanState(() => {
         const geocoder = new GoogleMapsGeocoder();
         const sandbox = sinon.createSandbox();
-        sandbox.stub(geocoder.get('geocoder'), 'geocode').returns(
-          { results: [{ some: 'result' }] }
+        sandbox.stub(geocoder.get('geocoder'), 'geocode').returns({
+          results: [{
+            address_components: [{ long_name: 'some result', }],
+            geometry: { viewport: { toJSON() { } } }
+          }]
+        }
         );
 
         return { geocoder, sandbox }
@@ -43,12 +47,11 @@ define(
           .to.deep.equal({ placeId: 'abc123' });
       });
 
-      it('returns results from the Google Maps API',
-        async () => {
-          const response = await state.geocoder.geocode('abc123');
+      it('returns results from the Google Maps API', async () => {
+        const response = await state.geocoder.geocode('abc123');
 
-          expect(response).to.deep.equal([{ some: 'result' }]);
-        });
+        expect(response[0].get('displayName')).to.equal('some result');
+      });
 
       it('does not throw an error even if the Google Maps API throws',
         async () => {
