@@ -49,6 +49,30 @@ define(["backbone", "models/maps/GeoUtilities"], function (
       },
 
       /**
+       * Parse a string according to a regular expression. 
+       * @param {string} value A user-entered value for parsing into a latiude
+       * and longitude pair.
+       * @throws An error indicating that more than two numbers have been
+       * entered.
+       * @returns 
+       */
+      parse(value) {
+        if (typeof value !== 'string') {
+          return new GeoPoint();
+        }
+
+        const matches = value?.match(FLOATS_REGEX);
+        if (matches?.length !== 2 || isNaN(matches[0]) || isNaN(matches[1])
+          || !GeoPoint.couldBeLatLong(value)) {
+          throw new Error(
+            'Try entering a search query with two numerical values representing a latitude and longitude (e.g. 64.84, -147.72).'
+          );
+        }
+
+        return { latitude: Number(matches[0]), longitude: Number(matches[1]) };
+      },
+
+      /**
        * Get the long and lat of the point as an array
        * @returns {Array} An array in the form [longitude, latitude]
        */
@@ -143,29 +167,6 @@ define(["backbone", "models/maps/GeoUtilities"], function (
     },
     {
       /**
-       * Parse a string according to a regular expression. 
-       * @param {string} value A user-entered value for parsing into a latiude
-       * and longitude pair.
-       * @throws An error indicating that more than two numbers have been
-       * entered.
-       * @returns 
-       */
-      fromString(value) {
-        const matches = value?.match(FLOATS_REGEX);
-        if (matches?.length !== 2 || isNaN(matches[0]) || isNaN(matches[1])
-          || !GeoPoint.couldBeLatLong(value)) {
-          throw new Error(
-            'Try entering a search query with two numerical values representing a latitude and longitude (e.g. 64.84, -147.72).'
-          );
-        }
-
-        const latitude = Number(matches[0]);
-        const longitude = Number(matches[1]);
-
-        return new GeoPoint({ latitude, longitude });
-      },
-
-      /**
        * Determine whether the user could be typing a lat, long pair.
        * @param {string} value is the currently entered query string.
        * @return {boolean} Whether the current value could be a lat,long pair
@@ -173,6 +174,10 @@ define(["backbone", "models/maps/GeoUtilities"], function (
        * be in a lat,long pair.
        */
       couldBeLatLong(value) {
+        if (typeof value !== 'string') {
+          return false;
+        }
+
         return value?.match(NON_LAT_LONG_CHARS_REGEX) == null;
       },
     }
