@@ -24,10 +24,8 @@ define([
   const AssetCategories = Backbone.Collection.extend(
     /** @lends AssetCategories.prototype */ {
 
+      /** @inheritdoc */
       model: AssetCategory,
-      modelId: attrs => {
-        return attrs.label;
-      },
 
       /**
        * Set the parent map model on each of the AssetCategory models in this
@@ -40,6 +38,10 @@ define([
         this.each(assetCategoryModel => assetCategoryModel.setMapModel(mapModel));
       },
 
+      /** 
+       * Gets an array of MapAssets, one from each AssetCategory model.
+       * @returns {MapAssets[]}
+       */
       getMapAssets() {
         return this.map(assetCategory => {
           return assetCategory.get("mapAssets");

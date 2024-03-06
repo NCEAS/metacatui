@@ -322,13 +322,19 @@ define([
         return newLayers;
       },
 
+      /**
+       * @returns {MapAssets[]} When layerCategories are configured, each MapAssets
+       * represets layers from one category. When layerCategories doesn't exist, flat
+       * layers are used and the array includes exactly one MapAssets with all
+       * the layers. Returns an empty array if no layer are found.
+       */
       getLayerGroups() {
         if (this.has("layerCategories")) {
           return this.get("layerCategories").getMapAssets();
         } else if (this.has("layers")) {
           return [this.get("layers")];
         }
-        return null;
+        return [];
       },
 
       /**

@@ -97,18 +97,19 @@ define([
 
       /**
        * Find the array of MapAssets collection from the Map model.
-       * @returns {LayerGroups} An array of MapAssets collection from the Map
-       * model or null if there is no Map model set on this model.
+       * @returns {MapAssets[]} An array of MapAssets collection from the Map
+       * model. Return null if no map or layers are found.
        */
       findLayerGroups: function () {
         const map = this.get("map");
         if (!map) return null;
-        return map.getLayerGroups();
+        const layerGroups = map.getLayerGroups();
+        return layerGroups.length > 0 ? layerGroups : null;
       },
 
       /**
        * Create a new array of MapAssets collection and set it on the Map model.
-       * @returns {LayerGroups} The new array of MapAssets collection.
+       * @returns {MapAssets[]} The new array of MapAssets collection.
        */
       createLayerGroups: function () {
         const map = this.get("map");
@@ -150,10 +151,12 @@ define([
         }
         // If there is still no Geohash layer, then we should wait for one to
         // be added to the Layers collection, then try to find it again.
-        if (!geohash) {
-          _.each(layerGroups, layers => this.listenToOnce(layers, "add", this.findAndSetGeohashLayer));
-          return;
-        }
+        _.each(layerGroups, layers => {
+          this.stopListening(layers, "add", this.findAndSetGeohashLayer);
+          if (!geohash) {
+            this.listenTo(layers, "add", this.findAndSetGeohashLayer);
+          }
+        });
         return geohash;
       },
 

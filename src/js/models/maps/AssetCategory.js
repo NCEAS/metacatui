@@ -69,7 +69,7 @@ define([
        * attributes, which will be set on the model.
        */
       initialize(categoryConfig) {
-        if (!categoryConfig.layers) {
+        if (!categoryConfig?.layers) {
           throw new Error("Category " + categoryConfig.label + " has empty layers.");
         }
         this.set("mapAssets", new MapAssets(categoryConfig.layers));

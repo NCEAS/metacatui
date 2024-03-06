@@ -6,7 +6,6 @@ define(
     'jquery',
     'underscore',
     'backbone',
-    'text!templates/maps/layer-category-list.html',
     'collections/maps/AssetCategories',
     // Sub-views
     'views/maps/LayerCategoryItemView',
@@ -15,7 +14,6 @@ define(
     $,
     _,
     Backbone,
-    Template,
     AssetCategories,
     // Sub-views
     LayerCategoryItemView,
@@ -54,12 +52,6 @@ define(
         collection: undefined,
 
         /**
-         * The primary HTML template for this view
-         * @type {Underscore.template}
-         */
-        template: _.template(Template),
-
-        /**
         * Executed when a new LayerCategoryListView is created
         * @param {Object} options - A literal object with options to pass to the view
         */
@@ -74,14 +66,8 @@ define(
         * @return {LayerCategoryListView} Returns the rendered view element
         */
         render() {
-          // Insert the template into the view
-          this.$el.html(this.template({}));
-
-          // Ensure the view's main element has the given class name
-          this.el.classList.add(this.className);
-
           if (!this.collection) {
-            return
+            return;
           }
 
           // Render a layer item for each layer in the collection
@@ -89,7 +75,7 @@ define(
             const layerCategoryItemView = new LayerCategoryItemView({model: categoryModel});
             layerCategoryItemView.render();
             this.el.appendChild(layerCategoryItemView.el);
-          })
+          });
 
           return this;
         },

@@ -70,12 +70,7 @@ define(
           layers: 'layer-category-item__layers',
         },
 
-        /**
-        * A function that gives the events this view will listen to and the associated
-        * function to call.
-        * @returns {Object} Returns an object with events in the format 'event selector':
-        * 'function'
-        */
+        /** @inheritdoc */
         events() {
           return {[`click .${this.classNames.metadata}`]: 'toggleExpanded'};
         },
@@ -85,7 +80,7 @@ define(
         * @param {Object} options - A literal object with options to pass to the view
         */
         initialize(options) {
-          if (options.model instanceof AssetCategory) {
+          if (options?.model instanceof AssetCategory) {
             this.model = options.model;
           }
         },

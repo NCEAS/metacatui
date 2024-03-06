@@ -97,7 +97,6 @@ define([
           attribution: "",
           moreInfoLink: "",
           downloadLink: "",
-          id: "",
           selected: false,
           opacity: 1,
           visible: true,
