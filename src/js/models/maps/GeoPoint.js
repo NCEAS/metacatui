@@ -151,7 +151,7 @@ define(["backbone", "models/maps/GeoUtilities"], function (
        * @returns 
        */
       fromString(value) {
-        const matches = value.match(FLOATS_REGEX);
+        const matches = value?.match(FLOATS_REGEX);
         if (matches?.length !== 2 || isNaN(matches[0]) || isNaN(matches[1])
           || !GeoPoint.couldBeLatLong(value)) {
           throw new Error(
@@ -166,14 +166,14 @@ define(["backbone", "models/maps/GeoUtilities"], function (
       },
 
       /**
-       * Determine whether the user is could be typing a lat, long pair.
+       * Determine whether the user could be typing a lat, long pair.
        * @param {string} value is the currently entered query string.
        * @return {boolean} Whether the current value could be a lat,long pair
        * due to the string NOT containing characters (e.g. a-z) that could not
        * be in a lat,long pair.
        */
       couldBeLatLong(value) {
-        return value.match(NON_LAT_LONG_CHARS_REGEX) == null;
+        return value?.match(NON_LAT_LONG_CHARS_REGEX) == null;
       },
     }
   );
