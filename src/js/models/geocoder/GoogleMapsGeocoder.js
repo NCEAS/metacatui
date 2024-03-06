@@ -1,36 +1,61 @@
 'use strict';
 
-define(['backbone', 'gmaps'], (Backbone, gmaps,) => {
-  /**
-  * @class GoogleMapsGeocoder
-  * @classdes Integrate with the Google Maps Geocoder API using the Google Maps
-  * Geocoder JS library.
-  * @classcategory Models
-  */
-  const GoogleMapsGeocoder = Backbone.Model.extend({
-    defaults() {
-      return { geocoder: new gmaps.Geocoder() };
-    },
-
+define(
+  ['backbone', 'gmaps', 'models/geocoder/GeocodedLocation'],
+  (Backbone, gmaps, GeocodedLocation) => {
     /**
-     * Use the Google Maps Geocoder API to convert a Google Maps Place ID into
-     * a geocoded object that includes latitude and longitude information along
-     * with a bound box for viewing the location.
-     * @param {string} placeId - Google Maps Place ID that uniquely identifies
-     * a place in the Google Maps API.
-     * @returns {Object[]} An array of objects with geocoding information about
-     * the specified place including a viewport bounding box and location
-     * description.
-     */
-    async geocode(placeId) {
-      try {
-        const response = await this.get('geocoder').geocode({ placeId });
-        return response.results;
-      } catch (e) {
-        return [];
-      }
-    },
-  });
+    * @class GoogleMapsGeocoder
+    * @classdes Integrate with the Google Maps Geocoder API using the Google Maps
+    * Geocoder JS library.
+    * @classcategory Models
+    */
+    const GoogleMapsGeocoder = Backbone.Model.extend({
+      /**
+       * Overrides the default Backbone.Model.defaults() function to specify
+       * default attributes for the Map
+       * @name GoogleMapsGeocoder#defaults
+       * @type {Object}
+       * @property {Geocoder} geocoder A Google Maps service for interacting
+       * with the Geocoder API.
+       */
+      defaults() {
+        return { geocoder: new gmaps.Geocoder() };
+      },
 
-  return GoogleMapsGeocoder;
-});
+      /**
+       * Use the Google Maps Geocoder API to convert a Google Maps Place ID into
+       * a geocoded object that includes latitude and longitude information along
+       * with a bound box for viewing the location.
+       * @param {string} placeId - Google Maps Place ID that uniquely identifies
+       * a place in the Google Maps API.
+       * @returns {GeocodedLocation[]} An array of locations with an associated
+       * bounding box. According to Google Maps API this should most often be a
+       * single value, but could potentially be many.
+       */
+      async geocode(placeId) {
+        try {
+          const response = await this.get('geocoder').geocode({ placeId });
+          return this.getGeocodedLocationsFromResults(response.results);
+        } catch (e) {
+          return [];
+        }
+      },
+
+      /**
+       * Helper function that converts a Google Maps Places API result into a
+       * useable GeocodedLocation model.
+       * @param {Object[]} List of Google Maps Places API results.
+       * @returns {GeocodedLocation[]} List of corresponding geocoded locations.
+       */
+      getGeocodedLocationsFromResults(results) {
+        return results.map(result => {
+          return new GeocodedLocation({
+            box: result.geometry.viewport.toJSON(),
+            displayName: result.address_components[0].long_name,
+          });
+        });
+      },
+    });
+
+    return GoogleMapsGeocoder;
+  });
