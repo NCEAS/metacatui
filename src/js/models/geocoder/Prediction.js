@@ -8,6 +8,16 @@ define(['backbone'], (Backbone) => {
   * @classcategory Models/Geocoder
   */
   const Prediction = Backbone.Model.extend({
+      /**
+       * Overrides the default Backbone.Model.defaults() function to specify
+       * default attributes for the Map
+       * @name Prediction#defaults
+       * @type {Object}
+       * @property {string} description A user-friendly description of a Google
+       * Maps Place.
+       * @property {string} googleMapsPlaceId Unique identifier that can be 
+       * geocoded by the Google Maps Geocoder API.
+       */
     defaults() {
       return { description: '', googleMapsPlaceId: '' };
     },

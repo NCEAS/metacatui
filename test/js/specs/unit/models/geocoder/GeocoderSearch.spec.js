@@ -27,29 +27,23 @@ define(
         sandbox.stub(
           geoSearch.get('googleMapsAutocompleter'),
           'autocomplete'
-        ).returns([{
+        ).returns([new Prediction({
           description: 'some desc',
-          place_id: 'somePlaceId',
-        }]);
+          googleMapsPlaceId: 'somePlaceId',
+        })]);
 
         sandbox.stub(
           geoSearch.get('googleMapsGeocoder'),
           'geocode'
-        ).returns([{
-          geometry: {
-            viewport: {
-              toJSON() {
-                return {
-                  north: 1,
-                  south: 2,
-                  east: 3,
-                  west: 4,
-                };
-              },
-            },
+        ).returns([new GeocodedLocation({
+          box: {
+            north: 1,
+            south: 2,
+            east: 3,
+            west: 4,
           },
-          address_components: [{ long_name: 'Some Location' }],
-        }]);
+          displayName: 'Some Location'
+        })]);
 
         return { geoSearch, sandbox }
       }, beforeEach);
@@ -59,8 +53,6 @@ define(
       });
 
       it('autcomplete returns Predictions related to search input', async () => {
-        state.geoSearch.should.be.instanceof(GeocoderSearch);
-
         const predictions = await state.geoSearch.autocomplete('some query');
 
         expect(predictions).to.have.lengthOf(1);
@@ -72,7 +64,10 @@ define(
       it('searches by Google Maps Place ID and returns geocoded locations', async () => {
         state.geoSearch.should.be.instanceof(GeocoderSearch);
 
-        const geoLocs = await state.geoSearch.geocode('somePlaceId');
+        const geoLocs = await state.geoSearch.geocode(new Prediction({
+          description: 'some desc',
+          googleMapsPlaceId: 'somePlaceId',
+        }));
 
         expect(geoLocs).to.have.lengthOf(1);
         geoLocs[0].should.be.instanceof(GeocodedLocation);

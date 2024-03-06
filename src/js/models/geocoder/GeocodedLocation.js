@@ -11,6 +11,16 @@ define(
     * @classcategory Models/Geocoder
     */
     const GeocodedLocation = Backbone.Model.extend({
+      /**
+       * Overrides the default Backbone.Model.defaults() function to specify
+       * default attributes for the Map
+       * @name GeocodedLocation#defaults
+       * @type {Object}
+       * @property {GeoBoundingBox} box Bounding box representing this location 
+       * on a map.
+       * @property {string} displayName A name that can be displayed to the user
+       * representing this location.
+       */
       defaults() {
         return {
           box: new GeoBoundingBox,

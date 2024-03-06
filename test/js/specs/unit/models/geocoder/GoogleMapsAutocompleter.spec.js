@@ -21,7 +21,7 @@ define(
         const sandbox = sinon.createSandbox();
         sandbox.stub(autocompleter.get('autocompleter'), 'getPlacePredictions')
           .returns(
-            { predictions: [{ some: 'result' }] }
+            { predictions: [{ description: 'some result' }] }
           );
 
         return { autocompleter, sandbox }
@@ -51,7 +51,7 @@ define(
         async () => {
           const response = await state.autocompleter.autocomplete('some place');
 
-          expect(response).to.deep.equal([{ some: 'result' }]);
+          expect(response[0].get('description')).to.equal('some result');
         });
 
       it('does not throw an error even if the Google Maps API throws',

@@ -6,15 +6,12 @@ define(
     'backbone',
     'models/geocoder/GoogleMapsGeocoder',
     'models/geocoder/GoogleMapsAutocompleter',
-    'models/geocoder/GeocodedLocation',
-    'models/geocoder/Prediction',
   ],
   (
     _,
     Backbone,
     GoogleMapsGeocoder,
     GoogleMapsAutocompleter,
-    GeocodedLocation,
     Prediction,
   ) => {
     /**
@@ -24,6 +21,16 @@ define(
     * @classcategory Models/Geocoder
     */
     const GeocoderSearch = Backbone.Model.extend({
+      /**
+       * Overrides the default Backbone.Model.defaults() function to specify
+       * default attributes for the Map
+       * @name GeocoderSearch#defaults
+       * @type {Object}
+       * @property {GoogleMapsAutocompleter} googleMapsAutocompleter Model for
+       * interacting with Google Maps Places Autocomplete APIs.
+       * @property {GoogleMapsGeocoder} googleMapsGeocoder Model for
+       * interacting with Google Maps Geocoder APIs.
+       */
       defaults() {
         return {
           googleMapsAutocompleter: new GoogleMapsAutocompleter(),
@@ -39,52 +46,22 @@ define(
        * user is looking for. Most often this comes in five or less results.
        */
       async autocomplete(newQuery) {
-        return this.getPredictionsFromResults(
-          await this.get('googleMapsAutocompleter').autocomplete(newQuery)
-        );
-      },
-
-      /**
-       * Helper function that converts a Google Maps Autocomplete API result
-       * into a useable Prediction model.
-       * @param {Object[]} List of Google Maps Autocomplete API results.
-       * @returns {Prediction[]} List of corresponding predictions.
-       */
-      getPredictionsFromResults(results) {
-        return results.map(result => new Prediction({
-          description: result.description,
-          googleMapsPlaceId: result.place_id,
-        }));
+        return this.get('googleMapsAutocompleter').autocomplete(newQuery);
       },
 
       /**
        * Convert a Google Maps Place ID into a list geocoded objects that can be
        * displayed in the map widget.
-       * @param {string} placeId - Google Maps Place ID that uniquely identifies
-       * a place in the Google Maps API.
+       * @param {Prediction} prediction An autocomplete prediction that includes
+       * a unique identifier for geocoding.
        * @returns {GeocodedLocation[]} An array of locations with an associated
        * bounding box. According to Google Maps API this should most often be a
        * single value, but could potentially be many.
        */
-      async geocode(placeId) {
-        return this.getGeocodedLocationsFromResults(
-          await this.get('googleMapsGeocoder').geocode(placeId)
+      async geocode(prediction) {
+        return this.get('googleMapsGeocoder').geocode(
+          prediction.get('googleMapsPlaceId')
         );
-      },
-
-      /**
-       * Helper function that converts a Google Maps Places API result into a
-       * useable GeocodedLocation model.
-       * @param {Object[]} List of Google Maps Places API results.
-       * @returns {GeocodedLocation[]} List of corresponding geocoded locations.
-       */
-      getGeocodedLocationsFromResults(results) {
-        return results.map(result => {
-          return new GeocodedLocation({
-            box: result.geometry.viewport.toJSON(),
-            displayName: result.address_components[0].long_name,
-          });
-        });
       },
     });
 
