@@ -86,7 +86,7 @@ define(
          * @returns {boolean} - True if a layer item matches the text
          */
         search(text) {
-          return this.layerCategoryItemViews.reduce((matched, layerCategoryItem) => {
+          return _.reduce(this.layerCategoryItemViews, (matched, layerCategoryItem) => {
             return layerCategoryItem.search(text) || matched;
           }, false);
         },
