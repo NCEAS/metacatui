@@ -3,15 +3,9 @@
 define(
   [
     '/test/js/specs/shared/clean-state.js',
-    '/test/js/specs/shared/mock-gmaps-module.js',
     'models/geocoder/GoogleMapsAutocompleter',
   ],
-  (
-    cleanState,
-    // Import for side effect, unused.
-    unusedGmapsMock,
-    GoogleMapsAutocompleter,
-  ) => {
+  (cleanState, GoogleMapsAutocompleter) => {
     const should = chai.should();
     const expect = chai.expect;
 

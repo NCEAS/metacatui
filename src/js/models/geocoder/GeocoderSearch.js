@@ -2,17 +2,10 @@
 
 define(
   [
-    'underscore',
-    'backbone',
     'models/geocoder/GoogleMapsGeocoder',
     'models/geocoder/GoogleMapsAutocompleter',
   ],
-  (
-    _,
-    Backbone,
-    GoogleMapsGeocoder,
-    GoogleMapsAutocompleter,
-  ) => {
+  (GoogleMapsGeocoder, GoogleMapsAutocompleter) => {
     /**
     * @class GeocoderSearch
     * @classdes GeocoderSearch interfaces with various geocoding and location

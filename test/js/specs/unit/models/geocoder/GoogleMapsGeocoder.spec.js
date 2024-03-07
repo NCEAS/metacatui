@@ -3,19 +3,13 @@
 define(
   [
     '/test/js/specs/shared/clean-state.js',
-    '/test/js/specs/shared/mock-gmaps-module.js',
     'models/geocoder/GoogleMapsGeocoder',
   ],
-  (
-    cleanState,
-    // Import for side effect, unused.
-    unusedGmapsMock,
-    GoogleMapsGeocoder,
-  ) => {
+  (cleanState, GoogleMapsGeocoder) => {
     const should = chai.should();
     const expect = chai.expect;
 
-    describe('GoogleMapsGeocoder Test Suite', () => {
+    describe.only('GoogleMapsGeocoder Test Suite', () => {
       const state = cleanState(() => {
         const geocoder = new GoogleMapsGeocoder();
         const sandbox = sinon.createSandbox();
