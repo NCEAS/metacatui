@@ -12,7 +12,6 @@ define(
     Backbone,
     GoogleMapsGeocoder,
     GoogleMapsAutocompleter,
-    Prediction,
   ) => {
     /**
     * @class GeocoderSearch
@@ -20,23 +19,17 @@ define(
     * searching services.
     * @classcategory Models/Geocoder
     */
-    const GeocoderSearch = Backbone.Model.extend({
+    return class GeocoderSearch {
       /**
-       * Overrides the default Backbone.Model.defaults() function to specify
-       * default attributes for the Map
-       * @name GeocoderSearch#defaults
-       * @type {Object}
-       * @property {GoogleMapsAutocompleter} googleMapsAutocompleter Model for
-       * interacting with Google Maps Places Autocomplete APIs.
-       * @property {GoogleMapsGeocoder} googleMapsGeocoder Model for
-       * interacting with Google Maps Geocoder APIs.
+       * GoogleMapsAutocompleter model for interacting with Google Maps Places
+       * Autocomplete APIs.
        */
-      defaults() {
-        return {
-          googleMapsAutocompleter: new GoogleMapsAutocompleter(),
-          googleMapsGeocoder: new GoogleMapsGeocoder(),
-        };
-      },
+      googleMapsAutocompleter = new GoogleMapsAutocompleter();
+
+      /**
+       * GoogleMapsGeocoder for interacting with Google Maps Geocoder APIs.
+       */
+      googleMapsGeocoder = new GoogleMapsGeocoder();
 
       /**
        * Convert a Google Maps Place ID into a list geocoded objects that can be
@@ -46,8 +39,8 @@ define(
        * user is looking for. Most often this comes in five or less results.
        */
       async autocomplete(newQuery) {
-        return this.get('googleMapsAutocompleter').autocomplete(newQuery);
-      },
+        return this.googleMapsAutocompleter.autocomplete(newQuery);
+      }
 
       /**
        * Convert a Google Maps Place ID into a list geocoded objects that can be
@@ -59,11 +52,9 @@ define(
        * single value, but could potentially be many.
        */
       async geocode(prediction) {
-        return this.get('googleMapsGeocoder').geocode(
+        return this.googleMapsGeocoder.geocode(
           prediction.get('googleMapsPlaceId')
         );
-      },
-    });
-
-    return GeocoderSearch;
+      }
+    }
   });

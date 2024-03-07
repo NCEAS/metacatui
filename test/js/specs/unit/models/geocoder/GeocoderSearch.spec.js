@@ -24,26 +24,22 @@ define(
         const geoSearch = new GeocoderSearch();
 
         const sandbox = sinon.createSandbox();
-        sandbox.stub(
-          geoSearch.get('googleMapsAutocompleter'),
-          'autocomplete'
-        ).returns([new Prediction({
-          description: 'some desc',
-          googleMapsPlaceId: 'somePlaceId',
-        })]);
+        sandbox.stub(geoSearch.googleMapsAutocompleter, 'autocomplete')
+          .returns([new Prediction({
+            description: 'some desc',
+            googleMapsPlaceId: 'somePlaceId',
+          })]);
 
-        sandbox.stub(
-          geoSearch.get('googleMapsGeocoder'),
-          'geocode'
-        ).returns([new GeocodedLocation({
-          box: {
-            north: 1,
-            south: 2,
-            east: 3,
-            west: 4,
-          },
-          displayName: 'Some Location'
-        })]);
+        sandbox.stub(geoSearch.googleMapsGeocoder, 'geocode')
+          .returns([new GeocodedLocation({
+            box: {
+              north: 1,
+              south: 2,
+              east: 3,
+              west: 4,
+            },
+            displayName: 'Some Location'
+          })]);
 
         return { geoSearch, sandbox }
       }, beforeEach);

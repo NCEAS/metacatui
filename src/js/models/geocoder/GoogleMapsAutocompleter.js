@@ -12,7 +12,7 @@ define(
     const GoogleMapsAutocompleter = Backbone.Model.extend({
       /**
        * Overrides the default Backbone.Model.defaults() function to specify
-       * default attributes for the Map
+       * default attributes.
        * @name GoogleMapsAutocompleter#defaults
        * @type {Object}
        * @property {AutocompleteService} autocompleter A Google Maps service for 
