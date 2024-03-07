@@ -3,15 +3,12 @@
 define(
   [
     '/test/js/specs/shared/clean-state.js',
-    '/test/js/specs/shared/mock-gmaps-module.js',
     'models/geocoder/GeocoderSearch',
     'models/geocoder/Prediction',
     'models/geocoder/GeocodedLocation',
   ],
   (
     cleanState,
-    // Import for side effect, unused.
-    unusedGmapsMock,
     GeocoderSearch,
     Prediction,
     GeocodedLocation,
