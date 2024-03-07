@@ -13,7 +13,7 @@ define(
     const GeocodedLocation = Backbone.Model.extend({
       /**
        * Overrides the default Backbone.Model.defaults() function to specify
-       * default attributes for the Map
+       * default attributes.
        * @name GeocodedLocation#defaults
        * @type {Object}
        * @property {GeoBoundingBox} box Bounding box representing this location 

@@ -12,7 +12,7 @@ define(
     const GoogleMapsGeocoder = Backbone.Model.extend({
       /**
        * Overrides the default Backbone.Model.defaults() function to specify
-       * default attributes for the Map
+       * default attributes.
        * @name GoogleMapsGeocoder#defaults
        * @type {Object}
        * @property {Geocoder} geocoder A Google Maps service for interacting
