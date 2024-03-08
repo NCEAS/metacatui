@@ -7,20 +7,12 @@ define(
     * @class GoogleMapsAutocompleter
     * @classdes Integrate with the Google Maps Places Autocomplete API using the
     * Google Maps AutocompleteService JS library.
-    * @classcategory Models
     */
-    const GoogleMapsAutocompleter = Backbone.Model.extend({
+    return class GoogleMapsAutocompleter {
       /**
-       * Overrides the default Backbone.Model.defaults() function to specify
-       * default attributes.
-       * @name GoogleMapsAutocompleter#defaults
-       * @type {Object}
-       * @property {AutocompleteService} autocompleter A Google Maps service for 
-       * interacting with the Places Autocomplete API.
+       * Google Maps service for interacting with the Places Autocomplete API.
        */
-      defaults() {
-        return { autocompleter: new gmaps.places.AutocompleteService() };
-      },
+      autocompleter = new gmaps.places.AutocompleteService();
 
       /**
        * Use the Google Maps Places API to get place predictions based off of a
@@ -31,14 +23,14 @@ define(
        */
       async autocomplete(input) {
         try {
-          const response = await this.get('autocompleter').getPlacePredictions({
+          const response = await this.autocompleter.getPlacePredictions({
             input,
           });
           return this.getPredictionsFromResults(response.predictions);
         } catch (e) {
           return [];
         }
-      },
+      }
 
       /**
        * Helper function that converts a Google Maps Autocomplete API result
@@ -51,8 +43,6 @@ define(
           description: result.description,
           googleMapsPlaceId: result.place_id,
         }));
-      },
-    });
-
-    return GoogleMapsAutocompleter;
+      }
+    }
   });

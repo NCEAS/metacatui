@@ -7,20 +7,10 @@ define(
     * @class GoogleMapsGeocoder
     * @classdes Integrate with the Google Maps Geocoder API using the Google Maps
     * Geocoder JS library.
-    * @classcategory Models
     */
-    const GoogleMapsGeocoder = Backbone.Model.extend({
-      /**
-       * Overrides the default Backbone.Model.defaults() function to specify
-       * default attributes.
-       * @name GoogleMapsGeocoder#defaults
-       * @type {Object}
-       * @property {Geocoder} geocoder A Google Maps service for interacting
-       * with the Geocoder API.
-       */
-      defaults() {
-        return { geocoder: new gmaps.Geocoder() };
-      },
+    return class GoogleMapsGeocoder {
+      /** Google Maps service for interacting  with the Geocoder API.  */
+      geocoder = new gmaps.Geocoder();
 
       /**
        * Use the Google Maps Geocoder API to convert a Google Maps Place ID into
@@ -34,12 +24,12 @@ define(
        */
       async geocode(placeId) {
         try {
-          const response = await this.get('geocoder').geocode({ placeId });
+          const response = await this.geocoder.geocode({ placeId });
           return this.getGeocodedLocationsFromResults(response.results);
         } catch (e) {
           return [];
         }
-      },
+      }
 
       /**
        * Helper function that converts a Google Maps Places API result into a
@@ -54,8 +44,6 @@ define(
             displayName: result.address_components[0].long_name,
           });
         });
-      },
-    });
-
-    return GoogleMapsGeocoder;
+      }
+    }
   });
