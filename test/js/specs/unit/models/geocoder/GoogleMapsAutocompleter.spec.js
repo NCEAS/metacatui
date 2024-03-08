@@ -11,31 +11,31 @@ define(
 
     describe('GoogleMapsAutocompleter Test Suite', () => {
       const state = cleanState(() => {
-        const autocompleter = new GoogleMapsAutocompleter();
+        const googleMapsAutocompleter = new GoogleMapsAutocompleter();
         const sandbox = sinon.createSandbox();
-        sandbox.stub(autocompleter.get('autocompleter'), 'getPlacePredictions')
+        sandbox.stub(googleMapsAutocompleter.autocompleter, 'getPlacePredictions')
           .returns(
             { predictions: [{ description: 'some result' }] }
           );
 
-        return { autocompleter, sandbox }
+        return { googleMapsAutocompleter, sandbox }
       }, beforeEach);
 
       it('creates a GoogleMapsAutocompleter instance', () => {
-        state.autocompleter.should.be.instanceof(GoogleMapsAutocompleter);
+        state.googleMapsAutocompleter.should.be.instanceof(GoogleMapsAutocompleter);
       });
 
       it('calls the Google Maps API', async () => {
-        await state.autocompleter.autocomplete('some place');
+        await state.googleMapsAutocompleter.autocomplete('some place');
 
-        expect(state.autocompleter.get('autocompleter')
+        expect(state.googleMapsAutocompleter.autocompleter
           .getPlacePredictions.callCount).to.equal(1);
       });
 
       it('calls the Google Maps API with the provided input', async () => {
-        await state.autocompleter.autocomplete('some place');
+        await state.googleMapsAutocompleter.autocomplete('some place');
 
-        expect(state.autocompleter.get('autocompleter').getPlacePredictions
+        expect(state.googleMapsAutocompleter.autocompleter.getPlacePredictions
           .getCall(0).firstArg).to.deep.equal({
             input: 'some place'
           });
@@ -43,7 +43,7 @@ define(
 
       it('returns results from the Google Maps API',
         async () => {
-          const response = await state.autocompleter.autocomplete('some place');
+          const response = await state.googleMapsAutocompleter.autocomplete('some place');
 
           expect(response[0].get('description')).to.equal('some result');
         });
@@ -52,22 +52,22 @@ define(
         async () => {
           state.sandbox.restore();
           state.sandbox.stub(
-            state.autocompleter.get('autocompleter'),
+            state.googleMapsAutocompleter.autocompleter,
             'getPlacePredictions'
           ).rejects();
 
-          expect(async () => await state.autocompleter.autocomplete('some place')).not.to.throw;
+          expect(async () => await state.googleMapsAutocompleter.autocomplete('some place')).not.to.throw;
         });
 
       it('returns an empty array if the Google Maps API throws',
         async () => {
           state.sandbox.restore();
           state.sandbox.stub(
-            state.autocompleter.get('autocompleter'),
+            state.googleMapsAutocompleter.autocompleter,
             'getPlacePredictions'
           ).rejects();
 
-          const response = await state.autocompleter.autocomplete('some place');
+          const response = await state.googleMapsAutocompleter.autocomplete('some place');
 
           expect(response).to.deep.equal([]);
         });
