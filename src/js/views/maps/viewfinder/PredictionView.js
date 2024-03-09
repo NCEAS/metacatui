@@ -93,7 +93,6 @@ define(
        * sibling list elements.
        */
       select(event) {
-        event.stopPropagation();
         this.viewfinderModel.selectPrediction(this.predictionModel);
       },
 
@@ -104,7 +103,7 @@ define(
        * */
       render() {
         const focusIndex = this.viewfinderModel.get('focusIndex');
-        this.templateVars.isFocused = focusIndex !== -1 && focusIndex === this.index;
+        this.templateVars.isFocused = focusIndex === this.index;
 
         this.el.innerHTML = _.template(Template)(this.templateVars);
       },
