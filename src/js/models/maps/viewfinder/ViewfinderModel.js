@@ -42,20 +42,13 @@ define(
       initialize({ mapModel }) {
         this.geocoderSearch = new GeocoderSearch();
         this.mapModel = mapModel;
-
-        this.autocompleteSearch = _.debounce(
-          this.notDebouncedAutocompleteSearch,
-          250, // milliseconds
-        );
       },
 
       /** 
        * Get autocompletion predictions from the GeocoderSearch model. 
-       * This function should be debounced to prevent sending many requests to
-       * the API while the user is still typing. 
        * @param {string} rawQuery is the user's search query with spaces.
        */
-      async notDebouncedAutocompleteSearch(rawQuery) {
+      async autocompleteSearch(rawQuery) {
         const query = rawQuery.trim();
         if (this.get('query') === query) {
           return;

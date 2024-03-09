@@ -17,12 +17,6 @@ define(
     describe('ViewfinderModel Test Suite', () => {
       const state = cleanState(() => {
         const sandbox = sinon.createSandbox();
-        // sinon.useFakeTimers() doesn't work with _.debounce, so stubbing instead.
-        const debounceStub = sandbox.stub(_, 'debounce').callsFake(function (fnToDebounce) {
-          return function (...args) {
-            fnToDebounce.apply(this, args);
-          };
-        });
         const model = new ViewfinderModel({ mapModel: new Map() });
         const zoomSpy = sinon.spy(model.mapModel, 'zoomTo');
         const autocompleteSpy = sandbox.stub(model.geocoderSearch, 'autocomplete').returns([])
@@ -46,7 +40,6 @@ define(
 
         return {
           autocompleteSpy,
-          debounceStub,
           geocodeSpy,
           model,
           predictions,
@@ -116,10 +109,6 @@ define(
           state.model.autocompleteSearch('1,23');
 
           expect(state.model.get('focusIndex')).to.equal(-1);
-        });
-
-        it('debounces autocomplete search using underscor\'s debounce', () => {
-          expect(state.debounceStub.callCount).to.equal(1);
         });
 
         it('sets predictions from autocomplete search', async () => {
