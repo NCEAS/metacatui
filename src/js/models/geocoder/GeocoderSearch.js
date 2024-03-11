@@ -44,9 +44,7 @@ define(
        * single value, but could potentially be many.
        */
       async geocode(prediction) {
-        return this.googleMapsGeocoder.geocode(
-          prediction.get('googleMapsPlaceId')
-        );
+        return this.googleMapsGeocoder.geocode(prediction);
       }
     }
   });

@@ -4,8 +4,9 @@ define(
   [
     '/test/js/specs/shared/clean-state.js',
     'models/geocoder/GoogleMapsGeocoder',
+    'models/geocoder/Prediction',
   ],
-  (cleanState, GoogleMapsGeocoder) => {
+  (cleanState, GoogleMapsGeocoder, Prediction) => {
     const should = chai.should();
     const expect = chai.expect;
 
@@ -18,10 +19,13 @@ define(
             address_components: [{ long_name: 'some result', }],
             geometry: { viewport: { toJSON() { } } }
           }]
-        }
-        );
+        });
+        const prediction = new Prediction({
+          description: 'some desc',
+          googleMapsPlaceId: 'abc123',
+        });
 
-        return { googleMapsGeocoder, sandbox }
+        return { googleMapsGeocoder, prediction, sandbox }
       }, beforeEach);
 
       it('creates a GoogleMapsGeocoder instance', () => {
@@ -29,20 +33,21 @@ define(
       });
 
       it('calls the Google Maps API', async () => {
-        await state.googleMapsGeocoder.geocode('abc123');
+        await state.googleMapsGeocoder.geocode(state.prediction);
 
         expect(state.googleMapsGeocoder.geocoder.geocode.callCount).to.equal(1);
       });
 
       it('calls the Google Maps API with the provided place ID', async () => {
-        await state.googleMapsGeocoder.geocode('abc123');
+        await state.googleMapsGeocoder.geocode(state.prediction);
 
         expect(state.googleMapsGeocoder.geocoder.geocode.getCall(0).firstArg)
           .to.deep.equal({ placeId: 'abc123' });
       });
 
       it('returns results from the Google Maps API', async () => {
-        const response = await state.googleMapsGeocoder.geocode('abc123');
+        const response =
+          await state.googleMapsGeocoder.geocode(state.prediction);
 
         expect(response[0].get('displayName')).to.equal('some result');
       });
@@ -55,15 +60,19 @@ define(
             'geocode'
           ).rejects();
 
-          expect(async () => await state.googleMapsGeocoder.geocode('abc123')).not.to.throw;
+          expect(
+            async () => state.googleMapsGeocoder.geocode(state.prediction)
+          ).not.to.throw;
         });
 
       it('returns an empty array if the Google Maps API throws',
         async () => {
           state.sandbox.restore();
-          state.sandbox.stub(state.googleMapsGeocoder.geocoder, 'geocode').rejects();
+          state.sandbox.stub(state.googleMapsGeocoder.geocoder, 'geocode')
+            .rejects();
 
-          const response = await state.googleMapsGeocoder.geocode('abc123');
+          const response = await state.googleMapsGeocoder
+            .geocode(state.prediction);
 
           expect(response).to.deep.equal([]);
         });

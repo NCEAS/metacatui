@@ -5,8 +5,8 @@ define(
   (Backbone, gmaps, GeocodedLocation) => {
     /**
     * @class GoogleMapsGeocoder
-    * @classdes Integrate with the Google Maps Geocoder API using the Google Maps
-    * Geocoder JS library.
+    * @classdes Integrate with the Google Maps Geocoder API using the Google
+    * Maps Geocoder JS library.
     */
     return class GoogleMapsGeocoder {
       /** Google Maps service for interacting  with the Geocoder API.  */
@@ -14,17 +14,19 @@ define(
 
       /**
        * Use the Google Maps Geocoder API to convert a Google Maps Place ID into
-       * a geocoded object that includes latitude and longitude information along
-       * with a bound box for viewing the location.
-       * @param {string} placeId - Google Maps Place ID that uniquely identifies
-       * a place in the Google Maps API.
+       * a geocoded object that includes latitude and longitude information 
+       * along with a bound box for viewing the location.
+       * @param {Prediction} prediction An autocomplete prediction that includes
+       * a unique identifier for geocoding.
        * @returns {GeocodedLocation[]} An array of locations with an associated
        * bounding box. According to Google Maps API this should most often be a
        * single value, but could potentially be many.
        */
-      async geocode(placeId) {
+      async geocode(prediction) {
         try {
-          const response = await this.geocoder.geocode({ placeId });
+          const response = await this.geocoder.geocode({
+            placeId: prediction.get('googleMapsPlaceId')
+          });
           return this.getGeocodedLocationsFromResults(response.results);
         } catch (e) {
           return [];
