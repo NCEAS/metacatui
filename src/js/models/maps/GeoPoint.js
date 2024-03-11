@@ -58,7 +58,7 @@ define(["backbone", "models/maps/GeoUtilities"], function (
        */
       parse(value) {
         if (typeof value !== 'string') {
-          return new GeoPoint();
+          return {};
         }
 
         const matches = value?.match(FLOATS_REGEX);
