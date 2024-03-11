@@ -57,7 +57,6 @@ define(
           [`click   .${this.classNames.button}`]: 'search',
           [`blur    .${this.classNames.input}`]: 'hidePredictionsList',
           [`change  .${this.classNames.input}`]: 'keyup',
-          [`click   .${this.classNames.input}`]: 'showPredictionsList',
           [`focus   .${this.classNames.input}`]: 'showPredictionsList',
           [`keydown .${this.classNames.input}`]: 'keydown',
           [`keyup   .${this.classNames.input}`]: 'keyup',
@@ -200,9 +199,7 @@ define(
        */
       showPredictionsList() {
         this.getList().show();
-        if (this.viewfinderModel.get('query') !== this.templateVars.inputValue) {
-          this.viewfinderModel.autocompleteSearch(this.templateVars.inputValue);
-        }
+        this.viewfinderModel.autocompleteSearch(this.templateVars.inputValue);
       },
 
       /**

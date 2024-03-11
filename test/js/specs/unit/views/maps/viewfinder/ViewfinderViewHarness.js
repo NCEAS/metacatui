@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 define([], function () {
   return class ViewFinderViewHarness {
@@ -6,18 +6,22 @@ define([], function () {
       this.view = view;
     }
     
-    clickInput() {
-      this.view.getInput().click();
+    focusInput() {
+      this.view.getInput().focus();
+    }
+
+    blurInput() {
+      this.view.getInput().blur();
     }
 
     setQuery(searchString) {
       this.view.getInput().val(searchString);
-      this.view.getInput().trigger("change");
+      this.view.getInput().trigger('change');
     }
 
     typeQuery(searchString) {
       this.view.getInput().val(searchString);
-      this.view.getInput().trigger("keyup");
+      this.view.getInput().trigger('keyup');
     }
 
     clickSearch() {
@@ -25,19 +29,19 @@ define([], function () {
     }
 
     hitEnter() {
-      this.view.getInput().trigger({ type: "keyup", key: 'Enter', });
+      this.view.getInput().trigger({ type: 'keyup', key: 'Enter', });
     }
 
     hitArrowUp() {
-      this.view.getInput().trigger({ type: "keyup", key: 'ArrowUp', });
+      this.view.getInput().trigger({ type: 'keyup', key: 'ArrowUp', });
     }
 
     hitArrowDown() {
-      this.view.getInput().trigger({ type: "keyup", key: 'ArrowDown', });
+      this.view.getInput().trigger({ type: 'keyup', key: 'ArrowDown', });
     }
 
     getError() {
-      return this.view.$el.find(".viewfinder__error").text();
+      return this.view.$el.find('.viewfinder__error').text();
     }
 
     getInput() {
