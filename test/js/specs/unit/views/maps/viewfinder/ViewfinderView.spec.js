@@ -10,7 +10,6 @@ define(
     '/test/js/specs/unit/views/maps/viewfinder/ViewfinderViewHarness.js',
     '/test/js/specs/unit/views/maps/viewfinder/PredictionsListViewHarness.js',
     '/test/js/specs/shared/clean-state.js',
-    '/test/js/specs/shared/mock-gmaps-module.js',
   ],
   (
     _,
@@ -20,8 +19,6 @@ define(
     ViewfinderViewHarness,
     PredictionsListViewHarness,
     cleanState,
-    // Import for side effect, unused.
-    unusedGmapsMock,
   ) => {
     const should = chai.should();
     const expect = chai.expect;
@@ -60,11 +57,18 @@ define(
         ];
         view.viewfinderModel.set('predictions', predictions);
 
+        // Actually render the view to document to test focus events.
+        const testContainer = document.createElement("div");
+        testContainer.id = "test-container";
+        testContainer.append(view.el);
+        document.body.append(testContainer);
+
         return {
           autocompleteSpy,
           debounceStub,
           harness,
           sandbox,
+          testContainer,
           view,
           zoomSpy,
         };
@@ -72,6 +76,7 @@ define(
 
       afterEach(() => {
         state.sandbox.restore();
+        state.testContainer.remove();
       });
 
       it('creates a ViewfinderView instance', () => {
@@ -156,16 +161,20 @@ define(
         expect(state.harness.getError()).to.match(/some error/);
       });
 
-      it('initially does not show a autocompletions list', () => {
-        state.view.render();
+      it('does not show an autocompletions list when input is not focused',
+        () => {
+          state.view.render();
+          state.harness.blurInput();
 
-        expect(state.autocompleteSpy.callCount).to.equal(0);
-      });
+          expect(state.view.getList().is(":visible")).to.be.false;
+        });
 
       it('updates autocompletions when list is shown with updated query string', () => {
         state.view.render();
+        // Focus is called on render, reset call count.
+        state.autocompleteSpy.resetHistory();
         state.view.viewfinderModel.set('query', 'some query');
-        state.harness.clickInput();
+        state.harness.focusInput();
 
         expect(state.autocompleteSpy.callCount).to.equal(1);
       });
