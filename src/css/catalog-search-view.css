@@ -202,7 +202,7 @@
   bottom: 1rem;
   z-index: 1;
   display: flex;
-  background: var(--map-col-bkg-lighter, black);
+  background: var(--map-col-bkg-lighter__deprecate, black);
   opacity: 0.8;
   padding: var(--cs-padding-small) var(--cs-padding-medium);
   border-radius: var(--map-border-radius, --cs-border-radius);
@@ -210,7 +210,7 @@
 }
 
 .map-filter-toggle__label {
-  color: var(--map-col-text, white);
+  color: var(--map-col-text__deprecate, white);
   margin: 0;
   line-height: 1;
   font-size: 0.7rem;
