@@ -7,11 +7,11 @@ define([], function () {
     }
 
     toggleExpand() {
-      this.view.$(`.${this.view.classNames.metadata}`).click();
+      this.view.$(".layer-category-item__metadata").click();
     }
 
     getLayers() {
-      return this.view.$(`.${this.view.classNames.layers}`);
+      return this.view.$(".layer-category-item__layers");
     }
   }
 });

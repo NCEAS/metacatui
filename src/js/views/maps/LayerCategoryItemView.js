@@ -22,6 +22,14 @@ define(
     // Sub-views
     LayerListView,
   ) {
+    const BASE_CLASS = 'layer-category-item';
+    const CLASS_NAMES = {
+      metadata: `${BASE_CLASS}__metadata`,
+      icon: `${BASE_CLASS}__icon`,
+      expanded: `${BASE_CLASS}__expanded`,
+      collapsed: `${BASE_CLASS}__collapsed`,
+      layers: `${BASE_CLASS}__layers`,
+    };
 
     /**
     * @class LayerCategoryItemView
@@ -48,7 +56,7 @@ define(
         * The HTML classes to use for this view's element
         * @type {string}
         */
-        className: 'layer-category-item',
+        className: BASE_CLASS,
 
         /**
         * The model that this view uses
@@ -62,17 +70,9 @@ define(
          */
         template: _.template(Template),
 
-        classNames: {
-          metadata: 'layer-category-item__metadata',
-          icon: 'layer-category-item__icon',
-          expanded: 'layer-category-item__expanded',
-          collapsed: 'layer-category-item__collapsed',
-          layers: 'layer-category-item__layers',
-        },
-
         /** @inheritdoc */
         events() {
-          return {[`click .${this.classNames.metadata}`]: 'toggleExpanded'};
+          return {[`click .${CLASS_NAMES.metadata}`]: 'toggleExpanded'};
         },
 
         /**
@@ -96,7 +96,7 @@ define(
 
           // Insert the template into the view
           this.$el.html(this.template({
-            classNames: this.classNames,
+            classNames: CLASS_NAMES,
             label: this.model.get('label'),
           }));
 
@@ -105,7 +105,7 @@ define(
 
           const layerList = new LayerListView({ collection: this.model.get("mapAssets") });
           layerList.render();
-          this.$(`.${this.classNames.layers}`).append(layerList.el);
+          this.$(`.${CLASS_NAMES.layers}`).append(layerList.el);
 
           // Show the category as expanded or collapsed depending on the model
           // properties.
@@ -120,7 +120,7 @@ define(
         insertIcon() {
           const icon = this.model.get('icon');
           if (icon && typeof icon === 'string' && IconUtilities.isSVG(icon)) {
-            this.$(`.${this.classNames.icon}`).html(icon);
+            this.$(`.${CLASS_NAMES.icon}`).html(icon);
           }
         },
 
@@ -138,9 +138,9 @@ define(
          * Show or hide the layer list based on the category's expand status.
          */
         updateLayerList() {
-          const expanded = this.$(`.${this.classNames.expanded}`);
-          const collapsed = this.$(`.${this.classNames.collapsed}`);
-          const layers = this.$(`.${this.classNames.layers}`);
+          const expanded = this.$(`.${CLASS_NAMES.expanded}`);
+          const collapsed = this.$(`.${CLASS_NAMES.collapsed}`);
+          const layers = this.$(`.${CLASS_NAMES.layers}`);
           if (this.model.get('expanded')) {
             expanded.show();
             collapsed.hide();
