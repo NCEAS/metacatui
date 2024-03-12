@@ -27,16 +27,18 @@
 
 :root {
   /* COLOURS */
-  --map-col-bkg: #111827;
-  --map-col-bkg-lighter: #1b2538;
-  --map-col-bkg-lightest: #242e42;
-  --map-col-buttons: #313c52;
-  --map-col-text: #F9FAFB;
+  --map-col-bkg__deprecate: #111827;
+  --map-col-bkg-lighter__deprecate: #1b2538;
+  --map-col-bkg-lightest__deprecate: #242e42;
+  --map-col-buttons__deprecate: #313c52;
+  --map-col-text__deprecate: #F9FAFB;
+  --map-col-buttons-emphasis__deprecate: var(--portal-secondary-color, var(--map-col-green));
+  --map-col-highlight__deprecate: var(--portal-primary-color, var(--map-col-blue));
+
   --map-col-green: #069868;
   --map-col-blue: #057fc6;
   --map-col-yellow: #f8b406;
-  --map-col-buttons-emphasis: var(--portal-secondary-color, var(--map-col-green));
-  --map-col-highlight: var(--portal-primary-color, var(--map-col-blue));
+
   --map-input-box-error-background: var(--portal-secondary-color-transparent);  /* TODO: yvonne - Use #FFFCF4 in the UI update PR. */
   --map-input-box-border-highlight: rgba(82, 168, 236, .8);  /* TODO: yvonne - Use #FFDDAA in the UI update PR. */
   --map-input-box-error-message: #CA6C0B;
@@ -61,7 +63,7 @@
 /* ---- TOOLTIP ---- */
 
 .map-tooltip {
-  color: var(--map-col-text);
+  color: var(--map-col-text__deprecate);
   border-radius: var(--map-border-radius);
   opacity: 1 !important;
   font-size: 0.8rem;
@@ -70,24 +72,24 @@
 }
 
 .map-tooltip.top .tooltip-arrow {
-  border-top-color: var(--map-col-buttons);
+  border-top-color: var(--map-col-buttons__deprecate);
 }
 
 .map-tooltip.right .tooltip-arrow {
-  border-right-color: var(--map-col-buttons);
+  border-right-color: var(--map-col-buttons__deprecate);
 }
 
 .map-tooltip.left .tooltip-arrow {
-  border-left-color: var(--map-col-buttons);
+  border-left-color: var(--map-col-buttons__deprecate);
 }
 
 .map-tooltip.bottom .tooltip-arrow {
-  border-bottom-color: var(--map-col-buttons);
+  border-bottom-color: var(--map-col-buttons__deprecate);
 }
 
 .map-tooltip .tooltip-inner {
   padding: 0.3rem;
-  background-color: var(--map-col-buttons);
+  background-color: var(--map-col-buttons__deprecate);
 }
 
 /* ---- BUTTON ---- */
@@ -103,8 +105,8 @@
   -webkit-appearance: button;
   border: 0;
   border-radius: var(--map-border-radius);
-  background: var(--map-col-buttons);
-  color: var(--map-col-text);
+  background: var(--map-col-buttons__deprecate);
+  color: var(--map-col-text__deprecate);
   white-space: nowrap;
   text-decoration: none;
   padding: 0.25rem 0.5rem;
@@ -118,14 +120,14 @@
 }
 
 .map-view__button--emphasis {
-  background: var(--map-col-buttons-emphasis);
+  background: var(--map-col-buttons-emphasis__deprecate);
   padding: 0.5rem 0.55rem;
   font-weight: 900;
   font-size: 1rem;
 }
 
 .map-view__button--active {
-  background-color: var(--map-col-highlight);
+  background-color: var(--map-col-highlight__deprecate);
 }
 
 /* ---- BADGE ---- */
@@ -134,8 +136,8 @@
   padding: 0.4em 0.5em 0.3em 0.55em;
   margin: 0 -0.2rem 0 0.3rem;
   font-size: 0.62rem;
-  background-color: var(--map-col-bkg-lighter);
-  color: var(--map-col-text);
+  background-color: var(--map-col-bkg-lighter__deprecate);
+  color: var(--map-col-text__deprecate);
   text-transform: uppercase;
   letter-spacing: 0.09em;
   filter: brightness(1.3);
@@ -156,15 +158,15 @@
 
 .map-view__badge--yellow {
   background-color: var(--map-col-yellow);
-  color: var(--map-col-bkg-lighter);
+  color: var(--map-col-bkg-lighter__deprecate);
   filter: none;
   font-weight: 600;
   opacity: 0.9;
 }
 
 .map-view__badge--contrast {
-  background-color: var(--map-col-text);
-  color: var(--map-col-bkg);
+  background-color: var(--map-col-text__deprecate);
+  color: var(--map-col-bkg__deprecate);
   opacity: 0.8;
   font-weight: 600;
 }
@@ -305,9 +307,9 @@
   width: max-content;
   min-width: 12rem;
   min-height: 2rem;
-  background: var(--map-col-bkg);
+  background: var(--map-col-bkg__deprecate);
   border-radius: var(--map-border-radius);
-  color: var(--map-col-text);
+  color: var(--map-col-text__deprecate);
   opacity: 0.7;
   font-size: 0.8rem;
   padding: 0.18rem 0.8rem;
@@ -351,7 +353,7 @@ represents 1 unit of the given distance measurement. */
   height: 4px;
   border-radius: 1px;
   transition: width 0.3s;
-  background-color: var(--map-col-text);
+  background-color: var(--map-col-text__deprecate);
 }
 
 /* The elements that contains the distance measurement */
@@ -369,7 +371,7 @@ represents 1 unit of the given distance measurement. */
 .toolbar {
   display: grid;
   grid-auto-flow: column;
-  color: var(--map-col-text);
+  color: var(--map-col-text__deprecate);
 }
 
 .toolbar__toggle {
@@ -387,14 +389,14 @@ represents 1 unit of the given distance measurement. */
   display: flex;
   flex-direction: column;
   height: min-content;
-  background-color: var(--map-col-bkg);
+  background-color: var(--map-col-bkg__deprecate);
   border-radius: var(--map-border-radius);
   margin: var(--map-size-toolbar-inter-link-margin);
   pointer-events: all;
 }
 
 .toolbar__all-content {
-  background-color: var(--map-col-bkg);
+  background-color: var(--map-col-bkg__deprecate);
   width: var(--map-width-toolbar);
   padding: 0.8rem;
   box-shadow: var(--map-shadow-md);
@@ -436,28 +438,28 @@ represents 1 unit of the given distance measurement. */
   cursor: pointer;
   height: var(--map-size-toolbar-link);
   width: var(--map-size-toolbar-link);
-  background-color: var(--map-col-bkg);
+  background-color: var(--map-col-bkg__deprecate);
   border-radius: var(--map-border-radius);
   padding: 0.2rem;
   margin: var(--map-size-toolbar-link-margin);
 }
 
 .toolbar__link:hover {
-  background-color: var(--map-col-bkg-lighter)
+  background-color: var(--map-col-bkg-lighter__deprecate)
 }
 
 .toolbar__link--active {
-  background-color: var(--map-col-highlight)
+  background-color: var(--map-col-highlight__deprecate)
 }
 
 .toolbar__link--active:hover {
-  background-color: var(--map-col-highlight)
+  background-color: var(--map-col-highlight__deprecate)
 }
 
 .toolbar__link-title {
   position: absolute;
   left: calc(100% + 1rem);
-  color: var(--map-col-text);
+  color: var(--map-col-text__deprecate);
   margin-top: 0.1em;
   text-transform: uppercase;
   font-size: 0.7rem;
@@ -470,7 +472,7 @@ represents 1 unit of the given distance measurement. */
 .toolbar__link:hover .toolbar__link-title {
   display: block;
   border-radius: var(--map-border-radius);
-  background-color: var(--map-col-bkg);
+  background-color: var(--map-col-bkg__deprecate);
   padding: 0.2rem 0.6rem
 }
 
@@ -608,7 +610,7 @@ represents 1 unit of the given distance measurement. */
 }
 
 .layer-item__label:hover {
-  color: var(--map-col-highlight);
+  color: var(--map-col-highlight__deprecate);
 }
 
 .layer-item__visibility-toggle {
@@ -631,7 +633,7 @@ represents 1 unit of the given distance measurement. */
 /* How to style the layer item when the layer details panel is showing for this item */
 
 .layer-item--selected .layer-item__label {
-  color: var(--map-col-highlight);
+  color: var(--map-col-highlight__deprecate);
   font-weight: 700;
 }
 
@@ -705,8 +707,8 @@ represents 1 unit of the given distance measurement. */
   border-top-right-radius: var(--map-border-radius);
   border-top-left-radius: var(--map-border-radius);
   padding: 0.4rem 0.8rem;
-  background-color: var(--map-col-bkg-lighter);
-  color: var(--map-col-text);
+  background-color: var(--map-col-bkg-lighter__deprecate);
+  color: var(--map-col-text__deprecate);
   box-shadow: var(--map-shadow-md);
   grid-template-columns: auto min-content;
   grid-template-rows: min-content auto;
@@ -723,7 +725,7 @@ represents 1 unit of the given distance measurement. */
 
 .layer-details__label {
   /* the important is needed to overwrite more specific styles set on portal title tags */
-  color: var(--map-col-text) !important;
+  color: var(--map-col-text__deprecate) !important;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -745,7 +747,7 @@ represents 1 unit of the given distance measurement. */
 .layer-details__notification {
   margin: -0.2rem 0 0.9rem 0;
   padding: 0.3rem 0.5rem;
-  background-color: var(--map-col-buttons);
+  background-color: var(--map-col-buttons__deprecate);
   border-radius: var(--map-border-radius);
 }
 
@@ -761,14 +763,14 @@ represents 1 unit of the given distance measurement. */
 
 .layer-details__notification--yellow {
   background-color: var(--map-col-yellow);
-  color: var(--map-col-bkg-lighter);
+  color: var(--map-col-bkg-lighter__deprecate);
   filter: none;
   opacity: 0.9;
 }
 
 .layer-details__notification--contrast {
-  background-color: var(--map-col-text);
-  color: var(--map-col-bkg);
+  background-color: var(--map-col-text__deprecate);
+  color: var(--map-col-bkg__deprecate);
   opacity: 0.95;
 }
 
@@ -789,7 +791,7 @@ represents 1 unit of the given distance measurement. */
 
 .layer-detail__label {
   /* the important is needed to overwrite more specific styles set on portal title tags */
-  color: var(--map-col-text) !important;
+  color: var(--map-col-text__deprecate) !important;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -886,7 +888,7 @@ represents 1 unit of the given distance measurement. */
   border-radius: var(--map-border-radius);
   background: var(--c-neutral-3);
   position: relative;
-  background-color: var(--map-col-buttons);
+  background-color: var(--map-col-buttons__deprecate);
 }
 
 .layer-opacity__range {
@@ -929,7 +931,7 @@ other class: .ui-slider-range */
   font-size: 0.8em;
   /* Show the opacity value just below the slider handle */
   margin-top: 2.5em;
-  color: var(--map-col-text);
+  color: var(--map-col-text__deprecate);
 }
 
 /*****************************************************************************************
@@ -950,8 +952,8 @@ other class: .ui-slider-range */
   border-top-left-radius: var(--map-border-radius);
   padding: 1rem 0.8rem 1rem 0.8rem;
   row-gap: 0.8rem;
-  background-color: var(--map-col-bkg-lighter);
-  color: var(--map-col-text);
+  background-color: var(--map-col-bkg-lighter__deprecate);
+  color: var(--map-col-text__deprecate);
   box-shadow: var(--map-shadow-md);
   grid-template-columns: auto 2.5rem;
   grid-template-rows: min-content auto min-content;
@@ -965,7 +967,7 @@ other class: .ui-slider-range */
 }
 
 .feature-info__label {
-  color: var(--map-col-text) !important;
+  color: var(--map-col-text__deprecate) !important;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1004,7 +1006,7 @@ other class: .ui-slider-range */
 
 .feature-info__table {
   /* TODO: use colour vars */
-  background-color: var(--map-col-bkg-lightest);
+  background-color: var(--map-col-bkg-lightest__deprecate);
   border-radius: var(--map-border-radius);
   box-shadow: var(--map-shadow-md);
   width: calc(var(--map-width-toolbar) - 2.2rem);
@@ -1019,7 +1021,7 @@ other class: .ui-slider-range */
 }
 
 .feature-info__table-row:nth-child(even) {
-  background-color: var(--map-col-bkg-lighter);
+  background-color: var(--map-col-bkg-lighter__deprecate);
 }
 
 .feature-info__table-cell {
@@ -1124,12 +1126,12 @@ other class: .ui-slider-range */
 }
 
 .nav-help {
-  background-color: var(--map-col-bkg-lighter);
+  background-color: var(--map-col-bkg-lighter__deprecate);
   border-radius: var(--map-border-radius);
 }
 
 .nav-help .map-view__button {
-  background-color: var(--map-col-bkg-lighter);
+  background-color: var(--map-col-bkg-lighter__deprecate);
   padding: 0.65rem 0.9rem;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
@@ -1137,7 +1139,7 @@ other class: .ui-slider-range */
 }
 
 .nav-help .map-view__button--active {
-  background-color: var(--map-col-bkg-lightest);
+  background-color: var(--map-col-bkg-lightest__deprecate);
   opacity: 1;
 }
 
@@ -1151,7 +1153,7 @@ other class: .ui-slider-range */
   width: 100%;
   gap: 0.8rem;
   padding: 0.8rem 0.4rem;
-  background-color: var(--map-col-bkg-lightest);
+  background-color: var(--map-col-bkg-lightest__deprecate);
   border-radius: var(--map-border-radius);
   border-top-left-radius: 0;
   border-top-right-radius: 0;
@@ -1239,7 +1241,7 @@ other class: .ui-slider-range */
 }
 
 .viewfinder__error {
-  color: var(--map-col-text);
+  color: var(--map-col-text__deprecate);
   font-size: .8rem;
   padding: 4px 12px;
 }
