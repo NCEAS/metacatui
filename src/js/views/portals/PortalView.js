@@ -513,7 +513,7 @@ define(["jquery",
             var theme = this.model.get("theme");
             var layout = this.model.get("layout");
             // TODO: make supported themes an app model config option?
-            var supportedThemes = ["dark"];
+            var supportedThemes = ["dark", "light"];
             var supportedLayouts = ["panels"];
             // We must remove theme/layout CSS when the user navigates away from the
             // portal in onClose(). To do this, we need to keep track of which CSS is
