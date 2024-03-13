@@ -178,7 +178,7 @@ define(
             },
             isVisible(model) {
               return model.get('showLayerList') &&
-                  (!model.get("layerCategories") || model.get("layerCategories").length === 0);
+                (!model.get("layerCategories") || model.get("layerCategories").length === 0);
             },
           },
           {
@@ -476,12 +476,19 @@ define(
         },
 
         /**
+         * @typedef {Object} SectionContentReturnType
+         * @property {HTMLElement} contentContainer - The content container HTML
+         * element.
+         * @property {Backbone.View} sectionContent - The Backbone.View instance
+         */
+
+        /**
          * Creates a container for a toolbar section's content, then rendered the
          * specified view in that container.
          * @param {SectionOption} sectionOption The view and view options that are set in
          * the Section Option are used to create the content container
-         * @returns {HTMLElement, Backbone.View} Returns the content container with the rendered view,
-         * and the Backbone.View itself.
+         * @returns {SectionContentReturnType} The content container with the
+         * rendered view, and the Backbone.View itself.
          */
         renderSectionContent: function (sectionOption) {
           try {
