@@ -41,7 +41,13 @@
     "./js/specs/unit/models/filters/SpatialFilter.spec.js",
     "./js/specs/unit/models/maps/Geohash.spec.js",
     "./js/specs/unit/models/maps/assets/CesiumGeohash.spec.js",
-    "./js/specs/unit/common/Utilities.spec.js"
+    "./js/specs/unit/common/Utilities.spec.js",
+    "./js/specs/unit/common/IconUtilities.spec.js",
+    "./js/specs/unit/models/maps/AssetCategory.spec.js",
+    "./js/specs/unit/collections/maps/AssetCategories.spec.js",
+    "./js/specs/unit/views/maps/LayerCategoryItemView.spec.js",
+    "./js/specs/unit/models/maps/Map.spec.js",
+    "./js/specs/unit/views/maps/CesiumWidgetView.spec.js"
   ],
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",
