@@ -7,6 +7,7 @@ define(
     * @class GoogleMapsGeocoder
     * @classdes Integrate with the Google Maps Geocoder API using the Google
     * Maps Geocoder JS library.
+    * @since x.x.x
     */
     return class GoogleMapsGeocoder {
       /** Google Maps service for interacting  with the Geocoder API.  */
