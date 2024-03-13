@@ -54,7 +54,8 @@ define(["backbone", "models/maps/GeoUtilities"], function (
        * and longitude pair.
        * @throws An error indicating that more than two numbers have been
        * entered.
-       * @returns 
+       * @returns {Object} Latitude and longitude information for creating a 
+       * GeoPoint.
        */
       parse(value) {
         if (typeof value !== 'string') {
