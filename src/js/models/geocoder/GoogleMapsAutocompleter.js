@@ -7,6 +7,7 @@ define(
     * @class GoogleMapsAutocompleter
     * @classdes Integrate with the Google Maps Places Autocomplete API using the
     * Google Maps AutocompleteService JS library.
+    * @since x.x.x
     */
     return class GoogleMapsAutocompleter {
       /**
