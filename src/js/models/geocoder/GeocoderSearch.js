@@ -10,6 +10,7 @@ define(
     * @class GeocoderSearch
     * @classdes GeocoderSearch interfaces with various geocoding and location
     * searching services.
+    * @since x.x.x
     */
     return class GeocoderSearch {
       /**
