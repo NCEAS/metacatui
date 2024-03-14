@@ -53,6 +53,13 @@ define(
         collection: undefined,
 
         /**
+        * Whether the layer list is a under a category. Flat layer list and categorized
+        * layer list are styled differently.
+        * @type {boolean}
+        */
+        isCategorized: undefined,
+
+        /**
          * The primary HTML template for this view
          * @type {Underscore.template}
          */
@@ -135,7 +142,8 @@ define(
               return memo;
             }
             const layerItem = new LayerItemView({
-              model: layerModel
+              model: layerModel,
+              isCategorized: this.isCategorized,
             })
             layerItem.render();
             this.el.appendChild(layerItem.el);

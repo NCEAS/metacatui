@@ -32,10 +32,18 @@ define([
         expect(state.view.layersView).to.be.instanceof(LayerCategoryListView);
       });
 
-      it("uses LayerListView if layerCategories doesn't exist", () => {
-        state.view.render();
+      describe("when layerCategories doesn't exist", () => {
+        it("uses LayerListView", () => {
+          state.view.render();
+  
+          expect(state.view.layersView).to.be.instanceof(LayerListView);
+        });
 
-        expect(state.view.layersView).to.be.instanceof(LayerListView);
+        it("creates layer items with isCategorized set to false", () => {
+          state.view.render();
+  
+          expect(state.view.layersView.layerItemViews[0].isCategorized).to.be.false;
+        });
       });
     });
 
