@@ -60,6 +60,13 @@ define(
         model: undefined,
 
         /**
+        * Whether the layer item is a under a category. Flat layer item and categorized
+        * layer item are styled differently.
+        * @type {boolean}
+        */
+        isCategorized: undefined,
+
+        /**
          * The primary HTML template for this view
          * @type {Underscore.template}
          */
@@ -92,6 +99,7 @@ define(
           hidden: 'layer-item--hidden',
           labelText: 'layer-item__label-text',
           highlightedText: 'layer-item__highlighted-text',
+          categorized: 'layer-item__categorized',
           badge: 'map-view__badge',
           tooltip: 'map-tooltip',
         },

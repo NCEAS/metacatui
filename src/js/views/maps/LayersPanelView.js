@@ -65,7 +65,10 @@ define([
       if (this.map.get('layerCategories')?.length > 0) {
         this.layersView = new LayerCategoryListView({ collection: this.map.get("layerCategories") });
       } else {
-        this.layersView = new LayerListView({ collection: this.map.get("layers") });
+        this.layersView = new LayerListView({
+          collection: this.map.get("layers"),
+          isCategorized: false,
+        });
       }
       this.layersView.render();
       this.$(`.${this.classNames.layers}`).append(this.layersView.el);
