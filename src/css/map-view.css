@@ -229,7 +229,7 @@
   top: 0;
   left: 0;
   height: 100%;
-  overflow: hidden;
+  min-height: 100%;
   width: min-content;
   /* required to be placed above map widget in firefox: */
   z-index: 1;
