@@ -7,12 +7,12 @@ define(
   ],
   (GoogleMapsGeocoder, GoogleMapsAutocompleter) => {
     /**
-    * @class GeocoderSearch
-    * @classdes GeocoderSearch interfaces with various geocoding and location
-    * searching services.
-    * @since x.x.x
-    */
-    return class GeocoderSearch {
+     * GeocoderSearch interfaces with various geocoding and location
+     * searching services.
+     * @classcategory Models/Geocoder
+     * @since x.x.x
+     */
+    class GeocoderSearch {
       /**
        * GoogleMapsAutocompleter model for interacting with Google Maps Places
        * Autocomplete APIs.
@@ -48,4 +48,6 @@ define(
         return this.googleMapsGeocoder.geocode(prediction);
       }
     }
+
+    return GeocoderSearch;
   });
