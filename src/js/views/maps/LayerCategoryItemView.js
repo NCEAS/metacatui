@@ -103,7 +103,10 @@ define(
           // Insert the icon on the left
           this.insertIcon();
 
-          this.layerListView = new LayerListView({ collection: this.model.get('mapAssets') });
+          this.layerListView = new LayerListView({
+            collection: this.model.get('mapAssets'),
+            isCategorized: true,
+          });
           this.layerListView.render();
           this.$(`.${CLASS_NAMES.layers}`).append(this.layerListView.el);
 
