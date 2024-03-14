@@ -27,6 +27,10 @@ define([
       it("creates an LayerCategoryItemView instance", () => {
         expect(state.view).to.be.instanceof(LayerCategoryItemView);
       });
+
+      it("creates layer items with isCategorized set to true", () => {
+        expect(state.view.layerListView.layerItemViews[0].isCategorized).to.be.true;
+      });
     });
 
     it("toggles between expanded and collapsed", () => {
