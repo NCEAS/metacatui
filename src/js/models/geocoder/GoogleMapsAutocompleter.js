@@ -4,12 +4,12 @@ define(
   ['backbone', 'gmaps', 'models/geocoder/Prediction'],
   (Backbone, gmaps, Prediction) => {
     /**
-    * @class GoogleMapsAutocompleter
-    * @classdes Integrate with the Google Maps Places Autocomplete API using the
-    * Google Maps AutocompleteService JS library.
-    * @since x.x.x
-    */
-    return class GoogleMapsAutocompleter {
+     * Integrate with the Google Maps Places Autocomplete API using the
+     * Google Maps AutocompleteService JS library.
+     * @classcategory Models/Geocoder
+     * @since x.x.x
+     */
+    class GoogleMapsAutocompleter {
       /**
        * Google Maps service for interacting with the Places Autocomplete API.
        */
@@ -46,4 +46,6 @@ define(
         }));
       }
     }
+
+    return GoogleMapsAutocompleter;
   });

@@ -4,12 +4,12 @@ define(
   ['backbone', 'gmaps', 'models/geocoder/GeocodedLocation'],
   (Backbone, gmaps, GeocodedLocation) => {
     /**
-    * @class GoogleMapsGeocoder
-    * @classdes Integrate with the Google Maps Geocoder API using the Google
-    * Maps Geocoder JS library.
-    * @since x.x.x
-    */
-    return class GoogleMapsGeocoder {
+     * Integrate with the Google Maps Geocoder API using the Google
+     * Maps Geocoder JS library.
+     * @classcategory Models/Geocoder
+     * @since x.x.x
+     */
+    class GoogleMapsGeocoder {
       /** Google Maps service for interacting  with the Geocoder API.  */
       geocoder = new gmaps.Geocoder();
 
@@ -49,4 +49,6 @@ define(
         });
       }
     }
+
+    return GoogleMapsGeocoder;
   });
