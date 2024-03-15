@@ -451,7 +451,6 @@ represents 1 unit of the given distance measurement. */
 .toolbar__all-content {
   background-color: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
   width: var(--map-width-toolbar);
-  padding: 0.8rem;
   box-shadow: var(--map-shadow-md);
   flex-direction: column;
   /* Don't display the content unless the toolbar is open. The outermost element, with
@@ -476,14 +475,16 @@ represents 1 unit of the given distance measurement. */
   overflow: auto;
 
   /* TODO: yvonne - Temporary. I'll clean this up in a separate PR. */
-  h2, h3 {
+  .toolbar__content-header {
     color: var(--map-col-text-title);
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 32px;
+    margin: 16px 24px;
   }
 }
 
 .toolbar__content--active {
-  padding-top: 1rem;
-  padding-right: 1rem;
   display: flex;
 }
 
@@ -630,6 +631,10 @@ represents 1 unit of the given distance measurement. */
 
 .layers-panel {
   width: 100%;
+
+  .layers-panel__search {
+    margin: 0 24px;
+  }
 }
 
 /*****************************************************************************************
@@ -657,6 +662,7 @@ represents 1 unit of the given distance measurement. */
   display: grid;
   grid-template-columns: auto max-content min-content;
   align-items: center;
+  padding: 0 24px;
 }
 
 .layer-item__label {
@@ -664,9 +670,9 @@ represents 1 unit of the given distance measurement. */
   font-size: 0.93rem;
   font-weight: 500;
   letter-spacing: 0.015em;
-  margin-right: 0.4rem;
   display: flex;
   align-items: center;
+  margin: 0 8px;
   color: var(--map-col-text-label);
 }
 
@@ -746,6 +752,7 @@ represents 1 unit of the given distance measurement. */
   align-items: center;
   box-shadow: 0 1px #f1f3f4 inset;
   cursor: pointer;
+  padding: 0 24px;
  }
 
  .layer-category-item__icon-and-label {
@@ -1215,6 +1222,10 @@ other class: .ui-slider-range */
 
 .map-help-panel{
   width: 100%;
+
+  .map-help-panel__content {
+    margin: 0 24px;
+  }
 }
 
 .nav-help {
@@ -1292,15 +1303,6 @@ other class: .ui-slider-range */
   grid-template-columns: 70px auto;
   gap: 0.5rem;
   align-items: center;
-}
-
-.map-help-panel__title{
-  text-transform: uppercase;
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  margin: 0 0 0.8rem 0;
-  line-height: normal;
 }
 
 .map-help-panel__section:not(:first-child) {
