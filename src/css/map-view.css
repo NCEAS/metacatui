@@ -425,18 +425,6 @@ represents 1 unit of the given distance measurement. */
   color: var(--map-col-content-bkg, var(--map-col-text__deprecate));
 }
 
-.toolbar__toggle {
-  width: 1.9rem;
-  align-self: flex-end;
-  padding: 0.4rem;
-  font-size: 1.25rem;
-  background-color: transparent;
-  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.6);
-  margin-bottom: 0.5rem;
-  margin-right: -0.3rem;
-  color: var(--map-col-utility-buttons);
-}
-
 .toolbar__links {
   display: flex;
   flex-direction: column;
