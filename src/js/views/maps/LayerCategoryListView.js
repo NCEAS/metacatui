@@ -75,6 +75,7 @@ define(
             const layerCategoryItemView = new LayerCategoryItemView({model: categoryModel});
             layerCategoryItemView.render();
             this.el.appendChild(layerCategoryItemView.el);
+            return layerCategoryItemView;
           });
 
           return this;
