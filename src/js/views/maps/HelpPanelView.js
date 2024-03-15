@@ -144,7 +144,7 @@ define(["backbone", "text!templates/maps/cesium-nav-help.html"], function (
 
           const sectionEl = document.createElement("section");
           sectionEl.classList.add("map-help-panel__section");
-          sectionEl.innerHTML = `<h3 class="map-help-panel__title">${section.title}</h3>
+          sectionEl.innerHTML = `<h3 class="toolbar__content-header">${section.title}</h3>
               <div class="${contentContainerClass}"></div>`;
           const contentEl = sectionEl.querySelector(
             "." + contentContainerClass
