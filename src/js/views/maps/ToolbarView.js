@@ -61,9 +61,9 @@ define(
         model: null,
 
         /**
-         * The primary HTML template for this view. The template must have three element,
-         * one with the contentContainer class, one with the linksContainer class, and one
-         * with the toggle class. See {@link ToolbarView#classes}.
+         * The primary HTML template for this view. The template must have two element,
+         * one with the contentContainer class, and one with the linksContainer class.
+         * See {@link ToolbarView#classes}.
          * @type {Underscore.template}
          */
         template: _.template(Template),
@@ -78,8 +78,6 @@ define(
          * @property {string} contentContainer The element that contains all containers
          * for the toolbar section content. This element must be part of this view's
          * template.
-         * @property {string} toggle The element in the template that acts as a toggle to
-         * close the toolbar.
          * @property {string} linksContainer The container for all of the section links
          * (i.e. tabs)
          * @property {string} link A section link
@@ -95,7 +93,6 @@ define(
         classes: {
           open: 'toolbar--open',
           contentContainer: 'toolbar__all-content',
-          toggle: 'toolbar__toggle',
           linksContainer: 'toolbar__links',
           link: 'toolbar__link',
           linkTitle: 'toolbar__link-title',
@@ -103,20 +100,6 @@ define(
           linkActive: 'toolbar__link--active',
           content: 'toolbar__content',
           contentActive: 'toolbar__content--active'
-        },
-
-        /**
-        * Creates an object that gives the events this view will listen to and the
-        * associated function to call. Each entry in the object has the format 'event
-        * selector': 'function'.
-        * @returns {Object}
-        */
-        events: function () {
-          var events = {};
-          // Close the toolbar when the toggle button is clicked. Get the class of the
-          // toggle button from the classes property set in this view.
-          events['click .' + this.classes.toggle] = 'close'
-          return events
         },
 
         /**
