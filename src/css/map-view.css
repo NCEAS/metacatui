@@ -154,8 +154,6 @@
   text-decoration: none;
   padding: 0.25rem 0.5rem;
   cursor: pointer;
-  /* temp */
-  margin-right: -1px !important;
 }
 
 .map-view__button:hover {
@@ -639,7 +637,6 @@ represents 1 unit of the given distance measurement. */
   display: grid;
   grid-template-columns: 100%;
   grid-template-rows: auto;
-  gap: 0.8rem;
   width: 100%;
   height: min-content;
 }
@@ -647,20 +644,61 @@ represents 1 unit of the given distance measurement. */
 /* A layer-item is one item in the layer-list */
 
 .layer-item {
-  width: 100%;
   display: grid;
-  grid-template-columns: auto max-content min-content;
+  grid-template-columns: min-content auto max-content;
   align-items: center;
   padding: 0 24px;
+
+  .layer-item__visibility-toggle {
+    opacity: var(--map-no-brightness-or-opacity-tweaks, 0.85);
+    padding: 0;
+    margin: 4px;
+    border: 0;
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--map-col-buttons-icon-muted, currentColor);
+    background-color: transparent;
+
+    .layer-item__icon {
+      fill: var(--map-col-buttons-icon-muted, currentColor);
+      svg>path {
+        fill: var(--map-col-buttons-icon-muted, currentColor);
+      }
+
+      height: 16px;
+      width: auto;
+      opacity: var(--map-no-brightness-or-opacity-tweaks, 0.8);
+    }
+  }
+
+  &:hover {
+    background-color: var(--map-col-content-bkg-muted, #323745);
+  }
+
+  &.layer-item--shown:hover {
+    background-color: var(--map-col-content-bkg-highlight, #15324e);
+  }
+
+  &.layer-item--shown .layer-item__visibility-toggle {
+    color: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
+
+    .layer-item__icon {
+      fill: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
+      svg>path {
+        fill: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
+      }
+    }
+  }
 }
 
 .layer-item__label {
   cursor: pointer;
-  font-size: 0.93rem;
+  font-size: 14px;
   font-weight: 500;
-  letter-spacing: 0.015em;
-  display: flex;
-  align-items: center;
   margin: 0 8px;
   color: var(--map-col-text-label);
 }
@@ -669,35 +707,9 @@ represents 1 unit of the given distance measurement. */
   background-color: var(--map-col-search-match-highlight);
 }
 
-.layer-item__icon {
-  fill: currentColor;
-  height: 1.04rem;
-  width: auto;
-  margin-right: 0.34rem;
-  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.8);
-}
-
 .layer-item__icon>svg {
   height: 100%;
   width: auto;
-}
-
-.layer-item__label:hover {
-  color: var(--map-col-text-label, var(--map-col-highlight__deprecate));
-  background-color: var(--map-col-content-bkg-muted);
-}
-
-.layer-item__visibility-toggle {
-  background: none;
-  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.85);
-  padding: 0;
-  margin-left: 0.5rem;
-}
-
-.layer-item__visibility-toggle:before {
-  /* use the font awesome 'eye-open' icon */
-  font-family: FontAwesome;
-  content: "\f06e";
 }
 
 .layer-item__visibility-toggle:hover {
@@ -709,17 +721,6 @@ represents 1 unit of the given distance measurement. */
 .layer-item--selected .layer-item__label {
   color: var(--map-col-text-label, var(--map-col-highlight__deprecate));
   font-weight: 700;
-}
-
-/* How to style the layer item when the layer is hidden on the map */
-
-.layer-item--hidden {
-  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.3);
-}
-
-.layer-item--hidden .layer-item__visibility-toggle:before {
-  /* switch to the font awesome 'eye-closed' icon */
-  content: "\f070";
 }
 
 /*****************************************************************************************
@@ -743,6 +744,10 @@ represents 1 unit of the given distance measurement. */
       font-size: 16px;
       grid-template-columns: min-content auto min-content;
       padding: 0 24px;
+
+      &:hover {
+        background-color: var(--map-col-content-bkg-highlight, #15324e);
+      }
     }
   }
 }
@@ -1170,8 +1175,9 @@ other class: .ui-slider-range */
  */
 
 .map-legend--preview {
-  height: 1.2rem;
-  width: 100%
+  height: 24px;
+  width: 100%;
+  margin: 4px;
 }
 
 .map-legend__svg--preview {
