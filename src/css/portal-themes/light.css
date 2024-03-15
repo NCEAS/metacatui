@@ -52,6 +52,9 @@
   --portal-col-input-error-text: #CA6C0B;
   --portal-col-search-match-highlight: #FEF4D6;
 
+  --portal-col-tooltip-background: var(--portal-grey-7);
+  --portal-col-tooltip-text: white;
+
   --portal-col-bkg: #111827;
   --portal-col-bkg-lighter: #1F2937;
   --portal-col-bkg-active: #374151;
