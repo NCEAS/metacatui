@@ -71,6 +71,9 @@
   --map-col-yellow: #f8b406;
   --map-col-text-on-yellow: #1b2538;
 
+  --map-col-tooltip-background: var(--portal-col-tooltip-background);
+  --map-col-tooltip-text: var(--portal-col-tooltip-text);
+
   --map-col-bkg__deprecate: #111827;
   --map-col-bkg-lighter__deprecate: #1b2538;
   --map-col-bkg-lightest__deprecate: #242e42;
@@ -102,7 +105,7 @@
 /* ---- TOOLTIP ---- */
 
 .map-tooltip {
-  color: var(--map-col-text-body, var(--map-col-text__deprecate));
+  color: var(--map-col-tooltip-text, var(--map-col-text__deprecate));
   border-radius: var(--map-border-radius);
   opacity: var(--map-no-brightness-or-opacity-tweaks, 1) !important;
   font-size: 0.8rem;
@@ -110,25 +113,25 @@
 }
 
 .map-tooltip.top .tooltip-arrow {
-  border-top-color: var(--map-col-content-bkg-highlight, var(--map-col-buttons__deprecate));
+  border-top-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
 }
 
 .map-tooltip.right .tooltip-arrow {
-  border-right-color: var(--map-col-content-bkg-highlight, var(--map-col-buttons__deprecate));
+  border-right-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
 }
 
 .map-tooltip.left .tooltip-arrow {
-  border-left-color: var(--map-col-content-bkg-highlight, var(--map-col-buttons__deprecate));
+  border-left-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
 }
 
 .map-tooltip.bottom .tooltip-arrow {
-  border-bottom-color: var(--map-col-content-bkg-highlight, var(--map-col-buttons__deprecate));
+  border-bottom-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
 }
 
 .map-tooltip .tooltip-inner {
   padding: 0.3rem;
-  background-color: var(--map-col-content-bkg-highlight, var(--map-col-buttons__deprecate));
-  color: var(--map-col-text-body);
+  background-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
+  color: var(--map-col-tooltip-text);
 }
 
 /* ---- BUTTON ---- */
@@ -516,7 +519,7 @@ represents 1 unit of the given distance measurement. */
 .toolbar__link-title {
   position: absolute;
   left: calc(100% + 1rem);
-  color: var(--map-col-buttons-text, var(--map-col-text__deprecate));
+  color: var(--map-col-tooltip-text, var(--map-col-text__deprecate));
   margin-top: 0.1em;
   text-transform: uppercase;
   font-size: 0.7rem;
@@ -529,7 +532,7 @@ represents 1 unit of the given distance measurement. */
 .toolbar__link:hover .toolbar__link-title {
   display: block;
   border-radius: var(--map-border-radius);
-  background-color: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
+  background-color: var(---map-col-tooltip-background, var(--map-col-bkg__deprecate));
   padding: 0.2rem 0.6rem
 }
 
@@ -963,7 +966,6 @@ represents 1 unit of the given distance measurement. */
   letter-spacing: 0.01em;
   font-size: 0.9rem;
   justify-self: center;
-  /* color: var(--map-col-buttons-text, var(--portal-primary-color)) !important; */
 }
 
 .layer-opacity {
