@@ -729,44 +729,48 @@ represents 1 unit of the given distance measurement. */
  *
  */
 
- .layer-category-list {
+.layer-category-list {
   width: 100%;
- }
 
- .layer-category-item__metadata {
-  height: 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 1px #f1f3f4 inset;
-  cursor: pointer;
-  padding: 0 24px;
- }
+  .layer-category-item {
+    box-shadow: 0 1px #f1f3f4 inset;
 
- .layer-category-item__icon-and-label {
-  align-items: center;
-  display: flex;
-  color: var(--map-col-text-highlight);
- }
+    .layer-category-item__metadata {
+      display: grid;
+      align-items: center;
+      cursor: pointer;
+      font-size: 16px;
+      grid-template-columns: min-content auto min-content;
+      padding: 0 24px;
+    }
+  }
+}
 
 .layer-category-item__label {
-  font-size: 16px;
   font-weight: 500;
+  color: var(--map-col-text-highlight, var(--map-col-highlight__deprecate));
 }
 
 .layer-category-item__icon {
-  fill: currentColor;
-  height: 24px;
-  width: 24px;
-  margin-right: 16px;
+  fill: var(--map-col-text-highlight, var(--map-col-highlight__deprecate));
+  color: var(--map-col-text-highlight, var(--map-col-highlight__deprecate));
+  height: 32px;
+  width: 32px;
+  margin: 4px;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .layer-category-item__icon>svg {
-  height: 24px;
+  height: 16px;
 }
 
-.layer-category-item__expanded, .layer-category-item__collapsed {
-  font-size: 16px;
+.layer-category-item__expand-toggle {
+  width: 32px;
+  display: flex;
+  justify-content: center;
   color: var(--map-col-utility-buttons);
 }
 
