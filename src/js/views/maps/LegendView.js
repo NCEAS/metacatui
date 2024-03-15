@@ -322,22 +322,20 @@ define(
                 })
 
               legendSquares.on('mouseenter', function (d) {
-                if (view.model.get('visible')) {
-                  // Bring the hovered element to the front, while keeping other
-                  // legendSquares in order
-                  legendSquares.sort((a, b) => d3.ascending(a.i, b.i));
-                  this.parentNode.appendChild(this)
-                  // Show tooltip
-                  if (d.label || d.value || d.value === 0) {
-                    $(this).tooltip({
-                      placement: 'bottom',
-                      trigger: 'manual',
-                      title: d.label || d.value,
-                      container: view.$el,
-                      animation: false,
-                      template: '<div class="tooltip ' + view.classes.tooltip + '"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>'
-                    }).tooltip('show')
-                  }
+                // Bring the hovered element to the front, while keeping other
+                // legendSquares in order
+                legendSquares.sort((a, b) => d3.ascending(a.i, b.i));
+                this.parentNode.appendChild(this)
+                // Show tooltip
+                if (d.label || d.value || d.value === 0) {
+                  $(this).tooltip({
+                    placement: 'bottom',
+                    trigger: 'manual',
+                    title: d.label || d.value,
+                    container: view.$el,
+                    animation: false,
+                    template: '<div class="tooltip ' + view.classes.tooltip + '"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>'
+                  }).tooltip('show')
                 }
               })
                 // Hide tooltip and return squares to regular z-ordering

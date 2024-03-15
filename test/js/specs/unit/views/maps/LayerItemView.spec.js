@@ -63,5 +63,41 @@ define([
         expect(matchedSpan).to.have.lengthOf(0);
       });
     });
+
+    describe("visibility toggle", () => {
+      it("uses eye icon if layer is categorized", () => {
+        state.view.isCategorized = true;
+        state.view.render();
+
+        expect(state.harness.getVisibilityToggle().children(".icon-eye-open")).to.have.lengthOf(1);
+      });
+
+      describe("when layer is not categorized", () => {
+        it("uses layer's icon", () => {
+          const icon = "<svg></svg>";
+          state.view.model.set("icon", icon);
+          state.view.render();
+  
+          expect(state.harness.getLayerIconVisibilityToggle().innerHTML).to.equal(icon);
+        });
+
+        it("uses the default icon if layer icon does not exist", () => {
+          expect(state.harness.getLayerIconVisibilityToggle().innerHTML).to.equal(state.view.model.defaults().icon);
+        });
+
+        it("updates the icon when it's fetched", () => {
+          state.view.model.set("iconStatus", "fetching");
+          state.view.render();
+
+          expect(state.harness.getLayerIconVisibilityToggle().innerHTML).to.equal(state.view.model.defaults().icon);
+
+          const icon = "<svg></svg>";
+          state.view.model.set("icon", icon);
+          state.view.model.set("iconStatus", "success");
+
+          expect(state.harness.getLayerIconVisibilityToggle().innerHTML).to.equal(icon);
+        });
+      });
+    });
   });
 });

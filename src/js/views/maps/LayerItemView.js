@@ -22,7 +22,6 @@ define(
     // Sub-views
     Legend
   ) {
-
     /**
     * @class LayerItemView
     * @classdesc One item in a Layer List: shows some basic information about the Map
@@ -84,8 +83,8 @@ define(
          * inserted into.
          * @property {string} selected The class that gets added to the view when the Layer
          * Item is selected
-         * @property {string} hidden The class that gets added to the view when the Layer
-         * Item is not visible
+         * @property {string} shown The class that gets added to the view when the Layer
+         * Item is visible
          * @property {string} badge The class to add to the badge element that is shown
          * when the layer has a notification message
          * @property {string} tooltip Class added to tooltips used in this view
@@ -96,7 +95,7 @@ define(
           visibilityToggle: 'layer-item__visibility-toggle',
           legendContainer: 'layer-item__legend-container',
           selected: 'layer-item--selected',
-          hidden: 'layer-item--hidden',
+          shown: 'layer-item--shown',
           labelText: 'layer-item__label-text',
           highlightedText: 'layer-item__highlighted-text',
           categorized: 'layer-item__categorized',
@@ -176,7 +175,9 @@ define(
             this.labelEl = this.el.querySelector('.' + this.classes.label)
 
             // Insert the icon on the left
-            this.insertIcon()
+            if (!this.isCategorized) {
+              this.insertIcon();
+            }
 
             // Add a thumbnail / legend preview
             const legendContainer = this.el.querySelector('.' + this.classes.legendContainer)
@@ -203,7 +204,7 @@ define(
             this.stopListening(this.model, 'change:selected')
             this.listenTo(this.model, 'change:selected', this.showSelection)
 
-            // Similar to above, add or remove the hidden class when the layer's
+            // Similar to above, add or remove the shown class when the layer's
             // visibility changes
             this.stopListening(this.model, 'change:visible')
             this.listenTo(this.model, 'change:visible', this.showVisibility)
@@ -231,20 +232,19 @@ define(
         insertIcon: function () {
           try {
             const model = this.model;
-            const iconStatus = model.get('iconStatus')
+            let icon = model.get('icon');
+            if (!icon || typeof icon !== 'string' || !IconUtilities.isSVG(icon)) {
+              icon = model.defaults().icon;
+            }
+            const iconContainer = document.createElement('span');
+            iconContainer.classList.add(this.classes.icon);
+            iconContainer.innerHTML = icon;
+            this.el.querySelector('.' + this.classes.visibilityToggle).replaceChildren(iconContainer);
+
+            const iconStatus = model.get('iconStatus');
             if (iconStatus && iconStatus === 'fetching') {
-              this.listenToOnce(model, 'change:iconStatus', this.insertIcon)
-              return
-            }
-            if (iconStatus === 'error') {
-              return
-            }
-            const icon = model.get('icon')
-            if (icon && typeof icon === 'string' && IconUtilities.isSVG(icon)) {
-              const iconContainer = document.createElement('span')
-              iconContainer.classList.add(this.classes.icon)
-              iconContainer.innerHTML = icon
-              this.el.querySelector('.' + this.classes.label).prepend(iconContainer)
+              this.listenToOnce(model, 'change:iconStatus', this.insertIcon);
+              return;
             }
           }
           catch (error) {
@@ -330,7 +330,7 @@ define(
         },
 
         /**
-         * Add or remove styles that indicate that the layer is hidden based on what is
+         * Add or remove styles that indicate that the layer is shown based on what is
          * set in the Layer model's 'visible' attribute. Executed whenever the 'visible'
          * attribute changes.
          */
@@ -338,14 +338,14 @@ define(
           try {
             var layerModel = this.model;
             if (layerModel.get('visible')) {
-              this.el.classList.remove(this.classes.hidden)
+              this.$el.addClass(this.classes.shown);
             } else {
-              this.el.classList.add(this.classes.hidden)
+              this.$el.removeClass(this.classes.shown);
             }
           }
           catch (error) {
             console.log(
-              'There was an error changing the hidden styles in a LayerItemView' +
+              'There was an error changing the shown styles in a LayerItemView' +
               '. Error details: ' + error
             );
           }
