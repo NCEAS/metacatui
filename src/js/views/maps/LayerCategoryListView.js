@@ -46,10 +46,10 @@ define(
         className: 'layer-category-list',
 
         /**
-        * The collection of layers to display in the list
-        * @type {AssetCategories}
+        * The array of layer categories to display in the list
+        * @type {LayerCategoryItemView[]}
         */
-        collection: undefined,
+        layerCategoryItemViews: undefined,
 
         /**
         * Executed when a new LayerCategoryListView is created
@@ -57,7 +57,9 @@ define(
         */
         initialize(options) {
           if (options.collection instanceof AssetCategories) {
-            this.collection = options.collection.clone();
+            this.layerCategoryItemViews = options.collection.map(categoryModel => {
+              return new LayerCategoryItemView({model: categoryModel});
+            });
           }
         },
 
@@ -66,16 +68,9 @@ define(
         * @return {LayerCategoryListView} Returns the rendered view element
         */
         render() {
-          if (!this.collection) {
-            return;
-          }
-
-          // Render a layer item for each layer in the collection
-          this.layerCategoryItemViews = this.collection.map(categoryModel => {
-            const layerCategoryItemView = new LayerCategoryItemView({model: categoryModel});
+          this.layerCategoryItemViews = _.forEach(this.layerCategoryItemViews, layerCategoryItemView => {
             layerCategoryItemView.render();
             this.el.appendChild(layerCategoryItemView.el);
-            return layerCategoryItemView;
           });
 
           return this;

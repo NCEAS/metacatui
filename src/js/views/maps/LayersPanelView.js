@@ -81,7 +81,8 @@ define([
 
     /**
      * Search function for the SearchInputView.
-     * @returns {boolean} True if there is a layer match.
+     * @param {string} [text] - The search text from user input.
+     * @returns {boolean} - True if there is a layer match.
      */
     search(text) {
       this.dismissLayerDetails();

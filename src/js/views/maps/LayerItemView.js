@@ -498,25 +498,25 @@ define(
          * @returns {boolean} - True if a layer label matches the text
          */
         search(text) {
-          let newLabel = this.model.get('label');
-          let matched;
-          if (text === '') {
-            matched = true;
-          } else if (text?.length > 0) {
-            const regex = new RegExp(text, "ig");
-            newLabel = this.model.get('label').replaceAll(regex, matchedText => {
-              matched = true;
-              return $('<span />').addClass(this.classes.highlightedText).html(matchedText).prop('outerHTML');
-            });
-          }
-          this.labelEl.querySelector(`.${this.classes.labelText}`).innerHTML = newLabel;
-
-          if (matched) {
+          if (!text) {
             this.$el.show();
-          } else {
-            this.$el.hide();
+            return true;
           }
-          return matched;
+
+          const regex = new RegExp(text, "ig");
+          const newLabel = this.model.get('label').replaceAll(regex, matchedText => {
+            return $('<span />').addClass(this.classes.highlightedText).html(matchedText).prop('outerHTML');
+          });
+
+          // Label is unchanged.
+          if (newLabel === this.model.get('label')) {
+            this.$el.hide();
+            return false;
+          }
+
+          this.labelEl.querySelector(`.${this.classes.labelText}`).innerHTML = newLabel;
+          this.$el.show();
+          return true;
         },
       }
     );
