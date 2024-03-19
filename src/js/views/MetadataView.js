@@ -187,6 +187,8 @@ define(['jquery',
           //Create a DataONEObject model to use in the DataPackage collection.
           var dataOneObject = new ScienceMetadata({ id: this.model.get("id") });
 
+          var view = this;
+
           // Create a new data package with this id
           this.dataPackage = new DataPackage([dataOneObject], { id: pid });
 
@@ -212,6 +214,23 @@ define(['jquery',
             }
 
           });
+
+          this.listenToOnce(this.dataPackage, "fetchFailed", function () {
+            view.dataPackageSynced = false;
+
+            // stop listening to the fetch complete
+            view.stopListening(view.dataPackage, "complete");
+
+            //Remove the loading elements
+            view.$(view.tableContainer).find(".loading").remove();
+
+            //Show an error message
+            MetacatUI.appView.showAlert(
+                "Error retrieving files for this data package.",
+                "alert-error",
+                view.$(view.tableContainer));
+          });
+
           if (this.dataPackage.packageModel && this.dataPackage.packageModel.get("synced") === true) {
             this.checkWritePermissions();
           } else {

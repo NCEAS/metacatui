@@ -468,6 +468,8 @@ define([
                             .fail(function() {
                                 // trigger failure()
                                 console.log("Fetch failed");
+
+                                thisPackage.trigger("fetchFailed", thisPackage);
                             });
                 };
             
