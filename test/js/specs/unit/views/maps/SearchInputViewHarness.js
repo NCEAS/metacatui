@@ -19,19 +19,19 @@ define([], function () {
     }
 
     hitEnter() {
-      this.view.getInput().trigger({ type: "keyup", key: "Enter", });
+      this.view.getInput().trigger({ type: "keyup", key: "Enter" });
     }
 
     getSearchButton() {
-      return this.view.$el.find(`.${this.view.classNames.searchButton}`);
+      return this.view.$el.find(".search-input__search-button");
     }
 
     getCancelButton() {
-      return this.view.$el.find(`.${this.view.classNames.cancelButton}`);
+      return this.view.$el.find(".search-input__cancel-button");
     }
 
     hasErrorInput() {
-      return this.view.getInput().hasClass(this.view.classNames.errorInput);
+      return this.view.getInput().hasClass("search-input__error-input");
     }
   }
 });

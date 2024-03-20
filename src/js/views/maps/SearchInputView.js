@@ -7,6 +7,15 @@ define([
   Backbone,
   Template,
 ) => {
+  const BASE_CLASS = "search-input";
+  const CLASS_NAMES = {
+    searchButton: `${BASE_CLASS}__search-button`,
+    cancelButton: `${BASE_CLASS}__cancel-button`,
+    input: `${BASE_CLASS}__input`,
+    errorInput: `${BASE_CLASS}__error-input`,
+    errorText: `${BASE_CLASS}__error-text`,
+  };
+
   /**
    * @class SearchInputView
    * @classdesc SearchInputView is a shared component for searching information in the
@@ -28,19 +37,7 @@ define([
     * The HTML classes to use for this view's element
     * @type {string}
     */
-    className: "search-input",
-
-    /**
-     * The HTML classes to use for this view's HTML elements.
-     * @type {Object<string,string>}
-     */
-    classNames: {
-      searchButton: "search-input__search-button",
-      cancelButton: "search-input__cancel-button",
-      input: "search-input__input",
-      errorInput: "search-input__error-input",
-      errorText: "search-input__error-text",
-    },
+    className: BASE_CLASS,
 
     /** 
      * Values meant to be used by the rendered HTML template.
@@ -48,7 +45,7 @@ define([
     templateVars: {
       errorText: "",
       placeholder: "",
-      classNames: {},
+      classNames: CLASS_NAMES,
     },
 
     /**
@@ -57,9 +54,9 @@ define([
     */
     events() {
       return {
-        [`keyup .${this.classNames.input}`]: 'keyup',
-        [`click .${this.classNames.searchButton}`]: "onSearch",
-        [`click .${this.classNames.cancelButton}`]: "onCancel",
+        [`keyup .${CLASS_NAMES.input}`]: 'keyup',
+        [`click .${CLASS_NAMES.searchButton}`]: "onSearch",
+        [`click .${CLASS_NAMES.cancelButton}`]: "onCancel",
       };
     },
 
@@ -78,7 +75,6 @@ define([
       this.search = options.search;
       this.noMatchCallback = options.noMatchCallback;
       this.templateVars.placeholder = options.placeholder;
-      this.templateVars.classNames = this.classNames;
     },
 
     /**
@@ -111,16 +107,16 @@ define([
       const inputValue = input.val().toLowerCase();
       const matched = this.search(inputValue);
       if (matched) {
-        input.removeClass(this.classNames.errorInput);
+        input.removeClass(CLASS_NAMES.errorInput);
       } else {
-        input.addClass(this.classNames.errorInput);
+        input.addClass(CLASS_NAMES.errorInput);
         if (typeof(this.noMatchCallback) === "function") {
           this.noMatchCallback();
         }
       }
 
-      const searchButton = this.$(`.${this.classNames.searchButton}`);
-      const cancelButton = this.$(`.${this.classNames.cancelButton}`);
+      const searchButton = this.$(`.${CLASS_NAMES.searchButton}`);
+      const cancelButton = this.$(`.${CLASS_NAMES.cancelButton}`);
       if (inputValue !== "") {
         searchButton.hide();
         cancelButton.show();
@@ -155,11 +151,11 @@ define([
     },
 
     getInput() {
-      return this.$(`.${this.classNames.input}`);
+      return this.$(`.${CLASS_NAMES.input}`);
     },
 
     getError() {
-      return this.$(`.${this.classNames.errorText}`);
+      return this.$(`.${CLASS_NAMES.errorText}`);
     },
   });
 

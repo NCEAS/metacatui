@@ -37,10 +37,10 @@
   --map-col-yellow: #f8b406;
   --map-col-buttons-emphasis: var(--portal-secondary-color, var(--map-col-green));
   --map-col-highlight: var(--portal-primary-color, var(--map-col-blue));
-  --map-input-box-error-background: var(--portal-secondary-color-transparent);  /* TODO: yvonne - Use #FFFCF4 in the UI update PR. */
+  --map-input-box-error-background: rgba(30,127,196, .5);  /* TODO: yvonne - Use #FFFCF4 in the UI update PR. */
   --map-input-box-border-highlight: rgba(82, 168, 236, .8);  /* TODO: yvonne - Use #FFDDAA in the UI update PR. */
   --map-input-box-error-message: #CA6C0B;
-  --map-search-match-highlight: var(--portal-secondary-color-transparent);  /* TODO: yvonne - Use #FEF4D6 in the UI update PR. */
+  --map-search-match-highlight: rgba(30,127,196, .5);  /* TODO: yvonne - Use #FEF4D6 in the UI update PR. */
   /* SIZING: */
   --map-size-toolbar-link: 2.2rem;
   --map-size-toolbar-link-margin: 0.4rem;
@@ -507,11 +507,13 @@ represents 1 unit of the given distance measurement. */
         height: 100%;
         margin: unset;
         padding-left: 16px;
-      }
-    
-      &.search-input__error-input {
-        border-color: var(--map-input-box-border-highlight);
-        background-color: var(--map-input-box-error-background);
+        background-color: var(--map-col-bkg);
+        color: var(--map-col-text);
+        
+        &.search-input__error-input {
+          border-color: var(--map-input-box-border-highlight);
+          background-color: var(--map-input-box-error-background);
+        }
       }
     }
   
