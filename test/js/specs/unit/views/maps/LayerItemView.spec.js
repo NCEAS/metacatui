@@ -28,6 +28,14 @@ define([
         expect(state.view.search("layer")).to.be.true;
       });
 
+      it("returns true when search text is empty", () => {
+        expect(state.view.search("")).to.be.true;
+      });
+
+      it("returns false when the label does not contain the text", () => {
+        expect(state.view.search("asdlkfjsa")).to.be.false;
+      });
+
       it("shows the view when there is a match, hides otherwise", () => {
         state.view.search("layer");
         expect(state.view.$el.css("display")).to.equal("block");
@@ -44,6 +52,15 @@ define([
         const matchedSpan = state.harness.getLabelText().find("span");
         expect(matchedSpan).to.have.lengthOf(1);
         expect(matchedSpan.text()).to.equal("Layer");
+      });
+
+      it("clears span wrappers if search text is empty", () => {
+        state.view.search("layer");
+
+        state.view.search("");
+
+        const matchedSpan = state.harness.getLabelText().find("span");
+        expect(matchedSpan).to.have.lengthOf(0);
       });
     });
   });
