@@ -2,6 +2,12 @@
   <i class="icon-eye-open"></i>
 </button>
 <span class="<%= classes.label %>">
-  <span class="<%= classes.labelText %>"><%= label %></span>
+  <!-- Title needed for when label overflows -->
+  <span class="<%= classes.labelText %>" title="<%= label %>">
+    <%= label %>
+  </span>
 </span>
-<span class="layer-item__legend-container"></span>
+<span class="<%= classes.legendAndSettings %>">
+  <i class="icon-gear layer-item__settings-toggle"></i>
+  <span class="layer-item__legend-container"></span>
+</span>

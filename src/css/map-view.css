@@ -647,6 +647,7 @@ represents 1 unit of the given distance measurement. */
   grid-template-columns: min-content auto max-content;
   align-items: center;
   padding: 0 24px;
+  cursor: pointer;
 
   .layer-item__visibility-toggle {
     opacity: var(--map-no-brightness-or-opacity-tweaks, 0.85);
@@ -676,30 +677,89 @@ represents 1 unit of the given distance measurement. */
 
   &:hover {
     background-color: var(--map-col-content-bkg-muted, #323745);
+
+    &.layer-item--shown {
+      background-color: var(--map-col-content-bkg-highlight, #15324e);
+    }
+
+    .layer-item__legend-and-settings {
+      /* Show button when layer is hovered. */
+      display: flex;
+      border: 1px solid var(--map-col-border-muted);
+
+      /* Use the same style on button hover and when selected. */
+      &.layer-item--selected, &:hover {
+        background-color: var(--map-col-buttons-bkg-hover, var(--map-col-bkg-lighter__deprecate));
+      }
+    }
   }
 
-  &.layer-item--shown:hover {
-    background-color: var(--map-col-content-bkg-highlight, #15324e);
-  }
+  &.layer-item--shown {
+    .layer-item__visibility-toggle {
+      color: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
 
-  &.layer-item--shown .layer-item__visibility-toggle {
-    color: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
-
-    .layer-item__icon {
-      fill: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
-      svg>path {
+      .layer-item__icon {
         fill: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
+        svg>path {
+          fill: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
+        }
+      }
+    }
+
+    .layer-item__legend-and-settings {
+      /* Show button when layer is shown. */
+      display: flex;
+      border: 1px solid var(--map-col-border);
+
+      /* Only show legend when layer is shown. */
+      .layer-item__legend-container {
+        display: block;
+      }
+    }
+  }
+
+  .layer-item__legend-and-settings {
+    /* By default, don't show button. */
+    display: none;
+    align-items: center;
+    border-radius: 4px;
+
+    .layer-item__settings-toggle {
+      font-size: 16px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--map-col-utility-buttons, currentColor);
+    }
+
+    .layer-item__legend-container {
+      /* By default, don't show legend. */
+      display: none;
+    }
+
+    /* Use the same style on button hover and when selected. */
+    &.layer-item--selected, &:hover {
+      display: flex;
+      background-color: var(--map-col-content-bkg-highlight, #15324e);
+      border: none;
+
+      .layer-item__settings-toggle {
+        color: var(--map-col-buttons-icon);
       }
     }
   }
 }
 
 .layer-item__label {
-  cursor: pointer;
   font-size: 14px;
   font-weight: 500;
   margin: 0 8px;
   color: var(--map-col-text-label);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .layer-item__highlighted-text {
@@ -713,13 +773,6 @@ represents 1 unit of the given distance measurement. */
 
 .layer-item__visibility-toggle:hover {
   opacity: var(--map-no-brightness-or-opacity-tweaks, 0.5);
-}
-
-/* How to style the layer item when the layer details panel is showing for this item */
-
-.layer-item--selected .layer-item__label {
-  color: var(--map-col-text-label, var(--map-col-highlight__deprecate));
-  font-weight: 700;
 }
 
 /*****************************************************************************************
@@ -1185,9 +1238,8 @@ other class: .ui-slider-range */
 }
 
 .map-legend__img--preview {
-  --img-overflow: 0.8rem;
   /* allow images previews to bleed into the padding a little, so that more detail is visible */
-  height: calc(100% + var(--img-overflow));
+  height: 100%;
   max-width: 100%;
   margin-top: calc(-0.5* var(--img-overflow));
   border-radius: 3px;

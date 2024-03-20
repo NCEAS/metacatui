@@ -99,6 +99,7 @@ define(
           labelText: 'layer-item__label-text',
           highlightedText: 'layer-item__highlighted-text',
           categorized: 'layer-item__categorized',
+          legendAndSettings: 'layer-item__legend-and-settings',
           badge: 'map-view__badge',
           tooltip: 'map-tooltip',
         },
@@ -120,8 +121,8 @@ define(
         events: function () {
           try {
             var events = {}
-            events['click .' + this.classes.label] = 'toggleSelected';
-            events['click .' + this.classes.visibilityToggle] = 'toggleVisibility';
+            events['click .' + this.classes.legendAndSettings] = 'toggleSelected';
+            events['click'] = 'toggleVisibility';
             return events
           }
           catch (error) {
@@ -281,8 +282,12 @@ define(
          * Sets the Layer model's visibility status attribute to true if it's false, and
          * to false if it's true. Executed when a user clicks on the visibility toggle.
          */
-        toggleVisibility: function () {
+        toggleVisibility: function (event) {
           try {
+            if (this.$(`.${this.classes.legendAndSettings}`).has(event.target).length > 0) {
+              return;
+            }
+
             const layerModel = this.model;
             // Hide if visible
             if (layerModel.get('visible')) {
@@ -316,9 +321,9 @@ define(
           try {
             var layerModel = this.model;
             if (layerModel.get('selected')) {
-              this.el.classList.add(this.classes.selected)
+              this.$(`.${this.classes.legendAndSettings}`).addClass(this.classes.selected)
             } else {
-              this.el.classList.remove(this.classes.selected)
+              this.$(`.${this.classes.legendAndSettings}`).removeClass(this.classes.selected)
             }
           }
           catch (error) {
