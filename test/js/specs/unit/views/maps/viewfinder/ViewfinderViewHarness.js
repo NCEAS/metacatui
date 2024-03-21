@@ -5,47 +5,55 @@ define([], function () {
     constructor(view) {
       this.view = view;
     }
-    
+
     focusInput() {
-      this.view.getInput().focus();
+      this.getInput().focus();
     }
 
     blurInput() {
-      this.view.getInput().blur();
+      this.getInput().blur();
     }
 
     setQuery(searchString) {
-      this.view.getInput().val(searchString);
-      this.view.getInput().trigger('change');
+      this.getInput().val(searchString);
+      this.getInput().trigger('change');
     }
 
     typeQuery(searchString) {
-      this.view.getInput().val(searchString);
-      this.view.getInput().trigger('keyup');
+      this.getInput().val(searchString);
+      this.getInput().trigger('keyup');
     }
 
     clickSearch() {
-      this.view.getButton().click();
+      this.view.$el.find(".search-input__search-button").click();
     }
 
     hitEnter() {
-      this.view.getInput().trigger({ type: 'keyup', key: 'Enter', });
+      this.getInput().trigger({ type: 'keyup', key: 'Enter', });
     }
 
     hitArrowUp() {
-      this.view.getInput().trigger({ type: 'keyup', key: 'ArrowUp', });
+      this.getInput().trigger({ type: 'keyup', key: 'ArrowUp', });
     }
 
     hitArrowDown() {
-      this.view.getInput().trigger({ type: 'keyup', key: 'ArrowDown', });
+      this.getInput().trigger({ type: 'keyup', key: 'ArrowDown', });
+    }
+
+    hitArrowUp() {
+      this.getInput().trigger({ type: "keyup", key: 'ArrowUp', });
+    }
+
+    hitArrowDown() {
+      this.getInput().trigger({ type: "keyup", key: 'ArrowDown', });
     }
 
     getError() {
-      return this.view.$el.find('.viewfinder__error').text();
+      return this.view.$el.find('.search-input__error-text').text();
     }
 
     getInput() {
-      return this.view.getInput();
+      return this.view.searchInput.getInput();
     }
 
     hasError() {
