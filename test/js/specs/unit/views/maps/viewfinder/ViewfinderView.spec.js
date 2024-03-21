@@ -88,7 +88,7 @@ define(
 
         state.harness.typeQuery('123')
 
-        expect(state.view.getInput().val()).to.equal('123');
+        expect(state.harness.getInput().val()).to.equal('123');
       });
 
       it('zooms to the specified location on clicking search button', () => {
@@ -137,7 +137,7 @@ define(
           state.harness.typeQuery('13')
           state.harness.clickSearch();
           state.harness.typeQuery('13,37')
-          state.harness.clickSearch();
+          state.harness.hitEnter();
 
           expect(state.harness.hasError()).to.be.false;
         });
@@ -148,15 +148,15 @@ define(
           state.harness.typeQuery('13')
           state.harness.clickSearch();
           state.harness.typeQuery('13,37')
-          state.harness.clickSearch();
+          state.harness.hitEnter();
 
           expect(state.zoomSpy.callCount).to.equal(1);
         });
       });
 
       it('shows an error when a new error is present', () => {
-        state.view.viewfinderModel.set('error', 'some error');
         state.view.render();
+        state.view.viewfinderModel.set('error', 'some error');
 
         expect(state.harness.getError()).to.match(/some error/);
       });

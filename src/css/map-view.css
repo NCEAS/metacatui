@@ -552,6 +552,7 @@ represents 1 unit of the given distance measurement. */
     .search-input__input {
       width: 100%;
       position: absolute;
+      padding-right: 32px;
     
       input[type=text]& {  /* Override bootstrap */
         height: 100%;

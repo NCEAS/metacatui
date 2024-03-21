@@ -7,8 +7,16 @@ define(
     'text!templates/maps/viewfinder/viewfinder.html',
     'views/maps/viewfinder/PredictionsListView',
     'models/maps/viewfinder/ViewfinderModel',
+    "views/maps/SearchInputView",
   ],
-  (_, Backbone, Template, PredictionsListView, ViewfinderModel) => {
+  (
+    _,
+    Backbone,
+    Template,
+    PredictionsListView,
+    ViewfinderModel,
+    SearchInputView,
+  ) => {
     // The base classname to use for this View's template elements.
     const BASE_CLASS = 'viewfinder';
 
@@ -44,35 +52,14 @@ define(
        * @type {Object<string,string>}
        */
       classNames: {
-        button: `${BASE_CLASS}__button`,
-        input: `${BASE_CLASS}__input`,
         predictions: `${BASE_CLASS}__predictions`,
-        error: `${BASE_CLASS}__error`,
-      },
-
-      /**
-      * The events this view will listen to and the associated function to call.
-      * @type {Object}
-      */
-      events() {
-        return {
-          [`click   .${this.classNames.button}`]: 'search',
-          [`blur    .${this.classNames.input}`]: 'hidePredictionsList',
-          [`change  .${this.classNames.input}`]: 'keyup',
-          [`focus   .${this.classNames.input}`]: 'showPredictionsList',
-          [`keydown .${this.classNames.input}`]: 'keydown',
-          [`keyup   .${this.classNames.input}`]: 'keyup',
-        };
+        searchInput: `${BASE_CLASS}__search-input`,
       },
 
       /** 
        * Values meant to be used by the rendered HTML template.
        */
       templateVars: {
-        errorMessage: '',
-        // Track the input value across re-renders.
-        inputValue: '',
-        placeholder: 'Enter coordinates or areas of interest',
         classNames: {},
       },
 
@@ -89,7 +76,9 @@ define(
         this.setupListeners();
 
         this.autocompleteSearch = _.debounce(() => {
-          this.viewfinderModel.autocompleteSearch(this.templateVars.inputValue);
+          this.viewfinderModel.autocompleteSearch(
+            this.searchInput.getInputValue()
+          );
         }, 250 /* milliseconds */);
       },
 
@@ -97,7 +86,7 @@ define(
       setupListeners() {
         this.listenTo(this.viewfinderModel, 'selection-made', (newQuery) => {
           this.setQuery(newQuery);
-          this.getInput().blur();
+          this.searchInput.blur();
         });
 
         this.listenTo(this.viewfinderModel, 'change:error', () => {
@@ -111,35 +100,7 @@ define(
        * which appears to be the default jQuery behavior).
        */
       focusInput() {
-        const input = this.getInput();
-        input.focus();
-        // Move cursor to end of input.
-        input.val('');
-        input.val(this.templateVars.inputValue);
-      },
-
-      /**
-       * Getter function for the search query input. 
-       * @return {HTMLInputElement} Returns the search input HTML element.
-       */
-      getInput() {
-        return this.$el.find(`.${this.classNames.input}`);
-      },
-
-      /**
-       * Getter function for the error field. 
-       * @return {HTMLDivElement} Returns the error div HTML element.
-       */
-      getError() {
-        return this.$el.find(`.${this.classNames.error}`);
-      },
-
-      /**
-       * Getter function for the search button. 
-       * @return {HTMLButtonElement} Returns the search button HTML element.
-       */
-      getButton() {
-        return this.$el.find(`.${this.classNames.button}`);
+        this.searchInput.focus();
       },
 
       /**
@@ -149,6 +110,14 @@ define(
        */
       getList() {
         return this.$el.find(`.${this.classNames.predictions}`);
+      },
+
+      /**
+       * Getter function for the search query input. 
+       * @return {HTMLInputElement} Returns the search input HTML element.
+       */
+      getSearchInput() {
+        return this.$el.find(`.${this.classNames.searchInput}`);
       },
 
       /**
@@ -163,7 +132,7 @@ define(
 
       /** Trigger the search on the ViewfinderModel. */
       search() {
-        this.viewfinderModel.search(this.templateVars.inputValue);
+        this.viewfinderModel.search(this.searchInput.getInputValue());
       },
 
       /**
@@ -178,21 +147,18 @@ define(
         } else if (event.key === 'ArrowDown') {
           this.viewfinderModel.incrementFocusIndex();
         } else {
-          this.templateVars.inputValue = this.getInput().val();
-          this.autocompleteSearch(this.templateVars.inputValue);
+          this.autocompleteSearch(this.searchInput.getInputValue());
         }
       },
 
       /** Helper function to set the input field. */
       setQuery(query) {
-        this.templateVars.inputValue = query;
-        this.getInput().val(query);
+        this.searchInput.setInputValue(query);
       },
 
       /** Helper function to set the error field. */
       setError(errorMessage) {
-        this.templateVars.errorMessage = errorMessage;
-        this.getError().text(errorMessage);
+        this.searchInput.setError(errorMessage);
       },
 
       /**
@@ -201,7 +167,9 @@ define(
        */
       showPredictionsList() {
         this.getList().show();
-        this.viewfinderModel.autocompleteSearch(this.templateVars.inputValue);
+        this.viewfinderModel.autocompleteSearch(
+          this.searchInput.getInputValue()
+        );
       },
 
       /**
@@ -214,6 +182,34 @@ define(
         if (clickedInList) return;
 
         this.getList().hide();
+      },
+
+      /**
+       * Render the SearchInputView. 
+       */
+      renderSearchInput() {
+        this.searchInput = new SearchInputView({
+          placeholder: "Enter coordinates or areas of interest",
+          search: text => {
+            this.viewfinderModel.search(text);
+            // TODO(ianguerin): set error if results are empty.
+            return true;
+          },
+          keyupCallback: event => {
+            this.keyup(event);
+          },
+          focusCallback: event => {
+            this.showPredictionsList(event);
+          },
+          blurCallback: event => {
+            this.hidePredictionsList(event);
+          },
+          keydownCallback: event => {
+            this.keydown(event);
+          },
+        });
+        this.getSearchInput().append(this.searchInput.el);
+        this.searchInput.render();
       },
 
       /**
@@ -234,9 +230,11 @@ define(
        * */
       render() {
         this.el.innerHTML = _.template(Template)(this.templateVars);
-        this.focusInput();
 
+        this.renderSearchInput();
         this.renderPredictionsList();
+
+        this.focusInput();
       },
     });
 
