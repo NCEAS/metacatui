@@ -68,6 +68,9 @@ define(['jquery', 'underscore', 'backbone'],
       * Your Google Maps API key, which is used to display interactive maps on the search
       * views and static maps on dataset landing pages.
       * If a Google Maps API key is not specified, the maps will be omitted from the interface.
+      * The Google Maps API key also controls the showViewfinder feature on a Map
+      * and should have the Geocoding API and Places API enabled in order to
+      * function properly.
       * Sign up for Google Maps services at https://console.developers.google.com/
       * @type {string}
       * @example "AIzaSyCYyHnbIokUEpMx5M61ButwgNGX8fIHUs"

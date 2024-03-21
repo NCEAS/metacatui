@@ -54,7 +54,9 @@ define([
        * @property {Boolean} [showHomeButton=true] - Whether or not to show the
        * home button in the toolbar.
        * @property {Boolean} [showViewfinder=false] - Whether or not to show the
-       * viefinder UI and viewfinder button in the toolbar.
+       * viefinder UI and viewfinder button in the toolbar. The ViewfinderView
+       * requires a Google Maps API key present in the AppModel. In order to 
+       * work properly the Geocoding API and Places API must be enabled. 
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.

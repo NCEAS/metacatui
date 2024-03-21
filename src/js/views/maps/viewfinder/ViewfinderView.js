@@ -17,6 +17,8 @@ define(
      * @classdesc ViewfinderView allows a user to search for
      * a latitude and longitude in the map view, and find suggestions
      * for places related to their search terms.
+     * This view requires a Google Maps API key in order to function properly,
+     * and must have the Geocoding API and Places API enabled.
      * @classcategory Views/Maps
      * @name ViewfinderView
      * @extends Backbone.View
