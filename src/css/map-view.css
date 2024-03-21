@@ -744,7 +744,7 @@ represents 1 unit of the given distance measurement. */
     &.layer-item--selected, &:hover {
       display: flex;
       background-color: var(--map-col-content-bkg-highlight, #15324e);
-      border: none;
+      border: 1px solid var(--map-col-content-bkg-highlight, #15324e);
 
       .layer-item__settings-toggle {
         color: var(--map-col-buttons-icon);
