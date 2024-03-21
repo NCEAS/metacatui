@@ -55,6 +55,7 @@ async function runTests(url){
   //Get and print the results
   let passes=parseInt($("#mocha-stats .passes em").text()) || 0;
   let fails=parseInt($("#mocha-stats .failures em").text()) || 0;
+  const error = $("#error").text();
   let passNum=`PASSES: ${passes}`;
   let failNum = `FAILS:  ${fails}`;
 
@@ -63,6 +64,10 @@ async function runTests(url){
   }
   else{
       console.log(`Test results are available at ${url}`);
+  }
+
+  if (error) {
+    console.error(error);
   }
 
   if(fails>0){

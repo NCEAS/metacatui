@@ -103,13 +103,14 @@ define(
           // Insert the icon on the left
           this.insertIcon();
 
-          const layerList = new LayerListView({ collection: this.model.get("mapAssets") });
-          layerList.render();
-          this.$(`.${CLASS_NAMES.layers}`).append(layerList.el);
+          this.layerListView = new LayerListView({ collection: this.model.get('mapAssets') });
+          this.layerListView.render();
+          this.$(`.${CLASS_NAMES.layers}`).append(this.layerListView.el);
 
           // Show the category as expanded or collapsed depending on the model
           // properties.
           this.updateLayerList();
+          this.listenTo(this.model, 'change:expanded', this.updateLayerList);
 
           return this;
         },
@@ -131,7 +132,6 @@ define(
          */
         toggleExpanded() {
           this.model.set('expanded', !this.model.get('expanded'));
-          this.updateLayerList();
         },
 
         /**
@@ -150,6 +150,23 @@ define(
             collapsed.show();
             layers.hide();
           }
+        },
+
+        /**
+         * Searches and only displays self if layers match the text.
+         * @param {string} [text] - The search text from user input.
+         * @returns {boolean} - True if a layer item matches the text
+         */
+        search(text) {
+          const matched = this.layerListView.search(text);
+          if (matched) {
+            this.$el.show();
+            this.model.set('expanded', text !== '');
+          } else {
+            this.$el.hide();
+            this.model.set('expanded', false);
+          }
+          return matched;
         },
       }
     );
