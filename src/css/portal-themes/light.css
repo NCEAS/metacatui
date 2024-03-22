@@ -92,7 +92,8 @@ body {
 }
 
 body, #portal-sections {
-  background-color: var(--portal-col-content-bkg);
+  /* TODO: Update to var(--portal-col-content-bkg) when all portal tabs support the color palette from a theme. */
+  background-color: #111827;
 }
 
 #portal-sections{
