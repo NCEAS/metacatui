@@ -48,28 +48,16 @@ define(
           expect(response[0].get('description')).to.equal('some result');
         });
 
-      it('does not throw an error even if the Google Maps API throws',
-        async () => {
-          state.sandbox.restore();
-          state.sandbox.stub(
-            state.googleMapsAutocompleter.autocompleter,
-            'getPlacePredictions'
-          ).rejects();
+      it('throws an error if the Google Maps API throws', async () => {
+        state.sandbox.restore();
+        state.sandbox.stub(
+          state.googleMapsAutocompleter.autocompleter,
+          'getPlacePredictions'
+        ).rejects();
 
-          expect(async () => await state.googleMapsAutocompleter.autocomplete('some place')).not.to.throw;
-        });
-
-      it('returns an empty array if the Google Maps API throws',
-        async () => {
-          state.sandbox.restore();
-          state.sandbox.stub(
-            state.googleMapsAutocompleter.autocompleter,
-            'getPlacePredictions'
-          ).rejects();
-
-          const response = await state.googleMapsAutocompleter.autocomplete('some place');
-
-          expect(response).to.deep.equal([]);
-        });
+        expect(
+          async () => await state.googleMapsAutocompleter.autocomplete('some place')
+        ).to.throw;
+      });
     });
   });

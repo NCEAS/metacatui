@@ -126,6 +126,32 @@ define(
           expect(state.model.get('predictions')[0].get('description')).to.equal('Some Other Location');
         });
 
+        it('shows permissions error if autocomplete search request is denied',
+          () => {
+            state.autocompleteSpy.callsFake(() => {
+              const error = new Error('Request error');
+              error.code = 'REQUEST_DENIED';
+              error.endpoint = 'PLACES_AUTOCOMPLETE';
+              throw error;
+            });
+
+            state.model.autocompleteSearch("somewhere else");
+
+            expect(state.model.get('error')).to.match(/The Places API is not enabled/);
+          });
+
+        it('shows \'no results\' message if autocomplete search throws some other error',
+          () => {
+            state.autocompleteSpy.callsFake(() => {
+              const error = new Error('Some other error');
+              throw error;
+            });
+
+            state.model.autocompleteSearch("somewhere else");
+
+            expect(state.model.get('error')).to.match(/No search results/);
+          });
+
         it('shows \'no results\' message if predictions are empty', async () => {
           state.autocompleteSpy.callsFake(() => ([]));
 
@@ -220,6 +246,32 @@ define(
 
           expect(triggerSpy.callCount).to.equal(1);
         });
+
+        it('shows permissions error if geocoder request is denied',
+          async () => {
+            state.geocodeSpy.callsFake(() => {
+              const error = new Error('Request error');
+              error.code = 'REQUEST_DENIED';
+              error.endpoint = 'GEOCODER_GEOCODE';
+              throw error;
+            });
+
+            await state.model.selectPrediction(state.predictions[0]);
+
+            expect(state.model.get('error')).to.match(/The Geocoding API is not enabled/);
+          });
+
+        it('shows \'no results\' message if geocoder throws some other error',
+          async () => {
+            state.geocodeSpy.callsFake(() => {
+              const error = new Error('Some other error');
+              throw error;
+            });
+
+            await state.model.selectPrediction(state.predictions[0]);
+
+            expect(state.model.get('error')).to.match(/No search results/);
+          });
 
         it('navigates to the geocoded location', async () => {
           state.geocodeSpy.returns([

@@ -9,6 +9,9 @@ define(
     'models/maps/GeoPoint'],
   (_, Backbone, Cesium, GeocoderSearch, GeoPoint) => {
     const NO_RESULTS_MESSAGE = 'No search results found.';
+    const PLACES_API_ERROR = 'The Places API is not enabled for this Google Maps API key.';
+    const GEOCODING_API_ERROR = 'The Geocoding API is not enabled for this Google Maps API key.';
+
     /**
     * @class ViewfinderModel
     * @classdes ViewfinderModel maintains state for the ViewfinderView and
@@ -61,10 +64,28 @@ define(
           return;
         }
 
-        // User is looking for autocompletions.
-        const predictions = await this.geocoderSearch.autocomplete(query);
-        const error = predictions.length === 0 ? NO_RESULTS_MESSAGE : '';
-        this.set({ error, focusIndex: -1, predictions, query, });
+        try {
+          // User is looking for autocompletions.
+          const predictions = await this.geocoderSearch.autocomplete(query);
+          const error = predictions.length === 0 ? NO_RESULTS_MESSAGE : '';
+          this.set({ error, focusIndex: -1, predictions, query, });
+        } catch (e) {
+          if (e.code === 'REQUEST_DENIED' && e.endpoint === 'PLACES_AUTOCOMPLETE') {
+            this.set({
+              error: PLACES_API_ERROR,
+              focusIndex: -1,
+              predictions: [],
+              query,
+            });
+          } else {
+            this.set({
+              error: NO_RESULTS_MESSAGE,
+              focusIndex: -1,
+              predictions: [],
+              query,
+            });
+          }
+        }
       },
 
       /**
@@ -125,15 +146,23 @@ define(
       async selectPrediction(prediction) {
         if (!prediction) return;
 
-        const geocodings = await this.geocoderSearch.geocode(prediction);
+        try {
+          const geocodings = await this.geocoderSearch.geocode(prediction);
 
-        if (geocodings.length === 0) {
-          this.set('error', NO_RESULTS_MESSAGE)
-          return;
+          if (geocodings.length === 0) {
+            this.set('error', NO_RESULTS_MESSAGE)
+            return;
+          }
+
+          this.trigger('selection-made', prediction.get('description'));
+          this.goToLocation(geocodings[0]);
+        } catch (e) {
+          if (e.code === 'REQUEST_DENIED' && e.endpoint === 'GEOCODER_GEOCODE') {
+            this.set({ error: GEOCODING_API_ERROR, focusIndex: -1, predictions: [] });
+          } else {
+            this.set('error', NO_RESULTS_MESSAGE)
+          }
         }
-
-        this.trigger('selection-made', prediction.get('description'));
-        this.goToLocation(geocodings[0]);
       },
 
       /**

@@ -24,14 +24,10 @@ define(
        * single value, but could potentially be many.
        */
       async geocode(prediction) {
-        try {
-          const response = await this.geocoder.geocode({
-            placeId: prediction.get('googleMapsPlaceId')
-          });
-          return this.getGeocodedLocationsFromResults(response.results);
-        } catch (e) {
-          return [];
-        }
+        const response = await this.geocoder.geocode({
+          placeId: prediction.get('googleMapsPlaceId')
+        });
+        return this.getGeocodedLocationsFromResults(response.results);
       }
 
       /**

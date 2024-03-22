@@ -52,29 +52,16 @@ define(
         expect(response[0].get('displayName')).to.equal('some result');
       });
 
-      it('does not throw an error even if the Google Maps API throws',
-        async () => {
-          state.sandbox.restore();
-          state.sandbox.stub(
-            state.googleMapsGeocoder.geocoder,
-            'geocode'
-          ).rejects();
+      it('throws an error if the Google Maps API throws', async () => {
+        state.sandbox.restore();
+        state.sandbox.stub(
+          state.googleMapsGeocoder.geocoder,
+          'geocode'
+        ).rejects();
 
-          expect(
-            async () => state.googleMapsGeocoder.geocode(state.prediction)
-          ).not.to.throw;
-        });
-
-      it('returns an empty array if the Google Maps API throws',
-        async () => {
-          state.sandbox.restore();
-          state.sandbox.stub(state.googleMapsGeocoder.geocoder, 'geocode')
-            .rejects();
-
-          const response = await state.googleMapsGeocoder
-            .geocode(state.prediction);
-
-          expect(response).to.deep.equal([]);
-        });
+        expect(
+          async () => state.googleMapsGeocoder.geocode(state.prediction)
+        ).to.throw;
+      });
     });
   });
