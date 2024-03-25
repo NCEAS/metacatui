@@ -1371,10 +1371,12 @@ other class: .ui-slider-range */
 
   .viewfinder-prediction__content {
     align-items: center;
-    background: var(--map-col-bkg);
+    background: var(--map-col-bkg, var(--map-col-bkg__deprecate));
+    /* TODO(ianguerin) */
     border: 1px solid var(--portal-col-bkg-active);
     border-radius: 4px;
     box-sizing: border-box;
+    /* TODO(ianguerin) */
     color: var(--map-col-text-body);
     cursor: pointer;
     display: flex;
@@ -1398,11 +1400,11 @@ other class: .ui-slider-range */
     }
 
     &:hover {
-      background-color: var(--map-col-bkg-lightest);
+      background-color: var(--map-col-bkg-lightest, var(--map-col-bkg-lighter));
     }
 
     &.viewfinder-prediction__focused {
-      background-color: var(--map-col-bkg-lighter);
+      background-color: var(--map-col-bkg-lighter, var(--map-col-bkg-lighter__deprecate));
     }
   }
 }
