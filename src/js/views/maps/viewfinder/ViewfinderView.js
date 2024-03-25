@@ -192,7 +192,6 @@ define(
           placeholder: "Enter coordinates or areas of interest",
           search: text => {
             this.viewfinderModel.search(text);
-            // TODO(ianguerin): set error if results are empty.
             return true;
           },
           keyupCallback: event => {

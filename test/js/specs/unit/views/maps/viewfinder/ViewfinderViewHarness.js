@@ -40,14 +40,6 @@ define([], function () {
       this.getInput().trigger({ type: 'keyup', key: 'ArrowDown', });
     }
 
-    hitArrowUp() {
-      this.getInput().trigger({ type: "keyup", key: 'ArrowUp', });
-    }
-
-    hitArrowDown() {
-      this.getInput().trigger({ type: "keyup", key: 'ArrowDown', });
-    }
-
     getError() {
       return this.view.$el.find('.search-input__error-text').text();
     }
