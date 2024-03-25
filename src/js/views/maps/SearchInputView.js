@@ -183,50 +183,83 @@ define([
       }
     },
 
+    /**
+     * Handler function for the cancel icon button action.
+     */
     onCancel() {
       this.getInput().val("");
       this.onSearch();
       this.focus();
     },
 
+    /**
+     * Focus the input field in this View. 
+     */
     focus() {
       this.getInput().trigger("focus");
     },
 
+    /**
+     * Blur the input field in this View.
+     */
     blur() {
       this.getInput().trigger("blur");
     },
 
+    /**
+     * Get the search icon button.
+     * @return jQuery element representing the search icon button. Or an empty
+     * jQuery selector if the button is not found.
+     */
     getSearchButton() {
       return this.$(`.${CLASS_NAMES.searchButton}`);
     },
 
+    /**
+     * Get the cancel icon button.
+     * @return jQuery element representing the cancel icon button. Or an empty
+     * jQuery selector if the button is not found.
+     */
     getCancelButton() {
       return this.$(`.${CLASS_NAMES.cancelButton}`);
     },
 
+    /**
+     * Get the input.
+     * @return jQuery element representing the input. Or an empty
+     * jQuery selector if the button is not found.
+     */
     getInput() {
       return this.$(`.${CLASS_NAMES.input}`);
     },
 
+    /**
+     * Get the error text element.
+     * @return jQuery element representing the error text. Or an empty
+     * jQuery selector if the button is not found.
+     */
     getError() {
       return this.$(`.${CLASS_NAMES.errorText}`);
     },
 
+    /**
+     * Get the current value of the input field.
+     * @return The current value of the input field or empty string if the
+     * input field is not found.
+     */
     getInputValue() {
-      return this.getInput().val();
+      return this.getInput().val() || '';
     },
 
+    /**
+     * Set the current value of the input field.
+     */
     setInputValue(value) {
       this.getInput().val(value);
     },
-
-    getError() {
-      return this.$(`.${CLASS_NAMES.errorText}`);
-    },
   });
 
-  // A function that does nothing.
+  // A function that does nothing. Can be safely called as a default callback.
   const noop = () => { };
 
   return SearchInputView;
