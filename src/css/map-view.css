@@ -27,20 +27,60 @@
 
 :root {
   /* COLOURS */
-  --map-col-bkg: #111827;
-  --map-col-bkg-lighter: #1b2538;
-  --map-col-bkg-lightest: #242e42;
-  --map-col-buttons: #313c52;
-  --map-col-text: #F9FAFB;
+  --map-col-content-bkg: var(--portal-col-content-bkg);
+  --map-col-content-bkg-highlight: var(--portal-col-content-bkg-highlight);
+  --map-col-content-bkg-muted: var(--portal-col-content-bkg-muted);
+
+  --map-col-buttons-bkg: var(--portal-col-buttons-bkg);
+  --map-col-buttons-bkg-hover: var(--portal-col-buttons-bkg-hover);
+  --map-col-buttons-bkg-highlight: var(--portal-col-buttons-bkg-highlight);
+  --map-col-buttons-bkg-muted: var(--portal-col-buttons-bkg-muted);
+  --map-col-buttons-text: var(--portal-col-buttons-text);
+  --map-col-buttons-text-highlight: var(--portal-col-buttons-text-highlight);
+  --map-col-buttons-icon: var(--portal-col-buttons-icon);
+  --map-col-buttons-icon-highlight: var(--portal-col-buttons-icon-highlight);
+  --map-col-buttons-icon-muted: var(--portal-col-buttons-icon-muted);
+  --map-col-utility-buttons: var(--portal-col-utility-buttons);
+
+  --map-col-border: var(--portal-col-border);
+  --map-col-border-highlight: var(--portal-col-border-highlight);
+  --map-col-border-muted: var(--portal-col-border-muted);
+  --map-col-border-highlight-search-box: var(--portal-col-border-highlight-search-box);
+
+  --map-col-text-body: var(--portal-col-text-body);
+  --map-col-text-highlight: var(--portal-col-text-highlight);
+  --map-col-text-title: var(--portal-col-text-title);
+  --map-col-text-label: var(--portal-col-text-label);
+  --map-col-text-detail: var(--portal-col-text-detail);
+  --map-col-text-muted: var(--portal-col-text-muted);
+
+  --map-col-opacity-slider-active: var(--portal-col-opacity-slider-active);
+  --map-col-opacity-slider-inactive: var(--portal-col-opacity-slider-inactive);
+
+  --map-col-input-error-bkg: var(--portal-col-input-error-bkg, rgba(30,127,196, .5));
+  --map-col-input-error-border: var(--portal-col-input-error-border, rgba(82, 168, 236, .8));
+  --map-col-input-error-text: var(--portal-col-input-error-text, #CA6C0B);
+  --map-col-search-match-highlight: var(--portal-col-search-match-highlight, rgba(30,127,196, .5));
+
+  --map-no-brightness-or-opacity-tweaks: var(--portal-no-brightness-or-opacity-tweaks);
+
   --map-col-green: #069868;
+  --map-col-text-on-green: white;
   --map-col-blue: #057fc6;
+  --map-col-text-on-blue: white;
   --map-col-yellow: #f8b406;
-  --map-col-buttons-emphasis: var(--portal-secondary-color, var(--map-col-green));
-  --map-col-highlight: var(--portal-primary-color, var(--map-col-blue));
-  --map-input-box-error-background: rgba(30,127,196, .5);  /* TODO: yvonne - Use #FFFCF4 in the UI update PR. */
-  --map-input-box-border-highlight: rgba(82, 168, 236, .8);  /* TODO: yvonne - Use #FFDDAA in the UI update PR. */
-  --map-input-box-error-message: #CA6C0B;
-  --map-search-match-highlight: rgba(30,127,196, .5);  /* TODO: yvonne - Use #FEF4D6 in the UI update PR. */
+  --map-col-text-on-yellow: #1b2538;
+
+  --map-col-tooltip-background: var(--portal-col-tooltip-background);
+  --map-col-tooltip-text: var(--portal-col-tooltip-text);
+
+  --map-col-bkg__deprecate: #111827;
+  --map-col-bkg-lighter__deprecate: #1b2538;
+  --map-col-bkg-lightest__deprecate: #242e42;
+  --map-col-buttons__deprecate: #313c52;
+  --map-col-text__deprecate: #F9FAFB;
+  --map-col-buttons-emphasis__deprecate: var(--portal-secondary-color, var(--map-col-green));
+  --map-col-highlight__deprecate: var(--portal-primary-color, var(--map-col-blue));
   /* SIZING: */
   --map-size-toolbar-link: 2.2rem;
   --map-size-toolbar-link-margin: 0.4rem;
@@ -49,8 +89,12 @@
   --map-width-toolbar: 21rem;
   --map-toolbar-link-width: calc(var(--map-size-toolbar-link) + var(--map-size-toolbar-link-margin) + var(--map-size-toolbar-link-margin));
   /* SHADOWS */
-  --map-shadow-md: 0 1px 9px -1px rgba(0, 0, 0, 0.2), 0 1px 2px 0px rgba(0, 0, 0, 0.5);
+  --map-shadow-md: var(--portal-shadow-md, 0 1px 9px -1px rgba(0, 0, 0, 0.2), 0 1px 2px 0px rgba(0, 0, 0, 0.5));
   /* NOTE: 768px is used as the mobile -> desktop breakpoint throughout the map view, but we cannot use a CSS variable for this. */
+
+  /* FONTS */
+  --map-body-font: var(--portal-body-font);
+  --map-attribution-font: var(--portal-attribution-font);
 }
 
 /* hide the credits until we can find a better placement for them */
@@ -61,33 +105,33 @@
 /* ---- TOOLTIP ---- */
 
 .map-tooltip {
-  color: var(--map-col-text);
+  color: var(--map-col-tooltip-text, var(--map-col-text__deprecate));
   border-radius: var(--map-border-radius);
-  opacity: 1 !important;
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 1) !important;
   font-size: 0.8rem;
   letter-spacing: 0.01em;
-  box-shadow: var(--map-shadow-md);
 }
 
 .map-tooltip.top .tooltip-arrow {
-  border-top-color: var(--map-col-buttons);
+  border-top-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
 }
 
 .map-tooltip.right .tooltip-arrow {
-  border-right-color: var(--map-col-buttons);
+  border-right-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
 }
 
 .map-tooltip.left .tooltip-arrow {
-  border-left-color: var(--map-col-buttons);
+  border-left-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
 }
 
 .map-tooltip.bottom .tooltip-arrow {
-  border-bottom-color: var(--map-col-buttons);
+  border-bottom-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
 }
 
 .map-tooltip .tooltip-inner {
   padding: 0.3rem;
-  background-color: var(--map-col-buttons);
+  background-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
+  color: var(--map-col-tooltip-text);
 }
 
 /* ---- BUTTON ---- */
@@ -103,8 +147,8 @@
   -webkit-appearance: button;
   border: 0;
   border-radius: var(--map-border-radius);
-  background: var(--map-col-buttons);
-  color: var(--map-col-text);
+  background: var(--map-col-buttons-bkg, var(--map-col-buttons__deprecate));
+  color: var(--map-col-buttons-text, var(--map-col-text__deprecate));
   white-space: nowrap;
   text-decoration: none;
   padding: 0.25rem 0.5rem;
@@ -114,18 +158,20 @@
 }
 
 .map-view__button:hover {
-  filter: brightness(1.2);
+  filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.2));
 }
 
 .map-view__button--emphasis {
-  background: var(--map-col-buttons-emphasis);
+  background-color: var(--map-col-buttons-bkg, var(--map-col-buttons-emphasis__deprecate));
   padding: 0.5rem 0.55rem;
   font-weight: 900;
   font-size: 1rem;
+  border: 1px solid var(--map-col-border);
 }
 
 .map-view__button--active {
-  background-color: var(--map-col-highlight);
+  background-color: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
+  color: var(--map-col-buttons-text-highlight);
 }
 
 /* ---- BADGE ---- */
@@ -134,11 +180,11 @@
   padding: 0.4em 0.5em 0.3em 0.55em;
   margin: 0 -0.2rem 0 0.3rem;
   font-size: 0.62rem;
-  background-color: var(--map-col-bkg-lighter);
-  color: var(--map-col-text);
+  background-color: var(--map-col-content-bkg-muted, var(--map-col-bkg-lighter__deprecate));
+  color: var(--map-col-text-muted, var(--map-col-text__deprecate));
   text-transform: uppercase;
   letter-spacing: 0.09em;
-  filter: brightness(1.3);
+  filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.3));
   border-radius: var(--map-border-radius);
   line-height: 100%;
   font-weight: 500;
@@ -146,26 +192,28 @@
 
 .map-view__badge--blue {
   background-color: var(--map-col-blue);
+  color: var(--map-col-text-on-blue);
   filter: none;
 }
 
 .map-view__badge--green {
   background-color: var(--map-col-green);
+  color: var(--map-col-text-on-green);
   filter: none;
 }
 
 .map-view__badge--yellow {
   background-color: var(--map-col-yellow);
-  color: var(--map-col-bkg-lighter);
+  color: var(--map-col-text-on-yellow, var(--map-col-bkg-lighter__deprecate));
   filter: none;
   font-weight: 600;
-  opacity: 0.9;
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.9);
 }
 
 .map-view__badge--contrast {
-  background-color: var(--map-col-text);
-  color: var(--map-col-bkg);
-  opacity: 0.8;
+  background-color: var(--map-col-text-label, var(--map-col-text__deprecate));
+  color: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.8);
   font-weight: 600;
 }
 
@@ -259,6 +307,10 @@
   overflow: auto;
   /* required to be placed above map widget in firefox: */
   z-index: 1;
+
+  .feature-info__zoom-button, .feature-info__layer-details-button {
+    border: 1px solid var(--map-col-border);
+  }
 }
 
 .map-view__layer-details-container {
@@ -305,10 +357,10 @@
   width: max-content;
   min-width: 12rem;
   min-height: 2rem;
-  background: var(--map-col-bkg);
+  background: var(--map-col-content-bkg-muted, var(--map-col-bkg__deprecate));
   border-radius: var(--map-border-radius);
-  color: var(--map-col-text);
-  opacity: 0.7;
+  color: var(--map-col-text-muted, var(--map-col-text__deprecate));
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.7);
   font-size: 0.8rem;
   padding: 0.18rem 0.8rem;
   display: grid;
@@ -351,7 +403,7 @@ represents 1 unit of the given distance measurement. */
   height: 4px;
   border-radius: 1px;
   transition: width 0.3s;
-  background-color: var(--map-col-text);
+  background-color: var(--map-col-buttons-icon-muted, var(--map-col-text__deprecate));
 }
 
 /* The elements that contains the distance measurement */
@@ -369,7 +421,7 @@ represents 1 unit of the given distance measurement. */
 .toolbar {
   display: grid;
   grid-auto-flow: column;
-  color: var(--map-col-text);
+  color: var(--map-col-content-bkg, var(--map-col-text__deprecate));
 }
 
 .toolbar__toggle {
@@ -378,23 +430,26 @@ represents 1 unit of the given distance measurement. */
   padding: 0.4rem;
   font-size: 1.25rem;
   background-color: transparent;
-  opacity: 0.6;
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.6);
   margin-bottom: 0.5rem;
   margin-right: -0.3rem;
+  color: var(--map-col-utility-buttons);
 }
 
 .toolbar__links {
   display: flex;
   flex-direction: column;
   height: min-content;
-  background-color: var(--map-col-bkg);
+  background-color: var(--map-col-content-bkg-highlight, var(--map-col-bkg__deprecate));
   border-radius: var(--map-border-radius);
   margin: var(--map-size-toolbar-inter-link-margin);
   pointer-events: all;
+  color: var(--map-col-buttons-bkg-highlight);
+  box-shadow: var(--map-shadow-md);
 }
 
 .toolbar__all-content {
-  background-color: var(--map-col-bkg);
+  background-color: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
   width: var(--map-width-toolbar);
   padding: 0.8rem;
   box-shadow: var(--map-shadow-md);
@@ -419,6 +474,11 @@ represents 1 unit of the given distance measurement. */
   /* hide unless the content section is active */
   display: none;
   overflow: auto;
+
+  /* TODO: yvonne - Temporary. I'll clean this up in a separate PR. */
+  h2, h3 {
+    color: var(--map-col-text-title);
+  }
 }
 
 .toolbar__content--active {
@@ -436,28 +496,30 @@ represents 1 unit of the given distance measurement. */
   cursor: pointer;
   height: var(--map-size-toolbar-link);
   width: var(--map-size-toolbar-link);
-  background-color: var(--map-col-bkg);
+  background-color: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
   border-radius: var(--map-border-radius);
   padding: 0.2rem;
   margin: var(--map-size-toolbar-link-margin);
+  border: 1px solid var(--map-col-border);
 }
 
 .toolbar__link:hover {
-  background-color: var(--map-col-bkg-lighter)
+  background-color: var(--map-col-buttons-bkg-hover, var(--map-col-bkg-lighter__deprecate));
 }
 
 .toolbar__link--active {
-  background-color: var(--map-col-highlight)
+  background-color: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
+  color: var(--map-col-buttons-icon-highlight);
 }
 
 .toolbar__link--active:hover {
-  background-color: var(--map-col-highlight)
+  background-color: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
 }
 
 .toolbar__link-title {
   position: absolute;
   left: calc(100% + 1rem);
-  color: var(--map-col-text);
+  color: var(--map-col-tooltip-text, var(--map-col-text__deprecate));
   margin-top: 0.1em;
   text-transform: uppercase;
   font-size: 0.7rem;
@@ -470,7 +532,7 @@ represents 1 unit of the given distance measurement. */
 .toolbar__link:hover .toolbar__link-title {
   display: block;
   border-radius: var(--map-border-radius);
-  background-color: var(--map-col-bkg);
+  background-color: var(---map-col-tooltip-background, var(--map-col-bkg__deprecate));
   padding: 0.2rem 0.6rem
 }
 
@@ -507,12 +569,20 @@ represents 1 unit of the given distance measurement. */
         height: 100%;
         margin: unset;
         padding-left: 16px;
-        background-color: var(--map-col-bkg);
-        color: var(--map-col-text);
-        
+        background-color: var(--map-col-content-bkg, var(--map-col-bkg));
+        color: var(--map-col-text-body, var(--map-col-text));
+        font-family: var(--map-body-font);
+        border: 1px solid;
+        border-color: var(--map-col-border-muted);
+        box-shadow: unset;
+
+        ::placeholder {
+          color: var(--map-col-text-muted);
+        }
+
         &.search-input__error-input {
-          border-color: var(--map-input-box-border-highlight);
-          background-color: var(--map-input-box-error-background);
+          border-color: var(--map-col-input-error-border);
+          background-color: var(--map-col-input-error-bkg);
         }
       }
     }
@@ -533,11 +603,18 @@ represents 1 unit of the given distance measurement. */
         font-size: 16px;
       }
     }
+
+    .search-input__search-button {
+      color: var(--map-col-buttons-icon-muted);
+    }
+    .search-input__cancel-button {
+      color: var(--map-col-utility-buttons);
+    }
   }
 
   .search-input__error-text {
     line-height: 16px;
-    color: var(--map-input-box-error-message);
+    color: var(--map-col-input-error-text);
   }
 }
 
@@ -590,10 +667,11 @@ represents 1 unit of the given distance measurement. */
   margin-right: 0.4rem;
   display: flex;
   align-items: center;
+  color: var(--map-col-text-label);
 }
 
 .layer-item__highlighted-text {
-  background-color: var(--map-search-match-highlight);
+  background-color: var(--map-col-search-match-highlight);
 }
 
 .layer-item__icon {
@@ -601,7 +679,7 @@ represents 1 unit of the given distance measurement. */
   height: 1.04rem;
   width: auto;
   margin-right: 0.34rem;
-  opacity: 0.8;
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.8);
 }
 
 .layer-item__icon>svg {
@@ -610,12 +688,13 @@ represents 1 unit of the given distance measurement. */
 }
 
 .layer-item__label:hover {
-  color: var(--map-col-highlight);
+  color: var(--map-col-text-label, var(--map-col-highlight__deprecate));
+  background-color: var(--map-col-content-bkg-muted);
 }
 
 .layer-item__visibility-toggle {
   background: none;
-  opacity: 0.85;
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.85);
   padding: 0;
   margin-left: 0.5rem;
 }
@@ -627,20 +706,20 @@ represents 1 unit of the given distance measurement. */
 }
 
 .layer-item__visibility-toggle:hover {
-  opacity: 0.5;
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.5);
 }
 
 /* How to style the layer item when the layer details panel is showing for this item */
 
 .layer-item--selected .layer-item__label {
-  color: var(--map-col-highlight);
+  color: var(--map-col-text-label, var(--map-col-highlight__deprecate));
   font-weight: 700;
 }
 
 /* How to style the layer item when the layer is hidden on the map */
 
 .layer-item--hidden {
-  opacity: 0.3;
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.3);
 }
 
 .layer-item--hidden .layer-item__visibility-toggle:before {
@@ -672,6 +751,7 @@ represents 1 unit of the given distance measurement. */
  .layer-category-item__icon-and-label {
   align-items: center;
   display: flex;
+  color: var(--map-col-text-highlight);
  }
 
 .layer-category-item__label {
@@ -692,6 +772,7 @@ represents 1 unit of the given distance measurement. */
 
 .layer-category-item__expanded, .layer-category-item__collapsed {
   font-size: 16px;
+  color: var(--map-col-utility-buttons);
 }
 
 /*****************************************************************************************
@@ -707,8 +788,8 @@ represents 1 unit of the given distance measurement. */
   border-top-right-radius: var(--map-border-radius);
   border-top-left-radius: var(--map-border-radius);
   padding: 0.4rem 0.8rem;
-  background-color: var(--map-col-bkg-lighter);
-  color: var(--map-col-text);
+  background-color: var(--map-col-content-bkg, var(--map-col-bkg-lighter__deprecate));
+  color: var(--map-col-text-body, var(--map-col-text__deprecate));
   box-shadow: var(--map-shadow-md);
   grid-template-columns: auto min-content;
   grid-template-rows: min-content auto;
@@ -717,6 +798,7 @@ represents 1 unit of the given distance measurement. */
   align-items: center;
   /* Don't show the details panel unless it also has the layer-details--open class */
   display: none;
+  border: 1px solid var(--map-col-border);
 }
 
 .layer-details--open {
@@ -725,7 +807,7 @@ represents 1 unit of the given distance measurement. */
 
 .layer-details__label {
   /* the important is needed to overwrite more specific styles set on portal title tags */
-  color: var(--map-col-text) !important;
+  color: var(--map-col-text-highlight, var(--map-col-text__deprecate)) !important;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -733,45 +815,53 @@ represents 1 unit of the given distance measurement. */
   width: 100%;
   font-weight: 500;
   font-size: 0.85rem;
-  opacity: 60%;
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 60%);
 }
 
 .layer-details__toggle {
   padding: 0.4rem;
   font-size: 1.3rem;
   background-color: transparent;
-  opacity: 0.6;
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.6);
+  color: var(--map-col-utility-buttons);
 }
 
 /* The notification div holds a badge & message, if one is set */
 .layer-details__notification {
   margin: -0.2rem 0 0.9rem 0;
   padding: 0.3rem 0.5rem;
-  background-color: var(--map-col-buttons);
+  background-color: var(--map-col-buttons-bkg, var(--map-col-buttons__deprecate));
   border-radius: var(--map-border-radius);
+  border: 1px solid var(--map-col-border);
 }
 
 .layer-details__notification--blue {
   background-color: var(--map-col-blue);
+  color: var(--map-col-text-on-blue);
   filter: none;
+  border-color: none;
 }
 
 .layer-details__notification--green {
   background-color: var(--map-col-green);
+  color: var(--map-col-text-on-green);
   filter: none;
+  border-color: none;
 }
 
 .layer-details__notification--yellow {
   background-color: var(--map-col-yellow);
-  color: var(--map-col-bkg-lighter);
+  color: var(--map-col-text-on-yellow, var(--map-col-bkg-lighter__deprecate));
   filter: none;
-  opacity: 0.9;
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.9);
+  border-color: none;
 }
 
 .layer-details__notification--contrast {
-  background-color: var(--map-col-text);
-  color: var(--map-col-bkg);
-  opacity: 0.95;
+  background-color: var(--map-col-text-body, var(--map-col-text__deprecate));
+  color: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.95);
+  border-color: none;
 }
 
 .layer-details__sections {
@@ -791,7 +881,7 @@ represents 1 unit of the given distance measurement. */
 
 .layer-detail__label {
   /* the important is needed to overwrite more specific styles set on portal title tags */
-  color: var(--map-col-text) !important;
+  color: var(--map-col-text-body, var(--map-col-text__deprecate)) !important;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -859,7 +949,9 @@ represents 1 unit of the given distance measurement. */
 .layer-info__attribution {
   font-size: 0.8rem;
   line-height: 1.3;
-  opacity: 0.8;
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.8);
+  color: var(--map-col-text-muted);
+  font-family: var(--map-attribution-font);
 }
 
 .layer-info__links {
@@ -888,11 +980,16 @@ represents 1 unit of the given distance measurement. */
   border-radius: var(--map-border-radius);
   background: var(--c-neutral-3);
   position: relative;
-  background-color: var(--map-col-buttons);
+  background-color: var(--map-col-opacity-slider-inactive, var(--map-col-buttons__deprecate));
 }
 
+/* The shaded part of the slider that stretches from 0 to the current opacity */
+
+/* Note that the range is also styled in the main metacatui CSS file, using the range's
+other class: .ui-slider-range */
 .layer-opacity__range {
   border-radius: var(--map-border-radius);
+  background-color: var(--map-col-opacity-slider-active, #1f254f);
 }
 
 .layer-navigation {
@@ -900,13 +997,6 @@ represents 1 unit of the given distance measurement. */
   display: flex;
   justify-content: center;
 }
-
-/* The shaded part of the slider that stretches from 0 to the current opacity */
-
-/* Note that the range is also styled in the main metacatui CSS file, using the range's
-other class: .ui-slider-range */
-
-.layer-opacity__range {}
 
 /* The draggable handle element */
 
@@ -923,6 +1013,7 @@ other class: .ui-slider-range */
   align-items: center;
   justify-content: center;
   border: none;
+  background-color: var(--map-col-buttons-bkg-highlight, #EFEFEF);
 }
 
 /* The element that displays the current opacity as a percentage */
@@ -931,7 +1022,7 @@ other class: .ui-slider-range */
   font-size: 0.8em;
   /* Show the opacity value just below the slider handle */
   margin-top: 2.5em;
-  color: var(--map-col-text);
+  color: var(--map-col-text-muted, var(--map-col-text__deprecate));
 }
 
 /*****************************************************************************************
@@ -952,8 +1043,8 @@ other class: .ui-slider-range */
   border-top-left-radius: var(--map-border-radius);
   padding: 1rem 0.8rem 1rem 0.8rem;
   row-gap: 0.8rem;
-  background-color: var(--map-col-bkg-lighter);
-  color: var(--map-col-text);
+  background-color: var(--map-col-content-bkg, var(--map-col-bkg-lighter__deprecate));
+  color: var(--map-col-text-body, var(--map-col-text__deprecate));
   box-shadow: var(--map-shadow-md);
   grid-template-columns: auto 2.5rem;
   grid-template-rows: min-content auto min-content;
@@ -967,7 +1058,7 @@ other class: .ui-slider-range */
 }
 
 .feature-info__label {
-  color: var(--map-col-text) !important;
+  color: var(--map-col-text-title, var(--map-col-text__deprecate)) !important;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -975,7 +1066,7 @@ other class: .ui-slider-range */
   width: 100%;
   font-weight: 500;
   font-size: 0.85rem;
-  opacity: 60%;
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 60%);
 }
 
 .feature-info__content {
@@ -992,7 +1083,7 @@ other class: .ui-slider-range */
   padding: 0.4rem 0.6rem 0.4rem;
   font-size: 1.25rem;
   background-color: transparent;
-  opacity: 0.6;
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.6);
   justify-self: end;
 }
 
@@ -1005,8 +1096,7 @@ other class: .ui-slider-range */
 /* styles for the (default) table template */
 
 .feature-info__table {
-  /* TODO: use colour vars */
-  background-color: var(--map-col-bkg-lightest);
+  background-color: var(--map-col-content-bkg-muted, var(--map-col-bkg-lightest__deprecate));
   border-radius: var(--map-border-radius);
   box-shadow: var(--map-shadow-md);
   width: calc(var(--map-width-toolbar) - 2.2rem);
@@ -1021,7 +1111,7 @@ other class: .ui-slider-range */
 }
 
 .feature-info__table-row:nth-child(even) {
-  background-color: var(--map-col-bkg-lighter);
+  background-color: var(--map-col-content-bkg, var(--map-col-bkg-lighter__deprecate));
 }
 
 .feature-info__table-cell {
@@ -1048,9 +1138,10 @@ other class: .ui-slider-range */
   font-size: 0.9em;
   text-transform: uppercase;
   display: block;
-  opacity: 0.85;
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.85);
   margin: 0;
   padding: 0;
+  color: var(--map-col-text-muted);
 }
 
 .feature-info__description {
@@ -1066,6 +1157,7 @@ other class: .ui-slider-range */
   align-items: center;
   font-weight: bold;
   text-decoration: none;
+  color: var(--map-col-buttons-text, var(--portal-col-highlight));
 }
 
 
@@ -1096,7 +1188,7 @@ other class: .ui-slider-range */
   border-radius: 3px;
   box-shadow: var(--map-shadow-md);
   /* imagery appears lighter on the map */
-  filter: brightness(1.75);
+  filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.75));
 }
 
 /*****************************************************************************************
@@ -1126,21 +1218,30 @@ other class: .ui-slider-range */
 }
 
 .nav-help {
-  background-color: var(--map-col-bkg-lighter);
+  /* Temporary. Background can't be buttons-bkg because the hand image on the button is white with no outline. */
+  background-color: var(--portal-grey-4, var(--map-col-bkg-lighter__deprecate));
+  color: white;
+
   border-radius: var(--map-border-radius);
 }
 
 .nav-help .map-view__button {
-  background-color: var(--map-col-bkg-lighter);
+  /* Temporary. Background can't be buttons-bkg because the hand image on the button is white with no outline. */
+  background-color: var(--portal-grey-4, var(--map-col-bkg-lighter__deprecate));
+  color: var(--map-col-text-label);
+
   padding: 0.65rem 0.9rem;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  opacity: 0.8;
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.8);
 }
 
 .nav-help .map-view__button--active {
-  background-color: var(--map-col-bkg-lightest);
-  opacity: 1;
+  /* Temporary. Background can't be buttons-bkg because the hand image on the button is white with no outline. */
+  background-color: var(--portal-grey-5, var(--map-col-bkg-lightest__deprecate));
+  color: white;
+
+  opacity: var(--map-no-brightness-or-opacity-tweaks, 1);
 }
 
 .nav-help__img {
@@ -1153,7 +1254,10 @@ other class: .ui-slider-range */
   width: 100%;
   gap: 0.8rem;
   padding: 0.8rem 0.4rem;
-  background-color: var(--map-col-bkg-lightest);
+  /* Temporary. Background can't be buttons-bkg because the hand image on the button is white with no outline. */
+  background-color: var(--portal-grey-5, var(--map-col-bkg-lightest__deprecate));
+  color: white;
+
   border-radius: var(--map-border-radius);
   border-top-left-radius: 0;
   border-top-right-radius: 0;
@@ -1211,7 +1315,7 @@ other class: .ui-slider-range */
   background: var(--portal-col-bkg-lighter);
 
   &:focus-within {
-    border-color: var(--map-input-box-border-highlight);
+    border-color: var(--map-col-input-error-border);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(82, 168, 236, .6);
   }
 
@@ -1241,7 +1345,7 @@ other class: .ui-slider-range */
 }
 
 .viewfinder__error {
-  color: var(--map-col-text);
+  color: var(--map-col-text__deprecate);
   font-size: .8rem;
   padding: 4px 12px;
 }
