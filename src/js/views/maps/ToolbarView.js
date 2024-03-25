@@ -12,7 +12,7 @@ define(
     'views/maps/LayersPanelView',
     'views/maps/DrawToolView',
     'views/maps/HelpPanelView',
-    'views/maps/ViewfinderView',
+    'views/maps/viewfinder/ViewfinderView',
   ],
   function (
     $,
@@ -201,7 +201,7 @@ define(
               sectionEl.sectionView.focusInput();
             },
             isVisible(model) {
-              return model.get("showViewfinder");
+              return MetacatUI.mapKey && model.get("showViewfinder");
             },
           },
           {

@@ -65,14 +65,12 @@
                 else{
                   // Use RequireJS to load in the tests, because RequireJS will not be happy loading them in any other way
                   let combinedTests = Object.values(testList).flat();
-                  require(combinedTests, function() {
+                  require(['./js/specs/shared/mock-gmaps-module.js', ...combinedTests], function() {
                     mocha.run();
                   }, function(err) {
                     document.getElementById("error").textContent = "Error loading tests: " + JSON.stringify(err);
                   });
                 }
-                
-
               });
             }
        </script>

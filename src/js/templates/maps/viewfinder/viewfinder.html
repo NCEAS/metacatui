@@ -1,0 +1,15 @@
+<h2>Viewfinder</h2>
+<div class="viewfinder__form-field">
+  <div class="viewfinder__field">
+    <input class="<%= classNames.input %>" type="text" placeholder="<%= placeholder %>" value="<%= inputValue %>" />
+    <button class="<%= classNames.button %>">
+      <i class="icon icon-search"></i>
+    </button>
+  </div>
+
+  <div class="<%= classNames.error %>">
+    <%= errorMessage %>
+  </div>
+</div>
+
+<div class="<%= classNames.predictions %>" tabindex="0"></div>
