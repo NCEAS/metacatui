@@ -137,7 +137,7 @@ define(
 
             state.model.autocompleteSearch("somewhere else");
 
-            expect(state.model.get('error')).to.match(/The Places API is not enabled/);
+            expect(state.model.get('error')).to.match(/We're having trouble/);
           });
 
         it('shows \'no results\' message if autocomplete search throws some other error',
@@ -258,7 +258,7 @@ define(
 
             await state.model.selectPrediction(state.predictions[0]);
 
-            expect(state.model.get('error')).to.match(/The Geocoding API is not enabled/);
+            expect(state.model.get('error')).to.match(/We're having trouble/);
           });
 
         it('shows \'no results\' message if geocoder throws some other error',
