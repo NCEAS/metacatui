@@ -1323,7 +1323,7 @@ other class: .ui-slider-range */
     border: 1px solid var(--portal-col-bkg-active);
     border-radius: 4px;
     box-sizing: border-box;
-    color: var(--map-col-text);
+    color: var(--map-col-text-body);
     cursor: pointer;
     display: flex;
     height: 48px;
