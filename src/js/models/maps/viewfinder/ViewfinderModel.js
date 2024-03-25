@@ -8,9 +8,11 @@ define(
     'models/geocoder/GeocoderSearch',
     'models/maps/GeoPoint'],
   (_, Backbone, Cesium, GeocoderSearch, GeoPoint) => {
-    const NO_RESULTS_MESSAGE = 'No search results found.';
-    const PLACES_API_ERROR = 'The Places API is not enabled for this Google Maps API key.';
-    const GEOCODING_API_ERROR = 'The Geocoding API is not enabled for this Google Maps API key.';
+    const EMAIL = MetacatUI.appModel.get('emailContact');
+    const NO_RESULTS_MESSAGE = 'No search results found, try using another place name.';
+    const API_ERROR = 'We\'re having trouble identifying locations on the map right now. Please reach out to support for help with this issue' + (EMAIL ? `: ${EMAIL}` : '.');
+    const PLACES_API_ERROR = API_ERROR;
+    const GEOCODING_API_ERROR = API_ERROR;
 
     /**
     * @class ViewfinderModel
