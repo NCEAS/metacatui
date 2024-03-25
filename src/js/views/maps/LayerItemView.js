@@ -7,6 +7,7 @@ define(
     'underscore',
     'backbone',
     'models/maps/assets/MapAsset',
+    'common/IconUtilities',
     'text!templates/maps/layer-item.html',
     // Sub-views
     'views/maps/LegendView'
@@ -16,6 +17,7 @@ define(
     _,
     Backbone,
     MapAsset,
+    IconUtilities,
     Template,
     // Sub-views
     Legend
@@ -88,6 +90,8 @@ define(
           legendContainer: 'layer-item__legend-container',
           selected: 'layer-item--selected',
           hidden: 'layer-item--hidden',
+          labelText: 'layer-item__label-text',
+          highlightedText: 'layer-item__highlighted-text',
           badge: 'map-view__badge',
           tooltip: 'map-tooltip',
         },
@@ -157,7 +161,8 @@ define(
 
             // Insert the template into the view
             this.$el.html(this.template({
-              label: this.model.get('label')
+              label: this.model.get('label'),
+              classes: this.classes,
             }));
             // Save a reference to the label element
             this.labelEl = this.el.querySelector('.' + this.classes.label)
@@ -227,7 +232,7 @@ define(
               return
             }
             const icon = model.get('icon')
-            if (icon && typeof icon === 'string' && model.isSVG(icon)) {
+            if (icon && typeof icon === 'string' && IconUtilities.isSVG(icon)) {
               const iconContainer = document.createElement('span')
               iconContainer.classList.add(this.classes.icon)
               iconContainer.innerHTML = icon
@@ -484,9 +489,33 @@ define(
               '. Error details: ' + error
             );
           }
-        }
+        },
 
+        /**
+         * Searches and only displays self if layer label matches the text. Highlights the
+         * matched text.
+         * @param {string} [text] - The search text from user input.
+         * @returns {boolean} - True if a layer label matches the text
+         */
+        search(text) {
+          let newLabel = this.model.get('label');
+          if (text) {
+            const regex = new RegExp(text, "ig");
+            newLabel = this.model.get('label').replaceAll(regex, matchedText => {
+              return $('<span />').addClass(this.classes.highlightedText).html(matchedText).prop('outerHTML');
+            });
 
+            // Label is unchanged.
+            if (newLabel === this.model.get('label')) {
+              this.$el.hide();
+              return false;
+            }
+          }
+
+          this.labelEl.querySelector(`.${this.classes.labelText}`).innerHTML = newLabel;
+          this.$el.show();
+          return true;
+        },
       }
     );
 

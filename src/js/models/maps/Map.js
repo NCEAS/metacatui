@@ -6,7 +6,8 @@ define([
   "backbone",
   "collections/maps/MapAssets",
   "models/maps/MapInteraction",
-], function ($, _, Backbone, MapAssets, Interactions) {
+  "collections/maps/AssetCategories",
+], function ($, _, Backbone, MapAssets, Interactions, AssetCategories) {
   /**
    * @class MapModel
    * @classdesc The Map Model contains all of the settings and options for a
@@ -31,7 +32,13 @@ define([
        * @property {MapConfig#MapAssetConfig[]} [layers] - A collection of
        * imagery, tiles, vector data, etc. to display on the map. Layers wil be
        * displayed in the order they appear. The array of the layer
-       * MapAssetConfigs are passed to a {@link MapAssets} collection.
+       * MapAssetConfigs are passed to a {@link MapAssets} collection. When layerCategories
+       * exist, this property will be ignored.
+       * @property {MapConfig#MapAssetConfig[]} [layerCategories] - A collection of
+       * layer categories to display in the tool bar. Categories wil be
+       * displayed in the order they appear. The array of the AssetCategoryConfig
+       * are passed to a {@link AssetCategories} collection. When layerCategories
+       * exist, the layers property will be ignored.
        * @property {MapConfig#MapAssetConfig[]} [terrains] - Configuration for
        * one or more digital elevation models (DEM) for the surface of the
        * earth. Note: Though multiple terrains are supported, currently only the
@@ -46,6 +53,8 @@ define([
        * a {@link LayerListView}.
        * @property {Boolean} [showHomeButton=true] - Whether or not to show the
        * home button in the toolbar.
+       * @property {Boolean} [showViewfinder=false] - Whether or not to show the
+       * viefinder UI and viewfinder button in the toolbar.
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
@@ -152,13 +161,21 @@ define([
        * @property {MapAssets} [terrains = new MapAssets()] - The terrain
        * options to show in the map.
        * @property {MapAssets} [layers = new MapAssets()] - The imagery and
-       * vector data to render in the map.
+       * vector data to render in the map. When layerCategories exist, this
+       * property will be ignored.
+       * @property {AssetCategories} [layerCategories = new AssetCategories()] -
+       * A collection of layer categories to display in the tool bar. Categories
+       * wil be displayed in the order they appear. The array of the AssetCategoryConfig
+       * are passed to a {@link AssetCategories} collection. When layerCategories
+       * exist, the layers property will be ignored.
        * @property {Boolean} [showToolbar=true] - Whether or not to show the
        * side bar with layer list and other tools. True by default.
        * @property {Boolean} [showLayerList=true] - Whether or not to include
        * the layer list in the toolbar. True by default.
        * @property {Boolean} [showHomeButton=true] - Whether or not to show the
        * home button in the toolbar. True by default.
+       * @property {Boolean} [showViewfinder=false] - Whether or not to show the
+       * viefinder UI and viewfinder button in the toolbar. Defaults to false.
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
@@ -197,6 +214,7 @@ define([
           showToolbar: true,
           showLayerList: true,
           showHomeButton: true,
+          showViewfinder: false,
           toolbarOpen: false,
           showScaleBar: true,
           showFeatureInfo: true,
@@ -220,9 +238,15 @@ define([
               return a && a.length && Array.isArray(a);
             }
 
-            if (isNonEmptyArray(config.layers)) {
+            if (isNonEmptyArray(config.layerCategories)) {
+              const assetCategories = new AssetCategories(config.layerCategories);
+              assetCategories.setMapModel(this);
+              this.set("layerCategories", assetCategories);
+              this.unset("layers");
+            } else if (isNonEmptyArray(config.layers)) {
               this.set("layers", new MapAssets(config.layers));
               this.get("layers").setMapModel(this);
+              this.unset("layerCategories");
             }
             if (isNonEmptyArray(config.terrains)) {
               this.set("terrains", new MapAssets(config.terrains));
@@ -296,6 +320,21 @@ define([
         const newLayers = this.defaults()?.layers || new MapAssets();
         this.set("layers", newLayers);
         return newLayers;
+      },
+
+      /**
+       * @returns {MapAssets[]} When layerCategories are configured, each MapAssets
+       * represets layers from one category. When layerCategories doesn't exist, flat
+       * layers are used and the array includes exactly one MapAssets with all
+       * the layers. Returns an empty array if no layer are found.
+       */
+      getLayerGroups() {
+        if (this.has("layerCategories")) {
+          return this.get("layerCategories").getMapAssets();
+        } else if (this.has("layers")) {
+          return [this.get("layers")];
+        }
+        return [];
       },
 
       /**

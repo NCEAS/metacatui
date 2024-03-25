@@ -7,7 +7,8 @@ define([
   "models/maps/GeoBoundingBox",
   "models/maps/GeoPoint",
   "models/maps/GeoScale",
-], function (Backbone, Features, Feature, GeoBoundingBox, GeoPoint, GeoScale) {
+  "collections/maps/MapAssets",
+], function (Backbone, Features, Feature, GeoBoundingBox, GeoPoint, GeoScale, MapAssets) {
   /**
    * @class MapInteraction
    * @classdesc The Map Interaction stores information about user interaction
@@ -336,7 +337,10 @@ define([
             return;
           }
 
-          const assets = this.get("mapModel")?.get("layers");
+          const assets = _.reduce(this.get("mapModel")?.getLayerGroups(), (mapAssets, layers) => {
+            mapAssets.add(layers.models);
+            return mapAssets;
+          }, new MapAssets());
 
           const newAttrs = features.map((f) => ({ featureObject: f }));
 

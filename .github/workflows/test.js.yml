@@ -32,3 +32,5 @@ jobs:
       run: npm ci
     - name: Run tests
       run: npm test
+    - name: Dry run jsdoc
+      run: npm run jsdoc-dry-run

@@ -144,6 +144,8 @@ define(["jquery",
               }
           });
 
+          document.body.style.removeProperty("height");
+
           this.markdownView?.tocView?.setAffix();
         },
 

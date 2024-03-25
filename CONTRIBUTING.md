@@ -11,6 +11,7 @@
   - [Testing](#testing)
   - [Code style](#code-style)
   - [Documentation](#documentation)
+  - [PR Code Review Guidelines](#pr-code-review-guidelines)
   - [Contributor license agreement](#contributor-license-agreement)
 
 ## Types of contributions
@@ -31,6 +32,10 @@ participation in the project.  Contributions are reviewed and suggestions are
 made to increase the value of MetacatUI to the community.  We strive to
 incorporate code, documentation, and other useful contributions quickly and
 efficiently while maintaining a high-quality repository software product.
+
+If you have any questions about contributing, please feel free to ask on the
+[MetacatUI discussions board](https://github.com/NCEAS/metacatui/discussions) or
+on the [DataONE Slack team](https://slack.dataone.org/).
 
 ## Pull Requests
 We use the pull-request model for contributions. See [GitHub's help on pull-requests](https://help.github.com/articles/about-pull-requests/).
@@ -133,7 +138,7 @@ Read more documentation about how tests are run and viewed in [/test/README.md](
 Code should be written to professional standards to enable clean, well-documented,
 readable, and maintainable software.  While there has been significant variability
 in the coding styles applied historically, new contributions should strive for
-clean code formatting.  Some of the guidelines we follow include:
+clean code formatting.
 
 ## Documentation
 
@@ -166,6 +171,28 @@ Things to check:
 - The class shows up in the right category in the class navigation menu
 - All class methods and attributes are documented and displaying correctly
 - Screenshots of views are displaying correctly
+
+## PR Code Review Guidelines
+
+When submitting a pull request (PR) to MetacatUI, it's essential to adhere not only to the above criteria on tests, formatting, and documentation, but also to additional aspects that ensure the quality and functionality of your contributions. Here are key points that reviewers will check during the code review process:
+
+1. **Theme Compatibility**: Test your changes across all standard themes included in MetacatUI (such as `arctic`, `dataone`, `default`, `knb`) and those in the [metacatui-themes repository](https://github.com/NCEAS/metacatui-themes) (`drp` and `sctld`). This ensures consistency and compatibility across different visual presentations.
+
+2. **Responsive Design**: Ensure that your changes perform well on various screen sizes, including mobile devices.
+
+3. **Component Impact Analysis**: If you modify an existing model, collection, or view, review all instances where that component is utilized within MetacatUI. This is crucial to prevent unintended impacts, especially considering that our test coverage is not yet exhaustive.
+
+4. **Performance Consideration**: Be mindful of the performance implications of your changes. This is particularly important for substantial additions, as we aim to maintain or improve the current performance levels of MetacatUI.
+
+5. **Error Handling and Messaging**: Incorporate robust error handling in your code and ensure that any error messages are clear and user-friendly. If one component triggers an error for any reason, it should not disrupt the functionality of the entire application.
+
+6. **Dependency Management**: When adding or updating dependencies, evaluate their necessity and impact on the project size. Avoid redundancy and prefer dependencies with a strong maintenance history and a large supporting community, as this increases the likelihood of long-term support.
+
+7. **User Status Consideration**: If applicable, test the functionality of your changes for both signed-in and non-signed-in users.
+
+8. **Documentation Updates**: In addition to updating JSDocs, if your changes affect any aspect covered in the MetacatUI guides (`docs/guide`), make the necessary updates. For significant features requiring configuration by MetacatUI administrators, consider adding a new guide.
+
+9. **Security Assessment**: Ensure that any security implications of your changes are thoroughly considered and addressed.
 
 ## Contributor license agreement
 

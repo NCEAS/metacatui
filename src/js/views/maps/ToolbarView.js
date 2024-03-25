@@ -7,10 +7,12 @@ define(
     'backbone',
     'text!templates/maps/toolbar.html',
     'models/maps/Map',
+    'common/IconUtilities',
     // Sub-views - TODO: import these as needed
-    'views/maps/LayerListView',
+    'views/maps/LayersPanelView',
     'views/maps/DrawToolView',
-    'views/maps/HelpPanelView'
+    'views/maps/HelpPanelView',
+    'views/maps/ViewfinderView',
   ],
   function (
     $,
@@ -18,10 +20,12 @@ define(
     Backbone,
     Template,
     Map,
+    IconUtilities,
     // Sub-views
-    LayerListView,
+    LayersPanelView,
     DrawTool,
-    HelpPanel
+    HelpPanel,
+    ViewfinderView,
   ) {
 
     /**
@@ -151,6 +155,8 @@ define(
          * This can be provided instead of a view and viewOptions, in which case no
          * toolbar section will be created. The function will be passed the view and the
          * Map model as arguments.
+         * @property {function} [isVisible] A function that determines whether this 
+         * section should be visible in the toolbar.
          */
 
         /**
@@ -163,18 +169,20 @@ define(
           {
             label: 'Layers',
             icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="m3.2 7.3 8.6 4.6a.5.5 0 0 0 .4 0l8.6-4.6a.4.4 0 0 0 0-.8L12.1 3a.5.5 0 0 0-.4 0L3.3 6.5a.4.4 0 0 0 0 .8Z"/><path d="M20.7 10.7 19 9.9l-6.7 3.6a.5.5 0 0 1-.4 0L5 9.9l-1.8.8a.5.5 0 0 0 0 .8l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.8Z"/><path d="m20.7 15.1-1.5-.7-7 3.8a.5.5 0 0 1-.4 0l-7-3.8-1.5.7a.5.5 0 0 0 0 .9l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.9Z"/></svg>',
-            view: LayerListView,
-            viewOptions: {
-              model: null,
-              collection: 'model.layers'
-            }
+            view: LayersPanelView,
+            isVisible(model) {
+              return model.get('showLayerList');
+            },
           },
           {
             label: 'Home',
             icon: 'home',
             action: function (view, model) {
               model.flyHome();
-            }
+            },
+            isVisible(model) {
+              return model.get("showHomeButton");
+            },
           },
           // We can enable to the draw tool once we have a use case for it
           // {
@@ -184,6 +192,19 @@ define(
           //   viewOptions: {}
           // },
           {
+            label: 'Viewfinder',
+            icon: 'search',
+            view: ViewfinderView,
+            action(view, model) {
+              const sectionEl = this;
+              view.defaultActivationAction(sectionEl);
+              sectionEl.sectionView.focusInput();
+            },
+            isVisible(model) {
+              return model.get("showViewfinder");
+            },
+          },
+          {
             label: 'Help',
             icon: 'question-sign',
             view: HelpPanel,
@@ -191,7 +212,10 @@ define(
               showFeedback: 'model.showFeedback',
               feedbackText: 'model.feedbackText',
               showNavHelp: 'model.showNavHelp',
-            }
+            },
+            isVisible(model) {
+              return model.get("showNavHelp") || model.get("showFeedback");
+            },
           }
         ],
 
@@ -219,30 +243,16 @@ define(
               this.model = new Map();
             }
 
-            if(this.model.get('toolbarOpen') === true) {
+            if (this.model.get('toolbarOpen') === true) {
               this.isOpen = true;
             }
 
-
-            // Deep clone the section options so that the original array is not
-            // modified
-            this.sections = _.map(this.sectionOptions, _.clone);
-
-            if (this.model.get("showLayerList") === false) {
-              this.sections = this.sections.filter(
-                (section) => section.label !== "Layers"
-              );
-            }
-            if (this.model.get("showHomeButton") === false) {
-              this.sections = this.sections.filter(
-                (section) => section.label !== "Home"
-              );
-            }
-            if (!this.model.get("showNavHelp") && !this.model.get("showFeedback")) {
-              this.sections = this.sections.filter(
-                (section) => section.label !== "Help"
-              );
-            }
+            // Check whether each section should be shown, defaulting to true.
+            this.sections = this.sectionOptions.filter(section => {
+              return typeof section.isVisible === 'function'
+                ? section.isVisible(this.model)
+                : true;
+            });
           } catch (e) {
             console.log('Error initializing a ToolbarView', e);
           }
@@ -286,14 +296,17 @@ define(
               var linkEl = view.renderSectionLink(sectionOption)
               var action = sectionOption.action
               let contentEl = null;
+              let sectionView;
               if (sectionOption.view) {
-                contentEl = view.renderSectionContent(sectionOption)
+                const { contentContainer, sectionContent } = view.renderSectionContent(sectionOption)
+                contentEl = contentContainer;
+                sectionView = sectionContent;
               }
               // Set the section to false to start
               var isActive = false
               // Save a reference to these elements and their status. sectionEl is an
               // object that has type SectionElement (documented in comments below)
-              var sectionEl = { linkEl, contentEl, isActive, action }
+              var sectionEl = { linkEl, contentEl, isActive, action, sectionView };
               view.sectionElements.push(sectionEl)
               // Attach the link and content to the view
               if (contentEl) {
@@ -336,6 +349,7 @@ define(
          * section's content, and open/close the toolbar.
          * @property {Boolean} isActive True if this is the active section, false
          * otherwise.
+         * @property {Backbone.View} sectionView The associated Backbone.View instance. 
          */
 
         /**
@@ -418,12 +432,8 @@ define(
 
             // iconString must be string
             if (typeof iconString === 'string') {
-
-              // Simple test to check if the string contains SVG content
-              const isSVG = iconString.toUpperCase().startsWith('<SVG');
-
               // If the icon is an SVG element
-              if (isSVG) {
+              if (IconUtilities.isSVG(iconString)) {
                 icon = new DOMParser()
                   .parseFromString(iconString, 'image/svg+xml')
                   .documentElement;
@@ -447,11 +457,19 @@ define(
         },
 
         /**
+         * @typedef {Object} SectionContentReturnType
+         * @property {HTMLElement} contentContainer - The content container HTML
+         * element.
+         * @property {Backbone.View} sectionContent - The Backbone.View instance
+         */
+
+        /**
          * Creates a container for a toolbar section's content, then rendered the
          * specified view in that container.
          * @param {SectionOption} sectionOption The view and view options that are set in
          * the Section Option are used to create the content container
-         * @returns {HTMLElement} Returns the content container with the rendered view
+         * @returns {SectionContentReturnType} The content container with the
+         * rendered view, and the Backbone.View itself.
          */
         renderSectionContent: function (sectionOption) {
           try {
@@ -481,7 +499,7 @@ define(
             var sectionContent = new sectionOption.view(viewOptions)
             contentContainer.appendChild(sectionContent.el)
             sectionContent.render()
-            return contentContainer
+            return { contentContainer, sectionContent }
           }
           catch (error) {
             console.log('Error rendering ToolbarView section', error);
@@ -527,21 +545,29 @@ define(
          * @param {SectionElement} sectionEl The section to activate
          */
         activateSection: function (sectionEl) {
-          if(!sectionEl) return;
+          if (!sectionEl) return;
           try {
             if (sectionEl.action && typeof sectionEl.action === 'function') {
               const view = this;
               const model = this.model;
               sectionEl.action(view, model)
             } else {
-              sectionEl.isActive = true;
-              sectionEl.contentEl.classList.add(this.classes.contentActive)
-              sectionEl.linkEl.classList.add(this.classes.linkActive)
+              this.defaultActivationAction(sectionEl);
             }
           }
           catch (error) {
             console.log('Failed to show a section in a ToolbarView', error);
           }
+        },
+
+        /**
+         * The default action for a section being activated. 
+         * @param {SectionElement} sectionEl The section to activate
+         */
+        defaultActivationAction(sectionEl) {
+          sectionEl.isActive = true;
+          sectionEl.contentEl.classList.add(this.classes.contentActive)
+          sectionEl.linkEl.classList.add(this.classes.linkActive)
         },
 
         /**
