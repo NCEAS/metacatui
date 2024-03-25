@@ -23,6 +23,7 @@ define(
        * user is looking for. Most often this comes in five or less results.
        */
       async autocomplete(input) {
+        if (!input) return [];
         const response = await this.autocompleter.getPlacePredictions({
           input,
         });
