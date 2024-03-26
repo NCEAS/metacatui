@@ -552,6 +552,7 @@ represents 1 unit of the given distance measurement. */
     .search-input__input {
       width: 100%;
       position: absolute;
+      padding-right: 32px;
     
       input[type=text]& {  /* Override bootstrap */
         height: 100%;
@@ -1364,61 +1365,19 @@ other class: .ui-slider-range */
   width: 100%;
 }
 
-.viewfinder__field {
-  border-radius: 4px;
-  border: 1px solid var(--portal-col-bkg-active);
-  display: flex;
-  flex-direction: row;
-  background: var(--portal-col-bkg-lighter);
-
-  &:focus-within {
-    border-color: var(--map-col-input-error-border);
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(82, 168, 236, .6);
-  }
-
-  .viewfinder__input {
-    border: none;
-    box-sizing: border-box;
-    flex: 1;
-    height: 100%;
-    margin: 0;
-    height: 48px;
-
-    &:focus {
-      border: none;
-      box-shadow: none;
-    }
-  }
-
-  .viewfinder__button {
-    border: none;
-    border-radius: 4px;
-    color: var(--portal-col-buttons);
-    background: none;
-
-    &:hover {
-      color: #ffffff;
-    }
-  }
-}
-
-.viewfinder__error {
-  color: var(--map-col-text__deprecate);
-  font-size: .8rem;
-  padding: 4px 12px;
-}
-
 .viewfinder-predictions {
   list-style: none;
   margin: 0;
 
   .viewfinder-prediction__content {
     align-items: center;
-    background: var(--map-col-bkg);
+    background: var(--map-col-bkg, var(--map-col-bkg__deprecate));
+    /* TODO(ianguerin) */
     border: 1px solid var(--portal-col-bkg-active);
     border-radius: 4px;
     box-sizing: border-box;
-    color: var(--map-col-text);
+    /* TODO(ianguerin) */
+    color: var(--map-col-text-body);
     cursor: pointer;
     display: flex;
     height: 48px;
@@ -1441,11 +1400,11 @@ other class: .ui-slider-range */
     }
 
     &:hover {
-      background-color: var(--map-col-bkg-lightest);
+      background-color: var(--map-col-bkg-lightest, var(--map-col-bkg-lighter));
     }
 
     &.viewfinder-prediction__focused {
-      background-color: var(--map-col-bkg-lighter);
+      background-color: var(--map-col-bkg-lighter, var(--map-col-bkg-lighter__deprecate));
     }
   }
 }

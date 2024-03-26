@@ -54,9 +54,13 @@ define([
     */
     events() {
       return {
-        [`keyup .${CLASS_NAMES.input}`]: 'keyup',
-        [`click .${CLASS_NAMES.searchButton}`]: "onSearch",
         [`click .${CLASS_NAMES.cancelButton}`]: "onCancel",
+        [`blur  .${CLASS_NAMES.input}`]: 'onBlur',
+        [`change  .${CLASS_NAMES.input}`]: 'onKeyup',
+        [`focus  .${CLASS_NAMES.input}`]: 'onFocus',
+        [`keydown  .${CLASS_NAMES.input}`]: 'onKeydown',
+        [`keyup .${CLASS_NAMES.input}`]: 'onKeyup',
+        [`click .${CLASS_NAMES.searchButton}`]: "onSearch",
       };
     },
 
@@ -64,16 +68,28 @@ define([
      * @typedef {Object} SearchInputViewOptions
      * @property {Function} search A function that takes in a text input and returns
      * a boolean for whether there is a match.
+     * @property {Function} keydownCallback A function that receives a key event
+     * on keydown.
+     * @property {Function} keyupCallback A function that receives a key event
+     * on keyup stroke.
+     * @property {Function} blurCallback A function that receives an event on
+     * blur of the input.
+     * @property {Function} focusCallback A function that receives an event on
+     * focus of the input.
      * @property {Function} noMatchCallback A callback function to handle a no match
      * situation.
      * @property {String} placeholder The placeholder text for the input box.
      */
     initialize(options) {
-      if (typeof(options.search) !== "function") {
+      if (typeof (options.search) !== "function") {
         throw new Error("Initializing SearchInputView without a search function.");
       }
       this.search = options.search;
-      this.noMatchCallback = options.noMatchCallback;
+      this.keyupCallback = options.keyupCallback || noop;
+      this.keydownCallback = options.keydownCallback || noop;
+      this.blurCallback = options.blurCallback || noop;
+      this.focusCallback = options.focusCallback || noop;
+      this.noMatchCallback = options.noMatchCallback || noop;
       this.templateVars.placeholder = options.placeholder;
     },
 
@@ -90,10 +106,37 @@ define([
      * Event handler for Backbone.View configuration that is called whenever 
      * the user types a key.
      */
-    keyup(event) {
+    onKeyup(event) {
       if (event.key === "Enter") {
         this.onSearch();
+        return;
       }
+
+      this.keyupCallback(event);
+    },
+
+    /**
+     * Event handler for Backbone.View configuration that is called whenever 
+     * the user types a key.
+     */
+    onKeydown(event) {
+      this.keydownCallback(event);
+    },
+
+    /**
+     * Event handler for Backbone.View configuration that is called whenever 
+     * the user focuses the input.
+     */
+    onFocus(event) {
+      this.focusCallback(event);
+    },
+
+    /**
+     * Event handler for Backbone.View configuration that is called whenever 
+     * the user blurs the input.
+     */
+    onBlur(event) {
+      this.blurCallback(event);
     },
 
     /**
@@ -104,7 +147,7 @@ define([
       this.getError().hide();
 
       const input = this.getInput();
-      const inputValue = input.val().toLowerCase();
+      const inputValue = this.getInputValue().toLowerCase();
       const matched = this.search(inputValue);
       if (matched) {
         input.removeClass(CLASS_NAMES.errorInput);
@@ -115,14 +158,12 @@ define([
         }
       }
 
-      const searchButton = this.$(`.${CLASS_NAMES.searchButton}`);
-      const cancelButton = this.$(`.${CLASS_NAMES.cancelButton}`);
       if (inputValue !== "") {
-        searchButton.hide();
-        cancelButton.show();
+        this.getSearchButton().hide();
+        this.getCancelButton().show();
       } else {
-        searchButton.show();
-        cancelButton.hide();
+        this.getSearchButton().show();
+        this.getCancelButton().hide();
       }
     },
 
@@ -131,33 +172,95 @@ define([
      * @param {string} errorText
      */
     setError(errorText) {
+      this.getInput().addClass(CLASS_NAMES.errorInput);
       const errorTextEl = this.getError();
       if (errorText) {
         errorTextEl.html(errorText);
         errorTextEl.show();
       } else {
+        errorTextEl.html('');
         errorTextEl.hide();
       }
     },
 
+    /**
+     * Handler function for the cancel icon button action.
+     */
     onCancel() {
       this.getInput().val("");
       this.onSearch();
       this.focus();
     },
 
+    /**
+     * Focus the input field in this View. 
+     */
     focus() {
       this.getInput().trigger("focus");
     },
 
+    /**
+     * Blur the input field in this View.
+     */
+    blur() {
+      this.getInput().trigger("blur");
+    },
+
+    /**
+     * Get the search icon button.
+     * @return jQuery element representing the search icon button. Or an empty
+     * jQuery selector if the button is not found.
+     */
+    getSearchButton() {
+      return this.$(`.${CLASS_NAMES.searchButton}`);
+    },
+
+    /**
+     * Get the cancel icon button.
+     * @return jQuery element representing the cancel icon button. Or an empty
+     * jQuery selector if the button is not found.
+     */
+    getCancelButton() {
+      return this.$(`.${CLASS_NAMES.cancelButton}`);
+    },
+
+    /**
+     * Get the input.
+     * @return jQuery element representing the input. Or an empty
+     * jQuery selector if the button is not found.
+     */
     getInput() {
       return this.$(`.${CLASS_NAMES.input}`);
     },
 
+    /**
+     * Get the error text element.
+     * @return jQuery element representing the error text. Or an empty
+     * jQuery selector if the button is not found.
+     */
     getError() {
       return this.$(`.${CLASS_NAMES.errorText}`);
     },
+
+    /**
+     * Get the current value of the input field.
+     * @return The current value of the input field or empty string if the
+     * input field is not found.
+     */
+    getInputValue() {
+      return this.getInput().val() || '';
+    },
+
+    /**
+     * Set the current value of the input field.
+     */
+    setInputValue(value) {
+      this.getInput().val(value);
+    },
   });
+
+  // A function that does nothing. Can be safely called as a default callback.
+  const noop = () => { };
 
   return SearchInputView;
 });

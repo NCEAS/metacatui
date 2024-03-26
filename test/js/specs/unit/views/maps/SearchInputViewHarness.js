@@ -18,6 +18,26 @@ define([], function () {
       this.getCancelButton().click();
     }
 
+    getInput() {
+      return this.view.getInput();
+    }
+
+    focusInput() {
+      this.view.getInput().focus();
+    }
+
+    blurInput() {
+      this.view.getInput().blur();
+    }
+
+    keydown(key) {
+      this.view.getInput().trigger({ type: "keydown", key });
+    }
+
+    keyup(key) {
+      this.view.getInput().trigger({ type: "keyup", key });
+    }
+
     hitEnter() {
       this.view.getInput().trigger({ type: "keyup", key: "Enter" });
     }
