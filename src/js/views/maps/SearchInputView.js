@@ -10,8 +10,11 @@ define([
   const BASE_CLASS = "search-input";
   const CLASS_NAMES = {
     searchButton: `${BASE_CLASS}__search-button`,
+    searchButtonActive: `${BASE_CLASS}__search-button--active`,
     cancelButton: `${BASE_CLASS}__cancel-button`,
+    cancelButtonContainer: `${BASE_CLASS}__cancel-button-container`,
     input: `${BASE_CLASS}__input`,
+    inputField: `${BASE_CLASS}__field`,
     errorInput: `${BASE_CLASS}__error-input`,
     errorText: `${BASE_CLASS}__error-text`,
   };
@@ -112,7 +115,31 @@ define([
         return;
       }
 
+      if (this.getInputValue().toLowerCase() !== "") {
+        this.showCancelAndSearch();
+      } else {
+        this.hideCancelAndDimSearch();
+      }
+
       this.keyupCallback(event);
+    },
+
+    /**
+     * Manage state change for the search button and cancel button when user has
+     * entered some input.
+     */
+    showCancelAndSearch() {
+      this.getCancelButtonContainer().show();
+      this.getSearchButton().addClass(CLASS_NAMES.searchButtonActive);
+    },
+
+    /**
+     * Manage state change for the search button and cancel button when user has
+     * cleared the input.
+     */
+    hideCancelAndDimSearch() {
+      this.getCancelButtonContainer().hide();
+      this.getSearchButton().removeClass(CLASS_NAMES.searchButtonActive);
     },
 
     /**
@@ -146,24 +173,16 @@ define([
     onSearch() {
       this.getError().hide();
 
-      const input = this.getInput();
+      const inputField = this.getInputField();
       const inputValue = this.getInputValue().toLowerCase();
       const matched = this.search(inputValue);
       if (matched) {
-        input.removeClass(CLASS_NAMES.errorInput);
+        inputField.removeClass(CLASS_NAMES.errorInput);
       } else {
-        input.addClass(CLASS_NAMES.errorInput);
-        if (typeof(this.noMatchCallback) === "function") {
+        inputField.addClass(CLASS_NAMES.errorInput);
+        if (typeof (this.noMatchCallback) === "function") {
           this.noMatchCallback();
         }
-      }
-
-      if (inputValue !== "") {
-        this.getSearchButton().hide();
-        this.getCancelButton().show();
-      } else {
-        this.getSearchButton().show();
-        this.getCancelButton().hide();
       }
     },
 
@@ -172,7 +191,7 @@ define([
      * @param {string} errorText
      */
     setError(errorText) {
-      this.getInput().addClass(CLASS_NAMES.errorInput);
+      this.getInputField().addClass(CLASS_NAMES.errorInput);
       const errorTextEl = this.getError();
       if (errorText) {
         errorTextEl.html(errorText);
@@ -187,9 +206,11 @@ define([
      * Handler function for the cancel icon button action.
      */
     onCancel() {
+      this.hideCancelAndDimSearch();
       this.getInput().val("");
       this.onSearch();
       this.focus();
+      this.getInputField().removeClass(CLASS_NAMES.errorInput);
     },
 
     /**
@@ -216,12 +237,21 @@ define([
     },
 
     /**
-     * Get the cancel icon button.
-     * @return jQuery element representing the cancel icon button. Or an empty
+     * Get the cancel icon button container.
+     * @return jQuery element representing the cancel icon button container. Or
+     * an empty jQuery selector if the button is not found.
+     */
+    getCancelButtonContainer() {
+      return this.$(`.${CLASS_NAMES.cancelButtonContainer}`);
+    },
+
+    /**
+     * Get the container element for the input.
+     * @return jQuery element representing the input container. Or an empty
      * jQuery selector if the button is not found.
      */
-    getCancelButton() {
-      return this.$(`.${CLASS_NAMES.cancelButton}`);
+    getInputField() {
+      return this.$(`.${CLASS_NAMES.inputField}`);
     },
 
     /**

@@ -173,6 +173,8 @@ define(
        * @param {string} value is the query string.
        */
       async search(value) {
+        if (!value) return;
+
         // This is not a lat,long value, so geocode the prediction instead.
         if (!GeoPoint.couldBeLatLong(value)) {
           const focusedIndex = Math.max(0, this.get("focusIndex"));

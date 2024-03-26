@@ -8,6 +8,7 @@ define([], function () {
 
     typeQuery(searchString) {
       this.view.getInput().val(searchString);
+      this.view.getInput().trigger('keyup');
     }
 
     clickSearch() {
@@ -50,8 +51,12 @@ define([], function () {
       return this.view.$el.find(".search-input__cancel-button");
     }
 
+    getCancelButtonContainer() {
+      return this.view.$el.find(".search-input__cancel-button-container");
+    }
+
     hasErrorInput() {
-      return this.view.getInput().hasClass("search-input__error-input");
+      return this.view.getInputField().hasClass("search-input__error-input");
     }
   }
 });
