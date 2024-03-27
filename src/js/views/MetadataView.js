@@ -13,12 +13,12 @@ define(['jquery',
   'models/metadata/ScienceMetadata',
   'models/MetricsModel',
   'common/Utilities',
+  'views/DataPackageView',
   'views/DownloadButtonView',
   'views/ProvChartView',
   'views/MetadataIndexView',
   'views/ExpandCollapseListView',
   'views/ProvStatementView',
-  'views/PackageTableView',
   'views/CitationHeaderView',
   'views/citations/CitationModalView',
   'views/AnnotationView',
@@ -40,7 +40,7 @@ define(['jquery',
   'views/MetricView',
 ],
   function ($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
-    MetricsModel, Utilities, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
+    MetricsModel, Utilities, DataPackageView, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement,
     CitationHeaderView, CitationModalView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
     VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
     MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
@@ -65,7 +65,9 @@ define(['jquery',
 
         model: new SolrResult(),
         packageModels: new Array(),
+        entities: new Array(),
         dataPackage: null,
+        dataPackageSynced: false,
         el: '#Content',
         metadataContainer: "#metadata-container",
         citationContainer: "#citation-container",
@@ -104,8 +106,8 @@ define(['jquery',
          */
         alternativeIdentifierHelpText: `
          An identifier used to reference this dataset in the past or in another
-         system. This could be a link to the original dataset or an old 
-         identifier that was replaced. The referenced dataset may be the same 
+         system. This could be a link to the original dataset or an old
+         identifier that was replaced. The referenced dataset may be the same
          or different from the one you are currently viewing, and its
          accessibility may vary. It may provide additional context about the
          history and evolution of the dataset.
@@ -125,6 +127,8 @@ define(['jquery',
           if ((options === undefined) || (!options)) var options = {};
 
           this.pid = options.pid || options.id || MetacatUI.appModel.get("pid") || null;
+
+          this.dataPackage = null;
 
           if (typeof options.el !== "undefined")
             this.setElement(options.el);
@@ -158,7 +162,11 @@ define(['jquery',
           });
 
           //Listen to when the package table has been rendered
-          this.once("packageTableRendered", function () {
+          this.once("dataPackageRendered", function () {
+            var packageTableContainer = this.$("#data-package-container");
+            $(packageTableContainer).children(".loading").remove();
+
+
             //Scroll to the element on the page that is in the hash fragment (if there is one)
             this.scrollToFragment();
           });
@@ -179,6 +187,8 @@ define(['jquery',
           //Create a DataONEObject model to use in the DataPackage collection.
           var dataOneObject = new ScienceMetadata({ id: this.model.get("id") });
 
+          var view = this;
+
           // Create a new data package with this id
           this.dataPackage = new DataPackage([dataOneObject], { id: pid });
 
@@ -186,18 +196,41 @@ define(['jquery',
 
           // If there is no resource map
           if (!pid) {
+            // mark the data package as synced,
+            // since there are no other models to fetch
+            this.dataPackageSynced = true;
+            this.trigger("changed:dataPackageSynced");
             this.checkWritePermissions();
             return
           }
 
           this.listenToOnce(this.dataPackage, "complete", function () {
-            var packageTableView = _.findWhere(this.subviews, { type: "PackageTable" });
-            if (packageTableView) {
-              packageTableView.dataPackageCollection = this.dataPackage;
-              packageTableView.checkForPrivateMembers();
+            this.dataPackageSynced = true;
+            this.trigger("changed:dataPackageSynced");
+            var dataPackageView = _.findWhere(this.subviews, { type: "DataPackage" });
+            if (dataPackageView) {
+              dataPackageView.dataPackageCollection = this.dataPackage;
+              dataPackageView.checkForPrivateMembers();
             }
 
           });
+
+          this.listenToOnce(this.dataPackage, "fetchFailed", function () {
+            view.dataPackageSynced = false;
+
+            // stop listening to the fetch complete
+            view.stopListening(view.dataPackage, "complete");
+
+            //Remove the loading elements
+            view.$(view.tableContainer).find(".loading").remove();
+
+            //Show an error message
+            MetacatUI.appView.showAlert(
+                "Error retrieving files for this data package.",
+                "alert-error",
+                view.$(view.tableContainer));
+          });
+
           if (this.dataPackage.packageModel && this.dataPackage.packageModel.get("synced") === true) {
             this.checkWritePermissions();
           } else {
@@ -413,6 +446,8 @@ define(['jquery',
 
                     //Now show the response from the view service
                     viewRef.$(viewRef.metadataContainer).html(response);
+
+                    viewRef.storeEntityPIDs(response);
 
                     //If there is no info from the index and there is no metadata doc rendered either, then display a message
                     if (viewRef.$el.is(".no-stylesheet") && viewRef.model.get("archived") && !viewRef.model.get("indexed"))
@@ -649,7 +684,7 @@ define(['jquery',
             var thisPackage = new Package({ id: null, members: [this.model] });
             thisPackage.flagComplete();
             this.packageModels = [thisPackage];
-            this.insertPackageDetails(thisPackage);
+            this.insertPackageDetails(thisPackage, {disablePackageDownloads: true});
           }
           else {
             _.each(packageIDs, function (thisPackageID, i) {
@@ -727,7 +762,7 @@ define(['jquery',
 
             // It may not exist for all datasets.
             if (!altIdentifierLabel.length) return;
-            
+
             const text = this.alternativeIdentifierHelpText;
 
             if(!text) return;
@@ -736,7 +771,7 @@ define(['jquery',
             const icon = $(document.createElement("i"))
               .addClass("tooltip-this icon icon-info-sign")
               .css("margin-left", "4px");
-            
+
             // Activate the jQuery tooltip plugin
             icon.tooltip({
               title: text,
@@ -757,16 +792,21 @@ define(['jquery',
         /*
          * Inserts a table with all the data package member information and sends the call to display annotations
          */
-        insertPackageDetails: function (packages) {
-
+        insertPackageDetails: function (packages, options) {
+          if (typeof options === 'undefined') {
+            var options = {}
+          }
           //Don't insert the package details twice
-          var tableEls = this.$(this.tableContainer).children().not(".loading");
+          var view = this;
+          var tableEls = this.$(view.tableContainer).children().not(".loading");
           if (tableEls.length > 0) return;
 
           //wait for the metadata to load
-          var metadataEls = this.$(this.metadataContainer).children();
+          var metadataEls = this.$(view.metadataContainer).children();
           if (!metadataEls.length || metadataEls.first().is(".loading")) {
-            this.once("metadataLoaded", this.insertPackageDetails);
+            this.once("metadataLoaded", function(){
+              view.insertPackageDetails(this.packageModels, options);
+            });
             return;
           }
 
@@ -800,30 +840,19 @@ define(['jquery',
             if (nestedPckgsToDisplay.length > 0) {
 
               if (!(!this.model.get("archived") && packageModel.get("archived") == true)) {
-                var title = 'Current Data Set (1 of ' + (nestedPckgsToDisplay.length + 1) + ') <span class="subtle">Package: ' + packageModel.get("id") + '</span>';
-                this.insertPackageTable(packageModel, { title: title });
+                var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
+                options.title = "Files in this dataset " + title;
+                options.nested = true;
+                this.insertPackageTable(packageModel, options);
               }
-
-              _.each(nestedPckgsToDisplay, function (nestedPackage, i, list) {
-                if (!(!this.model.get("archived") && nestedPackage.get("archived") == true)) {
-
-                  var title = 'Nested Data Set (' + (i + 2) + ' of ' +
-                    (list.length + 1) + ') <span class="subtle">Package: ' +
-                    nestedPackage.get("id") + '</span> <a href="' + MetacatUI.root +
-                    '/view/' + encodeURIComponent(nestedPackage.get("id")) +
-                    '" class="table-header-link">(View <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
-
-                  this.insertPackageTable(nestedPackage, { title: title, nested: true });
-
-                }
-              }, this);
             }
             else {
+
               //If this metadata is not archived, then don't display archived packages
               if (!(!this.model.get("archived") && packageModel.get("archived") == true)) {
                 var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
-                title = "Files in this dataset " + title;
-                this.insertPackageTable(packageModel, { title: title });
+                options.title = "Files in this dataset " + title;
+                this.insertPackageTable(packageModel, options);
               }
             }
 
@@ -832,36 +861,15 @@ define(['jquery',
 
           }, this);
 
-          //Collapse the table list after the first table
-          var additionalTables = $(this.$("#additional-tables-for-" + this.cid)),
-            numTables = additionalTables.children(".download-contents").length,
-            item = (numTables == 1) ? "dataset" : "datasets";
-          if (numTables > 0) {
-            var expandIcon = $(document.createElement("i")).addClass("icon icon-level-down"),
-              expandLink = $(document.createElement("a"))
-                .attr("href", "#")
-                .addClass("toggle-slide toggle-display-on-slide")
-                .attr("data-slide-el", "additional-tables-for-" + this.cid)
-                .text("Show " + numTables + " nested " + item)
-                .prepend(expandIcon),
-              collapseLink = $(document.createElement("a"))
-                .attr("href", "#")
-                .addClass("toggle-slide toggle-display-on-slide")
-                .attr("data-slide-el", "additional-tables-for-" + this.cid)
-                .text("Hide nested " + item)
-                .hide(),
-              expandControl = $(document.createElement("div")).addClass("expand-collapse-control").append(expandLink, collapseLink);
-
-            additionalTables.before(expandControl);
-          }
-
           //If this metadata doc is not in a package, but is just a lonely metadata doc...
           if (!packages.length) {
             var packageModel = new Package({
               members: [this.model],
             });
             packageModel.complete = true;
-            this.insertPackageTable(packageModel);
+            options.title = "Files in this dataset";
+            options.disablePackageDownloads = true;
+            this.insertPackageTable(packageModel, options);
           }
 
           //Insert the data details sections
@@ -888,8 +896,9 @@ define(['jquery',
                 mostRecentPackage = packages[packages.length - 1];
               }
 
-              //Get the data package
-              this.getDataPackage(mostRecentPackage.get("id"));
+              //Get the data package only if it is not the same as the previously fetched package
+              if (mostRecentPackage.get("id") != packages[0].get("id"))
+                this.getDataPackage(mostRecentPackage.get("id"));
             }
           }
           catch (e) {
@@ -903,23 +912,37 @@ define(['jquery',
         },
 
         insertPackageTable: function (packageModel, options) {
-          var viewRef = this;
+          var view  = this;
+          if (this.dataPackage == null || !this.dataPackageSynced) {
+            this.listenToOnce(this, "changed:dataPackageSynced", function(){
+              view.insertPackageTable(packageModel, options);
+            });
+            return;
+          }
+
+          // Merge already fetched SolrResults into the dataPackage
+            if (typeof packageModel !== "undefined" && typeof packageModel.get("members") !== "undefined") {
+                this.dataPackage.mergeModels(packageModel.get("members"));
+            }
 
           if (options) {
             var title = options.title || "";
+            var disablePackageDownloads = options.disablePackageDownloads || false;
             var nested = (typeof options.nested === "undefined") ? false : options.nested;
           }
           else
-            var title = "", nested = false;
-
-          if (typeof packageModel === "undefined") return;
+            var title = "", nested = false, disablePackageDownloads = false;
 
           //** Draw the package table **//
-          var tableView = new PackageTable({
-            model: packageModel,
+          var tableView = new DataPackageView({
+            edit: false,
+            dataPackage: this.dataPackage,
             currentlyViewing: this.pid,
+            dataEntities: this.entities,
+            disablePackageDownloads: disablePackageDownloads,
             parentView: this,
             title: title,
+            packageTitle: this.model.get("title"),
             nested: nested,
             metricsModel: this.metricsModel
           });
@@ -940,15 +963,27 @@ define(['jquery',
             var tableContainer = tablesContainer;
 
           //Insert the package table HTML
+          $(tableContainer).empty();
           $(tableContainer).append(tableView.render().el);
-          $(this.tableContainer).children(".loading").remove();
+
+          // Add Package Download
+          // create an instance of DownloadButtonView to handle package downloads
+          this.downloadButtonView = new DownloadButtonView({id: packageModel.get("id"), model: packageModel, view: "actionsView"});
+
+          // render
+          this.downloadButtonView.render();
+
+          // add the downloadButtonView el to the span
+          $(this.tableContainer).find('.file-header .file-actions .downloadAction').html(this.downloadButtonView.el);
+
+          $(this.tableContainer).find(".loading").remove();
 
           $(tableContainer).find(".tooltip-this").tooltip();
 
           this.subviews.push(tableView);
 
           //Trigger a custom event in this view that indicates the package table has been rendered
-          this.trigger("packageTableRendered");
+          this.trigger("dataPackageRendered");
         },
 
         insertParentLink: function (packageModel) {
@@ -1484,7 +1519,7 @@ define(['jquery',
           if (MetacatUI.appModel.get("showWholeTaleFeatures")) {
             this.createWholeTaleButton();
           }
-          
+
           // Show the citation modal with the ability to copy the citation text
           // when the "Copy Citation" button is clicked
           const citeButton = this.el.querySelector('#cite-this-dataset-btn');
@@ -1873,13 +1908,13 @@ define(['jquery',
           this.hideEditorControls();
 
           // Update the metadata table header with the new resource map id.
-          // First find the PackageTableView for the top level package, and
+          // First find the DataPackageView for the top level package, and
           // then re-render it with the update resmap id.
           var view = this;
           var metadataId = this.packageModels[0].getMetadata().get("id")
           _.each(this.subviews, function (thisView, i) {
             // Check if this is a ProvChartView
-            if (thisView.type && thisView.type.indexOf("PackageTable") !== -1) {
+            if (thisView.type && thisView.type.indexOf("DataPackage") !== -1) {
               if (thisView.currentlyViewing == metadataId) {
                 var packageId = view.dataPackage.packageModel.get("id");
                 var title = packageId ? '<span class="subtle">Package: ' + packageId + '</span>' : "";
@@ -2641,6 +2676,7 @@ define(['jquery',
           this.packageModels = new Array();
           this.model.set(this.model.defaults);
           this.pid = null;
+          this.dataPackage = null;
           this.seriesId = null;
           this.$detached = null;
           this.$loading = null;
@@ -3117,8 +3153,15 @@ define(['jquery',
 
             newView.render();
           });
-        }
+        },
 
+        storeEntityPIDs: function(responseEl) {
+          var view = this;
+          _.each($(responseEl).find(".entitydetails"), function (entityEl) {
+            var entityId = $(entityEl).data("id");
+            view.entities.push(entityId.replace('urn-uuid-', 'urn:uuid:'));
+          });
+        }
       });
 
     return MetadataView;

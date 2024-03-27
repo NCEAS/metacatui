@@ -1,0 +1,73 @@
+<!-- Icon & Files column -->
+<td>
+	<% if (nodeLevel !== "undefined") { 
+			if (isFolder) {
+				var indentFile = (nodeLevel) * 30 + 10;
+			}
+			else {
+				var indentFile = (nodeLevel) * 30;
+			}
+		}
+		else {
+			var indentFile = 30;
+		}
+	%>
+	<span style="padding-left:<%=indentFile %>px">
+		<% if (icon !== "undefined") { 
+			%>
+				<% if (isFolder) { 
+					%>
+					<a class="expand-control control" style="display:none"><i class="icon icon-caret-right"></i></a>
+					<a class="collapse-control control" ><i class="icon icon-caret-down"></i></a>
+					<i class="<%= icon %>" ></i>
+				<% } else { 
+					%>
+					<i class="<%= icon %>"></i>
+				<% } 
+					%>
+
+		<% } else { %>
+			<i class="icon-file"></i>
+		<% } %>
+	</span>
+	<span class="fileTitle">
+		<%= objectTitle %>
+	</span>
+</td>
+
+<!-- Size column -->
+<% if ( typeof sizeStr != "undefined" && sizeStr ) { %>
+    <td class="size"><%= sizeStr %></td>
+
+<% } else {%>
+    <td class="size"><%= size %></td>
+<% } %>
+
+<!-- Type column -->
+<% if (fileType) { %>
+    <td class="type"><%= fileType %></td>
+<% } else { %>
+	<td class="type"></td>
+<% } %>
+
+<% if (memberRowMetrics !== undefined && memberRowMetrics > 0) { %>
+	<td class="metrics-count downloads" data-id="<%= id %>">
+		<span class="packageTable-resultItem badge ">
+			<i class='catalog-metric-icon <%= metricIcon %>'></i> <%= memberRowMetrics %> 
+		</span>	
+	</td>
+<% } else { %>
+	<td class="metrics-count downloads" data-id="<%= id %>">
+		
+	</td>
+<% } %>
+
+<td class="file-actions">
+	<% if (isMetadata !== undefined && insertInfoIcon && !isMetadata && moreInfoLink !== undefined) { %>
+		<span class="action" data-id="<%= id %>">
+			<a class="btn btn-rounded action preview" href="<%= moreInfoLink %>" data-id="<%= id %>"><i class="icon icon-large icon-info"></i></a>
+		</span>
+	<% } %>
+
+	<span class="action downloadAction" data-id="<%= id %>"></span>
+</td>

@@ -1,19 +1,79 @@
-﻿  <thead id="data-package-table-head">
-    <!-- icon column -->
-    <th id="data-package-table-icon"></th>
-    <!-- Files column -->
-    <th id="data-package-table-files">Files</th>
-    <!-- Size column -->
-    <th id="data-package-table-size">Size</th>
-    <!-- Type column -->
-    <th id="data-package-table-type">Type</th>
-    <!-- Share column -->
-    <% if( MetacatUI.appModel.get("allowAccessPolicyChanges") ){ %>
-      <th id="data-package-table-share">Share</th>
-    <% } %>
-    <!-- Guide or Status column -->
-    <th id="data-package-table-guide-status">Status</th>
-    <!-- Button column -->
-    <th id="data-package-table-button"><!--i class="icon-large icon-pencil"></i--></th>
+﻿<% 
+  if (!edit){
+    if(!title) var title = "Files in this dataset";
+    if(!colspan) var colspan = 7;  
+  }
+%>
+<% if (!edit) {%>
+  <thead id="data-package-table-head">
+    <tr class="table-header">
+      <th colspan="<%=colspan%>" class="table-header"><%=title%></th>
+    </tr>
+    
+    <tr class="file-header">
+      <!-- Files column -->
+      <th id="data-package-table-files">
+        
+        Files and Folders
+
+        <% if (dataPackageSorting) {%>
+          <i class="icon icon-solid icon-arrow-up"></i>
+        <% } %>
+        <% if (dataPackageFiltering) {%>
+          <a class="btn" data-id="<%= id %>">
+            <i class="icon icon-large icon-filter"></i>
+            Filter
+          </a>
+        <% } %>
+      </th>
+      <!-- Size column -->
+      <th id="data-package-table-size">
+        Size
+        <% if (dataPackageSorting) {%>
+          <i class="icon icon-solid icon-arrow-up"></i>
+        <% } %>
+      </th>
+      <!-- Type column -->
+      <th id="data-package-table-type">
+        Type
+        <% if (dataPackageSorting) {%>
+          <i class="icon icon-solid icon-arrow-up"></i>
+        <% } %>
+      </th>
+      <!-- Metrics column -->
+      <% if( MetacatUI.appModel.get("displayDatasetMetrics") ){ %>
+        <th id="data-package-table-metrics" style="width:10%">
+          Metrics
+          <% if (dataPackageSorting) {%>
+            <i class="icon icon-solid icon-arrow-up"></i>
+          <% } %>
+        </th>
+      <% } %>
+      <!-- Button column -->
+      <th id="data-package-table-actions" style="width:10%">Actions</i--></th>
+    </tr>
+  </thead>
+  <tbody id="data-package-table-body" class="data-package-file-table"><%=loading%></tbody>
+<% } else { %>
+  <thead id="data-package-table-head">
+    <tr class="file-header">
+      <!-- icon column -->
+      <th id="data-package-table-icon"></th>
+      <!-- Files column -->
+      <th id="data-package-table-files">Files</th>
+      <!-- Size column -->
+      <th id="data-package-table-size">Size</th>
+      <!-- Type column -->
+      <th id="data-package-table-type">Type</th>
+      <!-- Share column -->
+      <% if( edit && MetacatUI.appModel.get("allowAccessPolicyChanges") ){ %>
+        <th id="data-package-table-share">Share</th>
+      <% } %>
+      <!-- Guide or Status column -->
+      <th id="data-package-table-guide-status">Status</th>
+      <!-- Button column -->
+      <th id="data-package-table-button"><!--i class="icon-large icon-pencil"></i--></th>
+    </tr>
   </thead>
   <tbody id="data-package-table-body"><%=loading%></tbody>
+<% } %>

@@ -865,18 +865,18 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		 */
 		showNoActivity: function(){
 
-      if( this.model.get("metadataCount") === 0 && this.model.get("dataCount") === 0 ){
-  			this.$(".show-loading .loading").remove();
-  			this.$(".stripe").addClass("no-activity");
-				this.$(".metric-chart-loading svg animate").remove();
-				$.each($(".metric-chart-loading .message"), function(i,messageEl){
-					$(messageEl).html("No metrics to show")
-				});
-      }
+			if( this.model.get("metadataCount") === 0 && this.model.get("dataCount") === 0 ){
+					this.$(".show-loading .loading").remove();
+					this.$(".stripe").addClass("no-activity");
+						this.$(".metric-chart-loading svg animate").remove();
+						$.each($(".metric-chart-loading .message"), function(i,messageEl){
+							$(messageEl).html("No metrics to show")
+						});
+			}
 
 		},
 
-				/**
+		/**
 		 * Convert number of bytes into human readable format
 		 *
 		 * @param integer bytes     Number of bytes to convert
@@ -884,27 +884,27 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		 * @return string
 		 */
 		bytesToSize: function(bytes, precision){
-		    var kilobyte = 1024;
-		    var megabyte = kilobyte * 1024;
-		    var gigabyte = megabyte * 1024;
-		    var terabyte = gigabyte * 1024;
+		    var kibibyte = 1024;
+		    var mebibyte = kibibyte * 1024;
+		    var gibibyte = mebibyte * 1024;
+		    var tebibyte = gibibyte * 1024;
 
 		    if(typeof bytes === "undefined") var bytes = this.get("size");
 
-		    if ((bytes >= 0) && (bytes < kilobyte)) {
+		    if ((bytes >= 0) && (bytes < kibibyte)) {
 		        return bytes + ' B';
 
-		    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
-		        return (bytes / kilobyte).toFixed(precision) + ' KB';
+		    } else if ((bytes >= kibibyte) && (bytes < mebibyte)) {
+		        return (bytes / kibibyte).toFixed(precision) + ' KiB';
 
-		    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
-		        return (bytes / megabyte).toFixed(precision) + ' MB';
+		    } else if ((bytes >= mebibyte) && (bytes < gibibyte)) {
+		        return (bytes / mebibyte).toFixed(precision) + ' MiB';
 
-		    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
-		        return (bytes / gigabyte).toFixed(precision) + ' GB';
+		    } else if ((bytes >= gibibyte) && (bytes < tebibyte)) {
+		        return (bytes / gibibyte).toFixed(precision) + ' GiB';
 
-		    } else if (bytes >= terabyte) {
-		        return (bytes / terabyte).toFixed(precision) + ' TB';
+		    } else if (bytes >= tebibyte) {
+		        return (bytes / tebibyte).toFixed(precision) + ' TiB';
 
 		    } else {
 		        return bytes + ' B';
@@ -912,11 +912,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		},
 
 		renderUsageMetricsError: function() {
-      var message = "<p class='check-back-message'><strong>This might take some time. Check back in 24 hours to see these results.</strong></p>";
+      		var message = "<p class='check-back-message'><strong>This might take some time. Check back in 24 hours to see these results.</strong></p>";
 
 			$.each($('.views-metrics, .downloads-metrics, #user-citations'), function(i,metricEl){
-        $(metricEl).find(".check-back-message").remove();
-        $(metricEl).find(".message").append(message);
+				$(metricEl).find(".check-back-message").remove();
+				$(metricEl).find(".message").append(message);
 			});
 		},
 
