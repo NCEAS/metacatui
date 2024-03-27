@@ -8728,10 +8728,6 @@ Pager View
 	border: 1px solid #CCC;
 	padding: 5px;
 }
-.pager-link.unactive {
-    color: #999;
-    cursor: default;
-}
 .pager .current-page.pager-link{
 	background-color: #ECF1F5;
 }
