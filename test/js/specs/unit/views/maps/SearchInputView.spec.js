@@ -66,28 +66,28 @@ define([
         expect(spy.callCount).to.equal(1);
       });
 
-      it("only shows search button if there is no input", () => {
+      it("shows search button as active if there is input", () => {
         state.harness.typeQuery("123");
         state.harness.hitEnter();
 
-        expect(state.harness.getSearchButton().css("display")).to.equal("none");
+        expect(state.harness.getSearchButton().hasClass("search-input__search-button--active")).to.be.true;
 
         state.harness.typeQuery("");
         state.harness.hitEnter();
 
-        expect(state.harness.getSearchButton().css("display")).to.not.equal("none");
+        expect(state.harness.getSearchButton().hasClass("search-input__search-button--active")).to.be.false;
       });
 
       it("only shows cancel button if there is input", () => {
         state.harness.typeQuery("123");
         state.harness.hitEnter();
 
-        expect(state.harness.getCancelButton().css("display")).to.not.equal("none");
+        expect(state.harness.getCancelButtonContainer().css("display")).to.not.equal("none");
 
         state.harness.typeQuery("");
         state.harness.hitEnter();
 
-        expect(state.harness.getCancelButton().css("display")).to.equal("none");
+        expect(state.harness.getCancelButtonContainer().css("display")).to.equal("none");
       });
 
       it("clears error text", () => {
@@ -108,7 +108,7 @@ define([
         expect(spy.callCount).to.equal(1);
       });
 
-      it("applies an error class to the input box if there is no match", () => {
+      it("applies an error class to the input field if there is no match", () => {
         stub(state.view, "search").returns(false);
 
         state.harness.clickSearch();
