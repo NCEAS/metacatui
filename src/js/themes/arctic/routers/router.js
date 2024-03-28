@@ -113,8 +113,8 @@ function ($, _, Backbone) {
 			this.routeHistory.push("data");
 			// Check for a page URL parameter
 			page = parseInt(page);
-			page = isNaN(page) || page < 1 ? 0 : page;
-			MetacatUI.appModel.set("page", page);
+			page = (isNaN(page) || page < 1) ? 1 : page;
+			MetacatUI.appModel.set("page", (page-1));
 
 			// Check if we are using the new CatalogSearchView
 			if(!MetacatUI.appModel.get("useDeprecatedDataCatalogView")){
