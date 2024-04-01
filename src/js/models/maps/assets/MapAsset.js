@@ -5,8 +5,9 @@ define([
   "backbone",
   "models/portals/PortalImage",
   "models/maps/AssetColorPalette",
+  "common/IconUtilities",
   MetacatUI.root + "/components/dayjs.min.js",
-], function (_, Backbone, PortalImage, AssetColorPalette, dayjs) {
+], function (_, Backbone, PortalImage, AssetColorPalette, IconUtilities, dayjs) {
   /**
    * @classdesc A MapAsset Model comprises information required to fetch source data for
    * some asset or resource that is displayed in a map, such as imagery (raster) tiles,
@@ -37,7 +38,7 @@ define([
        * The format of the data. Must be one of the supported types.
        * @property {string} label A user friendly name for this asset, to be displayed
        * in a map.
-       * @property {string} [icon = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1.2 13.7 3.6 3.5l7.2 8.7zM5 3.3c2 .3 3.5.4 4.4.4H13l3 6.3-4 1.8-7-8.5Zm9.1.6 2.8 6 4.5-2.2a23 23 0 0 1-.7-4c0-.8-1.2-.7-2-.7l-4.6.9ZM1 15l11-1.9c1.2-.3 2.7-1 4.2-2l2.5 5.2c-1.2.3-3.6.4-7.3.4-2.8 0-7.3 0-9.4-.8a2 2 0 0 1-1-.9Zm16.4-4.2 4-1.8 1.3 5.5c0 .4.1 1-.4 1.2l-2.5.5-2.4-5.4ZM1.7 17l-.5 2.6c0 .7.2 1 1 1.3a64.1 64.1 0 0 0 19.8 0c.4-.3 1-.5.7-1.6l-.5-2.3a52.6 52.6 0 0 1-20.6 0Z"/></svg>']
+       * @property {string} [icon = '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="m3.2 7.3 8.6 4.6a.5.5 0 0 0 .4 0l8.6-4.6a.4.4 0 0 0 0-.8L12.1 3a.5.5 0 0 0-.4 0L3.3 6.5a.4.4 0 0 0 0 .8Z"></path><path d="M20.7 10.7 19 9.9l-6.7 3.6a.5.5 0 0 1-.4 0L5 9.9l-1.8.8a.5.5 0 0 0 0 .8l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.8Z"></path><path d="m20.7 15.1-1.5-.7-7 3.8a.5.5 0 0 1-.4 0l-7-3.8-1.5.7a.5.5 0 0 0 0 .9l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.9Z"></path></svg>']
        * A PID for an SVG saved as a dataObject, or an SVG string. The SVG will be used
        * as an icon that will be displayed next to the label in the layers list. It
        * should be an SVG file that has no fills, borders, or styles set on it (since
@@ -91,12 +92,11 @@ define([
         return {
           type: "",
           label: "",
-          icon: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1.2 13.7 3.6 3.5l7.2 8.7zM5 3.3c2 .3 3.5.4 4.4.4H13l3 6.3-4 1.8-7-8.5Zm9.1.6 2.8 6 4.5-2.2a23 23 0 0 1-.7-4c0-.8-1.2-.7-2-.7l-4.6.9ZM1 15l11-1.9c1.2-.3 2.7-1 4.2-2l2.5 5.2c-1.2.3-3.6.4-7.3.4-2.8 0-7.3 0-9.4-.8a2 2 0 0 1-1-.9Zm16.4-4.2 4-1.8 1.3 5.5c0 .4.1 1-.4 1.2l-2.5.5-2.4-5.4ZM1.7 17l-.5 2.6c0 .7.2 1 1 1.3a64.1 64.1 0 0 0 19.8 0c.4-.3 1-.5.7-1.6l-.5-2.3a52.6 52.6 0 0 1-20.6 0Z"/></svg>',
+          icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="m3.2 7.3 8.6 4.6a.5.5 0 0 0 .4 0l8.6-4.6a.4.4 0 0 0 0-.8L12.1 3a.5.5 0 0 0-.4 0L3.3 6.5a.4.4 0 0 0 0 .8Z"></path><path d="M20.7 10.7 19 9.9l-6.7 3.6a.5.5 0 0 1-.4 0L5 9.9l-1.8.8a.5.5 0 0 0 0 .8l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.8Z"></path><path d="m20.7 15.1-1.5-.7-7 3.8a.5.5 0 0 1-.4 0l-7-3.8-1.5.7a.5.5 0 0 0 0 .9l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.9Z"></path></svg>',
           description: "",
           attribution: "",
           moreInfoLink: "",
           downloadLink: "",
-          id: "",
           selected: false,
           opacity: 1,
           visible: true,
@@ -324,12 +324,23 @@ define([
 
           // Fetch the icon, if there is one
           if (assetConfig.icon) {
-            if (model.isSVG(assetConfig.icon)) {
-              model.updateIcon(assetConfig.icon);
-            } else {
-              // If the string is not an SVG then assume it is a PID and try to fetch
-              // the SVG file. fetchIcon will update the icon when complete.
-              model.fetchIcon(assetConfig.icon);
+            try {
+              if (IconUtilities.isSVG(assetConfig.icon)) {
+                model.updateIcon(icon);
+              } else {
+                model.set("iconStatus", "fetching");
+                // If the string is not an SVG then assume it is a PID and try to fetch
+                // the SVG file.
+                IconUtilities.fetchIcon(assetConfig.icon)
+                  .then(icon => model.updateIcon(icon));
+              }
+            } catch (error) {
+              console.log(
+                "Failed to fetch an icon for a MapAsset" +
+                  ". Error details: " +
+                  error
+              );
+              model.set("iconStatus", "error");
             }
           }
 
@@ -719,101 +730,10 @@ define([
        * @param {string} icon An SVG string to use for the MapAsset icon
        */
       updateIcon: function (icon) {
-        const model = this;
-        try {
-          model.sanitizeIcon(icon, function (sanitizedIcon) {
-            model.set("icon", sanitizedIcon);
-            model.set("iconStatus", "success");
-          });
-        } catch (error) {
-          console.log(
-            "There was an error updating an icon in a MapAsset model" +
-              ". Error details: " +
-              error
-          );
-        }
-      },
+        if (!icon) return;
 
-      /**
-       * Simple test to see if a string is an SVG
-       * @param {string} str The string to check
-       * @returns {Boolean} Returns true if the string starts with `<svg` and ends with
-       * `</svg>`, regardless of case
-       */
-      isSVG: function (str) {
-        const strLower = str.toLowerCase();
-        return strLower.startsWith("<svg") && strLower.endsWith("</svg>");
-      },
-
-      /**
-       * Fetches an SVG given a pid, sanitizes it, then updates the model's icon
-       * attribute with the new and SVG string (after sanitizing it)
-       * @param {string} pid
-       */
-      fetchIcon: function (pid) {
-        const model = this;
-        try {
-          model.set("iconStatus", "fetching");
-
-          // Use the portal image model to get the correct baseURL for an image
-          const imageURL = new PortalImage({
-            identifier: pid,
-          }).get("imageURL");
-
-          fetch(imageURL)
-            .then(function (response) {
-              return response.text();
-            })
-            .then(function (data) {
-              if (model.isSVG(data)) {
-                model.updateIcon(data);
-              }
-            })
-            .catch(function (response) {
-              model.set("iconStatus", "error");
-            });
-        } catch (error) {
-          console.log(
-            "Failed to fetch an icon for a MapAsset" +
-              ". Error details: " +
-              error
-          );
-          model.set("iconStatus", "error");
-        }
-      },
-
-      /**
-       * Takes an SVG string and returns it with only the allowed tags and attributes
-       * @param {string} icon The SVG icon string to sanitize
-       * @param {function} callback Function to call once the icon has been sanitized.
-       * Will pass the sanitized icon string.
-       */
-      sanitizeIcon: function (icon, callback) {
-        try {
-          // Use the showdown xss filter to sanitize the SVG string
-          require(["showdown", "showdownXssFilter"], function (
-            showdown,
-            showdownXss
-          ) {
-            var converter = new showdown.Converter({
-              extensions: ["xssfilter"],
-            });
-            let sanitizedIcon = converter.makeHtml(icon);
-            // Remove the <p></p> tags that showdown wraps the string in
-            sanitizedIcon = sanitizedIcon.replace(/^(<p>)/, "");
-            sanitizedIcon = sanitizedIcon.replace(/(<\/p>)$/, "");
-            // Call the callback
-            if (callback && typeof callback === "function") {
-              callback(sanitizedIcon);
-            }
-          });
-        } catch (error) {
-          console.log(
-            "There was an error sanitizing an SVG icon in a MapAsset model" +
-              ". Error details: " +
-              error
-          );
-        }
+        this.set("icon", IconUtilities.sanitizeIcon(icon));
+        this.set("iconStatus", "success");
       },
 
       /**

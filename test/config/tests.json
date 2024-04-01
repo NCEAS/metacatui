@@ -1,5 +1,14 @@
 {
   "unit": [
+    "./js/specs/unit/models/geocoder/GeocodedLocation.spec.js",
+    "./js/specs/unit/models/geocoder/GeocoderSearch.spec.js",
+    "./js/specs/unit/models/geocoder/GoogleMapsAutocompleter.spec.js",
+    "./js/specs/unit/models/geocoder/GoogleMapsGeocoder.spec.js",
+    "./js/specs/unit/models/geocoder/Prediction.spec.js",
+    "./js/specs/unit/models/maps/viewfinder/ViewfinderModel.spec.js",
+    "./js/specs/unit/views/maps/viewfinder/PredictionView.spec.js",
+    "./js/specs/unit/views/maps/viewfinder/PredictionsListView.spec.js",
+    "./js/specs/unit/views/maps/viewfinder/ViewfinderView.spec.js",
     "./js/specs/unit/collections/SolrResults.spec.js",
     "./js/specs/unit/models/Search.spec.js",
     "./js/specs/unit/models/filters/Filter.spec.js",
@@ -40,7 +49,19 @@
     "./js/specs/unit/models/filters/SpatialFilter.spec.js",
     "./js/specs/unit/models/maps/Geohash.spec.js",
     "./js/specs/unit/models/maps/assets/CesiumGeohash.spec.js",
-    "./js/specs/unit/common/Utilities.spec.js"
+    "./js/specs/unit/common/Utilities.spec.js",
+    "./js/specs/unit/common/IconUtilities.spec.js",
+    "./js/specs/unit/models/maps/AssetCategory.spec.js",
+    "./js/specs/unit/collections/maps/AssetCategories.spec.js",
+    "./js/specs/unit/views/maps/LayerCategoryItemView.spec.js",
+    "./js/specs/unit/models/maps/Map.spec.js",
+    "./js/specs/unit/views/maps/CesiumWidgetView.spec.js",
+    "./js/specs/unit/views/maps/LayersPanelView.spec.js",
+    "./js/specs/unit/views/maps/LayerItemView.spec.js",
+    "./js/specs/unit/views/maps/SearchInputView.spec.js"
   ],
-  "integration": ["./js/specs/integration/collections/SolrResults.spec.js"]
+  "integration": [
+    "./js/specs/integration/collections/SolrResults.spec.js",
+    "./js/specs/integration/models/LookupModel.js"
+  ]
 }

@@ -1,0 +1,12 @@
+<div class="search-input__field">
+  <input class="<%= classNames.input %>" type="text" placeholder="<%= placeholder %>" />
+  <button class="<%= classNames.searchButton %>">
+    <i class="icon-search search-input__button-icon"></i>
+  </button>
+  <button class="<%= classNames.cancelButton %>" style="display: none">
+    <i class="icon-remove-circle search-input__button-icon"></i>
+  </button>
+</div>
+<div class="<%= classNames.errorText %>" style="display: none">
+  <%= errorText %>
+</div>

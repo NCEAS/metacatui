@@ -82,8 +82,6 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
        * than the South latitude
        * @property {string} crossesAntiMeridian - When the bounding box crosses
        * the anti-meridian
-       * @property {string} containsPole - When the bounding box contains the
-       * North or South pole
        * @since 2.27.0
        */
       errorMessages: {
@@ -97,7 +95,6 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
         "needPair": "Location requires at least one coordinate pair. Please add coordinates.",
         "northSouthReversed": "North latitude should be greater than South. Please swap the values.",
         "crossesAntiMeridian": "Bounding box crosses the anti-meridian. Please use multiple boxes that meet at the anti-meridian instead.",
-        "containsPole": "Coordinates include a pole. Latitudes should be >-90 and <90."
       },
 
       /**
@@ -408,8 +405,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
         else if (!pointStatuses.south.isSet && pointStatuses.east.isSet)
           errors.south = this.getErrorMessage("missing");
 
-        // Verify latitudes: north should be > south. Don't allow bounding boxes
-        // to contain the north or south poles (doesn't really work)
+        // Verify latitudes: north should be > south.
         if (
           pointStatuses.north.isSet &&
           pointStatuses.south.isSet &&
@@ -418,14 +414,6 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
         ) {
           if (pointStatuses.north.value < pointStatuses.south.value) {
             const msg = this.getErrorMessage("northSouthReversed");
-            errors.north = msg;
-            errors.south = msg;
-          }
-          if (
-            pointStatuses.north.value == 90 ||
-            pointStatuses.south.value == -90
-          ) {
-            const msg = this.getErrorMessage("containsPole");
             errors.north = msg;
             errors.south = msg;
           }

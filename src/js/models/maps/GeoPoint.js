@@ -4,6 +4,12 @@ define(["backbone", "models/maps/GeoUtilities"], function (
   Backbone,
   GeoUtilities
 ) {
+  // Regular expression matching a string that contains two numbers optionally separated by a comma.
+  const FLOATS_REGEX = /[+-]?[0-9]*[.]?[0-9]+/g;
+
+  // Regular expression matching everything except numbers, periods, and commas.
+  const NON_LAT_LONG_CHARS_REGEX = /[^0-9,.+-\s]/g;
+
   /**
    * @class GeoPoint
    * @classdesc The GeoPoint model stores geographical coordinates including
@@ -40,6 +46,31 @@ define(["backbone", "models/maps/GeoUtilities"], function (
           height: null,
           mapWidgetCoords: null,
         };
+      },
+
+      /**
+       * Parse a string according to a regular expression. 
+       * @param {string} value A user-entered value for parsing into a latiude
+       * and longitude pair.
+       * @throws An error indicating that more than two numbers have been
+       * entered.
+       * @returns {Object} Latitude and longitude information for creating a 
+       * GeoPoint.
+       */
+      parse(value) {
+        if (typeof value !== 'string') {
+          return {};
+        }
+
+        const matches = value?.match(FLOATS_REGEX);
+        if (matches?.length !== 2 || isNaN(matches[0]) || isNaN(matches[1])
+          || !GeoPoint.couldBeLatLong(value)) {
+          throw new Error(
+            'Try entering a search query with two numerical values representing a latitude and longitude (e.g. 64.84, -147.72).'
+          );
+        }
+
+        return { latitude: Number(matches[0]), longitude: Number(matches[1]) };
       },
 
       /**
@@ -118,19 +149,37 @@ define(["backbone", "models/maps/GeoUtilities"], function (
        */
       validate: function (attrs) {
         if (attrs.latitude < -90 || attrs.latitude > 90) {
-          return "Invalid latitude. Must be between -90 and 90.";
+          return { latitude: "Invalid latitude. Must be between -90 and 90." };
         }
 
         if (attrs.longitude < -180 || attrs.longitude > 180) {
-          return "Invalid longitude. Must be between -180 and 180.";
+          return {
+            longitude: "Invalid longitude. Must be between -180 and 180."
+          };
         }
 
         // Assuming height is in meters and can theoretically be below sea
         // level. Adjust the height constraints as needed for your specific
         // application.
         if (typeof attrs.height !== "number") {
-          return "Invalid height. Must be a number.";
+          return { height: "Invalid height. Must be a number." };
         }
+      },
+    },
+    {
+      /**
+       * Determine whether the user could be typing a lat, long pair.
+       * @param {string} value is the currently entered query string.
+       * @return {boolean} Whether the current value could be a lat,long pair
+       * due to the string NOT containing characters (e.g. a-z) that could not
+       * be in a lat,long pair.
+       */
+      couldBeLatLong(value) {
+        if (typeof value !== 'string') {
+          return false;
+        }
+
+        return value?.match(NON_LAT_LONG_CHARS_REGEX) == null;
       },
     }
   );

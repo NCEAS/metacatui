@@ -7,6 +7,7 @@ define(
     'underscore',
     'backbone',
     'models/maps/assets/MapAsset',
+    'common/IconUtilities',
     'text!templates/maps/layer-item.html',
     // Sub-views
     'views/maps/LegendView'
@@ -16,11 +17,11 @@ define(
     _,
     Backbone,
     MapAsset,
+    IconUtilities,
     Template,
     // Sub-views
     Legend
   ) {
-
     /**
     * @class LayerItemView
     * @classdesc One item in a Layer List: shows some basic information about the Map
@@ -58,6 +59,13 @@ define(
         model: undefined,
 
         /**
+        * Whether the layer item is a under a category. Flat layer item and categorized
+        * layer item are styled differently.
+        * @type {boolean}
+        */
+        isCategorized: undefined,
+
+        /**
          * The primary HTML template for this view
          * @type {Underscore.template}
          */
@@ -75,8 +83,8 @@ define(
          * inserted into.
          * @property {string} selected The class that gets added to the view when the Layer
          * Item is selected
-         * @property {string} hidden The class that gets added to the view when the Layer
-         * Item is not visible
+         * @property {string} shown The class that gets added to the view when the Layer
+         * Item is visible
          * @property {string} badge The class to add to the badge element that is shown
          * when the layer has a notification message
          * @property {string} tooltip Class added to tooltips used in this view
@@ -87,7 +95,11 @@ define(
           visibilityToggle: 'layer-item__visibility-toggle',
           legendContainer: 'layer-item__legend-container',
           selected: 'layer-item--selected',
-          hidden: 'layer-item--hidden',
+          shown: 'layer-item--shown',
+          labelText: 'layer-item__label-text',
+          highlightedText: 'layer-item__highlighted-text',
+          categorized: 'layer-item__categorized',
+          legendAndSettings: 'layer-item__legend-and-settings',
           badge: 'map-view__badge',
           tooltip: 'map-tooltip',
         },
@@ -109,8 +121,8 @@ define(
         events: function () {
           try {
             var events = {}
-            events['click .' + this.classes.label] = 'toggleSelected';
-            events['click .' + this.classes.visibilityToggle] = 'toggleVisibility';
+            events['click .' + this.classes.legendAndSettings] = 'toggleSelected';
+            events['click'] = 'toggleVisibility';
             return events
           }
           catch (error) {
@@ -157,13 +169,16 @@ define(
 
             // Insert the template into the view
             this.$el.html(this.template({
-              label: this.model.get('label')
+              label: this.model.get('label'),
+              classes: this.classes,
             }));
             // Save a reference to the label element
             this.labelEl = this.el.querySelector('.' + this.classes.label)
 
             // Insert the icon on the left
-            this.insertIcon()
+            if (!this.isCategorized) {
+              this.insertIcon();
+            }
 
             // Add a thumbnail / legend preview
             const legendContainer = this.el.querySelector('.' + this.classes.legendContainer)
@@ -190,7 +205,7 @@ define(
             this.stopListening(this.model, 'change:selected')
             this.listenTo(this.model, 'change:selected', this.showSelection)
 
-            // Similar to above, add or remove the hidden class when the layer's
+            // Similar to above, add or remove the shown class when the layer's
             // visibility changes
             this.stopListening(this.model, 'change:visible')
             this.listenTo(this.model, 'change:visible', this.showVisibility)
@@ -218,20 +233,19 @@ define(
         insertIcon: function () {
           try {
             const model = this.model;
-            const iconStatus = model.get('iconStatus')
+            let icon = model.get('icon');
+            if (!icon || typeof icon !== 'string' || !IconUtilities.isSVG(icon)) {
+              icon = model.defaults().icon;
+            }
+            const iconContainer = document.createElement('span');
+            iconContainer.classList.add(this.classes.icon);
+            iconContainer.innerHTML = icon;
+            this.el.querySelector('.' + this.classes.visibilityToggle).replaceChildren(iconContainer);
+
+            const iconStatus = model.get('iconStatus');
             if (iconStatus && iconStatus === 'fetching') {
-              this.listenToOnce(model, 'change:iconStatus', this.insertIcon)
-              return
-            }
-            if (iconStatus === 'error') {
-              return
-            }
-            const icon = model.get('icon')
-            if (icon && typeof icon === 'string' && model.isSVG(icon)) {
-              const iconContainer = document.createElement('span')
-              iconContainer.classList.add(this.classes.icon)
-              iconContainer.innerHTML = icon
-              this.el.querySelector('.' + this.classes.label).prepend(iconContainer)
+              this.listenToOnce(model, 'change:iconStatus', this.insertIcon);
+              return;
             }
           }
           catch (error) {
@@ -268,8 +282,12 @@ define(
          * Sets the Layer model's visibility status attribute to true if it's false, and
          * to false if it's true. Executed when a user clicks on the visibility toggle.
          */
-        toggleVisibility: function () {
+        toggleVisibility: function (event) {
           try {
+            if (this.$(`.${this.classes.legendAndSettings}`).has(event.target).length > 0) {
+              return;
+            }
+
             const layerModel = this.model;
             // Hide if visible
             if (layerModel.get('visible')) {
@@ -303,9 +321,9 @@ define(
           try {
             var layerModel = this.model;
             if (layerModel.get('selected')) {
-              this.el.classList.add(this.classes.selected)
+              this.$(`.${this.classes.legendAndSettings}`).addClass(this.classes.selected)
             } else {
-              this.el.classList.remove(this.classes.selected)
+              this.$(`.${this.classes.legendAndSettings}`).removeClass(this.classes.selected)
             }
           }
           catch (error) {
@@ -317,7 +335,7 @@ define(
         },
 
         /**
-         * Add or remove styles that indicate that the layer is hidden based on what is
+         * Add or remove styles that indicate that the layer is shown based on what is
          * set in the Layer model's 'visible' attribute. Executed whenever the 'visible'
          * attribute changes.
          */
@@ -325,14 +343,14 @@ define(
           try {
             var layerModel = this.model;
             if (layerModel.get('visible')) {
-              this.el.classList.remove(this.classes.hidden)
+              this.$el.addClass(this.classes.shown);
             } else {
-              this.el.classList.add(this.classes.hidden)
+              this.$el.removeClass(this.classes.shown);
             }
           }
           catch (error) {
             console.log(
-              'There was an error changing the hidden styles in a LayerItemView' +
+              'There was an error changing the shown styles in a LayerItemView' +
               '. Error details: ' + error
             );
           }
@@ -484,9 +502,33 @@ define(
               '. Error details: ' + error
             );
           }
-        }
+        },
 
+        /**
+         * Searches and only displays self if layer label matches the text. Highlights the
+         * matched text.
+         * @param {string} [text] - The search text from user input.
+         * @returns {boolean} - True if a layer label matches the text
+         */
+        search(text) {
+          let newLabel = this.model.get('label');
+          if (text) {
+            const regex = new RegExp(text, "ig");
+            newLabel = this.model.get('label').replaceAll(regex, matchedText => {
+              return $('<span />').addClass(this.classes.highlightedText).html(matchedText).prop('outerHTML');
+            });
 
+            // Label is unchanged.
+            if (newLabel === this.model.get('label')) {
+              this.$el.hide();
+              return false;
+            }
+          }
+
+          this.labelEl.querySelector(`.${this.classes.labelText}`).innerHTML = newLabel;
+          this.$el.show();
+          return true;
+        },
       }
     );
 

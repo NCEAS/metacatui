@@ -369,22 +369,24 @@ define([
       setAssetListeners: function () {
         const view = this;
         const model = view.model;
-        const layers = model.get("layers");
+        const layerGroups = model.getLayerGroups();
 
         // Listen for addition or removal of layers TODO: Add similar listeners
         // for terrain
-        if (layers) {
-          view.stopListening(layers);
-          view.listenTo(layers, "add", view.addAsset);
-          view.listenTo(layers, "remove", view.removeAsset);
+        _.each(layerGroups, layers => {
+          if (layers) {
+            view.stopListening(layers);
+            view.listenTo(layers, "add", view.addAsset);
+            view.listenTo(layers, "remove", view.removeAsset);
 
-          // Each layer fires 'appearanceChanged' whenever the color, opacity,
-          // etc. has been updated. Re-render the scene when this happens.
-          view.listenTo(layers, "appearanceChanged", view.requestRender);
-        }
+            // Each layer fires 'appearanceChanged' whenever the color, opacity,
+            // etc. has been updated. Re-render the scene when this happens.
+            view.listenTo(layers, "appearanceChanged", view.requestRender);
+          }
+        })
         // Reset asset listeners if the layers collection is replaced
-        view.stopListening(model, "change:layers");
-        view.listenTo(model, "change:layers", view.setAssetListeners);
+        view.stopListening(model, "change:layers change:layerCategories");
+        view.listenTo(model, "change:layers change:layerCategories", view.setAssetListeners);
       },
 
       /**
@@ -598,12 +600,14 @@ define([
         // the function configured in the View's mapAssetRenderFunctions
         // property. Add in reverse order for layers to appear in the correct
         // order on the map.
-        const layers = view.model.get("layers");
-        if (layers && layers.length) {
-          const layersReverse = layers.last(layers.length).reverse();
-          layersReverse.forEach(function (layer) {
-            view.addAsset(layer);
-          });
+        const layerGroups = view.model.getLayerGroups();
+        for (const layers of layerGroups) {
+          if (layers && layers.length) {
+            const layersReverse = layers.last(layers.length).reverse();
+            layersReverse.forEach(function (layer) {
+              view.addAsset(layer);
+            });
+          }
         }
 
         // The Cesium Widget will support just one terrain option to start.
@@ -1499,38 +1503,31 @@ define([
        * @since 2.21.0
        */
       sortImagery: function () {
-        try {
-          const imageryInMap = this.scene.imageryLayers;
-          const imageryModels = this.model
-            .get("layers")
-            .getAll("CesiumImagery");
+        const imageryInMap = this.scene.imageryLayers;
+        const imageryModels = _.reduce(this.model.getLayerGroups(), (models, layers) => {
+            models.push(...layers.getAll("CesiumImagery"));
+            return models;
+          }, []);
 
-          // If there are no imagery layers, or just one, return
-          if (
-            !imageryInMap ||
-            !imageryModels ||
-            imageryInMap.length <= 1 ||
-            imageryModels.length <= 1
-          ) {
-            return;
-          }
+        // If there are no imagery layers, or just one, return
+        if (
+          !imageryInMap ||
+          !imageryModels ||
+          imageryInMap.length <= 1 ||
+          imageryModels.length <= 1
+        ) {
+          return;
+        }
 
-          // If there are more than one imagery layer, arrange them in the order
-          // that they were added to the map
-          for (let i = 0; i < imageryModels.length; i++) {
-            const cesiumModel = imageryModels[i].get("cesiumModel");
-            if (cesiumModel) {
-              if (imageryInMap.contains(cesiumModel)) {
-                imageryInMap.lowerToBottom(cesiumModel);
-              }
+        // If there are more than one imagery layer, arrange them in the order
+        // that they were added to the map
+        for (let i = 0; i < imageryModels.length; i++) {
+          const cesiumModel = imageryModels[i].get("cesiumModel");
+          if (cesiumModel) {
+            if (imageryInMap.contains(cesiumModel)) {
+              imageryInMap.lowerToBottom(cesiumModel);
             }
           }
-        } catch (error) {
-          console.log(
-            "There was an error sorting displayed imagery in a CesiumWidgetView" +
-              ". Error details: " +
-              error
-          );
         }
       },
 

@@ -56,7 +56,7 @@ define([
         const search = this.get("searchResults");
 
         // Start results at first page and recreate query when the filters change
-        this.listenTo(filters, "update change", this.triggerSearch, true);
+        this.listenTo(filters, "update change", () => this.triggerSearch());
 
         // "changing" event triggers when the query is about to change, but
         // before it has been sent. Useful for showing a loading indicator.
@@ -64,13 +64,13 @@ define([
           search.trigger("changing");
         });
 
-        this.listenTo(search, "change:sort change:facet", this.triggerSearch);
+        this.listenTo(search, "change:sort change:facet", () => this.triggerSearch());
 
         // If the logged-in status changes, send a new search
         this.listenTo(
           MetacatUI.appUserModel,
           "change:loggedIn",
-          this.triggerSearch
+          () => this.triggerSearch()
         );
 
         this.set("isConnected", true);

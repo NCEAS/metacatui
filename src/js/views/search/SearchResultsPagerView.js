@@ -2,6 +2,10 @@
 define(["backbone"], function (Backbone) {
   "use strict";
 
+  // Classes are from Bootstrap
+  const INACTIVE_CLASS = "disabled";
+  const ACTIVE_CLASS = "active";
+
   /**
    * @class SearchResultsPagerView
    * @name SearchResultsPagerView
@@ -35,44 +39,41 @@ define(["backbone"], function (Backbone) {
        */
       template: `
         <ul>
-          <li><a class="unactive"></a></li>
-          <li><a class="unactive"></a></li>
-          <li><a class="unactive"></a></li>
-          <li><a class="unactive">...</a></li>
-          <li><a class="unactive"></a></li>
+          <li><a class="${INACTIVE_CLASS}"></a></li>
+          <li><a class="${INACTIVE_CLASS}"></a></li>
+          <li><a class="${INACTIVE_CLASS}"></a></li>
+          <li><a class="${INACTIVE_CLASS}">...</a></li>
+          <li><a class="${INACTIVE_CLASS}"></a></li>
         </ul>`,
 
       /**
        * Constructs and returns a URL string to use for the given page in this
        * pager. It assumes that the URL uses a ".../page/X" structure. To
        * provide a custom URL, override this function.
-       * @param {number|string} page
-       * @returns {string}
+       * @param {number|string} page The page number in base 0
+       * @returns {string} The relative URL to use for the given page. This
+       * will include the root part of the path name if it exists.
        */
       url: function (page) {
-        if (typeof page !== "number") {
-          try {
-            page = parseInt(page);
-          } catch (e) {
-            console.error(e);
-            return "";
-          } finally {
-            if (isNaN(page)) {
-              return "";
-            }
-          }
-        }
 
-        if (window.location.pathname.includes("page")) {
-          return window.location.pathname.replace(
-            /\/page\/\d+/,
-            "/page/" + (page + 1)
-          );
-        } else {
-          if (window.location.pathname.endsWith("/"))
-            return window.location.pathname + "page/" + (page + 1);
-          else return window.location.pathname + "/page/" + (page + 1);
-        }
+        page = typeof page === 'number' ? page : parseInt(page, 10);
+        if (page < 0 || isNaN(page)) return '';
+
+        // Page number to display in the URL
+        const pageBase1 = page + 1;
+        // Current URL path
+        const basePath = window.location.pathname;
+        // Regex to match a trailing '/page/number' or a trailing slash
+        const regexSuffix = /\/page\/\d+\/?$|\/$/;
+        // Regex to match the MetacatUI root, if it exists
+        const regexRoot = new RegExp(`^${MetacatUI.root}`);
+
+        // Remove the root and the trailing / or page/number
+        let newPath = basePath.replace(regexRoot, '').replace(regexSuffix, '');
+        // Add the new page number
+        newPath += `/page/${pageBase1}`;
+        return newPath;
+        
       },
 
       /**
@@ -91,10 +92,11 @@ define(["backbone"], function (Backbone) {
       ) {
         // Expand the data object into individual variables
         let { page, pageDisplay, className } = data;
-        let href = `${this.url(data.page)}`;
+        let href = `${MetacatUI.root + this.url(data.page)}`;
         if (href.length) href = `href="${href}"`;
+        if (className) className = `class="${className}"`;
         return `
-        <li class="${className}">
+        <li ${className}>
           <a class="pagerLink" data-page="${page}" ${href}>
             ${pageDisplay}
           </a>
@@ -185,7 +187,7 @@ define(["backbone"], function (Backbone) {
                 this.linkTemplate({
                   page: "",
                   pageDisplay: "...",
-                  className: "inactive",
+                  className: INACTIVE_CLASS,
                 })
               );
             }
@@ -206,7 +208,7 @@ define(["backbone"], function (Backbone) {
                 this.linkTemplate({
                   page: page,
                   pageDisplay: page + 1,
-                  className: page == currentPage ? "active" : "",
+                  className: page == currentPage ? ACTIVE_CLASS : "",
                 })
               );
             }
@@ -222,7 +224,7 @@ define(["backbone"], function (Backbone) {
                 this.linkTemplate({
                   page: "",
                   pageDisplay: "...",
-                  className: "inactive",
+                  className: INACTIVE_CLASS,
                 })
               );
             }
@@ -254,7 +256,25 @@ define(["backbone"], function (Backbone) {
 
         evt.preventDefault();
         evt.stopPropagation();
-        let page = evt.target.getAttribute("data-page");
+
+        // If the item is inactive, e.g. the ellipsis, then don't do anything
+        if (evt.target.classList.contains(INACTIVE_CLASS)) {
+          return;
+        }
+
+        const page = parseInt(evt.target.getAttribute("data-page"), 10);
+        if (page >= 0) {
+          this.goToPage(page);
+        }
+        
+      },
+
+      /**
+       * Navigates to the given page in the search results
+       * @param {number} page - The page number to navigate to (0-based)
+       * @since x.x.x
+       */
+      goToPage: function (page) {
         if (this.searchResults) {
           this.searchResults.toPage(page);
           MetacatUI.appModel.set("page", page);

@@ -513,7 +513,7 @@ define(["jquery",
             var theme = this.model.get("theme");
             var layout = this.model.get("layout");
             // TODO: make supported themes an app model config option?
-            var supportedThemes = ["dark"];
+            var supportedThemes = ["dark", "light"];
             var supportedLayouts = ["panels"];
             // We must remove theme/layout CSS when the user navigates away from the
             // portal in onClose(). To do this, we need to keep track of which CSS is
@@ -1060,6 +1060,14 @@ define(["jquery",
 
           MetacatUI.appModel.resetTitle();
           MetacatUI.appModel.resetDescription();
+
+          // Run subView onClose functions if they exist
+          for (const subView of this.subviews) {
+            if (typeof subView?.onClose === "function") {
+              subView.onClose();
+            }
+          }
+
           //Remove each subview from the DOM and remove listeners
           _.invoke(this.subviews, "remove");
 

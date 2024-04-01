@@ -136,27 +136,6 @@ define([
         errors.east.should.equal(expectedMsg);
       });
 
-      it("should give an error if the bounds contain the north pole", function () {
-        var emlGeoCoverage = new EMLGeoCoverage(
-          { objectDOM: this.testEML },
-          { parse: true }
-        );
-        emlGeoCoverage.set("north", "90");
-        const errors = emlGeoCoverage.validate();
-        const expectedMsg = emlGeoCoverage.errorMessages.containsPole;
-        errors.north.should.equal(expectedMsg);
-      });
-
-      it("should give an error if the bounds contain the south pole", function () {
-        var emlGeoCoverage = new EMLGeoCoverage(
-          { objectDOM: this.testEML },
-          { parse: true }
-        );
-        emlGeoCoverage.set("south", "-90");
-        const errors = emlGeoCoverage.validate();
-        const expectedMsg = emlGeoCoverage.errorMessages.containsPole;
-        errors.south.should.equal(expectedMsg);
-      });
     });
   });
 });

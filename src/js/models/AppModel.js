@@ -68,6 +68,9 @@ define(['jquery', 'underscore', 'backbone'],
       * Your Google Maps API key, which is used to display interactive maps on the search
       * views and static maps on dataset landing pages.
       * If a Google Maps API key is not specified, the maps will be omitted from the interface.
+      * The Google Maps API key also controls the showViewfinder feature on a Map
+      * and should have the Geocoding API and Places API enabled in order to
+      * function properly.
       * Sign up for Google Maps services at https://console.developers.google.com/
       * @type {string}
       * @example "AIzaSyCYyHnbIokUEpMx5M61ButwgNGX8fIHUs"
@@ -720,11 +723,13 @@ define(['jquery', 'underscore', 'backbone'],
       useNSFAwardAPI: false,
       /**
       * The URL for the NSF Award API, which can be used by the {@link LookupModel}
-      * to look up award information for the dataset editor or other views
+      * to look up award information for the dataset editor or other views. The
+      * URL must point to a proxy that can make requests to the NSF Award API,
+      * since it does not support CORS.
       * @type {string}
-      * @default "https://api.nsf.gov/services/v1/awards.json"
+      * @default "/research.gov/awardapi-service/v1/awards.json"
       */
-      grantsUrl: "https://api.nsf.gov/services/v1/awards.json",
+      grantsUrl: "/research.gov/awardapi-service/v1/awards.json",
 
       /**
       * The base URL for the ORCID REST services

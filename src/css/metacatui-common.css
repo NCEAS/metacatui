@@ -236,6 +236,9 @@ footer{
 #nav-trigger:hover{
   text-decoration: none;
 }
+#Navbar {
+	z-index: 3;
+}
 #Navbar .home{
   display: inline-block;
 }
@@ -4875,6 +4878,11 @@ i.toc-sub-item {
 * Portals
 ********************************************/
 
+.PortalView {
+  display: grid;
+  grid-template-rows: 40px 0px 100fr 0px;
+}
+
 .portal-view{
   width: calc(100% + 80px);
   margin-left: -40px;
@@ -5458,6 +5466,7 @@ i.toc-sub-item {
 /** The Portal Visualization View **/
 .portal-viz-section-view{
   background-color: black;
+  height: 100%;
 }
 .portal-viz-section-view iframe{
   box-sizing: border-box;
@@ -8322,11 +8331,11 @@ textarea.medium{
 	position: relative;
 }
 .Editor .funding-container .icon-spinner{
+	position: absolute;
+	left: 11px;
 	top: 5px;
-	left: 45px;
-    position: absolute;
-    font-size: 1.5em;
-    display: none;
+	font-size: 1.5em;
+	display: none;
 }
 .metadata-container #funding-visible{
 	padding-left: 30px;
@@ -8718,10 +8727,6 @@ Pager View
 .pager .pager-link{
 	border: 1px solid #CCC;
 	padding: 5px;
-}
-.pager-link.unactive {
-    color: #999;
-    cursor: default;
 }
 .pager .current-page.pager-link{
 	background-color: #ECF1F5;
