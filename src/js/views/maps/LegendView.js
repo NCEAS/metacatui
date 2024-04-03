@@ -240,6 +240,10 @@ define(
             const view = this
             // Data to use in d3
             let data = colorPalette.get('colors').toJSON().reverse();
+
+            if (data.length === 0) {
+              return;
+            }
             // The max width of the SVG, to be reduced if there are few colours
             let width = this.previewSvgDimensions.width
             // The height of the SVG
