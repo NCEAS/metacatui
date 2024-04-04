@@ -31,3 +31,6 @@ end
 
 # Performance-booster for watching directories on Windows
 gem "wdm", "~> 0.1.0", :install_if => Gem.win_platform?
+
+# WEBrick is no longer bundled with Ruby as of v 3.0.0. It is the default webserver for Jekyll.
+gem "webrick", "~> 1.7"

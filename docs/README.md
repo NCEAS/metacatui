@@ -52,25 +52,17 @@ You can now access the MetacatUI documentation website at the localhost address 
 
 [See the Github Pages documentation for additional help](https://help.github.com/en/enterprise/2.14/user/articles/setting-up-your-github-pages-site-locally-with-jekyll#step-4-build-your-local-jekyll-site)
 
-
 ### A note on Ruby versions
 
-If you get an error when you run `bundle exec jekyll serve`, check which version of Ruby you are running:
+The ruby version required to build the site is specified in the `.ruby-version` file. Ensure you have the correct version or a compatible version installed. You may need to use a Ruby version manager like `rbenv` to install and manage multiple versions of Ruby on your system.
 
-```
-ruby -v
-```
+For example, to install and use Ruby 3.1.x with `rbenv`:
 
-If you have 3.x release of Ruby installed, you need to switch to a 2.x version. To switch versions, use `rbenv`:
+1. Install `rbenv` and `ruby-build` following the instructions at [rbenv installation](https://github.com/rbenv/rbenv#installation).
+2. Install Ruby 3.1.x using `rbenv install 3.1.x`.
+3. Set Ruby 3.1.x as the global version with `rbenv global 3.1.x`.
 
-1. Follow the all the [installation and setup instructions](https://github.com/rbenv/rbenv#installation).
-2. Run `brew upgrade rbenv ruby-build`
-3. Run `rbenv install 2.x.x` where `2.x.x` is the version (use `rbenv install --list` to see which ones are available) - e.g. `2.7.2`
-4. Run `rbenv global x.x.x` to change your global Ruby version
-
-Check that the ruby version was successfully changed to a 2.x version using `ruby -v`. (If not, read some solutions [here](https://stackoverflow.com/questions/10940736/rbenv-not-changing-ruby-version))
-
-Try running `bundle install` then `bundle exec jekyll serve` again.
+After setting up the correct Ruby version, try running `bundle install` and then `bundle exec jekyll serve` again.
 
 ## Adding to this site
 Feel free to add pages to the MetacatUI docs website by adding markdown files to this `docs` directory. Use subdirectories
