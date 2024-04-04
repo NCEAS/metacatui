@@ -284,7 +284,8 @@ define(
          */
         toggleVisibility: function (event) {
           try {
-            if (this.$(`.${this.classes.legendAndSettings}`).has(event.target).length > 0) {
+            if (this.$(`.${this.classes.legendAndSettings}`).is(event.target) ||
+                this.$(`.${this.classes.legendAndSettings}`).has(event.target).length > 0) {
               return;
             }
 
