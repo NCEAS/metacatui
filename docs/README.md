@@ -30,10 +30,24 @@ Once your changes to the JSDocs are merged into the `main` branch, they will go 
 
 This directory is also built into a simple HTML website, using Jekyll, that is hosted on Github Pages. You can view the last published version of the Github site here: https://nceas.github.io/metacatui/
 
-To build a local version of the MetacatUI Github pages site, ensure you have a relatively recent 2.x release of [Ruby](https://www.ruby-lang.org/) (e.g., 2.7.2) installed. (If you are running a 3.x version of Ruby, see "A note on Ruby versions", below.) Then make sure [Bundler](https://bundler.io/) is installed:
+To build a local version of the MetacatUI Github pages site, ensure you have the version of [Ruby](https://www.ruby-lang.org/) installed that is specified in the `docs/.ruby-version` file. (See the note below about Ruby versions.)
+
+To check the version of Ruby installed on your system, run:
+
+```
+ruby -v
+```
+
+Then make sure [Bundler](https://bundler.io/) is installed:
 
 ```
 gem install bundler
+```
+
+Make sure you're in the docs directory of the MetacatUI repository:
+
+```
+cd docs
 ```
 
 Install the gems required to build the site with:
@@ -42,7 +56,7 @@ Install the gems required to build the site with:
 bundle install
 ```
 
-Then serve the Jekyll site from the `docs` directory:
+Then serve the Jekyll site (still from the `docs` directory):
 
 ```
 bundle exec jekyll serve
@@ -54,7 +68,7 @@ You can now access the MetacatUI documentation website at the localhost address 
 
 ### A note on Ruby versions
 
-The ruby version required to build the site is specified in the `.ruby-version` file. Ensure you have the correct version or a compatible version installed. You may need to use a Ruby version manager like `rbenv` to install and manage multiple versions of Ruby on your system.
+The ruby version required to build the site is specified in the `docs/.ruby-version` file. Ensure you have the correct version or a compatible version installed. You may need to use a Ruby version manager like `rbenv` to install and manage multiple versions of Ruby on your system.
 
 For example, to install and use Ruby 3.1.x with `rbenv`:
 
