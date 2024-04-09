@@ -88,7 +88,8 @@ define(
           scaleBarContainer: 'map-view__scale-bar-container',
           featureInfoContainer: 'map-view__feature-info-container',
           toolbarContainer: 'map-view__toolbar-container',
-          layerDetailsContainer: 'map-view__layer-details-container'
+          layerDetailsContainer: 'map-view__layer-details-container',
+          portalIndicator: 'map-view__portal',
         },
 
         /**
@@ -100,30 +101,22 @@ define(
         },
 
         /**
+        * @typedef {Object} ViewfinderViewOptions
+        * @property {Map} model The map model that contains the configs for this map view.
+        * @property {boolean} isPortalMap Indicates whether the map view is a part of a
+        * portal, which is styled differently.
+        */
+
+        /**
         * Executed when a new MapView is created
-        * @param {Object} [options] - A literal object with options to pass to the view.
+        * @param {ViewfinderViewOptions} options
         */
         initialize: function (options) {
+          // Add the CSS required for this view and its sub-views.
+          MetacatUI.appModel.addCSS(MapCSS, 'mapView');
 
-          try {
-            // Add the CSS required for this view and its sub-views.
-            MetacatUI.appModel.addCSS(MapCSS, 'mapView');
-
-            // Get all the options and apply them to this view
-            if (typeof options == 'object') {
-              for (const [key, value] of Object.entries(options)) {
-                this[key] = value;
-              }
-            }
-
-            if(!this.model) {
-              this.model = new Map();
-            }
-            
-          } catch (e) {
-            console.log('A MapView failed to initialize. Error message: ' + e);
-          }
-
+          this.model = options?.model ? options.model : new Map();
+          this.isPortalMap = options?.isPortalMap;
         },
 
         /**
@@ -144,6 +137,9 @@ define(
 
             // Ensure the view's main element has the given class name
             this.el.classList.add(this.className);
+            if (this.isPortalMap) {
+              this.el.classList.add(this.classes.portalIndicator);
+            }
 
             // Select the elements that will be updatable
             this.subElements = {};

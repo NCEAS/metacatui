@@ -93,6 +93,7 @@
   --map-border-radius-small: 0.25rem;
   --map-border-radius-big: 0.5rem;
   --map-width-toolbar: 21rem;
+  --map-width-toolbar-wide: 30rem;
   --map-toolbar-link-width: calc(var(--map-size-toolbar-link) + 2 * var(--map-size-toolbar-link-padding));
   /* SHADOWS */
   --map-shadow-md: var(--portal-shadow-md, 0 1px 9px -1px rgba(0, 0, 0, 0.2), 0 1px 2px 0px rgba(0, 0, 0, 0.5));
@@ -471,6 +472,10 @@ represents 1 unit of the given distance measurement. */
   display: none;
   overflow: hidden;
   pointer-events: all;
+}
+
+.map-view__portal .toolbar__all-content {
+  width: var(--map-width-toolbar-wide);
 }
 
 .toolbar--open .toolbar__all-content {
@@ -932,6 +937,10 @@ represents 1 unit of the given distance measurement. */
   display: none;
   border: 1px solid var(--map-col-border);
   animation: fadeIn .3s ease-in-out;
+}
+
+.map-view__portal .layer-details {
+  width: var(--map-width-toolbar-wide);
 }
 
 .layer-details--open {
