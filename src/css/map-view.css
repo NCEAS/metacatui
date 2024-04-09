@@ -32,6 +32,7 @@
   --map-col-content-bkg-muted: var(--portal-col-content-bkg-muted);
 
   --map-col-buttons-bkg: var(--portal-col-buttons-bkg);
+  --map-col-buttons-bkg-active: var(--portal-col-content-bkg-highlight);
   --map-col-buttons-bkg-hover: var(--portal-col-buttons-bkg-hover);
   --map-col-buttons-bkg-highlight: var(--portal-col-buttons-bkg-highlight);
   --map-col-buttons-bkg-muted: var(--portal-col-buttons-bkg-muted);
@@ -540,6 +541,7 @@ represents 1 unit of the given distance measurement. */
 
 .search-input {
   padding-bottom: 16px;
+  background-color: var(--map-col-content-bkg, var(--map-col-bkg));
 
   .search-input__field {
     position: relative;
@@ -548,56 +550,81 @@ represents 1 unit of the given distance measurement. */
     align-items: center;
     height: 40px;
     margin-bottom: 8px;
+    border: 1px solid;
+    border-color: var(--map-col-border-muted);
+    border-radius: 4px;
   
     .search-input__input {
       width: 100%;
-      position: absolute;
-      padding-right: 32px;
     
       input[type=text]& {  /* Override bootstrap */
         height: 100%;
         margin: unset;
         padding-left: 16px;
-        background-color: var(--map-col-content-bkg, var(--map-col-bkg));
+        background: none;
         color: var(--map-col-text-body, var(--map-col-text));
         font-family: var(--map-body-font);
-        border: 1px solid;
-        border-color: var(--map-col-border-muted);
+        border: none;
         box-shadow: unset;
 
         ::placeholder {
           color: var(--map-col-text-muted);
         }
-
-        &.search-input__error-input {
-          border-color: var(--map-col-input-error-border);
-          background-color: var(--map-col-input-error-bkg);
-        }
       }
     }
+
+    &:focus-within {
+      border-color: var(--map-col-border-highlight-search-box, var(--map-col-blue));
+    }
+
+    &.search-input__error-input {
+      border-color: var(--map-col-input-error-border);
+      background-color: var(--map-col-input-error-bkg);
+    }
   
-    .search-input__search-button, .search-input__cancel-button {
+    .search-input__cancel-button-container {
+      align-items: center;
+      display: flex;
+    }
+
+    .search-input__search-button,
+    .search-input__cancel-button {
       background-color: transparent;
-      border-color: transparent;
+      border: none;
       color: unset;
-      width: 24px;
-      height: 24px;
-      margin-right: 8px;
+      width: 32px;
+      height: 32px;
       display: inline-flex;
       justify-content: center;
       align-items: center;
       position: relative;
+      flex-shrink: 0;
+      margin: 4px;
   
       .search-input__button-icon {
         font-size: 16px;
       }
     }
 
+    .search-input__vertical-divider {
+      width: 0;
+      height:24px;
+      border-right: solid 1px var(--map-col-border);
+    }
+
     .search-input__search-button {
       color: var(--map-col-buttons-icon-muted);
+      border-radius: 4px;
+
+      &.search-input__search-button--active {
+        color: var(--map-col-buttons-icon, currentColor);
+        background: var(--map-col-buttons-bkg-active, var(--map-col-bkg-lighter__deprecate));
+      }
     }
     .search-input__cancel-button {
       color: var(--map-col-utility-buttons);
+      margin-left: 0;
+      width: 24px;
     }
   }
 
@@ -1376,12 +1403,10 @@ other class: .ui-slider-range */
   .viewfinder-prediction__content {
     align-items: center;
     background: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
-    /* TODO(ianguerin) */
-    border: 1px solid var(--map-col-border);
+    border: 1px solid var(--map-col-border-muted, white);
     border-radius: 4px;
     box-sizing: border-box;
-    /* TODO(ianguerin) */
-    color: var(--map-col-text-body);
+    color: var(--map-col-text-highlight, white);
     cursor: pointer;
     display: flex;
     height: 48px;
@@ -1405,7 +1430,7 @@ other class: .ui-slider-range */
 
     &:hover,
     &.viewfinder-prediction__focused {
-      border-color: var(--portal-col-border-highlight);
+      border-color: var(--map-col-border-highlight);
       background-color: var(--map-col-content-bkg-highlight, var(--map-col-bkg-lighter__deprecate));
     }
   }

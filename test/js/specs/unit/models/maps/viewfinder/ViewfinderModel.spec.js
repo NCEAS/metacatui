@@ -293,6 +293,18 @@ define(
       });
 
       describe('searching for a location', () => {
+        it('does nothing if the search string is null', async () => {
+          await state.model.search();
+
+          expect(state.zoomSpy.callCount).to.equal(0);
+        });
+
+        it('does nothing if the search string is empty', async () => {
+          await state.model.search('');
+
+          expect(state.zoomSpy.callCount).to.equal(0);
+        });
+
         it('geocodes and selects the focused prediction', async () => {
           state.geocodeSpy.returns([
             new GeocodedLocation({
