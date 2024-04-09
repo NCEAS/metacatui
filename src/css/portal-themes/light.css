@@ -10,6 +10,7 @@
   --portal-blue-7: #136682;
 
   --portal-grey-1: #F8F9FA;
+  --portal-grey-2: #F1F3F4;
   --portal-grey-3: #E8EAED;
   --portal-grey-4: #BDC1C6;
   --portal-grey-5: #80868B;
@@ -25,6 +26,7 @@
   --portal-col-buttons-bkg-hover: var(--portal-blue-2);
   --portal-col-buttons-bkg-highlight: var(--portal-blue-6);
   --portal-col-buttons-bkg-muted: var(--portal-grey-1);
+  --portal-col-buttons-bkg-white-content-contrast: var(--portal-grey-5);
   --portal-col-buttons-text: var(--portal-blue-6);
   --portal-col-buttons-text-highlight: white;
   --portal-col-buttons-icon: var(--portal-blue-6);
@@ -36,6 +38,9 @@
   --portal-col-border-highlight: unset;
   --portal-col-border-muted: var(--portal-grey-4);
   --portal-col-border-highlight-search-box: var(--portal-blue-3);
+
+  --portal-col-section-divider: var(--portal-grey-3);
+  --portal-col-item-divider: var(--portal-grey-2);
 
   --portal-col-text-body: var(--portal-grey-8);
   --portal-col-text-highlight: var(--portal-blue-6);
