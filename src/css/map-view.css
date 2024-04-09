@@ -211,6 +211,17 @@
   opacity: var(--map-no-brightness-or-opacity-tweaks, 0.8);
 }
 
+/* ---- Animation ---- */
+
+@keyframes fadeIn { 
+  from { 
+    opacity: 0;
+  } 
+  to { 
+    opacity: 1;
+  } 
+}
+
 
 /*****************************************************************************************
  *
@@ -396,7 +407,7 @@ represents 1 unit of the given distance measurement. */
 
 .scale-bar__bar {
   height: 0.25rem;
-  transition: width 0.3s;
+  transition: width 0.3s ease-in-out;
   background-color: var(--map-col-buttons-icon-muted, var(--map-col-text__deprecate));
 }
 
@@ -699,6 +710,7 @@ represents 1 unit of the given distance measurement. */
 
   &:hover {
     background-color: var(--map-col-content-bkg-muted, #323745);
+    transition: background-color .3s ease-in-out;
 
     &.layer-item--shown {
       background-color: var(--map-col-content-bkg-highlight, #15324e);
@@ -824,6 +836,7 @@ represents 1 unit of the given distance measurement. */
 
       &:hover {
         background-color: var(--map-col-content-bkg-highlight, #15324e);
+        transition: background-color .3s ease-in-out;
       }
     }
   }
@@ -857,6 +870,16 @@ represents 1 unit of the given distance measurement. */
   color: var(--map-col-utility-buttons);
 }
 
+.layer-category-item__layers {
+  display: none;
+  animation: fadeIn .3s ease-in-out;
+}
+
+.layer-category-item__layers.open {
+  display: block;
+}
+
+
 /*****************************************************************************************
  *
  * Layer Details
@@ -881,6 +904,7 @@ represents 1 unit of the given distance measurement. */
   /* Don't show the details panel unless it also has the layer-details--open class */
   display: none;
   border: 1px solid var(--map-col-border);
+  animation: fadeIn .3s ease-in-out;
 }
 
 .layer-details--open {
@@ -1120,6 +1144,7 @@ other class: .ui-slider-range */
   justify-items: center;
   /* Don't show the details panel unless it also has the feature-info--open class */
   display: none;
+  animation: fadeIn .3s ease-in-out;
 }
 
 .feature-info--open {
@@ -1365,6 +1390,7 @@ other class: .ui-slider-range */
     justify-content: flex-start;
     margin: 0.25rem 0;
     padding: 0.75rem 0.5rem;
+    transition: background-color .3s ease-in-out;
 
     >* {
       flex: 1;

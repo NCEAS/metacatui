@@ -147,11 +147,11 @@ define(
           if (this.model.get('expanded')) {
             expanded.show();
             collapsed.hide();
-            layers.show();
+            layers.addClass('open');
           } else {
             expanded.hide();
             collapsed.show();
-            layers.hide();
+            layers.removeClass('open');
           }
         },
 
