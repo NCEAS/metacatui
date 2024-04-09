@@ -35,17 +35,17 @@ define([
 
     it("toggles between expanded and collapsed", () => {
       expect(state.view.model.get("expanded")).to.be.false;
-      expect(state.harness.getLayers().css("display")).to.equal("none");
+      expect(state.harness.getLayers().hasClass("open")).to.be.false;
 
       state.harness.toggleExpand();
 
       expect(state.view.model.get("expanded")).to.be.true;
-      expect(state.harness.getLayers().css("display")).to.equal("block");
+      expect(state.harness.getLayers().hasClass("open")).to.be.true;
 
       state.harness.toggleExpand();
 
       expect(state.view.model.get("expanded")).to.be.false;
-      expect(state.harness.getLayers().css("display")).to.equal("none");
+      expect(state.harness.getLayers().hasClass("open")).to.be.false;
     });
 
     describe("search", () => {
