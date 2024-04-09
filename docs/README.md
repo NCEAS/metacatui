@@ -30,10 +30,24 @@ Once your changes to the JSDocs are merged into the `main` branch, they will go 
 
 This directory is also built into a simple HTML website, using Jekyll, that is hosted on Github Pages. You can view the last published version of the Github site here: https://nceas.github.io/metacatui/
 
-To build a local version of the MetacatUI Github pages site, ensure you have a relatively recent 2.x release of [Ruby](https://www.ruby-lang.org/) (e.g., 2.7.2) installed. (If you are running a 3.x version of Ruby, see "A note on Ruby versions", below.) Then make sure [Bundler](https://bundler.io/) is installed:
+To build a local version of the MetacatUI Github pages site, ensure you have the version of [Ruby](https://www.ruby-lang.org/) installed that is specified in the `docs/.ruby-version` file. (See the note below about Ruby versions.)
+
+To check the version of Ruby installed on your system, run:
+
+```
+ruby -v
+```
+
+Then make sure [Bundler](https://bundler.io/) is installed:
 
 ```
 gem install bundler
+```
+
+Make sure you're in the docs directory of the MetacatUI repository:
+
+```
+cd docs
 ```
 
 Install the gems required to build the site with:
@@ -42,7 +56,7 @@ Install the gems required to build the site with:
 bundle install
 ```
 
-Then serve the Jekyll site from the `docs` directory:
+Then serve the Jekyll site (still from the `docs` directory):
 
 ```
 bundle exec jekyll serve
@@ -52,25 +66,17 @@ You can now access the MetacatUI documentation website at the localhost address 
 
 [See the Github Pages documentation for additional help](https://help.github.com/en/enterprise/2.14/user/articles/setting-up-your-github-pages-site-locally-with-jekyll#step-4-build-your-local-jekyll-site)
 
-
 ### A note on Ruby versions
 
-If you get an error when you run `bundle exec jekyll serve`, check which version of Ruby you are running:
+The ruby version required to build the site is specified in the `docs/.ruby-version` file. Ensure you have the correct version or a compatible version installed. You may need to use a Ruby version manager like `rbenv` to install and manage multiple versions of Ruby on your system.
 
-```
-ruby -v
-```
+For example, to install and use Ruby 3.1.x with `rbenv`:
 
-If you have 3.x release of Ruby installed, you need to switch to a 2.x version. To switch versions, use `rbenv`:
+1. Install `rbenv` and `ruby-build` following the instructions at [rbenv installation](https://github.com/rbenv/rbenv#installation).
+2. Install Ruby 3.1.x using `rbenv install 3.1.x`.
+3. Set Ruby 3.1.x as the global version with `rbenv global 3.1.x`.
 
-1. Follow the all the [installation and setup instructions](https://github.com/rbenv/rbenv#installation).
-2. Run `brew upgrade rbenv ruby-build`
-3. Run `rbenv install 2.x.x` where `2.x.x` is the version (use `rbenv install --list` to see which ones are available) - e.g. `2.7.2`
-4. Run `rbenv global x.x.x` to change your global Ruby version
-
-Check that the ruby version was successfully changed to a 2.x version using `ruby -v`. (If not, read some solutions [here](https://stackoverflow.com/questions/10940736/rbenv-not-changing-ruby-version))
-
-Try running `bundle install` then `bundle exec jekyll serve` again.
+After setting up the correct Ruby version, try running `bundle install` and then `bundle exec jekyll serve` again.
 
 ## Adding to this site
 Feel free to add pages to the MetacatUI docs website by adding markdown files to this `docs` directory. Use subdirectories
