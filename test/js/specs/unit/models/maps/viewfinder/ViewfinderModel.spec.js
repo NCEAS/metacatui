@@ -162,6 +162,26 @@ define(
           expect(state.model.get('predictions').length).to.equal(0);
           expect(state.model.get('error')).to.match(/No search results/);
         });
+
+
+        it('silently unsets the error before searching', () => {
+          const unsetSpy = sinon.spy(state.model, 'unset');
+
+          state.model.autocompleteSearch("somewhere else");
+
+          expect(unsetSpy.callCount).to.equal(1);
+          expect(unsetSpy.getCall(0).args).to.deep.equal([
+            'error', { silent: true }
+          ]);
+        });
+
+        it('does not unset the error for possible lat,long values', () => {
+          const unsetSpy = sinon.spy(state.model, 'unset');
+
+          state.model.autocompleteSearch("123");
+
+          expect(unsetSpy.callCount).to.equal(0);
+        });
       });
 
       describe('manages the focused prediction index', () => {
@@ -360,6 +380,17 @@ define(
           expect(state.model.get('error')).to.match(
             /Try entering a search query with two numerical/
           );
+        });
+
+        it('silently unsets the error before searching', async () => {
+          const unsetSpy = sinon.spy(state.model, 'unset');
+
+          await state.model.search("45,");
+
+          expect(unsetSpy.callCount).to.equal(1);
+          expect(unsetSpy.getCall(0).args).to.deep.equal([
+            'error', { silent: true }
+          ]);
         });
       });
     });

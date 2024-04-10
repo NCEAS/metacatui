@@ -90,7 +90,7 @@ define(
         });
 
         this.listenTo(this.viewfinderModel, 'change:error', () => {
-          this.setError(this.viewfinderModel.get('error'));
+          this.searchInput.setError(this.viewfinderModel.get('error'));
         });
       },
 
@@ -128,6 +128,12 @@ define(
         if (event.key === 'ArrowUp') {
           event.preventDefault();
         }
+
+        // Unset query value since error is cleared and it should show up again
+        // if the user re-enters the same value.
+        if (this.searchInput.getInputValue() === '') {
+          this.viewfinderModel.unset('query', { silent: true });
+        }
       },
 
       /** Trigger the search on the ViewfinderModel. */
@@ -154,11 +160,6 @@ define(
       /** Helper function to set the input field. */
       setQuery(query) {
         this.searchInput.setInputValue(query);
-      },
-
-      /** Helper function to set the error field. */
-      setError(errorMessage) {
-        this.searchInput.setError(errorMessage);
       },
 
       /**
@@ -192,7 +193,7 @@ define(
           placeholder: "Enter coordinates or areas of interest",
           search: text => {
             this.viewfinderModel.search(text);
-            return true;
+            return false;
           },
           keyupCallback: event => {
             this.keyup(event);

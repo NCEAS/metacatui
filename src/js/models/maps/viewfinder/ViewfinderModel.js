@@ -66,6 +66,10 @@ define(
           return;
         }
 
+        // Unset error so the error will fire a change event even if it is the
+        // same error as already exists.
+        this.unset('error', { silent: true });
+
         try {
           // User is looking for autocompletions.
           const predictions = await this.geocoderSearch.autocomplete(query);
@@ -181,6 +185,10 @@ define(
           this.selectPrediction(this.get('predictions')[focusedIndex]);
           return;
         }
+
+        // Unset error so the error will fire a change event even if it is the
+        // same error as already exists.
+        this.unset('error', { silent: true });
 
         try {
           const geoPoint = new GeoPoint(value, { parse: true });
