@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow');
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap');
 
 :root {
   /* COLOURS */
@@ -75,11 +75,10 @@
 
   /* FONTS */
   --portal-body-font: Barlow;
-  --portal-attribution-font: Roboto;
 }
 
 body {
-  font-family: var(--portal-body-font) !important;
+  font-family: var(--portal-body-font);
 }
 
 .subtle {
