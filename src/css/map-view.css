@@ -1295,22 +1295,13 @@ other class: .ui-slider-range */
 }
 
 .nav-help .map-view__button--active {
-  /*
-  Temporary. Background needs to be a darker color because the hand image on the button
-  is white with no outline. Should be updated to --map-col-buttons-bkg-highlight when
-  implementing the design at
-  https://www.figma.com/file/9R80DBDAMQtOsu8y1HkAVT/permafrost-discovery-gateway?type=design&node-id=257-20734&mode=design&t=OloKsPrtR72yOcqn-4
-  */
+  /* TODO: https://github.com/NCEAS/metacatui/issues/2347 - Update to --map-col-buttons-bkg-highlight */
   background-color: var(--map-col-buttons-bkg-white-content-contrast, #505561);
   color: white;
 }
 
 .nav-help__img {
-  /*
-  Temporary. Background needs to be a darker color because the hand image on the demo
-  is white with no outline. Should be updated when implementing the design at
-  https://www.figma.com/file/9R80DBDAMQtOsu8y1HkAVT/permafrost-discovery-gateway?type=design&node-id=257-20734&mode=design&t=OloKsPrtR72yOcqn-4
-  */
+  /* TODO: https://github.com/NCEAS/metacatui/issues/2347 - Update to transparent */
   background: var(--map-col-buttons-bkg-hover, #505561);
   border-radius: var(--map-border-radius-big);
   height: 3rem;
