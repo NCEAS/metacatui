@@ -1313,10 +1313,8 @@ other class: .ui-slider-range */
   background-color: var(--map-col-content-bkg-highlight, var(--map-col-bkg-lighter__deprecate));
   border-radius: var(--map-border-radius-small);
   color: var(--map-col-text-label);
-
-  padding: 0.65rem 0.9rem;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+  margin-right: .5rem;
+  padding: 0.25rem 1rem;
 }
 
 .nav-help .map-view__button--active {
@@ -1330,15 +1328,16 @@ other class: .ui-slider-range */
   background: var(--map-col-buttons-bkg-hover, #505561);
   border-radius: var(--map-border-radius-big);
   height: 3rem;
-  width: 4.375rem;
+  padding: .5rem;
+  width: 3rem;
 }
 
 .nav-help__instructions {
   border-top: 1px solid var(--map-col-section-divider, var(--map-col-bkg-lightest__deprecate));
   display: grid;
+  margin: 1rem 0;
+  padding: 0;
   width: 100%;
-  gap: 0.8rem;
-  padding: 0.8rem 0.4rem;
 }
 
 .nav-help__instructions.hidden {
@@ -1356,9 +1355,10 @@ other class: .ui-slider-range */
 .nav-help__instruction {
   border-bottom: 1px solid var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
   display: grid;
-  grid-template-columns: 4.375rem auto;
-  gap: 0.5rem;
+  grid-template-columns: 3rem auto;
+  gap: 1rem;
   align-items: center;
+  padding: .5rem 0;
 }
 
 .map-help-panel__section:not(:first-child) {
