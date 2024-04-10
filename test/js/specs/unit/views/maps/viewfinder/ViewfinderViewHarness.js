@@ -21,6 +21,7 @@ define([], function () {
 
     typeQuery(searchString) {
       this.getInput().val(searchString);
+      this.getInput().trigger('keydown');
       this.getInput().trigger('keyup');
     }
 

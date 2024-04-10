@@ -148,6 +148,10 @@ define([
      */
     onKeydown(event) {
       this.keydownCallback(event);
+
+      if (this.getInputValue() === "") {
+        this.clearError();
+      }
     },
 
     /**
@@ -177,12 +181,9 @@ define([
       const inputValue = this.getInputValue().toLowerCase();
       const matched = this.search(inputValue);
       if (matched) {
-        inputField.removeClass(CLASS_NAMES.errorInput);
-      } else {
-        inputField.addClass(CLASS_NAMES.errorInput);
-        if (typeof (this.noMatchCallback) === "function") {
-          this.noMatchCallback();
-        }
+        this.clearError();
+      } else if (typeof (this.noMatchCallback) === "function") {
+        this.noMatchCallback();
       }
     },
 
@@ -191,15 +192,24 @@ define([
      * @param {string} errorText
      */
     setError(errorText) {
-      this.getInputField().addClass(CLASS_NAMES.errorInput);
-      const errorTextEl = this.getError();
       if (errorText) {
+        this.getInputField().addClass(CLASS_NAMES.errorInput);
+        const errorTextEl = this.getError();
         errorTextEl.html(errorText);
         errorTextEl.show();
       } else {
-        errorTextEl.html('');
-        errorTextEl.hide();
+        this.clearError();
       }
+    },
+
+    /**
+     * Clear error text, remove error styling and hide the error element.
+     */
+    clearError() {
+      this.getInputField().removeClass(CLASS_NAMES.errorInput);
+      const errorTextEl = this.getError();
+      errorTextEl.hide();
+      errorTextEl.html('');
     },
 
     /**
@@ -210,7 +220,7 @@ define([
       this.getInput().val("");
       this.onSearch();
       this.focus();
-      this.getInputField().removeClass(CLASS_NAMES.errorInput);
+      this.clearError();
     },
 
     /**

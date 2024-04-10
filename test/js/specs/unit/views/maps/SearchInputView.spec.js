@@ -108,14 +108,6 @@ define([
         expect(spy.callCount).to.equal(1);
       });
 
-      it("applies an error class to the input field if there is no match", () => {
-        stub(state.view, "search").returns(false);
-
-        state.harness.clickSearch();
-
-        expect(state.harness.hasErrorInput()).to.be.true;
-      });
-
       it("clears input error class after fixing input error and searching again", () => {
         stub(state.view, "search").returns(false);
         state.harness.clickSearch();
@@ -162,6 +154,13 @@ define([
 
         expect(error.css("display")).to.equal("none");
       });
+
+      it("applies an error class to the input field if there is an error", () => {
+        state.view.setError("ERR");
+
+        expect(state.harness.hasErrorInput()).to.be.true;
+      });
+
     });
 
     it('calls blurCallback on blur', () => {
@@ -194,6 +193,16 @@ define([
       state.harness.keydown('a');
 
       expect(spy.callCount).to.equal(1);
+    });
+
+    it('clears errors on keydown when input is empty', () => {
+      state.view.setError("ERR");
+
+      expect(state.harness.hasErrorInput()).to.be.true;
+
+      state.harness.keydown('');
+
+      expect(state.harness.hasErrorInput()).to.be.false;
     });
 
     it('focuses the input field on focus', () => {

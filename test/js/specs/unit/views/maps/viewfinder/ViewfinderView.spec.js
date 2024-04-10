@@ -206,6 +206,18 @@ define(
 
           expect(predictionsListHarness.getListItems().length).to.equal(2);
         });
+
+        it('silently unsets the query string on the model when the search query is empty',
+          () => {
+            const unsetSpy = sinon.spy(state.view.viewfinderModel, 'unset');
+            state.view.render();
+            state.harness.typeQuery('');
+
+            expect(unsetSpy.callCount).to.equal(1);
+            expect(unsetSpy.getCall(0).args).to.deep.equal([
+              'query', { silent: true }
+            ]);
+          });
       });
 
       describe('arrow key interactions', () => {
