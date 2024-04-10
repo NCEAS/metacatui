@@ -511,7 +511,7 @@ represents 1 unit of the given distance measurement. */
 
 .toolbar__link:hover .toolbar__link-title {
   display: block;
-  padding: 0.2rem 0.6rem
+  padding: 0.2rem 0.6rem;
   border-radius: var(--map-border-radius-small);
   background-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
 }
