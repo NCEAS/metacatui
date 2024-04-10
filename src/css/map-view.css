@@ -339,7 +339,7 @@
   max-height: 100%;
   overflow: auto;
   /* required to be placed above map widget in firefox: */
-  z-index: 1;
+  z-index: 3;
 }
 
 /*****************************************************************************************
