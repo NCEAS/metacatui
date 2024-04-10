@@ -36,6 +36,7 @@
   --map-col-buttons-bkg-hover: var(--portal-col-buttons-bkg-hover);
   --map-col-buttons-bkg-highlight: var(--portal-col-buttons-bkg-highlight);
   --map-col-buttons-bkg-muted: var(--portal-col-buttons-bkg-muted);
+  --map-col-buttons-bkg-white-content-contrast: var(--portal-col-buttons-bkg-white-content-contrast);
   --map-col-buttons-text: var(--portal-col-buttons-text);
   --map-col-buttons-text-highlight: var(--portal-col-buttons-text-highlight);
   --map-col-buttons-icon: var(--portal-col-buttons-icon);
@@ -47,6 +48,9 @@
   --map-col-border-highlight: var(--portal-col-border-highlight);
   --map-col-border-muted: var(--portal-col-border-muted);
   --map-col-border-highlight-search-box: var(--portal-col-border-highlight-search-box);
+
+  --map-col-section-divider: var(--portal-col-section-divider);
+  --map-col-item-divider: var(--portal-col-item-divider);
 
   --map-col-text-body: var(--portal-col-text-body);
   --map-col-text-highlight: var(--portal-col-text-highlight);
@@ -69,7 +73,7 @@
   --map-col-text-on-green: white;
   --map-col-blue: #057fc6;
   --map-col-text-on-blue: white;
-  --map-col-yellow: #f8b406;
+  --map-col-yellow: #fda;
   --map-col-text-on-yellow: #1b2538;
 
   --map-col-tooltip-background: var(--portal-col-tooltip-background);
@@ -181,8 +185,7 @@
   font-size: 0.66rem;
   background-color: var(--map-col-content-bkg-muted, var(--map-col-bkg-lighter__deprecate));
   color: var(--map-col-text-muted, var(--map-col-text__deprecate));
-  filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.3));
-  border-radius: var(--map-border-radius-big);
+  border-radius: var(--map-border-radius-small);
   line-height: 1;
   font-weight: 500;
 }
@@ -190,20 +193,16 @@
 .map-view__badge--blue {
   background-color: var(--map-col-blue);
   color: var(--map-col-text-on-blue);
-  filter: none;
 }
 
 .map-view__badge--green {
   background-color: var(--map-col-green);
   color: var(--map-col-text-on-green);
-  filter: none;
 }
 
 .map-view__badge--yellow {
   background-color: var(--map-col-yellow);
   color: var(--map-col-text-on-yellow, var(--map-col-bkg-lighter__deprecate));
-  filter: none;
-  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.9);
 }
 
 .map-view__badge--contrast {
@@ -305,6 +304,7 @@
 
   .feature-info__zoom-button, .feature-info__layer-details-button {
     border: 1px solid var(--map-col-border);
+    border-radius: var(--map-border-radius-small);
   }
 }
 
@@ -352,10 +352,10 @@
   width: max-content;
   min-width: 12rem;
   min-height: 2rem;
+  box-shadow: var(--map-shadow-md);
   background: var(--map-col-content-bkg-muted, var(--map-col-bkg__deprecate));
-  border-radius: var(--map-border-radius-big);
+  border-radius: var(--map-border-radius-small);
   color: var(--map-col-text-muted, var(--map-col-text__deprecate));
-  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.7);
   font-size: 0.8rem;
   padding: 0.18rem 0.8rem;
   display: grid;
@@ -396,7 +396,6 @@ represents 1 unit of the given distance measurement. */
 
 .scale-bar__bar {
   height: 0.25rem;
-  border-radius: 1px;
   transition: width 0.3s;
   background-color: var(--map-col-buttons-icon-muted, var(--map-col-text__deprecate));
 }
@@ -480,9 +479,9 @@ represents 1 unit of the given distance measurement. */
   height: var(--map-size-toolbar-link);
   width: var(--map-size-toolbar-link);
   background-color: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
-  border-radius: var(--map-border-radius-big);
   padding: 0.2rem;
   margin: var(--map-size-toolbar-link-margin);
+  border-radius: var(--map-border-radius-small);
   border: 1px solid var(--map-col-border);
 }
 
@@ -512,9 +511,9 @@ represents 1 unit of the given distance measurement. */
 
 .toolbar__link:hover .toolbar__link-title {
   display: block;
-  border-radius: var(--map-border-radius-big);
-  background-color: var(---map-col-tooltip-background, var(--map-col-bkg__deprecate));
-  padding: 0.2rem 0.6rem
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--map-border-radius-small);
+  background-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
 }
 
 .toolbar__link-icon {
@@ -659,6 +658,8 @@ represents 1 unit of the given distance measurement. */
   grid-template-rows: auto;
   width: 100%;
   height: min-content;
+  border: solid var(--map-col-section-divider, var(--map-col-bkg-lightest__deprecate));
+  border-width: 1px 0;
 }
 
 /* A layer-item is one item in the layer-list */
@@ -807,9 +808,11 @@ represents 1 unit of the given distance measurement. */
 
 .layer-category-list {
   width: 100%;
+  border: solid var(--map-col-section-divider, var(--map-col-bkg-lightest__deprecate));
+  border-width: 1px 0;
 
   .layer-category-item {
-    box-shadow: 0 1px #f1f3f4 inset;
+    box-shadow: 0 1px var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate)) inset;
 
     .layer-category-item__metadata {
       display: grid;
@@ -889,7 +892,6 @@ represents 1 unit of the given distance measurement. */
   color: var(--map-col-text-highlight, var(--map-col-text__deprecate)) !important;
   margin: 0;
   width: 100%;
-  opacity: var(--map-no-brightness-or-opacity-tweaks, 60%);
   font-size: 1.33rem;
   font-weight: 700;
   line-height: 1.25;
@@ -898,8 +900,6 @@ represents 1 unit of the given distance measurement. */
 
 .layer-details__toggle {
   padding: 0.4rem;
-  background-color: transparent;
-  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.6);
   color: var(--map-col-utility-buttons);
   font-size: 1rem;
 }
@@ -909,29 +909,25 @@ represents 1 unit of the given distance measurement. */
   margin: -0.2rem 0 0.9rem 0;
   padding: 0.3rem 0.5rem;
   background-color: var(--map-col-buttons-bkg, var(--map-col-buttons__deprecate));
-  border-radius: var(--map-border-radius-big);
+  border-radius: var(--map-border-radius-small);
   border: 1px solid var(--map-col-border);
 }
 
 .layer-details__notification--blue {
   background-color: var(--map-col-blue);
   color: var(--map-col-text-on-blue);
-  filter: none;
   border-color: none;
 }
 
 .layer-details__notification--green {
   background-color: var(--map-col-green);
   color: var(--map-col-text-on-green);
-  filter: none;
   border-color: none;
 }
 
 .layer-details__notification--yellow {
   background-color: var(--map-col-yellow);
   color: var(--map-col-text-on-yellow, var(--map-col-bkg-lighter__deprecate));
-  filter: none;
-  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.9);
   border-color: none;
 }
 
@@ -1023,7 +1019,6 @@ represents 1 unit of the given distance measurement. */
 }
 
 .layer-info__attribution {
-  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.8);
   font-size: 0.75rem;
   line-height: 1.5;
   color: var(--map-col-text-muted);
@@ -1038,6 +1033,8 @@ represents 1 unit of the given distance measurement. */
 
 .layer-info__link {
   justify-self: center;
+  border: 1px solid var(--map-col-border);
+  border-radius: var(--map-border-radius-small);
   font-size: 1rem;
 }
 
@@ -1112,11 +1109,10 @@ other class: .ui-slider-range */
 
 .feature-info {
   width: var(--map-width-toolbar);
-  border-top-right-radius: var(--map-border-radius-big);
-  border-top-left-radius: var(--map-border-radius-big);
   padding: 1rem 0.8rem 1rem 0.8rem;
   row-gap: 0.8rem;
-  background-color: var(--map-col-content-bkg, var(--map-col-bkg-lighter__deprecate));
+  border-radius: var(--map-border-radius-big);
+  background-color: var(--map-col-content-bkg-highlight, var(--map-col-bkg-lighter__deprecate));
   color: var(--map-col-text-body, var(--map-col-text__deprecate));
   box-shadow: var(--map-shadow-md);
   grid-template-columns: auto 2.5rem;
@@ -1131,13 +1127,13 @@ other class: .ui-slider-range */
 }
 
 .feature-info__label {
+  border-bottom: 1px solid var(--map-col-border, var(--map-col-bkg-lightest__deprecate));
   color: var(--map-col-text-title, var(--map-col-text__deprecate)) !important;
   font-weight: 600;
   font-size: 1.33rem;
   line-height: 1.5rem;
   margin: 0;
   width: 100%;
-  opacity: var(--map-no-brightness-or-opacity-tweaks, 60%);
 }
 
 .feature-info__content {
@@ -1153,8 +1149,8 @@ other class: .ui-slider-range */
 .feature-info__toggle {
   padding: 0.4rem 0.6rem 0.4rem;
   background-color: transparent;
-  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.6);
   justify-self: end;
+  color: var(--map-col-utility-buttons);
   font-size: 1rem;
 }
 
@@ -1201,15 +1197,12 @@ other class: .ui-slider-range */
   float: right;
   margin: 0.3rem;
   border-radius: var(--map-border-radius-big);
-  box-shadow: var(--map-shadow-md);
-
 }
 
 .feature-info__subtitle {
   font-size: 0.75em;
   font-weight: 500;
   display: block;
-  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.85);
   margin: 0;
   padding: 0;
   color: var(--map-col-text-muted);
@@ -1238,6 +1231,7 @@ other class: .ui-slider-range */
 
 .map-legend--preview {
   height: 1.5rem;
+  border-radius: var(--map-border-radius-small);
   width: 100%;
   margin: 0.25rem;
 }
@@ -1252,8 +1246,6 @@ other class: .ui-slider-range */
   height: 100%;
   max-width: 100%;
   margin-top: calc(-0.5* var(--img-overflow));
-  border-radius: 3px;
-  box-shadow: var(--map-shadow-md);
   /* imagery appears lighter on the map */
   filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.75));
 }
@@ -1289,76 +1281,55 @@ other class: .ui-slider-range */
 }
 
 .nav-help {
-  /* Temporary. Background can't be buttons-bkg because the hand image on the button is white with no outline. */
-  background-color: var(--portal-grey-4, var(--map-col-bkg-lighter__deprecate));
-  color: white;
-
-  border-radius: var(--map-border-radius-big);
+  color: var(--map-col-text-label, white);
 }
 
 .nav-help .map-view__button {
-  /* Temporary. Background can't be buttons-bkg because the hand image on the button is white with no outline. */
-  background-color: var(--portal-grey-4, var(--map-col-bkg-lighter__deprecate));
+  background-color: var(--map-col-content-bkg-highlight, var(--map-col-bkg-lighter__deprecate));
+  border-radius: var(--map-border-radius-small);
   color: var(--map-col-text-label);
 
   padding: 0.65rem 0.9rem;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  opacity: var(--map-no-brightness-or-opacity-tweaks, 0.8);
 }
 
 .nav-help .map-view__button--active {
-  /* Temporary. Background can't be buttons-bkg because the hand image on the button is white with no outline. */
-  background-color: var(--portal-grey-5, var(--map-col-bkg-lightest__deprecate));
+  /* TODO: https://github.com/NCEAS/metacatui/issues/2347 - Update to --map-col-buttons-bkg-highlight */
+  background-color: var(--map-col-buttons-bkg-white-content-contrast, #505561);
   color: white;
-
-  opacity: var(--map-no-brightness-or-opacity-tweaks, 1);
 }
 
 .nav-help__img {
+  /* TODO: https://github.com/NCEAS/metacatui/issues/2347 - Update to transparent */
+  background: var(--map-col-buttons-bkg-hover, #505561);
+  border-radius: var(--map-border-radius-big);
   height: 3rem;
   width: 4.375rem;
 }
 
 .nav-help__instructions {
+  border-top: 1px solid var(--map-col-section-divider, var(--map-col-bkg-lightest__deprecate));
   display: grid;
   width: 100%;
   gap: 0.8rem;
   padding: 0.8rem 0.4rem;
-  /* Temporary. Background can't be buttons-bkg because the hand image on the button is white with no outline. */
-  background-color: var(--portal-grey-5, var(--map-col-bkg-lightest__deprecate));
-  color: white;
-
-  border-radius: var(--map-border-radius-big);
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
 }
 
 .nav-help__instructions.hidden {
   display: none;
 }
 
-.cesium-navigation-help-pan {
-  color: #66ccff;
-  font-weight: bold;
-}
-
-.cesium-navigation-help-zoom {
-  color: #65fd00;
-  font-weight: bold;
-}
-
-.cesium-navigation-help-rotate {
-  color: #ffd800;
-  font-weight: bold;
-}
-
+.cesium-navigation-help-pan,
+.cesium-navigation-help-zoom,
+.cesium-navigation-help-rotate,
 .cesium-navigation-help-tilt {
-  color: #d800d8;
-  font-weight: bold;
+  color: var(--map-col-text-body, #66ccff);
+  font-weight: 500;
 }
 
 .nav-help__instruction {
+  border-bottom: 1px solid var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
   display: grid;
   grid-template-columns: 4.375rem auto;
   gap: 0.5rem;
