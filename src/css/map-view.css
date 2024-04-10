@@ -245,6 +245,16 @@
   box-sizing: border-box;
 }
 
+/* Create shadow on top of the map */
+.map-view::before {
+  content: '';
+  position: absolute;
+  height: 2rem;
+  box-shadow: 0 0.2rem 0.2rem 0 rgba(0, 0, 0, .16) inset;
+  width: 100%;
+  z-index: 2;
+}
+
 /* On larger screens, the toolbar should 'squish' the map, not overlap it */
 @media only screen and (min-width: 768px) {
   .map-view {
