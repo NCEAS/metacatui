@@ -49,6 +49,11 @@
   --portal-col-text-detail: var(--portal-grey-6);
   --portal-col-text-muted: var(--portal-grey-5);
 
+  --portal-col-page-bkg: var(--portal-blue-7);
+  --portal-col-text-nav: var(--portal-blue-3);
+  --portal-col-text-nav-highlight: var(--portal-blue-2);
+  --portal-col-text-nav-hover: white;
+
   --portal-col-opacity-slider-active: var(--portal-blue-5);
   --portal-col-opacity-slider-inactive: var(--portal-grey-3);
 
@@ -73,6 +78,7 @@
 
   /* SHADOWS */
   --portal-shadow-md: 0 2px 4px 0px rgba(0, 0, 0, 0.16);
+  
   /* Colors used in the 'loading-metrics.html' template, on Metrics page */
   --m-chart-bkg: var(--portal-col-bkg-lighter__deprecate);
   --m-chart-lines: var(--portal-col-bkg-active__deprecate);
@@ -91,8 +97,7 @@ body {
 }
 
 .portal-view, .Portal #Content, .PortalView #Content {
-  color: var(--portal-col-text__deprecate);
-  background-color: var(--portal-col-bkg-lighter__deprecate);
+  background-color: var(--portal-col-page-bkg);
 }
 
 body, #portal-sections {
