@@ -88,11 +88,12 @@
   --map-col-highlight__deprecate: var(--portal-primary-color, var(--map-col-blue));
   /* SIZING: */
   --map-size-toolbar-link: 2.5rem;
-  --map-size-toolbar-inter-link-margin: 1rem;
+  --map-size-toolbar-link-margin: 1rem;
+  --map-size-toolbar-link-padding: 0.5rem;
   --map-border-radius-small: 0.25rem;
   --map-border-radius-big: 0.5rem;
   --map-width-toolbar: 21rem;
-  --map-toolbar-link-width: calc(var(--map-size-toolbar-link) + 2 * var(--map-size-toolbar-inter-link-margin));
+  --map-toolbar-link-width: calc(var(--map-size-toolbar-link) + 2 * var(--map-size-toolbar-link-padding));
   /* SHADOWS */
   --map-shadow-md: var(--portal-shadow-md, 0 1px 9px -1px rgba(0, 0, 0, 0.2), 0 1px 2px 0px rgba(0, 0, 0, 0.5));
   /* NOTE: 768px is used as the mobile -> desktop breakpoint throughout the map view, but we cannot use a CSS variable for this. */
@@ -269,8 +270,8 @@
   .map-view__map-widget-container {
     order: 1;
     position: relative;
-    width: calc(100% + var(--map-toolbar-link-width) + (2* var(--map-size-toolbar-inter-link-margin)));
-    margin-left: calc(-1 * var(--map-toolbar-link-width) - (2* var(--map-size-toolbar-inter-link-margin)));
+    width: calc(100% + var(--map-toolbar-link-width) + (2* var(--map-size-toolbar-link-margin)));
+    margin-left: calc(-1 * var(--map-toolbar-link-width) - (2* var(--map-size-toolbar-link-margin)));
   }
 }
 
@@ -436,7 +437,7 @@ represents 1 unit of the given distance measurement. */
   height: min-content;
   background-color: var(--map-col-content-bkg-highlight, var(--map-col-bkg__deprecate));
   border-radius: var(--map-border-radius-big);
-  margin: var(--map-size-toolbar-inter-link-margin);
+  margin: var(--map-size-toolbar-link-margin);
   padding: .5rem;
   row-gap: .5rem;
   pointer-events: all;
