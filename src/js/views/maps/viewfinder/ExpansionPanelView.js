@@ -96,11 +96,17 @@ define(
         this.$el.removeClass('show-content');
       },
 
+      /** Force the panel's content to be shown. */
+      open() {
+        this.$el.addClass('show-content');
+      },
+
       /** Toggle the visibility of the panel's content. */
       toggle() {
-        this.$el.toggleClass('show-content');
-
         if (this.$el.hasClass('show-content')) {
+          this.collapse();
+        } else {
+          this.open();
           this.panelsModel?.collapseOthers(this);
         }
       },
