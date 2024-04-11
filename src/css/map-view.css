@@ -895,13 +895,11 @@ represents 1 unit of the given distance measurement. */
   width: var(--map-width-toolbar);
   border-top-right-radius: var(--map-border-radius-big);
   border-top-left-radius: var(--map-border-radius-big);
-  padding: 0.4rem 0.8rem;
-  background-color: var(--map-col-content-bkg, var(--map-col-bkg-lighter__deprecate));
+  background-color: var(--map-col-content-bkg-highlight, var(--map-col-bkg-lighter__deprecate));
   color: var(--map-col-text-body, var(--map-col-text__deprecate));
   box-shadow: var(--map-shadow-md);
   grid-template-columns: auto min-content;
   grid-template-rows: min-content auto;
-  row-gap: 1rem;
   column-gap: 0.5rem;
   align-items: center;
   /* Don't show the details panel unless it also has the layer-details--open class */
@@ -918,24 +916,26 @@ represents 1 unit of the given distance measurement. */
   /* the important is needed to overwrite more specific styles set on portal title tags */
   color: var(--map-col-text-highlight, var(--map-col-text__deprecate)) !important;
   margin: 0;
-  width: 100%;
   font-size: 1.33rem;
   font-weight: 700;
   line-height: 1.25;
+  padding: 1rem 1.5rem;
   text-transform: capitalize;
 }
 
 .layer-details__toggle {
-  padding: 0.4rem;
   color: var(--map-col-utility-buttons);
   font-size: 1rem;
+  height: 2rem;
+  margin-right: 1rem;
+  width: 2rem;
 }
 
 /* The notification div holds a badge & message, if one is set */
 .layer-details__notification {
-  margin: -0.2rem 0 0.9rem 0;
-  padding: 0.3rem 0.5rem;
-  background-color: var(--map-col-buttons-bkg, var(--map-col-buttons__deprecate));
+  margin: .5rem 0 1rem;
+  padding: 0.75rem;
+  background-color: var(--map-col-content-bkg, var(--map-col-buttons__deprecate));
   border-radius: var(--map-border-radius-small);
   border: 1px solid var(--map-col-border);
 }
@@ -966,11 +966,13 @@ represents 1 unit of the given distance measurement. */
 }
 
 .layer-details__sections {
+  background: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
   display: grid;
   grid-template-rows: auto;
   grid-template-columns: 100%;
   gap: 0.5rem;
   grid-column: 1 / 3;
+  padding: 1rem 1.5rem;
 }
 
 .layer-detail {
@@ -984,7 +986,6 @@ represents 1 unit of the given distance measurement. */
   /* the important is needed to overwrite more specific styles set on portal title tags */
   color: var(--map-col-text-body, var(--map-col-text__deprecate)) !important;
   margin: 0;
-  width: 100%;
   font-weight: 500;
   font-size: 1rem;
   line-height: 1;
@@ -995,8 +996,7 @@ represents 1 unit of the given distance measurement. */
   /* Do not display this contents of this detail section unless the open class is added */
   display: none;
   align-items: center;
-  justify-content: center;
-  margin: 1rem 0;
+  margin: .75rem 0;
 }
 
 .layer-detail--open .layer-detail__content {
@@ -1005,7 +1005,7 @@ represents 1 unit of the given distance measurement. */
 
 .layer-detail--no-header .layer-detail__content {
   margin-top: 0;
-  justify-self: center;
+  justify-self: left;
 }
 
 .layer-detail__toggle {
@@ -1051,25 +1051,19 @@ represents 1 unit of the given distance measurement. */
   color: var(--map-col-text-muted);
 }
 
-.layer-info__links {
-  display: grid;
-  grid-auto-flow: column;
-  gap: 2rem;
-  width: 100%;
-}
-
 .layer-info__link {
-  justify-self: center;
   border: 1px solid var(--map-col-border);
   border-radius: var(--map-border-radius-small);
   font-size: 1rem;
+  margin-right: .5rem;
+  padding: .5rem 1rem;
 }
 
 .layer-opacity {
-  min-height: 3rem;
+  height: 2rem;
   display: grid;
   align-content: center;
-  width: 90%;
+  width: 50%;
 }
 
 .layer-opacity__slider {
