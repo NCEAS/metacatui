@@ -512,6 +512,8 @@ define(["jquery",
             // Check for theme and layout settings.
             var theme = this.model.get("theme");
             var layout = this.model.get("layout");
+            // TODO(ianguerin):revert this.
+            theme="light";
             // TODO: make supported themes an app model config option?
             var supportedThemes = ["dark", "light"];
             var supportedLayouts = ["panels"];

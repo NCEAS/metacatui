@@ -75,7 +75,7 @@ define(
         // TODO(ianguerin): remove this 
         // so now we have mapmodel which has layers on it, and those layers can be turned on or off.
         this.viewfinderModel = new ViewfinderModel({ mapModel });
-        this.panelsModel = new ExpansionPanelsModel();
+        this.panelsModel = new ExpansionPanelsModel({ isMulti: true });
       },
 
       getZoomPresets() {
@@ -93,9 +93,9 @@ define(
         });
         const expansionPanel = new ExpansionPanelView({
           contentViewInstance: zoomPresetsListView,
-          icon: 'plane',
+          icon: 'icon-plane',
           panelsModel: this.panelsModel,
-          title:'Zoom to...',
+          title: 'Zoom to...',
         });
         expansionPanel.render();
 

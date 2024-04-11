@@ -36,6 +36,7 @@
 
   --portal-col-border: var(--portal-blue-2);
   --portal-col-border-highlight: unset;
+  --portal-col-border-panel: var(--portal-grey-3);
   --portal-col-border-muted: var(--portal-grey-4);
   --portal-col-border-highlight-search-box: var(--portal-blue-3);
 
@@ -51,6 +52,7 @@
 
   --portal-col-opacity-slider-active: var(--portal-blue-5);
   --portal-col-opacity-slider-inactive: var(--portal-grey-3);
+
 
   --portal-col-input-error-bkg: #FFFCF4;
   --portal-col-input-error-border: #FFDDAA;

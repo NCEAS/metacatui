@@ -149,6 +149,19 @@ define(
          * @type {SectionOption[]}
          */
         sectionOptions: [
+          // TODO(ianguerin): delete this duplicate.
+          {
+            label: 'Viewfinder',
+            icon: 'search',
+            view: ViewfinderView,
+            action(view, model) {
+              const sectionEl = this;
+              view.defaultActivationAction(sectionEl);
+            },
+            isVisible(model) {
+              return model.get("showViewfinder");
+            },
+          },
           {
             label: 'Layers',
             icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="m3.2 7.3 8.6 4.6a.5.5 0 0 0 .4 0l8.6-4.6a.4.4 0 0 0 0-.8L12.1 3a.5.5 0 0 0-.4 0L3.3 6.5a.4.4 0 0 0 0 .8Z"/><path d="M20.7 10.7 19 9.9l-6.7 3.6a.5.5 0 0 1-.4 0L5 9.9l-1.8.8a.5.5 0 0 0 0 .8l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.8Z"/><path d="m20.7 15.1-1.5-.7-7 3.8a.5.5 0 0 1-.4 0l-7-3.8-1.5.7a.5.5 0 0 0 0 .9l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.9Z"/></svg>',
@@ -181,7 +194,6 @@ define(
             action(view, model) {
               const sectionEl = this;
               view.defaultActivationAction(sectionEl);
-              sectionEl.sectionView.focusInput();
             },
             isVisible(model) {
               return MetacatUI.mapKey && model.get("showViewfinder");
@@ -476,6 +488,8 @@ define(
             for (const [key, value] of Object.entries(viewOptions)) {
               if (typeof value === 'string' && value.startsWith('model.')) {
                 const attr = value.replace(/^model\./, '')
+                // TODO(ianguerin): remove comment
+                // here we are setting the fields on layerlistview... view.collection = view.model.layers
                 viewOptions[key] = view.model.get(attr)
               }
             }

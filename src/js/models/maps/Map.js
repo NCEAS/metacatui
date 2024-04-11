@@ -7,7 +7,17 @@ define([
   "collections/maps/MapAssets",
   "models/maps/MapInteraction",
   "collections/maps/AssetCategories",
-], function ($, _, Backbone, MapAssets, Interactions, AssetCategories) {
+  "models/maps/GeoPoint",
+  "models/maps/viewfinder/ZoomPresetModel",
+], function ($,
+  _,
+  Backbone,
+  MapAssets,
+  Interactions,
+  AssetCategories,
+  GeoPoint,
+  ZoomPresetModel,
+) {
   /**
    * @class MapModel
    * @classdesc The Map Model contains all of the settings and options for a
@@ -195,6 +205,8 @@ define([
        * feedback section in the toolbar.
        * @property {String} [feedbackText=null] - The text to show in the
        * feedback section.
+       * @property {ZoomPresetModel[]} [zoomPreset=[]] - Predefined list of locations
+       * with an enabled list of layer IDs to be showin the zoom presets UI.
        */
       defaults: function () {
         return {
@@ -216,14 +228,16 @@ define([
           showToolbar: true,
           showLayerList: true,
           showHomeButton: true,
-          showViewfinder: false,
+          // TODO(ianguerin): revert this.
+          showViewfinder: true,
           toolbarOpen: false,
           showScaleBar: true,
           showFeatureInfo: true,
           clickFeatureAction: "showDetails",
           showNavHelp: true,
           showFeedback: false,
-          feedbackText: null
+          feedbackText: null,
+          zoomPrests: [],
         };
       },
 
@@ -258,6 +272,55 @@ define([
         } catch (error) {
           console.log('Failed to initialize a Map model.', error);
         }
+
+        // TODO(ianguerin): This should be loaded from metadata.
+        this.set('zoomPresets', [
+          new ZoomPresetModel({
+            title: 'Brevig Mission',
+            geoPoint: new GeoPoint()
+              .set('latitude', 65.3381235)
+              .set('longitude', -166.49594395)
+              .set('height', 5000),
+            description: 'Report to LEO of ground sinking at historic mass burial site',
+            enabledLayers: ['Ice-Wedge Polygons (high ice regions)', 'Local News Stories'],
+          }),
+          new ZoomPresetModel({
+            title: 'Golovin',
+            geoPoint: new GeoPoint()
+              .set('latitude', 64.56122491)
+              .set('longitude', -163.00985255)
+              .set('height', 5000),
+            description: 'Erosion at derelict fish processing plant and at old dump site are well documented by community members.',
+            enabledLayers: ['Local News Stories'],
+          }),
+          new ZoomPresetModel({
+            title: 'Huslia',
+            geoPoint: new GeoPoint()
+              .set('latitude', 65.7)
+              .set('longitude', -156.387134)
+              .set('height', 5000),
+            description: 'Erosion reported by ANTHC personnel working on an infrastructure project in Huslia',
+            enabledLayers: ['Local News Stories'],
+          }),
+          new ZoomPresetModel({
+            title: 'Kivalina',
+            geoPoint: new GeoPoint()
+              .set('latitude', 67.73266848)
+              .set('longitude', -164.52463932)
+              .set('height', 5000),
+            description: 'Community is moving inland. Even the evacuation road has had (likely) permafrost-related degradation.',
+            enabledLayers: ['Ice-Wedge Polygons (high ice regions)', 'Local News Stories'],
+          }),
+          new ZoomPresetModel({
+            title: 'Kotzebue',
+            geoPoint: new GeoPoint()
+              .set('latitude', 66.90537742)
+              .set('longitude', -162.5112918)
+              .set('height', 5000),
+            description: 'Unusual sudden lake draining event, which was well-documented by community members and PDG scientists. Event is clearly visible via historical Google Earth imagery.',
+            enabledLayers: ['Ice-Wedge Polygons (high ice regions)', 'Local News Stories'],
+          }),
+        ]);
       },
 
       /**

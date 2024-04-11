@@ -6,7 +6,8 @@ define(
     'backbone',
     'cesium',
     'models/geocoder/GeocoderSearch',
-    'models/maps/GeoPoint'],
+    'models/maps/GeoPoint'
+  ],
   (_, Backbone, Cesium, GeocoderSearch, GeoPoint) => {
     const EMAIL = MetacatUI.appModel.get('emailContact');
     const NO_RESULTS_MESSAGE = 'No search results found, try using another place name.';
@@ -48,6 +49,9 @@ define(
       initialize({ mapModel }) {
         this.geocoderSearch = new GeocoderSearch();
         this.mapModel = mapModel;
+
+        // TODO(ianguerin): this should be converting the xml into the model that I'm interested in.
+        this.set('zoomPresets', mapModel.get('zoomPresets'));
       },
 
       /** 
@@ -144,8 +148,16 @@ define(
         });
       },
 
-      selectZoomPreset() {
-        // TODO(ianguerin): implementation.
+      selectZoomPreset(preset) {
+        const layers = this.mapModel.get('layers');
+        const enabledLayers = ['Base map', ...preset.get('enabledLayers')];
+        layers.each(layer => {
+          // TODO(ianguerin): the layer id should be a unique, unchanging ID...
+          const layerId = layer.get('label');
+          layer.set('visible', enabledLayers.includes(layerId));
+        });
+
+        this.mapModel.zoomTo(preset.get('geoPoint'));
       },
 
       /**

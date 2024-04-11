@@ -1373,6 +1373,7 @@ other class: .ui-slider-range */
 .viewfinder-predictions {
   list-style: none;
   margin: -.5rem 1.5rem 0 1.5rem;
+  min-height: .5rem;
 
   .viewfinder-prediction__content {
     align-items: center;
@@ -1414,16 +1415,58 @@ other class: .ui-slider-range */
 .viewfinder-zoom-presets {
   display: flex;
   flex-direction: column;
+  margin-top: 16px;
   row-gap: 4px;
 
-  .viewfinder-zoom-presets__preset {
+  .viewfinder-zoom-preset__preset {
     border-radius: 4px;
-    border: 1px solid var(--portal-col-bkg-active);
+    border: 1px solid var(--portal-col-border-panel, white);
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
     padding: 8px;
+    row-gap: 8px;
 
     &:hover {
       background-color: var(--map-col-bkg-lightest);
+    }
+
+    .viewfinder-zoom-preset__title {
+      font-weight: bold;
+    }
+
+    .viewfinder-zoom-preset__description {
+      color: var(--map-col-text-body, var(--map-col-text));
+    }
+
+    .viewfinder-zoom-preset__layers {
+      column-gap: 4px;
+      display: flex;
+      flex-wrap: wrap;
+      overflow: hidden;
+      row-gap: 4px; 
+    }
+
+    .viewfinder-zoom-preset__layer {
+      align-items: center;
+      background: var(--map-col-bkg-lighter);
+      border-radius: 4px;
+      display: flex;
+      height: 24px;
+      justify-content: center;
+      max-width: 200px;
+      overflow: hidden;
+      padding: 0 16px 0 8px;
+
+      .viewfinder-zoom-preset__layer-content {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-wrap: nowrap;
+        
+        i {
+          padding-right: 4px;
+        }
+      }
     }
   }
 
@@ -1440,8 +1483,10 @@ other class: .ui-slider-range */
 /** START - Expansion panel View. */
 .expansion-panel {
   border: solid var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
-  border-width: 1px 0;
-  padding: .25rem .5rem;
+	border-width: 1px 0;
+  color: var(--map-col-text-highlight, white);
+	padding: .25rem .5rem;
+  font-size: 1rem;
 
   &.show-content {
     .expansion-panel__content {
@@ -1465,24 +1510,30 @@ other class: .ui-slider-range */
     display: block;
   }
 
-  .expansion-panel__title {
-    user-select: none;
-  }
+	.expansion-panel__title {
+		user-select: none;
+    flex: 1;
+	}
 
-  .expansion-panel__content {
-    display: none;
-    padding: .25rem 0;
-  }
- 
-  .expansion-panel__icon {
+	.expansion-panel__content {
+		display: none;
+		padding: .25rem 0;
+	}
+	
+	.expansion-panel__icon {
+		align-items: center;
+		display: flex;
+    font-size: 1.2rem;
+	}
+
+	.expansion-panel__toggle {
+		display: flex;
+		justify-content: space-between;
+		cursor: pointer;
+    column-gap: 16px;
+    padding: 0 24px;
+    height:40px;
     align-items: center;
-    display: flex;
-  }
-
-  .expansion-panel__toggle {
-    display: flex;
-    justify-content: space-between;
-    cursor: pointer;
-  } 
+	} 
 }
 /** END - Expansion panel View. */
