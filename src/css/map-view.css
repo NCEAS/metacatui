@@ -180,14 +180,16 @@
 /* ---- BADGE ---- */
 
 .map-view__badge {
-  padding: 0.4em 0.5em 0.3em 0.55em;
-  margin: 0 -0.2rem 0 0.3rem;
+  padding: 0.2rem 0.4rem;
+  margin: 0 0.25rem;
   font-size: 0.66rem;
   background-color: var(--map-col-content-bkg-muted, var(--map-col-bkg-lighter__deprecate));
   color: var(--map-col-text-muted, var(--map-col-text__deprecate));
   border-radius: var(--map-border-radius-small);
   line-height: 1;
   font-weight: 500;
+  display: inline-block;
+  vertical-align: top;
 }
 
 .map-view__badge--blue {
@@ -760,17 +762,19 @@ represents 1 unit of the given distance measurement. */
 
     .layer-item__settings-toggle {
       font-size: .85rem;
-      width: 2rem;
-      height: 2rem;
+      width: 1rem;
+      height: 1rem;
       display: flex;
       align-items: center;
       justify-content: center;
+      margin: .5rem;
       color: var(--map-col-utility-buttons, currentColor);
     }
 
     .layer-item__legend-container {
       /* By default, don't show legend. */
       display: none;
+      margin-left: -.5rem;
     }
 
     /* Use the same style on button hover and when selected. */
@@ -819,7 +823,6 @@ represents 1 unit of the given distance measurement. */
  */
 
 .layer-category-list {
-  width: 100%;
   border: solid var(--map-col-section-divider, var(--map-col-bkg-lightest__deprecate));
   border-width: 1px 0;
 
