@@ -120,6 +120,31 @@ define(
           expect(harness.isContentVisible()).to.be.false;
         });
 
+        it('does not collapse other on panels model i \'multi\' mode', () => {
+          const panelsModel = new ExpansionPanelsModel({ mode: 'multi' });
+          const view = new ExpansionPanelView({
+            title: 'Some title',
+            icon: 'leaf',
+            contentViewInstance: new TestView(),
+            panelsModel,
+          });
+          view.render();
+          const view2 = new ExpansionPanelView({
+            title: 'Some title 2',
+            icon: 'leaf',
+            contentViewInstance: new TestView(),
+            panelsModel: panelsModel,
+          });
+          view2.render();
+          const harness = new ExpansionPanelViewHarness(view);
+          const harness2 = new ExpansionPanelViewHarness(view2);
+
+          harness.clickToggle();
+          harness2.clickToggle();
+
+          expect(harness.isContentVisible()).to.be.true;
+        });
+
       });
     });
 
