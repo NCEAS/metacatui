@@ -1413,7 +1413,7 @@ other class: .ui-slider-range */
 
 /** START - Expansion panel View. */
 .expansion-panel {
-  border: solid var(--map-col-item-divider, white);
+  border: solid var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
   border-width: 1px 0;
   padding: .25rem .5rem;
 
