@@ -557,6 +557,64 @@ text-shadow: none;
   fill: #800000;
 }
 /******************************************
+** CatalogSearchView ***
+******************************************/
+.catalog-search-view .catalog-search-inner{
+	display: grid;
+	justify-content: stretch;
+	align-items: stretch;
+	grid-template-columns: auto 1fr 1fr;
+}
+.catalog-search-view .filter-groups-container {
+	width: 215px;
+	padding: var(--pad)
+}
+.catalog-search-view .search-results-container,
+.catalog-search-view .map-container {
+}
+.catalog-search-body.mapMode{
+	height: 100vh;
+	width: 100vw;
+	padding-bottom: 0px;
+	display: grid;
+	align-items: stretch;
+	justify-content: stretch;
+	overflow: hidden;
+}
+.catalog-search-body.mapMode #Content{
+	padding: 40px 0px 0px 0px;
+}
+.catalog-search-body.mapMode .search-results-view .result-row:last-child{
+	margin-bottom: 100px;
+}
+.catalog-search-body.mapMode .search-results-view {
+	overflow-y: scroll;
+	height: 100vh;
+	padding-bottom: 200px; /* Leaving room for the last row to show */
+	padding-right: 15px; /* Padding for the scrollbar */
+}
+.catalog-search-body.mapMode .search-results-panel-container .map-toggle-container{
+    display: none;
+}
+.catalog-search-body.listMode .map-panel-container{
+    display: none;
+}
+.catalog-search-body.listMode .catalog-search-inner{
+	grid-template-columns: auto 1fr 0;
+}
+.catalog-search-view .cesium-widget-view {
+	width: inherit;
+	margin-left: 0;
+}
+.search-results-view .result-row{
+	padding: var(--pad);
+}
+.catalog-search-view .no-search-results{
+	padding: var(--pad);
+	text-align: center;
+}
+
+/******************************************
 ** Results and Result Rows ***
 ******************************************/
 .result-row{
@@ -7783,6 +7841,7 @@ ul.side-nav-items {
 #data-package-table {
 	margin-bottom: 0px;
 	width: calc(100% - 2px);
+	border-collapse: separate;
 }
 /* Editor package table headers */
 #data-package-table-share,
@@ -9068,4 +9127,102 @@ body > #extension-is-installed{
 }
 .citation.header button.show-authors{
 	margin-left: 5px;
+}
+/* Table Head */
+#data-package-table-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+#data-package-table-head > .file-header > th {
+    background-color: #FDFDFD;
+    border-bottom: 1px solid #E3E3E3;
+    height: 32px;
+    position: sticky;
+    top: 0;
+    z-index: -2;
+}
+
+#data-package-table-head > .file-header > th:not(:last-child) {
+    border-right: 1px solid #E3E3E3;
+    height: 30px;
+}
+
+/* Table Body */
+#data-package-table-body > tr > td:first-child {
+    cursor: default;
+}
+
+/* Table Container */
+.file-table-container {
+    height: max-content;
+    max-height: 25.4em;
+    overflow-y: scroll;
+    border: 1px solid #E3E3E3;
+    border-radius: 4px;
+}
+
+.file-table-container::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 10px;
+}
+
+.file-table-container::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.5);
+    -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+/* Buttons */
+.btn.btn-rounded.action {
+    border-radius: 50%;
+    height: 15px;
+    width: 15px;
+}
+
+.btn.btn-rounded.action.downloadAction {
+    border: none;
+}
+
+.btn.btn-rounded.action.downloadAction > i {
+    margin-left: -4px;
+}
+
+/* Data Package Item */
+.data-package-item {
+    height: 38px;
+}
+
+/* File Table Styles */
+.data-package-file-table > .data-package-item > .file-actions > .action .btn,
+.data-package-file-table > .data-package-item > .file-actions > .action .btn-primary,
+.data-package-file-table > .data-package-item > .file-actions > .action .btn-large,
+.data-package-file-table > .data-package-item > .file-actions > .action .btn-small,
+.data-package-file-table > .data-package-item > .file-actions > .action .btn-mini {
+    font-weight: 400;
+    background-image: none;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    border: 1px solid #146660;
+    text-shadow: none;
+    box-shadow: none;
+    color: #146660;
+    padding: 0.5em;
+}
+
+.data-package-file-table > .data-package-item > .file-actions > .action .btn:hover,
+.data-package-file-table > .data-package-item > .file-actions > .action .btn:focus,
+.header .nav li .btn:hover,
+.header nav li .btn:focus {
+    background-color: #146660;
+    color: #FFF;
+    border: 0;
+    box-shadow: none;
+    border: 1px solid #146660;
+}
+
+/* Tooltip */
+.data-package-file-table div.tooltip {
+    white-space: wrap;
 }

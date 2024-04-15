@@ -94,7 +94,7 @@ define(['jquery', 'underscore', 'backbone'],
       * DataCatalog). This can be set to either "google" (the default), or "cesium". To
       * use Google maps, the {@link AppConfig#googleAnalyticsKey} must be set. To use
       * Cesium maps, the {@link AppConfig#enableCesium} property must be set to true, and
-      * the {@link AppConfig#cesiumToken} must be set. DEPRECATION NOTE: This configuration 
+      * the {@link AppConfig#cesiumToken} must be set. DEPRECATION NOTE: This configuration
       * is deprecated along with the {@link DataCatalogView} and {@link DataCatalogViewWithFilters}
       * views and Google Maps. The {@link CatalogSearchView} will replace these as the primary search view and will only
       * support Cesium, not Google Maps.
@@ -106,14 +106,25 @@ define(['jquery', 'underscore', 'backbone'],
       dataCatalogMap: "google",
 
       /**
-       * The default options for the Cesium map used in the
-       * {@link CatalogSearchView} for searching the data catalog. Add custom
-       * layers, a default home position (for example, zoom into your area of
-       * research), and enable/disable map widgets. See {@link MapConfig} for
-       * the full suite of options. Use any satellite imagery layer of your
-       * choice, such as a self-hosted imagery layer or hosted on Cesium Ion. If
-       * no layer of type `CesiumGeohash` is included, a geohash layer will be
-       * added automatically in order to show the search results on the map.
+      * Set this option to true to display the filtering button for data package table
+      * @type {boolean}
+      * @since x.x.x
+      */
+      dataPackageFiltering: false,
+
+      /**
+      * Set this option to true to display the sorting button for data package table
+      * @type {boolean}
+      * @since x.x.x
+      */
+      dataPackageSorting: false,
+
+      /**
+       * The default options for the Cesium map used in the {@link CatalogSearchView} for searching the data
+       * catalog. Add custom layers, a default home position (for example, zoom into your area of research),
+       * and enable/disable map widgets. See {@link MapConfig} for the full suite of options. Keep the `CesiumGeohash`
+       * layer here in order to show the search results in the map as geohash boxes. Use any satellite imagery
+       * layer of your choice, such as a self-hosted imagery layer or hosted on Cesium Ion.
        * @type {MapConfig}
        * @since 2.22.0
        */
@@ -362,25 +373,25 @@ define(['jquery', 'underscore', 'backbone'],
         contact: true
       },
 
-      /** 
-       * A list of required fields for each EMLParty (People) in the dataset editor. 
+      /**
+       * A list of required fields for each EMLParty (People) in the dataset editor.
        * This is a literal object where the keys are the EML Party type (e.g. creator, principalInvestigator) {@link see EMLParty.partytypes}
        * and the values are arrays of field names.
        * By default, EMLPartys are *always* required to have an individual's name, position name, or organization name.
        * @type {object}
        * @since 2.21.0
-       * @example 
+       * @example
        *   {
        *      contact: ["email"],
        *      creator: ["email", "address", "phone"]
        *      principalInvestigator: ["organizationName"]
        *   }
-       * @default 
+       * @default
        *  {
        *  }
       */
       emlEditorRequiredFields_EMLParty: {
-       
+
       },
 
       /**
@@ -529,7 +540,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @since 2.19.0
       */
       customEMLMethods: [],
-      
+
       /**
        * Configuration options for a drop down list of taxa.
        * @typedef {object} AppConfig#quickAddTaxaList
@@ -1699,14 +1710,14 @@ define(['jquery', 'underscore', 'backbone'],
        * @since 2.17.0
        */
       queryIdentifierFields: ["id", "identifier", "seriesId", "isPartOf"],
-      
+
       /**
        * The name of the query fields that specify latitude. Filter models that these
        * fields are handled specially, since they must be a float value and have a
        * pre-determined minRange and maxRange (-90 to 90).
        */
       queryLatitudeFields: ["northBoundCoord", "southBoundCoord"],
-      
+
       /**
        * The name of the query fields that specify longitude. Filter models that these
        * fields are handled specially, since they must be a float value and have a
@@ -1822,8 +1833,8 @@ define(['jquery', 'underscore', 'backbone'],
         }
       ],
 
-      /** 
-       * The document fields to return when conducting a search. This is the list of fields returned by the main catalog search view. 
+      /**
+       * The document fields to return when conducting a search. This is the list of fields returned by the main catalog search view.
        * @type {string[]}
        * @since 2.22.0
        * @example ["id", "title", "obsoletedBy"]

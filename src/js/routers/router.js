@@ -445,6 +445,14 @@ function ($, _, Backbone) {
 				MetacatUI.appView.metadataView.seriesId = seriesId;
 				MetacatUI.appView.metadataView.pid = pid;
 
+				// MetacatUI resets the dataPackage and dataPackageSynced
+				// attributes before rendering the view. These attributes are 
+				// initialized on a per-dataset basis to prevent displaying the 
+				// same dataset repeatedly.
+
+				MetacatUI.appView.metadataView.dataPackage = null;
+				MetacatUI.appView.metadataView.dataPackageSynced = false;
+
 				MetacatUI.appView.showView(MetacatUI.appView.metadataView);
 			}
 		},

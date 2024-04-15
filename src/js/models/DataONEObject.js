@@ -65,6 +65,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     latestVersion: null,
                     isDocumentedBy: null,
                     documents: [],
+                    members: [],
                     resourceMap: [],
                     nodeLevel: 0, // Indicates hierarchy level in the view for indentation
                     sortOrder: 2, // Metadata: 1, Data: 2, DataPackage: 3
@@ -258,6 +259,33 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                          encodeURIComponent(this.get("seriesid")));
               }
             }
+          },
+
+          /**
+           * Create the URL string that is used to download this package
+           * @returns PackageURL string for this DataONE Object
+           * @since x.x.x
+           */
+          getPackageURL: function(){
+            var url = null;
+
+            // With no id, we can't do anything
+            if( !this.get("id") && !this.get("seriesid") )
+              return url;
+
+            //If we haven't set a packageServiceURL upon app initialization and we are querying a CN, then the packageServiceURL is dependent on the MN this package is from
+            if((MetacatUI.appModel.get("d1Service").toLowerCase().indexOf("cn/") > -1) && MetacatUI.nodeModel.get("members").length){
+              var source = this.get("datasource"),
+                node   = _.find(MetacatUI.nodeModel.get("members"), {identifier: source});
+
+              //If this node has MNRead v2 services...
+              if(node && node.readv2)
+                url = node.baseURL + "/v2/packages/application%2Fbagit-097/" + encodeURIComponent(this.get("id"));
+            }
+            else if(MetacatUI.appModel.get("packageServiceUrl"))
+              url = MetacatUI.appModel.get("packageServiceUrl") + encodeURIComponent(this.get("id"));
+
+            return url;
           },
 
           /**
@@ -1193,6 +1221,61 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           },
 
           /**
+           * Looks up human readable format of the DataONE Object
+           * @returns format String
+           * @since x.x.x
+           */
+          getFormat: function(){
+            var formatMap = {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : "Microsoft Excel OpenXML",
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document" : "Microsoft Word OpenXML",
+              "application/vnd.ms-excel.sheet.binary.macroEnabled.12" : "Microsoft Office Excel 2007 binary workbooks",
+              "application/vnd.openxmlformats-officedocument.presentationml.presentation" : "Microsoft Office OpenXML Presentation",
+              "application/vnd.ms-excel" : "Microsoft Excel",
+              "application/msword" : "Microsoft Word",
+              "application/vnd.ms-powerpoint" : "Microsoft Powerpoint",
+              "text/html" : "HTML",
+              "text/plain": "plain text (.txt)",
+              "video/avi" : "Microsoft AVI file",
+              "video/x-ms-wmv" : "Windows Media Video (.wmv)",
+              "audio/x-ms-wma" : "Windows Media Audio (.wma)",
+              "application/vnd.google-earth.kml xml" : "Google Earth Keyhole Markup Language (KML)",
+              "http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html" : "annotation",
+              "application/mathematica" : "Mathematica Notebook",
+              "application/postscript" : "Postscript",
+              "application/rtf" : "Rich Text Format (RTF)",
+              "application/xml" : "XML Application",
+              "text/xml" : "XML",
+              "application/x-fasta" : "FASTA sequence file",
+              "nexus/1997" : "NEXUS File Format for Systematic Information",
+              "anvl/erc-v02" :  "Kernel Metadata and Electronic Resource Citations (ERCs), 2010.05.13",
+              "http://purl.org/dryad/terms/" : "Dryad Metadata Application Profile Version 3.0",
+              "http://datadryad.org/profile/v3.1" : "Dryad Metadata Application Profile Version 3.1",
+              "application/pdf" : "PDF",
+              "application/zip" : "ZIP file",
+              "http://www.w3.org/TR/rdf-syntax-grammar" : "RDF/XML",
+              "http://www.w3.org/TR/rdfa-syntax" : "RDFa",
+              "application/rdf xml" : "RDF",
+              "text/turtle" : "TURTLE",
+              "text/n3" : "N3",
+              "application/x-gzip" : "GZIP Format",
+              "application/x-python" : "Python script",
+              "http://www.w3.org/2005/Atom" : "ATOM-1.0",
+              "application/octet-stream" : "octet stream (application file)",
+              "http://digir.net/schema/conceptual/darwin/2003/1.0/darwin2.xsd" : "Darwin Core, v2.0",
+              "http://rs.tdwg.org/dwc/xsd/simpledarwincore/" : "Simple Darwin Core",
+              "eml://ecoinformatics.org/eml-2.1.0" : "EML v2.1.0",
+              "eml://ecoinformatics.org/eml-2.1.1" : "EML v2.1.1",
+              "eml://ecoinformatics.org/eml-2.0.1" : "EML v2.0.1",
+              "eml://ecoinformatics.org/eml-2.0.0" : "EML v2.0.0",
+              "https://eml.ecoinformatics.org/eml-2.2.0" : "EML v2.2.0",
+
+            }
+
+            return formatMap[this.get("formatId")] || this.get("formatId");
+          },
+
+          /**
            * Build a fresh system metadata document for this object when it is new
            * Return it as a DOM object
            */
@@ -1737,39 +1820,136 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           },
 
           /**
-           * Converts the number of bytes into a human readable format and updates the `sizeStr` attribute
+           * Converts the number of bytes into a human readable format and 
+           * updates the `sizeStr` attribute
+           * @returns: None
+           * 
            */
           bytesToSize: function(){
-              var kilobyte = 1024;
-              var megabyte = kilobyte * 1024;
-              var gigabyte = megabyte * 1024;
-              var terabyte = gigabyte * 1024;
+              var kibibyte = 1024;
+              var mebibyte = kibibyte * 1024;
+              var gibibyte = mebibyte * 1024;
+              var tebibyte = gibibyte * 1024;
               var precision = 0;
 
               var bytes = this.get("size");
 
-              if ((bytes >= 0) && (bytes < kilobyte)) {
+              if ((bytes >= 0) && (bytes < kibibyte)) {
                   this.set("sizeStr", bytes + ' B');
 
-              } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
-                  this.set("sizeStr", (bytes / kilobyte).toFixed(precision) + ' KB');
+              } else if ((bytes >= kibibyte) && (bytes < mebibyte)) {
+                  this.set("sizeStr", (bytes / kibibyte).toFixed(precision) + ' KiB');
 
-              } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+              } else if ((bytes >= mebibyte) && (bytes < gibibyte)) {
                   precision = 2;
-                  this.set("sizeStr", (bytes / megabyte).toFixed(precision) + ' MB');
+                  this.set("sizeStr", (bytes / mebibyte).toFixed(precision) + ' MiB');
 
-              } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+              } else if ((bytes >= gibibyte) && (bytes < tebibyte)) {
                   precision = 2;
-                  this.set("sizeStr", (bytes / gigabyte).toFixed(precision) + ' GB');
+                  this.set("sizeStr", (bytes / gibibyte).toFixed(precision) + ' GiB');
 
-              } else if (bytes >= terabyte) {
+              } else if (bytes >= tebibyte) {
                   precision = 2;
-                  this.set("sizeStr", (bytes / terabyte).toFixed(precision) + ' TB');
+                  this.set("sizeStr", (bytes / tebibyte).toFixed(precision) + ' TiB');
 
               } else {
                   this.set("sizeStr", bytes + ' B');
 
               }
+          },
+
+          /**
+          * This method will download this object while 
+          * sending the user's auth token in the request.
+          * @returns None
+          * @since: x.x.x
+          */
+          downloadWithCredentials: function(){
+            //if(this.get("isPublic")) return;
+
+            //Get info about this object
+            var url = this.get("url"),
+              model = this;
+
+            //Create an XHR
+            var xhr = new XMLHttpRequest();
+
+            //Open and send the request with the user's auth token
+            xhr.open('GET', url);
+
+                if(MetacatUI.appUserModel.get("loggedIn"))
+                  xhr.withCredentials = true;
+
+                //When the XHR is ready, create a link with the raw data (Blob) and click the link to download
+                xhr.onload = function(){
+
+              if( this.status == 404 ){
+              this.onerror.call(this);
+              return;
+              }
+
+              //Get the file name to save this file as
+              var filename = xhr.getResponseHeader('Content-Disposition');
+
+              if(!filename){
+                filename = model.get("fileName") || model.get("title") || model.get("id") || "download";
+              }
+              else
+                filename = filename.substring(filename.indexOf("filename=")+9).replace(/"/g, "");
+
+              //Replace any whitespaces
+              filename = filename.trim().replace(/ /g, "_");
+
+              //For IE, we need to use the navigator API
+              if (navigator && navigator.msSaveOrOpenBlob) {
+                navigator.msSaveOrOpenBlob(xhr.response, filename);
+              }
+              //Other browsers can download it via a link
+              else{
+                  var a = document.createElement('a');
+                  a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
+
+                  // Set the file name.
+                  a.download = filename
+
+                  a.style.display = 'none';
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+              }
+
+                model.trigger("downloadComplete");
+
+                // Track this event
+                MetacatUI.analytics?.trackEvent(
+                  "download",
+                  "Download DataONEObject", 
+                  model.get("id")
+                );
+            };
+
+            xhr.onerror = function(e){
+              model.trigger("downloadError");
+
+              // Track the error
+              MetacatUI.analytics?.trackException(
+                `Download DataONEObject error: ${e || ""}`, model.get("id"), true
+              );
+            };
+
+            xhr.onprogress = function(e){
+                if (e.lengthComputable){
+                    var percent = (e.loaded / e.total) * 100;
+                    model.set("downloadPercent", percent);
+                }
+            };
+
+            xhr.responseType = "blob";
+
+            if(MetacatUI.appUserModel.get("loggedIn"))
+              xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
+
+            xhr.send();
           },
 
           /**

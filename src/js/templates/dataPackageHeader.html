@@ -1,0 +1,42 @@
+﻿<tr class="file-header data-package-item" data-id="<%= id %>">
+
+  <% 
+    var indentFile = 10;
+  %>
+  <!-- file cell -->
+  <td style="padding-left:<%=indentFile %>px;" >
+    <a class="d1package-expand control" style="display: none;">
+      <i class="icon icon-caret-right"></i>
+    </a>
+    <a class="d1package-collapse control">
+      <i class="icon icon-caret-down"></i>
+    </a>
+    <span class="fileTitle tooltip-this" data-title="<%= titleTooltip %>">
+      <%= title %>
+    </span>
+
+  </td>
+
+  <!-- file cell -->
+  <td>
+
+  </td>
+
+  <!-- type cell -->
+  <td>
+
+  </td>
+
+  <!-- metrics cell -->
+  <td>
+
+  </td>
+
+  <!-- actions cell -->
+  <td class="file-actions">
+    <% if (!disablePackageDownloads) { %>
+      <span class="action downloadAction"></span>
+    <% } %>
+  </td>
+
+</tr>
