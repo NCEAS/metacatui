@@ -13,22 +13,21 @@ define([], () => {
      * @type {Object}
      * @property {ExpansionPanelView[]} panels The expansion panel views that
      * are meant to have only a single panel open at a time.
-     * @property {string} mode The open mode which determines the behavior of 
-     * other panels in group when a panel is opened. Possible values are
-     * 'single'|'multi".
+     * @property {boolean} isMulti Whether multiple panels can be open at the
+     * same time when displayed in a group of panels. 
      */
     defaults() {
       return {
         panels: [],
-        mode: 'single'
+        isMulti: false,
       }
     },
 
     /**
-     * @param {string} mode is the open mode.
+     * @param {boolean} isMulti The display mode of the panels.
      */
-    initialize({ mode } = { mode: 'single' }) {
-      this.set('mode', mode);
+    initialize({ isMulti } = { isMulti: false }) {
+      this.set('isMulti', isMulti);
     },
 
     /**
@@ -47,7 +46,7 @@ define([], () => {
      * should remain open.
      */
     collapseOthers(openedPanel) {
-      const isSingleOpenMode = this.get('mode') === 'single';
+      const isSingleOpenMode = !this.get('isMulti');
       for (const panel of this.get('panels')) {
         if (isSingleOpenMode && panel !== openedPanel) {
           panel.collapse();
