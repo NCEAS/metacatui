@@ -87,13 +87,13 @@
   --map-col-buttons-emphasis__deprecate: var(--portal-secondary-color, var(--map-col-green));
   --map-col-highlight__deprecate: var(--portal-primary-color, var(--map-col-blue));
   /* SIZING: */
-  --map-size-toolbar-link: 2.2rem;
-  --map-size-toolbar-link-margin: 0.4rem;
-  --map-size-toolbar-inter-link-margin: 0.5rem;
+  --map-size-toolbar-link: 2.5rem;
+  --map-size-toolbar-link-margin: 1rem;
+  --map-size-toolbar-link-padding: 0.5rem;
   --map-border-radius-small: 0.25rem;
   --map-border-radius-big: 0.5rem;
   --map-width-toolbar: 21rem;
-  --map-toolbar-link-width: calc(var(--map-size-toolbar-link) + var(--map-size-toolbar-link-margin) + var(--map-size-toolbar-link-margin));
+  --map-toolbar-link-width: calc(var(--map-size-toolbar-link) + 2 * var(--map-size-toolbar-link-padding));
   /* SHADOWS */
   --map-shadow-md: var(--portal-shadow-md, 0 1px 9px -1px rgba(0, 0, 0, 0.2), 0 1px 2px 0px rgba(0, 0, 0, 0.5));
   /* NOTE: 768px is used as the mobile -> desktop breakpoint throughout the map view, but we cannot use a CSS variable for this. */
@@ -270,8 +270,8 @@
   .map-view__map-widget-container {
     order: 1;
     position: relative;
-    width: calc(100% + var(--map-toolbar-link-width) + (2* var(--map-size-toolbar-inter-link-margin)));
-    margin-left: calc(-1 * var(--map-toolbar-link-width) - (2* var(--map-size-toolbar-inter-link-margin)));
+    width: calc(100% + var(--map-toolbar-link-width) + (2* var(--map-size-toolbar-link-margin)));
+    margin-left: calc(-1 * var(--map-toolbar-link-width) - (2* var(--map-size-toolbar-link-margin)));
   }
 }
 
@@ -437,7 +437,9 @@ represents 1 unit of the given distance measurement. */
   height: min-content;
   background-color: var(--map-col-content-bkg-highlight, var(--map-col-bkg__deprecate));
   border-radius: var(--map-border-radius-big);
-  margin: var(--map-size-toolbar-inter-link-margin);
+  margin: var(--map-size-toolbar-link-margin);
+  padding: .5rem;
+  row-gap: .5rem;
   pointer-events: all;
   color: var(--map-col-buttons-bkg-highlight);
   box-shadow: var(--map-shadow-md);
@@ -484,16 +486,11 @@ represents 1 unit of the given distance measurement. */
 
 .toolbar__link {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
   cursor: pointer;
   height: var(--map-size-toolbar-link);
   width: var(--map-size-toolbar-link);
   background-color: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
-  padding: 0.2rem;
-  margin: var(--map-size-toolbar-link-margin);
+  padding: 0.5rem;
   border-radius: var(--map-border-radius-small);
   border: 1px solid var(--map-col-border);
 }
@@ -513,25 +510,39 @@ represents 1 unit of the given distance measurement. */
 
 .toolbar__link-title {
   position: absolute;
-  left: calc(100% + 1rem);
+  left: calc(100% + .5rem);
+  top: .25rem;
   color: var(--map-col-tooltip-text, var(--map-col-text__deprecate));
-  margin-top: 0.1em;
   font-size: 0.75rem;
   font-weight: 700;
   /* don't show the link title until the link is hovered */
   display: none;
 }
 
+.toolbar__link-title:before {
+  content: '';
+  position: absolute;
+  width: .5rem;
+  height: .5rem;
+  left: -.5rem;
+  top: 50%;
+  transform: translate(50%,-50%) rotate(-45deg);
+  background-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
+}
+
 .toolbar__link:hover .toolbar__link-title {
   display: block;
-  padding: 0.2rem 0.6rem;
+  padding: 0.25rem 0.5rem;
   border-radius: var(--map-border-radius-small);
   background-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
 }
 
 .toolbar__link-icon {
+  display: block;
   font-size: 1.5rem;
+  height: 1.5rem;
   line-height: 1;
+  width: 1.5rem;
 }
 
 /*****************************************************************************************
