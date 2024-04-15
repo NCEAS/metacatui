@@ -277,7 +277,7 @@ define([
        * Select features on the map. Updates the selectedFeatures attribute on
        * the MapInteraction model.
        * @param {Feature[]} features - An array of Feature models to select.
-       * since x.x.x
+       * since 2.28.0
        */
       selectFeatures: function (features) {
         this.get("interactions")?.selectFeatures(features);

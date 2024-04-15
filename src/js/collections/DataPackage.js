@@ -4055,7 +4055,7 @@ define([
              * Returns atLocation information found in this resourceMap
              * for all the PIDs in this resourceMap
              * @returns object with PIDs as key and atLocation paths as values
-             * @since x.x.x
+             * @since 2.28.0
              */
             getAtLocation: function () {
                 return this.atLocationObject;
@@ -4067,7 +4067,7 @@ define([
              * @param {string} relativePath - The relative path to be converted to an absolute path.
              * @returns {string} - The absolute path after processing '~', '..', and '.'.
              *                    If the result is empty, returns '/'.
-             * @since x.x.x
+             * @since 2.28.0
              */
             getAbsolutePath(relativePath) {
                 // Replace ~ with an empty space

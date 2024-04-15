@@ -31,7 +31,7 @@ define(
      * @name ViewfinderView
      * @extends Backbone.View
      * @screenshot views/maps/viewfinder/ViewfinderView.png
-     * @since x.x.x
+     * @since 2.28.0
      * @constructs ViewfinderView
      */
     var ViewfinderView = Backbone.View.extend({

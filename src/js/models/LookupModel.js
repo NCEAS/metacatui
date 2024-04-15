@@ -428,7 +428,7 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
        * to 1.
        * @returns {Promise} A promise that resolves to an array of awards in the
        * format {id: string, title: string}
-       * @since x.x.x
+       * @since 2.28.0
        */
       findGrants: function (term, offset = 1) {
         let awards = [];
@@ -464,7 +464,7 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
        * {id: string, title: string}
        * @returns {Array} An array of awards in the format
        * {value: string, label: string}
-       * @since x.x.x
+       * @since 2.28.0
        */
       formatFundingForAutocomplete: function (awards) {
         if (!awards || !awards.length) return [];

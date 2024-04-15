@@ -13,7 +13,7 @@ define([
   * MetacatUI to perform useful functions related to icons, but not used to store or
   * manipulate any state about the application.
   * @type {object}
-  * @since x.x.x
+  * @since 2.28.0
   */
 	const IconUtilities = /** @lends IconUtilities.prototype */ {
 

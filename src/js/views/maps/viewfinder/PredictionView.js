@@ -13,7 +13,7 @@ define(
      * @name PredictionView
      * @extends Backbone.View
      * @screenshot views/maps/viewfinder/PredictionView.png
-     * @since x.x.x
+     * @since 2.28.0
      * @constructs PredictionView
      */
     const PredictionView = Backbone.View.extend({

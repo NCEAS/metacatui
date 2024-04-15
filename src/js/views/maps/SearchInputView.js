@@ -26,7 +26,7 @@ define([
    * @classcategory Views/Maps
    * @name SearchInputView
    * @extends Backbone.View
-   * @since x.x.x
+   * @since 2.28.0
    * @constructs SearchInputView
    */
   const SearchInputView = Backbone.View.extend({

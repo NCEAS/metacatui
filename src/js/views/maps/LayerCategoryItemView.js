@@ -40,7 +40,7 @@ define(
     * @name LayerCategoryItemView
     * @extends Backbone.View
     * @screenshot views/maps/LayerCategoryItemView.png
-    // * @since x.x.x
+    * @since 2.28.0
     * @constructs
     */
     const LayerCategoryItemView = Backbone.View.extend(

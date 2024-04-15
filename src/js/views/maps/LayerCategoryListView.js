@@ -27,7 +27,7 @@ define(
     * @name LayerCategoryListView
     * @screenshot views/maps/LayerCategoryListView.png
     * @extends Backbone.View
-    //  * @since x.x.x
+    * @since 2.28.0
     * @constructs
     */
     const LayerCategoryListView = Backbone.View.extend(

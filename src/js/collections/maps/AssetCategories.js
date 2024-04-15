@@ -18,7 +18,7 @@ define([
    * @classcategory Collections/Maps
    * @class AssetCategories
    * @extends Backbone.Collection
-  //  * @since x.x.x
+   * @since 2.28.0
    * @constructor
    */
   const AssetCategories = Backbone.Collection.extend(

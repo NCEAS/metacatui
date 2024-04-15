@@ -7,7 +7,7 @@ define(
      * Integrate with the Google Maps Places Autocomplete API using the
      * Google Maps AutocompleteService JS library.
      * @classcategory Models/Geocoder
-     * @since x.x.x
+     * @since 2.28.0
      */
     class GoogleMapsAutocompleter {
       /**

@@ -272,7 +272,7 @@ define(["backbone"], function (Backbone) {
       /**
        * Navigates to the given page in the search results
        * @param {number} page - The page number to navigate to (0-based)
-       * @since x.x.x
+       * @since 2.28.0
        */
       goToPage: function (page) {
         if (this.searchResults) {

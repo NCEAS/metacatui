@@ -10,7 +10,7 @@ define(
      * GeocoderSearch interfaces with various geocoding and location
      * searching services.
      * @classcategory Models/Geocoder
-     * @since x.x.x
+     * @since 2.28.0
      */
     class GeocoderSearch {
       /**

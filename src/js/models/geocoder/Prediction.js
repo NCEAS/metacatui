@@ -6,7 +6,7 @@ define(['backbone'], (Backbone) => {
   * @classdes Prediction represents a value returned from a location
   * autocompletion search.
   * @classcategory Models/Geocoder
-  * @since x.x.x
+  * @since 2.28.0
   */
   const Prediction = Backbone.Model.extend({
     /**

@@ -645,7 +645,7 @@ define([
             /**
              * Expand function to show hidden rows when a user clicks on an expand control.
              * @param {Event} e - The event object.
-             * @since x.x.x
+             * @since 2.28.0
              */
             expand: function(e) {
                 // Don't do anything...
@@ -674,7 +674,7 @@ define([
              * Collapse function to hide rows when a user clicks on a collapse control.
              * @param {Event} e - The event object.
              * 
-             * @since x.x.x
+             * @since 2.28.0
              */
             collapse: function(e) {
                 // Don't do anything...
@@ -698,7 +698,7 @@ define([
              * Expand all function to show all child rows when a user clicks on an expand-all control.
              * @param {Event} e - The event object.
              * 
-             * @since x.x.x
+             * @since 2.28.0
              */
             expandAll: function(e) {
                 // Don't do anything...
@@ -727,7 +727,7 @@ define([
              * Collapse all function to hide all child rows when a user clicks on a collapse-all control.
              * @param {Event} e - The event object.
              * 
-             * @since x.x.x
+             * @since 2.28.0
              */
             collapseAll: function(e) {
                 // Don't do anything...
@@ -757,7 +757,7 @@ define([
             /**
              * Check for private members and disable download buttons if necessary.
              * 
-             * @since x.x.x
+             * @since 2.28.0
              */
             checkForPrivateMembers: function() {
                 try {
@@ -806,7 +806,7 @@ define([
             /**
              * Retrieves and processes nested packages for the current package.
              *
-             * @since x.x.x
+             * @since 2.28.0
              */
             getNestedPackages: function() {
                 var nestedPackages = new Array();
@@ -838,7 +838,7 @@ define([
              * Adds a nested data package to the package table.
              *
              * @param {Object} dataPackage - The data package to be added.
-             * @since x.x.x
+             * @since 2.28.0
              */
             addNestedPackages: function(dataPackage) {
                 /**

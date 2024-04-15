@@ -21,7 +21,7 @@ define([
    * @name LayersPanelView
    * @extends Backbone.View
    * @screenshot views/maps/LayersPanelView.png
-   * @since x.x.x
+   * @since 2.28.0
    * @constructs LayersPanelView
    */
   const LayersPanelView = Backbone.View.extend({

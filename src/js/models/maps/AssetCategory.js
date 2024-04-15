@@ -12,7 +12,7 @@ define([
    * @class AssetCategory
    * @name AssetCategory
    * @extends Backbone.Model
-   //  * @since x.x.x
+   * @since 2.28.0
    * @constructor
    */
   const AssetCategory = Backbone.Model.extend(

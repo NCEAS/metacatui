@@ -9,7 +9,7 @@ define(
     * geocoded to provide latitude and longitude bounding coordinates for
     * navigating to on a map.
     * @classcategory Models/Geocoder
-    * @since x.x.x
+    * @since 2.28.0
     */
     const GeocodedLocation = Backbone.Model.extend({
       /**

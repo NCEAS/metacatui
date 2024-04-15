@@ -17,7 +17,7 @@ define(
      * @name PredictionsListView
      * @extends Backbone.View
      * @screenshot views/maps/viewfinder/PredictionsListView.png
-     * @since x.x.x
+     * @since 2.28.0
      * @constructs PredictionsListView
      */
     var PredictionsListView = Backbone.View.extend({
