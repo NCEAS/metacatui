@@ -19,6 +19,7 @@ define(
     * @classdes ViewfinderModel maintains state for the ViewfinderView and
     * interfaces with location searching services.
     * @classcategory Models/Maps
+    * @since 2.28.0
     */
     const ViewfinderModel = Backbone.Model.extend({
       /**
@@ -31,6 +32,7 @@ define(
        * @property {Prediction[]} predictions a list of Predictions models that
        * correspond to the user's search query.
        * @property {string} query the user's search query.
+       * @since 2.28.0
        */
       defaults() {
         return {
