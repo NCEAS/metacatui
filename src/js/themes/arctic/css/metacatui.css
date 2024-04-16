@@ -585,7 +585,7 @@ footer .logos a:hover, a:focus{
 }
 .Portal.Editor #Navbar #logo,
 .PortalView #Navbar #logo{
-  background: url(/js/themes/arctic/img/logo-small-no-title.png);
+  background: url(../img/logo-small-no-title.png);
   height: 20px;
   width: 20px;
   background-size: contain;
