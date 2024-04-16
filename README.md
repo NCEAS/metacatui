@@ -1,7 +1,7 @@
 ## MetacatUI: A client-side web interface for DataONE data repositories
 
-- **Author**: Matthew B. Jones, Chris Jones, Lauren Walker, Robyn Thiessen-Bock, Ben Leinfelder, Peter Slaughter, Bryce Mecum, Rushiraj Nenuji ([NCEAS](https://www.nceas.ucsb.edu)), Hesham Elbashandy, Val Hendrix 
-- **DOI**: [doi:10.18739/A25M6282K](https://doi.org/10.18739/A25M6282K)
+- **Author**: Matthew B. Jones, Chris Jones, Lauren Walker, Robyn Thiessen-Bock, Ben Leinfelder, Peter Slaughter, Bryce Mecum, Rushiraj Nenuji, Hesham Elbashandy, Val Hendrix 
+- **DOI**: [doi:10.18739/A2D21RM1M](https://doi.org/10.18739/A2D21RM1M)
 - **License**: [Apache 2](http://opensource.org/licenses/Apache-2.0)
 - [Package source code on Github](https://github.com/NCEAS/metacatui)
 - [**Submit Bugs and feature requests**](https://github.com/NCEAS/metacatui/issues/new/choose)
@@ -17,7 +17,7 @@ MetacatUI is an open source, community project.  We [welcome contributions](http
 
 Cite this software as:
 
-> Matthew B. Jones, Chris Jones, Lauren Walker, Robyn Thiessen-Bock, Ben Leinfelder, Peter Slaughter, Bryce Mecum, Rushiraj Nenuji, Hesham Elbashandy, Val Hendrix. 2024. MetacatUI: A client-side web interface for DataONE data repositories (version 2.28.0). Arctic Data Center. [doi:10.18739/A25M6282K](https://doi.org/10.18739/A25M6282K)
+> Matthew B. Jones, Chris Jones, Lauren Walker, Robyn Thiessen-Bock, Ben Leinfelder, Peter Slaughter, Bryce Mecum, Rushiraj Nenuji, Hesham Elbashandy, Val Hendrix. 2024. MetacatUI: A client-side web interface for DataONE data repositories (version 2.28.0). Arctic Data Center. [doi:10.18739/A2D21RM1M](https://doi.org/10.18739/A2D21RM1M)
 
 ## Screenshots
 
