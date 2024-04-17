@@ -100,6 +100,11 @@
 
   /* FONTS */
   --map-body-font: var(--portal-body-font);
+
+  /* ORDERING */
+  --map-z-index-base: 1;
+  --map-z-index-top-shadow: calc(var(--map-z-index-base) + 1);
+  --map-z-index-layer-details: calc(var(--map-z-index-top-shadow) + 1);
 }
 
 /* hide the credits until we can find a better placement for them */
@@ -252,7 +257,7 @@
   height: 2rem;
   box-shadow: 0 0.2rem 0.2rem 0 rgba(0, 0, 0, .16) inset;
   width: 100%;
-  z-index: 2;
+  z-index: var(--map-z-index-top-shadow);
 }
 
 /* On larger screens, the toolbar should 'squish' the map, not overlap it */
@@ -290,7 +295,7 @@
   top: 1rem;
   right: 1rem;
   /* required to be placed above map widget in firefox: */
-  z-index: 1;
+  z-index: var(--map-z-index-base);
 }
 
 .map-view__toolbar-container {
@@ -301,7 +306,7 @@
   min-height: 100%;
   width: min-content;
   /* required to be placed above map widget in firefox: */
-  z-index: 1;
+  z-index: var(--map-z-index-base);
   pointer-events: none;
 }
 
@@ -323,7 +328,7 @@
   max-height: calc(100% - 5rem);
   overflow: auto;
   /* required to be placed above map widget in firefox: */
-  z-index: 1;
+  z-index: var(--map-z-index-base);
 
   .feature-info__zoom-button, .feature-info__layer-details-button {
     border: 1px solid var(--map-col-border);
@@ -339,7 +344,7 @@
   max-height: 100%;
   overflow: auto;
   /* required to be placed above map widget in firefox: */
-  z-index: 3;
+  z-index: var(--map-z-index-layer-details);
 }
 
 /*****************************************************************************************
