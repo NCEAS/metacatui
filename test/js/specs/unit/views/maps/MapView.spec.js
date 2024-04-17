@@ -15,9 +15,11 @@ define([
     describe("Portal map", () => {
       it("has an additional portal indicator class", () => {
         const nonPortalMap = new MapView();
+        nonPortalMap.render();
         expect(nonPortalMap.$el.hasClass(nonPortalMap.classes.portalIndicator)).to.be.false;
         
         const portalMap = new MapView({ isPortalMap: true });
+        portalMap.render();
         expect(portalMap.$el.hasClass(portalMap.classes.portalIndicator)).to.be.true;
       });
     });
