@@ -44,7 +44,7 @@ service:
   port: 80
 
 ingress:
-  enabled: true
+  enabled: false
   className: traefik
   annotations:
     #traefik.ingress.kubernetes.io/router.entrypoints: web
@@ -58,7 +58,7 @@ ingress:
         pathType: Prefix
         backend:
           service:
-            name: mcui-metacatui
+            name: mcui-metacatui  # Assumes the service is exposed in the mcui namespace
             port:
               number: 80
   tls: []
