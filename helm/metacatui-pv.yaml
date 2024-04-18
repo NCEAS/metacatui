@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: metacatui-pv
+spec:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 10Gi
+  hostPath:
+    path: /Users/jones/development/metacatui/src
+    type: ""
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem
