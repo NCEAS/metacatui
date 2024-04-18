@@ -6,6 +6,7 @@
     "./js/specs/unit/models/geocoder/GoogleMapsGeocoder.spec.js",
     "./js/specs/unit/models/geocoder/Prediction.spec.js",
     "./js/specs/unit/models/maps/viewfinder/ViewfinderModel.spec.js",
+    "./js/specs/unit/views/maps/viewfinder/ExpansionPanelView.spec.js",
     "./js/specs/unit/views/maps/viewfinder/PredictionView.spec.js",
     "./js/specs/unit/views/maps/viewfinder/PredictionsListView.spec.js",
     "./js/specs/unit/views/maps/viewfinder/ViewfinderView.spec.js",
