@@ -314,9 +314,14 @@ define(
          */
         updateIFrameHeight: function () {
           const iFrame = this.elements?.iFrame;
-          const maxHeight = window.innerHeight - 320;
-          let height = iFrame.contentWindow.document.getElementById("content").scrollHeight + 24;
-          height = height > maxHeight ? maxHeight : height;
+          // 336 includes the maximum height of the top bars, bottom padding, and other
+          // content of feature info like label on top and buttons at the bottom. This is
+          // only an estimate and a temporary approach. Eventually we should move away
+          // from iFrame so that css layout can figure this out without us doing math
+          // here.
+          const maxHeight = window.innerHeight - 336;
+          const height = Math.min(maxHeight,
+              iFrame.contentWindow.document.getElementById("content").scrollHeight); 
           iFrame.style.height = height / 16 + "rem";
           iFrame.style.opacity = 1;
         },
