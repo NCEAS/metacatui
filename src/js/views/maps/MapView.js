@@ -31,6 +31,14 @@ define(
     // CSS
     MapCSS
   ) {
+    const CLASS_NAMES = {
+      mapWidgetContainer: 'map-view__map-widget-container',
+      scaleBarContainer: 'map-view__scale-bar-container',
+      featureInfoContainer: 'map-view__feature-info-container',
+      toolbarContainer: 'map-view__toolbar-container',
+      layerDetailsContainer: 'map-view__layer-details-container',
+      portalIndicator: 'map-view__portal',
+    };
 
     /**
     * @class MapView
@@ -69,28 +77,6 @@ define(
          * @type {Underscore.template}
          */
         template: _.template(Template),
-
-        /**
-         * Classes that will be used to select specific elements from the template.
-         * @name MapView#classes
-         * @type {Object}
-         * @property {string} mapWidgetContainer The element that will hold the map widget
-         * (i.e. CesiumWidgetView)
-         * @property {string} scaleBarContainer The container for the ScaleBarView
-         * @property {string} featureInfoContainer The container for the box that will
-         * show details about a selected feature
-         * @property {string} toolbarContainer The container for the toolbar UI
-         * @property {string} layerDetailsContainer The container for the element that
-         * will show details about a specific layer
-         */
-        classes: {
-          mapWidgetContainer: 'map-view__map-widget-container',
-          scaleBarContainer: 'map-view__scale-bar-container',
-          featureInfoContainer: 'map-view__feature-info-container',
-          toolbarContainer: 'map-view__toolbar-container',
-          layerDetailsContainer: 'map-view__layer-details-container',
-          portalIndicator: 'map-view__portal',
-        },
 
         /**
         * The events this view will listen to and the associated function to call.
@@ -138,12 +124,12 @@ define(
             // Ensure the view's main element has the given class name
             this.el.classList.add(this.className);
             if (this.isPortalMap) {
-              this.el.classList.add(this.classes.portalIndicator);
+              this.el.classList.add(CLASS_NAMES.portalIndicator);
             }
 
             // Select the elements that will be updatable
             this.subElements = {};
-            for (const [element, className] of Object.entries(view.classes)) {
+            for (const [element, className] of Object.entries(CLASS_NAMES)) {
               view.subElements[element] = document.querySelector('.' + className)
             }
 

@@ -1,6 +1,6 @@
 define([
   "views/maps/MapView",
-  'models/maps/Map',
+  "models/maps/Map",
 ], (MapView, MapAsset) => {
   const expect = chai.expect;
 
@@ -16,11 +16,11 @@ define([
       it("has an additional portal indicator class", () => {
         const nonPortalMap = new MapView();
         nonPortalMap.render();
-        expect(nonPortalMap.$el.hasClass(nonPortalMap.classes.portalIndicator)).to.be.false;
+        expect(nonPortalMap.$el.hasClass("map-view__portal")).to.be.false;
         
         const portalMap = new MapView({ isPortalMap: true });
         portalMap.render();
-        expect(portalMap.$el.hasClass(portalMap.classes.portalIndicator)).to.be.true;
+        expect(portalMap.$el.hasClass("map-view__portal")).to.be.true;
       });
     });
   });
