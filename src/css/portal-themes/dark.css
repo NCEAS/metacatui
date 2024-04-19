@@ -1,5 +1,34 @@
 :root {
   /* COLOURS */
+  --portal-blue-1: #ECF8FC;
+  --portal-blue-2: #CCF0FC;
+  --portal-blue-3: #99E1FA;
+  --portal-blue-4: #14c8ff;
+  --portal-blue-5: #00A9E4;
+  --portal-blue-6: #0087B5;
+  --portal-blue-7: #136682;
+
+  --portal-grey-1: #F8F9FA;
+  --portal-grey-2: #F1F3F4;
+  --portal-grey-3: #E8EAED;
+  --portal-grey-4: #BDC1C6;
+  --portal-grey-5: #80868B;
+  --portal-grey-6: #5F6368;
+  --portal-grey-7: #3C4043;
+  --portal-grey-8: #202124;
+
+  --portal-col-buttons-bkg: white;
+  --portal-col-buttons-bkg-hover: var(--portal-blue-2);
+  --portal-col-buttons-bkg-highlight: var(--portal-blue-5);
+  --portal-col-buttons-bkg-muted: var(--portal-grey-1);
+  --portal-col-buttons-bkg-white-content-contrast: var(--portal-grey-5);
+  --portal-col-buttons-text: var(--portal-blue-6);
+  --portal-col-buttons-text-highlight: white;
+  --portal-col-buttons-icon: var(--portal-blue-6);
+  --portal-col-buttons-icon-highlight: var(--portal-blue-2);
+  --portal-col-buttons-icon-muted: var(--portal-grey-6);
+  --portal-col-utility-buttons: var(--portal-grey-6);
+
   --portal-col-bkg: #111827;
   --portal-col-bkg-lighter: #1F2937;
   --portal-col-bkg-active: #374151;
@@ -8,6 +37,14 @@
   --portal-col-text: #F9FAFB;
   --portal-col-highlight: #269fb9;
   --portal-col-highlight-subtle: #0c4e66;
+
+  --portal-col-text-body: var(--portal-grey-3);
+  --portal-col-text-highlight: var(--portal-blue-4);
+  --portal-col-text-title: var(--portal-blue-6);
+  --portal-col-text-label: var(--portal-grey-4);
+  --portal-col-text-detail: var(--portal-grey-5);
+  --portal-col-text-muted: var(--portal-grey-3);
+
   /* SHADOWS */
   --map-shadow-md: 0 1px 9px -1px rgba(0, 0, 0, 0.2), 0 1px 2px 0px rgba(0, 0, 0, 0.5);
   /* Colors used in the 'loading-metrics.html' template, on Metrics page */
