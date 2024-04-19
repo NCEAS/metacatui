@@ -474,8 +474,10 @@ represents 1 unit of the given distance measurement. */
   pointer-events: all;
 }
 
-.map-view__portal .toolbar__all-content {
-  width: var(--map-width-toolbar-wide);
+@media only screen and (min-width: 31.5rem) {
+  .map-view__portal .toolbar__all-content {
+    width: var(--map-width-toolbar-wide);
+  }
 }
 
 .toolbar--open .toolbar__all-content {
@@ -939,8 +941,10 @@ represents 1 unit of the given distance measurement. */
   animation: fadeIn .3s ease-in-out;
 }
 
-.map-view__portal .layer-details {
-  width: var(--map-width-toolbar-wide);
+@media only screen and (min-width: 31.5rem) {
+  .map-view__portal .layer-details {
+    width: var(--map-width-toolbar-wide);
+  }
 }
 
 .layer-details--open {
