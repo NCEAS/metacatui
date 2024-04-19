@@ -146,10 +146,6 @@ define(
         });
       },
 
-      selectZoomPreset() {
-        // TODO(ianguerin): implementation.
-      },
-
       /**
        * Select a prediction from the list of predictions and navigate there.
        * @param {Prediction} prediction is the user-selected Prediction that

@@ -5,8 +5,6 @@ define(
     'underscore',
     'views/maps/viewfinder/ZoomPresetsListView',
     'models/maps/viewfinder/ZoomPresetModel',
-    'models/maps/viewfinder/ViewfinderModel',
-    'models/maps/Map',
     "models/maps/GeoPoint",
     // The file extension is required for files loaded from the /test directory.
     '/test/js/specs/shared/clean-state.js',
@@ -15,8 +13,6 @@ define(
   (_,
     ZoomPresetsListView,
     ZoomPresetModel,
-    ViewfinderModel,
-    Map,
     GeoPoint,
     cleanState,
     ZoomPresetsListViewHarness,
@@ -27,7 +23,6 @@ define(
     describe('ZoomPresetsListView Test Suite', () => {
       const state = cleanState(() => {
         const sandbox = sinon.createSandbox();
-        const viewfinderModel = new ViewfinderModel({ mapModel: new Map() })
         const zoomPresets = [
           new ZoomPresetModel({
             title: 'Test 1',
@@ -47,9 +42,12 @@ define(
             description: 'Test 1 description',
             enabledLayers: ['Layer 2', 'Layer 3'],
           }),
-        ]
-        viewfinderModel.set('zoomPresets', zoomPresets);
-        const view = new ZoomPresetsListView({ viewfinderModel });
+        ];
+        const selectZoomPresetSpy = sandbox.spy();
+        const view = new ZoomPresetsListView({
+          zoomPresets,
+          selectZoomPreset: selectZoomPresetSpy,
+        });
         view.render();
         const harness = new ZoomPresetsListViewHarness(view);
 
@@ -62,9 +60,9 @@ define(
         return {
           harness,
           sandbox,
+          selectZoomPresetSpy,
           testContainer,
           view,
-          viewfinderModel,
         };
       }, beforeEach);
 
@@ -82,17 +80,13 @@ define(
       });
 
       it('does not select zoom preset on model before clicking', () => {
-        const selectSpy = state.sandbox.spy(state.viewfinderModel, 'selectZoomPreset');
-
-        expect(selectSpy.callCount).to.equal(0);
+        expect(state.selectZoomPresetSpy.callCount).to.equal(0);
       });
 
       it('selects a zoom preset on model when it is clicked', () => {
-        const selectSpy = state.sandbox.spy(state.viewfinderModel, 'selectZoomPreset');
-
         state.harness.clickZoomPresetAt(0);
 
-        expect(selectSpy.callCount).to.equal(1);
+        expect(state.selectZoomPresetSpy.callCount).to.equal(1);
       });
 
       it('marks a zoom preset as selected after clicking it', () => {

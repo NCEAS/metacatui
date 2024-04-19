@@ -34,21 +34,24 @@ define(
 
         /**
          * @typedef {Object} ZoomPresetsListViewOptions
-         * @property {ViewfinderModel} The model associated with the parent view.
+         * @property {ZoomPreset[]} zoomPresets The zoom presets to render.
+         * @property {Function} selectZoomPreset The callback function for 
+         * selecting a zoom preset.
          */
-        initialize({ viewfinderModel }) {
+        initialize({ zoomPresets, selectZoomPreset }) {
           this.children = [];
-          this.viewfinderModel = viewfinderModel;
+          this.zoomPresets = zoomPresets;
+          this.selectZoomPreset = selectZoomPreset;
         },
 
         /**
          * Render the view by updating the HTML of the element.
          */
         render() {
-          this.children = this.viewfinderModel.get('zoomPresets').map(preset => {
+          this.children = this.zoomPresets.map(preset => {
             const view = new ZoomPresetView({
               selectCallback: () => {
-                this.viewfinderModel.selectZoomPreset(preset);
+                this.selectZoomPreset(preset);
                 this.children.forEach(child => {
                   child.resetActiveState();
                 });
@@ -56,10 +59,11 @@ define(
               preset,
             });
             view.render();
+
+            this.el.appendChild(view.el);
+
             return view;
           });
-
-          this.$el.html(this.children.map(view => view.el));
         },
       });
 
