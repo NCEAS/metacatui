@@ -78,6 +78,8 @@ define([
        * feedbackText.
        * @property {String} [feedbackText=null] - The text to show in the
        * feedback section. showFeedback must be true for this to be shown.
+       * @property {String} [globeBaseColor=null] - The base color of the globe when no
+       * layer is shown.
        *
        * @example
        * {
@@ -195,6 +197,8 @@ define([
        * feedback section in the toolbar.
        * @property {String} [feedbackText=null] - The text to show in the
        * feedback section.
+       * @property {String} [globeBaseColor=null] - The base color of the globe when no
+       * layer is shown.
        */
       defaults: function () {
         return {
@@ -223,7 +227,8 @@ define([
           clickFeatureAction: "showDetails",
           showNavHelp: true,
           showFeedback: false,
-          feedbackText: null
+          feedbackText: null,
+          globeBaseColor: null,
         };
       },
 
