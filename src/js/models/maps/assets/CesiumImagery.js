@@ -207,7 +207,8 @@ define(
 
           var initialAppearance = {
             alpha: this.get('opacity'),
-            show: this.get('visible')
+            show: this.get('visible'),
+            saturation: this.get('saturation'),
             // TODO: brightness, contrast, gamma, etc.
           }
 

@@ -19,7 +19,8 @@ define([
           url: '/test/data/models/maps/assets/CesiumImagery/WorldCRS84Quad/{TileMatrix}/{TileCol}/{TileRow}.png',
           tilingScheme: 'GeographicTilingScheme',
           rectangle: boundingBox
-        }
+        },
+        saturation: 0.5,
       });
     })
 
@@ -46,8 +47,17 @@ define([
           done(error)
         })
 
-      })
+      });
 
+      it("should use saturation from the imagery model", function (done) {
+        imagery.whenReady().then(function (model) {
+          expect(model.get("cesiumModel").saturation).to.equal(0.5);
+          done();
+        }, function (error) {
+          done(error);
+        })
+
+      });
     });
 
   });
