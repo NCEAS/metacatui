@@ -39,7 +39,8 @@ define(
      * @since x.x.x
      * @constructs SearchView
      */
-    var SearchView = Backbone.View.extend({
+    var SearchView = Backbone.View.extend(
+    /** @lends SearchView.prototype */ {
       /**
        * The type of View this is
        * @type {string}
