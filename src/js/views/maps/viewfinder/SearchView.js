@@ -59,8 +59,9 @@ define(
 
       /**
        * @typedef {Object} SearchViewOptions
-       * @property {Map} The Map model associated with this view allowing control
-       * of panning to different locations on the map. 
+       * @property {ViewfinderModel} viewfinderModel The model associated
+       * with this view allowing control of panning to different locations on
+       * the map, and displaying location related search features. 
        */
       initialize({ viewfinderModel }) {
         this.childPredictionViews = [];
