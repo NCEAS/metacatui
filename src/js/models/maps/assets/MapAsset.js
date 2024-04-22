@@ -60,9 +60,9 @@ define([
        * opacity of the layer on the map, with 0 representing fully transparent and 1
        * representing fully opaque. This applies to raster (imagery) and vector assets,
        * not to terrain assets.
-       * @property {Number} [saturation = 1] A number between 0 and 1 indicating the
-       * saturation of the layer on the map, with 0 representing grayscale and 1
-       * representing full color. This applies to raster (imagery) only.
+       * @property {Number} [saturation = 1] A number that indicates the saturation of
+       * the layer on the map. Less than 1.0 reduces the saturation while greater than
+       * 1.0 increases it. This applies to raster (imagery) only.
        * @property {Boolean} [visible = true] Set to true if the layer is visible on the
        * map, false if it is hidden. This applies to raster (imagery) and vector assets,
        * not to terrain assets.
@@ -146,9 +146,9 @@ define([
        * opacity of the layer on the map, with 0 representing fully transparent and 1
        * representing fully opaque. This applies to raster (imagery) and vector assets,
        * not to terrain assets.
-       * @property {Number} [saturation=1] - A number between 0 and 1 indicating the
-       * saturation of the layer on the map, with 0 representing grayscale and 1
-       * representing full color. This applies to raster (imagery) only.
+       * @property {Number} [saturation=1] - A number that indicates the saturation of
+       * the layer on the map. Less than 1.0 reduces the saturation while greater than
+       * 1.0 increases it. This applies to raster (imagery) only.
        * @property {Boolean} [visible=true] - Set to true if the layer is visible on the
        * map, false if it is hidden. This applies to raster (imagery) and vector assets,
        * not to terrain assets.
