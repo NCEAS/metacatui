@@ -5,6 +5,8 @@ define(['underscore', 'backbone',], (_, Backbone) => {
   * @class ZoomPresetModel
   * @classdesc ZoomPresetModel represents an element for the ZoomPresetModel.
   * @classcategory Models/Maps
+  * @extends Backbone.Model
+  * @since x.x.x
   */
   const ZoomPresetModel = Backbone.Model.extend(
     /** @lends ZoomPresetModel.prototype */ {
