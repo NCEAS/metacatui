@@ -3,7 +3,8 @@
 define(['underscore', 'backbone',], (_, Backbone) => {
   /**
   * @class ZoomPresetModel
-  * @classdesc ZoomPresetModel represents an element for the ZoomPresetModel.
+  * @classdesc ZoomPresetModel represents a point of interest on a map that can
+  * be configured within a MapView.
   * @classcategory Models/Maps
   * @extends Backbone.Model
   * @since x.x.x
