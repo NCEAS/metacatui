@@ -338,7 +338,7 @@
     border: 1px solid var(--map-col-border);
     border-radius: var(--map-border-radius-small);
     padding: .5rem 1rem;
-    text-wrap: pretty;
+    text-wrap: wrap;
   }
 }
 
