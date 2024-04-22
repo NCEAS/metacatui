@@ -69,6 +69,10 @@ define(
         this.panelsModel = new ExpansionPanelsModel();
       },
 
+      /**
+       * Get the SearchView element.
+       * @returns {JQuery} The SearchView element.
+       */
       getSearch() {
         return this.$el.find(`.${CLASS_NAMES.searchView}`);
       },
