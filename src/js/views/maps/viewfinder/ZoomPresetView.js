@@ -57,7 +57,11 @@ define(
           this.el.classList.remove(CLASS_NAMES.active);
         },
 
-        select(event) {
+        /**
+         * Add the active class and call the select callback function set on
+         * this view by the parent ZoomPresetsListView.
+         */
+        select() {
           this.selectCallback();
 
           this.el.classList.add(CLASS_NAMES.active);
