@@ -22,8 +22,9 @@ define(
 
     /**
      * @class ZoomPresetView
-     * @classdesc Allow user to zoom to a preset location with certain data
-     * layers enabled.
+     * @classdesc Shows the title, description, and associated layers of a
+     * configured location within a MapView. Users may click on a preset
+     * to zoom to that location.
      * @classcategory Views/Maps/Viewfinder
      * @name ZoomPresetView
      * @extends Backbone.View
