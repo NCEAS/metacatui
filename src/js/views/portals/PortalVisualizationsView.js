@@ -110,7 +110,8 @@ define(["jquery",
                   thisView.model.set("mapModel", mapModel)
                 }
                 let mapView = new MapView({
-                  model: mapModel
+                  model: mapModel,
+                  isPortalMap: true,
                 });
                 thisView.$el.html(mapView.el);
                 mapView.render();

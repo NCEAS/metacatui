@@ -63,7 +63,8 @@
     "./js/specs/unit/views/maps/SearchInputView.spec.js",
     "./js/specs/unit/models/Search.spec.js",
     "./js/specs/unit/models/SolrResult.spec.js",
-    "./js/specs/unit/models/DataONEObject.spec.js"
+    "./js/specs/unit/models/DataONEObject.spec.js",
+    "./js/specs/unit/views/maps/MapView.spec.js"
   ],
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",
