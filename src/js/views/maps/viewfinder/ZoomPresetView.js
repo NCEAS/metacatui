@@ -19,6 +19,8 @@ define(
       preset: `${BASE_CLASS}__preset`,
       title: `${BASE_CLASS}__title`,
     };
+    // A function that does nothing. Can be safely called as a default callback.
+    const noop = () => { };
 
     /**
      * @class ZoomPresetView
@@ -81,7 +83,8 @@ define(
          * selected.
          */
         initialize({ preset, selectCallback }) {
-          this.selectCallback = selectCallback;
+          this.selectCallback = typeof selectCallback === 'function'
+            ? selectCallback : noop;
           this.templateVars.preset = {
             title: preset.get('title'),
             description: preset.get('description'),
