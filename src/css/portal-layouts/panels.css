@@ -115,7 +115,7 @@
   left: 1.5rem;
   width: max-content;
   max-width: 15rem;
-  background-color: var(--portal-col-bkg-active, white);
+  background-color: var(--portal-col-bkg-active__deprecate, white);
   z-index: 1;
   padding: 0 0.3rem;
   border-radius: 0.2rem;
