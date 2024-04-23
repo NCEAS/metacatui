@@ -279,7 +279,8 @@ define(
             // Update the iFrame content
             this.getContent().then(function (html) {
               iFrameDiv.innerHTML = html;
-              view.updateIFrameHeight();
+              iFrame.style.height = 0;
+              iFrame.style.opacity = 0;
               // Not the ideal solution, but check the height of the iFrame
               // again after some time to allow external content to load. This
               // is necessary for content that loads asynchronously, like
@@ -287,7 +288,7 @@ define(
               // may be from a different domain.
               setTimeout(function () {
                 view.updateIFrameHeight();
-              }, 850);
+              }, 500);
             })
 
             // Show or hide the layer details button, update the text
@@ -309,24 +310,20 @@ define(
         /**
          * Update the height of the iFrame to match the height of the content
          * within it.
-         * @param {number} [height] The height to set the iFrame to. If no
-         * height is provided, then the height of the content within the iFrame
-         * will be used.
-         * @param {boolean} [limit=true] Whether or not to limit the height of
-         * the iFrame to the height of the window, minus 275px.
          * @since 2.27.0
          */
-        updateIFrameHeight: function (height, limit = true) {
+        updateIFrameHeight: function () {
           const iFrame = this.elements?.iFrame;
-          if (!iFrame) return;
-          if ((!height && height !== 0) || height < 0) {
-            height = iFrame.contentWindow.document.body.scrollHeight + 5;
-          }
-          if (limit) {
-            const maxHeight = window.innerHeight - 275;
-            height = height > maxHeight ? maxHeight : height;
-          }
-          iFrame.style.height = height + "px";
+          // 336 includes the maximum height of the top bars, bottom padding, and other
+          // content of feature info like label on top and buttons at the bottom. This is
+          // only an estimate and a temporary approach. Eventually we should move away
+          // from iFrame so that css layout can figure this out without us doing math
+          // here.
+          const maxHeight = window.innerHeight - 336;
+          const height = Math.min(maxHeight,
+              iFrame.contentWindow.document.getElementById("content").scrollHeight); 
+          iFrame.style.height = height / 16 + "rem";
+          iFrame.style.opacity = 1;
         },
 
         /**
