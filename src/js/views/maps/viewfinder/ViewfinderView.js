@@ -20,7 +20,7 @@ define(
     ViewfinderModel,
   ) => {
     // The base classname to use for this View's template elements.
-    const BASE_CLASS = 'viewfinder';
+    const BASE_CLASS = 'viewfinder-search';
     // The HTML classes to use for this view's HTML elements.
     const CLASS_NAMES = {
       searchView: `${BASE_CLASS}__search`,
