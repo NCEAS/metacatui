@@ -235,6 +235,13 @@ define([
         view.scene = view.widget.scene;
         view.camera = view.widget.camera;
 
+        if (typeof this.model.get("globeBaseColor") === 'string') {
+          const baseColor = Cesium.Color.fromCssColorString(this.model.get("globeBaseColor"));
+          if (baseColor) {
+            view.scene.globe.baseColor = baseColor;
+          }
+        }
+
         return view.widget;
       },
 

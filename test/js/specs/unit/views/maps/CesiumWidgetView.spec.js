@@ -92,6 +92,15 @@ define([
         expect(state.view.scene.imageryLayers.get(1).imageryProvider).to.equal(Cesium.WebMapServiceImageryProvider);
         expect(state.view.scene.imageryLayers.get(0).imageryProvider).to.equal(Cesium.WebMapTileServiceImageryProvider);
       });
+
+      it("uses base color from model if applicable", () => {
+        state.view.model.set("globeBaseColor", "red");
+
+        state.view.render();
+
+        expect(state.view.scene.globe.baseColor).to.deep.equal(
+            new Cesium.Color(/* red= */ 1, /* green= */ 0, /* blue= */ 0, /* alpha= */ 1));
+      });
     });
   });
 });
