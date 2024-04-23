@@ -3,20 +3,22 @@
 define(
   [
     'underscore',
-    'views/maps/viewfinder/ViewfinderView',
+    'views/maps/viewfinder/SearchView',
+    'models/maps/viewfinder/ViewfinderModel',
     'models/maps/Map',
     'models/geocoder/Prediction',
     // The file extension is required for files loaded from the /test directory.
-    '/test/js/specs/unit/views/maps/viewfinder/ViewfinderViewHarness.js',
+    '/test/js/specs/unit/views/maps/viewfinder/SearchViewHarness.js',
     '/test/js/specs/unit/views/maps/viewfinder/PredictionsListViewHarness.js',
     '/test/js/specs/shared/clean-state.js',
   ],
   (
     _,
-    ViewfinderView,
+    SearchView,
+    ViewfinderModel,
     Map,
     Prediction,
-    ViewfinderViewHarness,
+    SearchViewHarness,
     PredictionsListViewHarness,
     cleanState,
   ) => {
@@ -32,7 +34,7 @@ define(
       };
     };
 
-    describe('ViewfinderView Test Suite', () => {
+    describe('SearchView Test Suite', () => {
       const state = cleanState(() => {
         const sandbox = sinon.createSandbox();
         // sinon.useFakeTimers() doesn't work with _.debounce, so stubbing instead.
@@ -41,10 +43,11 @@ define(
             fnToDebounce.apply(this, args);
           };
         });
-        const view = new ViewfinderView({ model: new Map() });
-        const zoomSpy = sandbox.stub(view.model, 'zoomTo');
+        const viewfinderModel = new ViewfinderModel({ mapModel: new Map() })
+        const view = new SearchView({ viewfinderModel });
+        const zoomSpy = sandbox.stub(view.viewfinderModel.mapModel, 'zoomTo');
         const autocompleteSpy = sandbox.stub(view.viewfinderModel, 'autocompleteSearch');
-        const harness = new ViewfinderViewHarness(view);
+        const harness = new SearchViewHarness(view);
         const predictions = [
           new Prediction({
             description: 'Some Location',
@@ -79,8 +82,8 @@ define(
         state.testContainer.remove();
       });
 
-      it('creates a ViewfinderView instance', () => {
-        state.view.should.be.instanceof(ViewfinderView);
+      it('creates a SearchView instance', () => {
+        state.view.should.be.instanceof(SearchView);
       });
 
       it('has an input for the user\'s search query', () => {
