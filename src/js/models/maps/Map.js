@@ -7,7 +7,17 @@ define([
   "collections/maps/MapAssets",
   "models/maps/MapInteraction",
   "collections/maps/AssetCategories",
-], function ($, _, Backbone, MapAssets, Interactions, AssetCategories) {
+  "models/maps/GeoPoint",
+  "models/maps/viewfinder/ZoomPresetModel",
+], function ($,
+  _,
+  Backbone,
+  MapAssets,
+  Interactions,
+  AssetCategories,
+  GeoPoint,
+  ZoomPresetModel,
+) {
   /**
    * @class MapModel
    * @classdesc The Map Model contains all of the settings and options for a
@@ -54,9 +64,11 @@ define([
        * @property {Boolean} [showHomeButton=true] - Whether or not to show the
        * home button in the toolbar.
        * @property {Boolean} [showViewfinder=false] - Whether or not to show the
-       * viefinder UI and viewfinder button in the toolbar. The ViewfinderView
+       * viewfinder UI and viewfinder button in the toolbar. The ViewfinderView
        * requires a Google Maps API key present in the AppModel. In order to 
        * work properly the Geocoding API and Places API must be enabled. 
+       * @property {Boolean} [showZoomPresets=false] - Whether or not to show
+       * the zoom to preset location and layers UI within the viewfinder UI and
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
@@ -80,6 +92,9 @@ define([
        * feedback section. showFeedback must be true for this to be shown.
        * @property {String} [globeBaseColor=null] - The base color of the globe when no
        * layer is shown.
+       * @property {ZoomPresetModel[]} [zoomPresets=[]] - Predefined list of
+       * locations with an enabled list of layer IDs to be showin the zoom
+       * presets UI.
        *
        * @example
        * {
@@ -179,7 +194,10 @@ define([
        * @property {Boolean} [showHomeButton=true] - Whether or not to show the
        * home button in the toolbar. True by default.
        * @property {Boolean} [showViewfinder=false] - Whether or not to show the
-       * viefinder UI and viewfinder button in the toolbar. Defaults to false.
+       * viewfinder UI and viewfinder button in the toolbar. Defaults to false.
+       * @property {Boolean} [showZoomPresets=false] - Whether or not to show 
+       * the zoom to predefined location and layers UI within the viewfinder UI.
+       * Defaults to false.
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
@@ -199,6 +217,9 @@ define([
        * feedback section.
        * @property {String} [globeBaseColor=null] - The base color of the globe when no
        * layer is shown.
+       * @property {ZoomPresetModel[]} [zoomPresets=[]] - Predefined list of
+       * locations with an enabled list of layer IDs to be showin the zoom
+       * presets UI.
        */
       defaults: function () {
         return {
@@ -221,6 +242,7 @@ define([
           showLayerList: true,
           showHomeButton: true,
           showViewfinder: false,
+          showZoomPresets: false,
           toolbarOpen: false,
           showScaleBar: true,
           showFeatureInfo: true,
@@ -229,6 +251,7 @@ define([
           showFeedback: false,
           feedbackText: null,
           globeBaseColor: null,
+          zoomPresets: [],
         };
       },
 
@@ -257,6 +280,37 @@ define([
             }
             if (isNonEmptyArray(config.terrains)) {
               this.set("terrains", new MapAssets(config.terrains));
+            }
+
+            if (isNonEmptyArray(config.zoomPresets)) {
+              const zoomPresets = config.zoomPresets.map(zoomPresetObj => {
+                const allLayers = this.get('layers')?.models ?? this.get('layerCategories')
+                  .getMapAssets().map(assets => assets.models).flat();
+
+                const enabledLayerIds = [];
+                const enabledLayerLabels = [];
+                for (const layer of allLayers) {
+                  if (zoomPresetObj.layerIds.find(id => id === layer.get('layerId'))) {
+                    enabledLayerIds.push(layer.get('layerId'));
+                    enabledLayerLabels.push(layer.get('label'));
+                  }
+                }
+
+                const geoPoint = new GeoPoint({
+                  latitude: zoomPresetObj.latitude,
+                  longitude: zoomPresetObj.longitude,
+                  height: zoomPresetObj.height
+                });
+                return new ZoomPresetModel({
+                  description: zoomPresetObj.description,
+                  enabledLayerLabels,
+                  enabledLayerIds,
+                  geoPoint,
+                  title: zoomPresetObj.title,
+                });
+              });
+
+              this.set('zoomPresets', zoomPresets);
             }
           }
           this.setUpInteractions();

@@ -19,8 +19,10 @@ define(['underscore', 'backbone',], (_, Backbone) => {
        * including height information.
        * @property {string} description A brief description of the layers and
        * location.
-       * @property {string[]} enabledLayers A list of layer identifiers which are 
-       * to be enabled for this preset.
+       * @property {string[]} enabledLayerIds A list of layer IDs which are to
+       * be enabled for this preset.
+       * @property {string[]} enabledLayerLabels A list of layer labels which
+       * are enabled for this preset.
        */
 
       /**
@@ -32,6 +34,7 @@ define(['underscore', 'backbone',], (_, Backbone) => {
           title: '',
           geoPoint: null,
           description: '',
+          enabledLayerLabels: [],
           enabledLayers: [],
         }
       },

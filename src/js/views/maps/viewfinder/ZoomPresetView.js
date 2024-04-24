@@ -88,7 +88,7 @@ define(
           this.templateVars.preset = {
             title: preset.get('title'),
             description: preset.get('description'),
-            enabledLayers: preset.get('enabledLayers'),
+            enabledLayerLabels: preset.get('enabledLayerLabels'),
           };
         },
 

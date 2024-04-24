@@ -7,17 +7,37 @@ define(
     'models/maps/Map',
     'models/geocoder/Prediction',
     'models/geocoder/GeocodedLocation',
+    'models/maps/viewfinder/ZoomPresetModel',
+    'models/maps/GeoPoint',
     // The file extension is required for files loaded from the /test directory.
     '/test/js/specs/shared/clean-state.js',
   ],
-  (_, ViewfinderModel, Map, Prediction, GeocodedLocation, cleanState) => {
+  (
+    _,
+    ViewfinderModel,
+    Map,
+    Prediction,
+    GeocodedLocation,
+    ZoomPresetModel,
+    GeoPoint,
+    cleanState,
+  ) => {
     const should = chai.should();
     const expect = chai.expect;
 
     describe('ViewfinderModel Test Suite', () => {
       const state = cleanState(() => {
         const sandbox = sinon.createSandbox();
-        const model = new ViewfinderModel({ mapModel: new Map() });
+        const mapModel = new Map({
+          zoomPresets: [{
+            latitude: 55,
+            longitude: 66,
+            height: 77,
+            layerIds: ['layer1'],
+          }],
+          layers: [{ layerId: 'layer1' }, { layerId: 'layer2' }],
+        });
+        const model = new ViewfinderModel({ mapModel });
         const zoomSpy = sinon.spy(model.mapModel, 'zoomTo');
         const autocompleteSpy = sandbox.stub(model.geocoderSearch, 'autocomplete').returns([])
         const geocodeSpy = sandbox.stub(model.geocoderSearch, 'geocode').returns([]);
@@ -54,6 +74,34 @@ define(
 
       it('creates a ViewfinderModel instance', () => {
         state.model.should.be.instanceof(ViewfinderModel);
+      });
+
+      it('sets allLayers field from Map model layers', () => {
+        const model = new ViewfinderModel({
+          mapModel: new Map({ layers: [{ layerId: 'layer1' }] })
+        });
+
+        expect(model.allLayers[0].get('layerId')).to.equal('layer1');
+      });
+
+      it('sets allLayers field from Map model layerCategories', () => {
+        const model = new ViewfinderModel({
+          mapModel: new Map({
+            layerCategories: [{ layers: { layerId: 'layer1' } }],
+          })
+        });
+
+        expect(model.allLayers[0].get('layerId')).to.equal('layer1');
+      });
+
+      it('sets zoom presets field from Map model', () => {
+        const zoomPresets = [];
+        const model = new ViewfinderModel({
+          mapModel: new Map({ zoomPresets }),
+        });
+
+        // Reference equality.
+        expect(model.get('zoomPresets')).to.equal(zoomPresets);
       });
 
       describe('autocomplete search', () => {
@@ -309,6 +357,45 @@ define(
           await state.model.selectPrediction();
 
           expect(state.geocodeSpy.callCount).to.equal(0);
+        });
+      });
+
+      describe('selecting a zoom preset', () => {
+        it('shows all enabled layers', () => {
+          const setSpy = state.sandbox.spy(state.model.allLayers[0], 'set');
+          state.model.selectZoomPreset(new ZoomPresetModel({
+            latitude: 55,
+            longitude: 66,
+            height: 72,
+            enabledLayerIds: ['layer1']
+          }));
+
+          expect(setSpy.callCount).to.equal(1);
+          expect(setSpy.getCall(0).args).to.eql(['visible', true]);
+        });
+
+        it('hides all layers not inlcluded in enabled layers', () => {
+          const setSpy = state.sandbox.spy(state.model.allLayers[1], 'set');
+          state.model.selectZoomPreset(new ZoomPresetModel({
+            latitude: 55,
+            longitude: 66,
+            height: 72,
+            enabledLayerIds: ['layer1']
+          }));
+
+          expect(setSpy.callCount).to.equal(1);
+          expect(setSpy.getCall(0).args).to.eql(['visible', false]);
+        });
+
+        it('zooms to the location on the map', () => {
+          const geoPoint = new GeoPoint();
+          state.model.selectZoomPreset(new ZoomPresetModel({
+            enabledLayerIds: ['layer1'],
+            geoPoint,
+          }));
+
+          expect(state.zoomSpy.callCount).to.equal(1);
+          expect(state.zoomSpy.getCall(0).args[0]).to.eql(geoPoint);
         });
       });
 

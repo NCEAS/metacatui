@@ -6,7 +6,8 @@ define(
     'backbone',
     'cesium',
     'models/geocoder/GeocoderSearch',
-    'models/maps/GeoPoint'],
+    'models/maps/GeoPoint'
+  ],
   (_, Backbone, Cesium, GeocoderSearch, GeoPoint) => {
     const EMAIL = MetacatUI.appModel.get('emailContact');
     const NO_RESULTS_MESSAGE = 'No search results found, try using another place name.';
@@ -50,6 +51,13 @@ define(
       initialize({ mapModel }) {
         this.geocoderSearch = new GeocoderSearch();
         this.mapModel = mapModel;
+        this.allLayers = this.mapModel.get('layers')?.models ?? this.mapModel
+          .get('layerCategories')
+          .getMapAssets()
+          .map(assets => assets.models)
+          .flat();
+
+        this.set('zoomPresets', mapModel.get('zoomPresets'));
       },
 
       /** 
@@ -144,6 +152,21 @@ define(
             coords.north,
           )
         });
+      },
+
+      /**
+       * Select a ZoomPresetModel from the list of presets and navigate there.
+       * @param {ZoomPresetModel} preset A user selected preset for which to 
+       * enable layers and navigate.
+       */
+      selectZoomPreset(preset) {
+        const enabledLayerIds = preset.get('enabledLayerIds');
+        for (const layer of this.allLayers) {
+          const isVisible = enabledLayerIds.includes(layer.get('layerId'));
+          layer.set('visible', isVisible);
+        }
+
+        this.mapModel.zoomTo(preset.get('geoPoint'));
       },
 
       /**

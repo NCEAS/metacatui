@@ -6,11 +6,11 @@
     <%= preset.description %>
   </div>
   <div class="<%= classNames.layers %>">
-    <% _.each(preset.enabledLayers, enabledLayer=> { %>
-      <div class="<%= classNames.layer %>" title="<%= enabledLayer %>">
+    <% _.each(preset.enabledLayerLabels, label => { %>
+      <div class="<%= classNames.layer %>" title="<%= label %>">
         <div class="<%= classNames.layerContent %>">
           <i class="icon icon-eye-open"></i>
-          <%= enabledLayer %>
+          <%= label %>
         </div>
       </div>
       <% }); %>
