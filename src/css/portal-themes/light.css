@@ -5,6 +5,7 @@
   --portal-blue-1: #ECF8FC;
   --portal-blue-2: #CCF0FC;
   --portal-blue-3: #99E1FA;
+  --portal-blue-4: #33C3F5;
   --portal-blue-5: #00A9E4;
   --portal-blue-6: #0087B5;
   --portal-blue-7: #136682;
@@ -33,9 +34,13 @@
   --portal-col-buttons-icon-highlight: var(--portal-blue-3);
   --portal-col-buttons-icon-muted: var(--portal-grey-4);
   --portal-col-utility-buttons: var(--portal-grey-6);
+  --portal-col-layer-label-bkg: var(--portal-grey-2);
+  --portal-col-layer-label-bkg-active: #0098cc;
+  --portal-col-layer-label-icon-bkg: var(--portal-blue-4);
 
   --portal-col-border: var(--portal-blue-2);
   --portal-col-border-highlight: unset;
+  --portal-col-border-panel: var(--portal-grey-3);
   --portal-col-border-muted: var(--portal-grey-4);
   --portal-col-border-highlight-search-box: var(--portal-blue-3);
 
