@@ -198,6 +198,9 @@ define([
           // Set the map up so that selected features may be highlighted
           view.setUpSilhouettes();
 
+          // this.showImageryGrid("#000000", "WebMercatorTilingScheme");
+          this.showImageryGrid("#000000", "GeographicTilingScheme");
+
           return this;
         } catch (e) {
           console.log("Failed to render a CesiumWidgetView,", e);
@@ -513,8 +516,39 @@ define([
               view.setMousePosition(position);
               view.setHoveredFeatures(position);
             }
+            if (label == 'LEFT_CLICK') {
+              console.log("hi mom!");
+            }
           }, value);
         });
+
+        handler.setInputAction((event) => {
+          // const w = new Cesium.WebMercatorTilingScheme();
+          const w = new Cesium.GeographicTilingScheme();
+
+          const pickRay = this.camera.getPickRay(event.position);
+          const cartesian = this.scene.globe.pick(pickRay, this.scene);
+
+          const height = this.scene.camera.positionCartographic.height;
+
+          const levels = this.scene.globe._surface._tilesToRender.map(t => t.level);
+          const sum = levels.reduce((a, b) => a + b, 0);
+          const avg = Math.ceil((sum / levels.length));
+          const level = avg + 1;
+          const pos = w.positionToTileXY(Cesium.Cartographic.fromCartesian(cartesian), level);
+
+          // Corresponding OSM tile
+          // window.open(`https://a.tile.openstreetmap.org/${level}/${pos.x}/${pos.y}.png`, "_blank");
+
+          // Corresponding permafrost extent
+          window.open(
+            `https://arcticdata.io/data/tiles/10.18739/A2MG7FX35/new/coverage_category/WGS1984Quad/${level}/${pos.x}/${pos.y}.png`,
+            "_blank"
+          );
+
+
+          console.log("clicked!", level, pos);
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
       },
 
       /**
@@ -815,7 +849,7 @@ define([
               // Search for the entity again in case it was removed and
               // re-added to the data source display.
               entity = view.getEntityById(entity.id, entity.entityCollection);
-              if(!entity) {
+              if (!entity) {
                 clearInterval(interval);
                 reject("Failed to get bounding sphere for entity, entity not found.");
               }
@@ -1134,8 +1168,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error finding the edge points in a CesiumWidgetView" +
-              ". Error details: " +
-              error
+            ". Error details: " +
+            error
           );
         }
       },
@@ -1176,8 +1210,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error finding a midpoint in a CesiumWidgetView" +
-              ". Error details: " +
-              error
+            ". Error details: " +
+            error
           );
         }
       },
@@ -1329,8 +1363,8 @@ define([
         } catch (error) {
           console.log(
             "Failed to get a pixel to meters measurement in a CesiumWidgetView" +
-              ". Error details: " +
-              error
+            ". Error details: " +
+            error
           );
           return false;
         }
@@ -1512,9 +1546,9 @@ define([
       sortImagery: function () {
         const imageryInMap = this.scene.imageryLayers;
         const imageryModels = _.reduce(this.model.getLayerGroups(), (models, layers) => {
-            models.push(...layers.getAll("CesiumImagery"));
-            return models;
-          }, []);
+          models.push(...layers.getAll("CesiumImagery"));
+          return models;
+        }, []);
 
         // If there are no imagery layers, or just one, return
         if (
@@ -1560,8 +1594,8 @@ define([
           if (!color || typeof color !== "string" || !color.startsWith("#")) {
             console.log(
               `${color} is an invalid color for imagery grid. ` +
-                `Must be a hex color starting with '#'. ` +
-                `Setting color to white: '#ffffff'`
+              `Must be a hex color starting with '#'. ` +
+              `Setting color to white: '#ffffff'`
             );
             color = "#ffffff";
           }
@@ -1574,7 +1608,7 @@ define([
           if (availableTS.indexOf(tilingScheme) == -1) {
             console.log(
               `${tilingScheme} is not a valid tiling scheme ` +
-                `for the imagery grid. Using WebMercatorTilingScheme`
+              `for the imagery grid. Using WebMercatorTilingScheme`
             );
             tilingScheme = "WebMercatorTilingScheme";
           }
@@ -1583,6 +1617,7 @@ define([
           const gridOpts = {
             tilingScheme: new Cesium[tilingScheme](),
             color: Cesium.Color.fromCssColorString(color),
+            cells:2,
           };
 
           const gridOutlines = new Cesium.GridImageryProvider(gridOpts);
@@ -1594,8 +1629,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error showing the imagery grid in a CesiumWidgetView" +
-              ". Error details: " +
-              error
+            ". Error details: " +
+            error
           );
         }
       },
