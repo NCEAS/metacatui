@@ -7,42 +7,21 @@ define([
   "models/maps/AssetColor",
   "models/maps/AssetColorPalette",
   "collections/maps/VectorFilters",
+  "common/IconUtilities",
 ], function (
   _,
   Cesium,
   MapAsset,
   AssetColor,
   AssetColorPalette,
-  VectorFilters
+  VectorFilters,
+  IconUtilities
 ) {
   // Source: https://fontawesome.com/v6/icons/location-dot?f=classic&s=solid
   const PIN_SVG_STRING = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>';
   const PIN_OUTLINE_WIDTH = 30; // The width of the stroke around the pin is relative to the viewBox
   const PIN_OUTLINE_COLOR = "white";
-  const B64_START = 'data:image/svg+xml;base64,';
-  const PIN_SVG = convertFontAwesomeSvgForCesium(PIN_SVG_STRING, PIN_OUTLINE_WIDTH, PIN_OUTLINE_COLOR);
-
-  // Convert a Font Awesome SVG string to a SVG element that can be used as an image for a Cesium billboard
-  function convertFontAwesomeSvgForCesium(svgString, strokeWidth, strokeColor) {
-
-    const domParser = new DOMParser();
-    const svgElement = domParser.parseFromString(svgString, "image/svg+xml").querySelector("svg");
-
-    svgElement.removeChild(svgElement.firstChild);
-
-    svgElement.setAttribute("stroke-width", strokeWidth);
-    svgElement.setAttribute("stroke", strokeColor);
-
-    // Update the view box to accommodate the stroke width, otherwise the billboard will be clipped
-    let viewBox = svgElement.getAttribute("viewBox").split(" ");
-    viewBox[0] = parseFloat(viewBox[0]) - strokeWidth;
-    viewBox[1] = parseFloat(viewBox[1]) - strokeWidth;
-    viewBox[2] = parseFloat(viewBox[2]) + strokeWidth * 2;
-    viewBox[3] = parseFloat(viewBox[3]) + strokeWidth * 2;
-    svgElement.setAttribute("viewBox", viewBox.join(" "));
-
-    return svgElement;
-  }
+  const PIN_SVG = IconUtilities.formatSvgForCesiumBillboard(PIN_SVG_STRING, PIN_OUTLINE_WIDTH, PIN_OUTLINE_COLOR);
 
   /**
    * @classdesc A CesiumVectorData Model is a vector layer (excluding
@@ -639,7 +618,7 @@ define([
         PIN_SVG.setAttribute("height", size * 4);
         PIN_SVG.setAttribute("fill", styles.color.toCssHexString());
         entity.billboard = {
-          image: B64_START + btoa(PIN_SVG.outerHTML),
+          image: IconUtilities.svgToBase64(PIN_SVG),
           width: size,
           height: size
         };
