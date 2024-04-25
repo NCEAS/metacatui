@@ -1290,7 +1290,7 @@ other class: .ui-slider-range */
   border: 1px solid var(--map-col-border);
   border-radius: var(--map-border-radius-small);
   text-decoration: none;
-  color: var(--map-col-buttons-text, var(--portal-col-highlight));
+  color: var(--map-col-buttons-text, var(--portal-col-highlight__deprecate));
   display: inline-block;
   padding: .5rem 1rem;
 
