@@ -15,6 +15,7 @@ define(
       content: `${BASE_CLASS}__content`,
       toggle: `${BASE_CLASS}__toggle`,
       icon: `${BASE_CLASS}__icon`,
+      iconToggle: `${BASE_CLASS}__icon-toggle`,
     };
 
     /**
