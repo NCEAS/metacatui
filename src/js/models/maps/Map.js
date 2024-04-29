@@ -285,9 +285,7 @@ define([
 
             if (isNonEmptyArray(config.zoomPresets)) {
               const zoomPresets = config.zoomPresets.map(zoomPresetObj => {
-                const allLayers = this.get('layers')?.models ?? this.get('layerCategories')
-                  .getMapAssets().map(assets => assets.models).flat();
-
+                const allLayers = this.getAllLayers();
                 const enabledLayerIds = [];
                 const enabledLayerLabels = [];
                 for (const layer of allLayers) {
@@ -395,6 +393,24 @@ define([
           return this.get("layerCategories").getMapAssets();
         } else if (this.has("layers")) {
           return [this.get("layers")];
+        }
+        return [];
+      },
+
+      /**
+       * Get all of the layers regardless of presences of layerCategories in a
+       * flat list of MapAsset models.
+       * @returns {MapAsset[]} All of the layers, or empty array if no layers
+       * are configured.
+       */
+      getAllLayers() {
+        if (this.has("layerCategories")) {
+          return this.get("layerCategories")
+            .getMapAssets()
+            .map(assets => assets.models)
+            .flat();
+        } else if (this.has("layers")) {
+          return this.get("layers").models;
         }
         return [];
       },

@@ -51,11 +51,7 @@ define(
       initialize({ mapModel }) {
         this.geocoderSearch = new GeocoderSearch();
         this.mapModel = mapModel;
-        this.allLayers = this.mapModel.get('layers')?.models ?? this.mapModel
-          .get('layerCategories')
-          .getMapAssets()
-          .map(assets => assets.models)
-          .flat();
+        this.allLayers = this.mapModel.getAllLayers();
 
         this.set('zoomPresets', mapModel.get('zoomPresets'));
       },
@@ -156,6 +152,8 @@ define(
 
       /**
        * Select a ZoomPresetModel from the list of presets and navigate there.
+       * This function hides all layers that are not to be visible according to
+       * the ZoomPresetModel configuration.
        * @param {ZoomPresetModel} preset A user selected preset for which to 
        * enable layers and navigate.
        */
@@ -163,6 +161,7 @@ define(
         const enabledLayerIds = preset.get('enabledLayerIds');
         for (const layer of this.allLayers) {
           const isVisible = enabledLayerIds.includes(layer.get('layerId'));
+          // Show or hide the layer according to the preset.
           layer.set('visible', isVisible);
         }
 
