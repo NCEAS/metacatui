@@ -93,8 +93,9 @@ define([
        * @property {String} [globeBaseColor=null] - The base color of the globe when no
        * layer is shown.
        * @property {ZoomPresetModel[]} [zoomPresets=[]] - Predefined list of
-       * locations with an enabled list of layer IDs to be showin the zoom
-       * presets UI.
+       * locations with an enabled list of layer IDs to be shown the zoom
+       * presets UI. Requires `showViewfinder` to be true as this UI appears
+       * within the ViewfinderView. 
        *
        * @example
        * {

@@ -31,11 +31,11 @@ define(['underscore', 'backbone',], (_, Backbone) => {
        */
       defaults() {
         return {
-          title: '',
-          geoPoint: null,
           description: '',
+          enabledLayerIds: [],
           enabledLayerLabels: [],
-          enabledLayers: [],
+          geoPoint: null,
+          title: '',
         }
       },
     });
