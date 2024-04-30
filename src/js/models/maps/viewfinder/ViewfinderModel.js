@@ -41,6 +41,7 @@ define(
           focusIndex: -1,
           predictions: [],
           query: '',
+          zoomPresets: [],
         }
       },
 
