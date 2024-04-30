@@ -5,6 +5,7 @@ define(
     'underscore',
     'views/maps/viewfinder/ViewfinderView',
     'models/maps/Map',
+    'models/maps/viewfinder/ZoomPresetModel',
     // The file extension is required for files loaded from the /test directory.
     '/test/js/specs/unit/views/maps/viewfinder/ViewfinderViewHarness.js',
     '/test/js/specs/shared/clean-state.js',
@@ -13,6 +14,7 @@ define(
     _,
     ViewfinderView,
     Map,
+    ZoomPresetModel,
     ViewfinderViewHarness,
     cleanState,
   ) => {
@@ -50,7 +52,12 @@ define(
       });
 
       it('shows zoom presets UI when enabled in config', () => {
-        const view = new ViewfinderView({ model: new Map({ showZoomPresets: true }) });
+        const view = new ViewfinderView({
+          model: new Map({
+            showZoomPresets: true,
+            zoomPresets: [new ZoomPresetModel()]
+          })
+        });
         const harness = new ViewfinderViewHarness(view);
         view.render();
 
