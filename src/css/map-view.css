@@ -707,6 +707,7 @@ represents 1 unit of the given distance measurement. */
     border: solid var(--map-col-section-divider, var(--map-col-bkg-lightest__deprecate));
     border-width: 1px 0;
     overflow: auto;
+    border-top: 1px solid var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
   }
 }
 
