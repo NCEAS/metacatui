@@ -67,12 +67,15 @@ define(
          * visible.
          * @property {ExpansionPanelsModel} [panelsModel] Optional model for
          * coordinating the expanded/collapsed state among many panels. 
+         * @property {boolean} startOpen Whether the panel should be expanded by
+         * default. 
          */
-        initialize({ title, contentViewInstance, icon, panelsModel }) {
+        initialize({ title, contentViewInstance, icon, panelsModel, startOpen }) {
           this.templateVars.title = title;
           this.templateVars.icon = icon;
           this.contentViewInstance = contentViewInstance;
           this.panelsModel = panelsModel;
+          this.startOpen = !!startOpen;
 
           this.panelsModel?.register(this);
         },
@@ -93,6 +96,7 @@ define(
         /** Force the panel's content to be shown. */
         open() {
           this.$el.addClass('show-content');
+          this.panelsModel?.collapseOthers(this);
         },
 
         /** Toggle the visibility of the panel's content. */
@@ -101,7 +105,6 @@ define(
             this.collapse();
           } else {
             this.open();
-            this.panelsModel?.collapseOthers(this);
           }
         },
 
@@ -114,6 +117,9 @@ define(
           this.el.innerHTML = _.template(Template)(this.templateVars);
           this.contentViewInstance.render();
           this.getContent().append(this.contentViewInstance.el);
+          if (this.startOpen) {
+            this.open();
+          }
         },
       });
 
