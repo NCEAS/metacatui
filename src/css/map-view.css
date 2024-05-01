@@ -1429,7 +1429,19 @@ other class: .ui-slider-range */
 }
 
 .viewfinder {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   width: 100%;
+
+  .viewfinder__search {
+    border-bottom: 1px solid var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
+  }
+
+  .viewfinder__zoom-presets {
+    flex-grow: 1;
+    overflow: auto;
+  }
 }
 
 .viewfinder-search__search-input {
@@ -1539,7 +1551,7 @@ other class: .ui-slider-range */
         text-overflow: ellipsis;
         text-wrap: nowrap;
         color: var(--map-col-text-muted, white);
-        font-size: .75rem;
+        font-size: .8rem;
         max-width: 10rem;
         
         i {
@@ -1575,6 +1587,7 @@ other class: .ui-slider-range */
 /** START - Expansion panel View. */
 .expansion-panel {
   box-shadow: 0 1px var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate)) inset;
+  border-bottom: 1px solid var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
 
   .expansion-panel__toggle {
     display: grid;
@@ -1583,8 +1596,7 @@ other class: .ui-slider-range */
     font-size: 1rem;
     grid-template-columns: min-content auto min-content;
     padding: 0 1.5rem;
-    border: solid var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
-    border-width: 1px 0;
+    border: none;
 
     &:hover {
       background-color: var(--map-col-content-bkg-highlight, #15324e);
