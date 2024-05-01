@@ -351,6 +351,7 @@ define([
             }
           }
 
+          this.set("originalVisibility", this.get("visible"));
           this.setListeners();
         } catch (e) {
           console.log("Error initializing a MapAsset model", e);
@@ -393,7 +394,6 @@ define([
        * @since 2.27.0
        */
       handleError: function () {
-        this.set("originalVisibility", this.get("visible"));
         this.set("visible", false);
         this.stopListening(this, "change:visible");
       },
