@@ -342,6 +342,16 @@ define([
       },
 
       /**
+       * Reset the visibility of all layers to the value that was in the intial
+       * configuration.
+       */
+      resetLayerVisibility: function () {
+        for (const layer of this.getAllLayers()) {
+          layer.set("visible", layer.get('originalVisibility'));
+        }
+      },
+
+      /**
        * Reset the layers to the default layers. This will set a new MapAssets
        * collection on the layer attribute.
        * @returns {MapAssets} The new layers collection.

@@ -43,6 +43,20 @@ define(
           expect(state.harness.isContentVisible()).to.be.false;
         });
 
+        it('shows the content initially when startOpen is true', () => {
+          const view = new ExpansionPanelView({
+            title: 'Some title',
+            icon: 'leaf',
+            contentViewInstance: new TestView(),
+            startOpen: true,
+          });
+          view.render();
+
+          const harness = new ExpansionPanelViewHarness(view);
+
+          expect(harness.isContentVisible()).to.be.true;
+        });
+
         it('shows content when toggled', () => {
           state.harness.clickToggle();
 

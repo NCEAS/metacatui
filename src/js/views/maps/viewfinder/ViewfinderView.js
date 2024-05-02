@@ -115,6 +115,7 @@ define(
           icon: 'icon-plane',
           panelsModel: this.panelsModel,
           title: 'Zoom to...',
+          startOpen: true,
         });
         expansionPanel.render();
 
