@@ -211,7 +211,7 @@ define(
                 body {
                   background-color: transparent;
                   color: var(--map-col-text-body, var(--map-col-text__deprecate));
-                  font-family: "Helvetica Nueue", "Helvetica", "Arial", "Lato", "sans serif";
+                  font-family: var(--portal-body-font, "Helvetica Nueue", "Helvetica", "Arial", "Lato", "sans serif");
                   margin: 0;
                   box-sizing: border-box;
                 }

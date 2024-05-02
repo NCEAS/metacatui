@@ -692,6 +692,11 @@ represents 1 unit of the given distance measurement. */
   .layers-panel__search {
     margin: 0 1.5rem;
   }
+
+  .layers-panel__layers {
+    border: solid var(--map-col-section-divider, var(--map-col-bkg-lightest__deprecate));
+    border-width: 1px 0;
+  }
 }
 
 /*****************************************************************************************
@@ -709,8 +714,6 @@ represents 1 unit of the given distance measurement. */
   grid-template-rows: auto;
   width: 100%;
   height: min-content;
-  border: solid var(--map-col-section-divider, var(--map-col-bkg-lightest__deprecate));
-  border-width: 1px 0;
 }
 
 /* A layer-item is one item in the layer-list */
@@ -861,9 +864,6 @@ represents 1 unit of the given distance measurement. */
  */
 
 .layer-category-list {
-  border: solid var(--map-col-section-divider, var(--map-col-bkg-lightest__deprecate));
-  border-width: 1px 0;
-
   .layer-category-item {
     box-shadow: 0 1px var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate)) inset;
 
