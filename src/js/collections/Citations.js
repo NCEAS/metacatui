@@ -1,8 +1,8 @@
 /* global define */
 "use strict";
 
-define(['jquery', 'underscore', 'backbone'],
-    function($, _, Backbone) {
+define(['jquery', 'underscore', 'backbone', 'models/CitationModel'],
+    function($, _, Backbone, CitationModel) {
 
     /**
      * @class Citations
@@ -18,7 +18,7 @@ define(['jquery', 'underscore', 'backbone'],
       /** @lends Citations.prototype */{
 
         model: function (attrs, options) {
-            // We use the inline require here to
+            // We use the inline require here in addition to the define above to
             // avoid an issue caused by the circular dependency between
             // CitationModel and Citations
             var CitationModel = require('models/CitationModel');

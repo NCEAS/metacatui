@@ -156,6 +156,11 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
           // Format the citation metadata = DataONE datasets cited by this
           // citation (external document)
           const cm = response.citationMetadata;
+
+          // We use the inline require here in addition to the define above to
+          // avoid an issue caused by the circular dependency between
+          // CitationModel and Citations
+          var Citations = require('collections/Citations');
           if (cm) {
             if (cm && !(cm instanceof Citations)) {
               const citationMetadata = Object.entries(cm).map(([pid, data]) => {
