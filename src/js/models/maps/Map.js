@@ -67,8 +67,6 @@ define([
        * viewfinder UI and viewfinder button in the toolbar. The ViewfinderView
        * requires a Google Maps API key present in the AppModel. In order to 
        * work properly the Geocoding API and Places API must be enabled. 
-       * @property {Boolean} [showZoomPresets=false] - Whether or not to show
-       * the zoom to preset location and layers UI within the viewfinder UI and
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
@@ -196,9 +194,6 @@ define([
        * home button in the toolbar. True by default.
        * @property {Boolean} [showViewfinder=false] - Whether or not to show the
        * viewfinder UI and viewfinder button in the toolbar. Defaults to false.
-       * @property {Boolean} [showZoomPresets=false] - Whether or not to show 
-       * the zoom to predefined location and layers UI within the viewfinder UI.
-       * Defaults to false.
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
@@ -244,7 +239,6 @@ define([
           showLayerList: true,
           showHomeButton: true,
           showViewfinder: false,
-          showZoomPresets: false,
           toolbarOpen: false,
           showScaleBar: true,
           showFeatureInfo: true,

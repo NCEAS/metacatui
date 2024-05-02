@@ -53,7 +53,7 @@ define(
 
       it('shows zoom presets UI when enabled in config', () => {
         const view = new ViewfinderView({
-          model: new Map({ showZoomPresets: true, zoomPresets: [{}] })
+          model: new Map({ zoomPresets: [{}] })
         });
         const harness = new ViewfinderViewHarness(view);
         view.render();

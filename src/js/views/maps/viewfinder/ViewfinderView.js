@@ -140,7 +140,7 @@ define(
         this.el.innerHTML = _.template(Template)(this.templateVars);
 
         this.renderSearchView();
-        if (this.model.get('showZoomPresets') && this.viewfinderModel.get('zoomPresets').length) {
+        if (this.viewfinderModel.get('zoomPresets').length) {
           this.renderZoomPresetsView();
         }
       },
