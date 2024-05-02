@@ -402,6 +402,7 @@ define([
        * flat list of MapAsset models.
        * @returns {MapAsset[]} All of the layers, or empty array if no layers
        * are configured.
+       * @since x.x.x
        */
       getAllLayers() {
         if (this.has("layerCategories")) {
