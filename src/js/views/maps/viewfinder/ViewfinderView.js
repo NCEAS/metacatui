@@ -72,6 +72,11 @@ define(
         this.panelsModel = new ExpansionPanelsModel({ isMulti: true });
       },
 
+      /**
+       * Get the ZoomPresetsView element.
+       * @returns {JQuery} The ZoomPresetsView element.
+       * @since x.x.x
+       */
       getZoomPresets() {
         return this.$el.find(`.${CLASS_NAMES.zoomPresetsView}`);
       },
