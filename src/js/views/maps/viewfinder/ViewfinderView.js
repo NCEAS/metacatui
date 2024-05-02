@@ -99,7 +99,10 @@ define(
         this.searchView.focusInput();
       },
 
-      /** Render child ZoomPresetsView and append to DOM. */
+      /**
+       * Render child ZoomPresetsView and append to DOM.
+       * @since x.x.x
+       */
       renderZoomPresetsView() {
         const zoomPresetsListView = new ZoomPresetsListView({
           zoomPresets: this.viewfinderModel.get('zoomPresets'),
