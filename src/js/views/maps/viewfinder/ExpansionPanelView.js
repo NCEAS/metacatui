@@ -96,7 +96,7 @@ define(
         /** Force the panel's content to be shown. */
         open() {
           this.$el.addClass('show-content');
-          this.panelsModel?.collapseOthers(this);
+          this.panelsModel?.maybeCollapseOthers(this);
         },
 
         /** Toggle the visibility of the panel's content. */

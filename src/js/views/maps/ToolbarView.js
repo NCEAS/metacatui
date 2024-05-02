@@ -175,11 +175,7 @@ define(
             icon: 'rotate-left',
             action: function (view, model) {
               model.flyHome();
-              
-              // Reset the visibility of all layers.
-              for (const layer of model.getAllLayers()) {
-                layer.set("visible", layer.get('originalVisibility'));
-              }
+              model.resetLayerVisibility();
             },
             isVisible(model) {
               return model.get("showHomeButton");

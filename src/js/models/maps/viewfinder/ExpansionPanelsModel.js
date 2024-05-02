@@ -40,7 +40,7 @@ define([], () => {
        * @property {ExpansionPanelView} openedPanel The expansion panel view that 
        * should remain open.
        */
-      collapseOthers(openedPanel) {
+      maybeCollapseOthers(openedPanel) {
         const isSingleOpenMode = !this.get('isMulti');
         for (const panel of this.get('panels')) {
           if (isSingleOpenMode && panel !== openedPanel) {
