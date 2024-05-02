@@ -7,7 +7,17 @@ define([
   "collections/maps/MapAssets",
   "models/maps/MapInteraction",
   "collections/maps/AssetCategories",
-], function ($, _, Backbone, MapAssets, Interactions, AssetCategories) {
+  "models/maps/GeoPoint",
+  "collections/maps/viewfinder/ZoomPresets",
+], function ($,
+  _,
+  Backbone,
+  MapAssets,
+  Interactions,
+  AssetCategories,
+  GeoPoint,
+  ZoomPresets,
+) {
   /**
    * @class MapModel
    * @classdesc The Map Model contains all of the settings and options for a
@@ -54,7 +64,7 @@ define([
        * @property {Boolean} [showHomeButton=true] - Whether or not to show the
        * home button in the toolbar.
        * @property {Boolean} [showViewfinder=false] - Whether or not to show the
-       * viefinder UI and viewfinder button in the toolbar. The ViewfinderView
+       * viewfinder UI and viewfinder button in the toolbar. The ViewfinderView
        * requires a Google Maps API key present in the AppModel. In order to 
        * work properly the Geocoding API and Places API must be enabled. 
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
@@ -80,6 +90,10 @@ define([
        * feedback section. showFeedback must be true for this to be shown.
        * @property {String} [globeBaseColor=null] - The base color of the globe when no
        * layer is shown.
+       * @property {ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
+       * predefined list of locations with an enabled list of layer IDs to be
+       * shown the zoom presets UI. Requires `showViewfinder` to be true as this
+       * UI appears within the ViewfinderView. 
        *
        * @example
        * {
@@ -179,7 +193,7 @@ define([
        * @property {Boolean} [showHomeButton=true] - Whether or not to show the
        * home button in the toolbar. True by default.
        * @property {Boolean} [showViewfinder=false] - Whether or not to show the
-       * viefinder UI and viewfinder button in the toolbar. Defaults to false.
+       * viewfinder UI and viewfinder button in the toolbar. Defaults to false.
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
@@ -199,6 +213,10 @@ define([
        * feedback section.
        * @property {String} [globeBaseColor=null] - The base color of the globe when no
        * layer is shown.
+       * @property {ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
+       * predefined list of locations with an enabled list of layer IDs to be
+       * shown the zoom presets UI. Requires `showViewfinder` to be true as this
+       * UI appears within the ViewfinderView. 
        */
       defaults: function () {
         return {
@@ -229,6 +247,7 @@ define([
           showFeedback: false,
           feedbackText: null,
           globeBaseColor: null,
+          zoomPresets: null,
         };
       },
 
@@ -258,6 +277,11 @@ define([
             if (isNonEmptyArray(config.terrains)) {
               this.set("terrains", new MapAssets(config.terrains));
             }
+
+            this.set('zoomPresetsCollection', new ZoomPresets({
+              zoomPresetObjects: config.zoomPresets,
+              allLayers: this.getAllLayers(),
+            }, { parse: true }));
           }
           this.setUpInteractions();
         } catch (error) {
@@ -340,6 +364,25 @@ define([
           return this.get("layerCategories").getMapAssets();
         } else if (this.has("layers")) {
           return [this.get("layers")];
+        }
+        return [];
+      },
+
+      /**
+       * Get all of the layers regardless of presences of layerCategories in a
+       * flat list of MapAsset models.
+       * @returns {MapAsset[]} All of the layers, or empty array if no layers
+       * are configured.
+       * @since x.x.x
+       */
+      getAllLayers() {
+        if (this.has("layerCategories")) {
+          return this.get("layerCategories")
+            .getMapAssets()
+            .map(assets => assets.models)
+            .flat();
+        } else if (this.has("layers")) {
+          return this.get("layers").models;
         }
         return [];
       },

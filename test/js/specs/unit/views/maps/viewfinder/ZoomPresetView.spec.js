@@ -18,13 +18,14 @@ define(
       const state = cleanState(() => {
         const sandbox = sinon.createSandbox();
         const title = "Some preset";
-        const geoPoint = new GeoPoint()
-          .set('latitude', 42.33)
-          .set('longigude', -83.05)
-          .set('height', 5000);
+        const geoPoint = new GeoPoint({
+          latitude: 42.33,
+          longigude: -83.05,
+          height: 5000
+        });
         const description = "For testing the view";
-        const enabledLayers = ["Layer 1", "Layer 2"];
-        const preset = new ZoomPresetModel({ title, geoPoint, description, enabledLayers });
+        const enabledLayerLabels = ["Layer 1", "Layer 2"];
+        const preset = new ZoomPresetModel({ title, geoPoint, description, enabledLayerLabels });
         const selectCallbackSpy = sandbox.spy();
         const view = new ZoomPresetView({ preset, selectCallback: selectCallbackSpy });
         view.render();

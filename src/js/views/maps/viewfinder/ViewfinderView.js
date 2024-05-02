@@ -6,6 +6,7 @@ define(
     'backbone',
     'text!templates/maps/viewfinder/viewfinder.html',
     'views/maps/viewfinder/SearchView',
+    'views/maps/viewfinder/ZoomPresetsListView',
     'views/maps/viewfinder/ExpansionPanelView',
     'models/maps/viewfinder/ExpansionPanelsModel',
     'models/maps/viewfinder/ViewfinderModel',
@@ -15,6 +16,7 @@ define(
     Backbone,
     Template,
     SearchView,
+    ZoomPresetsListView,
     ExpansionPanelView,
     ExpansionPanelsModel,
     ViewfinderModel,
@@ -24,6 +26,7 @@ define(
     // The HTML classes to use for this view's HTML elements.
     const CLASS_NAMES = {
       searchView: `${BASE_CLASS}__search`,
+      zoomPresetsView: `${BASE_CLASS}__zoom-presets`,
     };
 
 
@@ -66,7 +69,16 @@ define(
        */
       initialize({ model: mapModel }) {
         this.viewfinderModel = new ViewfinderModel({ mapModel });
-        this.panelsModel = new ExpansionPanelsModel();
+        this.panelsModel = new ExpansionPanelsModel({ isMulti: true });
+      },
+
+      /**
+       * Get the ZoomPresetsView element.
+       * @returns {JQuery} The ZoomPresetsView element.
+       * @since x.x.x
+       */
+      getZoomPresets() {
+        return this.$el.find(`.${CLASS_NAMES.zoomPresetsView}`);
       },
 
       /**
@@ -77,14 +89,46 @@ define(
         return this.$el.find(`.${CLASS_NAMES.searchView}`);
       },
 
+      /**
+       * Helper function to focus input on the search query input and ensure
+       * that the cursor is at the end of the text (as opposed to the beginning
+       * which appears to be the default jQuery behavior).
+       * @since x.x.x
+       */
+      focusInput() {
+        this.searchView.focusInput();
+      },
+
+      /**
+       * Render child ZoomPresetsView and append to DOM.
+       * @since x.x.x
+       */
+      renderZoomPresetsView() {
+        const zoomPresetsListView = new ZoomPresetsListView({
+          zoomPresets: this.viewfinderModel.get('zoomPresets'),
+          selectZoomPreset: preset => {
+            this.viewfinderModel.selectZoomPreset(preset);
+          },
+        });
+        const expansionPanel = new ExpansionPanelView({
+          contentViewInstance: zoomPresetsListView,
+          icon: 'icon-plane',
+          panelsModel: this.panelsModel,
+          title: 'Zoom to...',
+        });
+        expansionPanel.render();
+
+        this.getZoomPresets().append(expansionPanel.el);
+      },
+
       /** Render child SearchView and append to DOM. */
       renderSearchView() {
-        const searchView = new SearchView({
+        this.searchView = new SearchView({
           viewfinderModel: this.viewfinderModel,
         });
-        searchView.render();
+        this.searchView.render();
 
-        this.getSearch().append(searchView.el);
+        this.getSearch().append(this.searchView.el);
       },
 
       /**
@@ -96,6 +140,9 @@ define(
         this.el.innerHTML = _.template(Template)(this.templateVars);
 
         this.renderSearchView();
+        if (this.viewfinderModel.get('zoomPresets').length) {
+          this.renderZoomPresetsView();
+        }
       },
     });
 

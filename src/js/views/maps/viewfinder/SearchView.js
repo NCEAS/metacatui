@@ -89,7 +89,7 @@ define(
       },
 
       /**
-       * Helper function to focus input on the searh query input and ensure
+       * Helper function to focus input on the search query input and ensure
        * that the cursor is at the end of the text (as opposed to the beginning
        * which appears to be the default jQuery behavior).
        */

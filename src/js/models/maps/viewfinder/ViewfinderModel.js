@@ -6,7 +6,8 @@ define(
     'backbone',
     'cesium',
     'models/geocoder/GeocoderSearch',
-    'models/maps/GeoPoint'],
+    'models/maps/GeoPoint'
+  ],
   (_, Backbone, Cesium, GeocoderSearch, GeoPoint) => {
     const EMAIL = MetacatUI.appModel.get('emailContact');
     const NO_RESULTS_MESSAGE = 'No search results found, try using another place name.';
@@ -40,6 +41,7 @@ define(
           focusIndex: -1,
           predictions: [],
           query: '',
+          zoomPresets: [],
         }
       },
 
@@ -50,6 +52,9 @@ define(
       initialize({ mapModel }) {
         this.geocoderSearch = new GeocoderSearch();
         this.mapModel = mapModel;
+        this.allLayers = this.mapModel.getAllLayers();
+
+        this.set('zoomPresets', mapModel.get('zoomPresetsCollection')?.models || []);
       },
 
       /** 
@@ -144,6 +149,24 @@ define(
             coords.north,
           )
         });
+      },
+
+      /**
+       * Select a ZoomPresetModel from the list of presets and navigate there.
+       * This function hides all layers that are not to be visible according to
+       * the ZoomPresetModel configuration.
+       * @param {ZoomPresetModel} preset A user selected preset for which to 
+       * enable layers and navigate.
+       */
+      selectZoomPreset(preset) {
+        const enabledLayerIds = preset.get('enabledLayerIds');
+        for (const layer of this.allLayers) {
+          const isVisible = enabledLayerIds.includes(layer.get('layerId'));
+          // Show or hide the layer according to the preset.
+          layer.set('visible', isVisible);
+        }
+
+        this.mapModel.zoomTo(preset.get('geoPoint'));
       },
 
       /**
