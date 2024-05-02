@@ -30,6 +30,9 @@
   --map-col-content-bkg: var(--portal-col-content-bkg);
   --map-col-content-bkg-highlight: var(--portal-col-content-bkg-highlight);
   --map-col-content-bkg-muted: var(--portal-col-content-bkg-muted);
+  --map-col-content-bkg-active-highlight: var(--portal-col-content-bkg-active-highlight);
+  --map-col-content-bkg-hover-highlight: var(--portal-col-content-bkg-hover-highlight);
+  --map-col-content-bkg-transparent: var(--portal-col-content-bkg-transparent);
 
   --map-col-buttons-bkg: var(--portal-col-buttons-bkg);
   --map-col-buttons-bkg-active: var(--portal-col-content-bkg-highlight);
@@ -43,11 +46,14 @@
   --map-col-buttons-icon-highlight: var(--portal-col-buttons-icon-highlight);
   --map-col-buttons-icon-muted: var(--portal-col-buttons-icon-muted);
   --map-col-utility-buttons: var(--portal-col-utility-buttons);
+  --map-col-buttons-icon-active-highlight: var(--portal-col-buttons-icon-active-highlight);
+  --map-col-buttons-icon-hover-highlight: var(--portal-col-buttons-icon-hover-highlight);
 
   --map-col-border: var(--portal-col-border);
   --map-col-border-highlight: var(--portal-col-border-highlight);
   --map-col-border-muted: var(--portal-col-border-muted);
   --map-col-border-highlight-search-box: var(--portal-col-border-highlight-search-box);
+  --map-col-border-panel: var(--portal-col-border-panel);
 
   --map-col-section-divider: var(--portal-col-section-divider);
   --map-col-item-divider: var(--portal-col-item-divider);
@@ -58,6 +64,8 @@
   --map-col-text-label: var(--portal-col-text-label);
   --map-col-text-detail: var(--portal-col-text-detail);
   --map-col-text-muted: var(--portal-col-text-muted);
+  --map-col-text-active-highlight: var(--portal-col-text-active-highlight);
+  --map-col-text-hover-highlight: var(--portal-col-text-hover-highlight);
 
   --map-col-opacity-slider-active: var(--portal-col-opacity-slider-active);
   --map-col-opacity-slider-inactive: var(--portal-col-opacity-slider-inactive);
@@ -688,6 +696,8 @@ represents 1 unit of the given distance measurement. */
 
 .layers-panel {
   width: 100%;
+  display: flex;
+  flex-direction: column;
 
   .layers-panel__search {
     margin: 0 1.5rem;
@@ -696,6 +706,8 @@ represents 1 unit of the given distance measurement. */
   .layers-panel__layers {
     border: solid var(--map-col-section-divider, var(--map-col-bkg-lightest__deprecate));
     border-width: 1px 0;
+    overflow: auto;
+    border-top: 1px solid var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
   }
 }
 
@@ -1421,7 +1433,19 @@ other class: .ui-slider-range */
 }
 
 .viewfinder {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   width: 100%;
+
+  .viewfinder__search {
+    border-bottom: 1px solid var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
+  }
+
+  .viewfinder__zoom-presets {
+    flex-grow: 1;
+    overflow: auto;
+  }
 }
 
 .viewfinder-search__search-input {
@@ -1431,6 +1455,7 @@ other class: .ui-slider-range */
 .viewfinder-predictions {
   list-style: none;
   margin: -.5rem 1.5rem 0 1.5rem;
+  min-height: .5rem;
 
   .viewfinder-prediction__content {
     align-items: center;
@@ -1472,34 +1497,119 @@ other class: .ui-slider-range */
 .viewfinder-zoom-presets {
   display: flex;
   flex-direction: column;
-  row-gap: .25rem;
+  padding: .5rem 1.5rem 1rem 1.5rem;
+  row-gap: .5rem;
 
-  .viewfinder-zoom-presets__preset {
-    border-radius: var(--map-border-radius-small);
-    border: 1px solid var(--map-col-section-divider, var(--map-col-bkg-lightest__deprecate));
+  .viewfinder-zoom-preset__preset {
+    border-radius: var(--map-border-radius-big);
+    border: 1px solid var(--map-col-border-panel, var(--map-col-bkg-lightest__deprecate));
     cursor: pointer;
-    padding: .5rem;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 1.5rem 1rem 2.5rem;
+    row-gap: .5rem;
 
     &:hover {
-      background-color: var(--map-col-bkg-lightest);
+      background-color: var(--map-col-content-bkg-highlight, var(--map-col-bkg-lighter__deprecate));
+
+      .viewfinder-zoom-preset__layer {
+        background-color: var(--map-col-content-bkg-hover-highlight, var(--map-col-bkg__deprecate));
+
+        .viewfinder-zoom-preset__layer-content {
+          color: var(--map-col-text-hover-highlight);
+
+          i {
+            color: var(--map-col-buttons-icon-hover-highlight);
+          }
+        }
+      }
+    }
+
+    .viewfinder-zoom-preset__title {
+      color: var(--map-col-text-highlight, white);
+      font-weight: 600;
+    }
+
+    .viewfinder-zoom-preset__description {
+      color: var(--map-col-text-label, white);
+      font-size: .85rem;
+      margin-bottom: .5rem;
+    }
+
+    .viewfinder-zoom-preset__layers {
+      column-gap: .5rem;
+      display: flex;
+      flex-wrap: wrap;
+      row-gap: .5rem; 
+    }
+
+    .viewfinder-zoom-preset__layer {
+      align-items: center;
+      background: var(--map-col-content-bkg-transparent, var(--map-col-bkg-lighter__deprecate));
+      border-radius: var(--map-border-radius-big);
+      display: flex;
+      height: 1.5rem;
+      justify-content: center;
+      padding: 0 1rem 0 .5rem;
+
+      .viewfinder-zoom-preset__layer-content {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-wrap: nowrap;
+        color: var(--map-col-text-muted, white);
+        font-size: .8rem;
+        max-width: 10rem;
+        
+        i {
+          padding: 0 .25rem;
+          color: var(--map-col-buttons-icon, white);
+        }
+      }
     }
   }
 
   .viewfinder-zoom-preset.viewfinder-zoom-preset--active .viewfinder-zoom-preset__preset {
-    background-color: var(--portal-col-buttons-bkg-highlight, var(--map-col-bkg-lighter__deprecate));
-    color: white;
+    background-color: var(--map-col-buttons-bkg-highlight, #15324e);
 
+    .viewfinder-zoom-preset__title,
     .viewfinder-zoom-preset__description {
-      color: white;
+      color: var(--map-col-buttons-text-highlight, white);
+    }
+
+    .viewfinder-zoom-preset__layer {
+      background: var(--map-col-content-bkg-active-highlight, var(--map-col-bkg__deprecate));
+
+      .viewfinder-zoom-preset__layer-content {
+        color: var(--map-col-text-active-highlight, white);
+
+        i {
+          color: var(--map-col-buttons-icon-active-highlight, white);
+        }
+      }
     }
   }
 }
 
 /** START - Expansion panel View. */
 .expansion-panel {
-  border: solid var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
-  border-width: 1px 0;
-  padding: .25rem .5rem;
+  box-shadow: 0 1px var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate)) inset;
+  border-bottom: 1px solid var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
+  font-size: 1rem;
+
+  .expansion-panel__toggle {
+    display: grid;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1rem;
+    grid-template-columns: min-content auto min-content;
+    padding: 0 1.5rem;
+    border: none;
+
+    &:hover {
+      background-color: var(--map-col-content-bkg-highlight, #15324e);
+      transition: background-color .3s ease-in-out;
+    }
+  }
 
   &.show-content {
     .expansion-panel__content {
@@ -1511,7 +1621,7 @@ other class: .ui-slider-range */
     }
 
     .icon-caret-up {
-    display: none;
+      display: none;
     }
   }
 
@@ -1524,23 +1634,36 @@ other class: .ui-slider-range */
   }
 
   .expansion-panel__title {
-    user-select: none;
+    font-weight: 500;
+    color: var(--map-col-text-highlight, var(--map-col-highlight__deprecate));
+  }
+
+  .expansion-panel__icon {
+    fill: var(--map-col-text-highlight, var(--map-col-highlight__deprecate));
+    color: var(--map-col-text-highlight, var(--map-col-highlight__deprecate));
+    height: 2rem;
+    width: 2rem;
+    margin: 0.25rem;
+    margin-right: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .expansion-panel__icon > svg {
+    height: 1rem;
+  }
+
+  .expansion-panel__icon-toggle {
+    width: 2rem;
+    display: flex;
+    justify-content: center;
+    color: var(--map-col-utility-buttons);
   }
 
   .expansion-panel__content {
     display: none;
-    padding: .25rem 0;
+    animation: fadeIn .3s ease-in-out;
   }
- 
-  .expansion-panel__icon {
-    align-items: center;
-    display: flex;
-  }
-
-  .expansion-panel__toggle {
-    display: flex;
-    justify-content: space-between;
-    cursor: pointer;
-  } 
 }
 /** END - Expansion panel View. */

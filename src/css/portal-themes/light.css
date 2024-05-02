@@ -4,13 +4,17 @@
   /* COLOURS */
   --portal-blue-1: #ECF8FC;
   --portal-blue-2: #CCF0FC;
+  --portal-blue-2-50: #CCF0FC80;
   --portal-blue-3: #99E1FA;
+  --portal-blue-4: #33C3F5;
   --portal-blue-5: #00A9E4;
+  --portal-blue-5-50: #00A9E480;
   --portal-blue-6: #0087B5;
   --portal-blue-7: #136682;
 
   --portal-grey-1: #F8F9FA;
   --portal-grey-2: #F1F3F4;
+  --portal-grey-2-50: #F1F3F480;
   --portal-grey-3: #E8EAED;
   --portal-grey-4: #BDC1C6;
   --portal-grey-5: #80868B;
@@ -21,6 +25,9 @@
   --portal-col-content-bkg: white;
   --portal-col-content-bkg-highlight: var(--portal-blue-1);
   --portal-col-content-bkg-muted: var(--portal-grey-1);
+  --portal-col-content-bkg-transparent: var(--portal-grey-2-50);
+  --portal-col-content-bkg-active-highlight: var(--portal-blue-5-50);
+  --portal-col-content-bkg-hover-highlight: var(--portal-blue-2-50);
 
   --portal-col-buttons-bkg: white;
   --portal-col-buttons-bkg-hover: var(--portal-blue-2);
@@ -30,12 +37,15 @@
   --portal-col-buttons-text: var(--portal-blue-6);
   --portal-col-buttons-text-highlight: white;
   --portal-col-buttons-icon: var(--portal-blue-6);
+  --portal-col-buttons-icon-active-highlight: var(--portal-blue-4);
+  --portal-col-buttons-icon-hover-highlight: var(--portal-blue-6);
   --portal-col-buttons-icon-highlight: var(--portal-blue-3);
   --portal-col-buttons-icon-muted: var(--portal-grey-4);
   --portal-col-utility-buttons: var(--portal-grey-6);
 
   --portal-col-border: var(--portal-blue-2);
   --portal-col-border-highlight: unset;
+  --portal-col-border-panel: var(--portal-grey-3);
   --portal-col-border-muted: var(--portal-grey-4);
   --portal-col-border-highlight-search-box: var(--portal-blue-3);
 
@@ -48,6 +58,8 @@
   --portal-col-text-label: var(--portal-grey-7);
   --portal-col-text-detail: var(--portal-grey-6);
   --portal-col-text-muted: var(--portal-grey-5);
+  --portal-col-text-active-highlight: var(--portal-blue-2);
+  --portal-col-text-hover-highlight: var(--portal-blue-6);
 
   --portal-col-page-bkg: var(--portal-blue-7);
   --portal-col-text-nav: var(--portal-blue-3);
