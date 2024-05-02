@@ -8,7 +8,7 @@ define([
   "models/maps/MapInteraction",
   "collections/maps/AssetCategories",
   "models/maps/GeoPoint",
-  "models/maps/viewfinder/ZoomPresetModel",
+  "collections/maps/viewfinder/ZoomPresets",
 ], function ($,
   _,
   Backbone,
@@ -16,7 +16,7 @@ define([
   Interactions,
   AssetCategories,
   GeoPoint,
-  ZoomPresetModel,
+  ZoomPresets,
 ) {
   /**
    * @class MapModel
@@ -92,10 +92,10 @@ define([
        * feedback section. showFeedback must be true for this to be shown.
        * @property {String} [globeBaseColor=null] - The base color of the globe when no
        * layer is shown.
-       * @property {ZoomPresetModel[]} [zoomPresets=[]] - Predefined list of
-       * locations with an enabled list of layer IDs to be shown the zoom
-       * presets UI. Requires `showViewfinder` to be true as this UI appears
-       * within the ViewfinderView. 
+       * @property {ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
+       * predefined list of locations with an enabled list of layer IDs to be
+       * shown the zoom presets UI. Requires `showViewfinder` to be true as this
+       * UI appears within the ViewfinderView. 
        *
        * @example
        * {
@@ -218,9 +218,10 @@ define([
        * feedback section.
        * @property {String} [globeBaseColor=null] - The base color of the globe when no
        * layer is shown.
-       * @property {ZoomPresetModel[]} [zoomPresets=[]] - Predefined list of
-       * locations with an enabled list of layer IDs to be showin the zoom
-       * presets UI.
+       * @property {ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
+       * predefined list of locations with an enabled list of layer IDs to be
+       * shown the zoom presets UI. Requires `showViewfinder` to be true as this
+       * UI appears within the ViewfinderView. 
        */
       defaults: function () {
         return {
@@ -252,7 +253,7 @@ define([
           showFeedback: false,
           feedbackText: null,
           globeBaseColor: null,
-          zoomPresets: [],
+          zoomPresets: null,
         };
       },
 
@@ -283,34 +284,10 @@ define([
               this.set("terrains", new MapAssets(config.terrains));
             }
 
-            if (isNonEmptyArray(config.zoomPresets)) {
-              const zoomPresets = config.zoomPresets.map(zoomPresetObj => {
-                const allLayers = this.getAllLayers();
-                const enabledLayerIds = [];
-                const enabledLayerLabels = [];
-                for (const layer of allLayers) {
-                  if (zoomPresetObj.layerIds.find(id => id === layer.get('layerId'))) {
-                    enabledLayerIds.push(layer.get('layerId'));
-                    enabledLayerLabels.push(layer.get('label'));
-                  }
-                }
-
-                const geoPoint = new GeoPoint({
-                  latitude: zoomPresetObj.latitude,
-                  longitude: zoomPresetObj.longitude,
-                  height: zoomPresetObj.height
-                });
-                return new ZoomPresetModel({
-                  description: zoomPresetObj.description,
-                  enabledLayerLabels,
-                  enabledLayerIds,
-                  geoPoint,
-                  title: zoomPresetObj.title,
-                });
-              });
-
-              this.set('zoomPresets', zoomPresets);
-            }
+            this.set('zoomPresetsCollection', new ZoomPresets({
+              zoomPresetObjects: config.zoomPresets,
+              allLayers: this.getAllLayers(),
+            }, { parse: true }));
           }
           this.setUpInteractions();
         } catch (error) {

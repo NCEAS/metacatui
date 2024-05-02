@@ -8,6 +8,7 @@ define(
     'models/geocoder/Prediction',
     'models/geocoder/GeocodedLocation',
     'models/maps/viewfinder/ZoomPresetModel',
+    'collections/maps/viewfinder/ZoomPresets',
     'models/maps/GeoPoint',
     // The file extension is required for files loaded from the /test directory.
     '/test/js/specs/shared/clean-state.js',
@@ -19,6 +20,7 @@ define(
     Prediction,
     GeocodedLocation,
     ZoomPresetModel,
+    ZoomPresets,
     GeoPoint,
     cleanState,
   ) => {
@@ -95,13 +97,12 @@ define(
       });
 
       it('sets zoom presets field from Map model', () => {
-        const zoomPresets = [];
-        const model = new ViewfinderModel({
-          mapModel: new Map({ zoomPresets }),
-        });
+        const mapModel = new Map({ zoomPresets: [{ layerIds: [] }] });
+
+        const model = new ViewfinderModel({ mapModel });
 
         // Reference equality.
-        expect(model.get('zoomPresets')).to.equal(zoomPresets);
+        expect(model.get('zoomPresets')).to.equal(mapModel.get('zoomPresetsCollection').models);
       });
 
       describe('autocomplete search', () => {
@@ -364,11 +365,13 @@ define(
         it('shows all enabled layers', () => {
           const setSpy = state.sandbox.spy(state.model.allLayers[0], 'set');
           state.model.selectZoomPreset(new ZoomPresetModel({
-            latitude: 55,
-            longitude: 66,
-            height: 72,
+            position: {
+              latitude: 55,
+              longitude: 66,
+              height: 72,
+            },
             enabledLayerIds: ['layer1']
-          }));
+          }, { parse: true }));
 
           expect(setSpy.callCount).to.equal(1);
           expect(setSpy.getCall(0).args).to.eql(['visible', true]);
@@ -377,25 +380,28 @@ define(
         it('hides all layers not inlcluded in enabled layers', () => {
           const setSpy = state.sandbox.spy(state.model.allLayers[1], 'set');
           state.model.selectZoomPreset(new ZoomPresetModel({
-            latitude: 55,
-            longitude: 66,
-            height: 72,
+            position: {
+              latitude: 55,
+              longitude: 66,
+              height: 72,
+            },
             enabledLayerIds: ['layer1']
-          }));
+          }, { parse: true }));
 
           expect(setSpy.callCount).to.equal(1);
           expect(setSpy.getCall(0).args).to.eql(['visible', false]);
         });
 
         it('zooms to the location on the map', () => {
-          const geoPoint = new GeoPoint();
+          const geoPoint = new GeoPoint({ latitude: 55, longitude: 66, height: 7777 });
           state.model.selectZoomPreset(new ZoomPresetModel({
             enabledLayerIds: ['layer1'],
-            geoPoint,
-          }));
+            position: { latitude: 55, longitude: 66, height: 7777 },
+          }, { parse: true }));
 
           expect(state.zoomSpy.callCount).to.equal(1);
-          expect(state.zoomSpy.getCall(0).args[0]).to.eql(geoPoint);
+          expect(state.zoomSpy.getCall(0).args[0].get('latitude'))
+            .to.eql(geoPoint.get('latitude'));
         });
       });
 

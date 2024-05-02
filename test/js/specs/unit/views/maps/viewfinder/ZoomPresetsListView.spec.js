@@ -26,24 +26,24 @@ define(
         const zoomPresets = [
           new ZoomPresetModel({
             title: 'Test 1',
-            geoPoint: new GeoPoint({
+            position: {
               latitude: 11,
               longitude: 111,
               height: 5000,
-            }),
+            },
             description: 'Test 1 description',
             enabledLayers: ['Layer 1', 'Layer 2'],
-          }),
+          }, { parse: true }),
           new ZoomPresetModel({
             title: 'Test 2',
-            geoPoint: new GeoPoint({
+            position: {
               latitude: 12,
               longitude: 112,
               height: 5000,
-            }),
+            },
             description: 'Test 1 description',
             enabledLayers: ['Layer 2', 'Layer 3'],
-          }),
+          }, { parse: true }),
         ];
         const selectZoomPresetSpy = sandbox.spy();
         const view = new ZoomPresetsListView({

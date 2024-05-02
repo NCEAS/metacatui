@@ -54,7 +54,7 @@ define(
         this.mapModel = mapModel;
         this.allLayers = this.mapModel.getAllLayers();
 
-        this.set('zoomPresets', mapModel.get('zoomPresets'));
+        this.set('zoomPresets', mapModel.get('zoomPresetsCollection')?.models || []);
       },
 
       /** 

@@ -49,7 +49,7 @@ define(
             layers: [{}]
           });
 
-          expect(map.get("zoomPresets")[0].get('title')).to.equal('Zoom 1');
+          expect(map.get("zoomPresetsCollection").at(0).get('title')).to.equal('Zoom 1');
         });
 
         it("sets zoomPresets from config with layerCategories", () => {
@@ -65,7 +65,7 @@ define(
             layerCategories: [{ layers: [{}] }]
           });
 
-          expect(map.get("zoomPresets")[0].get('title')).to.equal('Zoom 1');
+          expect(map.get("zoomPresetsCollection").at(0).get('title')).to.equal('Zoom 1');
         });
 
         it("filters out enabledLayerIds for layerIds that do not exist", () => {
@@ -82,7 +82,7 @@ define(
           });
 
           // Deep equality check with .to.eql
-          expect(map.get("zoomPresets")[0].get('enabledLayerIds')).to.eql(['layer1']);
+          expect(map.get("zoomPresetsCollection").at(0).get('enabledLayerIds')).to.eql(['layer1']);
         });
       });
 
