@@ -47,14 +47,13 @@ define(
           }
         },
 
-        /**
-         * @param {Map} mapModel is the Map model that the ViewfinderModel is
-         * managing for the corresponding ViewfinderView.
-         */
-        initialize({ mapModel }) {
-          this.geocoderSearch = new GeocoderSearch();
-          this.mapModel = mapModel;
-          this.allLayers = this.mapModel.getAllLayers();
+      /**
+       * @param {Map} mapModel is the Map model that the ViewfinderModel is
+       * managing for the corresponding ViewfinderView.
+       */
+      initialize({ mapModel }) {
+        this.geocoderSearch = new GeocoderSearch();
+        this.mapModel = mapModel;
 
           this.set('zoomPresets', mapModel.get('zoomPresetsCollection')?.models || []);
         },
@@ -153,20 +152,20 @@ define(
           });
         },
 
-        /**
-         * Select a ZoomPresetModel from the list of presets and navigate there.
-         * This function hides all layers that are not to be visible according to
-         * the ZoomPresetModel configuration.
-         * @param {ZoomPresetModel} preset A user selected preset for which to 
-         * enable layers and navigate.
-         */
-        selectZoomPreset(preset) {
-          const enabledLayerIds = preset.get('enabledLayerIds');
-          for (const layer of this.allLayers) {
-            const isVisible = enabledLayerIds.includes(layer.get('layerId'));
-            // Show or hide the layer according to the preset.
-            layer.set('visible', isVisible);
-          }
+      /**
+       * Select a ZoomPresetModel from the list of presets and navigate there.
+       * This function hides all layers that are not to be visible according to
+       * the ZoomPresetModel configuration.
+       * @param {ZoomPresetModel} preset A user selected preset for which to 
+       * enable layers and navigate.
+       */
+      selectZoomPreset(preset) {
+        const enabledLayerIds = preset.get('enabledLayerIds');
+        this.mapModel.get('allLayers').forEach(layer => {
+          const isVisible = enabledLayerIds.includes(layer.get('layerId'));
+          // Show or hide the layer according to the preset.
+          layer.set('visible', isVisible);
+        });
 
           this.mapModel.zoomTo(preset.get('geoPoint'));
         },

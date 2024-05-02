@@ -181,6 +181,10 @@ define([
        * @property {MapAssets} [layers = new MapAssets()] - The imagery and
        * vector data to render in the map. When layerCategories exist, this
        * property will be ignored.
+       * @property {MapAssets} [allLayers = new MapAssets()] - The assets that 
+       * correspond to the layers field or the layerCategories field depending 
+       * upon which is used. If layerCategories, this contains a flattened list 
+       * of the assets.
        * @property {AssetCategories} [layerCategories = new AssetCategories()] -
        * A collection of layer categories to display in the tool bar. Categories
        * wil be displayed in the order they appear. The array of the AssetCategoryConfig
@@ -269,18 +273,22 @@ define([
               assetCategories.setMapModel(this);
               this.set("layerCategories", assetCategories);
               this.unset("layers");
+              this.set('allLayers', assetCategories.getMapAssetsFlat());
             } else if (isNonEmptyArray(config.layers)) {
-              this.set("layers", new MapAssets(config.layers));
+              const layers = new MapAssets(config.layers);
+              this.set("layers", layers);
               this.get("layers").setMapModel(this);
               this.unset("layerCategories");
+              this.set('allLayers', layers);
             }
+
             if (isNonEmptyArray(config.terrains)) {
               this.set("terrains", new MapAssets(config.terrains));
             }
 
             this.set('zoomPresetsCollection', new ZoomPresets({
               zoomPresetObjects: config.zoomPresets,
-              allLayers: this.getAllLayers(),
+              allLayers: this.get('allLayers'),
             }, { parse: true }));
           }
           this.setUpInteractions();
@@ -346,9 +354,9 @@ define([
        * configuration.
        */
       resetLayerVisibility: function () {
-        for (const layer of this.getAllLayers()) {
+        this.get('allLayers').forEach(layer => {
           layer.set("visible", layer.get('originalVisibility'));
-        }
+        });
       },
 
       /**
@@ -374,25 +382,6 @@ define([
           return this.get("layerCategories").getMapAssets();
         } else if (this.has("layers")) {
           return [this.get("layers")];
-        }
-        return [];
-      },
-
-      /**
-       * Get all of the layers regardless of presences of layerCategories in a
-       * flat list of MapAsset models.
-       * @returns {MapAsset[]} All of the layers, or empty array if no layers
-       * are configured.
-       * @since 2.29.0
-       */
-      getAllLayers() {
-        if (this.has("layerCategories")) {
-          return this.get("layerCategories")
-            .getMapAssets()
-            .map(assets => assets.models)
-            .flat();
-        } else if (this.has("layers")) {
-          return this.get("layers").models;
         }
         return [];
       },

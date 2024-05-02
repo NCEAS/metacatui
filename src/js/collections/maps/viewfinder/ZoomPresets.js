@@ -26,7 +26,7 @@ define(
         /**
          * @param {Object[]} zoomPresets The raw list of objects that represent
          * the zoom presets, to be converted into ZoomPresetModels.
-         * @param {MapAsset[]} allLayers All of the layers available for display
+         * @param {MapAssets} allLayers All of the layers available for display
          * in the map.
          */
         parse({ zoomPresetObjects, allLayers }) {
@@ -34,7 +34,7 @@ define(
             const zoomPresets = zoomPresetObjects.map(zoomPresetObj => {
               const enabledLayerIds = [];
               const enabledLayerLabels = [];
-              for (const layer of allLayers) {
+              for (const layer of allLayers.models) {
                 if (zoomPresetObj.layerIds?.find(id => id === layer.get('layerId'))) {
                   enabledLayerIds.push(layer.get('layerId'));
                   enabledLayerLabels.push(layer.get('label'));

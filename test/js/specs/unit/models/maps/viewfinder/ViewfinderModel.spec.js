@@ -78,31 +78,18 @@ define(
         state.model.should.be.instanceof(ViewfinderModel);
       });
 
-      it('sets allLayers field from Map model layers', () => {
-        const model = new ViewfinderModel({
-          mapModel: new Map({ layers: [{ layerId: 'layer1' }] })
-        });
-
-        expect(model.allLayers[0].get('layerId')).to.equal('layer1');
-      });
-
-      it('sets allLayers field from Map model layerCategories', () => {
-        const model = new ViewfinderModel({
-          mapModel: new Map({
-            layerCategories: [{ layers: { layerId: 'layer1' } }],
-          })
-        });
-
-        expect(model.allLayers[0].get('layerId')).to.equal('layer1');
-      });
-
       it('sets zoom presets field from Map model', () => {
-        const mapModel = new Map({ zoomPresets: [{ layerIds: [] }] });
+        const mapModel = new Map({
+          zoomPresets: [{ layerIds: [] }],
+          layers: [{}]
+        });
 
         const model = new ViewfinderModel({ mapModel });
 
         // Reference equality.
-        expect(model.get('zoomPresets')).to.equal(mapModel.get('zoomPresetsCollection').models);
+        expect(model.get('zoomPresets')).to.equal(
+          mapModel.get('zoomPresetsCollection').models
+        );
       });
 
       describe('autocomplete search', () => {
@@ -172,7 +159,8 @@ define(
           await new Promise(resolve => setTimeout(resolve, 0));
 
           expect(state.model.get('predictions').length).to.equal(1);
-          expect(state.model.get('predictions')[0].get('description')).to.equal('Some Other Location');
+          expect(state.model.get('predictions')[0].get('description'))
+            .to.equal('Some Other Location');
         });
 
         it('shows permissions error if autocomplete search request is denied',
@@ -201,16 +189,17 @@ define(
             expect(state.model.get('error')).to.match(/No search results/);
           });
 
-        it('shows \'no results\' message if predictions are empty', async () => {
-          state.autocompleteSpy.callsFake(() => ([]));
+        it('shows \'no results\' message if predictions are empty',
+          async () => {
+            state.autocompleteSpy.callsFake(() => ([]));
 
-          state.model.autocompleteSearch("somewhere else");
-          // Wait for new predictions to be set on model.
-          await new Promise(resolve => setTimeout(resolve, 0));
+            state.model.autocompleteSearch("somewhere else");
+            // Wait for new predictions to be set on model.
+            await new Promise(resolve => setTimeout(resolve, 0));
 
-          expect(state.model.get('predictions').length).to.equal(0);
-          expect(state.model.get('error')).to.match(/No search results/);
-        });
+            expect(state.model.get('predictions').length).to.equal(0);
+            expect(state.model.get('error')).to.match(/No search results/);
+          });
 
 
         it('silently unsets the error before searching', () => {
@@ -297,11 +286,12 @@ define(
           expect(state.geocodeSpy.callCount).to.equal(1);
         });
 
-        it('shows a \'no results\' error message if there are not geocodings', async () => {
-          await state.model.selectPrediction(state.predictions[0]);
+        it('shows a \'no results\' error message if there are not geocodings',
+          async () => {
+            await state.model.selectPrediction(state.predictions[0]);
 
-          expect(state.model.get('error')).to.match(/No search results/);
-        });
+            expect(state.model.get('error')).to.match(/No search results/);
+          });
 
         it('triggers a \'selection-made\' event', async () => {
           const triggerSpy = state.sandbox.stub(state.model, 'trigger');
@@ -363,7 +353,10 @@ define(
 
       describe('selecting a zoom preset', () => {
         it('shows all enabled layers', () => {
-          const setSpy = state.sandbox.spy(state.model.allLayers[0], 'set');
+          const setSpy = state.sandbox.spy(
+            state.model.mapModel.get('allLayers').models[0],
+            'set'
+          );
           state.model.selectZoomPreset(new ZoomPresetModel({
             position: {
               latitude: 55,
@@ -378,7 +371,10 @@ define(
         });
 
         it('hides all layers not inlcluded in enabled layers', () => {
-          const setSpy = state.sandbox.spy(state.model.allLayers[1], 'set');
+          const setSpy = state.sandbox.spy(
+            state.model.mapModel.get('allLayers').models[1],
+            'set'
+          );
           state.model.selectZoomPreset(new ZoomPresetModel({
             position: {
               latitude: 55,
@@ -393,7 +389,11 @@ define(
         });
 
         it('zooms to the location on the map', () => {
-          const geoPoint = new GeoPoint({ latitude: 55, longitude: 66, height: 7777 });
+          const geoPoint = new GeoPoint({
+            latitude: 55,
+            longitude: 66,
+            height: 7777
+          });
           state.model.selectZoomPreset(new ZoomPresetModel({
             enabledLayerIds: ['layer1'],
             position: { latitude: 55, longitude: 66, height: 7777 },
@@ -430,18 +430,19 @@ define(
           expect(state.zoomSpy.callCount).to.equal(1);
         });
 
-        it('geocodes and selects the first prediction on search if no prediction is focused', async () => {
-          state.model.set('focusIndex', -1);
-          state.geocodeSpy.returns([
-            new GeocodedLocation({
-              box: { north: 1, south: 2, east: 3, west: 4 }
-            })
-          ]);
+        it('geocodes and selects the first prediction on search if no prediction is focused',
+          async () => {
+            state.model.set('focusIndex', -1);
+            state.geocodeSpy.returns([
+              new GeocodedLocation({
+                box: { north: 1, south: 2, east: 3, west: 4 }
+              })
+            ]);
 
-          await state.model.search("somewhere");
+            await state.model.search("somewhere");
 
-          expect(state.zoomSpy.callCount).to.equal(1);
-        });
+            expect(state.zoomSpy.callCount).to.equal(1);
+          });
 
         it('zooms to a lat, long pair', async () => {
           await state.model.search("45,135");
@@ -467,13 +468,14 @@ define(
           expect(state.model.get('error')).to.match(/Invalid longitude/);
         });
 
-        it('sets an error if search string is not valid as a lat, long pair ', async () => {
-          await state.model.search("45,");
+        it('sets an error if search string is not valid as a lat, long pair ',
+          async () => {
+            await state.model.search("45,");
 
-          expect(state.model.get('error')).to.match(
-            /Try entering a search query with two numerical/
-          );
-        });
+            expect(state.model.get('error')).to.match(
+              /Try entering a search query with two numerical/
+            );
+          });
 
         it('silently unsets the error before searching', async () => {
           const unsetSpy = sinon.spy(state.model, 'unset');
