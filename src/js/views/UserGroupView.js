@@ -9,6 +9,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'views/Grou
 		 * of members to groups
 		 * @classcategory Views
 		 * @screenshot views/UserGroupView.png
+		 * @extends Backbone.View
 		 */
 		var UserGroupView = Backbone.View.extend(
 			/** @lends UserGroupView.prototype */ {

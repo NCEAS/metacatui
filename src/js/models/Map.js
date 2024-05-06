@@ -7,6 +7,7 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
   * @class Map
   * @classdesc The Map Model represents all of the settings and options for a Google Map.
   * @classcategory Models
+  * @extends Backbone.Model
   */
 	var Map = Backbone.Model.extend(
     /** @lends Map.prototype */{

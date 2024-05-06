@@ -13,6 +13,7 @@ define([
    * @class BooleanFilterView
    * @classdesc Render a view of a single BooleanFilter model
    * @classcategory Views/Filters
+   * @extends FilterView
    */
   var BooleanFilterView = FilterView.extend(
     /** @lends BooleanFilterView.prototype */ {

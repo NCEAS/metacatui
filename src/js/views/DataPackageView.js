@@ -25,6 +25,7 @@ define([
          *  a file/folder browser
          * @classcategory Views
          * @screenshot views/DataPackageView.png
+         * @extends Backbone.View
          */
         var DataPackageView = Backbone.View.extend(
           /** @lends DataPackageView.prototype */{

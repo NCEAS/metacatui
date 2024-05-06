@@ -8,6 +8,7 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
        * @classdesc An AccessPolicy collection is a collection of AccessRules that specify
        * the permissions set on a DataONEObject
        * @classcategory Collections
+       * @extends Backbone.Collection
        */
       var AccessPolicy = Backbone.Collection.extend(
         /** @lends AccessPolicy.prototype */

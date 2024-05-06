@@ -7,6 +7,7 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
          * with the EML dataTable module.
          * @classcategory Models/Metadata/EML211
          * @see https://eml.ecoinformatics.org/schema/eml-datatable_xsd
+         * @extends EMLEntity
          */
         var EMLDataTable = EMLEntity.extend(
           /** @lends EMLDataTable.prototype */{

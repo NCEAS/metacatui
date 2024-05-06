@@ -6,7 +6,8 @@ define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
 	/**
 	 * @class UserGroup
 	 * @classdesc The collection of Users that represent a DataONE group
-   * @classcategory Collections
+     * @classcategory Collections
+     * @extends Backbone.Collection
 	 */
 	var UserGroup = Backbone.Collection.extend(
     /** @lends UserGroup.prototype */{

@@ -6,6 +6,7 @@ define(['jquery', 'underscore', 'backbone'],
   * @class SolrResult
   * @classdesc A single result from the Solr search service
   * @classcategory Models
+  * @extends Backbone.Model
   */
 	var SolrResult = Backbone.Model.extend(
     /** @lends SolrResult.prototype */{

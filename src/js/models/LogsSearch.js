@@ -10,7 +10,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
   * @deprecated
   * @classcategory Deprecated
   */
-	var LogsSearch = SearchModel.extend({
+	var LogsSearch = SearchModel.extend(
+		/** @lends LogsSearch.prototype */{
 		// This model contains all of the search/filter terms
 		/*
 		 * Search filters can be either plain text or a filter object with the following options:

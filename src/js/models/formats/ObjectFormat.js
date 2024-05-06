@@ -8,6 +8,7 @@ define(['jquery', 'underscore', 'backbone'], function($, _, Backbone) {
      * @classdesc An ObjectFormat represents a V2 DataONE object format
      * See https://purl.dataone.org/architecture/apis/Types2.html#v2_0.Types.ObjectFormat
      * @classcategory Models/Formats
+     * @extends Backbone.Model
      */
     var ObjectFormat = Backbone.Model.extend(
       /** @lends ObjectFormat.prototype */{

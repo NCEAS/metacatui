@@ -8,6 +8,7 @@ define(['underscore', 'jquery', 'backbone',
         * @class EMLTempCoverageView
         * @classdesc The EMLTempCoverage renders the content of an EMLTemporalCoverage model
         * @classcategory Views/Metadata
+		* @extends Backbone.View
         */
         var EMLTempCoverageView = Backbone.View.extend(
           /** @lends EMLTempCoverageView.prototype */{

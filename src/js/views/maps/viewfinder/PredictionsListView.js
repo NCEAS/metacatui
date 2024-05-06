@@ -20,7 +20,8 @@ define(
      * @since 2.28.0
      * @constructs PredictionsListView
      */
-    var PredictionsListView = Backbone.View.extend({
+    var PredictionsListView = Backbone.View.extend(
+      /** @lends PredictionsListView.prototype */{
       /**
        * The type of View this is
        * @type {string}

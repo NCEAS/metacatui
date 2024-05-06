@@ -10,6 +10,7 @@ define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
          * spatialRaster, and storedProcedure
          * @classcategory Models/Metadata/EML211
          * @see https://eml.ecoinformatics.org/schema/eml-entity_xsd
+         * @extends Backbone.Model
          */
         var EMLEntity = Backbone.Model.extend(
           /** @lends EMLEntity.prototype */{

@@ -42,110 +42,111 @@ define(
      * @since 2.28.0
      * @constructs ViewfinderView
      */
-    var ViewfinderView = Backbone.View.extend({
-      /**
-       * The type of View this is
-       * @type {string}
-       */
-      type: 'ViewfinderView',
+    var ViewfinderView = Backbone.View.extend(
+      /** @lends ViewfinderView.prototype */{
+        /**
+         * The type of View this is
+         * @type {string}
+         */
+        type: 'ViewfinderView',
 
-      /**
-       * The HTML class to use for this view's outermost element.
-       * @type {string}
-       */
-      className: BASE_CLASS,
+        /**
+         * The HTML class to use for this view's outermost element.
+         * @type {string}
+         */
+        className: BASE_CLASS,
 
-      /** 
-       * Values meant to be used by the rendered HTML template.
-       */
-      templateVars: {
-        classNames: CLASS_NAMES,
-      },
+        /** 
+         * Values meant to be used by the rendered HTML template.
+         */
+        templateVars: {
+          classNames: CLASS_NAMES,
+        },
 
-      /**
-       * @typedef {Object} ViewfinderViewOptions
-       * @property {Map} The Map model associated with this view allowing control
-       * of panning to different locations on the map. 
-       */
-      initialize({ model: mapModel }) {
-        this.viewfinderModel = new ViewfinderModel({ mapModel });
-        this.panelsModel = new ExpansionPanelsModel({ isMulti: true });
-      },
+        /**
+         * @typedef {Object} ViewfinderViewOptions
+         * @property {Map} The Map model associated with this view allowing control
+         * of panning to different locations on the map. 
+         */
+        initialize({ model: mapModel }) {
+          this.viewfinderModel = new ViewfinderModel({ mapModel });
+          this.panelsModel = new ExpansionPanelsModel({ isMulti: true });
+        },
 
-      /**
-       * Get the ZoomPresetsView element.
-       * @returns {JQuery} The ZoomPresetsView element.
-       * @since x.x.x
-       */
-      getZoomPresets() {
-        return this.$el.find(`.${CLASS_NAMES.zoomPresetsView}`);
-      },
+        /**
+         * Get the ZoomPresetsView element.
+         * @returns {JQuery} The ZoomPresetsView element.
+         * @since x.x.x
+         */
+        getZoomPresets() {
+          return this.$el.find(`.${CLASS_NAMES.zoomPresetsView}`);
+        },
 
-      /**
-       * Get the SearchView element.
-       * @returns {JQuery} The SearchView element.
-       */
-      getSearch() {
-        return this.$el.find(`.${CLASS_NAMES.searchView}`);
-      },
+        /**
+         * Get the SearchView element.
+         * @returns {JQuery} The SearchView element.
+         */
+        getSearch() {
+          return this.$el.find(`.${CLASS_NAMES.searchView}`);
+        },
 
-      /**
-       * Helper function to focus input on the search query input and ensure
-       * that the cursor is at the end of the text (as opposed to the beginning
-       * which appears to be the default jQuery behavior).
-       * @since x.x.x
-       */
-      focusInput() {
-        this.searchView.focusInput();
-      },
+        /**
+         * Helper function to focus input on the search query input and ensure
+         * that the cursor is at the end of the text (as opposed to the beginning
+         * which appears to be the default jQuery behavior).
+         * @since x.x.x
+         */
+        focusInput() {
+          this.searchView.focusInput();
+        },
 
-      /**
-       * Render child ZoomPresetsView and append to DOM.
-       * @since x.x.x
-       */
-      renderZoomPresetsView() {
-        const zoomPresetsListView = new ZoomPresetsListView({
-          zoomPresets: this.viewfinderModel.get('zoomPresets'),
-          selectZoomPreset: preset => {
-            this.viewfinderModel.selectZoomPreset(preset);
-          },
-        });
-        const expansionPanel = new ExpansionPanelView({
-          contentViewInstance: zoomPresetsListView,
-          icon: 'icon-plane',
-          panelsModel: this.panelsModel,
-          title: 'Zoom to...',
-          startOpen: true,
-        });
-        expansionPanel.render();
+        /**
+         * Render child ZoomPresetsView and append to DOM.
+         * @since x.x.x
+         */
+        renderZoomPresetsView() {
+          const zoomPresetsListView = new ZoomPresetsListView({
+            zoomPresets: this.viewfinderModel.get('zoomPresets'),
+            selectZoomPreset: preset => {
+              this.viewfinderModel.selectZoomPreset(preset);
+            },
+          });
+          const expansionPanel = new ExpansionPanelView({
+            contentViewInstance: zoomPresetsListView,
+            icon: 'icon-plane',
+            panelsModel: this.panelsModel,
+            title: 'Zoom to...',
+            startOpen: true,
+          });
+          expansionPanel.render();
 
-        this.getZoomPresets().append(expansionPanel.el);
-      },
+          this.getZoomPresets().append(expansionPanel.el);
+        },
 
-      /** Render child SearchView and append to DOM. */
-      renderSearchView() {
-        this.searchView = new SearchView({
-          viewfinderModel: this.viewfinderModel,
-        });
-        this.searchView.render();
+        /** Render child SearchView and append to DOM. */
+        renderSearchView() {
+          this.searchView = new SearchView({
+            viewfinderModel: this.viewfinderModel,
+          });
+          this.searchView.render();
 
-        this.getSearch().append(this.searchView.el);
-      },
+          this.getSearch().append(this.searchView.el);
+        },
 
-      /**
-       * Render the view by updating the HTML of the element.
-       * The new HTML is computed from an HTML template that
-       * is passed an object with relevant view state.
-       * */
-      render() {
-        this.el.innerHTML = _.template(Template)(this.templateVars);
+        /**
+         * Render the view by updating the HTML of the element.
+         * The new HTML is computed from an HTML template that
+         * is passed an object with relevant view state.
+         * */
+        render() {
+          this.el.innerHTML = _.template(Template)(this.templateVars);
 
-        this.renderSearchView();
-        if (this.viewfinderModel.get('zoomPresets').length) {
-          this.renderZoomPresetsView();
-        }
-      },
-    });
+          this.renderSearchView();
+          if (this.viewfinderModel.get('zoomPresets').length) {
+            this.renderZoomPresetsView();
+          }
+        },
+      });
 
     return ViewfinderView;
   });

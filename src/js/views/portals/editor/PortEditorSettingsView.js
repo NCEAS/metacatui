@@ -11,6 +11,7 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
   /**
   * @class PortEditorSettingsView
   * @classcategory Views/Portals/Editor
+  * @extends PortEditorSectionView
   */
   var PortEditorSettingsView = PortEditorSectionView.extend(
     /** @lends PortEditorSettingsView.prototype */{

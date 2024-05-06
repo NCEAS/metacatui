@@ -11,6 +11,7 @@ define(["jquery",
      * @classdesc The mapsView is the area where the the geographic coverage of the datasets that comprise the portal
      * are displayed. The mapsView will update to match the search results when they are filtered.
      * @classcategory Views
+     * @extends Backbone.View
      */
     var mapsView = Backbone.View.extend({
 
