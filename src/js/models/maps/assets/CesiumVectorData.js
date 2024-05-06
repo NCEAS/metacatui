@@ -7,18 +7,21 @@ define([
   "models/maps/AssetColor",
   "models/maps/AssetColorPalette",
   "collections/maps/VectorFilters",
+  "common/IconUtilities",
 ], function (
   _,
   Cesium,
   MapAsset,
   AssetColor,
   AssetColorPalette,
-  VectorFilters
+  VectorFilters,
+  IconUtilities
 ) {
   // Source: https://fontawesome.com/v6/icons/location-dot?f=classic&s=solid
-  // !Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.
-  const PIN_SVG_STRING = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 384 512'><path d='M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z'/></svg>";
-  const B64_START = 'data:image/svg+xml;base64,';
+  const PIN_SVG_STRING = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>';
+  const PIN_OUTLINE_WIDTH = 30; // The width of the stroke around the pin is relative to the viewBox
+  const PIN_OUTLINE_COLOR = "white";
+  const PIN_SVG = IconUtilities.formatSvgForCesiumBillboard(PIN_SVG_STRING, PIN_OUTLINE_WIDTH, PIN_OUTLINE_COLOR);
 
   /**
    * @classdesc A CesiumVectorData Model is a vector layer (excluding
@@ -608,20 +611,16 @@ define([
        * @since 2.25.0
        */
       styleBillboard: function (entity, styles) {
-        const pin = new DOMParser()
-            .parseFromString(PIN_SVG_STRING, "image/svg+xml")
-            .querySelector("svg");
-        pin.setAttribute("width", styles.markerSize);
-        pin.setAttribute("height", styles.markerSize);
-
-        const pinPath = pin.querySelector("path");
-        pinPath.setAttribute("fill", styles.color.toCssHexString());
-        pinPath.setAttribute("fill-rule", "evenodd");
-        pinPath.setAttribute("stroke", "white");
-        pinPath.setAttribute("stroke-width", styles.markerSize);
-
+        const size = styles.markerSize;
+        // Since we're converting to raster, start with a larger SVG and
+        // scale down so the resulting resolution is better
+        PIN_SVG.setAttribute("width", size * 4);
+        PIN_SVG.setAttribute("height", size * 4);
+        PIN_SVG.setAttribute("fill", styles.color.toCssHexString());
         entity.billboard = {
-          image: B64_START + btoa(pin.outerHTML),
+          image: IconUtilities.svgToBase64(PIN_SVG),
+          width: size,
+          height: size
         };
         // To convert the automatically created billboards to points instead:
         // entity.billboard = undefined; entity.point = new
