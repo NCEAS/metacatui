@@ -79,7 +79,7 @@ define([
      * @param {number} [strokeWidth=0] - The stroke width to apply to the SVG (in pixels).
      * @param {string} [strokeColor="white"] - The stroke color.
      * @returns {SVGElement|null} - The modified SVG element or null if an error occurs.
-     * @since x.x.x
+     * @since 2.29.0
      */
     formatSvgForCesiumBillboard(svgString, strokeWidth = 0, strokeColor = "white") {
       const svgElement = this.parseSvg(svgString);
@@ -99,7 +99,7 @@ define([
      * Parses an SVG string and returns the SVG element.
      * @param {string} svgString - The SVG markup as a string.
      * @returns {SVGElement} - The SVG element.
-     * @since x.x.x
+     * @since 2.29.0
      */
     parseSvg(svgString) {
       const parser = new DOMParser();
@@ -111,7 +111,7 @@ define([
     /**
      * Removes comment nodes from an SVG element.
      * @param {SVGElement} svgElement - The SVG element.
-     * @since x.x.x
+     * @since 2.29.0
      */
     removeCommentNodes(svgElement) {
       while (svgElement.firstChild && svgElement.firstChild.nodeType === Node.COMMENT_NODE) {
@@ -124,7 +124,7 @@ define([
      * @param {SVGElement} svgElement - The SVG element.
      * @param {number} strokeWidth - The stroke width to apply to the SVG (in pixels).
      * @param {string} strokeColor - The stroke color as a CSS color value.
-     * @since x.x.x
+     * @since 2.29.0
      */
     setStrokeProperties(svgElement, strokeWidth, strokeColor) {
       svgElement.setAttribute("stroke-width", strokeWidth);
@@ -135,7 +135,7 @@ define([
      * Adjusts the viewBox of an SVG element to accommodate a stroke width.
      * @param {SVGElement} svgElement - The SVG element.
      * @param {number} strokeWidth - The stroke width applied to the SVG (in pixels).
-     * @since x.x.x
+     * @since 2.29.0
      */
     adjustViewBox(svgElement, strokeWidth) {
       const viewBox = svgElement.getAttribute("viewBox");
@@ -156,7 +156,7 @@ define([
      * that can be used as a data URI in an image tag.
      * @param {SVGElement} svgElement - The SVG element to convert.
      * @returns {string} - The base64 encoded SVG string.
-     * @since x.x.x
+     * @since 2.29.0
      */
     svgToBase64(svgElement) {
       const base64 = btoa(svgElement.outerHTML);

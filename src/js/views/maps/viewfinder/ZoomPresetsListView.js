@@ -18,7 +18,7 @@ define(
      * @name ZoomPresetsListView
      * @extends Backbone.View
      * @screenshot views/maps/viewfinder/ZoomPresetsListView.png
-     * @since x.x.x
+     * @since 2.29.0
      * @constructs ZoomPresetsListView
      */
     var ZoomPresetsListView = Backbone.View.extend(

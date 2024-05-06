@@ -75,7 +75,7 @@ define(
       /**
        * Get the ZoomPresetsView element.
        * @returns {JQuery} The ZoomPresetsView element.
-       * @since x.x.x
+       * @since 2.29.0
        */
       getZoomPresets() {
         return this.$el.find(`.${CLASS_NAMES.zoomPresetsView}`);
@@ -93,7 +93,7 @@ define(
        * Helper function to focus input on the search query input and ensure
        * that the cursor is at the end of the text (as opposed to the beginning
        * which appears to be the default jQuery behavior).
-       * @since x.x.x
+       * @since 2.29.0
        */
       focusInput() {
         this.searchView.focusInput();
@@ -101,7 +101,7 @@ define(
 
       /**
        * Render child ZoomPresetsView and append to DOM.
-       * @since x.x.x
+       * @since 2.29.0
        */
       renderZoomPresetsView() {
         const zoomPresetsListView = new ZoomPresetsListView({

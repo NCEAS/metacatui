@@ -9,7 +9,7 @@ define(
     * be configured within a MapView.
     * @classcategory Models/Maps
     * @extends Backbone.Model
-    * @since x.x.x
+    * @since 2.29.0
     */
     const ZoomPresetModel = Backbone.Model.extend(
     /** @lends ZoomPresetModel.prototype */ {
