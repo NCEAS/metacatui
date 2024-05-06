@@ -17,6 +17,7 @@ define(["jquery",
         there are 'h2' tags within the 'topLevelItem' containers, these will be listed under
         the 'topLevelItem'.
      * @classcategory Views
+     * @extends Backbone.View
     */
     var TOCView = Backbone.View.extend(
         /** @lends TOCView.prototype */{

@@ -7,6 +7,7 @@ define(["jquery", "underscore", "backbone", "x2js", "models/metadata/eml211/EMLU
      * @class Units
      * @classdesc Units represents the Ecological Metadata Language units list
      * @classcategory Collections
+     * @extends Backbone.Collection
      */
     var Units = Backbone.Collection.extend(
       /** @lends Units.prototype */{

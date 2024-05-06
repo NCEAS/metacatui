@@ -13,7 +13,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
      @extends Backbone.Collection
      @constructor
     */
-    var QualityReport = Backbone.Collection.extend({
+    var QualityReport = Backbone.Collection.extend(
+      /** @lends QualityReport.prototype */{
 
       //The name of this type of collection
       type: "QualityReport",

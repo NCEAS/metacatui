@@ -14,10 +14,10 @@ MetacatUI.AppConfig = Object.assign(
     nodeId: "urn:node:ARCTIC",
 
     //Metadata quality
-    mdqSuiteIds: ["arctic.data.center.suite.1", "FAIR-suite-0.3.1"],
+    mdqSuiteIds: ["arctic.data.center.suite-1.2.0", "FAIR-suite-0.4.0"],
     mdqSuiteLabels: [
-      "Arctic Data Center Conformance Suite v1.0",
-      "FAIR Suite v0.3.1",
+      "Arctic Data Center Conformance Suite v1.2",
+      "FAIR Suite v0.4.0",
     ],
     mdqFormatIds: ["eml*", "https://eml*"],
     displayDatasetQualityMetric: true,

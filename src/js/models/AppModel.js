@@ -881,33 +881,33 @@ define(['jquery', 'underscore', 'backbone'],
       /**
       * The URL for the DataONE metadata assessment service
       * @type {string}
-      * @default "https://docker-ucsb-4.dataone.org:30443/quality"
+      * @default "https://api.dataone.org/quality"
       */
-      mdqBaseUrl: "https://docker-ucsb-4.dataone.org:30443/quality",
+      mdqBaseUrl: "https://api.dataone.org/quality",
       /**
       * Metadata Assessment Suite IDs for the dataset assessment reports.
       * @type {string[]}
-      * @default ["FAIR-suite-0.3.1"]
+      * @default ["FAIR-suite-0.4.0"]
       */
-      mdqSuiteIds: ["FAIR-suite-0.3.1"],
+      mdqSuiteIds: ["FAIR-suite-0.4.0"],
       /**
       * Metadata Assessment Suite labels for the dataset assessment reports
       * @type {string[]}
-      * @default ["FAIR Suite v0.3.1"]
+      * @default ["FAIR Suite v0.4.0"]
       */
-      mdqSuiteLabels: ["FAIR Suite v0.3.1"],
+      mdqSuiteLabels: ["FAIR Suite v0.4.0"],
       /**
       * Metadata Assessment Suite IDs for the aggregated assessment charts
       * @type {string[]}
-      * @default ["FAIR-suite-0.3.1"]
+      * @default ["FAIR-suite-0.4.0"]
       */
-      mdqAggregatedSuiteIds: ["FAIR-suite-0.3.1"],
+      mdqAggregatedSuiteIds: ["FAIR-suite-0.4.0"],
       /**
       * Metadata Assessment Suite labels for the aggregated assessment charts
       * @type {string[]}
-      * @default ["FAIR Suite v0.3.1"]
+      * @default ["FAIR Suite v0.4.0"]
       */
-      mdqAggregatedSuiteLabels: ["FAIR Suite v0.3.1"],
+      mdqAggregatedSuiteLabels: ["FAIR Suite v0.4.0"],
       /**
       * The metadata formats for which to display metadata assessment reports
       * @type {string[]}

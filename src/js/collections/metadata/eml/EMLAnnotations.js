@@ -7,6 +7,7 @@ function($, _, Backbone, EMLAnnotation){
    * @classdesc A collection of EMLAnnotations.
    * @classcategory Collections/Metadata/EML
    * @since 2.19.0
+   * @extends Backbone.Collection
    */
   var EMLAnnotations = Backbone.Collection.extend(
     /** @lends EMLAnnotations.prototype */

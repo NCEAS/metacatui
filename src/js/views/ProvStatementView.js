@@ -6,8 +6,10 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 	 * Constructs a list of provenance statements based on the indexed prov fields of Solr documents.
 	 * Renders a list of paragraph tags with sentences and links to the objects in the sentence.
 	 * The Prov Statement template can be used to display other UI elements along with the textual prov statements.
+	 * @extends Backbone.View
 	 */
-	var ProvStatementView = Backbone.View.extend({
+	var ProvStatementView = Backbone.View.extend(
+		/** @lends ProvStatementView */{
 		
 		/*
 		 * OPTIONS

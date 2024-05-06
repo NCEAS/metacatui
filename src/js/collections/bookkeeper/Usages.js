@@ -11,6 +11,7 @@ define(["jquery", "underscore", "backbone", "models/bookkeeper/Usage", "models/b
    * This collection also stores a reference to the Quota model associated with these Usages.
    * @classcategory Collections/Bookkeeper
    * @since 2.14.0
+   * @extends Backbone.Collection
    */
   var Usages = Backbone.Collection.extend(
     /** @lends Usages.prototype */ {

@@ -12,6 +12,7 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
    * @classdesc A utility model that contains functions for looking up values
    * from various services
    * @classcategory Models
+   * @extends Backbone.Model
    */
   var LookupModel = Backbone.Model.extend(
     /** @lends LookupModel.prototype */ {

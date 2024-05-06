@@ -5,6 +5,7 @@ define(["jquery", "underscore", "backbone", "views/BaseTextView", "text!template
         
         /*
          * Extend the TextView to provide new templates
+         * @extends BaseTextView
          */
         var TextView = BaseTextView.extend({
             // Add the preservation page template

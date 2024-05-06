@@ -9,6 +9,7 @@ define(["backbone", "models/metadata/eml211/EMLMissingValueCode"], function (
    * @classdesc A collection of EMLMissingValueCodes.
    * @classcategory Collections/Metadata/EML
    * @since 2.26.0
+   * @extends Backbone.Collection
    */
   var EMLMissingValueCodes = Backbone.Collection.extend(
     /** @lends EMLMissingValueCodes.prototype */

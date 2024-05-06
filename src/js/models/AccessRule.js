@@ -7,6 +7,7 @@ define(['jquery', 'underscore', 'backbone'],
    * @class AccessRule
    * @classdesc A model that specifies a single permission set on a DataONEObject
    * @classcategory Models
+   * @extends Backbone.Model
    */
 	var AccessRule = Backbone.Model.extend(
     /** @lends AccessRule */
