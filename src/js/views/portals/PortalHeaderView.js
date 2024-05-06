@@ -8,6 +8,7 @@ define(["jquery",
     * @classdesc The PortalHeaderView is the view at the top of portal pages
      * that shows the portal's title, synopsis, and logo
      * @classcategory Views/Portals
+     * @extends Backbone.View
      */
      var PortalHeaderView = Backbone.View.extend(
        /** @lends PortalHeaderView.prototype */{

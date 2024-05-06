@@ -7,6 +7,7 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/eml211/EMLText',
       * @class EMLText
       * @classdesc A model that represents the EML 2.2.0 Text module
       * @classcategory Models/Metadata/EML220
+      * @extends EMLText211
       */
   var EMLText = EMLText211.extend(
     /** @lends EMLText.prototype */{

@@ -4,6 +4,7 @@ define(["jquery", "underscore", "backbone", "localforage", "clipboard", "text!te
     * @class DraftsView
     * @classdesc A view that lists the local submission drafts for this user
     * @classcategory Views
+    * @extends Backbone.View
     */
     var view = Backbone.View.extend(
       /** @lends DraftsView.prototype */{

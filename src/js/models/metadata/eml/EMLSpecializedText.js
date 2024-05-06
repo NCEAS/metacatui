@@ -11,6 +11,7 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/eml220/EMLText'],
       * would be serialized in the EML XML as a section title or markdown header.
       * @classcategory Models/Metadata/EML
       * @since 2.19.0
+      * @extends EMLText
       */
   var EMLSpecializedText = EMLText.extend(
     /** @lends EMLSpecializedText.prototype */{

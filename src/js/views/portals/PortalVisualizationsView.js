@@ -10,6 +10,7 @@ define(["jquery",
      * @classdesc The PortalVisualizationsView is a view to render the
      * portal visualizations tab (within PortalSectionView)
      * @classcategory Views/Portals
+     * @extends PortalSectionView
      */
      var PortalVisualizationsView = PortalSectionView.extend(
        /** @lends PortalVisualizationsView.prototype */{

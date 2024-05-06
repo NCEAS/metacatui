@@ -9,6 +9,7 @@ define(['jquery', 'backbone'],
          *          metacat.
          * @classcategory Models/Projects
          * @since 2.22.0
+         * @extends Backbone.Model
          */
 
         var Project = Backbone.Model.extend(/** @lends Project.prototype */{

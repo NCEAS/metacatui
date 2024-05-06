@@ -10,6 +10,7 @@ define(["jquery", "underscore", "backbone", "models/bookkeeper/Quota"],
    * per unit to help with communicating limit warnings.
    * @classcategory Collections/Bookkeeper
    * @since 2.14.0
+   * @extends Backbone.Collection
    */
   var Quotas = Backbone.Collection.extend(
     /** @lends Quotas.prototype */ {

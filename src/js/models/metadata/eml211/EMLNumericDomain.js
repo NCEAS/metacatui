@@ -9,6 +9,7 @@ define(["jquery", "underscore", "backbone",
          * EMLMeasurementScale.
          * @classcategory Models/Metadata/EML211
          * @see https://eml.ecoinformatics.org/schema/eml-attribute_xsd.html#AttributeType_measurementScale
+         * @extends Backbone.Model
          */
         var EMLNumericDomain = Backbone.Model.extend(
             /** @lends EMLNumericDomain.prototype */{

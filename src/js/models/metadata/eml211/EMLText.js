@@ -6,6 +6,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
   * @class EMLText211
   * @classdesc A model that represents the EML 2.1.1 Text module
   * @classcategory Models/Metadata/EML211
+  * @extends Backbone.Model
   */
   var EMLText = Backbone.Model.extend(
     /** @lends EMLText211.prototype */{

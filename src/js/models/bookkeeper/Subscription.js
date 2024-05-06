@@ -15,6 +15,7 @@ define(["jquery",
      * @name Subscription
      * @since 2.14.0
      * @constructor
+     * @extends Backbone.Model
     */
     var Subscription = Backbone.Model.extend(
       /** @lends Subscription.prototype */ {

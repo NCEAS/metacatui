@@ -13,6 +13,7 @@ define(["jquery",
      * @class Usage
      * @name Usage
      * @since 2.14.0
+     * @extends Backbone.Model
      * @constructor
     */
     var Usage = Backbone.Model.extend(

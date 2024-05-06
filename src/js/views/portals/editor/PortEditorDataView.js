@@ -13,6 +13,7 @@ function( _, $, Backbone, FilterGroup, PortEditorSectionView, EditCollectionView
   /**
   * @class PortEditorDataView
   * @classcategory Views/Portals/Editor
+  * @extends PortEditorSectionView
   */
   var PortEditorDataView = PortEditorSectionView.extend(
     /** @lends PortEditorDataView.prototype */{

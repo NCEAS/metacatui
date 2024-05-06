@@ -15,6 +15,7 @@ define(["jquery",
      * @name Quota
      * @since 2.14.0
      * @constructor
+     * @extends Backbone.Model
     */
     var Quota = Backbone.Model.extend(
       /** @lends Quota.prototype */ {

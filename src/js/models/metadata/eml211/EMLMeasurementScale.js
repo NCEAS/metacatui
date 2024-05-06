@@ -11,6 +11,7 @@ define(["jquery", "underscore", "backbone",
          * EMLNumericDomain, or EMLDateTimeDomain, depending on the
          * domain name found in the given measurementScaleXML
          * @classcategory Models/Metadata/EML211
+         * @extends Backbone.Model
          */
         var EMLMeasurementScale = Backbone.Model.extend({},
           /** @lends EMLMeasurementScale.prototype */
