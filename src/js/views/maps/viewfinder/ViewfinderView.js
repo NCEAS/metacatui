@@ -73,14 +73,14 @@ define(
           this.panelsModel = new ExpansionPanelsModel({ isMulti: true });
         },
 
-        /**
-         * Get the ZoomPresetsView element.
-         * @returns {JQuery} The ZoomPresetsView element.
-         * @since x.x.x
-         */
-        getZoomPresets() {
-          return this.$el.find(`.${CLASS_NAMES.zoomPresetsView}`);
-        },
+      /**
+       * Get the ZoomPresetsView element.
+       * @returns {JQuery} The ZoomPresetsView element.
+       * @since 2.29.0
+       */
+      getZoomPresets() {
+        return this.$el.find(`.${CLASS_NAMES.zoomPresetsView}`);
+      },
 
         /**
          * Get the SearchView element.
@@ -90,35 +90,35 @@ define(
           return this.$el.find(`.${CLASS_NAMES.searchView}`);
         },
 
-        /**
-         * Helper function to focus input on the search query input and ensure
-         * that the cursor is at the end of the text (as opposed to the beginning
-         * which appears to be the default jQuery behavior).
-         * @since x.x.x
-         */
-        focusInput() {
-          this.searchView.focusInput();
-        },
+      /**
+       * Helper function to focus input on the search query input and ensure
+       * that the cursor is at the end of the text (as opposed to the beginning
+       * which appears to be the default jQuery behavior).
+       * @since 2.29.0
+       */
+      focusInput() {
+        this.searchView.focusInput();
+      },
 
-        /**
-         * Render child ZoomPresetsView and append to DOM.
-         * @since x.x.x
-         */
-        renderZoomPresetsView() {
-          const zoomPresetsListView = new ZoomPresetsListView({
-            zoomPresets: this.viewfinderModel.get('zoomPresets'),
-            selectZoomPreset: preset => {
-              this.viewfinderModel.selectZoomPreset(preset);
-            },
-          });
-          const expansionPanel = new ExpansionPanelView({
-            contentViewInstance: zoomPresetsListView,
-            icon: 'icon-plane',
-            panelsModel: this.panelsModel,
-            title: 'Zoom to...',
-            startOpen: true,
-          });
-          expansionPanel.render();
+      /**
+       * Render child ZoomPresetsView and append to DOM.
+       * @since 2.29.0
+       */
+      renderZoomPresetsView() {
+        const zoomPresetsListView = new ZoomPresetsListView({
+          zoomPresets: this.viewfinderModel.get('zoomPresets'),
+          selectZoomPreset: preset => {
+            this.viewfinderModel.selectZoomPreset(preset);
+          },
+        });
+        const expansionPanel = new ExpansionPanelView({
+          contentViewInstance: zoomPresetsListView,
+          icon: 'icon-plane',
+          panelsModel: this.panelsModel,
+          title: 'Zoom to...',
+          startOpen: true,
+        });
+        expansionPanel.render();
 
           this.getZoomPresets().append(expansionPanel.el);
         },

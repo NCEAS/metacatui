@@ -36,7 +36,7 @@ define(
      * @name SearchView
      * @extends Backbone.View
      * @screenshot views/maps/viewfinder/SearchView.png
-     * @since x.x.x
+     * @since 2.29.0
      * @constructs SearchView
      */
     var SearchView = Backbone.View.extend(

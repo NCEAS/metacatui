@@ -15,7 +15,7 @@ define(
      * @class ZoomPresets
      * @classcategory Collections/Maps
      * @extends Backbone.Collection
-     * @since x.x.x
+     * @since 2.29.0
      * @constructor
      */
     const ZoomPresets = Backbone.Collection.extend(

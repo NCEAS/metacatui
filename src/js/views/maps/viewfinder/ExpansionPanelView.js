@@ -26,7 +26,7 @@ define(
      * @extends Backbone.View
      * @screenshot views/maps/viewfinder/ExpansionPanelView_closed.png
      * @screenshot views/maps/viewfinder/ExpansionPanelView_open.png
-     * @since x.x.x
+     * @since 2.29.0
      * @constructs ExpansionPanelView
      */
     var ExpansionPanelView = Backbone.View.extend(
