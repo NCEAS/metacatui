@@ -62,8 +62,8 @@ MetacatUI.AppConfig = Object.assign({
 
   //Metadata assessments
   displayDatasetQualityMetric: true,
-  mdqSuiteIds: ["knb.suite.1"],
-  mdqSuiteLabels: ["KNB Metadata Completeness Suite v1.0"],
+  mdqSuiteIds: ["FAIR-suite-0.4.0"],
+  mdqSuiteLabels: ["FAIR Suite v0.4.0"],
   mdqFormatIds:["eml*", "https://eml*"],
 
   //Portals
