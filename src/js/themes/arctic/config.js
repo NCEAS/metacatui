@@ -259,7 +259,7 @@ MetacatUI.AppConfig = Object.assign(
     //Google Analytics
     googleAnalyticsKey: "G-12EKQM14SH",
   },
-  MetacatUI.AppConfig || {}
+  MetacatUI.AppConfig || {},
 );
 
 MetacatUI.themeMap = {

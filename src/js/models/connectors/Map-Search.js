@@ -1,9 +1,9 @@
 /*global define */
-define([
-  "backbone",
-  "models/maps/Map",
-  "collections/SolrResults",
-], function (Backbone, Map, SearchResults) {
+define(["backbone", "models/maps/Map", "collections/SolrResults"], function (
+  Backbone,
+  Map,
+  SearchResults,
+) {
   "use strict";
 
   /**
@@ -17,13 +17,12 @@ define([
    */
   return Backbone.Model.extend(
     /** @lends MapSearchConnector.prototype */ {
-
       /**
        * The type of Backbone.Model this is.
        * @type {string}
        * @since 2.25.0
        * @default "MapSearchConnector"
-      */
+       */
       type: "MapSearchConnector",
 
       /**
@@ -38,7 +37,7 @@ define([
         return {
           searchResults: null,
           map: null,
-          onMoveEnd: this.onMoveEnd
+          onMoveEnd: this.onMoveEnd,
         };
       },
 
@@ -81,13 +80,17 @@ define([
 
         // TODO: Since only the first Geohash is needed, create a getFirst
         // function in MapAssets.
-        let geohashes = _.reduce(layerGroups, (memo, layers) => {
-          const geohashes = layers.getAll("CesiumGeohash");
-          if (geohashes && geohashes.length) {
-            memo.push(...geohashes);
-          }
-          return memo;
-        }, []);
+        let geohashes = _.reduce(
+          layerGroups,
+          (memo, layers) => {
+            const geohashes = layers.getAll("CesiumGeohash");
+            if (geohashes && geohashes.length) {
+              memo.push(...geohashes);
+            }
+            return memo;
+          },
+          [],
+        );
         if (!geohashes || !geohashes.length) {
           return null;
         } else {
@@ -151,7 +154,7 @@ define([
         }
         // If there is still no Geohash layer, then we should wait for one to
         // be added to the Layers collection, then try to find it again.
-        _.each(layerGroups, layers => {
+        _.each(layerGroups, (layers) => {
           this.stopListening(layers, "add", this.findAndSetGeohashLayer);
           if (!geohash) {
             this.listenTo(layers, "add", this.findAndSetGeohashLayer);
@@ -191,7 +194,11 @@ define([
         // When the user is panning/zooming in the map, hide the GeoHash layer
         // to indicate that the map is not up to date with the search results,
         // which are about to be updated.
-        this.listenTo(interactions, "moveStartAndChanged", this.hideGeoHashLayer);
+        this.listenTo(
+          interactions,
+          "moveStartAndChanged",
+          this.hideGeoHashLayer,
+        );
 
         // When the user is done panning/zooming in the map, show the GeoHash
         // layer again and update the search results (thereby updating the
@@ -290,7 +297,7 @@ define([
         const facetCounts = searchResults?.facetCounts;
         if (!facetCounts) return null;
         const geohashFacets = Object.keys(facetCounts).filter((key) =>
-          key.startsWith("geohash_")
+          key.startsWith("geohash_"),
         );
         return geohashFacets.flatMap((key) => facetCounts[key]);
       },
@@ -340,6 +347,6 @@ define([
         const geohashes9 = searchResult.get("geohash_9");
         this.get("geohashLayer").selectGeohashes(geohashes9);
       },
-    }
+    },
   );
 });

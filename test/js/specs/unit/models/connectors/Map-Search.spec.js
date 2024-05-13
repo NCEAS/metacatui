@@ -106,17 +106,17 @@ define([
         state.mapSearch.set("map", map);
         state.mapSearch.unset("geohashLayer");
 
-
         state.mapSearch.findAndSetGeohashLayer();
 
-        expect(state.mapSearch.get("geohashLayer")).to.be.instanceof(CesiumGeohash);
+        expect(state.mapSearch.get("geohashLayer")).to.be.instanceof(
+          CesiumGeohash,
+        );
       });
 
       it("doesn't create a geohash if add is false", () => {
         const map = new Map({ layers: [{}] });
         state.mapSearch.set("map", map);
         state.mapSearch.unset("geohashLayer");
-
 
         state.mapSearch.findAndSetGeohashLayer(/* add= */ false);
 

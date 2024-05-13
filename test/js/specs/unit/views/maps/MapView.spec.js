@@ -1,7 +1,4 @@
-define([
-  "views/maps/MapView",
-  "models/maps/Map",
-], (MapView, MapAsset) => {
+define(["views/maps/MapView", "models/maps/Map"], (MapView, MapAsset) => {
   const expect = chai.expect;
 
   describe("MapView Test Suite", () => {
@@ -17,7 +14,7 @@ define([
         const nonPortalMap = new MapView();
         nonPortalMap.render();
         expect(nonPortalMap.$el.hasClass("map-view__portal")).to.be.false;
-        
+
         const portalMap = new MapView({ isPortalMap: true });
         portalMap.render();
         expect(portalMap.$el.hasClass("map-view__portal")).to.be.true;

@@ -64,13 +64,13 @@ define([
           search.trigger("changing");
         });
 
-        this.listenTo(search, "change:sort change:facet", () => this.triggerSearch());
+        this.listenTo(search, "change:sort change:facet", () =>
+          this.triggerSearch(),
+        );
 
         // If the logged-in status changes, send a new search
-        this.listenTo(
-          MetacatUI.appUserModel,
-          "change:loggedIn",
-          () => this.triggerSearch()
+        this.listenTo(MetacatUI.appUserModel, "change:loggedIn", () =>
+          this.triggerSearch(),
         );
 
         this.set("isConnected", true);
@@ -127,6 +127,6 @@ define([
         // Send the query to the server via the SolrResults collection
         searchResults.toPage(page);
       },
-    }
+    },
   );
 });

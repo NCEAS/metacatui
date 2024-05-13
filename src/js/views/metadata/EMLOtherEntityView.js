@@ -1,56 +1,59 @@
 /* global define */
-define(['underscore', 'jquery', 'backbone',
-        'models/DataONEObject', 'models/metadata/eml211/EMLOtherEntity',
-        'views/metadata/EMLEntityView',
-        'text!templates/metadata/eml-other-entity.html'],
-    function(_, $, Backbone, DataONEObject, EMLOtherEntity,
-    		EMLEntityView,
-    		EMLOtherEntityTemplate){
+define([
+  "underscore",
+  "jquery",
+  "backbone",
+  "models/DataONEObject",
+  "models/metadata/eml211/EMLOtherEntity",
+  "views/metadata/EMLEntityView",
+  "text!templates/metadata/eml-other-entity.html",
+], function (
+  _,
+  $,
+  Backbone,
+  DataONEObject,
+  EMLOtherEntity,
+  EMLEntityView,
+  EMLOtherEntityTemplate,
+) {
+  /**
+   * @class EMLOtherEntityView
+   * @classdesc An EMLOtherEntityView expands on the EMLEntityView to show attributes of the EML specific to the otherEntity
+   * @classcategory Views/Metadata
+   * @extends EMLEntityView
+   */
+  var EMLOtherEntityView = EMLEntityView.extend(
+    /** @lends EMLOtherEntityView.prototype */ {
+      tagName: "div",
 
-        /**
-         * @class EMLOtherEntityView
-         * @classdesc An EMLOtherEntityView expands on the EMLEntityView to show attributes of the EML specific to the otherEntity
-         * @classcategory Views/Metadata
-         * @extends EMLEntityView
-        */
-        var EMLOtherEntityView = EMLEntityView.extend(
-          /** @lends EMLOtherEntityView.prototype */{
+      className: "",
 
-            tagName: "div",
+      id: null,
 
-            className: "",
+      template: EMLOtherEntityTemplate(),
 
-            id: null,
+      /* Events this view listens to */
+      events: {},
 
-            template: EMLOtherEntityTemplate(),
+      initialize: function (options) {
+        if (!options) var options = {};
 
-            /* Events this view listens to */
-            events: {
+        this.model = options.model || new EMLOtherEntity();
+        this.DataONEObject = options.DataONEObject;
+      },
 
-            },
+      render: function () {
+        this.renderEntityTemplate();
 
-            initialize: function(options){
-            	if(!options)
-            		var options = {};
+        var overviewContainer = this.$(".overview-container");
+        overviewContainer.append(this.template(this.model.toJSON()));
 
-            	this.model = options.model || new EMLOtherEntity();
-            	this.DataONEObject = options.DataONEObject;
-            },
+        this.renderPreview();
 
-            render: function(){
+        this.renderAttributes();
+      },
+    },
+  );
 
-            	this.renderEntityTemplate();
-
-            	var overviewContainer = this.$(".overview-container");
-            	overviewContainer.append( this.template( this.model.toJSON() ) );
-
-            	this.renderPreview();
-
-            	this.renderAttributes();
-
-            }
-
-        });
-
-        return EMLOtherEntityView;
+  return EMLOtherEntityView;
 });

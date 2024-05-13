@@ -20,7 +20,7 @@ define([
   SorterView,
   Template,
   MapSearchFiltersConnector,
-  CatalogSearchViewCSS
+  CatalogSearchViewCSS,
 ) {
   "use strict";
 
@@ -363,7 +363,7 @@ define([
           }
         } catch (e) {
           console.error(
-            "Error setting the search mode, defaulting to list:" + e
+            "Error setting the search mode, defaulting to list:" + e,
           );
           this.mapVisible = false;
         }
@@ -386,7 +386,7 @@ define([
             "change:firstInteraction",
             function () {
               this.toggleMapFilter(true);
-            }
+            },
           );
         }
       },
@@ -413,11 +413,11 @@ define([
           this.$el.html(
             this.template({
               mapFilterOn: this.limitSearchToMapArea === true,
-            })
+            }),
           );
         } catch (e) {
           console.log(
-            "There was an error setting up the CatalogSearchView:" + e
+            "There was an error setting up the CatalogSearchView:" + e,
           );
           this.renderError();
         }
@@ -444,7 +444,7 @@ define([
           this.listenTo(
             this.model.get("searchResults"),
             "reset",
-            this.renderTitle
+            this.renderTitle,
           );
 
           // Render Pager
@@ -457,7 +457,7 @@ define([
           this.renderMap();
         } catch (e) {
           console.log(
-            "There was an error rendering the CatalogSearchView:" + e
+            "There was an error rendering the CatalogSearchView:" + e,
           );
           this.renderError();
         }
@@ -519,7 +519,7 @@ define([
           this.searchResultsView.render();
         } catch (e) {
           console.log(
-            "There was an error rendering the SearchResultsView:" + e
+            "There was an error rendering the SearchResultsView:" + e,
           );
         }
       },
@@ -623,7 +623,7 @@ define([
           let title = this.titleTemplate(
             searchResults.getStart() + 1,
             searchResults.getEnd() + 1,
-            searchResults.getNumFound()
+            searchResults.getNumFound(),
           );
 
           titleEl.insertAdjacentHTML("beforeend", title);
@@ -814,10 +814,10 @@ define([
       updateToggleFiltersLabel: function () {
         try {
           const toggleFiltersLabel = this.el.querySelector(
-            this.toggleFiltersLabel
+            this.toggleFiltersLabel,
           );
           const toggleFiltersButton = this.el.querySelector(
-            this.toggleFiltersButton
+            this.toggleFiltersButton,
           );
           if (this.filtersVisible) {
             if (toggleFiltersLabel) {
@@ -898,6 +898,6 @@ define([
           console.error("Couldn't close search view. ", e);
         }
       },
-    }
+    },
   );
 });

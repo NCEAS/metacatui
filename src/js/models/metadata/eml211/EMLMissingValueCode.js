@@ -128,7 +128,7 @@ define(["backbone"], function (Backbone) {
 
         return Object.keys(errors).length > 0 ? errors : undefined;
       },
-    }
+    },
   );
 
   return EMLMissingValueCode;

@@ -8,61 +8,75 @@
 */
 
 /* global define */
-define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLTaxonCoverage',
-        'text!templates/metadata/taxonomicClassificationTable.html',
-		'text!templates/metadata/taxonomicClassificationRow.html'],
-    function(_, $, Backbone, EMLTaxonCoverage, TaxonomicClassificationTable, TaxonomicClassificationRow){
+define([
+  "underscore",
+  "jquery",
+  "backbone",
+  "models/metadata/eml211/EMLTaxonCoverage",
+  "text!templates/metadata/taxonomicClassificationTable.html",
+  "text!templates/metadata/taxonomicClassificationRow.html",
+], function (
+  _,
+  $,
+  Backbone,
+  EMLTaxonCoverage,
+  TaxonomicClassificationTable,
+  TaxonomicClassificationRow,
+) {
+  var EMLTaxonView = Backbone.Model.extend(
+    /** @lends EMLTaxonView.prototype */ {
+      className: "row-fluid taxonomic-coverage",
 
-	var EMLTaxonView = Backbone.Model.extend(
-    /** @lends EMLTaxonView.prototype */{
+      tagName: "div",
 
-		className: "row-fluid taxonomic-coverage",
+      initialize: function (options) {
+        if (!options) var options = {};
 
-		tagName: "div",
+        this.isNew = options.isNew || false;
+        this.model = options.model || new EMLTaxonCoverage();
+      },
 
-		initialize: function(options){
-			if(!options)
-				var options = {};
+      // Creates a table to hold a single EMLTaxonCoverage element (table) for
+      // each root-level taxonomicClassification
+      render: function (coverage) {
+        var finishedEl = $('<div class="row-fluid taxonomic-coverage"></div>');
+        $(finishedEl).data({ model: coverage });
+        $(finishedEl).attr("data-category", "taxonomic-coverage");
 
-			this.isNew = options.isNew || false;
-			this.model = options.model || new EMLTaxonCoverage();
-		},
+        var classifications = coverage.get("taxonomicClassification");
 
-		// Creates a table to hold a single EMLTaxonCoverage element (table) for
-		// each root-level taxonomicClassification
-		render: function(coverage) {
+        // Make a textarea for the generalTaxonomicCoverage
+        var generalCoverageEl = $(document.createElement("textarea"))
+          .addClass("medium text")
+          .attr("data-category", "generalTaxonomicCoverage")
+          .text(coverage.get("generalTaxonomicCoverage") || "");
 
-			var finishedEl = $('<div class="row-fluid taxonomic-coverage"></div>');
-			$(finishedEl).data({ model: coverage });
-			$(finishedEl).attr("data-category", "taxonomic-coverage");
+        $(finishedEl).append(
+          $(document.createElement("h5")).text("General Taxonomic Coverage"),
+        );
+        $(finishedEl).append(generalCoverageEl);
 
-			var classifications = coverage.get("taxonomicClassification");
+        // taxonomicClassifications
+        $(finishedEl).append(
+          $(document.createElement("h5")).text("Taxonomic Classification(s)"),
+        );
 
-			// Make a textarea for the generalTaxonomicCoverage
-			var generalCoverageEl = $(document.createElement('textarea'))
-				.addClass("medium text")
-				.attr("data-category", "generalTaxonomicCoverage")
-				.text(coverage.get('generalTaxonomicCoverage') || ""	);
+        // Makes a table... for the root level
+        for (var i = 0; i < classifications.length; i++) {
+          $(finishedEl).append(
+            this.createTaxonomicClassificationTable(classifications[i]),
+          );
+        }
 
-			$(finishedEl).append($(document.createElement('h5')).text('General Taxonomic Coverage'));
-			$(finishedEl).append(generalCoverageEl);
+        // Create a new, blank table for another taxonomicClassification
+        var newTableEl = this.createTaxonomicClassificationTable();
 
-			// taxonomicClassifications
-			$(finishedEl).append($(document.createElement('h5')).text('Taxonomic Classification(s)'));
+        $(finishedEl).append(newTableEl);
 
-			// Makes a table... for the root level
-			for (var i = 0; i < classifications.length; i++) {
-				$(finishedEl).append(this.createTaxonomicClassificationTable(classifications[i]));
-			}
+        return finishedEl;
+      },
+    },
+  );
 
-			// Create a new, blank table for another taxonomicClassification
-			var newTableEl = this.createTaxonomicClassificationTable();
-
-			$(finishedEl).append(newTableEl);
-
-			return finishedEl;
-		}
-	});
-
-	return EMLTaxonView;
+  return EMLTaxonView;
 });
