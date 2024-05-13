@@ -375,7 +375,6 @@ define([
                   label = separator.add(label);
                 }
               }
-
               return label;
             },
             onLabelRemove(value) {
