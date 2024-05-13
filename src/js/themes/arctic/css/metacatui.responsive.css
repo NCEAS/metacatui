@@ -1,137 +1,133 @@
-
-
 /* Tablets and large screens ----------- */
-@media only screen and (min-width : 768px){
+@media only screen and (min-width: 768px) {
+  #Header {
+    overflow: hidden;
+    opacity: 0.8;
+  }
+  #Navbar #inner-header {
+    display: flex;
+    justify-content: space-between;
+  }
 
-    #Header {
-	    overflow: hidden;
-	    opacity: 0.8;
-  	}
-    #Navbar #inner-header{
-      display: flex;
-      justify-content: space-between;
-    }
+  .mapMode #Header {
+    opacity: 1;
+  }
 
-  	.mapMode #Header{
-  		opacity: 1;
-  	}
+  .DataCatalog #Content {
+    max-width: 100%;
+  }
+  footer .logos {
+    width: 470px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  footer .adc-contact {
+    width: 470px;
+  }
+  #logo {
+    font-size: 1.4em;
+  }
+  #logo img {
+    height: 70px;
+  }
+  .header nav {
+    float: right;
+    width: auto;
+    display: flex;
+  }
+  .header .nav > li {
+    width: auto;
+    border-bottom: 0px;
+  }
+  .header .nav > li > a {
+    text-align: left;
+    font-size: 1.3em;
+  }
+  .header .nav .sub-menu li a {
+    font-size: 1em;
+  }
+  .header #logo {
+    font-size: 1.1em;
+  }
+  .header .nav {
+    font-size: 0.9em;
+  }
+  .header .nav .dropdown-toggle.user {
+    font-size: 0.9em;
+    max-width: 130px;
+  }
+  .dropdown-menu {
+    position: absolute;
+  }
+  /** Backbone override for dropdowns so they display on hover rather than click **/
+  .dropdown-menu .sub-menu {
+    left: 100%;
+    position: absolute;
+    top: 0;
+    visibility: hidden;
+    margin-top: -1px;
+  }
 
-  	.DataCatalog #Content{
-  		max-width: 100%;
-  	}
-  	footer .logos{
-	    width: 470px;
-	    margin-left: auto;
-	    margin-right: auto;
-  	}
-    footer .adc-contact {
-      width: 470px;
-    }
-  	#logo{
-  		font-size: 1.4em;
-  	}
-  	#logo img{
-  		height: 70px;
-  	}
-  	.header nav{
-  		float: right;
-  		width: auto;
-  		display: flex;
-	  }
-  	.header .nav > li{
-  		width: auto;
-  		border-bottom: 0px;
-  	}
-  	.header .nav > li > a{
-  		text-align: left;
-  		font-size: 1.3em;
-  	}
-  	.header .nav .sub-menu li a{
-  		font-size: 1em;
-  	}
-  	.header #logo{
-  		font-size: 1.1em;
-  	}
-  	.header .nav{
-  		font-size: .9em;
-  	}
-  	.header .nav .dropdown-toggle.user{
-  		font-size: .9em;
-  		max-width: 130px;
-  	}
-  	.dropdown-menu{
-  		position: absolute;
-  	}
-    /** Backbone override for dropdowns so they display on hover rather than click **/
-    .dropdown-menu .sub-menu {
-	    left: 100%;
-	    position: absolute;
-	    top: 0;
-	    visibility: hidden;
-	    margin-top: -1px;
-	  }
+  .dropdown-menu li:hover .sub-menu {
+    visibility: visible;
+  }
 
-	.dropdown-menu li:hover .sub-menu {
-	    visibility: visible;
-	}
+  .dropdown:hover .dropdown-menu {
+    display: block;
+  }
 
-	.dropdown:hover .dropdown-menu {
-	    display: block;
-	}
+  .dropdown:hover .dropdown-menu.hidden,
+  .dropdown-menu.hidden {
+    display: none;
+  }
 
-	.dropdown:hover .dropdown-menu.hidden,
-	.dropdown-menu.hidden{
-		display: none;
-	}
-
-  	/*Dropdown menus - only appear on non-mobile*/
-	#Navbar .nav .dropdown-toggle .caret{
-		margin-top: 9px;
+  /*Dropdown menus - only appear on non-mobile*/
+  #Navbar .nav .dropdown-toggle .caret {
+    margin-top: 9px;
     margin-left: 4px;
-		border-top-color: #1F254F;
-	}
-  	#Navbar .nav .dropdown-menu{
-  	    box-shadow: none;
-   		border: 0px;
-    	background-color: transparent;
-      margin-top: 0px;
-      margin-left: -50px;
-  	}
-  	#Navbar .nav .dropdown-menu li a:hover,
-  	#Navbar .nav .dropdown-menu li a:focus{
-  		background-color: #19B36A;
-  		background-image: none;
-  		color: #FFF;
-  	}
-  	#Navbar .nav .dropdown-menu li:first-child a{
-  		border-top-left-radius: 4px;
-		-moz-border-top-left-radius: 4px;
-		-webkit-border-top-left-radius: 4px;
-		border-top-right-radius: 4px;
-		-moz-border-top-right-radius: 4px;
-		-webkit-border-top-right-radius: 4px;
-  	}
-  	#Navbar .nav .dropdown-menu li:last-child a{
-		border-bottom-left-radius: 4px;
-		-moz-border-bottom-left-radius: 4px;
-		-webkit-border-bottom-left-radius: 4px;
-		border-bottom-right-radius: 4px;
-		-moz-border-bottom-right-radius: 4px;
-		-webkit-border-bottom-right-radius: 4px;
+    border-top-color: #1f254f;
+  }
+  #Navbar .nav .dropdown-menu {
+    box-shadow: none;
+    border: 0px;
+    background-color: transparent;
+    margin-top: 0px;
+    margin-left: -50px;
+  }
+  #Navbar .nav .dropdown-menu li a:hover,
+  #Navbar .nav .dropdown-menu li a:focus {
+    background-color: #19b36a;
+    background-image: none;
+    color: #fff;
+  }
+  #Navbar .nav .dropdown-menu li:first-child a {
+    border-top-left-radius: 4px;
+    -moz-border-top-left-radius: 4px;
+    -webkit-border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    -moz-border-top-right-radius: 4px;
+    -webkit-border-top-right-radius: 4px;
+  }
+  #Navbar .nav .dropdown-menu li:last-child a {
+    border-bottom-left-radius: 4px;
+    -moz-border-bottom-left-radius: 4px;
+    -webkit-border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    -moz-border-bottom-right-radius: 4px;
+    -webkit-border-bottom-right-radius: 4px;
 
-		border-bottom: 0px;
-  	}
+    border-bottom: 0px;
+  }
 }
 
 /* Tablets & smartphones (portrait and landscape) ----------- */
-@media only screen and (max-width : 767px) {
+@media only screen and (max-width: 767px) {
+  /* navigation */
+  #nav-trigger {
+    display: block;
+  }
 
-    /* navigation */
-    #nav-trigger{
-      display: block;
-    }
-
-  .header .dropdown-menu{
+  .header .dropdown-menu {
     position: relative;
     width: 100%;
     border-radius: 0px;
@@ -141,13 +137,13 @@
     -webkit-box-shadow: none;
     box-shadow: none;
     float: none;
-      padding: 0px;
-      margin: 0px;
-      border: 0px;
+    padding: 0px;
+    margin: 0px;
+    border: 0px;
   }
-  #Navbar .navbar-inner{
-		border-bottom: 2px solid #992222;
-	}
+  #Navbar .navbar-inner {
+    border-bottom: 2px solid #992222;
+  }
 
   .header #inner-header {
     margin-left: 7px;
@@ -181,52 +177,50 @@
 
   /** Temporary Message */
   .has-temporary-message #Content {
-      padding-top: 0px;
+    padding-top: 0px;
   }
-
-
 }
 
 /* Smartphones (portrait and landscape) ----------- */
-@media only screen and (max-width : 480px) {
-	/************** General Structure ****************/
-	#Header{
-		display: none;
-	}
+@media only screen and (max-width: 480px) {
+  /************** General Structure ****************/
+  #Header {
+    display: none;
+  }
 
-	#Content{
-		padding-bottom: 785px; /* Keeps footer down */
-		margin-top: 0px;
-	}
+  #Content {
+    padding-bottom: 785px; /* Keeps footer down */
+    margin-top: 0px;
+  }
 
   /************** Portals ****************/
 
-  .PortalView #Content{
+  .PortalView #Content {
     display: flex;
     flex-direction: column;
   }
 
   /* div#inner-header */
 
-	/************** Footer ****************/
-	#Footer{
-		height: 775px; /* Keeps footer down */
-	}
+  /************** Footer ****************/
+  #Footer {
+    height: 775px; /* Keeps footer down */
+  }
 
-	footer div.help-items,
-	footer .logos{
-		width: 100%;
-		min-width: 100%;
-		margin-top: 20px;
+  footer div.help-items,
+  footer .logos {
+    width: 100%;
+    min-width: 100%;
+    margin-top: 20px;
     margin-bottom: 20px;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-	}
-	footer .logos > a {
-		margin: 10px;
-	}
+  }
+  footer .logos > a {
+    margin: 10px;
+  }
 
   /* contact info */
   footer nav.footer-links.col-1-4.offset-1-4 {
@@ -234,23 +228,23 @@
   }
 }
 /* Mobile navigation styles */
-@media only screen and (max-width : 900px) {
-  #main-nav .dropdown-menu{
+@media only screen and (max-width: 900px) {
+  #main-nav .dropdown-menu {
     margin-left: 0px;
   }
-  #main-nav .dropdown-menu > li > a{
+  #main-nav .dropdown-menu > li > a {
     padding-left: 20px;
   }
 }
-@media only screen and (min-width : 1024px){
-    .nav .dropdown-toggle.user{
-    	max-width: 250px;
-    	font-size: 1em
-    }
-    .nav #logo{
-    	font-size: 1.4em;
-    }
-    .header .nav > li > a{
-    	font-size: 1.4em;
-    }
+@media only screen and (min-width: 1024px) {
+  .nav .dropdown-toggle.user {
+    max-width: 250px;
+    font-size: 1em;
+  }
+  .nav #logo {
+    font-size: 1.4em;
+  }
+  .header .nav > li > a {
+    font-size: 1.4em;
+  }
 }

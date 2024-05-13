@@ -37,7 +37,7 @@ define([
       it("should parse EML", function () {
         var emlGeoCoverage = new EMLGeoCoverage(
           { objectDOM: this.testEML },
-          { parse: true }
+          { parse: true },
         );
 
         emlGeoCoverage
@@ -54,7 +54,7 @@ define([
       it("should serialize to XML", function () {
         var emlGeoCoverage = new EMLGeoCoverage(
           { objectDOM: this.testEML },
-          { parse: true }
+          { parse: true },
         );
         var xmlString = emlGeoCoverage.serialize();
         xmlString.should.equal(this.testEML);
@@ -65,7 +65,7 @@ define([
       it("should get the status of the coordinates", function () {
         var emlGeoCoverage = new EMLGeoCoverage(
           { objectDOM: this.testEML },
-          { parse: true }
+          { parse: true },
         );
         var status = emlGeoCoverage.getCoordinateStatus();
         status.north.isSet.should.equal(true);
@@ -81,7 +81,7 @@ define([
       it("should validate the coordinates", function () {
         var emlGeoCoverage = new EMLGeoCoverage(
           { objectDOM: this.testEML },
-          { parse: true }
+          { parse: true },
         );
         var status = emlGeoCoverage.getCoordinateStatus();
         const errors = emlGeoCoverage.generateStatusErrors(status);
@@ -91,7 +91,7 @@ define([
       it("should give an error if the coordinates are invalid", function () {
         var emlGeoCoverage = new EMLGeoCoverage(
           { objectDOM: this.testEML },
-          { parse: true }
+          { parse: true },
         );
         emlGeoCoverage.set("north", "100");
         const errors = emlGeoCoverage.validate();
@@ -102,7 +102,7 @@ define([
       it("should give an error if the coordinates are missing", function () {
         var emlGeoCoverage = new EMLGeoCoverage(
           { objectDOM: this.testEML },
-          { parse: true }
+          { parse: true },
         );
         emlGeoCoverage.set("north", "");
         const errors = emlGeoCoverage.validate();
@@ -113,7 +113,7 @@ define([
       it("should give an error if the north and south coordinates are reversed", function () {
         var emlGeoCoverage = new EMLGeoCoverage(
           { objectDOM: this.testEML },
-          { parse: true }
+          { parse: true },
         );
         emlGeoCoverage.set("north", "40");
         emlGeoCoverage.set("south", "50");
@@ -126,7 +126,7 @@ define([
       it("should give an error if the bounds cross the anti-meridian", function () {
         var emlGeoCoverage = new EMLGeoCoverage(
           { objectDOM: this.testEML },
-          { parse: true }
+          { parse: true },
         );
         emlGeoCoverage.set("west", "170");
         emlGeoCoverage.set("east", "-170");
@@ -135,7 +135,6 @@ define([
         errors.west.should.equal(expectedMsg);
         errors.east.should.equal(expectedMsg);
       });
-
     });
   });
 });

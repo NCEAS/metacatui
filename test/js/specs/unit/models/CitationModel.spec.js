@@ -54,7 +54,6 @@ require([
      * Parsing Metrics Service Response
      */
     describe("Parsing Metrics Service Response", function () {
-
       let cmParsed;
       beforeEach(function () {
         cmParsed = citation.parse({
@@ -148,7 +147,6 @@ require([
      * Populate from EML model
      */
     describe("Populate from EML model", function () {
-
       let eml;
       beforeEach(function () {
         eml = new EML211({
@@ -164,7 +162,7 @@ require([
           id: "10.18739/A2KK94B8Q",
           seriesId: "10.18739/A2KK94B8Q",
           pubDate: "2018-03-15T00:00:00Z",
-          datasource: "urn:node:ARCTIC"
+          datasource: "urn:node:ARCTIC",
         });
         citation.setSourceModel(eml);
       });
@@ -179,7 +177,7 @@ require([
       });
 
       it("should set the originArray", function () {
-        const csl = citation.get("originArray")[0]
+        const csl = citation.get("originArray")[0];
         csl.family.should.equal("LastName");
         csl.given.should.equal("FirstName");
       });
@@ -207,7 +205,7 @@ require([
           givenName: "NewFirstName",
           surName: "NewLastName",
         });
-        const csl = citation.get("originArray")[0]
+        const csl = citation.get("originArray")[0];
         csl.family.should.equal("NewLastName");
         csl.given.should.equal("NewFirstName");
       });
@@ -222,7 +220,7 @@ require([
           origin: "FirstName LastName",
           pubDate: "2018-03-15T00:00:00Z",
           seriesId: "10.18739/A2KK94B8Q",
-          datasource: "urn:node:ARCTIC"
+          datasource: "urn:node:ARCTIC",
         });
         citation.setSourceModel(solr);
       });
@@ -237,7 +235,7 @@ require([
       });
 
       it("should set the originArray", function () {
-        const csl = citation.get("originArray")[0]
+        const csl = citation.get("originArray")[0];
         csl.family.should.equal("LastName");
         csl.given.should.equal("FirstName");
       });

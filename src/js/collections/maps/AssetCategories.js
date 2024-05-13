@@ -5,12 +5,7 @@ define([
   "models/maps/AssetCategory",
   "models/maps/Map",
   "collections/maps/MapAssets",
-], function (
-  Backbone,
-  AssetCategory,
-  MapModel,
-  MapAssets,
-) {
+], function (Backbone, AssetCategory, MapModel, MapAssets) {
   /**
    * @classdesc AssetCategories collection is a group of AssetCategory models - models
    * that provide the information required to render geo-spatial data in categories,
@@ -23,7 +18,6 @@ define([
    */
   const AssetCategories = Backbone.Collection.extend(
     /** @lends AssetCategories.prototype */ {
-
       /** @inheritdoc */
       model: AssetCategory,
 
@@ -35,7 +29,9 @@ define([
        * models
        */
       setMapModel(mapModel) {
-        this.each(assetCategoryModel => assetCategoryModel.setMapModel(mapModel));
+        this.each((assetCategoryModel) =>
+          assetCategoryModel.setMapModel(mapModel),
+        );
       },
 
       /** 
@@ -50,15 +46,26 @@ define([
       },
 
       /** 
+       * Gets a single, flattened MapAssets collection from the AssetCategory
+       * group in the collection.
+       * @returns {MapAssets}
+       */
+      getMapAssetsFlat() {
+        return new MapAssets(
+          this.map(assetCategory => assetCategory.get('mapAssets').models).flat()
+        );
+      },
+
+      /**
        * Gets an array of MapAssets, one from each AssetCategory model.
        * @returns {MapAssets[]}
        */
       getMapAssets() {
-        return this.map(assetCategory => {
+        return this.map((assetCategory) => {
           return assetCategory.get("mapAssets");
         });
-      }
-    }
+      },
+    },
   );
 
   return AssetCategories;

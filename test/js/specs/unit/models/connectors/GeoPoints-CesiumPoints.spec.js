@@ -25,7 +25,6 @@ define([
     });
 
     describe("Defaults", function () {
-
       it("should have a layerPoints array", function () {
         this.geoPointsCesiumPoints.get("layerPoints").should.be.an("array");
       });
@@ -33,13 +32,10 @@ define([
 
     describe("handleCollectionChange", function () {
       it("should be a function", function () {
-        this.geoPointsCesiumPoints
-          .handleCollectionChange.should.be.a("function");
+        this.geoPointsCesiumPoints.handleCollectionChange.should.be.a(
+          "function",
+        );
       });
-
     });
-
-
-
   });
 });

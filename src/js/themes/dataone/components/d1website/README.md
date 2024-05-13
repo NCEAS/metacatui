@@ -2,8 +2,8 @@
 layout: metacatui_exports
 outputs: json
 html:
-  "nav" : navbar
-  "footer" : footer
+  "nav": navbar
+  "footer": footer
 dependencies:
   - button
   - logo
@@ -28,44 +28,44 @@ css:
     - root
 fonts:
   weights:
-  - "300"
-  - "regular"
-  - "500"
-  - "600"
-  - "700"
-  - "900"
+    - "300"
+    - "regular"
+    - "500"
+    - "600"
+    - "700"
+    - "900"
   types:
-  - "woff"
-  - "woff2"
+    - "woff"
+    - "woff2"
   faces:
-  - "martel-v4-latin"
-  - "work-sans-v5-latin"
+    - "martel-v4-latin"
+    - "work-sans-v5-latin"
 static_files:
-  "android-chrome-192x192.png"  : "android-chrome-192x192.png"
-  "android-chrome-512x512.png"  : "android-chrome-512x512.png"
-  "apple-touch-icon-120x120-precomposed.png"  : "apple-touch-icon-120x120-precomposed.png"
-  "apple-touch-icon-120x120.png"  : "apple-touch-icon-120x120.png"
-  "apple-touch-icon-152x152-precomposed.png"  : "apple-touch-icon-152x152-precomposed.png"
-  "apple-touch-icon-152x152.png"  : "apple-touch-icon-152x152.png"
-  "apple-touch-icon-180x180-precomposed.png"  : "apple-touch-icon-180x180-precomposed.png"
-  "apple-touch-icon-180x180.png"  : "apple-touch-icon-180x180.png"
-  "apple-touch-icon-60x60-precomposed.png"  : "apple-touch-icon-60x60-precomposed.png"
-  "apple-touch-icon-60x60.png"  : "apple-touch-icon-60x60.png"
-  "apple-touch-icon-76x76-precomposed.png"  : "apple-touch-icon-76x76-precomposed.png"
-  "apple-touch-icon-76x76.png"  : "apple-touch-icon-76x76.png"
-  "apple-touch-icon-precomposed.png"  : "apple-touch-icon-precomposed.png"
-  "apple-touch-icon.png"  : "apple-touch-icon.png"
-  "browserconfig.xml" : "browserconfig.xml"
-  "favicon-16x16.png" : "favicon-16x16.png"
-  "favicon-32x32.png" : "favicon-32x32.png"
-  "favicon.ico" : "favicon.ico"
-  "mstile-144x144.png"  : "mstile-144x144.png"
-  "mstile-150x150.png"  : "mstile-150x150.png"
-  "mstile-310x150.png"  : "mstile-310x150.png"
-  "mstile-310x310.png"  : "mstile-310x310.png"
-  "mstile-70x70.png"  : "mstile-70x70.png"
-  "safari-pinned-tab.svg" : "safari-pinned-tab.svg"
-  "site.webmanifest"  : "site.webmanifest"
+  "android-chrome-192x192.png": "android-chrome-192x192.png"
+  "android-chrome-512x512.png": "android-chrome-512x512.png"
+  "apple-touch-icon-120x120-precomposed.png": "apple-touch-icon-120x120-precomposed.png"
+  "apple-touch-icon-120x120.png": "apple-touch-icon-120x120.png"
+  "apple-touch-icon-152x152-precomposed.png": "apple-touch-icon-152x152-precomposed.png"
+  "apple-touch-icon-152x152.png": "apple-touch-icon-152x152.png"
+  "apple-touch-icon-180x180-precomposed.png": "apple-touch-icon-180x180-precomposed.png"
+  "apple-touch-icon-180x180.png": "apple-touch-icon-180x180.png"
+  "apple-touch-icon-60x60-precomposed.png": "apple-touch-icon-60x60-precomposed.png"
+  "apple-touch-icon-60x60.png": "apple-touch-icon-60x60.png"
+  "apple-touch-icon-76x76-precomposed.png": "apple-touch-icon-76x76-precomposed.png"
+  "apple-touch-icon-76x76.png": "apple-touch-icon-76x76.png"
+  "apple-touch-icon-precomposed.png": "apple-touch-icon-precomposed.png"
+  "apple-touch-icon.png": "apple-touch-icon.png"
+  "browserconfig.xml": "browserconfig.xml"
+  "favicon-16x16.png": "favicon-16x16.png"
+  "favicon-32x32.png": "favicon-32x32.png"
+  "favicon.ico": "favicon.ico"
+  "mstile-144x144.png": "mstile-144x144.png"
+  "mstile-150x150.png": "mstile-150x150.png"
+  "mstile-310x150.png": "mstile-310x150.png"
+  "mstile-310x310.png": "mstile-310x310.png"
+  "mstile-70x70.png": "mstile-70x70.png"
+  "safari-pinned-tab.svg": "safari-pinned-tab.svg"
+  "site.webmanifest": "site.webmanifest"
 ---
 
 ### Version: 2022-09-02 15:03:52.482665 -0400 EDT m=+6.707821154
@@ -79,7 +79,7 @@ we export certain components from the website for use in MetacatUI.
 
 All of the source files for the website are available in [a GitHub repository](https://github.com/dataoneORG/dataone-web).
 The website uses the static site generator, [Hugo](https://gohugo.io/), to convert the content and template files contained in the repository into HTML, CSS, javascript, and other resources.
-To build the website, download the repository, [install Hugo](https://gohugo.io/getting-started/installing/) and use the [`hugo`](https://gohugo.io/commands/hugo/) CLI command to build the website. 
+To build the website, download the repository, [install Hugo](https://gohugo.io/getting-started/installing/) and use the [`hugo`](https://gohugo.io/commands/hugo/) CLI command to build the website.
 You will most likely want to use the command with the following flags:
 
 ```
@@ -105,12 +105,13 @@ To help avoid conflicts, exported CSS classes are prefixed with `d1-`.
 ## Changing the exports from Hugo
 
 On the Hugo site, there are two files required to generate the `metacatui_exports`:
-  - **a layout file**: `themes/dataone/layouts/_default/metacatui_exports.json`, and
-  - **a content file**: `themes/dataone/content/metacatui_exports.md`
+
+- **a layout file**: `themes/dataone/layouts/_default/metacatui_exports.json`, and
+- **a content file**: `themes/dataone/content/metacatui_exports.md`
 
 The layout file generates [resources](https://gohugo.io/content-management/page-resources/) based on what's listed in the content file.
 It also builds a JSON document that summarizes the list of exports.
-(Although we don't need this JSON output in MetacatUI, the layout file *must* build some document that includes links to the resources, otherwise Hugo won't create the resources at all.)
+(Although we don't need this JSON output in MetacatUI, the layout file _must_ build some document that includes links to the resources, otherwise Hugo won't create the resources at all.)
 
 The front matter of the content file acts as the configuration; it indicates the list of items that are required for metacatUI.
 This is where you can easily configure which files Hugo should export.
@@ -120,16 +121,16 @@ The markdown in the content file generates this README.
 
 - **layout:** Should be set to `metacatui_exports`. It gives the basename of the layout file to use in the `layouts/_default` directory.
 - **outputs:** Should be set to `json`. It gives the filetype of the layout file to use in the `layouts/_default` directory.
-- **html:** Indicates which HTML blocks from the `themes/dataone/layouts/partials/blocks` to export as HTML files (templates) for MetacatUI. Listed as `key:value` pairs, where the key is the name of the block layout in Hugo, and the value is the desired name of the HTML output file without an extension, e.g. ` "block name" : output-file-name `. CSS and JS contained in the same directory as the block will be exported as part of the JS/CSS bundle files.
+- **html:** Indicates which HTML blocks from the `themes/dataone/layouts/partials/blocks` to export as HTML files (templates) for MetacatUI. Listed as `key:value` pairs, where the key is the name of the block layout in Hugo, and the value is the desired name of the HTML output file without an extension, e.g. `"block name" : output-file-name`. CSS and JS contained in the same directory as the block will be exported as part of the JS/CSS bundle files.
 - **dependencies:** Indicates which other blocks the above `html` blocks use as sub-blocks. For instance, the `nav` block uses the `logo` block as a partial. The CSS & JS for these "dependency" blocks will be included in the exported CSS & JS bundles.
-- **cssBundle:** 
+- **cssBundle:**
   - **outputName:** The base file name to use for the exported CSS bundle (export will be: `outputName.min.css`)
-  - **assets:** The list of assets from the `themes/dataone/assets/scss` directory to include in the exported CSS bundle. Note that the order matters here in how the CSS rules are implemented. (Assets are included in the bundle  *in addition* to the CSS exported for html blocks and the dependencies blocks.)
-- **jsBundle:** 
+  - **assets:** The list of assets from the `themes/dataone/assets/scss` directory to include in the exported CSS bundle. Note that the order matters here in how the CSS rules are implemented. (Assets are included in the bundle _in addition_ to the CSS exported for html blocks and the dependencies blocks.)
+- **jsBundle:**
   - **outputName:** The base file name to use for the exported JS bundle (export will be: `outputName.min.js`)
-  - **assets:** The list of assets from the `themes/dataone/assets/js` directory to include in the exported CSS bundle. (Assets are included in the bundle *in addition* to the JS exported for html blocks and the dependencies blocks.)
+  - **assets:** The list of assets from the `themes/dataone/assets/js` directory to include in the exported CSS bundle. (Assets are included in the bundle _in addition_ to the JS exported for html blocks and the dependencies blocks.)
 - **fonts:** Fonts to export for metacatui. Assumes fonts are in the `themes/dataone/static/fonts` directory and follow the naming format `fontface-weight.type`. Exports fonts with the same naming format. For other naming formats, use the `static_files` variable, below.
   - **weights:** The list of font weights to export
   - **types:** The list of font types (file extensions) to export
   - **faces:** The name of the font family to export, exactly as it is named in the `themes/dataone/static/fonts` directory.
-- **static_files** List of other files in the `themes/dataone/static` directory to export, listed as `key:value` pairs where the key is the name of the file in Hugo, and the value is the desired name of the output file, e.g. ` "images/staticFile.jpg" : "output-static-file.jpg" `. Note this only works for [files under 1MiB in size](https://github.com/gohugoio/hugo/blob/215d2ed883d5adbde1d119d33e2f2e88c8435f41/tpl/os/os.go#L73).
+- **static_files** List of other files in the `themes/dataone/static` directory to export, listed as `key:value` pairs where the key is the name of the file in Hugo, and the value is the desired name of the output file, e.g. `"images/staticFile.jpg" : "output-static-file.jpg"`. Note this only works for [files under 1MiB in size](https://github.com/gohugoio/hugo/blob/215d2ed883d5adbde1d119d33e2f2e88c8435f41/tpl/os/os.go#L73).

@@ -19,7 +19,7 @@ define([
   MapAsset,
   Cesium3DTileset,
   Feature,
-  Template
+  Template,
 ) {
   /**
    * @class CesiumWidgetView
@@ -235,8 +235,10 @@ define([
         view.scene = view.widget.scene;
         view.camera = view.widget.camera;
 
-        if (typeof this.model.get("globeBaseColor") === 'string') {
-          const baseColor = Cesium.Color.fromCssColorString(this.model.get("globeBaseColor"));
+        if (typeof this.model.get("globeBaseColor") === "string") {
+          const baseColor = Cesium.Color.fromCssColorString(
+            this.model.get("globeBaseColor"),
+          );
           if (baseColor) {
             view.scene.globe.baseColor = baseColor;
           }
@@ -336,7 +338,7 @@ define([
         view.scene.preRender.addEventListener(function (scene, time) {
           view.scene.light.direction = Cesium.Cartesian3.clone(
             scene.camera.directionWC,
-            view.scene.light.direction
+            view.scene.light.direction,
           );
         });
       },
@@ -362,7 +364,7 @@ define([
           scene.postProcessStages.add(
             Cesium.PostProcessStageLibrary.createSilhouetteStage([
               view.silhouettes,
-            ])
+            ]),
           );
         } catch (e) {
           console.log("Error initializing picking in a CesiumWidgetView", e);
@@ -380,7 +382,7 @@ define([
 
         // Listen for addition or removal of layers TODO: Add similar listeners
         // for terrain
-        _.each(layerGroups, layers => {
+        _.each(layerGroups, (layers) => {
           if (layers) {
             view.stopListening(layers);
             view.listenTo(layers, "add", view.addAsset);
@@ -390,10 +392,14 @@ define([
             // etc. has been updated. Re-render the scene when this happens.
             view.listenTo(layers, "appearanceChanged", view.requestRender);
           }
-        })
+        });
         // Reset asset listeners if the layers collection is replaced
         view.stopListening(model, "change:layers change:layerCategories");
-        view.listenTo(model, "change:layers change:layerCategories", view.setAssetListeners);
+        view.listenTo(
+          model,
+          "change:layers change:layerCategories",
+          view.setAssetListeners,
+        );
       },
 
       /**
@@ -417,7 +423,7 @@ define([
         // Zoom functions executed after each scene render
         this.removePostRenderListener = this.scene.postRender.addEventListener(
           this.postRender,
-          this
+          this,
         );
         this.listenTo(this.interactions, "change:zoomTarget", function () {
           const target = this.interactions.get("zoomTarget");
@@ -681,7 +687,6 @@ define([
        */
       completeFlight: function (target, options) {
         try {
-
           // A target is required
           if (!target) return;
 
@@ -715,7 +720,7 @@ define([
                   options.offset = new Cesium.HeadingPitchRange(
                     0.0,
                     -0.5,
-                    assetBoundingSphere.radius
+                    assetBoundingSphere.radius,
                   );
                 }
                 view.flyTo(assetBoundingSphere, options);
@@ -740,7 +745,7 @@ define([
               view.listenToOnce(layer, "change:displayReady", function () {
                 view.flyTo(target, options);
               });
-              return
+              return;
             }
             view.flyTo(target.get("featureObject"), options);
             return;
@@ -751,11 +756,12 @@ define([
           const entity = target instanceof Cesium.Entity ? target : target.id;
 
           if (entity instanceof Cesium.Entity) {
-
-            view.dataSourceDisplay._ready = true
-            view.getBoundingSphereFromEntity(entity).then(function (entityBoundingSphere) {
-              view.flyTo(entityBoundingSphere, options);
-            });
+            view.dataSourceDisplay._ready = true;
+            view
+              .getBoundingSphereFromEntity(entity)
+              .then(function (entityBoundingSphere) {
+                view.flyTo(entityBoundingSphere, options);
+              });
             return;
           }
 
@@ -793,14 +799,14 @@ define([
       },
 
       getBoundingSphereFromEntity: function (entity) {
-        const view = this
+        const view = this;
         const entityBoundingSphere = new Cesium.BoundingSphere();
         const readyState = Cesium.BoundingSphereState.DONE;
         function getBS() {
           return view.dataSourceDisplay.getBoundingSphere(
             entity,
             false,
-            entityBoundingSphere
+            entityBoundingSphere,
           );
         }
         // Return a promise that resolves to bounding box when it's ready.
@@ -815,11 +821,12 @@ define([
               // Search for the entity again in case it was removed and
               // re-added to the data source display.
               entity = view.getEntityById(entity.id, entity.entityCollection);
-              if(!entity) {
+              if (!entity) {
                 clearInterval(interval);
-                reject("Failed to get bounding sphere for entity, entity not found.");
+                reject(
+                  "Failed to get bounding sphere for entity, entity not found.",
+                );
               }
-
             } else {
               clearInterval(interval);
               resolve(entityBoundingSphere);
@@ -829,7 +836,7 @@ define([
               reject("Failed to get bounding sphere for entity.");
             }
           }, 100);
-        })
+        });
       },
 
       /**
@@ -894,7 +901,7 @@ define([
             target.destination = Cesium.Cartesian3.fromDegrees(
               position.longitude,
               position.latitude,
-              position.height
+              position.height,
             );
 
             if (
@@ -974,7 +981,7 @@ define([
         }
         var rect = camera.computeViewRectangle(
           scene.globe.ellipsoid,
-          view.scratchRectangle
+          view.scratchRectangle,
         );
         coords.north = Cesium.Math.toDegrees(rect.north);
         coords.east = Cesium.Math.toDegrees(rect.east);
@@ -1003,7 +1010,7 @@ define([
             Object.values(edges).forEach(function (point) {
               if (point) {
                 edgeLatitudes.push(
-                  view.getDegreesFromCartesian(point).latitude
+                  view.getDegreesFromCartesian(point).latitude,
                 );
               }
             });
@@ -1022,10 +1029,10 @@ define([
           // If not focused directly on one of the poles, then also limit the
           // east and west sides of the bounding box
           const northPointLat = view.getDegreesFromCartesian(
-            edges.top
+            edges.top,
           ).latitude;
           const southPointLat = view.getDegreesFromCartesian(
-            edges.bottom
+            edges.bottom,
           ).latitude;
 
           if (northPointLat > 25 && southPointLat < -25) {
@@ -1088,7 +1095,7 @@ define([
         coordinates.forEach(function (coordinate) {
           if (Cesium.defined(cartographic[coordinate])) {
             degrees[coordinate] = Cesium.Math.toDegrees(
-              cartographic[coordinate]
+              cartographic[coordinate],
             );
           }
         });
@@ -1135,7 +1142,7 @@ define([
           console.log(
             "There was an error finding the edge points in a CesiumWidgetView" +
               ". Error details: " +
-              error
+              error,
           );
         }
       },
@@ -1169,7 +1176,7 @@ define([
           const p3a = Cesium.Cartesian3.fromRadians(
             midPt.longitude,
             midPt.latitude,
-            0.0
+            0.0,
           );
 
           return p3a;
@@ -1177,7 +1184,7 @@ define([
           console.log(
             "There was an error finding a midpoint in a CesiumWidgetView" +
               ". Error details: " +
-              error
+              error,
           );
         }
       },
@@ -1300,10 +1307,10 @@ define([
           const height = scene.canvas.clientHeight;
 
           const left = camera.getPickRay(
-            new Cesium.Cartesian2((width / 2) | 0, height - 1)
+            new Cesium.Cartesian2((width / 2) | 0, height - 1),
           );
           const right = camera.getPickRay(
-            new Cesium.Cartesian2((1 + width / 2) | 0, height - 1)
+            new Cesium.Cartesian2((1 + width / 2) | 0, height - 1),
           );
 
           const leftPosition = globe.pick(left, scene);
@@ -1330,7 +1337,7 @@ define([
           console.log(
             "Failed to get a pixel to meters measurement in a CesiumWidgetView" +
               ". Error details: " +
-              error
+              error,
           );
           return false;
         }
@@ -1367,7 +1374,7 @@ define([
           if (!renderFunction || typeof renderFunction !== "function") {
             mapAsset.set(
               "statusDetails",
-              "This type of resource is not supported in the map widget."
+              "This type of resource is not supported in the map widget.",
             );
             mapAsset.set("status", "error");
             return;
@@ -1397,7 +1404,7 @@ define([
           console.error("Error rendering an asset", e, mapAsset);
           mapAsset.set(
             "statusDetails",
-            "There was a problem rendering this resource in the map widget."
+            "There was a problem rendering this resource in the map widget.",
           );
           mapAsset.set("status", "error");
         }
@@ -1414,11 +1421,11 @@ define([
         const cesiumModel = mapAsset.get("cesiumModel");
         if (!cesiumModel) return;
         // Find the remove function for this type of asset
-        const removeFunctionName = this.mapAssetRenderFunctions.find(function (
-          option
-        ) {
-          return option.types.includes(mapAsset.get("type"));
-        })?.removeFunction;
+        const removeFunctionName = this.mapAssetRenderFunctions.find(
+          function (option) {
+            return option.types.includes(mapAsset.get("type"));
+          },
+        )?.removeFunction;
         const removeFunction = this[removeFunctionName];
         // If there is a function for this type of asset, call it
         if (removeFunction && typeof removeFunction === "function") {
@@ -1426,7 +1433,7 @@ define([
         } else {
           console.log(
             "No remove function found for this type of asset",
-            mapAsset
+            mapAsset,
           );
         }
       },
@@ -1511,10 +1518,14 @@ define([
        */
       sortImagery: function () {
         const imageryInMap = this.scene.imageryLayers;
-        const imageryModels = _.reduce(this.model.getLayerGroups(), (models, layers) => {
+        const imageryModels = _.reduce(
+          this.model.getLayerGroups(),
+          (models, layers) => {
             models.push(...layers.getAll("CesiumImagery"));
             return models;
-          }, []);
+          },
+          [],
+        );
 
         // If there are no imagery layers, or just one, return
         if (
@@ -1552,7 +1563,7 @@ define([
        */
       showImageryGrid: function (
         color = "#ffffff",
-        tilingScheme = "GeographicTilingScheme"
+        tilingScheme = "GeographicTilingScheme",
       ) {
         try {
           const view = this;
@@ -1561,7 +1572,7 @@ define([
             console.log(
               `${color} is an invalid color for imagery grid. ` +
                 `Must be a hex color starting with '#'. ` +
-                `Setting color to white: '#ffffff'`
+                `Setting color to white: '#ffffff'`,
             );
             color = "#ffffff";
           }
@@ -1574,7 +1585,7 @@ define([
           if (availableTS.indexOf(tilingScheme) == -1) {
             console.log(
               `${tilingScheme} is not a valid tiling scheme ` +
-                `for the imagery grid. Using WebMercatorTilingScheme`
+                `for the imagery grid. Using WebMercatorTilingScheme`,
             );
             tilingScheme = "WebMercatorTilingScheme";
           }
@@ -1587,7 +1598,7 @@ define([
 
           const gridOutlines = new Cesium.GridImageryProvider(gridOpts);
           const gridCoords = new Cesium.TileCoordinatesImageryProvider(
-            gridOpts
+            gridOpts,
           );
           view.scene.imageryLayers.addImageryProvider(gridOutlines);
           view.scene.imageryLayers.addImageryProvider(gridCoords);
@@ -1595,11 +1606,11 @@ define([
           console.log(
             "There was an error showing the imagery grid in a CesiumWidgetView" +
               ". Error details: " +
-              error
+              error,
           );
         }
       },
-    }
+    },
   );
 
   return CesiumWidgetView;

@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 define([], function () {
   return class ExpansionPanelViewHarness {
@@ -7,23 +7,23 @@ define([], function () {
     }
 
     isContentVisible() {
-      return this.view.$el.hasClass('show-content');
+      return this.view.$el.hasClass("show-content");
     }
 
     getToggle() {
-      return this.view.$el.find('.expansion-panel__toggle');
+      return this.view.$el.find(".expansion-panel__toggle");
     }
 
     getIconClassString() {
-      return this.view.$el.find('.expansion-panel__icon i').attr('class');
+      return this.view.$el.find(".expansion-panel__icon i").attr("class");
     }
 
     getTitle() {
-      return this.view.$el.find('.expansion-panel__title');
+      return this.view.$el.find(".expansion-panel__title");
     }
 
     clickToggle() {
       this.getToggle().click();
     }
-  }
+  };
 });

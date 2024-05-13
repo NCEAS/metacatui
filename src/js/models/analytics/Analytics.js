@@ -126,7 +126,7 @@ define(["backbone"], function (Backbone) {
       trackPageView: function (path, title) {
         return;
       },
-    }
+    },
   );
 
   return Analytics;

@@ -3,7 +3,7 @@
 /*global define */
 define(["cesium", "models/connectors/GeoPoints-Cesium"], function (
   Cesium,
-  GeoPointsCesiumConnector
+  GeoPointsCesiumConnector,
 ) {
   /**
    * @class GeoPointsCesiumPointsConnector
@@ -164,6 +164,6 @@ define(["cesium", "models/connectors/GeoPoints-Cesium"], function (
           console.log("Failed to remove a point from a CesiumVectorData.", e);
         }
       },
-    }
+    },
   );
 });

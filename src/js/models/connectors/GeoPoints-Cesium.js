@@ -162,6 +162,6 @@ define([
           console.warn('Error handling a "' + eventName + '" event.', e);
         }
       },
-    }
+    },
   );
 });

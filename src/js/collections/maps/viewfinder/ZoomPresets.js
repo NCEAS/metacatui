@@ -1,27 +1,25 @@
-'use strict';
+"use strict";
 
-define(
-  [
-    'underscore',
-    'backbone',
-    'models/maps/viewfinder/ZoomPresetModel',
-  ],
-  function (_, Backbone, ZoomPresetModel) {
-    /**
-     * @class ZoomPresets
-     * @classdesc A ZoomPresets collection is a group of ZoomPresetModel models
-     * that provide a location and list of layers to make visible when the user
-     * selects.
-     * @class ZoomPresets
-     * @classcategory Collections/Maps
-     * @extends Backbone.Collection
-     * @since 2.29.0
-     * @constructor
-     */
-    const ZoomPresets = Backbone.Collection.extend(
+define([
+  "underscore",
+  "backbone",
+  "models/maps/viewfinder/ZoomPresetModel",
+], function (_, Backbone, ZoomPresetModel) {
+  /**
+   * @class ZoomPresets
+   * @classdesc A ZoomPresets collection is a group of ZoomPresetModel models
+   * that provide a location and list of layers to make visible when the user
+   * selects.
+   * @class ZoomPresets
+   * @classcategory Collections/Maps
+   * @extends Backbone.Collection
+   * @since 2.29.0
+   * @constructor
+   */
+  const ZoomPresets = Backbone.Collection.extend(
     /** @lends ZoomPresets.prototype */ {
-        /** @inheritdoc */
-        model: ZoomPresetModel,
+      /** @inheritdoc */
+      model: ZoomPresetModel,
 
         /**
          * @param {Object[]} zoomPresets The raw list of objects that represent
@@ -41,30 +39,33 @@ define(
                 }
               }
 
-              return new ZoomPresetModel({
+            return new ZoomPresetModel(
+              {
                 description: zoomPresetObj.description,
                 enabledLayerLabels,
                 enabledLayerIds,
                 position: {
                   latitude: zoomPresetObj.latitude,
                   longitude: zoomPresetObj.longitude,
-                  height: zoomPresetObj.height
+                  height: zoomPresetObj.height,
                 },
                 title: zoomPresetObj.title,
-              }, { parse: true });
-            });
+              },
+              { parse: true },
+            );
+          });
 
-            return zoomPresets;
-          }
+          return zoomPresets;
+        }
 
-          return [];
-        },
-      }
-    );
+        return [];
+      },
+    },
+  );
 
-    function isNonEmptyArray(a) {
-      return a && a.length && Array.isArray(a);
-    }
+  function isNonEmptyArray(a) {
+    return a && a.length && Array.isArray(a);
+  }
 
-    return ZoomPresets;
-  });
+  return ZoomPresets;
+});

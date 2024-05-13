@@ -29,14 +29,13 @@ define([
       /**
        * @inheritdoc
        */
-      events: function(){
+      events: function () {
         try {
           const events = FilterView.prototype.events.call(this);
           events["click input[type='checkbox']"] = "updateModel";
-          return events
-        }
-        catch (e) {
-          console.log('Failed to create events for BooleanFilterView: ' + e);
+          return events;
+        } catch (e) {
+          console.log("Failed to create events for BooleanFilterView: " + e);
           return {};
         }
       },
@@ -73,7 +72,7 @@ define([
         //Update the checkbox based on the model value
         this.$("input[type='checkbox']").prop("checked", modelValue);
       },
-    }
+    },
   );
   return BooleanFilterView;
 });

@@ -8,7 +8,7 @@ define([
   Backbone,
   EMLMissingValueCode,
   EMLMissingValueCodes,
-  EML211MissingValueCodeView
+  EML211MissingValueCodeView,
 ) {
   /**
    * @class EMLMissingValueCodesView
@@ -95,7 +95,7 @@ define([
         if (!this.collection) {
           console.warn(
             `The EMLMissingValueCodesView requires a MissingValueCodes collection` +
-              ` to render.`
+              ` to render.`,
           );
           return;
         }
@@ -194,7 +194,7 @@ define([
        * @returns {EML211MissingValueCodeView} The row view that was created
        */
       addRow: function (model) {
-        if (!model instanceof EMLMissingValueCode) return;
+        if ((!model) instanceof EMLMissingValueCode) return;
 
         // New rows will not have a remove button until the user starts typing
         const isNew = this.modelIsNew(model);
@@ -224,14 +224,14 @@ define([
        * @returns {EML211MissingValueCodeView} The row view that was removed
        */
       removeRow: function (model) {
-        if (!model instanceof EMLMissingValueCode) return;
+        if ((!model) instanceof EMLMissingValueCode) return;
         const rowView = this.el.querySelector(`[data-model-id="${model.cid}"]`);
         if (rowView) {
           rowView.remove();
           return rowView;
         }
       },
-    }
+    },
   );
 
   return EMLMissingValueCodesView;

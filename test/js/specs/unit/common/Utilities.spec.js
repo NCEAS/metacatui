@@ -19,11 +19,11 @@ define(["../../../../../../src/js/common/Utilities"], function (EntityUtils) {
       });
 
       it("should handle double quotes", function () {
-        expect(parse("\"a\",\"b\"\n1,2\n")).to.deep.equal(["a", "b"]);
+        expect(parse('"a","b"\n1,2\n')).to.deep.equal(["a", "b"]);
       });
 
       it("should handle a mix of unquoted and quoted", function () {
-        expect(parse("a,\"b\"\n1,2\n")).to.deep.equal(["a", "b"]);
+        expect(parse('a,"b"\n1,2\n')).to.deep.equal(["a", "b"]);
       });
     });
   });
