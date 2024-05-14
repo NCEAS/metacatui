@@ -508,13 +508,11 @@ define([
                     viewRef.model.get("archived") &&
                     !viewRef.model.get("indexed")
                   )
-                    viewRef
-                      .$(viewRef.metadataContainer)
-                      .prepend(
-                        viewRef.alertTemplate({
-                          msg: "There is limited metadata about this dataset since it has been archived.",
-                        }),
-                      );
+                    viewRef.$(viewRef.metadataContainer).prepend(
+                      viewRef.alertTemplate({
+                        msg: "There is limited metadata about this dataset since it has been archived.",
+                      }),
+                    );
 
                   viewRef.alterMarkup();
 
@@ -1335,7 +1333,8 @@ define([
               .parent()
               .parent().length
               ? $(georegion).find('label:contains("West")').parent().parent()
-              : georegion; //The last coordinate listed
+              : georegion;
+          //The last coordinate listed
           else var insertAfter = georegion;
 
           // Get the URL to the interactive Google Maps instance
