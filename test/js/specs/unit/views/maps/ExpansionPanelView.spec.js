@@ -84,6 +84,23 @@ define(
         it('renders an icon from Font Awesome', () => {
           expect(state.harness.getIconClassString()).to.be.match(/leaf/);
         });
+
+        it('does not render an svg icon if not passed isSvgIcon flag', () => {
+          expect(state.harness.hasSvgIcon()).to.be.false;
+        });
+
+        it('renders an svg icon if passed isSvgIcon flag', () => {
+          const view = new ExpansionPanelView({
+            title: 'Some title',
+            icon: '<svg xmlns="http://www.w3.org/2000/svg"><path /></svg>',
+            contentViewInstance: new TestView(),
+            isSvgIcon: true,
+          });
+          view.render();
+          const harness = new ExpansionPanelViewHarness(view);
+
+          expect(harness.hasSvgIcon()).to.be.true;
+        })
       });
 
       describe('coordinates with other panels via an ExpansionPanelsModel', () => {

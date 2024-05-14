@@ -6,6 +6,7 @@ define(
     'underscore',
     'backbone',
     'collections/maps/AssetCategories',
+    'common/IconUtilities',
     // Sub-views
     'views/maps/LayerListView',
     'views/maps/ExpansionPanelView',
@@ -16,8 +17,11 @@ define(
     _,
     Backbone,
     AssetCategories,
+    IconUtilities,
     // Sub-views
-    LayerCategoryItemView,
+    LayerListView,
+    ExpansionPanelView,
+    ExpansionPanelsModel,
   ) {
 
     /**
@@ -46,58 +50,74 @@ define(
        */
       className: "layer-category-list",
 
-      /**
-       * The array of layer categories to display in the list
-       * @type {LayerCategoryItemView[]}
-       */
-      layerCategoryItemViews: undefined,
+        /**
+        * The array of layer categories to display in the list
+        * @type {ExpansionPanel[]}
+        */
+        panels: undefined,
 
-      /**
-       * Executed when a new LayerCategoryListView is created
-       * @param {Object} options - A literal object with options to pass to the view
-       */
-      initialize(options) {
-        if (options.collection instanceof AssetCategories) {
-          this.layerCategoryItemViews = options.collection.map(
-            (categoryModel) => {
-              return new LayerCategoryItemView({ model: categoryModel });
-            },
-          );
-        }
-      },
+        /**
+        * Executed when a new LayerCategoryListView is created
+        * @param {Object} options - A literal object with options to pass to the view
+        */
+        initialize(options) {
+          if (options.collection instanceof AssetCategories) {
+            this.panelsModel = new ExpansionPanelsModel({ isMulti: true });
 
-      /**
-       * Renders this view
-       * @return {LayerCategoryListView} Returns the rendered view element
-       */
-      render() {
-        this.layerCategoryItemViews = _.forEach(
-          this.layerCategoryItemViews,
-          (layerCategoryItemView) => {
-            layerCategoryItemView.render();
-            this.el.appendChild(layerCategoryItemView.el);
-          },
-        );
+            this.panels = options.collection.map(categoryModel => {
+              const icon = categoryModel.get('icon');
+              return new ExpansionPanelView({
+                contentViewInstance: new LayerListView({
+                  collection: categoryModel.get('mapAssets'),
+                  isCategorized: true,
+                }),
+                icon,
+                isSvgIcon: IconUtilities.isSVG(icon),
+                panelsModel: this.panelsModel,
+                title: categoryModel.get('label'),
+              });
+            });
+          }
+        },
+
+        /**
+        * Renders this view
+        * @return {LayerCategoryListView} Returns the rendered view element
+        */
+        render() {
+          this.panels = _.forEach(this.panels, panel => {
+            panel.render();
+            this.el.appendChild(panel.el);
+          });
 
         return this;
       },
 
-      /**
-       * Searches and only dispays categories and layers that match the text.
-       * @param {string} [text] - The search text from user input.
-       * @returns {boolean} - True if a layer item matches the text
-       */
-      search(text) {
-        return _.reduce(
-          this.layerCategoryItemViews,
-          (matched, layerCategoryItem) => {
-            return layerCategoryItem.search(text) || matched;
-          },
-          false,
-        );
-      },
-    },
-  );
+        /**
+         * Searches and only dispays categories and layers that match the text.
+         * @param {string} [text] - The search text from user input.
+         * @returns {boolean} - True if a layer item matches the text
+         */
+        search(text) {
+          return _.reduce(this.panels, (matched, panel) => {
+            const searchResultsFound = panel.contentViewInstance.search(text);
+            if (searchResultsFound) {
+              panel.$el.show();
+              if (text !== '') {
+                panel.open();
+              } else {
+                panel.collapse();
+              }
+            } else {
+              panel.$el.hide();
+              panel.collapse();
+            }
+
+            return searchResultsFound || matched;
+          }, false);
+        },
+      }
+    );
 
   return LayerCategoryListView;
 });

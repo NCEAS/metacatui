@@ -56,6 +56,7 @@ define(
           classNames: CLASS_NAMES,
           title: '',
           icon: '',
+          isSvgIcon: false,
         },
 
         /**
@@ -71,14 +72,28 @@ define(
          * @property {boolean} startOpen Whether the panel should be expanded by
          * default. 
          */
-        initialize({ title, contentViewInstance, icon, panelsModel, startOpen }) {
-          this.templateVars.title = title;
-          this.templateVars.icon = icon;
+        initialize({ title, contentViewInstance, icon, panelsModel, startOpen, isSvgIcon, }) {
+          this.templateVars = {
+            ...this.templateVars,
+            title: title,
+            icon: icon,
+            isSvgIcon: isSvgIcon,
+          };
           this.contentViewInstance = contentViewInstance;
           this.panelsModel = panelsModel;
           this.startOpen = !!startOpen;
+          this.icon = icon;
 
           this.panelsModel?.register(this);
+        },
+
+        /**
+         * Inserts the icon before the label.
+         */
+        insertIcon(icon) {
+          if (icon && typeof icon === 'string') {
+            this.$el.find(`.${CLASS_NAMES.icon}`).html(icon);
+          }
         },
 
         /**
@@ -118,6 +133,11 @@ define(
           this.el.innerHTML = _.template(Template)(this.templateVars);
           this.contentViewInstance.render();
           this.getContent().append(this.contentViewInstance.el);
+
+          if (this.templateVars.isSvgIcon) {
+            this.insertIcon(this.icon);
+          }
+
           if (this.startOpen) {
             this.open();
           }
