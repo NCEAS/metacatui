@@ -89,6 +89,8 @@ require.config({
 	CircleBadge: ['views/CircleBadgeView', null],
 	DonutChart: ['views/DonutChartView', null],
 	MetricsChart: ['views/MetricsChartView', null],
+	TiffImageryProvider: MetacatUI.root + '/components/tiff-imagery-provider/dist/index',
+	geotiff: MetacatUI.root + '/components/geotiff/geotiff',
   },
   shim: { /* used for libraries without native AMD support */
     underscore: {

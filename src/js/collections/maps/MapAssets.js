@@ -10,6 +10,7 @@ define([
   "models/maps/assets/CesiumImagery",
   "models/maps/assets/CesiumTerrain",
   "models/maps/assets/CesiumGeohash",
+  "models/maps/assets/GeoTIFFImagery",
 ], function (
   $,
   _,
@@ -19,8 +20,12 @@ define([
   CesiumVectorData,
   CesiumImagery,
   CesiumTerrain,
-  CesiumGeohash
+  CesiumGeohash,
+  GeoTIFFImagery,
 ) {
+
+  function TIFFImageryProvider(){}
+
   /**
    * @class MapAssets
    * @classdesc A MapAssets collection is a group of MapAsset models - models
@@ -72,6 +77,12 @@ define([
               model: CesiumImagery,
             },
             {
+              types: [
+                "GeoTIFFProvider",
+              ],
+              model: GeoTIFFImagery,
+            },
+            {
               types: ["CesiumTerrainProvider"],
               model: CesiumTerrain,
             },
@@ -88,6 +99,7 @@ define([
 
           // Don't add an unsupported type to  the collection
           if (modelOption) {
+            console.log("model option", type, {assetConfig});
             return new modelOption.model(assetConfig);
           } else {
             // Return a generic MapAsset as a default

@@ -8,7 +8,8 @@
     "cheerio": "^1.0.0-rc.11",
     "express": "^4.19.2",
     "puppeteer": "^14.1.1",
-    "sinon": "^17.0.1"
+    "sinon": "^17.0.1",
+    "tiff-imagery-provider": "^2.10.5"
   },
   "devDependencies": {
     "@jsdoc/salty": "^0.2.3",

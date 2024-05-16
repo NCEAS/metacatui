@@ -223,6 +223,7 @@ define(
             cesiumOptions.url = cesiumOptions.url || 'https://a.tile.openstreetmap.org/'
           }
           if (cesiumOptions && cesiumOptions.tilingScheme) {
+            console.log({type});
             const ts = cesiumOptions.tilingScheme
             const availableTS = ['GeographicTilingScheme', 'WebMercatorTilingScheme']
             if (availableTS.indexOf(ts) > -1) {

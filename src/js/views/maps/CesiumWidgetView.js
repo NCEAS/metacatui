@@ -92,6 +92,13 @@ define([
         },
         {
           types: [
+            "GeoTIFFProvider",
+          ],
+          renderFunction: "addGeoTiff",
+          removeFunction: "removeGeoTiff",
+        },
+        {
+          types: [
             "BingMapsImageryProvider",
             "IonImageryProvider",
             "TileMapServiceImageryProvider",
@@ -815,7 +822,7 @@ define([
               // Search for the entity again in case it was removed and
               // re-added to the data source display.
               entity = view.getEntityById(entity.id, entity.entityCollection);
-              if(!entity) {
+              if (!entity) {
                 clearInterval(interval);
                 reject("Failed to get bounding sphere for entity, entity not found.");
               }
@@ -1134,8 +1141,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error finding the edge points in a CesiumWidgetView" +
-              ". Error details: " +
-              error
+            ". Error details: " +
+            error
           );
         }
       },
@@ -1176,8 +1183,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error finding a midpoint in a CesiumWidgetView" +
-              ". Error details: " +
-              error
+            ". Error details: " +
+            error
           );
         }
       },
@@ -1329,8 +1336,8 @@ define([
         } catch (error) {
           console.log(
             "Failed to get a pixel to meters measurement in a CesiumWidgetView" +
-              ". Error details: " +
-              error
+            ". Error details: " +
+            error
           );
           return false;
         }
@@ -1360,6 +1367,7 @@ define([
             }) || {};
           // Get the function for this type
           const renderFunction = view[renderOption.renderFunction];
+          console.log("add asset", renderFunction);
 
           // If the cesium widget does not have a way to display this error,
           // update the error status in the model (this will be reflected in the
@@ -1378,6 +1386,9 @@ define([
           const checkAndRenderAsset = function () {
             let shouldRender =
               mapAsset.get("visible") && mapAsset.get("status") === "ready";
+            if (type === 'GeoTIFFProvider') {
+              console.log("check and render", type, shouldRender);
+            }
             if (shouldRender) {
               renderFunction.call(view, mapAsset.get("cesiumModel"));
               view.stopListening(mapAsset);
@@ -1492,6 +1503,17 @@ define([
         this.sortImagery();
       },
 
+      addGeoTiff(cesiumModel) {
+        console.log("trying to add geo tiff", this.scene);
+
+        this.scene.imageryLayers.addImageryProvider(cesiumModel);
+        // this.sortImagery();
+      },
+
+      removeGeoTiff() {
+        console.log("trying to remove geo tiff");
+      },
+
       /**
        * Remove imagery from the Map.
        * @param {Cesium.ImageryLayer} cesiumModel The Cesium imagery model to
@@ -1512,9 +1534,9 @@ define([
       sortImagery: function () {
         const imageryInMap = this.scene.imageryLayers;
         const imageryModels = _.reduce(this.model.getLayerGroups(), (models, layers) => {
-            models.push(...layers.getAll("CesiumImagery"));
-            return models;
-          }, []);
+          models.push(...layers.getAll("CesiumImagery"));
+          return models;
+        }, []);
 
         // If there are no imagery layers, or just one, return
         if (
@@ -1560,8 +1582,8 @@ define([
           if (!color || typeof color !== "string" || !color.startsWith("#")) {
             console.log(
               `${color} is an invalid color for imagery grid. ` +
-                `Must be a hex color starting with '#'. ` +
-                `Setting color to white: '#ffffff'`
+              `Must be a hex color starting with '#'. ` +
+              `Setting color to white: '#ffffff'`
             );
             color = "#ffffff";
           }
@@ -1574,7 +1596,7 @@ define([
           if (availableTS.indexOf(tilingScheme) == -1) {
             console.log(
               `${tilingScheme} is not a valid tiling scheme ` +
-                `for the imagery grid. Using WebMercatorTilingScheme`
+              `for the imagery grid. Using WebMercatorTilingScheme`
             );
             tilingScheme = "WebMercatorTilingScheme";
           }
@@ -1594,8 +1616,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error showing the imagery grid in a CesiumWidgetView" +
-              ". Error details: " +
-              error
+            ". Error details: " +
+            error
           );
         }
       },

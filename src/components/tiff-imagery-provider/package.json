@@ -1,0 +1,55 @@
+{
+  "name": "tiff-imagery-provider",
+  "type": "module",
+  "version": "2.10.5",
+  "description": "Load GeoTIFF/COG(Cloud optimized GeoTIFF) on Cesium",
+  "keywords": [
+    "cesium",
+    "geotiff",
+    "cog",
+    "webgl"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hongfaqiu/tiff-imagery-provider.git"
+  },
+  "scripts": {
+    "dev": "rimraf dist && rollup -c --watch",
+    "build": "rimraf dist && rollup -c",
+    "prepublish": "pnpm build"
+  },
+  "author": "hongfaqiu",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "README.md",
+    "README_CN.md"
+  ],
+  "peerDependencies": {
+    "cesium": "*"
+  },
+  "dependencies": {
+    "geotiff": "^2.0.7"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^24.0.1",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@types/offscreencanvas": "^2019.7.0",
+    "cesium": "^1.108.0",
+    "esbuild": "^0.19.2",
+    "rollup": "^3.28.1",
+    "rollup-plugin-dts": "^6.0.1",
+    "rollup-plugin-esbuild": "^5.0.0",
+    "tslib": "^2.5.0",
+    "typescript": "4.8.4"
+  },
+  "gitHead": "2a8ac51c03fc9f97102a0eed60ea60cfb5a9d77e"
+}
