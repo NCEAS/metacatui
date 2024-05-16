@@ -5,7 +5,7 @@
 - **License**: [Apache 2](http://opensource.org/licenses/Apache-2.0)
 - [Package source code on Github](https://github.com/NCEAS/metacatui)
 - [**Submit Bugs and feature requests**](https://github.com/NCEAS/metacatui/issues/new/choose)
-- Contact us: metacat-dev@ecoinformatics.org
+- Contact us: developers@dataone.org
 
 ![Tests Status](https://github.com/NCEAS/metacatui/actions/workflows/test.js.yml/badge.svg)
 
