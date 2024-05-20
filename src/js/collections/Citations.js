@@ -1,4 +1,3 @@
-/* global define */
 "use strict";
 
 define(["jquery", "underscore", "backbone", "models/CitationModel"], function (

@@ -1,5 +1,4 @@
-﻿/* global define */
-"use strict";
+﻿"use strict";
 
 define([
   "jquery",

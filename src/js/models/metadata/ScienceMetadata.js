@@ -1,5 +1,4 @@
-﻿/* global define */
-define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
+﻿define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
   $,
   _,
   Backbone,

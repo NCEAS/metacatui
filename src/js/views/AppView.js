@@ -1,5 +1,4 @@
-﻿/*global define */
-define([
+﻿define([
   "jquery",
   "underscore",
   "backbone",

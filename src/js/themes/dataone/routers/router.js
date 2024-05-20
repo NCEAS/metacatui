@@ -1,4 +1,3 @@
-/*global Backbone */
 "use strict";
 
 define(["jquery", "underscore", "backbone", "routers/BaseRouter"], function (

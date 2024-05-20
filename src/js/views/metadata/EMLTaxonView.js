@@ -7,7 +7,6 @@
    For now the taxon information is all rendered in the EML211View.
 */
 
-/* global define */
 define([
   "underscore",
   "jquery",

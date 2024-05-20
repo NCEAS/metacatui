@@ -1,4 +1,3 @@
-/* global define */
 define(["models/analytics/Analytics"], function (Analytics) {
   /**
    * @class GoogleAnalytics

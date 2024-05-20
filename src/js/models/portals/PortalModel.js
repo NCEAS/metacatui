@@ -1,7 +1,6 @@
 /**
  * @exports PortalModel
  */
-/* global define */
 define([
   "jquery",
   "underscore",
