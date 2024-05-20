@@ -1,4 +1,3 @@
-/* global define */
 define(["jquery", "underscore", "backbone", "models/filters/Filter"], function (
   $,
   _,

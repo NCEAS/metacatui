@@ -1,4 +1,3 @@
-/* global define */
 define([
   "backbone",
   "models/metadata/eml211/EMLMissingValueCode",

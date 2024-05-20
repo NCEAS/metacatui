@@ -1,4 +1,3 @@
-/*global define */
 define(["jquery", "jqueryui", "underscore", "backbone"], function (
   $,
   $ui,

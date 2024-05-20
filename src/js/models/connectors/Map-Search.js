@@ -1,4 +1,3 @@
-/*global define */
 define(["backbone", "models/maps/Map", "collections/SolrResults"], function (
   Backbone,
   Map,
