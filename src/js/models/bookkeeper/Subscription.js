@@ -1,4 +1,3 @@
-/* global define */
 define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
   /**
    * @classdesc A Subscription Model represents a single instance of a Subscription object from the

@@ -1,4 +1,3 @@
-/*global define */
 define([
   "backbone",
   "collections/SolrResults",

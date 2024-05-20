@@ -1,6 +1,5 @@
 "use strict";
 
-/*global define */
 define([
   "backbone",
   "cesium",

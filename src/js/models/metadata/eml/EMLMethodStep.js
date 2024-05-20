@@ -1,4 +1,3 @@
-/* global define */
 var required = [
   "jquery",
   "underscore",

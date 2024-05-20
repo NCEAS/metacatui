@@ -1,4 +1,3 @@
-/* global define */
 "use strict";
 define(["jquery", "backbone", "models/projects/Project"], function (
   $,
