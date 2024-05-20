@@ -1,4 +1,3 @@
-/* global define */
 define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
   /**
    * @classdesc A Usage Model represents a single instance of a Usage object from the

@@ -1,6 +1,5 @@
 "use strict";
 
-/*global define */
 define(["cesium", "models/connectors/GeoPoints-Cesium"], function (
   Cesium,
   GeoPointsCesiumConnector,

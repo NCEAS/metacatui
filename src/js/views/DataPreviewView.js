@@ -1,4 +1,3 @@
-/* global define */
 define(["underscore", "jquery", "backbone", "models/DataONEObject"], function (
   _,
   $,

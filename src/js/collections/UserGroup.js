@@ -1,4 +1,3 @@
-/*global define */
 define(["jquery", "underscore", "backbone", "models/UserModel"], function (
   $,
   _,
