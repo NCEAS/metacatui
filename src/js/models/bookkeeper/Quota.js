@@ -1,4 +1,3 @@
-/* global define */
 define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
   /**
    * @classdesc A Quota Model represents a single instance of a Quota object from the

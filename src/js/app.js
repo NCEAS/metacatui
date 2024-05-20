@@ -1,5 +1,3 @@
-/*global require */
-/*jshint unused:false */
 "use strict";
 
 MetacatUI.recaptchaURL =

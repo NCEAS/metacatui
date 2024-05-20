@@ -1,4 +1,3 @@
-/*global define */
 define([
   "backbone",
   "models/maps/Map",
