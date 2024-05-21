@@ -13,7 +13,6 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
-
 // ---------------------------------------------------------------------
 // AIRBNB JAVASCRIPT STYLE GUIDE:
 // Use the Airbnb style guide, excluding react- and node- specific rules & the
