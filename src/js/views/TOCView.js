@@ -470,10 +470,10 @@ define([
       },
 
       tempMethodWithLintingFormattingErrors: function() {
-      const a = 1;
-      a = 2;
-           b = 99;
-         console.log("This is a test of the linting errors.");
+       const a = 1;
+       a = 2;
+            b = 99;
+          console.log("This is a test of the linting errors.");
            
       }
     },

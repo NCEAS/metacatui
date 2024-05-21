@@ -40,6 +40,5 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         reporter: github-pr-review
-        prettier_flags: '--check src/**/*.js'
         filter_mode: 'diff_context'
-      
+
