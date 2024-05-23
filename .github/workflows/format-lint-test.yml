@@ -66,7 +66,7 @@ jobs:
         with:
           template: .github/WORKFLOW_TEMPLATE/format-test-lint-summary.md
           vars: |
-            formatting_out_md: ${{ env.FORMATTING_OUT_MD }}
+            formatting_out_md: '⚠️⚠️⚠️ test ⚠️⚠️⚠️'
             linting_out_md: ${{ env.LINTING_OUT_MD }}
             unit_out_md: ${{ env.UNIT_OUT_MD }}
             jsdoc_out_md: ${{ env.JSDOC_OUT_MD }}
