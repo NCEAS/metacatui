@@ -12,7 +12,7 @@ Here is a summary of the checks that were performed and the issues that were fou
     - Checks JS files for code quality, style issues, and JSdoc comments using [ESLint](https://eslint.org/). Generally follows the [Airbnb style guide](https://github.com/airbnb/javascript)
   - **Unit Tests**: {{ .unit_out_md }}
     - Runs unit tests to ensure that the code changes do not break existing functionality. If you have added new functionality, please add tests to cover it.
-  - **JSDoc**: {{ .jsdocs_out_md }}
+  - **JSDoc**: {{ .jsdoc_out_md }}
     - Ensures that building the docs website succeeds and that there are no JSDoc warnings.
 
 ### What are the next steps?
