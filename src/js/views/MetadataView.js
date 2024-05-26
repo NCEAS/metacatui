@@ -3156,13 +3156,24 @@ define(['jquery',
         },
 
         storeEntityPIDs: function(responseEl) {
-          var view = this;
-          _.each($(responseEl).find(".entitydetails"), function (entityEl) {
-            var entityId = $(entityEl).data("id");
-            view.entities.push(entityId.replace('urn-uuid-', 'urn:uuid:'));
-          });
+            var view = this;
+            _.each($(responseEl).find(".entitydetails"), function (entityEl) {
+                var entityId = $(entityEl).data("id");
+            
+                // Check and replace urn-uuid- with urn:uuid: if the string starts with urn-uuid-
+                if (entityId.startsWith('urn-uuid-')) {
+                    entityId = entityId.replace('urn-uuid-', 'urn:uuid:');
+                }
+            
+                // Check and replace doi-10. with doi:10. if the string starts with doi-10.
+                if (entityId.startsWith('doi-10.')) {
+                    entityId = entityId.replace('doi-10.', 'doi:10.');
+                }
+            
+                view.entities.push(entityId);
+            });
         }
-      });
+    });
 
     return MetadataView;
   });
