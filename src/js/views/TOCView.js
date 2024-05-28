@@ -469,12 +469,11 @@ define([
         $(window).off("resize");
       },
 
-      tempMethodWithLintingFormattingErrors: function() {
-       const a = 1;
-       a = 2;
-            b = 99;
-          console.log("This is a test of the linting errors.");
-           
+      tempMethodWithLintingFormattingErrorsRenamed: function () {
+         const a = 1;
+        a = 2;
+         b = 999;
+         console.log("This is a test of the linting errors.");
       }
     },
   );

@@ -1,106 +1,72 @@
 name: Format, Lint, & Test
 
 on:
-  push:
+  pull_request:
+    types: [opened, reopened, synchronize]
     branches-ignore:
       - "ignore-*"
-  pull_request:
+  push:
     branches-ignore:
       - "ignore-*"
 
 jobs:
+  pre_job:
+    name: Skip duplicate actions
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        name: Check if we should skip
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          concurrent_skipping: 'same_content_newer'
+
   run_checks:
     name: Run All Checks
+    needs: pre_job
+    if: needs.pre_job.outputs.should_skip != 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Check out code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Important to fetch all history for diff
+          fetch-depth: 0  # Fetch all history for diff
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+
       - name: Install dependencies
         run: npm install
-      - name: Check Formatting with Prettier
-        id: prettier_check
-        run: npm run format-check
+      
+      - name: Run ESLint with reviewdog
+        uses: reviewdog/action-eslint@v1
         continue-on-error: true
-      - name: Check linting with ESLint
-        id: eslint_check
-        run: npm run lint
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          eslint_flags: 'src'
+          filter_mode: 'diff_context'
+  
+      - name: Run Prettier with reviewdog
+        uses: EPMatt/reviewdog-action-prettier@v1
         continue-on-error: true
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          filter_mode: 'diff_context'
+
       - name: Run unit tests
         id: test
         run: npm test
         continue-on-error: true
+        
       - name: Dry run jsdoc
         id: jsdoc-dry-run
         run: npm run jsdoc-dry-run
         continue-on-error: true
-      - name: Set env vars for subsequent steps
-        env:
-          OVERALL_OUTCOME: ${{ job.status }}
-          PASS_MD: '✅ PASS'
-          FAIL_MD: '❌ FAIL'
-          FORMATTING_OUT: ${{ steps.prettier_check.outcome }}
-          LINTING_OUT: ${{ steps.eslint_check.outcome }}
-          UNIT_OUT: ${{ steps.test.outcome }}
-          JSDOC_OUT: ${{ steps.jsdoc-dry-run.outcome }}
-        run: |
-          echo "OVERALL_OUTCOME=${{ env.OVERALL_OUTCOME }}" >> $GITHUB_ENV
-          echo "PASS_MD=${{ env.PASS_MD }}" >> $GITHUB_ENV
-          echo "FAIL_MD=${{ env.FAIL_MD }}" >> $GITHUB_ENV
-          echo "FORMATTING_OUT=${{ env.FORMATTING_OUT }}" >> $GITHUB_ENV
-          echo "LINTING_OUT=${{ env.LINTING_OUT }}" >> $GITHUB_ENV
-          echo "UNIT_OUT=${{ env.UNIT_OUT }}" >> $GITHUB_ENV
-          echo "JSDOC_OUT=${{ env.JSDOC_OUT }}" >> $GITHUB_ENV
-          echo "FORMATTING_OUT_MD=${{ env.FORMATTING_OUT == 'success' && env.PASS_MD || env.FAIL_MD }}" >> $GITHUB_ENV
-          echo "LINTING_OUT_MD=${{ env.LINTING_OUT == 'success' && env.PASS_MD || env.FAIL_MD }}" >> $GITHUB_ENV
-          echo "UNIT_OUT_MD=${{ env.UNIT_OUT == 'success' && env.PASS_MD || env.FAIL_MD }}" >> $GITHUB_ENV
-          echo "JSDOC_OUT_MD=${{ env.JSDOC_OUT == 'success' && env.PASS_MD || env.FAIL_MD }}" >> $GITHUB_ENV
-      - name: Render workflow summary template
-        id: summary-template
-        uses: chuhlomin/render-template@v1.4
-        with:
-          template: .github/WORKFLOW_TEMPLATE/format-test-lint-summary.md
-          vars: |
-            formatting_out_md: ${{ env.FORMATTING_OUT_MD }}
-            linting_out_md: ${{ env.LINTING_OUT_MD }}
-            unit_out_md: ${{ env.UNIT_OUT_MD }}
-            jsdoc_out_md: ${{ env.JSDOC_OUT_MD }}
-      - name: Write summary to step summary
-        run: echo "${{ steps.summary-template.outputs.result }}" >> $GITHUB_STEP_SUMMARY
-      - name: Stop here if not a PR workflow
-        if: ${{ github.event_name != 'pull_request' }}
-        run: |
-          echo "All checks for this commit have been completed. Exiting..."
-          exit 1
-      - name: Choose PR comment template based on outcome
-        id: choose-template
-        env:
-          GUIDANCE_TEMPLATE: .github/WORKFLOW_TEMPLATE/pr-comment-guidance.md
-          CONFIRMATION_TEMPLATE: .github/WORKFLOW_TEMPLATE/pr-comment-confirmation.md
-        run: |
-          if [ ${{ env.OVERALL_OUTCOME }} == 'success' ]; then
-            echo "PR_COMMENT_TEMPLATE=${{ env.CONFIRMATION_TEMPLATE }}" >> $GITHUB_ENV
-          else
-            echo "PR_COMMENT_TEMPLATE=${{ env.GUIDANCE_TEMPLATE }}" >> $GITHUB_ENV
-          fi
-      - name: Render PR comment template
-        id: guidance-template
-        uses: chuhlomin/render-template@v1.4
-        with:
-          template: ${{ env.PR_COMMENT_TEMPLATE }}
-          vars: |
-            formatting_out_md: ${{ env.FORMATTING_OUT_MD }}
-            linting_out_md: ${{ env.LINTING_OUT_MD }}
-            unit_out_md: ${{ env.UNIT_OUT_MD }}
-            jsdoc_out_md: ${{ env.JSDOC_OUT_MD }}
-      - name: Create comment
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: ${{ steps.guidance-template.outputs.result }}
-          token: ${{ secrets.GITHUB_TOKEN }}
