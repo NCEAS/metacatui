@@ -5,27 +5,10 @@ on:
     types: [opened, reopened, synchronize]
     branches-ignore:
       - "ignore-*"
-  push:
-    branches-ignore:
-      - "ignore-*"
 
 jobs:
-  pre_job:
-    name: Skip duplicate actions
-    runs-on: ubuntu-latest
-    outputs:
-      should_skip: ${{ steps.skip_check.outputs.should_skip }}
-    steps:
-      - id: skip_check
-        name: Check if we should skip
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          concurrent_skipping: 'same_content_newer'
-
   run_checks:
     name: Run All Checks
-    needs: pre_job
-    if: needs.pre_job.outputs.should_skip != 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -43,7 +26,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-      
+
       - name: Run ESLint with reviewdog
         uses: reviewdog/action-eslint@v1
         continue-on-error: true
