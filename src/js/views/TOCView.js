@@ -472,7 +472,7 @@ define([
       /**
        * a new method that is properly formatted and linted
        */
-      newMethod: function () {
+      newMethod () {
         const x = 1;
         return x;
       },
