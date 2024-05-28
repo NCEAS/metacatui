@@ -468,6 +468,18 @@ define([
         $("body").off("activate");
         $(window).off("resize");
       },
+
+
+      /**
+       * a method without sufficient documentation
+       */
+      aNewMethodWithLintingAndFormattingErrors: function (x, y) {
+         const a = 1;
+        a = 999;
+      var b=2;
+        console.log("this is just a test of the new linter and formatter")
+          return a + b;
+      },
     },
   );
 
