@@ -471,8 +471,9 @@ define([
 
       /**
        * a new method that is properly formatted and linted
+       * @returns {number} x - the number 1
        */
-      newMethod () {
+      newMethod() {
         const x = 1;
         return x;
       },
