@@ -35,6 +35,7 @@ jobs:
           reporter: github-pr-review
           eslint_flags: 'src'
           filter_mode: 'diff_context'
+          fail_on_error: true
   
       - name: Check for formatting errors on changed code
         uses: EPMatt/reviewdog-action-prettier@v1
@@ -43,6 +44,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           filter_mode: 'diff_context'
+          fail_on_error: true
 
       - name: Ensure unit tests pass
         id: test
