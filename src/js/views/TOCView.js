@@ -468,6 +468,14 @@ define([
         $("body").off("activate");
         $(window).off("resize");
       },
+
+      /**
+       * a new method that is properly formatted and linted
+       */
+      newMethod: function () {
+        const x = 1;
+        return x;
+      },
     },
   );
 
