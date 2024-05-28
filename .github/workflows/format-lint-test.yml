@@ -27,29 +27,29 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run ESLint with reviewdog
+      - name: Check for linting errors on changed code
         uses: reviewdog/action-eslint@v1
-        continue-on-error: true
+        if: always()
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           eslint_flags: 'src'
           filter_mode: 'diff_context'
   
-      - name: Run Prettier with reviewdog
+      - name: Check for formatting errors on changed code
         uses: EPMatt/reviewdog-action-prettier@v1
-        continue-on-error: true
+        if: always()
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           filter_mode: 'diff_context'
 
-      - name: Run unit tests
+      - name: Ensure unit tests pass
         id: test
+        if: always()
         run: npm test
-        continue-on-error: true
         
-      - name: Dry run jsdoc
+      - name: Ensure docs build without errors
         id: jsdoc-dry-run
+        if: always()
         run: npm run jsdoc-dry-run
-        continue-on-error: true
