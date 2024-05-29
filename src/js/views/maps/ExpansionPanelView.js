@@ -83,16 +83,6 @@ define(
         },
 
         /**
-         * Inserts the icon before the label.
-         * @since x.x.x
-         */
-        insertIcon(icon) {
-          if (icon && typeof icon === 'string') {
-            this.$el.find(`.${CLASS_NAMES.icon}`).html(icon);
-          }
-        },
-
-        /**
          * Getter function for the content div. 
          * @return {HTMLDivElement} Returns the content element.
          */
@@ -129,10 +119,6 @@ define(
           this.el.innerHTML = _.template(Template)(this.templateVars);
           this.contentViewInstance.render();
           this.getContent().append(this.contentViewInstance.el);
-
-          if (this.templateVars.isSvgIcon) {
-            this.insertIcon(this.templateVars.icon);
-          }
 
           if (this.startOpen) {
             this.open();

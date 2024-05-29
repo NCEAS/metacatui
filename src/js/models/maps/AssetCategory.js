@@ -29,7 +29,6 @@ define([
        * @type {Object}
        * @property {string} label A user friendly name for this category, to be displayed
        * in a map.
-       //  TODO: yvonneshi - Find default icon
        * @property {string} icon
        * A PID for an SVG saved as a dataObject, or an SVG string. The SVG will be used
        * as an icon that will be displayed next to the category label. It should be an
@@ -43,7 +42,7 @@ define([
       defaults() {
         return {
           label: "",
-          icon: "",
+          icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="m3.2 7.3 8.6 4.6a.5.5 0 0 0 .4 0l8.6-4.6a.4.4 0 0 0 0-.8L12.1 3a.5.5 0 0 0-.4 0L3.3 6.5a.4.4 0 0 0 0 .8Z"/><path d="M20.7 10.7 19 9.9l-6.7 3.6a.5.5 0 0 1-.4 0L5 9.9l-1.8.8a.5.5 0 0 0 0 .8l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.8Z"/><path d="m20.7 15.1-1.5-.7-7 3.8a.5.5 0 0 1-.4 0l-7-3.8-1.5.7a.5.5 0 0 0 0 .9l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.9Z"/></svg>',
           expanded: false,
         };
       },
@@ -71,7 +70,7 @@ define([
       initialize(categoryConfig) {
         if (!categoryConfig?.layers) {
           throw new Error(
-            "Category " + categoryConfig.label + " has empty layers.",
+            "Category " + categoryConfig.label + " has empty layers."
           );
         }
         this.set("mapAssets", new MapAssets(categoryConfig.layers));
@@ -85,7 +84,7 @@ define([
               this.updateIcon(categoryConfig.icon);
             } else {
               IconUtilities.fetchIcon(categoryConfig.icon).then((icon) =>
-                this.updateIcon(icon),
+                this.updateIcon(icon)
               );
             }
           } catch (error) {
