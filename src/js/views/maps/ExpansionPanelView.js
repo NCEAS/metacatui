@@ -25,8 +25,7 @@ define(
      * @classcategory Views/Maps/Viewfinder
      * @name ExpansionPanelView
      * @extends Backbone.View
-     * @screenshot views/maps/ExpansionPanelView_closed.png
-     * @screenshot views/maps/ExpansionPanelView_open.png
+     * @screenshot views/maps/ExpansionPanelView.png
      * @since 2.29.0
      * @constructs ExpansionPanelView
      */
@@ -51,14 +50,6 @@ define(
           };
         },
 
-        /** Values meant to be used by the rendered HTML template. */
-        templateVars: {
-          classNames: CLASS_NAMES,
-          title: '',
-          icon: '',
-          isSvgIcon: false,
-        },
-
         /**
          * @typedef {Object} ExpansionPanelViewOptions
          * @property {string} title The displayed label for this panel. 
@@ -72,23 +63,28 @@ define(
          * @property {boolean} startOpen Whether the panel should be expanded by
          * default. 
          */
+
+        /**
+         * Initialize the view with the given options.
+         * @param {ExpansionPanelViewOptions} options The options for this view.
+         */
         initialize({ title, contentViewInstance, icon, panelsModel, startOpen, isSvgIcon, }) {
           this.templateVars = {
-            ...this.templateVars,
-            title: title,
+            classNames: CLASS_NAMES,
             icon: icon,
             isSvgIcon: isSvgIcon,
+            title: title,
           };
           this.contentViewInstance = contentViewInstance;
           this.panelsModel = panelsModel;
           this.startOpen = !!startOpen;
-          this.icon = icon;
 
           this.panelsModel?.register(this);
         },
 
         /**
          * Inserts the icon before the label.
+         * @since x.x.x
          */
         insertIcon(icon) {
           if (icon && typeof icon === 'string') {
@@ -135,7 +131,7 @@ define(
           this.getContent().append(this.contentViewInstance.el);
 
           if (this.templateVars.isSvgIcon) {
-            this.insertIcon(this.icon);
+            this.insertIcon(this.templateVars.icon);
           }
 
           if (this.startOpen) {

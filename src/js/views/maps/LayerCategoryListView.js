@@ -62,8 +62,6 @@ define(
         */
         initialize(options) {
           if (options.collection instanceof AssetCategories) {
-            this.panelsModel = new ExpansionPanelsModel({ isMulti: true });
-
             this.panels = options.collection.map(categoryModel => {
               const icon = categoryModel.get('icon');
               return new ExpansionPanelView({
@@ -73,7 +71,7 @@ define(
                 }),
                 icon,
                 isSvgIcon: IconUtilities.isSVG(icon),
-                panelsModel: this.panelsModel,
+                panelsModel: new ExpansionPanelsModel({ isMulti: true }),
                 title: categoryModel.get('label'),
               });
             });
