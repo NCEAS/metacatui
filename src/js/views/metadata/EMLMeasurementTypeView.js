@@ -7,15 +7,7 @@ define([
   "views/AnnotationView",
   "text!templates/metadata/eml-measurement-type.html",
   "text!templates/metadata/eml-measurement-type-annotations.html",
-], /**
- * @class EMLMeasurementTypeView
- * @classdec The EMLMeasurementTypeView is a view to render a specialized
- * EML annotation editor that lets the use pick a single annotation from a
- * specified ontology or portion of an ontology.
- * @classcategory Views/Metadata
- * @extends Backbone.View
- */
-function (
+], function (
   _,
   $,
   Backbone,
@@ -25,6 +17,14 @@ function (
   EMLMeasurementTypeTemplate,
   EMLMeasurementTypeAnnotationsTemplate,
 ) {
+  /**
+   * @class EMLMeasurementTypeView
+   * @classdec The EMLMeasurementTypeView is a view to render a specialized
+   * EML annotation editor that lets the use pick a single annotation from a
+   * specified ontology or portion of an ontology.
+   * @classcategory Views/Metadata
+   * @extends Backbone.View
+   */
   var EMLMeasurementTypeView = Backbone.View.extend(
     /** @lends EMLMeasurementTypeView.prototype */ {
       tagName: "div",
