@@ -2,7 +2,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
   $,
   _,
   Backbone,
-  Bioportal
+  Bioportal,
 ) {
   /**
    * @class AnnotationFilter
@@ -99,7 +99,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
 
                 this[key] = options[key];
               },
-              this
+              this,
             );
           }
 
@@ -111,7 +111,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
         } catch (e) {
           console.log(
             "Failed to initialize an Annotation Filter View, error message:",
-            e
+            e,
           );
         }
       },
@@ -125,7 +125,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
         try {
           if (!MetacatUI.appModel.get("bioportalAPIKey")) {
             console.log(
-              "A bioportal key is required for the Annotation Filter View. Please set a key in the MetacatUI config. The view will not render."
+              "A bioportal key is required for the Annotation Filter View. Please set a key in the MetacatUI config. The view will not render.",
             );
             return;
           }
@@ -143,7 +143,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
           return this;
         } catch (e) {
           console.log(
-            "Failed to render an Annotation Filter View, error message: " + e
+            "Failed to render an Annotation Filter View, error message: " + e,
           );
         }
       },
@@ -167,17 +167,17 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
             "data-trigger='hover' data-placement='top' data-container='body' style='margin-right: 3px'";
           view.treeContent = $("<div></div>");
           view.buttonContainer = $(
-            '<div class="ncbo-tree-buttons-container"></div>'
+            '<div class="ncbo-tree-buttons-container"></div>',
           );
           view.jumpUpButton = $(
             "<button class='icon icon-level-up tooltip-this btn' id='jumpUp' data-title='Go up to parent' " +
               buttonProps +
-              " ></button>"
+              " ></button>",
           );
           view.resetButton = $(
             "<button class='icon icon-undo tooltip-this btn' id='resetTree' data-title='Reset tree' " +
               buttonProps +
-              " ></button>"
+              " ></button>",
           );
           $(view.buttonContainer).append(view.jumpUpButton);
           $(view.buttonContainer).append(view.resetButton);
@@ -185,7 +185,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
           $(view.treeContent).append(view.treeEl);
         } catch (e) {
           console.log(
-            "Failed to set up an annotation tree, error message: " + e
+            "Failed to set up an annotation tree, error message: " + e,
           );
         }
       },
@@ -199,7 +199,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
           var view = this;
 
           require(["views/searchSelect/SearchableSelectView"], function (
-            SearchableSelect
+            SearchableSelect,
           ) {
             view.multiSelectView = new SearchableSelect({
               placeholderText: view.placeholderText
@@ -229,7 +229,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
         } catch (e) {
           console.log(
             "Failed to create the multi-select interface for an Annotation Filter View, error message: " +
-              e
+              e,
           );
         }
       },
@@ -292,7 +292,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
         } catch (e) {
           console.log(
             "Failed to update an annotation filter with selected values, error message: " +
-              e
+              e,
           );
         }
       },
@@ -371,7 +371,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
             error: function (response) {
               console.log(
                 "Error finding class labels for the Annotation Filter, error response:",
-                response
+                response,
               );
               formatResponse(response, false);
               callback.call(view);
@@ -379,7 +379,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
           });
         } catch (e) {
           console.log(
-            "Failed to fetch labels for bioontology IDs, error message: " + e
+            "Failed to fetch labels for bioontology IDs, error message: " + e,
           );
         }
       },
@@ -394,7 +394,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
         try {
           var view = this;
           $("body").append(
-            $('<div id="bioportal-popover" data-category="annotation"></div>')
+            $('<div id="bioportal-popover" data-category="annotation"></div>'),
           );
           $(view.popoverTriggerSelector)
             .popover({
@@ -431,7 +431,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
         } catch (e) {
           console.log(
             "Failed to create popover HTML for an annotation filter, error message: " +
-              e
+              e,
           );
         }
       },
@@ -454,9 +454,9 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
                 event,
                 classId,
                 prefLabel,
-                selectedNode
+                selectedNode,
               );
-            }
+            },
           );
           view.treeEl.on("afterJumpToClass", function (event, classId) {
             view.afterJumpToClass.call(view, event, classId);
@@ -488,13 +488,13 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
                   view.updateMultiselect();
                 }
                 view.trigger("changeSelection", newValues);
-              }
+              },
             );
           }
         } catch (e) {
           console.log(
             "Failed to set listeners in an Annotation Filter View, error message: " +
-              e
+              e,
           );
         }
       },
@@ -545,7 +545,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
           return false;
         } catch (e) {
           console.log(
-            "Failed to select an annotation concept, error message: " + e
+            "Failed to select an annotation concept, error message: " + e,
           );
         }
       },
@@ -561,7 +561,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
         } catch (e) {
           console.log(
             "Failed to initialize tooltips in the annotation filter, error message: " +
-              e
+              e,
           );
         }
       },
@@ -591,7 +591,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
         } catch (e) {
           console.log(
             "Failed to re-render the annotation filter after jump to class, error message: " +
-              e
+              e,
           );
         }
       },
@@ -614,7 +614,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
           }
 
           var parentId = $(
-            "a[data-id='" + encodeURIComponent(startingRoot) + "'"
+            "a[data-id='" + encodeURIComponent(startingRoot) + "'",
           ).attr("data-subclassof");
 
           // Re-root
@@ -632,7 +632,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
         } catch (e) {
           console.log(
             "Failed to jump to parent concept in the annotation filter, error message: " +
-              e
+              e,
           );
         }
       },
@@ -667,10 +667,10 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
           return false;
         } catch (e) {
           console.log(
-            "Failed to reset the annotation filter tree, error message: " + e
+            "Failed to reset the annotation filter tree, error message: " + e,
           );
         }
       },
-    }
+    },
   );
 });

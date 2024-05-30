@@ -19,9 +19,10 @@ The [Citation View]({{site.url}}/docs/CitationView.html) is responsible for rend
 
 ## Links
 
-* [Planned Enhancements for Citations](https://github.com/NCEAS/metacatui/issues?q=is%3Aissue+is%3Aopen+label%3Acitations)
-* [Citation Model]({{site.url}}/docs/CitationModel.html)
-* [Citation View]({{site.url}}/docs/CitationView.html)
+- [Planned Enhancements for Citations](https://github.com/NCEAS/metacatui/issues?q=is%3Aissue+is%3Aopen+label%3Acitations)
+- [Citation Model]({{site.url}}/docs/CitationModel.html)
+- [Citation View]({{site.url}}/docs/CitationView.html)
+
 # Customization
 
 ## Extending the Citation Model
@@ -31,13 +32,17 @@ To extend the Citation Model without copying the entire Citation Model file into
 ```js
 // config.js
 MetacatUI.themeMap = {
-    '*': {
-        // ...
-        // The default Citation Model
-        'models/BaseCitationModel': MetacatUI.root + '/js/models/CitationModel.js',
-        // The Citation Model for your theme
-        'models/CitationModel': MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/models/CitationModel.js',
-    }
+  "*": {
+    // ...
+    // The default Citation Model
+    "models/BaseCitationModel": MetacatUI.root + "/js/models/CitationModel.js",
+    // The Citation Model for your theme
+    "models/CitationModel":
+      MetacatUI.root +
+      "/js/themes/" +
+      MetacatUI.theme +
+      "/models/CitationModel.js",
+  },
 };
 ```
 
@@ -45,13 +50,12 @@ Create your theme's extended Citation Model file in the following location: `src
 
 ```js
 // src/js/themes/{YOUR-THEME-NAME}/models/CitationModel.js
-define(["models/BaseCitationModel"], function(BaseCitationModel) {
+define(["models/BaseCitationModel"], function (BaseCitationModel) {
+  var CitationModel = BaseCitationModel.extend({
+    // Add your customizations here
+  });
 
-    var CitationModel = BaseCitationModel.extend({
-        // Add your customizations here
-    });
-
-    return CitationModel;
+  return CitationModel;
 });
 ```
 
@@ -62,7 +66,6 @@ populated from the source model, extend the `attrGetters` property.
 // src/js/themes/{YOUR-THEME-NAME}/models/CitationModel.js
 define(["models/BaseCitationModel"], function (BaseCitationModel) {
   var CitationModel = BaseCitationModel.extend({
-
     attrGetters: function () {
       return Object.assign(BaseCitationModel.prototype.attrGetters(), {
         // Add a new attribute to the Citation Model
@@ -72,7 +75,6 @@ define(["models/BaseCitationModel"], function (BaseCitationModel) {
         },
       });
     },
-
   });
 });
 ```
@@ -82,16 +84,15 @@ populated, you can override the method that the `attrGetters` property calls.
 
 ```js
 // src/js/themes/{YOUR-THEME-NAME}/models/CitationModel.js
-define(["models/BaseCitationModel"], function(BaseCitationModel) {
+define(["models/BaseCitationModel"], function (BaseCitationModel) {
+  var CitationModel = BaseCitationModel.extend({
+    getJournalFromSourceModel: function (sourceModel) {
+      // Given the input model (DataONE Object, EML, Solr model, etc), return
+      // the value for the "journal" attribute
+    },
+  });
 
-    var CitationModel = BaseCitationModel.extend({
-        getJournalFromSourceModel: function(sourceModel) {
-            // Given the input model (DataONE Object, EML, Solr model, etc), return
-            // the value for the "journal" attribute
-        }
-    });
-
-    return CitationModel;
+  return CitationModel;
 });
 ```
 
@@ -107,7 +108,7 @@ like you would any other template in your theme.
 'templates/citations/citationAPA.html': MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/citations/citationAPA.html',
 ```
 
-Options passed to the template include the Citation Model attributes as JSON, 
+Options passed to the template include the Citation Model attributes as JSON,
 plus a class for the title element and the citationsMetadata container element.
 In the case of the "apa" style, these options are further modified before being
 passed to the template by the `renderAPA` method. This methods handles formatting
@@ -120,25 +121,28 @@ Extend the Citation View in the same way as the Citation Model, above.
 ```js
 // config.js
 MetacatUI.themeMap = {
-    '*': {
-        // ...
-        // The default CitationView
-        'views/BaseCitationView': MetacatUI.root + '/js/views/CitationView.js',
-        // The CitationView for your theme
-        'views/CitationView': MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/views/CitationView.js',
-    }
+  "*": {
+    // ...
+    // The default CitationView
+    "views/BaseCitationView": MetacatUI.root + "/js/views/CitationView.js",
+    // The CitationView for your theme
+    "views/CitationView":
+      MetacatUI.root +
+      "/js/themes/" +
+      MetacatUI.theme +
+      "/views/CitationView.js",
+  },
 };
 ```
 
 ```js
 // src/js/themes/{YOUR-THEME-NAME}/views/CitationView.js
-define(["views/BaseCitationView"], function(BaseCitationView) {
+define(["views/BaseCitationView"], function (BaseCitationView) {
+  var CitationView = BaseCitationView.extend({
+    // Add your customizations here
+  });
 
-    var CitationView = BaseCitationView.extend({
-        // Add your customizations here
-    });
-
-    return CitationView;
+  return CitationView;
 });
 ```
 
@@ -151,29 +155,29 @@ and in-text form ("inText").
 ```js
 // src/js/themes/{YOUR-THEME-NAME}/views/CitationView.js
 define([
-    "views/BaseCitationView",
-    "text!templates/citations/myStyle.html",
-    "text!templates/citations/myStyleInText.html",
-], function(BaseCitationView, MyStyleTemplate, MyStyleInTextTemplate) {
-    "use strict";
+  "views/BaseCitationView",
+  "text!templates/citations/myStyle.html",
+  "text!templates/citations/myStyleInText.html",
+], function (BaseCitationView, MyStyleTemplate, MyStyleInTextTemplate) {
+  "use strict";
 
-    var CitationView = BaseCitationView.extend({
-        styles: Object.assign({}, BaseCitationView.prototype.styles, {
-            "my-style": {
-                full: {
-                    template: _.template(MyStyleTemplate),
-                },
-                inText: {
-                    template: _.template(MyStyleInTextTemplate),
-                },
-            },
-        }),
+  var CitationView = BaseCitationView.extend({
+    styles: Object.assign({}, BaseCitationView.prototype.styles, {
+      "my-style": {
+        full: {
+          template: _.template(MyStyleTemplate),
+        },
+        inText: {
+          template: _.template(MyStyleInTextTemplate),
+        },
+      },
+    }),
 
-        // Set the default citation style to "my-style"
-        style: "my-style",
-    });
+    // Set the default citation style to "my-style"
+    style: "my-style",
+  });
 
-    return CitationView;
+  return CitationView;
 });
 ```
 

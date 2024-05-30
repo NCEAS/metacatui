@@ -6,7 +6,6 @@ define([
   var expect = chai.expect;
 
   describe("EMLDistribution Test Suite", function () {
-
     describe("Initialization", function () {
       it("should create a EMLDistribution instance", function () {
         new EMLDistribution().should.be.instanceof(EMLDistribution);
@@ -21,14 +20,14 @@ define([
             "    <url>http://www.dataone.org</url>" +
             "  </online>" +
             "</distribution>",
-          "text/xml"
+          "text/xml",
         ).documentElement;
 
         var emlDistribution = new EMLDistribution(
           {
             objectDOM: objectDOM,
           },
-          { parse: true }
+          { parse: true },
         );
 
         emlDistribution.get("url").should.equal("http://www.dataone.org");
@@ -44,14 +43,14 @@ define([
             "    <mediumNote>Some notes</mediumNote>" +
             "  </offline>" +
             "</distribution>",
-          "text/xml"
+          "text/xml",
         ).documentElement;
 
         var emlDistribution = new EMLDistribution(
           {
             objectDOM: objectDOM,
           },
-          { parse: true }
+          { parse: true },
         );
 
         emlDistribution.get("mediumName").should.equal("CD-ROM");
@@ -67,14 +66,14 @@ define([
             "    <url function='information'>http://www.dataone.org</url>" +
             "  </online>" +
             "</distribution>",
-          "text/xml"
+          "text/xml",
         ).documentElement;
 
         var emlDistribution = new EMLDistribution(
           {
             objectDOM: objectDOM,
           },
-          { parse: true }
+          { parse: true },
         );
 
         emlDistribution.get("urlFunction").should.equal("information");
@@ -89,14 +88,14 @@ define([
             "    <url>http://www.dataone.org</url>" +
             "  </online>" +
             "</distribution>",
-          "text/xml"
+          "text/xml",
         ).documentElement;
 
         var emlDistribution = new EMLDistribution(
           {
             objectDOM: objectDOM,
           },
-          { parse: true }
+          { parse: true },
         );
 
         emlDistribution.set("url", "http://www.dataone.org/updated");
@@ -115,14 +114,14 @@ define([
             "    <mediumName>CD-ROM</mediumName>" +
             "  </offline>" +
             "</distribution>",
-          "text/xml"
+          "text/xml",
         ).documentElement;
 
         var emlDistribution = new EMLDistribution(
           {
             objectDOM: objectDOM,
           },
-          { parse: true }
+          { parse: true },
         );
 
         emlDistribution.set("mediumName", "CD-ROM");
@@ -155,14 +154,14 @@ define([
             "    <url>http://www.dataone.org</url>" +
             "  </online>" +
             "</distribution>",
-          "text/xml"
+          "text/xml",
         ).documentElement;
 
         var emlDistribution = new EMLDistribution(
           {
             objectDOM: objectDOM,
           },
-          { parse: true }
+          { parse: true },
         );
 
         emlDistribution.set("url", "");
@@ -178,14 +177,14 @@ define([
             "    <url>http://www.dataone.org</url>" +
             "  </online>" +
             "</distribution>",
-          "text/xml"
+          "text/xml",
         ).documentElement;
 
         var emlDistribution = new EMLDistribution(
           {
             objectDOM: objectDOM,
           },
-          { parse: true }
+          { parse: true },
         );
 
         emlDistribution.set("url", "");
@@ -203,20 +202,23 @@ define([
             "    <url>http://www.dataone.org</url>" +
             "  </online>" +
             "</distribution>",
-          "text/xml"
+          "text/xml",
         ).documentElement;
 
         var emlDistribution = new EMLDistribution(
           {
             objectDOM: objectDOM,
           },
-          { parse: true }
+          { parse: true },
         );
 
         emlDistribution.set("urlFunction", "information");
 
         var updatedDOM = emlDistribution.updateDOM();
-        updatedDOM.querySelector("url").getAttribute("function").should.equal("information");
+        updatedDOM
+          .querySelector("url")
+          .getAttribute("function")
+          .should.equal("information");
       });
 
       it("should remove the url function attribute if the value is empty", function () {
@@ -226,20 +228,22 @@ define([
             "    <url function='information'>http://www.dataone.org</url>" +
             "  </online>" +
             "</distribution>",
-          "text/xml"
+          "text/xml",
         ).documentElement;
 
         var emlDistribution = new EMLDistribution(
           {
             objectDOM: objectDOM,
           },
-          { parse: true }
+          { parse: true },
         );
 
         emlDistribution.set("urlFunction", "");
 
         var updatedDOM = emlDistribution.updateDOM();
-        expect(updatedDOM.querySelector("url").getAttribute("function")).to.equal(null);
+        expect(
+          updatedDOM.querySelector("url").getAttribute("function"),
+        ).to.equal(null);
       });
     });
   });

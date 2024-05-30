@@ -8,7 +8,15 @@ define([
   "models/maps/GeoPoint",
   "models/maps/GeoScale",
   "collections/maps/MapAssets",
-], function (Backbone, Features, Feature, GeoBoundingBox, GeoPoint, GeoScale, MapAssets) {
+], function (
+  Backbone,
+  Features,
+  Feature,
+  GeoBoundingBox,
+  GeoPoint,
+  GeoScale,
+  MapAssets,
+) {
   /**
    * @class MapInteraction
    * @classdesc The Map Interaction stores information about user interaction
@@ -39,7 +47,7 @@ define([
        * user last clicked.
        * @property {GeoScale} scale - The current scale of the map in
        * pixels:meters, i.e. The number of pixels on the screen that equal the
-       * number of meters on the map/globe. Updated by the map widget. 
+       * number of meters on the map/globe. Updated by the map widget.
        * @property {GeoBoundingBox} viewExtent - The extent of the currently
        * visible area in the map widget. Updated by the map widget.
        * @property {Features} hoveredFeatures - The feature that the mouse is
@@ -121,7 +129,7 @@ define([
               listener.stopListening();
               listener.destroy();
             }
-          }
+          },
         );
       },
 
@@ -146,11 +154,11 @@ define([
           listener.listenToOnce(model, "cameraChanged", function () {
             listener.stopListening(model, "moveEnd");
             model.trigger("moveStartAndChanged");
-          })
+          });
           listener.listenToOnce(model, "moveEnd", function () {
             listener.stopListening(model, "cameraChanged");
-          })
-        })
+          });
+        });
       },
 
       /**
@@ -201,12 +209,12 @@ define([
        * properties.
        * @returns {GeoPoint} The corresponding position as a GeoPoint model.
        */
-      setPosition: function(attributeName, position) {
+      setPosition: function (attributeName, position) {
         let point = this.get(attributeName);
         if (!point) {
           point = new GeoPoint();
           this.set(attributeName, point);
-        } 
+        }
         point.set(position);
         return point;
       },
@@ -217,17 +225,17 @@ define([
        * properties.
        * @returns {GeoPoint} The clicked position as a GeoPoint model.
        */
-      setClickedPosition: function(position) {
+      setClickedPosition: function (position) {
         return this.setPosition("clickedPosition", position);
       },
 
       /**
-      * Sets the position of the mouse on the map.
-      * @param {Object} position - An object with 'longitude' and 'latitude'
-      * properties.
-      * @returns {GeoPoint} The mouse position as a GeoPoint model.
-      */
-      setMousePosition: function(position) {
+       * Sets the position of the mouse on the map.
+       * @param {Object} position - An object with 'longitude' and 'latitude'
+       * properties.
+       * @returns {GeoPoint} The mouse position as a GeoPoint model.
+       */
+      setMousePosition: function (position) {
         return this.setPosition("mousePosition", position);
       },
 
@@ -337,10 +345,14 @@ define([
             return;
           }
 
-          const assets = _.reduce(this.get("mapModel")?.getLayerGroups(), (mapAssets, layers) => {
-            mapAssets.add(layers.models);
-            return mapAssets;
-          }, new MapAssets());
+          const assets = _.reduce(
+            this.get("mapModel")?.getLayerGroups(),
+            (mapAssets, layers) => {
+              mapAssets.add(layers.models);
+              return mapAssets;
+            },
+            new MapAssets(),
+          );
 
           const newAttrs = features.map((f) => ({ featureObject: f }));
 
@@ -351,7 +363,7 @@ define([
           console.log("Failed to select a Feature in a Map model.", e);
         }
       },
-    }
+    },
   );
 
   return MapInteraction;

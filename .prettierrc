@@ -1,7 +1,5 @@
 {
-  "plugins": [
-    "@shopify/prettier-plugin-liquid"
-  ],
+  "plugins": ["@shopify/prettier-plugin-liquid"],
   "overrides": [
     {
       "files": "docs/_includes/*.html",

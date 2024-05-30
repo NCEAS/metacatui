@@ -175,7 +175,7 @@ define(["backbone"], function (Backbone) {
           );
         }
       },
-    }
+    },
   );
 
   return GeoBoundingBox;

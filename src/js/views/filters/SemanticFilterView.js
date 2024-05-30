@@ -86,7 +86,7 @@ define([
           console.log(
             "There was an error rendering a SemanticFilterView." +
               " Error details: " +
-              error
+              error,
           );
         }
       },
@@ -140,7 +140,7 @@ define([
         newMappings[term] = label;
         this.model.set("valueLabels", newMappings);
       },
-    }
+    },
   );
 
   return SemanticFilterView;

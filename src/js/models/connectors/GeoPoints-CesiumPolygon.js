@@ -3,7 +3,7 @@
 /*global define */
 define(["cesium", "models/connectors/GeoPoints-Cesium"], function (
   Cesium,
-  GeoPointsCesiumConnector
+  GeoPointsCesiumConnector,
 ) {
   /**
    * @class GeoPointsCesiumPolygonConnector
@@ -70,6 +70,6 @@ define(["cesium", "models/connectors/GeoPoints-Cesium"], function (
         this.get("polygon") || this.addPolygon();
         this.get("layer").updateAppearance();
       },
-    }
+    },
   );
 });

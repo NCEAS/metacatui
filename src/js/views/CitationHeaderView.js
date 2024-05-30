@@ -203,13 +203,13 @@ define([
             els.grp2,
             els.last,
             els.btn,
-            els.ellipsis
+            els.ellipsis,
           );
           this.authorListIsOpen = true;
         } catch (error) {
           console.log(
             "Failed to expand an author list in the citation view.",
-            error
+            error,
           );
         }
       },
@@ -231,13 +231,13 @@ define([
             els.ellipsis,
             els.last,
             els.btn,
-            els.grp2
+            els.grp2,
           );
           this.authorListIsOpen = false;
         } catch (error) {
           console.log(
             "Failed to collapse an author list in the citation view.",
-            error
+            error,
           );
         }
       },
@@ -254,7 +254,7 @@ define([
           this.openList();
         }
       },
-    }
+    },
   );
 
   return CitationHeaderView;

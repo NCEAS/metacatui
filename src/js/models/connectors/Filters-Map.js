@@ -2,7 +2,7 @@
 define(["backbone", "collections/Filters", "models/maps/Map"], function (
   Backbone,
   Filters,
-  Map
+  Map,
 ) {
   "use strict";
 
@@ -69,7 +69,7 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
       initialize: function (attr, options) {
         try {
           if (!this.get("filters")) {
-            this.set("filters",  new Filters([], { catalogSearch: true }));
+            this.set("filters", new Filters([], { catalogSearch: true }));
           }
           if (!this.get("map")) {
             this.set("map", new Map());
@@ -118,7 +118,7 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
         this.listenToOnce(
           this.get("filters"),
           "add remove",
-          this.findAndSetSpatialFilters
+          this.findAndSetSpatialFilters,
         );
       },
 
@@ -149,7 +149,7 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
           this.stopListening(
             this.get("filters"),
             "add remove",
-            this.findAndSetSpatialFilters
+            this.findAndSetSpatialFilters,
           );
           spatialFilters.forEach((filter) => {
             filter.collection.remove(filter);
@@ -247,6 +247,6 @@ define(["backbone", "collections/Filters", "models/maps/Map"], function (
           console.log("Error updating spatial filters: ", e);
         }
       },
-    }
+    },
   );
 });

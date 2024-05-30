@@ -113,7 +113,7 @@ define(["models/analytics/Analytics"], function (Analytics) {
           page_title: title,
         });
       },
-    }
+    },
   );
 
   return GoogleAnalytics;

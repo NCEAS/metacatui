@@ -3,6 +3,7 @@ layout: default
 title: MetacatUI
 id: homepage
 ---
+
 <div class="notification" style="background-image:url({{ site.url }}/assets/images/celebration.webp); padding:20px; border-radius:15px; background-size:100%;">
     <h2>MetacatUI 3.0.0 is coming soon</h2>
     <p>
@@ -14,9 +15,10 @@ id: homepage
 {% include homepage.html %}
 
 ## About
-MetacatUI is a client-side web interface for Metacat science data repositories and other repository software that implement the DataONE REST API.  Currently, it is used as the basis for the [KNB Data Repository](http://knb.ecoinformatics.org), the [NSF Arctic Data Center](https://arcticdata.io/catalog/), the [DataONE federation](https://search.dataone.org), and other organizations.
 
-MetacatUI is an open source, community project.  We [welcome contributions](https://github.com/NCEAS/metacatui/blob/main/CONTRIBUTING.md) in many forms, including code, graphics, documentation, bug reports, testing, etc.  Use the [Github discussion list](https://github.com/NCEAS/metacatui/issues) to discuss these contributions with us.
+MetacatUI is a client-side web interface for Metacat science data repositories and other repository software that implement the DataONE REST API. Currently, it is used as the basis for the [KNB Data Repository](http://knb.ecoinformatics.org), the [NSF Arctic Data Center](https://arcticdata.io/catalog/), the [DataONE federation](https://search.dataone.org), and other organizations.
+
+MetacatUI is an open source, community project. We [welcome contributions](https://github.com/NCEAS/metacatui/blob/main/CONTRIBUTING.md) in many forms, including code, graphics, documentation, bug reports, testing, etc. Use the [Github discussion list](https://github.com/NCEAS/metacatui/issues) to discuss these contributions with us.
 
 ## Citation
 
