@@ -15,7 +15,7 @@ define([
   "views/portals/PortalMembersView",
   "views/portals/PortalLogosView",
   "views/portals/PortalVisualizationsView",
-], function (
+], (
   $,
   _,
   Backbone,
@@ -32,7 +32,7 @@ define([
   PortalMembersView,
   PortalLogosView,
   PortalVisualizationsView,
-) {
+) => {
   "use_strict";
 
   /**
@@ -43,7 +43,7 @@ define([
    * @extends Backbone.View
    * @constructor
    */
-  var PortalView = Backbone.View.extend(
+  const PortalView = Backbone.View.extend(
     /** @lends PortalView.prototype */ {
       /**
        * The Portal element
@@ -159,7 +159,7 @@ define([
       /**
        * Is executed when a new PortalView is created
        */
-      initialize: function (options) {
+      initialize(options) {
         // Set the current PortalView properties
         this.portalId = options.portalId ? options.portalId : undefined;
         this.model = options.model ? options.model : undefined;
@@ -178,10 +178,10 @@ define([
        *
        * @return {PortalView} Returns itself for easy function stacking in the app
        */
-      render: function () {
-        var view = this;
+      render() {
+        const view = this;
 
-        //Make sure the subviews array is reset
+        // Make sure the subviews array is reset
         this.subviews = new Array();
 
         // Add the overall class immediately so the navbar is styled correctly right away
@@ -193,9 +193,9 @@ define([
           }),
         );
 
-        //Perform specific label checks
+        // Perform specific label checks
         if (!MetacatUI.nodeModel.get("checked")) {
-          this.listenToOnce(MetacatUI.nodeModel, "change:checked", function () {
+          this.listenToOnce(MetacatUI.nodeModel, "change:checked", () => {
             // perform node checks
             if (view.isNode(view.label)) {
               view.nodeView = true;
@@ -206,7 +206,7 @@ define([
             }
           });
 
-          this.listenToOnce(MetacatUI.nodeModel, "error", function () {
+          this.listenToOnce(MetacatUI.nodeModel, "error", () => {
             this.showError(null, "Couldn't get the DataONE Node info document");
           });
         } else if (MetacatUI.nodeModel.get("error")) {
@@ -225,7 +225,7 @@ define([
       /**
        * Entry point for portal rendering
        */
-      renderAsPortal: function () {
+      renderAsPortal() {
         // At this point we know that the given label is not a
         // repository short identifier
 
@@ -255,8 +255,8 @@ define([
        * Entry point for a repository portal view
        * At this point we know for sure that a given label/username is a repository user
        */
-      renderAsNode: function () {
-        var view = this;
+      renderAsNode() {
+        const view = this;
 
         //Create a UserModel with the username given
         this.userModel = new User({
@@ -264,7 +264,7 @@ define([
         });
         this.userModel.saveAsNode();
         // get the node Info
-        var nodeInfo = _.find(
+        const nodeInfo = _.find(
           MetacatUI.nodeModel.get("members"),
           function (nodeModel) {
             return (
@@ -291,7 +291,7 @@ define([
         this.model.createNodeAttributes(this.nodeInfo);
 
         //Setting the repo specific statsModel
-        var statsSearchModel = this.userModel.get("searchModel").clone();
+        const statsSearchModel = this.userModel.get("searchModel").clone();
         statsSearchModel
           .set("exclude", [], { silent: true })
           .set("formatType", [], { silent: true });
@@ -314,7 +314,7 @@ define([
       /**
        * Render the Portal view
        */
-      renderPortal: function () {
+      renderPortal() {
         // Set the document title to the portal name
         MetacatUI.appModel.set("title", this.model.get("name"));
         MetacatUI.appModel.set("description", this.model.get("description"));
@@ -333,7 +333,7 @@ define([
           MetacatUI.appModel.get("dataonePlusPreviewMode") &&
           !this.nodeView
         ) {
-          var sourceMN = this.model.get("datasource");
+          const sourceMN = this.model.get("datasource");
 
           //Check if the portal source node is from the active alt repo OR is
           // configured as a Plus portal.
@@ -347,10 +347,10 @@ define([
               ))
           ) {
             //Get the name of the source member node
-            var sourceMNName = "original data repository",
+            const sourceMNName = "original data repository",
               mnURL = "";
             if (typeof sourceMN == "string") {
-              var sourceMNObject = MetacatUI.nodeModel.getMember(sourceMN);
+              const sourceMNObject = MetacatUI.nodeModel.getMember(sourceMN);
               if (sourceMNObject) {
                 sourceMNName = sourceMNObject.name;
 
@@ -374,7 +374,7 @@ define([
             }
 
             //Show a message that the portal can be found on the repository website.
-            var message = $(document.createElement("h3")).addClass(
+            const message = $(document.createElement("h3")).addClass(
               "center stripe",
             );
             message.text(
@@ -490,7 +490,7 @@ define([
         }
 
         // Render the logos at the bottom of the portal page
-        var ackLogos = this.model.get("acknowledgmentsLogos") || [];
+        const ackLogos = this.model.get("acknowledgmentsLogos") || [];
         if (ackLogos.length) {
           this.logosView = new PortalLogosView();
           this.logosView.logos = ackLogos;
@@ -502,19 +502,21 @@ define([
         // Re-order the section tabs according the the portal editor's preference,
         // if one has been set
         try {
-          var pageOrder = this.model.get("pageOrder");
+          const pageOrder = this.model.get("pageOrder");
           if (pageOrder && pageOrder.length) {
-            var linksContainer = this.el.querySelector("#portal-section-tabs"),
+            const linksContainer = this.el.querySelector(
+                "#portal-section-tabs",
+              ),
               sortableLinks = this.el.querySelectorAll(
                 "#portal-section-tabs .section-link-container",
               ),
               sortableLinksArray = Array.prototype.slice.call(sortableLinks, 0);
             // sort the links according the pageOrder
             sortableLinksArray.sort(function (a, b) {
-              var aName = $(a).text();
-              var bName = $(b).text();
-              var aIndex = pageOrder.indexOf(aName);
-              var bIndex = pageOrder.indexOf(bName);
+              const aName = $(a).text();
+              const bName = $(b).text();
+              const aIndex = pageOrder.indexOf(aName);
+              const bIndex = pageOrder.indexOf(bName);
               // If the label can't be found in the list of labels, place it at the end
               if (bIndex === -1) {
                 return +1;
@@ -546,7 +548,7 @@ define([
         }
 
         // Save reference to this view
-        var view = this;
+        const view = this;
 
         // On mobile, hide section tabs a moment after page loads so
         // users notice where they are
@@ -565,18 +567,18 @@ define([
        * Checks the portal model for theme or layout options. If there are any, and if
        * they are supported, then add the associated CSS.
        */
-      addTheming: function () {
+      addTheming() {
         try {
           // Check for theme and layout settings.
-          var theme = this.model.get("theme");
-          var layout = this.model.get("layout");
+          const theme = this.model.get("theme");
+          const layout = this.model.get("layout");
           // TODO: make supported themes an app model config option?
-          var supportedThemes = ["dark", "light"];
-          var supportedLayouts = ["panels"];
+          const supportedThemes = ["dark", "light"];
+          const supportedLayouts = ["panels"];
           // We must remove theme/layout CSS when the user navigates away from the
           // portal in onClose(). To do this, we need to keep track of which CSS is
           // added during this step.
-          var view = this;
+          const view = this;
           view.addedThemeCSS = [];
           // Layout should be added before theme for CSS rules to work together properly
           // when there is a theme + layout
@@ -588,7 +590,7 @@ define([
                 layout +
                 ".css",
             ], function (ThemeCss) {
-              var cssID = "portal-layout-" + layout;
+              const cssID = "portal-layout-" + layout;
               MetacatUI.appModel.addCSS(ThemeCss, cssID);
               view.addedThemeCSS.push(cssID);
             });
@@ -597,7 +599,7 @@ define([
             require([
               "text!" + MetacatUI.root + "/css/portal-themes/" + theme + ".css",
             ], function (ThemeCss) {
-              var cssID = "portal-theme-" + theme;
+              const cssID = "portal-theme-" + theme;
               MetacatUI.appModel.addCSS(ThemeCss, cssID);
               view.addedThemeCSS.push(cssID);
             });
@@ -615,7 +617,7 @@ define([
        * toggleSectionLinks - show or hide the section links nav. Used for
        * mobile/small screens only.
        */
-      toggleSectionLinks: function () {
+      toggleSectionLinks() {
         try {
           // Only toggle the section links on mobile. On mobile, the
           // ".show-sections-toggle" is visible.
@@ -632,11 +634,11 @@ define([
        * inserts control elements onto the page for the user to interact
        * with the portal. So far, this is just an 'edit portal' button.
        */
-      insertOwnerControls: function () {
+      insertOwnerControls() {
         // Insert the button into the navbar
-        var container = $(this.editButtonContainer);
+        const container = $(this.editButtonContainer);
 
-        var model = this.model;
+        const model = this.model;
 
         this.listenToOnce(this.model, "change:isAuthorized", function () {
           if (!model.get("isAuthorized")) {
@@ -664,8 +666,8 @@ define([
        * Update the window location path with the active section name
        * @param {boolean} [showSectionLabel] - If true, the section label will be added to the path
        */
-      updatePath: function (showSectionLabel) {
-        var label = this.model.get("label") || this.newPortalTempName,
+      updatePath(showSectionLabel) {
+        const label = this.model.get("label") || this.newPortalTempName,
           originalLabel =
             this.model.get("originalLabel") || this.newPortalTempName,
           pathName = decodeURIComponent(window.location.pathname)
@@ -675,7 +677,7 @@ define([
 
         // Add or replace the label and section part of the path with updated values.
         // pathRE matches "/label/section", where the "/section" part is optional
-        var pathRE = new RegExp(
+        const pathRE = new RegExp(
           "\\/(" + label + "|" + originalLabel + ")(\\/[^\\/]*)?$",
           "i",
         );
@@ -683,6 +685,11 @@ define([
 
         if (showSectionLabel && this.activeSection) {
           newPathName += "/" + this.activeSection.uniqueSectionLabel;
+        }
+
+        const queryString = new URL(window.location.href).search;
+        if (queryString) {
+          newPathName += queryString;
         }
 
         // Update the window location
@@ -693,9 +700,9 @@ define([
        * Gets a list of section names from tab elements and updates the
        * sectionNames attribute on this view.
        */
-      updateSectionNames: function () {
+      updateSectionNames() {
         // Get the section names from the tab elements
-        var sectionNames = [];
+        const sectionNames = [];
         this.$(this.sectionLinks).each(function (i, anchorEl) {
           sectionNames[i] = $(anchorEl).attr("href").substring(1);
         });
@@ -710,25 +717,25 @@ define([
        * library, but a manual switch may be necessary sometimes
        * @param {PortalSectionView} [sectionView] - The section view to switch to. If not given, defaults to the activeSection set on the view.
        */
-      switchSection: function (sectionView) {
+      switchSection(sectionView) {
         //Create a flag for whether the section label should be shown in the URL
-        var showSectionLabelInURL = true;
+        const showSectionLabelInURL = true;
 
         // If no section view is given, use the active section in the view.
         if (!sectionView) {
           //Use the sectionView set already
           if (this.activeSection) {
-            var sectionView = this.activeSection;
+            const sectionView = this.activeSection;
           }
           //Or find the section view by name, which may have been passed through the URL
           else if (this.activeSectionLabel) {
-            var sectionView = this.getSectionByLabel(this.activeSectionLabel);
+            const sectionView = this.getSectionByLabel(this.activeSectionLabel);
           }
         }
 
         //If no section view was indicated, just default to the first visible one
         if (!sectionView) {
-          var sectionView = this.$(this.sectionLinkContainer)
+          const sectionView = this.$(this.sectionLinkContainer)
             .first()
             .data("view");
 
@@ -802,10 +809,10 @@ define([
        * When a section link has been clicked, switch to that section
        * @param {Event} e - The click event on the section link
        */
-      handleSwitchSection: function (e) {
+      handleSwitchSection(e) {
         e.preventDefault();
 
-        var sectionView = $(e.target)
+        const sectionView = $(e.target)
           .parents(this.sectionLinkContainer)
           .first()
           .data("view");
@@ -828,7 +835,7 @@ define([
        * @param {string} label - The label for the section
        * @return {PortalSectionView|false} - Returns false if a matching section view isn't found
        */
-      getSectionByLabel: function (label) {
+      getSectionByLabel(label) {
         //If no label is given, exit
         if (!label) {
           return;
@@ -850,9 +857,9 @@ define([
        * @param {PortEditorSection} sectionModel - The section for which to create a unique label
        * @return {string} The unique label string
        */
-      getUniqueSectionLabel: function (sectionModel) {
+      getUniqueSectionLabel(sectionModel) {
         //Get the label for this section
-        var sectionLabel = sectionModel
+        const sectionLabel = sectionModel
             .get("label")
             .replace(/[^a-zA-Z0-9 ]/g, "")
             .replace(/ /g, "-"),
@@ -875,7 +882,7 @@ define([
        *
        * @param {PortalSectionModel} sectionModel - The section to render in this view
        */
-      addSection: function (sectionModel) {
+      addSection(sectionModel) {
         //If this is a visualization Section, render it differently with PortalVizSectionView
         if (sectionModel.get("sectionType") == "visualization") {
           this.addVizSection(sectionModel);
@@ -884,7 +891,7 @@ define([
         //All other portal section types are rendered with the basic PortalSectionView
         else {
           //Create a new PortalSectionView
-          var sectionView = new PortalSectionView({
+          const sectionView = new PortalSectionView({
             model: sectionModel,
           });
 
@@ -897,7 +904,7 @@ define([
           this.addSectionLink(sectionView);
 
           //Create a unique label for this section and save it
-          var uniqueLabel = this.getUniqueSectionLabel(sectionModel);
+          const uniqueLabel = this.getUniqueSectionLabel(sectionModel);
           //Set the unique section label for this view
           sectionView.uniqueSectionLabel = uniqueLabel;
 
@@ -911,9 +918,9 @@ define([
        * @param {PortalVizSectionModel} sectionModel - The visualization section to render in this view
        *
        */
-      addVizSection: function (sectionModel) {
+      addVizSection(sectionModel) {
         //Create a new PortalSectionView
-        var sectionView = new PortalVisualizationsView({
+        const sectionView = new PortalVisualizationsView({
           model: sectionModel,
         });
 
@@ -926,7 +933,7 @@ define([
         this.addSectionLink(sectionView);
 
         //Create a unique label for this section and save it
-        var uniqueLabel = this.getUniqueSectionLabel(sectionModel);
+        const uniqueLabel = this.getUniqueSectionLabel(sectionModel);
 
         //Set the unique section label for this view
         sectionView.uniqueSectionLabel = uniqueLabel;
@@ -938,9 +945,9 @@ define([
        * Add a link to a section of this portal page
        * @param {PortalSectionView} sectionView - The view to add a link to
        */
-      addSectionLink: function (sectionView) {
-        var label = sectionView.getName();
-        var hrefLabel = sectionView.getName({ linkFriendly: true });
+      addSectionLink(sectionView) {
+        const label = sectionView.getName();
+        const hrefLabel = sectionView.getName({ linkFriendly: true });
 
         //Create a navigation link
         this.$("#portal-section-tabs").append(
@@ -961,8 +968,8 @@ define([
       /**
        * Handles the case where the PortalModel is fetched and nothing is found.
        */
-      handleNotFound: function () {
-        var view = this;
+      handleNotFound() {
+        const view = this;
 
         //If the user is NOT logged in OR
         // if the user is logged in, and the last fetch was done with user credentials, then this Portal is either not accessible or non-existent
@@ -974,7 +981,7 @@ define([
             this.model.get("fetchedWithAuth"))
         ) {
           //Check if there is an indexing queue, because this model may still be indexing
-          var onError = function () {
+          const onError = function () {
               //If the request to the monitor/status API fails, then show the not-found message
               view.showNotFound.call(view);
             },
@@ -1025,8 +1032,8 @@ define([
       /**
        * If the given portal doesn't exist, display a Not Found message.
        */
-      showNotFound: function () {
-        var notFoundMessage =
+      showNotFound() {
+        const notFoundMessage =
             "The data portal \"<span id='portal-view-not-found-name'></span>" +
             "\" doesn't exist.",
           notification = this.alertTemplate({
@@ -1045,9 +1052,9 @@ define([
        * @param {SolrResult} model
        * @param {XMLHttpRequest.response|string} reponse
        */
-      showError: function (model, response) {
+      showError(model, response) {
         try {
-          var errorMsg = "",
+          const errorMsg = "",
             errorClass = "alert-error",
             icon = "frown",
             portalTerm =
@@ -1119,11 +1126,11 @@ define([
       /**
        * This function is called whenever the window is scrolled.
        */
-      handleScroll: function () {
-        var menu = $(".section-links-container")[0],
+      handleScroll() {
+        const menu = $(".section-links-container")[0],
           menuHeight = $(menu).height(),
           hiddenHeight = menuHeight * -1;
-        var currentScrollPos = window.pageYOffset;
+        const currentScrollPos = window.pageYOffset;
         if (MetacatUI.appView.prevScrollpos > currentScrollPos) {
           //Get the height of any menu that may be displayed at the bottom of the page, too
 
@@ -1138,7 +1145,7 @@ define([
        * This function is called when the app navigates away from this view.
        * Any clean-up or housekeeping happens at this time.
        */
-      onClose: function () {
+      onClose() {
         MetacatUI.appModel.resetTitle();
         MetacatUI.appModel.resetDescription();
 
@@ -1191,13 +1198,13 @@ define([
        *
        * @param {string} username - The portal label or the member node repository identifier
        */
-      isNode: function (username) {
+      isNode(username) {
         if (username === undefined) {
           this.showNotFound();
           return;
         }
-        var model = this;
-        var node = _.find(
+        const model = this;
+        const node = _.find(
           MetacatUI.nodeModel.get("members"),
           function (nodeModel) {
             return (

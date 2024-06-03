@@ -6,15 +6,17 @@ define([
   "models/portals/PortalImage",
   "models/maps/AssetColorPalette",
   "common/IconUtilities",
+  "common/SearchParams",
   MetacatUI.root + "/components/dayjs.min.js",
-], function (
+], (
   _,
   Backbone,
   PortalImage,
   AssetColorPalette,
   IconUtilities,
+  SearchParams,
   dayjs,
-) {
+) => {
   /**
    * @classdesc A MapAsset Model comprises information required to fetch source data for
    * some asset or resource that is displayed in a map, such as imagery (raster) tiles,
@@ -29,7 +31,7 @@ define([
    * @since 2.18.0
    * @constructor
    */
-  var MapAsset = Backbone.Model.extend(
+  const MapAsset = Backbone.Model.extend(
     /** @lends MapAsset.prototype */ {
       /**
        * The name of this type of model
@@ -61,7 +63,7 @@ define([
        * go to download the source data.
        * @property {string} [id = ''] If this asset's data is archived in a DataONE
        * repository, the ID of the data package.
-       * @property {Boolean} [selected = false] Set to true when this asset has been
+       * @property {boolean} [selected = false] Set to true when this asset has been
        * selected by the user in the layer list.
        * @property {Number} [opacity = 1] A number between 0 and 1 indicating the
        * opacity of the layer on the map, with 0 representing fully transparent and 1
@@ -70,9 +72,13 @@ define([
        * @property {Number} [saturation = 1] A number that indicates the saturation of
        * the layer on the map. Less than 1.0 reduces the saturation while greater than
        * 1.0 increases it. This applies to raster (imagery) only.
-       * @property {Boolean} [visible = true] Set to true if the layer is visible on the
+       * @property {boolean} [visible = true] Set to true if the layer is visible on the
        * map, false if it is hidden. This applies to raster (imagery) and vector assets,
        * not to terrain assets.
+       * @property {boolean} [configuredVisibility = true] Tracks the original
+       * visibility value according to the portal configuration and ignoring any
+       * search query parameters in the URL which can affect the layer's initial
+       * visibility.
        * @property {AssetColorPalette} [colorPalette] The color or colors mapped to
        * attributes of this asset. This applies to raster/imagery and vector assets. For
        * imagery, the colorPalette will be used to create a legend. For vector assets
@@ -95,10 +101,10 @@ define([
        * the asset is not supported, or there was a problem requesting the resource.
        * @property {string} [statusDetails = null] Any further details about the status,
        * especially when there was an error.
-       * @property {Boolean} [hideInLayerList = false] Set to true to hide this asset
+       * @property {boolean} [hideInLayerList = false] Set to true to hide this asset
        * from the layer list.
        */
-      defaults: function () {
+      defaults() {
         return {
           type: "",
           label: "",
@@ -111,6 +117,7 @@ define([
           opacity: 1,
           saturation: 1,
           visible: true,
+          configuredVisibility: true,
           colorPalette: null,
           customProperties: {},
           featureTemplate: {},
@@ -156,7 +163,7 @@ define([
        * @property {Number} [saturation=1] - A number that indicates the saturation of
        * the layer on the map. Less than 1.0 reduces the saturation while greater than
        * 1.0 increases it. This applies to raster (imagery) only.
-       * @property {Boolean} [visible=true] - Set to true if the layer is visible on the
+       * @property {boolean} [visible=true] - Set to true if the layer is visible on the
        * map, false if it is hidden. This applies to raster (imagery) and vector assets,
        * not to terrain assets.
        * @property {string} [description] - A brief description about the asset, e.g.
@@ -318,7 +325,7 @@ define([
        * @param {MapConfig#MapAssetConfig} [assetConfig] The initial values of the
        * attributes, which will be set on the model.
        */
-      initialize: function (assetConfig) {
+      initialize(assetConfig) {
         try {
           const model = this;
 
@@ -359,7 +366,17 @@ define([
             }
           }
 
-          this.set("originalVisibility", this.get("visible"));
+          this.on("change:visible", ({ changed: { visible } }) => {
+            const layerId = this.get("layerId");
+            if (!(this.get("mapModel")?.get("showShareUrl") && layerId)) return;
+
+            if (visible) {
+              SearchParams.addEnabledLayer(layerId);
+            } else {
+              SearchParams.removeEnabledLayer(layerId);
+            }
+          });
+
           this.setListeners();
         } catch (e) {
           console.log("Error initializing a MapAsset model", e);
@@ -372,7 +389,7 @@ define([
        * attribute or or string with details about the error.
        * @since 2.27.0
        */
-      setError: function (error) {
+      setError(error) {
         // See https://cesium.com/learn/cesiumjs/ref-doc/RequestErrorEvent.html
         let details = error;
         // Write a helpful error message
@@ -392,7 +409,7 @@ define([
        * Set a ready status for this asset.
        * @since 2.27.0
        */
-      setReady: function () {
+      setReady() {
         this.set("status", "ready");
         this.set("statusDetails", null);
       },
@@ -401,7 +418,7 @@ define([
        * When the asset can't be loaded, hide it from the map and show an error.
        * @since 2.27.0
        */
-      handleError: function () {
+      handleError() {
         this.set("visible", false);
         this.stopListening(this, "change:visible");
       },
@@ -410,14 +427,14 @@ define([
        * Set all of the listeners for this model
        * @since 2.27.0
        */
-      setListeners: function () {
+      setListeners() {
         try {
           const status = this.get("status");
           if (status === "error") {
             this.handleError();
             return;
           } else {
-            const vis = this.get("originalVisibility");
+            const vis = this.get("visible");
             if (typeof vis === "boolean") {
               this.set("visible", vis);
             }
@@ -444,7 +461,7 @@ define([
        * selected or deselected in the map widget.
        * @since 2.27.0
        */
-      listenToSelectedFeatures: function () {
+      listenToSelectedFeatures() {
         if (typeof this.updateAppearance !== "function") {
           return;
         }
@@ -498,7 +515,7 @@ define([
        * are no cesiumOptions.
        * @since 2.26.0
        */
-      getCesiumOptions: function () {
+      getCesiumOptions() {
         const cesiumOptions = this.get("cesiumOptions");
         if (!cesiumOptions) {
           return null;
@@ -515,7 +532,7 @@ define([
        * @returns {boolean} Returns true if the given feature is part of the
        * selectedFeatures collection in this asset
        */
-      featureIsSelected: function (feature) {
+      featureIsSelected(feature) {
         const map = this.get("mapModel");
         if (!map) {
           return false;
@@ -539,7 +556,7 @@ define([
        * type set on the asset model, false otherwise.
        * @since 2.25.0
        */
-      usesFeatureType: function (feature) {
+      usesFeatureType(feature) {
         const ft = this.get("featureType");
         if (!feature || !ft) return false;
         if ((!feature) instanceof ft) return false;
@@ -556,7 +573,7 @@ define([
        * selectedFeatures collection in this asset
        * @since 2.25.0
        */
-      containsFeature: function (feature) {
+      containsFeature(feature) {
         if (!this.usesFeatureType(feature)) return false;
         if (!this.getCesiumModelFromFeature) return false;
         const cesiumModel = this.getCesiumModelFromFeature(feature);
@@ -574,7 +591,7 @@ define([
        * and label properties. Returns null if the feature is not the correct type
        * for this asset model.
        */
-      getFeatureAttributes: function (feature) {
+      getFeatureAttributes(feature) {
         if (!this.usesFeatureType(feature)) return null;
         if (!this.getCesiumModelFromFeature) return null;
         return {
@@ -594,7 +611,7 @@ define([
        * properties of a feature from this asset.
        * @returns {Object} The properties object with any custom properties added.
        */
-      addCustomProperties: function (properties) {
+      addCustomProperties(properties) {
         try {
           const model = this;
           const customProperties = model.get("customProperties");
@@ -647,7 +664,7 @@ define([
        * @returns {string} The value for the new date property, formatted as defined by
        * config, for the given feature
        */
-      formatDateProperty: function (config, properties) {
+      formatDateProperty(config, properties) {
         try {
           if (!properties) {
             properties = {};
@@ -684,7 +701,7 @@ define([
        * a Feature
        * @returns {string} The new string for the given Feature property
        */
-      formatStringProperty: function (config, properties) {
+      formatStringProperty(config, properties) {
         try {
           if (!properties) {
             properties = {};
@@ -744,7 +761,7 @@ define([
        * string. Also sets the 'iconStatus' attribute to 'success'.
        * @param {string} icon An SVG string to use for the MapAsset icon
        */
-      updateIcon: function (icon) {
+      updateIcon(icon) {
         if (!icon) return;
 
         this.set("icon", IconUtilities.sanitizeIcon(icon));
@@ -756,7 +773,7 @@ define([
        * values.
        * @since 2.21.0
        */
-      resetStatus: function () {
+      resetStatus() {
         const defaults = this.defaults();
         this.set("status", defaults.status);
         this.set("statusDetails", defaults.statusDetails);
@@ -766,7 +783,7 @@ define([
        * Checks if the asset information has been fetched and is ready to use.
        * @returns {Promise} Returns a promise that resolves to this model when ready.
        */
-      whenReady: function () {
+      whenReady() {
         const model = this;
         return new Promise(function (resolve, reject) {
           if (model.get("status") === "ready") {
@@ -792,7 +809,7 @@ define([
        * @returns {AssetColor#Color} The color associated with the given set of
        * properties.
        */
-      getColor: function (properties) {
+      getColor(properties) {
         try {
           const model = this;
           const colorPalette = model.get("colorPalette");
@@ -814,7 +831,7 @@ define([
        * there are no filters set for this MapAsset. Returns false if the feature fails
        * any of the filters.
        */
-      featureIsVisible: function (properties) {
+      featureIsVisible(properties) {
         const model = this;
         const filters = model.get("filters");
         if (filters && filters.length) {
@@ -830,7 +847,7 @@ define([
        * @param {Feature} feature The feature to navigate to.
        * @since 2.27.0
        */
-      zoomTo: function (target) {
+      zoomTo(target) {
         this.get("mapModel")?.zoomTo(target);
       },
 
@@ -839,7 +856,7 @@ define([
        * is greater than zero. If both conditions are met, returns true.
        * @returns {boolean} Returns true if the MapAsset has opacity > 0 and is visible.
        */
-      isVisible: function () {
+      isVisible() {
         if (this.get("temporarilyHidden") === true) return false;
         return this.get("visible") && this.get("opacity") > 0;
       },
@@ -848,7 +865,7 @@ define([
        * Make sure the layer is visible. Sets visibility to true if false, and sets
        * opacity to 0.5 if it's less than 0.05.
        */
-      show: function () {
+      show() {
         // If the opacity is very low, set it to 50%
         if (this.get("opacity") < 0.05) {
           this.set("opacity", 0.5);

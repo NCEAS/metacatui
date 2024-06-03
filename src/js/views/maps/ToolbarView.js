@@ -9,10 +9,10 @@ define([
   "common/IconUtilities",
   // Sub-views - TODO: import these as needed
   "views/maps/LayersPanelView",
-  "views/maps/DrawToolView",
   "views/maps/HelpPanelView",
   "views/maps/viewfinder/ViewfinderView",
-], function (
+  "views/maps/ShareUrlView",
+], (
   $,
   _,
   Backbone,
@@ -21,10 +21,10 @@ define([
   IconUtilities,
   // Sub-views
   LayersPanelView,
-  DrawTool,
   HelpPanel,
   ViewfinderView,
-) {
+  ShareUrlView,
+) => {
   /**
    * @class ToolbarView
    * @classdesc The map toolbar view is a side bar that contains information about a map,
@@ -36,7 +36,7 @@ define([
    * @since 2.18.0
    * @constructs
    */
-  var ToolbarView = Backbone.View.extend(
+  const ToolbarView = Backbone.View.extend(
     /** @lends ToolbarView.prototype */ {
       /**
        * The type of View this is
@@ -92,10 +92,12 @@ define([
         linksContainer: "toolbar__links",
         link: "toolbar__link",
         linkTitle: "toolbar__link-title",
+        linkTitleHidden: "toolbar__link-title--hidden",
         linkIcon: "toolbar__link-icon",
         linkActive: "toolbar__link--active",
         content: "toolbar__content",
         contentActive: "toolbar__content--active",
+        shareUrlView: "toolbar__share-url",
       },
 
       /**
@@ -169,7 +171,7 @@ define([
         {
           label: "Reset",
           icon: "rotate-left",
-          action: function (view, model) {
+          action(view, model) {
             model.flyHome();
             model.resetLayerVisibility();
           },
@@ -197,6 +199,29 @@ define([
             return model.get("showNavHelp") || model.get("showFeedback");
           },
         },
+        {
+          label: "Share",
+          icon: "link",
+          action(view) {
+            if (view.$el.find(`.${view.classes.shareUrlView}`).length) return;
+
+            const title = this.linkEl.querySelector(
+              `.${view.classes.linkTitle}`,
+            );
+            const shareUrlView = new ShareUrlView({
+              top: this.linkEl.offsetTop,
+              left: this.linkEl.offsetLeft,
+              linkTitle: title,
+              linkTitleHiddenClassName: view.classes.linkTitleHidden,
+            });
+            shareUrlView.render();
+            title.classList.add(view.classes.linkTitleHidden);
+            view.$el.append(shareUrlView.el);
+          },
+          isVisible(model) {
+            return model.get("showShareUrl");
+          },
+        },
       ],
 
       /**
@@ -210,7 +235,7 @@ define([
        * Executed when a new ToolbarView is created
        * @param {Object} [options] - A literal object with options to pass to the view
        */
-      initialize: function (options) {
+      initialize(options) {
         try {
           // Get all the options and apply them to this view
           if (typeof options == "object") {
@@ -241,7 +266,7 @@ define([
        * Renders this view
        * @return {ToolbarView} Returns the rendered view element
        */
-      render: function () {
+      render() {
         try {
           // Save a reference to this view
           var view = this;
@@ -340,7 +365,7 @@ define([
        * clicked section content.
        * @param {SectionElement} sectionEl
        */
-      handleLinkClick: function (sectionEl) {
+      handleLinkClick(sectionEl) {
         try {
           var toolbarOpen = this.isOpen;
           var sectionActive = sectionEl.isActive;
@@ -372,7 +397,7 @@ define([
        * Section Option are used to create the link content
        * @returns {HTMLElement} Returns the link element
        */
-      renderSectionLink: function (sectionOption) {
+      renderSectionLink(sectionOption) {
         try {
           // Create a container, label
           const link = document.createElement("div");
@@ -405,7 +430,7 @@ define([
        * @returns {HTMLElement} Returns either an <i> element with a Font Awesome icon,
        * or and SVG with a custom icon
        */
-      createIcon: function (iconString) {
+      createIcon(iconString) {
         try {
           // The icon element we will create and return. By default, return an empty span
           // element.
@@ -452,7 +477,7 @@ define([
        * @returns {SectionContentReturnType} The content container with the
        * rendered view, and the Backbone.View itself.
        */
-      renderSectionContent: function (sectionOption) {
+      renderSectionContent(sectionOption) {
         try {
           const view = this;
           // Create the container for the toolbar section content
@@ -489,7 +514,7 @@ define([
       /**
        * Opens the toolbar and displays the content of the active toolbar section
        */
-      open: function () {
+      open() {
         try {
           this.isOpen = true;
           this.el.classList.add(this.classes.open);
@@ -505,7 +530,7 @@ define([
       /**
        * Closes the toolbar. Also inactivates all sections.
        */
-      close: function () {
+      close() {
         try {
           this.isOpen = false;
           this.el.classList.remove(this.classes.open);
@@ -524,7 +549,7 @@ define([
        * Display the content of a given section
        * @param {SectionElement} sectionEl The section to activate
        */
-      activateSection: function (sectionEl) {
+      activateSection(sectionEl) {
         if (!sectionEl) return;
         try {
           if (sectionEl.action && typeof sectionEl.action === "function") {
@@ -553,7 +578,7 @@ define([
        * Hide the content of a section
        * @param {SectionElement} sectionEl The section to inactivate
        */
-      inactivateSection: function (sectionEl) {
+      inactivateSection(sectionEl) {
         try {
           sectionEl.isActive = false;
           if (sectionEl.contentEl) {
@@ -572,10 +597,10 @@ define([
       /**
        * Hide all of the sections in a toolbar view
        */
-      inactivateAllSections: function () {
+      inactivateAllSections() {
         try {
-          var view = this;
-          this.sectionElements.forEach(function (sectionEl) {
+          const view = this;
+          this.sectionElements.forEach((sectionEl) => {
             view.inactivateSection(sectionEl);
           });
         } catch (error) {
