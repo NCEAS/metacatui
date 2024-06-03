@@ -35,8 +35,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/DataONE
                 (this.model.get("type") == "DataPackage"))) {
                 hrefLink = this.model.getPackageURL();
             }
-            if (this.model instanceof PackageModel && 
-                this.nested &&
+            if (this.model instanceof PackageModel &&
                 ((this.model.get("formatType") == "RESOURCE") || 
                 (this.model.get("type") == "DataPackage") ||
                 (this.model.get("type") == "Package"))) {

@@ -968,7 +968,7 @@ define(['jquery',
 
           // Add Package Download
           // create an instance of DownloadButtonView to handle package downloads
-          this.downloadButtonView = new DownloadButtonView({id: packageModel.get("id"), model: packageModel, view: "actionsView"});
+          this.downloadButtonView = new DownloadButtonView({ model: packageModel, view: "actionsView"});
 
           // render
           this.downloadButtonView.render();
