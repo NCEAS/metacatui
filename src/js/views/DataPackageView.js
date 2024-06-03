@@ -443,7 +443,7 @@ define([
                         packageUrl = MetacatUI.appModel.get("packageServiceUrl") + encodeURIComponent(view.dataPackage.id);
 
                     var disablePackageDownloads = this.disablePackageDownloads;
-                    tableRow = this.dataPackageHeaderTemplate({id:view.dataPackage.id, title: title, titleTooltip: titleTooltip, downloadUrl: packageUrl, disablePackageDownloads: disablePackageDownloads});
+                    tableRow = this.dataPackageHeaderTemplate({id:view.dataPackage.id, title: title, titleTooltip: titleTooltip, downloadUrl: packageUrl, disablePackageDownloads: disablePackageDownloads, disablePackageUrl: true});
 
                     this.$el.append(tableRow);
 
@@ -890,12 +890,20 @@ define([
                 let titleTooltip = title;
                 title = (title.length > 150) ? title.slice(0, 75) + "..." + title.slice(title.length - 75, title.length) : title;
 
+
+                /**
+                * The View URL for this nested package.
+                *
+                * @type {string}
+                */
+               let nestedPackageUrl = MetacatUI.root + "/view/" + dataPackage.id;
+
                 /**
                 * The HTML content for the data package header.
                 *
                 * @type {string}
                 */
-                tableRow = this.dataPackageHeaderTemplate({ id: dataPackage.id, title: title, titleTooltip: titleTooltip, disablePackageDownloads: false });
+                tableRow = this.dataPackageHeaderTemplate({ id: dataPackage.id, title: title, titleTooltip: titleTooltip, disablePackageDownloads: false, disablePackageUrl: false, packageUrl: nestedPackageUrl });
                 this.$el.append(tableRow);
 
                 // Create an instance of DownloadButtonView to handle package downloads
