@@ -30,6 +30,19 @@ spec:
       serviceAccountName: {{ include "metacatui.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.git.enabled }}
+      initContainers:
+        - name: git-clone
+          image: alpine/git
+          command:
+            - sh
+            - -c
+            - >
+              git clone -b {{ .Values.git.revision }} --depth 1 {{ .Values.git.repoUrl }} /metacatui
+          volumeMounts:
+            - name: {{ .Release.Name }}-mcui-static-files
+              mountPath: /metacatui
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -40,24 +53,43 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          {{- with .Values.livenessProbe }}
           livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-          {{- with .Values.volumeMounts }}
-          volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- with .Values.volumes }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- if .Values.appConfig.enabled }}
+            - name: {{ .Release.Name }}-mcui-config-vol
+              mountPath: /usr/share/nginx/html/config/config.js
+              subPath: config.js
+            {{- end }}
+            - name: {{ .Release.Name }}-mcui-static-files
+              mountPath: "/usr/share/nginx/html"
+              subPath: "src"
+          {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
       volumes:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- if .Values.appConfig.enabled }}
+        - name: {{ .Release.Name }}-mcui-config-vol
+          configMap:
+            name: {{ .Release.Name }}-metacatui-configjs
+            defaultMode: 0644
+        {{- end }}
+        {{- if .Values.git.enabled }}
+        - name: {{ .Release.Name }}-mcui-static-files
+          emptyDir: {}
+        {{- else }}
+        {{- with .Values.volumes }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

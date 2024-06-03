@@ -4,6 +4,65 @@
 
 replicaCount: 1
 
+## appConfig contains the MetacatUI.AppConfig settings that can be overridden. Uses a configMap to
+## define MetacatUI.AppConfig, replacing the version of config/config.js found on the mounted drive.
+## Note that changes to the configMap will not be read unless the pod is restarted, and changes to
+## these values will not be reflected in the configMap unless you do a 'helm upgrade'.
+##
+appConfig:
+  ## appConfig.enabled Use a configMap to define MetacatUI.AppConfig, replacing the on-disk version
+  ## Typical use is "false" for development purposes, and "true" for more-permanent deployments
+  ##
+  enabled: true
+
+  ## appConfig.root (required) The url root to be appended after the appConfig.baseUrl, below
+  ##
+  root: "/"
+
+  ## appConfig.theme (required) Corresponds to the name of one of the directories in src/js/themes/
+  ##
+  theme: "default"
+
+  ## appConfig.baseUrl (required) the base url (typically defined by the ingress)
+  ##
+  baseUrl: "http://localhost:8080/"
+
+  ## Optional configuration -- leave commented to use metacatui default values
+  ##
+#  d1CNBaseUrl: "https://cn-sandbox.test.dataone.org/cn"
+#  mapKey: "your-map-key-here"
+#  mdqBaseUrl: "https://localhost:8080:30443/quality"
+#  dataoneSearchUrl: "https://search-stage.test.dataone.org"
+#  portalLimit: 100
+#  googleAnalyticsKey: "your-google-analytics-key-here"
+#  bioportalAPIKey: "your-bio-portal-api-key-here"
+#  cesiumToken: "your-cesium-token-here"
+
+
+git:
+  ## git.enabled set 'true' to create an initContainer and do a git checkout of the metacatui files
+  ## NOTE: If you set git.enabled: 'false', then you will need to provide values for 'volumes'
+  ## that
+  enabled: true
+
+  ## git.repoUrl the https url of the repo to be cloned
+  repoUrl: "https://github.com/NCEAS/metacatui.git"
+
+  ## git.revision can be any string that makes sense after the command `git checkout`... - for
+  ## example:
+  ##     git checkout tags/2.29.0    =>     revision: "tags/2.29.0"
+  ##     git checkout develop        =>     revision: "develop"
+  ##
+  revision: "main"
+
+## volumes Uncomment and provide values if you want to use a pre-configured PVC instead of doing a
+## git checkout
+#volumes:
+#  ## volumes.name substitute your own release name, but do NOT change the '-mcui-static-files' part
+#  - name: <Your-Release-Name>-mcui-static-files
+#    persistentVolumeClaim:
+#      claimName: <Your-Pre-Configured-pvc>
+
 image:
   repository: nginx
   pullPolicy: IfNotPresent
@@ -13,6 +72,15 @@ image:
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
+
+#livenessProbe:
+#  httpGet:
+#    path: /
+#    port: http
+#readinessProbe:
+#  httpGet:
+#    path: /
+#    port: http
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -84,18 +152,6 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
-
-# Additional volumes on the output Deployment definition.
-volumes:
-  - name: metacatui-pvc
-    persistentVolumeClaim:
-      claimName: metacatui-pvc
-
-# Additional volumeMounts on the output Deployment definition.
-volumeMounts:
-  - name: metacatui-pvc
-    mountPath: "/usr/share/nginx/html"
-    readOnly: true
 
 nodeSelector: {}
 
