@@ -890,16 +890,12 @@ define([
                 let titleTooltip = title;
                 title = (title.length > 150) ? title.slice(0, 75) + "..." + title.slice(title.length - 75, title.length) : title;
 
-                // Set the package URL
-                if (MetacatUI.appModel.get("packageServiceUrl"))
-                    packageUrl = MetacatUI.appModel.get("packageServiceUrl") + encodeURIComponent(dataPackage.id);
-
                 /**
                 * The HTML content for the data package header.
                 *
                 * @type {string}
                 */
-                tableRow = this.dataPackageHeaderTemplate({ id: dataPackage.id, title: title, titleTooltip: titleTooltip, disablePackageDownloads: false, downloadUrl: packageUrl });
+                tableRow = this.dataPackageHeaderTemplate({ id: dataPackage.id, title: title, titleTooltip: titleTooltip, disablePackageDownloads: false });
                 this.$el.append(tableRow);
 
                 // Create an instance of DownloadButtonView to handle package downloads
@@ -909,7 +905,7 @@ define([
                 this.downloadButtonView.render();
 
                 // Add the downloadButtonView el to the span
-                this.$el.find('.downloadAction').html(this.downloadButtonView.el);
+                this.$el.find('.downloadAction[data-id="' + dataPackage.id + '"]').html(this.downloadButtonView.el);
 
                 // Filter out the packages from the member list
                 members = _.filter(members, function(m) { return (m.type != "Package") });
