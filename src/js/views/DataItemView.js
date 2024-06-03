@@ -539,21 +539,6 @@ define([
                     }
 
                     //Download button
-                    attributes.downloadUrl = undefined;
-                    if (this.model.get("dataUrl") !== undefined || 
-                        this.model.get("url") !== undefined     || 
-                        this.model.url() !== undefined) {
-                      if (this.model.get("dataUrl") !== undefined) {
-                        attributes.downloadUrl = this.model.get("dataUrl");
-                      }
-                      else if (this.model.get("url") !== undefined) {
-                        attributes.downloadUrl = this.model.get("url");
-                      }
-                      else if (this.model.url() !== undefined) {
-                        var downloadUrl = this.model.url();
-                        attributes.downloadUrl = downloadUrl.replace("/meta/", "/object/");
-                      }
-                    }
                     this.downloadButtonView = new DownloadButtonView({ model: this.model, view: "actionsView" });
                     this.downloadButtonView.render();
 
