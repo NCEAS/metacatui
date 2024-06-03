@@ -7,8 +7,8 @@ define([
   "collections/maps/MapAssets",
   "models/maps/MapInteraction",
   "collections/maps/AssetCategories",
-  "models/maps/GeoPoint",
   "collections/maps/viewfinder/ZoomPresets",
+  "common/SearchParams",
 ], (
   $,
   _,
@@ -16,8 +16,8 @@ define([
   MapAssets,
   Interactions,
   AssetCategories,
-  GeoPoint,
   ZoomPresets,
+  SearchParams,
 ) => {
   /**
    * Determine if array is empty.
@@ -65,40 +65,44 @@ define([
        * first terrain is used in the CesiumWidgetView and there is not yet a UI
        * for switching terrains in the map. The array of the terrain
        * MapAssetConfigs are passed to a {@link MapAssets} collection.
-       * @property {Boolean} [showToolbar=true] - Whether or not to show the
+       * @property {boolean} [showToolbar=true] - Whether or not to show the
        * side bar with layer list, etc. If true, the {@link MapView} will render
        * a {@link ToolbarView}.
-       * @property {Boolean} [showLayerList=true] - Whether or not to show the
+       * @property {boolean} [showLayerList=true] - Whether or not to show the
        * layer list in the toolbar. If true, the {@link ToolbarView} will render
        * a {@link LayerListView}.
-       * @property {Boolean} [showHomeButton=true] - Whether or not to show the
+       * @property {boolean} [showHomeButton=true] - Whether or not to show the
        * home button in the toolbar.
-       * @property {Boolean} [showViewfinder=false] - Whether or not to show the
+       * @property {boolean} [showViewfinder=false] - Whether or not to show the
        * viewfinder UI and viewfinder button in the toolbar. The ViewfinderView
        * requires a Google Maps API key present in the AppModel. In order to
        * work properly the Geocoding API and Places API must be enabled.
-       * requires a Google Maps API key present in the AppModel. In order to
-       * work properly the Geocoding API and Places API must be enabled.
-       * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
+       * @property {boolean} [showShareUrl=false] - Whether or not to show the
+       * share as URL UI in the toolbar and update the URL as the user interacts
+       * with the map. This feature requires a `layerId` field on any layers
+       * that are expected to be saved to the URL search parameter, as that is
+       * the only unique identifier which can be used to turn the layer
+       * visibility on or off.
+       * @property {boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
-       * @property {Boolean} [showScaleBar=true] - Whether or not to show a
+       * @property {boolean} [showScaleBar=true] - Whether or not to show a
        * scale bar. If true, the {@link MapView} will render a
        * {@link ScaleBarView}.
-       * @property {Boolean} [showFeatureInfo=true] - Whether or not to allow
+       * @property {boolean} [showFeatureInfo=true] - Whether or not to allow
        * users to click on map features to show more information about them. If
        * true, the {@link MapView} will render a {@link FeatureInfoView} and
        * will initialize "picking" in the {@link CesiumWidgetView}.
-       * @property {String} [clickFeatureAction="showDetails"] - The default
+       * @property {string} [clickFeatureAction="showDetails"] - The default
        * action to take when a user clicks on a feature on the map. The
        * available options are "showDetails" (show the feature details in the
        * sidebar) or "zoom" (zoom to the feature's location).
-       * @property {Boolean} [showNavHelp=true] - Whether or not to show
+       * @property {boolean} [showNavHelp=true] - Whether or not to show
        * navigation instructions in the toolbar.
-       * @property {Boolean} [showFeedback=false] - Whether or not to show a
+       * @property {boolean} [showFeedback=false] - Whether or not to show a
        * feedback section in the toolbar with the text specified in
        * feedbackText.
-       * @property {String} [feedbackText=null] - The text to show in the
+       * @property {string} [feedbackText=null] - The text to show in the
        * feedback section. showFeedback must be true for this to be shown.
        * @property {String} [globeBaseColor=null] - The base color of the globe when no
        * layer is shown.
@@ -203,28 +207,30 @@ define([
        * wil be displayed in the order they appear. The array of the AssetCategoryConfig
        * are passed to a {@link AssetCategories} collection. When layerCategories
        * exist, the layers property will be ignored.
-       * @property {Boolean} [showToolbar=true] - Whether or not to show the
+       * @property {boolean} [showToolbar=true] - Whether or not to show the
        * side bar with layer list and other tools. True by default.
-       * @property {Boolean} [showLayerList=true] - Whether or not to include
+       * @property {boolean} [showLayerList=true] - Whether or not to include
        * the layer list in the toolbar. True by default.
-       * @property {Boolean} [showHomeButton=true] - Whether or not to show the
+       * @property {boolean} [showHomeButton=true] - Whether or not to show the
        * home button in the toolbar. True by default.
-       * @property {Boolean} [showViewfinder=false] - Whether or not to show the
+       * @property {boolean} [showViewfinder=false] - Whether or not to show the
        * viewfinder UI and viewfinder button in the toolbar. Defaults to false.
-       * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
+       * @property {boolean} [showShareUrl=false] - Whether or not to show the
+       * share as URL UI. Defaults to false.
+       * @property {boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
-       * @property {Boolean} [showScaleBar=true] - Whether or not to show a
+       * @property {boolean} [showScaleBar=true] - Whether or not to show a
        * scale bar.
-       * @property {Boolean} [showFeatureInfo=true] - Whether or not to allow
+       * @property {boolean} [showFeatureInfo=true] - Whether or not to allow
        * users to click on map features to show more information about them.
-       * @property {String} [clickFeatureAction="showDetails"] - The default
+       * @property {string} [clickFeatureAction="showDetails"] - The default
        * action to take when a user clicks on a feature on the map. The
        * available options are "showDetails" (show the feature details in the
        * sidebar) or "zoom" (zoom to the feature's location).
-       * @property {Boolean} [showNavHelp=true] - Whether or not to show
+       * @property {boolean} [showNavHelp=true] - Whether or not to show
        * navigation instructions in the toolbar.
-       * @property {Boolean} [showFeedback=false] - Whether or not to show a
+       * @property {boolean} [showFeedback=false] - Whether or not to show a
        * feedback section in the toolbar.
        * @property {String} [feedbackText=null] - The text to show in the
        * feedback section.
@@ -257,6 +263,7 @@ define([
           showLayerList: true,
           showHomeButton: true,
           showViewfinder: false,
+          showShareUrl: false,
           toolbarOpen: false,
           showScaleBar: true,
           showFeatureInfo: true,
@@ -292,6 +299,20 @@ define([
               this.get("layers").setMapModel(this);
               this.unset("layerCategories");
               this.set("allLayers", layers);
+            }
+
+            // Set enabled layers URL parameter if there are no enabled layers
+            // currently set.
+            if (
+              this.get("showShareUrl") &&
+              !SearchParams.getEnabledLayers().length
+            ) {
+              this.get("allLayers").forEach((layer) => {
+                const layerId = layer.get("layerId");
+                if (layerId && layer.get("visible")) {
+                  SearchParams.addEnabledLayer(layerId);
+                }
+              });
             }
 
             if (isNonEmptyArray(config.terrains)) {
@@ -374,7 +395,7 @@ define([
        */
       resetLayerVisibility() {
         this.get("allLayers").forEach((layer) => {
-          layer.set("visible", layer.get("originalVisibility"));
+          layer.set("visible", layer.get("configuredVisibility"));
         });
       },
 

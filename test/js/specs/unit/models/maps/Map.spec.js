@@ -3,17 +3,15 @@ define([
   "models/maps/AssetCategory",
   "collections/maps/AssetCategories",
   "collections/maps/MapAssets",
-  "models/maps/viewfinder/ZoomPresetModel",
-  "models/maps/GeoPoint",
   "/test/js/specs/shared/clean-state.js",
+  "common/SearchParams",
 ], (
   Map,
   AssetCategory,
   AssetCategories,
   MapAssets,
-  ZoomPresetModel,
-  GeoPoint,
   cleanState,
+  SearchParams,
 ) => {
   const expect = chai.expect;
 
@@ -21,6 +19,14 @@ define([
     const state = cleanState(() => {
       return { model: new Map() };
     }, beforeEach);
+
+    beforeEach(() => {
+      SearchParams.clearSavedView();
+    });
+
+    afterEach(() => {
+      SearchParams.clearSavedView();
+    });
 
     describe("Initialization", () => {
       it("creates an Map instance", () => {
@@ -96,6 +102,36 @@ define([
         expect(
           map.get("zoomPresetsCollection").at(0).get("enabledLayerIds"),
         ).to.eql(["layer1"]);
+      });
+
+      it("updates the enabled layers search param if it is empty", () => {
+        const map = new Map({
+          layerCategories: [{ layers: [{ layerId: "somelayer" }] }],
+          showShareUrl: true,
+        });
+
+        expect(SearchParams.getEnabledLayers()).to.deep.equal(["somelayer"]);
+      });
+
+      it("does not update the enabled layers search param if feature is turned off", () => {
+        const map = new Map({
+          layerCategories: [{ layers: [{ layerId: "somelayer" }] }],
+          showShareUrl: false,
+        });
+
+        expect(SearchParams.getEnabledLayers()).to.deep.equal([]);
+      });
+
+      it("does not update the enabled layers search param if it is non-empty", () => {
+        SearchParams.addEnabledLayer("someotherlayer");
+        const map = new Map({
+          layerCategories: [{ layers: [{ layerId: "somelayer" }] }],
+          showShareUrl: true,
+        });
+
+        expect(SearchParams.getEnabledLayers()).to.deep.equal([
+          "someotherlayer",
+        ]);
       });
     });
 
