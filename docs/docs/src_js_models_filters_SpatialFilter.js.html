@@ -48,7 +48,7 @@
   "underscore",
   "jquery",
   "models/filters/Filter",
-  "collections/maps/Geohashes"
+  "collections/maps/Geohashes",
 ], function (_, $, Filter, Geohashes) {
   /**
    * @classdesc A SpatialFilter represents a spatial constraint on the query to
@@ -178,7 +178,7 @@
        * a GeoBoundingBox model
        * @since 2.25.0
        */
-      getBounds: function (as="object") {
+      getBounds: function (as = "object") {
         const coords = {
           north: this.get("north"),
           south: this.get("south"),
@@ -291,7 +291,7 @@
           if (precisions.length === 1) {
             return this.createBaseFilter(
               precisions,
-              geohashes.getAllHashStrings()
+              geohashes.getAllHashStrings(),
             ).getQuery();
           }
 
@@ -304,8 +304,8 @@
               filters.add(
                 this.createBaseFilter(
                   [precision],
-                  geohashes.getAllHashStrings(precision)
-                )
+                  geohashes.getAllHashStrings(precision),
+                ),
               );
             }
           });
@@ -359,7 +359,7 @@
 
           //Insert the matchSubstring node
           $(matchSubstringNode).insertBefore(
-            $updatedDOM.children("value").first()
+            $updatedDOM.children("value").first(),
           );
 
           //Return the updated DOM
@@ -380,7 +380,7 @@
         this.removeListeners();
 
         let df = this.defaults();
-        
+
         this.set({
           values: df.values,
           east: df.east,
@@ -389,11 +389,11 @@
           south: df.south,
           height: df.height,
         });
-        
+
         // Reset the listeners
         this.setListeners();
       },
-    }
+    },
   );
   return SpatialFilter;
 });

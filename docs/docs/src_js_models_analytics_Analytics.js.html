@@ -44,8 +44,7 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/* global define */
-define(["backbone"], function (Backbone) {
+            <pre class="prettyprint source linenums"><code>define(["backbone"], function (Backbone) {
   /**
    * @class Analytics
    * @classdesc A model that connects with an analytics service to record user
@@ -172,7 +171,7 @@ define(["backbone"], function (Backbone) {
       trackPageView: function (path, title) {
         return;
       },
-    }
+    },
   );
 
   return Analytics;
