@@ -1,5 +1,5 @@
 define(["../../../../../../../../src/js/models/LookupModel"], function (
-  LookupModel
+  LookupModel,
 ) {
   // Configure the Chai assertion library
   var should = chai.should();
@@ -9,9 +9,8 @@ define(["../../../../../../../../src/js/models/LookupModel"], function (
     beforeEach(function () {
       MetacatUI.appModel.set(
         "grantsUrl",
-        "https://arcticdata.io/research.gov/awardapi-service/v1/awards.json"
+        "https://arcticdata.io/research.gov/awardapi-service/v1/awards.json",
       );
-      
     });
 
     afterEach(function () {
@@ -19,7 +18,6 @@ define(["../../../../../../../../src/js/models/LookupModel"], function (
     });
 
     describe("NSF Awards API Lookup", function () {
-
       it("should return results for a valid term", async function () {
         let lookup = new LookupModel();
         const awards = await lookup.findGrants("alaska");

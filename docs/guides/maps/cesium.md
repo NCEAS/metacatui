@@ -44,8 +44,8 @@ No configuration is required to render a Cesium map, but with no config options 
       "icon": "urn:uuid:77d43f50-c947-4600-889a-73c714aba54b",
       "type": "BingMapsImageryProvider",
       "cesiumOptions": {
-        "key" : "someBingMapsAPIKeyHere",
-        "url" : "https://dev.virtualearth.net",
+        "key": "someBingMapsAPIKeyHere",
+        "url": "https://dev.virtualearth.net"
       }
     }
   ],
@@ -108,9 +108,7 @@ Below is an example of a detailed map configuration (descriptions have been shor
         {
           "filterType": "categorical",
           "property": "DN",
-          "values": [
-            0
-          ]
+          "values": [0]
         }
       ]
     },
@@ -205,7 +203,7 @@ Below is an example of a detailed map configuration (descriptions have been shor
         "template": "story",
         "label": "year",
         "options": {
-          "description": "summary",
+          "description": "summary"
         }
       },
       "cesiumOptions": {
@@ -273,13 +271,11 @@ All three of these Cesium asset models have the common `createCesiumModel()` fun
   <figcaption>The models and collections that control the cesium map. From the <a href="https://github.com/NCEAS/metacatui-design">MetacatUI Design repo</a>.</figcaption>
 </figure>
 
-
-
 ## Useful links
 
-* [CesiumJS on GitHub](https://github.com/CesiumGS/cesium)
-* [CesiumJS website](https://cesium.com/platform/cesiumjs/) - Overview of Cesium, including information about Cesium Ion
-* [Cesium documentation](https://cesium.com/learn/cesiumjs/ref-doc/)
-* [Cesium sandcastle](https://sandcastle.cesium.com/) - For experimenting with Cesium, includes helpful examples and demos
-* [TerriaJS on GitHub](https://github.com/TerriaJS/terriajs) - a large application that also uses the CesiumWidget. Although Terria uses a customized and older version of Cesium, it can serve as a good reference.
-* [Planned features & known issues related to the Cesium Map in MetacatUI](https://github.com/NCEAS/metacatui/issues?q=is%3Aopen+is%3Aissue+label%3Acesium)
+- [CesiumJS on GitHub](https://github.com/CesiumGS/cesium)
+- [CesiumJS website](https://cesium.com/platform/cesiumjs/) - Overview of Cesium, including information about Cesium Ion
+- [Cesium documentation](https://cesium.com/learn/cesiumjs/ref-doc/)
+- [Cesium sandcastle](https://sandcastle.cesium.com/) - For experimenting with Cesium, includes helpful examples and demos
+- [TerriaJS on GitHub](https://github.com/TerriaJS/terriajs) - a large application that also uses the CesiumWidget. Although Terria uses a customized and older version of Cesium, it can serve as a good reference.
+- [Planned features & known issues related to the Cesium Map in MetacatUI](https://github.com/NCEAS/metacatui/issues?q=is%3Aopen+is%3Aissue+label%3Acesium)

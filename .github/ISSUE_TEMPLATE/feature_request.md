@@ -1,10 +1,9 @@
 ---
 name: Feature request
 about: Suggest an idea for MetacatUI
-title: ''
+title: ""
 labels: enhancement
-assignees: ''
-
+assignees: ""
 ---
 
 **Describe the feature you'd like**

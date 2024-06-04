@@ -83,7 +83,7 @@ define([
         if (fix) return p < min ? min : max;
         throw new Error(
           `Precision must be a number between ${min} and ${max}` +
-            ` (inclusive), but got ${p}`
+            ` (inclusive), but got ${p}`,
         );
       },
 
@@ -140,7 +140,7 @@ define([
         bounds.forEach(function (b) {
           const c = b.getCoords();
           hashStrings = hashStrings.concat(
-            nGeohash.bboxes(c.south, c.west, c.north, c.east, precision)
+            nGeohash.bboxes(c.south, c.west, c.north, c.east, precision),
           );
         });
         return hashStrings;
@@ -172,7 +172,6 @@ define([
         return this.models.map((geohash) => geohash.get(attr));
       },
 
-
       /**
        * Add geohashes to the collection based on a bounding box.
        * @param {GeoBoundingBox} bounds - Bounding box with north, south, east, and west
@@ -202,7 +201,7 @@ define([
         maxGeohashes = Infinity,
         overwrite = false,
         minPrecision = this.MIN_PRECISION,
-        maxPrecision = this.MAX_PRECISION
+        maxPrecision = this.MAX_PRECISION,
       ) {
         let hashStrings = [];
         if (consolidate) {
@@ -210,7 +209,7 @@ define([
             bounds,
             minPrecision,
             maxPrecision,
-            maxGeohashes
+            maxGeohashes,
           );
         } else {
           const area = bounds.getArea();
@@ -218,7 +217,7 @@ define([
             area,
             maxGeohashes,
             minPrecision,
-            maxPrecision
+            maxPrecision,
           );
           hashStrings = this.getHashStringsForBounds(bounds, precision);
         }
@@ -258,7 +257,7 @@ define([
        */
       getGeohashAreas: function (
         minPrecision = this.MIN_PRECISION,
-        maxPrecision = this.MAX_PRECISION
+        maxPrecision = this.MAX_PRECISION,
       ) {
         minPrecision = this.validatePrecision(minPrecision);
         maxPrecision = this.validatePrecision(maxPrecision);
@@ -290,7 +289,7 @@ define([
         area,
         maxGeohashes,
         absMin = this.MIN_PRECISION,
-        absMax = this.MAX_PRECISION
+        absMax = this.MAX_PRECISION,
       ) {
         absMin = this.validatePrecision(absMin);
         absMax = this.validatePrecision(absMax);
@@ -315,7 +314,7 @@ define([
           console.warn(
             `The area is too large to cover with fewer than ${maxGeohashes} ` +
               `geohashes at the min precision level (${absMin}). Returning ` +
-              `the min precision level, which may result in too many geohashes.`
+              `the min precision level, which may result in too many geohashes.`,
           );
         }
 
@@ -336,7 +335,7 @@ define([
       getMinPrecision: function (
         area,
         absMin = this.MIN_PRECISION,
-        absMax = this.MAX_PRECISION
+        absMax = this.MAX_PRECISION,
       ) {
         absMin = this.validatePrecision(absMin);
         absMax = this.validatePrecision(absMax);
@@ -376,12 +375,12 @@ define([
         bounds,
         maxGeohashes = Infinity,
         absMin = this.MIN_PRECISION,
-        absMax = this.MAX_PRECISION
+        absMax = this.MAX_PRECISION,
       ) {
-        if (!bounds.isValid()){
+        if (!bounds.isValid()) {
           console.warn(
             `Bounds are invalid: ${JSON.stringify(bounds)}. ` +
-              `Returning the min and max allowable precision levels.`
+              `Returning the min and max allowable precision levels.`,
           );
           return [absMin, absMax];
         }
@@ -417,7 +416,7 @@ define([
         bounds,
         minPrecision = this.MIN_PRECISION,
         maxPrecision = this.MAX_PRECISION,
-        maxGeohashes = Infinity
+        maxGeohashes = Infinity,
       ) {
         // Check the inputs
         if (!bounds.isValid()) return [];
@@ -431,7 +430,7 @@ define([
           bounds,
           maxGeohashes,
           minPrecision,
-          maxPrecision
+          maxPrecision,
         );
 
         // Base32 is the set of characters used to encode geohashes
@@ -452,8 +451,7 @@ define([
           for (const b of allBounds) {
             if (bounds.boundsAreFullyContained(n, e, s, w)) {
               return "inside";
-            } else if (
-              bounds.boundsAreFullyOutside(n, e, s, w)) {
+            } else if (bounds.boundsAreFullyOutside(n, e, s, w)) {
               outside.push(true);
             }
           }
@@ -527,7 +525,7 @@ define([
         if (!bounds || !bounds.isValid()) {
           console.warn(
             `Bounds are invalid: ${JSON.stringify(bounds)}. ` +
-              `Returning an empty Geohashes collection.`
+              `Returning an empty Geohashes collection.`,
           );
           return new Geohashes();
         }
@@ -535,7 +533,7 @@ define([
         let hashes = [];
         precisions.forEach((precision) => {
           hashes = hashes.concat(
-            this.getHashStringsForBounds(bounds, precision)
+            this.getHashStringsForBounds(bounds, precision),
           );
         });
         const subsetModels = this.filter((geohash) => {
@@ -717,7 +715,7 @@ define([
         });
         return geohash;
       },
-    }
+    },
   );
 
   return Geohashes;

@@ -18,9 +18,10 @@ define([
 
     describe("Initialization", function () {
       it("should create a GeoPointsCesiumPolygon instance", function () {
-        new GeoPointsCesiumPolygon().should.be.instanceof(GeoPointsCesiumPolygon);
+        new GeoPointsCesiumPolygon().should.be.instanceof(
+          GeoPointsCesiumPolygon,
+        );
       });
     });
-
   });
 });

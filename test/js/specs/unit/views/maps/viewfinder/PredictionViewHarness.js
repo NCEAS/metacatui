@@ -11,11 +11,11 @@ define([], function () {
     }
 
     isFocused() {
-      return this.view.$el.find('.viewfinder-prediction__focused').length === 1;
+      return this.view.$el.find(".viewfinder-prediction__focused").length === 1;
     }
 
     getDescription() {
-      return this.view.$el.find('.viewfinder-prediction__main').text();
+      return this.view.$el.find(".viewfinder-prediction__main").text();
     }
-  }
+  };
 });

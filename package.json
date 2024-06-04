@@ -1,6 +1,6 @@
 {
   "name": "metacatui",
-  "version": "2.29.0",
+  "version": "2.29.1",
   "description": "MetacatUI: A client-side web interface for DataONE data repositories",
   "main": "server.js",
   "dependencies": {
@@ -11,12 +11,21 @@
     "sinon": "^17.0.1"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.0.2",
     "@jsdoc/salty": "^0.2.3",
     "@jsdoc/util": "^0.2.4",
+    "@shopify/prettier-plugin-liquid": "^1.5.0",
     "code-prettify": "^0.1.0",
     "common-path-prefix": "^3.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jsdoc": "^48.2.5",
+    "eslint-plugin-requirejs": "^4.0.1",
     "jsdoc": "^4.0.0",
-    "open-sans-fonts": "^1.6.2"
+    "open-sans-fonts": "^1.6.2",
+    "prettier": "^3.2.5"
   },
   "scripts": {
     "dev": "node server.js",
@@ -25,7 +34,11 @@
     "doc": "cd docs; bundle exec jekyll serve",
     "test": "node test/server.js",
     "integration-test": "node test/server.js integration",
-    "view-tests": "node test/server.js keep-running"
+    "view-tests": "node test/server.js keep-running",
+    "format": "prettier --write .",
+    "format-check": "prettier --check .",
+    "lint": "eslint src",
+    "lint-fix": "eslint --fix src"
   },
   "repository": {
     "type": "git",

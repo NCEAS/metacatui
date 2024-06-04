@@ -1,0 +1,17 @@
+{
+  "plugins": ["@shopify/prettier-plugin-liquid"],
+  "overrides": [
+    {
+      "files": "docs/_includes/*.html",
+      "options": {
+        "parser": "liquid-html"
+      }
+    },
+    {
+      "files": "docs/_layouts/*.html",
+      "options": {
+        "parser": "liquid-html"
+      }
+    }
+  ]
+}
