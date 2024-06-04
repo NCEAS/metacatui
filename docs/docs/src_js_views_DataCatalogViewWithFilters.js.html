@@ -71,7 +71,7 @@
   DataCatalogView,
   FilterGroupsView,
   template,
-  nGeohash
+  nGeohash,
 ) {
   /**
    * @class DataCatalogViewWithFilters
@@ -196,7 +196,7 @@
           isMySearch:
             _.indexOf(
               this.searchModel.get("username"),
-              MetacatUI.appUserModel.get("username")
+              MetacatUI.appUserModel.get("username"),
             ) > -1,
           loading: loadingHTML,
           searchModelRef: this.searchModel,
@@ -205,7 +205,7 @@
             MetacatUI.theme == "dataone" ? "Member Node" : "Data source",
         };
         compiledEl = this.template(
-          _.extend(this.searchModel.toJSON(), templateVars)
+          _.extend(this.searchModel.toJSON(), templateVars),
         );
         this.$el.html(compiledEl);
 
@@ -263,12 +263,12 @@
         // Listen to changes in the Search model Filters to trigger a search
         this.stopListening(
           this.searchModel.get("filters"),
-          "add remove update reset change"
+          "add remove update reset change",
         );
         this.listenTo(
           this.searchModel.get("filters"),
           "add remove update reset change",
-          this.triggerSearch
+          this.triggerSearch,
         );
 
         // Listen to the MetacatUI.appModel for the search trigger
@@ -277,7 +277,7 @@
         this.listenTo(
           MetacatUI.appUserModel,
           "change:loggedIn",
-          this.triggerSearch
+          this.triggerSearch,
         );
 
         // and go to a certain page if we have it
@@ -324,7 +324,7 @@
             // Add the Filters to the array
             allFilters = _.union(allFilters, filterGroup.get("filters").models);
           },
-          this
+          this,
         );
 
         // Add the filters to the Search model
@@ -405,7 +405,7 @@
             "northBoundCoord",
             "southBoundCoord",
             "eastBoundCoord",
-            "westBoundCoord"
+            "westBoundCoord",
           );
         }
         // Set the field list on the SolrResults collection as a comma-separated
@@ -461,7 +461,7 @@
 
         var spatialFilter = _.findWhere(
           this.searchModel.get("filters").models,
-          { type: "SpatialFilter" }
+          { type: "SpatialFilter" },
         );
 
         if (isOn) {
@@ -485,7 +485,7 @@
         google.maps.event.trigger(this.mapModel.get("map"), "idle");
 
         // Track this event
-        MetacatUI.analytics?.trackEvent("map", (isOn ? "on" : "off"));
+        MetacatUI.analytics?.trackEvent("map", isOn ? "on" : "off");
       },
 
       /**
@@ -691,7 +691,7 @@
                 west,
                 north,
                 east,
-                precision
+                precision,
               );
             }
 
@@ -723,7 +723,7 @@
                       viewRef.$(".toggle-map-filter").prop("checked", false);
                       viewRef.toggleMapFilter();
                     }
-                  }
+                  },
                 );
               }
             }
@@ -763,7 +763,7 @@
           viewRef.hasDragged = true;
         });
       },
-    }
+    },
   );
   return DataCatalogViewWithFilters;
 });
