@@ -34,7 +34,7 @@ sudo systemctl restart apache2
 
 ### 2. Configure Apache Virtual Host
 
-Edit your Apache virtual host configuration file where MetacatUI is served. This file is typically located in `/etc/apache2/sites-available/`. 
+Edit your Apache virtual host configuration file where MetacatUI is served. This file is typically located in `/etc/apache2/sites-available/`.
 
 Add the following configuration inside the `<VirtualHost>` block:
 

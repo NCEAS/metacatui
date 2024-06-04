@@ -7,11 +7,11 @@ define([], function () {
     }
 
     getListItems() {
-      return this.view.$el.find('li');
+      return this.view.$el.find("li");
     }
 
     getFocusedItemIndex() {
-      return this.view.$el.find('.viewfinder-prediction__focused').index();
+      return this.view.$el.find(".viewfinder-prediction__focused").index();
     }
-  }
+  };
 });

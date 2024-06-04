@@ -2,7 +2,7 @@
 
 define(["backbone", "models/metadata/eml211/EMLMissingValueCode"], function (
   Backbone,
-  EMLMissingValueCode
+  EMLMissingValueCode,
 ) {
   /**
    * @class EMLMissingValueCodes
@@ -79,7 +79,7 @@ define(["backbone", "models/metadata/eml211/EMLMissingValueCode"], function (
         // For now, if there is at least one error, just return the first one
         return errors.length ? errors[0] : null;
       },
-    }
+    },
   );
 
   return EMLMissingValueCodes;

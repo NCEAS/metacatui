@@ -32,7 +32,7 @@ Here's an example:
     <optionValue>
 <![CDATA[{
   "homePosition": {...},
-  ... 
+  ...
   "showFeatureInfo": false
 }]]>
       </optionValue>

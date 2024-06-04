@@ -42,8 +42,8 @@ define([
        */
       defaults() {
         return {
-          label: '',
-          icon: '',
+          label: "",
+          icon: "",
           expanded: false,
         };
       },
@@ -70,7 +70,9 @@ define([
        */
       initialize(categoryConfig) {
         if (!categoryConfig?.layers) {
-          throw new Error("Category " + categoryConfig.label + " has empty layers.");
+          throw new Error(
+            "Category " + categoryConfig.label + " has empty layers.",
+          );
         }
         this.set("mapAssets", new MapAssets(categoryConfig.layers));
 
@@ -82,8 +84,9 @@ define([
             if (IconUtilities.isSVG(categoryConfig.icon)) {
               this.updateIcon(categoryConfig.icon);
             } else {
-              IconUtilities.fetchIcon(categoryConfig.icon)
-                .then(icon => this.updateIcon(icon));
+              IconUtilities.fetchIcon(categoryConfig.icon).then((icon) =>
+                this.updateIcon(icon),
+              );
             }
           } catch (error) {
             // Do nothing. Use the default icon instead.
@@ -112,7 +115,7 @@ define([
       setMapModel(mapModel) {
         this.get("mapAssets").setMapModel(mapModel);
       },
-    }
+    },
   );
 
   return AssetCategory;

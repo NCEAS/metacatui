@@ -1,56 +1,54 @@
-'use strict';
+"use strict";
 
-define(
-  [
-    'underscore',
-    'backbone',
-    'text!templates/maps/viewfinder/viewfinder-search.html',
-    'views/maps/viewfinder/PredictionsListView',
-    'models/maps/viewfinder/ViewfinderModel',
-    "views/maps/SearchInputView",
-  ],
-  (
-    _,
-    Backbone,
-    Template,
-    PredictionsListView,
-    ViewfinderModel,
-    SearchInputView,
-  ) => {
-    // The base classname to use for this View's template elements.
-    const BASE_CLASS = 'viewfinder-search';
-    // The HTML classes to use for this view's HTML elements.
-    const CLASS_NAMES = {
-      predictions: `${BASE_CLASS}__predictions`,
-      searchInput: `${BASE_CLASS}__search-input`,
-    };
+define([
+  "underscore",
+  "backbone",
+  "text!templates/maps/viewfinder/viewfinder-search.html",
+  "views/maps/viewfinder/PredictionsListView",
+  "models/maps/viewfinder/ViewfinderModel",
+  "views/maps/SearchInputView",
+], (
+  _,
+  Backbone,
+  Template,
+  PredictionsListView,
+  ViewfinderModel,
+  SearchInputView,
+) => {
+  // The base classname to use for this View's template elements.
+  const BASE_CLASS = "viewfinder-search";
+  // The HTML classes to use for this view's HTML elements.
+  const CLASS_NAMES = {
+    predictions: `${BASE_CLASS}__predictions`,
+    searchInput: `${BASE_CLASS}__search-input`,
+  };
 
-    /**
-     * @class SearchView
-     * @classdesc SearchView allows a user to search for
-     * a latitude and longitude in the map view, and find suggestions
-     * for places related to their search terms.
-     * This view requires a Google Maps API key in order to function properly,
-     * and must have the Geocoding API and Places API enabled.
-     * @classcategory Views/Maps
-     * @name SearchView
-     * @extends Backbone.View
-     * @screenshot views/maps/viewfinder/SearchView.png
-     * @since 2.29.0
-     * @constructs SearchView
-     */
-    var SearchView = Backbone.View.extend(
+  /**
+   * @class SearchView
+   * @classdesc SearchView allows a user to search for
+   * a latitude and longitude in the map view, and find suggestions
+   * for places related to their search terms.
+   * This view requires a Google Maps API key in order to function properly,
+   * and must have the Geocoding API and Places API enabled.
+   * @classcategory Views/Maps
+   * @name SearchView
+   * @extends Backbone.View
+   * @screenshot views/maps/viewfinder/SearchView.png
+   * @since 2.29.0
+   * @constructs SearchView
+   */
+  var SearchView = Backbone.View.extend(
     /** @lends SearchView.prototype */ {
       /**
        * The type of View this is
        * @type {string}
        */
-      type: 'SearchView',
+      type: "SearchView",
 
       /** @inheritdoc */
       className: BASE_CLASS,
 
-      /** 
+      /**
        * Values meant to be used by the rendered HTML template.
        */
       templateVars: {
@@ -61,7 +59,7 @@ define(
        * @typedef {Object} SearchViewOptions
        * @property {ViewfinderModel} viewfinderModel The model associated
        * with this view allowing control of panning to different locations on
-       * the map, and displaying location related search features. 
+       * the map, and displaying location related search features.
        */
       initialize({ viewfinderModel }) {
         this.childPredictionViews = [];
@@ -71,20 +69,20 @@ define(
 
         this.autocompleteSearch = _.debounce(() => {
           this.viewfinderModel.autocompleteSearch(
-            this.searchInput.getInputValue()
+            this.searchInput.getInputValue(),
           );
         }, 250 /* milliseconds */);
       },
 
       /** Setup all event listeners on ViewfinderModel. */
       setupListeners() {
-        this.listenTo(this.viewfinderModel, 'selection-made', (newQuery) => {
+        this.listenTo(this.viewfinderModel, "selection-made", (newQuery) => {
           this.setQuery(newQuery);
           this.searchInput.blur();
         });
 
-        this.listenTo(this.viewfinderModel, 'change:error', () => {
-          this.searchInput.setError(this.viewfinderModel.get('error'));
+        this.listenTo(this.viewfinderModel, "change:error", () => {
+          this.searchInput.setError(this.viewfinderModel.get("error"));
         });
       },
 
@@ -98,7 +96,7 @@ define(
       },
 
       /**
-       * Getter function for the list of predictions. 
+       * Getter function for the list of predictions.
        * @return {HTMLUListElement} Returns the predictions unordered list
        * HTML element.
        */
@@ -107,7 +105,7 @@ define(
       },
 
       /**
-       * Getter function for the search query input. 
+       * Getter function for the search query input.
        * @return {HTMLInputElement} Returns the search input HTML element.
        */
       getSearchInput() {
@@ -119,14 +117,14 @@ define(
        * of an input field (default behavior).
        */
       keydown(event) {
-        if (event.key === 'ArrowUp') {
+        if (event.key === "ArrowUp") {
           event.preventDefault();
         }
 
         // Unset query value since error is cleared and it should show up again
         // if the user re-enters the same value.
-        if (this.searchInput.getInputValue() === '') {
-          this.viewfinderModel.unset('query', { silent: true });
+        if (this.searchInput.getInputValue() === "") {
+          this.viewfinderModel.unset("query", { silent: true });
         }
       },
 
@@ -136,15 +134,15 @@ define(
       },
 
       /**
-       * Event handler for Backbone.View configuration that is called whenever 
+       * Event handler for Backbone.View configuration that is called whenever
        * the user types a key.
        */
       async keyup(event) {
-        if (event.key === 'Enter') {
+        if (event.key === "Enter") {
           this.search();
-        } else if (event.key === 'ArrowUp') {
+        } else if (event.key === "ArrowUp") {
           this.viewfinderModel.decrementFocusIndex();
-        } else if (event.key === 'ArrowDown') {
+        } else if (event.key === "ArrowDown") {
           this.viewfinderModel.incrementFocusIndex();
         } else {
           this.autocompleteSearch(this.searchInput.getInputValue());
@@ -163,13 +161,13 @@ define(
       showPredictionsList() {
         this.getList().show();
         this.viewfinderModel.autocompleteSearch(
-          this.searchInput.getInputValue()
+          this.searchInput.getInputValue(),
         );
       },
 
       /**
        * Hide the predictions list unless user is selecting a list item.
-       * @param {FocusEvent} event Mouse event corresponding to a change in 
+       * @param {FocusEvent} event Mouse event corresponding to a change in
        * focus.
        */
       hidePredictionsList(event) {
@@ -180,25 +178,25 @@ define(
       },
 
       /**
-       * Render the SearchInputView. 
+       * Render the SearchInputView.
        */
       renderSearchInput() {
         this.searchInput = new SearchInputView({
           placeholder: "Enter coordinates or areas of interest",
-          search: text => {
+          search: (text) => {
             this.viewfinderModel.search(text);
             return false;
           },
-          keyupCallback: event => {
+          keyupCallback: (event) => {
             this.keyup(event);
           },
-          focusCallback: event => {
+          focusCallback: (event) => {
             this.showPredictionsList(event);
           },
-          blurCallback: event => {
+          blurCallback: (event) => {
             this.hidePredictionsList(event);
           },
-          keydownCallback: event => {
+          keydownCallback: (event) => {
             this.keydown(event);
           },
         });
@@ -207,11 +205,11 @@ define(
       },
 
       /**
-       * Render the Prediction sub-views. 
+       * Render the Prediction sub-views.
        */
       renderPredictionsList() {
         this.predictionsView = new PredictionsListView({
-          viewfinderModel: this.viewfinderModel
+          viewfinderModel: this.viewfinderModel,
         });
         this.getList().html(this.predictionsView.el);
         this.predictionsView.render();
@@ -230,7 +228,8 @@ define(
 
         this.focusInput();
       },
-    });
+    },
+  );
 
-    return SearchView;
-  });
+  return SearchView;
+});
