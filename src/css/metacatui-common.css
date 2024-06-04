@@ -569,9 +569,7 @@ svg.icon {
   width: 215px;
   padding: var(--pad);
 }
-.catalog-search-view .search-results-container,
-.catalog-search-view .map-container {
-}
+
 .catalog-search-body.mapMode {
   height: 100vh;
   width: 100vw;
@@ -1795,7 +1793,6 @@ svg.icon {
   padding: 10px;
 }
 .metadata-view .controls-container > .controls {
-  display: inline-block;
   float: right;
   margin-top: 0px;
   margin-bottom: 0px;
@@ -1945,7 +1942,6 @@ div.analyze.dropdown.open button.dropdown.btn.btn-secondary.dropdown-toggle {
 }
 .citation-container + .data-source {
   max-width: 125px;
-  display: inline-block;
   float: right;
   margin-bottom: 10px;
 }
@@ -3623,7 +3619,6 @@ add font awesome close icon */
   width: calc(100% - 1.1rem);
   min-width: 1.5rem;
   float: left;
-  display: inline-block;
   margin-left: 0;
   line-height: 120%;
   color: #555;
@@ -3803,10 +3798,7 @@ add font awesome close icon */
 .portals-list-entry .portal-title {
   margin-bottom: 0px;
 }
-.portals-list-entry .portal-edit-link {
-}
-.portals-list-entry .portal-description {
-}
+
 .portals-list-entry .portal-description p {
   margin: 0;
   color: #888;
@@ -5335,7 +5327,7 @@ i.toc-sub-item {
   > a {
   border-bottom-width: 0px;
   border-bottom-left-radius: 6px;
-  border-botttom-right-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 #portal-section-tabs .section-link-container .dropdown-menu > li > a:hover {
   background-image: none;
@@ -5632,8 +5624,6 @@ div.markdown pre {
 }
 
 /* markdown citations */
-.markdown .inlineCitation {
-}
 
 .markdown .csl-entry {
   text-indent: -15px;
@@ -9074,8 +9064,6 @@ table.api tr td:nth-child(even) {
   height: 100px;
   word-break: break-word;
 }
-.slaask-widget-container {
-}
 /*******************************************
 CSS library fixes
 ******************************************/
@@ -9370,7 +9358,6 @@ CSS library fixes
   width: 100%;
   display: grid;
   align-self: center;
-  ttext-align: center;
   justify-self: center;
 }
 .summary-container.span3 > div {
