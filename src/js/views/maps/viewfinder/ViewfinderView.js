@@ -1,34 +1,31 @@
 "use strict";
 
-define(
-  [
-    'underscore',
-    'backbone',
-    'text!templates/maps/viewfinder/viewfinder.html',
-    'views/maps/viewfinder/SearchView',
-    'views/maps/viewfinder/ZoomPresetsListView',
-    'views/maps/ExpansionPanelView',
-    'models/maps/ExpansionPanelsModel',
-    'models/maps/viewfinder/ViewfinderModel',
-  ],
-  (
-    _,
-    Backbone,
-    Template,
-    SearchView,
-    ZoomPresetsListView,
-    ExpansionPanelView,
-    ExpansionPanelsModel,
-    ViewfinderModel,
-  ) => {
-    // The base classname to use for this View's template elements.
-    const BASE_CLASS = 'viewfinder';
-    // The HTML classes to use for this view's HTML elements.
-    const CLASS_NAMES = {
-      searchView: `${BASE_CLASS}__search`,
-      zoomPresetsView: `${BASE_CLASS}__zoom-presets`,
-    };
-
+define([
+  "underscore",
+  "backbone",
+  "text!templates/maps/viewfinder/viewfinder.html",
+  "views/maps/viewfinder/SearchView",
+  "views/maps/viewfinder/ZoomPresetsListView",
+  "views/maps/ExpansionPanelView",
+  "models/maps/ExpansionPanelsModel",
+  "models/maps/viewfinder/ViewfinderModel",
+], (
+  _,
+  Backbone,
+  Template,
+  SearchView,
+  ZoomPresetsListView,
+  ExpansionPanelView,
+  ExpansionPanelsModel,
+  ViewfinderModel,
+) => {
+  // The base classname to use for this View's template elements.
+  const BASE_CLASS = "viewfinder";
+  // The HTML classes to use for this view's HTML elements.
+  const CLASS_NAMES = {
+    searchView: `${BASE_CLASS}__search`,
+    zoomPresetsView: `${BASE_CLASS}__zoom-presets`,
+  };
 
   /**
    * @class ViewfinderView

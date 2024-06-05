@@ -70,7 +70,7 @@ define([
       initialize(categoryConfig) {
         if (!categoryConfig?.layers) {
           throw new Error(
-            "Category " + categoryConfig.label + " has empty layers."
+            "Category " + categoryConfig.label + " has empty layers.",
           );
         }
         this.set("mapAssets", new MapAssets(categoryConfig.layers));
@@ -84,7 +84,7 @@ define([
               this.updateIcon(categoryConfig.icon);
             } else {
               IconUtilities.fetchIcon(categoryConfig.icon).then((icon) =>
-                this.updateIcon(icon)
+                this.updateIcon(icon),
               );
             }
           } catch (error) {

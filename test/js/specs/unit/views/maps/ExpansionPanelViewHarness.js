@@ -19,7 +19,7 @@ define([], function () {
     }
 
     hasSvgIcon() {
-      return this.view.$el.find('.expansion-panel__icon > svg').length === 1;
+      return this.view.$el.find(".expansion-panel__icon > svg").length === 1;
     }
 
     getTitle() {
