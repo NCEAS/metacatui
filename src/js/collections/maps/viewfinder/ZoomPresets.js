@@ -32,7 +32,7 @@ define([
           const zoomPresets = zoomPresetObjects.map((zoomPresetObj) => {
             const enabledLayerIds = [];
             const enabledLayerLabels = [];
-            for (const layer of allLayers) {
+            for (const layer of allLayers.models) {
               if (
                 zoomPresetObj.layerIds?.find(
                   (id) => id === layer.get("layerId"),

@@ -81,9 +81,6 @@ define([
         // Unset error so the error will fire a change event even if it is the
         // same error as already exists.
         this.unset("error", { silent: true });
-        // Unset error so the error will fire a change event even if it is the
-        // same error as already exists.
-        this.unset("error", { silent: true });
 
         try {
           // User is looking for autocompletions.
