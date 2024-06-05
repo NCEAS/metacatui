@@ -34,25 +34,16 @@ define([
         );
       },
 
-      /** 
+      /**
        * Gets a single, flattened MapAssets collection from the AssetCategory
        * group in the collection.
        * @returns {MapAssets}
        */
       getMapAssetsFlat() {
         return new MapAssets(
-          this.map(assetCategory => assetCategory.get('mapAssets').models).flat()
-        );
-      },
-
-      /** 
-       * Gets a single, flattened MapAssets collection from the AssetCategory
-       * group in the collection.
-       * @returns {MapAssets}
-       */
-      getMapAssetsFlat() {
-        return new MapAssets(
-          this.map(assetCategory => assetCategory.get('mapAssets').models).flat()
+          this.map(
+            (assetCategory) => assetCategory.get("mapAssets").models,
+          ).flat(),
         );
       },
 

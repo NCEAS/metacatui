@@ -48,13 +48,13 @@ define([
         };
       },
 
-        /**
-         * @param {Map} mapModel is the Map model that the ViewfinderModel is
-         * managing for the corresponding ViewfinderView.
-         */
-        initialize({ mapModel }) {
-          this.geocoderSearch = new GeocoderSearch();
-          this.mapModel = mapModel;
+      /**
+       * @param {Map} mapModel is the Map model that the ViewfinderModel is
+       * managing for the corresponding ViewfinderView.
+       */
+      initialize({ mapModel }) {
+        this.geocoderSearch = new GeocoderSearch();
+        this.mapModel = mapModel;
 
         this.set(
           "zoomPresets",
@@ -78,6 +78,9 @@ define([
           return;
         }
 
+        // Unset error so the error will fire a change event even if it is the
+        // same error as already exists.
+        this.unset("error", { silent: true });
         // Unset error so the error will fire a change event even if it is the
         // same error as already exists.
         this.unset("error", { silent: true });
@@ -159,20 +162,20 @@ define([
         });
       },
 
-        /**
-         * Select a ZoomPresetModel from the list of presets and navigate there.
-         * This function hides all layers that are not to be visible according to
-         * the ZoomPresetModel configuration.
-         * @param {ZoomPresetModel} preset A user selected preset for which to 
-         * enable layers and navigate.
-         */
-        selectZoomPreset(preset) {
-          const enabledLayerIds = preset.get('enabledLayerIds');
-          this.mapModel.get('allLayers').forEach(layer => {
-            const isVisible = enabledLayerIds.includes(layer.get('layerId'));
-            // Show or hide the layer according to the preset.
-            layer.set('visible', isVisible);
-          });
+      /**
+       * Select a ZoomPresetModel from the list of presets and navigate there.
+       * This function hides all layers that are not to be visible according to
+       * the ZoomPresetModel configuration.
+       * @param {ZoomPresetModel} preset A user selected preset for which to
+       * enable layers and navigate.
+       */
+      selectZoomPreset(preset) {
+        const enabledLayerIds = preset.get("enabledLayerIds");
+        this.mapModel.get("allLayers").forEach((layer) => {
+          const isVisible = enabledLayerIds.includes(layer.get("layerId"));
+          // Show or hide the layer according to the preset.
+          layer.set("visible", isVisible);
+        });
 
         this.mapModel.zoomTo(preset.get("geoPoint"));
       },
@@ -184,10 +187,13 @@ define([
        */
       async selectPrediction(prediction) {
         if (!prediction) return;
-
         try {
           const geocodings = await this.geocoderSearch.geocode(prediction);
 
+          if (geocodings.length === 0) {
+            this.set("error", NO_RESULTS_MESSAGE);
+            return;
+          }
           if (geocodings.length === 0) {
             this.set("error", NO_RESULTS_MESSAGE);
             return;

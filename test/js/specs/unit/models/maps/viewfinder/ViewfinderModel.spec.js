@@ -82,28 +82,10 @@ define([
       state.model.should.be.instanceof(ViewfinderModel);
     });
 
-    it("sets allLayers field from Map model layers", () => {
-      const model = new ViewfinderModel({
-        mapModel: new Map({ layers: [{ layerId: "layer1" }] }),
-      });
-
-      expect(model.allLayers[0].get("layerId")).to.equal("layer1");
-    });
-
-    it("sets allLayers field from Map model layerCategories", () => {
-      const model = new ViewfinderModel({
-        mapModel: new Map({
-          layerCategories: [{ layers: { layerId: "layer1" } }],
-        }),
-      });
-
-      expect(model.allLayers[0].get("layerId")).to.equal("layer1");
-    });
-
-    it('sets zoom presets field from Map model', () => {
+    it("sets zoom presets field from Map model", () => {
       const mapModel = new Map({
         zoomPresets: [{ layerIds: [] }],
-        layers: [{}]
+        layers: [{}],
       });
 
       const model = new ViewfinderModel({ mapModel });
@@ -369,38 +351,48 @@ define([
       });
     });
 
-    describe('selecting a zoom preset', () => {
-      it('shows all enabled layers', () => {
+    describe("selecting a zoom preset", () => {
+      it("shows all enabled layers", () => {
         const setSpy = state.sandbox.spy(
-          state.model.mapModel.get('allLayers').models[0],
-          'set'
+          state.model.mapModel.get("allLayers").models[0],
+          "set",
         );
-        state.model.selectZoomPreset(new ZoomPresetModel({
-          position: {
-            latitude: 55,
-            longitude: 66,
-            height: 72,
-          },
-          enabledLayerIds: ['layer1']
-        }, { parse: true }));
+        state.model.selectZoomPreset(
+          new ZoomPresetModel(
+            {
+              position: {
+                latitude: 55,
+                longitude: 66,
+                height: 72,
+              },
+              enabledLayerIds: ["layer1"],
+            },
+            { parse: true },
+          ),
+        );
 
         expect(setSpy.callCount).to.equal(1);
         expect(setSpy.getCall(0).args).to.eql(["visible", true]);
       });
 
-      it('hides all layers not inlcluded in enabled layers', () => {
+      it("hides all layers not inlcluded in enabled layers", () => {
         const setSpy = state.sandbox.spy(
-          state.model.mapModel.get('allLayers').models[1],
-          'set'
+          state.model.mapModel.get("allLayers").models[1],
+          "set",
         );
-        state.model.selectZoomPreset(new ZoomPresetModel({
-          position: {
-            latitude: 55,
-            longitude: 66,
-            height: 72,
-          },
-          enabledLayerIds: ['layer1']
-        }, { parse: true }));
+        state.model.selectZoomPreset(
+          new ZoomPresetModel(
+            {
+              position: {
+                latitude: 55,
+                longitude: 66,
+                height: 72,
+              },
+              enabledLayerIds: ["layer1"],
+            },
+            { parse: true },
+          ),
+        );
 
         expect(setSpy.callCount).to.equal(1);
         expect(setSpy.getCall(0).args).to.eql(["visible", false]);

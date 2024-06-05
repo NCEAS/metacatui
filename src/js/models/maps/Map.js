@@ -68,6 +68,8 @@ define([
        * viewfinder UI and viewfinder button in the toolbar. The ViewfinderView
        * requires a Google Maps API key present in the AppModel. In order to
        * work properly the Geocoding API and Places API must be enabled.
+       * requires a Google Maps API key present in the AppModel. In order to
+       * work properly the Geocoding API and Places API must be enabled.
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
@@ -94,6 +96,7 @@ define([
        * @property {ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
        * predefined list of locations with an enabled list of layer IDs to be
        * shown the zoom presets UI. Requires `showViewfinder` to be true as this
+       * UI appears within the ViewfinderView.
        * UI appears within the ViewfinderView.
        *
        * @example
@@ -182,9 +185,9 @@ define([
        * @property {MapAssets} [layers = new MapAssets()] - The imagery and
        * vector data to render in the map. When layerCategories exist, this
        * property will be ignored.
-       * @property {MapAssets} [allLayers = new MapAssets()] - The assets that 
-       * correspond to the layers field or the layerCategories field depending 
-       * upon which is used. If layerCategories, this contains a flattened list 
+       * @property {MapAssets} [allLayers = new MapAssets()] - The assets that
+       * correspond to the layers field or the layerCategories field depending
+       * upon which is used. If layerCategories, this contains a flattened list
        * of the assets.
        * @property {AssetCategories} [layerCategories = new AssetCategories()] -
        * A collection of layer categories to display in the tool bar. Categories
@@ -221,6 +224,7 @@ define([
        * @property {ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
        * predefined list of locations with an enabled list of layer IDs to be
        * shown the zoom presets UI. Requires `showViewfinder` to be true as this
+       * UI appears within the ViewfinderView.
        * UI appears within the ViewfinderView.
        */
       defaults: function () {
@@ -276,26 +280,33 @@ define([
               assetCategories.setMapModel(this);
               this.set("layerCategories", assetCategories);
               this.unset("layers");
-              this.set('allLayers', assetCategories.getMapAssetsFlat());
+              this.set("allLayers", assetCategories.getMapAssetsFlat());
             } else if (isNonEmptyArray(config.layers)) {
               const layers = new MapAssets(config.layers);
               this.set("layers", layers);
               this.get("layers").setMapModel(this);
               this.unset("layerCategories");
-              this.set('allLayers', layers);
+              this.set("allLayers", layers);
             }
 
             if (isNonEmptyArray(config.terrains)) {
               this.set("terrains", new MapAssets(config.terrains));
             }
 
-            this.set('zoomPresetsCollection', new ZoomPresets({
-              zoomPresetObjects: config.zoomPresets,
-              allLayers: this.get('allLayers'),
-            }, { parse: true }));
+            this.set(
+              "zoomPresetsCollection",
+              new ZoomPresets(
+                {
+                  zoomPresetObjects: config.zoomPresets,
+                  allLayers: this.get("allLayers"),
+                },
+                { parse: true },
+              ),
+            );
           }
           this.setUpInteractions();
         } catch (error) {
+          console.log("Failed to initialize a Map model.", error);
           console.log("Failed to initialize a Map model.", error);
         }
       },
@@ -357,8 +368,8 @@ define([
        * configuration.
        */
       resetLayerVisibility: function () {
-        this.get('allLayers').forEach(layer => {
-          layer.set("visible", layer.get('originalVisibility'));
+        this.get("allLayers").forEach((layer) => {
+          layer.set("visible", layer.get("originalVisibility"));
         });
       },
 

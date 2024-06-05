@@ -5,7 +5,7 @@
 - **License**: [Apache 2](http://opensource.org/licenses/Apache-2.0)
 - [Package source code on Github](https://github.com/NCEAS/metacatui)
 - [**Submit Bugs and feature requests**](https://github.com/NCEAS/metacatui/issues/new/choose)
-- Contact us: metacat-dev@ecoinformatics.org
+- Contact us: developers@dataone.org
 
 ![Tests Status](https://github.com/NCEAS/metacatui/actions/workflows/test.js.yml/badge.svg)
 
@@ -17,7 +17,7 @@ MetacatUI is an open source, community project. We [welcome contributions](https
 
 Cite this software as:
 
-> Matthew B. Jones, Chris Jones, Lauren Walker, Robyn Thiessen-Bock, Ben Leinfelder, Peter Slaughter, Bryce Mecum, Rushiraj Nenuji, Hesham Elbashandy, Val Hendrix, Ian Nesbitt, Yvonne Shi, Ian Guerin, Doug Hungarter. 2024. MetacatUI: A client-side web interface for DataONE data repositories (version 2.29.0). Arctic Data Center. [doi:10.18739/A2KD1QN1N](https://doi.org/10.18739/A2KD1QN1N)
+> Matthew B. Jones, Chris Jones, Lauren Walker, Robyn Thiessen-Bock, Ben Leinfelder, Peter Slaughter, Bryce Mecum, Rushiraj Nenuji, Hesham Elbashandy, Val Hendrix, Ian Nesbitt, Yvonne Shi, Ian Guerin, Doug Hungarter. 2024. MetacatUI: A client-side web interface for DataONE data repositories (version 2.29.1). Arctic Data Center. [doi:10.18739/A2KD1QN1N](https://doi.org/10.18739/A2KD1QN1N)
 
 ## Screenshots
 

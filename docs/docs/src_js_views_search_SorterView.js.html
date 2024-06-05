@@ -44,8 +44,7 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/*global define */
-define(["backbone"], function (Backbone) {
+            <pre class="prettyprint source linenums"><code>define(["backbone"], function (Backbone) {
   "use strict";
   /**
    * @class SorterView
@@ -119,7 +118,7 @@ define(["backbone"], function (Backbone) {
         for (let opt of this.sortOptions) {
           select.insertAdjacentHTML(
             "beforeend",
-            `&lt;option value="${opt.value}">${opt.label}&lt;/option>`
+            `&lt;option value="${opt.value}">${opt.label}&lt;/option>`,
           );
         }
 
@@ -167,7 +166,7 @@ define(["backbone"], function (Backbone) {
       show: function () {
         this.el.style.visibility = "visible";
       },
-    }
+    },
   );
 });
 </code></pre>

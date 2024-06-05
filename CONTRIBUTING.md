@@ -1,30 +1,40 @@
 # Contributing to MetacatUI
 
-:tada: First off, thanks for contributing! :tada:
+**🎉 First off, thanks for contributing! 🎉**
 
-- [Contributing to MetacatUI](#contributing-to-metacatui)
-  - [Types of contributions](#types-of-contributions)
-  - [Pull Requests](#pull-requests)
-  - [Development Workflow](#development-workflow)
-    - [Development flow overview](#development-flow-overview)
-  - [Release process](#release-process)
-  - [Testing](#testing)
-  - [Code style](#code-style)
-  - [Documentation](#documentation)
-  - [PR Code Review Guidelines](#pr-code-review-guidelines)
-  - [Contributor license agreement](#contributor-license-agreement)
+- [✨ Types of Contributions](#-types-of-contributions)
+- [🐈‍⬛ About MetacatUI](#-about-metacatui)
+- [🌱 Getting Started with Contributions](#-getting-started-with-contributions)
+  - [🔧 Setting Up Your Environment](#-setting-up-your-environment)
+  - [✍️ Making Changes and Submitting Contributions](#️-making-changes-and-submitting-contributions)
+  - [📤 Submitting a Pull Request](#-submitting-a-pull-request)
+- [🎨 Code Style](#-code-style)
+  - [🖋 Formatting](#-formatting)
+  - [🔍 Linting](#-linting)
+- [🔬 Testing](#-testing)
+- [📚 Documentation](#-documentation)
+- [📐 Key Quality Checks for Contributions](#-key-quality-checks-for-contributions)
+- [🚀 Development Workflow](#-development-workflow)
+  - [🌳 Branches](#-branches)
+  - [🔀 Workflow Diagram](#-workflow-diagram)
+  - [🚀 Release Process](#-release-process)
+- [📄 Contributor license agreement](#-contributor-license-agreement)
 
-## Types of contributions
+## ✨ Types of Contributions
 
 We welcome all types of contributions, including bug fixes, feature enhancements,
 bug reports, documentation, graphics, and many others. You might consider contributing by:
 
-- Report a bug or request a new feature in our [issue tracker](https://github.com/NCEAS/metacatui/issues)
+- Report a bug or request a new feature in our [issue
+  tracker](https://github.com/NCEAS/metacatui/issues)
 - Fix a bug and contribute the code with a Pull Request
-- Write or edit some documentation
-- Sharing helpful tips or FAQ-type answers to users or future contributors
+- Write or edit some documentation, such as this file!
+- Sharing helpful tips or FAQ-type answers with users or future contributors
+- Ask or answer a question on our [discussions
+  board](https://github.com/NCEAS/metacatui/discussions)
 - Create screenshots or tutorials of features of MetacatUI
-- Answer questions on our mailing list or [Slack team](https://slack.dataone.org/)
+- Answer questions on our mailing list or [Slack
+  team](https://slack.dataone.org/)
 - ...
 
 MetacatUI is an open source project, and we welcome full
@@ -58,11 +68,22 @@ Development is managed through the git repository at https://github.com/NCEAS/me
 
 **main**. Releases are merged from the `develop` branch to the `main` branch, and the resulting commit is tagged with the release tag (e.g., `2.4.0`). The tip of the `main` branch always reflects the most recent release of the software. The version number in all configuration files and the README on the `main` branch follows [semantic versioning](https://semver.org/) and should always be set to the current release version, for example, `2.8.5`.
 
-**develop**. The `develop` branch is a stable branch that is constantly maintained in a state ready for release. Commits should only be pushed to this branch once they are ready to be deployed to production immediately after being pushed. Any unreleased code changes on the develop branch represent changes that have been tested and staged for the next release. The tip of the develop branch always represents the set of features that have been staged for the next release. Commits are added to the develop branch via a pull request or after consultation with the designated MetacatUI product owner.
+**develop**. The `develop` branch is a stable branch that is constantly
+maintained in a state ready for release. Commits should only be pushed to this
+branch once they are ready to be deployed to production immediately after being
+pushed. Any unreleased code changes on the develop branch represent changes that
+have been tested and staged for the next release. The tip of the develop branch
+always represents the set of features that have been staged for the next
+release. Commits are added to the develop branch via a pull request or after
+consultation with the designated MetacatUI product owner.
 
-**feature**. to isolate development on a specific set of capabilities, especially if it may be disruptive to other developers working on the main `develop` branch, feature branches should be created.
+**feature**. to isolate development on a specific set of capabilities,
+especially if it may be disruptive to other developers working on the main
+`develop` branch, feature branches should be created.
 
-Feature branches are named as `feature-` + `#{issue}` + `-{short-description}-`. With `{issue}` being the Github issue number related to that new feature. e.g. `feature-#1456-new-search`.
+Feature branches are named as `feature-` + `#{issue}` + `-{short-description}-`.
+With `{issue}` being the Github issue number related to that new feature. e.g.
+`feature-#1456-new-search`.
 
 All `feature-*` branches should be frequently merged with changes from `develop` to
 ensure that the feature branch stays up to date with other features that have
@@ -70,8 +91,9 @@ been tested and are awaiting release. Thus, each `feature-*` branch represents a
 for integration testing of the set of features intended to work together for a
 particular release.
 
-**dev-X.X**. Development branches named after their minor version number can be used when a patch release
-needs to be created that is behind the main **develop** branch.
+**dev-X.X**. Development branches named after their minor version number can be
+used when a patch release needs to be created that is behind the main
+**develop** branch.
 
 **bugfix**. A final branch type are `bugfix` branches, which work the same as feature branches, but fix bugs rather than adding new functionality. Bugfix branches are named similarly, following the pattern: `bugfix-` + `{issue}` + `-{short-description}`, with `{issue}` being the GitHub issue number related to that bug. e.g. `bugfix-83-fix-name-display`.
 
@@ -79,9 +101,11 @@ needs to be created that is behind the main **develop** branch.
 
 ```mermaid
 %%{init: {  'theme': 'base',
+%%{init: {  'theme': 'base',
             'gitGraph': {
                 'rotateCommitLabel': false,
                 'showCommitLabel': false
+            },
             },
             'themeVariables': {
               'commitLabelColor': '#ffffffff',
@@ -109,7 +133,7 @@ gitGraph
     merge develop id: "11" tag: "v1.1.0"
 ```
 
-## Release process
+### 🚀 Release Process
 
 1. Our release process starts with integration testing in a `develop` branch. Once all
    changes that are desired in a release are merged into the `develop` branch, we run
@@ -200,43 +224,37 @@ When submitting a pull request (PR) to MetacatUI, it's essential to adhere not o
 
 9. **Security Assessment**: Ensure that any security implications of your changes are thoroughly considered and addressed.
 
-## Contributor license agreement
+## 📄 Contributor license agreement
 
-In order to clarify the intellectual property license
-granted with Contributions from any person or entity, you agree to
-a Contributor License Agreement ("CLA") with the Regents of the University of
-California (hereafter, the "Regents").
+In order to clarify the intellectual property license granted with Contributions
+from any person or entity, you agree to a Contributor License Agreement ("CLA")
+with the Regents of the University of California (hereafter, the "Regents").
 
-1. Definitions.
-   "You" (or "Your") shall mean the copyright owner or legal entity
-   authorized by the copyright owner that is making this Agreement
-   with the Regents. For legal entities, the entity making a
-   Contribution and all other entities that control, are controlled
-   by, or are under common control with that entity are considered to
-   be a single Contributor. For the purposes of this definition,
-   "control" means (i) the power, direct or indirect, to cause the
-   direction or management of such entity, whether by contract or
-   otherwise, or (ii) ownership of fifty percent (50%) or more of the
-   outstanding shares, or (iii) beneficial ownership of such entity.
-   "Contribution" shall mean any original work of authorship,
-   including any modifications or additions to an existing work, that
-   is intentionally submitted by You to the Regents for inclusion
-   in, or documentation of, any of the products owned or managed by
-   the Regents (the "Work"). For the purposes of this definition,
-   "submitted" means any form of electronic, verbal, or written
-   communication sent to the Regents or its representatives,
-   including but not limited to communication on electronic mailing
-   lists, source code control systems, and issue tracking systems that
-   are managed by, or on behalf of, the Regents for the purpose of
-   discussing and improving the Work, but excluding communication that
-   is conspicuously marked or otherwise designated in writing by You
-   as "Not a Contribution."
-2. Grant of Copyright License. Subject to the terms and conditions of
-   this Agreement, You hereby grant to the Regents and to
-   recipients of software distributed by the Regents a perpetual,
-   worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-   copyright license to reproduce, prepare derivative works of,
-   publicly display, publicly perform, sublicense, and distribute Your
+1. Definitions. "You" (or "Your") shall mean the copyright owner or legal entity
+   authorized by the copyright owner that is making this Agreement with the
+   Regents. For legal entities, the entity making a Contribution and all other
+   entities that control, are controlled by, or are under common control with
+   that entity are considered to be a single Contributor. For the purposes of
+   this definition, "control" means (i) the power, direct or indirect, to cause
+   the direction or management of such entity, whether by contract or otherwise,
+   or (ii) ownership of fifty percent (50%) or more of the outstanding shares,
+   or (iii) beneficial ownership of such entity. "Contribution" shall mean any
+   original work of authorship, including any modifications or additions to an
+   existing work, that is intentionally submitted by You to the Regents for
+   inclusion in, or documentation of, any of the products owned or managed by
+   the Regents (the "Work"). For the purposes of this definition, "submitted"
+   means any form of electronic, verbal, or written communication sent to the
+   Regents or its representatives, including but not limited to communication on
+   electronic mailing lists, source code control systems, and issue tracking
+   systems that are managed by, or on behalf of, the Regents for the purpose of
+   discussing and improving the Work, but excluding communication that is
+   conspicuously marked or otherwise designated in writing by You as "Not a
+   Contribution."
+2. Grant of Copyright License. Subject to the terms and conditions of this
+   Agreement, You hereby grant to the Regents and to recipients of software
+   distributed by the Regents a perpetual, worldwide, non-exclusive, no-charge,
+   royalty-free, irrevocable copyright license to reproduce, prepare derivative
+   works of, publicly display, publicly perform, sublicense, and distribute Your
    Contributions and such derivative works.
 3. Grant of Patent License. Subject to the terms and conditions of
    this Agreement, You hereby grant to the Regents and to

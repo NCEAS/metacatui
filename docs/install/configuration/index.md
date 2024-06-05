@@ -104,7 +104,7 @@ MetacatUI.AppConfig = Object.assign(
 );
 ```
 
-You could use this `AppConfig` as your primary application configuration by setting the [`appConfigPath`](<(../docs/global.html#appConfigPath)>)
+You could use this `AppConfig` as your primary application configuration by setting the [`appConfigPath`](../docs/global.html#appConfigPath)
 to this file path. Or it can be used as additional configurations on top of a primary configuration file.
 
 ## Advanced customization by extending models and views

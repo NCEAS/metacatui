@@ -21,23 +21,27 @@ define([
       /** @inheritdoc */
       model: ZoomPresetModel,
 
-        /**
-         * @param {Object[]} zoomPresets The raw list of objects that represent
-         * the zoom presets, to be converted into ZoomPresetModels.
-         * @param {MapAssets} allLayers All of the layers available for display
-         * in the map.
-         */
-        parse({ zoomPresetObjects, allLayers }) {
-          if (isNonEmptyArray(zoomPresetObjects)) {
-            const zoomPresets = zoomPresetObjects.map(zoomPresetObj => {
-              const enabledLayerIds = [];
-              const enabledLayerLabels = [];
-              for (const layer of allLayers.models) {
-                if (zoomPresetObj.layerIds?.find(id => id === layer.get('layerId'))) {
-                  enabledLayerIds.push(layer.get('layerId'));
-                  enabledLayerLabels.push(layer.get('label'));
-                }
+      /**
+       * @param {Object[]} zoomPresets The raw list of objects that represent
+       * the zoom presets, to be converted into ZoomPresetModels.
+       * @param {MapAsset[]} allLayers All of the layers available for display
+       * in the map.
+       */
+      parse({ zoomPresetObjects, allLayers }) {
+        if (isNonEmptyArray(zoomPresetObjects)) {
+          const zoomPresets = zoomPresetObjects.map((zoomPresetObj) => {
+            const enabledLayerIds = [];
+            const enabledLayerLabels = [];
+            for (const layer of allLayers) {
+              if (
+                zoomPresetObj.layerIds?.find(
+                  (id) => id === layer.get("layerId"),
+                )
+              ) {
+                enabledLayerIds.push(layer.get("layerId"));
+                enabledLayerLabels.push(layer.get("label"));
               }
+            }
 
             return new ZoomPresetModel(
               {
