@@ -3,7 +3,12 @@ define([
   "models/maps/AssetCategory",
   "/test/js/specs/unit/views/maps/LayerCategoryItemViewHarness.js",
   "/test/js/specs/shared/clean-state.js",
-], (LayerCategoryItemView, AssetCategory, LayerCategoryItemViewHarness, cleanState) => {
+], (
+  LayerCategoryItemView,
+  AssetCategory,
+  LayerCategoryItemViewHarness,
+  cleanState,
+) => {
   const expect = chai.expect;
   const sandbox = sinon.createSandbox();
   const stub = sandbox.stub;
@@ -29,7 +34,8 @@ define([
       });
 
       it("creates layer items with isCategorized set to true", () => {
-        expect(state.view.layerListView.layerItemViews[0].isCategorized).to.be.true;
+        expect(state.view.layerListView.layerItemViews[0].isCategorized).to.be
+          .true;
       });
     });
 

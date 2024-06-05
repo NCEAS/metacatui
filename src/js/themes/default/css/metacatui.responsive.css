@@ -1,38 +1,35 @@
 /* Smartphones (portrait and landscape) ----------- */
-@media only screen
-and (min-width : 320px)
-and (max-width : 480px) {
+@media only screen and (min-width: 320px) and (max-width: 480px) {
+  #Navbar {
+    background-color: #166194;
+  }
 
-	#Navbar{
-		background-color: #166194;
-	}
-
-	#Navbar .navbar li{
-		border-bottom: 1px solid #1D8EDC;
-	}
+  #Navbar .navbar li {
+    border-bottom: 1px solid #1d8edc;
+  }
 }
-@media only screen and (min-width : 900px) {
+@media only screen and (min-width: 900px) {
   /* At large widths, always show the non-mobile nav menu, especially if it was previously hidden via the mobile nav-trigger */
-  #main-nav{
+  #main-nav {
     display: block !important;
   }
 }
 
-@media only screen and (max-width : 900px) {
+@media only screen and (max-width: 900px) {
   /* At smaller widths, give more height for the temporary message */
   .has-temporary-message #Content {
-      padding-top: 135px;
+    padding-top: 135px;
   }
-	.PortalView #main-nav .dropdown-menu > li > a,
-	.Portal.Editor #main-nav .dropdown-menu > li > a ,
-	.PortalView #nav-trigger,
-	.Portal.Editor #nav-trigger  {
-		color: #888;
-	}
+  .PortalView #main-nav .dropdown-menu > li > a,
+  .Portal.Editor #main-nav .dropdown-menu > li > a,
+  .PortalView #nav-trigger,
+  .Portal.Editor #nav-trigger {
+    color: #888;
+  }
 }
-@media only screen and (max-width : 500px) {
+@media only screen and (max-width: 500px) {
   /* At smaller widths, give more height for the temporary message */
   .has-temporary-message #Content {
-      padding-top: 175px;
+    padding-top: 175px;
   }
 }

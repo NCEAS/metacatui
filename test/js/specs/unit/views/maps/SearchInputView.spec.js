@@ -70,24 +70,36 @@ define([
         state.harness.typeQuery("123");
         state.harness.hitEnter();
 
-        expect(state.harness.getSearchButton().hasClass("search-input__search-button--active")).to.be.true;
+        expect(
+          state.harness
+            .getSearchButton()
+            .hasClass("search-input__search-button--active"),
+        ).to.be.true;
 
         state.harness.typeQuery("");
         state.harness.hitEnter();
 
-        expect(state.harness.getSearchButton().hasClass("search-input__search-button--active")).to.be.false;
+        expect(
+          state.harness
+            .getSearchButton()
+            .hasClass("search-input__search-button--active"),
+        ).to.be.false;
       });
 
       it("only shows cancel button if there is input", () => {
         state.harness.typeQuery("123");
         state.harness.hitEnter();
 
-        expect(state.harness.getCancelButtonContainer().css("display")).to.not.equal("none");
+        expect(
+          state.harness.getCancelButtonContainer().css("display"),
+        ).to.not.equal("none");
 
         state.harness.typeQuery("");
         state.harness.hitEnter();
 
-        expect(state.harness.getCancelButtonContainer().css("display")).to.equal("none");
+        expect(
+          state.harness.getCancelButtonContainer().css("display"),
+        ).to.equal("none");
       });
 
       it("clears error text", () => {
@@ -160,10 +172,9 @@ define([
 
         expect(state.harness.hasErrorInput()).to.be.true;
       });
-
     });
 
-    it('calls blurCallback on blur', () => {
+    it("calls blurCallback on blur", () => {
       state.view.blurCallback = spy;
 
       state.harness.blurInput();
@@ -171,7 +182,7 @@ define([
       expect(spy.callCount).to.equal(1);
     });
 
-    it('calls focusCallback on focus', () => {
+    it("calls focusCallback on focus", () => {
       state.view.focusCallback = spy;
 
       state.harness.focusInput();
@@ -179,43 +190,43 @@ define([
       expect(spy.callCount).to.equal(1);
     });
 
-    it('calls keyupCallback on keyup', () => {
+    it("calls keyupCallback on keyup", () => {
       state.view.keyupCallback = spy;
 
-      state.harness.keyup('a');
+      state.harness.keyup("a");
 
       expect(spy.callCount).to.equal(1);
     });
 
-    it('calls keydownCallback on keydown', () => {
+    it("calls keydownCallback on keydown", () => {
       state.view.keydownCallback = spy;
 
-      state.harness.keydown('a');
+      state.harness.keydown("a");
 
       expect(spy.callCount).to.equal(1);
     });
 
-    it('clears errors on keydown when input is empty', () => {
+    it("clears errors on keydown when input is empty", () => {
       state.view.setError("ERR");
 
       expect(state.harness.hasErrorInput()).to.be.true;
 
-      state.harness.keydown('');
+      state.harness.keydown("");
 
       expect(state.harness.hasErrorInput()).to.be.false;
     });
 
-    it('focuses the input field on focus', () => {
+    it("focuses the input field on focus", () => {
       state.view.focus();
 
-      expect(state.harness.getInput().is(':focus')).to.be.true;
+      expect(state.harness.getInput().is(":focus")).to.be.true;
     });
 
-    it('blurs the input field on blur', () => {
+    it("blurs the input field on blur", () => {
       state.view.focus();
       state.view.blur();
 
-      expect(state.harness.getInput().is(':focus')).to.be.false;
+      expect(state.harness.getInput().is(":focus")).to.be.false;
     });
   });
 });

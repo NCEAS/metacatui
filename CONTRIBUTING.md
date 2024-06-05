@@ -17,7 +17,7 @@
 ## Types of contributions
 
 We welcome all types of contributions, including bug fixes, feature enhancements,
-bug reports, documentation, graphics, and many others.  You might consider contributing by:
+bug reports, documentation, graphics, and many others. You might consider contributing by:
 
 - Report a bug or request a new feature in our [issue tracker](https://github.com/NCEAS/metacatui/issues)
 - Fix a bug and contribute the code with a Pull Request
@@ -28,8 +28,8 @@ bug reports, documentation, graphics, and many others.  You might consider contr
 - ...
 
 MetacatUI is an open source project, and we welcome full
-participation in the project.  Contributions are reviewed and suggestions are
-made to increase the value of MetacatUI to the community.  We strive to
+participation in the project. Contributions are reviewed and suggestions are
+made to increase the value of MetacatUI to the community. We strive to
 incorporate code, documentation, and other useful contributions quickly and
 efficiently while maintaining a high-quality repository software product.
 
@@ -38,6 +38,7 @@ If you have any questions about contributing, please feel free to ask on the
 on the [DataONE Slack team](https://slack.dataone.org/).
 
 ## Pull Requests
+
 We use the pull-request model for contributions. See [GitHub's help on pull-requests](https://help.github.com/articles/about-pull-requests/).
 
 In short:
@@ -53,7 +54,7 @@ In short:
 
 ## Development Workflow
 
-Development is managed through the git repository at https://github.com/NCEAS/metacatui.  The repository is organized into several branches, each with a specific purpose.  
+Development is managed through the git repository at https://github.com/NCEAS/metacatui. The repository is organized into several branches, each with a specific purpose.
 
 **main**. Releases are merged from the `develop` branch to the `main` branch, and the resulting commit is tagged with the release tag (e.g., `2.4.0`). The tip of the `main` branch always reflects the most recent release of the software. The version number in all configuration files and the README on the `main` branch follows [semantic versioning](https://semver.org/) and should always be set to the current release version, for example, `2.8.5`.
 
@@ -65,22 +66,23 @@ Feature branches are named as `feature-` + `#{issue}` + `-{short-description}-`.
 
 All `feature-*` branches should be frequently merged with changes from `develop` to
 ensure that the feature branch stays up to date with other features that have
-been tested and are awaiting release.  Thus, each `feature-*` branch represents an opportunity
+been tested and are awaiting release. Thus, each `feature-*` branch represents an opportunity
 for integration testing of the set of features intended to work together for a
 particular release.
 
 **dev-X.X**. Development branches named after their minor version number can be used when a patch release
 needs to be created that is behind the main **develop** branch.
 
-**bugfix**. A final branch type are `bugfix` branches, which work the same as feature branches, but fix bugs rather than adding new functionality. Bugfix branches are named similarly, following the pattern: `bugfix-` + `{issue}` +  `-{short-description}`, with `{issue}` being the GitHub issue number related to that bug. e.g. `bugfix-83-fix-name-display`.
+**bugfix**. A final branch type are `bugfix` branches, which work the same as feature branches, but fix bugs rather than adding new functionality. Bugfix branches are named similarly, following the pattern: `bugfix-` + `{issue}` + `-{short-description}`, with `{issue}` being the GitHub issue number related to that bug. e.g. `bugfix-83-fix-name-display`.
 
 ### Development flow overview
+
 ```mermaid
-%%{init: {  'theme': 'base', 
+%%{init: {  'theme': 'base',
             'gitGraph': {
                 'rotateCommitLabel': false,
                 'showCommitLabel': false
-            },            
+            },
             'themeVariables': {
               'commitLabelColor': '#ffffffff',
               'commitLabelBackground': '#000000'
@@ -110,8 +112,8 @@ gitGraph
 ## Release process
 
 1. Our release process starts with integration testing in a `develop` branch. Once all
-changes that are desired in a release are merged into the `develop` branch, we run
-the full set of tests on a clean checkout of the `develop` branch.
+   changes that are desired in a release are merged into the `develop` branch, we run
+   the full set of tests on a clean checkout of the `develop` branch.
 2. After testing, the `develop` branch is merged to main.
 3. Then the `main` branch can be tagged with the new version number (e.g. `2.11.2`).
 4. Releases can be downloaded from the [Github releases page for the MetacatUI repository](https://github.com/NCEAS/metacatui/releases).
@@ -121,9 +123,9 @@ the full set of tests on a clean checkout of the `develop` branch.
 **Unit and integration tests**. MetacatUI has a full suite of unit tests and
 integration tests in the `tests` subdirectory.
 Any new code developed should include a robust set of unit tests for each public
-method, as well as integration tests from new feature sets.  Tests should fully
+method, as well as integration tests from new feature sets. Tests should fully
 exercise the feature to ensure that it responds correctly to both good data inputs
-and various classes of corrupt or bad data.  All tests should pass before submitting a PR
+and various classes of corrupt or bad data. All tests should pass before submitting a PR
 or merging to `develop`.
 
 Tests are automatically run via GitHub Actions. Check the root `README.md` file
@@ -136,7 +138,7 @@ Read more documentation about how tests are run and viewed in [/test/README.md](
 ## Code style
 
 Code should be written to professional standards to enable clean, well-documented,
-readable, and maintainable software.  While there has been significant variability
+readable, and maintainable software. While there has been significant variability
 in the coding styles applied historically, new contributions should strive for
 clean code formatting.
 
@@ -145,19 +147,23 @@ clean code formatting.
 All JavaScript code should be fully documented with [JSDoc](https://jsdoc.app/) comments.
 
 For Models and Views:
+
 - Gives a brief overview of what the class / file does and give a few short example of how you might use the class / file.
 - Create a screenshot of the View and use the `@screenshot` tag to include it in the built docs.
 - Use the `@classcategory` tag to organize the class file in the built docs navigational menu
 
 For Model and View methods:
+
 - Say what each class method does and how to use it (use `@param` and `@returns`)
 - Use `@example` tags to give examples of parameters and return values
 - Use `@fires` to indicate Backbone Events that are fired by a method
 
 For Model and View attributes:
+
 - Describe the purpose of the attribute, its `@default` value, and one or more `@example`s
 
 For everything:
+
 - Use the `@since` tag to indicate the version the class/method/attribute was added
 - Use `@deprecated` for deprecated APIs and features
 - Use `@link` to link to other JSDoc pages when mentioning other classes, attributes, and methods (e.g. `{@link Model#method}`)
@@ -257,7 +263,7 @@ California (hereafter, the "Regents").
    your Contributions to the Regents, or that your employer has
    executed a separate Corporate CLA with the Regents.
 5. You represent that each of Your Contributions is Your original
-   creation (see section 7 for submissions on behalf of others).  You
+   creation (see section 7 for submissions on behalf of others). You
    represent that Your Contribution submissions include complete
    details of any third-party license or other restriction (including,
    but not limited to, related patents and trademarks) of which you

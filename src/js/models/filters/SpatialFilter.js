@@ -2,7 +2,7 @@ define([
   "underscore",
   "jquery",
   "models/filters/Filter",
-  "collections/maps/Geohashes"
+  "collections/maps/Geohashes",
 ], function (_, $, Filter, Geohashes) {
   /**
    * @classdesc A SpatialFilter represents a spatial constraint on the query to
@@ -132,7 +132,7 @@ define([
        * a GeoBoundingBox model
        * @since 2.25.0
        */
-      getBounds: function (as="object") {
+      getBounds: function (as = "object") {
         const coords = {
           north: this.get("north"),
           south: this.get("south"),
@@ -245,7 +245,7 @@ define([
           if (precisions.length === 1) {
             return this.createBaseFilter(
               precisions,
-              geohashes.getAllHashStrings()
+              geohashes.getAllHashStrings(),
             ).getQuery();
           }
 
@@ -258,8 +258,8 @@ define([
               filters.add(
                 this.createBaseFilter(
                   [precision],
-                  geohashes.getAllHashStrings(precision)
-                )
+                  geohashes.getAllHashStrings(precision),
+                ),
               );
             }
           });
@@ -313,7 +313,7 @@ define([
 
           //Insert the matchSubstring node
           $(matchSubstringNode).insertBefore(
-            $updatedDOM.children("value").first()
+            $updatedDOM.children("value").first(),
           );
 
           //Return the updated DOM
@@ -334,7 +334,7 @@ define([
         this.removeListeners();
 
         let df = this.defaults();
-        
+
         this.set({
           values: df.values,
           east: df.east,
@@ -343,11 +343,11 @@ define([
           south: df.south,
           height: df.height,
         });
-        
+
         // Reset the listeners
         this.setListeners();
       },
-    }
+    },
   );
   return SpatialFilter;
 });

@@ -96,7 +96,7 @@ define([
         try {
           if (!this.model) {
             console.warn(
-              "An EMLMissingValueCodeView model is required to render this view."
+              "An EMLMissingValueCodeView model is required to render this view.",
             );
             return this;
           }
@@ -187,7 +187,7 @@ define([
         // The model must be part of a collection to remove it from anything
         if (!this.model.collection) {
           console.warn(
-            "The model must be part of a collection to render a remove button."
+            "The model must be part of a collection to render a remove button.",
           );
           return;
         }
@@ -260,7 +260,7 @@ define([
         // Remove the view from the DOM
         this.remove();
       },
-    }
+    },
   );
 
   return EMLMissingValueCodeView;

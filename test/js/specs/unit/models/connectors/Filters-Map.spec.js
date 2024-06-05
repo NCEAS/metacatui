@@ -80,6 +80,6 @@ define([
         const spatialFilters = this.filtersMap.get("spatialFilters");
         spatialFilters[0].get("values").should.deep.equal([]);
       });
-    }); 
+    });
   });
 });

@@ -1,81 +1,99 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-    <head>
-        <meta charset="UTF-8"/>
-        <title>MetacatUI Tests</title>
-        <link rel="stylesheet" href="https://unpkg.com/mocha@9.2.2/mocha.css" />
-    </head>
-    <body>
-        <h1 id="test-header"></h1>
-        <div id="error"></div>
-        <div id="mocha"></div>
-        <script type="text/javascript" src="https://unpkg.com/chai@4.3.6/chai.js"></script>
-        <script type="text/javascript" src="https://unpkg.com/mocha@9.2.2/mocha.js"></script>
-        <script type="text/javascript" src="../node_modules/sinon/pkg/sinon.js"></script>
-        <script type="text/javascript">
-          var MetacatUI = {
-            AppConfig: {
-              root: "/src"
-            },
-            customAppConfig: function(){
-              //Start Mocha when the app is initialized
-              MetacatUI.appModel.on("appInitialized", mochaExec);
-            }
-          }
+  <head>
+    <meta charset="UTF-8" />
+    <title>MetacatUI Tests</title>
+    <link rel="stylesheet" href="https://unpkg.com/mocha@9.2.2/mocha.css" />
+  </head>
+  <body>
+    <h1 id="test-header"></h1>
+    <div id="error"></div>
+    <div id="mocha"></div>
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/chai@4.3.6/chai.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/mocha@9.2.2/mocha.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="../node_modules/sinon/pkg/sinon.js"
+    ></script>
+    <script type="text/javascript">
+      var MetacatUI = {
+        AppConfig: {
+          root: "/src",
+        },
+        customAppConfig: function () {
+          //Start Mocha when the app is initialized
+          MetacatUI.appModel.on("appInitialized", mochaExec);
+        },
+      };
 
-          //Get the App Config file for the test suite
-          fetch("config/appconfig.json")
-            .then(response => response.json())
-            .then(appconfig => {
-              MetacatUI.AppConfig = Object.assign(appconfig, MetacatUI.AppConfig);
-              //Load the configuration file
-              let script = document.createElement("script");
-              script.src = "/src/loader.js"
-              document.getElementsByTagName("body")[0].appendChild(script);
-            })
-        </script>
-        <script class="mocha-init">
-          mocha.setup('bdd');
-          mocha.checkLeaks();
-        </script>
-        <script class="mocha-exec">
-          const mochaExec = function(){
+      //Get the App Config file for the test suite
+      fetch("config/appconfig.json")
+        .then((response) => response.json())
+        .then((appconfig) => {
+          MetacatUI.AppConfig = Object.assign(appconfig, MetacatUI.AppConfig);
+          //Load the configuration file
+          let script = document.createElement("script");
+          script.src = "/src/loader.js";
+          document.getElementsByTagName("body")[0].appendChild(script);
+        });
+    </script>
+    <script class="mocha-init">
+      mocha.setup("bdd");
+      mocha.checkLeaks();
+    </script>
+    <script class="mocha-exec">
+      const mochaExec = function () {
+        /*
+         * Load all the tests from the tests.json file
+         * Separate Unit tests from Integration tests so that they can be run separately,
+         * especially unit tests which should be run continuously during development.
+         * Pass the `type` URL search parameter (e.g. `/test?type=integration`) to run tests other than the default `unit` type.
+         */
+        console.log("Fetching test JSON file");
 
-            /* 
-             * Load all the tests from the tests.json file
-             * Separate Unit tests from Integration tests so that they can be run separately, 
-             * especially unit tests which should be run continuously during development.
-             * Pass the `type` URL search parameter (e.g. `/test?type=integration`) to run tests other than the default `unit` type.
-             */
-            console.log("Fetching test JSON file")
+        fetch("config/tests.json")
+          .then((response) => response.json())
+          .then((testList) => {
+            let testType = window.location.search.substring(
+              window.location.search.indexOf("type=") + 5,
+            );
 
-            fetch("config/tests.json")
-              .then(response => response.json())
-              .then(testList => {
-
-                let testType = window.location.search.substring(window.location.search.indexOf("type=")+5);
-                
-                if(testType && testList[testType]?.length){
-                  document.getElementById("test-header").textContent = testType + " tests";
-                  // Use RequireJS to load in the tests, because RequireJS will not be happy loading them in any other way
-                  require(testList[testType], function() {
-                      mocha.run();
-                  });
-                }
-                else{
-                  // Use RequireJS to load in the tests, because RequireJS will not be happy loading them in any other way
-                  let combinedTests = Object.values(testList).flat();
-                  require(['./js/specs/shared/mock-gmaps-module.js', ...combinedTests], function() {
-                    mocha.run();
-                  }, function(err) {
-                    document.getElementById("error").textContent = "Error loading tests: " + JSON.stringify(err);
-                  });
-                }
+            if (testType && testList[testType]?.length) {
+              document.getElementById("test-header").textContent =
+                testType + " tests";
+              // Use RequireJS to load in the tests, because RequireJS will not be happy loading them in any other way
+              require(testList[testType], function () {
+                mocha.run();
+              });
+            } else {
+              // Use RequireJS to load in the tests, because RequireJS will not be happy loading them in any other way
+              let combinedTests = Object.values(testList).flat();
+              require([
+                "./js/specs/shared/mock-gmaps-module.js",
+                ...combinedTests,
+              ], function () {
+                mocha.run();
+              }, function (err) {
+                document.getElementById("error").textContent =
+                  "Error loading tests: " + JSON.stringify(err);
               });
             }
-       </script>
-    </body>
-    <style type="text/css">
-      #test-header{ margin: 20px 60px; text-transform: capitalize; font-family: Tahoma; font-weight: normal;}
-    </style>
+          });
+      };
+    </script>
+  </body>
+  <style type="text/css">
+    #test-header {
+      margin: 20px 60px;
+      text-transform: capitalize;
+      font-family: Tahoma;
+      font-weight: normal;
+    }
+  </style>
 </html>

@@ -21,9 +21,7 @@ define([
       });
     });
 
-
     describe("setting user interactions", function () {
-
       it("should set the mouse position", function () {
         const model = new MapInteraction();
         const position = { longitude: 1, latitude: 2 };
@@ -53,18 +51,22 @@ define([
 
     it("should set feature with one map assets collection", () => {
       const model = new MapInteraction();
-      model.set("mapModel", new Map({
-        layerCategories: [
-          { layers: [{}] },
-          { layers: [{}, {}] },
-        ],
-      }));
+      model.set(
+        "mapModel",
+        new Map({
+          layerCategories: [{ layers: [{}] }, { layers: [{}, {}] }],
+        }),
+      );
       const currentFeatures = new Features();
       model.set("selectedFeatures", currentFeatures);
       const spy = sinon.spy();
       currentFeatures.set = spy;
 
-      model.setFeatures(new Features([{ label: "feature" }]), /* type= */ "selectedFeatures", true);
+      model.setFeatures(
+        new Features([{ label: "feature" }]),
+        /* type= */ "selectedFeatures",
+        true,
+      );
 
       expect(spy.callCount).to.equal(1);
       expect(spy.args[0][1].assets).to.be.instanceof(MapAssets);

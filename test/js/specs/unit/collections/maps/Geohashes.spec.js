@@ -1,5 +1,5 @@
 define(["../../../../../../../../src/js/collections/maps/Geohashes"], function (
-  Geohashes
+  Geohashes,
 ) {
   // Configure the Chai assertion library
   const should = chai.should();

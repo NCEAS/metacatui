@@ -8,7 +8,7 @@ define([], function () {
 
     typeQuery(searchString) {
       this.view.getInput().val(searchString);
-      this.view.getInput().trigger('keyup');
+      this.view.getInput().trigger("keyup");
     }
 
     clickSearch() {
@@ -58,5 +58,5 @@ define([], function () {
     hasErrorInput() {
       return this.view.getInputField().hasClass("search-input__error-input");
     }
-  }
+  };
 });

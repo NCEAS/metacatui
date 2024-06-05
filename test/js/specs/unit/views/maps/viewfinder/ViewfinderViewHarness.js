@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 define([], function () {
   return class ViewFinderViewHarness {
@@ -9,5 +9,5 @@ define([], function () {
     hasZoomPresets() {
       return !!this.view.getZoomPresets().html();
     }
-  }
+  };
 });
