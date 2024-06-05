@@ -20,9 +20,9 @@ define([
   ZoomPresets,
 ) => {
   /**
-   * Determine if array is empty. 
+   * Determine if array is empty.
    * @param {Array} a The array in question.
-   * @returns {boolean} Whether the array is empty. 
+   * @returns {boolean} Whether the array is empty.
    */
   function isNonEmptyArray(a) {
     return a && a.length && Array.isArray(a);

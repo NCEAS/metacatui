@@ -1,14 +1,14 @@
 "use strict";
 
-define([
-  "underscore",
-  "backbone",
-  "models/maps/viewfinder/ZoomPresetModel",
-], (_, Backbone, ZoomPresetModel) => {
+define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
+  _,
+  Backbone,
+  ZoomPresetModel,
+) => {
   /**
-   * Determine if array is empty. 
+   * Determine if array is empty.
    * @param {Array} a The array in question.
-   * @returns {boolean} Whether the array is empty. 
+   * @returns {boolean} Whether the array is empty.
    */
   function isNonEmptyArray(a) {
     return a && a.length && Array.isArray(a);
@@ -39,11 +39,11 @@ define([
        */
 
       /**
-       * Parse values and return a list of models for creating a 
+       * Parse values and return a list of models for creating a
        * Backbone.Collection.
-       * @param {ZoomPresetsParseOptions} object Values to be parsed into the 
+       * @param {ZoomPresetsParseOptions} object Values to be parsed into the
        * Backbone.Collection.
-       * @returns {ZoomPresets} A collection of models representative of the 
+       * @returns {ZoomPresets} A collection of models representative of the
        * values passed in.
        */
       parse({ zoomPresetObjects, allLayers }) {
@@ -51,7 +51,7 @@ define([
           const zoomPresets = zoomPresetObjects.map((zoomPresetObj) => {
             const enabledLayerIds = [];
             const enabledLayerLabels = [];
-            allLayers.models.forEach(layer => {
+            allLayers.models.forEach((layer) => {
               if (
                 zoomPresetObj.layerIds?.find(
                   (id) => id === layer.get("layerId"),
