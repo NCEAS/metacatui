@@ -1,42 +1,9 @@
-# Default values for metacatui.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-source:
-  ## source.from The source for the metacatui source code. Options are "package", "git", or "pvc"
-  ## * "package" will download a release package from the metacatui git repository, unzip it, and
-  ##    install the files in local pod storage (emptyDir{})
-  ## * "git" will clone a specific branch or tag from the metacatui git repository, and install the
-  ##    files in local pod storage (emptyDir{})
-  ## * "pvc" expects to find a pre-configured PVC containing the files to be used. Note you will
-  ##    need to provide values for a pre-configured PVC in 'volumes', below
-  ##
-  from: package
-
-  ## git settings ignored unless 'source.from:' is set to 'git'
-  git:
-    ## source.git.repoUrl the https url of the repo to be cloned
-    repoUrl: "https://github.com/NCEAS/metacatui.git"
-
-    ## source.git.revision can be any string that makes sense after the command `git checkout`...
-    ## - for example:
-    ##     git checkout tags/2.29.0    =>     revision: "tags/2.29.0"
-    ##     git checkout develop        =>     revision: "develop"
-    ##
-    revision: "develop"
-
-  package:
-    ## source.package.location The remote location where the release zipfile is hosted
-    ##
-    location: "https://github.com/NCEAS/metacatui/archive"
-
-    ## source.package.version The release version. Assumes release is a zipfile named <version>.zip
-    ## example:
-    ##    location: "https://github.com/NCEAS/metacatui/archive"
-    ##    version: "2.29.1"
-    ## will download:   https://github.com/NCEAS/metacatui/archive/2.29.1.zip
-    ##
-    version: "2.29.1"
+## Default values for metacatui.
+## This is a YAML-formatted file.
+## Edit values, then install and/or upgrade using:
+##
+## $  helm upgrade --install releasename -n mynamespace ./relative/path/to/helm/directory
+##
 
 ## appConfig contains the MetacatUI.AppConfig settings that can be overridden. Uses a configMap to
 ## define MetacatUI.AppConfig, replacing the version of config/config.js found on the mounted drive.
@@ -70,26 +37,8 @@ appConfig:
 
   ## appConfig.theme Corresponds to the name of a directory in src/js/themes/. 'default' if not set
   ##
-  theme: "default"
+  theme: "knb"
 
-
-## volumes Uncomment and provide values if you want to use a pre-configured PVC instead of doing a
-## git checkout
-#volumes:
-#  ## volumes.name substitute your own release name, but do NOT change the '-mcui-source-files' part
-#  - name: <Your-Release-Name>-mcui-source-files
-#    persistentVolumeClaim:
-#      claimName: <Your-Pre-Configured-pvc>
-
-image:
-  repository: nginx
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
-
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
 
 livenessProbe:
   httpGet:
@@ -100,37 +49,12 @@ readinessProbe:
     path: /
     port: http
 
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: false
-  # Automatically mount a ServiceAccount's API credentials?
-  automount: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
-
-podAnnotations: {}
-podLabels: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
 service:
   type: ClusterIP
   port: 80
 
-## ingress typically disabled here and handled by metacat helm chart. Example settings below for
-## local dev
+## ingress typically disabled here (enabled: false) and handled by metacat helm chart.
+## Example settings below for local dev
 ##
 ingress:
   enabled: false
@@ -138,16 +62,83 @@ ingress:
   annotations:
     kubernetes.io/ingress.class: traefik
   hosts:
-    - host: firn.local    # hostname of local machine
+    - host: myMacbookPro.local    # example hostname of local machine
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: mcui-metacatui  # Assumes the service is exposed in the mcui namespace
+            name: mcui-metacatui  # Assumes the service is exposed in the 'mcui' namespace
             port:
               number: 80
   tls: []
+
+
+## source  The source from which to retrieve the metacatui code. NOTE: Changes should not be needed
+## here, unless you wish to deviate from the official metacatui release version defined in the
+## helm chart (see Chart.yaml)
+##
+source:
+  ## source.from  Options are "package" (the default), "git", or "pvc"
+  ## * "package" will download a release package from the metacatui git repository, unzip it, and
+  ##    install the files in local pod storage (emptyDir{})
+  ## * "git" will clone a specific branch or tag from the metacatui git repository, and install the
+  ##    files in local pod storage (emptyDir{})
+  ## * "pvc" expects to find a pre-configured PVC containing the files to be used. Note you will
+  ##    need to provide values for a pre-configured PVC in 'volumes', below
+  ##
+  from: package
+
+  ## source.package (default): use the package version defined in Chart.yaml, unless overridden here
+  ## Note these settings ignored unless 'source.from:' is set to 'package'
+  ## example:
+  ##    source.package.location: "https://github.com/NCEAS/metacatui/archive"
+  ##    source.package.version: "2.26.0"
+  ## ...will download:   https://github.com/NCEAS/metacatui/archive/2.26.0.zip
+  ##
+  package:
+    ## source.package.location The remote location where the release zipfile is hosted
+    ##
+    location: "https://github.com/NCEAS/metacatui/archive"
+
+    ## source.package.version override the release version defined in Chart.yaml
+    ## Assumes release is a zipfile named <version>.zip
+    ## LEAVE COMMENTED UNLESS YOU NEED TO OVERRIDE THE CHART SETTING!
+  #    version: "2.29.1"
+
+  ## source.git clone a specific branch or tag from the metacatui git repository, and install the
+  ## files in local pod storage (emptyDir{})
+  ## Note these settings ignored unless 'source.from:' is set to 'git'
+  ##
+#  git:
+#    ## source.git.repoUrl the https url of the repo to be cloned
+#    repoUrl: "https://github.com/NCEAS/metacatui.git"
+#
+#    ## source.git.revision can be any string that makes sense after the command `git checkout`...
+#    ## - for example:
+#    ##     git checkout tags/2.29.0    =>     revision: "tags/2.29.0"
+#    ##     git checkout develop        =>     revision: "develop"
+#    ##
+#    revision: "develop"
+
+## volumes Uncomment and provide values if you want to use a pre-configured PVC instead of doing a
+## git checkout
+#volumes:
+#  ## volumes.name substitute your own release name, but do NOT change the '-mcui-source-files' part
+#  - name: <Your-Release-Name>-mcui-source-files
+#    persistentVolumeClaim:
+#      claimName: <Your-Pre-Configured-pvc>
+
+
+image: {}
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+serviceAccount: {}
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -170,7 +161,5 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
 
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}

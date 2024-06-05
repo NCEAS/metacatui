@@ -51,10 +51,11 @@ spec:
             - -c
             - >
               start=$(date +%s);
-              FILENAME={{ .Values.source.package.version }}.zip;
+              VERSION={{ .Values.source.package.version | default .Chart.AppVersion }}
+              FILENAME=$VERSION.zip;
               wget -O ./$FILENAME {{ .Values.source.package.location }}/$FILENAME;
               unzip $FILENAME -d /tmp/;
-              mv /tmp/metacatui-{{ .Values.source.package.version }}/*  /metacatui/;
+              mv /tmp/metacatui-$VERSION/*  /metacatui/;
               finish=$(date +%s);
               echo "$FILENAME download and install took $((finish - start)) sec";
         {{- end }}
@@ -66,8 +67,9 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ .Values.image.repository | default "nginx" }}:
+                        {{- .Values.image.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
