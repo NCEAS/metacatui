@@ -37,7 +37,8 @@ define([
       /**
        * Gets a single, flattened MapAssets collection from the AssetCategory
        * group in the collection.
-       * @returns {MapAssets}
+       * @returns {MapAssets} A single MapAssets collection constructed from
+       * groups of MapAsset models.
        */
       getMapAssetsFlat() {
         return new MapAssets(
@@ -49,7 +50,7 @@ define([
 
       /**
        * Gets an array of MapAssets, one from each AssetCategory model.
-       * @returns {MapAssets[]}
+       * @returns {MapAssets[]} A list of MapAssets collections.
        */
       getMapAssets() {
         return this.map((assetCategory) => {

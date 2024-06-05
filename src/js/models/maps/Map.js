@@ -367,7 +367,7 @@ define([
        * Reset the visibility of all layers to the value that was in the intial
        * configuration.
        */
-      resetLayerVisibility: function () {
+      resetLayerVisibility() {
         this.get("allLayers").forEach((layer) => {
           layer.set("visible", layer.get("originalVisibility"));
         });
