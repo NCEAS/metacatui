@@ -1,29 +1,15 @@
 MetacatUI.AppConfig = {
-    root: {{ .Values.appConfig.root | quote }},
-    theme: {{ .Values.appConfig.theme | quote }},
-    baseUrl: {{ .Values.appConfig.baseUrl | quote }}
-    {{/* Add any new keys to these lists, and they will be populated automatically if set */}}
-    {{- $optionalStringValues := list
-        "d1CNBaseUrl"
-        "mapKey"
-        "mdqBaseUrl"
-        "dataoneSearchUrl"
-        "googleAnalyticsKey"
-        "bioportalAPIKey"
-        "cesiumToken"
-    -}}
-    {{- $optionalIntValues := list
-        "portalLimit"
-    -}}
-    {{- range $key, $value := .Values.appConfig }}
-        {{- if has $key $optionalStringValues }}
-            {{- (printf ",") }}
-            {{- (printf "%s: \"%s\"" $key (toString $value)) | nindent 6 }}
-        {{- else }}
-            {{- if has $key $optionalIntValues }}
-                {{- (printf ",") }}
-                {{- (printf "%s: %s" $key (toString $value)) | nindent 6 }}
-            {{- end }}
-        {{- end }}
-    {{- end }}
+  {{- $ignoreList := list "enabled" "root" "baseUrl" -}}
+  {{- range $key, $value := .Values.appConfig }}
+      {{- if not (has $key $ignoreList) }}
+          {{- if eq (typeOf $value) "string" }}
+              {{- $key | nindent 4 }}: {{ $value | quote }},
+          {{- else }}
+              {{- $key | nindent 4 }}: {{ $value }},
+          {{- end }}
+      {{- end }}
+  {{- end -}}
+  {{/* These go last, so we can handle the trailing comma */}}
+  root: {{ required "root is REQUIRED" .Values.appConfig.root | quote }},
+  baseUrl: {{ required "baseUrl is REQUIRED" .Values.appConfig.baseUrl | quote }}
 }
