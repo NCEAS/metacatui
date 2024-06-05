@@ -44,13 +44,25 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/* global define */
-define(['underscore', 'jquery', 'backbone', 'bioportal',
-  'models/metadata/eml211/EMLAnnotation',
-  'views/AnnotationView',
-  'text!templates/metadata/eml-measurement-type.html',
-  'text!templates/metadata/eml-measurement-type-annotations.html'],
-
+            <pre class="prettyprint source linenums"><code>define([
+  "underscore",
+  "jquery",
+  "backbone",
+  "bioportal",
+  "models/metadata/eml211/EMLAnnotation",
+  "views/AnnotationView",
+  "text!templates/metadata/eml-measurement-type.html",
+  "text!templates/metadata/eml-measurement-type-annotations.html",
+], function (
+  _,
+  $,
+  Backbone,
+  BioPortal,
+  EMLAnnotation,
+  AnnotationView,
+  EMLMeasurementTypeTemplate,
+  EMLMeasurementTypeAnnotationsTemplate,
+) {
   /**
    * @class EMLMeasurementTypeView
    * @classdec The EMLMeasurementTypeView is a view to render a specialized
@@ -59,10 +71,8 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
    * @classcategory Views/Metadata
    * @extends Backbone.View
    */
-  function (_, $, Backbone, BioPortal, EMLAnnotation, AnnotationView, EMLMeasurementTypeTemplate, EMLMeasurementTypeAnnotationsTemplate) {
-    var EMLMeasurementTypeView = Backbone.View.extend(
-      /** @lends EMLMeasurementTypeView.prototype */{
-
+  var EMLMeasurementTypeView = Backbone.View.extend(
+    /** @lends EMLMeasurementTypeView.prototype */ {
       tagName: "div",
       className: "eml-measurement-type row-fluid",
       template: _.template(EMLMeasurementTypeTemplate),
@@ -70,7 +80,7 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
 
       events: {
         "click .remove": "handleRemove",
-        "change .notfound" : "handleMeasurementTypeNotFound",
+        "change .notfound": "handleMeasurementTypeNotFound",
       },
 
       /**
@@ -94,7 +104,8 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
        * to start at the root of the tree and set it to a class/term URI
        * to root the tree at that class/term
        */
-      startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType",
+      startingRoot:
+        "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType",
 
       /**
        * The label for the property that goes with terms selected with this
@@ -106,7 +117,8 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
        * The URI of for the property that goes with terms selected with this
        * interface as well as the terms inserted
        */
-      filterURI: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#containsMeasurementsOfType",
+      filterURI:
+        "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#containsMeasurementsOfType",
 
       initialize: function (options) {
         this.model = options.model;
@@ -127,20 +139,31 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
           startingRoot: this.startingRoot || "roots",
           jumpAfterSelect: true,
           selectFromAutocomplete: true,
-          afterJumpToClass: function(cls) {
-            var foundClass = viewRef.$("ul.ncboTree").find("a[data-id='" + encodeURIComponent(cls) + "']");
+          afterJumpToClass: function (cls) {
+            var foundClass = viewRef
+              .$("ul.ncboTree")
+              .find("a[data-id='" + encodeURIComponent(cls) + "']");
 
             if (foundClass.length &lt;= 0) {
               return;
             }
 
-            foundClass[0].scrollIntoView(false)
-          }
+            foundClass[0].scrollIntoView(false);
+          },
         });
 
-        tree.on("afterSelect", function(event, classId, prefLabel, selectedNode) {
-          viewRef.selectConcept.call(viewRef, event, classId, prefLabel, selectedNode)
-        });
+        tree.on(
+          "afterSelect",
+          function (event, classId, prefLabel, selectedNode) {
+            viewRef.selectConcept.call(
+              viewRef,
+              event,
+              classId,
+              prefLabel,
+              selectedNode,
+            );
+          },
+        );
 
         tree.init();
       },
@@ -152,27 +175,34 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
        * selectConcept and handleRemove to update the list as annotations
        * are added and removed
        */
-      renderAnnotations: function() {
+      renderAnnotations: function () {
         var viewRef = this;
 
-        var filtered = _.filter(this.model.get("annotation"), function(annotation) {
-          return annotation.get("propertyURI") === viewRef.filterURI;
-        });
+        var filtered = _.filter(
+          this.model.get("annotation"),
+          function (annotation) {
+            return annotation.get("propertyURI") === viewRef.filterURI;
+          },
+        );
 
         var templateData = {
-          annotations: _.map(filtered, function(annotation) {
-            return {
-              propertyLabel: annotation.get("propertyLabel"),
-              propertyURI: annotation.get("propertyURI"),
-              valueLabel: annotation.get("valueLabel"),
-              valueURI: annotation.get("valueURI"),
-              contextString: "This attribute",
-            }
-          }, this)
+          annotations: _.map(
+            filtered,
+            function (annotation) {
+              return {
+                propertyLabel: annotation.get("propertyLabel"),
+                propertyURI: annotation.get("propertyURI"),
+                valueLabel: annotation.get("valueLabel"),
+                valueURI: annotation.get("valueURI"),
+                contextString: "This attribute",
+              };
+            },
+            this,
+          ),
         };
 
         this.$(".measurement-type-annotations").html(
-          this.annotationsTemplate(templateData)
+          this.annotationsTemplate(templateData),
         );
 
         // Create AnnotationViews for each Measurement Type so we have nice
@@ -192,12 +222,12 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
        * @param {string} prefLabel - The selected term's prefLabel
        * @param {Element} selectedNode - The clicked element
        */
-      selectConcept: function(event, classId, prefLabel, selectedNode) {
+      selectConcept: function (event, classId, prefLabel, selectedNode) {
         var anno = new EMLAnnotation({
           propertyLabel: this.filterLabel,
           propertyURI: this.filterURI,
           valueLabel: prefLabel,
-          valueURI: classId
+          valueURI: classId,
         });
 
         if (!this.model.get("annotation")) {
@@ -240,7 +270,7 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
        *
        * @param {Event} e - A click event handler
        */
-      handleRemove: function(e) {
+      handleRemove: function (e) {
         // First we find the container div for the annotation so we can get
         // the values to match against from data properties
         var annotationEl = $(e.target).parents(".annotation");
@@ -250,7 +280,7 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
         }
 
         var valueLabel = $(annotationEl).data("value-label"),
-            valueURI = $(annotationEl).data("value-uri");
+          valueURI = $(annotationEl).data("value-uri");
 
         if (!valueLabel || !valueURI) {
           return;
@@ -267,14 +297,18 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
        * @param {string} attribute - The model attribute to pull from
        * @param {string} value - The value to compare with
        */
-      removeAnnotationsBy: function(attribute, value) {
+      removeAnnotationsBy: function (attribute, value) {
         // Remove by index now that we've found the right one
         var existing = this.model.get("annotation");
 
         // Remove annotations matching the input
-        var filtered = _.reject(existing, function(anno) {
-          return anno.get(attribute) === value;
-        }, this);
+        var filtered = _.reject(
+          existing,
+          function (anno) {
+            return anno.get(attribute) === value;
+          },
+          this,
+        );
 
         this.model.set("annotation", filtered);
         this.model.trickleUpChange();
@@ -293,18 +327,19 @@ define(['underscore', 'jquery', 'backbone', 'bioportal',
        *
        * @param {Event} e - The click event
        */
-      handleMeasurementTypeNotFound: function(e) {
+      handleMeasurementTypeNotFound: function (e) {
         if (e.target.checked) {
           this.removeAnnotationsBy("propertyURI", this.filterURI);
           this.$el.find(".measurement-type-browse").hide();
         } else {
           this.$el.find(".measurement-type-browse").show();
         }
-      }
-    });
+      },
+    },
+  );
 
-    return EMLMeasurementTypeView;
-  });
+  return EMLMeasurementTypeView;
+});
 </code></pre>
         </article>
     </section>
