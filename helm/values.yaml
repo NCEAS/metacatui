@@ -2,10 +2,49 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
+source:
+  ## source.from The source for the metacatui source code. Options are "package", "git", or "pvc"
+  ## * "package" will download a release package from the metacatui git repository, unzip it, and
+  ##    install the files in local pod storage (emptyDir{})
+  ## * "git" will clone a specific branch or tag from the metacatui git repository, and install the
+  ##    files in local pod storage (emptyDir{})
+  ## * "pvc" expects to find a pre-configured PVC containing the files to be used. Note you will
+  ##    need to provide values for a pre-configured PVC in 'volumes', below
+  ##
+  from: package
+
+  ## git settings ignored unless 'source.from:' is set to 'git'
+  git:
+    ## source.git.repoUrl the https url of the repo to be cloned
+    repoUrl: "https://github.com/NCEAS/metacatui.git"
+
+    ## source.git.revision can be any string that makes sense after the command `git checkout`...
+    ## - for example:
+    ##     git checkout tags/2.29.0    =>     revision: "tags/2.29.0"
+    ##     git checkout develop        =>     revision: "develop"
+    ##
+    revision: "develop"
+
+  package:
+    ## source.package.location The remote location where the release zipfile is hosted
+    ##
+    location: "https://github.com/NCEAS/metacatui/archive"
+
+    ## source.package.version The release version. Assumes release is a zipfile named <version>.zip
+    ## example:
+    ##    location: "https://github.com/NCEAS/metacatui/archive"
+    ##    version: "2.29.1"
+    ## will download:   https://github.com/NCEAS/metacatui/archive/2.29.1.zip
+    ##
+    version: "2.29.1"
 
 ## appConfig contains the MetacatUI.AppConfig settings that can be overridden. Uses a configMap to
 ## define MetacatUI.AppConfig, replacing the version of config/config.js found on the mounted drive.
+##
+## You can define any attributes here, that will be automatically inserted into config/config.js.
+## For a full list of attributes that can be overridden, see AppModel.js:
+## https://github.com/NCEAS/metacatui/blob/main/src/js/models/AppModel.js
+##
 ## Note that changes to the configMap will not be read unless the pod is restarted, and changes to
 ## these values will not be reflected in the configMap unless you do a 'helm upgrade'.
 ##
@@ -15,51 +54,30 @@ appConfig:
   ##
   enabled: true
 
-  ## appConfig.root (required) The url root to be appended after the appConfig.baseUrl, below
+  ## appConfig.root (required) The url root to be appended after the appConfig.baseUrl, below.
   ##
   root: "/"
 
-  ## appConfig.theme (required) Corresponds to the name of one of the directories in src/js/themes/
-  ##
-  theme: "default"
-
-  ## appConfig.baseUrl (required) the base url (typically defined by the ingress)
+  ## appConfig.baseUrl (required) the base url. (Typically defined by the ingress; used to contact
+  ## the metacat API.)
   ##
   baseUrl: "http://localhost:8080/"
 
-  ## Optional configuration -- leave commented to use metacatui default values
+  ## Optional configuration. Note you can define any attributes here, to override those that would
+  ## normally appear in config.js. See full listing in AppModel.js:
+  ## https://github.com/NCEAS/metacatui/blob/main/src/js/models/AppModel.js
   ##
-#  d1CNBaseUrl: "https://cn-sandbox.test.dataone.org/cn"
-#  mapKey: "your-map-key-here"
-#  mdqBaseUrl: "https://localhost:8080:30443/quality"
-#  dataoneSearchUrl: "https://search-stage.test.dataone.org"
-#  portalLimit: 100
-#  googleAnalyticsKey: "your-google-analytics-key-here"
-#  bioportalAPIKey: "your-bio-portal-api-key-here"
-#  cesiumToken: "your-cesium-token-here"
 
-
-git:
-  ## git.enabled set 'true' to create an initContainer and do a git checkout of the metacatui files
-  ## NOTE: If you set git.enabled: 'false', then you will need to provide values for 'volumes'
-  ## that
-  enabled: true
-
-  ## git.repoUrl the https url of the repo to be cloned
-  repoUrl: "https://github.com/NCEAS/metacatui.git"
-
-  ## git.revision can be any string that makes sense after the command `git checkout`... - for
-  ## example:
-  ##     git checkout tags/2.29.0    =>     revision: "tags/2.29.0"
-  ##     git checkout develop        =>     revision: "develop"
+  ## appConfig.theme Corresponds to the name of a directory in src/js/themes/. 'default' if not set
   ##
-  revision: "main"
+  theme: "default"
+
 
 ## volumes Uncomment and provide values if you want to use a pre-configured PVC instead of doing a
 ## git checkout
 #volumes:
-#  ## volumes.name substitute your own release name, but do NOT change the '-mcui-static-files' part
-#  - name: <Your-Release-Name>-mcui-static-files
+#  ## volumes.name substitute your own release name, but do NOT change the '-mcui-source-files' part
+#  - name: <Your-Release-Name>-mcui-source-files
 #    persistentVolumeClaim:
 #      claimName: <Your-Pre-Configured-pvc>
 
@@ -73,14 +91,14 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
-#livenessProbe:
-#  httpGet:
-#    path: /
-#    port: http
-#readinessProbe:
-#  httpGet:
-#    path: /
-#    port: http
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -111,16 +129,16 @@ service:
   type: ClusterIP
   port: 80
 
+## ingress typically disabled here and handled by metacat helm chart. Example settings below for
+## local dev
+##
 ingress:
   enabled: false
-  className: traefik
+  className: traefik    # enable in rancher desktop
   annotations:
-    #traefik.ingress.kubernetes.io/router.entrypoints: web
     kubernetes.io/ingress.class: traefik
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: firn.local
+    - host: firn.local    # hostname of local machine
       paths:
       - path: /
         pathType: Prefix
@@ -130,9 +148,6 @@ ingress:
             port:
               number: 80
   tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -146,12 +161,13 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+replicaCount: 1
+
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
 
