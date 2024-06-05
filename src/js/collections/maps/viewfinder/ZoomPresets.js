@@ -4,7 +4,16 @@ define([
   "underscore",
   "backbone",
   "models/maps/viewfinder/ZoomPresetModel",
-], function (_, Backbone, ZoomPresetModel) {
+], (_, Backbone, ZoomPresetModel) => {
+  /**
+   * Determine if array is empty. 
+   * @param {Array} a The array in question.
+   * @returns {boolean} Whether the array is empty. 
+   */
+  function isNonEmptyArray(a) {
+    return a && a.length && Array.isArray(a);
+  }
+
   /**
    * @class ZoomPresets
    * @classdesc A ZoomPresets collection is a group of ZoomPresetModel models
@@ -12,9 +21,9 @@ define([
    * selects.
    * @class ZoomPresets
    * @classcategory Collections/Maps
-   * @extends Backbone.Collection
+   * @augments Backbone.Collection
    * @since 2.29.0
-   * @constructor
+   * @class
    */
   const ZoomPresets = Backbone.Collection.extend(
     /** @lends ZoomPresets.prototype */ {
@@ -22,17 +31,27 @@ define([
       model: ZoomPresetModel,
 
       /**
-       * @param {Object[]} zoomPresets The raw list of objects that represent
+       * @typedef {object} ZoomPresetsParseOptions
+       * @property {object} zoomPresets The raw list of objects that represent
        * the zoom presets, to be converted into ZoomPresetModels.
-       * @param {MapAsset[]} allLayers All of the layers available for display
+       * @property {MapAsset[]} allLayers All of the layers available for display
        * in the map.
+       */
+
+      /**
+       * Parse values and return a list of models for creating a 
+       * Backbone.Collection.
+       * @param {ZoomPresetsParseOptions} object Values to be parsed into the 
+       * Backbone.Collection.
+       * @returns {ZoomPresets} A collection of models representative of the 
+       * values passed in.
        */
       parse({ zoomPresetObjects, allLayers }) {
         if (isNonEmptyArray(zoomPresetObjects)) {
           const zoomPresets = zoomPresetObjects.map((zoomPresetObj) => {
             const enabledLayerIds = [];
             const enabledLayerLabels = [];
-            for (const layer of allLayers.models) {
+            allLayers.models.forEach(layer => {
               if (
                 zoomPresetObj.layerIds?.find(
                   (id) => id === layer.get("layerId"),
@@ -41,7 +60,7 @@ define([
                 enabledLayerIds.push(layer.get("layerId"));
                 enabledLayerLabels.push(layer.get("label"));
               }
-            }
+            });
 
             return new ZoomPresetModel(
               {
@@ -66,10 +85,6 @@ define([
       },
     },
   );
-
-  function isNonEmptyArray(a) {
-    return a && a.length && Array.isArray(a);
-  }
 
   return ZoomPresets;
 });

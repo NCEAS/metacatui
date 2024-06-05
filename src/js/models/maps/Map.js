@@ -9,7 +9,7 @@ define([
   "collections/maps/AssetCategories",
   "models/maps/GeoPoint",
   "collections/maps/viewfinder/ZoomPresets",
-], function (
+], (
   $,
   _,
   Backbone,
@@ -18,7 +18,16 @@ define([
   AssetCategories,
   GeoPoint,
   ZoomPresets,
-) {
+) => {
+  /**
+   * Determine if array is empty. 
+   * @param {Array} a The array in question.
+   * @returns {boolean} Whether the array is empty. 
+   */
+  function isNonEmptyArray(a) {
+    return a && a.length && Array.isArray(a);
+  }
+
   /**
    * @class MapModel
    * @classdesc The Map Model contains all of the settings and options for a
@@ -26,16 +35,16 @@ define([
    * @classcategory Models/Maps
    * @name MapModel
    * @since 2.18.0
-   * @extends Backbone.Model
+   * @augments Backbone.Model
    */
-  var MapModel = Backbone.Model.extend(
+  const MapModel = Backbone.Model.extend(
     /** @lends MapModel.prototype */ {
       /**
        * Configuration options for a {@link MapModel} that control the
        * appearance of the map, the data/imagery displayed, and which UI
        * components are rendered. A MapConfig object can be used when
        * initializing a Map model, e.g. `new Map(myMapConfig)`
-       * @namespace {Object} MapConfig
+       * @namespace {object} MapConfig
        * @property {MapConfig#CameraPosition} [homePosition] - A set of
        * coordinates that give the (3D) starting point of the Viewer. This
        * position is also where the "home" button in the Cesium widget will
@@ -134,7 +143,7 @@ define([
       /**
        * Coordinates that describe a camera position for Cesium. Requires at
        * least a longitude and latitude.
-       * @typedef {Object} MapConfig#CameraPosition
+       * @typedef {object} MapConfig#CameraPosition
        * @property {number} longitude - Longitude of the central home point
        * @property {number} latitude - Latitude of the central home point
        * @property {number} [height] - Height above sea level (meters)
@@ -227,7 +236,7 @@ define([
        * UI appears within the ViewfinderView.
        * UI appears within the ViewfinderView.
        */
-      defaults: function () {
+      defaults() {
         return {
           homePosition: {
             longitude: -65,
@@ -266,13 +275,9 @@ define([
        * for the map. If any config option is not specified, the default will be
        * used instead (see {@link MapModel#defaults}).
        */
-      initialize: function (config) {
+      initialize(config) {
         try {
           if (config && config instanceof Object) {
-            function isNonEmptyArray(a) {
-              return a && a.length && Array.isArray(a);
-            }
-
             if (isNonEmptyArray(config.layerCategories)) {
               const assetCategories = new AssetCategories(
                 config.layerCategories,
@@ -316,7 +321,7 @@ define([
        * @returns {MapInteraction} The new interactions model.
        * @since 2.27.0
        */
-      setUpInteractions: function () {
+      setUpInteractions() {
         const interactions = new Interactions({
           mapModel: this,
         });
@@ -330,7 +335,7 @@ define([
        * @param {Feature[]} features - An array of Feature models to select.
        * since 2.28.0
        */
-      selectFeatures: function (features) {
+      selectFeatures(features) {
         this.get("interactions")?.selectFeatures(features);
       },
 
@@ -339,7 +344,7 @@ define([
        * @returns {Features} The selected Feature collection.
        * @since 2.27.0
        */
-      getSelectedFeatures: function () {
+      getSelectedFeatures() {
         return this.get("interactions")?.get("selectedFeatures");
       },
 
@@ -352,14 +357,14 @@ define([
        * zoom to. See {@link CesiumWidgetView#flyTo} for more details on types
        * of targets.
        */
-      zoomTo: function (target) {
+      zoomTo(target) {
         this.get("interactions")?.set("zoomTarget", target);
       },
 
       /**
        * Indicate that the map widget view should navigate to the home position.
        */
-      flyHome: function () {
+      flyHome() {
         this.zoomTo(this.get("homePosition"));
       },
 
@@ -379,7 +384,7 @@ define([
        * @returns {MapAssets} The new layers collection.
        * @since 2.25.0
        */
-      resetLayers: function () {
+      resetLayers() {
         const newLayers = this.defaults()?.layers || new MapAssets();
         this.set("layers", newLayers);
         return newLayers;
@@ -410,7 +415,7 @@ define([
        * @returns {MapAsset} The new layer model.
        * @since 2.25.0
        */
-      addAsset: function (asset) {
+      addAsset(asset) {
         const layers = this.get("layers") || this.resetLayers();
         return layers.addAsset(asset, this);
       },
@@ -420,7 +425,7 @@ define([
        * @param {MapAsset} asset - The layer model to remove from the map.
        * @since 2.27.0
        */
-      removeAsset: function (asset) {
+      removeAsset(asset) {
         if (!asset) return;
         const layers = this.get("layers");
         if (!layers) return;
