@@ -7,7 +7,7 @@ define([
   "models/maps/Map",
   "text!templates/maps/map.html",
   // SubViews
-  "views/maps/CesiumWidgetView",
+  "views/maps/CesiumWidgetContainerView",
   "views/maps/ToolbarView",
   "views/maps/ScaleBarView",
   "views/maps/FeatureInfoView",
@@ -21,7 +21,7 @@ define([
   Map,
   Template,
   // SubViews
-  CesiumWidgetView,
+  CesiumWidgetContainerView,
   ToolbarView,
   ScaleBarView,
   FeatureInfoView,
@@ -159,25 +159,17 @@ define([
 
       /**
        * Renders the view that shows the map/globe and all of the geo-spatial data.
-       * Currently, this uses the CesiumWidgetView, but this function could be modified
+       * Currently, this uses the CesiumWidgetContainerView, but this function could be modified
        * to use an alternative map widget in the future.
-       * @returns {CesiumWidgetView} Returns the rendered view
+       * @returns {CesiumWidgetContainerView} Returns the rendered view
        */
       renderMapWidget: function () {
-        try {
-          this.mapWidget = new CesiumWidgetView({
-            el: this.subElements.mapWidgetContainer,
-            model: this.model,
-          });
-          this.mapWidget.render();
-          return this.mapWidget;
-        } catch (error) {
-          console.log(
-            "There was an error rendering the map widget in a MapView" +
-              ". Error details: " +
-              error,
-          );
-        }
+        this.mapWidgetContainer = new CesiumWidgetContainerView({
+          el: this.subElements.mapWidgetContainer,
+          model: this.model,
+        });
+        this.mapWidgetContainer.render();
+        return this.mapWidgetContainer;
       },
 
       /**
@@ -325,7 +317,7 @@ define([
        */
       getSubViews: function () {
         return [
-          this.mapWidget,
+          this.mapWidgetContainer,
           this.toolbar,
           this.featureInfo,
           this.layerDetails,
