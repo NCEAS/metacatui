@@ -10,7 +10,7 @@ define([
   "views/maps/LayerListView",
   "views/maps/ExpansionPanelView",
   "models/maps/ExpansionPanelsModel",
-], function (
+], (
   $,
   _,
   Backbone,
@@ -20,7 +20,7 @@ define([
   LayerListView,
   ExpansionPanelView,
   ExpansionPanelsModel,
-) {
+) => {
   /**
    * @class LayerCategoryListView
    * @classdesc A LayerCategoryListView shows a collection of AssetCategories, each with
@@ -54,7 +54,7 @@ define([
 
       /**
        * Executed when a new LayerCategoryListView is created
-       * @param {Object} options - A literal object with options to pass to the view
+       * @param {object} options - A literal object with options to pass to the view
        */
       initialize(options) {
         if (options.collection instanceof AssetCategories) {
@@ -76,7 +76,7 @@ define([
 
       /**
        * Renders this view
-       * @return {LayerCategoryListView} Returns the rendered view element
+       * @returns {LayerCategoryListView} Returns the rendered view element
        */
       render() {
         this.panels = _.forEach(this.panels, (panel) => {

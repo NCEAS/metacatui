@@ -5,7 +5,7 @@ define([
   "models/maps/Map",
   "collections/maps/MapAssets",
   "common/IconUtilities",
-], function (Backbone, MapModel, MapAssets, IconUtilities) {
+], (Backbone, MapModel, MapAssets, IconUtilities) => {
   /**
    * @classdesc A AssetCategory Model contains metadata about the category, like a label and an icon.
    * @classcategory Models/Maps
@@ -26,7 +26,7 @@ define([
       /**
        * Default attributes for AssetCategory models
        * @name AssetCategory#defaults
-       * @type {Object}
+       * @type {object}
        * @property {string} label A user friendly name for this category, to be displayed
        * in a map.
        * @property {string} icon
@@ -69,9 +69,7 @@ define([
        */
       initialize(categoryConfig) {
         if (!categoryConfig?.layers) {
-          throw new Error(
-            "Category " + categoryConfig.label + " has empty layers.",
-          );
+          throw new Error(`Category ${categoryConfig.label} has empty layers.`);
         }
         this.set("mapAssets", new MapAssets(categoryConfig.layers));
 

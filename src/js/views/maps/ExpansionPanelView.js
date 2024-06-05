@@ -7,7 +7,7 @@ define(["underscore", "backbone", "text!templates/maps/expansion-panel.html"], (
 ) => {
   // The base classname to use for this View's template elements.
   const BASE_CLASS = "expansion-panel";
-  //The HTML classes to use for this view's HTML elements.
+  // The HTML classes to use for this view's HTML elements.
   const CLASS_NAMES = {
     title: `${BASE_CLASS}__title`,
     content: `${BASE_CLASS}__content`,
@@ -21,12 +21,12 @@ define(["underscore", "backbone", "text!templates/maps/expansion-panel.html"], (
    * @classdesc Allow expand and collapse content in a panel.
    * @classcategory Views/Maps/Viewfinder
    * @name ExpansionPanelView
-   * @extends Backbone.View
+   * @augments Backbone.View
    * @screenshot views/maps/ExpansionPanelView.png
    * @since 2.29.0
    * @constructs ExpansionPanelView
    */
-  var ExpansionPanelView = Backbone.View.extend(
+  const ExpansionPanelView = Backbone.View.extend(
     /** @lends ExpansionPanelView.prototype */ {
       /**
        * The type of View this is
@@ -39,7 +39,7 @@ define(["underscore", "backbone", "text!templates/maps/expansion-panel.html"], (
 
       /**
        * The events this view will listen to and the associated function to call.
-       * @type {Object}
+       * @type {object}
        */
       events() {
         return {
@@ -48,7 +48,7 @@ define(["underscore", "backbone", "text!templates/maps/expansion-panel.html"], (
       },
 
       /**
-       * @typedef {Object} ExpansionPanelViewOptions
+       * @typedef {object} ExpansionPanelViewOptions
        * @property {string} title The displayed label for this panel.
        * @property {string} icon The icon displayed in the panel's clickable
        * label.
@@ -75,9 +75,9 @@ define(["underscore", "backbone", "text!templates/maps/expansion-panel.html"], (
       }) {
         this.templateVars = {
           classNames: CLASS_NAMES,
-          icon: icon,
-          isSvgIcon: isSvgIcon,
-          title: title,
+          icon,
+          isSvgIcon,
+          title,
         };
         this.contentViewInstance = contentViewInstance;
         this.panelsModel = panelsModel;
@@ -88,7 +88,7 @@ define(["underscore", "backbone", "text!templates/maps/expansion-panel.html"], (
 
       /**
        * Getter function for the content div.
-       * @return {HTMLDivElement} Returns the content element.
+       * @returns {HTMLDivElement} Returns the content element.
        */
       getContent() {
         return this.$el.find(`.${CLASS_NAMES.content}`);
