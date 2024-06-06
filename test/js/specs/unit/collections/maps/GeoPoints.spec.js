@@ -1,5 +1,5 @@
 define(["../../../../../../../../src/js/collections/maps/GeoPoints"], function (
-  GeoPoints
+  GeoPoints,
 ) {
   // Configure the Chai assertion library
   var should = chai.should();

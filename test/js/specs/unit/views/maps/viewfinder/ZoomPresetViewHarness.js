@@ -7,7 +7,7 @@ define([], function () {
     }
 
     click() {
-      this.view.$el.find('.viewfinder-zoom-preset__preset').click();
+      this.view.$el.find(".viewfinder-zoom-preset__preset").click();
     }
 
     reset() {
@@ -15,19 +15,19 @@ define([], function () {
     }
 
     isActive() {
-      return this.view.$el.hasClass('viewfinder-zoom-preset--active');
+      return this.view.$el.hasClass("viewfinder-zoom-preset--active");
     }
 
     getTitle() {
-      return this.view.$el.find('.viewfinder-zoom-preset__title').text();
+      return this.view.$el.find(".viewfinder-zoom-preset__title").text();
     }
 
     getDescription() {
-      return this.view.$el.find('.viewfinder-zoom-preset__description').text();
+      return this.view.$el.find(".viewfinder-zoom-preset__description").text();
     }
 
-    getEnabledLayers(){
-      return this.view.$el.find('.viewfinder-zoom-preset__layers').text();
+    getEnabledLayers() {
+      return this.view.$el.find(".viewfinder-zoom-preset__layers").text();
     }
-  }
+  };
 });

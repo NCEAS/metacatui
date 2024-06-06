@@ -1,4 +1,3 @@
-/* global define */
 define([
   "underscore",
   "jquery",
@@ -85,7 +84,7 @@ define([
             this.editTemplate({
               edit: this.edit,
               model: this.model.toJSON(),
-            })
+            }),
           );
 
           if (this.isNew) {
@@ -127,10 +126,10 @@ define([
         //Are the NW and SE points the same? i.e. is this a single point and not
         //a box?
         var isSinglePoint =
-          this.model.get("north") != null &&
-          this.model.get("north") == this.model.get("south") &&
-          this.model.get("west") != null &&
-          this.model.get("west") == this.model.get("east"),
+            this.model.get("north") != null &&
+            this.model.get("north") == this.model.get("south") &&
+            this.model.get("west") != null &&
+            this.model.get("west") == this.model.get("east"),
           hasEmptyInputs =
             this.$("[data-attribute='north']").val() == "" ||
             this.$("[data-attribute='south']").val() == "" ||
@@ -205,7 +204,7 @@ define([
         } else {
           //Find out if we are missing a complete NW or SE point
           var isMissingNWPoint =
-            this.model.get("north") == null && this.model.get("west") == null,
+              this.model.get("north") == null && this.model.get("west") == null,
             isMissingSEPoint =
               this.model.get("south") == null && this.model.get("east") == null;
 
@@ -239,7 +238,7 @@ define([
             this.model.get("parentModel").type == "EML" &&
             _.contains(
               MetacatUI.rootDataPackage.models,
-              this.model.get("parentModel")
+              this.model.get("parentModel"),
             )
           ) {
             MetacatUI.rootDataPackage.packageModel.set("changed", true);
@@ -261,7 +260,7 @@ define([
         //Query for the EMlGeoCoverageView element that the user is actively
         //interacting with
         var activeGeoCovEl = $(document.activeElement).parents(
-          ".eml-geocoverage"
+          ".eml-geocoverage",
         );
 
         //If the user is not actively in this view, then exit
@@ -301,7 +300,7 @@ define([
         // Highlight the fields that need to be fixed
         fields.forEach((field) => {
           this.$("[data-attribute='" + field + "']").addClass("error");
-        })
+        });
         // Show the combined error message
         this.$(".notification").text(errorMessages).addClass("error");
       },
@@ -320,7 +319,7 @@ define([
         this.$el.removeClass("new");
         this.isNew = false;
       },
-    }
+    },
   );
 
   return EMLGeoCoverageView;

@@ -39,12 +39,15 @@ define([
     describe("setMapModel", () => {
       it("sets mapModel attribute to mapAssets models", () => {
         expect(state.model.get("mapAssets")).to.have.lengthOf(1);
-        expect(state.model.get("mapAssets").at(0).get("mapModel")).to.be.undefined;
+        expect(state.model.get("mapAssets").at(0).get("mapModel")).to.be
+          .undefined;
 
         const map = new Map();
         state.model.setMapModel(map);
 
-        expect(state.model.get("mapAssets").at(0).get("mapModel")).to.equal(map);
+        expect(state.model.get("mapAssets").at(0).get("mapModel")).to.equal(
+          map,
+        );
       });
     });
   });

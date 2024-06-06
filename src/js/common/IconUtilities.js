@@ -1,25 +1,22 @@
-/*global define */
 define([
   "models/portals/PortalImage",
   "showdown",
-  "showdownXssFilter"
-],
-	function(PortalImage, showdown, showdownXss) {
-	'use strict';
+  "showdownXssFilter",
+], function (PortalImage, showdown, showdownXss) {
+  "use strict";
 
   // The start of a base64 encoded SVG string
-  const B64_START = 'data:image/svg+xml;base64,';
+  const B64_START = "data:image/svg+xml;base64,";
 
-	/**
-  * @namespace IconUtilities
-  * @description A generic utility object that contains functions used throughout
-  * MetacatUI to perform useful functions related to icons, but not used to store or
-  * manipulate any state about the application.
-  * @type {object}
-  * @since 2.28.0
-  */
-	const IconUtilities = /** @lends IconUtilities.prototype */ {
-
+  /**
+   * @namespace IconUtilities
+   * @description A generic utility object that contains functions used throughout
+   * MetacatUI to perform useful functions related to icons, but not used to store or
+   * manipulate any state about the application.
+   * @type {object}
+   * @since 2.28.0
+   */
+  const IconUtilities = /** @lends IconUtilities.prototype */ {
     /**
      * Simple test to see if a string is an SVG
      * @param {string} str The string to check
@@ -44,8 +41,8 @@ define([
       }).get("imageURL");
 
       return fetch(imageURL)
-        .then(response => response.text())
-        .then(data => {
+        .then((response) => response.text())
+        .then((data) => {
           if (this.isSVG(data)) {
             return data;
           }
@@ -81,20 +78,26 @@ define([
      * @returns {SVGElement|null} - The modified SVG element or null if an error occurs.
      * @since 2.29.0
      */
-    formatSvgForCesiumBillboard(svgString, strokeWidth = 0, strokeColor = "white") {
+    formatSvgForCesiumBillboard(
+      svgString,
+      strokeWidth = 0,
+      strokeColor = "white",
+    ) {
       const svgElement = this.parseSvg(svgString);
       if (!svgElement) {
-        console.error("No SVG element found in the SVG string or failed to parse.");
+        console.error(
+          "No SVG element found in the SVG string or failed to parse.",
+        );
         return null;
       }
-  
+
       this.removeCommentNodes(svgElement);
       this.setStrokeProperties(svgElement, strokeWidth, strokeColor);
       this.adjustViewBox(svgElement, strokeWidth);
-  
+
       return svgElement;
     },
-    
+
     /**
      * Parses an SVG string and returns the SVG element.
      * @param {string} svgString - The SVG markup as a string.
@@ -107,18 +110,21 @@ define([
       const svgElement = doc.querySelector("svg");
       return svgElement;
     },
-    
+
     /**
      * Removes comment nodes from an SVG element.
      * @param {SVGElement} svgElement - The SVG element.
      * @since 2.29.0
      */
     removeCommentNodes(svgElement) {
-      while (svgElement.firstChild && svgElement.firstChild.nodeType === Node.COMMENT_NODE) {
+      while (
+        svgElement.firstChild &&
+        svgElement.firstChild.nodeType === Node.COMMENT_NODE
+      ) {
         svgElement.removeChild(svgElement.firstChild);
       }
     },
-    
+
     /**
      * Sets stroke properties on an SVG element.
      * @param {SVGElement} svgElement - The SVG element.
@@ -130,7 +136,7 @@ define([
       svgElement.setAttribute("stroke-width", strokeWidth);
       svgElement.setAttribute("stroke", strokeColor);
     },
-    
+
     /**
      * Adjusts the viewBox of an SVG element to accommodate a stroke width.
      * @param {SVGElement} svgElement - The SVG element.
@@ -145,9 +151,14 @@ define([
         const newY = y - strokeWidth;
         const newWidth = width + 2 * strokeWidth;
         const newHeight = height + 2 * strokeWidth;
-        svgElement.setAttribute("viewBox", `${newX} ${newY} ${newWidth} ${newHeight}`);
+        svgElement.setAttribute(
+          "viewBox",
+          `${newX} ${newY} ${newWidth} ${newHeight}`,
+        );
       } else {
-        console.warn("SVG element does not have a 'viewBox' attribute; viewBox adjustment skipped.");
+        console.warn(
+          "SVG element does not have a 'viewBox' attribute; viewBox adjustment skipped.",
+        );
       }
     },
 
@@ -161,9 +172,8 @@ define([
     svgToBase64(svgElement) {
       const base64 = btoa(svgElement.outerHTML);
       return B64_START + base64;
-    }
-
-  }
+    },
+  };
 
   return IconUtilities;
 });

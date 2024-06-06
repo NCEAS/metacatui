@@ -65,7 +65,7 @@
   DateFilter,
   NumericFilter,
   ToggleFilter,
-  SpatialFilter
+  SpatialFilter,
 ) {
   "use strict";
 
@@ -79,7 +79,6 @@
    */
   var Filters = Backbone.Collection.extend(
     /** @lends Filters.prototype */ {
-
       /**
        * The name of this type of collection
        * @type {string}
@@ -129,7 +128,7 @@
           }
         } catch (error) {
           console.log(
-            "Error initializing a Filters collection. Error details: " + error
+            "Error initializing a Filters collection. Error details: " + error,
           );
         }
       },
@@ -325,7 +324,7 @@
           });
         } catch (error) {
           console.log(
-            "Error trying to find ID Filters, error details: " + error
+            "Error trying to find ID Filters, error details: " + error,
           );
         }
       },
@@ -342,7 +341,7 @@
           return this.difference(this.getIdFilters());
         } catch (error) {
           console.log(
-            "Error trying to find non-ID Filters, error details: " + error
+            "Error trying to find non-ID Filters, error details: " + error,
           );
         }
       },
@@ -382,13 +381,13 @@
                 groupQueryFragments.push(filterQuery);
               }
             },
-            this
+            this,
           );
 
           //Join this group's query fragments with an OR operator
           if (groupQueryFragments.length) {
             var queryString = groupQueryFragments.join(
-              "%20" + operator + "%20"
+              "%20" + operator + "%20",
             );
             if (groupQueryFragments.length > 1) {
               queryString = "(" + queryString + ")";
@@ -401,7 +400,8 @@
           }
         } catch (e) {
           console.log(
-            "Error creating a group query, returning a blank string. ", e
+            "Error creating a group query, returning a blank string. ",
+            e,
           );
           return "";
         }
@@ -443,7 +443,7 @@
               filterModel.get("values").length &amp;&amp;
               _.difference(
                 filterModel.get("values"),
-                filterModel.defaults().values
+                filterModel.defaults().values,
               ).length) ||
               (!Array.isArray(filterModel.get("values")) &amp;&amp;
                 filterModel.get("values") !== filterModel.defaults().values))
@@ -491,8 +491,8 @@
                   return field.indexOf("geohash") > -1;
                 });
               }
-            })
-          )
+            }),
+          ),
         );
       },
 
@@ -539,7 +539,7 @@
             exclude: true,
             matchSubstring: true,
             operator: "OR",
-          }
+          },
         ]);
         var query = catalogFilters.getGroupQuery(catalogFilters.models, "AND");
         return query;
@@ -625,7 +625,7 @@
         } catch (e) {
           console.log(
             "Failed to remove empty Filter models from the Filters collection, error message: " +
-              e
+              e,
           );
         }
       },
@@ -644,7 +644,7 @@
         } catch (e) {
           console.log(
             "Failed to remove empty Filter models from the Filters collection, error message: " +
-              e
+              e,
           );
         }
       },
@@ -671,7 +671,7 @@
           return newModel;
         } catch (e) {
           console.log(
-            "Failed to replace a Filter model in a Filters collection, " + e
+            "Failed to replace a Filter model in a Filters collection, " + e,
           );
         }
       },
@@ -696,11 +696,11 @@
         } catch (e) {
           console.log(
             "Failed to get the index of a Filter within the collection of visible Filters, error message: " +
-              e
+              e,
           );
         }
       },
-    }
+    },
   );
   return Filters;
 });

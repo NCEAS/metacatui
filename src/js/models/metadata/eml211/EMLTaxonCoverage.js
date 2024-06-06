@@ -1,9 +1,8 @@
-/* global define */
 define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
   $,
   _,
   Backbone,
-  DataONEObject
+  DataONEObject,
 ) {
   /**
    * @name taxonomicClassification
@@ -32,9 +31,9 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
    * @classcategory Models/Metadata/EML
    * @extends Backbone.Model
    * @constructor
-  */
+   */
   var EMLTaxonCoverage = Backbone.Model.extend(
-    /** @lends EMLTaxonCoverage.prototype */{
+    /** @lends EMLTaxonCoverage.prototype */ {
       /**
        * Returns the default properties for this model. Defined here.
        * @type {Object}
@@ -76,7 +75,8 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
           taxonomicsystem: "taxonomicSystem",
           classificationsystem: "classificationSystem",
           classificationsystemcitation: "classificationSystemCitation",
-          classificationsystemmodifications: "classificationSystemModifications",
+          classificationsystemmodifications:
+            "classificationSystemModifications",
           identificationreference: "identificationReference",
           identifiername: "identifierName",
           taxonomicprocedures: "taxonomicProcedures",
@@ -91,14 +91,14 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
 
         var model = this,
           taxonomicClassifications = $(objectDOM).children(
-            "taxonomicclassification"
+            "taxonomicclassification",
           ),
           modelJSON = {
             taxonomicClassification: _.map(
               taxonomicClassifications,
               function (tc) {
                 return model.parseTaxonomicClassification(tc);
-              }
+              },
             ),
             generalTaxonomicCoverage: $(objectDOM)
               .children("generaltaxonomiccoverage")
@@ -116,7 +116,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
         var commonName = $(classification).children("commonname");
         var taxonId = $(classification).children("taxonId");
         var taxonomicClassification = $(classification).children(
-          "taxonomicclassification"
+          "taxonomicclassification",
         );
 
         var model = this,
@@ -137,7 +137,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
               taxonomicClassification,
               function (tc) {
                 return model.parseTaxonomicClassification(tc);
-              }
+              },
             ),
           };
 
@@ -176,8 +176,8 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
         if (_.isString(generalCoverage) && generalCoverage.length > 0) {
           $(objectDOM).append(
             $(document.createElement("generaltaxonomiccoverage")).text(
-              this.get("generalTaxonomicCoverage")
-            )
+              this.get("generalTaxonomicCoverage"),
+            ),
           );
         }
 
@@ -193,7 +193,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
 
         for (var i = 0; i < classifications.length; i++) {
           $(objectDOM).append(
-            this.createTaxonomicClassificationDOM(classifications[i])
+            this.createTaxonomicClassificationDOM(classifications[i]),
           );
         }
 
@@ -230,19 +230,19 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
 
         if (taxonRankName && taxonRankName.length > 0) {
           $(finishedEl).append(
-            $(document.createElement("taxonrankname")).text(taxonRankName)
+            $(document.createElement("taxonrankname")).text(taxonRankName),
           );
         }
 
         if (taxonRankValue && taxonRankValue.length > 0) {
           $(finishedEl).append(
-            $(document.createElement("taxonrankvalue")).text(taxonRankValue)
+            $(document.createElement("taxonrankvalue")).text(taxonRankValue),
           );
         }
 
         if (commonName && commonName.length > 0) {
           $(finishedEl).append(
-            $(document.createElement("commonname")).text(commonName)
+            $(document.createElement("commonname")).text(commonName),
           );
         }
 
@@ -265,7 +265,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
             function (tc) {
               $(finishedEl).append(this.createTaxonomicClassificationDOM(tc));
             },
-            this
+            this,
           );
         }
 
@@ -299,7 +299,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
             !_.every(
               this.get("taxonomicClassification"),
               this.isClassificationValid,
-              this
+              this,
             )
           )
             errors.taxonomicClassification =
@@ -337,7 +337,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
 
         if (taxonomicClassification.taxonomicClassification)
           return this.isClassificationValid(
-            taxonomicClassification.taxonomicClassification
+            taxonomicClassification.taxonomicClassification,
           );
         else return true;
       },
@@ -368,7 +368,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
           if (c.taxonId) stringified.taxonId = c.taxonId;
           if (c.taxonomicClassification) {
             stringified.taxonomicClassification = stringifyClassification(
-              c.taxonomicClassification
+              c.taxonomicClassification,
             );
           }
           const st = JSON.stringify(stringified);
@@ -398,7 +398,9 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
         const classifications = this.get("taxonomicClassification");
         for (let i = 0; i < classifications.length; i++) {
           if (typeof indexToSkip === "number" && i === indexToSkip) continue;
-          if (this.classificationsAreEqual(classifications[i], classification)) {
+          if (
+            this.classificationsAreEqual(classifications[i], classification)
+          ) {
             return true;
           }
         }
@@ -457,7 +459,8 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
       formatXML: function (xmlString) {
         return DataONEObject.prototype.formatXML.call(this, xmlString);
       },
-    });
+    },
+  );
 
   return EMLTaxonCoverage;
 });

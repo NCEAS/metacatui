@@ -1,8 +1,6 @@
-
-
-define([
-  "../../../../../../../../src/js/models/maps/GeoBoundingBox",
-], function (GeoBoundingBox) {
+define(["../../../../../../../../src/js/models/maps/GeoBoundingBox"], function (
+  GeoBoundingBox,
+) {
   // Configure the Chai assertion library
   var should = chai.should();
   var expect = chai.expect;
@@ -74,7 +72,7 @@ define([
           north: 90,
           south: -90,
           east: -180,
-          west: 180
+          west: 180,
         });
         const split = bbox.split();
         expect(split.length).to.equal(2);

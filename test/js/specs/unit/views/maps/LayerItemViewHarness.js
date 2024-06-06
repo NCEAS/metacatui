@@ -15,7 +15,9 @@ define([], function () {
     }
 
     getLayerIconVisibilityToggle() {
-      return this.getVisibilityToggle().children(`.${this.view.classes.icon}`)[0];
+      return this.getVisibilityToggle().children(
+        `.${this.view.classes.icon}`,
+      )[0];
     }
-  }
+  };
 });
