@@ -1,9 +1,6 @@
 "use strict";
 
-define([
-  "backbone",
-  "text!templates/maps/search-input.html",
-], (
+define(["backbone", "text!templates/maps/search-input.html"], (
   Backbone,
   Template,
 ) => {
@@ -30,7 +27,7 @@ define([
    * @constructs SearchInputView
    */
   const SearchInputView = Backbone.View.extend(
-    /** @lends SearchInputView.prototype */{
+    /** @lends SearchInputView.prototype */ {
       /**
        * The type of View this is
        * @type {string}
@@ -38,12 +35,12 @@ define([
       type: "SearchInputView",
 
       /**
-      * The HTML classes to use for this view's element
-      * @type {string}
-      */
+       * The HTML classes to use for this view's element
+       * @type {string}
+       */
       className: BASE_CLASS,
 
-      /** 
+      /**
        * Values meant to be used by the rendered HTML template.
        */
       templateVars: {
@@ -53,17 +50,17 @@ define([
       },
 
       /**
-      * The events this view will listen to and the associated function to call.
-      * @type {Object}
-      */
+       * The events this view will listen to and the associated function to call.
+       * @type {Object}
+       */
       events() {
         return {
           [`click .${CLASS_NAMES.cancelButton}`]: "onCancel",
-          [`blur  .${CLASS_NAMES.input}`]: 'onBlur',
-          [`change  .${CLASS_NAMES.input}`]: 'onKeyup',
-          [`focus  .${CLASS_NAMES.input}`]: 'onFocus',
-          [`keydown  .${CLASS_NAMES.input}`]: 'onKeydown',
-          [`keyup .${CLASS_NAMES.input}`]: 'onKeyup',
+          [`blur  .${CLASS_NAMES.input}`]: "onBlur",
+          [`change  .${CLASS_NAMES.input}`]: "onKeyup",
+          [`focus  .${CLASS_NAMES.input}`]: "onFocus",
+          [`keydown  .${CLASS_NAMES.input}`]: "onKeydown",
+          [`keyup .${CLASS_NAMES.input}`]: "onKeyup",
           [`click .${CLASS_NAMES.searchButton}`]: "onSearch",
         };
       },
@@ -85,8 +82,10 @@ define([
        * @property {String} placeholder The placeholder text for the input box.
        */
       initialize(options) {
-        if (typeof (options.search) !== "function") {
-          throw new Error("Initializing SearchInputView without a search function.");
+        if (typeof options.search !== "function") {
+          throw new Error(
+            "Initializing SearchInputView without a search function.",
+          );
         }
         this.search = options.search;
         this.keyupCallback = options.keyupCallback || noop;
@@ -107,7 +106,7 @@ define([
       },
 
       /**
-       * Event handler for Backbone.View configuration that is called whenever 
+       * Event handler for Backbone.View configuration that is called whenever
        * the user types a key.
        */
       onKeyup(event) {
@@ -144,7 +143,7 @@ define([
       },
 
       /**
-       * Event handler for Backbone.View configuration that is called whenever 
+       * Event handler for Backbone.View configuration that is called whenever
        * the user types a key.
        */
       onKeydown(event) {
@@ -156,7 +155,7 @@ define([
       },
 
       /**
-       * Event handler for Backbone.View configuration that is called whenever 
+       * Event handler for Backbone.View configuration that is called whenever
        * the user focuses the input.
        */
       onFocus(event) {
@@ -164,7 +163,7 @@ define([
       },
 
       /**
-       * Event handler for Backbone.View configuration that is called whenever 
+       * Event handler for Backbone.View configuration that is called whenever
        * the user blurs the input.
        */
       onBlur(event) {
@@ -172,7 +171,7 @@ define([
       },
 
       /**
-       * Event handler for Backbone.View configuration that is called whenever 
+       * Event handler for Backbone.View configuration that is called whenever
        * the user clicks the search button or hits the Enter key.
        */
       onSearch() {
@@ -183,7 +182,7 @@ define([
         const matched = this.search(inputValue);
         if (matched) {
           this.clearError();
-        } else if (typeof (this.noMatchCallback) === "function") {
+        } else if (typeof this.noMatchCallback === "function") {
           this.noMatchCallback();
         }
       },
@@ -210,7 +209,7 @@ define([
         this.getInputField().removeClass(CLASS_NAMES.errorInput);
         const errorTextEl = this.getError();
         errorTextEl.hide();
-        errorTextEl.html('');
+        errorTextEl.html("");
       },
 
       /**
@@ -225,7 +224,7 @@ define([
       },
 
       /**
-       * Focus the input field in this View. 
+       * Focus the input field in this View.
        */
       focus() {
         this.getInput().trigger("focus");
@@ -289,7 +288,7 @@ define([
        * input field is not found.
        */
       getInputValue() {
-        return this.getInput().val() || '';
+        return this.getInput().val() || "";
       },
 
       /**
@@ -298,10 +297,11 @@ define([
       setInputValue(value) {
         this.getInput().val(value);
       },
-    });
+    },
+  );
 
   // A function that does nothing. Can be safely called as a default callback.
-  const noop = () => { };
+  const noop = () => {};
 
   return SearchInputView;
 });

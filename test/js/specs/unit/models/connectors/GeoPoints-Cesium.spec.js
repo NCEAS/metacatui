@@ -26,7 +26,7 @@ define([
       });
 
       it("should set the CesiumVectorData model", function () {
-        this.geoPointsCesium.get("layer").should.be.instanceof(Object)
+        this.geoPointsCesium.get("layer").should.be.instanceof(Object);
       });
     });
 

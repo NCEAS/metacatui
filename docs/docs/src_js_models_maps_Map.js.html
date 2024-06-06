@@ -55,7 +55,8 @@ define([
   "collections/maps/AssetCategories",
   "models/maps/GeoPoint",
   "collections/maps/viewfinder/ZoomPresets",
-], function ($,
+], function (
+  $,
   _,
   Backbone,
   MapAssets,
@@ -111,8 +112,8 @@ define([
        * home button in the toolbar.
        * @property {Boolean} [showViewfinder=false] - Whether or not to show the
        * viewfinder UI and viewfinder button in the toolbar. The ViewfinderView
-       * requires a Google Maps API key present in the AppModel. In order to 
-       * work properly the Geocoding API and Places API must be enabled. 
+       * requires a Google Maps API key present in the AppModel. In order to
+       * work properly the Geocoding API and Places API must be enabled.
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
@@ -139,7 +140,7 @@ define([
        * @property {ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
        * predefined list of locations with an enabled list of layer IDs to be
        * shown the zoom presets UI. Requires `showViewfinder` to be true as this
-       * UI appears within the ViewfinderView. 
+       * UI appears within the ViewfinderView.
        *
        * @example
        * {
@@ -262,7 +263,7 @@ define([
        * @property {ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
        * predefined list of locations with an enabled list of layer IDs to be
        * shown the zoom presets UI. Requires `showViewfinder` to be true as this
-       * UI appears within the ViewfinderView. 
+       * UI appears within the ViewfinderView.
        */
       defaults: function () {
         return {
@@ -311,7 +312,9 @@ define([
             }
 
             if (isNonEmptyArray(config.layerCategories)) {
-              const assetCategories = new AssetCategories(config.layerCategories);
+              const assetCategories = new AssetCategories(
+                config.layerCategories,
+              );
               assetCategories.setMapModel(this);
               this.set("layerCategories", assetCategories);
               this.unset("layers");
@@ -324,14 +327,20 @@ define([
               this.set("terrains", new MapAssets(config.terrains));
             }
 
-            this.set('zoomPresetsCollection', new ZoomPresets({
-              zoomPresetObjects: config.zoomPresets,
-              allLayers: this.getAllLayers(),
-            }, { parse: true }));
+            this.set(
+              "zoomPresetsCollection",
+              new ZoomPresets(
+                {
+                  zoomPresetObjects: config.zoomPresets,
+                  allLayers: this.getAllLayers(),
+                },
+                { parse: true },
+              ),
+            );
           }
           this.setUpInteractions();
         } catch (error) {
-          console.log('Failed to initialize a Map model.', error);
+          console.log("Failed to initialize a Map model.", error);
         }
       },
 
@@ -393,7 +402,7 @@ define([
        */
       resetLayerVisibility: function () {
         for (const layer of this.getAllLayers()) {
-          layer.set("visible", layer.get('originalVisibility'));
+          layer.set("visible", layer.get("originalVisibility"));
         }
       },
 
@@ -435,7 +444,7 @@ define([
         if (this.has("layerCategories")) {
           return this.get("layerCategories")
             .getMapAssets()
-            .map(assets => assets.models)
+            .map((assets) => assets.models)
             .flat();
         } else if (this.has("layers")) {
           return this.get("layers").models;
@@ -471,7 +480,7 @@ define([
         // is a bug in the MapAssets collection or Backbone?
         if (layers) layers.remove(asset.cid);
       },
-    }
+    },
   );
 
   return MapModel;

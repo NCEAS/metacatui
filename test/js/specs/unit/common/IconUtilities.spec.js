@@ -1,6 +1,4 @@
-define([
-  "common/IconUtilities",
-], (IconUtilities) => {
+define(["common/IconUtilities"], (IconUtilities) => {
   const expect = chai.expect;
   const sandbox = sinon.createSandbox();
   const stub = sandbox.stub;
@@ -20,26 +18,28 @@ define([
     describe("fetchIcon", () => {
       it("returns svg string", () => {
         const responseBody = "<svg></svg>";
-        const response = new Response(responseBody,
-          {
-            status: 200,
-            headers: { 'Content-type': 'application/json' }
-          });
+        const response = new Response(responseBody, {
+          status: 200,
+          headers: { "Content-type": "application/json" },
+        });
         stub(window, "fetch").resolves(response);
 
-        return IconUtilities.fetchIcon("").then(data => expect(data).to.equal(responseBody));
+        return IconUtilities.fetchIcon("").then((data) =>
+          expect(data).to.equal(responseBody),
+        );
       });
 
       it("returns undefined if response is not svg", () => {
         const responseBody = "<error></error>";
-        const response = new Response(responseBody,
-          {
-            status: 200,
-            headers: { 'Content-type': 'application/json' }
-          });
+        const response = new Response(responseBody, {
+          status: 200,
+          headers: { "Content-type": "application/json" },
+        });
         stub(window, "fetch").resolves(response);
 
-        return IconUtilities.fetchIcon("").then(data => expect(data).to.be.undefined);
+        return IconUtilities.fetchIcon("").then(
+          (data) => expect(data).to.be.undefined,
+        );
       });
     });
 
@@ -57,7 +57,11 @@ define([
       it("returns svgElement with stroke properties", () => {
         const svgString = "<svg></svg>";
         const svgElement = document.createElement("svg");
-        const formattedSvgElement = IconUtilities.formatSvgForCesiumBillboard(svgString, 1, "black");
+        const formattedSvgElement = IconUtilities.formatSvgForCesiumBillboard(
+          svgString,
+          1,
+          "black",
+        );
         expect(formattedSvgElement.getAttribute("stroke-width")).to.equal("1");
         expect(formattedSvgElement.getAttribute("stroke")).to.equal("black");
       });
@@ -65,8 +69,14 @@ define([
       it("returns svgElement with viewBox adjusted", () => {
         const svgString = "<svg viewBox='0 0 100 100'></svg>";
         const svgElement = document.createElement("svg");
-        const formattedSvgElement = IconUtilities.formatSvgForCesiumBillboard(svgString, 1, "black");
-        expect(formattedSvgElement.getAttribute("viewBox")).to.equal("-1 -1 102 102");
+        const formattedSvgElement = IconUtilities.formatSvgForCesiumBillboard(
+          svgString,
+          1,
+          "black",
+        );
+        expect(formattedSvgElement.getAttribute("viewBox")).to.equal(
+          "-1 -1 102 102",
+        );
       });
     });
 
@@ -102,7 +112,9 @@ define([
         svgElement.setAttribute("viewBox", "0 0 100 100");
         console.log(svgElement);
         console.log(svgElement.getAttribute("viewBox"));
-        console.log(svgElement.getAttribute("viewBox").split(" ").map(parseFloat));
+        console.log(
+          svgElement.getAttribute("viewBox").split(" ").map(parseFloat),
+        );
         IconUtilities.adjustViewBox(svgElement, 1);
         expect(svgElement.getAttribute("viewBox")).to.equal("-1 -1 102 102");
       });
@@ -115,7 +127,5 @@ define([
         expect(base64).to.equal("data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=");
       });
     });
-
-
   });
 });

@@ -11,7 +11,7 @@ define([
     const state = cleanState(() => {
       const collection = new AssetCategories([
         { layers: [{}] },
-        { layers: [{}, {}] }
+        { layers: [{}, {}] },
       ]);
 
       return { collection };
@@ -42,7 +42,9 @@ define([
     describe("getMapAssets", () => {
       it("returns an array of MapAssets", () => {
         expect(state.collection.getMapAssets()).to.have.lengthOf(2);
-        expect(state.collection.getMapAssets().at(0)).to.be.instanceof(MapAssets);
+        expect(state.collection.getMapAssets().at(0)).to.be.instanceof(
+          MapAssets,
+        );
       });
     });
   });
