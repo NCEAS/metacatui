@@ -204,7 +204,7 @@ define([
               <style>
                 body {
                   background-color: transparent;
-                  color: var(--map-col-text-body, var(--map-col-text__deprecate));
+                  color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
                   font-family: var(--portal-body-font, "Helvetica Nueue", "Helvetica", "Arial", "Lato", "sans serif");
                   margin: 0;
                   box-sizing: border-box;

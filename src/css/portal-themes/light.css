@@ -2,80 +2,31 @@
 
 :root {
   /* COLOURS */
-  --portal-blue-1: #ecf8fc;
-  --portal-blue-2: #ccf0fc;
-  --portal-blue-2-50: #ccf0fc80;
-  --portal-blue-3: #99e1fa;
-  --portal-blue-4: #33c3f5;
-  --portal-blue-5: #00a9e4;
-  --portal-blue-5-50: #00a9e480;
-  --portal-blue-6: #0087b5;
-  --portal-blue-7: #136682;
+  --portal-col-primary-1: #ecf8fc;
+  --portal-col-primary-2: #ccf0fc;
+  --portal-col-primary-3: #99e1fa;
+  --portal-col-primary-4: #33c3f5;
+  --portal-col-primary-5: #00a9e4;
+  --portal-col-primary-6: #0087b5;
+  --portal-col-primary-7: #136682;
 
-  --portal-grey-1: #f8f9fa;
-  --portal-grey-2: #f1f3f4;
-  --portal-grey-2-50: #f1f3f480;
-  --portal-grey-3: #e8eaed;
-  --portal-grey-4: #bdc1c6;
-  --portal-grey-5: #80868b;
-  --portal-grey-6: #5f6368;
-  --portal-grey-7: #3c4043;
-  --portal-grey-8: #202124;
+  --portal-col-neutral-1: #f8f9fa;
+  --portal-col-neutral-2: #f1f3f4;
+  --portal-col-neutral-3: #e8eaed;
+  --portal-col-neutral-4: #bdc1c6;
+  --portal-col-neutral-5: #80868b;
+  --portal-col-neutral-6: #5f6368;
+  --portal-col-neutral-7: #3c4043;
+  --portal-col-neutral-8: #202124;
 
-  --portal-col-content-bkg: white;
-  --portal-col-content-bkg-highlight: var(--portal-blue-1);
-  --portal-col-content-bkg-muted: var(--portal-grey-1);
-  --portal-col-content-bkg-transparent: var(--portal-grey-2-50);
-  --portal-col-content-bkg-active-highlight: var(--portal-blue-5-50);
-  --portal-col-content-bkg-hover-highlight: var(--portal-blue-2-50);
+  --portal-col-neutral-00: white;
+  --portal-col-neutral-10: black;
 
-  --portal-col-buttons-bkg: white;
-  --portal-col-buttons-bkg-hover: var(--portal-blue-2);
-  --portal-col-buttons-bkg-highlight: var(--portal-blue-6);
-  --portal-col-buttons-bkg-muted: var(--portal-grey-1);
-  --portal-col-buttons-bkg-white-content-contrast: var(--portal-grey-5);
-  --portal-col-buttons-text: var(--portal-blue-6);
-  --portal-col-buttons-text-highlight: white;
-  --portal-col-buttons-icon: var(--portal-blue-6);
-  --portal-col-buttons-icon-active-highlight: var(--portal-blue-4);
-  --portal-col-buttons-icon-hover-highlight: var(--portal-blue-6);
-  --portal-col-buttons-icon-highlight: var(--portal-blue-3);
-  --portal-col-buttons-icon-muted: var(--portal-grey-4);
-  --portal-col-utility-buttons: var(--portal-grey-6);
+  --portal-col-highlight-1: #fffcf4;
+  --portal-col-highlight-2: #ffddaa;
+  --portal-col-highlight-3: #ca6c0b;
 
-  --portal-col-border: var(--portal-blue-2);
-  --portal-col-border-highlight: unset;
-  --portal-col-border-panel: var(--portal-grey-3);
-  --portal-col-border-muted: var(--portal-grey-4);
-  --portal-col-border-highlight-search-box: var(--portal-blue-3);
-
-  --portal-col-section-divider: var(--portal-grey-3);
-  --portal-col-item-divider: var(--portal-grey-2);
-
-  --portal-col-text-body: var(--portal-grey-8);
-  --portal-col-text-highlight: var(--portal-blue-6);
-  --portal-col-text-title: var(--portal-blue-7);
-  --portal-col-text-label: var(--portal-grey-7);
-  --portal-col-text-detail: var(--portal-grey-6);
-  --portal-col-text-muted: var(--portal-grey-5);
-  --portal-col-text-active-highlight: var(--portal-blue-2);
-  --portal-col-text-hover-highlight: var(--portal-blue-6);
-
-  --portal-col-page-bkg: var(--portal-blue-7);
-  --portal-col-text-nav: var(--portal-blue-3);
-  --portal-col-text-nav-highlight: var(--portal-blue-2);
-  --portal-col-text-nav-hover: white;
-
-  --portal-col-opacity-slider-active: var(--portal-blue-5);
-  --portal-col-opacity-slider-inactive: var(--portal-grey-3);
-
-  --portal-col-input-error-bkg: #fffcf4;
-  --portal-col-input-error-border: #ffddaa;
-  --portal-col-input-error-text: #ca6c0b;
   --portal-col-search-match-highlight: #fef4d6;
-
-  --portal-col-tooltip-background: var(--portal-grey-7);
-  --portal-col-tooltip-text: white;
 
   --portal-col-bkg__deprecate: #111827;
   --portal-col-bkg-lighter__deprecate: #1f2937;
@@ -111,12 +62,12 @@ body {
 .portal-view,
 .Portal #Content,
 .PortalView #Content {
-  background-color: var(--portal-col-page-bkg);
+  background-color: var(--portal-col-primary-7);
 }
 
 body,
 #portal-sections {
-  /* TODO: Update to var(--portal-col-content-bkg) when all portal tabs support the color palette from a theme. */
+  /* TODO: Update to var(--portal-col-neutral-00) when all portal tabs support the color palette from a theme. */
   background-color: #111827;
 }
 
@@ -480,7 +431,7 @@ textarea {
 }
 
 .map-view a {
-  color: var(--portal-col-buttons-text);
+  color: var(--portal-col-primary-6);
   filter: unset;
 }
 
