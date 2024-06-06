@@ -43,7 +43,6 @@ define([
       }
       if (
         this.model instanceof PackageModel &&
-        this.nested &&
         (this.model.get("formatType") == "RESOURCE" ||
           this.model.get("type") == "DataPackage" ||
           this.model.get("type") == "Package")
