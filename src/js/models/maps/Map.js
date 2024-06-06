@@ -9,7 +9,7 @@ define([
   "collections/maps/AssetCategories",
   "models/maps/GeoPoint",
   "collections/maps/viewfinder/ZoomPresets",
-], function (
+], (
   $,
   _,
   Backbone,
@@ -18,7 +18,16 @@ define([
   AssetCategories,
   GeoPoint,
   ZoomPresets,
-) {
+) => {
+  /**
+   * Determine if array is empty.
+   * @param {Array} a The array in question.
+   * @returns {boolean} Whether the array is empty.
+   */
+  function isNonEmptyArray(a) {
+    return a && a.length && Array.isArray(a);
+  }
+
   /**
    * @class MapModel
    * @classdesc The Map Model contains all of the settings and options for a
@@ -26,16 +35,16 @@ define([
    * @classcategory Models/Maps
    * @name MapModel
    * @since 2.18.0
-   * @extends Backbone.Model
+   * @augments Backbone.Model
    */
-  var MapModel = Backbone.Model.extend(
+  const MapModel = Backbone.Model.extend(
     /** @lends MapModel.prototype */ {
       /**
        * Configuration options for a {@link MapModel} that control the
        * appearance of the map, the data/imagery displayed, and which UI
        * components are rendered. A MapConfig object can be used when
        * initializing a Map model, e.g. `new Map(myMapConfig)`
-       * @namespace {Object} MapConfig
+       * @namespace {object} MapConfig
        * @property {MapConfig#CameraPosition} [homePosition] - A set of
        * coordinates that give the (3D) starting point of the Viewer. This
        * position is also where the "home" button in the Cesium widget will
@@ -68,6 +77,8 @@ define([
        * viewfinder UI and viewfinder button in the toolbar. The ViewfinderView
        * requires a Google Maps API key present in the AppModel. In order to
        * work properly the Geocoding API and Places API must be enabled.
+       * requires a Google Maps API key present in the AppModel. In order to
+       * work properly the Geocoding API and Places API must be enabled.
        * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
@@ -94,6 +105,7 @@ define([
        * @property {ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
        * predefined list of locations with an enabled list of layer IDs to be
        * shown the zoom presets UI. Requires `showViewfinder` to be true as this
+       * UI appears within the ViewfinderView.
        * UI appears within the ViewfinderView.
        *
        * @example
@@ -131,7 +143,7 @@ define([
       /**
        * Coordinates that describe a camera position for Cesium. Requires at
        * least a longitude and latitude.
-       * @typedef {Object} MapConfig#CameraPosition
+       * @typedef {object} MapConfig#CameraPosition
        * @property {number} longitude - Longitude of the central home point
        * @property {number} latitude - Latitude of the central home point
        * @property {number} [height] - Height above sea level (meters)
@@ -182,6 +194,10 @@ define([
        * @property {MapAssets} [layers = new MapAssets()] - The imagery and
        * vector data to render in the map. When layerCategories exist, this
        * property will be ignored.
+       * @property {MapAssets} [allLayers = new MapAssets()] - The assets that
+       * correspond to the layers field or the layerCategories field depending
+       * upon which is used. If layerCategories, this contains a flattened list
+       * of the assets.
        * @property {AssetCategories} [layerCategories = new AssetCategories()] -
        * A collection of layer categories to display in the tool bar. Categories
        * wil be displayed in the order they appear. The array of the AssetCategoryConfig
@@ -218,8 +234,9 @@ define([
        * predefined list of locations with an enabled list of layer IDs to be
        * shown the zoom presets UI. Requires `showViewfinder` to be true as this
        * UI appears within the ViewfinderView.
+       * UI appears within the ViewfinderView.
        */
-      defaults: function () {
+      defaults() {
         return {
           homePosition: {
             longitude: -65,
@@ -258,13 +275,9 @@ define([
        * for the map. If any config option is not specified, the default will be
        * used instead (see {@link MapModel#defaults}).
        */
-      initialize: function (config) {
+      initialize(config) {
         try {
           if (config && config instanceof Object) {
-            function isNonEmptyArray(a) {
-              return a && a.length && Array.isArray(a);
-            }
-
             if (isNonEmptyArray(config.layerCategories)) {
               const assetCategories = new AssetCategories(
                 config.layerCategories,
@@ -272,11 +285,15 @@ define([
               assetCategories.setMapModel(this);
               this.set("layerCategories", assetCategories);
               this.unset("layers");
+              this.set("allLayers", assetCategories.getMapAssetsFlat());
             } else if (isNonEmptyArray(config.layers)) {
-              this.set("layers", new MapAssets(config.layers));
+              const layers = new MapAssets(config.layers);
+              this.set("layers", layers);
               this.get("layers").setMapModel(this);
               this.unset("layerCategories");
+              this.set("allLayers", layers);
             }
+
             if (isNonEmptyArray(config.terrains)) {
               this.set("terrains", new MapAssets(config.terrains));
             }
@@ -286,7 +303,7 @@ define([
               new ZoomPresets(
                 {
                   zoomPresetObjects: config.zoomPresets,
-                  allLayers: this.getAllLayers(),
+                  allLayers: this.get("allLayers"),
                 },
                 { parse: true },
               ),
@@ -294,6 +311,7 @@ define([
           }
           this.setUpInteractions();
         } catch (error) {
+          console.log("Failed to initialize a Map model.", error);
           console.log("Failed to initialize a Map model.", error);
         }
       },
@@ -303,7 +321,7 @@ define([
        * @returns {MapInteraction} The new interactions model.
        * @since 2.27.0
        */
-      setUpInteractions: function () {
+      setUpInteractions() {
         const interactions = new Interactions({
           mapModel: this,
         });
@@ -317,7 +335,7 @@ define([
        * @param {Feature[]} features - An array of Feature models to select.
        * since 2.28.0
        */
-      selectFeatures: function (features) {
+      selectFeatures(features) {
         this.get("interactions")?.selectFeatures(features);
       },
 
@@ -326,7 +344,7 @@ define([
        * @returns {Features} The selected Feature collection.
        * @since 2.27.0
        */
-      getSelectedFeatures: function () {
+      getSelectedFeatures() {
         return this.get("interactions")?.get("selectedFeatures");
       },
 
@@ -339,14 +357,14 @@ define([
        * zoom to. See {@link CesiumWidgetView#flyTo} for more details on types
        * of targets.
        */
-      zoomTo: function (target) {
+      zoomTo(target) {
         this.get("interactions")?.set("zoomTarget", target);
       },
 
       /**
        * Indicate that the map widget view should navigate to the home position.
        */
-      flyHome: function () {
+      flyHome() {
         this.zoomTo(this.get("homePosition"));
       },
 
@@ -354,10 +372,10 @@ define([
        * Reset the visibility of all layers to the value that was in the intial
        * configuration.
        */
-      resetLayerVisibility: function () {
-        for (const layer of this.getAllLayers()) {
+      resetLayerVisibility() {
+        this.get("allLayers").forEach((layer) => {
           layer.set("visible", layer.get("originalVisibility"));
-        }
+        });
       },
 
       /**
@@ -366,7 +384,7 @@ define([
        * @returns {MapAssets} The new layers collection.
        * @since 2.25.0
        */
-      resetLayers: function () {
+      resetLayers() {
         const newLayers = this.defaults()?.layers || new MapAssets();
         this.set("layers", newLayers);
         return newLayers;
@@ -388,25 +406,6 @@ define([
       },
 
       /**
-       * Get all of the layers regardless of presences of layerCategories in a
-       * flat list of MapAsset models.
-       * @returns {MapAsset[]} All of the layers, or empty array if no layers
-       * are configured.
-       * @since 2.29.0
-       */
-      getAllLayers() {
-        if (this.has("layerCategories")) {
-          return this.get("layerCategories")
-            .getMapAssets()
-            .map((assets) => assets.models)
-            .flat();
-        } else if (this.has("layers")) {
-          return this.get("layers").models;
-        }
-        return [];
-      },
-
-      /**
        * Add a layer or other asset to the map. This is the best way to add a
        * layer to the map because it will ensure that this map model is set on
        * the layer model.
@@ -416,7 +415,7 @@ define([
        * @returns {MapAsset} The new layer model.
        * @since 2.25.0
        */
-      addAsset: function (asset) {
+      addAsset(asset) {
         const layers = this.get("layers") || this.resetLayers();
         return layers.addAsset(asset, this);
       },
@@ -426,7 +425,7 @@ define([
        * @param {MapAsset} asset - The layer model to remove from the map.
        * @since 2.27.0
        */
-      removeAsset: function (asset) {
+      removeAsset(asset) {
         if (!asset) return;
         const layers = this.get("layers");
         if (!layers) return;

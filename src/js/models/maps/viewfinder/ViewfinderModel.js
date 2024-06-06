@@ -55,7 +55,6 @@ define([
       initialize({ mapModel }) {
         this.geocoderSearch = new GeocoderSearch();
         this.mapModel = mapModel;
-        this.allLayers = this.mapModel.getAllLayers();
 
         this.set(
           "zoomPresets",
@@ -169,11 +168,11 @@ define([
        */
       selectZoomPreset(preset) {
         const enabledLayerIds = preset.get("enabledLayerIds");
-        for (const layer of this.allLayers) {
+        this.mapModel.get("allLayers").forEach((layer) => {
           const isVisible = enabledLayerIds.includes(layer.get("layerId"));
           // Show or hide the layer according to the preset.
           layer.set("visible", isVisible);
-        }
+        });
 
         this.mapModel.zoomTo(preset.get("geoPoint"));
       },
@@ -185,10 +184,13 @@ define([
        */
       async selectPrediction(prediction) {
         if (!prediction) return;
-
         try {
           const geocodings = await this.geocoderSearch.geocode(prediction);
 
+          if (geocodings.length === 0) {
+            this.set("error", NO_RESULTS_MESSAGE);
+            return;
+          }
           if (geocodings.length === 0) {
             this.set("error", NO_RESULTS_MESSAGE);
             return;
