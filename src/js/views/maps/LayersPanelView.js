@@ -25,7 +25,7 @@ define([
    * @constructs LayersPanelView
    */
   const LayersPanelView = Backbone.View.extend(
-    /** @lends LayersPanelView.prototype */{
+    /** @lends LayersPanelView.prototype */ {
       /**
        * The type of View this is
        * @type {string}
@@ -33,9 +33,9 @@ define([
       type: "LayersPanelView",
 
       /**
-      * The HTML classes to use for this view's element
-      * @type {string}
-      */
+       * The HTML classes to use for this view's element
+       * @type {string}
+       */
       className: "layers-panel",
 
       /**
@@ -61,10 +61,14 @@ define([
        * is passed an object with relevant view state.
        * */
       render() {
-        this.el.innerHTML = _.template(Template)({ classNames: this.classNames });
+        this.el.innerHTML = _.template(Template)({
+          classNames: this.classNames,
+        });
 
-        if (this.map.get('layerCategories')?.length > 0) {
-          this.layersView = new LayerCategoryListView({ collection: this.map.get("layerCategories") });
+        if (this.map.get("layerCategories")?.length > 0) {
+          this.layersView = new LayerCategoryListView({
+            collection: this.map.get("layerCategories"),
+          });
         } else {
           this.layersView = new LayerListView({
             collection: this.map.get("layers"),
@@ -76,7 +80,7 @@ define([
 
         this.searchInput = new SearchInputView({
           placeholder: "Search all data layers",
-          search: text => this.search(text),
+          search: (text) => this.search(text),
           noMatchCallback: () => this.layersView.search(""),
         });
         this.searchInput.render();
@@ -98,13 +102,14 @@ define([
       },
 
       dismissLayerDetails() {
-        this.map.getLayerGroups().forEach(mapAssets => {
-          mapAssets.forEach(layerModel => {
+        this.map.getLayerGroups().forEach((mapAssets) => {
+          mapAssets.forEach((layerModel) => {
             layerModel.set("selected", false);
           });
         });
       },
-    });
+    },
+  );
 
   return LayersPanelView;
 });

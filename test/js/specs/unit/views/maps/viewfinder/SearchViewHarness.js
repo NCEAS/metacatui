@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 define([], function () {
   return class ViewFinderViewHarness {
@@ -16,13 +16,13 @@ define([], function () {
 
     setQuery(searchString) {
       this.getInput().val(searchString);
-      this.getInput().trigger('change');
+      this.getInput().trigger("change");
     }
 
     typeQuery(searchString) {
       this.getInput().val(searchString);
-      this.getInput().trigger('keydown');
-      this.getInput().trigger('keyup');
+      this.getInput().trigger("keydown");
+      this.getInput().trigger("keyup");
     }
 
     clickSearch() {
@@ -30,19 +30,19 @@ define([], function () {
     }
 
     hitEnter() {
-      this.getInput().trigger({ type: 'keyup', key: 'Enter', });
+      this.getInput().trigger({ type: "keyup", key: "Enter" });
     }
 
     hitArrowUp() {
-      this.getInput().trigger({ type: 'keyup', key: 'ArrowUp', });
+      this.getInput().trigger({ type: "keyup", key: "ArrowUp" });
     }
 
     hitArrowDown() {
-      this.getInput().trigger({ type: 'keyup', key: 'ArrowDown', });
+      this.getInput().trigger({ type: "keyup", key: "ArrowDown" });
     }
 
     getError() {
-      return this.view.$el.find('.search-input__error-text').text();
+      return this.view.$el.find(".search-input__error-text").text();
     }
 
     getInput() {
@@ -50,7 +50,7 @@ define([], function () {
     }
 
     hasError() {
-      return this.getError() !== ''
+      return this.getError() !== "";
     }
-  }
+  };
 });

@@ -1,4 +1,3 @@
-/*global define */
 define([
   "jquery",
   "underscore",
@@ -39,7 +38,7 @@ define([
        * @type {Underscore.Template}
        */
       innerButtonTemplate: _.template(
-        "<i class='icon <%=icon%> icon-on-left'></i> <%=text%>"
+        "<i class='icon <%=icon%> icon-on-left'></i> <%=text%>",
       ),
 
       /**
@@ -169,7 +168,7 @@ define([
 
           // Find the citation container
           this.citationContainer = this.el.querySelector(
-            "#" + ids.citationContainer
+            "#" + ids.citationContainer,
           );
 
           // Find the citation button
@@ -258,7 +257,7 @@ define([
                 textarea.trigger("focus");
                 textarea.tooltip("show");
               },
-            }
+            },
           );
           textarea.focusout(function () {
             textarea.animate({ width: "0px" }, function () {
@@ -291,7 +290,7 @@ define([
       onClose: function () {
         this.teardown();
       },
-    }
+    },
   );
 
   return CitationModalView;

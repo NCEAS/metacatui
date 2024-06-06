@@ -1,9 +1,8 @@
-/*global define */
 define(["jquery", "jqueryui", "underscore", "backbone"], function (
   $,
   $ui,
   _,
-  Backbone
+  Backbone,
 ) {
   "use strict";
 
@@ -216,7 +215,7 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
           item["class"] = uri;
           item["ontology"] = "http://data.bioontology.org/ontologies/ECSO";
           batchData["http://www.w3.org/2002/07/owl#Class"]["collection"].push(
-            item
+            item,
           );
         });
 
@@ -390,7 +389,7 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
         request,
         response,
         beforeRequest,
-        afterRequest
+        afterRequest,
       ) {
         // Handle errors in this function or in the findGrants function
         function handleError(error) {
@@ -500,7 +499,7 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
                 //If the parsing XML failed, exit now
                 console.error(
                   "The accounts service did not return valid XML.",
-                  e
+                  e,
                 );
                 return;
               }
@@ -541,14 +540,14 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
                     ")",
                   type: type,
                 });
-              }
+              },
             );
 
             var term = $.ui.autocomplete.escapeRegex(request.term),
               startsWithMatcher = new RegExp("^" + term, "i"),
               startsWith = $.grep(list, function (value) {
                 return startsWithMatcher.test(
-                  value.label || value.value || value
+                  value.label || value.value || value,
                 );
               }),
               containsMatcher = new RegExp(term, "i"),
@@ -600,7 +599,7 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
             },
             success: function (data) {
               var sizeOfQueue = parseInt(
-                $(data).find("status > index > sizeOfQueue").text()
+                $(data).find("status > index > sizeOfQueue").text(),
               );
 
               if (sizeOfQueue > 0 || sizeOfQueue == 0) {
@@ -621,8 +620,8 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
           $.ajax(
             _.extend(
               requestSettings,
-              MetacatUI.appUserModel.createAjaxSettings()
-            )
+              MetacatUI.appUserModel.createAjaxSettings(),
+            ),
           );
         } catch (e) {
           console.error(e);
@@ -632,7 +631,7 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
           }
         }
       },
-    }
+    },
   );
   return LookupModel;
 });

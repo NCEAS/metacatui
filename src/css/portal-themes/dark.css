@@ -1,15 +1,16 @@
 :root {
   /* COLOURS */
   --portal-col-bkg__deprecate: #111827;
-  --portal-col-bkg-lighter__deprecate: #1F2937;
+  --portal-col-bkg-lighter__deprecate: #1f2937;
   --portal-col-bkg-active__deprecate: #374151;
-  --portal-col-buttons__deprecate: #4B5563F2;
-  --portal-col-text-subtle__deprecate: #9CA3AF;
-  --portal-col-text__deprecate: #F9FAFB;
+  --portal-col-buttons__deprecate: #4b5563f2;
+  --portal-col-text-subtle__deprecate: #9ca3af;
+  --portal-col-text__deprecate: #f9fafb;
   --portal-col-highlight__deprecate: #269fb9;
   --portal-col-highlight-subtle__deprecate: #0c4e66;
   /* SHADOWS */
-  --map-shadow-md: 0 1px 9px -1px rgba(0, 0, 0, 0.2), 0 1px 2px 0px rgba(0, 0, 0, 0.5);
+  --map-shadow-md: 0 1px 9px -1px rgba(0, 0, 0, 0.2),
+    0 1px 2px 0px rgba(0, 0, 0, 0.5);
   /* Colors used in the 'loading-metrics.html' template, on Metrics page */
   --m-chart-bkg: var(--portal-col-bkg-lighter__deprecate);
   --m-chart-lines: var(--portal-col-bkg-active__deprecate);
@@ -20,20 +21,29 @@
   color: var(--portal-col-text-subtle__deprecate);
 }
 
-.portal-view, .Portal #Content, .PortalView #Content {
+.portal-view,
+.Portal #Content,
+.PortalView #Content {
   color: var(--portal-col-text__deprecate);
   background-color: var(--portal-col-bkg-lighter__deprecate);
 }
 
-body, #portal-sections {
+body,
+#portal-sections {
   background-color: var(--portal-col-bkg__deprecate);
 }
 
-#portal-sections{
+#portal-sections {
   box-shadow: inset 0 7px 9px -7px rgb(0 0 0 / 40%);
 }
 
-.portal-view, .portal-view .portal-section-content, .portal-view h2, .portal-view h3, .portal-view h4, .portal-view h5, .portal-view h6 {
+.portal-view,
+.portal-view .portal-section-content,
+.portal-view h2,
+.portal-view h3,
+.portal-view h4,
+.portal-view h5,
+.portal-view h6 {
   color: var(--portal-col-text__deprecate);
 }
 
@@ -45,33 +55,45 @@ body, #portal-sections {
   line-height: 1.2;
 }
 
-.portal-display-image .portal-display-text, .portal-editor .portal-display-text, .portal-section .portal-display-text {
+.portal-display-image .portal-display-text,
+.portal-editor .portal-display-text,
+.portal-section .portal-display-text {
   background-color: rgb(28 39 64 / 82%);
 }
 
-.Portal.Editor #Navbar, .PortalView #Navbar, .Portal.Editor .navbar-inner, .PortalView .navbar-inner, .Portal .d1_nav, .PortalView .d1_nav {
+.Portal.Editor #Navbar,
+.PortalView #Navbar,
+.Portal.Editor .navbar-inner,
+.PortalView .navbar-inner,
+.Portal .d1_nav,
+.PortalView .d1_nav {
   color: var(--portal-col-text__deprecate);
   background-color: var(--portal-col-bkg-active__deprecate);
 }
 
-.navbar-inner .nav>li>a, #nav-trigger, .header .nav li a, .Portal.Editor #Navbar .brand::before, .PortalView #Navbar .brand::before {
+.navbar-inner .nav > li > a,
+#nav-trigger,
+.header .nav li a,
+.Portal.Editor #Navbar .brand::before,
+.PortalView #Navbar .brand::before {
   color: var(--portal-col-text__deprecate);
 }
 
-.navbar-inner .nav>li>a:hover {
-  color: var(--portal-col-highlight__deprecate)
+.navbar-inner .nav > li > a:hover {
+  color: var(--portal-col-highlight__deprecate);
 }
 
 #Navbar .nav .dropdown-toggle .caret {
   border-top-color: var(--portal-col-text__deprecate);
 }
 
-.Portal.Editor #Navbar #logo::after, .PortalView #Navbar #logo::after {
+.Portal.Editor #Navbar #logo::after,
+.PortalView #Navbar #logo::after {
   color: var(--portal-col-text-subtle__deprecate);
 }
 
 .portal-view .portal-description {
-  color: var(--portal-col-text__deprecate)
+  color: var(--portal-col-text__deprecate);
 }
 
 /* sign in button */
@@ -81,7 +103,7 @@ body, #portal-sections {
   color: var(--portal-col-text-subtle__deprecate);
 }
 
-.header .nav li a.btn.login>.icon {
+.header .nav li a.btn.login > .icon {
   opacity: 0.7;
 }
 
@@ -89,19 +111,21 @@ body, #portal-sections {
   color: var(--portal-col-text-subtle__deprecate);
 }
 
-footer, #Footer {
+footer,
+#Footer {
   color: var(--portal-col-text__deprecate);
   background-color: var(--portal-col-bkg__deprecate);
   border: none;
 }
 
-footer .footnote, footer .adc-contact .contact-title {
+footer .footnote,
+footer .adc-contact .contact-title {
   color: var(--portal-col-text__deprecate);
   opacity: 0.7;
 }
 
 a {
-  color: var(--portal-col-highlight__deprecate)
+  color: var(--portal-col-highlight__deprecate);
 }
 
 .thumbnail {
@@ -110,27 +134,30 @@ a {
   margin: 1rem 0;
 }
 
-.table-hover tbody tr:hover>td, .table-hover tbody tr:hover>th {
+.table-hover tbody tr:hover > td,
+.table-hover tbody tr:hover > th {
   background-color: var(--portal-col-bkg-active__deprecate);
 }
 
-.table td, .table th {
+.table td,
+.table th {
   border-color: var(--portal-col-bkg-active__deprecate);
 }
 
 .portal-section-content thead tr {
   background-color: var(--portal-primary-color-transparent);
-  color: var(--portal-col-text__deprecate)
+  color: var(--portal-col-text__deprecate);
 }
 
 .portal-section-content thead th {
   background-color: var(--portal-primary-color-transparent);
-  color: var(--portal-col-text__deprecate)
+  color: var(--portal-col-text__deprecate);
 }
 
 /* Table of contents in portal markdown section */
 
-.portal-editor .toc-ul, .portal-view .toc-ul {
+.portal-editor .toc-ul,
+.portal-view .toc-ul {
   background-color: var(--portal-col-bkg-active__deprecate);
   border-radius: 0.5rem;
   opacity: 0.85;
@@ -139,14 +166,18 @@ a {
   box-shadow: 0px 1px 15px -1px rgba(32, 23, 23, 0.9);
 }
 
-.portal-view .toc li.active>a, .portal-editor .toc li.active>a, .portal-view .toc-ul li>a:hover, .portal-editor .toc-ul li>a:hover {
+.portal-view .toc li.active > a,
+.portal-editor .toc li.active > a,
+.portal-view .toc-ul li > a:hover,
+.portal-editor .toc-ul li > a:hover {
   border-radius: 0.5rem;
   box-shadow: 0px 1px 10px -1px rgba(0, 0, 0, 0.5);
 }
 
 /* Metrics page */
 
-.stripe, .profile .charts-container {
+.stripe,
+.profile .charts-container {
   background-color: transparent;
 }
 
@@ -168,7 +199,14 @@ a {
 
 /* SVG charts */
 
-.donut-title-text, svg .title, svg .tick text, .donut-arc-count, .portal-view .donut-title-count.data, .portal-view .donut-title-count.metadata, .portal-view .donut-title-text, .portal-view .donut-title-text {
+.donut-title-text,
+svg .title,
+svg .tick text,
+.donut-arc-count,
+.portal-view .donut-title-count.data,
+.portal-view .donut-title-count.metadata,
+.portal-view .donut-title-text,
+.portal-view .donut-title-text {
   color: var(--portal-col-text-subtle__deprecate);
   fill: var(--portal-col-text-subtle__deprecate);
 }
@@ -177,11 +215,15 @@ a {
   stroke: var(--portal-col-bkg-lighter__deprecate);
 }
 
-#metric-modal .metric-chart rect.no-data, .views-metrics .metric-chart rect.no-data, .downloads-metrics .metric-chart rect.no-data {
+#metric-modal .metric-chart rect.no-data,
+.views-metrics .metric-chart rect.no-data,
+.downloads-metrics .metric-chart rect.no-data {
   fill: var(--portal-col-bkg-lighter__deprecate);
 }
 
-#metric-modal .metric-chart text.no-data, .views-metrics .metric-chart text.no-data, .downloads-metrics .metric-chart text.no-data {
+#metric-modal .metric-chart text.no-data,
+.views-metrics .metric-chart text.no-data,
+.downloads-metrics .metric-chart text.no-data {
   fill: var(--portal-col-text__deprecate);
 }
 
@@ -189,40 +231,73 @@ a {
   background-color: var(--portal-col-bkg-lighter__deprecate);
 }
 
-.no-activity h3, .no-activity h4, .no-activity h5, .no-activity h6, .no-activity p, .no-activity .summary-container p, .no-activity a, .no-activity .message, .no-activity svg .title, .no-activity svg .bar-label, .profile .no-activity .packages p {
+.no-activity h3,
+.no-activity h4,
+.no-activity h5,
+.no-activity h6,
+.no-activity p,
+.no-activity .summary-container p,
+.no-activity a,
+.no-activity .message,
+.no-activity svg .title,
+.no-activity svg .bar-label,
+.profile .no-activity .packages p {
   color: var(--portal-col-text-subtle__deprecate);
   stroke: var(--portal-col-text-subtle__deprecate);
   fill: var(--portal-col-text-subtle__deprecate);
 }
 
-.donut.no-activity>g .donut-arc, .donut.data.no-activity>g .donut-arc, .donut.metadata.no-activity>g .donut-arc, .donut.no-activity .donut-title-count, .donut.no-activity .donut-title-text {
-  fill: var(--portal-col-buttons__deprecate)
+.donut.no-activity > g .donut-arc,
+.donut.data.no-activity > g .donut-arc,
+.donut.metadata.no-activity > g .donut-arc,
+.donut.no-activity .donut-title-count,
+.donut.no-activity .donut-title-text {
+  fill: var(--portal-col-buttons__deprecate);
 }
 
-#metric-modal .metric-chart rect.pane, .views-metrics .metric-chart rect.pane, .downloads-metrics .metric-chart rect.pane {
+#metric-modal .metric-chart rect.pane,
+.views-metrics .metric-chart rect.pane,
+.downloads-metrics .metric-chart rect.pane {
   fill: var(--portal-col-bkg-lighter__deprecate);
 }
 
-.portal-view #metric-modal .metric-chart .bar, .portal-view .views-metrics .metric-chart .bar, .portal-view .downloads-metrics .metric-chart .bar, .portal-view #metric-modal .metric-chart .scale_button:hover rect, .portal-view #metric-modal .metric-chart .bar, .portal-view #metric-modal .metric-chart .bar_context, .portal-view .views-metrics .metric-chart .scale_button:hover rect, .portal-view .views-metrics .metric-chart .bar, .portal-view .views-metrics .metric-chart .bar_context, .portal-view .downloads-metrics .metric-chart .scale_button:hover rect, .portal-view .downloads-metrics .metric-chart .bar, .portal-view .downloads-metrics .metric-chart .bar_context {
+.portal-view #metric-modal .metric-chart .bar,
+.portal-view .views-metrics .metric-chart .bar,
+.portal-view .downloads-metrics .metric-chart .bar,
+.portal-view #metric-modal .metric-chart .scale_button:hover rect,
+.portal-view #metric-modal .metric-chart .bar,
+.portal-view #metric-modal .metric-chart .bar_context,
+.portal-view .views-metrics .metric-chart .scale_button:hover rect,
+.portal-view .views-metrics .metric-chart .bar,
+.portal-view .views-metrics .metric-chart .bar_context,
+.portal-view .downloads-metrics .metric-chart .scale_button:hover rect,
+.portal-view .downloads-metrics .metric-chart .bar,
+.portal-view .downloads-metrics .metric-chart .bar_context {
   filter: brightness(1.2);
 }
 
-#metric-modal .metric-chart text, .views-metrics .metric-chart text, .downloads-metrics .metric-chart text {
-  fill: var(--portal-col-text-subtle__deprecate)
+#metric-modal .metric-chart text,
+.views-metrics .metric-chart text,
+.downloads-metrics .metric-chart text {
+  fill: var(--portal-col-text-subtle__deprecate);
 }
 
-#metric-modal .metric-chart .y.axis line, .views-metrics .metric-chart .y.axis line, .downloads-metrics .metric-chart .y.axis line {
-  fill: var(--portal-col-text-subtle__deprecate)
+#metric-modal .metric-chart .y.axis line,
+.views-metrics .metric-chart .y.axis line,
+.downloads-metrics .metric-chart .y.axis line {
+  fill: var(--portal-col-text-subtle__deprecate);
 }
 
-#metric-modal .metric-chart .scale_button rect, .views-metrics .metric-chart .scale_button rect, .downloads-metrics .metric-chart .scale_button rect {
-  fill: var(--portal-col-bkg-active__deprecate)
+#metric-modal .metric-chart .scale_button rect,
+.views-metrics .metric-chart .scale_button rect,
+.downloads-metrics .metric-chart .scale_button rect {
+  fill: var(--portal-col-bkg-active__deprecate);
 }
 
 /* members page */
 
 .portal-view #Members .row-fluid:nth-child(odd) {
-  background-color: var(--portal-col-bkg-lighter__deprecate)
+  background-color: var(--portal-col-bkg-lighter__deprecate);
 }
 
 /* data page */
@@ -239,15 +314,32 @@ a {
   border-top: 1px solid var(--portal-col-bkg-active__deprecate);
 }
 
-.pagination ul>li>a, .pagination ul>li>span {
+.pagination ul > li > a,
+.pagination ul > li > span {
   border: 1px solid var(--portal-col-bkg-active__deprecate);
   background-color: var(--portal-col-bkg__deprecate);
 }
 
-select, .uneditable-input, input[type=text], input[type=password], input[type=datetime], input[type=datetime-local], input[type=date], input[type=month], input[type=time], input[type=week], input[type=number], input[type=email], input[type=url], input[type=tel], input[type=color], input[type=search], textarea {
+select,
+.uneditable-input,
+input[type="text"],
+input[type="password"],
+input[type="datetime"],
+input[type="datetime-local"],
+input[type="date"],
+input[type="month"],
+input[type="time"],
+input[type="week"],
+input[type="number"],
+input[type="email"],
+input[type="url"],
+input[type="tel"],
+input[type="color"],
+input[type="search"],
+textarea {
   border: 1px solid var(--portal-col-bkg-active__deprecate);
   background-color: var(--portal-col-bkg-lighter__deprecate);
-  color: var(--portal-col-text__deprecate)
+  color: var(--portal-col-text__deprecate);
 }
 
 .filter-groups .filter .btn:not(.btn-filter-editor) {
@@ -256,7 +348,9 @@ select, .uneditable-input, input[type=text], input[type=password], input[type=da
   background-color: var(--portal-col-bkg-active__deprecate);
 }
 
-.filter-group-link a, .nav-tabs .filter-group-link a, .nav-tabs .filter-group-link.active a {
+.filter-group-link a,
+.nav-tabs .filter-group-link a,
+.nav-tabs .filter-group-link.active a {
   background-color: var(--portal-col-bkg__deprecate);
 }
 
@@ -264,15 +358,21 @@ select, .uneditable-input, input[type=text], input[type=password], input[type=da
   background-color: var(--portal-col-bkg-lighter__deprecate);
 }
 
-.nav-tabs .filter-group-link a:hover, .filter-group-link a, .nav-tabs .filter-group-link a, .nav-tabs .filter-group-link.active a {
+.nav-tabs .filter-group-link a:hover,
+.filter-group-link a,
+.nav-tabs .filter-group-link a,
+.nav-tabs .filter-group-link.active a {
   border-color: var(--portal-col-bkg-lighter__deprecate);
 }
 
-.filter-group-link, .nav>li>a:focus, .nav>li>a:hover {
+.filter-group-link,
+.nav > li > a:focus,
+.nav > li > a:hover {
   background-color: var(--portal-col-bkg-lighter__deprecate);
 }
 
-.filter-group-links, .nav-tabs {
+.filter-group-links,
+.nav-tabs {
   border-color: var(--portal-col-bkg-lighter__deprecate);
 }
 
@@ -282,12 +382,13 @@ select, .uneditable-input, input[type=text], input[type=password], input[type=da
 
 .catalog-metrics .badge {
   background-color: var(--portal-col-bkg-active__deprecate);
-  color: var(--portal-col-text-subtle__deprecate)
+  color: var(--portal-col-text-subtle__deprecate);
 }
 
 /* Various elements in the portal view that need to be a little bit lighter */
 
-.portal-section-view a, .portal-view .quick-stats-count {
+.portal-section-view a,
+.portal-view .quick-stats-count {
   filter: brightness(1.25);
 }
 
@@ -295,23 +396,31 @@ select, .uneditable-input, input[type=text], input[type=password], input[type=da
   filter: brightness(1.2);
 }
 
-.Portal.Editor #Navbar .brand, .PortalView #Navbar .brand {
+.Portal.Editor #Navbar .brand,
+.PortalView #Navbar .brand {
   filter: brightness(1.6);
 }
 
 .citations-metrics-list > .metric-table.table.table-striped.table-condensed td {
-  background-color: var(--portal-col-bkg__deprecate)
+  background-color: var(--portal-col-bkg__deprecate);
 }
 
 /* nav in dataone theme */
 
-.PortalView .d1_nav__minimal-nav .d1_menu-item__top-item-name, .Portal .d1_nav__minimal-nav .d1_menu-item__top-item-name, .PortalView .d1_menu-item__icon, .Portal .d1_menu-item__icon, .PortalView .d1_menu-item__dropdown-icon, .Portal .d1_menu-item__dropdown-icon {
+.PortalView .d1_nav__minimal-nav .d1_menu-item__top-item-name,
+.Portal .d1_nav__minimal-nav .d1_menu-item__top-item-name,
+.PortalView .d1_menu-item__icon,
+.Portal .d1_menu-item__icon,
+.PortalView .d1_menu-item__dropdown-icon,
+.Portal .d1_menu-item__dropdown-icon {
   filter: brightness(1.6);
 }
 
 /* loading */
-.notification.loading p, .notification.loading .icon, .stripe .notification.loading i {
-  color: var(--portal-col-text-subtle__deprecate)
+.notification.loading p,
+.notification.loading .icon,
+.stripe .notification.loading i {
+  color: var(--portal-col-text-subtle__deprecate);
 }
 
 /* data page search results */

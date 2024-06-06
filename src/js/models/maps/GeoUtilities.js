@@ -48,7 +48,7 @@ define(["backbone"], function (Backbone) {
 
         return [x, y, z];
       },
-    }
+    },
   );
 
   return GeoUtilities;
