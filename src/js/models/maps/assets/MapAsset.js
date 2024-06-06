@@ -7,7 +7,14 @@ define([
   "models/maps/AssetColorPalette",
   "common/IconUtilities",
   MetacatUI.root + "/components/dayjs.min.js",
-], function (_, Backbone, PortalImage, AssetColorPalette, IconUtilities, dayjs) {
+], function (
+  _,
+  Backbone,
+  PortalImage,
+  AssetColorPalette,
+  IconUtilities,
+  dayjs,
+) {
   /**
    * @classdesc A MapAsset Model comprises information required to fetch source data for
    * some asset or resource that is displayed in a map, such as imagery (raster) tiles,
@@ -325,7 +332,7 @@ define([
           if (assetConfig.colorPalette) {
             this.set(
               "colorPalette",
-              new AssetColorPalette(assetConfig.colorPalette)
+              new AssetColorPalette(assetConfig.colorPalette),
             );
           }
 
@@ -338,14 +345,15 @@ define([
                 model.set("iconStatus", "fetching");
                 // If the string is not an SVG then assume it is a PID and try to fetch
                 // the SVG file.
-                IconUtilities.fetchIcon(assetConfig.icon)
-                  .then(icon => model.updateIcon(icon));
+                IconUtilities.fetchIcon(assetConfig.icon).then((icon) =>
+                  model.updateIcon(icon),
+                );
               }
             } catch (error) {
               console.log(
                 "Failed to fetch an icon for a MapAsset" +
                   ". Error details: " +
-                  error
+                  error,
               );
               model.set("iconStatus", "error");
             }
@@ -370,14 +378,14 @@ define([
         // Write a helpful error message
         switch (error.statusCode) {
           case 404:
-            details = 'The resource was not found (error code 404).'
+            details = "The resource was not found (error code 404).";
             break;
           case 500:
-            details = 'There was a server error (error code 500).'
+            details = "There was a server error (error code 500).";
             break;
         }
-        this.set('status', 'error');
-        this.set('statusDetails', details)
+        this.set("status", "error");
+        this.set("statusDetails", details);
       },
 
       /**
@@ -385,8 +393,8 @@ define([
        * @since 2.27.0
        */
       setReady: function () {
-        this.set('status', 'ready')
-        this.set('statusDetails', null)
+        this.set("status", "ready");
+        this.set("statusDetails", null);
       },
 
       /**
@@ -409,8 +417,8 @@ define([
             this.handleError();
             return;
           } else {
-            const vis = this.get("originalVisibility")
-            if(typeof vis === "boolean"){
+            const vis = this.get("originalVisibility");
+            if (typeof vis === "boolean") {
               this.set("visible", vis);
             }
           }
@@ -446,7 +454,7 @@ define([
           this.listenToOnce(
             this,
             "change:mapModel",
-            this.listenToSelectedFeatures
+            this.listenToSelectedFeatures,
           );
           return;
         }
@@ -457,14 +465,14 @@ define([
           this.listenToOnce(
             mapModel,
             "change:interactions",
-            this.listenToSelectedFeatures
+            this.listenToSelectedFeatures,
           );
           return;
         }
 
         const selectedFeatures = mapModel.getSelectedFeatures();
 
-        if(selectedFeatures){
+        if (selectedFeatures) {
           this.stopListening(selectedFeatures, "update");
           this.listenTo(selectedFeatures, "update", this.updateAppearance);
         }
@@ -534,7 +542,7 @@ define([
       usesFeatureType: function (feature) {
         const ft = this.get("featureType");
         if (!feature || !ft) return false;
-        if (!feature instanceof ft) return false;
+        if ((!feature) instanceof ft) return false;
         return true;
       },
 
@@ -622,7 +630,7 @@ define([
           console.log(
             "There was an error adding custom properties. Returning properties " +
               "unchanged. Error details: " +
-              error
+              error,
           );
           return properties;
         }
@@ -657,7 +665,7 @@ define([
           console.log(
             "There was an error formatting a date for a Feature model" +
               ". Error details: " +
-              error
+              error,
           );
           return "";
         }
@@ -691,7 +699,7 @@ define([
           console.log(
             "There was an error formatting a string for a Feature model" +
               ". Error details: " +
-              error
+              error,
           );
           return "";
         }
@@ -850,7 +858,7 @@ define([
           this.set("visible", true);
         }
       },
-    }
+    },
   );
 
   return MapAsset;

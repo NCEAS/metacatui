@@ -44,8 +44,7 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/*global define */
-define([
+            <pre class="prettyprint source linenums"><code>define([
   "jquery",
   "underscore",
   "backbone",
@@ -85,7 +84,7 @@ define([
        * @type {Underscore.Template}
        */
       innerButtonTemplate: _.template(
-        "&lt;i class='icon &lt;%=icon%> icon-on-left'>&lt;/i> &lt;%=text%>"
+        "&lt;i class='icon &lt;%=icon%> icon-on-left'>&lt;/i> &lt;%=text%>",
       ),
 
       /**
@@ -215,7 +214,7 @@ define([
 
           // Find the citation container
           this.citationContainer = this.el.querySelector(
-            "#" + ids.citationContainer
+            "#" + ids.citationContainer,
           );
 
           // Find the citation button
@@ -304,7 +303,7 @@ define([
                 textarea.trigger("focus");
                 textarea.tooltip("show");
               },
-            }
+            },
           );
           textarea.focusout(function () {
             textarea.animate({ width: "0px" }, function () {
@@ -337,7 +336,7 @@ define([
       onClose: function () {
         this.teardown();
       },
-    }
+    },
   );
 
   return CitationModalView;

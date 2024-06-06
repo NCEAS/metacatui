@@ -1,4 +1,3 @@
-/*global define */
 define(["backbone"], function (Backbone) {
   "use strict";
 
@@ -55,9 +54,8 @@ define(["backbone"], function (Backbone) {
        * will include the root part of the path name if it exists.
        */
       url: function (page) {
-
-        page = typeof page === 'number' ? page : parseInt(page, 10);
-        if (page < 0 || isNaN(page)) return '';
+        page = typeof page === "number" ? page : parseInt(page, 10);
+        if (page < 0 || isNaN(page)) return "";
 
         // Page number to display in the URL
         const pageBase1 = page + 1;
@@ -69,11 +67,10 @@ define(["backbone"], function (Backbone) {
         const regexRoot = new RegExp(`^${MetacatUI.root}`);
 
         // Remove the root and the trailing / or page/number
-        let newPath = basePath.replace(regexRoot, '').replace(regexSuffix, '');
+        let newPath = basePath.replace(regexRoot, "").replace(regexSuffix, "");
         // Add the new page number
         newPath += `/page/${pageBase1}`;
         return newPath;
-        
       },
 
       /**
@@ -88,7 +85,7 @@ define(["backbone"], function (Backbone) {
           page: 0,
           pageDisplay: "",
           className: "",
-        }
+        },
       ) {
         // Expand the data object into individual variables
         let { page, pageDisplay, className } = data;
@@ -172,11 +169,11 @@ define(["backbone"], function (Backbone) {
           if (currentPage > 0) {
             container.insertAdjacentHTML(
               "afterbegin",
-              this.linkTemplate({ page: currentPage - 1, pageDisplay: "<" })
+              this.linkTemplate({ page: currentPage - 1, pageDisplay: "<" }),
             );
             container.insertAdjacentHTML(
               "beforeend",
-              this.linkTemplate({ page: 0, pageDisplay: 1 })
+              this.linkTemplate({ page: 0, pageDisplay: 1 }),
             );
 
             //If there are pages between the first page and the current-2, then
@@ -188,7 +185,7 @@ define(["backbone"], function (Backbone) {
                   page: "",
                   pageDisplay: "...",
                   className: INACTIVE_CLASS,
-                })
+                }),
               );
             }
           }
@@ -209,7 +206,7 @@ define(["backbone"], function (Backbone) {
                   page: page,
                   pageDisplay: page + 1,
                   className: page == currentPage ? ACTIVE_CLASS : "",
-                })
+                }),
               );
             }
           }
@@ -225,17 +222,17 @@ define(["backbone"], function (Backbone) {
                   page: "",
                   pageDisplay: "...",
                   className: INACTIVE_CLASS,
-                })
+                }),
               );
             }
 
             container.insertAdjacentHTML(
               "beforeend",
-              this.linkTemplate({ page: lastPage, pageDisplay: lastPage + 1 })
+              this.linkTemplate({ page: lastPage, pageDisplay: lastPage + 1 }),
             );
             container.insertAdjacentHTML(
               "beforeend",
-              this.linkTemplate({ page: currentPage + 1, pageDisplay: ">" })
+              this.linkTemplate({ page: currentPage + 1, pageDisplay: ">" }),
             );
           }
         } catch (e) {
@@ -266,7 +263,6 @@ define(["backbone"], function (Backbone) {
         if (page >= 0) {
           this.goToPage(page);
         }
-        
       },
 
       /**
@@ -312,6 +308,6 @@ define(["backbone"], function (Backbone) {
       removeLoading: function () {
         this.el.classList.remove("loading");
       },
-    }
+    },
   );
 });

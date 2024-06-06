@@ -1,9 +1,8 @@
-/* global define */
 define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
   $,
   _,
   Backbone,
-  DataONEObject
+  DataONEObject,
 ) {
   /**
    * @class EMLDistribution
@@ -16,7 +15,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
    * @constructor
    */
   var EMLDistribution = Backbone.Model.extend(
-    /** @lends EMLDistribution.prototype */{
+    /** @lends EMLDistribution.prototype */ {
       /**
        * Default values for an EML 211 Distribution model. This is essentially a
        * flattened version of the EML 2.1.1 DistributionType, including nodes and
@@ -73,7 +72,12 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
        * @type {string[]}
        * @since 2.26.0
        */
-      offlineNodes: ["mediumname", "mediumvolume", "mediumformat", "mediumnote"],
+      offlineNodes: [
+        "mediumname",
+        "mediumvolume",
+        "mediumformat",
+        "mediumnote",
+      ],
 
       /**
        * lower-case EML node names that belong within the <online> node. These
@@ -100,7 +104,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
         this.listenTo(
           this,
           "change:" + nodeAttr.join(" change:"),
-          this.trickleUpChange
+          this.trickleUpChange,
         );
       },
 
@@ -250,7 +254,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
 
         // Add the urlFunction attribute if one is set in the model. Remove it if
         // it's not set.
-        const url = $objectDOM.find("url")
+        const url = $objectDOM.find("url");
         if (url) {
           const urlFunction = this.get("urlFunction");
           if (urlFunction) {
@@ -259,7 +263,6 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
             url.removeAttr("function");
           }
         }
-
 
         return objectDOM;
       },
@@ -324,7 +327,8 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
       formatXML: function (xmlString) {
         return DataONEObject.prototype.formatXML.call(this, xmlString);
       },
-    });
+    },
+  );
 
   return EMLDistribution;
 });

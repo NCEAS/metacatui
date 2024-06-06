@@ -48,7 +48,7 @@
 
 define(["backbone", "text!templates/maps/cesium-nav-help.html"], function (
   Backbone,
-  NavHelpTemplate
+  NavHelpTemplate,
 ) {
   /**
    * @class MapHelpPanel
@@ -95,7 +95,6 @@ define(["backbone", "text!templates/maps/cesium-nav-help.html"], function (
             this[option] = options[option];
           }
         });
-
       },
 
       /**
@@ -193,7 +192,7 @@ define(["backbone", "text!templates/maps/cesium-nav-help.html"], function (
           sectionEl.innerHTML = `&lt;h3 class="toolbar__content-header">${section.title}&lt;/h3>
               &lt;div class="${contentContainerClass}">&lt;/div>`;
           const contentEl = sectionEl.querySelector(
-            "." + contentContainerClass
+            "." + contentContainerClass,
           );
           renderMethod.call(view, contentEl);
 
@@ -295,7 +294,7 @@ define(["backbone", "text!templates/maps/cesium-nav-help.html"], function (
         if (!buttonEl) return;
         buttonEl.classList.add("map-view__button--active");
       },
-    }
+    },
   );
 
   return MapHelpPanel;

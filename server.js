@@ -18,7 +18,7 @@ const app = express();
 const src_dir = "src";
 
 app.use(express.static(__dirname + "/" + src_dir));
-app.get("*", function(request, response) {
+app.get("*", function (request, response) {
   response.sendFile(path.resolve(__dirname, src_dir, "index.html"));
 });
 app.listen(port);

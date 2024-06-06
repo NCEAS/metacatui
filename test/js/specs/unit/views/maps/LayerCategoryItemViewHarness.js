@@ -13,5 +13,5 @@ define([], function () {
     getLayers() {
       return this.view.$(".layer-category-item__layers");
     }
-  }
+  };
 });

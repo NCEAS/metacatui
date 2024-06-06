@@ -63,7 +63,7 @@
   overflow: hidden;
 }
 
-#portal-header-container>.row {
+#portal-header-container > .row {
   margin-left: 0;
   position: relative;
   width: auto;
@@ -78,18 +78,17 @@
 .portal-view .portal-logo {
   height: 3rem;
   margin-right: -3.25rem;
-  opacity: .25;
+  opacity: 0.25;
   z-index: 1;
 }
 
 .portal-view .portal-description {
   align-self: center;
-  font-size: .75rem;
+  font-size: 0.75rem;
   margin: 0;
   margin-left: 0.75rem;
   position: relative;
 }
-
 
 .portal-view .portal-description::before {
   /* font awesome info icon */
@@ -106,16 +105,19 @@
 }
 
 .portal-view .portal-description p {
-  font-size: .8rem;
+  font-size: 0.8rem;
   font-weight: 500;
   position: absolute;
   margin: 0;
-  top: -.25rem;
+  top: -0.25rem;
   left: 1.5rem;
   width: max-content;
-  background-color: var(--portal-col-tooltip-background, var(--portal-col-bkg-active__deprecate, white));
+  background-color: var(
+    --portal-col-tooltip-background,
+    var(--portal-col-bkg-active__deprecate, white)
+  );
   z-index: 10;
-  padding: 0.25rem .5rem;
+  padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
   /* hide the description until the info icon is hovered */
   display: none;
@@ -133,11 +135,10 @@
   }
 }
 
-
 /* Title & logo on smaller screens... */
 @media only screen and (max-width: 768px) {
-
-  .Portal.Editor #editor-header, .PortalView #portal-header-container .row {
+  .Portal.Editor #editor-header,
+  .PortalView #portal-header-container .row {
     flex-direction: row;
   }
 
@@ -182,18 +183,28 @@
   color: var(--portal-col-text-nav);
 }
 
-.portal-view #portal-section-tabs .section-link-container.active .portal-section-link {
+.portal-view
+  #portal-section-tabs
+  .section-link-container.active
+  .portal-section-link {
   color: var(--portal-col-text-nav-highlight, var(--portal-secondary-color));
   background: transparent;
 }
 
-#portal-section-tabs .section-link-container.active:hover, #portal-section-tabs .section-link-container:hover {
+#portal-section-tabs .section-link-container.active:hover,
+#portal-section-tabs .section-link-container:hover {
   background: transparent;
 }
 
-.portal-view #portal-section-tabs .section-link-container .portal-section-link:hover {
+.portal-view
+  #portal-section-tabs
+  .section-link-container
+  .portal-section-link:hover {
   background: transparent;
-  color: var(--portal-col-text-nav-hover, var(--portal-secondary-color)) !important;
+  color: var(
+    --portal-col-text-nav-hover,
+    var(--portal-secondary-color)
+  ) !important;
 }
 
 .portal-logos-view {

@@ -1,4 +1,3 @@
-/*global define */
 define([
   "jquery",
   "underscore",
@@ -16,7 +15,7 @@ define([
   MetricModalTemplate,
   Citations,
   CitationList,
-  SignInView
+  SignInView,
 ) {
   "use strict";
 
@@ -166,7 +165,7 @@ define([
           // Get the current metric name and associated options
           const metric = this.metricName || this.metrics[0].name;
           const metricOpts = this.metrics.find(
-            (metric) => metric.name === this.metricName
+            (metric) => metric.name === this.metricName,
           );
 
           // Get the name in the singular form in lower case.
@@ -227,7 +226,7 @@ define([
       getMetricAtOffset: function (n) {
         const currentMetricName = this.metricName || this.metrics[0].name;
         const currentMetricIndex = this.metrics.findIndex(
-          (metric) => metric.name === currentMetricName
+          (metric) => metric.name === currentMetricName,
         );
         let metricIndex = (currentMetricIndex + n) % this.metrics.length;
         if (metricIndex < 0) {
@@ -312,7 +311,7 @@ define([
           this.teardown();
 
           require(["views/RegisterCitationView"], function (
-            RegisterCitationView
+            RegisterCitationView,
           ) {
             // display a register citation modal
             var registerCitationView = new RegisterCitationView({
@@ -329,7 +328,7 @@ define([
        */
       showSignIn: function () {
         var container = $(document.createElement("div")).addClass(
-          "container center"
+          "container center",
         );
         this.$el.html(container);
 
@@ -344,7 +343,7 @@ define([
         //Add the elements to the page
         $(container).append(
           "<h1>Sign in to register citations</h1>",
-          signInButtons
+          signInButtons,
         );
       },
 
@@ -369,7 +368,7 @@ define([
         // Prepend to modal-body
         this.$el.find(".modal-body").prepend(chartContainer);
         var metricCount = MetacatUI.appView.currentView.metricsModel.get(
-          this.metricName.toLowerCase()
+          this.metricName.toLowerCase(),
         );
         var metricMonths =
           MetacatUI.appView.currentView.metricsModel.get("months");
@@ -408,7 +407,7 @@ define([
       onClose: function () {
         this.teardown();
       },
-    }
+    },
   );
 
   return MetricModalView;
