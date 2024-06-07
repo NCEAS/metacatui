@@ -6,6 +6,7 @@ This is a simple helm chart for debugging a MetacatUI deployment.
 
 1. modify values.yaml as appropriate
 2. install the helm chart:
+
 ```shell
 $ helm -n knb upgrade --install knbmcui ./helm
 ```
