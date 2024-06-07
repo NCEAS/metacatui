@@ -6,8 +6,12 @@
     "./js/specs/unit/models/geocoder/GoogleMapsGeocoder.spec.js",
     "./js/specs/unit/models/geocoder/Prediction.spec.js",
     "./js/specs/unit/models/maps/viewfinder/ViewfinderModel.spec.js",
+    "./js/specs/unit/views/maps/viewfinder/ExpansionPanelView.spec.js",
     "./js/specs/unit/views/maps/viewfinder/PredictionView.spec.js",
     "./js/specs/unit/views/maps/viewfinder/PredictionsListView.spec.js",
+    "./js/specs/unit/views/maps/viewfinder/ZoomPresetView.spec.js",
+    "./js/specs/unit/views/maps/viewfinder/ZoomPresetsListView.spec.js",
+    "./js/specs/unit/views/maps/viewfinder/SearchView.spec.js",
     "./js/specs/unit/views/maps/viewfinder/ViewfinderView.spec.js",
     "./js/specs/unit/collections/SolrResults.spec.js",
     "./js/specs/unit/models/Search.spec.js",
@@ -62,7 +66,8 @@
     "./js/specs/unit/views/maps/SearchInputView.spec.js",
     "./js/specs/unit/models/Search.spec.js",
     "./js/specs/unit/models/SolrResult.spec.js",
-    "./js/specs/unit/models/DataONEObject.spec.js"
+    "./js/specs/unit/models/DataONEObject.spec.js",
+    "./js/specs/unit/views/maps/MapView.spec.js"
   ],
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",

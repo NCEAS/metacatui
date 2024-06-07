@@ -1,6 +1,5 @@
 "use strict";
 
-/*global define */
 define([
   "backbone",
   "cesium",
@@ -162,6 +161,6 @@ define([
           console.warn('Error handling a "' + eventName + '" event.', e);
         }
       },
-    }
+    },
   );
 });

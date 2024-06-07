@@ -1,11 +1,11 @@
 $padding: 20px;
 $padding-small: 10px;
 
-body{
+body {
   color: $neutral-dark;
   margin: 0px;
 
-  > section{
+  > section {
     display: grid;
     grid-template-columns: 80% $padding 100fr;
     grid-template-rows: auto;
@@ -13,32 +13,32 @@ body{
       "header header header"
       "main . side-nav";
 
-    > article{
+    > article {
       grid-area: main;
       padding: $padding;
     }
 
-    > nav{
+    > nav {
       grid-area: side-nav;
     }
 
-    > header{
+    > header {
       grid-area: header;
       background-color: $neutral-dark;
       color: $neutral;
       padding: $padding-small $padding;
 
-      > nav{
+      > nav {
         display: flex;
         width: 100%;
         justify-content: flex-end;
         align-items: center;
 
-        .logo{
+        .logo {
           flex-grow: 1;
         }
 
-        a{
+        a {
           font-size: 1em;
           flex-grow: 0;
           padding-right: $padding;
@@ -46,43 +46,43 @@ body{
           font-weight: bold;
         }
 
-        .download{
+        .download {
           align-self: flex-end;
           max-width: 17%;
           min-width: 150px;
           flex-grow: 1;
         }
       }
-
     }
   }
-
 }
 
-a, a:visited, a:active{
+a,
+a:visited,
+a:active {
   color: $secondary-brand;
   text-decoration: none;
 
-  > svg{
+  > svg {
     height: 1em;
   }
 }
 
-img{
+img {
   max-width: 100%;
 }
 
 .highlight,
-p code{
+p code {
   background-color: #f8f8f8;
   padding: 5px;
   border-radius: 4px;
 }
 
-.release-notes h1{
+.release-notes h1 {
   font-size: 1.3em;
 }
-.release-notes h2{
+.release-notes h2 {
   font-size: 1.1em;
 }
 .release-notes img {
@@ -92,14 +92,14 @@ p code{
   border-radius: 4px;
   max-width: 90%;
 }
-.subtle{
-  font-size: .9em;
+.subtle {
+  font-size: 0.9em;
   color: $neutral-light;
 }
 
-h2 .subtle{
+h2 .subtle {
   font-weight: normal;
   margin-left: $padding;
-  font-size: .6em;
+  font-size: 0.6em;
   vertical-align: middle;
 }

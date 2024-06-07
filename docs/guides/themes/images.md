@@ -37,7 +37,9 @@ are randomly shuffled through with each page load.
 ### Changing the header images
 
 #### Step 1. Add new images to your theme
+
 These images are located in the `img/backgrounds` directory inside your theme directory.
+
 - The image file names need to start with `bg` and the numbers `1` to `n`, where `n` is the number of total images.
 - The file extensions need to be `.jpg`
 
@@ -53,11 +55,14 @@ Example:
 ```
 
 #### Step 2. Update the image count in the navbar template
+
 The `navbar.html` template contains the HTML element that displays these images. In
 order for the images to show up correctly, this element needs two components:
+
 1. The `id` attribute must equal `bg_image`.
 2. The `data-image-count` attribute must equal the number of image files that you added in Step 1. e.g. `data-image-count="3"`
 
 ### Removing the header images
+
 Whatever element in MetacatUI that contains the `id` `bg_image` (`#bg_image`) will display these images.
 Simply remove or rename elements with that `id`. By default, the `navbar.html` template contains that element.

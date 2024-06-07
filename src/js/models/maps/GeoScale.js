@@ -55,7 +55,7 @@ define(["backbone"], function (Backbone) {
           return "Invalid meters scale. Must be greater than 0.";
         }
       },
-    }
+    },
   );
 
   return GeoScale;

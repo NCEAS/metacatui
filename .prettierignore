@@ -1,0 +1,8 @@
+# Prettier doesn't format underscore.js templates correctly
+src/**/*.html
+# Don't modify third-party code
+src/components
+# docs/docs is auto-generated
+docs/docs
+# Ignore any minimized files
+**/*.min.*

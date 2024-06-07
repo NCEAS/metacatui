@@ -1,27 +1,29 @@
-'use strict';
-define(
-  ['backbone', 'text!templates/maps/viewfinder/viewfinder-prediction.html'],
-  (Backbone, Template) => {
-    // The base classname to use for this View's template elements.
-    const BASE_CLASS = 'viewfinder-prediction';
+"use strict";
+define([
+  "backbone",
+  "text!templates/maps/viewfinder/viewfinder-prediction.html",
+], (Backbone, Template) => {
+  // The base classname to use for this View's template elements.
+  const BASE_CLASS = "viewfinder-prediction";
 
-    /**
-     * @class PredictionView
-     * @classdesc PredictionView shows an autocomplete suggestion
-     * for the user when they are searching for a place on a map.
-     * @classcategory Views/Maps
-     * @name PredictionView
-     * @extends Backbone.View
-     * @screenshot views/maps/viewfinder/PredictionView.png
-     * @since 2.28.0
-     * @constructs PredictionView
-     */
-    const PredictionView = Backbone.View.extend({
+  /**
+   * @class PredictionView
+   * @classdesc PredictionView shows an autocomplete suggestion
+   * for the user when they are searching for a place on a map.
+   * @classcategory Views/Maps
+   * @name PredictionView
+   * @extends Backbone.View
+   * @screenshot views/maps/viewfinder/PredictionView.png
+   * @since 2.28.0
+   * @constructs PredictionView
+   */
+  const PredictionView = Backbone.View.extend(
+    /** @lends PredictionView.prototype */ {
       /**
        * The type of View this is
        * @type {string}
        */
-      type: 'PredictionView',
+      type: "PredictionView",
 
       /**
        * The HTML class to use for this view's outermost element.
@@ -33,7 +35,7 @@ define(
        * The HTML element to use for this view's outermost element.
        * @type {string}
        */
-      tagName: 'li',
+      tagName: "li",
 
       /**
        * The HTML classes to use for this view's HTML elements.
@@ -44,12 +46,12 @@ define(
       },
 
       /**
-      * The events this view will listen to and the associated function to call.
-      * @type {Object}
-      */
-      events: { click: 'select' },
+       * The events this view will listen to and the associated function to call.
+       * @type {Object}
+       */
+      events: { click: "select" },
 
-      /** 
+      /**
        * Values meant to be used by the rendered HTML template.
        */
       templateVars: {
@@ -73,7 +75,7 @@ define(
         this.templateVars = {
           ...this.templateVars,
           classNames: this.classNames,
-          description: this.predictionModel.get('description'),
+          description: this.predictionModel.get("description"),
         };
 
         this.setupListeners();
@@ -83,13 +85,13 @@ define(
        * Setup all event listeners on ViewfinderModel.
        */
       setupListeners() {
-        this.listenTo(this.viewfinderModel, 'change:focusIndex', () => {
+        this.listenTo(this.viewfinderModel, "change:focusIndex", () => {
           this.render();
         });
       },
 
       /**
-       * Event handler function that selects this element, deselecting any other 
+       * Event handler function that selects this element, deselecting any other
        * sibling list elements.
        */
       select(event) {
@@ -102,12 +104,13 @@ define(
        * is passed an object with relevant view state.
        * */
       render() {
-        const focusIndex = this.viewfinderModel.get('focusIndex');
+        const focusIndex = this.viewfinderModel.get("focusIndex");
         this.templateVars.isFocused = focusIndex === this.index;
 
         this.el.innerHTML = _.template(Template)(this.templateVars);
       },
-    });
+    },
+  );
 
-    return PredictionView;
-  });
+  return PredictionView;
+});

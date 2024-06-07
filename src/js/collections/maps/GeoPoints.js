@@ -184,7 +184,7 @@ define(["backbone", "models/maps/GeoPoint"], function (Backbone, GeoPoint) {
       toCZMLPoints: function () {
         return this.models.map((model) => {
           return model.toCZML();
-        })
+        });
       },
 
       /**
@@ -323,7 +323,7 @@ define(["backbone", "models/maps/GeoPoint"], function (Backbone, GeoPoint) {
           return model.get("mapWidgetCoords");
         });
       },
-    }
+    },
   );
 
   return GeoPoints;

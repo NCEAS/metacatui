@@ -18,7 +18,6 @@
   --cs-border-radius: 0.5rem;
 }
 
-
 /* ------ PAGE LAYOUT ------ */
 /* organize the page elements that are outside of the catalog search view */
 
@@ -72,8 +71,7 @@
 .catalog {
   display: grid;
   grid-template-columns: min-content 1fr 1fr;
-  grid-template-areas:
-    "filters results map";
+  grid-template-areas: "filters results map";
   grid-template-rows: 100%;
   height: 100%;
   overflow: hidden;
@@ -135,8 +133,10 @@
 /* ------ MAP CONTROLS ------ */
 
 /* the toggle buttons and their labels */
-.catalog__map-toggle, .catalog__filters-toggle,
-.catalog__toggle-map-label, .catalog__toggle-filters-label {
+.catalog__map-toggle,
+.catalog__filters-toggle,
+.catalog__toggle-map-label,
+.catalog__toggle-filters-label {
   position: absolute;
   top: var(--cs-padding-large);
   box-shadow: var(--cs-element-shadow);
@@ -144,7 +144,8 @@
 }
 
 /* buttons */
-.catalog__map-toggle, .catalog__filters-toggle {
+.catalog__map-toggle,
+.catalog__filters-toggle {
   top: var(--cs-padding-small);
   height: var(--cs-toggle-height, 2.5rem);
   width: var(--cs-toggle-width, 1.9rem);
@@ -165,12 +166,14 @@
   border-radius: 0 var(--cs-border-radius) var(--cs-border-radius) 0;
 }
 
-.catalog__map-toggle:hover, .catalog__filters-toggle:hover {
+.catalog__map-toggle:hover,
+.catalog__filters-toggle:hover {
   filter: brightness(0.9);
 }
 
 /* labels */
-.catalog__toggle-map-label, .catalog__toggle-filters-label {
+.catalog__toggle-map-label,
+.catalog__toggle-filters-label {
   display: none;
   /* show on hover only */
   top: 0.9rem;
@@ -182,15 +185,14 @@
 
 .catalog__toggle-map-label {
   right: calc(var(--cs-padding-small) + var(--cs-toggle-width));
-
 }
 
 .catalog__toggle-filters-label {
   left: calc(var(--cs-padding-small) + var(--cs-toggle-width));
 }
 
-.catalog__map-toggle:hover~.catalog__toggle-map-label,
-.catalog__filters-toggle:hover~.catalog__toggle-filters-label {
+.catalog__map-toggle:hover ~ .catalog__toggle-map-label,
+.catalog__filters-toggle:hover ~ .catalog__toggle-filters-label {
   display: block;
 }
 
@@ -220,13 +222,12 @@
 }
 
 /* the rule has high specificity to override bootstrap rules */
-.catalog__map-filter-toggle input[type=checkbox] {
+.catalog__map-filter-toggle input[type="checkbox"] {
   margin: 0;
   order: -1;
   transform: scale(1.35);
   margin-right: 0.5rem;
 }
-
 
 /* ------ MAP HIDDEN (formerly "LIST MODE") ------ */
 /* catalog is styled as map mode by default. Modifications needed for list-mode
@@ -247,8 +248,7 @@
 
 .catalog--map-hidden .catalog {
   grid-template-columns: min-content auto;
-  grid-template-areas:
-    "filters results";
+  grid-template-areas: "filters results";
   overflow: scroll;
 }
 
@@ -262,8 +262,7 @@ filters visible are below */
 
 .catalog--filters-hidden .catalog {
   grid-template-columns: 1fr 1fr;
-  grid-template-areas:
-    "results map";
+  grid-template-areas: "results map";
 }
 
 /* ------ FILTERS HIDDEN, MAP HIDDEN ------ */
@@ -272,6 +271,5 @@ entire width of the page */
 
 .catalog--map-hidden.catalog--filters-hidden .catalog {
   grid-template-columns: 1fr;
-  grid-template-areas:
-    "results";
+  grid-template-areas: "results";
 }

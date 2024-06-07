@@ -1,0 +1,19 @@
+<div class="<%= classNames.preset %>" tabindex="0">
+  <div class="<%= classNames.title %>">
+    <%= preset.title %>
+  </div>
+  <div class="<%= classNames.description %>">
+    <%= preset.description %>
+  </div>
+  <div class="<%= classNames.layers %>">
+    <% _.each(preset.enabledLayerLabels, label => { %>
+      <div class="<%= classNames.layer %>" title="<%= label %>">
+        <div class="<%= classNames.layerContent %>">
+          <i class="icon icon-eye-open"></i>
+          <%= label %>
+        </div>
+      </div>
+      <% }); %>
+  </div>
+
+</div>
