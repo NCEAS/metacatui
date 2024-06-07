@@ -11,7 +11,7 @@ define([
    * @classcategory Views/Maps
    * @name CesiumWidgetContainerView
    * @augments Backbone.View
-   * @since x.x.x
+   * @since 0.0.0
    * @constructs
    */
   const CesiumWidgetContainerView = Backbone.View.extend(
