@@ -7,7 +7,7 @@ define([
   "models/maps/Map",
   "text!templates/maps/map.html",
   // SubViews
-  "views/maps/CesiumWidgetContainerView",
+  "views/maps/MapWidgetContainerView",
   "views/maps/ToolbarView",
   "views/maps/ScaleBarView",
   "views/maps/FeatureInfoView",
@@ -21,7 +21,7 @@ define([
   Map,
   Template,
   // SubViews
-  CesiumWidgetContainerView,
+  MapWidgetContainerView,
   ToolbarView,
   ScaleBarView,
   FeatureInfoView,
@@ -146,12 +146,10 @@ define([
 
       /**
        * Renders the view that shows the map/globe and all of the geo-spatial data.
-       * Currently, this uses the CesiumWidgetContainerView, but this function could be modified
-       * to use an alternative map widget in the future.
-       * @returns {CesiumWidgetContainerView} Returns the rendered view
+       * @returns {MapWidgetContainerView} Returns the rendered view
        */
       renderMapWidget() {
-        this.mapWidgetContainer = new CesiumWidgetContainerView({
+        this.mapWidgetContainer = new MapWidgetContainerView({
           el: this.subElements.mapWidgetContainer,
           model: this.model,
         });
