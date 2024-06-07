@@ -328,13 +328,18 @@ define([
             assetConfig = JSON.parse(JSON.stringify(assetConfig));
           }
 
-          // Set the color palette
-          if (assetConfig.colorPalette) {
-            this.set(
-              "colorPalette",
-              new AssetColorPalette(assetConfig.colorPalette),
-            );
-          }
+        // Set the color palette
+        if (assetConfig.colorPalette) {
+          this.set(
+            "colorPalette",
+            new AssetColorPalette(
+              _.extend(
+                assetConfig.colorPalette,
+                _.pick(assetConfig, "label"),
+              ),
+            ),
+          );
+        }
 
           // Fetch the icon, if there is one
           if (assetConfig.icon) {
