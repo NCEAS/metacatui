@@ -143,7 +143,7 @@ define([
       /**
        * Coordinates that describe a camera position for Cesium. Requires at
        * least a longitude and latitude.
-       * @typedef {object} MapConfig#CameraPosition
+       * @typedef {object} CameraPosition
        * @property {number} longitude - Longitude of the central home point
        * @property {number} latitude - Latitude of the central home point
        * @property {number} [height] - Height above sea level (meters)
