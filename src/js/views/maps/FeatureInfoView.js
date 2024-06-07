@@ -91,12 +91,7 @@ define([
         },
       ],
 
-      /**
-       * Creates an object that gives the events this view will listen to and the
-       * associated function to call. Each entry in the object has the format 'event
-       * selector': 'function'.
-       * @returns {object}
-       */
+      /** @inheritdoc */
       events() {
         const events = {};
         // Close the layer details panel when the toggle button is clicked. Get the
@@ -144,17 +139,11 @@ define([
        * @param {object} [options] - A literal object with options to pass to the view
        */
       initialize(options) {
-        try {
-          // Get all the options and apply them to this view
-          if (typeof options === "object") {
-            Object.entries(options).forEach(([key, value]) => {
-              this[key] = value;
-            });
-          }
-        } catch (e) {
-          console.log(
-            `A FeatureInfoView failed to initialize. Error message: ${e}`,
-          );
+        // Get all the options and apply them to this view
+        if (typeof options === "object") {
+          Object.entries(options).forEach(([key, value]) => {
+            this[key] = value;
+          });
         }
       },
 
@@ -163,139 +152,125 @@ define([
        * @returns {FeatureInfoView} Returns the rendered view element
        */
       render() {
-        try {
-          const view = this;
-          const { classes } = view;
+        const view = this;
+        const { classes } = view;
 
-          // Show the feature info box as open if the view is set to have it open
-          // already
-          if (view.isOpen) {
-            view.el.classList.add(view.classes.open);
-          }
-
-          // Insert the principal template into the view
-          view.$el.html(
-            view.template({
-              classes,
-            }),
-          );
-
-          const iFrame = view.el.querySelector(`.${classes.contentContainer}`);
-
-          // Select the iFrame
-          const iFrameDoc = iFrame.contentWindow.document;
-
-          // Add a script that gets all of the CSS stylesheets from the parent and
-          // applies them within the iFrame. Create a div within the iFrame to hold the
-          // feature info template content.
-          iFrameDoc.open();
-          iFrameDoc.write(`
-              <div id="content"></div>
-              <script type="text/javascript">
-              window.onload = function() {
-                  if (parent) {
-                      var h = document.getElementsByTagName("head")[0];
-                      var ss = parent.document.getElementsByTagName("style");
-                      for (var i = 0; i < ss.length; i++)
-                          h.appendChild(ss[i].cloneNode(true));
-                  }
-              }
-              </script>
-              <style>
-                body {
-                  background-color: transparent;
-                  color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
-                  font-family: var(--portal-body-font, "Helvetica Nueue", "Helvetica", "Arial", "Lato", "sans serif");
-                  margin: 0;
-                  box-sizing: border-box;
-                }
-              </style>
-            `);
-          iFrameDoc.close();
-
-          // Identify the elements from the template that will be updated when the
-          // Feature model changes
-          view.elements = {
-            title: view.el.querySelector(`.${classes.title}`),
-            iFrame,
-            iFrameContentContainer: iFrameDoc.getElementById("content"),
-            layerDetailsButton: view.el.querySelector(
-              `.${classes.layerDetailsButton}`,
-            ),
-            zoomButton: view.el.querySelector(`.${classes.zoomButton}`),
-          };
-
-          view.update();
-
-          // Ensure the view's main element has the given class name
-          view.el.classList.add(view.className);
-
-          // When the model changes, update the view
-          view.stopListening(view.model, "change");
-          view.listenTo(view.model, "change", view.update);
-        } catch (error) {
-          console.log(
-            `There was an error rendering a FeatureInfoView` +
-              `. Error details: ${error}`,
-          );
+        // Show the feature info box as open if the view is set to have it open
+        // already
+        if (view.isOpen) {
+          view.el.classList.add(view.classes.open);
         }
-        return this;
+
+        // Insert the principal template into the view
+        view.$el.html(
+          view.template({
+            classes,
+          }),
+        );
+
+        const iFrame = view.el.querySelector(`.${classes.contentContainer}`);
+
+        // Select the iFrame
+        const iFrameDoc = iFrame.contentWindow.document;
+
+        // Add a script that gets all of the CSS stylesheets from the parent and
+        // applies them within the iFrame. Create a div within the iFrame to hold the
+        // feature info template content.
+        iFrameDoc.open();
+        iFrameDoc.write(`
+            <div id="content"></div>
+            <script type="text/javascript">
+            window.onload = function() {
+                if (parent) {
+                    var h = document.getElementsByTagName("head")[0];
+                    var ss = parent.document.getElementsByTagName("style");
+                    for (var i = 0; i < ss.length; i++)
+                        h.appendChild(ss[i].cloneNode(true));
+                }
+            }
+            </script>
+            <style>
+              body {
+                background-color: transparent;
+                color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
+                font-family: var(--portal-body-font, "Helvetica Nueue", "Helvetica", "Arial", "Lato", "sans serif");
+                margin: 0;
+                box-sizing: border-box;
+              }
+            </style>
+          `);
+        iFrameDoc.close();
+
+        // Identify the elements from the template that will be updated when the
+        // Feature model changes
+        view.elements = {
+          title: view.el.querySelector(`.${classes.title}`),
+          iFrame,
+          iFrameContentContainer: iFrameDoc.getElementById("content"),
+          layerDetailsButton: view.el.querySelector(
+            `.${classes.layerDetailsButton}`,
+          ),
+          zoomButton: view.el.querySelector(`.${classes.zoomButton}`),
+        };
+
+        view.update();
+
+        // Ensure the view's main element has the given class name
+        view.el.classList.add(view.className);
+
+        // When the model changes, update the view
+        view.stopListening(view.model, "change");
+        view.listenTo(view.model, "change", view.update);
+        return view;
       },
 
       /**
        * Updates the view with information from the current Feature model
        */
       updateContent() {
-        try {
-          const view = this;
+        const view = this;
 
-          // Elements to update
-          const title = this.getFeatureTitle();
-          const { iFrame } = this.elements;
-          const iFrameDiv = this.elements.iFrameContentContainer;
-          const { layerDetailsButton } = this.elements;
-          const { zoomButton } = this.elements;
-          const mapAsset = this.model.get("mapAsset");
-          const mapAssetLabel = mapAsset ? mapAsset.get("label") : null;
-          const layerButtonDisplay = mapAsset ? null : "none";
-          const layerButtonText = `See ${mapAssetLabel} layer details`;
-          // The Cesium Map Widget can't zoom to Cesium3DTileFeatures, so for now, hide
-          // the 'zoom to feature' button
-          const zoomButtonDisplay =
-            !mapAsset || mapAsset.get("type") === "Cesium3DTileset"
-              ? "none"
-              : null;
+        // Elements to update
+        const title = this.getFeatureTitle();
+        const { iFrame } = this.elements;
+        const iFrameDiv = this.elements.iFrameContentContainer;
+        const { layerDetailsButton } = this.elements;
+        const { zoomButton } = this.elements;
+        const mapAsset = this.model.get("mapAsset");
+        const mapAssetLabel = mapAsset ? mapAsset.get("label") : null;
+        const layerButtonDisplay = mapAsset ? null : "none";
+        const layerButtonText = `See ${mapAssetLabel} layer details`;
+        // The Cesium Map Widget can't zoom to Cesium3DTileFeatures, so for now, hide
+        // the 'zoom to feature' button
+        const zoomButtonDisplay =
+          !mapAsset || mapAsset.get("type") === "Cesium3DTileset"
+            ? "none"
+            : null;
 
-          // Insert the title into the title element
-          this.elements.title.innerHTML = title;
+        // Insert the title into the title element
+        this.elements.title.innerHTML = title;
 
-          // Update the iFrame content
-          this.getContent().then((html) => {
-            iFrameDiv.innerHTML = html;
-            iFrame.style.height = 0;
-            iFrame.style.opacity = 0;
-            // Not the ideal solution, but check the height of the iFrame
-            // again after some time to allow external content to load. This
-            // is necessary for content that loads asynchronously, like
-            // images. Difficult to set listeners for this, since the content
-            // may be from a different domain.
-            setTimeout(() => {
-              view.updateIFrameHeight();
-            }, 500);
-          });
+        // Update the iFrame content
+        this.getContent().then((html) => {
+          iFrameDiv.innerHTML = html;
+          iFrame.style.height = 0;
+          iFrame.style.opacity = 0;
+          // Not the ideal solution, but check the height of the iFrame
+          // again after some time to allow external content to load. This
+          // is necessary for content that loads asynchronously, like
+          // images. Difficult to set listeners for this, since the content
+          // may be from a different domain.
+          setTimeout(() => {
+            view.updateIFrameHeight();
+          }, 500);
+        });
 
-          // Show or hide the layer details button, update the text
-          layerDetailsButton.style.display = layerButtonDisplay;
-          layerDetailsButton.innerText = layerButtonText;
+        // Show or hide the layer details button, update the text
+        layerDetailsButton.style.display = layerButtonDisplay;
+        layerDetailsButton.innerText = layerButtonText;
 
-          // Show or hide the zoom to feature button
-          zoomButton.style.display = zoomButtonDisplay;
-        } catch (error) {
-          console.log(
-            `There was an error rendering the content of a FeatureInfoView` +
-              `. Error details: ${error}`,
-          );
-        }
+        // Show or hide the zoom to feature button
+        zoomButton.style.display = zoomButtonDisplay;
       },
 
       /**
@@ -324,65 +299,57 @@ define([
        * based on the feature and if there is a template set on the parent Map Asset
        * model.
        * @since 2.19.0
-       * @returns {Promise|null} Returns a promise that resolves to the content HTML
+       * @returns {Promise} Returns a promise that resolves to the content HTML
        * when ready, otherwise null
        */
       getContent() {
-        try {
-          let content = null;
-          let templateOptions = this.model.toJSON();
-          const mapAsset = this.model.get("mapAsset");
-          const featureProperties = this.model.get("properties");
-          const templateConfig = mapAsset
-            ? mapAsset.get("featureTemplate")
-            : null;
-          const propertyMap = templateConfig ? templateConfig.options : {};
-          const templateName = templateConfig ? templateConfig.template : null;
-          const { contentTemplates } = this;
+        let content = null;
+        let templateOptions = this.model.toJSON();
+        const mapAsset = this.model.get("mapAsset");
+        const featureProperties = this.model.get("properties");
+        const templateConfig = mapAsset
+          ? mapAsset.get("featureTemplate")
+          : null;
+        const propertyMap = templateConfig ? templateConfig.options : {};
+        const templateName = templateConfig ? templateConfig.template : null;
+        const { contentTemplates } = this;
 
-          // Given the name of a template configured in the MapAsset model, find the
-          // matching template from the contentTemplates set on this view
-          let contentTemplate = contentTemplates.find(
-            (template) => template.name === templateName,
-          );
-          if (!contentTemplate) {
-            contentTemplate = contentTemplates[contentTemplates.length - 1];
-          }
-
-          // To get variables to pass to the template, there must be properties set on
-          // the feature and the selected content template must accept options
-          if (
-            contentTemplate &&
-            contentTemplate.options &&
-            templateConfig &&
-            templateConfig.options
-          ) {
-            templateOptions = {};
-            contentTemplate.options.forEach((prop) => {
-              const key = propertyMap[prop];
-              templateOptions[prop] = featureProperties[key] || "";
-            });
-          }
-
-          // Return a promise that resolves to the content HTML
-          return new Promise((resolve) => {
-            if (contentTemplate) {
-              // eslint-disable-next-line import/no-dynamic-require
-              require([contentTemplate.template], (template) => {
-                content = _.template(template)(templateOptions);
-                resolve(content);
-              });
-            } else {
-              resolve(null);
-            }
-          });
-        } catch (error) {
-          console.log(
-            `There was an error getting the content of a FeatureInfoView` +
-              `. Error details: ${error}`,
-          );
-          return null;
+        // Given the name of a template configured in the MapAsset model, find the
+        // matching template from the contentTemplates set on this view
+        let contentTemplate = contentTemplates.find(
+          (template) => template.name === templateName,
+        );
+        if (!contentTemplate) {
+          contentTemplate = contentTemplates[contentTemplates.length - 1];
         }
+
+        // To get variables to pass to the template, there must be properties set on
+        // the feature and the selected content template must accept options
+        if (
+          contentTemplate &&
+          contentTemplate.options &&
+          templateConfig &&
+          templateConfig.options
+        ) {
+          templateOptions = {};
+          contentTemplate.options.forEach((prop) => {
+            const key = propertyMap[prop];
+            templateOptions[prop] = featureProperties[key] || "";
+          });
+        }
+
+        // Return a promise that resolves to the content HTML
+        return new Promise((resolve) => {
+          if (contentTemplate) {
+            // eslint-disable-next-line import/no-dynamic-require
+            require([contentTemplate.template], (template) => {
+              content = _.template(template)(templateOptions);
+              resolve(content);
+            });
+          } else {
+            resolve(null);
+          }
+        });
       },
 
       /**
@@ -391,74 +358,66 @@ define([
        * @returns {string} The title for the feature info box
        */
       getFeatureTitle() {
-        try {
-          let title = "";
-          let suffix = "";
+        let title = "";
+        let suffix = "";
 
-          if (this.model) {
-            // Get the layer/mapAsset model
-            const mapAsset = this.model.get("mapAsset");
+        if (this.model) {
+          // Get the layer/mapAsset model
+          const mapAsset = this.model.get("mapAsset");
 
-            const featureTemplate = mapAsset
-              ? mapAsset.get("featureTemplate")
-              : null;
-            const properties = this.model.get("properties") ?? {};
-            const assetName = mapAsset ? mapAsset.get("label") : null;
-            let name = featureTemplate
-              ? properties[featureTemplate.label]
-              : this.model.get("label");
+          const featureTemplate = mapAsset
+            ? mapAsset.get("featureTemplate")
+            : null;
+          const properties = this.model.get("properties") ?? {};
+          const assetName = mapAsset ? mapAsset.get("label") : null;
+          let name = featureTemplate
+            ? properties[featureTemplate.label]
+            : this.model.get("label");
 
-            // Build a title if the feature has no label. Check if the feature has a name,
-            // title, ID, or identifier property. Search for these properties independent
-            // of case. If none of these properties exist, use the feature ID provided by
-            // the model.
-            if (!name) {
-              title = "Feature";
+          // Build a title if the feature has no label. Check if the feature has a name,
+          // title, ID, or identifier property. Search for these properties independent
+          // of case. If none of these properties exist, use the feature ID provided by
+          // the model.
+          if (!name) {
+            title = "Feature";
 
-              let searchKeys = ["name", "title", "id", "identifier"];
-              searchKeys = searchKeys.map((key) => key.toLowerCase());
-              const propKeys = Object.keys(properties);
-              const propKeysLower = propKeys.map((key) => key.toLowerCase());
+            let searchKeys = ["name", "title", "id", "identifier"];
+            searchKeys = searchKeys.map((key) => key.toLowerCase());
+            const propKeys = Object.keys(properties);
+            const propKeysLower = propKeys.map((key) => key.toLowerCase());
 
-              // Search by search key, since search keys are in order of preference. Find
-              // the first matching key.
-              const nameKeyLower = searchKeys.find((searchKey) =>
-                propKeysLower.includes(searchKey),
-              );
+            // Search by search key, since search keys are in order of preference. Find
+            // the first matching key.
+            const nameKeyLower = searchKeys.find((searchKey) =>
+              propKeysLower.includes(searchKey),
+            );
 
-              // Then figure out which of the original property keys matches (we need it
-              // in the original case).
-              const nameKey = propKeys[propKeysLower.indexOf(nameKeyLower)];
+            // Then figure out which of the original property keys matches (we need it
+            // in the original case).
+            const nameKey = propKeys[propKeysLower.indexOf(nameKeyLower)];
 
-              name = properties[nameKey] ?? this.model.get("featureID");
+            name = properties[nameKey] ?? this.model.get("featureID");
 
-              if (assetName) {
-                suffix = ` from ${assetName} Layer`;
-              }
-            }
-            if (name) {
-              title = `${title} ${name}`;
-            }
-            if (suffix) {
-              title += suffix;
+            if (assetName) {
+              suffix = ` from ${assetName} Layer`;
             }
           }
-
-          // Do some basic sanitization of the title
-          title = title.replace(/&/g, "&amp;");
-          title = title.replace(/</g, "&lt;");
-          title = title.replace(/>/g, "&gt;");
-          title = title.replace(/"/g, "&quot;");
-          title = title.replace(/'/g, "&#039;");
-
-          return title;
-        } catch (error) {
-          console.log(
-            `There was an error making a title for the FeatureInfoView` +
-              `. Error details: ${error}`,
-          );
-          return "Feature";
+          if (name) {
+            title = `${title} ${name}`;
+          }
+          if (suffix) {
+            title += suffix;
+          }
         }
+
+        // Do some basic sanitization of the title
+        title = title.replace(/&/g, "&amp;");
+        title = title.replace(/</g, "&lt;");
+        title = title.replace(/>/g, "&gt;");
+        title = title.replace(/"/g, "&quot;");
+        title = title.replace(/'/g, "&#039;");
+
+        return title;
       },
 
       /**
@@ -468,15 +427,8 @@ define([
        * attribute is changed.
        */
       showLayerDetails() {
-        try {
-          if (this.model && this.model.get("mapAsset")) {
-            this.model.get("mapAsset").set("selected", true);
-          }
-        } catch (error) {
-          console.log(
-            `There was an error showing the layer details panel from a FeatureInfoView` +
-              `. Error details: ${error}`,
-          );
+        if (this.model && this.model.get("mapAsset")) {
+          this.model.get("mapAsset").set("selected", true);
         }
       },
 
@@ -486,17 +438,10 @@ define([
        * Asset layer is visible in the map.
        */
       zoomToFeature() {
-        try {
-          const { model } = this;
-          const mapAsset = model ? model.get("mapAsset") : false;
-          if (mapAsset) {
-            mapAsset.zoomTo(model);
-          }
-        } catch (error) {
-          console.log(
-            `There was an error zooming to a feature from a FeatureInfoView` +
-              `. Error details: ${error}`,
-          );
+        const { model } = this;
+        const mapAsset = model ? model.get("mapAsset") : false;
+        if (mapAsset) {
+          mapAsset.zoomTo(model);
         }
       },
 
@@ -504,35 +449,21 @@ define([
        * Shows the feature info box
        */
       open() {
-        try {
-          this.el.classList.add(this.classes.open);
-          this.isOpen = true;
-        } catch (error) {
-          console.log(
-            `There was an error showing the FeatureInfoView` +
-              `. Error details: ${error}`,
-          );
-        }
+        this.el.classList.add(this.classes.open);
+        this.isOpen = true;
       },
 
       /**
        * Hide the feature info box from view
        */
       close() {
-        try {
-          this.el.classList.remove(this.classes.open);
-          this.isOpen = false;
-          // When the feature info panel is closed, remove the Feature model from the
-          // Features collection. This will trigger the map widget to remove
-          // highlighting from the feature.
-          if (this.model && this.model.collection) {
-            this.model.collection.remove(this.model);
-          }
-        } catch (error) {
-          console.log(
-            `There was an error hiding the FeatureInfoView` +
-              `. Error details: ${error}`,
-          );
+        this.el.classList.remove(this.classes.open);
+        this.isOpen = false;
+        // When the feature info panel is closed, remove the Feature model from the
+        // Features collection. This will trigger the map widget to remove
+        // highlighting from the feature.
+        if (this.model && this.model.collection) {
+          this.model.collection.remove(this.model);
         }
       },
 
@@ -542,20 +473,13 @@ define([
        * or close it if there is no model or the model has only default values.
        */
       update() {
-        try {
-          if (!this.model || this.model.isDefault()) {
-            if (this.isOpen) {
-              this.close();
-            }
-          } else {
-            this.open();
-            this.updateContent();
+        if (!this.model || this.model.isDefault()) {
+          if (this.isOpen) {
+            this.close();
           }
-        } catch (error) {
-          console.log(
-            `There was an error updating the content of a FeatureInfoView` +
-              `. Error details: ${error}`,
-          );
+        } else {
+          this.open();
+          this.updateContent();
         }
       },
 
