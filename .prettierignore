@@ -6,3 +6,5 @@ src/components
 docs/docs
 # Ignore any minimized files
 **/*.min.*
+# Ignore helm's go yaml templates
+helm/**/*.yaml
