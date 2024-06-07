@@ -1,16 +1,10 @@
 define([
   "views/maps/CesiumWidgetContainerView",
   "models/maps/Map",
-  "collections/maps/AssetCategories",
-  "views/maps/LayerCategoryListView",
-  "views/maps/LayerListView",
   "/test/js/specs/shared/clean-state.js",
 ], (
   CesiumWidgetContainerView,
   Map,
-  AssetCategories,
-  LayerCategoryListView,
-  LayerListView,
   cleanState,
 ) => {
   const expect = chai.expect;
