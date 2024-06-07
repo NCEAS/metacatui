@@ -1,8 +1,9 @@
 define([
   "views/maps/MapWidgetContainerView",
   "models/maps/Map",
+  "views/maps/legend/LegendContainerView",
   "/test/js/specs/shared/clean-state.js",
-], (MapWidgetContainerView, Map, cleanState) => {
+], (MapWidgetContainerView, Map, LegendContainerView, cleanState) => {
   const expect = chai.expect;
 
   describe("MapWidgetContainerView Test Suite", () => {
@@ -27,6 +28,16 @@ define([
 
         expect(
           state.view.el.getElementsByClassName("cesium-widget"),
+        ).to.have.lengthOf(1);
+      });
+
+      it("adds a legend to the DOM tree", () => {
+        state.view.render();
+
+        expect(
+          state.view.el.getElementsByClassName(
+            new LegendContainerView({}).className,
+          ),
         ).to.have.lengthOf(1);
       });
     });
