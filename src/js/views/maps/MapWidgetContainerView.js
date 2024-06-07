@@ -1,21 +1,21 @@
 "use strict";
 
-define([
-  "backbone",
-  "models/maps/Map",
-  "views/maps/CesiumWidgetView",
-], (Backbone, Map, CesiumWidgetView) => {
+define(["backbone", "models/maps/Map", "views/maps/CesiumWidgetView"], (
+  Backbone,
+  Map,
+  CesiumWidgetView,
+) => {
   /**
-   * @class CesiumWidgetContainerView
+   * @class MapWidgetContainerView
    * @classdesc A container for CesiumWidgetView and other map overlays, e.g. lat/lng, legends, etc.
    * @classcategory Views/Maps
-   * @name CesiumWidgetContainerView
+   * @name MapWidgetContainerView
    * @augments Backbone.View
    * @since 0.0.0
    * @constructs
    */
-  const CesiumWidgetContainerView = Backbone.View.extend(
-    /** @lends CesiumWidgetContainerView.prototype */ {
+  const MapWidgetContainerView = Backbone.View.extend(
+    /** @lends MapWidgetContainerView.prototype */ {
       /**
        * The model that this view uses
        * @type {Map}
@@ -36,7 +36,7 @@ define([
         this.renderMapWidget(this.el, this.model);
       },
 
-      /** Renders Cesium map. */
+      /** Renders Cesium map. Currently, this uses the MapWidgetContainerView, but this function could be modified to use an alternative map widget in the future. */
       renderMapWidget() {
         const mapWidget = new CesiumWidgetView({
           el: this.el,
@@ -47,5 +47,5 @@ define([
     },
   );
 
-  return CesiumWidgetContainerView;
+  return MapWidgetContainerView;
 });

@@ -1,17 +1,13 @@
 define([
-  "views/maps/CesiumWidgetContainerView",
+  "views/maps/MapWidgetContainerView",
   "models/maps/Map",
   "/test/js/specs/shared/clean-state.js",
-], (
-  CesiumWidgetContainerView,
-  Map,
-  cleanState,
-) => {
+], (MapWidgetContainerView, Map, cleanState) => {
   const expect = chai.expect;
 
-  describe("CesiumWidgetContainerView Test Suite", () => {
+  describe("MapWidgetContainerView Test Suite", () => {
     const state = cleanState(() => {
-      const view = new CesiumWidgetContainerView({
+      const view = new MapWidgetContainerView({
         el: document.createElement("div"),
         model: new Map(),
       });
@@ -20,8 +16,8 @@ define([
     }, beforeEach);
 
     describe("Initialization", () => {
-      it("creates an CesiumWidgetContainerView instance", () => {
-        expect(state.view).to.be.instanceof(CesiumWidgetContainerView);
+      it("creates an MapWidgetContainerView instance", () => {
+        expect(state.view).to.be.instanceof(MapWidgetContainerView);
       });
     });
 
