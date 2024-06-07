@@ -5,41 +5,58 @@
 ## $  helm upgrade --install releasename -n mynamespace ./relative/path/to/helm/directory
 ##
 
-## appConfig contains the MetacatUI.AppConfig settings that can be overridden. Uses a configMap to
-## define MetacatUI.AppConfig, replacing the version of config/config.js found on the mounted drive.
+global:
+  ## @param global.metacatExternalBaseUrl metacat base url, accessible from outside the cluster.
+  ## Include protocol and trailing slash, but not the context; e.g.: "https://test.arcticdata.io/"
+  ##
+  metacatExternalBaseUrl: "https://localhost/"
+
+  ## @param global.metacatAppContext The directory that metacat is installed in at the `baseUrl`.
+  ## Used to populate metacatui's 'metacatContext'.
+  ## For example, if you have metacat installed in $TOMCAT/webapps/knb, then this should be set
+  ## to "knb". If you are using the default metacat settings, it should be 'metacat'
+  ##
+  metacatAppContext: "metacat"
+
+  ## @param global.d1ClientCnUrl the url of the CN. Used to determine metacatui's 'd1CNBaseUrl'
+  ## NOTE: only the base URL is used to populate d1CNBaseUrl; anything after the third "/" will be
+  ## ignored - e.g. if you set d1ClientCnUrl: "https://cn.dataone.org/cn", then d1CNBaseUrl will
+  ## be set to "https://cn.dataone.org/"
+  ##
+  d1ClientCnUrl: "https://cn.dataone.org/cn"
+
+
+## appConfig contains the MetacatUI.AppConfig settings that can be overridden.
 ##
-## You can define any attributes here, that will be automatically inserted into config/config.js.
-## For a full list of attributes that can be overridden, see AppModel.js:
+## Optional configuration. Note you can define any attributes here, to override those that would
+## normally appear in config.js. See full listing in AppModel.js:
 ## https://github.com/NCEAS/metacatui/blob/main/src/js/models/AppModel.js
 ##
-## Note that changes to the configMap will not be read unless the pod is restarted, and changes to
-## these values will not be reflected in the configMap unless you do a 'helm upgrade'.
+## * * * IMPORTANT NOTE:  * * * DO NOT SET THE FOLLOWING VALUES IN THIS SECTION! * * *
+## They will be ignored here, because they are populated from the "global" section, above:
+## * baseUrl:         uses '.Values.global.metacatExternalBaseUrl'
+## * d1CNBaseUrl:     uses base URL portion of '.Values.global.d1ClientCnUrl'
+##                      - see above for details
+## * metacatContext:  uses '.Values.global.metacatAppContext'
 ##
 appConfig:
-  ## appConfig.enabled Use a configMap to define MetacatUI.AppConfig, replacing the on-disk version
-  ## Typical use is "false" for development purposes, and "true" for more-permanent deployments
+  ## @param appConfig.enabled Define override values in MetacatUI.AppConfig
+  ## Since we generally want to avoid loading 2 different config.js files, this would typically be
+  ## set to "false" for production deployments, and "true" only for development & test environments.
   ##
   enabled: true
 
-  ## appConfig.root (required) The url root to be appended after the appConfig.baseUrl, below.
+  ## @param appConfig.root The url root to be appended after the metacatui baseUrl.
   ##
   root: "/"
 
-  ## appConfig.baseUrl (required) the base url. (Typically defined by the ingress; used to contact
-  ## the metacat API.)
-  ##
-  baseUrl: "http://localhost:8080/"
-
-  ## Optional configuration. Note you can define any attributes here, to override those that would
-  ## normally appear in config.js. See full listing in AppModel.js:
-  ## https://github.com/NCEAS/metacatui/blob/main/src/js/models/AppModel.js
-  ##
-
-  ## appConfig.theme Corresponds to the name of a directory in src/js/themes/. 'default' if not set
+  ## @param appConfig.theme Corresponds to the name of a directory in src/js/themes/.
+  ## Uses the 'default' theme if not set
   ##
   theme: "knb"
 
-
+## Probes
+##
 livenessProbe:
   httpGet:
     path: /
@@ -53,7 +70,7 @@ service:
   type: ClusterIP
   port: 80
 
-## ingress typically disabled here (enabled: false) and handled by metacat helm chart.
+## @param ingress typically disabled here (enabled: false) and handled by metacat helm chart.
 ## Example settings below for local dev
 ##
 ingress:
@@ -74,12 +91,12 @@ ingress:
   tls: []
 
 
-## source  The source from which to retrieve the metacatui code. NOTE: Changes should not be needed
-## here, unless you wish to deviate from the official metacatui release version defined in the
-## helm chart (see Chart.yaml)
+## @param source  The source from which to retrieve the metacatui code. NOTE: Changes should not be
+## needed here, unless you wish to deviate from the official metacatui release version defined in
+## the helm chart (see Chart.yaml)
 ##
 source:
-  ## source.from  Options are "package" (the default), "git", or "pvc"
+  ## @param source.from  Options are "package" (the default), "git", or "pvc"
   ## * "package" will download a release package from the metacatui git repository, unzip it, and
   ##    install the files in local pod storage (emptyDir{})
   ## * "git" will clone a specific branch or tag from the metacatui git repository, and install the
@@ -89,7 +106,7 @@ source:
   ##
   from: package
 
-  ## source.package (default): use the package version defined in Chart.yaml, unless overridden here
+  ## @param source.package (default): Download the official release version defined in Chart.yaml
   ## Note these settings ignored unless 'source.from:' is set to 'package'
   ## example:
   ##    source.package.location: "https://github.com/NCEAS/metacatui/archive"
@@ -97,60 +114,37 @@ source:
   ## ...will download:   https://github.com/NCEAS/metacatui/archive/2.26.0.zip
   ##
   package:
-    ## source.package.location The remote location where the release zipfile is hosted
+    ## @param source.package.location The remote location where the release zipfile is hosted
     ##
     location: "https://github.com/NCEAS/metacatui/archive"
 
     ## source.package.version override the release version defined in Chart.yaml
     ## Assumes release is a zipfile named <version>.zip
     ## LEAVE COMMENTED UNLESS YOU NEED TO OVERRIDE THE CHART SETTING!
-  #    version: "2.29.1"
+#    version: "2.29.1"
 
-  ## source.git clone a specific branch or tag from the metacatui git repository, and install the
-  ## files in local pod storage (emptyDir{})
+  ## @param source.git clone a specific branch or tag from the metacatui git repository, and install
+  ## the files in local pod storage (emptyDir{})
   ## Note these settings ignored unless 'source.from:' is set to 'git'
   ##
-#  git:
-#    ## source.git.repoUrl the https url of the repo to be cloned
-#    repoUrl: "https://github.com/NCEAS/metacatui.git"
-#
-#    ## source.git.revision can be any string that makes sense after the command `git checkout`...
-#    ## - for example:
-#    ##     git checkout tags/2.29.0    =>     revision: "tags/2.29.0"
-#    ##     git checkout develop        =>     revision: "develop"
-#    ##
-#    revision: "develop"
+  git:
+    ## @param source.git.repoUrl the https url of the repo to be cloned
+    repoUrl: "https://github.com/NCEAS/metacatui.git"
 
-## volumes Uncomment and provide values if you want to use a pre-configured PVC instead of doing a
+    ## @param source.git.revision Any string that makes sense after the command `git checkout`...
+    ## - for example:
+    ##     revision: "tags/2.29.0"    =>     git checkout tags/2.29.0
+    ##     revision: "develop"        =>     git checkout develop
+    ##
+    revision: "develop"
+
+## volumes: Uncomment and provide values if you want to use a pre-configured PVC instead of doing a
 ## git checkout
 #volumes:
 #  ## volumes.name substitute your own release name, but do NOT change the '-mcui-source-files' part
 #  - name: <Your-Release-Name>-mcui-source-files
 #    persistentVolumeClaim:
 #      claimName: <Your-Pre-Configured-pvc>
-
-
-image: {}
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
-serviceAccount: {}
-podAnnotations: {}
-podLabels: {}
-podSecurityContext: {}
-securityContext: {}
-
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
 
 replicaCount: 1
 
@@ -163,3 +157,14 @@ autoscaling:
 nodeSelector: {}
 tolerations: []
 affinity: {}
+
+image: {}
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+serviceAccount: {}
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
+resources: {}

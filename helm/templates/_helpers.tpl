@@ -60,3 +60,21 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Populate the dataone cn url
+*/}}
+{{- define "metacatui.cn.url" -}}
+{{- $d1ClientCnUrl := .Values.global.d1ClientCnUrl }}
+{{- if $d1ClientCnUrl }}
+{{- if not (hasSuffix "/" $d1ClientCnUrl) -}}
+  {{- $d1ClientCnUrl = print $d1ClientCnUrl "/" -}}
+{{- end -}}
+{{- $baseCnURL := regexFind "http.?://[^/]*/" $d1ClientCnUrl }}
+{{- if not $baseCnURL }}
+d1CNBaseUrl: "ERROR_IN_URL__{{ $d1ClientCnUrl }}",
+{{- else }}
+d1CNBaseUrl: "{{ $baseCnURL }}",
+{{- end }}
+{{- end }}
+{{- end }}
