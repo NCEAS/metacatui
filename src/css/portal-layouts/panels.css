@@ -201,10 +201,7 @@
   .section-link-container
   .portal-section-link:hover {
   background: transparent;
-  color: var(
-    --portal-col-neutral-00,
-    var(--portal-secondary-color)
-  ) !important;
+  color: var(--portal-col-neutral-00, var(--portal-secondary-color)) !important;
 }
 
 .portal-logos-view {

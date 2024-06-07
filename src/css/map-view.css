@@ -433,10 +433,7 @@ represents 1 unit of the given distance measurement. */
 .scale-bar__bar {
   height: 0.25rem;
   transition: width 0.3s ease-in-out;
-  background-color: var(
-    --portal-col-neutral-4,
-    var(--map-col-text__deprecate)
-  );
+  background-color: var(--portal-col-neutral-4, var(--map-col-text__deprecate));
 }
 
 /* The elements that contains the distance measurement */
@@ -462,10 +459,7 @@ represents 1 unit of the given distance measurement. */
   display: flex;
   flex-direction: column;
   height: min-content;
-  background-color: var(
-    --portal-col-primary-1,
-    var(--map-col-bkg__deprecate)
-  );
+  background-color: var(--portal-col-primary-1, var(--map-col-bkg__deprecate));
   border-radius: var(--map-border-radius-big);
   margin: var(--map-size-toolbar-link-margin);
   padding: 0.5rem;
@@ -640,17 +634,11 @@ represents 1 unit of the given distance measurement. */
     }
 
     &:focus-within {
-      border-color: var(
-        --portal-col-primary-3,
-        var(--map-col-blue)
-      );
+      border-color: var(--portal-col-primary-3, var(--map-col-blue));
     }
 
     &.search-input__error-input {
-      border-color: var(
-        --portal-col-highlight-2,
-        rgba(82, 168, 236, 0.8)
-      );
+      border-color: var(--portal-col-highlight-2, rgba(82, 168, 236, 0.8));
       background-color: var(--portal-col-highlight-1, rgba(30, 127, 196, 0.5));
     }
 
@@ -814,16 +802,10 @@ represents 1 unit of the given distance measurement. */
 
   &.layer-item--shown {
     .layer-item__visibility-toggle {
-      color: var(
-        --portal-col-primary-6,
-        var(--map-col-highlight__deprecate)
-      );
+      color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
 
       .layer-item__icon {
-        fill: var(
-          --portal-col-primary-6,
-          var(--map-col-highlight__deprecate)
-        );
+        fill: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
         svg > path {
           fill: var(
             --portal-col-primary-6,
@@ -894,10 +876,7 @@ represents 1 unit of the given distance measurement. */
 }
 
 .layer-item__highlighted-text {
-  background-color: var(
-    --portal-col-highlight-2,
-    rgba(30, 127, 196, 0.5)
-  );
+  background-color: var(--portal-col-highlight-2, rgba(30, 127, 196, 0.5));
 }
 
 .layer-item__icon > svg {
@@ -949,10 +928,7 @@ represents 1 unit of the given distance measurement. */
 
 .layer-details__label {
   /* the important is needed to overwrite more specific styles set on portal title tags */
-  color: var(
-    --portal-col-primary-6,
-    var(--map-col-text__deprecate)
-  ) !important;
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
   margin: 0;
   font-size: 1.33rem;
   font-weight: 700;
