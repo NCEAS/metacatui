@@ -58,7 +58,7 @@ define([
        * Each type of Cesium Data Source has a specific set of load method
        * options. See for example, the GeoJsonDataSource options:
        * {@link https://cesium.com/learn/cesiumjs/ref-doc/GeoJsonDataSource.html}
-       * @typedef {Object} CesiumVectorData#cesiumOptions
+       * @typedef {Object} CesiumVectorDataOptions
        * @property {string|Object} data - The url, GeoJSON object, or TopoJSON
        * object to be loaded.
        */
@@ -79,7 +79,7 @@ define([
        * model created and used by Cesium that organizes the data to display in
        * the Cesium Widget. See
        * {@link https://cesium.com/learn/cesiumjs/ref-doc/DataSource.html?classFilter=DataSource}
-       * @property {CesiumVectorData#cesiumOptions} cesiumOptions options are
+       * @property {CesiumVectorDataOptions} cesiumOptions options are
        * passed to the function that creates the Cesium model. The properties of
        * options are specific to each type of asset.
        * @property {string|AssetColor} [outlineColor=null] The color of the
