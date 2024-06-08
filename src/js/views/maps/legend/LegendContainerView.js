@@ -77,7 +77,11 @@ define([
       updateLegend() {
         const content = this.$(`.${CLASS_NAMES.content}`).empty();
         this.model.get("allLayers")?.forEach((layer) => {
-          if (!layer.get("visible") || !layer.get("colorPalette")) {
+          if (
+            !layer.get("visible") ||
+            !layer.get("colorPalette") ||
+            layer.get("colorPalette").get("colors").isEmpty()
+          ) {
             return;
           }
           const layerLegendView = new LayerLegendView({
