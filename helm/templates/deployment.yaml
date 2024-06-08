@@ -51,6 +51,7 @@ spec:
             - -c
             - >
               start=$(date +%s);
+              # # # # # # TODO - RUN THE MOUNTED /TMP/SCRIPT.SH INSTEAD # # # # # #
               VERSION={{ .Values.source.package.version | default .Chart.AppVersion }}
               FILENAME=$VERSION.zip;
               wget -O ./$FILENAME {{ .Values.source.package.location }}/$FILENAME;
@@ -62,6 +63,9 @@ spec:
           volumeMounts:
             - name: {{ .Release.Name }}-mcui-source-files
               mountPath: /metacatui
+            - name: {{ .Release.Name }}-mcui-config-vol
+              subPath: install.sh
+              mountPath: /tmp/install.sh
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
