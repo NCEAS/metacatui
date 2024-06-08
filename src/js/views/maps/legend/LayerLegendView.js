@@ -4,8 +4,9 @@ define([
   "backbone",
   "underscore",
   "models/maps/AssetColorPalette",
+  "views/maps/legend/CategoricalSwatchView",
   "text!templates/maps/legend/layer-legend.html",
-], (Backbone, _, AssetColorPalette, Template) => {
+], (Backbone, _, AssetColorPalette, CategoricalSwatchView, Template) => {
   const BASE_CLASS = "layer-legend";
   const CLASS_NAMES = {
     palette: `${BASE_CLASS}__palette`,
@@ -43,27 +44,39 @@ define([
 
       /** @inheritdoc */
       render() {
-        this.$el.html(
-          this.template({
-            classNames: CLASS_NAMES,
-            name: this.model.get("label"),
-          }),
-        );
-
         const paletteType = this.model.get("paletteType");
-        if (paletteType === "categorical") {
+        if (!paletteType || paletteType === "categorical") {
           this.renderCategoricalPalette();
         } else if (paletteType === "continuous") {
           this.renderContinuousPalette();
         }
       },
 
+      /** Populates the view template with variabels. */
+      renderTemplate() {
+        this.$el.html(
+          this.template({
+            classNames: CLASS_NAMES,
+            name: this.model.get("label"),
+          }),
+        );
+      },
+
+      /** Fills the palette div with categorical swatches. */
       renderCategoricalPalette() {
-        // TODO
+        this.renderTemplate();
+        this.model.get("colors").forEach((color) => {
+          const swatch = new CategoricalSwatchView({ model: color });
+          swatch.render();
+
+          this.$(`.${CLASS_NAMES.palette}`).append(swatch.el);
+        });
       },
 
       renderContinuousPalette() {
         // TODO
+        this.renderTemplate();
+        this.$(`.${CLASS_NAMES.palette}`).text("palette");
       },
     },
   );
