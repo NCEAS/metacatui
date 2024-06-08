@@ -6,8 +6,9 @@ define([
   "backbone",
   "d3",
   "models/maps/AssetColorPalette",
+  "common/Utilities",
   "text!templates/maps/legend.html",
-], function ($, _, Backbone, d3, AssetColorPalette, Template) {
+], function ($, _, Backbone, d3, AssetColorPalette, Utilities, Template) {
   /**
    * @class LegendView
    * @classdesc Creates a legend for a given Map Asset (Work In Progress). Currently
@@ -387,20 +388,7 @@ define([
           const min = data[0].value;
           const max = data[data.length - 1].value;
           const range = max - min;
-          let roundingConstant = 10; // Allow 1 decimal place by default
-          if (range < 0.0001 || range > 100000) {
-            roundingConstant = null; // Will use scientific notation
-          } else if (range < 0.001) {
-            roundingConstant = 100000; // Allow 5 decimal places
-          } else if (range < 0.01) {
-            roundingConstant = 10000; // Allow 4 decimal places
-          } else if (range < 0.1) {
-            roundingConstant = 1000; // Allow 3 decimal places
-          } else if (range < 1) {
-            roundingConstant = 100; // Allow 2 decimal places
-          } else if (range > 100) {
-            roundingConstant = 1; // No decimal places
-          }
+          const roundingConstant = Utilities.getRoundingConstant(range);
 
           // SVG element
           const svg = this.createSVG({
