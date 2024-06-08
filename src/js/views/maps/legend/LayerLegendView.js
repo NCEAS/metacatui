@@ -5,8 +5,16 @@ define([
   "underscore",
   "models/maps/AssetColorPalette",
   "views/maps/legend/CategoricalSwatchView",
+  "views/maps/legend/ContinuousSwatchView",
   "text!templates/maps/legend/layer-legend.html",
-], (Backbone, _, AssetColorPalette, CategoricalSwatchView, Template) => {
+], (
+  Backbone,
+  _,
+  AssetColorPalette,
+  CategoricalSwatchView,
+  ContinuousSwatchView,
+  Template,
+) => {
   const BASE_CLASS = "layer-legend";
   const CLASS_NAMES = {
     palette: `${BASE_CLASS}__palette`,
@@ -73,10 +81,15 @@ define([
         });
       },
 
+      /** Fills the palette div with a continuous swatch. */
       renderContinuousPalette() {
-        // TODO
         this.renderTemplate();
-        this.$(`.${CLASS_NAMES.palette}`).text("palette");
+        const swatch = new ContinuousSwatchView({
+          collection: this.model.get("colors"),
+        });
+        swatch.render();
+
+        this.$(`.${CLASS_NAMES.palette}`).append(swatch.el);
       },
     },
   );

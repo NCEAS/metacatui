@@ -71,7 +71,8 @@
     "./js/specs/unit/views/maps/MapWidgetContainerView.spec.js",
     "./js/specs/unit/views/maps/legend/LayerLegendView.spec.js",
     "./js/specs/unit/views/maps/legend/LegendContainerView.spec.js",
-    "./js/specs/unit/views/maps/legend/CategoricalSwatchView.spec.js"
+    "./js/specs/unit/views/maps/legend/CategoricalSwatchView.spec.js",
+    "./js/specs/unit/views/maps/legend/ContinuousSwatchView.spec.js"
   ],
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",
