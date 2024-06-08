@@ -1754,21 +1754,44 @@ other class: .ui-slider-range */
         font-size: 0.8rem;
         font-weight: 500;
 
-        .categorical-swatch {
+        .categorical-swatch,
+        .continuous-swatch {
           display: flex;
           column-gap: 0.5rem;
           align-items: center;
           padding: 0.25rem 0;
+        }
 
+        .categorical-swatch__swatch,
+        .continuous-swatch__swatch {
+          width: 1.5rem;
+          border-radius: var(--map-border-radius-small);
+          flex-shrink: 0;
+        }
+
+        .categorical-swatch {
           .categorical-swatch__swatch {
             height: 1.5rem;
-            width: 1.5rem;
-            border-radius: var(--map-border-radius-small);
-            flex-shrink: 0;
           }
 
           .categorical-swatch__value {
             overflow-wrap: anywhere;
+          }
+        }
+
+        .continuous-swatch {
+          height: 5.5rem;
+
+          .continuous-swatch__swatch {
+            height: 5rem;
+          }
+
+          .continuous-swatch__value {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            justify-content: space-between;
+            overflow-x: auto;
           }
         }
       }

@@ -117,6 +117,38 @@ define(["jquery", "underscore"], function ($, _) {
 
       return names;
     },
+
+    // Format the number into a string with better readability.
+    formatNumber(value, min, max) {
+      if (!value && value !== 0) {
+        return "";
+      }
+
+      const roundingConstant = Utilities.getRoundingConstant(max - min);
+      if (roundingConstant) {
+        return (Math.round(value * roundingConstant) / roundingConstant).toString();
+      }
+      return value.toExponential(2).toString();
+    },
+
+    // Calculate the rounding precision we should use based on the
+    // range of the data.
+    getRoundingConstant(range) {
+      if (range < 0.0001 || range > 100000) {
+        return null; // Will use scientific notation
+      } else if (range < 0.001) {
+        return 100000; // Allow 5 decimal places
+      } else if (range < 0.01) {
+        return 10000; // Allow 4 decimal places
+      } else if (range < 0.1) {
+        return 1000; // Allow 3 decimal places
+      } else if (range < 1) {
+        return 100; // Allow 2 decimal places
+      } else if (range > 100) {
+        return 1; // No decimal places
+      }
+      return 10; // Allow 1 decimal place by default
+    }
   };
 
   return Utilities;

@@ -3,12 +3,7 @@ define([
   "models/maps/AssetColorPalette",
   "/test/js/specs/shared/clean-state.js",
   "/test/js/specs/unit/views/maps/legend/LayerLegendViewHarness.js",
-], (
-  LayerLegendView,
-  AssetColorPalette,
-  cleanState,
-  LayerLegendViewHarness,
-) => {
+], (LayerLegendView, AssetColorPalette, cleanState, LayerLegendViewHarness) => {
   const expect = chai.expect;
 
   describe("LayerLegendView Test Suite", () => {
@@ -43,6 +38,13 @@ define([
         expect(state.view.$el.children()).to.not.have.lengthOf(0);
       });
 
+      it("renders if paletteType is continuous", () => {
+        state.view.model.set("paletteType", "continuous");
+        state.view.render();
+
+        expect(state.view.$el.children()).to.not.have.lengthOf(0);
+      });
+
       it("does not render if paletteType is unrecognized", () => {
         state.view.model = new AssetColorPalette({
           label: "layer",
@@ -62,6 +64,15 @@ define([
         expect(state.harness.getPalette().children()).to.have.lengthOf(
           state.view.model.get("colors").length,
         );
+      });
+    });
+
+    describe("renderContinuousPalette", () => {
+      it("creates one swatch for one palette", () => {
+        state.view.model.set("paletteType", "continuous");
+        state.view.render();
+
+        expect(state.harness.getPalette().children()).to.have.lengthOf(1);
       });
     });
   });
