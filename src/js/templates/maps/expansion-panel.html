@@ -1,6 +1,10 @@
 <div class="<%= classNames.toggle %>">
   <div class="<%= classNames.icon %>">
-    <i class="icon <%= icon %>"></i>
+    <%if(isSvgIcon) {%>
+      <%= icon %>
+    <%} else {%>
+      <i class="icon <%= icon %>"></i>
+    <%}%>
   </div>
   <div class="<%= classNames.title %>">
     <%= title %>
