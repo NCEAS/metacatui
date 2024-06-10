@@ -1,7 +1,6 @@
 "use strict";
 
 define([
-  "jquery",
   "underscore",
   "backbone",
   "collections/maps/AssetCategories",
@@ -11,7 +10,6 @@ define([
   "views/maps/ExpansionPanelView",
   "models/maps/ExpansionPanelsModel",
 ], (
-  $,
   _,
   Backbone,
   AssetCategories,
@@ -50,17 +48,26 @@ define([
        * The array of layer categories to display in the list
        * @type {ExpansionPanel[]}
        */
-      panels: undefined,
+      panels: [],
 
       /**
        * Executed when a new LayerCategoryListView is created
        * @param {object} options - A literal object with options to pass to the view
+       * @param {AssetCategories} options.collection - The collection of AssetCategory to display.
        */
       initialize(options) {
-        if (options.collection instanceof AssetCategories) {
-          this.panels = options.collection.map((categoryModel) => {
+        this.assetCategories = options.collection;
+      },
+
+      /**
+       * Renders this view
+       * @returns {LayerCategoryListView} Returns the rendered view element
+       */
+      render() {
+        if (this.assetCategories instanceof AssetCategories) {
+          this.panels = this.assetCategories.map((categoryModel) => {
             const icon = categoryModel.get("icon");
-            return new ExpansionPanelView({
+            const panel = new ExpansionPanelView({
               contentViewInstance: new LayerListView({
                 collection: categoryModel.get("mapAssets"),
                 isCategorized: true,
@@ -70,19 +77,13 @@ define([
               panelsModel: new ExpansionPanelsModel({ isMulti: true }),
               title: categoryModel.get("label"),
             });
+
+            panel.render();
+            this.el.appendChild(panel.el);
+
+            return panel;
           });
         }
-      },
-
-      /**
-       * Renders this view
-       * @returns {LayerCategoryListView} Returns the rendered view element
-       */
-      render() {
-        this.panels = _.forEach(this.panels, (panel) => {
-          panel.render();
-          this.el.appendChild(panel.el);
-        });
 
         return this;
       },
