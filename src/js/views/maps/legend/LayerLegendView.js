@@ -18,6 +18,7 @@ define([
    * @classcategory Views/Maps/Legend
    * @name LayerLegendView
    * @augments Backbone.View
+   * @screenshot views/maps/legend/LayerLegendView.png
    * @since 0.0.0
    * @constructs
    */

@@ -20,6 +20,7 @@ define([
    * @classcategory Views/Maps/Legend
    * @name LegendContainerView
    * @augments Backbone.View
+   * @screenshot views/maps/legend/LegendContainerView.png
    * @since 0.0.0
    * @constructs
    */
