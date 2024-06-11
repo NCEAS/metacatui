@@ -17,6 +17,7 @@ define([
    * @classcategory Views/Maps/Legend
    * @name ContinuousSwatchView
    * @augments Backbone.View
+   * @screenshot views/maps/legend/ContinuousSwatchView.png
    * @since 0.0.0
    * @constructs
    */
