@@ -1,42 +1,30 @@
 "use strict";
 
 define([], () => {
-  /** IDs used to encode search parameters to save map location to URL.  */
-  const saveToUrlDestinationIds = {
-    LATITUDE: "lt",
-    LONGITUDE: "ln",
-    HEIGHT: "ht",
-    HEADING: "hd",
-    PITCH: "p",
-    ROLL: "r",
-  };
-
   /**
    * A map from search parameter key to the actual keys used by the application.
    */
   const paramIdToDestinationKey = {
-    [saveToUrlDestinationIds.LATITUDE]: "latitude",
-    [saveToUrlDestinationIds.LONGITUDE]: "longitude",
-    [saveToUrlDestinationIds.HEIGHT]: "height",
-    [saveToUrlDestinationIds.HEADING]: "heading",
-    [saveToUrlDestinationIds.PITCH]: "pitch",
-    [saveToUrlDestinationIds.ROLL]: "roll",
+    lt: "latitude",
+    ln: "longitude",
+    ht: "height",
+    hd: "heading",
+    p: "pitch",
+    r: "roll",
   };
-
+  /** The search parameter ID for enabled layers in the save to URL feature. */
+  const ENABLED_LAYERS_ID = 'el';
   /** Destination IDs plus enabled layers. */
-  const saveToUrlIds = {
-    ...saveToUrlDestinationIds,
-    ENABLED_LAYERS: "el",
-  };
+  const saveToUrlIds = [...Object.keys(paramIdToDestinationKey), ENABLED_LAYERS_ID];
 
   /** Clear all search parameters in URL related to save view to URL feature. */
   const clearSavedView = () => {
-    const url = new URL(location.href);
-    for (const id of Object.values(saveToUrlIds)) {
+    const url = new URL(window.location.href);
+    saveToUrlIds.forEach(id => {
       url.searchParams.delete(id);
-    }
+    });
 
-    history.replaceState(null, "", url);
+    window.history.replaceState(null, "", url);
   };
 
   /**
@@ -45,13 +33,13 @@ define([], () => {
    * enabled layers search parameter.
    */
   const updateEnabledLayerParam = (layers) => {
-    const url = new URL(location.href);
+    const url = new URL(window.location.href);
     url.searchParams.set(
-      saveToUrlIds.ENABLED_LAYERS,
+      ENABLED_LAYERS_ID,
       layers.filter((layer) => layer).join(","),
     );
 
-    history.replaceState(null, "", url);
+    window.history.replaceState(null, "", url);
   };
 
   /**
@@ -60,8 +48,8 @@ define([], () => {
    * no enabled layer search parameter.
    */
   const getEnabledLayers = () => {
-    const url = new URL(location.href);
-    return url.searchParams.get(saveToUrlIds.ENABLED_LAYERS)?.split(",") || [];
+    const url = new URL(window.location.href);
+    return url.searchParams.get(ENABLED_LAYERS_ID)?.split(",") || [];
   };
 
   /**
@@ -101,13 +89,12 @@ define([], () => {
    * height.
    */
   const updateDestination = (params) => {
-    const url = new URL(location.href);
-    for (const searchParamId of Object.values(saveToUrlDestinationIds)) {
-      const id = paramIdToDestinationKey[searchParamId];
-      url.searchParams.set(searchParamId, params[id]);
-    }
+    const url = new URL(window.location.href);
+    Object.entries(paramIdToDestinationKey).forEach(([searchParamId, destinationId]) => {
+      url.searchParams.set(searchParamId, params[destinationId]);
+    });
 
-    history.replaceState(null, "", url);
+    window.history.replaceState(null, "", url);
   };
 
   /**
@@ -118,24 +105,23 @@ define([], () => {
    * for a Cesium map to fly to.
    */
   const getDestination = () => {
-    const url = new URL(location.href);
+    const url = new URL(window.location.href);
     const params = {};
-    for (const searchParamId of Object.values(saveToUrlDestinationIds)) {
-      const id = paramIdToDestinationKey[searchParamId];
+    Object.entries(paramIdToDestinationKey).forEach(([searchParamId, destinationId]) => {
       if (url.searchParams.has(searchParamId)) {
         const num = Number(url.searchParams.get(searchParamId));
         if (!Number.isNaN(num)) {
-          params[id] = num;
+          params[destinationId] = num;
         }
       }
-    }
+    });
 
     if (
       params.latitude == null ||
       params.longitude == null ||
       params.height == null
     ) {
-      return;
+      return undefined;
     }
 
     return params;

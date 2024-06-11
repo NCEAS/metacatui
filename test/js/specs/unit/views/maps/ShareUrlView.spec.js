@@ -14,14 +14,11 @@ define([
   describe("ShareUrlView Test Suite", () => {
     const state = cleanState(() => {
       const sandbox = sinon.createSandbox();
-      const linkTitle = document.createElement("div");
-      const linkTitleHiddenClassName = "hidden";
-      linkTitle.classList.add(linkTitleHiddenClassName);
+      const onRemoveSpy = sandbox.spy();
       const view = new ShareUrlView({
         left: 1,
         top: 2,
-        linkTitle,
-        linkTitleHiddenClassName,
+        onRemove: onRemoveSpy,
       });
       const harness = new ShareUrlViewHarness(view);
 
@@ -30,10 +27,10 @@ define([
       testContainer.id = "test-container";
       testContainer.append(view.el);
       document.body.append(testContainer);
-      document.body.append(linkTitle);
 
       return {
         harness,
+        onRemoveSpy,
         sandbox,
         testContainer,
         view,
@@ -74,27 +71,13 @@ define([
       expect(removeSpy.callCount).to.equal(1);
     });
 
-    it("saves a reference to a linkTitle element with a specific class name", () => {
-      state.view.render();
-
-      expect(
-        state.view.linkTitle.classList.contains(
-          state.view.linkTitleHiddenClassName,
-        ),
-      ).to.be.true;
-    });
-
-    it("removes class name from link title upon clicking the document", () => {
+    it("calls onRemove callback upon clicking the document", () => {
       state.view.render();
       state.view.skipEvent = false;
 
       $("body").click();
 
-      expect(
-        state.view.linkTitle.classList.contains(
-          state.view.linkTitleHiddenClassName,
-        ),
-      ).to.be.false;
+      expect(state.onRemoveSpy.callCount).to.equal(1);
     });
 
     it("hides itself when clicking the remove button", () => {

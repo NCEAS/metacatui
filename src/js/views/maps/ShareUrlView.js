@@ -59,11 +59,8 @@ define([
        * @typedef {object} ShareUrlViewOptions
        * @property {number} left position for absolute positioning this element.
        * @property {number} top position for absolute positioning this element.
-       * @property {jQuery} linkTitle jQuery reference to the link title on the
-       * link button that opened this UI so it can be hidden if the user
-       * hovers the button while this UI is still open.
-       * @property {string} linkTitleHiddenClassName special CSS class name that
-       * can be applied to (and removed from) the linkTitle.
+       * @property {Function} onRemove callback function to be executed before 
+       * this View removes itself.
        */
 
       /**
@@ -71,11 +68,9 @@ define([
        * @param {ShareUrlViewOptions} An object specifying configuration options
        * for the view.
        */
-      initialize({ left, top, linkTitle, linkTitleHiddenClassName }) {
+      initialize({ left, top, onRemove}) {
         this.left = left;
         this.top = top;
-        this.linkTitle = linkTitle;
-        this.linkTitleHiddenClassName = linkTitleHiddenClassName;
 
         // Skip the first click event since it opened this UI.
         this.skipEvent = true;
@@ -90,7 +85,7 @@ define([
 
           document.removeEventListener("click", this.documentClickHandler);
           this.remove();
-          this.linkTitle.classList.remove(this.linkTitleHiddenClassName);
+          onRemove();
         };
 
         document.addEventListener("click", this.documentClickHandler);
@@ -152,7 +147,7 @@ define([
         this.$el.html(
           this.template({
             classes: CLASS_NAMES,
-            link: location.href,
+            link: window.location.href,
           }),
         );
 

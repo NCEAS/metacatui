@@ -601,7 +601,7 @@ represents 1 unit of the given distance measurement. */
   flex-direction: column;
   height: min-content;
   margin-left: 3.5rem;
-  min-width: 18.75px;
+  min-width: 10rem;
   padding: 1rem;
   pointer-events: all;
   position: absolute;
@@ -666,7 +666,7 @@ represents 1 unit of the given distance measurement. */
       background: none;
       border: none;
       box-shadow: unset;
-      color: var(--map-col-text-body, var(--map-col-text));
+      color: var(--map-col-text-body, var(--map-col-text__deprecate));
       cursor: text;
       flex: 1;
       font-family: var(--map-body-font);
@@ -724,7 +724,7 @@ represents 1 unit of the given distance measurement. */
         margin: unset;
         padding-left: 1rem;
         background: none;
-        color: var(--portal-col-neutral-8, var(--map-col-text));
+        color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
         font-family: var(--map-body-font);
         border: none;
         box-shadow: unset;

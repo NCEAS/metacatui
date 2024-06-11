@@ -97,7 +97,6 @@ define([
         linkActive: "toolbar__link--active",
         content: "toolbar__content",
         contentActive: "toolbar__content--active",
-        shareUrlView: "toolbar__share-url",
       },
 
       /**
@@ -203,16 +202,20 @@ define([
           label: "Share",
           icon: "link",
           action(view) {
-            if (view.$el.find(`.${view.classes.shareUrlView}`).length) return;
-
             const title = this.linkEl.querySelector(
               `.${view.classes.linkTitle}`,
             );
+
+            if (title.classList.contains(view.classes.linkTitleHidden)) {
+              return;
+            }
+
             const shareUrlView = new ShareUrlView({
               top: this.linkEl.offsetTop,
               left: this.linkEl.offsetLeft,
-              linkTitle: title,
-              linkTitleHiddenClassName: view.classes.linkTitleHidden,
+              onRemove() {
+                title.classList.remove(view.classes.linkTitleHidden);
+              },
             });
             shareUrlView.render();
             // Make sure link's tooltip is hidden while its popup is visible.
@@ -339,8 +342,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error rendering a ToolbarView" +
-              ". Error details: " +
-              error,
+            ". Error details: " +
+            error,
           );
         }
       },
@@ -386,8 +389,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error handling a toolbar link click in a ToolbarView" +
-              ". Error details: " +
-              error,
+            ". Error details: " +
+            error,
           );
         }
       },
@@ -418,8 +421,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error rendering a section link in a ToolbarView" +
-              ". Error details: " +
-              error,
+            ". Error details: " +
+            error,
           );
         }
       },
@@ -456,8 +459,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error  in a ToolbarView" +
-              ". Error details: " +
-              error,
+            ". Error details: " +
+            error,
           );
           return document.createElement("span");
         }
@@ -522,8 +525,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error opening a ToolbarView" +
-              ". Error details: " +
-              error,
+            ". Error details: " +
+            error,
           );
         }
       },
@@ -540,8 +543,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error closing a ToolbarView" +
-              ". Error details: " +
-              error,
+            ". Error details: " +
+            error,
           );
         }
       },
@@ -589,8 +592,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error showing a toolbar section in a ToolbarView" +
-              ". Error details: " +
-              error,
+            ". Error details: " +
+            error,
           );
         }
       },
@@ -607,8 +610,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error hiding toolbar sections in a ToolbarView" +
-              ". Error details: " +
-              error,
+            ". Error details: " +
+            error,
           );
         }
       },
