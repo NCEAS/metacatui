@@ -16,6 +16,7 @@ define([
    * @classcategory Views/Maps/Legend
    * @name CategoricalSwatchView
    * @augments Backbone.View
+   * @screenshot views/maps/legend/CategoricalSwatchView.png
    * @since 0.0.0
    * @constructs
    */
