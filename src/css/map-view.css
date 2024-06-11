@@ -787,7 +787,7 @@ represents 1 unit of the given distance measurement. */
       background-color: var(--portal-col-primary-1, #15324e);
     }
 
-    .layer-item__legend-and-settings {
+    .layer-item__settings {
       /* Show button when layer is hovered. */
       display: flex;
       border: 1px solid var(--portal-col-neutral-4);
@@ -818,19 +818,14 @@ represents 1 unit of the given distance measurement. */
       }
     }
 
-    .layer-item__legend-and-settings {
+    .layer-item__settings {
       /* Show button when layer is shown. */
       display: flex;
       border: 1px solid var(--portal-col-primary-2);
-
-      /* Only show legend when layer is shown. */
-      .layer-item__legend-container {
-        display: block;
-      }
     }
   }
 
-  .layer-item__legend-and-settings {
+  .layer-item__settings {
     /* By default, don't show button. */
     display: none;
     align-items: center;
@@ -845,12 +840,6 @@ represents 1 unit of the given distance measurement. */
       justify-content: center;
       margin: 0.5rem;
       color: var(--portal-col-neutral-6, currentColor);
-    }
-
-    .layer-item__legend-container {
-      /* By default, don't show legend. */
-      display: none;
-      margin-left: -0.5rem;
     }
 
     /* Use the same style on button hover and when selected. */
