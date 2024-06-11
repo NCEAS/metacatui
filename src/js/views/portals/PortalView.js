@@ -666,7 +666,7 @@ define([
        * Update the window location path with the active section name
        * @param {boolean} [showSectionLabel] - If true, the section label will be added to the path
        */
-      updatePath(showSectionLabel) {
+      updatePath(showSectionLabel, retainSearchQuery) {
         const label = this.model.get("label") || this.newPortalTempName;
         const originalLabel =
           this.model.get("originalLabel") || this.newPortalTempName;
@@ -689,7 +689,7 @@ define([
 
         const searchQueryString = new URL(window.location.href).search;
         // Support optional parameters for loading a portal's view from URL.
-        if (searchQueryString) {
+        if (retainSearchQuery && searchQueryString) {
           newPathName += searchQueryString;
         }
 
@@ -801,7 +801,10 @@ define([
 
         if (!this.nodeView) {
           // Update the location path with the new section name
-          this.updatePath(showSectionLabelInURL);
+          this.updatePath(
+            showSectionLabelInURL,
+            /* retainSearchQuery= */ !portalSectionView,
+          );
         }
       },
 

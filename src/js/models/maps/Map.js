@@ -301,20 +301,6 @@ define([
               this.set("allLayers", layers);
             }
 
-            // Set enabled layers URL parameter if there are no enabled layers
-            // currently set.
-            if (
-              this.get("showShareUrl") &&
-              !SearchParams.getEnabledLayers().length
-            ) {
-              this.get("allLayers").forEach((layer) => {
-                const layerId = layer.get("layerId");
-                if (layerId && layer.get("visible")) {
-                  SearchParams.addEnabledLayer(layerId);
-                }
-              });
-            }
-
             if (isNonEmptyArray(config.terrains)) {
               this.set("terrains", new MapAssets(config.terrains));
             }
@@ -332,7 +318,6 @@ define([
           }
           this.setUpInteractions();
         } catch (error) {
-          console.log("Failed to initialize a Map model.", error);
           console.log("Failed to initialize a Map model.", error);
         }
       },

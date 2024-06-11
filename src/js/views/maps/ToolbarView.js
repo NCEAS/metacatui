@@ -342,8 +342,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error rendering a ToolbarView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
         }
       },
@@ -389,8 +389,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error handling a toolbar link click in a ToolbarView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
         }
       },
@@ -421,8 +421,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error rendering a section link in a ToolbarView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
         }
       },
@@ -459,8 +459,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error  in a ToolbarView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
           return document.createElement("span");
         }
@@ -525,8 +525,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error opening a ToolbarView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
         }
       },
@@ -543,8 +543,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error closing a ToolbarView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
         }
       },
@@ -592,8 +592,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error showing a toolbar section in a ToolbarView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
         }
       },
@@ -610,8 +610,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error hiding toolbar sections in a ToolbarView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
         }
       },

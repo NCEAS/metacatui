@@ -13,14 +13,17 @@ define([], () => {
     r: "roll",
   };
   /** The search parameter ID for enabled layers in the save to URL feature. */
-  const ENABLED_LAYERS_ID = 'el';
+  const ENABLED_LAYERS_ID = "el";
   /** Destination IDs plus enabled layers. */
-  const saveToUrlIds = [...Object.keys(paramIdToDestinationKey), ENABLED_LAYERS_ID];
+  const saveToUrlIds = [
+    ...Object.keys(paramIdToDestinationKey),
+    ENABLED_LAYERS_ID,
+  ];
 
   /** Clear all search parameters in URL related to save view to URL feature. */
   const clearSavedView = () => {
     const url = new URL(window.location.href);
-    saveToUrlIds.forEach(id => {
+    saveToUrlIds.forEach((id) => {
       url.searchParams.delete(id);
     });
 
@@ -90,9 +93,11 @@ define([], () => {
    */
   const updateDestination = (params) => {
     const url = new URL(window.location.href);
-    Object.entries(paramIdToDestinationKey).forEach(([searchParamId, destinationId]) => {
-      url.searchParams.set(searchParamId, params[destinationId]);
-    });
+    Object.entries(paramIdToDestinationKey).forEach(
+      ([searchParamId, destinationId]) => {
+        url.searchParams.set(searchParamId, params[destinationId]);
+      },
+    );
 
     window.history.replaceState(null, "", url);
   };
@@ -107,14 +112,16 @@ define([], () => {
   const getDestination = () => {
     const url = new URL(window.location.href);
     const params = {};
-    Object.entries(paramIdToDestinationKey).forEach(([searchParamId, destinationId]) => {
-      if (url.searchParams.has(searchParamId)) {
-        const num = Number(url.searchParams.get(searchParamId));
-        if (!Number.isNaN(num)) {
-          params[destinationId] = num;
+    Object.entries(paramIdToDestinationKey).forEach(
+      ([searchParamId, destinationId]) => {
+        if (url.searchParams.has(searchParamId)) {
+          const num = Number(url.searchParams.get(searchParamId));
+          if (!Number.isNaN(num)) {
+            params[destinationId] = num;
+          }
         }
-      }
-    });
+      },
+    );
 
     if (
       params.latitude == null ||

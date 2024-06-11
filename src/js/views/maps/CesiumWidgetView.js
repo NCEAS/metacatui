@@ -558,6 +558,15 @@ define([
           pitch: Cesium.Math.toDegrees(pitch),
           roll: Cesium.Math.toDegrees(roll),
         });
+
+        this.model.get("allLayers").forEach((layer) => {
+          const layerId = layer.get("layerId");
+          if (layerId && layer.get("visible")) {
+            SearchParams.addEnabledLayer(layerId);
+          } else {
+            SearchParams.removeEnabledLayer(layerId);
+          }
+        });
       },
 
       /**

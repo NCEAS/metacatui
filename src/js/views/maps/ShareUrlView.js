@@ -59,7 +59,7 @@ define([
        * @typedef {object} ShareUrlViewOptions
        * @property {number} left position for absolute positioning this element.
        * @property {number} top position for absolute positioning this element.
-       * @property {Function} onRemove callback function to be executed before 
+       * @property {Function} onRemove callback function to be executed before
        * this View removes itself.
        */
 
@@ -68,7 +68,7 @@ define([
        * @param {ShareUrlViewOptions} An object specifying configuration options
        * for the view.
        */
-      initialize({ left, top, onRemove}) {
+      initialize({ left, top, onRemove }) {
         this.left = left;
         this.top = top;
 
