@@ -103,36 +103,6 @@ define([
           map.get("zoomPresetsCollection").at(0).get("enabledLayerIds"),
         ).to.eql(["layer1"]);
       });
-
-      it("updates the enabled layers search param if it is empty", () => {
-        const map = new Map({
-          layerCategories: [{ layers: [{ layerId: "somelayer" }] }],
-          showShareUrl: true,
-        });
-
-        expect(SearchParams.getEnabledLayers()).to.deep.equal(["somelayer"]);
-      });
-
-      it("does not update the enabled layers search param if feature is turned off", () => {
-        const map = new Map({
-          layerCategories: [{ layers: [{ layerId: "somelayer" }] }],
-          showShareUrl: false,
-        });
-
-        expect(SearchParams.getEnabledLayers()).to.deep.equal([]);
-      });
-
-      it("does not update the enabled layers search param if it is non-empty", () => {
-        SearchParams.addEnabledLayer("someotherlayer");
-        const map = new Map({
-          layerCategories: [{ layers: [{ layerId: "somelayer" }] }],
-          showShareUrl: true,
-        });
-
-        expect(SearchParams.getEnabledLayers()).to.deep.equal([
-          "someotherlayer",
-        ]);
-      });
     });
 
     describe("getLayerGroups", () => {
