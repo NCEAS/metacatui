@@ -7,8 +7,6 @@ define([
   "models/maps/assets/MapAsset",
   "common/IconUtilities",
   "text!templates/maps/layer-item.html",
-  // Sub-views
-  "views/maps/LegendView",
 ], function (
   $,
   _,
@@ -16,8 +14,6 @@ define([
   MapAsset,
   IconUtilities,
   Template,
-  // Sub-views
-  Legend,
 ) {
   /**
    * @class LayerItemView
@@ -25,8 +21,7 @@ define([
    * Asset (Layer), including label and icon. Also has a button that changes the
    * visibility of the Layer of the map (by updating the 'visibility' attribute in the
    * MapAsset model). Clicking on the Layer Item opens the Layer Details panel (by
-   * setting the 'selected' attribute to true in the Layer model.) Additionally, shows a
-   * small preview of a legend for the data that's on the map.
+   * setting the 'selected' attribute to true in the Layer model.)
    * @classcategory Views/Maps
    * @name LayerItemView
    * @extends Backbone.View
@@ -75,8 +70,6 @@ define([
        * @property {string} icon The span element that contains the SVG icon
        * @property {string} visibilityToggle The element that acts like a button to
        * switch the Layer's visibility on and off
-       * @property {string} legendContainer The element that the legend preview will be
-       * inserted into.
        * @property {string} selected The class that gets added to the view when the Layer
        * Item is selected
        * @property {string} shown The class that gets added to the view when the Layer
@@ -89,13 +82,12 @@ define([
         label: "layer-item__label",
         icon: "layer-item__icon",
         visibilityToggle: "layer-item__visibility-toggle",
-        legendContainer: "layer-item__legend-container",
         selected: "layer-item--selected",
         shown: "layer-item--shown",
         labelText: "layer-item__label-text",
         highlightedText: "layer-item__highlighted-text",
         categorized: "layer-item__categorized",
-        legendAndSettings: "layer-item__legend-and-settings",
+        settings: "layer-item__settings",
         badge: "map-view__badge",
         tooltip: "map-tooltip",
       },
@@ -117,7 +109,7 @@ define([
       events: function () {
         try {
           var events = {};
-          events["click ." + this.classes.legendAndSettings] = "toggleSelected";
+          events["click ." + this.classes.settings] = "toggleSelected";
           events["click"] = "toggleVisibility";
           return events;
         } catch (error) {
@@ -175,16 +167,6 @@ define([
           if (!this.isCategorized) {
             this.insertIcon();
           }
-
-          // Add a thumbnail / legend preview
-          const legendContainer = this.el.querySelector(
-            "." + this.classes.legendContainer,
-          );
-          const legendPreview = new Legend({
-            model: this.model,
-            mode: "preview",
-          });
-          legendContainer.append(legendPreview.render().el);
 
           // Ensure the view's main element has the given class name
           this.el.classList.add(this.className);
@@ -284,8 +266,8 @@ define([
       toggleVisibility: function (event) {
         try {
           if (
-            this.$(`.${this.classes.legendAndSettings}`).is(event.target) ||
-            this.$(`.${this.classes.legendAndSettings}`).has(event.target)
+            this.$(`.${this.classes.settings}`).is(event.target) ||
+            this.$(`.${this.classes.settings}`).has(event.target)
               .length > 0
           ) {
             return;
@@ -324,11 +306,11 @@ define([
         try {
           var layerModel = this.model;
           if (layerModel.get("selected")) {
-            this.$(`.${this.classes.legendAndSettings}`).addClass(
+            this.$(`.${this.classes.settings}`).addClass(
               this.classes.selected,
             );
           } else {
-            this.$(`.${this.classes.legendAndSettings}`).removeClass(
+            this.$(`.${this.classes.settings}`).removeClass(
               this.classes.selected,
             );
           }
