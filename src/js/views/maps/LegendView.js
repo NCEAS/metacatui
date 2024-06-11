@@ -145,10 +145,10 @@ define([
         // Check for a color palette model in the Map Asset model. Even imagery layers
         // may have a color palette configured, specifically to use to create a
         // legend.
-        this.model.attributes.keys().forEach((attr) => {
-          if (this.model.attributes[attr] instanceof AssetColorPalette) {
-            colorPalette = this.model.get(attr);
-            paletteType = colorPalette.get("paletteType");
+        Object.values(this.model.attributes).forEach((attr) => {
+          if (attr instanceof AssetColorPalette) {
+            colorPalette = attr;
+            paletteType = attr.get("paletteType");
           }
         });
 
