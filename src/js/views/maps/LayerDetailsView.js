@@ -11,8 +11,7 @@ define([
   "views/maps/LayerOpacityView",
   "views/maps/LayerInfoView",
   "views/maps/LayerNavigationView",
-  "views/maps/LegendView",
-], (
+], function (
   $,
   _,
   Backbone,
@@ -23,8 +22,7 @@ define([
   LayerOpacityView,
   LayerInfoView,
   LayerNavigationView,
-  LegendView,
-) => {
+) {
   /**
    * @class LayerDetailsView
    * @classdesc A panel with additional information about a Layer (a Map Asset like
@@ -118,13 +116,6 @@ define([
           view: LayerNavigationView,
           collapsible: false,
           showTitle: false,
-          hideIfError: true,
-        },
-        {
-          label: "Legend",
-          view: LegendView,
-          collapsible: false,
-          showTitle: true,
           hideIfError: true,
         },
         {
