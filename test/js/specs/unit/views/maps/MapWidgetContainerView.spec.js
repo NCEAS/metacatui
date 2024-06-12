@@ -4,7 +4,13 @@ define([
   "views/maps/legend/LegendContainerView",
   "views/maps/ScaleBarView",
   "/test/js/specs/shared/clean-state.js",
-], (MapWidgetContainerView, Map, LegendContainerView, ScaleBarView, cleanState) => {
+], (
+  MapWidgetContainerView,
+  Map,
+  LegendContainerView,
+  ScaleBarView,
+  cleanState,
+) => {
   const expect = chai.expect;
 
   describe("MapWidgetContainerView Test Suite", () => {
@@ -47,9 +53,7 @@ define([
         state.view.render();
 
         expect(
-          state.view.el.getElementsByClassName(
-            new ScaleBarView({}).className,
-          ),
+          state.view.el.getElementsByClassName(new ScaleBarView({}).className),
         ).to.have.lengthOf(1);
       });
 
@@ -58,9 +62,7 @@ define([
         state.view.render();
 
         expect(
-          state.view.el.getElementsByClassName(
-            new ScaleBarView({}).className,
-          ),
+          state.view.el.getElementsByClassName(new ScaleBarView({}).className),
         ).to.have.lengthOf(0);
       });
     });
