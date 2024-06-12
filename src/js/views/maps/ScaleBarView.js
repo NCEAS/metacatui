@@ -140,7 +140,7 @@ define([
           // Select the elements that will be updatable
           this.subElements = {};
           for (const [element, className] of Object.entries(view.classes)) {
-            view.subElements[element] = document.querySelector("." + className);
+            view.subElements[element] = this.el.querySelector("." + className);
           }
 
           // Start with empty values
