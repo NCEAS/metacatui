@@ -665,6 +665,9 @@ define([
       /**
        * Update the window location path with the active section name
        * @param {boolean} [showSectionLabel] - If true, the section label will be added to the path
+       * @param {boolean} [retainSearchQuery] Whether to keep the search query
+       * params during a path change. These should be kept when the page is
+       * loading initially.
        */
       updatePath(showSectionLabel, retainSearchQuery) {
         const label = this.model.get("label") || this.newPortalTempName;
@@ -695,6 +698,8 @@ define([
 
         // Update the window location
         MetacatUI.uiRouter.navigate(newPathName, { trigger: false });
+
+        this.model.reportSectionChange(this.activeSection?.model);
       },
 
       /**

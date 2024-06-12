@@ -152,6 +152,12 @@ define([
           this.debouncedUpdateSearchParams = _.debounce(() => {
             this.updateSearchParams();
           }, 150 /* milliseconds */);
+
+          this.listenTo(
+            this.model,
+            "change:searchparams",
+            this.updateSearchParams,
+          );
         } catch (e) {
           console.log("Failed to initialize a CesiumWidgetView. ", e);
         }

@@ -202,7 +202,8 @@ define([
         state.view.model.set("showShareUrl", true);
         const assetCategories = new AssetCategories([
           { layers: [{ label: "layer 1" }, { label: "layer 2" }] },
-          { layers: [{ label: "layer 3" }] }]);
+          { layers: [{ label: "layer 3" }] },
+        ]);
         state.view.model.set("allLayers", assetCategories.getMapAssetsFlat());
 
         state.view.render();

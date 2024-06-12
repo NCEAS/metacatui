@@ -2272,6 +2272,12 @@ define([
           this.set("label", randomGeneratedLabel);
         }
       },
+
+      reportSectionChange(model) {
+        this.get("sections").forEach((section) => {
+          section.reportSectionChange(model === section);
+        });
+      },
     },
   );
 
