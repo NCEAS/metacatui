@@ -301,14 +301,6 @@
   }
 }
 
-.map-view__scale-bar-container {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  /* required to be placed above map widget in firefox: */
-  z-index: var(--map-z-index-base);
-}
-
 .map-view__toolbar-container {
   position: absolute;
   top: 0;
@@ -405,6 +397,11 @@
   grid-template-columns: auto auto;
   gap: 1rem;
   align-items: center;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  /* required to be placed above map widget in firefox: */
+  z-index: var(--map-z-index-base);
 }
 
 /* __coordinates contains __longitude, __latitude, and __elevation */
