@@ -7,14 +7,7 @@ define([
   "models/maps/assets/MapAsset",
   "common/IconUtilities",
   "text!templates/maps/layer-item.html",
-], function (
-  $,
-  _,
-  Backbone,
-  MapAsset,
-  IconUtilities,
-  Template,
-) {
+], ($, _, Backbone, MapAsset, IconUtilities, Template) => {
   /**
    * @class LayerItemView
    * @classdesc One item in a Layer List: shows some basic information about the Map
@@ -24,12 +17,12 @@ define([
    * setting the 'selected' attribute to true in the Layer model.)
    * @classcategory Views/Maps
    * @name LayerItemView
-   * @extends Backbone.View
+   * @augments Backbone.View
    * @screenshot views/maps/LayerItemView.png
    * @since 2.18.0
    * @constructs
    */
-  var LayerItemView = Backbone.View.extend(
+  const LayerItemView = Backbone.View.extend(
     /** @lends LayerItemView.prototype */ {
       /**
        * The type of View this is
@@ -65,7 +58,7 @@ define([
       /**
        * Classes that are used to identify or create the HTML elements that comprise this
        * view.
-       * @type {Object}
+       * @type {object}
        * @property {string} label The element that contains the layer's name/label
        * @property {string} icon The span element that contains the SVG icon
        * @property {string} visibilityToggle The element that acts like a button to
@@ -103,137 +96,100 @@ define([
       /**
        * A function that gives the events this view will listen to and the associated
        * function to call.
-       * @returns {Object} Returns an object with events in the format 'event selector':
+       * @returns {object} Returns an object with events in the format 'event selector':
        * 'function'
        */
-      events: function () {
-        try {
-          var events = {};
-          events["click ." + this.classes.settings] = "toggleSelected";
-          events["click"] = "toggleVisibility";
-          return events;
-        } catch (error) {
-          console.log(
-            "There was an error setting the events object in a LayerItemView" +
-              ". Error details: " +
-              error,
-          );
-        }
+      events() {
+        const events = {};
+        events[`click .${this.classes.settings}`] = "toggleSelected";
+        events.click = "toggleVisibility";
+        return events;
       },
 
       /**
        * Executed when a new LayerItemView is created
-       * @param {Object} [options] - A literal object with options to pass to the view
+       * @param {object} [options] - A literal object with options to pass to the view
        */
-      initialize: function (options) {
-        try {
-          // Get all the options and apply them to this view
-          if (typeof options == "object") {
-            for (const [key, value] of Object.entries(options)) {
-              this[key] = value;
-            }
-          }
-        } catch (e) {
-          console.log(
-            "A LayerItemView failed to initialize. Error message: " + e,
-          );
+      initialize(options) {
+        // Get all the options and apply them to this view
+        if (typeof options === "object") {
+          Object.entries(options).forEach(([key, value]) => {
+            this[key] = value;
+          });
         }
       },
 
-      /**
-       * Renders this view
-       * @return {LayerItemView} Returns the rendered view element
-       */
-      render: function () {
-        try {
-          // Save a reference to this view
-          var view = this;
-
-          if (!this.model) {
-            return;
-          }
-
-          // Insert the template into the view
-          this.$el.html(
-            this.template({
-              label: this.model.get("label"),
-              classes: this.classes,
-            }),
-          );
-          // Save a reference to the label element
-          this.labelEl = this.el.querySelector("." + this.classes.label);
-
-          // Insert the icon on the left
-          if (!this.isCategorized) {
-            this.insertIcon();
-          }
-
-          // Ensure the view's main element has the given class name
-          this.el.classList.add(this.className);
-
-          // Show the item as hidden and/or selected depending on the model properties
-          // that are set initially
-          this.showVisibility();
-          this.showSelection();
-          // Show the current status of this layer
-          this.showStatus();
-
-          // When the Layer is selected, highlight this item in the Layer List. When
-          // it's no longer selected, then make sure it's no longer highlighted. Set a
-          // listener because the 'selected' attribute can be changed within this view,
-          // from the parent Layers collection, or from the Layer Details View.
-          this.stopListening(this.model, "change:selected");
-          this.listenTo(this.model, "change:selected", this.showSelection);
-
-          // Similar to above, add or remove the shown class when the layer's
-          // visibility changes
-          this.stopListening(this.model, "change:visible");
-          this.listenTo(this.model, "change:visible", this.showVisibility);
-
-          // Update the item in the list to show when it is loading, loaded, or there's
-          // been an error.
-          this.stopListening(this.model, "change:status");
-          this.listenTo(this.model, "change:status", this.showStatus);
-
+      /** @inheritdoc */
+      render() {
+        if (!this.model) {
           return this;
-        } catch (error) {
-          console.log(
-            "There was an error rendering a LayerItemView" +
-              ". Error details: " +
-              error,
-          );
         }
+
+        // Insert the template into the view
+        this.$el.html(
+          this.template({
+            label: this.model.get("label"),
+            classes: this.classes,
+          }),
+        );
+        // Save a reference to the label element
+        this.labelEl = this.el.querySelector(`.${this.classes.label}`);
+
+        // Insert the icon on the left
+        if (!this.isCategorized) {
+          this.insertIcon();
+        }
+
+        // Ensure the view's main element has the given class name
+        this.el.classList.add(this.className);
+
+        // Show the item as hidden and/or selected depending on the model properties
+        // that are set initially
+        this.showVisibility();
+        this.showSelection();
+        // Show the current status of this layer
+        this.showStatus();
+
+        // When the Layer is selected, highlight this item in the Layer List. When
+        // it's no longer selected, then make sure it's no longer highlighted. Set a
+        // listener because the 'selected' attribute can be changed within this view,
+        // from the parent Layers collection, or from the Layer Details View.
+        this.stopListening(this.model, "change:selected");
+        this.listenTo(this.model, "change:selected", this.showSelection);
+
+        // Similar to above, add or remove the shown class when the layer's
+        // visibility changes
+        this.stopListening(this.model, "change:visible");
+        this.listenTo(this.model, "change:visible", this.showVisibility);
+
+        // Update the item in the list to show when it is loading, loaded, or there's
+        // been an error.
+        this.stopListening(this.model, "change:status");
+        this.listenTo(this.model, "change:status", this.showStatus);
+
+        return this;
       },
 
       /**
        * Waits for the icon attribute to be ready in the Map Asset model, then inserts
        * the icon before the label.
        */
-      insertIcon: function () {
-        try {
-          const model = this.model;
-          let icon = model.get("icon");
-          if (!icon || typeof icon !== "string" || !IconUtilities.isSVG(icon)) {
-            icon = model.defaults().icon;
-          }
-          const iconContainer = document.createElement("span");
-          iconContainer.classList.add(this.classes.icon);
-          iconContainer.innerHTML = icon;
-          this.el
-            .querySelector("." + this.classes.visibilityToggle)
-            .replaceChildren(iconContainer);
+      insertIcon() {
+        const { model } = this;
+        let icon = model.get("icon");
+        if (!icon || typeof icon !== "string" || !IconUtilities.isSVG(icon)) {
+          icon = model.defaults().icon;
+        }
+        const iconContainer = document.createElement("span");
+        iconContainer.classList.add(this.classes.icon);
+        iconContainer.innerHTML = icon;
+        this.el
+          .querySelector(`.${this.classes.visibilityToggle}`)
+          .replaceChildren(iconContainer);
 
-          const iconStatus = model.get("iconStatus");
-          if (iconStatus && iconStatus === "fetching") {
-            this.listenToOnce(model, "change:iconStatus", this.insertIcon);
-            return;
-          }
-        } catch (error) {
-          console.log(
-            "There was an error inserting an icon in a LayerItemView" +
-              ". Error details: " +
-              error,
-          );
+        const iconStatus = model.get("iconStatus");
+        if (iconStatus && iconStatus === "fetching") {
+          this.listenToOnce(model, "change:iconStatus", this.insertIcon);
         }
       },
 
@@ -242,55 +198,39 @@ define([
        * to false if it's true. Executed when a user clicks on this Layer Item in a
        * Layer List view.
        */
-      toggleSelected: function () {
-        try {
-          var layerModel = this.model;
-          if (layerModel.get("selected")) {
-            layerModel.set("selected", false);
-          } else {
-            layerModel.set("selected", true);
-          }
-        } catch (error) {
-          console.log(
-            "There was an error selecting or unselecting a layer in a LayerItemView" +
-              ". Error details: " +
-              error,
-          );
+      toggleSelected() {
+        const layerModel = this.model;
+        if (layerModel.get("selected")) {
+          layerModel.set("selected", false);
+        } else {
+          layerModel.set("selected", true);
         }
       },
 
       /**
        * Sets the Layer model's visibility status attribute to true if it's false, and
-       * to false if it's true. Executed when a user clicks on the visibility toggle.
+       * to false if it's true. Executed when a user clicks on this view.
+       * @param {object} event The click event on this view component.
        */
-      toggleVisibility: function (event) {
-        try {
-          if (
-            this.$(`.${this.classes.settings}`).is(event.target) ||
-            this.$(`.${this.classes.settings}`).has(event.target)
-              .length > 0
-          ) {
-            return;
-          }
+      toggleVisibility(event) {
+        if (
+          this.$(`.${this.classes.settings}`).is(event.target) ||
+          this.$(`.${this.classes.settings}`).has(event.target).length > 0
+        ) {
+          return;
+        }
 
-          const layerModel = this.model;
-          // Hide if visible
-          if (layerModel.get("visible")) {
-            layerModel.set("visible", false);
-            // Show if hidden
-          } else {
-            // If user is trying to make the layer visible, make sure the opacity is not 0
-            if (layerModel.get("opacity") === 0) {
-              layerModel.set("opacity", 0.5);
-            }
-            layerModel.set("visible", true);
+        const layerModel = this.model;
+        // Hide if visible
+        if (layerModel.get("visible")) {
+          layerModel.set("visible", false);
+          // Show if hidden
+        } else {
+          // If user is trying to make the layer visible, make sure the opacity is not 0
+          if (layerModel.get("opacity") === 0) {
+            layerModel.set("opacity", 0.5);
           }
-        } catch (error) {
-          console.log(
-            "There was an error selecting or unselecting a layer in a LayerItemView" +
-              ". Error details: " +
-              error,
-          );
+          layerModel.set("visible", true);
         }
       },
 
@@ -302,23 +242,13 @@ define([
        * toggleSelected function), from the parent Layers collection, or from the
        * Layer Details View.
        */
-      showSelection: function () {
-        try {
-          var layerModel = this.model;
-          if (layerModel.get("selected")) {
-            this.$(`.${this.classes.settings}`).addClass(
-              this.classes.selected,
-            );
-          } else {
-            this.$(`.${this.classes.settings}`).removeClass(
-              this.classes.selected,
-            );
-          }
-        } catch (error) {
-          console.log(
-            "There was an error changing the highlighting in a LayerItemView" +
-              ". Error details: " +
-              error,
+      showSelection() {
+        const layerModel = this.model;
+        if (layerModel.get("selected")) {
+          this.$(`.${this.classes.settings}`).addClass(this.classes.selected);
+        } else {
+          this.$(`.${this.classes.settings}`).removeClass(
+            this.classes.selected,
           );
         }
       },
@@ -328,20 +258,12 @@ define([
        * set in the Layer model's 'visible' attribute. Executed whenever the 'visible'
        * attribute changes.
        */
-      showVisibility: function () {
-        try {
-          var layerModel = this.model;
-          if (layerModel.get("visible")) {
-            this.$el.addClass(this.classes.shown);
-          } else {
-            this.$el.removeClass(this.classes.shown);
-          }
-        } catch (error) {
-          console.log(
-            "There was an error changing the shown styles in a LayerItemView" +
-              ". Error details: " +
-              error,
-          );
+      showVisibility() {
+        const layerModel = this.model;
+        if (layerModel.get("visible")) {
+          this.$el.addClass(this.classes.shown);
+        } else {
+          this.$el.removeClass(this.classes.shown);
         }
       },
 
@@ -349,29 +271,21 @@ define([
        * Gets the Map Asset model's status and updates this Layer Item View to reflect
        * that status to the user.
        */
-      showStatus: function () {
-        try {
-          var layerModel = this.model;
-          var status = layerModel.get("status");
-          if (status === "error") {
-            const errorMessage = layerModel.get("statusDetails");
-            this.showError(errorMessage);
-          } else if (status === "ready") {
-            this.removeStatuses();
-            const notice = layerModel.get("notification");
-            const badge = notice ? notice.badge : null;
-            if (badge) {
-              this.showBadge(badge, notice.style);
-            }
-          } else if (status === "loading") {
-            this.showLoading();
+      showStatus() {
+        const layerModel = this.model;
+        const status = layerModel.get("status");
+        if (status === "error") {
+          const errorMessage = layerModel.get("statusDetails");
+          this.showError(errorMessage);
+        } else if (status === "ready") {
+          this.removeStatuses();
+          const notice = layerModel.get("notification");
+          const badge = notice ? notice.badge : null;
+          if (badge) {
+            this.showBadge(badge, notice.style);
           }
-        } catch (error) {
-          console.log(
-            "There was an error showing the status in a LayerItemView" +
-              ". Error details: " +
-              error,
-          );
+        } else if (status === "loading") {
+          this.showLoading();
         }
       },
 
@@ -379,22 +293,14 @@ define([
        * Remove any icons, tooltips, or other visual indicators of a Map Asset's error
        * or loading status in this view
        */
-      removeStatuses: function () {
-        try {
-          if (this.statusIcon) {
-            this.statusIcon.remove();
-          }
-          if (this.badge) {
-            this.badge.remove();
-          }
-          this.$el.tooltip("destroy");
-        } catch (error) {
-          console.log(
-            "There was an error removing status indicators in a LayerItemView" +
-              ". Error details: " +
-              error,
-          );
+      removeStatuses() {
+        if (this.statusIcon) {
+          this.statusIcon.remove();
         }
+        if (this.badge) {
+          this.badge.remove();
+        }
+        this.$el.tooltip("destroy");
       },
 
       /**
@@ -403,26 +309,18 @@ define([
        * @param {string} [style] - The style of the badge. Can be any of the styles
        * defined in the {@link MapConfig#Notification} style property, e.g. 'green'
        */
-      showBadge: function (text, style) {
-        try {
-          if (!text) {
-            return;
-          }
-          this.removeStatuses();
-          this.badge = document.createElement("span");
-          this.badge.classList.add(this.classes.badge);
-          this.badge.innerText = text;
-          this.labelEl.append(this.badge);
-          if (style) {
-            const badgeClass = this.classes.badge + "--" + style;
-            this.badge.classList.add(badgeClass);
-          }
-        } catch (error) {
-          console.log(
-            "There was an error showing the badge in a LayerItemView" +
-              ". Error details: " +
-              error,
-          );
+      showBadge(text, style) {
+        if (!text) {
+          return;
+        }
+        this.removeStatuses();
+        this.badge = document.createElement("span");
+        this.badge.classList.add(this.classes.badge);
+        this.badge.innerText = text;
+        this.labelEl.append(this.badge);
+        if (style) {
+          const badgeClass = `${this.classes.badge}--${style}`;
+          this.badge.classList.add(badgeClass);
         }
       },
 
@@ -432,66 +330,47 @@ define([
        * with more details
        * @param {string} message The error message to show in the tooltip.
        */
-      showError: function (message = "") {
-        try {
-          const view = this;
+      showError(message = "") {
+        const view = this;
 
-          // Remove any style elements for other statuses
-          this.removeStatuses();
+        // Remove any style elements for other statuses
+        this.removeStatuses();
 
-          // Show a warning icon
-          this.statusIcon = document.createElement("span");
-          this.statusIcon.innerHTML = `<i class="icon-warning-sign icon icon-on-right"></i>`;
-          this.statusIcon.style.opacity = "0.6";
-          this.labelEl.append(this.statusIcon);
+        // Show a warning icon
+        this.statusIcon = document.createElement("span");
+        this.statusIcon.innerHTML = `<i class="icon-warning-sign icon icon-on-right"></i>`;
+        this.statusIcon.style.opacity = "0.6";
+        this.labelEl.append(this.statusIcon);
 
-          // Show a tooltip with the error message
-          let fullMessage = this.errorMessage;
-          if (message) {
-            fullMessage = fullMessage + " Error details: " + message;
-          }
-          this.$el.tooltip({
-            placement: "top",
-            trigger: "hover",
-            title: fullMessage,
-            container: "body",
-            animation: false,
-            template:
-              '<div class="tooltip ' +
-              view.classes.tooltip +
-              '"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>',
-            delay: { show: 250, hide: 5 },
-          });
-        } catch (error) {
-          console.log(
-            "Failed to show the error status in a LayerItemView" +
-              ". Error details: " +
-              error,
-          );
+        // Show a tooltip with the error message
+        let fullMessage = this.errorMessage;
+        if (message) {
+          fullMessage = `${fullMessage} Error details: ${message}`;
         }
+        this.$el.tooltip({
+          placement: "top",
+          trigger: "hover",
+          title: fullMessage,
+          container: "body",
+          animation: false,
+          template: `<div class="tooltip ${view.classes.tooltip}"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>`,
+          delay: { show: 250, hide: 5 },
+        });
       },
 
       /**
        * Show a spinner icon to the right of the Map Asset label to indicate that this
        * layer is loading
        */
-      showLoading: function () {
-        try {
-          // Remove any style elements for other statuses
-          this.removeStatuses();
+      showLoading() {
+        // Remove any style elements for other statuses
+        this.removeStatuses();
 
-          // Show a spinner icon
-          this.statusIcon = document.createElement("span");
-          this.statusIcon.innerHTML = `<i class="icon-spinner icon-spin icon-small loading icon icon-on-right"></i>`;
-          this.statusIcon.style.opacity = "0.6";
-          this.labelEl.append(this.statusIcon);
-        } catch (error) {
-          console.log(
-            "There was an error showing the loading status in a LayerItemView" +
-              ". Error details: " +
-              error,
-          );
-        }
+        // Show a spinner icon
+        this.statusIcon = document.createElement("span");
+        this.statusIcon.innerHTML = `<i class="icon-spinner icon-spin icon-small loading icon icon-on-right"></i>`;
+        this.statusIcon.style.opacity = "0.6";
+        this.labelEl.append(this.statusIcon);
       },
 
       /**
@@ -506,12 +385,12 @@ define([
           const regex = new RegExp(text, "ig");
           newLabel = this.model
             .get("label")
-            .replaceAll(regex, (matchedText) => {
-              return $("<span />")
+            .replaceAll(regex, (matchedText) =>
+              $("<span />")
                 .addClass(this.classes.highlightedText)
                 .html(matchedText)
-                .prop("outerHTML");
-            });
+                .prop("outerHTML"),
+            );
 
           // Label is unchanged.
           if (newLabel === this.model.get("label")) {
