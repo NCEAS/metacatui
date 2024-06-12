@@ -35,9 +35,6 @@ define([
        */
       model: null,
 
-      /** Whether the legend is expanded or collapsed. */
-      expanded: false,
-
       /** @inheritdoc */
       template: _.template(Template),
 
@@ -67,16 +64,11 @@ define([
       },
 
       toggleExpanded() {
-        this.expanded = !this.expanded;
-        if (this.expanded) {
-          this.$el.addClass("expanded");
-        } else {
-          this.$el.removeClass("expanded");
-        }
+        this.$el.toggleClass("expanded");
       },
 
       updateLegend() {
-        this.$(`.${CLASS_NAMES.content}`).empty();
+        const content = this.$(`.${CLASS_NAMES.content}`).empty();
         this.model.get("allLayers")?.forEach((layer) => {
           if (!layer.get("visible") || !layer.get("colorPalette")) {
             return;
@@ -85,7 +77,7 @@ define([
             model: layer.get("colorPalette"),
           });
           layerLegendView.render();
-          this.$(`.${CLASS_NAMES.content}`).append(layerLegendView.el);
+          content.append(layerLegendView.el);
         });
       },
     },
