@@ -45,7 +45,7 @@ define([
       /** @inheritdoc */
       render() {
         const paletteType = this.model.get("paletteType");
-        if (!paletteType || paletteType === "categorical") {
+        if (paletteType === "categorical") {
           this.renderCategoricalPalette();
         } else if (paletteType === "continuous") {
           this.renderContinuousPalette();
