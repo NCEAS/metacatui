@@ -314,36 +314,32 @@ define([
       initialize(assetConfig) {
         const model = this;
 
-        let parsedAssetConfig;
-        if (!assetConfig || typeof assetConfig !== "object") {
-          parsedAssetConfig = {};
-        } else {
-          parsedAssetConfig = JSON.parse(JSON.stringify(assetConfig));
-        }
+        const assetConfigCopy =
+          !assetConfig || typeof assetConfig !== "object" ? {} : assetConfig;
 
         // Set the color palette
-        if (parsedAssetConfig.colorPalette) {
+        if (assetConfigCopy.colorPalette) {
           this.set(
             "colorPalette",
             new AssetColorPalette(
               _.extend(
-                parsedAssetConfig.colorPalette,
-                _.pick(parsedAssetConfig, "label"),
+                assetConfigCopy.colorPalette,
+                _.pick(assetConfigCopy, "label"),
               ),
             ),
           );
         }
 
         // Fetch the icon, if there is one
-        if (parsedAssetConfig.icon) {
+        if (assetConfigCopy.icon) {
           try {
-            if (IconUtilities.isSVG(parsedAssetConfig.icon)) {
-              model.updateIcon(parsedAssetConfig.icon);
+            if (IconUtilities.isSVG(assetConfigCopy.icon)) {
+              model.updateIcon(assetConfigCopy.icon);
             } else {
               model.set("iconStatus", "fetching");
               // If the string is not an SVG then assume it is a PID and try to fetch
               // the SVG file.
-              IconUtilities.fetchIcon(parsedAssetConfig.icon).then((icon) =>
+              IconUtilities.fetchIcon(assetConfigCopy.icon).then((icon) =>
                 model.updateIcon(icon),
               );
             }
@@ -591,7 +587,7 @@ define([
         }
 
         const propertiesCopy =
-          properties && typeof properties !== "object" ? properties : {};
+          properties && typeof properties === "object" ? properties : {};
 
         if (customProperties) {
           _.each(customProperties, (config, key) => {
