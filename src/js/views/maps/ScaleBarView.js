@@ -5,7 +5,7 @@ define([
   "underscore",
   "backbone",
   "text!templates/maps/scale-bar.html",
-], function ($, _, Backbone, Template) {
+], ($, _, Backbone, Template) => {
   /**
    * @class ScaleBarView
    * @classdesc The scale bar is a legend for a map that shows the current longitude,
@@ -13,12 +13,12 @@ define([
    * geo-spatial features.
    * @classcategory Views/Maps
    * @name ScaleBarView
-   * @extends Backbone.View
+   * @augments Backbone.View
    * @screenshot views/maps/ScaleBarView.png
    * @since 2.18.0
    * @constructs
    */
-  var ScaleBarView = Backbone.View.extend(
+  const ScaleBarView = Backbone.View.extend(
     /** @lends ScaleBarView.prototype */ {
       /**
        * The type of View this is
@@ -56,7 +56,7 @@ define([
        * Classes that will be used to select elements from the template that will be
        * updated with new coordinates and scale.
        * @name ScaleBarView#classes
-       * @type {Object}
+       * @type {object}
        * @property {string} longitude The element that will contain the longitude
        * measurement
        * @property {string} latitude The element that will contain the latitude
@@ -99,7 +99,7 @@ define([
 
       /**
        * The events this view will listen to and the associated function to call.
-       * @type {Object}
+       * @type {object}
        */
       events: {
         // 'event selector': 'function',
@@ -107,67 +107,55 @@ define([
 
       /**
        * Executed when a new ScaleBarView is created
-       * @param {Object} [options] - A literal object with options to pass to the view
+       * @param {object} [options] - A literal object with options to pass to the view
        */
-      initialize: function (options) {
-        try {
-          // Get all the options and apply them to this view
-          if (typeof options == "object") {
-            for (const [key, value] of Object.entries(options)) {
-              this[key] = value;
-            }
-          }
-        } catch (e) {
-          console.log("A ScaleBarView failed to initialize.", e);
+      initialize(options) {
+        // Get all the options and apply them to this view
+        if (typeof options === "object") {
+          Object.entries(options).forEach(([key, value]) => {
+            this[key] = value;
+          });
         }
       },
 
       /**
        * Renders this view
-       * @return {ScaleBarView} Returns the rendered view element
+       * @returns {ScaleBarView} Returns the rendered view element
        */
-      render: function () {
-        try {
-          // Save a reference to this view
-          var view = this;
+      render() {
+        // Save a reference to this view
+        const view = this;
 
-          // Insert the template into the view
-          this.$el.html(this.template());
+        // Insert the template into the view
+        this.$el.html(this.template());
 
-          // Ensure the view's main element has the given class name
-          this.el.classList.add(this.className);
+        // Ensure the view's main element has the given class name
+        this.el.classList.add(this.className);
 
-          // Select the elements that will be updatable
-          this.subElements = {};
-          for (const [element, className] of Object.entries(view.classes)) {
-            view.subElements[element] = this.el.querySelector("." + className);
-          }
+        // Select the elements that will be updatable
+        this.subElements = {};
+        Object.entries(view.classes).forEach(([element, className]) => {
+          view.subElements[element] = this.el.querySelector(`.${className}`);
+        });
 
-          // Start with empty values
-          this.updateCoordinates();
-          this.updateScale();
+        // Start with empty values
+        this.updateCoordinates();
+        this.updateScale();
 
-          // Listen for changes to the models
-          this.listenToScaleModel();
-          this.listenToPointModel();
+        // Listen for changes to the models
+        this.listenToScaleModel();
+        this.listenToPointModel();
 
-          return this;
-        } catch (error) {
-          console.log(
-            "There was an error rendering a ScaleBarView" +
-              ". Error details: " +
-              error,
-          );
-        }
+        return this;
       },
 
       /**
        * Update the scale bar when the pixel:meters ratio changes
        * @since 2.27.0
        */
-      listenToScaleModel: function () {
+      listenToScaleModel() {
         const view = this;
-        this.listenTo(this.scaleModel, "change", function () {
+        this.listenTo(this.scaleModel, "change", () => {
           view.updateScale(
             view.scaleModel.get("pixels"),
             view.scaleModel.get("meters"),
@@ -179,7 +167,7 @@ define([
        * Stop listening to the scale model
        * @since 2.27.0
        */
-      stopListeningToScaleModel: function () {
+      stopListeningToScaleModel() {
         this.stopListening(this.scaleModel, "change");
       },
 
@@ -187,12 +175,12 @@ define([
        * Update the scale bar view when the lat and long change
        * @since 2.27.0
        */
-      listenToPointModel: function () {
+      listenToPointModel() {
         const view = this;
         this.listenTo(
           this.pointModel,
           "change:latitude change:longitude",
-          function () {
+          () => {
             view.updateCoordinates(
               view.pointModel.get("latitude"),
               view.pointModel.get("longitude"),
@@ -204,7 +192,7 @@ define([
       /**
        * Stop listening to the point model
        */
-      stopListeningToPointModel: function () {
+      stopListeningToPointModel() {
         this.stopListening(this.pointModel, "change:latitude change:longitude");
       },
 
@@ -218,38 +206,30 @@ define([
        * @param {number} elevation The distance from sea-level of the point to show
        * coordinates for
        */
-      updateCoordinates: function (latitude, longitude, elevation) {
-        try {
-          if ((latitude || latitude === 0) && (longitude || longitude === 0)) {
-            // Update the displayed coordinates
-            this.subElements.latitude.textContent =
-              Number.parseFloat(latitude).toFixed(5);
-            this.subElements.longitude.textContent =
-              Number.parseFloat(longitude).toFixed(5);
-            this.subElements.latitudeLabel.style.display = null;
-            this.subElements.longitudeLabel.style.display = null;
-          } else {
-            // Update the displayed coordinates
-            this.subElements.latitude.textContent = "";
-            this.subElements.longitude.textContent = "";
-            this.subElements.latitudeLabel.style.display = "none";
-            this.subElements.longitudeLabel.style.display = "none";
-          }
+      updateCoordinates(latitude, longitude, elevation) {
+        if ((latitude || latitude === 0) && (longitude || longitude === 0)) {
+          // Update the displayed coordinates
+          this.subElements.latitude.textContent =
+            Number.parseFloat(latitude).toFixed(5);
+          this.subElements.longitude.textContent =
+            Number.parseFloat(longitude).toFixed(5);
+          this.subElements.latitudeLabel.style.display = null;
+          this.subElements.longitudeLabel.style.display = null;
+        } else {
+          // Update the displayed coordinates
+          this.subElements.latitude.textContent = "";
+          this.subElements.longitude.textContent = "";
+          this.subElements.latitudeLabel.style.display = "none";
+          this.subElements.longitudeLabel.style.display = "none";
+        }
 
-          if (elevation || elevation === 0) {
-            // TODO: round/prettify elevation number
-            this.subElements.elevation.textContent = elevation + "m";
-            this.subElements.elevationLabel.style.display = "none";
-          } else {
-            this.subElements.elevation.textContent = "";
-            this.subElements.elevationLabel.style.display = "none";
-          }
-        } catch (error) {
-          console.log(
-            "There was an error updating the coordinates in a ScaleBarView" +
-              ". Error details: " +
-              error,
-          );
+        if (elevation || elevation === 0) {
+          // TODO: round/prettify elevation number
+          this.subElements.elevation.textContent = `${elevation}m`;
+          this.subElements.elevationLabel.style.display = "none";
+        } else {
+          this.subElements.elevation.textContent = "";
+          this.subElements.elevationLabel.style.display = "none";
         }
       },
 
@@ -262,29 +242,23 @@ define([
        * @param {number} meters A distance, in meters, that is equivalent to the given
        * distance in pixels
        */
-      updateScale: function (pixels, meters) {
-        try {
-          // Hide the scale bar if a measurement is not available
-          let label = null;
-          let barWidth = 0;
+      updateScale(pixels, meters) {
+        // Hide the scale bar if a measurement is not available
+        let label = null;
+        let barWidth = 0;
 
-          if (pixels && meters && pixels > 0 && meters > 0) {
-            const prettyValues = this.prettifyScaleValues(pixels, meters);
-            label = prettyValues.label;
-            barWidth = prettyValues.pixels;
-          }
-
-          if (barWidth === undefined || barWidth === null || !label) {
-            barWidth = 0;
-          }
-
-          this.subElements.distance.textContent = label;
-          this.subElements.bar.style.width = barWidth + "px";
-        } catch (error) {
-          console.log(
-            "Failed to update the ScaleBarView. Error details: " + error,
-          );
+        if (pixels && meters && pixels > 0 && meters > 0) {
+          const prettyValues = this.prettifyScaleValues(pixels, meters);
+          label = prettyValues.label;
+          barWidth = prettyValues.pixels;
         }
+
+        if (barWidth === undefined || barWidth === null || !label) {
+          barWidth = 0;
+        }
+
+        this.subElements.distance.textContent = label;
+        this.subElements.bar.style.width = `${barWidth}px`;
       },
 
       /**
@@ -292,14 +266,14 @@ define([
        * @param {number} pixels A length in pixels. Must be > 0.
        * @param {number} meters A distance, in meters, that is equivalent to the given
        * distance in pixels. Must be > 0.
-       * @returns {Object} Returns the prettified values.  Returns null for both values
+       * @returns {object} Returns the prettified values.  Returns null for both values
        * if a matching distance was not found (see {@link ScaleBarView#distances})
        * @property {number|null} pixels The updated pixel value that is less than the
        * maxBarWidth and equivalent to the distance given by the label.
        * @property {string|null} label A string that gives a rounded distance
        * measurement along with a unit, either meters or kilometers (when > 1000m).
        */
-      prettifyScaleValues: function (pixels, meters) {
+      prettifyScaleValues(pixels, meters) {
         try {
           const view = this;
           let prettyValues = {
@@ -315,7 +289,7 @@ define([
             for (
               let i = view.distances.length - 1;
               !(distance !== undefined && distance !== null) && i >= 0;
-              --i
+              i -= 1
             ) {
               if (view.distances[i] / onePixelInMeters < view.maxBarWidth) {
                 distance = view.distances[i];
@@ -325,27 +299,22 @@ define([
             if (distance !== undefined && distance !== null) {
               let label;
               if (distance >= 1000) {
-                label = (distance / 1000).toString() + " km";
+                label = `${(distance / 1000).toString()} km`;
               } else if (distance > 1) {
-                label = distance.toString() + " m";
+                label = `${distance.toString()} m`;
               } else {
-                label = (distance * 100).toString() + " cm";
+                label = `${(distance * 100).toString()} cm`;
               }
 
               prettyValues = {
                 pixels: distance / onePixelInMeters,
-                label: label,
+                label,
               };
             }
           }
 
           return prettyValues;
         } catch (error) {
-          console.log(
-            "There was an error prettifying scale values in a ScaleBarView" +
-              ". Error details: " +
-              error,
-          );
           return {
             pixels: null,
             label: null,
@@ -357,7 +326,7 @@ define([
        * Function to execute when this view is removed from the DOM
        * @since 2.27.0
        */
-      onClose: function () {
+      onClose() {
         this.stopListeningToScaleModel();
         this.stopListeningToPointModel();
       },
