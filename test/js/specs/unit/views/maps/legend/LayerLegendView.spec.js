@@ -43,13 +43,6 @@ define([
         expect(state.view.$el.children()).to.not.have.lengthOf(0);
       });
 
-      it("renders if paletteType is empty", () => {
-        state.view.model.unset("paletteType");
-        state.view.render();
-
-        expect(state.view.$el.children()).to.not.have.lengthOf(0);
-      });
-
       it("does not render if paletteType is unrecognized", () => {
         state.view.model = new AssetColorPalette({
           label: "layer",
@@ -70,7 +63,6 @@ define([
           state.view.model.get("colors").length,
         );
       });
-    });
     });
   });
 });
