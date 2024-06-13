@@ -29,17 +29,25 @@ define(["../../../../../../src/js/common/Utilities"], function (EntityUtils) {
 
     describe("formatNumber", () => {
       it("rounds number if the range is between 0.0001 and 100000", () => {
-        expect(EntityUtils.formatNumber(0.000099999, 0, 0.0001)).to.equal(
-          "0.0001",
+        expect(EntityUtils.formatNumber(0.000099999, 0.0001)).to.equal(
+          "0.00010",
         );
-        expect(EntityUtils.formatNumber(1.9, 0, 100000)).to.equal("2");
+        expect(EntityUtils.formatNumber(1.9, 100000)).to.equal("2");
       });
 
       it("uses scientific notation if the range is outside of 0.0001 and 100000", () => {
-        expect(EntityUtils.formatNumber(0.000099999, 0, 0.000099999)).to.equal(
+        expect(EntityUtils.formatNumber(0.000099999, 0.000099999)).to.equal(
           "1.00e-4",
         );
-        expect(EntityUtils.formatNumber(1.9, 0, 100001)).to.equal("1.90e+0");
+        expect(EntityUtils.formatNumber(1.9, 100001)).to.equal("1.90e+0");
+      });
+
+      it("returns empty string if input value isn't a number", () => {
+        expect(EntityUtils.formatNumber("1.0", 0.000099999)).to.equal("");
+      });
+
+      it("returns value as is if range isn't a number", () => {
+        expect(EntityUtils.formatNumber(1.9, "invalid range")).to.equal("1.9");
       });
     });
   });

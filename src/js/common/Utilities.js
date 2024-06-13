@@ -106,43 +106,53 @@ define([], () => {
       return names;
     },
 
-    // Format the number into a string with better readability.
-    formatNumber(value, min, max) {
-      if (!value && value !== 0) {
+    /**
+     * Format the number into a string with better readability, based on the manitude of a
+     * range this number falls in.
+     * @param {number} value The number value to be formatted.
+     * @param {number} range The range of numerics this value can fall in.
+     * @returns {string} A formatted number based on the magnitude of `range`.
+     */
+    formatNumber(value, range) {
+      if (typeof value !== "number") {
         return "";
       }
+      if (typeof range !== "number") {
+        return value.toString();
+      }
 
-      const roundingConstant = Utilities.getRoundingConstant(max - min);
-      if (roundingConstant) {
-        return (
-          Math.round(value * roundingConstant) / roundingConstant
-        ).toString();
+      const numDecimalPlaces = Utilities.getNumDecimalPlaces(range);
+      if (numDecimalPlaces !== null) {
+        return value.toFixed(numDecimalPlaces);
       }
       return value.toExponential(2).toString();
     },
 
-    // Calculate the rounding precision we should use based on the
-    // range of the data.
-    getRoundingConstant(range) {
+    /**
+     * Calculate the number of decimal places we should use based on the range of the data.
+     * @param {number} range The range of data values.
+     * @returns {number} The number of decimal places we should use.
+     */
+    getNumDecimalPlaces(range) {
       if (range < 0.0001 || range > 100000) {
         return null; // Will use scientific notation
       }
       if (range < 0.001) {
-        return 100000; // Allow 5 decimal places
+        return 5; // Allow 5 decimal places
       }
       if (range < 0.01) {
-        return 10000; // Allow 4 decimal places
+        return 4; // Allow 4 decimal places
       }
       if (range < 0.1) {
-        return 1000; // Allow 3 decimal places
+        return 3; // Allow 3 decimal places
       }
       if (range < 1) {
-        return 100; // Allow 2 decimal places
+        return 2; // Allow 2 decimal places
       }
-      if (range > 100) {
-        return 1; // No decimal places
+      if (range <= 100) {
+        return 1; // Allow 1 decimal places
       }
-      return 10; // Allow 1 decimal place by default
+      return 0; // No decimal places
     },
   };
 
