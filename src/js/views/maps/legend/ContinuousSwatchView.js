@@ -45,12 +45,13 @@ define([
         const min = this.collection.first().get("value");
         const max = this.collection.last().get("value");
         const mid = (min + max) / 2;
+        const range = max - min;
         this.$el.html(
           this.template({
             classNames: CLASS_NAMES,
-            min: Utilities.formatNumber(min, min, max),
-            mid: Utilities.formatNumber(mid, min, max),
-            max: Utilities.formatNumber(max, min, max),
+            min: Utilities.formatNumber(min, range),
+            mid: Utilities.formatNumber(mid, range),
+            max: Utilities.formatNumber(max, range),
           }),
         );
 
