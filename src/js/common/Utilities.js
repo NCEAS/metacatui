@@ -107,42 +107,40 @@ define([], () => {
     },
 
     // Format the number into a string with better readability.
-    formatNumber(value, min, max) {
-      if (!value && value !== 0) {
+    formatNumber(value, range) {
+      if (typeof value !== "number") {
         return "";
       }
 
-      const roundingConstant = Utilities.getRoundingConstant(max - min);
-      if (roundingConstant) {
-        return (
-          Math.round(value * roundingConstant) / roundingConstant
-        ).toString();
+      const numDecimalPlaces = Utilities.getNumDecimalPlaces(range);
+      if (numDecimalPlaces !== null) {
+        return value.toFixed(numDecimalPlaces);
       }
       return value.toExponential(2).toString();
     },
 
-    // Calculate the rounding precision we should use based on the
+    // Calculate the number of decimal places we should use based on the
     // range of the data.
-    getRoundingConstant(range) {
+    getNumDecimalPlaces(range) {
       if (range < 0.0001 || range > 100000) {
         return null; // Will use scientific notation
       }
       if (range < 0.001) {
-        return 100000; // Allow 5 decimal places
+        return 5; // Allow 5 decimal places
       }
       if (range < 0.01) {
-        return 10000; // Allow 4 decimal places
+        return 4; // Allow 4 decimal places
       }
       if (range < 0.1) {
-        return 1000; // Allow 3 decimal places
+        return 3; // Allow 3 decimal places
       }
       if (range < 1) {
-        return 100; // Allow 2 decimal places
+        return 2; // Allow 2 decimal places
       }
-      if (range > 100) {
-        return 1; // No decimal places
+      if (range <= 100) {
+        return 1; // Allow 1 decimal places
       }
-      return 10; // Allow 1 decimal place by default
+      return 0; // No decimal places
     },
   };
 

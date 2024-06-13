@@ -356,7 +356,7 @@ define([
         const min = data[0].value;
         const max = data[data.length - 1].value;
         const range = max - min;
-        const roundingConstant = Utilities.getRoundingConstant(range);
+        const numDecimalPlaces = Utilities.getNumDecimalPlaces(range);
 
         // SVG element
         const svg = this.createSVG({
@@ -429,10 +429,8 @@ define([
               // Show tooltip with the value
               if (value || value === 0) {
                 // Round or show in scientific notation
-                if (roundingConstant) {
-                  value = (
-                    Math.round(value * roundingConstant) / roundingConstant
-                  ).toString();
+                if (numDecimalPlaces !== null) {
+                  value = value.toFixed(numDecimalPlaces);
                 } else {
                   value = value.toExponential(2).toString();
                 }
