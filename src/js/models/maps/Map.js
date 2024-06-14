@@ -8,17 +8,7 @@ define([
   "models/maps/MapInteraction",
   "collections/maps/AssetCategories",
   "collections/maps/viewfinder/ZoomPresets",
-  "common/SearchParams",
-], (
-  $,
-  _,
-  Backbone,
-  MapAssets,
-  Interactions,
-  AssetCategories,
-  ZoomPresets,
-  SearchParams,
-) => {
+], ($, _, Backbone, MapAssets, Interactions, AssetCategories, ZoomPresets) => {
   /**
    * Determine if array is empty.
    * @param {Array} a The array in question.

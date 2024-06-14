@@ -591,13 +591,10 @@ represents 1 unit of the given distance measurement. */
 }
 
 .share-url {
-  background-color: var(
-    --map-col-content-bkg-highlight,
-    var(--map-col-bkg__deprecate)
-  );
+  background-color: var(--portal-col-primary-1, var(--map-col-bkg__deprecate));
   border-radius: var(--map-border-radius-big);
   box-shadow: var(--map-shadow-md);
-  color: var(--map-col-buttons-bkg-highlight);
+  color: var(--portal-col-primary-6);
   flex-direction: column;
   height: min-content;
   margin-left: 3.5rem;
@@ -629,12 +626,12 @@ represents 1 unit of the given distance measurement. */
 
   p {
     font-size: 0.8125rem;
-    color: var(--map-col-text-label, white);
+    color: var(--portal-col-neutral-7, white);
   }
 
   .share-url__remove {
     align-items: center;
-    color: var(--map-col-utility-buttons);
+    color: var(--portal-col-neutral-6);
     display: flex;
     height: 1.5rem;
     justify-content: center;
@@ -647,13 +644,13 @@ represents 1 unit of the given distance measurement. */
   }
 
   .share-url__error {
-    color: var(--map-col-input-error-text);
+    color: var(--portal-col-highlight-3, #ca6c0b);
   }
 
   .share-url__field {
     align-items: center;
-    background: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
-    border-color: var(--map-col-border-muted);
+    background: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
+    border-color: var(--portal-col-neutral-4);
     border-radius: var(--map-border-radius-small);
     border: 1px solid;
     display: flex;
@@ -666,7 +663,7 @@ represents 1 unit of the given distance measurement. */
       background: none;
       border: none;
       box-shadow: unset;
-      color: var(--map-col-text-body, var(--map-col-text__deprecate));
+      color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
       cursor: text;
       flex: 1;
       font-family: var(--map-body-font);
