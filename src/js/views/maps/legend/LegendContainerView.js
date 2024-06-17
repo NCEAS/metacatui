@@ -70,6 +70,9 @@ define([
         this.$el.toggleClass("expanded");
       },
 
+      /**
+       * Updates the legend with the current color palettes.
+       */
       updateLegend() {
         const content = this.$(`.${CLASS_NAMES.content}`).empty();
         this.model.get("allLayers")?.forEach((layer) => {
