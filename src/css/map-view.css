@@ -664,7 +664,7 @@ represents 1 unit of the given distance measurement. */
       border: none;
       box-shadow: unset;
       color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
-      cursor: text;
+      cursor: pointer;
       flex: 1;
       font-family: var(--map-body-font);
       height: 100%;

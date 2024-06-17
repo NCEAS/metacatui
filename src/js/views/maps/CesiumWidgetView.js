@@ -548,7 +548,7 @@ define([
       /**
        * Update the search parameters related to the current map position
        * and heading.
-       * @since x.x.x
+       * @since 0.0.0
        */
       updateSearchParams() {
         if (!this.model.get("showShareUrl")) return;

@@ -206,7 +206,7 @@ define([
               `.${view.classes.linkTitle}`,
             );
 
-            if (title.classList.contains(view.classes.linkTitleHidden)) {
+            if (view.el.querySelector(".share-url")) {
               return;
             }
 

@@ -11,9 +11,10 @@ define([
   // The HTML classes to use for this view's HTML elements.
   const CLASS_NAMES = {
     copy: `${BASE_CLASS}__copy`,
-    remove: `${BASE_CLASS}__remove`,
-    hint: `${BASE_CLASS}__hint`,
     error: `${BASE_CLASS}__error`,
+    hint: `${BASE_CLASS}__hint`,
+    input: `${BASE_CLASS}__input`,
+    remove: `${BASE_CLASS}__remove`,
   };
 
   /**
@@ -23,7 +24,7 @@ define([
    * @name ShareUrlView
    * @augments Backbone.View
    * @screenshot views/maps/ShareUrlView.png
-   * @since x.x.x
+   * @since 0.0.0
    * @constructs
    */
   const ShareUrlView = Backbone.View.extend(
@@ -46,6 +47,7 @@ define([
        */
       events: {
         [`click .${CLASS_NAMES.copy}`]: "copyToClipboard",
+        [`click .${CLASS_NAMES.input}`]: "copyToClipboard",
         [`click .${CLASS_NAMES.remove}`]: "triggerBodyClick",
       },
 

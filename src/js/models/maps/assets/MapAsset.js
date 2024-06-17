@@ -79,6 +79,9 @@ define([
        * visibility value according to the portal configuration and ignoring any
        * search query parameters in the URL which can affect the layer's initial
        * visibility.
+       * @property {boolean} [originalVisibility = true] Tracks the original
+       * visibility value according to search query parameters and portal
+       * configuration.
        * @property {AssetColorPalette} [colorPalette] The color or colors mapped to
        * attributes of this asset. This applies to raster/imagery and vector assets. For
        * imagery, the colorPalette will be used to create a legend. For vector assets
@@ -118,6 +121,7 @@ define([
           saturation: 1,
           visible: true,
           configuredVisibility: true,
+          originalVisibility: true,
           colorPalette: null,
           customProperties: {},
           featureTemplate: {},
@@ -362,15 +366,19 @@ define([
           }
         }
 
-          this.on("change:visible", ({ changed: { visible } }) => {
-            const layerId = this.get("layerId");
-            if (!(this.get("mapModel")?.get("showShareUrl") && layerId)) return;
+          this.on("change:visible", () => {
+            if (!this.get("mapModel")?.get("showShareUrl")) return;
 
-            if (visible) {
-              SearchParams.addEnabledLayer(layerId);
-            } else {
-              SearchParams.removeEnabledLayer(layerId);
-            }
+            this.get("mapModel")
+              .get("allLayers")
+              .forEach((layer) => {
+                const layerId = layer.get("layerId");
+                if (layerId && layer.get("visible")) {
+                  SearchParams.addEnabledLayer(layerId);
+                } else {
+                  SearchParams.removeEnabledLayer(layerId);
+                }
+              });
           });
 
           this.setListeners();
@@ -427,6 +435,7 @@ define([
           this.handleError();
           return;
         }
+
         const vis = this.get("originalVisibility");
         if (typeof vis === "boolean") {
           this.set("visible", vis);

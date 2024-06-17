@@ -808,6 +808,8 @@ define([
           // Update the location path with the new section name
           this.updatePath(
             showSectionLabelInURL,
+            // portalSectionView is undefined on initial page load, so keep the
+            // search query parameters that the user expects.
             /* retainSearchQuery= */ !portalSectionView,
           );
         }

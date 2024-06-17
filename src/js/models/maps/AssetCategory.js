@@ -74,15 +74,20 @@ define([
         }
 
         const searchParamLayerIds = SearchParams.getEnabledLayers();
-        const layers = categoryConfig.layers.map((layer) => ({
-          ...layer,
-          configuredVisibility: layer.visible,
+        const layers = categoryConfig.layers.map((layer) => {
           // Consider portal configuration and URL search params.
-          visible: searchParamLayerIds.length
+          const visible = searchParamLayerIds.length
             ? Boolean(layer.layerId) &&
               searchParamLayerIds.includes(layer.layerId)
-            : layer.visible,
-        }));
+            : layer.visible;
+
+          return {
+            ...layer,
+            configuredVisibility: layer.visible,
+            originalVisibility: visible,
+            visible,
+          };
+        });
         this.set("mapAssets", new MapAssets(layers));
 
         this.set("label", categoryConfig.label);
