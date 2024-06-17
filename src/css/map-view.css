@@ -1707,17 +1707,17 @@ other class: .ui-slider-range */
     }
 
     .legend-container__header-icon {
-      color: var(--portal-col-primary-6);
+      color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
     }
 
     .legend-container__header-expand {
-      color: var(--portal-col-primary-5);
+      color: var(--portal-col-primary-5, var(--map-col-text__deprecate));
       display: none;
     }
 
     .legend-container__header-name {
       flex-grow: 1;
-      color: var(--portal-col-primary-8);
+      color: var(--portal-col-primary-8, var(--map-col-text__deprecate));
       font-size: 0.8rem;
       font-weight: 500;
     }
@@ -1734,20 +1734,20 @@ other class: .ui-slider-range */
 
       .layer-legend__layer-name {
         padding: 0.25rem 0;
-        color: var(--portal-col-neutral-6);
+        color: var(--portal-col-neutral-6, var(--map-col-text__deprecate));
         font-size: 0.8rem;
         font-weight: 500;
       }
 
       .layer-legend__palette {
-        color: var(--portal-col-neutral-8);
+        color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
         font-size: 0.8rem;
         font-weight: 500;
       }
     }
   }
 
-  &.expanded {
+  &.legend-container--expanded {
     width: 12.5rem;
 
     .legend-container__content,
@@ -1759,5 +1759,15 @@ other class: .ui-slider-range */
       border-radius: var(--map-border-radius-big) var(--map-border-radius-big) 0
         0;
     }
+  }
+}
+
+/* TODO: Remove when the new mobile layout is ready. */
+@media only screen and (max-width: 768px) {
+  .legend-container {
+    /* 41px is the height of the bottom nav bar. */
+    bottom: 41px;
+    /* TODO: Update when we deprecate toolbar links. */
+    max-height: calc(100% - 1rem - 41px - var(--max-map-toolbar-link-height) - 2 * var(--map-size-toolbar-link-margin));
   }
 }

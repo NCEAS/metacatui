@@ -34,8 +34,8 @@ define([
 
       /** @inheritdoc */
       render() {
-        this.renderMapWidget(this.el, this.model);
-        this.renderLegendContainer(this.el, this.model);
+        this.renderMapWidget();
+        this.renderLegendContainer();
       },
 
       /** Renders Cesium map. Currently, this uses the MapWidgetContainerView, but this function could be modified to use an alternative map widget in the future. */
