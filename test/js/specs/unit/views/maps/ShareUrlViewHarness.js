@@ -14,6 +14,10 @@ define([], function () {
       this.view.$el.find(".share-url__copy").click();
     }
 
+    clickInput() {
+      this.view.$el.find(".share-url__input").click();
+    }
+
     hasHint() {
       return this.view.$el.find(".share-url__hint").text() !== "";
     }

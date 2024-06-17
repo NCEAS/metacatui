@@ -101,6 +101,17 @@ define([
       expect(navigator.clipboard.writeText.callCount).to.equal(1);
     });
 
+    it("copies the text to clipboard after clicking the input", () => {
+      state.view.render();
+      state.sandbox
+        .stub(navigator.clipboard, "writeText")
+        .returns(Promise.resolve());
+
+      state.harness.clickInput();
+
+      expect(navigator.clipboard.writeText.callCount).to.equal(1);
+    });
+
     it("shows a hint after successfully copying", async () => {
       state.view.render();
       state.sandbox
