@@ -70,17 +70,17 @@ define([
        * attributes of this asset. This applies to raster/imagery and vector assets. For
        * imagery, the colorPalette will be used to create a legend. For vector assets
        * (e.g. 3Dtilesets), it will also be used to style the features.
-       * @property {FeatureTemplate} [featureTemplate] Configuration for
+       * @property {MapConfig#FeatureTemplate} [featureTemplate] Configuration for
        * content and layout of the Feature Info panel - the panel that shows information
        * about a selected feature from a vector asset ({@link FeatureInfoView}).
        * @property {Cesium.Entity|Cesium.Cesium3DTilesetFeature} [featureType] For vector
        * and 3d tileset assets, the object type that cesium uses to represent features
        * from the asset. Null for imagery and terrain assets.
-       * @property {CustomProperties} [customProperties] Configuration that
+       * @property {MapConfig#CustomProperties} [customProperties] Configuration that
        * allows for the definition of custom feature properties, potentially based on
        * other properties. For example, a custom property could be a formatted version
        * of an existing date property.
-       * @property {Notification} [notification] A custom badge and message to
+       * @property {MapConfig#Notification} [notification] A custom badge and message to
        * display about the layer in the Layer list. For example, this could highlight
        * the layer if it is new, give a warning if they layer is under development, etc.
        * @property {'ready'|'error'|null} [status = null] Set to 'ready' when the
@@ -129,7 +129,7 @@ define([
        * that is shipped with Cesium/MetacatUI. If this type is set, then no other
        * cesiumOptions are required. The same is true for USGSImageryTopo, which pulls
        * imagery directly from USGS.
-       * @property {(Cesium3DTilesetOptions|CesiumImageryOptions|CesiuCesiumTerrainOptions|CesiumVectorDataOptions)} [cesiumOptions] -
+       * @property {(Cesium3DTileset#cesiumOptions|CesiumImagery#cesiumOptions|CesiumTerrain#cesiumOptions|CesiumVectorData#cesiumOptions)} [cesiumOptions] -
        * For MapAssets that are configured for Cesium, like
        * Cesium3DTilesets, an object with options to pass to the Cesium constructor
        * function that creates the Cesium model. Options are specific to each type of
@@ -162,23 +162,23 @@ define([
        * where a user can go to download the source data.
        * @property {string} [id] If this asset's data is archived in a DataONE
        * repository, the ID of the data package.
-       * @property {ColorPaletteConfig} [colorPalette] The color or colors
+       * @property {MapConfig#ColorPaletteConfig} [colorPalette] The color or colors
        * mapped to attributes of this asset. This applies to raster/imagery and vector
        * assets. For imagery, the colorPalette will be used to create a legend. For
        * vector assets (e.g. 3Dtilesets), it will also be used to style the features.
-       * @property {FeatureTemplate} [featureTemplate] Configuration for the
+       * @property {MapConfig#FeatureTemplate} [featureTemplate] Configuration for the
        * content and layout of the Feature Info panel ({@link FeatureInfoView}) - the
        * panel that shows information about a selected feature from a vector asset. If
        * no feature template is set, then the default table layout is used.
-       * @property {CustomProperties} [customProperties] Definitions of custom
+       * @property {MapConfig#CustomProperties} [customProperties] Definitions of custom
        * properties of features, potentially based on existing properties. For example,
        * a custom property could be a formatted version of another date property. These
        * custom properties can be used in the filters, colorPalette, or featureTemplate.
        * So far, custom strings and formatted dates are supported. Eventually, the
        * custom properties may be expanded to support formatted numbers and booleans.
-       * @property {VectorFilterConfig} [filters] - A set of conditions used
+       * @property {MapConfig#VectorFilterConfig} [filters] - A set of conditions used
        * to show or hide specific features of this tileset.
-       * @property {Notification} [notification] A custom badge and message to
+       * @property {MapConfig#Notification} [notification] A custom badge and message to
        * display about the layer in the Layer list. For example, this could highlight
        * the layer if it is new, give a warning if they layer is under development, etc.
        * @property {boolean} [hideInLayerList] - Set to true to hide this asset from the
@@ -198,7 +198,7 @@ define([
        * @property {string} [label] Sets which of the feature properties to use as the
        * title for the FeatureInfoView. The string must exactly match the key for a
        * property that exists in the feature.
-       * @property {StoryTemplateOptions} [options] A list of key-value pairs
+       * @property {MapConfig#StoryTemplateOptions} [options] A list of key-value pairs
        * that map the template variable to a property/attribute of the the feature. Keys
        * are the template variable names and values are the names of properties in the
        * feature. Template variable names are specific to each template. Currently only
@@ -247,7 +247,7 @@ define([
       /**
        * An object where the keys indicate the name/ID of the new custom property to
        * create, and the values are an object that defines the new property.
-       * @typedef {{string: (CustomDateProperty|CustomStringProperty)}} CustomProperties
+       * @typedef {{string: (MapConfig#CustomDateProperty|MapConfig#CustomStringProperty)}} CustomProperties
        * @name MapConfig#CustomProperties
        * @since 2.19.0
        * @example
@@ -308,7 +308,7 @@ define([
 
       /**
        * Executed when a new MapAsset model is created.
-       * @param {MapAssetConfig} [assetConfig] The initial values of the
+       * @param {MapConfig#MapAssetConfig} [assetConfig] The initial values of the
        * attributes, which will be set on the model.
        */
       initialize(assetConfig) {
@@ -613,7 +613,7 @@ define([
        * Given a definition for a new date property, and the properties that already
        * exist on a specific feature, returns a new string with the formatted date.
        * @since 2.19.0
-       * @param {CustomDateProperty} config - An object that defines the new
+       * @param {MapConfig#CustomDateProperty} config - An object that defines the new
        * date property to create
        * @param {object} properties key-value pairs representing existing properties in
        * a Feature
@@ -640,7 +640,7 @@ define([
        * of config.value. This function exists to allow support of dynamic strings in
        * the future (e.g. combining strings from existing properties)
        * @since 2.19.0
-       * @param {CustomStringProperty} config The object the defines the new
+       * @param {MapConfig#CustomStringProperty} config The object the defines the new
        * custom property
        * @returns {string} The new string for the given Feature property
        */
@@ -737,7 +737,7 @@ define([
        * @param {object} properties The properties of the feature to get the color for;
        * An object containing key-value mapping of property names to properties. (See
        * the 'properties' attribute of {@link Feature#defaults}.)
-       * @returns {Color} The color associated with the given set of
+       * @returns {AssetColor#Color} The color associated with the given set of
        * properties.
        */
       getColor(properties) {
@@ -770,7 +770,7 @@ define([
       /**
        * Indicate that the map widget should navigate to a given target from
        * this MapAsset.
-       * @param {CameraPosition} target The target to navigate to.
+       * @param {MapConfig#CameraPosition} target The target to navigate to.
        * @since 2.27.0
        */
       zoomTo(target) {

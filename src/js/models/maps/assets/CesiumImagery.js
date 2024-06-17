@@ -35,7 +35,7 @@ define([
        * {@link https://cesium.com/learn/cesiumjs/ref-doc/BingMapsImageryProvider.html#.ConstructorOptions}
        * and
        * {@link https://cesium.com/learn/cesiumjs/ref-doc/IonImageryProvider.html#.ConstructorOptions}.
-       * @typedef {Object} CesiumImageryOptions
+       * @typedef {Object} CesiumImagery#cesiumOptions
        * @property {string|number} ionAssetId - If this imagery is hosted by Cesium
        * Ion, then Ion asset ID.
        * @property {string|number} key - A key or token required to access the tiles.
@@ -64,7 +64,7 @@ define([
        * {@link https://cesium.com/learn/cesiumjs/ref-doc/ImageryLayer.html?classFilter=ImageryLayer}
        * and
        * {@link https://cesium.com/learn/cesiumjs/ref-doc/?classFilter=ImageryProvider}
-       * @property {CesiumImageryOptions} cesiumOptions options that are passed
+       * @property {CesiumImagery#cesiumOptions} cesiumOptions options that are passed
        * to the function that creates the Cesium model. The properties of options are
        * specific to each type of asset.
        */

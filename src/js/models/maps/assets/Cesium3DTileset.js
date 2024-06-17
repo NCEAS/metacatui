@@ -30,7 +30,7 @@ define([
        * to `Cesium.Cesium3DTileset(options)` as options, so the properties listed in
        * the Cesium3DTileset documentation are also supported, see
        * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileset.html}
-       * @typedef {Object} Cesium3DTilesetOptions
+       * @typedef {Object} Cesium3DTileset#cesiumOptions
        * @property {string|number} ionAssetId - If this tileset is hosted by Cesium Ion,
        * then Ion asset ID.
        * @property {string} cesiumToken - If this tileset is hosted by Cesium Ion, then
@@ -53,7 +53,7 @@ define([
        * @property {Cesium.Cesium3DTileset} cesiumModel A model created and used by
        * Cesium that organizes the data to display in the Cesium Widget. See
        * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileset.html}
-       * @property {Cesium3DTilesetOptions} cesiumOptions options are passed
+       * @property {Cesium3DTileset#cesiumOptions} cesiumOptions options are passed
        * to the function that creates the Cesium model. The properties of options are
        * specific to each type of asset.
        */
