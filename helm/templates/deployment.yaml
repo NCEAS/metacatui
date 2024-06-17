@@ -51,8 +51,8 @@ spec:
             - -c
             - >
               start=$(date +%s);
-              # # # # # # TODO - RUN THE MOUNTED /TMP/SCRIPT.SH INSTEAD # # # # # #
-              VERSION={{ .Values.source.package.version | default .Chart.AppVersion }}
+              echo "Starting at $start";
+              VERSION={{ .Values.source.package.version | default .Chart.AppVersion }};
               FILENAME=$VERSION.zip;
               wget -O ./$FILENAME {{ .Values.source.package.location }}/$FILENAME;
               unzip $FILENAME -d /tmp/;
@@ -104,7 +104,7 @@ spec:
         {{- if .Values.appConfig.enabled }}
         - name: {{ .Release.Name }}-mcui-config-vol
           configMap:
-            name: {{ .Release.Name }}-metacatui-configjs
+            name: {{ .Release.Name }}-metacatui-configfiles
             defaultMode: 0644
         {{- end }}
         {{- if not .Values.source.pvc }}

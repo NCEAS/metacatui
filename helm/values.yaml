@@ -57,14 +57,14 @@ appConfig:
 
 ## Probes
 ##
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
+#livenessProbe:
+#  httpGet:
+#    path: /
+#    port: http
+#readinessProbe:
+#  httpGet:
+#    path: /
+#    port: http
 
 service:
   type: ClusterIP
@@ -75,11 +75,11 @@ service:
 ##
 ingress:
   enabled: false
-  className: traefik    # enable in rancher desktop
+  className: traefik # enable in rancher desktop
   annotations:
     kubernetes.io/ingress.class: traefik
   hosts:
-    - host: myMacbookPro.local    # example hostname of local machine
+    - host: myMacbookPro.local # example hostname of local machine
       paths:
       - path: /
         pathType: Prefix
@@ -109,6 +109,7 @@ source:
   ## @param source.package (default): Download the official release version defined in Chart.yaml
   ## Note these settings ignored unless 'source.from:' is set to 'package'
   ## example:
+  ##    source.from: package
   ##    source.package.location: "https://github.com/NCEAS/metacatui/archive"
   ##    source.package.version: "2.26.0"
   ## ...will download:   https://github.com/NCEAS/metacatui/archive/2.26.0.zip
@@ -121,7 +122,7 @@ source:
     ## source.package.version override the release version defined in Chart.yaml
     ## Assumes release is a zipfile named <version>.zip
     ## LEAVE COMMENTED UNLESS YOU NEED TO OVERRIDE THE CHART SETTING!
-#    version: "2.29.1"
+  #    version: "2.29.1"
 
   ## @param source.git clone a specific branch or tag from the metacatui git repository, and install
   ## the files in local pod storage (emptyDir{})
@@ -140,6 +141,8 @@ source:
 
 ## volumes: Uncomment and provide values if you want to use a pre-configured PVC instead of doing a
 ## git checkout
+## Note these settings ignored unless 'source.from:' is set to 'pvc'
+##
 #volumes:
 #  ## volumes.name substitute your own release name, but do NOT change the '-mcui-source-files' part
 #  - name: <Your-Release-Name>-mcui-source-files

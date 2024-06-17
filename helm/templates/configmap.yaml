@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-metacatui-configjs
+  name: {{ .Release.Name }}-metacatui-configfiles
   labels:
     {{- include "metacatui.labels" . | nindent 4 }}
 data:

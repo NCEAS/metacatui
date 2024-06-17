@@ -1,7 +1,7 @@
 #!/bin/bash
 # A script that installs MetacatUI
 
-# EXPECTS THESE FOLLOWING ENV VARS TO BE PRE-SET
+# EXPECTS THE FOLLOWING ENV VARS TO BE PRE-SET
 # REQUIRED:
 # * tag - MetacatUI tag/version or branch name - e.g. 2.29.1
 # * hostedRepoTheme - boolean
