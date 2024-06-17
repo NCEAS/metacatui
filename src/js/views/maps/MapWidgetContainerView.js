@@ -1,10 +1,11 @@
 "use strict";
 
-define(["backbone", "models/maps/Map", "views/maps/CesiumWidgetView"], (
-  Backbone,
-  Map,
-  CesiumWidgetView,
-) => {
+define([
+  "backbone",
+  "models/maps/Map",
+  "views/maps/CesiumWidgetView",
+  "views/maps/legend/LegendContainerView",
+], (Backbone, Map, CesiumWidgetView, LegendContainerView) => {
   /**
    * @class MapWidgetContainerView
    * @classdesc A container for CesiumWidgetView and other map overlays, e.g. lat/lng, legends, etc.
@@ -34,6 +35,7 @@ define(["backbone", "models/maps/Map", "views/maps/CesiumWidgetView"], (
       /** @inheritdoc */
       render() {
         this.renderMapWidget(this.el, this.model);
+        this.renderLegendContainer(this.el, this.model);
       },
 
       /** Renders Cesium map. Currently, this uses the MapWidgetContainerView, but this function could be modified to use an alternative map widget in the future. */
@@ -43,6 +45,15 @@ define(["backbone", "models/maps/Map", "views/maps/CesiumWidgetView"], (
           model: this.model,
         });
         mapWidget.render();
+      },
+
+      /** Renders legend overlay. */
+      renderLegendContainer() {
+        const legendContainerView = new LegendContainerView({
+          model: this.model,
+        });
+        legendContainerView.render();
+        this.$el.append(legendContainerView.el);
       },
     },
   );
