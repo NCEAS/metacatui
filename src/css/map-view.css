@@ -55,6 +55,7 @@
   --map-size-toolbar-link: 2.5rem;
   --map-size-toolbar-link-margin: 1rem;
   --map-size-toolbar-link-padding: 0.5rem;
+  --map-size-toolbar-link-gap: 0.5rem;
   --map-border-radius-small: 0.25rem;
   --map-border-radius-big: 0.5rem;
   --map-width-toolbar: 21rem;
@@ -62,6 +63,8 @@
   --map-toolbar-link-width: calc(
     var(--map-size-toolbar-link) + 2 * var(--map-size-toolbar-link-padding)
   );
+  /* Assumes 4 links max. */
+  --max-map-toolbar-link-height: calc(4 * var(--map-size-toolbar-link) + 3 * var(--map-size-toolbar-link-gap) + 2 * var(--map-size-toolbar-link-padding));
   --map-width-feature-info: calc(var(--map-width-toolbar) * 1.25);
   --map-width-feature-info-wide: calc(var(--map-width-toolbar-wide) * 1.25);
   --map-padding-feature-info: 1.5rem;
@@ -462,8 +465,8 @@ represents 1 unit of the given distance measurement. */
   background-color: var(--portal-col-primary-1, var(--map-col-bkg__deprecate));
   border-radius: var(--map-border-radius-big);
   margin: var(--map-size-toolbar-link-margin);
-  padding: 0.5rem;
-  row-gap: 0.5rem;
+  padding: var(--map-size-toolbar-link-padding);
+  row-gap: var(--map-size-toolbar-link-gap);
   pointer-events: all;
   color: var(--portal-col-primary-6);
   box-shadow: var(--map-shadow-md);
@@ -1781,11 +1784,11 @@ other class: .ui-slider-range */
   border-radius: var(--map-border-radius-big);
   background: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
   width: 6.875rem;
-  max-height: -moz-available; /* WebKit-based browsers will ignore this. */
-  max-height: -webkit-fill-available; /* Mozilla-based browsers will ignore this. */
-  max-height: fill-available;
+  /* TODO: Update when we deprecate toolbar links. */
+  max-height: calc(100% - 1rem - var(--max-map-toolbar-link-height) - 2 * var(--map-size-toolbar-link-margin));
   display: flex;
   flex-direction: column;
+  box-shadow: var(--map-shadow-md);
 
   .legend-container__header {
     border-radius: var(--map-border-radius-big);
