@@ -63,6 +63,9 @@ define([
         });
       },
 
+      /**
+       * Toggles the expanded state of the legend container.
+       */
       toggleExpanded() {
         this.$el.toggleClass("expanded");
       },
