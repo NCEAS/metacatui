@@ -319,13 +319,13 @@ define([
 
         // Set the color palette
         if (assetConfigCopy.colorPalette) {
+          const label = assetConfigCopy.colorPalette.label
+            ? assetConfigCopy.colorPalette.label
+            : assetConfigCopy.label;
           this.set(
             "colorPalette",
             new AssetColorPalette(
-              _.extend(
-                assetConfigCopy.colorPalette,
-                _.pick(assetConfigCopy, "label"),
-              ),
+              _.extend(assetConfigCopy.colorPalette, { label }),
             ),
           );
         }
