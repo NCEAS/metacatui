@@ -133,6 +133,7 @@ define([], () => {
      * Calculate the number of decimal places we should use based on the range of the data.
      * @param {number} range The range of data values.
      * @returns {number} The number of decimal places we should use.
+     * @since 0.0.0
      */
     getNumDecimalPlaces(range) {
       if (range < 0.0001 || range > 100000) {
