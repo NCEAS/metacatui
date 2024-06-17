@@ -1,95 +1,122 @@
+"use strict";
 
-'use strict';
+define([
+  "underscore",
+  "backbone",
+  "collections/maps/AssetCategories",
+  "common/IconUtilities",
+  // Sub-views
+  "views/maps/LayerListView",
+  "views/maps/ExpansionPanelView",
+  "models/maps/ExpansionPanelsModel",
+], (
+  _,
+  Backbone,
+  AssetCategories,
+  IconUtilities,
+  // Sub-views
+  LayerListView,
+  ExpansionPanelView,
+  ExpansionPanelsModel,
+) => {
+  /**
+   * @class LayerCategoryListView
+   * @classdesc A LayerCategoryListView shows a collection of AssetCategories, each with
+   * a MapAssets collection nested under it.
+   * @classcategory Views/Maps
+   * @name LayerCategoryListView
+   * @screenshot views/maps/LayerCategoryListView.png
+   * @extends Backbone.View
+   * @since 2.28.0
+   * @constructs
+   */
+  const LayerCategoryListView = Backbone.View.extend(
+    /** @lends LayerCategoryListView.prototype */ {
+      /**
+       * The type of View this is
+       * @type {string}
+       */
+      type: "LayerCategoryListView",
 
-define(
-  [
-    'jquery',
-    'underscore',
-    'backbone',
-    'collections/maps/AssetCategories',
-    // Sub-views
-    'views/maps/LayerCategoryItemView',
-  ],
-  function (
-    $,
-    _,
-    Backbone,
-    AssetCategories,
-    // Sub-views
-    LayerCategoryItemView,
-  ) {
+      /**
+       * The HTML classes to use for this view's element
+       * @type {string}
+       */
+      className: "layer-category-list",
 
-    /**
-    * @class LayerCategoryListView
-    * @classdesc A LayerCategoryListView shows a collection of AssetCategories, each with
-    * a MapAssets collection nested under it.
-    * @classcategory Views/Maps
-    * @name LayerCategoryListView
-    * @screenshot views/maps/LayerCategoryListView.png
-    * @extends Backbone.View
-    * @since 2.28.0
-    * @constructs
-    */
-    const LayerCategoryListView = Backbone.View.extend(
-      /** @lends LayerCategoryListView.prototype */{
+      /**
+       * The array of layer categories to display in the list
+       * @type {ExpansionPanel[]}
+       */
+      panels: [],
 
-        /**
-        * The type of View this is
-        * @type {string}
-        */
-        type: 'LayerCategoryListView',
+      /**
+       * Executed when a new LayerCategoryListView is created
+       * @param {object} options - A literal object with options to pass to the view
+       * @param {AssetCategories} options.collection - The collection of AssetCategory to display.
+       */
+      initialize(options) {
+        this.assetCategories = options.collection;
+      },
 
-        /**
-        * The HTML classes to use for this view's element
-        * @type {string}
-        */
-        className: 'layer-category-list',
-
-        /**
-        * The array of layer categories to display in the list
-        * @type {LayerCategoryItemView[]}
-        */
-        layerCategoryItemViews: undefined,
-
-        /**
-        * Executed when a new LayerCategoryListView is created
-        * @param {Object} options - A literal object with options to pass to the view
-        */
-        initialize(options) {
-          if (options.collection instanceof AssetCategories) {
-            this.layerCategoryItemViews = options.collection.map(categoryModel => {
-              return new LayerCategoryItemView({model: categoryModel});
+      /**
+       * Renders this view
+       * @returns {LayerCategoryListView} Returns the rendered view element
+       */
+      render() {
+        if (this.assetCategories instanceof AssetCategories) {
+          this.panels = this.assetCategories.map((categoryModel) => {
+            const icon = categoryModel.get("icon");
+            const panel = new ExpansionPanelView({
+              contentViewInstance: new LayerListView({
+                collection: categoryModel.get("mapAssets"),
+                isCategorized: true,
+              }),
+              icon,
+              isSvgIcon: IconUtilities.isSVG(icon),
+              panelsModel: new ExpansionPanelsModel({ isMulti: true }),
+              title: categoryModel.get("label"),
             });
-          }
-        },
 
-        /**
-        * Renders this view
-        * @return {LayerCategoryListView} Returns the rendered view element
-        */
-        render() {
-          this.layerCategoryItemViews = _.forEach(this.layerCategoryItemViews, layerCategoryItemView => {
-            layerCategoryItemView.render();
-            this.el.appendChild(layerCategoryItemView.el);
+            panel.render();
+            this.el.appendChild(panel.el);
+
+            return panel;
           });
+        }
 
-          return this;
-        },
+        return this;
+      },
 
-        /**
-         * Searches and only dispays categories and layers that match the text.
-         * @param {string} [text] - The search text from user input.
-         * @returns {boolean} - True if a layer item matches the text
-         */
-        search(text) {
-          return _.reduce(this.layerCategoryItemViews, (matched, layerCategoryItem) => {
-            return layerCategoryItem.search(text) || matched;
-          }, false);
-        },
-      }
-    );
+      /**
+       * Searches and only dispays categories and layers that match the text.
+       * @param {string} [text] - The search text from user input.
+       * @returns {boolean} - True if a layer item matches the text
+       */
+      search(text) {
+        return _.reduce(
+          this.panels,
+          (matched, panel) => {
+            const searchResultsFound = panel.contentViewInstance.search(text);
+            if (searchResultsFound) {
+              panel.$el.show();
+              if (text !== "") {
+                panel.open();
+              } else {
+                panel.collapse();
+              }
+            } else {
+              panel.$el.hide();
+              panel.collapse();
+            }
 
-    return LayerCategoryListView;
+            return searchResultsFound || matched;
+          },
+          false,
+        );
+      },
+    },
+  );
 
-  }
-);
+  return LayerCategoryListView;
+});

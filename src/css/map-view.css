@@ -27,47 +27,9 @@
 
 :root {
   /* COLOURS */
-  --map-col-content-bkg: var(--portal-col-content-bkg);
-  --map-col-content-bkg-highlight: var(--portal-col-content-bkg-highlight);
-  --map-col-content-bkg-muted: var(--portal-col-content-bkg-muted);
-
-  --map-col-buttons-bkg: var(--portal-col-buttons-bkg);
-  --map-col-buttons-bkg-active: var(--portal-col-content-bkg-highlight);
-  --map-col-buttons-bkg-hover: var(--portal-col-buttons-bkg-hover);
-  --map-col-buttons-bkg-highlight: var(--portal-col-buttons-bkg-highlight);
-  --map-col-buttons-bkg-muted: var(--portal-col-buttons-bkg-muted);
-  --map-col-buttons-bkg-white-content-contrast: var(--portal-col-buttons-bkg-white-content-contrast);
-  --map-col-buttons-text: var(--portal-col-buttons-text);
-  --map-col-buttons-text-highlight: var(--portal-col-buttons-text-highlight);
-  --map-col-buttons-icon: var(--portal-col-buttons-icon);
-  --map-col-buttons-icon-highlight: var(--portal-col-buttons-icon-highlight);
-  --map-col-buttons-icon-muted: var(--portal-col-buttons-icon-muted);
-  --map-col-utility-buttons: var(--portal-col-utility-buttons);
-
-  --map-col-border: var(--portal-col-border);
-  --map-col-border-highlight: var(--portal-col-border-highlight);
-  --map-col-border-muted: var(--portal-col-border-muted);
-  --map-col-border-highlight-search-box: var(--portal-col-border-highlight-search-box);
-
-  --map-col-section-divider: var(--portal-col-section-divider);
-  --map-col-item-divider: var(--portal-col-item-divider);
-
-  --map-col-text-body: var(--portal-col-text-body);
-  --map-col-text-highlight: var(--portal-col-text-highlight);
-  --map-col-text-title: var(--portal-col-text-title);
-  --map-col-text-label: var(--portal-col-text-label);
-  --map-col-text-detail: var(--portal-col-text-detail);
-  --map-col-text-muted: var(--portal-col-text-muted);
-
-  --map-col-opacity-slider-active: var(--portal-col-opacity-slider-active);
-  --map-col-opacity-slider-inactive: var(--portal-col-opacity-slider-inactive);
-
-  --map-col-input-error-bkg: var(--portal-col-input-error-bkg, rgba(30,127,196, .5));
-  --map-col-input-error-border: var(--portal-col-input-error-border, rgba(82, 168, 236, .8));
-  --map-col-input-error-text: var(--portal-col-input-error-text, #CA6C0B);
-  --map-col-search-match-highlight: var(--portal-col-search-match-highlight, rgba(30,127,196, .5));
-
-  --map-no-brightness-or-opacity-tweaks: var(--portal-no-brightness-or-opacity-tweaks);
+  --map-no-brightness-or-opacity-tweaks: var(
+    --portal-no-brightness-or-opacity-tweaks
+  );
 
   --map-col-green: #069868;
   --map-col-text-on-green: white;
@@ -76,16 +38,19 @@
   --map-col-yellow: #fda;
   --map-col-text-on-yellow: #1b2538;
 
-  --map-col-tooltip-background: var(--portal-col-tooltip-background);
-  --map-col-tooltip-text: var(--portal-col-tooltip-text);
-
   --map-col-bkg__deprecate: #111827;
   --map-col-bkg-lighter__deprecate: #1b2538;
   --map-col-bkg-lightest__deprecate: #242e42;
   --map-col-buttons__deprecate: #313c52;
-  --map-col-text__deprecate: #F9FAFB;
-  --map-col-buttons-emphasis__deprecate: var(--portal-secondary-color, var(--map-col-green));
-  --map-col-highlight__deprecate: var(--portal-primary-color, var(--map-col-blue));
+  --map-col-text__deprecate: #f9fafb;
+  --map-col-buttons-emphasis__deprecate: var(
+    --portal-secondary-color,
+    var(--map-col-green)
+  );
+  --map-col-highlight__deprecate: var(
+    --portal-primary-color,
+    var(--map-col-blue)
+  );
   /* SIZING: */
   --map-size-toolbar-link: 2.5rem;
   --map-size-toolbar-link-margin: 1rem;
@@ -93,9 +58,19 @@
   --map-border-radius-small: 0.25rem;
   --map-border-radius-big: 0.5rem;
   --map-width-toolbar: 21rem;
-  --map-toolbar-link-width: calc(var(--map-size-toolbar-link) + 2 * var(--map-size-toolbar-link-padding));
+  --map-width-toolbar-wide: 30rem;
+  --map-toolbar-link-width: calc(
+    var(--map-size-toolbar-link) + 2 * var(--map-size-toolbar-link-padding)
+  );
+  --map-width-feature-info: calc(var(--map-width-toolbar) * 1.25);
+  --map-width-feature-info-wide: calc(var(--map-width-toolbar-wide) * 1.25);
+  --map-padding-feature-info: 1.5rem;
   /* SHADOWS */
-  --map-shadow-md: var(--portal-shadow-md, 0 1px 9px -1px rgba(0, 0, 0, 0.2), 0 1px 2px 0px rgba(0, 0, 0, 0.5));
+  --map-shadow-md: var(
+    --portal-shadow-md,
+    0 1px 9px -1px rgba(0, 0, 0, 0.2),
+    0 1px 2px 0px rgba(0, 0, 0, 0.5)
+  );
   /* NOTE: 768px is used as the mobile -> desktop breakpoint throughout the map view, but we cannot use a CSS variable for this. */
 
   /* FONTS */
@@ -105,6 +80,7 @@
   --map-z-index-base: 1;
   --map-z-index-top-shadow: calc(var(--map-z-index-base) + 1);
   --map-z-index-layer-details: calc(var(--map-z-index-top-shadow) + 1);
+  --map-z-index-feature-info: calc(var(--map-z-index-layer-details) + 1);
 }
 
 /* hide the credits until we can find a better placement for them */
@@ -116,7 +92,7 @@
 /* ---- TOOLTIP ---- */
 
 .map-tooltip {
-  color: var(--map-col-tooltip-text, var(--map-col-text__deprecate));
+  color: var(--portal-col-neutral-00, var(--map-col-text__deprecate));
   border-radius: var(--map-border-radius-big);
   opacity: var(--map-no-brightness-or-opacity-tweaks, 1) !important;
   font-size: 0.8rem;
@@ -124,25 +100,40 @@
 }
 
 .map-tooltip.top .tooltip-arrow {
-  border-top-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
+  border-top-color: var(
+    --portal-col-neutral-7,
+    var(--map-col-buttons__deprecate)
+  );
 }
 
 .map-tooltip.right .tooltip-arrow {
-  border-right-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
+  border-right-color: var(
+    --portal-col-neutral-7,
+    var(--map-col-buttons__deprecate)
+  );
 }
 
 .map-tooltip.left .tooltip-arrow {
-  border-left-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
+  border-left-color: var(
+    --portal-col-neutral-7,
+    var(--map-col-buttons__deprecate)
+  );
 }
 
 .map-tooltip.bottom .tooltip-arrow {
-  border-bottom-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
+  border-bottom-color: var(
+    --portal-col-neutral-7,
+    var(--map-col-buttons__deprecate)
+  );
 }
 
 .map-tooltip .tooltip-inner {
   padding: 0.3rem;
-  background-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
-  color: var(--map-col-tooltip-text);
+  background-color: var(
+    --portal-col-neutral-7,
+    var(--map-col-buttons__deprecate)
+  );
+  color: var(--portal-col-neutral-00);
 }
 
 /* ---- BUTTON ---- */
@@ -158,8 +149,8 @@
   -webkit-appearance: button;
   border: 0;
   border-radius: var(--map-border-radius-big);
-  background: var(--map-col-buttons-bkg, var(--map-col-buttons__deprecate));
-  color: var(--map-col-buttons-text, var(--map-col-text__deprecate));
+  background: var(--portal-col-neutral-00, var(--map-col-buttons__deprecate));
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
   white-space: nowrap;
   text-decoration: none;
   padding: 0.25rem 0.5rem;
@@ -171,15 +162,21 @@
 }
 
 .map-view__button--emphasis {
-  background-color: var(--map-col-buttons-bkg, var(--map-col-buttons-emphasis__deprecate));
+  background-color: var(
+    --portal-col-neutral-00,
+    var(--map-col-buttons-emphasis__deprecate)
+  );
   padding: 0.5rem 0.55rem;
   font-size: 1rem;
-  border: 1px solid var(--map-col-border);
+  border: 1px solid var(--portal-col-primary-2);
 }
 
 .map-view__button--active {
-  background-color: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
-  color: var(--map-col-buttons-text-highlight);
+  background-color: var(
+    --portal-col-primary-6,
+    var(--map-col-highlight__deprecate)
+  );
+  color: var(--portal-col-neutral-00);
 }
 
 /* ---- BADGE ---- */
@@ -188,8 +185,11 @@
   padding: 0.2rem 0.4rem;
   margin: 0 0.25rem;
   font-size: 0.66rem;
-  background-color: var(--map-col-content-bkg-muted, var(--map-col-bkg-lighter__deprecate));
-  color: var(--map-col-text-muted, var(--map-col-text__deprecate));
+  background-color: var(
+    --portal-col-neutral-1,
+    var(--map-col-bkg-lighter__deprecate)
+  );
+  color: var(--portal-col-neutral-5, var(--map-col-text__deprecate));
   border-radius: var(--map-border-radius-small);
   line-height: 1;
   font-weight: 500;
@@ -213,22 +213,21 @@
 }
 
 .map-view__badge--contrast {
-  background-color: var(--map-col-text-label, var(--map-col-text__deprecate));
-  color: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
+  background-color: var(--portal-col-neutral-7, var(--map-col-text__deprecate));
+  color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
   opacity: var(--map-no-brightness-or-opacity-tweaks, 0.8);
 }
 
 /* ---- Animation ---- */
 
-@keyframes fadeIn { 
-  from { 
+@keyframes fadeIn {
+  from {
     opacity: 0;
-  } 
-  to { 
+  }
+  to {
     opacity: 1;
-  } 
+  }
 }
-
 
 /*****************************************************************************************
  *
@@ -252,10 +251,10 @@
 
 /* Create shadow on top of the map */
 .map-view::before {
-  content: '';
+  content: "";
   position: absolute;
   height: 2rem;
-  box-shadow: 0 0.2rem 0.2rem 0 rgba(0, 0, 0, .16) inset;
+  box-shadow: 0 0.2rem 0.2rem 0 rgba(0, 0, 0, 0.16) inset;
   width: 100%;
   z-index: var(--map-z-index-top-shadow);
 }
@@ -285,8 +284,14 @@
   .map-view__map-widget-container {
     order: 1;
     position: relative;
-    width: calc(100% + var(--map-toolbar-link-width) + (2* var(--map-size-toolbar-link-margin)));
-    margin-left: calc(-1 * var(--map-toolbar-link-width) - (2* var(--map-size-toolbar-link-margin)));
+    width: calc(
+      100% + var(--map-toolbar-link-width) +
+        (2 * var(--map-size-toolbar-link-margin))
+    );
+    margin-left: calc(
+      -1 * var(--map-toolbar-link-width) - (2 *
+            var(--map-size-toolbar-link-margin))
+    );
   }
 }
 
@@ -322,17 +327,19 @@
 
 .map-view__feature-info-container {
   position: absolute;
-  right: 0;
-  bottom: 0;
-  /* Make sure the entire panel is visible always. Leave 5rem for scale bar. */
-  max-height: calc(100% - 5rem);
-  overflow: auto;
+  right: 1rem;
+  bottom: 1rem;
+  min-height: 10rem;
+  overflow: hidden;
   /* required to be placed above map widget in firefox: */
-  z-index: var(--map-z-index-base);
+  z-index: var(--map-z-index-feature-info);
 
-  .feature-info__zoom-button, .feature-info__layer-details-button {
-    border: 1px solid var(--map-col-border);
+  .feature-info__zoom-button,
+  .feature-info__layer-details-button {
+    border: 1px solid var(--portal-col-primary-2);
     border-radius: var(--map-border-radius-small);
+    padding: 0.5rem 1rem;
+    text-wrap: wrap;
   }
 }
 
@@ -355,14 +362,15 @@
  *
  */
 
-.cesium-widget-view {}
+.cesium-widget-view {
+}
 
-.cesium-widget-view>.cesium-widget {
+.cesium-widget-view > .cesium-widget {
   width: 100%;
   height: 100%;
 }
 
-.cesium-widget>canvas {
+.cesium-widget > canvas {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -381,9 +389,9 @@
   min-width: 12rem;
   min-height: 2rem;
   box-shadow: var(--map-shadow-md);
-  background: var(--map-col-content-bkg-muted, var(--map-col-bkg__deprecate));
+  background: var(--portal-col-neutral-1, var(--map-col-bkg__deprecate));
   border-radius: var(--map-border-radius-small);
-  color: var(--map-col-text-muted, var(--map-col-text__deprecate));
+  color: var(--portal-col-neutral-5, var(--map-col-text__deprecate));
   font-size: 0.8rem;
   padding: 0.18rem 0.8rem;
   display: grid;
@@ -425,12 +433,13 @@ represents 1 unit of the given distance measurement. */
 .scale-bar__bar {
   height: 0.25rem;
   transition: width 0.3s ease-in-out;
-  background-color: var(--map-col-buttons-icon-muted, var(--map-col-text__deprecate));
+  background-color: var(--portal-col-neutral-4, var(--map-col-text__deprecate));
 }
 
 /* The elements that contains the distance measurement */
 
-.scale-bar__distance {}
+.scale-bar__distance {
+}
 
 /*****************************************************************************************
  *
@@ -443,25 +452,25 @@ represents 1 unit of the given distance measurement. */
 .toolbar {
   display: grid;
   grid-auto-flow: column;
-  color: var(--map-col-content-bkg, var(--map-col-text__deprecate));
+  color: var(--portal-col-neutral-00, var(--map-col-text__deprecate));
 }
 
 .toolbar__links {
   display: flex;
   flex-direction: column;
   height: min-content;
-  background-color: var(--map-col-content-bkg-highlight, var(--map-col-bkg__deprecate));
+  background-color: var(--portal-col-primary-1, var(--map-col-bkg__deprecate));
   border-radius: var(--map-border-radius-big);
   margin: var(--map-size-toolbar-link-margin);
-  padding: .5rem;
-  row-gap: .5rem;
+  padding: 0.5rem;
+  row-gap: 0.5rem;
   pointer-events: all;
-  color: var(--map-col-buttons-bkg-highlight);
+  color: var(--portal-col-primary-6);
   box-shadow: var(--map-shadow-md);
 }
 
 .toolbar__all-content {
-  background-color: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
+  background-color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
   width: var(--map-width-toolbar);
   box-shadow: var(--map-shadow-md);
   flex-direction: column;
@@ -471,6 +480,12 @@ represents 1 unit of the given distance measurement. */
   display: none;
   overflow: hidden;
   pointer-events: all;
+}
+
+@media only screen and (min-width: 31.5rem) {
+  .map-view__portal .toolbar__all-content {
+    width: var(--map-width-toolbar-wide);
+  }
 }
 
 .toolbar--open .toolbar__all-content {
@@ -487,7 +502,7 @@ represents 1 unit of the given distance measurement. */
   overflow: auto;
 
   .toolbar__content-header {
-    color: var(--map-col-text-title);
+    color: var(--portal-col-primary-7);
     font-size: 1.5rem;
     font-weight: 700;
     line-height: 2rem;
@@ -504,30 +519,39 @@ represents 1 unit of the given distance measurement. */
   cursor: pointer;
   height: var(--map-size-toolbar-link);
   width: var(--map-size-toolbar-link);
-  background-color: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
+  background-color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
   padding: 0.5rem;
   border-radius: var(--map-border-radius-small);
-  border: 1px solid var(--map-col-border);
+  border: 1px solid var(--portal-col-primary-2);
 }
 
 .toolbar__link:hover {
-  background-color: var(--map-col-buttons-bkg-hover, var(--map-col-bkg-lighter__deprecate));
+  background-color: var(
+    --portal-col-primary-2,
+    var(--map-col-bkg-lighter__deprecate)
+  );
 }
 
 .toolbar__link--active {
-  background-color: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
-  color: var(--map-col-buttons-icon-highlight);
+  background-color: var(
+    --portal-col-primary-6,
+    var(--map-col-highlight__deprecate)
+  );
+  color: var(--portal-col-primary-3);
 }
 
 .toolbar__link--active:hover {
-  background-color: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
+  background-color: var(
+    --portal-col-primary-6,
+    var(--map-col-highlight__deprecate)
+  );
 }
 
 .toolbar__link-title {
   position: absolute;
-  left: calc(100% + .5rem);
-  top: .25rem;
-  color: var(--map-col-tooltip-text, var(--map-col-text__deprecate));
+  left: calc(100% + 0.5rem);
+  top: 0.25rem;
+  color: var(--portal-col-neutral-00, var(--map-col-text__deprecate));
   font-size: 0.75rem;
   font-weight: 700;
   /* don't show the link title until the link is hovered */
@@ -535,21 +559,27 @@ represents 1 unit of the given distance measurement. */
 }
 
 .toolbar__link-title:before {
-  content: '';
+  content: "";
   position: absolute;
-  width: .5rem;
-  height: .5rem;
-  left: -.5rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  left: -0.5rem;
   top: 50%;
-  transform: translate(50%,-50%) rotate(-45deg);
-  background-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
+  transform: translate(50%, -50%) rotate(-45deg);
+  background-color: var(
+    --portal-col-neutral-7,
+    var(--map-col-buttons__deprecate)
+  );
 }
 
 .toolbar__link:hover .toolbar__link-title {
   display: block;
   padding: 0.25rem 0.5rem;
   border-radius: var(--map-border-radius-small);
-  background-color: var(--map-col-tooltip-background, var(--map-col-buttons__deprecate));
+  background-color: var(
+    --portal-col-neutral-7,
+    var(--map-col-buttons__deprecate)
+  );
 }
 
 .toolbar__link-icon {
@@ -568,10 +598,9 @@ represents 1 unit of the given distance measurement. */
  *
  */
 
-
 .search-input {
   padding-bottom: 1rem;
-  background-color: var(--map-col-content-bkg, var(--map-col-bkg));
+  background-color: var(--portal-col-neutral-00, var(--map-col-bkg));
 
   .search-input__field {
     position: relative;
@@ -581,37 +610,38 @@ represents 1 unit of the given distance measurement. */
     height: 2.5rem;
     margin-bottom: 0.5rem;
     border: 1px solid;
-    border-color: var(--map-col-border-muted);
+    border-color: var(--portal-col-neutral-4);
     border-radius: var(--map-border-radius-small);
-  
+
     .search-input__input {
       width: 100%;
-    
-      input[type=text]& {  /* Override bootstrap */
+
+      input[type="text"]& {
+        /* Override bootstrap */
         height: 100%;
         margin: unset;
         padding-left: 1rem;
         background: none;
-        color: var(--map-col-text-body, var(--map-col-text));
+        color: var(--portal-col-neutral-8, var(--map-col-text));
         font-family: var(--map-body-font);
         border: none;
         box-shadow: unset;
 
         ::placeholder {
-          color: var(--map-col-text-muted);
+          color: var(--portal-col-neutral-5);
         }
       }
     }
 
     &:focus-within {
-      border-color: var(--map-col-border-highlight-search-box, var(--map-col-blue));
+      border-color: var(--portal-col-primary-3, var(--map-col-blue));
     }
 
     &.search-input__error-input {
-      border-color: var(--map-col-input-error-border);
-      background-color: var(--map-col-input-error-bkg);
+      border-color: var(--portal-col-highlight-2, rgba(82, 168, 236, 0.8));
+      background-color: var(--portal-col-highlight-1, rgba(30, 127, 196, 0.5));
     }
-  
+
     .search-input__cancel-button-container {
       align-items: center;
       display: flex;
@@ -630,7 +660,7 @@ represents 1 unit of the given distance measurement. */
       position: relative;
       flex-shrink: 0;
       margin: 0.25rem;
-  
+
       .search-input__button-icon {
         font-size: 1rem;
       }
@@ -639,20 +669,23 @@ represents 1 unit of the given distance measurement. */
     .search-input__vertical-divider {
       width: 0;
       height: 1.5rem;
-      border-right: solid 1px var(--map-col-border);
+      border-right: solid 1px var(--portal-col-primary-2);
     }
 
     .search-input__search-button {
-      color: var(--map-col-buttons-icon-muted);
+      color: var(--portal-col-neutral-4);
       border-radius: var(--map-border-radius-small);
 
       &.search-input__search-button--active {
-        color: var(--map-col-buttons-icon, currentColor);
-        background: var(--map-col-buttons-bkg-active, var(--map-col-bkg-lighter__deprecate));
+        color: var(--portal-col-primary-6, currentColor);
+        background: var(
+          --portal-col-primary-1,
+          var(--map-col-bkg-lighter__deprecate)
+        );
       }
     }
     .search-input__cancel-button {
-      color: var(--map-col-utility-buttons);
+      color: var(--portal-col-neutral-6);
       margin-left: 0;
       width: 1.5rem;
     }
@@ -660,7 +693,7 @@ represents 1 unit of the given distance measurement. */
 
   .search-input__error-text {
     line-height: 1rem;
-    color: var(--map-col-input-error-text);
+    color: var(--portal-col-highlight-3, #ca6c0b);
   }
 }
 
@@ -673,12 +706,22 @@ represents 1 unit of the given distance measurement. */
  *
  */
 
-
 .layers-panel {
   width: 100%;
+  display: flex;
+  flex-direction: column;
 
   .layers-panel__search {
     margin: 0 1.5rem;
+  }
+
+  .layers-panel__layers {
+    border: solid
+      var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate));
+    border-width: 1px 0;
+    overflow: auto;
+    border-top: 1px solid
+      var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
   }
 }
 
@@ -690,15 +733,12 @@ represents 1 unit of the given distance measurement. */
  *
  */
 
-
 .layer-list {
   display: grid;
   grid-template-columns: 100%;
   grid-template-rows: auto;
   width: 100%;
   height: min-content;
-  border: solid var(--map-col-section-divider, var(--map-col-bkg-lightest__deprecate));
-  border-width: 1px 0;
 }
 
 /* A layer-item is one item in the layer-list */
@@ -721,13 +761,13 @@ represents 1 unit of the given distance measurement. */
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--map-col-buttons-icon-muted, currentColor);
+    color: var(--portal-col-neutral-4, currentColor);
     background-color: transparent;
 
     .layer-item__icon {
-      fill: var(--map-col-buttons-icon-muted, currentColor);
-      svg>path {
-        fill: var(--map-col-buttons-icon-muted, currentColor);
+      fill: var(--portal-col-neutral-4, currentColor);
+      svg > path {
+        fill: var(--portal-col-neutral-4, currentColor);
       }
 
       height: 1rem;
@@ -737,33 +777,40 @@ represents 1 unit of the given distance measurement. */
   }
 
   &:hover {
-    background-color: var(--map-col-content-bkg-muted, #323745);
-    transition: background-color .3s ease-in-out;
+    background-color: var(--portal-col-neutral-1, #323745);
+    transition: background-color 0.3s ease-in-out;
 
     &.layer-item--shown {
-      background-color: var(--map-col-content-bkg-highlight, #15324e);
+      background-color: var(--portal-col-primary-1, #15324e);
     }
 
     .layer-item__legend-and-settings {
       /* Show button when layer is hovered. */
       display: flex;
-      border: 1px solid var(--map-col-border-muted);
+      border: 1px solid var(--portal-col-neutral-4);
 
       /* Use the same style on button hover and when selected. */
-      &.layer-item--selected, &:hover {
-        background-color: var(--map-col-buttons-bkg-hover, var(--map-col-bkg-lighter__deprecate));
+      &.layer-item--selected,
+      &:hover {
+        background-color: var(
+          --portal-col-primary-2,
+          var(--map-col-bkg-lighter__deprecate)
+        );
       }
     }
   }
 
   &.layer-item--shown {
     .layer-item__visibility-toggle {
-      color: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
+      color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
 
       .layer-item__icon {
-        fill: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
-        svg>path {
-          fill: var(--map-col-buttons-bkg-highlight, var(--map-col-highlight__deprecate));
+        fill: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
+        svg > path {
+          fill: var(
+            --portal-col-primary-6,
+            var(--map-col-highlight__deprecate)
+          );
         }
       }
     }
@@ -771,7 +818,7 @@ represents 1 unit of the given distance measurement. */
     .layer-item__legend-and-settings {
       /* Show button when layer is shown. */
       display: flex;
-      border: 1px solid var(--map-col-border);
+      border: 1px solid var(--portal-col-primary-2);
 
       /* Only show legend when layer is shown. */
       .layer-item__legend-container {
@@ -787,30 +834,31 @@ represents 1 unit of the given distance measurement. */
     border-radius: var(--map-border-radius-small);
 
     .layer-item__settings-toggle {
-      font-size: .85rem;
+      font-size: 0.85rem;
       width: 1rem;
       height: 1rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: .5rem;
-      color: var(--map-col-utility-buttons, currentColor);
+      margin: 0.5rem;
+      color: var(--portal-col-neutral-6, currentColor);
     }
 
     .layer-item__legend-container {
       /* By default, don't show legend. */
       display: none;
-      margin-left: -.5rem;
+      margin-left: -0.5rem;
     }
 
     /* Use the same style on button hover and when selected. */
-    &.layer-item--selected, &:hover {
+    &.layer-item--selected,
+    &:hover {
       display: flex;
-      background-color: var(--map-col-content-bkg-highlight, #15324e);
-      border: 1px solid var(--map-col-content-bkg-highlight, #15324e);
+      background-color: var(--portal-col-primary-1, #15324e);
+      border: 1px solid var(--portal-col-primary-1, #15324e);
 
       .layer-item__settings-toggle {
-        color: var(--map-col-buttons-icon);
+        color: var(--portal-col-primary-6);
       }
     }
   }
@@ -820,7 +868,7 @@ represents 1 unit of the given distance measurement. */
   font-size: 0.825rem;
   font-weight: 400;
   margin: 0 0.5rem;
-  color: var(--map-col-text-label);
+  color: var(--portal-col-neutral-7);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -828,10 +876,10 @@ represents 1 unit of the given distance measurement. */
 }
 
 .layer-item__highlighted-text {
-  background-color: var(--map-col-search-match-highlight);
+  background-color: var(--portal-col-highlight-2, rgba(30, 127, 196, 0.5));
 }
 
-.layer-item__icon>svg {
+.layer-item__icon > svg {
   height: 100%;
   width: auto;
 }
@@ -839,75 +887,6 @@ represents 1 unit of the given distance measurement. */
 .layer-item__visibility-toggle:hover {
   opacity: var(--map-no-brightness-or-opacity-tweaks, 0.5);
 }
-
-/*****************************************************************************************
- *
- * Layers Category List
- *
- * Layer category list contains a list of layer categories which can be expanded in to a list of Layer Items.
- *
- */
-
-.layer-category-list {
-  border: solid var(--map-col-section-divider, var(--map-col-bkg-lightest__deprecate));
-  border-width: 1px 0;
-
-  .layer-category-item {
-    box-shadow: 0 1px var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate)) inset;
-
-    .layer-category-item__metadata {
-      display: grid;
-      align-items: center;
-      cursor: pointer;
-      font-size: 1rem;
-      grid-template-columns: min-content auto min-content;
-      padding: 0 1.5rem;
-
-      &:hover {
-        background-color: var(--map-col-content-bkg-highlight, #15324e);
-        transition: background-color .3s ease-in-out;
-      }
-    }
-  }
-}
-
-.layer-category-item__label {
-  font-weight: 500;
-  color: var(--map-col-text-highlight, var(--map-col-highlight__deprecate));
-}
-
-.layer-category-item__icon {
-  fill: var(--map-col-text-highlight, var(--map-col-highlight__deprecate));
-  color: var(--map-col-text-highlight, var(--map-col-highlight__deprecate));
-  height: 2rem;
-  width: 2rem;
-  margin: 0.25rem;
-  margin-right: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.layer-category-item__icon>svg {
-  height: 1rem;
-}
-
-.layer-category-item__expand-toggle {
-  width: 2rem;
-  display: flex;
-  justify-content: center;
-  color: var(--map-col-utility-buttons);
-}
-
-.layer-category-item__layers {
-  display: none;
-  animation: fadeIn .3s ease-in-out;
-}
-
-.layer-category-item__layers.open {
-  display: block;
-}
-
 
 /*****************************************************************************************
  *
@@ -921,8 +900,11 @@ represents 1 unit of the given distance measurement. */
   width: var(--map-width-toolbar);
   border-top-right-radius: var(--map-border-radius-big);
   border-top-left-radius: var(--map-border-radius-big);
-  background-color: var(--map-col-content-bkg-highlight, var(--map-col-bkg-lighter__deprecate));
-  color: var(--map-col-text-body, var(--map-col-text__deprecate));
+  background-color: var(
+    --portal-col-primary-1,
+    var(--map-col-bkg-lighter__deprecate)
+  );
+  color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
   box-shadow: var(--map-shadow-md);
   grid-template-columns: auto min-content;
   grid-template-rows: min-content auto;
@@ -930,8 +912,14 @@ represents 1 unit of the given distance measurement. */
   align-items: center;
   /* Don't show the details panel unless it also has the layer-details--open class */
   display: none;
-  border: 1px solid var(--map-col-border);
-  animation: fadeIn .3s ease-in-out;
+  border: 1px solid var(--portal-col-primary-2);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@media only screen and (min-width: 31.5rem) {
+  .map-view__portal .layer-details {
+    width: var(--map-width-toolbar-wide);
+  }
 }
 
 .layer-details--open {
@@ -940,7 +928,7 @@ represents 1 unit of the given distance measurement. */
 
 .layer-details__label {
   /* the important is needed to overwrite more specific styles set on portal title tags */
-  color: var(--map-col-text-highlight, var(--map-col-text__deprecate)) !important;
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
   margin: 0;
   font-size: 1.33rem;
   font-weight: 700;
@@ -950,7 +938,7 @@ represents 1 unit of the given distance measurement. */
 }
 
 .layer-details__toggle {
-  color: var(--map-col-utility-buttons);
+  color: var(--portal-col-neutral-6);
   font-size: 1rem;
   height: 2rem;
   margin-right: 1rem;
@@ -959,11 +947,14 @@ represents 1 unit of the given distance measurement. */
 
 /* The notification div holds a badge & message, if one is set */
 .layer-details__notification {
-  margin: .5rem 0 1rem;
+  margin: 0.5rem 0 1rem;
   padding: 0.75rem;
-  background-color: var(--map-col-content-bkg, var(--map-col-buttons__deprecate));
+  background-color: var(
+    --portal-col-neutral-00,
+    var(--map-col-buttons__deprecate)
+  );
   border-radius: var(--map-border-radius-small);
-  border: 1px solid var(--map-col-border);
+  border: 1px solid var(--portal-col-primary-2);
 }
 
 .layer-details__notification--blue {
@@ -985,14 +976,14 @@ represents 1 unit of the given distance measurement. */
 }
 
 .layer-details__notification--contrast {
-  background-color: var(--map-col-text-body, var(--map-col-text__deprecate));
-  color: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
+  background-color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
+  color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
   opacity: var(--map-no-brightness-or-opacity-tweaks, 0.95);
   border-color: none;
 }
 
 .layer-details__sections {
-  background: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
+  background: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
   display: grid;
   grid-template-rows: auto;
   grid-template-columns: 100%;
@@ -1010,7 +1001,7 @@ represents 1 unit of the given distance measurement. */
 
 .layer-detail__label {
   /* the important is needed to overwrite more specific styles set on portal title tags */
-  color: var(--map-col-text-body, var(--map-col-text__deprecate)) !important;
+  color: var(--portal-col-neutral-8, var(--map-col-text__deprecate)) !important;
   margin: 0;
   font-weight: 500;
   font-size: 1rem;
@@ -1022,7 +1013,7 @@ represents 1 unit of the given distance measurement. */
   /* Do not display this contents of this detail section unless the open class is added */
   display: none;
   align-items: center;
-  margin: .75rem 0;
+  margin: 0.75rem 0;
 }
 
 .layer-detail--open .layer-detail__content {
@@ -1074,15 +1065,15 @@ represents 1 unit of the given distance measurement. */
 .layer-info__attribution {
   font-size: 0.75rem;
   line-height: 1.5;
-  color: var(--map-col-text-muted);
+  color: var(--portal-col-neutral-5);
 }
 
 .layer-info__link {
-  border: 1px solid var(--map-col-border);
+  border: 1px solid var(--portal-col-primary-2);
   border-radius: var(--map-border-radius-small);
   font-size: 1rem;
-  margin-right: .5rem;
-  padding: .5rem 1rem;
+  margin-right: 0.5rem;
+  padding: 0.5rem 1rem;
 }
 
 .layer-opacity {
@@ -1097,7 +1088,10 @@ represents 1 unit of the given distance measurement. */
   border-radius: var(--map-border-radius-big);
   background: var(--c-neutral-3);
   position: relative;
-  background-color: var(--map-col-opacity-slider-inactive, var(--map-col-buttons__deprecate));
+  background-color: var(
+    --portal-col-neutral-3,
+    var(--map-col-buttons__deprecate)
+  );
 }
 
 /* The shaded part of the slider that stretches from 0 to the current opacity */
@@ -1106,7 +1100,7 @@ represents 1 unit of the given distance measurement. */
 other class: .ui-slider-range */
 .layer-opacity__range {
   border-radius: var(--map-border-radius-big);
-  background-color: var(--map-col-opacity-slider-active, #1f254f);
+  background-color: var(--portal-col-primary-5, #1f254f);
 }
 
 .layer-navigation {
@@ -1130,7 +1124,7 @@ other class: .ui-slider-range */
   align-items: center;
   justify-content: center;
   border: none;
-  background-color: var(--map-col-buttons-bkg-highlight, #EFEFEF);
+  background-color: var(--portal-col-primary-6, #efefef);
 }
 
 /* The element that displays the current opacity as a percentage */
@@ -1139,7 +1133,7 @@ other class: .ui-slider-range */
   font-size: 0.8em;
   /* Show the opacity value just below the slider handle */
   margin-top: 2.5em;
-  color: var(--map-col-text-muted, var(--map-col-text__deprecate));
+  color: var(--portal-col-neutral-5, var(--map-col-text__deprecate));
 }
 
 /*****************************************************************************************
@@ -1155,119 +1149,142 @@ other class: .ui-slider-range */
  */
 
 .feature-info {
-  width: var(--map-width-toolbar);
-  padding: 1rem 0.8rem 1rem 0.8rem;
+  width: var(--map-width-feature-info);
+  padding: var(--map-padding-feature-info);
   row-gap: 0.8rem;
   border-radius: var(--map-border-radius-big);
-  background-color: var(--map-col-content-bkg-highlight, var(--map-col-bkg-lighter__deprecate));
-  color: var(--map-col-text-body, var(--map-col-text__deprecate));
+  background-color: var(
+    --portal-col-primary-1,
+    var(--map-col-bkg-lighter__deprecate)
+  );
+  color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
   box-shadow: var(--map-shadow-md);
-  grid-template-columns: auto 2.5rem;
-  grid-template-rows: min-content auto min-content;
-  justify-items: center;
   /* Don't show the details panel unless it also has the feature-info--open class */
   display: none;
-  animation: fadeIn .3s ease-in-out;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@media only screen and (min-width: 38.5rem) {
+  .map-view__portal .feature-info {
+    width: var(--map-width-feature-info-wide);
+  }
 }
 
 .feature-info--open {
-  display: grid;
+  display: block;
 }
 
 .feature-info__label {
-  border-bottom: 1px solid var(--map-col-border, var(--map-col-bkg-lightest__deprecate));
-  color: var(--map-col-text-title, var(--map-col-text__deprecate)) !important;
+  border-bottom: 1px solid
+    var(--portal-col-primary-2, var(--map-col-bkg-lightest__deprecate));
+  color: var(--portal-col-primary-7, var(--map-col-text__deprecate)) !important;
   font-weight: 600;
   font-size: 1.33rem;
   line-height: 1.5rem;
   margin: 0;
-  width: 100%;
+  padding: 0 3rem 1rem 0;
+  position: relative;
 }
 
 .feature-info__content {
-  display: grid;
-  grid-template-rows: auto;
-  grid-template-columns: 100%;
-  gap: 1rem;
-  grid-column: 1 / 3;
-  padding-bottom: 0.5rem;
-  overflow: scroll;
+  overflow-y: scroll;
+  width: 100%;
+  transition: height 0.5s ease-in-out;
+  border-width: 0;
 }
 
 .feature-info__toggle {
-  padding: 0.4rem 0.6rem 0.4rem;
-  background-color: transparent;
-  justify-self: end;
-  color: var(--map-col-utility-buttons);
+  color: var(--portal-col-neutral-6);
   font-size: 1rem;
+  height: 2rem;
+  position: absolute;
+  right: 1.5rem;
+  top: 1.25rem;
+  width: 2rem;
 }
 
 .feature-info__buttons {
-  grid-column: 1 / 3;
   display: grid;
   gap: 0.5rem;
+  grid-template-columns: 50% 50%;
 }
 
 /* styles for the (default) table template */
 
 .feature-info__table {
-  background-color: var(--map-col-content-bkg-muted, var(--map-col-bkg-lightest__deprecate));
+  background-color: var(
+    --portal-col-neutral-1,
+    var(--map-col-bkg-lightest__deprecate)
+  );
   border-radius: var(--map-border-radius-big);
   box-shadow: var(--map-shadow-md);
-  width: calc(var(--map-width-toolbar) - 2.2rem);
+  width: 100%;
+  table-layout: fixed;
 }
 
 /* .feature-info__table-body {} */
 
 .feature-info__table-row {
   padding-bottom: 0.6rem;
-  border: 1px solid #FFFFFF0D;
+  border: 1px solid #ffffff0d;
   border-top-right-radius: var(--map-border-radius-big);
 }
 
 .feature-info__table-row:nth-child(even) {
-  background-color: var(--map-col-content-bkg, var(--map-col-bkg-lighter__deprecate));
+  background-color: var(
+    --portal-col-neutral-00,
+    var(--map-col-bkg-lighter__deprecate)
+  );
 }
 
 .feature-info__table-cell {
   padding: 0.6rem;
   overflow-wrap: break-word;
   word-wrap: break-word;
-  max-width: calc((var(--map-width-toolbar)/2) - 1rem);
 }
 
 /* styles for the story template */
 
+#content {
+  padding: 1rem 0 1.5rem 0;
+  overflow: hidden;
+}
+
 .feature-info__thumbnail {
-  min-width: 6rem;
-  min-height: 6rem;
-  max-width: 50%;
-  float: right;
-  margin: 0.3rem;
   border-radius: var(--map-border-radius-big);
+  float: left;
+  margin: 0 1rem 1rem 0;
+  width: 7.5rem;
 }
 
 .feature-info__subtitle {
   font-size: 0.75em;
   font-weight: 500;
   display: block;
-  margin: 0;
+  margin: 0 0 0.5rem;
   padding: 0;
-  color: var(--map-col-text-muted);
+  color: var(--portal-col-neutral-5);
 }
 
 .feature-info__description {
-  margin: 0.55rem 0;
+  margin: 0 0 1.5rem;
   line-height: 1.4rem;
 }
 
 .feature-info__link {
-  display: flex;
-  align-items: center;
+  background: var(--portal-col-neutral-00, var(--map-col-buttons__deprecate));
+  border: 1px solid var(--portal-col-primary-2);
+  border-radius: var(--map-border-radius-small);
   text-decoration: none;
-  color: var(--map-col-buttons-text, var(--portal-col-highlight));
-}
+  color: var(--portal-col-primary-6, var(--portal-col-highlight__deprecate));
+  display: inline-block;
+  padding: 0.5rem 1rem;
 
+  svg {
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+}
 
 /*****************************************************************************************
  *
@@ -1293,7 +1310,7 @@ other class: .ui-slider-range */
   /* allow images previews to bleed into the padding a little, so that more detail is visible */
   height: 100%;
   max-width: 100%;
-  margin-top: calc(-0.5* var(--img-overflow));
+  margin-top: calc(-0.5 * var(--img-overflow));
   /* imagery appears lighter on the map */
   filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.75));
 }
@@ -1329,34 +1346,38 @@ other class: .ui-slider-range */
 }
 
 .nav-help {
-  color: var(--map-col-text-label, white);
+  color: var(--portal-col-neutral-7, white);
 }
 
 .nav-help .map-view__button {
-  background-color: var(--map-col-content-bkg-highlight, var(--map-col-bkg-lighter__deprecate));
+  background-color: var(
+    --portal-col-primary-1,
+    var(--map-col-bkg-lighter__deprecate)
+  );
   border-radius: var(--map-border-radius-small);
-  color: var(--map-col-text-label);
-  margin-right: .5rem;
+  color: var(--portal-col-neutral-7);
+  margin-right: 0.5rem;
   padding: 0.25rem 1rem;
 }
 
 .nav-help .map-view__button--active {
-  /* TODO: https://github.com/NCEAS/metacatui/issues/2347 - Update to --map-col-buttons-bkg-highlight */
-  background-color: var(--map-col-buttons-bkg-white-content-contrast, #505561);
+  /* TODO: https://github.com/NCEAS/metacatui/issues/2347 - Update to --portal-col-primary-6 */
+  background-color: var(--portal-col-neutral-5, #505561);
   color: white;
 }
 
 .nav-help__img {
   /* TODO: https://github.com/NCEAS/metacatui/issues/2347 - Update to transparent */
-  background: var(--map-col-buttons-bkg-hover, #505561);
+  background: var(--portal-col-primary-2, #505561);
   border-radius: var(--map-border-radius-big);
   height: 3rem;
-  padding: .5rem;
+  padding: 0.5rem;
   width: 3rem;
 }
 
 .nav-help__instructions {
-  border-top: 1px solid var(--map-col-section-divider, var(--map-col-bkg-lightest__deprecate));
+  border-top: 1px solid
+    var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate));
   display: grid;
   margin: 1rem 0;
   padding: 0;
@@ -1371,17 +1392,18 @@ other class: .ui-slider-range */
 .cesium-navigation-help-zoom,
 .cesium-navigation-help-rotate,
 .cesium-navigation-help-tilt {
-  color: var(--map-col-text-body, #66ccff);
+  color: var(--portal-col-neutral-8, #66ccff);
   font-weight: 500;
 }
 
 .nav-help__instruction {
-  border-bottom: 1px solid var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
+  border-bottom: 1px solid
+    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
   display: grid;
   grid-template-columns: 3rem auto;
   gap: 1rem;
   align-items: center;
-  padding: .5rem 0;
+  padding: 0.5rem 0;
 }
 
 .map-help-panel__section:not(:first-child) {
@@ -1389,33 +1411,47 @@ other class: .ui-slider-range */
 }
 
 .viewfinder {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   width: 100%;
+
+  .viewfinder__search {
+    border-bottom: 1px solid
+      var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
+  }
+
+  .viewfinder__zoom-presets {
+    flex-grow: 1;
+    overflow: auto;
+  }
 }
 
-.viewfinder__search-input {
+.viewfinder-search__search-input {
   margin: 0 1.5rem;
 }
 
 .viewfinder-predictions {
   list-style: none;
-  margin: -.5rem 1.5rem 0 1.5rem;
+  margin: -0.5rem 1.5rem 0 1.5rem;
+  min-height: 0.5rem;
 
   .viewfinder-prediction__content {
     align-items: center;
-    background: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
-    border: 1px solid var(--map-col-border-muted, white);
+    background: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
+    border: 1px solid var(--portal-col-neutral-4, white);
     border-radius: var(--map-border-radius-small);
     box-sizing: border-box;
-    color: var(--map-col-text-highlight, white);
+    color: var(--portal-col-primary-6, white);
     cursor: pointer;
     display: flex;
-    gap: .5rem;
+    gap: 0.5rem;
     height: 3rem;
-    margin: 0 0 .5rem;
-    padding: .5rem 1rem;
-    transition: background-color .3s ease-in-out;
+    margin: 0 0 0.5rem;
+    padding: 0.5rem 1rem;
+    transition: background-color 0.3s ease-in-out;
 
-    >* {
+    > * {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -1431,8 +1467,201 @@ other class: .ui-slider-range */
 
     &:hover,
     &.viewfinder-prediction__focused {
-      border-color: var(--map-col-border-highlight);
-      background-color: var(--map-col-content-bkg-highlight, var(--map-col-bkg-lighter__deprecate));
+      border-color: unset;
+      background-color: var(
+        --portal-col-primary-1,
+        var(--map-col-bkg-lighter__deprecate)
+      );
     }
   }
 }
+
+.viewfinder-zoom-presets {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 1.5rem 1rem 1.5rem;
+  row-gap: 0.5rem;
+
+  .viewfinder-zoom-preset__preset {
+    border-radius: var(--map-border-radius-big);
+    border: 1px solid
+      var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate));
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 1.5rem 1rem 2.5rem;
+    row-gap: 0.5rem;
+
+    &:hover {
+      background-color: var(
+        --portal-col-primary-1,
+        var(--map-col-bkg-lighter__deprecate)
+      );
+
+      .viewfinder-zoom-preset__layer {
+        background-color: var(
+          rgb(from var(--portal-col-primary-2) r g b / 50%),
+          var(--map-col-bkg__deprecate)
+        );
+
+        .viewfinder-zoom-preset__layer-content {
+          color: var(--portal-col-primary-6);
+
+          i {
+            color: var(--portal-col-primary-6);
+          }
+        }
+      }
+    }
+
+    .viewfinder-zoom-preset__title {
+      color: var(--portal-col-primary-6, white);
+      font-weight: 600;
+    }
+
+    .viewfinder-zoom-preset__description {
+      color: var(--portal-col-neutral-7, white);
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .viewfinder-zoom-preset__layers {
+      column-gap: 0.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      row-gap: 0.5rem;
+    }
+
+    .viewfinder-zoom-preset__layer {
+      align-items: center;
+      background: var(
+        rgb(from var(--portal-col-neutral-2) r g b / 50%),
+        var(--map-col-bkg-lighter__deprecate)
+      );
+      border-radius: var(--map-border-radius-big);
+      display: flex;
+      height: 1.5rem;
+      justify-content: center;
+      padding: 0 1rem 0 0.5rem;
+
+      .viewfinder-zoom-preset__layer-content {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-wrap: nowrap;
+        color: var(--portal-col-neutral-5, white);
+        font-size: 0.8rem;
+        max-width: 10rem;
+
+        i {
+          padding: 0 0.25rem;
+          color: var(--portal-col-primary-6, white);
+        }
+      }
+    }
+  }
+
+  .viewfinder-zoom-preset.viewfinder-zoom-preset--active
+    .viewfinder-zoom-preset__preset {
+    background-color: var(--portal-col-primary-6, #15324e);
+
+    .viewfinder-zoom-preset__title,
+    .viewfinder-zoom-preset__description {
+      color: var(--portal-col-neutral-00, white);
+    }
+
+    .viewfinder-zoom-preset__layer {
+      background: var(
+        rgb(from var(--portal-col-primary-5) r g b / 50%),
+        var(--map-col-bkg__deprecate)
+      );
+
+      .viewfinder-zoom-preset__layer-content {
+        color: var(--portal-col-primary-2, white);
+
+        i {
+          color: var(--portal-col-primary-4, white);
+        }
+      }
+    }
+  }
+}
+
+/** START - Expansion panel View. */
+.expansion-panel {
+  box-shadow: 0 1px
+    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate)) inset;
+  border-bottom: 1px solid
+    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
+  font-size: 1rem;
+
+  .expansion-panel__toggle {
+    display: grid;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1rem;
+    grid-template-columns: min-content auto min-content;
+    padding: 0 1.5rem;
+    border: none;
+
+    &:hover {
+      background-color: var(--portal-col-primary-1, #15324e);
+      transition: background-color 0.3s ease-in-out;
+    }
+  }
+
+  &.show-content {
+    .expansion-panel__content {
+      display: block;
+    }
+
+    .icon-caret-down {
+      display: block;
+    }
+
+    .icon-caret-up {
+      display: none;
+    }
+  }
+
+  .icon-caret-down {
+    display: none;
+  }
+
+  .icon-caret-up {
+    display: block;
+  }
+
+  .expansion-panel__title {
+    font-weight: 500;
+    color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
+  }
+
+  .expansion-panel__icon {
+    fill: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
+    color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
+    height: 2rem;
+    width: 2rem;
+    margin: 0.25rem;
+    margin-right: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .expansion-panel__icon > svg {
+    height: 1rem;
+  }
+
+  .expansion-panel__icon-toggle {
+    width: 2rem;
+    display: flex;
+    justify-content: center;
+    color: var(--portal-col-neutral-6);
+  }
+
+  .expansion-panel__content {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+}
+/** END - Expansion panel View. */

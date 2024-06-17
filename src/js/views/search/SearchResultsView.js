@@ -1,4 +1,3 @@
-/*global define */
 define([
   "backbone",
   "collections/SolrResults",
@@ -268,6 +267,6 @@ define([
           i++;
         }
       },
-    }
+    },
   );
 });

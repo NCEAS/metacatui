@@ -7,14 +7,27 @@ define([
   "models/maps/AssetColor",
   "models/maps/AssetColorPalette",
   "collections/maps/VectorFilters",
+  "common/IconUtilities",
 ], function (
   _,
   Cesium,
   MapAsset,
   AssetColor,
   AssetColorPalette,
-  VectorFilters
+  VectorFilters,
+  IconUtilities,
 ) {
+  // Source: https://fontawesome.com/v6/icons/location-dot?f=classic&s=solid
+  const PIN_SVG_STRING =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>';
+  const PIN_OUTLINE_WIDTH = 30; // The width of the stroke around the pin is relative to the viewBox
+  const PIN_OUTLINE_COLOR = "white";
+  const PIN_SVG = IconUtilities.formatSvgForCesiumBillboard(
+    PIN_SVG_STRING,
+    PIN_OUTLINE_WIDTH,
+    PIN_OUTLINE_COLOR,
+  );
+
   /**
    * @classdesc A CesiumVectorData Model is a vector layer (excluding
    * Cesium3DTilesets) that can be used in Cesium maps. This model corresponds
@@ -114,7 +127,7 @@ define([
           ) {
             this.set(
               "outlineColor",
-              new AssetColor({ color: assetConfig.outlineColor })
+              new AssetColor({ color: assetConfig.outlineColor }),
             );
           }
 
@@ -124,7 +137,7 @@ define([
           ) {
             this.set(
               "highlightColor",
-              new AssetColor({ color: assetConfig.highlightColor })
+              new AssetColor({ color: assetConfig.highlightColor }),
             );
           }
 
@@ -191,7 +204,7 @@ define([
           // For GeoJSON and CZML data sources
           if (!cesiumOptions || !cesiumOptions.data) {
             model.setError(
-              "No data was provided to create a Cesium DataSource model."
+              "No data was provided to create a Cesium DataSource model.",
             );
             return;
           }
@@ -401,7 +414,7 @@ define([
           return;
         }
         const time = Cesium.JulianDate.now();
-        let displayReadyNow = true
+        let displayReadyNow = true;
         for (let x = 0; x < visualizers.length; x++) {
           displayReadyNow = visualizers[x].update(time) && displayReadyNow;
         }
@@ -603,12 +616,17 @@ define([
        * @since 2.25.0
        */
       styleBillboard: function (entity, styles) {
-        if (!this.pinBuilder) {
-          this.pinBuilder = new Cesium.PinBuilder();
-        }
-        entity.billboard.image = this.pinBuilder
-          .fromColor(styles.color, styles.markerSize)
-          .toDataURL();
+        const size = styles.markerSize;
+        // Since we're converting to raster, start with a larger SVG and
+        // scale down so the resulting resolution is better
+        PIN_SVG.setAttribute("width", size * 4);
+        PIN_SVG.setAttribute("height", size * 4);
+        PIN_SVG.setAttribute("fill", styles.color.toCssHexString());
+        entity.billboard = {
+          image: IconUtilities.svgToBase64(PIN_SVG),
+          width: size,
+          height: size,
+        };
         // To convert the automatically created billboards to points instead:
         // entity.billboard = undefined; entity.point = new
         // Cesium.PointGraphics();
@@ -638,7 +656,7 @@ define([
           color.red,
           color.green,
           color.blue,
-          color.alpha
+          color.alpha,
         );
       },
 
@@ -667,7 +685,7 @@ define([
        */
       getSelectedStyles: function (entity) {
         const highlightColor = this.colorToCesiumColor(
-          this.get("highlightColor")
+          this.get("highlightColor"),
         );
         return {
           color: highlightColor || this.colorForEntity(entity),
@@ -696,14 +714,14 @@ define([
           return null;
         }
         const outlineColor = this.colorToCesiumColor(
-          this.get("outlineColor")?.get("color")
+          this.get("outlineColor")?.get("color"),
         );
         return {
           color: color,
           outlineColor: outlineColor,
           outline: outlineColor ? true : false,
           lineWidth: 3,
-          markerSize: 25,
+          markerSize: 24,
           pointSize: 13,
         };
       },
@@ -762,13 +780,13 @@ define([
               state = dataSourceDisplay.getBoundingSphere(
                 entities[i],
                 false,
-                boundingSphereScratch
+                boundingSphereScratch,
               );
               if (state === Cesium.BoundingSphereState.PENDING) {
                 return false;
               } else if (state !== Cesium.BoundingSphereState.FAILED) {
                 boundingSpheres.push(
-                  Cesium.BoundingSphere.clone(boundingSphereScratch)
+                  Cesium.BoundingSphere.clone(boundingSphereScratch),
                 );
               }
             }
@@ -781,7 +799,7 @@ define([
             console.log("Error getting bounding sphere.", e);
           });
       },
-    }
+    },
   );
 
   return CesiumVectorData;
