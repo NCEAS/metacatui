@@ -156,9 +156,7 @@ define([
       initialize(options) {
         // Get all the options and apply them to this view
         if (typeof options === "object") {
-          Object.entries(options).forEach(([key, value]) => {
-            this[key] = value;
-          });
+          Object.assign(this, options);
         }
       },
 
