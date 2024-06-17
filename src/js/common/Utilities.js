@@ -112,6 +112,7 @@ define([], () => {
      * @param {number} value The number value to be formatted.
      * @param {number} range The range of numerics this value can fall in.
      * @returns {string} A formatted number based on the magnitude of `range`.
+     * @since 0.0.0
      */
     formatNumber(value, range) {
       if (typeof value !== "number") {
