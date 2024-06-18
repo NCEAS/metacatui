@@ -86,6 +86,7 @@ define([
           }
           const layerLegendView = new LayerLegendView({
             model: layer.get("colorPalette"),
+            layerName: layer.get("label"),
           });
           layerLegendView.render();
           content.append(layerLegendView.el);

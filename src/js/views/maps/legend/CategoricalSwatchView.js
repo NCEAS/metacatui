@@ -44,7 +44,7 @@ define([
         this.$el.html(
           this.template({
             classNames: CLASS_NAMES,
-            value: this.model.get("value"),
+            value: this.model.get("label") || this.model.get("value"),
           }),
         );
 
