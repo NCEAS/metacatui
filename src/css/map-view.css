@@ -64,7 +64,10 @@
     var(--map-size-toolbar-link) + 2 * var(--map-size-toolbar-link-padding)
   );
   /* Assumes 4 links max. */
-  --max-map-toolbar-link-height: calc(4 * var(--map-size-toolbar-link) + 3 * var(--map-size-toolbar-link-gap) + 2 * var(--map-size-toolbar-link-padding));
+  --max-map-toolbar-link-height: calc(
+    4 * var(--map-size-toolbar-link) + 3 * var(--map-size-toolbar-link-gap) + 2 *
+      var(--map-size-toolbar-link-padding)
+  );
   --map-width-feature-info: calc(var(--map-width-toolbar) * 1.25);
   --map-width-feature-info-wide: calc(var(--map-width-toolbar-wide) * 1.25);
   --map-padding-feature-info: 1.5rem;
@@ -1785,7 +1788,10 @@ other class: .ui-slider-range */
   background: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
   width: 6.875rem;
   /* TODO: Update when we deprecate toolbar links. */
-  max-height: calc(100% - 1rem - var(--max-map-toolbar-link-height) - 2 * var(--map-size-toolbar-link-margin));
+  max-height: calc(
+    100% - 1rem - var(--max-map-toolbar-link-height) - 2 *
+      var(--map-size-toolbar-link-margin)
+  );
   display: flex;
   flex-direction: column;
   box-shadow: var(--map-shadow-md);
