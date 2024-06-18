@@ -189,6 +189,17 @@ define([
           return;
         }
       },
+
+      /**
+       * Override the handler function for the a portal section change.
+       * @param {boolean} isActive Whether the active portal section model is
+       * this portal section model.
+       */
+      reportSectionChange(isActive) {
+        if (isActive) {
+          this.get("mapModel").trigger("change:searchparams");
+        }
+      },
     },
   );
 

@@ -6,8 +6,17 @@ define([
   "models/portals/PortalImage",
   "models/maps/AssetColorPalette",
   "common/IconUtilities",
+  "common/SearchParams",
   `${MetacatUI.root}/components/dayjs.min.js`,
-], (_, Backbone, PortalImage, AssetColorPalette, IconUtilities, dayjs) => {
+], (
+  _,
+  Backbone,
+  PortalImage,
+  AssetColorPalette,
+  IconUtilities,
+  SearchParams,
+  dayjs,
+) => {
   /**
    * @classdesc A MapAsset Model comprises information required to fetch source data for
    * some asset or resource that is displayed in a map, such as imagery (raster) tiles,
@@ -66,6 +75,13 @@ define([
        * @property {boolean} [visible = true] Set to true if the layer is visible on the
        * map, false if it is hidden. This applies to raster (imagery) and vector assets,
        * not to terrain assets.
+       * @property {boolean} [configuredVisibility = true] Tracks the original
+       * visibility value according to the portal configuration and ignoring any
+       * search query parameters in the URL which can affect the layer's initial
+       * visibility.
+       * @property {boolean} [originalVisibility = true] Tracks the original
+       * visibility value according to search query parameters and portal
+       * configuration.
        * @property {AssetColorPalette} [colorPalette] The color or colors mapped to
        * attributes of this asset. This applies to raster/imagery and vector assets. For
        * imagery, the colorPalette will be used to create a legend. For vector assets
@@ -104,6 +120,8 @@ define([
           opacity: 1,
           saturation: 1,
           visible: true,
+          configuredVisibility: true,
+          originalVisibility: true,
           colorPalette: null,
           customProperties: {},
           featureTemplate: {},
@@ -348,7 +366,21 @@ define([
           }
         }
 
-        this.set("originalVisibility", this.get("visible"));
+        this.on("change:visible", () => {
+          if (!this.get("mapModel")?.get("showShareUrl")) return;
+
+          this.get("mapModel")
+            .get("allLayers")
+            .forEach((layer) => {
+              const layerId = layer.get("layerId");
+              if (layerId && layer.get("visible")) {
+                SearchParams.addEnabledLayer(layerId);
+              } else {
+                SearchParams.removeEnabledLayer(layerId);
+              }
+            });
+        });
+
         this.setListeners();
       },
 
@@ -403,6 +435,7 @@ define([
           this.handleError();
           return;
         }
+
         const vis = this.get("originalVisibility");
         if (typeof vis === "boolean") {
           this.set("visible", vis);

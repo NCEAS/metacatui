@@ -1,7 +1,7 @@
 "use strict";
 
 define([], function () {
-  return class ViewFinderViewHarness {
+  return class SearchViewHarness {
     constructor(view) {
       this.view = view;
     }

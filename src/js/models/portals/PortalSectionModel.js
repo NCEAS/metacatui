@@ -324,6 +324,16 @@ define([
           return;
         }
       },
+
+      /**
+       * Handler function for the a portal section change. Can be overridden by
+       * derived classes.
+       * @param {boolean} isActive Whether the active portal section model is
+       * this portal section model.
+       */
+      reportSectionChange(isActive) {
+        // Do nothing.
+      },
     },
   );
 

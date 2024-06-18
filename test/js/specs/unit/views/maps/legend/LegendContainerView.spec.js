@@ -33,8 +33,18 @@ define([
     describe("render", () => {
       it("shows the legend for the visible layers", () => {
         const layers = new MapAssets([
-          { label: "layer 1", visible: false, colorPalette: {} },
-          { label: "layer 2", visible: true, colorPalette: {} },
+          {
+            label: "layer 1",
+            visible: false,
+            originalVisibility: false,
+            colorPalette: {},
+          },
+          {
+            label: "layer 2",
+            visible: true,
+            originalVisibility: true,
+            colorPalette: {},
+          },
         ]);
         state.view.model.set("allLayers", layers);
         state.view.render();
@@ -44,8 +54,18 @@ define([
 
       it("updates legend content when layers' visibility changes", () => {
         const layers = new MapAssets([
-          { label: "layer 1", visible: false, colorPalette: {} },
-          { label: "layer 2", visible: true, colorPalette: {} },
+          {
+            label: "layer 1",
+            visible: false,
+            originalVisibility: false,
+            colorPalette: {},
+          },
+          {
+            label: "layer 2",
+            visible: true,
+            originalVisibility: true,
+            colorPalette: {},
+          },
         ]);
         state.view.model.set("allLayers", layers);
         state.view.render();
