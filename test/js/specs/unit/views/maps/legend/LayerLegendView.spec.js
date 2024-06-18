@@ -3,12 +3,7 @@ define([
   "models/maps/AssetColorPalette",
   "/test/js/specs/shared/clean-state.js",
   "/test/js/specs/unit/views/maps/legend/LayerLegendViewHarness.js",
-], (
-  LayerLegendView,
-  AssetColorPalette,
-  cleanState,
-  LayerLegendViewHarness,
-) => {
+], (LayerLegendView, AssetColorPalette, cleanState, LayerLegendViewHarness) => {
   const expect = chai.expect;
 
   describe("LayerLegendView Test Suite", () => {
