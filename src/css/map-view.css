@@ -1665,3 +1665,109 @@ other class: .ui-slider-range */
   }
 }
 /** END - Expansion panel View. */
+
+/*****************************************************************************************
+ *
+ * Legend
+ *
+ * The full legend that overlays the map
+ *
+ */
+
+.legend-container {
+  z-index: var(--map-z-index-base);
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  border-radius: var(--map-border-radius-big);
+  background: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
+  width: 6.875rem;
+
+  .legend-container__header {
+    border-radius: var(--map-border-radius-big);
+    background: var(
+      --portal-col-primary-2,
+      var(--portal-col-bkg-lighter__deprecate)
+    );
+    width: 100%;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    column-gap: 0.5rem;
+    padding: 0 1rem;
+    cursor: pointer;
+
+    i {
+      font-size: 1rem;
+      width: 1.5rem;
+      height: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .legend-container__header-icon {
+      color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
+    }
+
+    .legend-container__header-expand {
+      color: var(--portal-col-primary-5, var(--map-col-text__deprecate));
+      display: none;
+    }
+
+    .legend-container__header-name {
+      flex-grow: 1;
+      color: var(--portal-col-primary-8, var(--map-col-text__deprecate));
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+  }
+
+  .legend-container__content {
+    padding-bottom: 0.5rem;
+    row-gap: 0.5rem;
+    flex-direction: column;
+    display: none;
+
+    .layer-legend {
+      padding: 0 1rem;
+
+      .layer-legend__layer-name {
+        padding: 0.25rem 0;
+        color: var(--portal-col-neutral-6, var(--map-col-text__deprecate));
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+
+      .layer-legend__palette {
+        color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+    }
+  }
+
+  &.legend-container--expanded {
+    width: 12.5rem;
+
+    .legend-container__content,
+    .legend-container__header-expand {
+      display: flex;
+    }
+
+    .legend-container__header {
+      border-radius: var(--map-border-radius-big) var(--map-border-radius-big) 0
+        0;
+    }
+  }
+}
+
+/* TODO: Remove when the new mobile layout is ready. */
+@media only screen and (max-width: 768px) {
+  .legend-container {
+    /* 41px is the height of the bottom nav bar. */
+    bottom: 41px;
+    /* TODO: Update when we deprecate toolbar links. */
+    max-height: calc(100% - 1rem - 41px - var(--max-map-toolbar-link-height) - 2 * var(--map-size-toolbar-link-margin));
+  }
+}

@@ -12,6 +12,7 @@ define([
     content: `${BASE_CLASS}__content`,
     header: `${BASE_CLASS}__header`,
     expandIcon: `${BASE_CLASS}__header-expand`,
+    expanded: `${BASE_CLASS}--expanded`,
   };
 
   /**
@@ -67,7 +68,7 @@ define([
        * Toggles the expanded state of the legend container.
        */
       toggleExpanded() {
-        this.$el.toggleClass("expanded");
+        this.$el.toggleClass(CLASS_NAMES.expanded);
       },
 
       /**
