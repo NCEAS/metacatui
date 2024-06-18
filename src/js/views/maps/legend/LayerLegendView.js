@@ -29,10 +29,16 @@ define([
       className: BASE_CLASS,
 
       /**
-       * The model that this view uses
+       * The palette model that this view uses
        * @type {AssetColorPalette}
        */
       model: null,
+
+      /**
+       * The name of the layer that this legend applies to.
+       * @type {string}
+       */
+      layerName: null,
 
       /** @inheritdoc */
       template: _.template(Template),
@@ -40,6 +46,7 @@ define([
       /** @inheritdoc */
       initialize(options) {
         this.model = options.model;
+        this.layerName = options.layerName;
       },
 
       /** @inheritdoc */
@@ -54,10 +61,18 @@ define([
 
       /** Populates the view template with variabels. */
       renderTemplate() {
+        let name;
+        const property = this.model.get("label") || this.model.get("property");
+        if (this.layerName && property) {
+          name = `${this.layerName} (${property})`;
+        } else {
+          name = this.layerName || property;
+        }
+
         this.$el.html(
           this.template({
             classNames: CLASS_NAMES,
-            name: this.model.get("label"),
+            name,
           }),
         );
       },
