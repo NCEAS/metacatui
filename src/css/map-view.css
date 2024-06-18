@@ -1867,6 +1867,9 @@ other class: .ui-slider-range */
     /* 41px is the height of the bottom nav bar. */
     bottom: 41px;
     /* TODO: Update when we deprecate toolbar links. */
-    max-height: calc(100% - 1rem - 41px - var(--max-map-toolbar-link-height) - 2 * var(--map-size-toolbar-link-margin));
+    max-height: calc(
+      100% - 1rem - 41px - var(--max-map-toolbar-link-height) - 2 *
+        var(--map-size-toolbar-link-margin)
+    );
   }
 }

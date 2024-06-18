@@ -366,22 +366,22 @@ define([
           }
         }
 
-          this.on("change:visible", () => {
-            if (!this.get("mapModel")?.get("showShareUrl")) return;
+        this.on("change:visible", () => {
+          if (!this.get("mapModel")?.get("showShareUrl")) return;
 
-            this.get("mapModel")
-              .get("allLayers")
-              .forEach((layer) => {
-                const layerId = layer.get("layerId");
-                if (layerId && layer.get("visible")) {
-                  SearchParams.addEnabledLayer(layerId);
-                } else {
-                  SearchParams.removeEnabledLayer(layerId);
-                }
-              });
-          });
+          this.get("mapModel")
+            .get("allLayers")
+            .forEach((layer) => {
+              const layerId = layer.get("layerId");
+              if (layerId && layer.get("visible")) {
+                SearchParams.addEnabledLayer(layerId);
+              } else {
+                SearchParams.removeEnabledLayer(layerId);
+              }
+            });
+        });
 
-          this.setListeners();
+        this.setListeners();
       },
 
       /**

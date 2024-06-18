@@ -11,7 +11,7 @@ define([], () => {
     }
 
     isExpanded() {
-      return this.view.$el.hasClass("expanded");
+      return this.view.$el.hasClass("legend-container--expanded");
     }
   };
 });
