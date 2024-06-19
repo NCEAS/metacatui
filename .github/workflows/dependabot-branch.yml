@@ -4,9 +4,8 @@ on:
     types:
       - opened
       - edited
-    branches:
-      - dependabot/*
 jobs:
+  if: startsWith(github.head_ref, 'dependabot/')    
   check-branch:
     runs-on: ubuntu-latest
     permissions:
