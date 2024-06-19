@@ -56,16 +56,14 @@ spec:
               FILENAME=$VERSION.zip;
               wget -O ./$FILENAME {{ .Values.source.package.location }}/$FILENAME;
               unzip $FILENAME -d /tmp/;
-              mv /tmp/metacatui-$VERSION/*  /metacatui/;
+              mkdir -p /metacatui{{ include "metacatui.clean.root" . }};
+              mv /tmp/metacatui-$VERSION/src/* /metacatui{{ include "metacatui.clean.root" . }};
               finish=$(date +%s);
               echo "$FILENAME download and install took $((finish - start)) sec";
         {{- end }}
           volumeMounts:
             - name: {{ .Release.Name }}-mcui-source-files
               mountPath: /metacatui
-            - name: {{ .Release.Name }}-mcui-config-vol
-              subPath: install.sh
-              mountPath: /tmp/install.sh
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -78,35 +76,46 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          {{- with .Values.livenessProbe }}
+          {{- if .Values.livenessProbeEnabled }}
           livenessProbe:
+          {{- if .Values.livenessProbe }}
+            {{- with .Values.livenessProbe }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- else }}
+            httpGet:
+              path: {{ .Values.appConfig.root }}
+              port: http
           {{- end }}
-          {{- with .Values.readinessProbe }}
+          {{- end }}
+          {{- if .Values.readinessProbeEnabled }}
           readinessProbe:
+          {{- if .Values.readinessProbe }}
+            {{- with .Values.readinessProbe }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- else }}
+            httpGet:
+              path: {{ .Values.appConfig.root }}
+              port: http
+          {{- end }}
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            {{- if .Values.appConfig.enabled }}
-            - name: {{ .Release.Name }}-mcui-config-vol
-              mountPath: /usr/share/nginx/html/config/config.js
-              subPath: config.js
-            {{- end }}
             - name: {{ .Release.Name }}-mcui-source-files
-              mountPath: "/usr/share/nginx/html"
-              subPath: "src"
+              mountPath: /usr/share/nginx/html
+            - name: {{ .Release.Name }}-mcui-config-js
+              mountPath: {{ include "metacatui.root.mountpath" . }}/config/config.js
+              subPath: config.js
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
       volumes:
-        {{- if .Values.appConfig.enabled }}
-        - name: {{ .Release.Name }}-mcui-config-vol
+        - name: {{ .Release.Name }}-mcui-config-js
           configMap:
-            name: {{ .Release.Name }}-metacatui-configfiles
+            name: {{ .Release.Name }}-metacatui-config-js
             defaultMode: 0644
-        {{- end }}
         {{- if not .Values.source.pvc }}
         - name: {{ .Release.Name }}-mcui-source-files
           emptyDir: {}

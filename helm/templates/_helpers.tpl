@@ -71,10 +71,25 @@ Populate the dataone cn url
   {{- $d1ClientCnUrl = print $d1ClientCnUrl "/" -}}
 {{- end -}}
 {{- $baseCnURL := regexFind "http.?://[^/]*/" $d1ClientCnUrl }}
-{{- if not $baseCnURL }}
+{{- if not $baseCnURL -}}
 d1CNBaseUrl: "ERROR_IN_URL__{{ $d1ClientCnUrl }}",
-{{- else }}
+{{- else -}}
 d1CNBaseUrl: "{{ $baseCnURL }}",
 {{- end }}
 {{- end }}
+{{- end }}
+
+{{/*
+Remove trailing slash from root, if it exists
+*/}}
+{{- define "metacatui.clean.root" -}}
+{{- $cleanedRoot := regexReplaceAll "/$" .Values.appConfig.root "" -}}
+{{- $cleanedRoot }}
+{{- end }}
+
+{{/*
+generate file path for the web root mount
+*/}}
+{{- define "metacatui.root.mountpath" -}}
+/usr/share/nginx/html{{ include "metacatui.clean.root" . }}
 {{- end }}

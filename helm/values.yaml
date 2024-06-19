@@ -26,45 +26,81 @@ global:
   d1ClientCnUrl: "https://cn.dataone.org/cn"
 
 
-## appConfig contains the MetacatUI.AppConfig settings that can be overridden.
+## @section MetacatUI Configuration Files ('config.js')
 ##
-## Optional configuration. Note you can define any attributes here, to override those that would
-## normally appear in config.js. See full listing in AppModel.js:
+## The k8s version of Metacatui requires two 'config.js' configuration files:
+## 1. the "root config" at the path {root}/config/config.js, and
+## 2. the "theme config" in the theme directory itself (for example, see the knb config.js at:
+##     https://github.com/NCEAS/metacatui/blob/main/src/js/themes/knb/config.js)
+##
+## The "root config" file must, at a minimum, contain the name of the theme to be used, e.g:
+##
+##   MetacatUI.AppConfig = {
+##     theme: "knb"
+##   };
+##
+## ...and metacatui will then load that theme and its "theme config".
+## If any additional settings are defined in the "root config", Metacatui will use them to override
+## corresponding settings in the "theme config".
+##
+## By default, this chart creates a simple "root config" that contains any values of the form:
+## 'key: stringValue,' or 'key: intValue,' provided in the 'appConfig:' section below. If you need
+## to provide more-complex overrides, set 'appConfig.enabled: false', below, and manually create
+## your own configMap named 'YourReleaseName-metacatui-config-js', containing your custom config.js.
+##
+## Note that if you choose not to use one of the themes that are bundled with metacatui, you will
+## need to provide the files for that theme (including its 'theme config' file) on a Persistent
+## Volume. See the MetacatUI documentation for help with creating custom themes:
+## https://nceas.github.io/metacatui/install/configuration/index.html
+##
+
+## @param appConfig The MetacatUI.AppConfig optional override settings
+##
+## Optional configuration. Note you can define any attributes here, to override those that appear
+## in config.js, provided they are of the form: 'key: stringValue,' or 'key: intValue,'.
+##
+## See full listing in AppModel.js:
 ## https://github.com/NCEAS/metacatui/blob/main/src/js/models/AppModel.js
 ##
 ## * * * IMPORTANT NOTE:  * * * DO NOT SET THE FOLLOWING VALUES IN THIS SECTION! * * *
 ## They will be ignored here, because they are populated from the "global" section, above:
 ## * baseUrl:         uses '.Values.global.metacatExternalBaseUrl'
 ## * d1CNBaseUrl:     uses base URL portion of '.Values.global.d1ClientCnUrl'
-##                      - see above for details
 ## * metacatContext:  uses '.Values.global.metacatAppContext'
 ##
 appConfig:
-  ## @param appConfig.enabled Define override values in MetacatUI.AppConfig
-  ## Since we generally want to avoid loading 2 different config.js files, this would typically be
-  ## set to "false" for production deployments, and "true" only for development & test environments.
+  ## @param appConfig.enabled Define theme name and override values in MetacatUI.AppConfig
+  ## If you need to provide more-complex overrides, set 'appConfig.enabled: false', and manually
+  ## create your own configMap named 'YourReleaseName-metacatui-config-js', containing your custom
+  ## config.js.
   ##
   enabled: true
 
-  ## @param appConfig.root The url root to be appended after the metacatui baseUrl.
+  ## @param appConfig.root The url root to be appended after the metacatui baseUrl. Starts with "/"
   ##
   root: "/"
 
   ## @param appConfig.theme Corresponds to the name of a directory in src/js/themes/.
-  ## Uses the 'default' theme if not set
   ##
   theme: "knb"
 
-## Probes
+## @param livenessProbeEnabled Enable livenessProbe. Autoconfigured using .Values.appConfig.root
+## To override autoconfig, keep 'livenessProbeEnabled: true', and define a livenessProbe; e.g:
+##  livenessProbe:
+##    httpGet:
+##      path: /myPath
+##      port: http
 ##
-#livenessProbe:
-#  httpGet:
-#    path: /
-#    port: http
-#readinessProbe:
-#  httpGet:
-#    path: /
-#    port: http
+livenessProbeEnabled: true
+
+## @param readinessProbeEnabled Enable readinessProbe. Autoconfigured using .Values.appConfig.root
+## To override autoconfig, keep 'readinessProbeEnabled: true', and define a readinessProbe; e.g:
+##  readinessProbe:
+##    httpGet:
+##      path: /myPath
+##      port: http
+##
+readinessProbeEnabled: true
 
 service:
   type: ClusterIP
