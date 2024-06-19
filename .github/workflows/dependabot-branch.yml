@@ -5,7 +5,8 @@ on:
       - opened
       - edited
 jobs:
-  if: startsWith(github.head_ref, 'dependabot/')    
+  # For testing, add condition for this branch ("fake-2456-test-gh-action")
+  if: startsWith(github.head_ref, 'dependabot/') || startsWith(github.head_ref, 'fake-2456-test-gh-action')
   check-branch:
     runs-on: ubuntu-latest
     permissions:
