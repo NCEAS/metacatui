@@ -5,8 +5,8 @@ on:
       - opened
       - edited
 jobs:
-  if: startsWith(github.head_ref, 'dependabot/')    
   check-branch:
+    if: startsWith(github.head_ref, 'dependabot/')
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
