@@ -4,6 +4,7 @@ on:
     types:
       - opened
       - edited
+  pull_request:
 jobs:
   check-branch:
     if: startsWith(github.head_ref, 'dependabot/') || startsWith(github.head_ref, 'fake-2456-test-gh-action')
