@@ -15,5 +15,5 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
-          target: main
+          target: fake-2456-test-gh-action
           change-to: develop
