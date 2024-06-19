@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: Vankka/pr-target-branch-action@v3
         env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           target: main
           change-to: develop
