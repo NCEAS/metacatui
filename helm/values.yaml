@@ -131,49 +131,49 @@ ingress:
 ## needed here, unless you wish to deviate from the official metacatui release version defined in
 ## the helm chart (see Chart.yaml)
 ##
-source:
-  ## @param source.from  Options are "package" (the default), "git", or "pvc"
-  ## * "package" will download a release package from the metacatui git repository, unzip it, and
-  ##    install the files in local pod storage (emptyDir{})
-  ## * "git" will clone a specific branch or tag from the metacatui git repository, and install the
-  ##    files in local pod storage (emptyDir{})
-  ## * "pvc" expects to find a pre-configured PVC containing the files to be used. Note you will
-  ##    need to provide values for a pre-configured PVC in 'volumes', below
-  ##
-  from: package
-
-  ## @param source.package (default): Download the official release version defined in Chart.yaml
-  ## Note these settings ignored unless 'source.from:' is set to 'package'
-  ## example:
-  ##    source.from: package
-  ##    source.package.location: "https://github.com/NCEAS/metacatui/archive"
-  ##    source.package.version: "2.26.0"
-  ## ...will download:   https://github.com/NCEAS/metacatui/archive/2.26.0.zip
-  ##
-  package:
-    ## @param source.package.location The remote location where the release zipfile is hosted
-    ##
-    location: "https://github.com/NCEAS/metacatui/archive"
-
-    ## source.package.version override the release version defined in Chart.yaml
-    ## Assumes release is a zipfile named <version>.zip
-    ## LEAVE COMMENTED UNLESS YOU NEED TO OVERRIDE THE CHART SETTING!
-  #    version: "2.29.1"
-
-  ## @param source.git clone a specific branch or tag from the metacatui git repository, and install
-  ## the files in local pod storage (emptyDir{})
-  ## Note these settings ignored unless 'source.from:' is set to 'git'
-  ##
-  git:
-    ## @param source.git.repoUrl the https url of the repo to be cloned
-    repoUrl: "https://github.com/NCEAS/metacatui.git"
-
-    ## @param source.git.revision Any string that makes sense after the command `git checkout`...
-    ## - for example:
-    ##     revision: "tags/2.29.0"    =>     git checkout tags/2.29.0
-    ##     revision: "develop"        =>     git checkout develop
-    ##
-    revision: "develop"
+#source:
+#  ## @param source.from  Options are "package" (the default), "git", or "pvc"
+#  ## * "package" will download a release package from the metacatui git repository, unzip it, and
+#  ##    install the files in local pod storage (emptyDir{})
+#  ## * "git" will clone a specific branch or tag from the metacatui git repository, and install the
+#  ##    files in local pod storage (emptyDir{})
+#  ## * "pvc" expects to find a pre-configured PVC containing the files to be used. Note you will
+#  ##    need to provide values for a pre-configured PVC in 'volumes', below
+#  ##
+#  from: package
+#
+#  ## @param source.package (default): Download the official release version defined in Chart.yaml
+#  ## Note these settings ignored unless 'source.from:' is set to 'package'
+#  ## example:
+#  ##    source.from: package
+#  ##    source.package.location: "https://github.com/NCEAS/metacatui/archive"
+#  ##    source.package.version: "2.26.0"
+#  ## ...will download:   https://github.com/NCEAS/metacatui/archive/2.26.0.zip
+#  ##
+#  package:
+#    ## @param source.package.location The remote location where the release zipfile is hosted
+#    ##
+#    location: "https://github.com/NCEAS/metacatui/archive"
+#
+#    ## source.package.version override the release version defined in Chart.yaml
+#    ## Assumes release is a zipfile named <version>.zip
+#    ## LEAVE COMMENTED UNLESS YOU NEED TO OVERRIDE THE CHART SETTING!
+#  #    version: "2.29.1"
+#
+#  ## @param source.git clone a specific branch or tag from the metacatui git repository, and install
+#  ## the files in local pod storage (emptyDir{})
+#  ## Note these settings ignored unless 'source.from:' is set to 'git'
+#  ##
+#  git:
+#    ## @param source.git.repoUrl the https url of the repo to be cloned
+#    repoUrl: "https://github.com/NCEAS/metacatui.git"
+#
+#    ## @param source.git.revision Any string that makes sense after the command `git checkout`...
+#    ## - for example:
+#    ##     revision: "tags/2.29.0"    =>     git checkout tags/2.29.0
+#    ##     revision: "develop"        =>     git checkout develop
+#    ##
+#    revision: "develop"
 
 ## volumes: Uncomment and provide values if you want to use a pre-configured PVC instead of doing a
 ## git checkout

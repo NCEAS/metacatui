@@ -93,3 +93,21 @@ generate file path for the web root mount
 {{- define "metacatui.root.mountpath" -}}
 /usr/share/nginx/html{{ include "metacatui.clean.root" . }}
 {{- end }}
+
+{{/*
+validate and clean up '.Values.source.from'
+*/}}
+{{- define "metacatui.source.from" -}}
+{{- $source := "" }}
+{{- $defaultSrc := "package" }}
+{{- if not (and .Values.source .Values.source.from) }}
+{{- $source = $defaultSrc }}
+{{- else }}
+{{- $source = .Values.source.from }}
+{{- end }}
+{{- $allowedSourceVals := list "package" "git" "pvc" }}
+{{- if not (has $source $allowedSourceVals) }}
+{{- $source = $defaultSrc }}
+{{- end }}
+{{- $source }}
+{{- end }}
