@@ -32,14 +32,14 @@ define([], () => {
 
   /**
    * Set the destination related URL search params and update the URL.
-   * @param {string[]} [layers] - Array of layerIds for encoding into the
+   * @param {string[]} [layerIds] - Array of layerIds for encoding into the
    * enabled layers search parameter.
    */
-  const updateEnabledLayerParam = (layers) => {
+  const updateEnabledLayerParam = (layerIds) => {
     const url = new URL(window.location.href);
     url.searchParams.set(
       ENABLED_LAYERS_ID,
-      layers.filter((layer) => layer).join(","),
+      layerIds.filter((layer) => layer).join(","),
     );
 
     window.history.replaceState(null, "", url);
@@ -57,32 +57,30 @@ define([], () => {
 
   /**
    * Add a layer ID to the layers search parameter.
-   * @param {string} [layer] - A layerId to add to the enabled layers search
+   * @param {string} [layerId] - A layerId to add to the enabled layers search
    * parameter.
    */
-  const addEnabledLayer = (layer) => {
+  const addEnabledLayer = (layerId) => {
     if (typeof layer !== "string") return;
 
-    const layers = getEnabledLayers();
-    if (!layers.includes(layer)) {
-      updateEnabledLayerParam([...layers, layer]);
+    const layerIds = getEnabledLayers();
+    if (!layerIds.includes(layerId)) {
+      updateEnabledLayerParam([...layerIds, layerId]);
     }
   };
 
   /**
    * Remove a layer ID from the layers search parameter.
-   * @param {string} [layerToRemove] - A layerId to remove from the enabled
+   * @param {string} [layerIdToRemove] - A layerId to remove from the enabled
    * layers search parameter.
    */
-  const removeEnabledLayer = (layerToRemove) => {
-    if (typeof layerToRemove !== "string") return;
+  const removeEnabledLayer = (layerIdToRemove) => {
+    if (typeof layerIdToRemove !== "string") return;
 
     const layers = getEnabledLayers();
-    if (layers.includes(layerToRemove)) {
-      updateEnabledLayerParam(
-        layers.filter((layer) => layer !== layerToRemove),
-      );
-    }
+    updateEnabledLayerParam(
+      layers.filter((layer) => layer !== layerIdToRemove),
+    );
   };
 
   /**
