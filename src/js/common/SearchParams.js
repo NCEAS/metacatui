@@ -39,7 +39,7 @@ define([], () => {
     const url = new URL(window.location.href);
     url.searchParams.set(
       ENABLED_LAYERS_ID,
-      layerIds.filter((layer) => layer).join(","),
+      layerIds.filter((layerId) => layerId).join(","),
     );
 
     window.history.replaceState(null, "", url);
@@ -61,7 +61,7 @@ define([], () => {
    * parameter.
    */
   const addEnabledLayer = (layerId) => {
-    if (typeof layer !== "string") return;
+    if (typeof layerId !== "string") return;
 
     const layerIds = getEnabledLayers();
     if (!layerIds.includes(layerId)) {
@@ -77,9 +77,9 @@ define([], () => {
   const removeEnabledLayer = (layerIdToRemove) => {
     if (typeof layerIdToRemove !== "string") return;
 
-    const layers = getEnabledLayers();
+    const layerIds = getEnabledLayers();
     updateEnabledLayerParam(
-      layers.filter((layer) => layer !== layerIdToRemove),
+      layerIds.filter((layerId) => layerId !== layerIdToRemove),
     );
   };
 
