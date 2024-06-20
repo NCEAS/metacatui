@@ -1855,8 +1855,7 @@ other class: .ui-slider-range */
   }
 
   .legend-container__header {
-    border-radius: var(--map-border-radius-big) var(--map-border-radius-big) 0
-      0;
+    border-radius: var(--map-border-radius-big) var(--map-border-radius-big) 0 0;
   }
 }
 
