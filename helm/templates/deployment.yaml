@@ -99,7 +99,7 @@ spec:
             {{- end }}
           {{- else }}
             httpGet:
-              path: {{ .Values.appConfig.root }}
+              path: {{ .Values.global.metacatUiWebRoot }}
               port: http
           {{- end }}
           {{- end }}
@@ -111,34 +111,48 @@ spec:
             {{- end }}
           {{- else }}
             httpGet:
-              path: {{ .Values.appConfig.root }}
+              path: {{ .Values.global.metacatUiWebRoot }}
               port: http
           {{- end }}
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
+            {{- with .Values.volumeMounts }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
             - name: {{ .Release.Name }}-mcui-source-files
               mountPath: /usr/share/nginx/html
+              {{- if .Values.customTheme.enabled }}
+            - name: {{ .Release.Name }}-mcui-custom-theme-files
+              mountPath: {{ include "metacatui.root.mountpath" . }}/js/themes/{{ .Values.global.metacatUiThemeName }}
+                {{- if .Values.customTheme.subPath }}
+              subPath: {{ .Values.customTheme.subPath }}
+                {{- end }}
+              {{- end }}
             - name: {{ .Release.Name }}-mcui-config-js
               mountPath: {{ include "metacatui.root.mountpath" . }}/config/config.js
               subPath: config.js
-          {{- with .Values.volumeMounts }}
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
       volumes:
         - name: {{ .Release.Name }}-mcui-config-js
           configMap:
             name: {{ .Release.Name }}-metacatui-config-js
             defaultMode: 0644
-        {{- if ne $source "pvc" }}
         - name: {{ .Release.Name }}-mcui-source-files
+          {{- if eq $source "pvc" }}
+          persistentVolumeClaim:
+            claimName: {{ required "claimName_REQUIRED" .Values.source.pvc.sourceCodeClaimName }}
+          {{- else }}
           emptyDir: {}
-        {{- else }}
-        {{- with .Values.volumes }}
-          {{- toYaml . | nindent 8 }}
-        {{- end }}
-        {{- end }}
+          {{- end }}
+          {{- if .Values.customTheme.enabled }}
+        - name: {{ .Release.Name }}-mcui-custom-theme-files
+          persistentVolumeClaim:
+            claimName: {{ required "claimName_REQUIRED" .Values.customTheme.claimName }}
+          {{- end }}
+          {{- with .Values.volumes }}
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
