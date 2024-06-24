@@ -1,13 +1,11 @@
 define([
   "views/maps/legend/ContinuousSwatchView",
-  "models/maps/AssetColor",
-  "collections/maps/AssetColors",
+  "models/maps/AssetColorPalette",
   "/test/js/specs/shared/clean-state.js",
   "/test/js/specs/unit/views/maps/legend/ContinuousSwatchViewHarness.js",
 ], (
   ContinuousSwatchView,
-  AssetColor,
-  AssetColors,
+  AssetColorPalette,
   cleanState,
   ContinuousSwatchViewHarness,
 ) => {
@@ -16,7 +14,9 @@ define([
   describe("ContinuousSwatchView Test Suite", () => {
     const state = cleanState(() => {
       const view = new ContinuousSwatchView({
-        collection: new AssetColors([new AssetColor(), new AssetColor()]),
+        model: new AssetColorPalette({
+          colors: [{}, {}],
+        }),
       });
       const harness = new ContinuousSwatchViewHarness(view);
 
@@ -35,6 +35,22 @@ define([
 
         expect(state.harness.getSwatch().css("background-image")).to.not.be
           .empty;
+      });
+
+      it("rerenders when minVal/maxVal of the palette changes", () => {
+        // Because of how backbone event handlers are triggered, we have to bind spy before the object creation.
+        // https://stackoverflow.com/questions/8441612/why-is-this-sinon-spy-not-being-called-when-i-run-this-test
+        const spy = sinon.spy(ContinuousSwatchView.prototype, "render");
+        const view = new ContinuousSwatchView({
+          model: new AssetColorPalette({
+            colors: [{}, {}],
+          }),
+        });
+
+        view.model.set("minVal", -10);
+        view.model.set("maxVal", 10);
+
+        expect(spy.callCount).to.equal(2);
       });
     });
   });

@@ -30,20 +30,30 @@ define([
       template: _.template(Template),
 
       /**
-       * The colors collection that this view uses
-       * @type {AssetColors}
+       * The palette model that this view uses
+       * @type {AssetColorPalette}
        */
-      collection: null,
+      model: null,
 
       /** @inheritdoc */
       initialize(options) {
-        this.collection = options.collection;
+        this.model = options.model;
+
+        this.stopListening(this.model, "change:minVal change:maxVal");
+        this.listenTo(this.model, "change:minVal change:maxVal", this.render);
       },
 
       /** @inheritdoc */
       render() {
-        const min = this.collection.first().get("value");
-        const max = this.collection.last().get("value");
+        const colors = this.model.get("colors");
+        const min =
+          colors.first().get("value") === "min"
+            ? this.model.get("minVal")
+            : colors.first().get("value");
+        const max =
+          colors.last().get("value") === "max"
+            ? this.model.get("maxVal")
+            : colors.last().get("value");
         const mid = (min + max) / 2;
         const range = max - min;
         this.$el.html(
@@ -55,7 +65,7 @@ define([
           }),
         );
 
-        const gradient = this.collection.reduce(
+        const gradient = colors.reduce(
           (memo, color) => memo + (memo ? ", " : "") + color.getCss(),
           "",
         );

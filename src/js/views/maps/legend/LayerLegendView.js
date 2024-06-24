@@ -100,7 +100,7 @@ define([
       renderContinuousPalette() {
         this.renderTemplate();
         const swatch = new ContinuousSwatchView({
-          collection: this.model.get("colors"),
+          model: this.model,
         });
         swatch.render();
 
