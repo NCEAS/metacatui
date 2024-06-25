@@ -28,7 +28,7 @@ define([
    * @name LayerLegendView
    * @augments Backbone.View
    * @screenshot views/maps/legend/LayerLegendView.png
-   * @since 0.0.0
+   * @since 2.30.0
    * @constructs
    */
   const LayerLegendView = Backbone.View.extend(

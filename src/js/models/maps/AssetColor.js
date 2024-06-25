@@ -143,9 +143,9 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
       },
 
       /**
-      @returns {string} A string in the format of a css color value.
-      @since 0.0.0
-      */
+       * @returns {string} A string in the format of a css color value.
+       * @since 2.30.0
+       */
       getCss() {
         const color = this.get("color");
         return `rgba(${color.red * 255}, ${color.green * 255}, ${color.blue * 255}, ${color.alpha * 255})`;

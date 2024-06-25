@@ -24,7 +24,7 @@ define([
    * @name ShareUrlView
    * @augments Backbone.View
    * @screenshot views/maps/ShareUrlView.png
-   * @since 0.0.0
+   * @since 2.30.0
    * @constructs
    */
   const ShareUrlView = Backbone.View.extend(
