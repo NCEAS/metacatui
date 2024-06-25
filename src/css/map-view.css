@@ -63,9 +63,11 @@
   --map-toolbar-link-width: calc(
     var(--map-size-toolbar-link) + 2 * var(--map-size-toolbar-link-padding)
   );
-  /* Assumes 4 links max. */
+  /* Assumes 5 links max. */
+  --max-num-toolbar-links: 5;
   --max-map-toolbar-link-height: calc(
-    4 * var(--map-size-toolbar-link) + 3 * var(--map-size-toolbar-link-gap) + 2 *
+    var(--max-num-toolbar-links) * var(--map-size-toolbar-link) +
+      (var(--max-num-toolbar-links) - 1) * var(--map-size-toolbar-link-gap) + 2 *
       var(--map-size-toolbar-link-padding)
   );
   --map-width-feature-info: calc(var(--map-width-toolbar) * 1.25);
