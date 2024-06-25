@@ -112,7 +112,7 @@ define([], () => {
      * @param {number} value The number value to be formatted.
      * @param {number} range The range of numerics this value can fall in.
      * @returns {string} A formatted number based on the magnitude of `range`.
-     * @since 0.0.0
+     * @since 2.30.0
      */
     formatNumber(value, range) {
       if (typeof value !== "number") {
@@ -133,7 +133,7 @@ define([], () => {
      * Calculate the number of decimal places we should use based on the range of the data.
      * @param {number} range The range of data values.
      * @returns {number} The number of decimal places we should use.
-     * @since 0.0.0
+     * @since 2.30.0
      */
     getNumDecimalPlaces(range) {
       if (range < 0.0001 || range > 100000) {

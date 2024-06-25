@@ -17,7 +17,7 @@ define([
    * @name CategoricalSwatchView
    * @augments Backbone.View
    * @screenshot views/maps/legend/CategoricalSwatchView.png
-   * @since 0.0.0
+   * @since 2.30.0
    * @constructs
    */
   const CategoricalSwatchView = Backbone.View.extend(

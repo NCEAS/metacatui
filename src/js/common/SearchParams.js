@@ -137,7 +137,7 @@ define([], () => {
    * @description Helpful functions for dealing with various search parameter
    * changes.
    * @type {object}
-   * @since 0.0.0
+   * @since 2.30.0
    */
   return {
     addEnabledLayer,

@@ -18,7 +18,7 @@ define([
    * @name ContinuousSwatchView
    * @augments Backbone.View
    * @screenshot views/maps/legend/ContinuousSwatchView.png
-   * @since 0.0.0
+   * @since 2.30.0
    * @constructs
    */
   const ContinuousSwatchView = Backbone.View.extend(

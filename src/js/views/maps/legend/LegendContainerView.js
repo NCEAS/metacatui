@@ -22,7 +22,7 @@ define([
    * @name LegendContainerView
    * @augments Backbone.View
    * @screenshot views/maps/legend/LegendContainerView.png
-   * @since 0.0.0
+   * @since 2.30.0
    * @constructs
    */
   const LegendContainerView = Backbone.View.extend(

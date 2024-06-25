@@ -12,7 +12,7 @@ define([
    * @classcategory Views/Maps
    * @name MapWidgetContainerView
    * @augments Backbone.View
-   * @since 0.0.0
+   * @since 2.30.0
    * @constructs
    */
   const MapWidgetContainerView = Backbone.View.extend(
