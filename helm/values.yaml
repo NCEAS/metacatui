@@ -96,7 +96,7 @@ appConfig:
 customTheme:
   ## @param customTheme.enabled Provide custom Theme files on a pre-configured PVC
   ##
-  enabled: true
+  enabled: false
 
   ## @param customTheme.themeClaimName substitute your own PVC name
   ##

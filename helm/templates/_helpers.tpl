@@ -83,7 +83,7 @@ d1CNBaseUrl: "{{ $baseCnURL }}",
 Remove trailing slash from root, if it exists
 */}}
 {{- define "metacatui.clean.root" -}}
-{{- $cleanedRoot := regexReplaceAll "/$" .Values.appConfig.root "" -}}
+{{- $cleanedRoot := regexReplaceAll "/$" .Values.global.metacatUiWebRoot "" -}}
 {{- $cleanedRoot }}
 {{- end }}
 

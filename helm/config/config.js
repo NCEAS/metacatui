@@ -11,7 +11,7 @@ MetacatUI.AppConfig = {
   {{- end -}}
   {{- include "metacatui.cn.url" . | nindent 4 }}
   theme: {{ required "metacatUiThemeName_is_REQUIRED" .Values.global.metacatUiThemeName | quote }},
-  root: {{ required "root_is_REQUIRED" .Values.appConfig.root | quote }},
+  root: {{ required "root_is_REQUIRED" .Values.global.metacatUiWebRoot | quote }},
   metacatContext: {{ required "metacatAppContext_is_REQUIRED" .Values.global.metacatAppContext | quote }},
   baseUrl: {{ required "metacatExternalBaseUrl_is_REQUIRED"  .Values.global.metacatExternalBaseUrl | quote }}
 }
