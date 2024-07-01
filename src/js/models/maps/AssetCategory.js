@@ -5,13 +5,14 @@ define([
   "models/maps/Map",
   "collections/maps/MapAssets",
   "common/IconUtilities",
-], (Backbone, MapModel, MapAssets, IconUtilities) => {
+  "common/SearchParams",
+], (Backbone, MapModel, MapAssets, IconUtilities, SearchParams) => {
   /**
    * @classdesc A AssetCategory Model contains metadata about the category, like a label and an icon.
    * @classcategory Models/Maps
    * @class AssetCategory
    * @name AssetCategory
-   * @extends Backbone.Model
+   * @augments Backbone.Model
    * @since 2.28.0
    * @constructor
    */
@@ -35,7 +36,7 @@ define([
        * SVG file that has no fills, borders, or styles set on it (since the icon will
        * be shaded dynamically by the maps CSS using a fill attribute). It must use a
        * viewbox property rather than a height and width.
-       * @property {Boolean} [expanded = false] Set to true when this category has been
+       * @property {boolean} [expanded = false] Set to true when this category has been
        * expanded by the user.
        * @property {MapAssets} mapAssets The data to render in the map.
        */
@@ -50,7 +51,7 @@ define([
       /**
        * The source of a specific category to show in the ToolBarView, as well as
        * display properties of the asset.
-       * @typedef {Object} AssetCategoryConfig
+       * @typedef {object} AssetCategoryConfig
        * @name MapConfig#AssetCategoryConfig
        * @property {string} label - A user friendly name for this category, to be
        * displayed in a map.
@@ -71,7 +72,23 @@ define([
         if (!categoryConfig?.layers) {
           throw new Error(`Category ${categoryConfig.label} has empty layers.`);
         }
-        this.set("mapAssets", new MapAssets(categoryConfig.layers));
+
+        const searchParamLayerIds = SearchParams.getEnabledLayers();
+        const layers = categoryConfig.layers.map((layer) => {
+          // Consider portal configuration and URL search params.
+          const visible = searchParamLayerIds.length
+            ? Boolean(layer.layerId) &&
+              searchParamLayerIds.includes(layer.layerId)
+            : layer.visible;
+
+          return {
+            ...layer,
+            configuredVisibility: layer.visible,
+            originalVisibility: visible,
+            visible,
+          };
+        });
+        this.set("mapAssets", new MapAssets(layers));
 
         this.set("label", categoryConfig.label);
 

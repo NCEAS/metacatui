@@ -1,17 +1,18 @@
 "use strict";
 
-define(["backbone", "models/maps/Map", "views/maps/CesiumWidgetView"], (
-  Backbone,
-  Map,
-  CesiumWidgetView,
-) => {
+define([
+  "backbone",
+  "views/maps/CesiumWidgetView",
+  "views/maps/legend/LegendContainerView",
+  "views/maps/ScaleBarView",
+], (Backbone, CesiumWidgetView, LegendContainerView, ScaleBarView) => {
   /**
    * @class MapWidgetContainerView
    * @classdesc A container for CesiumWidgetView and other map overlays, e.g. lat/lng, legends, etc.
    * @classcategory Views/Maps
    * @name MapWidgetContainerView
    * @augments Backbone.View
-   * @since 0.0.0
+   * @since 2.30.0
    * @constructs
    */
   const MapWidgetContainerView = Backbone.View.extend(
@@ -33,7 +34,12 @@ define(["backbone", "models/maps/Map", "views/maps/CesiumWidgetView"], (
 
       /** @inheritdoc */
       render() {
-        this.renderMapWidget(this.el, this.model);
+        this.renderMapWidget();
+        this.renderLegendContainer();
+
+        if (this.model.get("showScaleBar")) {
+          this.renderScaleBar();
+        }
       },
 
       /** Renders Cesium map. Currently, this uses the MapWidgetContainerView, but this function could be modified to use an alternative map widget in the future. */
@@ -43,6 +49,51 @@ define(["backbone", "models/maps/Map", "views/maps/CesiumWidgetView"], (
           model: this.model,
         });
         mapWidget.render();
+      },
+
+      /** Renders legend overlay. */
+      renderLegendContainer() {
+        const legendContainerView = new LegendContainerView({
+          model: this.model,
+        });
+        legendContainerView.render();
+        this.$el.append(legendContainerView.el);
+      },
+
+      /**
+       * Renders the scale bar view that shows the current position of the mouse on the
+       * map.
+       */
+      renderScaleBar() {
+        const interactions = this.model.get("interactions");
+        if (!interactions) {
+          this.listenToOnce(
+            this.model,
+            "change:interactions",
+            this.renderScaleBar,
+          );
+          return;
+        }
+        const scaleBar = new ScaleBarView({
+          // el: this.el,
+          scaleModel: interactions.get("scale"),
+          pointModel: interactions.get("mousePosition"),
+        });
+        scaleBar.render();
+        this.$el.append(scaleBar.el);
+
+        // If the interaction model or relevant sub-models are ever completely
+        // replaced for any reason, re-render the scale bar.
+        this.listenToOnce(
+          interactions,
+          "change:scale change:mousePosition",
+          this.renderScaleBar,
+        );
+        this.listenToOnce(
+          this.model,
+          "change:interactions",
+          this.renderScaleBar,
+        );
       },
     },
   );

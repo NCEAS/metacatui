@@ -57,6 +57,7 @@
     "./js/specs/unit/models/maps/assets/CesiumGeohash.spec.js",
     "./js/specs/unit/common/Utilities.spec.js",
     "./js/specs/unit/common/IconUtilities.spec.js",
+    "./js/specs/unit/common/SearchParams.spec.js",
     "./js/specs/unit/models/maps/AssetCategory.spec.js",
     "./js/specs/unit/collections/maps/AssetCategories.spec.js",
     "./js/specs/unit/models/maps/Map.spec.js",
@@ -64,11 +65,16 @@
     "./js/specs/unit/views/maps/LayersPanelView.spec.js",
     "./js/specs/unit/views/maps/LayerItemView.spec.js",
     "./js/specs/unit/views/maps/SearchInputView.spec.js",
+    "./js/specs/unit/views/maps/ShareUrlView.spec.js",
     "./js/specs/unit/models/Search.spec.js",
     "./js/specs/unit/models/SolrResult.spec.js",
     "./js/specs/unit/models/DataONEObject.spec.js",
     "./js/specs/unit/views/maps/MapView.spec.js",
-    "./js/specs/unit/views/maps/MapWidgetContainerView.spec.js"
+    "./js/specs/unit/views/maps/MapWidgetContainerView.spec.js",
+    "./js/specs/unit/views/maps/legend/LayerLegendView.spec.js",
+    "./js/specs/unit/views/maps/legend/LegendContainerView.spec.js",
+    "./js/specs/unit/views/maps/legend/CategoricalSwatchView.spec.js",
+    "./js/specs/unit/views/maps/legend/ContinuousSwatchView.spec.js"
   ],
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",

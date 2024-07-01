@@ -9,7 +9,6 @@ define([
   // SubViews
   "views/maps/MapWidgetContainerView",
   "views/maps/ToolbarView",
-  "views/maps/ScaleBarView",
   "views/maps/FeatureInfoView",
   "views/maps/LayerDetailsView",
   // CSS
@@ -23,7 +22,6 @@ define([
   // SubViews
   MapWidgetContainerView,
   ToolbarView,
-  ScaleBarView,
   FeatureInfoView,
   LayerDetailsView,
   // CSS
@@ -31,7 +29,6 @@ define([
 ) => {
   const CLASS_NAMES = {
     mapWidgetContainer: "map-view__map-widget-container",
-    scaleBarContainer: "map-view__scale-bar-container",
     featureInfoContainer: "map-view__feature-info-container",
     toolbarContainer: "map-view__toolbar-container",
     layerDetailsContainer: "map-view__layer-details-container",
@@ -127,13 +124,10 @@ define([
         // Render the (Cesium) map
         this.renderMapWidget();
 
-        // Optionally add the toolbar, layer details, scale bar, and feature info box.
+        // Optionally add the toolbar, layer details, and feature info box.
         if (this.model.get("showToolbar")) {
           this.renderToolbar();
           this.renderLayerDetails();
-        }
-        if (this.model.get("showScaleBar")) {
-          this.renderScaleBar();
         }
         if (
           this.model.get("showFeatureInfo") &&
@@ -233,41 +227,6 @@ define([
       },
 
       /**
-       * Renders the scale bar view that shows the current position of the mouse on the
-       * map.
-       */
-      renderScaleBar() {
-        const interactions = this.model.get("interactions");
-        if (!interactions) {
-          this.listenToOnce(
-            this.model,
-            "change:interactions",
-            this.renderScaleBar,
-          );
-          return;
-        }
-        this.scaleBar = new ScaleBarView({
-          el: this.subElements.scaleBarContainer,
-          scaleModel: interactions.get("scale"),
-          pointModel: interactions.get("mousePosition"),
-        });
-        this.scaleBar.render();
-
-        // If the interaction model or relevant sub-models are ever completely
-        // replaced for any reason, re-render the scale bar.
-        this.listenToOnce(
-          interactions,
-          "change:scale change:mousePosition",
-          this.renderScaleBar,
-        );
-        this.listenToOnce(
-          this.model,
-          "change:interactions",
-          this.renderScaleBar,
-        );
-      },
-
-      /**
        * Get a list of the views that this view contains.
        * @returns {Backbone.View[]} Returns an array of all of the sub-views.
        * Some may be undefined if they have not been rendered yet.
@@ -279,7 +238,6 @@ define([
           this.toolbar,
           this.featureInfo,
           this.layerDetails,
-          this.scaleBar,
         ];
       },
 
