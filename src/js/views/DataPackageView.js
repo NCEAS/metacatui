@@ -983,12 +983,6 @@
               title.slice(title.length - 75, title.length)
             : title;
 
-        // Set the package URL
-        if (MetacatUI.appModel.get("packageServiceUrl"))
-          packageUrl =
-            MetacatUI.appModel.get("packageServiceUrl") +
-            encodeURIComponent(dataPackage.id);
-
         /**
          * The HTML content for the data package header.
          *
@@ -999,7 +993,6 @@
           title: title,
           titleTooltip: titleTooltip,
           disablePackageDownloads: false,
-          downloadUrl: packageUrl,
         });
         this.$el.append(tableRow);
 
@@ -1014,7 +1007,7 @@
         this.downloadButtonView.render();
 
         // Add the downloadButtonView el to the span
-        this.$el.find(".downloadAction").html(this.downloadButtonView.el);
+        this.$el.find(".downloadAction[data-id='" + dataPackage.id + "']").html(this.downloadButtonView.el);
 
         // Filter out the packages from the member list
         members = _.filter(members, function (m) {
