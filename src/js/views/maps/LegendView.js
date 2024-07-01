@@ -6,8 +6,9 @@ define([
   "backbone",
   "d3",
   "models/maps/AssetColorPalette",
+  "common/Utilities",
   "text!templates/maps/legend.html",
-], function ($, _, Backbone, d3, AssetColorPalette, Template) {
+], ($, _, Backbone, d3, AssetColorPalette, Utilities, Template) => {
   /**
    * @class LegendView
    * @classdesc Creates a legend for a given Map Asset (Work In Progress). Currently
@@ -17,12 +18,12 @@ define([
    * palettes (including 'continuous' and 'classified')
    * @classcategory Views/Maps
    * @name LegendView
-   * @extends Backbone.View
+   * @augments Backbone.View
    * @screenshot views/maps/LegendView.png
    * @since 2.18.0
    * @constructs
    */
-  var LegendView = Backbone.View.extend(
+  const LegendView = Backbone.View.extend(
     /** @lends LegendView.prototype */ {
       /**
        * The type of View this is
@@ -51,7 +52,7 @@ define([
 
       /**
        * The events this view will listen to and the associated function to call.
-       * @type {Object}
+       * @type {object}
        */
       events: {
         // 'event selector': 'function',
@@ -69,7 +70,7 @@ define([
        * For vector preview legends, the relative dimensions to use. The SVG's
        * dimensions are set with a viewBox property only, so the height and width
        * represent an aspect ratio rather than absolute size.
-       * @type {Object}
+       * @type {object}
        * @property {number} previewSvgDimensions.width - The width of the entire SVG
        * @property {number} previewSvgDimensions.height - The height of the entire SVG
        * @property {number} squareSpacing - Maximum spacing between each of the squares
@@ -85,7 +86,7 @@ define([
       /**
        * Classes that are used to identify, or that are added to, the HTML elements that
        * comprise this view.
-       * @type {Object}
+       * @type {object}
        * @property {string} preview Additional class to add to legend that are the
        * preview/thumbnail version
        * @property {string} previewSVG The SVG element that holds the shapes with all
@@ -103,39 +104,39 @@ define([
 
       /**
        * Executed when a new LegendView is created
-       * @param {Object} [options] - A literal object with options to pass to the view
+       * @param {object} [options] - A literal object with options to pass to the view
        */
-      initialize: function (options) {
+      initialize(options) {
         try {
           // Get all the options and apply them to this view
-          if (typeof options == "object") {
+          if (typeof options === "object") {
             for (const [key, value] of Object.entries(options)) {
               this[key] = value;
             }
           }
         } catch (e) {
-          console.log("A LegendView failed to initialize. Error message: " + e);
+          console.log(`A LegendView failed to initialize. Error message: ${e}`);
         }
       },
 
       /**
        * Renders this view
-       * @return {LegendView} Returns the rendered view element
+       * @returns {LegendView} Returns the rendered view element
        */
-      render: function () {
+      render() {
         try {
           if (!this.model) {
             return;
           }
 
           // Save a reference to this view
-          var view = this;
+          const view = this;
 
           // The color palette maps colors to attributes of the map asset
           let colorPalette = null;
           // For color palettes,
           let paletteType = null;
-          const mode = this.mode;
+          const { mode } = this;
 
           // Insert the template into the view
           this.$el.html(this.template({}));
@@ -183,9 +184,8 @@ define([
           return this;
         } catch (error) {
           console.log(
-            "There was an error rendering a Legend View" +
-              ". Error details: " +
-              error,
+            `There was an error rendering a Legend View` +
+              `. Error details: ${error}`,
           );
         }
       },
@@ -195,7 +195,7 @@ define([
        * @param {string} thumbnailURL A url to use for the src property of the thumbnail
        * image
        */
-      renderImagePreviewLegend: function (thumbnailURL) {
+      renderImagePreviewLegend(thumbnailURL) {
         try {
           const img = new Image();
           img.src = thumbnailURL;
@@ -203,9 +203,8 @@ define([
           this.el.append(img);
         } catch (error) {
           console.log(
-            "There was an error rendering an image preview legend in a LegendView" +
-              ". Error details: " +
-              error,
+            `There was an error rendering an image preview legend in a LegendView` +
+              `. Error details: ${error}`,
           );
         }
       },
@@ -216,7 +215,7 @@ define([
        * @param {AssetColorPalette} colorPalette - The AssetColorPalette that maps
        * feature attributes to colors, used to create the legend
        */
-      renderCategoricalPreviewLegend: function (colorPalette) {
+      renderCategoricalPreviewLegend(colorPalette) {
         try {
           if (!colorPalette) {
             return;
@@ -229,15 +228,15 @@ define([
             return;
           }
           // The max width of the SVG, to be reduced if there are few colours
-          let width = this.previewSvgDimensions.width;
+          let { width } = this.previewSvgDimensions;
           // The height of the SVG
-          const height = this.previewSvgDimensions.height;
+          const { height } = this.previewSvgDimensions;
           // Height and width of the square is the height of the SVG, leaving some room
           // for shadow to show
           const squareSize = height * 0.92;
           // Maximum spacing between squares. When not hovered, the squares will be
           // spaced 80% of this value.
-          let squareSpacing = this.previewSvgDimensions.squareSpacing;
+          const { squareSpacing } = this.previewSvgDimensions;
           // The maximum number of squares that can fit on the SVG without any spilling
           // over
           const maxNumSquares = Math.floor(
@@ -250,7 +249,7 @@ define([
             data = data.slice(0, maxNumSquares);
           }
           // Add index to data for sorting later (also works as unique ID)
-          data.forEach(function (d, i) {
+          data.forEach((d, i) => {
             d.i = i;
           });
 
@@ -260,8 +259,8 @@ define([
           // SVG element
           const svg = this.createSVG({
             dropshadowFilter: true,
-            width: width,
-            height: height,
+            width,
+            height,
           });
 
           // Add the preview class and dropshadow to the SVG
@@ -270,6 +269,11 @@ define([
 
           // Calculates the placement of the square along x-axis, when SVG is hovered
           // and when it's not
+          /**
+           *
+           * @param i
+           * @param hovered
+           */
           function getSquareX(i, hovered) {
             const multiplier = hovered ? 1 : 0.8;
             return width - squareSize - i * (squareSpacing * multiplier);
@@ -281,15 +285,15 @@ define([
             .data(data)
             .enter()
             .append("rect")
-            .attr("x", function (d, i) {
-              return getSquareX(i, false);
-            })
+            .attr("x", (d, i) => getSquareX(i, false))
             .attr("height", squareSize)
             .attr("width", squareSize)
             .attr("rx", squareSize * 0.1)
-            .style("fill", function (d) {
-              return `rgb(${d.color.red * 255},${d.color.green * 255},${d.color.blue * 255})`;
-            })
+            .style(
+              "fill",
+              (d) =>
+                `rgb(${d.color.red * 255},${d.color.green * 255},${d.color.blue * 255})`,
+            )
             .style("filter", "url(#dropshadow)");
 
           // For legend with multiple colours, show a tooltip with the value/label when
@@ -298,23 +302,19 @@ define([
           if (data.length > 1) {
             // Space the squares further apart when they are hovered over
             svg
-              .on("mouseenter", function () {
+              .on("mouseenter", () => {
                 if (view.model.get("visible")) {
                   legendSquares
                     .transition()
                     .duration(250)
-                    .attr("x", function (d, i) {
-                      return getSquareX(i, true);
-                    });
+                    .attr("x", (d, i) => getSquareX(i, true));
                 }
               })
-              .on("mouseleave", function () {
+              .on("mouseleave", () => {
                 legendSquares
                   .transition()
                   .duration(200)
-                  .attr("x", function (d, i) {
-                    return getSquareX(i, false);
-                  });
+                  .attr("x", (d, i) => getSquareX(i, false));
               });
 
             legendSquares
@@ -332,10 +332,7 @@ define([
                       title: d.label || d.value,
                       container: view.$el,
                       animation: false,
-                      template:
-                        '<div class="tooltip ' +
-                        view.classes.tooltip +
-                        '"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>',
+                      template: `<div class="tooltip ${view.classes.tooltip}"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>`,
                     })
                     .tooltip("show");
                 }
@@ -348,9 +345,8 @@ define([
           }
         } catch (error) {
           console.log(
-            "There was an error creating a categorical legend preview in a LegendView" +
-              ". Error details: " +
-              error,
+            `There was an error creating a categorical legend preview in a LegendView` +
+              `. Error details: ${error}`,
           );
         }
       },
@@ -361,7 +357,7 @@ define([
        * @param {AssetColorPalette} colorPalette - The AssetColorPalette that maps
        * feature attributes to colors, used to create the legend
        */
-      renderContinuousPreviewLegend: function (colorPalette) {
+      renderContinuousPreviewLegend(colorPalette) {
         try {
           if (!colorPalette) {
             return;
@@ -370,14 +366,14 @@ define([
           // Data to use in d3
           let data = colorPalette.get("colors").toJSON();
           // The max width of the SVG
-          let width = this.previewSvgDimensions.width;
+          const { width } = this.previewSvgDimensions;
           // The height of the SVG
-          const height = this.previewSvgDimensions.height;
+          const { height } = this.previewSvgDimensions;
           // Height of the gradient rectangle, leaving some room for the drop shadow
           const gradientHeight = height * 0.92;
 
           // A unique ID for the gradient
-          const gradientId = "gradient-" + view.cid;
+          const gradientId = `gradient-${view.cid}`;
 
           // Calculate the rounding precision we should use based on the
           // range of the data. This determines how each value in the legend
@@ -387,26 +383,13 @@ define([
           const min = data[0].value;
           const max = data[data.length - 1].value;
           const range = max - min;
-          let roundingConstant = 10; // Allow 1 decimal place by default
-          if (range < 0.0001 || range > 100000) {
-            roundingConstant = null; // Will use scientific notation
-          } else if (range < 0.001) {
-            roundingConstant = 100000; // Allow 5 decimal places
-          } else if (range < 0.01) {
-            roundingConstant = 10000; // Allow 4 decimal places
-          } else if (range < 0.1) {
-            roundingConstant = 1000; // Allow 3 decimal places
-          } else if (range < 1) {
-            roundingConstant = 100; // Allow 2 decimal places
-          } else if (range > 100) {
-            roundingConstant = 1; // No decimal places
-          }
+          const numDecimalPlaces = Utilities.getNumDecimalPlaces(range);
 
           // SVG element
           const svg = this.createSVG({
             dropshadowFilter: false,
-            width: width,
-            height: height,
+            width,
+            height,
           });
 
           // Add the preview class and dropshadow to the SVG
@@ -421,10 +404,10 @@ define([
             .attr("x1", "0%")
             .attr("y1", "0%");
 
-          var getOffset = function (d, data) {
-            return ((d.value - min) / range) * 100 + "%";
+          const getOffset = function (d, data) {
+            return `${((d.value - min) / range) * 100}%`;
           };
-          var getStopColor = function (d) {
+          const getStopColor = function (d) {
             const r = d.color.red * 255;
             const g = d.color.green * 255;
             const b = d.color.blue * 255;
@@ -432,7 +415,7 @@ define([
           };
 
           // Add the gradient stops
-          data.forEach(function (d, i) {
+          data.forEach((d, i) => {
             gradient
               .append("stop")
               // offset should be relative to the value in the data
@@ -448,7 +431,7 @@ define([
             .attr("width", width)
             .attr("height", gradientHeight)
             .attr("rx", gradientHeight * 0.1)
-            .style("fill", "url(#" + gradientId + ")");
+            .style("fill", `url(#${gradientId})`);
 
           // Create a proxy element to attach the tooltip to, so that we can move the
           // tooltip to follow the mouse (by moving the proxy element to follow the mouse)
@@ -475,10 +458,8 @@ define([
                 // Show tooltip with the value
                 if (value || value === 0) {
                   // Round or show in scientific notation
-                  if (roundingConstant) {
-                    value = (
-                      Math.round(value * roundingConstant) / roundingConstant
-                    ).toString();
+                  if (numDecimalPlaces !== null) {
+                    value = value.toFixed(numDecimalPlaces);
                   } else {
                     value = value.toExponential(2).toString();
                   }
@@ -494,24 +475,20 @@ define([
                       title: value,
                       container: view.$el,
                       animation: false,
-                      template:
-                        '<div class="tooltip ' +
-                        view.classes.tooltip +
-                        '"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>',
+                      template: `<div class="tooltip ${view.classes.tooltip}"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>`,
                     })
                     .tooltip("show");
                 }
               }
             })
             // Hide tooltip
-            .on("mouseleave", function () {
+            .on("mouseleave", () => {
               $(proxyEl).tooltip("destroy");
             });
         } catch (error) {
           console.log(
-            "There was an error rendering a continuous preview legend in a LegendView" +
-              ". Error details: " +
-              error,
+            `There was an error rendering a continuous preview legend in a LegendView` +
+              `. Error details: ${error}`,
           );
         }
       },
@@ -529,12 +506,12 @@ define([
        * property)
        * @returns {SVG} Returns the SVG element that is in the view
        */
-      createSVG: function (options = {}) {
+      createSVG(options = {}) {
         try {
           // Create an SVG to hold legend elements
           const container = this.el;
-          const width = options.width;
-          const height = options.height;
+          const { width } = options;
+          const { height } = options;
 
           const svg = d3
             .select(container)
@@ -556,9 +533,7 @@ define([
               </filter>`;
 
             const filterEl = new DOMParser().parseFromString(
-              '<svg xmlns="http://www.w3.org/2000/svg">' +
-                filterText +
-                "</svg>",
+              `<svg xmlns="http://www.w3.org/2000/svg">${filterText}</svg>`,
               "application/xml",
             ).documentElement.firstChild;
 
@@ -568,9 +543,8 @@ define([
           return svg;
         } catch (error) {
           console.log(
-            "There was an error creating an SVG in a LegendView" +
-              ". Error details: " +
-              error,
+            `There was an error creating an SVG in a LegendView` +
+              `. Error details: ${error}`,
           );
         }
       },
