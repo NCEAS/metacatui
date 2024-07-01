@@ -6,8 +6,8 @@ define([
   "text!templates/maps/viewfinder/viewfinder.html",
   "views/maps/viewfinder/SearchView",
   "views/maps/viewfinder/ZoomPresetsListView",
-  "views/maps/viewfinder/ExpansionPanelView",
-  "models/maps/viewfinder/ExpansionPanelsModel",
+  "views/maps/ExpansionPanelView",
+  "models/maps/ExpansionPanelsModel",
   "models/maps/viewfinder/ViewfinderModel",
 ], (
   _,

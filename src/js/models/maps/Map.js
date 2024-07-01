@@ -7,18 +7,17 @@ define([
   "collections/maps/MapAssets",
   "models/maps/MapInteraction",
   "collections/maps/AssetCategories",
-  "models/maps/GeoPoint",
   "collections/maps/viewfinder/ZoomPresets",
-], function (
-  $,
-  _,
-  Backbone,
-  MapAssets,
-  Interactions,
-  AssetCategories,
-  GeoPoint,
-  ZoomPresets,
-) {
+], ($, _, Backbone, MapAssets, Interactions, AssetCategories, ZoomPresets) => {
+  /**
+   * Determine if array is empty.
+   * @param {Array} a The array in question.
+   * @returns {boolean} Whether the array is empty.
+   */
+  function isNonEmptyArray(a) {
+    return a && a.length && Array.isArray(a);
+  }
+
   /**
    * @class MapModel
    * @classdesc The Map Model contains all of the settings and options for a
@@ -26,16 +25,16 @@ define([
    * @classcategory Models/Maps
    * @name MapModel
    * @since 2.18.0
-   * @extends Backbone.Model
+   * @augments Backbone.Model
    */
-  var MapModel = Backbone.Model.extend(
+  const MapModel = Backbone.Model.extend(
     /** @lends MapModel.prototype */ {
       /**
        * Configuration options for a {@link MapModel} that control the
        * appearance of the map, the data/imagery displayed, and which UI
        * components are rendered. A MapConfig object can be used when
        * initializing a Map model, e.g. `new Map(myMapConfig)`
-       * @namespace {Object} MapConfig
+       * @namespace {object} MapConfig
        * @property {MapConfig#CameraPosition} [homePosition] - A set of
        * coordinates that give the (3D) starting point of the Viewer. This
        * position is also where the "home" button in the Cesium widget will
@@ -56,44 +55,51 @@ define([
        * first terrain is used in the CesiumWidgetView and there is not yet a UI
        * for switching terrains in the map. The array of the terrain
        * MapAssetConfigs are passed to a {@link MapAssets} collection.
-       * @property {Boolean} [showToolbar=true] - Whether or not to show the
+       * @property {boolean} [showToolbar=true] - Whether or not to show the
        * side bar with layer list, etc. If true, the {@link MapView} will render
        * a {@link ToolbarView}.
-       * @property {Boolean} [showLayerList=true] - Whether or not to show the
+       * @property {boolean} [showLayerList=true] - Whether or not to show the
        * layer list in the toolbar. If true, the {@link ToolbarView} will render
        * a {@link LayerListView}.
-       * @property {Boolean} [showHomeButton=true] - Whether or not to show the
+       * @property {boolean} [showHomeButton=true] - Whether or not to show the
        * home button in the toolbar.
-       * @property {Boolean} [showViewfinder=false] - Whether or not to show the
+       * @property {boolean} [showViewfinder=false] - Whether or not to show the
        * viewfinder UI and viewfinder button in the toolbar. The ViewfinderView
        * requires a Google Maps API key present in the AppModel. In order to
        * work properly the Geocoding API and Places API must be enabled.
-       * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
+       * @property {boolean} [showShareUrl=false] - Whether or not to show the
+       * share as URL UI in the toolbar and update the URL as the user interacts
+       * with the map. This feature requires a `layerId` field on any layers
+       * that are expected to be saved to the URL search parameter, as that is
+       * the only unique identifier which can be used to turn the layer
+       * visibility on or off.
+       * @property {boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
-       * @property {Boolean} [showScaleBar=true] - Whether or not to show a
+       * @property {boolean} [showScaleBar=true] - Whether or not to show a
        * scale bar. If true, the {@link MapView} will render a
        * {@link ScaleBarView}.
-       * @property {Boolean} [showFeatureInfo=true] - Whether or not to allow
+       * @property {boolean} [showFeatureInfo=true] - Whether or not to allow
        * users to click on map features to show more information about them. If
        * true, the {@link MapView} will render a {@link FeatureInfoView} and
        * will initialize "picking" in the {@link CesiumWidgetView}.
-       * @property {String} [clickFeatureAction="showDetails"] - The default
+       * @property {string} [clickFeatureAction="showDetails"] - The default
        * action to take when a user clicks on a feature on the map. The
        * available options are "showDetails" (show the feature details in the
        * sidebar) or "zoom" (zoom to the feature's location).
-       * @property {Boolean} [showNavHelp=true] - Whether or not to show
+       * @property {boolean} [showNavHelp=true] - Whether or not to show
        * navigation instructions in the toolbar.
-       * @property {Boolean} [showFeedback=false] - Whether or not to show a
+       * @property {boolean} [showFeedback=false] - Whether or not to show a
        * feedback section in the toolbar with the text specified in
        * feedbackText.
-       * @property {String} [feedbackText=null] - The text to show in the
+       * @property {string} [feedbackText=null] - The text to show in the
        * feedback section. showFeedback must be true for this to be shown.
        * @property {String} [globeBaseColor=null] - The base color of the globe when no
        * layer is shown.
        * @property {ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
        * predefined list of locations with an enabled list of layer IDs to be
        * shown the zoom presets UI. Requires `showViewfinder` to be true as this
+       * UI appears within the ViewfinderView.
        * UI appears within the ViewfinderView.
        *
        * @example
@@ -131,7 +137,7 @@ define([
       /**
        * Coordinates that describe a camera position for Cesium. Requires at
        * least a longitude and latitude.
-       * @typedef {Object} MapConfig#CameraPosition
+       * @typedef {object} MapConfig#CameraPosition
        * @property {number} longitude - Longitude of the central home point
        * @property {number} latitude - Latitude of the central home point
        * @property {number} [height] - Height above sea level (meters)
@@ -182,33 +188,39 @@ define([
        * @property {MapAssets} [layers = new MapAssets()] - The imagery and
        * vector data to render in the map. When layerCategories exist, this
        * property will be ignored.
+       * @property {MapAssets} [allLayers = new MapAssets()] - The assets that
+       * correspond to the layers field or the layerCategories field depending
+       * upon which is used. If layerCategories, this contains a flattened list
+       * of the assets.
        * @property {AssetCategories} [layerCategories = new AssetCategories()] -
        * A collection of layer categories to display in the tool bar. Categories
        * wil be displayed in the order they appear. The array of the AssetCategoryConfig
        * are passed to a {@link AssetCategories} collection. When layerCategories
        * exist, the layers property will be ignored.
-       * @property {Boolean} [showToolbar=true] - Whether or not to show the
+       * @property {boolean} [showToolbar=true] - Whether or not to show the
        * side bar with layer list and other tools. True by default.
-       * @property {Boolean} [showLayerList=true] - Whether or not to include
+       * @property {boolean} [showLayerList=true] - Whether or not to include
        * the layer list in the toolbar. True by default.
-       * @property {Boolean} [showHomeButton=true] - Whether or not to show the
+       * @property {boolean} [showHomeButton=true] - Whether or not to show the
        * home button in the toolbar. True by default.
-       * @property {Boolean} [showViewfinder=false] - Whether or not to show the
+       * @property {boolean} [showViewfinder=false] - Whether or not to show the
        * viewfinder UI and viewfinder button in the toolbar. Defaults to false.
-       * @property {Boolean} [toolbarOpen=false] - Whether or not the toolbar is
+       * @property {boolean} [showShareUrl=false] - Whether or not to show the
+       * share as URL UI. Defaults to false.
+       * @property {boolean} [toolbarOpen=false] - Whether or not the toolbar is
        * open when the map is initialized. Set to false by default, so that the
        * toolbar is hidden by default.
-       * @property {Boolean} [showScaleBar=true] - Whether or not to show a
+       * @property {boolean} [showScaleBar=true] - Whether or not to show a
        * scale bar.
-       * @property {Boolean} [showFeatureInfo=true] - Whether or not to allow
+       * @property {boolean} [showFeatureInfo=true] - Whether or not to allow
        * users to click on map features to show more information about them.
-       * @property {String} [clickFeatureAction="showDetails"] - The default
+       * @property {string} [clickFeatureAction="showDetails"] - The default
        * action to take when a user clicks on a feature on the map. The
        * available options are "showDetails" (show the feature details in the
        * sidebar) or "zoom" (zoom to the feature's location).
-       * @property {Boolean} [showNavHelp=true] - Whether or not to show
+       * @property {boolean} [showNavHelp=true] - Whether or not to show
        * navigation instructions in the toolbar.
-       * @property {Boolean} [showFeedback=false] - Whether or not to show a
+       * @property {boolean} [showFeedback=false] - Whether or not to show a
        * feedback section in the toolbar.
        * @property {String} [feedbackText=null] - The text to show in the
        * feedback section.
@@ -218,8 +230,9 @@ define([
        * predefined list of locations with an enabled list of layer IDs to be
        * shown the zoom presets UI. Requires `showViewfinder` to be true as this
        * UI appears within the ViewfinderView.
+       * UI appears within the ViewfinderView.
        */
-      defaults: function () {
+      defaults() {
         return {
           homePosition: {
             longitude: -65,
@@ -240,6 +253,7 @@ define([
           showLayerList: true,
           showHomeButton: true,
           showViewfinder: false,
+          showShareUrl: false,
           toolbarOpen: false,
           showScaleBar: true,
           showFeatureInfo: true,
@@ -258,13 +272,9 @@ define([
        * for the map. If any config option is not specified, the default will be
        * used instead (see {@link MapModel#defaults}).
        */
-      initialize: function (config) {
+      initialize(config) {
         try {
           if (config && config instanceof Object) {
-            function isNonEmptyArray(a) {
-              return a && a.length && Array.isArray(a);
-            }
-
             if (isNonEmptyArray(config.layerCategories)) {
               const assetCategories = new AssetCategories(
                 config.layerCategories,
@@ -272,11 +282,15 @@ define([
               assetCategories.setMapModel(this);
               this.set("layerCategories", assetCategories);
               this.unset("layers");
+              this.set("allLayers", assetCategories.getMapAssetsFlat());
             } else if (isNonEmptyArray(config.layers)) {
-              this.set("layers", new MapAssets(config.layers));
+              const layers = new MapAssets(config.layers);
+              this.set("layers", layers);
               this.get("layers").setMapModel(this);
               this.unset("layerCategories");
+              this.set("allLayers", layers);
             }
+
             if (isNonEmptyArray(config.terrains)) {
               this.set("terrains", new MapAssets(config.terrains));
             }
@@ -286,7 +300,7 @@ define([
               new ZoomPresets(
                 {
                   zoomPresetObjects: config.zoomPresets,
-                  allLayers: this.getAllLayers(),
+                  allLayers: this.get("allLayers"),
                 },
                 { parse: true },
               ),
@@ -303,7 +317,7 @@ define([
        * @returns {MapInteraction} The new interactions model.
        * @since 2.27.0
        */
-      setUpInteractions: function () {
+      setUpInteractions() {
         const interactions = new Interactions({
           mapModel: this,
         });
@@ -317,7 +331,7 @@ define([
        * @param {Feature[]} features - An array of Feature models to select.
        * since 2.28.0
        */
-      selectFeatures: function (features) {
+      selectFeatures(features) {
         this.get("interactions")?.selectFeatures(features);
       },
 
@@ -326,7 +340,7 @@ define([
        * @returns {Features} The selected Feature collection.
        * @since 2.27.0
        */
-      getSelectedFeatures: function () {
+      getSelectedFeatures() {
         return this.get("interactions")?.get("selectedFeatures");
       },
 
@@ -339,14 +353,14 @@ define([
        * zoom to. See {@link CesiumWidgetView#flyTo} for more details on types
        * of targets.
        */
-      zoomTo: function (target) {
+      zoomTo(target) {
         this.get("interactions")?.set("zoomTarget", target);
       },
 
       /**
        * Indicate that the map widget view should navigate to the home position.
        */
-      flyHome: function () {
+      flyHome() {
         this.zoomTo(this.get("homePosition"));
       },
 
@@ -354,10 +368,10 @@ define([
        * Reset the visibility of all layers to the value that was in the intial
        * configuration.
        */
-      resetLayerVisibility: function () {
-        for (const layer of this.getAllLayers()) {
-          layer.set("visible", layer.get("originalVisibility"));
-        }
+      resetLayerVisibility() {
+        this.get("allLayers").forEach((layer) => {
+          layer.set("visible", layer.get("configuredVisibility"));
+        });
       },
 
       /**
@@ -366,7 +380,7 @@ define([
        * @returns {MapAssets} The new layers collection.
        * @since 2.25.0
        */
-      resetLayers: function () {
+      resetLayers() {
         const newLayers = this.defaults()?.layers || new MapAssets();
         this.set("layers", newLayers);
         return newLayers;
@@ -388,25 +402,6 @@ define([
       },
 
       /**
-       * Get all of the layers regardless of presences of layerCategories in a
-       * flat list of MapAsset models.
-       * @returns {MapAsset[]} All of the layers, or empty array if no layers
-       * are configured.
-       * @since 2.29.0
-       */
-      getAllLayers() {
-        if (this.has("layerCategories")) {
-          return this.get("layerCategories")
-            .getMapAssets()
-            .map((assets) => assets.models)
-            .flat();
-        } else if (this.has("layers")) {
-          return this.get("layers").models;
-        }
-        return [];
-      },
-
-      /**
        * Add a layer or other asset to the map. This is the best way to add a
        * layer to the map because it will ensure that this map model is set on
        * the layer model.
@@ -416,7 +411,7 @@ define([
        * @returns {MapAsset} The new layer model.
        * @since 2.25.0
        */
-      addAsset: function (asset) {
+      addAsset(asset) {
         const layers = this.get("layers") || this.resetLayers();
         return layers.addAsset(asset, this);
       },
@@ -426,7 +421,7 @@ define([
        * @param {MapAsset} asset - The layer model to remove from the map.
        * @since 2.27.0
        */
-      removeAsset: function (asset) {
+      removeAsset(asset) {
         if (!asset) return;
         const layers = this.get("layers");
         if (!layers) return;

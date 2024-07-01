@@ -3,11 +3,11 @@
 define([
   "underscore",
   "backbone",
-  "views/maps/viewfinder/ExpansionPanelView",
-  "models/maps/viewfinder/ExpansionPanelsModel",
+  "views/maps/ExpansionPanelView",
+  "models/maps/ExpansionPanelsModel",
   // The file extension is required for files loaded from the /test directory.
   "/test/js/specs/shared/clean-state.js",
-  "/test/js/specs/unit/views/maps/viewfinder/ExpansionPanelViewHarness.js",
+  "/test/js/specs/unit/views/maps/ExpansionPanelViewHarness.js",
 ], (
   _,
   Backbone,
@@ -81,6 +81,23 @@ define([
 
       it("renders an icon from Font Awesome", () => {
         expect(state.harness.getIconClassString()).to.be.match(/leaf/);
+      });
+
+      it("does not render an svg icon if not passed isSvgIcon flag", () => {
+        expect(state.harness.hasSvgIcon()).to.be.false;
+      });
+
+      it("renders an svg icon if passed isSvgIcon flag", () => {
+        const view = new ExpansionPanelView({
+          title: "Some title",
+          icon: '<svg xmlns="http://www.w3.org/2000/svg"><path /></svg>',
+          contentViewInstance: new TestView(),
+          isSvgIcon: true,
+        });
+        view.render();
+        const harness = new ExpansionPanelViewHarness(view);
+
+        expect(harness.hasSvgIcon()).to.be.true;
       });
     });
 
