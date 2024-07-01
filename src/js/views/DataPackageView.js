@@ -483,6 +483,7 @@
             titleTooltip: titleTooltip,
             downloadUrl: packageUrl,
             disablePackageDownloads: disablePackageDownloads,
+            disablePackageUrl: true
           });
 
           this.$el.append(tableRow);
@@ -952,6 +953,12 @@
            * @type {null|string}
            */
           packageUrl = null;
+          /**
+           * The URL of the nested data package.
+           *
+           * @type {null|string}
+           */
+          nestedPackageUrl = null;
 
         /**
          * The members of the data package.
@@ -989,6 +996,14 @@
             MetacatUI.appModel.get("packageServiceUrl") +
             encodeURIComponent(dataPackage.id);
 
+        // Set the nested package URL
+        if (
+            MetacatUI.appModel.get("viewServiceUrl") !== undefined &&
+            MetacatUI.appModel.get("viewServiceUrl")
+            )
+            nestedPackageUrl =
+                MetacatUI.appModel.get("viewServiceUrl") + encodeURIComponent(dataPackage.id);
+
         /**
          * The HTML content for the data package header.
          *
@@ -1000,6 +1015,8 @@
           titleTooltip: titleTooltip,
           disablePackageDownloads: false,
           downloadUrl: packageUrl,
+          disablePackageUrl: false, 
+          packageUrl: nestedPackageUrl
         });
         this.$el.append(tableRow);
 
