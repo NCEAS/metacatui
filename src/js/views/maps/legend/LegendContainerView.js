@@ -22,7 +22,7 @@ define([
    * @name LegendContainerView
    * @augments Backbone.View
    * @screenshot views/maps/legend/LegendContainerView.png
-   * @since 0.0.0
+   * @since 2.30.0
    * @constructs
    */
   const LegendContainerView = Backbone.View.extend(
@@ -77,11 +77,16 @@ define([
       updateLegend() {
         const content = this.$(`.${CLASS_NAMES.content}`).empty();
         this.model.get("allLayers")?.forEach((layer) => {
-          if (!layer.get("visible") || !layer.get("colorPalette")) {
+          if (
+            !layer.get("visible") ||
+            !layer.get("colorPalette") ||
+            layer.get("colorPalette").get("colors").isEmpty()
+          ) {
             return;
           }
           const layerLegendView = new LayerLegendView({
             model: layer.get("colorPalette"),
+            layerName: layer.get("label"),
           });
           layerLegendView.render();
           content.append(layerLegendView.el);

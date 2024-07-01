@@ -55,12 +55,20 @@
   --map-size-toolbar-link: 2.5rem;
   --map-size-toolbar-link-margin: 1rem;
   --map-size-toolbar-link-padding: 0.5rem;
+  --map-size-toolbar-link-gap: 0.5rem;
   --map-border-radius-small: 0.25rem;
   --map-border-radius-big: 0.5rem;
   --map-width-toolbar: 21rem;
   --map-width-toolbar-wide: 30rem;
   --map-toolbar-link-width: calc(
     var(--map-size-toolbar-link) + 2 * var(--map-size-toolbar-link-padding)
+  );
+  /* Assumes 5 links max. */
+  --max-num-toolbar-links: 5;
+  --max-map-toolbar-link-height: calc(
+    var(--max-num-toolbar-links) * var(--map-size-toolbar-link) +
+      (var(--max-num-toolbar-links) - 1) * var(--map-size-toolbar-link-gap) + 2 *
+      var(--map-size-toolbar-link-padding)
   );
   --map-width-feature-info: calc(var(--map-width-toolbar) * 1.25);
   --map-width-feature-info-wide: calc(var(--map-width-toolbar-wide) * 1.25);
@@ -295,14 +303,6 @@
   }
 }
 
-.map-view__scale-bar-container {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  /* required to be placed above map widget in firefox: */
-  z-index: var(--map-z-index-base);
-}
-
 .map-view__toolbar-container {
   position: absolute;
   top: 0;
@@ -399,6 +399,11 @@
   grid-template-columns: auto auto;
   gap: 1rem;
   align-items: center;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  /* required to be placed above map widget in firefox: */
+  z-index: var(--map-z-index-base);
 }
 
 /* __coordinates contains __longitude, __latitude, and __elevation */
@@ -462,8 +467,8 @@ represents 1 unit of the given distance measurement. */
   background-color: var(--portal-col-primary-1, var(--map-col-bkg__deprecate));
   border-radius: var(--map-border-radius-big);
   margin: var(--map-size-toolbar-link-margin);
-  padding: 0.5rem;
-  row-gap: 0.5rem;
+  padding: var(--map-size-toolbar-link-padding);
+  row-gap: var(--map-size-toolbar-link-gap);
   pointer-events: all;
   color: var(--portal-col-primary-6);
   box-shadow: var(--map-shadow-md);
@@ -1776,89 +1781,137 @@ other class: .ui-slider-range */
 .legend-container {
   z-index: var(--map-z-index-base);
   position: absolute;
-  left: 1rem;
-  bottom: 1rem;
+  margin: 1rem;
+  bottom: 0;
   border-radius: var(--map-border-radius-big);
   background: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
   width: 6.875rem;
+  /* TODO: Update when we deprecate toolbar links. */
+  max-height: calc(
+    100% - 1rem - var(--max-map-toolbar-link-height) - 2 *
+      var(--map-size-toolbar-link-margin)
+  );
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--map-shadow-md);
+}
 
-  .legend-container__header {
-    border-radius: var(--map-border-radius-big);
-    background: var(
-      --portal-col-primary-2,
-      var(--portal-col-bkg-lighter__deprecate)
-    );
-    width: 100%;
-    height: 2.5rem;
+.legend-container__header {
+  border-radius: var(--map-border-radius-big);
+  background: var(
+    --portal-col-primary-2,
+    var(--portal-col-bkg-lighter__deprecate)
+  );
+  width: 100%;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  column-gap: 0.5rem;
+  padding: 0 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  i {
+    font-size: 1rem;
+    width: 1.5rem;
+    height: 1.5rem;
     display: flex;
     align-items: center;
-    column-gap: 0.5rem;
-    padding: 0 1rem;
-    cursor: pointer;
+    justify-content: center;
+  }
+}
 
-    i {
-      font-size: 1rem;
-      width: 1.5rem;
-      height: 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+.legend-container__header-icon {
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
+}
 
-    .legend-container__header-icon {
-      color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
-    }
+.legend-container__header-expand {
+  color: var(--portal-col-primary-5, var(--map-col-text__deprecate));
+  display: none;
+}
 
-    .legend-container__header-expand {
-      color: var(--portal-col-primary-5, var(--map-col-text__deprecate));
-      display: none;
-    }
+.legend-container__header-name {
+  flex-grow: 1;
+  color: var(--portal-col-primary-8, var(--map-col-text__deprecate));
+  font-size: 0.8rem;
+  font-weight: 500;
+}
 
-    .legend-container__header-name {
-      flex-grow: 1;
-      color: var(--portal-col-primary-8, var(--map-col-text__deprecate));
-      font-size: 0.8rem;
-      font-weight: 500;
-    }
+.legend-container__content {
+  padding-bottom: 0.5rem;
+  row-gap: 0.5rem;
+  flex-direction: column;
+  display: none;
+  overflow-y: auto;
+}
+
+.legend-container--expanded {
+  width: 12.5rem;
+
+  .legend-container__content,
+  .legend-container__header-expand {
+    display: flex;
   }
 
-  .legend-container__content {
-    padding-bottom: 0.5rem;
-    row-gap: 0.5rem;
-    flex-direction: column;
-    display: none;
-
-    .layer-legend {
-      padding: 0 1rem;
-
-      .layer-legend__layer-name {
-        padding: 0.25rem 0;
-        color: var(--portal-col-neutral-6, var(--map-col-text__deprecate));
-        font-size: 0.8rem;
-        font-weight: 500;
-      }
-
-      .layer-legend__palette {
-        color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
-        font-size: 0.8rem;
-        font-weight: 500;
-      }
-    }
+  .legend-container__header {
+    border-radius: var(--map-border-radius-big) var(--map-border-radius-big) 0 0;
   }
+}
 
-  &.legend-container--expanded {
-    width: 12.5rem;
+.layer-legend {
+  padding: 0 1rem;
+}
 
-    .legend-container__content,
-    .legend-container__header-expand {
-      display: flex;
-    }
+.layer-legend__layer-name {
+  padding: 0.25rem 0;
+  color: var(--portal-col-neutral-6, var(--map-col-text__deprecate));
+  font-size: 0.8rem;
+  font-weight: 500;
+}
 
-    .legend-container__header {
-      border-radius: var(--map-border-radius-big) var(--map-border-radius-big) 0
-        0;
-    }
-  }
+.layer-legend__palette {
+  color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.categorical-swatch,
+.continuous-swatch {
+  display: flex;
+  column-gap: 0.5rem;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+
+.categorical-swatch__swatch,
+.continuous-swatch__swatch {
+  width: 1.5rem;
+  border-radius: var(--map-border-radius-small);
+  flex-shrink: 0;
+}
+
+.categorical-swatch__swatch {
+  height: 1.5rem;
+}
+
+.categorical-swatch__value {
+  overflow-wrap: anywhere;
+}
+
+.continuous-swatch {
+  height: 5.5rem;
+}
+
+.continuous-swatch__swatch {
+  height: 5rem;
+}
+
+.continuous-swatch__value {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+  overflow-x: auto;
 }
 
 /* TODO: Remove when the new mobile layout is ready. */
