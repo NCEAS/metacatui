@@ -26,9 +26,9 @@ The k8s version of Metacatui requires two 'config.js' configuration files:
 The "root config" file must, at an absolute minimum, contain the name of the theme to be used; e.g:
 
 ```javascript
-  MetacatUI.AppConfig = {
-    theme: "knb"
-  };
+MetacatUI.AppConfig = {
+  theme: "knb",
+};
 ```
 ...and metacatui will then load that theme and the corresponding "theme config".
 
