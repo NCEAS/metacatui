@@ -16,6 +16,7 @@ ships with [a few pre-defined themes](https://github.com/NCEAS/metacatui/tree/ma
 which can be selected in values.yaml.
 
 ---
+
 ## MetacatUI Configuration Files ('config.js')
 
 The k8s version of Metacatui requires two 'config.js' configuration files:
