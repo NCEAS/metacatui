@@ -6,7 +6,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name:  $RELEASENAME-metacatui-customtheme
+  name: $RELEASENAME-metacatui-customtheme
   ## NOTE: namespace must match the deployment namespace
   namespace: $NAMESPACE
 spec:
