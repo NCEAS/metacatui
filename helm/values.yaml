@@ -128,7 +128,6 @@ customTheme:
   ##
   subPath: ""
 
-
 ## @param livenessProbeEnabled Enable livenessProbe. Autoconfigured using .Values.appConfig.root
 ## To override autoconfig, keep 'livenessProbeEnabled: true', and define a livenessProbe; e.g:
 ##  livenessProbe:
