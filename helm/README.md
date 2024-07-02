@@ -44,6 +44,7 @@ By default, this chart creates a simple "root config", which will contain any va
 If you need to provide more-complex overrides, set `appConfig.enabled: false`, and manually
 create your own configMap named `<YourReleaseName>-metacatui-config-js`, containing your custom
 config.js:
+
 ```shell
 kubectl create configmap  <yourReleaseName>-metacatui-config-js \
         --from-file=config.js=<yourCustomConfig.js>
