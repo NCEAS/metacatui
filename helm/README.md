@@ -8,9 +8,8 @@ This is a helm chart for deploying MetacatUI.
 
 1. Modify values.yaml as appropriate
 2. install the helm chart:
-    ```shell
-    $ helm -n knb upgrade --install knbmcui ./helm
-    ```
+   ```shell
+   $ helm -n knb upgrade --install knbmcui ./helm
 
 There's no need to set up any persistent storage, unless you wish to add your own theme. The chart
 ships with [a few pre-defined themes](https://github.com/NCEAS/metacatui/tree/main/src/js/themes),
