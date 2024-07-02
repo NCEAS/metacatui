@@ -1,0 +1,20 @@
+## EXAMPLE file for manually creating a Persistent Volume Claim to access the PV containing a
+## metacatui custom theme.
+## Needed only if 'customTheme.enabled:' is set to 'true' in values.yaml.
+## EDIT this file to replace "$RELEASENAME" and "$NAMESPACE"
+##
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: $RELEASENAME-metacatui-customtheme
+  ## NOTE: namespace must match the deployment namespace
+  namespace: $NAMESPACE
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+  storageClassName: csi-cephfs-sc
+  volumeMode: Filesystem
+  volumeName: cephfs-RELEASENAME-metacatui-customtheme

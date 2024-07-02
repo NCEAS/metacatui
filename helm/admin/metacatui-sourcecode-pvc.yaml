@@ -1,0 +1,18 @@
+## EXAMPLE file for manually creating a Persistent Volume Claim to access the PV containing the
+## metacatui source code (see metacatui-pv.yaml), typically for development purposes.
+## Needed only if 'source.from:' is set to 'pvc' in values.yaml.
+##
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: metacatui-pvc
+  namespace: mcui
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: ""
+  volumeMode: Filesystem
+  volumeName: metacatui-pv

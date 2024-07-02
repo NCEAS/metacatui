@@ -1,0 +1,11 @@
+{{- if .Values.appConfig.enabled }}
+# Load all files in the "config" directory into a ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-metacatui-config-js
+  labels:
+    {{- include "metacatui.labels" . | nindent 4 }}
+data:
+  {{- (tpl (.Files.Glob "config/config.js").AsConfig . ) | nindent 2 }}
+{{- end }}

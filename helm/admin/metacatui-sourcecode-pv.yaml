@@ -1,0 +1,18 @@
+## EXAMPLE file for manually creating a Persistent Volume to store the metacatui source code,
+## typically for development purposes (so edits can be seen in realtime).
+## Needed only if 'source.from:' is set to 'pvc' in values.yaml.
+##
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: metacatui-pv
+spec:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 10Gi
+  hostPath:
+    path: /your/host/path/here    # e.g. /Users/jones/development/metacatui/src
+    type: ""
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem
