@@ -1,6 +1,12 @@
 apiVersion: v2
 name: metacatui
-description: MetacatUI, a web interface for DataONE repositories
+description: |
+  Helm chart for Kubernetes Deployment of MetacatUI, a web interface for DataONE repositories 
+  (https://github.com/NCEAS/metacatui)
+
+# OCI Annotations - see https://github.com/helm/helm/pull/11204
+sources:
+  - https://github.com/NCEAS/metacatui
 
 # A chart can be either an 'application' or a 'library' chart.
 #
