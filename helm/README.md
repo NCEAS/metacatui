@@ -60,6 +60,7 @@ mount and a Persistent Volume Claim (PVC). Example files for creating PVs and PV
 in the [admin](./admin) directory.
 
 Once you've got the chart deployed (see above), next steps are:
+
 1. Copy your theme files to a directory on a filesystem that is accessible from your Kubernetes
    cluster
 2. Create a Persistent Volume (PV) pointing to the correct directory on the filesystem
