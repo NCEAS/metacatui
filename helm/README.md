@@ -31,6 +31,7 @@ MetacatUI.AppConfig = {
   theme: "knb",
 };
 ```
+
 ...and metacatui will then load that theme and the corresponding "theme config".
 
 If any additional settings are defined in the "root config", Metacatui will use them to override
