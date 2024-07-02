@@ -34,7 +34,6 @@ global:
   ##
   d1ClientCnUrl: "https://cn.dataone.org/cn"
 
-
 ## @section MetacatUI Configuration Files ('config.js')
 ##
 ## The k8s version of Metacatui requires two 'config.js' configuration files:
