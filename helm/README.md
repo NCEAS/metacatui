@@ -72,6 +72,7 @@ Once you've got the chart deployed (see above), next steps are:
 ---
 
 ## Development on Localhost
+
 (e.g. Rancher Desktop/Docker Desktop)
 
 1. Create a namespace for the deployment (e.g. `mcui`)
