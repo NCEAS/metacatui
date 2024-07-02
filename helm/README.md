@@ -49,6 +49,7 @@ config.js:
 kubectl create configmap  <yourReleaseName>-metacatui-config-js \
         --from-file=config.js=<yourCustomConfig.js>
 ```
+
 ---
 
 ## Using a Custom Theme
