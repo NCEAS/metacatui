@@ -20,6 +20,7 @@ which can be selected in values.yaml.
 ## MetacatUI Configuration Files ('config.js')
 
 The k8s version of Metacatui requires two 'config.js' configuration files:
+
 1. the "root config" at the path `{root}/config/config.js`, and
 2. the "theme config" in the theme directory itself (for example, see the knb `config.js` at:
    https://github.com/NCEAS/metacatui/blob/main/src/js/themes/knb/config.js)
