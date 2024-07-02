@@ -66,9 +66,8 @@ Once you've got the chart deployed (see above), next steps are:
 2. Create a Persistent Volume (PV) pointing to the correct directory on the filesystem
 3. Create a PVC for the PV, and edit the `customTheme:` section in values.yaml
 4. upgrade the helm chart
-    ```shell
-    $ helm -n knb upgrade --install knbmcui ./helm
-    ```
+   ```shell
+   $ helm -n knb upgrade --install knbmcui ./helm
 
 ---
 
