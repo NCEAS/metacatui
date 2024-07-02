@@ -30,35 +30,52 @@ spec:
       serviceAccountName: {{ include "metacatui.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      {{- if not (eq .Values.source.from "pvc") }}
+      {{- $source := (include "metacatui.source.from" .) }}
+      {{- if ne $source "pvc" }}
       initContainers:
-        {{- if (eq .Values.source.from "git") }}
-        - name: git-clone
-          image: alpine/git:latest
-          command:
-            - sh
-            - -c
-            - >
-              start=$(date +%s);
-              git clone -b {{ .Values.source.git.revision }} --depth 1 {{ .Values.source.git.repoUrl }} /metacatui;
-              finish=$(date +%s);
-              echo "git clone -b {{ .Values.source.git.revision }} took $((finish - start)) sec";
-        {{- else }}
         - name: get-source
+          {{- if eq $source "git" }}
+          image: alpine/git:latest
+          {{- else }}
           image: busybox:latest
+          {{- end }}
           command:
             - sh
             - -c
             - >
               start=$(date +%s);
-              VERSION={{ .Values.source.package.version | default .Chart.AppVersion }}
+              echo "Starting at $start";
+              DEST="/metacatui{{ include "metacatui.clean.root" . }}";
+              mkdir -p $DEST;
+              {{- if eq $source "git" }}
+                {{- $repoUrl := "" }}
+                {{- $revision := "" }}
+                {{- if and .Values.source .Values.source.git }}
+                  {{- $repoUrl = .Values.source.git.repoUrl }}
+                  {{- $revision = .Values.source.git.revision }}
+                {{- end }}
+              REPO='{{ $repoUrl | default "https://github.com/NCEAS/metacatui.git" }}';
+              REV='{{ $revision | default .Chart.AppVersion }}';
+              git clone -b $REV --depth 1 $REPO /tmp/metacatui/;
+              mv /tmp/metacatui/src/* $DEST;
+              finish=$(date +%s);
+              echo "git clone -b {{ $revision }} --depth 1 took $((finish - start)) sec";
+              {{- else }}
+                {{- $version := "" }}
+                {{- $location := "" }}
+                {{- if and .Values.source .Values.source.package }}
+                  {{- $version = .Values.source.package.version }}
+                  {{- $location = .Values.source.package.location }}
+                {{- end }}
+              VERSION={{ $version | default .Chart.AppVersion }};
               FILENAME=$VERSION.zip;
-              wget -O ./$FILENAME {{ .Values.source.package.location }}/$FILENAME;
+              LOC='{{ $location | default "https://github.com/NCEAS/metacatui/archive" }}';
+              wget -O ./$FILENAME $LOC/$FILENAME;
               unzip $FILENAME -d /tmp/;
-              mv /tmp/metacatui-$VERSION/*  /metacatui/;
+              mv /tmp/metacatui-$VERSION/src/* $DEST;
               finish=$(date +%s);
               echo "$FILENAME download and install took $((finish - start)) sec";
-        {{- end }}
+              {{- end }}
           volumeMounts:
             - name: {{ .Release.Name }}-mcui-source-files
               mountPath: /metacatui
@@ -74,43 +91,68 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          {{- with .Values.livenessProbe }}
+          {{- if .Values.livenessProbeEnabled }}
           livenessProbe:
+          {{- if .Values.livenessProbe }}
+            {{- with .Values.livenessProbe }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- else }}
+            httpGet:
+              path: {{ .Values.global.metacatUiWebRoot }}
+              port: http
           {{- end }}
-          {{- with .Values.readinessProbe }}
+          {{- end }}
+          {{- if .Values.readinessProbeEnabled }}
           readinessProbe:
+          {{- if .Values.readinessProbe }}
+            {{- with .Values.readinessProbe }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- else }}
+            httpGet:
+              path: {{ .Values.global.metacatUiWebRoot }}
+              port: http
+          {{- end }}
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            {{- if .Values.appConfig.enabled }}
-            - name: {{ .Release.Name }}-mcui-config-vol
-              mountPath: /usr/share/nginx/html/config/config.js
-              subPath: config.js
+            {{- with .Values.volumeMounts }}
+              {{- toYaml . | nindent 12 }}
             {{- end }}
             - name: {{ .Release.Name }}-mcui-source-files
-              mountPath: "/usr/share/nginx/html"
-              subPath: "src"
-          {{- with .Values.volumeMounts }}
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+              mountPath: /usr/share/nginx/html
+              {{- if .Values.customTheme.enabled }}
+            - name: {{ .Release.Name }}-mcui-custom-theme-files
+              mountPath: {{ include "metacatui.root.mountpath" . }}/js/themes/{{ .Values.global.metacatUiThemeName }}
+                {{- if .Values.customTheme.subPath }}
+              subPath: {{ .Values.customTheme.subPath }}
+                {{- end }}
+              {{- end }}
+            - name: {{ .Release.Name }}-mcui-config-js
+              mountPath: {{ include "metacatui.root.mountpath" . }}/config/config.js
+              subPath: config.js
       volumes:
-        {{- if .Values.appConfig.enabled }}
-        - name: {{ .Release.Name }}-mcui-config-vol
+        - name: {{ .Release.Name }}-mcui-config-js
           configMap:
-            name: {{ .Release.Name }}-metacatui-configjs
+            name: {{ .Release.Name }}-metacatui-config-js
             defaultMode: 0644
-        {{- end }}
-        {{- if not .Values.source.pvc }}
         - name: {{ .Release.Name }}-mcui-source-files
+          {{- if eq $source "pvc" }}
+          persistentVolumeClaim:
+            claimName: {{ required "claimName_REQUIRED" .Values.source.pvc.sourceCodeClaimName }}
+          {{- else }}
           emptyDir: {}
-        {{- else }}
-        {{- with .Values.volumes }}
-          {{- toYaml . | nindent 8 }}
-        {{- end }}
-        {{- end }}
+          {{- end }}
+          {{- if .Values.customTheme.enabled }}
+        - name: {{ .Release.Name }}-mcui-custom-theme-files
+          persistentVolumeClaim:
+            claimName: {{ required "claimName_REQUIRED" .Values.customTheme.claimName }}
+          {{- end }}
+          {{- with .Values.volumes }}
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
