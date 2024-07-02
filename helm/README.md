@@ -102,7 +102,7 @@ for `config/config.js`:
 
 ```javascript
 MetacatUI.AppConfig = {
-      root: "/",
-      baseUrl: "https://dev.nceas.ucsb.edu/knb/d1/mn"
-}
+  root: "/",
+  baseUrl: "https://dev.nceas.ucsb.edu/knb/d1/mn",
+};
 ```
