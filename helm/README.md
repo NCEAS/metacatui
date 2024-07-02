@@ -8,8 +8,10 @@ This is a helm chart for deploying MetacatUI.
 
 1. Modify values.yaml as appropriate
 2. install the helm chart:
+
    ```shell
    $ helm -n knb upgrade --install knbmcui ./helm
+   ```
 
 There's no need to set up any persistent storage, unless you wish to add your own theme. The chart
 ships with [a few pre-defined themes](https://github.com/NCEAS/metacatui/tree/main/src/js/themes),
@@ -72,8 +74,10 @@ Once you've got the chart deployed (see above), next steps are:
 2. Create a Persistent Volume (PV) pointing to the correct directory on the filesystem
 3. Create a PVC for the PV, and edit the `customTheme:` section in values.yaml
 4. upgrade the helm chart
+
    ```shell
    $ helm -n knb upgrade --install knbmcui ./helm
+   ```
 
 ---
 
@@ -88,6 +92,7 @@ Once you've got the chart deployed (see above), next steps are:
    1. Add the name of the PVC, so MetacatUI can find the files
    2. Set your hostname for the Ingress definition
 5. install the helm chart:
+
    ```shell
    $ helm -n mcui upgrade --install --debug mcui ./helm
    Release "mcui" has been upgraded. Happy Helming!
@@ -97,7 +102,8 @@ Once you've got the chart deployed (see above), next steps are:
    STATUS: deployed
    REVISION: 11
    ...etc
-
+   ```
+   
 You can now edit the MetacatUI source files, and changes will be immediately visible in your k8s
 deployment.
 
