@@ -83,16 +83,15 @@ Once you've got the chart deployed (see above), next steps are:
    1. Add the name of the PVC, so MetacatUI can find the files
    2. Set your hostname for the Ingress definition
 5. install the helm chart:
-    ```shell
-    $ helm -n mcui upgrade --install --debug mcui ./helm
-    Release "mcui" has been upgraded. Happy Helming!
-    NAME: mcui
-    LAST DEPLOYED: Wed Apr 17 19:45:58 2024
-    NAMESPACE: mcui
-    STATUS: deployed
-    REVISION: 11
-    ...etc
-    ```
+   ```shell
+   $ helm -n mcui upgrade --install --debug mcui ./helm
+   Release "mcui" has been upgraded. Happy Helming!
+   NAME: mcui
+   LAST DEPLOYED: Wed Apr 17 19:45:58 2024
+   NAMESPACE: mcui
+   STATUS: deployed
+   REVISION: 11
+   ...etc
 
 You can now edit the MetacatUI source files, and changes will be immediately visible in your k8s
 deployment.
