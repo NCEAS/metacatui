@@ -32,12 +32,10 @@ const airbnbRulesOverrides = {
   // We are using RequireJS
   "import/no-unresolved": "off",
   // Allow unused variables if they start with an underscore
-  "variables/no-unused-vars": [
+  "no-unused-vars": [
     "error",
     {
-      vars: "all",
-      args: "after-used",
-      ignoreRestSiblings: true,
+      argsIgnorePattern: "^_",
       varsIgnorePattern: "^_",
     },
   ],
