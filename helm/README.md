@@ -3,6 +3,7 @@
 This is a helm chart for deploying MetacatUI.
 
 ---
+
 ## Deployment in a Kubernetes cluster:
 
 1. Modify values.yaml as appropriate
