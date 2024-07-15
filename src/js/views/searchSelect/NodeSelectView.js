@@ -63,39 +63,36 @@ define([
        * @param {Object} options - A literal object with options to pass to the view
        */
       initialize: function (options) {
-        try {
-          // Ensure the query fields are cached
-          if (typeof MetacatUI.nodeModel === "undefined") {
-            MetacatUI.nodeModel = new NodeModel();
-          }
-
-          var members = MetacatUI.nodeModel.get("members");
-
-          // Maps the nodeModel member attributes (keys) to the searchSelect
-          // dropdown options properties (values)
-          var map = Object.entries({
-            logo: "image",
-            name: "label",
-            description: "description",
-            identifier: "value",
-          });
-
-          this.options = [];
-
-          // Convert nodeModel members to options of searchSelect
-          members.forEach((member, i) => {
-            this.options[i] = {};
-            for (const [oldName, newName] of map) {
-              this.options[i][newName] = member[oldName];
-            }
-          });
-
-          SearchableSelect.prototype.initialize.call(this, options);
-        } catch (e) {
-          console.log(
-            "Failed to initialize a Node Select View, error message: " + e,
-          );
+        const opts = options || {};
+        // Ensure the query fields are cached
+        if (typeof MetacatUI.nodeModel === "undefined") {
+          MetacatUI.nodeModel = new NodeModel();
         }
+
+        var members = MetacatUI.nodeModel.get("members");
+
+        // Maps the nodeModel member attributes (keys) to the searchSelect
+        // dropdown options properties (values)
+        var map = Object.entries({
+          logo: "image",
+          name: "label",
+          description: "description",
+          identifier: "value",
+        });
+
+        const selectOptions = [];
+
+        // Convert nodeModel members to options of searchSelect
+        members.forEach((member, i) => {
+          selectOptions[i] = {};
+          for (const [oldName, newName] of map) {
+            selectOptions[i][newName] = member[oldName];
+          }
+        });
+
+        opts.options = selectOptions;
+
+        SearchableSelect.prototype.initialize.call(this, opts); 
       },
     },
   );

@@ -223,12 +223,13 @@ define([
         // If we haven't started looking up user/organization names yet...
         if (typeof view.labelsToFetch === "undefined") {
           // Keep a count of the number of accounts we need to lookup
-          view.labelsToFetch = this.selected ? this.selected.length : 0;
+          const selected = this.model.get("selected");
+          view.labelsToFetch = selected ? selected : 0;
 
           if (view.labelsToFetch > 0) {
             view.options = [];
 
-            view.selected.forEach(function (accountId) {
+            selected.forEach(function (accountId) {
               MetacatUI.appLookupModel.getAccountsAutocomplete(
                 { term: accountId },
                 function (results) {

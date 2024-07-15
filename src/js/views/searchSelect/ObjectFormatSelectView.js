@@ -62,59 +62,54 @@ define([
        */
       allowAdditions: true,
 
+      /** @inheritdoc */
+      initialize: function () {
+        this.getObjectFormats();
+        SearchableSelect.prototype.initialize.call(this);
+      },
+
       /**
-       * Render the view
-       *
-       * @return {ObjectFormatSelect}  Returns the view
-       * @since 2.15.0
+       * Fetch the object formats from the DataONE API and update the
+       * select options on the model
+       * @since 0.0.0
        */
-      render: function () {
-        try {
-          var view = this;
-
-          // Ensure the object formats are cached
-          if (typeof MetacatUI.objectFormats === "undefined") {
-            MetacatUI.objectFormats = new ObjectFormats();
-          }
-
-          // If not already synced, then get the object formats
-          if (
-            MetacatUI.objectFormats.length === 0 &&
-            !(
-              MetacatUI.objectFormats._events &&
-              MetacatUI.objectFormats._events.sync
-            )
-          ) {
-            this.listenToOnce(
-              MetacatUI.objectFormats,
-              "sync error",
-              view.render,
-            );
-            MetacatUI.objectFormats.fetch();
-            return;
-          }
-
-          var formatIds = MetacatUI.objectFormats.toJSON();
-          var options = _.chain(formatIds)
-            // Since the Query Rules automatically include a rule for formatType =
-            // "METADATA", only allow filtering datasets by specific metadata type.
-            .where({ formatType: "METADATA" })
-            .map(function (format) {
-              return {
-                label: format.formatName,
-                value: format.formatId,
-                description: format.formatId,
-              };
-            })
-            .value();
-
-          this.options = options;
-
-          SearchableSelect.prototype.render.call(view);
-        } catch (error) {
-          console.log("Error rendering an Object Format Select View.");
-          console.log(error);
+      getObjectFormats: function () {
+        const view = this;
+        // Ensure the object formats are cached
+        if (typeof MetacatUI.objectFormats === "undefined") {
+          MetacatUI.objectFormats = new ObjectFormats();
         }
+        // If not already synced, then get the object formats
+        if (
+          MetacatUI.objectFormats.length === 0 &&
+          !(
+            MetacatUI.objectFormats._events &&
+            MetacatUI.objectFormats._events.sync
+          )
+        ) {
+          view.listenToOnce(
+            MetacatUI.objectFormats,
+            "sync error",
+            view.getObjectFormats,
+          );
+          MetacatUI.objectFormats.fetch();
+          return;
+        }
+        var formatIds = MetacatUI.objectFormats.toJSON();
+        var options = _.chain(formatIds)
+          // Since the Query Rules automatically include a rule for formatType =
+          // "METADATA", only allow filtering datasets by specific metadata type.
+          .where({ formatType: "METADATA" })
+          .map(function (format) {
+            return {
+              label: format.formatName,
+              value: format.formatId,
+              description: format.formatId,
+            };
+          })
+          .value();
+
+        view.updateOptions(options);
       },
     },
   );

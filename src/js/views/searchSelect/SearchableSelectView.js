@@ -2,6 +2,7 @@ define([
   "jquery",
   "underscore",
   "backbone",
+  "models/searchSelect/SearchSelect",
   "semanticUItransition",
   `text!${MetacatUI.root}/components/semanticUI/transition.min.css`,
   "semanticUIdropdown",
@@ -11,6 +12,7 @@ define([
   $,
   _,
   Backbone,
+  SearchSelect,
   Transition,
   TransitionCSS,
   Dropdown,
@@ -54,56 +56,6 @@ define([
        * @type {string}
        */
       inputLabel: "Select a value",
-
-      /**
-       * Whether to allow users to select more than one value
-       * @type {boolean}
-       */
-      allowMulti: true,
-
-      /**
-       * Setting to true gives users the ability to add their own options that
-       * are not listed in this.options. This can work with either single
-       * or multiple search select dropdowns
-       * @type {boolean}
-       */
-      allowAdditions: false,
-
-      /**
-       * Whether the dropdown value can be cleared by the user after being
-       * selected.
-       * @type {boolean}
-       */
-      clearable: true,
-
-      /**
-       * When items are grouped within categories, this attribute determines how to display the items
-       * within each category.
-       * @type {string}
-       * @example
-       * // display the items in a traditional, non-interactive list below category titles
-       * "list"
-       * @example
-       * // initially show only a list of category titles, and popout
-       * // a submenu on the left or right when the user hovers over
-       * // or touches a category (can lead to the sub-menu being hidden
-       * // on mobile devices if the element is wide)
-       * "popout"
-       * @example
-       * // initially show only a list of category titles, and expand
-       * // the list of items below each category when a user clicks
-       * // on the category title, much like an "accordion" element.
-       * "accordion"
-       * @default "list"
-       */
-      submenuStyle: "list",
-
-      /**
-       * Set to false to always display category headers in the dropdown,
-       * even if there are no results in that category when a user is searching.
-       * @type {boolean}
-       */
-      hideEmptyCategoriesOnSearch: true,
 
       /**
        * The maximum width of images used for each option, in pixels
@@ -236,14 +188,6 @@ define([
       options: [],
 
       /**
-       * The values that a user has selected. If provided to the view upon
-       * initialization, the values will be pre-selected. Selected values must
-       * exist as a label in the options {@link SearchableSelect#options}
-       * @type {string[]}
-       */
-      selected: [],
-
-      /**
        * Can be set to an object to specify API settings for retrieving remote selection
        * menu content from an API endpoint. Details of what can be set here are
        * specified by the Semantic-UI / Fomantic-UI package. Set to false if not
@@ -275,26 +219,52 @@ define([
         MetacatUI.appModel.addCSS(TransitionCSS, "semanticUItransition");
         MetacatUI.appModel.addCSS(DropdownCSS, "semanticUIdropdown");
 
-        // If pre-selected values that are passed to this view are also attached to a
-        // model (e.g. when they were passed to this view as {selected:
-        // parentView.model.get("values")}), then it's important that we use a clone
-        // instead. Otherwise this view may silently update the model, and important
-        // events may not be triggered.
-        if (options.selected) {
-          options.selected = _.clone(options.selected);
+        const { modelAttrs, viewAttrs } = this.splitModelViewOptions(options);
+
+        if (!options.model) {
+          this.createModel(modelAttrs);
         }
 
-        // If pre-selected values that are passed to this view are also attached to a
-        // model (e.g. when they were passed to this view as {selected:
-        // parentView.model.get("values")}), then it's important that we use a clone
-        // instead. Otherwise this view may silently update the model, and important
-        // events may not be triggered.
-        if (options.selected) {
-          options.selected = _.clone(options.selected);
+        // Set the view attributes
+        _.extend(this, viewAttrs);
+
+      },
+
+      /**
+       * Split the options passed to the view into model and view attributes.
+       * @param {object} options - The options passed to the view
+       * @returns {object} An object with two keys: modelAttrs and viewAttrs
+       * @since 0.0.0
+       */
+      splitModelViewOptions(options) {
+        const modelAttrNames = ['allowMulti', 'allowAdditions', 'clearable', 'submenuStyle', 'hideEmptyCategoriesOnSearch', 'selected', 'options'];
+        const modelAttrs = _.pick(options, modelAttrNames);
+        const viewAttrs = _.omit(options, modelAttrNames);
+        return { modelAttrs, viewAttrs };
+      },
+
+      /**
+       * Create a new SearchSelect model and set it on the view. If a model already
+       * exists, it will be destroyed. Sets a listener to update the menu when the
+       * options in the model change.
+       * @options {object} options - The options to pass to the model
+       * @since 0.0.0
+       */
+      createModel(options) {
+
+        const modelAttrs = options || {};
+
+        if (this.model) {
+          this.stopListening(this.model);
+          this.model.destroy();
         }
 
-        // Get all the options and apply them to this view
-        _.extend(this, options);
+        if (modelAttrs.selected) {
+          // Selected values can be part of other models
+          modelAttrs.selected = _.clone(options.selected);
+        }
+        this.model = new SearchSelect(modelAttrs);
+        this.listenTo(this.model, "change:options", this.updateMenu);
       },
 
       /**
@@ -314,7 +284,7 @@ define([
         }
 
         // Render the template using the view attributes
-        this.$el.html(this.template(this));
+        this.$el.html(this.renderTemplate());
 
         // Start the dropdown in a disabled state.
         // This allows us to pre-select values without triggering a change
@@ -335,16 +305,14 @@ define([
           duration: 90,
           forceSelection: false,
           ignoreDiacritics: true,
-          clearable: view.clearable,
-          allowAdditions: view.allowAdditions,
+          clearable: view.model.get('clearable'),
+          allowAdditions: view.model.get('allowAdditions'),
           hideAdditions: false,
           allowReselection: true,
           onRemove(removedValue) {
             // Callback when a value is removed *for multi-select inputs only*
             // Remove the value from the selected array
-            view.selected = view.selected.filter(
-              (value) => value !== removedValue,
-            );
+            view.model.removeSelected(removedValue);
           },
           onLabelCreate(value, _text) {
             // Callback when a label is created *for multi-select inputs only*
@@ -353,9 +321,7 @@ define([
             // the onLabelCreate callback instead of in the onAdd callback because
             // we would like to update the selected array before we create the
             // separator element (below).
-            if (!view.selected.includes(value)) {
-              view.selected.push(value);
-            }
+            view.model.addSelected(value);
             // Add a separator between labels if required.
             let label = this;
             if (view.separatorRequired.call(view)) {
@@ -404,14 +370,14 @@ define([
 
             // Update values for single-select inputs (multi-select are updated
             // using the onLabelCreate and onRemove callbacks)
-            if (!view.allowMulti) {
-              view.selected = [values];
+            if (!view.model.get('allowMulti')) {
+              view.model.setSelected(values);
             }
 
             // Trigger an event if items are selected after the UI has been rendered
             // (It is set as disabled until fully rendered).
             if (!$(this).hasClass("disabled")) {
-              const newValues = _.clone(view.selected);
+              const newValues = _.clone(view.model.get('selected'));
               view.trigger("changeSelection", newValues);
             }
 
@@ -427,7 +393,7 @@ define([
               const textEl = view.$selectUI.find(".text:not(.default),.label");
               // Single select text element will not have the value attribute, add
               // it so that we can find the matching description for the tooltip
-              if (!textEl.data("value") && !view.allowMulti) {
+              if (!textEl.data("value") && !view.model.get('allowMulti')) {
                 textEl.data("value", values);
               }
               if (textEl) {
@@ -452,8 +418,7 @@ define([
        * @since 2.24.0
        */
       updateOptions(options) {
-        this.options = options;
-        this.render();
+        this.model.updateOptions(options);
       },
 
       /**
@@ -464,15 +429,17 @@ define([
        * @since 2.15.0
        */
       separatorRequired() {
+        // TODO - use the model method instead of the view method
+        const selected = this.model.get('selected');
         if (
           // Separators not required if only one selection is allowed
-          !this.allowMulti ||
+          !this.model.get('allowMulti') ||
           // Need separator text to create a separator element
           !this.separatorText ||
           // Need the list of selected values to determine the value's position
-          !this.selected ||
+          !selected ||
           // Separator is only required between two or more values
-          this.selected.length <= 1 ||
+          selected.length <= 1 ||
           // Separator is only required after the first element has been added
           this.$selectUI.find(".label").length === 0
         ) {
@@ -591,8 +558,22 @@ define([
        * the options that are set on the view.
        */
       updateMenu() {
-        const menu = $(this.template(this).trim()).find(".menu")[0].innerHTML;
+        const menu = $(this.renderTemplate().trim()).find(".menu")[0].innerHTML;
         this.$el.find(".menu").html(menu);
+      },
+
+      /**
+       * Renders the template for the view
+       * @returns {string} The HTML for the view
+       * @since 0.0.0
+       */
+      renderTemplate() {
+        const templateOptionsFromModel = {
+          allowMulti: this.model.get('allowMulti'),
+          options: this.model.optionsAsJSON(true),
+        };
+        const templateOptions = _.extend({}, this, templateOptionsFromModel);
+        return this.template(templateOptions);
       },
 
       /**
@@ -607,12 +588,14 @@ define([
           view.addTooltip(item);
         });
 
+        const selected = view.model.get('selected');
+
         // Show an error message if the pre-selected options are not in the
         // list of available options (only if user additions are not allowed)
-        if (!view.allowAdditions) {
-          if (view.selected && view.selected.length) {
+        if (!view.model.get('allowAdditions')) {
+          if (selected && selected.length) {
             const invalidOptions = [];
-            view.selected.forEach((item) => {
+            selected.forEach((item) => {
               if (!view.isValidOption(item)) {
                 invalidOptions.push(item);
               }
@@ -631,23 +614,26 @@ define([
         }
 
         // Set the selected values in the dropdown
-        this.$selectUI.dropdown("set exactly", view.selected);
+        this.$selectUI.dropdown("set exactly", selected);
         this.$selectUI.dropdown("save defaults");
         this.enable();
         this.hideLoading();
 
+        const subMenuStyle = this.model.get('submenuStyle');
+        const hideEmptyCategoriesOnSearch = this.model.get('hideEmptyCategoriesOnSearch');
+
         // Make sub-menus if the option is configured in this view
-        if (this.submenuStyle === "popout") {
+        if (subMenuStyle === "popout") {
           this.convertToPopout();
-        } else if (this.submenuStyle === "accordion") {
+        } else if (subMenuStyle === "accordion") {
           this.convertToAccordion();
         }
 
         // Convert interactive submenus to lists and hide empty categories
         // when the user is searching for a term
         if (
-          ["popout", "accordion"].includes(view.submenuStyle) ||
-          view.hideEmptyCategoriesOnSearch
+          ["popout", "accordion"].includes(subMenuStyle) ||
+          hideEmptyCategoriesOnSearch
         ) {
           this.$selectUI.find("input").on("keyup blur", (e) => {
             const inputVal = e.target.value;
@@ -656,23 +642,23 @@ define([
             if (inputVal !== "") {
               // For interactive type submenus where items are sometimes
               // hidden, show all the matching items when a user is searching
-              if (["popout", "accordion"].includes(view.submenuStyle)) {
+              if (["popout", "accordion"].includes(subMenuStyle)) {
                 view.convertToList();
               }
-              if (view.hideEmptyCategoriesOnSearch) {
+              if (hideEmptyCategoriesOnSearch) {
                 view.hideEmptyCategories();
               }
 
               // When the input is EMPTY
             } else {
               // Convert back to sub-menus if the option is configured in this view
-              if (view.submenuStyle === "popout") {
+              if (subMenuStyle === "popout") {
                 view.convertToPopout();
-              } else if (view.submenuStyle === "accordion") {
+              } else if (subMenuStyle === "accordion") {
                 view.convertToAccordion();
               }
               // Show all the category titles again, in cases some where hidden
-              if (view.hideEmptyCategoriesOnSearch) {
+              if (hideEmptyCategoriesOnSearch) {
                 view.showAllCategories();
               }
             }
@@ -692,22 +678,16 @@ define([
       /**
        * isValidOption - Checks if a value is one of the values given in view.options
        * @param  {string} value The value to check
-       * @returns {boolean}      returns true if the value is one of the values given in
+       * @returns {boolean} returns true if the value is one of the values given in
        * view.options
        */
       isValidOption(value) {
         const view = this;
-        let { options } = view;
+        let options = view.model.optionsAsJSON(true)
 
         // If there are no options set on the view, assume the value is invalid
         if (!options || options.length === 0) {
           return false;
-        }
-
-        // If the list of options doesn't have category headings, put it in the
-        // same format as options that do have headings.
-        if (Array.isArray(options)) {
-          options = { "": options };
         }
 
         // Reduce the options object to just an Array of value and label strings
@@ -926,10 +906,30 @@ define([
 
       /**
        * showAllCategories - In the searchable select interface, show all
-       * category headers that were previously empty
+       * category headers that we re previously empty
        */
       showAllCategories() {
         this.$selectUI.find(".header:hidden").show();
+      },
+
+      /**
+       * Add a value to the selected array in the model to reflect the user's
+       * selection in the interface
+       * @param {string} newValue The value to add to the selected array
+       * @param {boolean} silent Set to true to disable the select interface
+       * and prevent the model from triggering a change event
+       * @since 0.0.0
+       */
+      addSelected(newValue, silent = false) {
+        if (silent === true) {
+          view.disable();
+        }
+        this.model.addSelected(newValue, { silent: silent });
+        const selected = this.model.get('selected');
+        this.$selectUI.dropdown("set selected", selected);
+        if (silent === true) {
+          view.enable();
+        }
       },
 
       /**
@@ -946,10 +946,10 @@ define([
           return;
         }
         const view = this;
-        this.selected = newValues;
         if (silent === true) {
           view.disable();
         }
+        this.model.setSelected(newValues, { silent: silent });
         this.$selectUI.dropdown("set exactly", newValues);
         if (silent === true) {
           view.enable();
