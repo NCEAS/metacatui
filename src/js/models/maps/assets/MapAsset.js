@@ -130,6 +130,7 @@ define([
           status: null,
           statusDetails: null,
           hideInLayerList: false,
+          showOpacitySlider: true,
         };
       },
 
