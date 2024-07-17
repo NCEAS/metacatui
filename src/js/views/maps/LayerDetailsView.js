@@ -216,11 +216,13 @@ define([
 
           // Render each section in the Details panel
           this.renderedSections = _.clone(this.sections);
-       
+
           // Remove and do not render opacity section if showOpacitySlider is false
           if (model.get("showOpacitySlider") === false) {
-            this.renderedSections = this.renderedSections.filter(item => item.label !== 'Opacity')
-            }
+            this.renderedSections = this.renderedSections.filter(
+              (item) => item.label !== "Opacity",
+            );
+          }
 
           this.renderedSections.forEach(function (section) {
             var detailSection = new LayerDetailView({
