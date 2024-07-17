@@ -1033,17 +1033,11 @@ define([
         this.operatorSelect.$el.addClass(this.operatorClass);
         this.el.append(this.operatorSelect.el);
 
-        if (operatorError) {
-          view.listenToOnce(view.operatorSelect, "postRender", () => {
-            view.operatorSelect.showMessage(
-              "Please select a valid operator",
-              "error",
-              true,
-            );
-          });
-        }
-
         this.operatorSelect.render();
+
+        if(operatorError){
+          view.operatorSelect.showInvalidSelectionError();
+        }
 
         // Update model when the values change
         this.stopListening(this.operatorSelect.model, "change:selected");

@@ -3,10 +3,11 @@ define([
   "semanticUItransition",
   `text!${MetacatUI.root}/components/semanticUI/transition.min.css`,
 ], (Backbone, _Transition, TransitionCSS) => {
+
   // Default class names for the separator element
+  const BASE_CLASS ="separator";
   const CLASS_NAMES = {
-    mainEl: "separator",
-    highlighted: "changeable-separator",
+    highlighted: `${BASE_CLASS}--hover`,
   };
 
   /**
@@ -28,7 +29,7 @@ define([
       type: "SeparatorView",
 
       /** @inheritdoc */
-      className: CLASS_NAMES.mainEl,
+      className: BASE_CLASS,
 
       /** @inheritdoc */
       tagName: "span",

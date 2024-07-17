@@ -205,7 +205,7 @@
   transition-duration: 0.3s;
   transition-property: background-color, color;
 }
-.searchable-select .changeable-separator {
+.searchable-select .separator--hover {
   border-radius: 4px;
   cursor: pointer;
   background-color: #e2eef1;

@@ -20,7 +20,30 @@ define([
   _Dropdown,
   DropdownCSS,
   Template,
-) =>
+) => {
+
+  const BASE_CLASS = "searchable-select";
+  const CLASS_NAMES = {
+    // Classes from the Semantic UI dropdown module
+    inactive: "disabled",
+    loading: "loading",
+  };
+
+  // Classes to use for different types of messages
+  const MESSAGE_TYPES = {
+    error: {
+      messageClass: "text-error",
+      selectUIClass: "error",
+    },
+    warning: {
+      messageClass: "text-warning",
+      selectUIClass: "warning",
+    },
+    info: {
+      messageClass: "text-info",
+      selectUIClass: "",
+    },
+  };
   /**
    * @class SearchableSelectView
    * @classdesc A select interface that allows the user to search from within
@@ -32,7 +55,7 @@ define([
    * @since 2.14.0
    * @screenshot views/searchSelect/SearchableSelectView.png
    */
-  Backbone.View.extend(
+  const SearchableSelectView = Backbone.View.extend(
     /** @lends SearchableSelectView.prototype */
     {
       /**
@@ -45,7 +68,7 @@ define([
        * The HTML class names for this view element
        * @type {string}
        */
-      className: "searchable-select",
+      className: BASE_CLASS,
 
       /**
        * Text to show in the input field before any value has been entered
@@ -95,8 +118,7 @@ define([
 
       /**
        * Creates a new SearchableSelectView
-       * @param {object} opts - A literal object with options to pass to the
-       * view
+       * @param {object} opts A literal object with options to pass to the view
        */
       initialize(opts) {
         const options = opts || {};
@@ -113,7 +135,7 @@ define([
 
       /**
        * Split the options passed to the view into model and view attributes.
-       * @param {object} options - The options passed to the view
+       * @param {object} options The options passed to the view
        * @returns {object} An object with two keys: modelAttrs and viewAttrs
        * @since 0.0.0
        */
@@ -127,7 +149,7 @@ define([
       /**
        * Create a new SearchSelect model and set it on the view. If a model
        * already exists, it will be destroyed.
-       * @param {object} options - The options to pass to the model
+       * @param {object} options The options to pass to the model
        * @since 0.0.0
        */
       createModel(options) {
@@ -152,6 +174,7 @@ define([
       render() {
         const view = this;
 
+        // TODO: 
         if (view.apiSettings && !view.semanticAPILoaded) {
           // eslint-disable-next-line import/no-dynamic-require
           require(["semanticAPI"], (_SemanticAPI) => {
@@ -164,11 +187,35 @@ define([
         // Render the template using the view attributes
         this.$el.html(this.renderTemplate());
 
-        // Start the dropdown in a disabled state. This allows us to pre-select
+        // Start the dropdown in an inactive state. This allows us to pre-select
         // values without triggering a change event.
-        this.disable();
+        this.inactivate();
         this.showLoading();
 
+        this.renderSelectUI();
+        this.listenToModel();
+        this.listenToSelectUI();
+
+        // Add tool tips for the description
+        this.$el.find(".item").each((_i, item) => {
+          view.addTooltip(item);
+        });
+
+        const invalidSelections = view.model.hasInvalidSelections();
+        if (invalidSelections) {
+          view.showInvalidSelectionError(invalidSelections);
+        }
+
+        this.updateSubmenuStyle();
+
+        this.enable();
+        this.hideLoading();
+
+        return this;
+      },
+
+      renderSelectUI() {
+        const view = this;
         // Initialize the dropdown interface For explanations of settings, see:
         // https://semantic-ui.com/modules/dropdown.html#/settings
         this.$selectUI = this.$el.find(".ui.dropdown").dropdown({
@@ -186,142 +233,117 @@ define([
           hideAdditions: false,
           allowReselection: true,
           onRemove(removedValue) {
-            // Callback when a value is removed *for multi-select inputs only*
-            // Remove the value from the selected array
             view.model.removeSelected(removedValue);
           },
           onLabelCreate(value, _text) {
-            // Callback when a label is created *for multi-select inputs only*
-
-            // Add the value to the selected array (but don't add twice). Do
-            // this in the onLabelCreate callback instead of in the onAdd
-            // callback because we would like to update the selected array
-            // before we create the separator element (below).
-            view.model.addSelected(value);
-            // Add a separator between labels if required.
-            let label = this;
-            if (view.model.separatorRequired()) {
-              // Create the separator element.
-              const separator = view.createSeparator();
-              if (separator) {
-                // Attach the separator to the label so that we can easily
-                // remove it when the label is removed.
-                label.data("separator", separator);
-                // Add it before the label element.
-                label = separator.$el.add(label);
-              }
-            }
-            return label;
+            const $label = this;
+            return view.onLabelCreate.call(view, value, _text, $label);
           },
-          onLabelRemove(_value) {
-            // Call back when a user deletes a label *for multi-select inputs
-            // only*
-            const label = this;
-            // Remove the separator before this label if there is one.
-            const sep = label.data("separator");
-            if (sep) {
-              sep.remove();
-            }
-            // If this is the first label in an input of at least two, then
-            // delete the separator directly *after* this label - The label
-            // that's second will become first, and should not have an separator
-            // before it.
-            const allLabels = view.$selectUI.find(".label");
-            if (allLabels.index(label) === 0) {
-              // Get the second label:
-              const nextLabel = allLabels.eq(1);
-              // Remove the separator before the second label.
-              const nextSep = nextLabel.data("separator");
-              if (nextSep) {
-                nextSep.remove();
-              }
-            }
+          onLabelRemove(value) {
+            const $label = this;
+            view.onLabelRemove.call(view, value, $label);
           },
           onChange(values, _text, _$choice) {
-            // Callback when values change for any type of input.
+            view.onChange.call(view, values, _text, _$choice);
+          }
 
-            // NOTE: The "values" argument is a string that contains all the
-            // selected values separated by commas. We updated the view.selected
-            // array with the onLabelCreate and onRemove callbacks instead of
-            // using the values argument passed to this function in order to
-            // allow commas within individual values. For example, if the user
-            // selected the value "x" and the value "y,z", the values string
-            // would be "x,y,z" and it would be difficult to see that two values
-            // were selected instead of three.
-
-            // Update values for single-select inputs (multi-select are updated
-            // using the onLabelCreate and onRemove callbacks)
-            if (!view.model.get("allowMulti")) {
-              const silent = $(this).hasClass("disabled");
-              view.model.setSelected(values, { silent });
-            }
-            // Refresh the tooltips on the labels/text
-
-            // Ensure tooltips for labels are removed
-            $(".search-select-tooltip").remove();
-
-            // Add a tooltip for single select elements (.text) or multi-select
-            // elements (.label). Delay so that to give time for DOM elements to
-            // be added or removed.
-            setTimeout(() => {
-              const textEl = view.$selectUI.find(".text:not(.default),.label");
-              // Single select text element will not have the value attribute,
-              // add it so that we can find the matching description for the
-              // tooltip
-              if (!textEl.data("value") && !view.model.get("allowMulti")) {
-                textEl.data("value", values);
-              }
-              if (textEl) {
-                textEl.each((i, el) => {
-                  view.addTooltip.call(view, el, "top");
-                });
-              }
-            }, 50);
-          },
         });
 
         view.$selectUI.data("view", view);
-
-        view.postRender();
-
-        return this;
-      },
-
-      /**
-       * Updates to the view once the dropdown UI has loaded
-       */
-      postRender() {
-        const view = this;
-
-        this.listenToModel();
-
-        view.trigger("postRender");
-
-        // Add tool tips for the description
-        this.$el.find(".item").each((_i, item) => {
-          view.addTooltip(item);
-        });
-
-        const invalidSelections = view.model.hasInvalidSelections();
-        if (invalidSelections) {
-          view.showInvalidSelectionError(invalidSelections);
-        }
-
-        this.updateSubmenuStyle();
 
         // Set the selected values in the dropdown
         const selected = this.model.get("selected");
         this.$selectUI.dropdown("set exactly", selected);
         this.$selectUI.dropdown("save defaults");
-        this.enable();
-        this.hideLoading();
+      },
 
-        // Save the active search term in the model
-        this.$selectUI.find("input").off("keyup blur focus");
-        this.$selectUI.find("input").on("keyup blur focus", (e) => {
-          this.model.set("lastInteraction", e.type);
-          this.model.set("searchTerm", e.target.value);
-        });
+      onLabelCreate(value, _text, $label) {
+        const view = this;
+        // Callback when a label is created *for multi-select inputs only*
+
+        // Add the value to the selected array (but don't add twice). Do this in
+        // the onLabelCreate callback instead of in the onAdd callback because
+        // we would like to update the selected array before we create the
+        // separator element (below).
+        view.model.addSelected(value);
+        // Add a separator between labels if required.
+
+        let $updatedLabel = $label;
+
+        if (view.model.separatorRequired()) {
+          // Create the separator element.
+          const separator = view.createSeparator();
+          if (separator) {
+            // Attach the separator to the label so that we can easily remove it
+            // when the label is removed.
+            $label.data("separator", separator);
+            // Add it before the label element.
+            $updatedLabel = separator.$el.add($label);
+          }
+        }
+        return $updatedLabel;
+      },
+
+      /**
+       * Call back from the select UI when a label is removed from multi-select
+       * inputs. This function removes separators that are no longer needed.
+       * @param {string} _value The value of the label that was removed
+       * @param {JQuery} $label The label element that was removed
+       * @since 0.0.0
+       */
+      onLabelRemove(_value, $label) {
+        const view = this;
+        const sep = $label.data("separator");
+        sep?.remove();
+        // Remove separator from second label if the first label is the one
+        // being removed
+        const allLabels = view.$selectUI.find(".label");
+        if (allLabels.index($label) === 0) {
+          allLabels.eq(1)?.data("separator")?.remove();
+        }
+      },
+
+      /**
+       * Callback when the user changes the selection in the dropdown. We update
+       * the model with the new selection when the dropdown is a single-select.
+       * Multi-select dropdowns are updated in the onLabelCreate and
+       * onLabelRemove
+       * @param {string} values The selected values separated by commas
+       * @param {string} _text The text of the selected values
+       * @param {JQuery} _$choice The selected choice element
+       * @since 0.0.0
+       */
+      onChange(values, _text, _$choice) {
+        const view = this
+
+        // Update values for single-select inputs (multi-select are updated
+        // using the onLabelCreate and onRemove callbacks)
+        if (!view.model.get("allowMulti")) {
+          const silent = this.$selectUI.hasClass(CLASS_NAMES.inactive);
+          view.model.setSelected(values, { silent });
+        }
+
+        // Refresh the tooltips on the labels/text
+
+        // Ensure tooltips for labels are removed
+        $(".search-select-tooltip").remove();
+
+        // Add a tooltip for single select elements (.text) or multi-select
+        // elements (.label). Delay so that to give time for DOM elements to be
+        // added or removed.
+        setTimeout(() => {
+          const textEl = view.$selectUI.find(".text:not(.default),.label");
+          // Single select text element will not have the value attribute, add
+          // it so that we can find the matching description for the tooltip
+          if (!textEl.data("value") && !view.model.get("allowMulti")) {
+            textEl.data("value", values);
+          }
+          if (textEl) {
+            textEl.each((i, el) => {
+              view.addTooltip.call(view, el, "top");
+            });
+          }
+        }, 50);
       },
 
       /**
@@ -356,12 +378,17 @@ define([
        * @since 0.0.0
        */
       listenToSelectUI() {
-        // TODO: move from render/postrender
+        // Save the active search term in the model
+        this.$selectUI.find("input").off("keyup blur focus");
+        this.$selectUI.find("input").on("keyup blur focus", (e) => {
+          this.model.set("lastInteraction", e.type);
+          this.model.set("searchTerm", e.target.value);
+        });
       },
 
       /**
        * Change the options available in the dropdown menu and re-render.
-       * @param {SearchableSelectOptions} options - The new options
+       * @param {SearchableSelectOptions} options The new options
        * @since 2.24.0
        */
       updateOptions(options) {
@@ -390,8 +417,8 @@ define([
       },
 
       /**
-       * updateMenu - Re-render the menu of options. Useful after changing the
-       * options that are set on the view.
+       * Re-render the menu of options. Useful after changing the options that
+       * are set on the view.
        * @since 0.0.0
        */
       updateMenu() {
@@ -434,21 +461,28 @@ define([
        * @param {string[]} opts The values that are not valid choices
        */
       showInvalidSelectionError(opts) {
-        if (!opts || !opts.length) return;
-        const optsStr = `"${opts.join(", ")}"`;
-        const notValid =
-          opts.length < 2 ? "is not a valid option" : "are not valid options";
-        const msg = `${optsStr} ${notValid}. Please change your selection.`;
+
+        let msg = "";
+        if (opts?.length) {
+          msg += opts.join(", ");
+          if (opts.length > 1) {
+            msg += " are not valid options. ";
+          } else {
+            msg += " is not a valid option. ";
+          }
+        }
+
+        msg += "Please select from the available options.";
+
         this.showMessage(msg, "error", true);
       },
 
       /**
-       * addTooltip - Add a tooltip to a given element using the description in
-       * the options object that's set on the view.
+       * Add a tooltip to a given element using the description in the options
+       * object that's set on the view.
        * @param  {HTMLElement} element The HTML element a tooltip should be
        * added
-       * @param  {string} position how to position the tooltip - top | bottom |
-       * left | right
+       * @param  {"top"|"bottom"|"left"|"right"} position Tooltip position
        * @returns {jQuery} The element with a tooltip wrapped by jQuery
        */
       addTooltip(element, position = "bottom") {
@@ -505,8 +539,8 @@ define([
       },
 
       /**
-       * convertToPopout - Re-arrange the HTML to display category contents as
-       * sub-menus that popout to the left or right of category titles
+       * Re-arrange the HTML to display category contents as sub-menus that
+       * popout to the left or right of category titles
        */
       convertToPopout() {
         if (!this.$selectUI) {
@@ -542,8 +576,7 @@ define([
       },
 
       /**
-       * convertToList - Re-arrange HTML to display the full list of options in
-       * one static menu
+       * Re-arrange HTML to display the full list of options in one static menu
        */
       convertToList() {
         if (!this.$selectUI) {
@@ -561,8 +594,8 @@ define([
       },
 
       /**
-       * convertToAccordion - Re-arrange the HTML to display category items with
-       * expandable sections, similar to an accordion element.
+       * Re-arrange the HTML to display category items with expandable sections,
+       * similar to an accordion element.
        */
       convertToAccordion() {
         if (!this.$selectUI) {
@@ -611,8 +644,8 @@ define([
       },
 
       /**
-       * hideEmptyCategories - In the searchable select interface, hide category
-       * headers that are empty, if any
+       * In the searchable select interface, hide category headers that are
+       * empty, if any
        */
       hideEmptyCategories() {
         const $headers = this.$selectUI.find(".header");
@@ -637,8 +670,8 @@ define([
       },
 
       /**
-       * showAllCategories - In the searchable select interface, show all
-       * category headers that we re previously empty
+       * In the searchable select interface, show all category headers that we
+       * re previously empty
        */
       showAllCategories() {
         this.$selectUI.find(".header:hidden").show();
@@ -648,14 +681,14 @@ define([
        * Add a value to the selected array in the model to reflect the user's
        * selection in the interface
        * @param {string} newValue The value to add to the selected array
-       * @param {boolean} silent Set to true to disable the select interface and
-       * prevent the model from triggering a change event
+       * @param {boolean} silent Set to true to inactivate the select interface
+       * and prevent the model from triggering a change event
        * @since 0.0.0
        */
       addSelected(newValue, silent = false) {
         const view = this;
         if (silent === true) {
-          view.disable();
+          view.inactivate();
         }
         this.model.addSelected(newValue, { silent });
         const selected = this.model.get("selected");
@@ -666,9 +699,9 @@ define([
       },
 
       /**
-       * changeSelection - Set selected values in the interface
-       * @param  {string[]} newValues - An array of strings to select
-       * @param  {boolean} silent - Set to true to disable the select interface
+       * Set selected values in the interface
+       * @param  {string[]} newValues An array of strings to select
+       * @param  {boolean} silent Set to true to inactivate the select interface
        */
       changeSelection(newValues, silent = false) {
         if (
@@ -680,7 +713,7 @@ define([
         }
         const view = this;
         if (silent === true) {
-          view.disable();
+          view.inactivate();
         }
         this.model.setSelected(newValues, { silent });
         this.$selectUI.dropdown("set exactly", newValues);
@@ -689,23 +722,21 @@ define([
         }
       },
 
-      /**
-       * enable - Remove the class the makes the select UI appear disabled
-       */
+      /** Visually indicate that the select interface is enabled */
       enable() {
-        this.$el.find(".ui.dropdown").removeClass("disabled");
+        this.enabled = true;
+        this.$el.find(".ui.dropdown").removeClass(CLASS_NAMES.inactive);
+      },
+
+      /** Visually indicate that the select interface is inactive */
+      inactivate() {
+        this.enabled = false;
+        this.$el.find(".ui.dropdown").addClass(CLASS_NAMES.inactive);
       },
 
       /**
-       * disable - Add the class the makes the select UI appear disabled
-       */
-      disable() {
-        this.$el.find(".ui.dropdown").addClass("disabled");
-      },
-
-      /**
-       * showMessage - Show an error, warning, or informational message, and
-       * highlight the select interface in an appropriate colour.
+       * Show an error, warning, or informational message, and highlight the
+       * select interface in an appropriate colour.
        * @param  {string} message The message to display. Use an empty string to
        * only highlight the select interface without showing any message text.
        * @param  {string} type one of "error", "warning", or "info"
@@ -713,36 +744,19 @@ define([
        * soon as the user changes the selection
        */
       showMessage(message, type = "info", removeOnChange = true) {
-        if (!this.$selectUI) {
-          return;
-        }
-
-        const messageTypes = {
-          error: {
-            messageClass: "text-error",
-            selectUIClass: "error",
-          },
-          warning: {
-            messageClass: "text-warning",
-            selectUIClass: "warning",
-          },
-          info: {
-            messageClass: "text-info",
-            selectUIClass: "",
-          },
-        };
+        if (!this.$selectUI) return;
 
         let level = typeof type === "string" ? type.toLowerCase() : "info";
-        if (!Object.keys(messageTypes).includes(level)) {
+        if (!Object.keys(MESSAGE_TYPES).includes(level)) {
           level = "info";
         }
 
         this.removeMessages();
-        this.$selectUI.addClass(messageTypes[level].selectUIClass);
+        this.$selectUI.addClass(MESSAGE_TYPES[level].selectUIClass);
 
         if (message && message.length && typeof message === "string") {
           this.message = $(
-            `<p style='margin:0.2rem' class='${messageTypes[level].messageClass}'><small>${message}</small></p>`,
+            `<p style='margin:0.2rem' class='${MESSAGE_TYPES[level].messageClass}'><small>${message}</small></p>`,
           );
         }
 
@@ -753,34 +767,27 @@ define([
         }
       },
 
-      /**
-       * removeMessages - Remove all messages and classes set by the showMessage
-       * function.
-       */
+      /** Remove all messages and classes set by the showMessage function */
       removeMessages() {
         if (!this.$selectUI) {
           return;
         }
-
-        this.$selectUI.removeClass("error warning");
-        if (this.message) {
-          this.message.remove();
-        }
+        const classes = Object.values(MESSAGE_TYPES).map((type) => type.selectUIClass);
+        this.$selectUI.removeClass(classes.join(" "));
+        if (this.message) this.message.remove();
       },
 
-      /**
-       * showLoading - Indicate that dropdown options are loading by showing a
-       * spinner in the select interface
-       */
+      /** Visually indicate that dropdown options are loading */
       showLoading() {
-        this.$el.find(".ui.dropdown").addClass("loading");
+        this.$el.find(".ui.dropdown").addClass(CLASS_NAMES.loading);
       },
 
-      /**
-       * hideLoading - Remove the loading spinner set by the showLoading
-       */
+      /** Remove the loading spinner set by the showLoading */
       hideLoading() {
-        this.$el.find(".ui.dropdown").removeClass("loading");
+        this.$el.find(".ui.dropdown").removeClass(CLASS_NAMES.loading);
       },
     },
-  ));
+  )
+
+  return SearchableSelectView;
+});
