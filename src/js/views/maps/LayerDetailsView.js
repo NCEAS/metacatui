@@ -225,10 +225,10 @@ define([
           }
 
           this.renderedSections.forEach(function (section) {
-            let detailSection = new LayerDetailView({
+            const detailSection = new LayerDetailView({
               label: section.label,
               contentView: section.view,
-              model: model,
+              model,
               collapsible: section.collapsible,
               showTitle: section.showTitle,
             });
