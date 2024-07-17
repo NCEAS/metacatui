@@ -6,3 +6,5 @@ src/components
 docs/docs
 # Ignore any minimized files
 **/*.min.*
+# Ignore helm chart; Prettier can't handle go templates correctly
+helm/**
