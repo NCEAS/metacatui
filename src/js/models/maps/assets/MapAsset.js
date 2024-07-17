@@ -106,6 +106,8 @@ define([
        * especially when there was an error.
        * @property {boolean} [hideInLayerList = false] Set to true to hide this asset
        * from the layer list.
+       * @property {boolean} [showOpacitySlider = true] Set to true to show opacity slider
+       * for the layer.
        */
       defaults() {
         return {
@@ -131,6 +133,7 @@ define([
           statusDetails: null,
           hideInLayerList: false,
           showOpacitySlider: true,
+          clickFeatureAction: "",
         };
       },
 
