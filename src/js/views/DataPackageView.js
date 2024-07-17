@@ -483,6 +483,7 @@
             titleTooltip: titleTooltip,
             downloadUrl: packageUrl,
             disablePackageDownloads: disablePackageDownloads,
+            disablePackageUrl: true,
           });
 
           this.$el.append(tableRow);
@@ -930,28 +931,29 @@
       addNestedPackages: function (dataPackage) {
         /**
          * Generates the table row for the data package header.
-         *
          * @type {null|Element}
          */
         var tableRow = null,
-          /**
-           * Reference to the current view.
-           *
-           * @type {Object}
-           */
-          view = this,
-          /**
-           * The title of the data package.
-           *
-           * @type {null|string}
-           */
-          title = null,
-          /**
-           * The URL of the data package.
-           *
-           * @type {null|string}
-           */
-          packageUrl = null;
+        /**
+         * Reference to the current view.
+         * @type {Object}
+         */
+        view = this,
+        /**
+         * The title of the data package.
+         * @type {null|string}
+         */
+        title = null,
+        /**
+         * The URL of the data package.
+         * @type {null|string}
+         */
+        packageUrl = null;
+        /**
+         * The URL of the nested data package.
+         * @type {null|string}
+         */
+        nestedPackageUrl = null;
 
         /**
          * The members of the data package.
@@ -983,6 +985,21 @@
               title.slice(title.length - 75, title.length)
             : title;
 
+        // Set the package URL
+        if (MetacatUI.appModel.get("packageServiceUrl"))
+          packageUrl =
+            MetacatUI.appModel.get("packageServiceUrl") +
+            encodeURIComponent(dataPackage.id);
+
+        // Set the nested package URL
+        if (
+            MetacatUI.appModel.get("viewServiceUrl") !== undefined &&
+            MetacatUI.appModel.get("viewServiceUrl")
+            )
+            nestedPackageUrl =
+                MetacatUI.appModel.get("viewServiceUrl") + 
+                encodeURIComponent(dataPackage.id);
+
         /**
          * The HTML content for the data package header.
          *
@@ -993,6 +1010,9 @@
           title: title,
           titleTooltip: titleTooltip,
           disablePackageDownloads: false,
+          downloadUrl: packageUrl,
+          disablePackageUrl: false,
+          packageUrl: nestedPackageUrl,
         });
         this.$el.append(tableRow);
 

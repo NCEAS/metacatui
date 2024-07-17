@@ -1,13 +1,13 @@
 "use strict";
 
-define([
-  "underscore",
-  "backbone",
-  "text!templates/maps/viewfinder/expansion-panel.html",
-], (_, Backbone, Template) => {
+define(["underscore", "backbone", "text!templates/maps/expansion-panel.html"], (
+  _,
+  Backbone,
+  Template,
+) => {
   // The base classname to use for this View's template elements.
   const BASE_CLASS = "expansion-panel";
-  //The HTML classes to use for this view's HTML elements.
+  // The HTML classes to use for this view's HTML elements.
   const CLASS_NAMES = {
     title: `${BASE_CLASS}__title`,
     content: `${BASE_CLASS}__content`,
@@ -21,13 +21,12 @@ define([
    * @classdesc Allow expand and collapse content in a panel.
    * @classcategory Views/Maps/Viewfinder
    * @name ExpansionPanelView
-   * @extends Backbone.View
-   * @screenshot views/maps/viewfinder/ExpansionPanelView_closed.png
-   * @screenshot views/maps/viewfinder/ExpansionPanelView_open.png
+   * @augments Backbone.View
+   * @screenshot views/maps/ExpansionPanelView.png
    * @since 2.29.0
    * @constructs ExpansionPanelView
    */
-  var ExpansionPanelView = Backbone.View.extend(
+  const ExpansionPanelView = Backbone.View.extend(
     /** @lends ExpansionPanelView.prototype */ {
       /**
        * The type of View this is
@@ -40,7 +39,7 @@ define([
 
       /**
        * The events this view will listen to and the associated function to call.
-       * @type {Object}
+       * @type {object}
        */
       events() {
         return {
@@ -48,15 +47,8 @@ define([
         };
       },
 
-      /** Values meant to be used by the rendered HTML template. */
-      templateVars: {
-        classNames: CLASS_NAMES,
-        title: "",
-        icon: "",
-      },
-
       /**
-       * @typedef {Object} ExpansionPanelViewOptions
+       * @typedef {object} ExpansionPanelViewOptions
        * @property {string} title The displayed label for this panel.
        * @property {string} icon The icon displayed in the panel's clickable
        * label.
@@ -68,9 +60,25 @@ define([
        * @property {boolean} startOpen Whether the panel should be expanded by
        * default.
        */
-      initialize({ title, contentViewInstance, icon, panelsModel, startOpen }) {
-        this.templateVars.title = title;
-        this.templateVars.icon = icon;
+
+      /**
+       * Initialize the view with the given options.
+       * @param {ExpansionPanelViewOptions} options The options for this view.
+       */
+      initialize({
+        title,
+        contentViewInstance,
+        icon,
+        panelsModel,
+        startOpen,
+        isSvgIcon,
+      }) {
+        this.templateVars = {
+          classNames: CLASS_NAMES,
+          icon,
+          isSvgIcon,
+          title,
+        };
         this.contentViewInstance = contentViewInstance;
         this.panelsModel = panelsModel;
         this.startOpen = !!startOpen;
@@ -80,7 +88,7 @@ define([
 
       /**
        * Getter function for the content div.
-       * @return {HTMLDivElement} Returns the content element.
+       * @returns {HTMLDivElement} Returns the content element.
        */
       getContent() {
         return this.$el.find(`.${CLASS_NAMES.content}`);
@@ -115,6 +123,7 @@ define([
         this.el.innerHTML = _.template(Template)(this.templateVars);
         this.contentViewInstance.render();
         this.getContent().append(this.contentViewInstance.el);
+
         if (this.startOpen) {
           this.open();
         }

@@ -27,75 +27,6 @@
 
 :root {
   /* COLOURS */
-  --map-col-content-bkg: var(--portal-col-content-bkg);
-  --map-col-content-bkg-highlight: var(--portal-col-content-bkg-highlight);
-  --map-col-content-bkg-muted: var(--portal-col-content-bkg-muted);
-  --map-col-content-bkg-active-highlight: var(
-    --portal-col-content-bkg-active-highlight
-  );
-  --map-col-content-bkg-hover-highlight: var(
-    --portal-col-content-bkg-hover-highlight
-  );
-  --map-col-content-bkg-transparent: var(--portal-col-content-bkg-transparent);
-
-  --map-col-buttons-bkg: var(--portal-col-buttons-bkg);
-  --map-col-buttons-bkg-active: var(--portal-col-content-bkg-highlight);
-  --map-col-buttons-bkg-hover: var(--portal-col-buttons-bkg-hover);
-  --map-col-buttons-bkg-highlight: var(--portal-col-buttons-bkg-highlight);
-  --map-col-buttons-bkg-muted: var(--portal-col-buttons-bkg-muted);
-  --map-col-buttons-bkg-white-content-contrast: var(
-    --portal-col-buttons-bkg-white-content-contrast
-  );
-  --map-col-buttons-text: var(--portal-col-buttons-text);
-  --map-col-buttons-text-highlight: var(--portal-col-buttons-text-highlight);
-  --map-col-buttons-icon: var(--portal-col-buttons-icon);
-  --map-col-buttons-icon-highlight: var(--portal-col-buttons-icon-highlight);
-  --map-col-buttons-icon-muted: var(--portal-col-buttons-icon-muted);
-  --map-col-utility-buttons: var(--portal-col-utility-buttons);
-  --map-col-buttons-icon-active-highlight: var(
-    --portal-col-buttons-icon-active-highlight
-  );
-  --map-col-buttons-icon-hover-highlight: var(
-    --portal-col-buttons-icon-hover-highlight
-  );
-
-  --map-col-border: var(--portal-col-border);
-  --map-col-border-highlight: var(--portal-col-border-highlight);
-  --map-col-border-muted: var(--portal-col-border-muted);
-  --map-col-border-highlight-search-box: var(
-    --portal-col-border-highlight-search-box
-  );
-  --map-col-border-panel: var(--portal-col-border-panel);
-
-  --map-col-section-divider: var(--portal-col-section-divider);
-  --map-col-item-divider: var(--portal-col-item-divider);
-
-  --map-col-text-body: var(--portal-col-text-body);
-  --map-col-text-highlight: var(--portal-col-text-highlight);
-  --map-col-text-title: var(--portal-col-text-title);
-  --map-col-text-label: var(--portal-col-text-label);
-  --map-col-text-detail: var(--portal-col-text-detail);
-  --map-col-text-muted: var(--portal-col-text-muted);
-  --map-col-text-active-highlight: var(--portal-col-text-active-highlight);
-  --map-col-text-hover-highlight: var(--portal-col-text-hover-highlight);
-
-  --map-col-opacity-slider-active: var(--portal-col-opacity-slider-active);
-  --map-col-opacity-slider-inactive: var(--portal-col-opacity-slider-inactive);
-
-  --map-col-input-error-bkg: var(
-    --portal-col-input-error-bkg,
-    rgba(30, 127, 196, 0.5)
-  );
-  --map-col-input-error-border: var(
-    --portal-col-input-error-border,
-    rgba(82, 168, 236, 0.8)
-  );
-  --map-col-input-error-text: var(--portal-col-input-error-text, #ca6c0b);
-  --map-col-search-match-highlight: var(
-    --portal-col-search-match-highlight,
-    rgba(30, 127, 196, 0.5)
-  );
-
   --map-no-brightness-or-opacity-tweaks: var(
     --portal-no-brightness-or-opacity-tweaks
   );
@@ -106,9 +37,6 @@
   --map-col-text-on-blue: white;
   --map-col-yellow: #fda;
   --map-col-text-on-yellow: #1b2538;
-
-  --map-col-tooltip-background: var(--portal-col-tooltip-background);
-  --map-col-tooltip-text: var(--portal-col-tooltip-text);
 
   --map-col-bkg__deprecate: #111827;
   --map-col-bkg-lighter__deprecate: #1b2538;
@@ -127,12 +55,20 @@
   --map-size-toolbar-link: 2.5rem;
   --map-size-toolbar-link-margin: 1rem;
   --map-size-toolbar-link-padding: 0.5rem;
+  --map-size-toolbar-link-gap: 0.5rem;
   --map-border-radius-small: 0.25rem;
   --map-border-radius-big: 0.5rem;
   --map-width-toolbar: 21rem;
   --map-width-toolbar-wide: 30rem;
   --map-toolbar-link-width: calc(
     var(--map-size-toolbar-link) + 2 * var(--map-size-toolbar-link-padding)
+  );
+  /* Assumes 5 links max. */
+  --max-num-toolbar-links: 5;
+  --max-map-toolbar-link-height: calc(
+    var(--max-num-toolbar-links) * var(--map-size-toolbar-link) +
+      (var(--max-num-toolbar-links) - 1) * var(--map-size-toolbar-link-gap) + 2 *
+      var(--map-size-toolbar-link-padding)
   );
   --map-width-feature-info: calc(var(--map-width-toolbar) * 1.25);
   --map-width-feature-info-wide: calc(var(--map-width-toolbar-wide) * 1.25);
@@ -164,7 +100,7 @@
 /* ---- TOOLTIP ---- */
 
 .map-tooltip {
-  color: var(--map-col-tooltip-text, var(--map-col-text__deprecate));
+  color: var(--portal-col-neutral-00, var(--map-col-text__deprecate));
   border-radius: var(--map-border-radius-big);
   opacity: var(--map-no-brightness-or-opacity-tweaks, 1) !important;
   font-size: 0.8rem;
@@ -173,28 +109,28 @@
 
 .map-tooltip.top .tooltip-arrow {
   border-top-color: var(
-    --map-col-tooltip-background,
+    --portal-col-neutral-7,
     var(--map-col-buttons__deprecate)
   );
 }
 
 .map-tooltip.right .tooltip-arrow {
   border-right-color: var(
-    --map-col-tooltip-background,
+    --portal-col-neutral-7,
     var(--map-col-buttons__deprecate)
   );
 }
 
 .map-tooltip.left .tooltip-arrow {
   border-left-color: var(
-    --map-col-tooltip-background,
+    --portal-col-neutral-7,
     var(--map-col-buttons__deprecate)
   );
 }
 
 .map-tooltip.bottom .tooltip-arrow {
   border-bottom-color: var(
-    --map-col-tooltip-background,
+    --portal-col-neutral-7,
     var(--map-col-buttons__deprecate)
   );
 }
@@ -202,10 +138,10 @@
 .map-tooltip .tooltip-inner {
   padding: 0.3rem;
   background-color: var(
-    --map-col-tooltip-background,
+    --portal-col-neutral-7,
     var(--map-col-buttons__deprecate)
   );
-  color: var(--map-col-tooltip-text);
+  color: var(--portal-col-neutral-00);
 }
 
 /* ---- BUTTON ---- */
@@ -221,8 +157,8 @@
   -webkit-appearance: button;
   border: 0;
   border-radius: var(--map-border-radius-big);
-  background: var(--map-col-buttons-bkg, var(--map-col-buttons__deprecate));
-  color: var(--map-col-buttons-text, var(--map-col-text__deprecate));
+  background: var(--portal-col-neutral-00, var(--map-col-buttons__deprecate));
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
   white-space: nowrap;
   text-decoration: none;
   padding: 0.25rem 0.5rem;
@@ -235,20 +171,20 @@
 
 .map-view__button--emphasis {
   background-color: var(
-    --map-col-buttons-bkg,
+    --portal-col-neutral-00,
     var(--map-col-buttons-emphasis__deprecate)
   );
   padding: 0.5rem 0.55rem;
   font-size: 1rem;
-  border: 1px solid var(--map-col-border);
+  border: 1px solid var(--portal-col-primary-2);
 }
 
 .map-view__button--active {
   background-color: var(
-    --map-col-buttons-bkg-highlight,
+    --portal-col-primary-6,
     var(--map-col-highlight__deprecate)
   );
-  color: var(--map-col-buttons-text-highlight);
+  color: var(--portal-col-neutral-00);
 }
 
 /* ---- BADGE ---- */
@@ -258,10 +194,10 @@
   margin: 0 0.25rem;
   font-size: 0.66rem;
   background-color: var(
-    --map-col-content-bkg-muted,
+    --portal-col-neutral-1,
     var(--map-col-bkg-lighter__deprecate)
   );
-  color: var(--map-col-text-muted, var(--map-col-text__deprecate));
+  color: var(--portal-col-neutral-5, var(--map-col-text__deprecate));
   border-radius: var(--map-border-radius-small);
   line-height: 1;
   font-weight: 500;
@@ -285,8 +221,8 @@
 }
 
 .map-view__badge--contrast {
-  background-color: var(--map-col-text-label, var(--map-col-text__deprecate));
-  color: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
+  background-color: var(--portal-col-neutral-7, var(--map-col-text__deprecate));
+  color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
   opacity: var(--map-no-brightness-or-opacity-tweaks, 0.8);
 }
 
@@ -367,14 +303,6 @@
   }
 }
 
-.map-view__scale-bar-container {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  /* required to be placed above map widget in firefox: */
-  z-index: var(--map-z-index-base);
-}
-
 .map-view__toolbar-container {
   position: absolute;
   top: 0;
@@ -408,7 +336,7 @@
 
   .feature-info__zoom-button,
   .feature-info__layer-details-button {
-    border: 1px solid var(--map-col-border);
+    border: 1px solid var(--portal-col-primary-2);
     border-radius: var(--map-border-radius-small);
     padding: 0.5rem 1rem;
     text-wrap: wrap;
@@ -461,9 +389,9 @@
   min-width: 12rem;
   min-height: 2rem;
   box-shadow: var(--map-shadow-md);
-  background: var(--map-col-content-bkg-muted, var(--map-col-bkg__deprecate));
+  background: var(--portal-col-neutral-1, var(--map-col-bkg__deprecate));
   border-radius: var(--map-border-radius-small);
-  color: var(--map-col-text-muted, var(--map-col-text__deprecate));
+  color: var(--portal-col-neutral-5, var(--map-col-text__deprecate));
   font-size: 0.8rem;
   padding: 0.18rem 0.8rem;
   display: grid;
@@ -471,6 +399,11 @@
   grid-template-columns: auto auto;
   gap: 1rem;
   align-items: center;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  /* required to be placed above map widget in firefox: */
+  z-index: var(--map-z-index-base);
 }
 
 /* __coordinates contains __longitude, __latitude, and __elevation */
@@ -505,10 +438,7 @@ represents 1 unit of the given distance measurement. */
 .scale-bar__bar {
   height: 0.25rem;
   transition: width 0.3s ease-in-out;
-  background-color: var(
-    --map-col-buttons-icon-muted,
-    var(--map-col-text__deprecate)
-  );
+  background-color: var(--portal-col-neutral-4, var(--map-col-text__deprecate));
 }
 
 /* The elements that contains the distance measurement */
@@ -527,28 +457,25 @@ represents 1 unit of the given distance measurement. */
 .toolbar {
   display: grid;
   grid-auto-flow: column;
-  color: var(--map-col-content-bkg, var(--map-col-text__deprecate));
+  color: var(--portal-col-neutral-00, var(--map-col-text__deprecate));
 }
 
 .toolbar__links {
   display: flex;
   flex-direction: column;
   height: min-content;
-  background-color: var(
-    --map-col-content-bkg-highlight,
-    var(--map-col-bkg__deprecate)
-  );
+  background-color: var(--portal-col-primary-1, var(--map-col-bkg__deprecate));
   border-radius: var(--map-border-radius-big);
   margin: var(--map-size-toolbar-link-margin);
-  padding: 0.5rem;
-  row-gap: 0.5rem;
+  padding: var(--map-size-toolbar-link-padding);
+  row-gap: var(--map-size-toolbar-link-gap);
   pointer-events: all;
-  color: var(--map-col-buttons-bkg-highlight);
+  color: var(--portal-col-primary-6);
   box-shadow: var(--map-shadow-md);
 }
 
 .toolbar__all-content {
-  background-color: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
+  background-color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
   width: var(--map-width-toolbar);
   box-shadow: var(--map-shadow-md);
   flex-direction: column;
@@ -580,7 +507,7 @@ represents 1 unit of the given distance measurement. */
   overflow: auto;
 
   .toolbar__content-header {
-    color: var(--map-col-text-title);
+    color: var(--portal-col-primary-7);
     font-size: 1.5rem;
     font-weight: 700;
     line-height: 2rem;
@@ -597,30 +524,30 @@ represents 1 unit of the given distance measurement. */
   cursor: pointer;
   height: var(--map-size-toolbar-link);
   width: var(--map-size-toolbar-link);
-  background-color: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
+  background-color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
   padding: 0.5rem;
   border-radius: var(--map-border-radius-small);
-  border: 1px solid var(--map-col-border);
+  border: 1px solid var(--portal-col-primary-2);
 }
 
 .toolbar__link:hover {
   background-color: var(
-    --map-col-buttons-bkg-hover,
+    --portal-col-primary-2,
     var(--map-col-bkg-lighter__deprecate)
   );
 }
 
 .toolbar__link--active {
   background-color: var(
-    --map-col-buttons-bkg-highlight,
+    --portal-col-primary-6,
     var(--map-col-highlight__deprecate)
   );
-  color: var(--map-col-buttons-icon-highlight);
+  color: var(--portal-col-primary-3);
 }
 
 .toolbar__link--active:hover {
   background-color: var(
-    --map-col-buttons-bkg-highlight,
+    --portal-col-primary-6,
     var(--map-col-highlight__deprecate)
   );
 }
@@ -629,7 +556,7 @@ represents 1 unit of the given distance measurement. */
   position: absolute;
   left: calc(100% + 0.5rem);
   top: 0.25rem;
-  color: var(--map-col-tooltip-text, var(--map-col-text__deprecate));
+  color: var(--portal-col-neutral-00, var(--map-col-text__deprecate));
   font-size: 0.75rem;
   font-weight: 700;
   /* don't show the link title until the link is hovered */
@@ -645,17 +572,17 @@ represents 1 unit of the given distance measurement. */
   top: 50%;
   transform: translate(50%, -50%) rotate(-45deg);
   background-color: var(
-    --map-col-tooltip-background,
+    --portal-col-neutral-7,
     var(--map-col-buttons__deprecate)
   );
 }
 
-.toolbar__link:hover .toolbar__link-title {
+.toolbar__link:hover .toolbar__link-title:not(.toolbar__link-title--hidden) {
   display: block;
   padding: 0.25rem 0.5rem;
   border-radius: var(--map-border-radius-small);
   background-color: var(
-    --map-col-tooltip-background,
+    --portal-col-neutral-7,
     var(--map-col-buttons__deprecate)
   );
 }
@@ -668,6 +595,105 @@ represents 1 unit of the given distance measurement. */
   width: 1.5rem;
 }
 
+.share-url {
+  background-color: var(--portal-col-primary-1, var(--map-col-bkg__deprecate));
+  border-radius: var(--map-border-radius-big);
+  box-shadow: var(--map-shadow-md);
+  color: var(--portal-col-primary-6);
+  flex-direction: column;
+  height: min-content;
+  margin-left: 3.5rem;
+  min-width: 10rem;
+  padding: 1rem;
+  pointer-events: all;
+  position: absolute;
+  row-gap: 0.5rem;
+
+  .share-url__header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+
+  h1 {
+    align-items: center;
+    display: flex;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    margin: 0;
+
+    i {
+      font-size: 1.5rem;
+      line-height: 1.5rem;
+      margin: 0.1875rem 0.5rem 0 0;
+    }
+  }
+
+  p {
+    font-size: 0.8125rem;
+    color: var(--portal-col-neutral-7, white);
+  }
+
+  .share-url__remove {
+    align-items: center;
+    color: var(--portal-col-neutral-6);
+    display: flex;
+    height: 1.5rem;
+    justify-content: center;
+    width: 1.5rem;
+  }
+
+  .share-url__hint,
+  .share-url__error {
+    font-size: 0.8125rem;
+  }
+
+  .share-url__error {
+    color: var(--portal-col-highlight-3, #ca6c0b);
+  }
+
+  .share-url__field {
+    align-items: center;
+    background: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
+    border-color: var(--portal-col-neutral-4);
+    border-radius: var(--map-border-radius-small);
+    border: 1px solid;
+    display: flex;
+    height: 2.5rem;
+    justify-content: flex-start;
+    margin-bottom: 0.5rem;
+    position: relative;
+
+    > input[type="text"] {
+      background: none;
+      border: none;
+      box-shadow: unset;
+      color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
+      cursor: pointer;
+      flex: 1;
+      font-family: var(--map-body-font);
+      height: 100%;
+      margin: unset;
+      text-overflow: ellipsis;
+    }
+
+    .share-url__copy {
+      align-items: center;
+      background-color: transparent;
+      border: none;
+      color: unset;
+      display: inline-flex;
+      flex-shrink: 0;
+      font-size: 1rem;
+      height: 2rem;
+      justify-content: center;
+      margin: 0.25rem;
+      position: relative;
+      width: 2rem;
+    }
+  }
+}
+
 /*****************************************************************************************
  *
  * Search Input
@@ -678,7 +704,7 @@ represents 1 unit of the given distance measurement. */
 
 .search-input {
   padding-bottom: 1rem;
-  background-color: var(--map-col-content-bkg, var(--map-col-bkg));
+  background-color: var(--portal-col-neutral-00, var(--map-col-bkg));
 
   .search-input__field {
     position: relative;
@@ -688,7 +714,7 @@ represents 1 unit of the given distance measurement. */
     height: 2.5rem;
     margin-bottom: 0.5rem;
     border: 1px solid;
-    border-color: var(--map-col-border-muted);
+    border-color: var(--portal-col-neutral-4);
     border-radius: var(--map-border-radius-small);
 
     .search-input__input {
@@ -700,27 +726,24 @@ represents 1 unit of the given distance measurement. */
         margin: unset;
         padding-left: 1rem;
         background: none;
-        color: var(--map-col-text-body, var(--map-col-text));
+        color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
         font-family: var(--map-body-font);
         border: none;
         box-shadow: unset;
 
         ::placeholder {
-          color: var(--map-col-text-muted);
+          color: var(--portal-col-neutral-5);
         }
       }
     }
 
     &:focus-within {
-      border-color: var(
-        --map-col-border-highlight-search-box,
-        var(--map-col-blue)
-      );
+      border-color: var(--portal-col-primary-3, var(--map-col-blue));
     }
 
     &.search-input__error-input {
-      border-color: var(--map-col-input-error-border);
-      background-color: var(--map-col-input-error-bkg);
+      border-color: var(--portal-col-highlight-2, rgba(82, 168, 236, 0.8));
+      background-color: var(--portal-col-highlight-1, rgba(30, 127, 196, 0.5));
     }
 
     .search-input__cancel-button-container {
@@ -750,23 +773,23 @@ represents 1 unit of the given distance measurement. */
     .search-input__vertical-divider {
       width: 0;
       height: 1.5rem;
-      border-right: solid 1px var(--map-col-border);
+      border-right: solid 1px var(--portal-col-primary-2);
     }
 
     .search-input__search-button {
-      color: var(--map-col-buttons-icon-muted);
+      color: var(--portal-col-neutral-4);
       border-radius: var(--map-border-radius-small);
 
       &.search-input__search-button--active {
-        color: var(--map-col-buttons-icon, currentColor);
+        color: var(--portal-col-primary-6, currentColor);
         background: var(
-          --map-col-buttons-bkg-active,
+          --portal-col-primary-1,
           var(--map-col-bkg-lighter__deprecate)
         );
       }
     }
     .search-input__cancel-button {
-      color: var(--map-col-utility-buttons);
+      color: var(--portal-col-neutral-6);
       margin-left: 0;
       width: 1.5rem;
     }
@@ -774,7 +797,7 @@ represents 1 unit of the given distance measurement. */
 
   .search-input__error-text {
     line-height: 1rem;
-    color: var(--map-col-input-error-text);
+    color: var(--portal-col-highlight-3, #ca6c0b);
   }
 }
 
@@ -798,11 +821,11 @@ represents 1 unit of the given distance measurement. */
 
   .layers-panel__layers {
     border: solid
-      var(--map-col-section-divider, var(--map-col-bkg-lightest__deprecate));
+      var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate));
     border-width: 1px 0;
     overflow: auto;
     border-top: 1px solid
-      var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
+      var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
   }
 }
 
@@ -842,13 +865,13 @@ represents 1 unit of the given distance measurement. */
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--map-col-buttons-icon-muted, currentColor);
+    color: var(--portal-col-neutral-4, currentColor);
     background-color: transparent;
 
     .layer-item__icon {
-      fill: var(--map-col-buttons-icon-muted, currentColor);
+      fill: var(--portal-col-neutral-4, currentColor);
       svg > path {
-        fill: var(--map-col-buttons-icon-muted, currentColor);
+        fill: var(--portal-col-neutral-4, currentColor);
       }
 
       height: 1rem;
@@ -858,23 +881,23 @@ represents 1 unit of the given distance measurement. */
   }
 
   &:hover {
-    background-color: var(--map-col-content-bkg-muted, #323745);
+    background-color: var(--portal-col-neutral-1, #323745);
     transition: background-color 0.3s ease-in-out;
 
     &.layer-item--shown {
-      background-color: var(--map-col-content-bkg-highlight, #15324e);
+      background-color: var(--portal-col-primary-1, #15324e);
     }
 
     .layer-item__legend-and-settings {
       /* Show button when layer is hovered. */
       display: flex;
-      border: 1px solid var(--map-col-border-muted);
+      border: 1px solid var(--portal-col-neutral-4);
 
       /* Use the same style on button hover and when selected. */
       &.layer-item--selected,
       &:hover {
         background-color: var(
-          --map-col-buttons-bkg-hover,
+          --portal-col-primary-2,
           var(--map-col-bkg-lighter__deprecate)
         );
       }
@@ -883,19 +906,13 @@ represents 1 unit of the given distance measurement. */
 
   &.layer-item--shown {
     .layer-item__visibility-toggle {
-      color: var(
-        --map-col-buttons-bkg-highlight,
-        var(--map-col-highlight__deprecate)
-      );
+      color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
 
       .layer-item__icon {
-        fill: var(
-          --map-col-buttons-bkg-highlight,
-          var(--map-col-highlight__deprecate)
-        );
+        fill: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
         svg > path {
           fill: var(
-            --map-col-buttons-bkg-highlight,
+            --portal-col-primary-6,
             var(--map-col-highlight__deprecate)
           );
         }
@@ -905,7 +922,7 @@ represents 1 unit of the given distance measurement. */
     .layer-item__legend-and-settings {
       /* Show button when layer is shown. */
       display: flex;
-      border: 1px solid var(--map-col-border);
+      border: 1px solid var(--portal-col-primary-2);
 
       /* Only show legend when layer is shown. */
       .layer-item__legend-container {
@@ -928,7 +945,7 @@ represents 1 unit of the given distance measurement. */
       align-items: center;
       justify-content: center;
       margin: 0.5rem;
-      color: var(--map-col-utility-buttons, currentColor);
+      color: var(--portal-col-neutral-6, currentColor);
     }
 
     .layer-item__legend-container {
@@ -941,11 +958,11 @@ represents 1 unit of the given distance measurement. */
     &.layer-item--selected,
     &:hover {
       display: flex;
-      background-color: var(--map-col-content-bkg-highlight, #15324e);
-      border: 1px solid var(--map-col-content-bkg-highlight, #15324e);
+      background-color: var(--portal-col-primary-1, #15324e);
+      border: 1px solid var(--portal-col-primary-1, #15324e);
 
       .layer-item__settings-toggle {
-        color: var(--map-col-buttons-icon);
+        color: var(--portal-col-primary-6);
       }
     }
   }
@@ -955,7 +972,7 @@ represents 1 unit of the given distance measurement. */
   font-size: 0.825rem;
   font-weight: 400;
   margin: 0 0.5rem;
-  color: var(--map-col-text-label);
+  color: var(--portal-col-neutral-7);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -963,7 +980,7 @@ represents 1 unit of the given distance measurement. */
 }
 
 .layer-item__highlighted-text {
-  background-color: var(--map-col-search-match-highlight);
+  background-color: var(--portal-col-highlight-2, rgba(30, 127, 196, 0.5));
 }
 
 .layer-item__icon > svg {
@@ -973,72 +990,6 @@ represents 1 unit of the given distance measurement. */
 
 .layer-item__visibility-toggle:hover {
   opacity: var(--map-no-brightness-or-opacity-tweaks, 0.5);
-}
-
-/*****************************************************************************************
- *
- * Layers Category List
- *
- * Layer category list contains a list of layer categories which can be expanded in to a list of Layer Items.
- *
- */
-
-.layer-category-list {
-  .layer-category-item {
-    box-shadow: 0 1px
-      var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate)) inset;
-
-    .layer-category-item__metadata {
-      display: grid;
-      align-items: center;
-      cursor: pointer;
-      font-size: 1rem;
-      grid-template-columns: min-content auto min-content;
-      padding: 0 1.5rem;
-
-      &:hover {
-        background-color: var(--map-col-content-bkg-highlight, #15324e);
-        transition: background-color 0.3s ease-in-out;
-      }
-    }
-  }
-}
-
-.layer-category-item__label {
-  font-weight: 500;
-  color: var(--map-col-text-highlight, var(--map-col-highlight__deprecate));
-}
-
-.layer-category-item__icon {
-  fill: var(--map-col-text-highlight, var(--map-col-highlight__deprecate));
-  color: var(--map-col-text-highlight, var(--map-col-highlight__deprecate));
-  height: 2rem;
-  width: 2rem;
-  margin: 0.25rem;
-  margin-right: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.layer-category-item__icon > svg {
-  height: 1rem;
-}
-
-.layer-category-item__expand-toggle {
-  width: 2rem;
-  display: flex;
-  justify-content: center;
-  color: var(--map-col-utility-buttons);
-}
-
-.layer-category-item__layers {
-  display: none;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.layer-category-item__layers.open {
-  display: block;
 }
 
 /*****************************************************************************************
@@ -1054,10 +1005,10 @@ represents 1 unit of the given distance measurement. */
   border-top-right-radius: var(--map-border-radius-big);
   border-top-left-radius: var(--map-border-radius-big);
   background-color: var(
-    --map-col-content-bkg-highlight,
+    --portal-col-primary-1,
     var(--map-col-bkg-lighter__deprecate)
   );
-  color: var(--map-col-text-body, var(--map-col-text__deprecate));
+  color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
   box-shadow: var(--map-shadow-md);
   grid-template-columns: auto min-content;
   grid-template-rows: min-content auto;
@@ -1065,7 +1016,7 @@ represents 1 unit of the given distance measurement. */
   align-items: center;
   /* Don't show the details panel unless it also has the layer-details--open class */
   display: none;
-  border: 1px solid var(--map-col-border);
+  border: 1px solid var(--portal-col-primary-2);
   animation: fadeIn 0.3s ease-in-out;
 }
 
@@ -1081,10 +1032,7 @@ represents 1 unit of the given distance measurement. */
 
 .layer-details__label {
   /* the important is needed to overwrite more specific styles set on portal title tags */
-  color: var(
-    --map-col-text-highlight,
-    var(--map-col-text__deprecate)
-  ) !important;
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
   margin: 0;
   font-size: 1.33rem;
   font-weight: 700;
@@ -1094,7 +1042,7 @@ represents 1 unit of the given distance measurement. */
 }
 
 .layer-details__toggle {
-  color: var(--map-col-utility-buttons);
+  color: var(--portal-col-neutral-6);
   font-size: 1rem;
   height: 2rem;
   margin-right: 1rem;
@@ -1106,11 +1054,11 @@ represents 1 unit of the given distance measurement. */
   margin: 0.5rem 0 1rem;
   padding: 0.75rem;
   background-color: var(
-    --map-col-content-bkg,
+    --portal-col-neutral-00,
     var(--map-col-buttons__deprecate)
   );
   border-radius: var(--map-border-radius-small);
-  border: 1px solid var(--map-col-border);
+  border: 1px solid var(--portal-col-primary-2);
 }
 
 .layer-details__notification--blue {
@@ -1132,14 +1080,14 @@ represents 1 unit of the given distance measurement. */
 }
 
 .layer-details__notification--contrast {
-  background-color: var(--map-col-text-body, var(--map-col-text__deprecate));
-  color: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
+  background-color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
+  color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
   opacity: var(--map-no-brightness-or-opacity-tweaks, 0.95);
   border-color: none;
 }
 
 .layer-details__sections {
-  background: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
+  background: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
   display: grid;
   grid-template-rows: auto;
   grid-template-columns: 100%;
@@ -1157,7 +1105,7 @@ represents 1 unit of the given distance measurement. */
 
 .layer-detail__label {
   /* the important is needed to overwrite more specific styles set on portal title tags */
-  color: var(--map-col-text-body, var(--map-col-text__deprecate)) !important;
+  color: var(--portal-col-neutral-8, var(--map-col-text__deprecate)) !important;
   margin: 0;
   font-weight: 500;
   font-size: 1rem;
@@ -1221,11 +1169,11 @@ represents 1 unit of the given distance measurement. */
 .layer-info__attribution {
   font-size: 0.75rem;
   line-height: 1.5;
-  color: var(--map-col-text-muted);
+  color: var(--portal-col-neutral-5);
 }
 
 .layer-info__link {
-  border: 1px solid var(--map-col-border);
+  border: 1px solid var(--portal-col-primary-2);
   border-radius: var(--map-border-radius-small);
   font-size: 1rem;
   margin-right: 0.5rem;
@@ -1245,7 +1193,7 @@ represents 1 unit of the given distance measurement. */
   background: var(--c-neutral-3);
   position: relative;
   background-color: var(
-    --map-col-opacity-slider-inactive,
+    --portal-col-neutral-3,
     var(--map-col-buttons__deprecate)
   );
 }
@@ -1256,7 +1204,7 @@ represents 1 unit of the given distance measurement. */
 other class: .ui-slider-range */
 .layer-opacity__range {
   border-radius: var(--map-border-radius-big);
-  background-color: var(--map-col-opacity-slider-active, #1f254f);
+  background-color: var(--portal-col-primary-5, #1f254f);
 }
 
 .layer-navigation {
@@ -1280,7 +1228,7 @@ other class: .ui-slider-range */
   align-items: center;
   justify-content: center;
   border: none;
-  background-color: var(--map-col-buttons-bkg-highlight, #efefef);
+  background-color: var(--portal-col-primary-6, #efefef);
 }
 
 /* The element that displays the current opacity as a percentage */
@@ -1289,7 +1237,7 @@ other class: .ui-slider-range */
   font-size: 0.8em;
   /* Show the opacity value just below the slider handle */
   margin-top: 2.5em;
-  color: var(--map-col-text-muted, var(--map-col-text__deprecate));
+  color: var(--portal-col-neutral-5, var(--map-col-text__deprecate));
 }
 
 /*****************************************************************************************
@@ -1310,10 +1258,10 @@ other class: .ui-slider-range */
   row-gap: 0.8rem;
   border-radius: var(--map-border-radius-big);
   background-color: var(
-    --map-col-content-bkg-highlight,
+    --portal-col-primary-1,
     var(--map-col-bkg-lighter__deprecate)
   );
-  color: var(--map-col-text-body, var(--map-col-text__deprecate));
+  color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
   box-shadow: var(--map-shadow-md);
   /* Don't show the details panel unless it also has the feature-info--open class */
   display: none;
@@ -1332,8 +1280,8 @@ other class: .ui-slider-range */
 
 .feature-info__label {
   border-bottom: 1px solid
-    var(--map-col-border, var(--map-col-bkg-lightest__deprecate));
-  color: var(--map-col-text-title, var(--map-col-text__deprecate)) !important;
+    var(--portal-col-primary-2, var(--map-col-bkg-lightest__deprecate));
+  color: var(--portal-col-primary-7, var(--map-col-text__deprecate)) !important;
   font-weight: 600;
   font-size: 1.33rem;
   line-height: 1.5rem;
@@ -1350,7 +1298,7 @@ other class: .ui-slider-range */
 }
 
 .feature-info__toggle {
-  color: var(--map-col-utility-buttons);
+  color: var(--portal-col-neutral-6);
   font-size: 1rem;
   height: 2rem;
   position: absolute;
@@ -1369,7 +1317,7 @@ other class: .ui-slider-range */
 
 .feature-info__table {
   background-color: var(
-    --map-col-content-bkg-muted,
+    --portal-col-neutral-1,
     var(--map-col-bkg-lightest__deprecate)
   );
   border-radius: var(--map-border-radius-big);
@@ -1388,7 +1336,7 @@ other class: .ui-slider-range */
 
 .feature-info__table-row:nth-child(even) {
   background-color: var(
-    --map-col-content-bkg,
+    --portal-col-neutral-00,
     var(--map-col-bkg-lighter__deprecate)
   );
 }
@@ -1419,7 +1367,7 @@ other class: .ui-slider-range */
   display: block;
   margin: 0 0 0.5rem;
   padding: 0;
-  color: var(--map-col-text-muted);
+  color: var(--portal-col-neutral-5);
 }
 
 .feature-info__description {
@@ -1428,11 +1376,11 @@ other class: .ui-slider-range */
 }
 
 .feature-info__link {
-  background: var(--map-col-buttons-bkg, var(--map-col-buttons__deprecate));
-  border: 1px solid var(--map-col-border);
+  background: var(--portal-col-neutral-00, var(--map-col-buttons__deprecate));
+  border: 1px solid var(--portal-col-primary-2);
   border-radius: var(--map-border-radius-small);
   text-decoration: none;
-  color: var(--map-col-buttons-text, var(--portal-col-highlight__deprecate));
+  color: var(--portal-col-primary-6, var(--portal-col-highlight__deprecate));
   display: inline-block;
   padding: 0.5rem 1rem;
 
@@ -1502,29 +1450,29 @@ other class: .ui-slider-range */
 }
 
 .nav-help {
-  color: var(--map-col-text-label, white);
+  color: var(--portal-col-neutral-7, white);
 }
 
 .nav-help .map-view__button {
   background-color: var(
-    --map-col-content-bkg-highlight,
+    --portal-col-primary-1,
     var(--map-col-bkg-lighter__deprecate)
   );
   border-radius: var(--map-border-radius-small);
-  color: var(--map-col-text-label);
+  color: var(--portal-col-neutral-7);
   margin-right: 0.5rem;
   padding: 0.25rem 1rem;
 }
 
 .nav-help .map-view__button--active {
-  /* TODO: https://github.com/NCEAS/metacatui/issues/2347 - Update to --map-col-buttons-bkg-highlight */
-  background-color: var(--map-col-buttons-bkg-white-content-contrast, #505561);
+  /* TODO: https://github.com/NCEAS/metacatui/issues/2347 - Update to --portal-col-primary-6 */
+  background-color: var(--portal-col-neutral-5, #505561);
   color: white;
 }
 
 .nav-help__img {
   /* TODO: https://github.com/NCEAS/metacatui/issues/2347 - Update to transparent */
-  background: var(--map-col-buttons-bkg-hover, #505561);
+  background: var(--portal-col-primary-2, #505561);
   border-radius: var(--map-border-radius-big);
   height: 3rem;
   padding: 0.5rem;
@@ -1533,7 +1481,7 @@ other class: .ui-slider-range */
 
 .nav-help__instructions {
   border-top: 1px solid
-    var(--map-col-section-divider, var(--map-col-bkg-lightest__deprecate));
+    var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate));
   display: grid;
   margin: 1rem 0;
   padding: 0;
@@ -1548,13 +1496,13 @@ other class: .ui-slider-range */
 .cesium-navigation-help-zoom,
 .cesium-navigation-help-rotate,
 .cesium-navigation-help-tilt {
-  color: var(--map-col-text-body, #66ccff);
+  color: var(--portal-col-neutral-8, #66ccff);
   font-weight: 500;
 }
 
 .nav-help__instruction {
   border-bottom: 1px solid
-    var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
+    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
   display: grid;
   grid-template-columns: 3rem auto;
   gap: 1rem;
@@ -1574,7 +1522,7 @@ other class: .ui-slider-range */
 
   .viewfinder__search {
     border-bottom: 1px solid
-      var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
+      var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
   }
 
   .viewfinder__zoom-presets {
@@ -1594,11 +1542,11 @@ other class: .ui-slider-range */
 
   .viewfinder-prediction__content {
     align-items: center;
-    background: var(--map-col-content-bkg, var(--map-col-bkg__deprecate));
-    border: 1px solid var(--map-col-border-muted, white);
+    background: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
+    border: 1px solid var(--portal-col-neutral-4, white);
     border-radius: var(--map-border-radius-small);
     box-sizing: border-box;
-    color: var(--map-col-text-highlight, white);
+    color: var(--portal-col-primary-6, white);
     cursor: pointer;
     display: flex;
     gap: 0.5rem;
@@ -1623,9 +1571,9 @@ other class: .ui-slider-range */
 
     &:hover,
     &.viewfinder-prediction__focused {
-      border-color: var(--map-col-border-highlight);
+      border-color: unset;
       background-color: var(
-        --map-col-content-bkg-highlight,
+        --portal-col-primary-1,
         var(--map-col-bkg-lighter__deprecate)
       );
     }
@@ -1641,7 +1589,7 @@ other class: .ui-slider-range */
   .viewfinder-zoom-preset__preset {
     border-radius: var(--map-border-radius-big);
     border: 1px solid
-      var(--map-col-border-panel, var(--map-col-bkg-lightest__deprecate));
+      var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate));
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -1650,33 +1598,33 @@ other class: .ui-slider-range */
 
     &:hover {
       background-color: var(
-        --map-col-content-bkg-highlight,
+        --portal-col-primary-1,
         var(--map-col-bkg-lighter__deprecate)
       );
 
       .viewfinder-zoom-preset__layer {
         background-color: var(
-          --map-col-content-bkg-hover-highlight,
+          rgb(from var(--portal-col-primary-2) r g b / 50%),
           var(--map-col-bkg__deprecate)
         );
 
         .viewfinder-zoom-preset__layer-content {
-          color: var(--map-col-text-hover-highlight);
+          color: var(--portal-col-primary-6);
 
           i {
-            color: var(--map-col-buttons-icon-hover-highlight);
+            color: var(--portal-col-primary-6);
           }
         }
       }
     }
 
     .viewfinder-zoom-preset__title {
-      color: var(--map-col-text-highlight, white);
+      color: var(--portal-col-primary-6, white);
       font-weight: 600;
     }
 
     .viewfinder-zoom-preset__description {
-      color: var(--map-col-text-label, white);
+      color: var(--portal-col-neutral-7, white);
       font-size: 0.85rem;
       margin-bottom: 0.5rem;
     }
@@ -1691,7 +1639,7 @@ other class: .ui-slider-range */
     .viewfinder-zoom-preset__layer {
       align-items: center;
       background: var(
-        --map-col-content-bkg-transparent,
+        rgb(from var(--portal-col-neutral-2) r g b / 50%),
         var(--map-col-bkg-lighter__deprecate)
       );
       border-radius: var(--map-border-radius-big);
@@ -1704,13 +1652,13 @@ other class: .ui-slider-range */
         overflow: hidden;
         text-overflow: ellipsis;
         text-wrap: nowrap;
-        color: var(--map-col-text-muted, white);
+        color: var(--portal-col-neutral-5, white);
         font-size: 0.8rem;
         max-width: 10rem;
 
         i {
           padding: 0 0.25rem;
-          color: var(--map-col-buttons-icon, white);
+          color: var(--portal-col-primary-6, white);
         }
       }
     }
@@ -1718,24 +1666,24 @@ other class: .ui-slider-range */
 
   .viewfinder-zoom-preset.viewfinder-zoom-preset--active
     .viewfinder-zoom-preset__preset {
-    background-color: var(--map-col-buttons-bkg-highlight, #15324e);
+    background-color: var(--portal-col-primary-6, #15324e);
 
     .viewfinder-zoom-preset__title,
     .viewfinder-zoom-preset__description {
-      color: var(--map-col-buttons-text-highlight, white);
+      color: var(--portal-col-neutral-00, white);
     }
 
     .viewfinder-zoom-preset__layer {
       background: var(
-        --map-col-content-bkg-active-highlight,
+        rgb(from var(--portal-col-primary-5) r g b / 50%),
         var(--map-col-bkg__deprecate)
       );
 
       .viewfinder-zoom-preset__layer-content {
-        color: var(--map-col-text-active-highlight, white);
+        color: var(--portal-col-primary-2, white);
 
         i {
-          color: var(--map-col-buttons-icon-active-highlight, white);
+          color: var(--portal-col-primary-4, white);
         }
       }
     }
@@ -1745,9 +1693,9 @@ other class: .ui-slider-range */
 /** START - Expansion panel View. */
 .expansion-panel {
   box-shadow: 0 1px
-    var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate)) inset;
+    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate)) inset;
   border-bottom: 1px solid
-    var(--map-col-item-divider, var(--map-col-bkg-lightest__deprecate));
+    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
   font-size: 1rem;
 
   .expansion-panel__toggle {
@@ -1760,7 +1708,7 @@ other class: .ui-slider-range */
     border: none;
 
     &:hover {
-      background-color: var(--map-col-content-bkg-highlight, #15324e);
+      background-color: var(--portal-col-primary-1, #15324e);
       transition: background-color 0.3s ease-in-out;
     }
   }
@@ -1789,12 +1737,12 @@ other class: .ui-slider-range */
 
   .expansion-panel__title {
     font-weight: 500;
-    color: var(--map-col-text-highlight, var(--map-col-highlight__deprecate));
+    color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
   }
 
   .expansion-panel__icon {
-    fill: var(--map-col-text-highlight, var(--map-col-highlight__deprecate));
-    color: var(--map-col-text-highlight, var(--map-col-highlight__deprecate));
+    fill: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
+    color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
     height: 2rem;
     width: 2rem;
     margin: 0.25rem;
@@ -1812,7 +1760,7 @@ other class: .ui-slider-range */
     width: 2rem;
     display: flex;
     justify-content: center;
-    color: var(--map-col-utility-buttons);
+    color: var(--portal-col-neutral-6);
   }
 
   .expansion-panel__content {
@@ -1821,3 +1769,160 @@ other class: .ui-slider-range */
   }
 }
 /** END - Expansion panel View. */
+
+/*****************************************************************************************
+ *
+ * Legend
+ *
+ * The full legend that overlays the map
+ *
+ */
+
+.legend-container {
+  z-index: var(--map-z-index-base);
+  position: absolute;
+  margin: 1rem;
+  bottom: 0;
+  border-radius: var(--map-border-radius-big);
+  background: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
+  width: 6.875rem;
+  /* TODO: Update when we deprecate toolbar links. */
+  max-height: calc(
+    100% - 1rem - var(--max-map-toolbar-link-height) - 2 *
+      var(--map-size-toolbar-link-margin)
+  );
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--map-shadow-md);
+}
+
+.legend-container__header {
+  border-radius: var(--map-border-radius-big);
+  background: var(
+    --portal-col-primary-2,
+    var(--portal-col-bkg-lighter__deprecate)
+  );
+  width: 100%;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  column-gap: 0.5rem;
+  padding: 0 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  i {
+    font-size: 1rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.legend-container__header-icon {
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
+}
+
+.legend-container__header-expand {
+  color: var(--portal-col-primary-5, var(--map-col-text__deprecate));
+  display: none;
+}
+
+.legend-container__header-name {
+  flex-grow: 1;
+  color: var(--portal-col-primary-8, var(--map-col-text__deprecate));
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.legend-container__content {
+  padding-bottom: 0.5rem;
+  row-gap: 0.5rem;
+  flex-direction: column;
+  display: none;
+  overflow-y: auto;
+}
+
+.legend-container--expanded {
+  width: 12.5rem;
+
+  .legend-container__content,
+  .legend-container__header-expand {
+    display: flex;
+  }
+
+  .legend-container__header {
+    border-radius: var(--map-border-radius-big) var(--map-border-radius-big) 0 0;
+  }
+}
+
+.layer-legend {
+  padding: 0 1rem;
+}
+
+.layer-legend__layer-name {
+  padding: 0.25rem 0;
+  color: var(--portal-col-neutral-6, var(--map-col-text__deprecate));
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.layer-legend__palette {
+  color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.categorical-swatch,
+.continuous-swatch {
+  display: flex;
+  column-gap: 0.5rem;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+
+.categorical-swatch__swatch,
+.continuous-swatch__swatch {
+  width: 1.5rem;
+  border-radius: var(--map-border-radius-small);
+  flex-shrink: 0;
+}
+
+.categorical-swatch__swatch {
+  height: 1.5rem;
+}
+
+.categorical-swatch__value {
+  overflow-wrap: anywhere;
+}
+
+.continuous-swatch {
+  height: 5.5rem;
+}
+
+.continuous-swatch__swatch {
+  height: 5rem;
+}
+
+.continuous-swatch__value {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+  overflow-x: auto;
+}
+
+/* TODO: Remove when the new mobile layout is ready. */
+@media only screen and (max-width: 768px) {
+  .legend-container {
+    /* 41px is the height of the bottom nav bar. */
+    bottom: 41px;
+    /* TODO: Update when we deprecate toolbar links. */
+    max-height: calc(
+      100% - 1rem - 41px - var(--max-map-toolbar-link-height) - 2 *
+        var(--map-size-toolbar-link-margin)
+    );
+  }
+}
