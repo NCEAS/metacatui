@@ -225,7 +225,7 @@ define([
           }
 
           this.renderedSections.forEach(function (section) {
-            var detailSection = new LayerDetailView({
+            let detailSection = new LayerDetailView({
               label: section.label,
               contentView: section.view,
               model: model,
