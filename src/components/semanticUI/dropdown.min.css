@@ -201,14 +201,16 @@
   padding: 0.2rem;
   color: #9c9c9c;
   font-weight: 600;
-  transition: background-color .5s ease,color .4s ease;
+  transition-delay: 0.2s;
+  transition-duration: 0.3s;
+  transition-property: background-color, color;
 }
 .searchable-select .changeable-separator {
-  transition: background-color .5s ease,color .4s ease;
   border-radius: 4px;
   cursor: pointer;
   background-color: #e2eef1;
   color: #2994bb;
+  transition-delay: 0.4s;
 }
 
 @media only screen and (max-width: 767px) {

@@ -2,6 +2,7 @@ define([
   "jquery",
   "underscore",
   "backbone",
+  "views/searchSelect/SeparatorView",
   "models/searchSelect/SearchSelect",
   "semanticUItransition",
   `text!${MetacatUI.root}/components/semanticUI/transition.min.css`,
@@ -12,10 +13,11 @@ define([
   $,
   _,
   Backbone,
+  SeparatorView,
   SearchSelect,
-  Transition,
+  _Transition,
   TransitionCSS,
-  Dropdown,
+  _Dropdown,
   DropdownCSS,
   Template,
 ) =>
@@ -68,31 +70,6 @@ define([
        * @type {number}
        */
       imageHeight: 30,
-
-      /**
-       * The HTML class name to add to the separator elements that are created
-       * for this view.
-       * @type {string}
-       * @since 2.15.0
-       */
-      separatorClass: "separator",
-
-      /**
-       * An additional HTML class to add to separator elements on hover when a
-       * user can click that element to switch the text.
-       * @type {string}
-       * @since 2.17.0
-       */
-      changeableSeparatorClass: "changeable-separator",
-
-      /**
-       * For separators that are changeable (see
-       * {@link SearchableSelectView#separatorTextOptions}), optional tooltip
-       * text to show when a user hovers over a separator element.
-       * @type {string}
-       * @since 2.17.0
-       */
-      changeableSeparatorTooltip: "Click to switch the operator",
 
       /**
        * Can be set to an object to specify API settings for retrieving remote
@@ -225,13 +202,13 @@ define([
             let label = this;
             if (view.model.separatorRequired()) {
               // Create the separator element.
-              const separator = view.createSeparator.call(view);
+              const separator = view.createSeparator();
               if (separator) {
                 // Attach the separator to the label so that we can easily
                 // remove it when the label is removed.
                 label.data("separator", separator);
                 // Add it before the label element.
-                label = separator.add(label);
+                label = separator.$el.add(label);
               }
             }
             return label;
@@ -251,9 +228,12 @@ define([
             // before it.
             const allLabels = view.$selectUI.find(".label");
             if (allLabels.index(label) === 0) {
-              const separatorAfter = label.next(`.${view.separatorClass}`);
-              if (separatorAfter) {
-                separatorAfter.remove();
+              // Get the second label:
+              const nextLabel = allLabels.eq(1);
+              // Remove the separator before the second label.
+              const nextSep = nextLabel.data("separator");
+              if (nextSep) {
+                nextSep.remove();
               }
             }
           },
@@ -351,9 +331,6 @@ define([
       listenToModel() {
         const view = this;
         this.listenTo(this.model, "change:options", this.updateMenu);
-        this.listenTo(this.model, "change:separator", (_model, newSeparator) =>
-          this.changeSeparatorText(newSeparator),
-        );
         this.listenTo(
           this.model,
           "change:submenuStyle",
@@ -398,145 +375,18 @@ define([
        * @since 2.15.0
        */
       createSeparator() {
-        const view = this;
-        const separatorText = view.model.get("separator");
-        if (!separatorText) return null;
-
-        const separatorEl = $(`<span>${separatorText}</span>`);
-        separatorEl.addClass(this.separatorClass);
-
-        // Is there
-        if (view.model.canChangeSeparator()) {
-          view.activateSeparator(separatorEl);
-        }
-
-        return separatorEl;
-      },
-
-      /**
-       * Add event listeners to a separator element to allow the user to change
-       * the separator text by clicking on it. Add indicators to show that the
-       * separator is clickable.
-       * @param {HTMLElement} separatorEl - The separator element
-       * @since 0.0.0
-       */
-      activateSeparator(separatorEl) {
-        const view = this;
-
-        if (view.changeableSeparatorTooltip) {
-          view.addSeparatorTooltip(
-            separatorEl,
-            view.changeableSeparatorTooltip,
-          );
-        }
-
-        // Indicate that the separator is clickable
-        separatorEl.css("cursor", "pointer");
-
-        // Remove any existing listeners and add new ones
-        separatorEl.off("click mouseenter mouseout");
-
-        // Change all the separator text when one is clicked
-        separatorEl.on("click", () => {
-          view.model.setNextSeparator();
+        const separator = new SeparatorView({
+          model: this.model,
+          // hovering over one separator should highlight them all
+          mouseEnterCallback: () =>
+            this.separators.forEach((sep) => sep.highlight()),
+          mouseOutCallback: () =>
+            this.separators.forEach((sep) => sep.unhighlight()),
         });
-
-        // Highlight all of the separator elements when one is hovered
-        separatorEl.on("mouseenter", () => {
-          view.hoveredSeparator = separatorEl;
-          setTimeout(() => {
-            view.highlightSeparators();
-            // Even more of a delay to show the tooltip
-            setTimeout(() => {
-              view.showSeparatorTooltip(separatorEl);
-            }, 80);
-          }, 350);
-        });
-
-        // Hide all the tooltips and remove the highlight class on mouse out
-        separatorEl.on("mouseout", () => {
-          view.hoveredSeparator = null;
-          view.unhighlightSeparators();
-          view.hideSeparatorTooltip(separatorEl);
-        });
-      },
-
-      /**
-       * Add a tooltip to a separator element
-       * @param {HTMLElement} separator - The separator element
-       * @param {string} text - The text to show in the tooltip
-       * @since 0.0.0
-       */
-      addSeparatorTooltip(separator, text) {
-        $(separator).tooltip("destroy");
-        $(separator).tooltip({
-          title: text,
-          trigger: "manual",
-        });
-      },
-
-      /**
-       * Highlight all separator elements
-       * @since 0.0.0
-       */
-      highlightSeparators() {
-        const view = this;
-        // If user is no longer hovering over a separator, then don't highlight
-        if (!view.hoveredSeparator) return;
-        const separatorEls = view.$el.find(`.${view.separatorClass}`);
-        separatorEls.addClass(view.changeableSeparatorClass);
-      },
-
-      /**
-       * Remove the highlight class from all separator elements
-       * @since 0.0.0
-       */
-      unhighlightSeparators() {
-        const view = this;
-        const separatorEls = view.$el.find(`.${view.separatorClass}`);
-        separatorEls.removeClass(view.changeableSeparatorClass);
-      },
-
-      /**
-       * Show the tooltip for a separator element
-       * @param {HTMLElement} separatorEl - The separator element
-       * @since 0.0.0
-       */
-      showSeparatorTooltip(separatorEl) {
-        // If user is no longer hovering over a separator, then don't show the
-        // tooltip
-        if (separatorEl !== this.hoveredSeparator) return;
-        $(separatorEl).tooltip("show");
-      },
-
-      /**
-       * Hide the tooltip for a separator element
-       * @param {HTMLElement} separatorEl - The separator element
-       * @since 0.0.0
-       */
-      hideSeparatorTooltip(separatorEl) {
-        $(separatorEl).tooltip("hide");
-      },
-
-      /**
-       * Changes the separator text for all separator elements.
-       * @param {string} newSeparatorString - The new separator text
-       * @since 0.0.0
-       */
-      changeSeparatorText(newSeparatorString) {
-        const view = this;
-        if (!newSeparatorString) return;
-        // Change the separator text for all of the separators in the view with
-        // an animation
-        const separatorEls = view.$el.find(`.${view.separatorClass}`);
-        separatorEls.transition({
-          animation: "pulse",
-          displayType: "inline-block",
-          duration: "250ms",
-          onComplete() {
-            $(this).text(newSeparatorString);
-          },
-        });
+        separator.render();
+        this.separators = this.separators || [];
+        this.separators.push(separator);
+        return separator;
       },
 
       /**
