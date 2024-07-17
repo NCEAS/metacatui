@@ -601,12 +601,12 @@ define([
               this.$el.attr("data-packageId", this.dataPackageId);
             }
 
-                    //Download button
+                    // Download button
                     this.downloadButtonView = new DownloadButtonView({ model: this.model, view: "actionsView" });
                     this.downloadButtonView.render();
 
-            let id = this.model.get("id");
-            let infoLink =
+            const id = this.model.get("id");
+            const infoLink =
               MetacatUI.root +
               "/view/" +
               encodeURIComponent(this.currentlyViewing) +
