@@ -36,14 +36,14 @@ define([
       let hrefLink = this.model.get("url");
       if (
         this.model instanceof DataONEObject &&
-        (this.model.get("formatType") == "RESOURCE" ||
-          this.model.get("type") == "DataPackage")
+        (this.model.get("formatType") === "RESOURCE" ||
+          this.model.get("type") === "DataPackage")
       ) {
         hrefLink = this.model.getPackageURL();
       }
       if (
         this.model instanceof PackageModel &&
-        (this.model.get("formatType") == "RESOURCE" ||
+        (this.model.get("formatType") === "RESOURCE" ||
           this.model.get("type") == "DataPackage" ||
           this.model.get("type") == "Package")
       ) {
