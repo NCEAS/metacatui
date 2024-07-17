@@ -317,92 +317,92 @@ define([
        * @since 2.17.0
        */
       renderExcludeOperatorInputs: function () {
-        try {
-          if (!this.filterGroup) {
-            console.log(
-              "A filterGroup model is required to edit the exclude and " +
-                "operator attributes in a Query Builder View.",
-            );
-            return;
-          }
+        if (!this.filterGroup) {
+          console.log(
+            "A filterGroup model is required to edit the exclude and " +
+              "operator attributes in a Query Builder View.",
+          );
+          return;
+        }
 
-          // Select the elements in the template where the two inputs should be inserted
-          var excludeContainer = this.$el.find(this.excludeInputSelector);
-          var operatorContainer = this.$el.find(this.operatorInputSelector);
-          // Create the exclude input
-          var excludeInput = new SearchableSelect({
-            options: [
-              {
-                label: "Include",
-                value: "false",
-                description:
-                  "Include all datasets with metadata that matches the rules" +
-                  " that are set below.",
-              },
-              {
-                label: "Exclude",
-                value: "true",
-                description:
-                  "Match any dataset except those with metadata that match" +
-                  " the rules that are set below",
-              },
-            ],
-            allowMulti: false,
-            allowAdditions: false,
-            inputLabel: "",
-            selected: [this.filterGroup.get("exclude").toString()],
-            clearable: false,
-          });
-          // Create the operator input
-          var operatorInput = new SearchableSelect({
-            options: [
-              {
-                label: "all",
-                value: "AND",
-                description:
-                  "For a dataset to match, it must have metadata that " +
-                  "matches every rule set below.",
-              },
-              {
-                label: "any",
-                value: "OR",
-                description:
-                  "For a dataset to match, its metadata only needs to " +
-                  "match one of the rules set below.",
-              },
-            ],
-            allowMulti: false,
-            allowAdditions: false,
-            inputLabel: "",
-            selected: [this.filterGroup.get("operator")],
-            clearable: false,
-          });
-          // Update the FilterGroup model when the user changes the operator or exclude
-          // options. newValues will always be an Array, but since these inputs don't
-          // allow multiple selections (allowMulti: false), then there will only ever be
-          // one value.
-          this.stopListening(excludeInput);
-          this.listenTo(excludeInput, "changeSelection", function (newValues) {
+        // Select the elements in the template where the two inputs should be inserted
+        var excludeContainer = this.$el.find(this.excludeInputSelector);
+        var operatorContainer = this.$el.find(this.operatorInputSelector);
+        // Create the exclude input
+        var excludeInput = new SearchableSelect({
+          options: [
+            {
+              label: "Include",
+              value: "false",
+              description:
+                "Include all datasets with metadata that matches the rules" +
+                " that are set below.",
+            },
+            {
+              label: "Exclude",
+              value: "true",
+              description:
+                "Match any dataset except those with metadata that match" +
+                " the rules that are set below",
+            },
+          ],
+          allowMulti: false,
+          allowAdditions: false,
+          inputLabel: "",
+          selected: [this.filterGroup.get("exclude").toString()],
+          clearable: false,
+        });
+        // Create the operator input
+        var operatorInput = new SearchableSelect({
+          options: [
+            {
+              label: "all",
+              value: "AND",
+              description:
+                "For a dataset to match, it must have metadata that " +
+                "matches every rule set below.",
+            },
+            {
+              label: "any",
+              value: "OR",
+              description:
+                "For a dataset to match, its metadata only needs to " +
+                "match one of the rules set below.",
+            },
+          ],
+          allowMulti: false,
+          allowAdditions: false,
+          inputLabel: "",
+          selected: [this.filterGroup.get("operator")],
+          clearable: false,
+        });
+        // Update the FilterGroup model when the user changes the operator or exclude
+        // options. newValues will always be an Array, but since these inputs don't
+        // allow multiple selections (allowMulti: false), then there will only ever be
+        // one value.
+        this.stopListening(excludeInput.model);
+        this.listenTo(
+          excludeInput.model,
+          "change:selected",
+          function (_model, newValues) {
             // Convert the string (necessary to be used as a value in SearchableSelect)
             // to a boolean. It should be "true" or "false".
             var newExclude = newValues[0] == "true";
             this.filterGroup.set("exclude", newExclude);
-          });
-          this.stopListening(operatorInput);
-          this.listenTo(operatorInput, "changeSelection", function (newValues) {
+          },
+        );
+        this.stopListening(operatorInput.model);
+        this.listenTo(
+          operatorInput,
+          "change:selected",
+          function (_model, newValues) {
             this.filterGroup.set("operator", newValues[0]);
-          });
-          // Render the inputs and insert them into the view. Replace the default text
-          // within the containers otherwise.
-          excludeContainer.html(excludeInput.render().el);
-          operatorContainer.html(operatorInput.render().el);
-        } catch (error) {
-          console.log(
-            "There was a problem rendering the exclude and operator " +
-              "inputs in a QueryBuilderView, error details: " +
-              error,
-          );
-        }
+          },
+        );
+        // Render the inputs and insert them into the view. Replace the default text
+        // within the containers otherwise.
+        excludeContainer.html(excludeInput.render().el);
+        operatorContainer.html(operatorInput.render().el);
       },
 
       /**

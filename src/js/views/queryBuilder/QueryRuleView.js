@@ -436,7 +436,7 @@ define([
               allowAdditions: false,
               inputLabel: "Select a coupling",
               selected: this.model.get("values"),
-              separatorText: this.model.get("operator"),
+              separator: this.model.get("operator"),
             });
           },
         },
@@ -446,7 +446,7 @@ define([
           uiFunction() {
             return new ObjectFormatSelect({
               selected: this.model.get("values"),
-              separatorText: this.model.get("operator"),
+              separator: this.model.get("operator"),
             });
           },
         },
@@ -458,7 +458,7 @@ define([
             if (MetacatUI.appModel.get("bioportalAPIKey")) {
               return new AnnotationFilter({
                 selected: this.model.get("values").slice(),
-                separatorText: this.model.get("operator"),
+                separator: this.model.get("operator"),
                 multiselect: true,
                 inputLabel: "Type a value",
               });
@@ -479,7 +479,7 @@ define([
           uiFunction() {
             return new AccountSelect({
               selected: this.model.get("values"),
-              separatorText: this.model.get("operator"),
+              separator: this.model.get("operator"),
             });
           },
         },
@@ -496,7 +496,7 @@ define([
           uiFunction() {
             return new NodeSelect({
               selected: this.model.get("values"),
-              separatorText: this.model.get("operator"),
+              separator: this.model.get("operator"),
             });
           },
         },
@@ -508,7 +508,7 @@ define([
             return new NumericFilterView({
               model: this.model,
               showButton: false,
-              separatorText: this.model.get("operator"),
+              separator: this.model.get("operator"),
             });
           },
         },
@@ -519,7 +519,7 @@ define([
           uiFunction() {
             return new DateFilterView({
               model: this.model,
-              separatorText: this.model.get("operator"),
+              separator: this.model.get("operator"),
             });
           },
         },
@@ -532,7 +532,7 @@ define([
               allowAdditions: true,
               inputLabel: "Type a value",
               selected: this.model.get("values"),
-              separatorText: this.model.get("operator"),
+              separator: this.model.get("operator"),
             });
           },
         },
@@ -907,28 +907,34 @@ define([
           selected: selectedFields,
           excludeFields: this.excludeFields,
           addFields: this.specialFields,
-          separatorText: this.model.get("fieldsOperator"),
+          separator: this.model.get("fieldsOperator"),
         });
         this.fieldSelect.$el.addClass(this.fieldsClass);
         this.el.append(this.fieldSelect.el);
         this.fieldSelect.render();
 
         // Update the model when the fieldsOperator changes
-        this.stopListening(this.fieldSelect, "separatorChanged");
-        this.listenTo(this.fieldSelect, "separatorChanged", (newOperator) => {
-          this.model.set("fieldsOperator", newOperator);
-        });
-        // Update model when the selected fields change
-        this.stopListening(this.fieldSelect, "changeSelection");
+        this.stopListening(this.fieldSelect.model, "change:separator");
         this.listenTo(
-          this.fieldSelect,
-          "changeSelection",
-          this.handleFieldChange,
+          this.fieldSelect.model,
+          "change:separator",
+          (_model, newOperator) => {
+            this.model.set("fieldsOperator", newOperator);
+          },
+        );
+        // Update model when the selected fields change
+        this.stopListening(this.fieldSelect.model, "change:selected");
+        this.listenTo(
+          this.fieldSelect.model,
+          "change:selected",
+          function (_model, fields) {
+            this.handleFieldChange(fields);
+          },
         );
       },
 
       /**
-       * handleFieldChange - Called when the Query Field Select View triggers a change
+       * Called when the Query Field Select View triggers a change
        * event. Updates the model with the new fields, and if required,
        * 1) converts the filter model to a different type based on the types of fields
        * selected, 2) updates the operator select and the value select
@@ -1040,11 +1046,13 @@ define([
         this.operatorSelect.render();
 
         // Update model when the values change
-        this.stopListening(this.operatorSelect, "changeSelection");
+        this.stopListening(this.operatorSelect.model, "change:selected");
         this.listenTo(
-          this.operatorSelect,
-          "changeSelection",
-          this.handleOperatorChange,
+          this.operatorSelect.model,
+          "change:selected",
+          function (_model, newOperator) {
+            this.handleOperatorChange(newOperator);
+          },
         );
       },
 
@@ -1407,47 +1415,59 @@ define([
 
         // Make sure the listeners set below are not set multiple times
         this.stopListening(
-          view.valueSelect,
-          "changeSelection inputFocus separatorChanged",
+          view.valueSelect.model,
+          "change:selected change:separator",
         );
+        this.stopListening(view.valueSelect.model, "change:lastInteraction");
 
         // Update model when the values change - note that the date & numeric filter
-        // views do not trigger a 'changeSelection' event, (because they are not based
+        // views do not trigger a 'change:selected' event, (because they are not based
         // on a SearchSelect View) but update the models directly
         this.listenTo(
-          view.valueSelect,
-          "changeSelection",
-          this.handleValueChange,
+          view.valueSelect.model,
+          "change:selected",
+          (_model, newValues) => {
+            this.handleValueChange(newValues);
+          },
         );
 
         // Update the model when the operator changes
-        this.listenTo(view.valueSelect, "separatorChanged", (newOperator) => {
-          this.model.set("operator", newOperator);
-        });
+        this.listenTo(
+          view.valueSelect.model,
+          "change:separator",
+          (_model, newOperator) => {
+            this.model.set("operator", newOperator);
+          },
+        );
 
         // Show a message that reminds the user that capitalization matters when they
         // are typing a value for a field that is case-sensitive.
-        this.listenTo(view.valueSelect, "inputFocus", () => {
-          const currentFields = this.model.get("fields");
-          const isCaseSensitive = _.some(currentFields, (field) =>
-            MetacatUI.queryFields.findWhere({
-              name: field,
-              caseSensitive: true,
-            }),
-          );
+        this.listenTo(
+          view.valueSelect.model,
+          "change:lastInteraction",
+          (model, interaction) => {
+            if (interaction !== "focus") return;
+            const currentFields = view.model.get("fields");
+            const isCaseSensitive = _.some(currentFields, (field) =>
+              MetacatUI.queryFields.findWhere({
+                name: field,
+                caseSensitive: true,
+              }),
+            );
 
-          if (isCaseSensitive) {
-            let fieldsText = "The field";
-            if (currentFields.length > 1) {
-              fieldsText = "At least one of the fields";
+            if (isCaseSensitive) {
+              let fieldsText = "The field";
+              if (currentFields.length > 1) {
+                fieldsText = "At least one of the fields";
+              }
+
+              const message = `<i class='icon-lightbulb icon-on-left'></i> <b>Hint:</b> ${fieldsText} you selected is case-sensitive. Capitalization matters here.`;
+              view.valueSelect.showMessage(message, "info", false);
+            } else {
+              view.valueSelect.removeMessages();
             }
-
-            const message = `<i class='icon-lightbulb icon-on-left'></i> <b>Hint:</b> ${fieldsText} you selected is case-sensitive. Capitalization matters here.`;
-            view.valueSelect.showMessage(message, "info", false);
-          } else {
-            view.valueSelect.removeMessages();
-          }
-        });
+          },
+        );
       },
 
       /**
@@ -1472,9 +1492,10 @@ define([
         switch (inputType) {
           case "value":
             if (this.valueSelect) {
+              this.stopListening(this.valueSelect.model, "change:selected");
               this.stopListening(
-                this.valueSelect,
-                "changeSelection inputFocus",
+                this.valueSelect.model,
+                "change:lastInteraction",
               );
               this.valueSelect.remove();
               this.valueSelect = null;
@@ -1482,14 +1503,14 @@ define([
             break;
           case "operator":
             if (this.operatorSelect) {
-              this.stopListening(this.operatorSelect, "changeSelection");
+              this.stopListening(this.operatorSelect.model, "change:selected");
               this.operatorSelect.remove();
               this.operatorSelect = null;
             }
             break;
           case "field":
             if (this.fieldSelect) {
-              this.stopListening(this.fieldSelect, "changeSelection");
+              this.stopListening(this.fieldSelect.model, "change:selected");
               this.fieldSelect.remove();
               this.fieldSelect = null;
             }

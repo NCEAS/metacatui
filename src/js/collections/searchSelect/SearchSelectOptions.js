@@ -14,7 +14,6 @@ define(["backbone", "models/searchSelect/SearchSelectOption"], (
   const SearchSelectOptions = Backbone.Collection.extend({
     /** @lends SearchSelectOptions.prototype */
 
-
     /** @inheritdoc */
     model: SearchSelectOption,
 
@@ -43,7 +42,7 @@ define(["backbone", "models/searchSelect/SearchSelectOption"], (
      *     { label: "Option 4" }
      * });
      */
-    initialize(_models, _options) { },
+    initialize(_models, _options) {},
 
     /**
      * Parses the incoming options data. This can handle both an array of options
@@ -85,12 +84,15 @@ define(["backbone", "models/searchSelect/SearchSelectOption"], (
     },
 
     /**
-     * Checks if a value is one of the values in the collection.
-     * @param {string} value - The value to check for.
+     * Checks if a given matches either a label or value in the collection of options.
+     * @param {string} value - The value or label to check for.
      * @returns {boolean} - Returns true if the value is found in the collection, false otherwise.
      */
     isValidValue(value) {
-      return this.some((option) => option.get("value") === value);
+      return this.some(
+        (option) =>
+          option.get("value") === value || option.get("label") === value,
+      );
     },
 
     /**
@@ -115,7 +117,7 @@ define(["backbone", "models/searchSelect/SearchSelectOption"], (
       });
 
       return categorizedOptions;
-    }
+    },
   });
 
   return SearchSelectOptions;

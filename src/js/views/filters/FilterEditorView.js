@@ -371,7 +371,7 @@ define([
             if (!options.model.collection) {
               console.log(
                 "The Filter model for a FilterEditorView must be part of a" +
-                " Filters collection",
+                  " Filters collection",
               );
               return;
             }
@@ -384,7 +384,7 @@ define([
             if (!options.collection) {
               console.log(
                 "A Filters collection is required to render a " +
-                "FilterEditorView for a new Filters model.",
+                  "FilterEditorView for a new Filters model.",
               );
               return;
             }
@@ -421,13 +421,13 @@ define([
           }
           var editButton = $(
             "<a class='" +
-            buttonClasses +
-            "'>" +
-            "<i class='icon icon-" +
-            buttonIcon +
-            " icon-on-left'></i> " +
-            buttonText +
-            "</a>",
+              buttonClasses +
+              "'>" +
+              "<i class='icon icon-" +
+              buttonIcon +
+              " icon-on-left'></i> " +
+              buttonText +
+              "</a>",
           );
           this.$el.prepend(editButton);
 
@@ -499,8 +499,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error rendering the modal in a FilterEditorView" +
-            " Error details: " +
-            error,
+              " Error details: " +
+              error,
           );
         }
       },
@@ -520,8 +520,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error hiding the editing modal in a FilterEditorView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
         }
       },
@@ -594,8 +594,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error activating the modal buttons in a FilterEditorView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
         }
       },
@@ -681,8 +681,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error rendering the UI filter builders in a FilterEditorView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
         }
       },
@@ -701,24 +701,26 @@ define([
             inputLabel: "Select one or more metadata fields",
             excludeFields: view.excludeFields,
             addFields: view.specialFields,
-            separatorText: view.model.get("fieldsOperator"),
+            separator: view.model.get("fieldsOperator"),
           });
           view.modalEl
             .find("." + view.classes.fieldsContainer)
             .append(view.fieldInput.el);
           view.fieldInput.render();
 
-          // When the field input is changed, limit UI options to options that match
-          // this field type
-          view.fieldInput.off("changeSelection");
-          view.fieldInput.on("changeSelection", function (selectedFields) {
-            view.handleFieldChange.call(view, selectedFields);
-          });
+          this.stopListening(view.fieldInput.model, "change:selected");
+          this.listenTo(
+            view.fieldInput.model,
+            "change:selected",
+            function (_model, newSelectedFields) {
+              view.handleFieldChange.call(view, newSelectedFields);
+            },
+          );
         } catch (error) {
           console.log(
             "There was an error rendering a fields input in a FilterEditorView" +
-            " Error details: " +
-            error,
+              " Error details: " +
+              error,
           );
         }
       },
@@ -766,8 +768,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error handling a field change in a FilterEditorView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
         }
       },
@@ -809,8 +811,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error blocking a filter UI builder in a FilterEditorView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
         }
       },
@@ -842,8 +844,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error unblocking a filter UI builder in a FilterEditorView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
         }
       },
@@ -873,9 +875,9 @@ define([
         } catch (error) {
           console.log(
             "There was an error showing a message to indicate that no filter builder " +
-            "UI options are allowed in a FilterEditorView" +
-            ". Error details: " +
-            error,
+              "UI options are allowed in a FilterEditorView" +
+              ". Error details: " +
+              error,
           );
         }
       },
@@ -898,8 +900,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error hiding a message in a FilterEditorView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
         }
       },
@@ -922,9 +924,9 @@ define([
             newModelAttrs = selectedUI.draftModel.toJSON();
 
           // Set the new fields
-          newModelAttrs.fields = _.clone(this.fieldInput.model.get('selected'));
+          newModelAttrs.fields = _.clone(this.fieldInput.model.get("selected"));
           // set the new fieldsOperator
-          newModelAttrs.fieldsOperator = this.fieldInput.separatorText;
+          newModelAttrs.fieldsOperator = this.fieldInput.model.get("separator");
 
           delete newModelAttrs.objectDOM;
           delete newModelAttrs.cid;
@@ -952,8 +954,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error updating a Filter model in a FilterEditorView" +
-            " Error details: " +
-            error,
+              " Error details: " +
+              error,
           );
         }
       },
@@ -974,8 +976,8 @@ define([
           }
           view.validationErrorEl = $(
             '<p class="alert alert-error">' +
-            view.text.validationError +
-            "</p>",
+              view.text.validationError +
+              "</p>",
           );
           this.$el.find(".modal-body").prepend(view.validationErrorEl);
 
@@ -991,8 +993,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error  in a FilterEditorView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
         }
       },
@@ -1015,8 +1017,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error handling a click event in a FilterEditorView" +
-            " Error details: " +
-            error,
+              " Error details: " +
+              error,
           );
         }
       },
@@ -1117,8 +1119,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error switching filter types in a FilterEditorView." +
-            " Error details: " +
-            error,
+              " Error details: " +
+              error,
           );
         }
       },
@@ -1173,8 +1175,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error getting common model attributes in a FilterEditorView" +
-            ". Error details: " +
-            error,
+              ". Error details: " +
+              error,
           );
         }
       },

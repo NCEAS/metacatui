@@ -92,7 +92,7 @@ define([
 
         opts.options = selectOptions;
 
-        SearchableSelect.prototype.initialize.call(this, opts); 
+        SearchableSelect.prototype.initialize.call(this, opts);
       },
     },
   );

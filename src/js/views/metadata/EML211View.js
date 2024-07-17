@@ -2535,7 +2535,7 @@ define([
             const taxonSelects = view.taxonSelects;
             if (!taxonSelects || !taxonSelects.length) return;
             const selectedItems = taxonSelects
-              .map((select) => select.model.get('selected'))
+              .map((select) => select.model.get("selected"))
               .flat();
             if (!selectedItems || !selectedItems.length) return;
             const selectedItemObjs = selectedItems.map((item) => {

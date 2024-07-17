@@ -122,8 +122,14 @@ define([
         }
 
         // TODO: Until we move these fields to a model, they are set on the view for this subclass
-        const modelAttrNames = ['allowMulti', 'allowAdditions', 'clearable', 'submenuStyle', 'hideEmptyCategoriesOnSearch'];
-        modelAttrNames.forEach(attrName => {
+        const modelAttrNames = [
+          "allowMulti",
+          "allowAdditions",
+          "clearable",
+          "submenuStyle",
+          "hideEmptyCategoriesOnSearch",
+        ];
+        modelAttrNames.forEach((attrName) => {
           if (options[attrName] === undefined) {
             options[attrName] = this[attrName];
           }
@@ -140,7 +146,6 @@ define([
        * @since 2.17.0
        */
       processFields: function () {
-
         var view = this;
 
         // Ensure the query fields are cached for the Query Field Select
@@ -152,11 +157,7 @@ define([
           if (typeof MetacatUI.queryFields === "undefined") {
             MetacatUI.queryFields = new QueryFields();
           }
-          this.listenToOnce(
-            MetacatUI.queryFields,
-            "sync",
-            this.processFields,
-          );
+          this.listenToOnce(MetacatUI.queryFields, "sync", this.processFields);
           MetacatUI.queryFields.fetch();
           return;
         }
@@ -380,12 +381,12 @@ define([
       },
 
       /**
-       * isValidOption - Checks if a value is one of the values given in view.options
-       *
+       * Checks if a value is one of the values given in view.options
        * @param  {string} value The value to check
        * @return {boolean}      returns true if the value is one of the values given in view.options
        */
       isValidOption: function (value) {
+        // TODO: Move to model
 
         var view = this;
 
