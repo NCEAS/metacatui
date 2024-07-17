@@ -70,7 +70,7 @@
 }
 
 .portal-view .portal-title {
-  color: var(--portal-col-text-nav-highlight);
+  color: var(--portal-col-primary-2);
   font-size: 1rem;
   font-weight: 400;
 }
@@ -97,7 +97,7 @@
   display: flex;
   font-size: 1rem;
   cursor: help;
-  color: var(--portal-col-text-nav);
+  color: var(--portal-col-primary-3);
 }
 
 .portal-view .portal-description:hover::before {
@@ -113,7 +113,7 @@
   left: 1.5rem;
   width: max-content;
   background-color: var(
-    --portal-col-tooltip-background,
+    --portal-col-neutral-7,
     var(--portal-col-bkg-active__deprecate, white)
   );
   z-index: 10;
@@ -180,14 +180,14 @@
 
 .portal-view #portal-section-tabs .section-link-container .portal-section-link {
   background: transparent;
-  color: var(--portal-col-text-nav);
+  color: var(--portal-col-primary-3);
 }
 
 .portal-view
   #portal-section-tabs
   .section-link-container.active
   .portal-section-link {
-  color: var(--portal-col-text-nav-highlight, var(--portal-secondary-color));
+  color: var(--portal-col-primary-2, var(--portal-secondary-color));
   background: transparent;
 }
 
@@ -201,10 +201,7 @@
   .section-link-container
   .portal-section-link:hover {
   background: transparent;
-  color: var(
-    --portal-col-text-nav-hover,
-    var(--portal-secondary-color)
-  ) !important;
+  color: var(--portal-col-neutral-00, var(--portal-secondary-color)) !important;
 }
 
 .portal-logos-view {

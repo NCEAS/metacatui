@@ -1,20 +1,24 @@
 "use strict";
 
 define([
-  "jquery",
   "underscore",
   "backbone",
   "collections/maps/AssetCategories",
+  "common/IconUtilities",
   // Sub-views
-  "views/maps/LayerCategoryItemView",
-], function (
-  $,
+  "views/maps/LayerListView",
+  "views/maps/ExpansionPanelView",
+  "models/maps/ExpansionPanelsModel",
+], (
   _,
   Backbone,
   AssetCategories,
+  IconUtilities,
   // Sub-views
-  LayerCategoryItemView,
-) {
+  LayerListView,
+  ExpansionPanelView,
+  ExpansionPanelsModel,
+) => {
   /**
    * @class LayerCategoryListView
    * @classdesc A LayerCategoryListView shows a collection of AssetCategories, each with
@@ -42,36 +46,44 @@ define([
 
       /**
        * The array of layer categories to display in the list
-       * @type {LayerCategoryItemView[]}
+       * @type {ExpansionPanel[]}
        */
-      layerCategoryItemViews: undefined,
+      panels: [],
 
       /**
        * Executed when a new LayerCategoryListView is created
-       * @param {Object} options - A literal object with options to pass to the view
+       * @param {object} options - A literal object with options to pass to the view
+       * @param {AssetCategories} options.collection - The collection of AssetCategory to display.
        */
       initialize(options) {
-        if (options.collection instanceof AssetCategories) {
-          this.layerCategoryItemViews = options.collection.map(
-            (categoryModel) => {
-              return new LayerCategoryItemView({ model: categoryModel });
-            },
-          );
-        }
+        this.assetCategories = options.collection;
       },
 
       /**
        * Renders this view
-       * @return {LayerCategoryListView} Returns the rendered view element
+       * @returns {LayerCategoryListView} Returns the rendered view element
        */
       render() {
-        this.layerCategoryItemViews = _.forEach(
-          this.layerCategoryItemViews,
-          (layerCategoryItemView) => {
-            layerCategoryItemView.render();
-            this.el.appendChild(layerCategoryItemView.el);
-          },
-        );
+        if (this.assetCategories instanceof AssetCategories) {
+          this.panels = this.assetCategories.map((categoryModel) => {
+            const icon = categoryModel.get("icon");
+            const panel = new ExpansionPanelView({
+              contentViewInstance: new LayerListView({
+                collection: categoryModel.get("mapAssets"),
+                isCategorized: true,
+              }),
+              icon,
+              isSvgIcon: IconUtilities.isSVG(icon),
+              panelsModel: new ExpansionPanelsModel({ isMulti: true }),
+              title: categoryModel.get("label"),
+            });
+
+            panel.render();
+            this.el.appendChild(panel.el);
+
+            return panel;
+          });
+        }
 
         return this;
       },
@@ -83,9 +95,22 @@ define([
        */
       search(text) {
         return _.reduce(
-          this.layerCategoryItemViews,
-          (matched, layerCategoryItem) => {
-            return layerCategoryItem.search(text) || matched;
+          this.panels,
+          (matched, panel) => {
+            const searchResultsFound = panel.contentViewInstance.search(text);
+            if (searchResultsFound) {
+              panel.$el.show();
+              if (text !== "") {
+                panel.open();
+              } else {
+                panel.collapse();
+              }
+            } else {
+              panel.$el.hide();
+              panel.collapse();
+            }
+
+            return searchResultsFound || matched;
           },
           false,
         );

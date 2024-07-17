@@ -1,0 +1,253 @@
+## Default values for metacatui.
+## This is a YAML-formatted file.
+## Edit values, then install and/or upgrade using:
+##
+## $  helm upgrade --install releasename -n mynamespace ./relative/path/to/helm/directory
+##
+
+global:
+  ## @param global.metacatUiThemeName The theme name to use. Required, even if overriding config.js
+  ##
+  metacatUiThemeName: "knb"
+
+  ## @param global.metacatUiWebRoot The url root to be appended after the metacatui baseUrl.
+  ## Starts with "/". Required, even if overriding config.js
+  ##
+  metacatUiWebRoot: "/"
+
+  ## @param global.metacatExternalBaseUrl metacat base url, accessible from outside the cluster.
+  ## Include protocol and trailing slash, but not the context; e.g.: "https://test.arcticdata.io/"
+  ##
+  metacatExternalBaseUrl: "https://localhost/"
+
+  ## @param global.metacatAppContext The directory that metacat is installed in at the `baseUrl`.
+  ## Used to populate metacatui's 'metacatContext'.
+  ## For example, if you have metacat installed in $TOMCAT/webapps/knb, then this should be set
+  ## to "knb". If you are using the default metacat settings, it should be 'metacat'
+  ##
+  metacatAppContext: "metacat"
+
+  ## @param global.d1ClientCnUrl the url of the CN. Used to determine metacatui's 'd1CNBaseUrl'
+  ## NOTE: only the base URL is used to populate d1CNBaseUrl; anything after the third "/" will be
+  ## ignored - e.g. if you set d1ClientCnUrl: "https://cn.dataone.org/cn", then d1CNBaseUrl will
+  ## be set to "https://cn.dataone.org/"
+  ##
+  d1ClientCnUrl: "https://cn.dataone.org/cn"
+
+## @section MetacatUI Configuration Files ('config.js')
+##
+## The k8s version of Metacatui requires two 'config.js' configuration files:
+## 1. the "root config" at the path {root}/config/config.js, and
+## 2. the "theme config" in the theme directory itself (for example, see the knb config.js at:
+##     https://github.com/NCEAS/metacatui/blob/main/src/js/themes/knb/config.js)
+##
+## The "root config" file must, at a minimum, contain the name of the theme to be used, e.g:
+##
+##   MetacatUI.AppConfig = {
+##     theme: "knb"
+##   };
+##
+## ...and metacatui will then load that theme and its "theme config".
+## If any additional settings are defined in the "root config", Metacatui will use them to override
+## corresponding settings in the "theme config".
+##
+## By default, this chart creates a simple "root config" that contains any values of the form:
+## 'key: stringValue,' or 'key: intValue,' provided in the 'appConfig:' section below. If you need
+## to provide more-complex overrides, set 'appConfig.enabled: false', below, and manually create
+## your own configMap named 'YourReleaseName-metacatui-config-js', containing your custom config.js.
+##
+## Note that if you choose not to use one of the themes that are bundled with metacatui, you will
+## need to provide the files for that theme (including its 'theme config' file) on a Persistent
+## Volume. See the MetacatUI documentation for help with creating custom themes:
+## https://nceas.github.io/metacatui/install/configuration/index.html
+##
+
+## @param appConfig The MetacatUI.AppConfig optional override settings
+##
+## Optional configuration. Note you can define any attributes here, to override those that appear
+## in config.js, provided they are of the form: 'key: stringValue,' or 'key: intValue,'.
+##
+## See full listing in AppModel.js:
+## https://github.com/NCEAS/metacatui/blob/main/src/js/models/AppModel.js
+##
+## * * * IMPORTANT NOTE:  * * * DO NOT SET THE FOLLOWING VALUES IN THIS SECTION! * * *
+## They will be ignored here, because they are populated from the "global" section, above:
+## * theme:           uses '.Values.global.metacatUiThemeName'
+## * root:           uses '.Values.global.metacatUiWebRoot'
+## * baseUrl:         uses '.Values.global.metacatExternalBaseUrl'
+## * d1CNBaseUrl:     uses base URL portion of '.Values.global.d1ClientCnUrl'
+## * metacatContext:  uses '.Values.global.metacatAppContext'
+##
+appConfig:
+  ## @param appConfig.enabled Define theme name and override values in MetacatUI.AppConfig
+  ## If you need to provide more-complex overrides, set 'appConfig.enabled: false', and manually
+  ## create your own configMap named 'YourReleaseName-metacatui-config-js', containing your custom
+  ## config.js.
+  ##
+  ## IMPORTANT: global.metacatUiThemeName MUST be set to your theme name, even if you are disabling
+  ## appConfig and providing a custom config.js in a configMap.
+  ##
+  enabled: true
+
+## @param themeFilesClaimName Provide source files for a custom Theme (also see 'appConfig.theme').
+## NOTE that global.metacatUiThemeName MUST match the theme of your custom theme
+##
+customTheme:
+  ## @param customTheme.enabled Provide custom Theme files on a pre-configured PVC
+  ##
+  enabled: false
+
+  ## @param customTheme.themeClaimName substitute your own PVC name
+  ##
+  claimName: "Your-Pre-Configured-pvc-name"
+
+  ## @param customTheme.subPath path to theme directory, within mounted filesystem
+  ## For example, if you cloned https://github.com/NCEAS/metacatui-themes to the root of your
+  ## shared drive, it would look like this:
+  ##
+  ## /metacatui-themes
+  ##     └── src
+  ##         ├── cerp
+  ##         │ └── js
+  ##         │     └── themes
+  ##         │         └── cerp
+  ##         │             ├── config.js
+  ##         │             ├── css
+  ##         │             ├── ...etc
+  ##         ├── drp
+  ##         │ └── js
+  ##         │     └── themes
+  ##         │         └── drp
+  ##         │             ├── config.js
+  ##         │             ├── css
+  ##       ...etc          ├── ...etc
+  ##
+  ## ...so to use the drp theme, you would set the subPath to:
+  ##     subPath: "metacatui-themes/src/drp/js/themes/drp"
+  ##
+  subPath: ""
+
+## @param livenessProbeEnabled Enable livenessProbe. Autoconfigured using .Values.appConfig.root
+## To override autoconfig, keep 'livenessProbeEnabled: true', and define a livenessProbe; e.g:
+##  livenessProbe:
+##    httpGet:
+##      path: /myPath
+##      port: http
+##
+livenessProbeEnabled: true
+
+## @param readinessProbeEnabled Enable readinessProbe. Autoconfigured using .Values.appConfig.root
+## To override autoconfig, keep 'readinessProbeEnabled: true', and define a readinessProbe; e.g:
+##  readinessProbe:
+##    httpGet:
+##      path: /myPath
+##      port: http
+##
+readinessProbeEnabled: true
+
+service:
+  type: ClusterIP
+  port: 80
+
+## @param ingress typically disabled here (enabled: false) and handled by metacat helm chart.
+## Example settings below for local dev
+##
+ingress:
+  enabled: false
+  className: traefik # enable in rancher desktop
+  annotations:
+    kubernetes.io/ingress.class: traefik
+  hosts:
+    - host: myMacbookPro.local # example hostname of local machine
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcui-metacatui  # Assumes the service is exposed in the 'mcui' namespace
+            port:
+              number: 80
+  tls: []
+
+
+## @param source  The source from which to retrieve the metacatui code. NOTE: Changes should not be
+## needed here, unless you wish to deviate from the official metacatui release version defined in
+## the helm chart (see Chart.yaml)
+##
+source:
+  ## @param source.from  Options are "package" (the default), "git", or "pvc"
+  ## * "package" will download a release package from the metacatui git repository, unzip it, and
+  ##    install the files in local pod storage (emptyDir{})
+  ## * "git" will clone a specific branch or tag from the metacatui git repository, and install the
+  ##    files in local pod storage (emptyDir{})
+  ## * "pvc" expects to find a pre-configured PVC containing the files to be used. Note you will
+  ##    need to provide values for a pre-configured PVC in 'volumes', below
+  ##
+  from: package
+
+  ## @param source.package (default): Download the official release version defined in Chart.yaml
+  ## example:
+  ##    source.from: package
+  ##    source.package.location: "https://github.com/NCEAS/metacatui/archive"
+  ##    source.package.version: "2.26.0"
+  ## ...will download:   https://github.com/NCEAS/metacatui/archive/2.26.0.zip
+  ##
+  ## Note these settings ignored unless 'source.from:' is set to 'package'
+  ##
+  package:
+    ## @param source.package.location The remote location where the release zipfile is hosted
+    ##
+    location: "https://github.com/NCEAS/metacatui/archive"
+
+    ## source.package.version override the release version defined in Chart.yaml
+    ## Assumes release is a zipfile named <version>.zip
+    ## LEAVE UNSET, UNLESS YOU NEED TO OVERRIDE THE CHART SETTING!
+    version: ""
+
+  ## @param source.git clone a specific branch or tag from the metacatui git repository, and install
+  ## the files in local pod storage (emptyDir{})
+  ##
+  ## Note these settings ignored unless 'source.from:' is set to 'git'
+  ##
+  git:
+    ## @param source.git.repoUrl the https url of the repo to be cloned
+    repoUrl: "https://github.com/NCEAS/metacatui.git"
+
+    ## @param source.git.revision Any string that makes sense after the command `git checkout`...
+    ## - for example:
+    ##     revision: "tags/2.29.0"    =>     git checkout tags/2.29.0
+    ##     revision: "develop"        =>     git checkout develop
+    ##
+    revision: "develop"
+
+  ## @param source.pvc Provide custom source files on a pre-configured PVC (typ. for development)
+  ##
+  ## Note these settings ignored unless 'source.from:' is set to 'pvc'
+  ##
+  pvc:
+    ## @param volumes.name substitute your own PVC name
+    ##
+    sourceCodeClaimName: "Your-Pre-Configured-pvc-name"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+image: {}
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+serviceAccount: {}
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
+resources: {}
