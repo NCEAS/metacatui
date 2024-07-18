@@ -948,7 +948,7 @@
          * The URL of the data package.
          * @type {null|string}
          */
-        packageUrl = null;
+        packageUrl = null,
         /**
          * The URL of the nested data package.
          * @type {null|string}
@@ -993,11 +993,11 @@
 
         // Set the nested package URL
         if (
-            MetacatUI.appModel.get("viewServiceUrl") !== undefined &&
-            MetacatUI.appModel.get("viewServiceUrl")
+            MetacatUI.root !== undefined &&
+            dataPackage.id !== undefined
             )
             nestedPackageUrl =
-                MetacatUI.appModel.get("viewServiceUrl") + 
+                MetacatUI.root + "/view/" +
                 encodeURIComponent(dataPackage.id);
 
         /**
