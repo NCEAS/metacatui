@@ -44,8 +44,8 @@ define([
       if (
         this.model instanceof PackageModel &&
         (this.model.get("formatType") === "RESOURCE" ||
-          this.model.get("type") == "DataPackage" ||
-          this.model.get("type") == "Package")
+          this.model.get("type") === "DataPackage" ||
+          this.model.get("type") === "Package")
       ) {
         hrefLink = this.model.getURL();
       }
