@@ -294,24 +294,14 @@ define([
           return;
         }
 
-        // Find the description in the options object, using the data-value
-        // attribute set in the template. The data-value attribute is either
-        // the label, or the value, depending on if a value is provided.
-        var valueOrLabel = $(element).data("value"),
-          opt = _.chain(this.model.optionsAsJSON())
-            .values()
-            .flatten()
-            .find(function (option) {
-              return (
-                option.label == valueOrLabel || option.value == valueOrLabel
-              );
-            })
-            .value();
+        // Find the description in the options object.
+        const valueOrLabel = $(element).data("value");
+        const opt = this.model.get("options").getOptionByLabelOrValue(valueOrLabel);
 
-        var label = opt.label,
-          value = opt.value,
-          type = opt.type,
-          description = opt.description ? opt.description : "";
+        const label = opt.get("label");
+        const value = opt.get("value");
+        const type = opt.get("type");
+        const description = opt.get("description") || "";
 
         // For added fields, the value set on the options.value element is just a
         // unique identifier. The values that should be used to build a query are saved

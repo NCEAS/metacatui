@@ -22,11 +22,35 @@ define([
   Template,
 ) => {
 
+  // The base class for the searchable select view
   const BASE_CLASS = "searchable-select";
+
+  // Class names that we use in the view, including those from the dropdown
+  // module
   const CLASS_NAMES = {
-    // Classes from the Semantic UI dropdown module
-    inactive: "disabled",
-    loading: "loading",
+    tooltip: `${BASE_CLASS}-tooltip`,
+    inputLabel: `${BASE_CLASS}-label`,
+    placeholder: "default text", // Not sure where these come from
+    popout: "popout-mode",
+    accordion: "accordion-mode",
+    chevronDown: "dropdown icon icon-on-right icon-chevron-down",
+    chevronRight: "dropdown icon icon-on-right icon-chevron-right",
+    accordionIcon: "accordion-mode-icon",
+    popoutIcon: "popout-mode-icon",
+    dropdown: $().dropdown.settings.className,
+  };
+
+  // This is missing from older version of the dropdown module
+  // TODO: On updating to new version, this should be available
+  CLASS_NAMES.dropdown.text = "text";
+
+  // Selectors for the dropdown module
+  const DROPDOWN_SELECTORS = $().dropdown.settings.selector;
+
+  // Classes that we use from the bootstrap module
+  const BOOTSTRAP_CLASS_NAMES = {
+    collapse: "collapse",
+    collapsed: "collapsed",
   };
 
   // Classes to use for different types of messages
@@ -44,6 +68,7 @@ define([
       selectUIClass: "",
     },
   };
+
   /**
    * @class SearchableSelectView
    * @classdesc A select interface that allows the user to search from within
@@ -167,14 +192,11 @@ define([
         this.model = new SearchSelect(modelAttrs);
       },
 
-      /**
-       * Render the view
-       * @returns {SearchableSelectView}  Returns the view
-       */
+      /** @inheritdoc */
       render() {
         const view = this;
 
-        // TODO: 
+        // TODO:
         if (view.apiSettings && !view.semanticAPILoaded) {
           // eslint-disable-next-line import/no-dynamic-require
           require(["semanticAPI"], (_SemanticAPI) => {
@@ -186,6 +208,7 @@ define([
 
         // Render the template using the view attributes
         this.$el.html(this.renderTemplate());
+        this.$selectUI = this.$el.find(DROPDOWN_SELECTORS.dropdown);
 
         // Start the dropdown in an inactive state. This allows us to pre-select
         // values without triggering a change event.
@@ -197,9 +220,8 @@ define([
         this.listenToSelectUI();
 
         // Add tool tips for the description
-        this.$el.find(".item").each((_i, item) => {
-          view.addTooltip(item);
-        });
+        const items = this.$el.find(`.${CLASS_NAMES.dropdown.item}`);
+        items.each((_i, item) => view.addTooltip(item));
 
         const invalidSelections = view.model.hasInvalidSelections();
         if (invalidSelections) {
@@ -214,11 +236,12 @@ define([
         return this;
       },
 
+      /** Initialize the dropdown interface */
       renderSelectUI() {
         const view = this;
         // Initialize the dropdown interface For explanations of settings, see:
         // https://semantic-ui.com/modules/dropdown.html#/settings
-        this.$selectUI = this.$el.find(".ui.dropdown").dropdown({
+        this.$selectUI = this.$selectUI.dropdown({
           keys: {
             // So that a user may enter search text using a comma
             delimiter: false,
@@ -245,8 +268,7 @@ define([
           },
           onChange(values, _text, _$choice) {
             view.onChange.call(view, values, _text, _$choice);
-          }
-
+          },
         });
 
         view.$selectUI.data("view", view);
@@ -297,7 +319,7 @@ define([
         sep?.remove();
         // Remove separator from second label if the first label is the one
         // being removed
-        const allLabels = view.$selectUI.find(".label");
+        const allLabels = view.$selectUI.find(DROPDOWN_SELECTORS.siblingLabel);
         if (allLabels.index($label) === 0) {
           allLabels.eq(1)?.data("separator")?.remove();
         }
@@ -314,32 +336,34 @@ define([
        * @since 0.0.0
        */
       onChange(values, _text, _$choice) {
-        const view = this
+        const view = this;
 
         // Update values for single-select inputs (multi-select are updated
         // using the onLabelCreate and onRemove callbacks)
         if (!view.model.get("allowMulti")) {
-          const silent = this.$selectUI.hasClass(CLASS_NAMES.inactive);
+          const silent = this.$selectUI.hasClass(CLASS_NAMES.dropdown.disabled);
           view.model.setSelected(values, { silent });
         }
 
         // Refresh the tooltips on the labels/text
 
         // Ensure tooltips for labels are removed
-        $(".search-select-tooltip").remove();
+        $(`.${CLASS_NAMES.tooltip}`).remove();
 
         // Add a tooltip for single select elements (.text) or multi-select
         // elements (.label). Delay so that to give time for DOM elements to be
         // added or removed.
         setTimeout(() => {
-          const textEl = view.$selectUI.find(".text:not(.default),.label");
+          const selector = `.${CLASS_NAMES.dropdown.text}:not(.default),${DROPDOWN_SELECTORS.siblingLabel}`;
+          const textEl = view.$selectUI.find(selector);
+
           // Single select text element will not have the value attribute, add
           // it so that we can find the matching description for the tooltip
           if (!textEl.data("value") && !view.model.get("allowMulti")) {
             textEl.data("value", values);
           }
           if (textEl) {
-            textEl.each((i, el) => {
+            textEl.each((_i, el) => {
               view.addTooltip.call(view, el, "top");
             });
           }
@@ -422,8 +446,10 @@ define([
        * @since 0.0.0
        */
       updateMenu() {
-        const menu = $(this.renderTemplate().trim()).find(".menu")[0].innerHTML;
-        this.$el.find(".menu").html(menu);
+        const menuClass = CLASS_NAMES.dropdown.menu;
+        const html = $(this.renderTemplate().trim());
+        const menu = html.find(`.${menuClass}`)[0].innerHTML;
+        this.$el.find(`.${menuClass}`).html(menu);
       },
 
       /**
@@ -435,6 +461,7 @@ define([
         const templateOptionsFromModel = {
           allowMulti: this.model.get("allowMulti"),
           options: this.model.optionsAsJSON(true),
+          classes: CLASS_NAMES,
         };
         const templateOptions = _.extend({}, this, templateOptionsFromModel);
         return this.template(templateOptions);
@@ -461,7 +488,6 @@ define([
        * @param {string[]} opts The values that are not valid choices
        */
       showInvalidSelectionError(opts) {
-
         let msg = "";
         if (opts?.length) {
           msg += opts.join(", ");
@@ -486,39 +512,31 @@ define([
        * @returns {jQuery} The element with a tooltip wrapped by jQuery
        */
       addTooltip(element, position = "bottom") {
-        if (!element) {
-          return $(element);
-        }
+        const $element = $(element);
+
+        if (!element) return $element;
 
         // Find the description in the options object, using the data-value
         // attribute set in the template. The data-value attribute is either the
         // label, or the value, depending on if a value is provided.
-        let valueOrLabel = $(element).data("value");
-        if (typeof valueOrLabel === "undefined") {
-          return $(element);
-        }
+        let valueOrLabel = $element.data("value");
+
+        // if undefined, return the element unchanged
+        if (typeof valueOrLabel === "undefined") return $element;
         if (typeof valueOrLabel === "boolean") {
           valueOrLabel = valueOrLabel.toString();
         }
-        const opt = _.chain(this.options)
-          .values()
-          .flatten()
-          .find(
-            (option) =>
-              option.label === valueOrLabel || option.value === valueOrLabel,
-          )
-          .value();
 
-        if (!opt) {
-          return $(element);
-        }
-        if (!opt.description) {
-          return $(element);
-        }
+        const opt = this.model
+          .get("options")
+          .getOptionByLabelOrValue(valueOrLabel);
+        const description = opt?.get("description");
 
-        $(element)
+        if (!description) return $element;
+
+        $element
           .tooltip({
-            title: opt.description,
+            title: description,
             placement: position,
             container: "body",
             delay: {
@@ -531,48 +549,11 @@ define([
             // Allow time for the popup to be added to the DOM
             setTimeout(() => {
               // Add class to identify popups when they need to be removed.
-              $el.data("tooltip").$tip.addClass("search-select-tooltip");
+              $el.data("tooltip").$tip.addClass(CLASS_NAMES.tooltip);
             }, 10);
           });
 
-        return $(element);
-      },
-
-      /**
-       * Re-arrange the HTML to display category contents as sub-menus that
-       * popout to the left or right of category titles
-       */
-      convertToPopout() {
-        if (!this.$selectUI) {
-          return;
-        }
-        if (this.currentSubmenuMode === "popout") {
-          return;
-        }
-        this.currentSubmenuMode = "popout";
-        this.$selectUI.addClass("popout-mode");
-        const $headers = this.$selectUI.find(".header");
-        if (!$headers || $headers.length === 0) {
-          return;
-        }
-        $headers.each((_i, header) => {
-          const $header = $(header);
-          const $itemGroup = $().add($header.nextUntil(".header"));
-          const $itemAndHeaderGroup = $header.add($header.nextUntil(".header"));
-          const $icon = $header.next().find(".icon");
-          if ($icon && $icon.length > 0) {
-            const $headerIcon = $icon.clone().addClass("popout-mode-icon").css({
-              opacity: "0.9",
-              "margin-right": "1rem",
-            });
-            $header.prepend($headerIcon[0]);
-          }
-          $itemAndHeaderGroup.wrapAll("<div class='item popout-mode'/>");
-          $itemGroup.wrapAll("<div class='menu popout-mode'/>");
-          $header.append(
-            "<i class='popout-mode-icon dropdown icon icon-on-right icon-chevron-right'></i>",
-          );
-        });
+        return $element;
       },
 
       /**
@@ -586,11 +567,58 @@ define([
           return;
         }
         this.currentSubmenuMode = "list";
-        this.$selectUI.find(".popout-mode > *").unwrap();
-        this.$selectUI.find(".accordion-mode > *").unwrap();
-        this.$selectUI.find(".popout-mode-icon").remove();
-        this.$selectUI.find(".accordion-mode-icon").remove();
-        this.$selectUI.removeClass("popout-mode accordion-mode");
+
+        this.$selectUI.find(`.${CLASS_NAMES.popout} > *`).unwrap();
+        this.$selectUI.find(`.${CLASS_NAMES.accordion} > *`).unwrap();
+
+        // TODO
+        this.$selectUI.find(`.${CLASS_NAMES.accordionIcon}`).remove();
+        this.$selectUI.find(`.${CLASS_NAMES.popoutIcon}`).remove();
+
+        this.$selectUI.removeClass(
+          `${CLASS_NAMES.popout} ${CLASS_NAMES.accordion}`,
+        );
+      },
+
+      /**
+       * Re-arrange the HTML to display category contents as sub-menus that
+       * popout to the left or right of category titles
+       */
+      convertToPopout() {
+        if (!this.$selectUI || this.currentSubmenuMode === "popout") return;
+        this.currentSubmenuMode = "popout";
+        this.$selectUI.addClass(CLASS_NAMES.popout);
+
+        const $headers = this.getItemHeaders();
+
+        if (!$headers?.length) return;
+
+        $headers.each((_i, header) => {
+          const $header = $(header);
+          const $itemGroup = $().add(
+            $header.nextUntil(`.${CLASS_NAMES.dropdown.header}`),
+          );
+          const $itemAndHeaderGroup = $header.add(
+            $header.nextUntil(`.${CLASS_NAMES.dropdown.header}`),
+          );
+          const $icon = $header.next().find(`.${CLASS_NAMES.dropdown.icon}`);
+          if ($icon && $icon.length > 0) {
+            const $headerIcon = $icon.clone().css({
+              opacity: "0.9",
+              "margin-right": "1rem",
+            });
+            $header.prepend($headerIcon[0]);
+          }
+          $itemAndHeaderGroup.wrapAll(
+            `<div class='${CLASS_NAMES.item} ${CLASS_NAMES.popout}'/>`,
+          );
+          $itemGroup.wrapAll(
+            `<div class='${CLASS_NAMES.dropdown.menu} ${CLASS_NAMES.popout}'/>`,
+          );
+          $header.append(
+            `<i class='${CLASS_NAMES.popoutIcon} ${CLASS_NAMES.chevronRight}'></i>`,
+          );
+        });
       },
 
       /**
@@ -598,18 +626,13 @@ define([
        * similar to an accordion element.
        */
       convertToAccordion() {
-        if (!this.$selectUI) {
-          return;
-        }
-        if (this.currentSubmenuMode === "accordion") {
-          return;
-        }
+        if (!this.$selectUI || this.currentSubmenuMode === "accordion") return;
+
         this.currentSubmenuMode = "accordion";
-        this.$selectUI.addClass("accordion-mode");
-        const $headers = this.$selectUI.find(".header");
-        if (!$headers || $headers.length === 0) {
-          return;
-        }
+        this.$selectUI.addClass(CLASS_NAMES.accordion);
+
+        const $headers = this.getItemHeaders();
+        if (!$headers?.length) return;
 
         // Id to match the header to the
         $headers.each((_i, header) => {
@@ -619,28 +642,39 @@ define([
           const headerText = $header.text().replace(/\W/g, "");
           const id = headerText + randomNum;
 
-          const $itemGroup = $().add($header.nextUntil(".header"));
-          const $icon = $header.next().find(".icon");
+          const $itemGroup = $().add(
+            $header.nextUntil(`.${CLASS_NAMES.dropdown.header}`),
+          );
+          const $icon = $header.next().find(`.${CLASS_NAMES.dropdown.icon}`);
           if ($icon && $icon.length > 0) {
             const $headerIcon = $icon
               .clone()
-              .addClass("accordion-mode-icon")
+              .addClass(CLASS_NAMES.accordionIcon)
               .css({
                 opacity: "0.9",
                 "margin-right": "1rem",
               });
             $header.prepend($headerIcon[0]);
             $header.wrap(
-              `<a data-toggle='collapse' data-target='#${id}' class='accordion-mode collapsed'/>`,
+              `<a data-toggle='${BOOTSTRAP_CLASS_NAMES.collapse}' data-target='#${id}' class='${CLASS_NAMES.accordion} ${BOOTSTRAP_CLASS_NAMES.collapsed}'/>`,
             );
           }
           $itemGroup.wrapAll(
-            `<div id='${id}' class='accordion-mode collapse'/>`,
+            `<div id='${id}' class='${CLASS_NAMES.accordion} ${BOOTSTRAP_CLASS_NAMES.collapse}'/>`,
           );
           $header.append(
-            "<i class='accordion-mode-icon dropdown icon icon-on-right icon-chevron-down'></i>",
+            `<i class='${CLASS_NAMES.accordionIcon} ${CLASS_NAMES.chevronDown}'></i>`,
           );
         });
+      },
+
+      /**
+       * Get the category headers in the dropdown menu
+       * @returns {JQuery} The category headers
+       * @since 0.0.0
+       */
+      getItemHeaders() {
+        return this.$selectUI.find(`.${CLASS_NAMES.dropdown.header}`);
       },
 
       /**
@@ -648,20 +682,23 @@ define([
        * empty, if any
        */
       hideEmptyCategories() {
-        const $headers = this.$selectUI.find(".header");
-        if (!$headers || $headers.length === 0) {
-          return;
-        }
+        const $headers = this.getItemHeaders();
+        if (!$headers?.length) return;
+
         $headers.each((_i, header) => {
           const $header = $(header);
           // this is the header
-          const $itemGroup = $().add($header.nextUntil(".header"));
-          const $itemGroupFiltered = $().add(
-            $header.nextUntil(".header", ".filtered"),
+          const $itemGroup = $().add(
+            $header.nextUntil(`.${CLASS_NAMES.dropdown.header}`),
           );
-          // If all items are filtered
+          const $itemGroupFiltered = $().add(
+            $header.nextUntil(
+              `.${CLASS_NAMES.dropdown.header}`,
+              `.${CLASS_NAMES.dropdown.filtered}`,
+            ),
+          );
+          // If all items are filtered then also hide the header
           if ($itemGroup.length === $itemGroupFiltered.length) {
-            // Then also hide the header
             $header.hide();
           } else {
             $header.show();
@@ -674,7 +711,7 @@ define([
        * re previously empty
        */
       showAllCategories() {
-        this.$selectUI.find(".header:hidden").show();
+        this.getItemHeaders().show();
       },
 
       /**
@@ -725,13 +762,13 @@ define([
       /** Visually indicate that the select interface is enabled */
       enable() {
         this.enabled = true;
-        this.$el.find(".ui.dropdown").removeClass(CLASS_NAMES.inactive);
+        this.$selectUI.removeClass(CLASS_NAMES.dropdown.disabled);
       },
 
       /** Visually indicate that the select interface is inactive */
       inactivate() {
         this.enabled = false;
-        this.$el.find(".ui.dropdown").addClass(CLASS_NAMES.inactive);
+        this.$selectUI.addClass(CLASS_NAMES.dropdown.disabled);
       },
 
       /**
@@ -772,22 +809,24 @@ define([
         if (!this.$selectUI) {
           return;
         }
-        const classes = Object.values(MESSAGE_TYPES).map((type) => type.selectUIClass);
+        const classes = Object.values(MESSAGE_TYPES).map(
+          (type) => type.selectUIClass,
+        );
         this.$selectUI.removeClass(classes.join(" "));
         if (this.message) this.message.remove();
       },
 
       /** Visually indicate that dropdown options are loading */
       showLoading() {
-        this.$el.find(".ui.dropdown").addClass(CLASS_NAMES.loading);
+        this.$selectUI.addClass(CLASS_NAMES.dropdown.loading);
       },
 
       /** Remove the loading spinner set by the showLoading */
       hideLoading() {
-        this.$el.find(".ui.dropdown").removeClass(CLASS_NAMES.loading);
+        this.$selectUI.removeClass(CLASS_NAMES.dropdown.loading);
       },
     },
-  )
+  );
 
   return SearchableSelectView;
 });
