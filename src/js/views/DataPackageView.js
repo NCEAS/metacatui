@@ -1023,7 +1023,9 @@
         this.downloadButtonView.render();
 
         // Add the downloadButtonView el to the span
-        this.$el.find(".downloadAction[data-id='" + dataPackage.id + "']").html(this.downloadButtonView.el);
+        this.$el
+          .find(".downloadAction[data-id='" + dataPackage.id + "']")
+          .html(this.downloadButtonView.el);
 
         // Filter out the packages from the member list
         members = _.filter(members, function (m) {

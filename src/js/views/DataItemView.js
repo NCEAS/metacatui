@@ -601,9 +601,12 @@ define([
               this.$el.attr("data-packageId", this.dataPackageId);
             }
 
-                    // Download button
-                    this.downloadButtonView = new DownloadButtonView({ model: this.model, view: "actionsView" });
-                    this.downloadButtonView.render();
+            // Download button
+            this.downloadButtonView = new DownloadButtonView({
+              model: this.model,
+              view: "actionsView",
+            });
+            this.downloadButtonView.render();
 
             const id = this.model.get("id");
             const infoLink =
