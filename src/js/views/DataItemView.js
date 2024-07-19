@@ -601,33 +601,15 @@ define([
               this.$el.attr("data-packageId", this.dataPackageId);
             }
 
-            //Download button
-            attributes.downloadUrl = undefined;
-            if (
-              this.model.get("dataUrl") !== undefined ||
-              this.model.get("url") !== undefined ||
-              this.model.url() !== undefined
-            ) {
-              if (this.model.get("dataUrl") !== undefined) {
-                attributes.downloadUrl = this.model.get("dataUrl");
-              } else if (this.model.get("url") !== undefined) {
-                attributes.downloadUrl = this.model.get("url");
-              } else if (this.model.url() !== undefined) {
-                var downloadUrl = this.model.url();
-                attributes.downloadUrl = downloadUrl.replace(
-                  "/meta/",
-                  "/object/",
-                );
-              }
-            }
+            // Download button
             this.downloadButtonView = new DownloadButtonView({
               model: this.model,
               view: "actionsView",
             });
             this.downloadButtonView.render();
 
-            let id = this.model.get("id");
-            let infoLink =
+            const id = this.model.get("id");
+            const infoLink =
               MetacatUI.root +
               "/view/" +
               encodeURIComponent(this.currentlyViewing) +
