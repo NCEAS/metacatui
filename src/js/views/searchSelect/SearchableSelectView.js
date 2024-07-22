@@ -1,3 +1,5 @@
+"use strict";
+
 define([
   "jquery",
   "underscore",
@@ -5,9 +7,11 @@ define([
   "views/searchSelect/SeparatorView",
   "models/searchSelect/SearchSelect",
   "semanticUItransition",
-  `text!${MetacatUI.root}/components/semanticUI/transition.min.css`,
   "semanticUIdropdown",
+  "semanticPopup",
+  `text!${MetacatUI.root}/components/semanticUI/transition.min.css`,
   `text!${MetacatUI.root}/components/semanticUI/dropdown.min.css`,
+  `text!${MetacatUI.root}/components/semanticUI/popup.min.css`,
   "text!templates/selectUI/searchableSelect.html",
 ], (
   $,
@@ -16,19 +20,19 @@ define([
   SeparatorView,
   SearchSelect,
   _Transition,
-  TransitionCSS,
   _Dropdown,
+  _Popup,
+  TransitionCSS,
   DropdownCSS,
+  PopupCSS,
   Template,
 ) => {
-
   // The base class for the searchable select view
   const BASE_CLASS = "searchable-select";
 
   // Class names that we use in the view, including those from the dropdown
   // module
   const CLASS_NAMES = {
-    tooltip: `${BASE_CLASS}-tooltip`,
     inputLabel: `${BASE_CLASS}-label`,
     placeholder: "default text", // Not sure where these come from
     popout: "popout-mode",
@@ -120,18 +124,22 @@ define([
       imageHeight: 30,
 
       /**
-       * Can be set to an object to specify API settings for retrieving remote
-       * selection menu content from an API endpoint. Details of what can be set
-       * here are specified by the Semantic-UI / Fomantic-UI package. Set to
-       * false if not retrieving remote content.
-       * @type {object | booealn}
-       * @default false
-       * @since 2.15.0
-       * @see
-       * {@link https://fomantic-ui.com/modules/dropdown.html#remote-settings}
-       * @see {@link https://fomantic-ui.com/behaviors/api.html#/settings}
+       * Options and selected values for the searchable select interface show a
+       * tooltip with the description of the option when the user hovers over
+       * the option. This object is passed to the Formantic UI popup module to
+       * configure the tooltip. Set to false to disable tooltips.
+       * @see https://fomantic-ui.com/modules/popup.html#/settings
+       * @type {object|boolean}
+       * @since 0.0.0
        */
-      apiSettings: false,
+      tooltipSettings: {
+        position: "top center",
+        delay: {
+          show: 500,
+          hide: 40,
+        },
+        exclusive: true,
+      },
 
       /**
        * The primary HTML template for this view. The template follows the
@@ -151,6 +159,7 @@ define([
         // Add CSS required for this view
         MetacatUI.appModel.addCSS(TransitionCSS, "semanticUItransition");
         MetacatUI.appModel.addCSS(DropdownCSS, "semanticUIdropdown");
+        MetacatUI.appModel.addCSS(PopupCSS, "semanticUIpopup");
 
         // Set options on the view and create the model
         const { modelAttrs, viewAttrs } = this.splitModelViewOptions(options);
@@ -347,9 +356,6 @@ define([
 
         // Refresh the tooltips on the labels/text
 
-        // Ensure tooltips for labels are removed
-        $(`.${CLASS_NAMES.tooltip}`).remove();
-
         // Add a tooltip for single select elements (.text) or multi-select
         // elements (.label). Delay so that to give time for DOM elements to be
         // added or removed.
@@ -364,7 +370,7 @@ define([
           }
           if (textEl) {
             textEl.each((_i, el) => {
-              view.addTooltip.call(view, el, "top");
+              view.addTooltip.call(view, el);
             });
           }
         }, 50);
@@ -504,56 +510,57 @@ define([
       },
 
       /**
+       * Get the option model given a dropdown text or label element
+       * @param {HTMLElement} label The label element
+       * @returns {SearchSelectOption|null} The option model or null if not
+       * found
+       * @since 0.0.0
+       */
+      optionFromLabel(label) {
+        const $label = $(label);
+        if (!$label) return null;
+        const value = $label.data("value");
+        if (!value) return null;
+        return this.model.get("options").getOptionByLabelOrValue(value);
+      },
+
+      /**
+       * Create HTML for a tooltip for a given option. By default this method
+       * returns the description of the option, but can be overridden in
+       * extended SearchableSelectViews to return a custom HTML string based on
+       * the option.
+       * @param {SearchSelectOption} option The option to create a tooltip for
+       * @returns {string|null} An HTML string to use for the content of the
+       * tooltip.
+       * @since 0.0.0
+       */
+      tooltipHTML(option) {
+        return option?.get("description") || null;
+      },
+
+      /**
        * Add a tooltip to a given element using the description in the options
        * object that's set on the view.
        * @param  {HTMLElement} element The HTML element a tooltip should be
        * added
-       * @param  {"top"|"bottom"|"left"|"right"} position Tooltip position
-       * @returns {jQuery} The element with a tooltip wrapped by jQuery
+       * @param  {object} settings Additional settings to override those set in
+       * view.tooltipSettings.
        */
-      addTooltip(element, position = "bottom") {
+      addTooltip(element, settings) {
+        // Tooltips are disabled when tooltipSettings is false
+        const viewSettings = this.tooltipSettings;
+        if (!viewSettings) return;
+
         const $element = $(element);
+        const opt = this.optionFromLabel(element);
+        const html = this.tooltipHTML(opt);
+        if (!html) return;
 
-        if (!element) return $element;
-
-        // Find the description in the options object, using the data-value
-        // attribute set in the template. The data-value attribute is either the
-        // label, or the value, depending on if a value is provided.
-        let valueOrLabel = $element.data("value");
-
-        // if undefined, return the element unchanged
-        if (typeof valueOrLabel === "undefined") return $element;
-        if (typeof valueOrLabel === "boolean") {
-          valueOrLabel = valueOrLabel.toString();
-        }
-
-        const opt = this.model
-          .get("options")
-          .getOptionByLabelOrValue(valueOrLabel);
-        const description = opt?.get("description");
-
-        if (!description) return $element;
-
-        $element
-          .tooltip({
-            title: description,
-            placement: position,
-            container: "body",
-            delay: {
-              show: 900,
-              hide: 50,
-            },
-          })
-          .on("show.bs.popover", (e) => {
-            const $el = $(e.target);
-            // Allow time for the popup to be added to the DOM
-            setTimeout(() => {
-              // Add class to identify popups when they need to be removed.
-              $el.data("tooltip").$tip.addClass(CLASS_NAMES.tooltip);
-            }, 10);
-          });
-
-        return $element;
+        $element.popup({
+          content: html,
+          ...viewSettings,
+          ...settings,
+        });
       },
 
       /**

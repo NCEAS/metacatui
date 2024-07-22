@@ -95,6 +95,7 @@ require.config({
       MetacatUI.root + "/components/semanticUI/transition.min",
     semanticUIdropdown: MetacatUI.root + "/components/semanticUI/dropdown.min",
     semanticAPI: `${MetacatUI.root}/components/semanticUI/api.min`,
+    semanticPopup: `${MetacatUI.root}/components/semanticUI/popup.min`,
     // To make elements drag and drop, sortable
     sortable: MetacatUI.root + "/components/sortable.min",
     //Cesium

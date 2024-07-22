@@ -1,8 +1,12 @@
+"use strict";
+
 define([
   "backbone",
   "semanticUItransition",
+  "semanticUIpopup",
   `text!${MetacatUI.root}/components/semanticUI/transition.min.css`,
-], (Backbone, _Transition, TransitionCSS) => {
+  `text!${MetacatUI.root}/components/semanticUI/popup.min.css`,
+], (Backbone, _Transition, _Popup, TransitionCSS, PopupCSS) => {
   // Default class names for the separator element
   const BASE_CLASS = "separator";
   const CLASS_NAMES = {
@@ -34,18 +38,19 @@ define([
       tagName: "span",
 
       /**
-       * The number of milliseconds to wait before showing the tooltip when the
-       * hovers over this separator element.
-       * @type {number}
+       * Settings is passed to the Formantic UI popup module to configure a
+       * tooltip shown when the user hovers over the separator. Set to `false`
+       * to disable tooltips.
+       * @see https://fomantic-ui.com/modules/popup.html#/settings
+       * @type {object|boolean}
        */
-      tooltipShowDelay: 600,
-
-      /**
-       * The number of milliseconds to wait before hiding the tooltip when the
-       * hovers over this separator element.
-       * @type {number}
-       */
-      tooltipHideDelay: 80,
+      tooltipSettings: {
+        content: "Click to switch the operator",
+        delay: {
+          show: 400,
+          hide: 40,
+        },
+      },
 
       /**
        * Callback function to run when the user hovers. If not set, the default
@@ -61,17 +66,10 @@ define([
        */
       mouseOutCallback: null,
 
-      /**
-       * For separators that are changeable (see
-       * {@link SearchableSelect#canChangeSeparator}), optional tooltip text to
-       * show when a user hovers over.
-       * @type {string}
-       */
-      tooltipText: "Click to switch the operator",
-
       /** @inheritdoc */
       initialize(opts) {
         MetacatUI.appModel.addCSS(TransitionCSS, "semanticUItransition");
+        MetacatUI.appModel.addCSS(PopupCSS, "semanticUIpopup");
         // Set all the options on the view
         Object.keys(opts).forEach((key) => {
           this[key] = opts[key];
@@ -136,7 +134,6 @@ define([
 
       /** Remove event listeners and visual indicators */
       deactivate() {
-        this.removeTooltip();
         this.$el.css("cursor", "default");
         this.$el.off("click mouseenter mouseout");
         this.stopListening(this.model);
@@ -144,22 +141,9 @@ define([
 
       /** Create and attach a tooltip */
       addTooltip() {
-        const view = this;
-        const { tooltipText } = this;
-        if (!tooltipText) return;
-        this.$el.tooltip("destroy");
-        this.$el.tooltip({
-          title: tooltipText,
-          delay: {
-            show: view.tooltipShowDelay || 0,
-            hide: view.tooltipHideDelay || 0,
-          },
-        });
-      },
-
-      /** Remove the tooltip */
-      removeTooltip() {
-        this.$el.tooltip("destroy");
+        const settings = this.tooltipSettings;
+        if (!settings) return;
+        this.$el.popup(settings);
       },
 
       /** Visually emphasize the separator */
