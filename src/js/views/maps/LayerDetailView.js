@@ -58,6 +58,10 @@ define([
        * @property {string} label The element that holds the view's label text
        * @property {string} contentContainer The container into which the contentView's
        * rendered content will be placed
+       * @property {string} [clickFeatureAction] - The default
+       * action to take when a user clicks on a feature on the layer. The
+       * available options are "showDetails" (show the feature details in the
+       * sidebar) or "zoom" (zoom to the feature's location).
        */
       classes: {
         open: "layer-detail--open",

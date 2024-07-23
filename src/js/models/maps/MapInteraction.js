@@ -175,7 +175,15 @@ define([
         // Clone the models in hovered features and set them as clicked features
         const hoveredFeatures = this.get("hoveredFeatures").models;
         this.setClickedFeatures(hoveredFeatures);
-        const clickAction = this.get("mapModel")?.get("clickFeatureAction");
+        /** Assign clickFeatureAction from the layer level,
+         * if it's null then use clickFeatureAction from the map level
+         */
+        let clickAction = this.get("hoveredFeatures")
+          ?.models[0].get("mapAsset")
+          ?.get("clickFeatureAction");
+        if (clickAction == null) {
+          clickAction = this.get("mapModel")?.get("clickFeatureAction");
+        }
         if (clickAction === "showDetails") {
           this.selectFeatures(hoveredFeatures);
         } else if (clickAction === "zoom") {
