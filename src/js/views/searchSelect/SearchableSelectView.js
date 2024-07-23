@@ -545,11 +545,12 @@ define([
        * extended SearchableSelectViews to return a custom HTML string based on
        * the option.
        * @param {SearchSelectOption} option The option to create a tooltip for
+       * @param {JQuery} _$element The element to attach the tooltip to
        * @returns {string|null} An HTML string to use for the content of the
        * tooltip.
        * @since 0.0.0
        */
-      tooltipHTML(option) {
+      tooltipHTML(option, _$element) {
         return option?.get("description") || null;
       },
 
@@ -568,7 +569,7 @@ define([
 
         const $element = $(element);
         const opt = this.optionFromLabel(element);
-        const html = this.tooltipHTML(opt);
+        const html = this.tooltipHTML(opt, $element);
         if (!html) return;
 
         $element.popup({
