@@ -28,7 +28,7 @@ define([
    * @since 2.27.0
    * @extends Backbone.Model
    */
-  var MapInteraction = Backbone.Model.extend(
+  let MapInteraction = Backbone.Model.extend(
     /** @lends MapInteraction.prototype */ {
       /**
        * The type of model this is.
@@ -175,7 +175,8 @@ define([
         // Clone the models in hovered features and set them as clicked features
         const hoveredFeatures = this.get("hoveredFeatures").models;
         this.setClickedFeatures(hoveredFeatures);
-        /** Assign clickFeatureAction from the layer level,
+        /** 
+         * Assign clickFeatureAction from the layer level,
          * if it's null then use clickFeatureAction from the map level
          */
         let clickAction = this.get("hoveredFeatures")
