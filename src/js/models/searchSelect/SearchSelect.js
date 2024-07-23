@@ -16,7 +16,7 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
     /** @lends SearchSelect.prototype */
 
     /**
-     * Default properties for the SearchableSelectModel.
+     * @returns {object} Default attributes for a SearchSelect model.
      * @property {boolean} allowMulti - Whether to allow users to select more
      * than one value.
      * @property {boolean} allowAdditions - Allows users to add their own
@@ -44,20 +44,29 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
      * be set automatically by the model during initialization.
      * @property {object|boolean} apiSettings - Settings for retrieving data via
      * API, false if not using remote content.
+     * @see {@link https://fomantic-ui.com/modules/dropdown.html#remote-settings}
+     * @see {@link https://fomantic-ui.com/behaviors/api.html#/settings}
+     * @property {string} placeholderText Text to show in the input field
+     * before any value has been entered.
+     * @property {string} inputLabel Label for the input element.
      */
-    defaults: {
-      allowMulti: true,
-      allowAdditions: false,
-      clearable: true,
-      submenuStyle: "list",
-      hideEmptyCategoriesOnSearch: true,
-      options: new SearchSelectOptions(),
-      selected: [],
-      separatorOptions: ["AND", "OR"],
-      separator: "",
-      searchTerm: "",
-      originalSubmenuStyle: "",
-      apiSettings: false,
+    defaults() {
+      return {
+        allowMulti: true,
+        allowAdditions: false,
+        clearable: true,
+        submenuStyle: "list",
+        hideEmptyCategoriesOnSearch: true,
+        options: new SearchSelectOptions(),
+        selected: [],
+        separatorOptions: ["AND", "OR"],
+        separator: "",
+        searchTerm: "",
+        originalSubmenuStyle: "",
+        apiSettings: false,
+        placeholderText: "Search for or select a value",
+        inputLabel: "Select a value",
+      };
     },
 
     /** @inheritdoc */
@@ -185,24 +194,15 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
     },
 
     /**
-     * Checks whether a separator should be created for the label that was just
-     * created, but not yet attached to the DOM
-     * @returns {boolean} - Returns true if a separator should be created, false
-     * otherwise.
+     * Determines if a separator is needed for the newly created, yet to be attached label.
+     * @param {string} value - The value of the label.
+     * @returns {boolean} - Returns true if a separator should be created, otherwise false.
      */
-    separatorRequired() {
+    separatorRequired(value) {
       const selected = this.get("selected");
-      if (
-        // Separators not required if only one selection is allowed
-        !this.get("allowMulti") ||
-        // Need the list of selected values to determine the value's position
-        !selected ||
-        // Separator is only required between two or more values
-        selected.length < 2
-      ) {
-        return false;
-      }
-      return true;
+      return (
+        this.get("allowMulti") && selected?.length > 1 && selected[0] !== value
+      );
     },
 
     /**

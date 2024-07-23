@@ -12,6 +12,7 @@ define([
   `text!${MetacatUI.root}/components/semanticUI/transition.min.css`,
   `text!${MetacatUI.root}/components/semanticUI/dropdown.min.css`,
   `text!${MetacatUI.root}/components/semanticUI/popup.min.css`,
+  `text!${MetacatUI.root}/components/semanticUI/card.min.css`,
   "text!templates/selectUI/searchableSelect.html",
 ], (
   $,
@@ -25,6 +26,7 @@ define([
   TransitionCSS,
   DropdownCSS,
   PopupCSS,
+  CardCSS,
   Template,
 ) => {
   // The base class for the searchable select view
@@ -44,8 +46,8 @@ define([
     dropdown: $().dropdown.settings.className,
   };
 
-  // This is missing from older version of the dropdown module
-  // TODO: On updating to new version, this should be available
+  // This is missing from older version of the dropdown module TODO: On updating
+  // to new version, this should be available
   CLASS_NAMES.dropdown.text = "text";
 
   // Selectors for the dropdown module
@@ -100,28 +102,19 @@ define([
       className: BASE_CLASS,
 
       /**
-       * Text to show in the input field before any value has been entered
-       * @type {string}
+       * The constructor function for the model that this view uses. Must be a
+       * SearchSelect or an extension of it.
+       * @type {Backbone.Model}
+       * @since 0.0.0
        */
-      placeholderText: "Search for or select a value",
+      ModelType: SearchSelect,
 
       /**
-       * Label for the input element
-       * @type {string}
+       * The max height and width of images used for each option in pixels, respectively
+       * @type {number[]}
+       * @since 0.0.0
        */
-      inputLabel: "Select a value",
-
-      /**
-       * The maximum width of images used for each option, in pixels
-       * @type {number}
-       */
-      imageWidth: 30,
-
-      /**
-       * The maximum height of images used for each option, in pixels
-       * @type {number}
-       */
-      imageHeight: 30,
+      imageSize: [30, 30],
 
       /**
        * Options and selected values for the searchable select interface show a
@@ -133,10 +126,10 @@ define([
        * @since 0.0.0
        */
       tooltipSettings: {
-        position: "top center",
+        position: "top left",
         delay: {
-          show: 500,
-          hide: 40,
+          show: 450,
+          hide: 10,
         },
         exclusive: true,
       },
@@ -156,10 +149,11 @@ define([
       initialize(opts) {
         const options = opts || {};
 
-        // Add CSS required for this view
+        // TODO: Make a bundle of required CSS files for semantic UI
         MetacatUI.appModel.addCSS(TransitionCSS, "semanticUItransition");
         MetacatUI.appModel.addCSS(DropdownCSS, "semanticUIdropdown");
         MetacatUI.appModel.addCSS(PopupCSS, "semanticUIpopup");
+        MetacatUI.appModel.addCSS(CardCSS, "semanticUIcard");
 
         // Set options on the view and create the model
         const { modelAttrs, viewAttrs } = this.splitModelViewOptions(options);
@@ -174,7 +168,7 @@ define([
        * @since 0.0.0
        */
       splitModelViewOptions(options) {
-        const modelAttrNames = Object.keys(SearchSelect.prototype.defaults);
+        const modelAttrNames = Object.keys(this.ModelType.prototype.defaults());
         const modelAttrs = _.pick(options, modelAttrNames);
         const viewAttrs = _.omit(options, modelAttrNames);
         return { modelAttrs, viewAttrs };
@@ -198,15 +192,15 @@ define([
         if (modelAttrs.selected) {
           modelAttrs.selected = _.clone(options.selected);
         }
-        this.model = new SearchSelect(modelAttrs);
+        this.model = new this.ModelType(modelAttrs);
       },
 
       /** @inheritdoc */
       render() {
         const view = this;
 
-        // TODO:
-        if (view.apiSettings && !view.semanticAPILoaded) {
+        // If we're using remote content, load the semantic API module
+        if (view.model.get("apiSettings") && !view.semanticAPILoaded) {
           // eslint-disable-next-line import/no-dynamic-require
           require(["semanticAPI"], (_SemanticAPI) => {
             view.semanticAPILoaded = true;
@@ -228,16 +222,9 @@ define([
         this.listenToModel();
         this.listenToSelectUI();
 
-        // Add tool tips for the description
-        const items = this.$el.find(`.${CLASS_NAMES.dropdown.item}`);
-        items.each((_i, item) => view.addTooltip(item));
-
-        const invalidSelections = view.model.hasInvalidSelections();
-        if (invalidSelections) {
-          view.showInvalidSelectionError(invalidSelections);
-        }
-
-        this.updateSubmenuStyle();
+        this.updateSubmenuStyle(true);
+        this.addTooltipsToItems();
+        this.checkForInvalidSelections();
 
         this.enable();
         this.hideLoading();
@@ -255,7 +242,7 @@ define([
             // So that a user may enter search text using a comma
             delimiter: false,
           },
-          apiSettings: this.apiSettings,
+          apiSettings: this.model.get("apiSettings"),
           fullTextSearch: true,
           duration: 90,
           forceSelection: false,
@@ -288,6 +275,15 @@ define([
         this.$selectUI.dropdown("save defaults");
       },
 
+      /**
+       * Callback when a label is created in the dropdown interface. This
+       * function adds a separator between labels if required.
+       * @param {string} value The value of the label that was created
+       * @param {string} _text The text of the label that was created
+       * @param {JQuery} $label The label element that was created
+       * @returns {JQuery} The updated label element
+       * @since 0.0.0
+       */
       onLabelCreate(value, _text, $label) {
         const view = this;
         // Callback when a label is created *for multi-select inputs only*
@@ -301,7 +297,7 @@ define([
 
         let $updatedLabel = $label;
 
-        if (view.model.separatorRequired()) {
+        if (view.model.separatorRequired(value)) {
           // Create the separator element.
           const separator = view.createSeparator();
           if (separator) {
@@ -382,7 +378,7 @@ define([
        */
       listenToModel() {
         const view = this;
-        this.listenTo(this.model, "change:options", this.updateMenu);
+        this.listenTo(this.model, "change:options", this.render);
         this.listenTo(
           this.model,
           "change:submenuStyle",
@@ -447,15 +443,28 @@ define([
       },
 
       /**
-       * Re-render the menu of options. Useful after changing the options that
-       * are set on the view.
+       * Show an error message if the user has selected an invalid value
        * @since 0.0.0
        */
-      updateMenu() {
-        const menuClass = CLASS_NAMES.dropdown.menu;
-        const html = $(this.renderTemplate().trim());
-        const menu = html.find(`.${menuClass}`)[0].innerHTML;
-        this.$el.find(`.${menuClass}`).html(menu);
+      checkForInvalidSelections() {
+        const view = this;
+        const invalidSelections = view.model.hasInvalidSelections();
+        if (invalidSelections) {
+          view.showInvalidSelectionError(invalidSelections);
+        } else {
+          // clear any error messages
+          view.removeMessages();
+        }
+      },
+
+      /**
+       * Add tooltips to the items in the dropdown menu
+       * @since 0.0.0
+       */
+      addTooltipsToItems() {
+        const view = this;
+        const items = this.$el.find(`.${CLASS_NAMES.dropdown.item}`);
+        items.each((_i, item) => view.addTooltip(item));
       },
 
       /**
@@ -468,6 +477,10 @@ define([
           allowMulti: this.model.get("allowMulti"),
           options: this.model.optionsAsJSON(true),
           classes: CLASS_NAMES,
+          placeholderText: this.model.get("placeholderText"),
+          inputLabel: this.model.get("inputLabel"),
+          imageHeight: this.imageSize?.[0] || 30,
+          imageWidth: this.imageSize?.[1] || 30,
         };
         const templateOptions = _.extend({}, this, templateOptionsFromModel);
         return this.template(templateOptions);
@@ -475,13 +488,15 @@ define([
 
       /**
        * Convert the submenu style to the style set in the model
+       * @param {boolean} [force] Set to true to force the view to update
        * @since 0.0.0
        */
-      updateSubmenuStyle() {
-        const subMenuStyle = this.model.get("submenuStyle");
-        if (subMenuStyle === "popout") {
+      updateSubmenuStyle(force = false) {
+        if (force === true) this.currentSubmenuMode = null;
+        const submenuStyle = this.model.get("submenuStyle");
+        if (submenuStyle === "popout") {
           this.convertToPopout();
-        } else if (subMenuStyle === "accordion") {
+        } else if (submenuStyle === "accordion") {
           this.convertToAccordion();
         } else {
           this.convertToList();
@@ -557,7 +572,7 @@ define([
         if (!html) return;
 
         $element.popup({
-          content: html,
+          html,
           ...viewSettings,
           ...settings,
         });
