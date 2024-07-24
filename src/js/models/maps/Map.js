@@ -273,7 +273,6 @@ define([
        * used instead (see {@link MapModel#defaults}).
        */
       initialize(config) {
-
         try {
           if (config && config instanceof Object) {
             if (isNonEmptyArray(config.layerCategories)) {
