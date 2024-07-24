@@ -119,7 +119,7 @@ define([
           resolve(MetacatUI.queryFields);
           return;
         }
-        if(!MetacatUI.queryFields) MetacatUI.queryFields = new QueryFields();
+        if (!MetacatUI.queryFields) MetacatUI.queryFields = new QueryFields();
         MetacatUI.queryFields.fetch({
           success: () => resolve(MetacatUI.queryFields),
           error: () => resolve([]),

@@ -108,11 +108,19 @@ define(["backbone", "models/searchSelect/SearchSelectOption"], (
      * or label.
      */
     getOptionByLabelOrValue(value) {
-      const valSearch = typeof value === "boolean" ? value.toString() : value;
-      return this.find(
+      let optModel = this.find(
         (option) =>
-          option.get("value") === value || option.get("label") === valSearch,
+          option.get("value") === value || option.get("label") === value,
       );
+      if (!optModel) {
+        // try converting the value to a string
+        optModel = this.find(
+          (option) =>
+            option.get("value") === String(value) ||
+            option.get("label") === String(value),
+        );
+      }
+      return optModel;
     },
 
     /**

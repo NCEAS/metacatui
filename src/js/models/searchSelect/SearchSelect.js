@@ -178,7 +178,8 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
      */
     setSelected(values, options = {}) {
       const newValues = !Array.isArray(values) ? [values] : values;
-      this.set({ selected: newValues }, options);
+      const selected = [...newValues];
+      this.set({ selected }, options);
     },
 
     /**
@@ -199,6 +200,8 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
      * @returns {boolean} - Returns true if a separator should be created, otherwise false.
      */
     separatorRequired(value) {
+      // must have at least a current separator
+      if (!this.get("separator")) return false;
       const selected = this.get("selected");
       return (
         this.get("allowMulti") && selected?.length > 1 && selected[0] !== value

@@ -36,7 +36,6 @@ define([
   // module
   const CLASS_NAMES = {
     inputLabel: `${BASE_CLASS}-label`,
-    placeholder: "default text", // Not sure where these come from
     popout: "popout-mode",
     accordion: "accordion-mode",
     chevronDown: "dropdown icon icon-on-right icon-chevron-down",
@@ -46,10 +45,8 @@ define([
     dropdown: $().dropdown.settings.className,
   };
 
-  // This is missing from older version of the dropdown module TODO: On updating
-  // to new version, this should be available
-  CLASS_NAMES.dropdown.text = "text";
-
+  // The placeholder element needs both to work properly
+  CLASS_NAMES.placeholder = `${CLASS_NAMES.dropdown.placeholder} ${CLASS_NAMES.dropdown.text}`;
   // Selectors for the dropdown module
   const DROPDOWN_SELECTORS = $().dropdown.settings.selector;
 
@@ -74,6 +71,9 @@ define([
       selectUIClass: "",
     },
   };
+
+  // The delimiter used to separate values in the dropdown
+  const DELIMITER = ";";
 
   /**
    * @class SearchableSelectView
@@ -158,7 +158,7 @@ define([
         // Set options on the view and create the model
         const { modelAttrs, viewAttrs } = this.splitModelViewOptions(options);
         if (!options.model) this.createModel(modelAttrs);
-        _.extend(this, viewAttrs);
+        Object.assign(this, viewAttrs);
       },
 
       /**
@@ -190,7 +190,7 @@ define([
 
         // Selected values can be part of other models
         if (modelAttrs.selected) {
-          modelAttrs.selected = _.clone(options.selected);
+          modelAttrs.selected = [...modelAttrs.selected];
         }
         this.model = new this.ModelType(modelAttrs);
       },
@@ -235,13 +235,16 @@ define([
       /** Initialize the dropdown interface */
       renderSelectUI() {
         const view = this;
+
+        // Destroy any previous dropdowns
+        if (typeof this.$selectUI.dropdown === "function") {
+          this.$selectUI.dropdown("destroy");
+        }
+
         // Initialize the dropdown interface For explanations of settings, see:
         // https://semantic-ui.com/modules/dropdown.html#/settings
         this.$selectUI = this.$selectUI.dropdown({
-          keys: {
-            // So that a user may enter search text using a comma
-            delimiter: false,
-          },
+          delimiter: DELIMITER,
           apiSettings: this.model.get("apiSettings"),
           fullTextSearch: true,
           duration: 90,
@@ -251,125 +254,85 @@ define([
           allowAdditions: view.model.get("allowAdditions"),
           hideAdditions: false,
           allowReselection: true,
-          onRemove(removedValue) {
-            view.model.removeSelected(removedValue);
-          },
-          onLabelCreate(value, _text) {
-            const $label = this;
-            return view.onLabelCreate.call(view, value, _text, $label);
-          },
-          onLabelRemove(value) {
-            const $label = this;
-            view.onLabelRemove.call(view, value, $label);
-          },
-          onChange(values, _text, _$choice) {
-            view.onChange.call(view, values, _text, _$choice);
+          onChange() {
+            if (view.enabled) {
+              // Update the model with the selected values
+              const selected = view.$selectUI.dropdown("get values");
+              view.model.setSelected(selected);
+            }
+            // ensure the DOM is updated before modifying the elements
+            requestAnimationFrame(() => {
+              view.addTooltipsToSelectionEls();
+              view.addSeparators();
+            });
           },
         });
-
         view.$selectUI.data("view", view);
 
         // Set the selected values in the dropdown
         const selected = this.model.get("selected");
-        this.$selectUI.dropdown("set exactly", selected);
-        this.$selectUI.dropdown("save defaults");
+        // Add one at a time so that labels appear in the correct order
+        selected.forEach((s, i) => {
+          // trigger the change event on the last selection
+          const silent = i === selected.length - 1;
+          this.$selectUI.dropdown("set selected", s, silent);
+        });
+      },
+
+      /** @returns {HTMLElement[]} The selected label elements in a multi-select dropdown */
+      getLabels() {
+        return this.$selectUI.find(DROPDOWN_SELECTORS.label).toArray();
+      },
+
+      /** @returns {HTMLElement[]} The selected text element in a single-select dropdown */
+      getTexts() {
+        // default text is the placeholder
+        return this.$selectUI
+          .find(
+            `${DROPDOWN_SELECTORS.text}:not(.${CLASS_NAMES.dropdown.placeholder})`,
+          )
+          .toArray();
+      },
+
+      /** Add tooltips to the selected labels or text elements */
+      addTooltipsToSelectionEls() {
+        const els = this.getLabels().concat(this.getTexts());
+        els.forEach((el) => this.addTooltip(el));
+      },
+
+      /** Remove all messages from the view */
+      removeAllSeparators() {
+        this.separators?.forEach((sep) => sep.remove());
+      },
+
+      /** Add separators between labels in the dropdown if required */
+      addSeparators() {
+        this.removeAllSeparators();
+        const labels = this.getLabels();
+
+        labels.forEach((label) => {
+          const value = $(label).data("value");
+          if (this.model.separatorRequired(value)) {
+            this.addSeparator(label);
+          }
+        });
       },
 
       /**
-       * Callback when a label is created in the dropdown interface. This
-       * function adds a separator between labels if required.
-       * @param {string} value The value of the label that was created
-       * @param {string} _text The text of the label that was created
-       * @param {JQuery} $label The label element that was created
-       * @returns {JQuery} The updated label element
-       * @since 0.0.0
+       * Add a separator before the given label element
+       * @param {HTMLElement} el The label element to add a separator before
        */
-      onLabelCreate(value, _text, $label) {
-        const view = this;
-        // Callback when a label is created *for multi-select inputs only*
-
-        // Add the value to the selected array (but don't add twice). Do this in
-        // the onLabelCreate callback instead of in the onAdd callback because
-        // we would like to update the selected array before we create the
-        // separator element (below).
-        view.model.addSelected(value);
-        // Add a separator between labels if required.
-
-        let $updatedLabel = $label;
-
-        if (view.model.separatorRequired(value)) {
-          // Create the separator element.
-          const separator = view.createSeparator();
-          if (separator) {
-            // Attach the separator to the label so that we can easily remove it
-            // when the label is removed.
-            $label.data("separator", separator);
-            // Add it before the label element.
-            $updatedLabel = separator.$el.add($label);
-          }
+      addSeparator(el) {
+        if (!this.separators) this.separators = [];
+        const separator = this.createSeparator();
+        if (separator) {
+          // Attach the separator to the label so that we can easily remove it
+          // when the label is removed.
+          $(el).data("separator", separator);
+          // Add it before the label element.
+          separator.$el.insertBefore($(el));
+          this.separators.push(separator);
         }
-        return $updatedLabel;
-      },
-
-      /**
-       * Call back from the select UI when a label is removed from multi-select
-       * inputs. This function removes separators that are no longer needed.
-       * @param {string} _value The value of the label that was removed
-       * @param {JQuery} $label The label element that was removed
-       * @since 0.0.0
-       */
-      onLabelRemove(_value, $label) {
-        const view = this;
-        const sep = $label.data("separator");
-        sep?.remove();
-        // Remove separator from second label if the first label is the one
-        // being removed
-        const allLabels = view.$selectUI.find(DROPDOWN_SELECTORS.siblingLabel);
-        if (allLabels.index($label) === 0) {
-          allLabels.eq(1)?.data("separator")?.remove();
-        }
-      },
-
-      /**
-       * Callback when the user changes the selection in the dropdown. We update
-       * the model with the new selection when the dropdown is a single-select.
-       * Multi-select dropdowns are updated in the onLabelCreate and
-       * onLabelRemove
-       * @param {string} values The selected values separated by commas
-       * @param {string} _text The text of the selected values
-       * @param {JQuery} _$choice The selected choice element
-       * @since 0.0.0
-       */
-      onChange(values, _text, _$choice) {
-        const view = this;
-
-        // Update values for single-select inputs (multi-select are updated
-        // using the onLabelCreate and onRemove callbacks)
-        if (!view.model.get("allowMulti")) {
-          const silent = this.$selectUI.hasClass(CLASS_NAMES.dropdown.disabled);
-          view.model.setSelected(values, { silent });
-        }
-
-        // Refresh the tooltips on the labels/text
-
-        // Add a tooltip for single select elements (.text) or multi-select
-        // elements (.label). Delay so that to give time for DOM elements to be
-        // added or removed.
-        setTimeout(() => {
-          const selector = `.${CLASS_NAMES.dropdown.text}:not(.default),${DROPDOWN_SELECTORS.siblingLabel}`;
-          const textEl = view.$selectUI.find(selector);
-
-          // Single select text element will not have the value attribute, add
-          // it so that we can find the matching description for the tooltip
-          if (!textEl.data("value") && !view.model.get("allowMulti")) {
-            textEl.data("value", values);
-          }
-          if (textEl) {
-            textEl.each((_i, el) => {
-              view.addTooltip.call(view, el);
-            });
-          }
-        }, 50);
       },
 
       /**
@@ -452,7 +415,6 @@ define([
         if (invalidSelections) {
           view.showInvalidSelectionError(invalidSelections);
         } else {
-          // clear any error messages
           view.removeMessages();
         }
       },
@@ -525,17 +487,20 @@ define([
       },
 
       /**
-       * Get the option model given a dropdown text or label element
-       * @param {HTMLElement} label The label element
+       * Get the option model given a dropdown text or label element. Label
+       * elements are used for multi-select dropdowns, the value is a data
+       * attribute. Text elements are for single-select dropdowns, so the value
+       * is the current selection.
+       * @param {HTMLElement} el The text or label element
        * @returns {SearchSelectOption|null} The option model or null if not
        * found
        * @since 0.0.0
        */
-      optionFromLabel(label) {
-        const $label = $(label);
-        if (!$label) return null;
-        const value = $label.data("value");
-        if (!value) return null;
+      optionFromSelectionEl(el) {
+        if (!el) return null;
+        const value =
+          $(el).data("value") || this.$selectUI.dropdown("get value");
+        if (!value && value !== 0) return null;
         return this.model.get("options").getOptionByLabelOrValue(value);
       },
 
@@ -568,7 +533,7 @@ define([
         if (!viewSettings) return;
 
         const $element = $(element);
-        const opt = this.optionFromLabel(element);
+        const opt = this.optionFromSelectionEl(element);
         const html = this.tooltipHTML(opt, $element);
         if (!html) return;
 
@@ -594,7 +559,6 @@ define([
         this.$selectUI.find(`.${CLASS_NAMES.popout} > *`).unwrap();
         this.$selectUI.find(`.${CLASS_NAMES.accordion} > *`).unwrap();
 
-        // TODO
         this.$selectUI.find(`.${CLASS_NAMES.accordionIcon}`).remove();
         this.$selectUI.find(`.${CLASS_NAMES.popoutIcon}`).remove();
 
@@ -735,51 +699,6 @@ define([
        */
       showAllCategories() {
         this.getItemHeaders().show();
-      },
-
-      /**
-       * Add a value to the selected array in the model to reflect the user's
-       * selection in the interface
-       * @param {string} newValue The value to add to the selected array
-       * @param {boolean} silent Set to true to inactivate the select interface
-       * and prevent the model from triggering a change event
-       * @since 0.0.0
-       */
-      addSelected(newValue, silent = false) {
-        const view = this;
-        if (silent === true) {
-          view.inactivate();
-        }
-        this.model.addSelected(newValue, { silent });
-        const selected = this.model.get("selected");
-        this.$selectUI.dropdown("set selected", selected);
-        if (silent === true) {
-          view.enable();
-        }
-      },
-
-      /**
-       * Set selected values in the interface
-       * @param  {string[]} newValues An array of strings to select
-       * @param  {boolean} silent Set to true to inactivate the select interface
-       */
-      changeSelection(newValues, silent = false) {
-        if (
-          !this.$selectUI ||
-          typeof newValues === "undefined" ||
-          !Array.isArray(newValues)
-        ) {
-          return;
-        }
-        const view = this;
-        if (silent === true) {
-          view.inactivate();
-        }
-        this.model.setSelected(newValues, { silent });
-        this.$selectUI.dropdown("set exactly", newValues);
-        if (silent === true) {
-          view.enable();
-        }
       },
 
       /** Visually indicate that the select interface is enabled */
