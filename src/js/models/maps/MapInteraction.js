@@ -28,7 +28,7 @@ define([
    * @since 2.27.0
    * @extends Backbone.Model
    */
-  let MapInteraction = Backbone.Model.extend(
+  const MapInteraction = Backbone.Model.extend(
     /** @lends MapInteraction.prototype */ {
       /**
        * The type of model this is.
