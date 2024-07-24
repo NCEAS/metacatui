@@ -28,7 +28,7 @@ define([
    * @since 2.27.0
    * @extends Backbone.Model
    */
-  let MapInteraction = Backbone.Model.extend(
+  var MapInteraction = Backbone.Model.extend(
     /** @lends MapInteraction.prototype */ {
       /**
        * The type of model this is.
@@ -163,7 +163,7 @@ define([
 
       /**
        * Handles a mouse click on the map. If the user has clicked on a feature,
-       * the feature is set as the 'clickedFeatures' attribute. If the map or layer is
+       * the feature is set as the 'clickedFeatures' attribute. If the map is
        * configured to show details when a feature is clicked, the feature is
        * also set as the 'selectedFeatures' attribute.
        * @param {MapInteraction} m - The MapInteraction model.
@@ -175,12 +175,14 @@ define([
         // Clone the models in hovered features and set them as clicked features
         const hoveredFeatures = this.get("hoveredFeatures").models;
         this.setClickedFeatures(hoveredFeatures);
-        let clickAction = this.get("hoveredFeatures")
-          ?.models[0].get("mapAsset")
-          ?.get("clickFeatureAction");
+
+        let clickAction = this.get("hoveredFeatures")?.models[0].get("mapAsset")?.get("clickFeatureAction")
         if (clickAction == null) {
-          clickAction = this.get("mapModel")?.get("clickFeatureAction");
+           clickAction = this.get("mapModel")?.get("clickFeatureAction");
         }
+        /** Assign clickFeatureAction from the layer level, 
+         * if it's null then use clickFeatureAction from the map level 
+         */ 
         if (clickAction === "showDetails") {
           this.selectFeatures(hoveredFeatures);
         } else if (clickAction === "zoom") {
