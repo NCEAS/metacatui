@@ -99,8 +99,7 @@ define(["underscore", "backbone", "x2js", "models/queryFields/QueryField"], (
        * of fields that are set in {@link QueryField#filterTypesMap})
        */
       getRequiredFilterType(fields) {
-        const defaultFilterType =
-          MetacatUI.queryFields.models[0].defaults().filterType;
+        const defaultFilterType = this.model.prototype.defaults().filterType;
 
         const types = [];
         // When fields is empty or are different types

@@ -117,12 +117,13 @@ define([
       return new Promise((resolve) => {
         if (MetacatUI.queryFields?.length) {
           resolve(MetacatUI.queryFields);
+          return;
         }
-        MetacatUI.queryFields = new QueryFields();
-        this.listenToOnce(MetacatUI.queryFields, "sync", () => {
-          resolve(MetacatUI.queryFields);
+        if(!MetacatUI.queryFields) MetacatUI.queryFields = new QueryFields();
+        MetacatUI.queryFields.fetch({
+          success: () => resolve(MetacatUI.queryFields),
+          error: () => resolve([]),
         });
-        MetacatUI.queryFields.fetch();
       });
     },
 
