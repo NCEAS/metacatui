@@ -108,7 +108,7 @@ define([
        * from the layer list.
        * @property {boolean} [showOpacitySlider = true] Set to true to show opacity slider
        * for the layer.
-       * @property {boolean} [clickFeatureAction = null] The action to take when a user clicks on a feature on the layer. The
+       * @property {"showDetails"|"zoom"} [clickFeatureAction = null] The action to take when a user clicks on a feature on the layer. The
        * available options are "showDetails" (show the feature details in the
        * sidebar) or "zoom" (zoom to the feature's location).
        */
