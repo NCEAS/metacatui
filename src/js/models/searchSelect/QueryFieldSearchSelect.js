@@ -99,17 +99,13 @@ define([
      * for this model
      */
     async getQueryFieldOptions() {
-      try {
-        const queryFields = await this.fetchQueryFields();
-        const fields = queryFields.toJSON();
-        const excludedFields = this.excludeFields(fields);
-        const addedFields = this.addFields(excludedFields);
-        const options = addedFields.map(this.fieldToOption);
-        const sortedOptions = this.sortFields(options);
-        this.updateOptions(sortedOptions);
-      } catch (error) {
-        this.set("error", error);
-      }
+      const queryFields = await this.fetchQueryFields();
+      const fields = queryFields.toJSON();
+      const excludedFields = this.excludeFields(fields);
+      const addedFields = this.addFields(excludedFields);
+      const options = addedFields.map(this.fieldToOption);
+      const sortedOptions = this.sortFields(options);
+      this.updateOptions(sortedOptions);
     },
 
     /**
@@ -118,11 +114,16 @@ define([
      * collection
      */
     async fetchQueryFields() {
-      if (MetacatUI.queryFields?.length) {
-        return MetacatUI.queryFields;
-      }
-      MetacatUI.queryFields = new QueryFields();
-      return MetacatUI.queryFields.fetch();
+      return new Promise((resolve) => {
+        if (MetacatUI.queryFields?.length) {
+          resolve(MetacatUI.queryFields);
+        }
+        MetacatUI.queryFields = new QueryFields();
+        this.listenToOnce(MetacatUI.queryFields, "sync", () => {
+          resolve(MetacatUI.queryFields);
+        });
+        MetacatUI.queryFields.fetch();
+      });
     },
 
     /**

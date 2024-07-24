@@ -12,7 +12,7 @@ define(["backbone"], (Backbone) => {
     /** @lends SearchSelectOption.prototype */
 
     /**
-     * Default properties for the SelectOptionModel.
+     * @returns {Object} The default properties for a SearchSelectOption
      * @property {string} icon - The name of a Font Awesome 3.2.1 icon to display to
      * the left of the label (e.g. "lemon", "heart")
      * @property {string} image - The complete path to an image to use instead of an
@@ -25,13 +25,15 @@ define(["backbone"], (Backbone) => {
      * @property {string} category - If the option is part of a category, the name of
      * the category to display in the dropdown
      */
-    defaults: {
-      icon: "",
-      image: "",
-      label: "",
-      description: "",
-      value: "",
-      category: "",
+    defaults() {
+      return {
+        icon: "",
+        image: "",
+        label: "",
+        description: "",
+        value: "",
+        category: "",
+      };
     },
   });
 
