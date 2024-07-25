@@ -1,7 +1,7 @@
-define([
-  "views/searchSelect/SearchSelectView",
-  "collections/ObjectFormats",
-], (SearchSelect, ObjectFormats) => {
+define(["views/searchSelect/SearchSelectView", "collections/ObjectFormats"], (
+  SearchSelect,
+  ObjectFormats,
+) => {
   /**
    * @class ObjectFormatSelect
    * @classdesc A select interface that allows the user to search for and

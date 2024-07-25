@@ -26,7 +26,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         "projects(/:portalId)(/:portalSection)(/)": "renderPortal", // portal page
         "edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)":
           "renderPortalEditor",
-        drafts: "renderDrafts"
+        drafts: "renderDrafts",
       },
 
       helpPages: {

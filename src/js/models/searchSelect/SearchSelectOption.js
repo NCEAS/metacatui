@@ -12,7 +12,7 @@ define(["backbone"], (Backbone) => {
     /** @lends SearchSelectOption.prototype */
 
     /**
-     * @returns {Object} The default properties for a SearchSelectOption
+     * @returns {object} The default properties for a SearchSelectOption
      * @property {string} icon - The name of a Font Awesome 3.2.1 icon to display to
      * the left of the label (e.g. "lemon", "heart")
      * @property {string} image - The complete path to an image to use instead of an

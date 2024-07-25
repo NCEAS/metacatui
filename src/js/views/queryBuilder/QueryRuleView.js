@@ -927,7 +927,7 @@ define([
         this.listenTo(
           this.fieldSelect.model,
           "change:selected",
-          function (_model, fields) {
+          (_model, fields) => {
             this.handleFieldChange(fields);
           },
         );
@@ -1044,7 +1044,7 @@ define([
         this.listenTo(
           this.operatorSelect.model,
           "change:selected",
-          function (_model, newOperator) {
+          (_model, newOperator) => {
             this.handleOperatorChange(newOperator);
           },
         );

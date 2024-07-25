@@ -112,9 +112,17 @@ define([
     });
 
     it("checks if a separator is required", () => {
+      state.searchSelect.set("separator", "or");
       state.searchSelect.set("selected", ["option1", "option2"]);
       state.searchSelect.separatorRequired("option1").should.be.false;
       state.searchSelect.separatorRequired("option2").should.be.true;
+    });
+
+    it("indicates no separator is required if separator is empty", () => {
+      state.searchSelect.set("separator", "");
+      state.searchSelect.set("selected", ["option1", "option2"]);
+      state.searchSelect.separatorRequired("option1").should.be.false;
+      state.searchSelect.separatorRequired("option2").should.be.false;
     });
 
     it("checks if separator can be changed", () => {
