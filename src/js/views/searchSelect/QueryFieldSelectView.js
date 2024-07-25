@@ -38,7 +38,8 @@ define([
       /** @inheritdoc */
       tooltipSettings: {
         ...SearchableSelect.prototype.tooltipSettings,
-        // remove padding because the card has its own padding
+        variation: "mini",
+        // the semantic "card" we use for inner content has sufficient padding
         onCreate() {
           this.css({ padding: 0 });
         },

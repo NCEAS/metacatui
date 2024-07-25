@@ -2,11 +2,9 @@
 
 define([
   "backbone",
-  "semanticUItransition",
-  "semanticUIpopup",
-  `text!${MetacatUI.root}/components/semanticUI/transition.min.css`,
-  `text!${MetacatUI.root}/components/semanticUI/popup.min.css`,
-], (Backbone, _Transition, _Popup, TransitionCSS, PopupCSS) => {
+  "semantic",
+  `text!${MetacatUI.root}/components/semantic/dist/semantic.min.css`,
+], (Backbone, _Semantic, SemanticCSS) => {
   // Default class names for the separator element
   const BASE_CLASS = "separator";
   const CLASS_NAMES = {
@@ -46,6 +44,7 @@ define([
        */
       tooltipSettings: {
         content: "Click to switch the operator",
+        variation: "mini inverted",
         delay: {
           show: 400,
           hide: 40,
@@ -68,8 +67,7 @@ define([
 
       /** @inheritdoc */
       initialize(opts) {
-        MetacatUI.appModel.addCSS(TransitionCSS, "semanticUItransition");
-        MetacatUI.appModel.addCSS(PopupCSS, "semanticUIpopup");
+        MetacatUI.appModel.addCSS(SemanticCSS, "semantic");
         // Set all the options on the view
         Object.keys(opts).forEach((key) => {
           this[key] = opts[key];

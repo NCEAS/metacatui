@@ -6,13 +6,8 @@ define([
   "backbone",
   "views/searchSelect/SeparatorView",
   "models/searchSelect/SearchSelect",
-  "semanticUItransition",
-  "semanticUIdropdown",
-  "semanticPopup",
-  `text!${MetacatUI.root}/components/semanticUI/transition.min.css`,
-  `text!${MetacatUI.root}/components/semanticUI/dropdown.min.css`,
-  `text!${MetacatUI.root}/components/semanticUI/popup.min.css`,
-  `text!${MetacatUI.root}/components/semanticUI/card.min.css`,
+  "semantic",
+  `text!${MetacatUI.root}/components/semantic/dist/semantic.min.css`,
   "text!templates/selectUI/searchableSelect.html",
 ], (
   $,
@@ -20,13 +15,8 @@ define([
   Backbone,
   SeparatorView,
   SearchSelect,
-  _Transition,
-  _Dropdown,
-  _Popup,
-  TransitionCSS,
-  DropdownCSS,
-  PopupCSS,
-  CardCSS,
+  _Semantic,
+  SemanticCSS,
   Template,
 ) => {
   // The base class for the searchable select view
@@ -127,6 +117,7 @@ define([
        */
       tooltipSettings: {
         position: "top left",
+        variation: "inverted mini",
         delay: {
           show: 450,
           hide: 10,
@@ -150,10 +141,7 @@ define([
         const options = opts || {};
 
         // TODO: Make a bundle of required CSS files for semantic UI
-        MetacatUI.appModel.addCSS(TransitionCSS, "semanticUItransition");
-        MetacatUI.appModel.addCSS(DropdownCSS, "semanticUIdropdown");
-        MetacatUI.appModel.addCSS(PopupCSS, "semanticUIpopup");
-        MetacatUI.appModel.addCSS(CardCSS, "semanticUIcard");
+        MetacatUI.appModel.addCSS(SemanticCSS, "semantic");
 
         // Set options on the view and create the model
         const { modelAttrs, viewAttrs } = this.splitModelViewOptions(options);

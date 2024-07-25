@@ -1,0 +1,225 @@
+/*******************************
+        User Overrides
+*******************************/
+
+
+@media only screen and (min-width: 768px) {
+  .ui.search.dropdown .menu {
+    max-height: 20rem;
+  }
+}
+
+ /* Warning */
+
+.ui.dropdown.warning,
+.ui.dropdown.warning > .text,
+.ui.dropdown.warning > .default.text {
+ color: #a88d07;
+}
+.ui.selection.dropdown.warning {
+ background: #fffcf6;
+ border-color: #e8e3ba;
+}
+.ui.selection.dropdown.warning:hover {
+ border-color: #e8e3ba;
+}
+.ui.dropdown.warning > .menu,
+.ui.dropdown.warning > .menu .menu {
+ border-color: #e8e3ba;
+}
+.ui.dropdown.warning > .menu > .item {
+ color: #a88d07;
+}
+.ui.multiple.selection.warning.dropdown > .label {
+ border-color: #e8e3ba;
+ background-color: white;
+}
+.ui.multiple.selection.error.dropdown > .label {
+ background-color: white;
+}
+/* Make sure the text element is at the top of the dropdown so that tooltips work */
+.ui.search.dropdown>.text {
+  z-index: 22;
+}
+/* Loading */
+.ui.loading.selection.dropdown>i.icon {
+  padding: 1.17em 1.29em!important;
+}
+
+ /* Item Hover */
+ .ui.dropdown.warning > .menu > .item:hover {
+   background-color: #fffcf2;
+ }
+
+ /* Item Active */
+ .ui.dropdown.warning > .menu .active.item {
+   background-color: #fdf1cf;
+ }
+ 
+.ui, .ui > * {
+  box-sizing: border-box;
+}
+.ui.multiple.dropdown {
+  padding: .2em 2.1em .2em .36em;
+}
+.ui.label .delete.icon {
+  cursor: pointer;
+  margin-right: 0;
+  margin-left: .5em;
+  font-size: 1rem;
+  opacity: .6;
+  transition: background .1s ease, opacity .1s ease;
+  height: 1.5rem;
+  font-weight: 100;
+}
+.ui .icon:not(.delete){
+  color: #707070;
+}
+.ui.label .delete.icon:before {
+  content: "\f00d";
+  font-family: FontAwesome;
+  font-weight: normal;
+  font-style: normal;
+  opacity: 0.3;
+}
+.ui.label .delete.icon:hover {
+  opacity: 1;
+}
+.ui.selection.dropdown {
+  min-height: 1.5rem;
+}
+.ui.selection .label {
+  color: #333;
+  background-color: #f7f7f7;
+  text-shadow: none;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  box-shadow: none !important;
+  border: 1px solid #f2f2f2;
+  font-size: 0.82rem !important;
+  line-height: 1 !important;
+}
+.ui.multiple.dropdown>.label {
+  vertical-align: inherit;
+}
+.ui.selection .label:hover {
+  color: #333;
+}
+
+.ui.multiple.search.dropdown>input.search {
+  min-height: 1.2rem;
+  font-size: 12px;
+  line-height: 14px;
+}
+
+.ui.dropdown .menu .header {
+  margin: 1rem 0 .75rem;
+  padding: 0 1.14285714rem;
+  color: rgba(0,0,0,.85);
+  font-size: .78571429em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ui.selection.dropdown .menu>.item {
+  font-size: 0.86rem;
+  padding: .55rem .9rem!important;
+  min-height: 1rem;
+}
+
+/* Popout sub-menu styles */
+
+.ui.popout-mode > .menu {
+  overflow: visible !important;
+  max-height: unset !important;
+}
+.ui.selection.dropdown .item.popout-mode > .header {
+  padding: 0;
+  margin: 0;
+}
+
+/* Accordion sub-menu styles */
+
+.accordion-mode-icon.icon-chevron-down {
+  float: right;
+  transform: rotate(-180deg);
+  transition: transform 0.3s;
+  cursor: pointer;
+  opacity: .8;
+  float: right;
+}
+.accordion-mode-icon.icon-chevron-down::before {
+  content: '\f0d7';
+}
+.collapsed .accordion-mode-icon.icon-chevron-down {
+  transform: rotate(0deg);
+}
+.accordion-mode .item {
+  font-size: 0.86rem;
+  padding: .55rem .9rem .55rem 1.14285714rem !important;
+  border-top: 1px solid #fafafa;
+  white-space: normal;
+  position: relative;
+  cursor: pointer;
+  display: block;
+  height: auto;
+  text-align: left;
+  line-height: 1em;
+  color: rgba(0,0,0,.87);
+  text-transform: none;
+  font-weight: 400;
+  box-shadow: none;
+}
+.accordion-mode .item:hover {
+  background: rgba(0,0,0,.05);
+  color: rgba(0,0,0,.95);
+  z-index: 13;
+}
+.ui.dropdown.accordion-mode .header {
+  margin: .7rem 0 .7rem;
+}
+
+/* For the account service lookup input */
+.searchable-select.account-select .dropdown .menu>.item {
+  min-height: 1.9rem;
+}
+.searchable-select.account-select .dropdown .item .description {
+  font-size: 0.7rem;
+}
+
+/* separator elements */
+.searchable-select .separator {
+  font-size: 0.72rem;
+  margin: 0 0.2rem 0 0;
+  padding: 0.2rem;
+  color: #9c9c9c;
+  font-weight: 600;
+  transition-delay: 0.2s;
+  transition-duration: 0.3s;
+  transition-property: background-color, color;
+}
+.searchable-select .separator--hover {
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #e2eef1;
+  color: #2994bb;
+  transition-delay: 0.4s;
+}
+
+@media only screen and (max-width: 767px) {
+  /* Overwrite dropdown rule for accordion-mode */
+  .ui.search.dropdown.accordion-mode .menu {
+    max-height: 20rem;
+  }
+  .ui.search.dropdown.accordion-mode .header {
+    white-space: normal;
+  }
+}
+/* Small text for really small screens */
+@media only screen and (max-width: 450px) {
+  .ui.multiple.search.dropdown>.text {
+    font-size: 0.85rem;
+    margin: .1em 0 .4em .6em;
+  }
+}
+
