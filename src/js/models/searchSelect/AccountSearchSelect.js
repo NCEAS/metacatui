@@ -117,10 +117,12 @@ define(["models/searchSelect/SearchSelect", "models/LookupModel"], (
       const formatIcon = icon
         ? `<i class="icon icon-on-left icon-${icon}"></i>`
         : "";
-      const formatId = id ? `<span class="description">${id}</span>` : "";
       return {
-        name: `${formatIcon} ${accountName} ${formatId}`,
+        name: `${formatIcon} ${accountName}`,
         value: result.value,
+        description: id,
+        descriptionVertical: true,
+        text: `${formatIcon} ${accountName}`,
       };
     },
 

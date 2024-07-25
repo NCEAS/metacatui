@@ -1035,7 +1035,7 @@ define([
 
         this.operatorSelect.render();
 
-        if(operatorError){
+        if (operatorError) {
           view.operatorSelect.showInvalidSelectionError();
         }
 

@@ -2551,7 +2551,7 @@ define([
               }
             });
             view.addTaxa(selectedItemObjs);
-            taxonSelects.forEach((select) => select.changeSelection([], true));
+            taxonSelects.forEach((select) => select.model.setSelected([], { silent: true }));
           };
           button.removeEventListener("click", onButtonClick);
           button.addEventListener("click", onButtonClick);
