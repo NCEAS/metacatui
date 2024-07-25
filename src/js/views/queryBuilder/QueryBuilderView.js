@@ -4,7 +4,7 @@ define([
   "backbone",
   "collections/Filters",
   "collections/queryFields/QueryFields",
-  "views/searchSelect/SearchableSelectView",
+  "views/searchSelect/SearchSelectView",
   "views/queryBuilder/QueryRuleView",
   "text!templates/queryBuilder/queryBuilder.html",
 ], function (
@@ -13,7 +13,7 @@ define([
   Backbone,
   Filters,
   QueryFields,
-  SearchableSelect,
+  SearchSelect,
   QueryRule,
   Template,
 ) {
@@ -329,7 +329,7 @@ define([
         var excludeContainer = this.$el.find(this.excludeInputSelector);
         var operatorContainer = this.$el.find(this.operatorInputSelector);
         // Create the exclude input
-        var excludeInput = new SearchableSelect({
+        var excludeInput = new SearchSelect({
           options: [
             {
               label: "Include",
@@ -353,7 +353,7 @@ define([
           clearable: false,
         });
         // Create the operator input
-        var operatorInput = new SearchableSelect({
+        var operatorInput = new SearchSelect({
           options: [
             {
               label: "all",
@@ -385,7 +385,7 @@ define([
           excludeInput.model,
           "change:selected",
           function (_model, newValues) {
-            // Convert the string (necessary to be used as a value in SearchableSelect)
+            // Convert the string (necessary to be used as a value in SearchSelect)
             // to a boolean. It should be "true" or "false".
             var newExclude = newValues[0] == "true";
             this.filterGroup.set("exclude", newExclude);

@@ -1,25 +1,25 @@
 define([
-  "views/searchSelect/SearchableSelectView",
+  "views/searchSelect/SearchSelectView",
   "collections/ObjectFormats",
-], (SearchableSelect, ObjectFormats) => {
+], (SearchSelect, ObjectFormats) => {
   /**
    * @class ObjectFormatSelect
    * @classdesc A select interface that allows the user to search for and
    * select a DataONE object format
    * @classcategory Views/SearchSelect
-   * @augments SearchableSelect
+   * @augments SearchSelect
    * @class
    * @since 2.15.0
    * @screenshot views/searchSelect/ObjectFormatSelectView.png
    */
-  const ObjectFormatSelect = SearchableSelect.extend(
+  const ObjectFormatSelect = SearchSelect.extend(
     /** @lends ObjectFormatSelectView.prototype */
     {
       /** @inheritdoc */
       type: "ObjectFormatSelect",
 
       /** @inheritdoc */
-      className: `${SearchableSelect.prototype.className} object-format-select`,
+      className: `${SearchSelect.prototype.className} object-format-select`,
 
       /** @inheritdoc */
       initialize(options = {}) {
@@ -31,7 +31,7 @@ define([
           ...options,
         };
 
-        SearchableSelect.prototype.initialize.call(this, opts);
+        SearchSelect.prototype.initialize.call(this, opts);
         this.getObjectFormats();
       },
 
@@ -65,7 +65,7 @@ define([
           // Query Rules automatically include a rule for formatType="METADATA"
           // so subset to only METADATA formats
           .filter((format) => format.formatType === "METADATA")
-          // Reformat for a SearchableSelect
+          // Reformat for a SearchSelect
           .map((format) => ({
             label: format.formatName,
             value: format.formatId,

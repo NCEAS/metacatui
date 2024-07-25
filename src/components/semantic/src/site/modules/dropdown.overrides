@@ -180,15 +180,15 @@
 }
 
 /* For the account service lookup input */
-.searchable-select.account-select .dropdown .menu>.item {
+.search-select.account-select .dropdown .menu>.item {
   min-height: 1.9rem;
 }
-.searchable-select.account-select .dropdown .item .description {
+.search-select.account-select .dropdown .item .description {
   font-size: 0.7rem;
 }
 
 /* separator elements */
-.searchable-select .separator {
+.search-select .separator {
   font-size: 0.72rem;
   margin: 0 0.2rem 0 0;
   padding: 0.2rem;
@@ -198,7 +198,7 @@
   transition-duration: 0.3s;
   transition-property: background-color, color;
 }
-.searchable-select .separator--hover {
+.search-select .separator--hover {
   border-radius: 4px;
   cursor: pointer;
   background-color: #e2eef1;

@@ -6,7 +6,7 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
 ) => {
   /**
    * @class SearchSelect
-   * @classdesc A model for managing dropdown options and state for a searchable
+   * @classdesc A model for managing dropdown options and state for a search
    * select component.
    * @classcategory Models/SearchSelect
    * @since 0.0.0

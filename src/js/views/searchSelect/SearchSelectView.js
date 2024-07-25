@@ -8,7 +8,7 @@ define([
   "models/searchSelect/SearchSelect",
   "semantic",
   `text!${MetacatUI.root}/components/semantic/dist/semantic.min.css`,
-  "text!templates/selectUI/searchableSelect.html",
+  "text!templates/searchSelect/searchSelect.html",
 ], (
   $,
   _,
@@ -19,8 +19,8 @@ define([
   SemanticCSS,
   Template,
 ) => {
-  // The base class for the searchable select view
-  const BASE_CLASS = "searchable-select";
+  // The base class for the search select view
+  const BASE_CLASS = "search-select";
 
   // Class names that we use in the view, including those from the dropdown
   // module
@@ -66,7 +66,7 @@ define([
   const DELIMITER = ";";
 
   /**
-   * @class SearchableSelectView
+   * @class SearchSelectView
    * @classdesc A select interface that allows the user to search from within
    * the options, and optionally select multiple items. Also allows the items to
    * be grouped, and to display an icon or image for each item.
@@ -74,16 +74,16 @@ define([
    * @augments Backbone.View
    * @class
    * @since 2.14.0
-   * @screenshot views/searchSelect/SearchableSelectView.png
+   * @screenshot views/searchSelect/SearchSelectView.png
    */
-  const SearchableSelectView = Backbone.View.extend(
-    /** @lends SearchableSelectView.prototype */
+  const SearchSelectView = Backbone.View.extend(
+    /** @lends SearchSelectView.prototype */
     {
       /**
        * The type of View this is
        * @type {string}
        */
-      type: "SearchableSelect",
+      type: "SearchSelect",
 
       /**
        * The HTML class names for this view element
@@ -107,7 +107,7 @@ define([
       imageSize: [30, 30],
 
       /**
-       * Options and selected values for the searchable select interface show a
+       * Options and selected values for the search select interface show a
        * tooltip with the description of the option when the user hovers over
        * the option. This object is passed to the Formantic UI popup module to
        * configure the tooltip. Set to false to disable tooltips.
@@ -134,7 +134,7 @@ define([
       template: _.template(Template),
 
       /**
-       * Creates a new SearchableSelectView
+       * Creates a new SearchSelectView
        * @param {object} opts A literal object with options to pass to the view
        */
       initialize(opts) {
@@ -365,7 +365,7 @@ define([
 
       /**
        * Change the options available in the dropdown menu and re-render.
-       * @param {SearchableSelectOptions} options The new options
+       * @param {SearchSelectOptions} options The new options
        * @since 2.24.0
        */
       updateOptions(options) {
@@ -495,7 +495,7 @@ define([
       /**
        * Create HTML for a tooltip for a given option. By default this method
        * returns the description of the option, but can be overridden in
-       * extended SearchableSelectViews to return a custom HTML string based on
+       * extended SearchSelectViews to return a custom HTML string based on
        * the option.
        * @param {SearchSelectOption} option The option to create a tooltip for
        * @param {JQuery} _$element The element to attach the tooltip to
@@ -653,7 +653,7 @@ define([
       },
 
       /**
-       * In the searchable select interface, hide category headers that are
+       * In the search select interface, hide category headers that are
        * empty, if any
        */
       hideEmptyCategories() {
@@ -682,7 +682,7 @@ define([
       },
 
       /**
-       * In the searchable select interface, show all category headers that we
+       * In the search select interface, show all category headers that we
        * re previously empty
        */
       showAllCategories() {
@@ -758,5 +758,5 @@ define([
     },
   );
 
-  return SearchableSelectView;
+  return SearchSelectView;
 });

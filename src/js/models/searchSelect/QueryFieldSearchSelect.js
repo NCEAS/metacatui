@@ -95,7 +95,7 @@ define([
 
     /**
      * Fetches the query fields from the query service, converts them to the
-     * format required by the SearchableSelectView, and sets them as the options
+     * format required by the SearchSelectView, and sets them as the options
      * for this model
      */
     async getQueryFieldOptions() {
@@ -181,11 +181,11 @@ define([
 
     /**
      * Converts an object that represents a QueryField model to the format
-     * specified by the SearchableSelectView.options
+     * specified by the SearchSelectView.options
      * @param  {object} field An object with properties corresponding to a
      * QueryField model
      * @returns {object} An object with properties that match the format
-     * specified by the SearchableSelectView.options
+     * specified by the SearchSelectView.options
      */
     fieldToOption(field) {
       if (!field) return {};

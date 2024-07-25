@@ -1,8 +1,8 @@
 define([
   "underscore",
-  "views/searchSelect/SearchableSelectView",
+  "views/searchSelect/SearchSelectView",
   "models/searchSelect/QueryFieldSearchSelect",
-], (_, SearchableSelect, QueryFieldSearchSelect) => {
+], (_, SearchSelect, QueryFieldSearchSelect) => {
   // The classes for the semantic/formantic UI card component
   const CARD_CLASSES = {
     card: "ui card",
@@ -18,26 +18,26 @@ define([
    * @classdesc A select interface that allows the user to search for and select
    * metadata field(s).
    * @classcategory Views/SearchSelect
-   * @augments SearchableSelect
+   * @augments SearchSelect
    * @class
    * @since 2.14.0
    * @screenshot views/searchSelect/QueryFieldSelectView.png
    */
-  const QueryFieldSelectView = SearchableSelect.extend(
+  const QueryFieldSelectView = SearchSelect.extend(
     /** @lends QueryFieldSelectView.prototype */
     {
       /** @inheritdoc */
       type: "QueryFieldSelect",
 
       /** @inheritdoc */
-      className: `${SearchableSelect.prototype.className} query-field-select`,
+      className: `${SearchSelect.prototype.className} query-field-select`,
 
       /** @inheritdoc */
       ModelType: QueryFieldSearchSelect,
 
       /** @inheritdoc */
       tooltipSettings: {
-        ...SearchableSelect.prototype.tooltipSettings,
+        ...SearchSelect.prototype.tooltipSettings,
         variation: "mini",
         // the semantic "card" we use for inner content has sufficient padding
         onCreate() {

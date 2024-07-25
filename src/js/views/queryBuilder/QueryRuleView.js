@@ -2,7 +2,7 @@ define([
   "jquery",
   "underscore",
   "backbone",
-  "views/searchSelect/SearchableSelectView",
+  "views/searchSelect/SearchSelectView",
   "views/searchSelect/QueryFieldSelectView",
   "views/searchSelect/NodeSelectView",
   "views/searchSelect/AccountSelectView",
@@ -14,7 +14,7 @@ define([
   $,
   _,
   Backbone,
-  SearchableSelect,
+  SearchSelect,
   QueryFieldSelect,
   NodeSelect,
   AccountSelect,
@@ -412,7 +412,7 @@ define([
         {
           queryFields: ["serviceCoupling"],
           uiFunction() {
-            return new SearchableSelect({
+            return new SearchSelect({
               options: [
                 {
                   label: "tight",
@@ -526,7 +526,7 @@ define([
         // The last is the default value selection UI
         {
           uiFunction() {
-            return new SearchableSelect({
+            return new SearchSelect({
               options: [],
               allowMulti: true,
               allowAdditions: true,
@@ -1022,7 +1022,7 @@ define([
           selectedOperator = [selectedOperator];
         }
 
-        this.operatorSelect = new SearchableSelect({
+        this.operatorSelect = new SearchSelect({
           options,
           allowMulti: false,
           inputLabel: "Select an operator",
@@ -1395,7 +1395,7 @@ define([
         this.valueSelect = interfaceProperties.uiFunction.call(this);
         if (interfaceProperties.label && interfaceProperties.label.length) {
           label = $(
-            `<p class='subtle searchable-select-label'>${interfaceProperties.label}</p>`,
+            `<p class='subtle search-select-label'>${interfaceProperties.label}</p>`,
           );
         }
 

@@ -3,7 +3,7 @@
 define(["backbone"], (Backbone) => {
   /**
    * @class SelectOptionModel
-   * @classdesc A model for representing an option in a searchable select dropdown.
+   * @classdesc A model for representing an option in a search select dropdown.
    * @classcategory Models/SearchSelect
    * @since 0.0.0
    * @augments Backbone.Model

@@ -2558,7 +2558,7 @@ define([
 
           // Create the search selects
           view.taxonSelects = [];
-          const componentPath = "views/searchSelect/SearchableSelectView";
+          const componentPath = "views/searchSelect/SearchSelectView";
           require([componentPath], function (SearchSelect) {
             quickAddTaxa.forEach((taxaList, i) => {
               try {
