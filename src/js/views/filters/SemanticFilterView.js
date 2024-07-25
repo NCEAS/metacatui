@@ -39,7 +39,7 @@ define([
        * Render an instance of a Semantic Filter View.
        *
        * Note that this View doesn't have a template and instead delegates to
-       * the AnnotationFilterView which renders a SearchableSelectView which
+       * the AnnotationFilterView which renders a SearchSelectView which
        * renders an NCBOTree.
        * @since 2.22.0
        */
@@ -52,7 +52,7 @@ define([
           FilterView.prototype.render.call(this, templateVars);
 
           var viewOpts = {
-            useSearchableSelect: true,
+            useSearchSelect: true,
             placeholderText: templateVars.placeholder,
             inputLabel: null, // Hides label and uses FilterView label
             ontology: this.model.get("ontology"),
@@ -92,9 +92,9 @@ define([
 
       /**
        * Helper function which defocuses the dropdown portion of the
-       * SearchableSelectView used by this View's AnnotationFilterView. When the
+       * SearchSelectView used by this View's AnnotationFilterView. When the
        * user clicks an item in the NCBOTree widget, we want the
-       * SearchableSelectView's dropdown to go away and I couldn't find any API
+       * SearchSelectView's dropdown to go away and I couldn't find any API
        * to do that so we have this code. See the render() method to see how it's
        * called.
        *

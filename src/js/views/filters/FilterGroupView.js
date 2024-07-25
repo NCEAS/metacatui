@@ -10,7 +10,7 @@ define([
   "views/filters/NumericFilterView",
   "views/filters/ToggleFilterView",
   "views/searchSelect/AnnotationFilterView",
-  "views/searchSelect/SearchableSelectView",
+  "views/searchSelect/SearchSelectView",
   "views/filters/SemanticFilterView",
 ], function (
   $,
@@ -24,7 +24,7 @@ define([
   NumericFilterView,
   ToggleFilterView,
   AnnotationFilterView,
-  SearchableSelectView,
+  SearchSelectView,
   SemanticFilterView,
 ) {
   "use strict";

@@ -2535,7 +2535,7 @@ define([
             const taxonSelects = view.taxonSelects;
             if (!taxonSelects || !taxonSelects.length) return;
             const selectedItems = taxonSelects
-              .map((select) => select.selected)
+              .map((select) => select.model.get("selected"))
               .flat();
             if (!selectedItems || !selectedItems.length) return;
             const selectedItemObjs = selectedItems.map((item) => {
@@ -2551,14 +2551,16 @@ define([
               }
             });
             view.addTaxa(selectedItemObjs);
-            taxonSelects.forEach((select) => select.changeSelection([], true));
+            taxonSelects.forEach((select) =>
+              select.model.setSelected([], { silent: true }),
+            );
           };
           button.removeEventListener("click", onButtonClick);
           button.addEventListener("click", onButtonClick);
 
           // Create the search selects
           view.taxonSelects = [];
-          const componentPath = "views/searchSelect/SearchableSelectView";
+          const componentPath = "views/searchSelect/SearchSelectView";
           require([componentPath], function (SearchSelect) {
             quickAddTaxa.forEach((taxaList, i) => {
               try {

@@ -1,0 +1,65 @@
+/*******************************
+     User Global Variables
+*******************************/
+
+/***********************************************************
+  Central element variation compilation enablers
+***********************************************************/
+
+/* Card */
+@variationCardInverted: false;
+@variationCardLoading: false;
+@variationCardHorizontal: false;
+@variationCardRaised: false;
+@variationCardCentered: false;
+@variationCardFluid: false;
+@variationCardLink: false;
+@variationCardDoubling: false;
+@variationCardStackable: false;
+@variationCardFloated: false;
+@variationCardAligned: false;
+@variationCardImage: false;
+@variationCardButton: false;
+@variationCardStar: false;
+@variationCardLike: false;
+@variationCardEqualWidth: false;
+@variationCardSizes: mini;
+@variationCardColors: false;
+
+/*******************************
+            Modules
+*******************************/
+
+/* Dropdown */
+@variationDropdownInverted: false;
+@variationDropdownColumnar: false;
+@variationDropdownSizes: false;
+
+/* Popup */
+@variationPopupLoading: false;
+@variationPopupSizes: mini;
+@variationPopupColors: false;
+
+/* Transition */
+@variationTransitionDisabled: false
+@variationTransitionLoading: false
+@variationTransitionLooping: false
+@variationTransitionInverted: false
+@variationTransitionBrowse: false
+@variationTransitionDrop: false
+@variationTransitionFade: false
+@variationTransitionFlip: false
+@variationTransitionScale: false
+@variationTransitionFly: false
+@variationTransitionSlide: false
+@variationTransitionSwing: false
+@variationTransitionZoom: false
+@variationTransitionFlash: false
+@variationTransitionShake: false
+@variationTransitionBounce: false
+@variationTransitionTada: false
+@variationTransitionPulse: false
+@variationTransitionJiggle: false
+@variationTransitionGlow: false
+@variationTransitionPulsating: false
+@variationTransitionColors: false;
