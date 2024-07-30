@@ -237,11 +237,14 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
 
+image:
+  ## NGINX image version to use. Setting a specific value is safer than using "LATEST"
+  ## See dockerhub for versions: https://hub.docker.com/_/nginx
+  tag: 1.27.0
+
 nodeSelector: {}
 tolerations: []
 affinity: {}
-
-image: {}
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
