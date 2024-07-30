@@ -31,6 +31,7 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       {{- $source := (include "metacatui.source.from" .) }}
+      {{- if ne $source "pvc" }}
       initContainers:
         - name: get-source
           {{- if eq $source "git" }}
@@ -59,8 +60,7 @@ spec:
               mv /tmp/metacatui/src/* $DEST;
               finish=$(date +%s);
               echo "git clone -b {{ $revision }} --depth 1 took $((finish - start)) sec";
-              {{- end }}
-              {{- if eq $source "package" }}
+              {{- else }}
                 {{- $version := "" }}
                 {{- $location := "" }}
                 {{- if and .Values.source .Values.source.package }}
@@ -76,10 +76,6 @@ spec:
               finish=$(date +%s);
               echo "$FILENAME download and install took $((finish - start)) sec";
               {{- end }}
-              sed -i \
-               's|"/config/config.js"|"{{ include "metacatui.clean.root" . }}/config/config.js"|g' \
-               "${DEST}"/index.html;
-      {{- if ne $source "pvc" }}
           volumeMounts:
             - name: {{ .Release.Name }}-mcui-source-files
               mountPath: /metacatui
