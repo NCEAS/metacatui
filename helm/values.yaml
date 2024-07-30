@@ -73,7 +73,7 @@ global:
 ## * * * IMPORTANT NOTE:  * * * DO NOT SET THE FOLLOWING VALUES IN THIS SECTION! * * *
 ## They will be ignored here, because they are populated from the "global" section, above:
 ## * theme:           uses '.Values.global.metacatUiThemeName'
-## * root:           uses '.Values.global.metacatUiWebRoot'
+## * root:            uses '.Values.global.metacatUiWebRoot'
 ## * baseUrl:         uses '.Values.global.metacatExternalBaseUrl'
 ## * d1CNBaseUrl:     uses base URL portion of '.Values.global.d1ClientCnUrl'
 ## * metacatContext:  uses '.Values.global.metacatAppContext'
@@ -98,11 +98,14 @@ customTheme:
   enabled: false
 
   ## @param customTheme.themeClaimName substitute your own PVC name
+  ## Ignored unless customTheme is enabled
   ##
   claimName: "Your-Pre-Configured-pvc-name"
 
   ## @param customTheme.subPath path to theme directory, within mounted filesystem
-  ## For example, if you cloned https://github.com/NCEAS/metacatui-themes to the root of your
+  ## Ignored unless customTheme is enabled
+  ##
+  ## Example: if you cloned https://github.com/NCEAS/metacatui-themes to the root of your
   ## shared drive, it would look like this:
   ##
   ## /metacatui-themes
@@ -123,7 +126,7 @@ customTheme:
   ##       ...etc          ├── ...etc
   ##
   ## ...so to use the drp theme, you would set the subPath to:
-  ##     subPath: "metacatui-themes/src/drp/js/themes/drp"
+  ##     subPath: "metacatui-themes/src/drp/js/themes/drp" # (do NOT include initial "/" in subPath)
   ##
   subPath: ""
 
@@ -222,7 +225,10 @@ source:
 
   ## @param source.pvc Provide custom source files on a pre-configured PVC (typ. for development)
   ##
-  ## Note these settings ignored unless 'source.from:' is set to 'pvc'
+  ## Note:
+  ## 1. these settings ignored unless 'source.from:' is set to 'pvc'
+  ## 2. the value of 'var appConfigPath' in index.html must be set manually. (This value is
+  ##    autoconfigured for other 'source' scenarios).
   ##
   pvc:
     ## @param volumes.name substitute your own PVC name
