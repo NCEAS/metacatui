@@ -76,6 +76,9 @@ spec:
               finish=$(date +%s);
               echo "$FILENAME download and install took $((finish - start)) sec";
               {{- end }}
+              sed -i \
+               's|"/config/config.js"|"{{ include "metacatui.clean.root" . }}/config/config.js"|g' \
+               "${DEST}"/index.html;
           volumeMounts:
             - name: {{ .Release.Name }}-mcui-source-files
               mountPath: /metacatui
