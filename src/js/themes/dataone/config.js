@@ -142,6 +142,11 @@ MetacatUI.AppConfig = Object.assign(
         datasource: "urn:node:mnUCSB1",
         label: "9434702",
       },
+      {
+        seriesId: "urn:uuid:dfbfc37d-e907-45e8-913f-acb88f1b2e64",
+        datasource: "urn:node:ARCTIC",
+        label: "QGreenland",
+      },
     ],
 
     googleAnalyticsKey: "G-CR31GM016V",
