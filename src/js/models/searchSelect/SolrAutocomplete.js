@@ -23,17 +23,16 @@ define(["models/searchSelect/SearchSelect", "collections/SolrResults"], (
         inputLabel: "Search for a term",
         allowMulti: false,
         allowAdditions: true,
-        queryField: "text",
+        queryField: "",
       };
     },
 
     /** @inheritdoc */
     initialize(attributes, options) {
-      //   if (!MetacatUI.appLookupModel)
-      //     MetacatUI.appLookupModel = new LookupModel();
-      //   this.setOptionsForPreselected();
-      //   SearchSelect.prototype.initialize.call(this);
-      const queryField = attributes.queryField || this.get("queryField");
+      const queryField = attributes?.queryField || this.get("queryField");
+      if (!queryField) {
+        throw new Error("queryField is required.");
+      }
       this.set(
         "searchResults",
         new SolrResults([], {
@@ -54,12 +53,14 @@ define(["models/searchSelect/SearchSelect", "collections/SolrResults"], (
     },
 
     formatOptions() {
+
       const results = this.get("searchResults");
       const queryField = this.get("queryField");
       const facetArray = results.facetCounts[queryField];
-
       const formattedFacets = [];
+
       for (let i = 0; i < facetArray.length; i += 2) {
+        // Array format is [term, count, term, count, ...]
         const term = facetArray[i];
         const count = facetArray[i + 1];
 
@@ -67,8 +68,11 @@ define(["models/searchSelect/SearchSelect", "collections/SolrResults"], (
           label: term,
           value: term,
           description: `${count} matching results`,
+          numResults: count,
         });
       }
+
+      formattedFacets.sort((a, b) => b.numResults - a.numResults);
 
       this.updateOptions(formattedFacets);
     },
