@@ -129,7 +129,12 @@ define([
           this.renderToolbar();
           this.renderLayerDetails();
         }
-        this.renderFeatureInfo();
+        if (
+          this.model.get("showFeatureInfo") &&
+          this.model.get("clickFeatureAction") === "showDetails"
+        ) {
+          this.renderFeatureInfo();
+        }
         return this;
       },
 
