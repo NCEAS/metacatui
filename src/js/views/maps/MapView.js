@@ -129,9 +129,7 @@ define([
           this.renderToolbar();
           this.renderLayerDetails();
         }
-        if (
-          this.model.get("showFeatureInfo")
-        ) {
+        if (this.model.get("showFeatureInfo")) {
           this.renderFeatureInfo();
         }
         return this;
