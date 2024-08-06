@@ -130,8 +130,7 @@ define([
           this.renderLayerDetails();
         }
         if (
-          this.model.get("showFeatureInfo") &&
-          this.model.get("clickFeatureAction") === "showDetails"
+          this.model.get("showFeatureInfo")
         ) {
           this.renderFeatureInfo();
         }
