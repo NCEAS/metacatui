@@ -3,7 +3,6 @@ define([
   "views/searchSelect/SearchSelectView",
   "models/searchSelect/SolrAutocomplete",
 ], (_, SearchSelect, SolrAutocomplete) => {
-
   /**
    * @class
    * @classdesc
