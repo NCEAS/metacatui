@@ -121,7 +121,7 @@ define(["backbone"], (Backbone) => {
      */
     parse(response, options) {
       const collection = this.get("collection");
-      if (options.repalceCollection === true) {
+      if (options.replaceCollection === true) {
         collection.reset(response.collection);
       } else {
         collection.add(response.collection);

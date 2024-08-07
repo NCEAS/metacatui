@@ -7,7 +7,6 @@ define([
   "views/searchSelect/SeparatorView",
   "models/searchSelect/SearchSelect",
   "semantic",
-  `text!${MetacatUI.root}/components/semantic/dist/semantic.min.css`,
   "text!templates/searchSelect/searchSelect.html",
 ], (
   $,
@@ -16,7 +15,6 @@ define([
   SeparatorView,
   SearchSelect,
   _Semantic,
-  SemanticCSS,
   Template,
 ) => {
   // The base class for the search select view
@@ -139,10 +137,6 @@ define([
        */
       initialize(opts) {
         const options = opts || {};
-
-        // TODO: Make a bundle of required CSS files for semantic UI
-        MetacatUI.appModel.addCSS(SemanticCSS, "semantic");
-
         // Set options on the view and create the model
         const { modelAttrs, viewAttrs } = this.splitModelViewOptions(options);
         if (!options.model) this.createModel(modelAttrs);
