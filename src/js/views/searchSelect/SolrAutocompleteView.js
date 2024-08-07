@@ -28,7 +28,7 @@ define([
        * The name of the field in the Solr schema that the user is searching.
        * @type {string}
        */
-      queryField: "text",
+      queryField: "",
     },
   );
   return SolrAutocompleteView;
