@@ -3,6 +3,7 @@ define([
   "underscore",
   "backbone",
   "gmaps",
+  "common/Utilities",
   "models/SolrResult",
   "views/DownloadButtonView",
   "text!templates/loading.html",
@@ -14,6 +15,7 @@ define([
   _,
   Backbone,
   gmaps,
+  Utilities,
   SolrResult,
   DownloadButtonView,
   LoadingTemplate,
@@ -434,7 +436,10 @@ define([
       _.each(pkg.get("members"), function (solrResult, i) {
         if (solrResult.get("formatType") != "DATA") return;
 
-        solrResult.set("formattedSize", solrResult.bytesToSize());
+        solrResult.set(
+          "formattedSize",
+          Utilities.bytesToSize(solrResult.get("size")),
+        );
 
         //Add a section for the data details, just like the other attribute sections
         var keys = [
