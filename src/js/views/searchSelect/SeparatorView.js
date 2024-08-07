@@ -2,9 +2,8 @@
 
 define([
   "backbone",
-  "semantic",
-  `text!${MetacatUI.root}/components/semantic/dist/semantic.min.css`,
-], (Backbone, _Semantic, SemanticCSS) => {
+  "semantic"
+], (Backbone, _Semantic) => {
   // Default class names for the separator element
   const BASE_CLASS = "separator";
   const CLASS_NAMES = {
@@ -67,7 +66,6 @@ define([
 
       /** @inheritdoc */
       initialize(opts) {
-        MetacatUI.appModel.addCSS(SemanticCSS, "semantic");
         // Set all the options on the view
         Object.keys(opts).forEach((key) => {
           this[key] = opts[key];

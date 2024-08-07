@@ -91,7 +91,7 @@ require.config({
     // Polyfill required for using dropzone with older browsers
     corejs: MetacatUI.root + "/components/core-js",
     // Custom semantic bundle used for searchable multi-select dropdown component
-    semantic: `${MetacatUI.root}/components/semantic/dist/semantic.min`,
+    semantic: `${MetacatUI.root}/js/common/Semantic`,
     // To make elements drag and drop, sortable
     sortable: MetacatUI.root + "/components/sortable.min",
     //Cesium
