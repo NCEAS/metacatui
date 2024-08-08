@@ -8,6 +8,7 @@ define([
   "DonutChart",
   "CircleBadge",
   "collections/Citations",
+  "common/Utilities",
   "models/MetricsModel",
   "models/Stats",
   "MetricsChart",
@@ -27,6 +28,7 @@ define([
   DonutChart,
   CircleBadge,
   Citations,
+  Utilities,
   MetricsModel,
   StatsModel,
   MetricsChart,
@@ -923,12 +925,13 @@ define([
       displayTotalSize: function () {
         var className = "quick-stats-count";
         var count = "";
+        var view = this;
 
         if (!this.model.get("totalSize")) {
           count = "0 bytes";
           className += " no-activity";
         } else {
-          count = this.bytesToSize(this.model.get("totalSize"));
+          count = Utilities.bytesToSize(view.model.get("totalSize"));
         }
 
         var countEl = $(document.createElement("p"))
@@ -1100,36 +1103,6 @@ define([
           $.each($(".metric-chart-loading .message"), function (i, messageEl) {
             $(messageEl).html("No metrics to show");
           });
-        }
-      },
-
-      /**
-       * Convert number of bytes into human readable format
-       *
-       * @param integer bytes     Number of bytes to convert
-       * @param integer precision Number of digits after the decimal separator
-       * @return string
-       */
-      bytesToSize: function (bytes, precision) {
-        var kibibyte = 1024;
-        var mebibyte = kibibyte * 1024;
-        var gibibyte = mebibyte * 1024;
-        var tebibyte = gibibyte * 1024;
-
-        if (typeof bytes === "undefined") var bytes = this.get("size");
-
-        if (bytes >= 0 && bytes < kibibyte) {
-          return bytes + " B";
-        } else if (bytes >= kibibyte && bytes < mebibyte) {
-          return (bytes / kibibyte).toFixed(precision) + " KiB";
-        } else if (bytes >= mebibyte && bytes < gibibyte) {
-          return (bytes / mebibyte).toFixed(precision) + " MiB";
-        } else if (bytes >= gibibyte && bytes < tebibyte) {
-          return (bytes / gibibyte).toFixed(precision) + " GiB";
-        } else if (bytes >= tebibyte) {
-          return (bytes / tebibyte).toFixed(precision) + " TiB";
-        } else {
-          return bytes + " B";
         }
       },
 

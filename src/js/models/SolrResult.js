@@ -859,38 +859,6 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         //If nothing works so far, return an empty array
         return [];
       },
-
-      /****************************/
-
-      /**
-       * Convert number of bytes into human readable format
-       *
-       * @param integer bytes     Number of bytes to convert
-       * @param integer precision Number of digits after the decimal separator
-       * @return string
-       */
-      bytesToSize: function (bytes, precision) {
-        var kibibyte = 1024;
-        var mebibyte = kibibyte * 1024;
-        var gibibyte = mebibyte * 1024;
-        var tebibyte = gibibyte * 1024;
-
-        if (typeof bytes === "undefined") var bytes = this.get("size");
-
-        if (bytes >= 0 && bytes < kibibyte) {
-          return bytes + " B";
-        } else if (bytes >= kibibyte && bytes < mebibyte) {
-          return (bytes / kibibyte).toFixed(precision) + " KiB";
-        } else if (bytes >= mebibyte && bytes < gibibyte) {
-          return (bytes / mebibyte).toFixed(precision) + " MiB";
-        } else if (bytes >= gibibyte && bytes < tebibyte) {
-          return (bytes / gibibyte).toFixed(precision) + " GiB";
-        } else if (bytes >= tebibyte) {
-          return (bytes / tebibyte).toFixed(precision) + " TiB";
-        } else {
-          return bytes + " B";
-        }
-      },
     },
   );
   return SolrResult;

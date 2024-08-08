@@ -1,6 +1,11 @@
 define([], () => {
   "use strict";
 
+  const KIBIBYTE = 1024;
+  const MEBIBYTE = KIBIBYTE * 1024;
+  const GIBIBYTE = MEBIBYTE * 1024;
+  const TEBIBYTE = GIBIBYTE * 1024;
+
   /**
    * @namespace Utilities
    * @description A generic utility object that contains functions used throughout MetacatUI to perform useful functions,
@@ -155,6 +160,34 @@ define([], () => {
         return 1; // Allow 1 decimal places
       }
       return 0; // No decimal places
+    },
+
+    /**
+     * Convert number of bytes into human readable format
+     *
+     * @param integer bytes     Number of bytes to convert
+     * @param integer precision Number of digits after the decimal separator
+     * @return string
+     */
+    bytesToSize: function (bytes, precision = 0) {
+      if (typeof bytes === "undefined") return;
+
+      if (bytes >= 0 && bytes < KIBIBYTE) {
+        return bytes + " B";
+      } else if (bytes >= KIBIBYTE && bytes < MEBIBYTE) {
+        return (bytes / KIBIBYTE).toFixed(precision) + " KiB";
+      } else if (bytes >= MEBIBYTE && bytes < GIBIBYTE) {
+        precision = 2;
+        return (bytes / MEBIBYTE).toFixed(precision) + " MiB";
+      } else if (bytes >= GIBIBYTE && bytes < TEBIBYTE) {
+        precision = 2;
+        return (bytes / GIBIBYTE).toFixed(precision) + " GiB";
+      } else if (bytes >= TEBIBYTE) {
+        precision = 2;
+        return (bytes / TEBIBYTE).toFixed(precision) + " TiB";
+      } else {
+        return bytes + " B";
+      }
     },
   };
 

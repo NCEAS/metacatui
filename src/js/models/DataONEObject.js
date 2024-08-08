@@ -6,8 +6,19 @@ define([
   "he",
   "collections/AccessPolicy",
   "collections/ObjectFormats",
+  "common/Utilities",
   "md5",
-], function ($, _, Backbone, uuid, he, AccessPolicy, ObjectFormats, md5) {
+], function (
+  $,
+  _,
+  Backbone,
+  uuid,
+  he,
+  AccessPolicy,
+  ObjectFormats,
+  Utilities,
+  md5,
+) {
   /**
         * @class DataONEObject
         * @classdesc A DataONEObject represents a DataONE object, such as a data file,
@@ -124,8 +135,15 @@ define([
 
         this.set("accessPolicy", this.createAccessPolicy());
 
-        this.on("change:size", this.bytesToSize);
-        if (attrs.size) this.bytesToSize();
+        var model = this;
+        this.on("change:size", function () {
+          var size = Utilities.bytesToSize(model.get("size"));
+          model.set("sizeStr", size);
+        });
+        if (attrs.size) {
+          var size = Utilities.bytesToSize(model.get("size"));
+          model.set("sizeStr", size);
+        }
 
         // Cache an array of original attribute names to help in handleChange()
         if (this.type == "DataONEObject")
@@ -1975,39 +1993,6 @@ define([
         });
 
         return xmlString;
-      },
-
-      /**
-       * Converts the number of bytes into a human readable format and
-       * updates the `sizeStr` attribute
-       * @returns: None
-       *
-       */
-      bytesToSize: function () {
-        var kibibyte = 1024;
-        var mebibyte = kibibyte * 1024;
-        var gibibyte = mebibyte * 1024;
-        var tebibyte = gibibyte * 1024;
-        var precision = 0;
-
-        var bytes = this.get("size");
-
-        if (bytes >= 0 && bytes < kibibyte) {
-          this.set("sizeStr", bytes + " B");
-        } else if (bytes >= kibibyte && bytes < mebibyte) {
-          this.set("sizeStr", (bytes / kibibyte).toFixed(precision) + " KiB");
-        } else if (bytes >= mebibyte && bytes < gibibyte) {
-          precision = 2;
-          this.set("sizeStr", (bytes / mebibyte).toFixed(precision) + " MiB");
-        } else if (bytes >= gibibyte && bytes < tebibyte) {
-          precision = 2;
-          this.set("sizeStr", (bytes / gibibyte).toFixed(precision) + " GiB");
-        } else if (bytes >= tebibyte) {
-          precision = 2;
-          this.set("sizeStr", (bytes / tebibyte).toFixed(precision) + " TiB");
-        } else {
-          this.set("sizeStr", bytes + " B");
-        }
       },
 
       /**

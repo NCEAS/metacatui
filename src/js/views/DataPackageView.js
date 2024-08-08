@@ -4,6 +4,7 @@
   "backbone",
   "localforage",
   "collections/DataPackage",
+  "common/Utilities",
   "models/DataONEObject",
   "models/PackageModel",
   "models/metadata/ScienceMetadata",
@@ -20,6 +21,7 @@
   Backbone,
   LocalForage,
   DataPackage,
+  Utilities,
   DataONEObject,
   PackageModel,
   ScienceMetadata,
@@ -1036,7 +1038,7 @@
         var view = this;
         _.each(members, function (m) {
           // Update the size to bytes format
-          m.set({ size: m.bytesToSize(m.get("size")) });
+          m.set({ size: Utilities.bytesToSize(m.get("size")) });
 
           // Add each item of this nested package to the package table view
           view.addOne(m, dataPackage);
