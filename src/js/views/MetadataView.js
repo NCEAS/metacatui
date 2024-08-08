@@ -499,7 +499,6 @@ define([
                   //Now show the response from the view service
                   viewRef.$(viewRef.metadataContainer).html(response);
 
-                  viewRef.storeEntityPIDs(response);
 
                   //If there is no info from the index and there is no metadata doc rendered either, then display a message
                   if (
@@ -2480,7 +2479,12 @@ define([
             DataONEObject.prototype.getXMLSafeID(id) +
             "']",
         );
-        if (container.length) return container;
+        if (container.length) {
+          //Store the PID on this element for moreInfo icons
+          this.storeEntityPIDs(container, id);
+
+          return container;
+        }
 
         //Are we looking for the main object that this MetadataView is displaying?
         if (id == this.pid) {
@@ -2532,6 +2536,9 @@ define([
           //Add the id so we can easily find it later
           container.attr("data-id", id);
 
+          //Store the PID on this element for moreInfo icons
+          this.storeEntityPIDs(container, id);
+
           return container;
         }
 
@@ -2575,7 +2582,12 @@ define([
             }
           }
 
-          if (container.length) return container;
+          if (container.length) {
+            //Store the PID on this element for moreInfo icons
+            this.storeEntityPIDs(container, id);
+
+            return container;
+          }
         }
 
         //--- The last option:----
@@ -2587,6 +2599,9 @@ define([
         if (dataMembers.length == 1) {
           if (this.$(".entitydetails").length == 1) {
             this.$(".entitydetails").attr("data-id", id);
+            //Store the PID on this element for moreInfo icons
+            this.storeEntityPIDs(this.$(".entitydetails"), id);
+
             return this.$(".entitydetails");
           }
         }
@@ -3606,12 +3621,26 @@ define([
         });
       },
 
-      storeEntityPIDs: function (responseEl) {
-        var view = this;
-        _.each($(responseEl).find(".entitydetails"), function (entityEl) {
-          var entityId = $(entityEl).data("id");
-          view.entities.push(entityId.replace("urn-uuid-", "urn:uuid:"));
-        });
+      storeEntityPIDs: function (entityEl, entityId) {
+        // Get the entity ID if it is null or undefined
+        if (entityId == null) entityId = $(entityEl).data("id");
+
+        // Perform clean up with the entity ID
+        if (entityId & (typeof entityId === "string")) {
+          // Check and replace urn-uuid- with urn:uuid: if the string starts with urn-uuid-
+          if (entityId.startsWith("urn-uuid-")) {
+            entityId = entityId.replace("urn-uuid-", "urn:uuid:");
+          }
+
+          // Check and replace doi-10. with doi:10. if the string starts with doi-10.
+          if (entityId.startsWith("doi-10.")) {
+            entityId = entityId.replace("doi-10.", "doi:10.");
+          }
+        }
+
+        if (!this.entities.includes(entityId)) {
+            this.entities.push(entityId);
+        }
       },
     },
   );
