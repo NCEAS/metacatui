@@ -81,7 +81,9 @@
     "./js/specs/unit/models/searchSelect/QueryFieldSearchSelect.spec.js",
     "./js/specs/unit/models/searchSelect/SolrAutocomplete.spec.js",
     "./js/specs/unit/collections/searchSelect/SearchSelectOptions.spec.js",
-    "./js/specs/unit/models/ontologies/Bioontology.spec.js"
+    "./js/specs/unit/models/ontologies/Bioontology.spec.js",
+    "./js/specs/unit/models/accordion/Accordion.spec.js",
+    "./js/specs/unit/models/accordion/AccordionItem.spec.js"
   ],
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",
