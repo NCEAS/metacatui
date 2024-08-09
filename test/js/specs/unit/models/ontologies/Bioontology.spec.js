@@ -20,7 +20,9 @@ define([
     });
 
     it("creates a collection for the Bioontology classes", () => {
-      state.ontology.get("collection").should.be.instanceof(Backbone.Collection);
+      state.ontology
+        .get("collection")
+        .should.be.instanceof(Backbone.Collection);
     });
 
     it("forms valid search URLs", () => {
@@ -35,27 +37,34 @@ define([
         ontology: "ontology",
         include: ["prefLabel", "definition"],
         searchTerm: "searchTerm",
-      })
+      });
       const url = state.ontology.url();
-      url.should.equal("https://base.url/search?q=searchTerm*&ontologies=ontology&ontology=ontology&subtree_root_id=subTree&apikey=key&pagesize=10&include=prefLabel%2Cdefinition");
+      url.should.equal(
+        "https://base.url/search?q=searchTerm*&ontologies=ontology&ontology=ontology&subtree_root_id=subTree&apikey=key&pagesize=10&include=prefLabel%2Cdefinition",
+      );
     });
 
-    if("forms valid children URLs", () => {
-      state.ontology.set({
-        apiBaseURL: "https://base.url",
-        apiKey: "key",
-        queryType: "children",
-        pageSize: 10,
-        displayContext: true,
-        displayLinks: true,
-        subTree: "subTree",
-        ontology: "ontology",
-        include: ["prefLabel", "definition"],
-        searchTerm: "searchTerm",
+    if (
+      ("forms valid children URLs",
+      () => {
+        state.ontology.set({
+          apiBaseURL: "https://base.url",
+          apiKey: "key",
+          queryType: "children",
+          pageSize: 10,
+          displayContext: true,
+          displayLinks: true,
+          subTree: "subTree",
+          ontology: "ontology",
+          include: ["prefLabel", "definition"],
+          searchTerm: "searchTerm",
+        });
+        const url = state.ontology.url();
+        url.should.equal(
+          "https://base.url/ontologies/ontology/classes/subTree/children?apikey=key&pagesize=10&display_context=true&display_links=true&include=prefLabel%2Cdefinition",
+        );
       })
-      const url = state.ontology.url();
-      url.should.equal("https://base.url/ontologies/ontology/classes/subTree/children?apikey=key&pagesize=10&display_context=true&display_links=true&include=prefLabel%2Cdefinition");
-    });
+    );
 
     it("parses the response correctly", () => {
       const response = {
@@ -63,8 +72,9 @@ define([
       };
       const options = { replaceCollection: true };
       const parsed = state.ontology.parse(response, options);
-      parsed.collection.toJSON().should.deep.equal([{ "@id": 1 }, { "@id": 2 }]);
+      parsed.collection
+        .toJSON()
+        .should.deep.equal([{ "@id": 1 }, { "@id": 2 }]);
     });
-
   });
 });

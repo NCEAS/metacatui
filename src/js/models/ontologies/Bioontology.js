@@ -1,7 +1,6 @@
 "use strict";
 
 define(["backbone"], (Backbone) => {
-
   /**
    * @class Bioontology
    * @classdesc A model that fetches data from the BioPortal API for a given
@@ -12,20 +11,6 @@ define(["backbone"], (Backbone) => {
    */
   const Bioontology = Backbone.Model.extend({
     /** @lends Bioontology.prototype */
-
-    /**
-     * Initialize the Bioontology mode
-     * @param {object} attributes - The model attributes
-     * @param {string} attributes.apiKey - An alternative API key to use. If not
-     * set, the appModel's API key will be used.
-     * @param {object} _options - The options object
-     */
-    initialize(attributes, _options) {
-      // Fall back to the appModel's API key if one is not provided
-      if (!attributes.apiKey && !this.get("apiKey")) {
-        this.set("apiKey", MetacatUI.appModel.get("bioportalAPIKey"));
-      }
-    },
 
     /**
      * The default attributes for this model. All attributes not documented here
@@ -47,7 +32,8 @@ define(["backbone"], (Backbone) => {
         collection: new Backbone.Collection(),
         apiKey: null,
         apiBaseURL: "https://data.bioontology.org",
-        subTree: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType",
+        subTree:
+          "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType",
         ontology: "ECSO",
         pageSize: 500,
         displayContext: false,
@@ -58,9 +44,22 @@ define(["backbone"], (Backbone) => {
       };
     },
 
+    /**
+     * Initialize the Bioontology mode
+     * @param {object} attributes - The model attributes
+     * @param {string} attributes.apiKey - An alternative API key to use. If not
+     * set, the appModel's API key will be used.
+     * @param {object} _options - The options object
+     */
+    initialize(attributes, _options) {
+      // Fall back to the appModel's API key if one is not provided
+      if (!attributes?.apiKey && !this.get("apiKey")) {
+        this.set("apiKey", MetacatUI.appModel.get("bioportalAPIKey"));
+      }
+    },
+
     /** @inheritdoc */
     url() {
-
       const root = this.get("apiBaseURL");
       const key = this.get("apiKey");
       const queryType = this.get("queryType");
@@ -77,7 +76,9 @@ define(["backbone"], (Backbone) => {
       let include = this.get("include");
       // subClassOf and hasChildren does not work with search queries
       if (queryType === "search") {
-        include = include.filter((item) => item !== "subClassOf" && item !== "hasChildren");
+        include = include.filter(
+          (item) => item !== "subClassOf" && item !== "hasChildren",
+        );
       }
       include = include?.length ? include.join(",") : null;
       include = include ? encodeURIComponent(include) : null;
@@ -87,9 +88,14 @@ define(["backbone"], (Backbone) => {
 
       let url = `${root}`;
 
-      if (queryType === "children" && subTree && ontology) {
-        url += `/ontologies/${ontology}/classes/${subTree}/children?`;
-
+      if (queryType === "children" && ontology) {
+        url += `/ontologies/${ontology}/classes/`;
+        if (subTree) {
+          url += `${subTree}/children`;
+        } else {
+          url += `roots`;
+        }
+        url += `?`;
       } else if (queryType === "search" && searchTerm) {
         url += `/search?q=${searchTerm}*`;
         if (ontology) {
@@ -120,14 +126,33 @@ define(["backbone"], (Backbone) => {
      * @returns {object} The parsed response
      */
     parse(response, options) {
-      const collection = this.get("collection");
-      if (options.replaceCollection === true) {
-        collection.reset(response.collection);
-      } else {
-        collection.add(response.collection);
+      let parsedResponse = response;
+
+      // when querying for the "roots" (no subTree) of an ontology, the
+      // collection is the response itself
+      if (!parsedResponse.collection) {
+        parsedResponse = {
+          collection: response,
+        };
+
+        // In this case, there is also no returned pagination info.
+        // Ensure any previous pagination info is reset to defaults.
+        const defaults = this.defaults();
+        const pageAttrs = ["page", "pageCount", "prevPage", "nextPage"];
+        pageAttrs.forEach((attr) => {
+          parsedResponse[attr] = defaults[attr];
+        });
       }
-      response.collection = collection;
-      return response;
+
+      const collection = this.get("collection");
+
+      if (options.replaceCollection === true) {
+        collection.reset(parsedResponse.collection);
+      } else {
+        collection.add(parsedResponse.collection);
+      }
+      parsedResponse.collection = collection;
+      return parsedResponse;
     },
 
     /**
@@ -151,9 +176,7 @@ define(["backbone"], (Backbone) => {
       this.set("queryType", "children");
       this.fetch();
     },
-
   });
 
   return Bioontology;
-
 });
