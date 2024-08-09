@@ -73,4 +73,31 @@ define([
       expect(spy.args[0][1].assets.length).to.equal(3);
     });
   });
+  it("should do nothing if the action is not LEFT_CLICK", function () {
+    const initialClickedFeatures =
+      mapInteraction.get("clickedFeatures").models.length;
+    mapInteraction.handleClick(mapInteraction, "RIGHT_CLICK");
+    mapInteraction
+      .get("clickedFeatures")
+      .models.length.should.equal(initialClickedFeatures);
+  });
+
+  it("should call selectFeatures if clickFeatureAction is 'showDetails'", function () {
+    const feature1 = new Feature({ id: 1 });
+    mapInteraction.set("hoveredFeatures", new Features([feature1]));
+
+    const spy = sinon.spy(mapInteraction, "selectFeatures");
+    mapInteraction.handleClick(mapInteraction, "LEFT_CLICK");
+
+    sinon.assert.calledOnce(spy);
+    sinon.assert.calledWith(spy, [feature1]);
+  });
+
+  it("should set zoomTarget if clickFeatureAction is 'zoom'", function () {
+    model.set("clickFeatureAction", "zoom"); // change action to zoom
+    const feature1 = new Feature({ id: 1 });
+    mapInteraction.set("hoveredFeatures", new Features([feature1]));
+    mapInteraction.handleClick(mapInteraction, "LEFT_CLICK");
+    mapInteraction.get("zoomTarget").should.equal(feature1);
+  });
 });
