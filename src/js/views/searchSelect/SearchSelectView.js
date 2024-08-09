@@ -8,15 +8,7 @@ define([
   "models/searchSelect/SearchSelect",
   "semantic",
   "text!templates/searchSelect/searchSelect.html",
-], (
-  $,
-  _,
-  Backbone,
-  SeparatorView,
-  SearchSelect,
-  _Semantic,
-  Template,
-) => {
+], ($, _, Backbone, SeparatorView, SearchSelect, _Semantic, Template) => {
   // The base class for the search select view
   const BASE_CLASS = "search-select";
 
@@ -31,6 +23,8 @@ define([
     accordionIcon: "accordion-mode-icon",
     popoutIcon: "popout-mode-icon",
     dropdown: $().dropdown.settings.className,
+    buttonStyle: "button",
+    labeled: "labeled",
   };
 
   // The placeholder element needs both to work properly
@@ -103,6 +97,22 @@ define([
        * @since 0.0.0
        */
       imageSize: [30, 30],
+
+      /**
+       * Set this to true to render the dropdown as more of a button-like
+       * interface. This works best for single-select dropdowns.
+       * @type {boolean}
+       * @since 0.0.0
+       */
+      buttonStyle: false,
+
+      /**
+       * Set this to a FontAwesome icon to use instead of the default dropdown
+       * (down arrow) icon. Works will with the buttonStyle option.
+       * @type {string|boolean}
+       * @since 0.0.0
+       */
+      icon: false,
 
       /**
        * Options and selected values for the search select interface show a
@@ -259,6 +269,22 @@ define([
           const silent = i === selected.length - 1;
           this.$selectUI.dropdown("set selected", s, silent);
         });
+
+        if (this.buttonStyle) {
+          this.$selectUI.addClass(CLASS_NAMES.buttonStyle);
+          this.$selectUI.removeClass(CLASS_NAMES.dropdown.selection);
+          // TODO: Rquired to make the entire dropdown clickable. This may be
+          // required because of our custom dropdown overrides?
+          this.$selectUI.find(DROPDOWN_SELECTORS.text).css({ "z-index": 0 });
+        }
+
+        if (this.icon) {
+          this.$selectUI.addClass(`${CLASS_NAMES.dropdown.icon}`);
+          this.$selectUI.addClass(`${CLASS_NAMES.labeled}`);
+          this.$selectUI
+            .find(DROPDOWN_SELECTORS.menuIcon)
+            .replaceWith(`<i class="icon icon-${this.icon}"></i>`);
+        }
       },
 
       /** @returns {HTMLElement[]} The selected label elements in a multi-select dropdown */
