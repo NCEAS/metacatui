@@ -36,20 +36,26 @@ define(["jquery", "backbone", "semantic", "models/accordion/AccordionItem"], (
       /** @inheritdoc */
       tagName: "div",
 
+      /**
+       * An HTML string to use for an icon indicating that the accordion item is
+       * collapsible.
+       * @type {string}
+       */
       dropdownIconTemplate: `<i class="${CLASS_NAMES.icon}"></i>`,
 
       /** @inheritdoc */
       initialize(options) {
         this.model = options?.model || new AccordionItem();
-        this.listenTo(this.model, "change", this.render);
       },
 
+      /* Hide the dropdown icon */
       hideIcon() {
         this.iconEl.style.display = "none";
       },
 
+      /* Show the dropdown icon */
       showIcon() {
-        this.iconEl.style.display = "inline";
+        this.iconEl.style.display = "inline-block";
       },
 
       /** @inheritdoc */
@@ -62,7 +68,7 @@ define(["jquery", "backbone", "semantic", "models/accordion/AccordionItem"], (
 
         // Title
         const titleSpan = document.createElement("span");
-        titleSpan.textContent = this.model.get("title");
+        titleSpan.innerHTML = this.model.get("title");
         const titleContainer = document.createElement("div");
         titleContainer.classList.add(CLASS_NAMES.title);
         titleContainer.appendChild(iconEl);
@@ -90,11 +96,11 @@ define(["jquery", "backbone", "semantic", "models/accordion/AccordionItem"], (
        */
       updateContent(content, clear = true) {
         const { contentContainer } = this;
-
         if (!contentContainer) return;
         if (clear) {
           contentContainer.innerHTML = "";
           this.hideIcon();
+          contentContainer.style.padding = "0";
         }
         if (!content) return;
         if (typeof content === "string") {
@@ -105,6 +111,17 @@ define(["jquery", "backbone", "semantic", "models/accordion/AccordionItem"], (
           contentContainer.appendChild(content.render().el);
         }
         this.showIcon();
+        contentContainer.style.padding = "";
+      },
+
+      /*
+       * Remove the view, DOM elements, and its associated popups.
+       */
+      remove() {
+        $(this.titleContainer).popup("destroy");
+        this.titleContainer.remove();
+        this.contentContainer.remove();
+        Backbone.View.prototype.remove.call(this);
       },
     },
   );

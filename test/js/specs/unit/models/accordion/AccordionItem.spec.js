@@ -1,9 +1,9 @@
 "use strict";
 
-define(["/test/js/specs/shared/clean-state.js", "models/accordion/AccordionItem"], (
-  cleanState,
-  AccordionItem,
-) => {
+define([
+  "/test/js/specs/shared/clean-state.js",
+  "models/accordion/AccordionItem",
+], (cleanState, AccordionItem) => {
   const should = chai.should();
   const expect = chai.expect;
 
@@ -19,7 +19,6 @@ define(["/test/js/specs/shared/clean-state.js", "models/accordion/AccordionItem"
     it("creates an AccordionItem instance", () => {
       state.accordionItem.should.be.instanceof(AccordionItem);
     });
-
 
     it("automatically sets an itemId based on the title", () => {
       state.accordionItem.get("itemId").should.equal("title-1");

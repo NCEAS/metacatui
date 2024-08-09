@@ -25,6 +25,11 @@ define([
   // Keys for the settings available in the accordion module
   const ACCORDION_SETTINGS_KEYS = Object.keys($().accordion.settings);
 
+  // Callbacks that can be set in the model for the accordion, e.g. onOpen
+  const ACCORDION_CALLBACKS = ACCORDION_SETTINGS_KEYS.filter((key) =>
+    /^on[A-Z]/.test(key),
+  );
+
   /**
    * @class AccordionView
    * @classdesc An extension of the Semantic UI accordion that allows for
@@ -68,12 +73,15 @@ define([
       /** @inheritdoc */
       render() {
         this.initializeAccordion();
+
         // Start rendering the root, and then the children will be rendered
         // recursively
         const rootItems = this.model.getRootItems();
         const rootAccordion = this.createAccordion(rootItems);
         this.rootAccordion = rootAccordion;
+
         this.$el.append(rootAccordion);
+
         return this;
       },
 
@@ -83,13 +91,48 @@ define([
        * any new DOM elements that are added.
        */
       initializeAccordion() {
+        const view = this;
+
+        // Gather all the necessary settings from the model
         const modelJSON = this.model.toJSON();
         const settings = Object.fromEntries(
-          Object.entries(modelJSON).filter(([key, _val]) =>
+          Object.entries(modelJSON).filter(([key, _]) =>
             ACCORDION_SETTINGS_KEYS.includes(key),
           ),
         );
+
+        // Pass the associated model and view to the callback functions instead
+        // only having access to the DOM element as the context
+        const createCallback = (callbackName) => {
+          const originalCallback = this.model.get(callbackName);
+          if (originalCallback) {
+            return function callbackWrapper() {
+              const contentEl = this[0];
+              const itemView = view.viewFromContentEl(contentEl);
+              const itemModel = itemView.model;
+              originalCallback(itemView, itemModel);
+            };
+          }
+          return null;
+        };
+        ACCORDION_CALLBACKS.forEach((callbackName) => {
+          const callback = createCallback(callbackName);
+          if (callback) {
+            settings[callbackName] = callback;
+          }
+        });
+
+        // Initialize the accordion with the specified settings
         this.$el.accordion(settings);
+      },
+
+      /**
+       * @param {HTMLElement} contentEl A content element from an item
+       * @returns {AccordionItemView} The view associated with the item
+       */
+      viewFromContentEl(contentEl) {
+        const views = Object.values(this.itemViews);
+        return views.find((view) => view.contentContainer === contentEl);
       },
 
       /**
@@ -101,7 +144,7 @@ define([
        */
       createAccordion(items) {
         const accordionContainer = this.createContainer();
-        this.addItems(items, accordionContainer);
+        if (items?.length) this.addItems(items, accordionContainer);
         return accordionContainer;
       },
 
@@ -169,7 +212,8 @@ define([
       refreshContent(itemId) {
         // Check if there are children for the given item
         const children = this.model.getChildren(itemId);
-        const itemView = this.itemViews[itemId];
+        const itemView = this.itemViews?.[itemId];
+        if (!itemView) return;
         if (children?.length) {
           const subAccordion = this.createAccordion(children);
           itemView.updateContent(subAccordion);
@@ -200,7 +244,19 @@ define([
       removeItem(model) {
         const id = model.get("itemId") || model.cid;
         const itemView = this.itemViews[id];
-        itemView.remove();
+        // remove the item view from the itemViews object
+        delete this.itemViews[id];
+        itemView?.remove();
+      },
+
+      /**
+       * Removes all items from the accordion and clears the itemViews object.
+       */
+      clearAllItems() {
+        Object.entries(this.itemViews).forEach(([id, view]) => {
+          view.remove();
+          delete this.itemViews[id];
+        });
       },
     },
   );
