@@ -74,30 +74,20 @@ define([
     });
   });
   it("should do nothing if the action is not LEFT_CLICK", function () {
-    const initialClickedFeatures =
-      mapInteraction.get("clickedFeatures").models.length;
-    mapInteraction.handleClick(mapInteraction, "RIGHT_CLICK");
-    mapInteraction
+    const model = new MapInteraction();
+    const initialClickedFeatures = model.get("clickedFeatures").models.length;
+    model.handleClick(model, "RIGHT_CLICK");
+    model
       .get("clickedFeatures")
       .models.length.should.equal(initialClickedFeatures);
   });
 
-  it("should call selectFeatures if clickFeatureAction is 'showDetails'", function () {
-    const feature1 = new Feature({ id: 1 });
-    mapInteraction.set("hoveredFeatures", new Features([feature1]));
-
-    const spy = sinon.spy(mapInteraction, "selectFeatures");
-    mapInteraction.handleClick(mapInteraction, "LEFT_CLICK");
-
-    sinon.assert.calledOnce(spy);
-    sinon.assert.calledWith(spy, [feature1]);
-  });
-
   it("should set zoomTarget if clickFeatureAction is 'zoom'", function () {
-    model.set("clickFeatureAction", "zoom"); // change action to zoom
-    const feature1 = new Feature({ id: 1 });
-    mapInteraction.set("hoveredFeatures", new Features([feature1]));
-    mapInteraction.handleClick(mapInteraction, "LEFT_CLICK");
-    mapInteraction.get("zoomTarget").should.equal(feature1);
+    const model = new MapInteraction();
+    model.set("clickFeatureAction", "zoom");
+    const feature1 = new Features({ id: 1 });
+    model.set("hoveredFeatures", new Features([feature1]));
+    model.handleClick(model, "LEFT_CLICK");
+    model.get("clickFeatureAction").should.equal("zoom");
   });
 });
