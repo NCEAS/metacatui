@@ -4,31 +4,9 @@ define([
   "semantic",
   "views/accordion/AccordionItemView",
   "models/accordion/Accordion",
-], ($, Backbone, _Semantic, AccordionItemView, AccordionModel) => {
+], ($, Backbone, Semantic, AccordionItemView, AccordionModel) => {
   // The base class for the view
   const BASE_CLASS = "accordion-view";
-
-  // Class names that we use in the view, including those from the dropdown
-  // module
-  const CLASS_NAMES = {
-    container: "accordion",
-    semantic: "ui",
-    title: "title",
-    icon: "dropdown icon",
-    content: "content",
-    fluid: "fluid",
-    styled: "styled",
-    inverted: "inverted",
-    accordion: $().accordion.settings.className,
-  };
-
-  // Keys for the settings available in the accordion module
-  const ACCORDION_SETTINGS_KEYS = Object.keys($().accordion.settings);
-
-  // Callbacks that can be set in the model for the accordion, e.g. onOpen
-  const ACCORDION_CALLBACKS = ACCORDION_SETTINGS_KEYS.filter((key) =>
-    /^on[A-Z]/.test(key),
-  );
 
   /**
    * @class AccordionView
@@ -97,7 +75,7 @@ define([
         const modelJSON = this.model.toJSON();
         const settings = Object.fromEntries(
           Object.entries(modelJSON).filter(([key, _]) =>
-            ACCORDION_SETTINGS_KEYS.includes(key),
+            Semantic.ACCORDION_SETTINGS_KEYS.includes(key),
           ),
         );
 
@@ -110,12 +88,12 @@ define([
               const contentEl = this[0];
               const itemView = view.viewFromContentEl(contentEl);
               const itemModel = itemView.model;
-              originalCallback(itemView, itemModel);
+              originalCallback(itemModel, itemView);
             };
           }
           return null;
         };
-        ACCORDION_CALLBACKS.forEach((callbackName) => {
+        Semantic.ACCORDION_CALLBACKS.forEach((callbackName) => {
           const callback = createCallback(callbackName);
           if (callback) {
             settings[callbackName] = callback;
@@ -155,14 +133,17 @@ define([
        */
       createContainer() {
         const container = document.createElement("div");
-        container.classList.add(CLASS_NAMES.container, CLASS_NAMES.semantic);
+        container.classList.add(
+          Semantic.CLASS_NAMES.accordion.container,
+          Semantic.CLASS_NAMES.base,
+        );
         container.style.marginTop = 0;
 
         // Add optional class names based on model properties
         const optionalClasses = ["fluid", "styled", "inverted"];
         optionalClasses.forEach((className) => {
           if (this.model.get(className)) {
-            container.classList.add(CLASS_NAMES[className]);
+            container.classList.add(Semantic.CLASS_NAMES.variations[className]);
           }
         });
 

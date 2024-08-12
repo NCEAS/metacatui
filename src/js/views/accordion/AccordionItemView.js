@@ -1,19 +1,11 @@
 define(["jquery", "backbone", "semantic", "models/accordion/AccordionItem"], (
   $,
   Backbone,
-  _Semantic,
+  Semantic,
   AccordionItem,
 ) => {
   // Base class for the view
   const BASE_CLASS = "accordion-item";
-
-  // Class names that we use in the view, including those from the dropdown
-  // module
-  const CLASS_NAMES = {
-    title: "title",
-    icon: "dropdown icon",
-    content: "content",
-  };
 
   /**
    * @class AccordionItemView
@@ -41,7 +33,7 @@ define(["jquery", "backbone", "semantic", "models/accordion/AccordionItem"], (
        * collapsible.
        * @type {string}
        */
-      dropdownIconTemplate: `<i class="${CLASS_NAMES.icon}"></i>`,
+      dropdownIconTemplate: `<i class="${Semantic.CLASS_NAMES.accordion.icon}"></i>`,
 
       /** @inheritdoc */
       initialize(options) {
@@ -70,14 +62,14 @@ define(["jquery", "backbone", "semantic", "models/accordion/AccordionItem"], (
         const titleSpan = document.createElement("span");
         titleSpan.innerHTML = this.model.get("title");
         const titleContainer = document.createElement("div");
-        titleContainer.classList.add(CLASS_NAMES.title);
+        titleContainer.classList.add(Semantic.CLASS_NAMES.accordion.title);
         titleContainer.appendChild(iconEl);
         titleContainer.appendChild(titleSpan);
         this.titleContainer = titleContainer;
 
         // Content
         const contentContainer = document.createElement("div");
-        contentContainer.classList.add(CLASS_NAMES.content);
+        contentContainer.classList.add(Semantic.CLASS_NAMES.accordion.content);
         this.contentContainer = contentContainer;
 
         // Put it all together

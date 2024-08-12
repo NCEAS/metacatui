@@ -1,18 +1,9 @@
 define([
   "underscore",
+  "semantic",
   "views/searchSelect/SearchSelectView",
   "models/searchSelect/QueryFieldSearchSelect",
-], (_, SearchSelect, QueryFieldSearchSelect) => {
-  // The classes for the semantic/formantic UI card component
-  const CARD_CLASSES = {
-    card: "ui card",
-    content: "content",
-    header: "header",
-    meta: "meta",
-    description: "description",
-    extra: "extra content",
-  };
-
+], (_, Semantic, SearchSelect, QueryFieldSearchSelect) => {
   /**
    * @class QueryFieldSelectView
    * @classdesc A select interface that allows the user to search for and select
@@ -58,13 +49,13 @@ define([
         const description = option.get("description") || "";
 
         const htmlStr = `
-        <div class="ui mini card">
-          <div class="${CARD_CLASSES.content}">
-            <div class="${CARD_CLASSES.header}">${label}</div>
-            <div class="${CARD_CLASSES.meta}"><span class="category">${value}</span></div>
-            <div class="${CARD_CLASSES.description}">${description}</div>
+        <div class="${Semantic.CLASS_NAMES.base} ${Semantic.CLASS_NAMES.variations.mini} ${Semantic.CLASS_NAMES.card.base}">
+          <div class="${Semantic.CLASS_NAMES.card.content}">
+            <div class="${Semantic.CLASS_NAMES.card.header}">${label}</div>
+            <div class="${Semantic.CLASS_NAMES.card.meta}"><span class="category">${value}</span></div>
+            <div class="${Semantic.CLASS_NAMES.card.description}">${description}</div>
           </div>
-          <div class="${CARD_CLASSES.extra} right floated">Type: <code>${type}</code></div>
+          <div class="${Semantic.CLASS_NAMES.card.extra} ${Semantic.CLASS_NAMES.card.content} ${Semantic.CLASS_NAMES.grid.floated} ${Semantic.CLASS_NAMES.grid.right}">Type: <code>${type}</code></div>
         </div>`;
 
         return htmlStr;

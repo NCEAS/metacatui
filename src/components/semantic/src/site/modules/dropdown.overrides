@@ -2,6 +2,9 @@
         User Overrides
 *******************************/
 
+.ui.dropdown .menu > .item {
+  min-height: unset;
+}
 
 @media only screen and (min-width: 768px) {
   .ui.search.dropdown .menu {

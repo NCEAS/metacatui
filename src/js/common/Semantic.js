@@ -8,12 +8,77 @@
  * @since 0.0.0
  */
 define([
+  `jquery`,
   `${MetacatUI.root}/components/semantic/dist/semantic.min.js`,
-  `text!${MetacatUI.root}/components/semantic/dist/semantic.min.css`
-], (
-  _Semantic,
-  SemanticCSS
-) => {
+  `text!${MetacatUI.root}/components/semantic/dist/semantic.min.css`,
+], ($, _Semantic, SemanticCSS) => {
   MetacatUI.appModel.addCSS(SemanticCSS, "semantic");
-  return true;
+
+  const $obj = $();
+
+  // Return an object with classes, selectors, and other options from the
+  // semantic modules that we use in our views.
+  return {
+    // Class names that we use in the view, including those from the dropdown
+    // module
+    CLASS_NAMES: {
+      base: "ui",
+
+      accordion: {
+        ...$obj.accordion.settings.className,
+        container: "accordion",
+        title: "title",
+        icon: "dropdown icon",
+        content: "content",
+      },
+      dropdown: $obj.dropdown.settings.className,
+      // Button & card & message modules CSS only and don't have jQuery settings
+      button: {
+        base: "button",
+        labeled: "labeled",
+      },
+      card: {
+        base: "card",
+        content: "content",
+        header: "header",
+        meta: "meta",
+        description: "description",
+        extra: "extra",
+      },
+      message: {
+        base: "message",
+        header: "header",
+      },
+      grid: {
+        floated: "floated",
+        left: "left",
+        right: "right",
+      },
+      // Variations apply to multiple modules
+      variations: {
+        floating: "floating",
+        fluid: "fluid",
+        styled: "styled",
+        inverted: "inverted",
+        mini: "mini",
+        info: "info",
+        raised: "raised",
+        attached: "attached",
+      },
+      colors: {
+        blue: "blue",
+      },
+    },
+
+    // Keys for the settings available in the accordion module
+    ACCORDION_SETTINGS_KEYS: Object.keys($obj.accordion.settings),
+
+    // Callbacks that can be set in the model for the accordion, e.g. onOpen
+    ACCORDION_CALLBACKS: Object.keys($obj.accordion.settings).filter((key) =>
+      /^on[A-Z]/.test(key),
+    ),
+
+    // Selectors for the dropdown module
+    DROPDOWN_SELECTORS: $().dropdown.settings.selector,
+  };
 });

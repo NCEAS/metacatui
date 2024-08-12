@@ -8,7 +8,7 @@ define([
   "models/searchSelect/SearchSelect",
   "semantic",
   "text!templates/searchSelect/searchSelect.html",
-], ($, _, Backbone, SeparatorView, SearchSelect, _Semantic, Template) => {
+], ($, _, Backbone, SeparatorView, SearchSelect, Semantic, Template) => {
   // The base class for the search select view
   const BASE_CLASS = "search-select";
 
@@ -22,15 +22,12 @@ define([
     chevronRight: "dropdown icon icon-on-right icon-chevron-right",
     accordionIcon: "accordion-mode-icon",
     popoutIcon: "popout-mode-icon",
-    dropdown: $().dropdown.settings.className,
-    buttonStyle: "button",
-    labeled: "labeled",
+    buttonStyle: Semantic.CLASS_NAMES.button.base,
+    labeled: Semantic.CLASS_NAMES.button.labeled,
   };
 
   // The placeholder element needs both to work properly
-  CLASS_NAMES.placeholder = `${CLASS_NAMES.dropdown.placeholder} ${CLASS_NAMES.dropdown.text}`;
-  // Selectors for the dropdown module
-  const DROPDOWN_SELECTORS = $().dropdown.settings.selector;
+  CLASS_NAMES.placeholder = `${Semantic.CLASS_NAMES.dropdown.placeholder} ${Semantic.CLASS_NAMES.dropdown.text}`;
 
   // Classes that we use from the bootstrap module
   const BOOTSTRAP_CLASS_NAMES = {
@@ -99,22 +96,6 @@ define([
       imageSize: [30, 30],
 
       /**
-       * Set this to true to render the dropdown as more of a button-like
-       * interface. This works best for single-select dropdowns.
-       * @type {boolean}
-       * @since 0.0.0
-       */
-      buttonStyle: false,
-
-      /**
-       * Set this to a FontAwesome icon to use instead of the default dropdown
-       * (down arrow) icon. Works will with the buttonStyle option.
-       * @type {string|boolean}
-       * @since 0.0.0
-       */
-      icon: false,
-
-      /**
        * Options and selected values for the search select interface show a
        * tooltip with the description of the option when the user hovers over
        * the option. This object is passed to the Formantic UI popup module to
@@ -149,6 +130,7 @@ define([
         const options = opts || {};
         // Set options on the view and create the model
         const { modelAttrs, viewAttrs } = this.splitModelViewOptions(options);
+
         if (!options.model) this.createModel(modelAttrs);
         Object.assign(this, viewAttrs);
       },
@@ -203,7 +185,7 @@ define([
 
         // Render the template using the view attributes
         this.$el.html(this.renderTemplate());
-        this.$selectUI = this.$el.find(DROPDOWN_SELECTORS.dropdown);
+        this.$selectUI = this.$el.find(Semantic.DROPDOWN_SELECTORS.dropdown);
 
         // Start the dropdown in an inactive state. This allows us to pre-select
         // values without triggering a change event.
@@ -270,26 +252,29 @@ define([
           this.$selectUI.dropdown("set selected", s, silent);
         });
 
-        if (this.buttonStyle) {
+        if (this.model.get("buttonStyle")) {
           this.$selectUI.addClass(CLASS_NAMES.buttonStyle);
-          this.$selectUI.removeClass(CLASS_NAMES.dropdown.selection);
+          this.$selectUI.removeClass(Semantic.CLASS_NAMES.dropdown.selection);
           // TODO: Rquired to make the entire dropdown clickable. This may be
           // required because of our custom dropdown overrides?
-          this.$selectUI.find(DROPDOWN_SELECTORS.text).css({ "z-index": 0 });
+          this.$selectUI
+            .find(Semantic.DROPDOWN_SELECTORS.text)
+            .css({ "z-index": 0 });
         }
 
-        if (this.icon) {
-          this.$selectUI.addClass(`${CLASS_NAMES.dropdown.icon}`);
+        const icon = this.model.get("icon");
+        if (icon) {
+          this.$selectUI.addClass(`${Semantic.CLASS_NAMES.dropdown.icon}`);
           this.$selectUI.addClass(`${CLASS_NAMES.labeled}`);
           this.$selectUI
-            .find(DROPDOWN_SELECTORS.menuIcon)
-            .replaceWith(`<i class="icon icon-${this.icon}"></i>`);
+            .find(Semantic.DROPDOWN_SELECTORS.menuIcon)
+            .replaceWith(`<i class="icon icon-${icon}"></i>`);
         }
       },
 
       /** @returns {HTMLElement[]} The selected label elements in a multi-select dropdown */
       getLabels() {
-        return this.$selectUI.find(DROPDOWN_SELECTORS.label).toArray();
+        return this.$selectUI.find(Semantic.DROPDOWN_SELECTORS.label).toArray();
       },
 
       /** @returns {HTMLElement[]} The selected text element in a single-select dropdown */
@@ -297,7 +282,7 @@ define([
         // default text is the placeholder
         return this.$selectUI
           .find(
-            `${DROPDOWN_SELECTORS.text}:not(.${CLASS_NAMES.dropdown.placeholder})`,
+            `${Semantic.DROPDOWN_SELECTORS.text}:not(.${Semantic.CLASS_NAMES.dropdown.placeholder})`,
           )
           .toArray();
       },
@@ -433,7 +418,7 @@ define([
        */
       addTooltipsToItems() {
         const view = this;
-        const items = this.$el.find(`.${CLASS_NAMES.dropdown.item}`);
+        const items = this.$el.find(`.${Semantic.CLASS_NAMES.dropdown.item}`);
         items.each((_i, item) => view.addTooltip(item));
       },
 
@@ -447,6 +432,7 @@ define([
           allowMulti: this.model.get("allowMulti"),
           options: this.model.optionsAsJSON(true),
           classes: CLASS_NAMES,
+          dropdownClasses: Semantic.CLASS_NAMES.dropdown,
           placeholderText: this.model.get("placeholderText"),
           inputLabel: this.model.get("inputLabel"),
           imageHeight: this.imageSize?.[0] || 30,
@@ -591,12 +577,14 @@ define([
         $headers.each((_i, header) => {
           const $header = $(header);
           const $itemGroup = $().add(
-            $header.nextUntil(`.${CLASS_NAMES.dropdown.header}`),
+            $header.nextUntil(`.${Semantic.CLASS_NAMES.dropdown.header}`),
           );
           const $itemAndHeaderGroup = $header.add(
-            $header.nextUntil(`.${CLASS_NAMES.dropdown.header}`),
+            $header.nextUntil(`.${Semantic.CLASS_NAMES.dropdown.header}`),
           );
-          const $icon = $header.next().find(`.${CLASS_NAMES.dropdown.icon}`);
+          const $icon = $header
+            .next()
+            .find(`.${Semantic.CLASS_NAMES.dropdown.icon}`);
           if ($icon && $icon.length > 0) {
             const $headerIcon = $icon.clone().css({
               opacity: "0.9",
@@ -608,7 +596,7 @@ define([
             `<div class='${CLASS_NAMES.item} ${CLASS_NAMES.popout}'/>`,
           );
           $itemGroup.wrapAll(
-            `<div class='${CLASS_NAMES.dropdown.menu} ${CLASS_NAMES.popout}'/>`,
+            `<div class='${Semantic.CLASS_NAMES.dropdown.menu} ${CLASS_NAMES.popout}'/>`,
           );
           $header.append(
             `<i class='${CLASS_NAMES.popoutIcon} ${CLASS_NAMES.chevronRight}'></i>`,
@@ -638,9 +626,11 @@ define([
           const id = headerText + randomNum;
 
           const $itemGroup = $().add(
-            $header.nextUntil(`.${CLASS_NAMES.dropdown.header}`),
+            $header.nextUntil(`.${Semantic.CLASS_NAMES.dropdown.header}`),
           );
-          const $icon = $header.next().find(`.${CLASS_NAMES.dropdown.icon}`);
+          const $icon = $header
+            .next()
+            .find(`.${Semantic.CLASS_NAMES.dropdown.icon}`);
           if ($icon && $icon.length > 0) {
             const $headerIcon = $icon
               .clone()
@@ -669,7 +659,7 @@ define([
        * @since 0.0.0
        */
       getItemHeaders() {
-        return this.$selectUI.find(`.${CLASS_NAMES.dropdown.header}`);
+        return this.$selectUI.find(`.${Semantic.CLASS_NAMES.dropdown.header}`);
       },
 
       /**
@@ -684,12 +674,12 @@ define([
           const $header = $(header);
           // this is the header
           const $itemGroup = $().add(
-            $header.nextUntil(`.${CLASS_NAMES.dropdown.header}`),
+            $header.nextUntil(`.${Semantic.CLASS_NAMES.dropdown.header}`),
           );
           const $itemGroupFiltered = $().add(
             $header.nextUntil(
-              `.${CLASS_NAMES.dropdown.header}`,
-              `.${CLASS_NAMES.dropdown.filtered}`,
+              `.${Semantic.CLASS_NAMES.dropdown.header}`,
+              `.${Semantic.CLASS_NAMES.dropdown.filtered}`,
             ),
           );
           // If all items are filtered then also hide the header
@@ -712,13 +702,13 @@ define([
       /** Visually indicate that the select interface is enabled */
       enable() {
         this.enabled = true;
-        this.$selectUI.removeClass(CLASS_NAMES.dropdown.disabled);
+        this.$selectUI.removeClass(Semantic.CLASS_NAMES.dropdown.disabled);
       },
 
       /** Visually indicate that the select interface is inactive */
       inactivate() {
         this.enabled = false;
-        this.$selectUI.addClass(CLASS_NAMES.dropdown.disabled);
+        this.$selectUI.addClass(Semantic.CLASS_NAMES.dropdown.disabled);
       },
 
       /**
@@ -768,12 +758,12 @@ define([
 
       /** Visually indicate that dropdown options are loading */
       showLoading() {
-        this.$selectUI.addClass(CLASS_NAMES.dropdown.loading);
+        this.$selectUI.addClass(Semantic.CLASS_NAMES.dropdown.loading);
       },
 
       /** Remove the loading spinner set by the showLoading */
       hideLoading() {
-        this.$selectUI.removeClass(CLASS_NAMES.dropdown.loading);
+        this.$selectUI.removeClass(Semantic.CLASS_NAMES.dropdown.loading);
       },
     },
   );

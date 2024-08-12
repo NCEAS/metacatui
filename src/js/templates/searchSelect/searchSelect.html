@@ -2,23 +2,23 @@
   <p class="subtle <%= classes.inputLabel %>"><%= inputLabel %></p>
 <% } %>
 
-<div class="fluid <%= classes.dropdown.dropdown %> <% if(allowMulti){ %> <%= classes.dropdown.multiple %> <% } %> <%= classes.dropdown.selection %> <%= classes.dropdown.search %>">
+<div class="fluid <%= dropdownClasses.dropdown %> <% if(allowMulti){ %> <%= dropdownClasses.multiple %> <% } %> <%= dropdownClasses.selection %> <%= dropdownClasses.search %>">
   <% // Do not pre-select options by providing a value to the hidden input field. %>
   <% // This causes errors in some situations. Pre-select in the view JS instead. %>
   <input name="search-select-<%= cid %>" type="hidden">
   <i class="<%= classes.chevronDown %>"></i>
-  <div class="<%= classes.placeholder %>"><%= placeholderText %></div>
-  <div class="<%= classes.dropdown.menu %>">
+  <span class="<%= classes.placeholder %>"><%= placeholderText %></span>
+  <div class="<%= dropdownClasses.menu %>">
     <% // If the list of options doesn't have category headings, put it in the %>
     <% // same format as options that do have headings. %>
     <% if (Array.isArray(options)) { options = { "" : options } } %>
     
     <% for (const [header, values] of Object.entries(options)) { %>
       <% if (header) { %>
-        <h6 class="<%= classes.dropdown.header %>"><%= header %></h6>
+        <h6 class="<%= dropdownClasses.header %>"><%= header %></h6>
       <% } %>
         <% for (option of values) { %>
-          <div class="<%= classes.dropdown.item %>" data-value="<%= option.value ? option.value : option.label %>">
+          <div class="<%= dropdownClasses.item %>" data-value="<%= option.value ? option.value : option.label %>">
             <% if (option.icon) { %>
               <i class="icon icon-on-left icon-<%= option.icon %>"></i>
             <% } else if (option.image) { %>
