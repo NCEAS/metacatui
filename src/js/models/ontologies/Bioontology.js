@@ -137,11 +137,7 @@ define(["backbone"], (Backbone) => {
 
         // In this case, there is also no returned pagination info.
         // Ensure any previous pagination info is reset to defaults.
-        const defaults = this.defaults();
-        const pageAttrs = ["page", "pageCount", "prevPage", "nextPage"];
-        pageAttrs.forEach((attr) => {
-          parsedResponse[attr] = defaults[attr];
-        });
+        this.resetPageInfo();
       }
 
       const collection = this.get("collection");
@@ -175,6 +171,46 @@ define(["backbone"], (Backbone) => {
       this.set("subTree", classId);
       this.set("queryType", "children");
       this.fetch();
+    },
+
+    /**
+     * Clears the pagination info that has been fetched from the BioPortal API
+     */
+    resetPageInfo() {
+      const defaults = this.defaults();
+      const pageAttrs = ["page", "pageCount", "prevPage", "nextPage"];
+      pageAttrs.forEach((attr) => this.set(attr, defaults[attr]));
+    },
+
+    /**
+     * Queries the BioPortal API for the label of an arbitrary ontology or
+     * class.
+     * @param {string} acronym - The ontology acronym
+     * @param {string} [subTree] - The class ID, if querying for a class
+     * @returns {Promise<string>} A promise that resolves to the label of the
+     * ontology or class
+     */
+    async fetchOntologyLabel(acronym, subTree) {
+      let url = `${this.get("apiBaseURL")}/ontologies/${acronym}`;
+
+      if (subTree) {
+        url += `/classes/${encodeURIComponent(subTree)}`;
+      }
+
+      const params = {
+        apikey: this.get("apiKey"),
+        include: "name,prefLabel",
+        include_views: false,
+        display_context: false,
+        display_links: false,
+      };
+
+      url += `?${new URLSearchParams(params).toString()}`;
+
+      return fetch(url)
+        .then((response) => response.json())
+        .then((data) => data)
+        .then((data) => data.name || data.prefLabel);
     },
   });
 

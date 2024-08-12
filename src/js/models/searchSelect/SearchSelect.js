@@ -44,11 +44,18 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
      * be set automatically by the model during initialization.
      * @property {object|boolean} apiSettings - Settings for retrieving data via
      * API, false if not using remote content.
-     * @see {@link https://fomantic-ui.com/modules/dropdown.html#remote-settings}
+     * @see
+     * {@link https://fomantic-ui.com/modules/dropdown.html#remote-settings}
      * @see {@link https://fomantic-ui.com/behaviors/api.html#/settings}
-     * @property {string} placeholderText Text to show in the input field
-     * before any value has been entered.
+     * @property {string} placeholderText Text to show in the input field before
+     * any value has been entered.
      * @property {string} inputLabel Label for the input element.
+     * @property {boolean} buttonStyle Set this to true to render the dropdown
+     * as more of a button-like interface. This works best for single-select
+     * dropdowns.
+     * @property {string|boolean} icon Set this to a FontAwesome icon to use
+     * instead of the default dropdown (down arrow) icon. Works will with the
+     * buttonStyle option.
      */
     defaults() {
       return {
@@ -66,6 +73,8 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
         apiSettings: false,
         placeholderText: "Search for or select a value",
         inputLabel: "Select a value",
+        buttonStyle: false,
+        icon: false,
       };
     },
 
@@ -245,6 +254,18 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
       const nextSeparator = this.getNextSeparator();
       if (!nextSeparator) return;
       this.set("separator", nextSeparator);
+    },
+
+    /**
+     * Get the selected models from the options collection.
+     * @returns {SearchSelectOption[]} - The selected models from the options
+     * collection.
+     */
+    getSelectedModels() {
+      const selected = this.get("selected");
+      return this.get("options").filter((model) =>
+        selected.includes(model.get("value")),
+      );
     },
   });
 

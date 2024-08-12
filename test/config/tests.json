@@ -52,6 +52,7 @@
     "./js/specs/unit/models/connectors/Filters-Search.spec.js",
     "./js/specs/unit/models/connectors/Map-Search-Filters.spec.js",
     "./js/specs/unit/models/connectors/Map-Search.spec.js",
+    "./js/specs/unit/models/connectors/Bioontology-Accordion-SearchSelect.spec.js",
     "./js/specs/unit/models/filters/SpatialFilter.spec.js",
     "./js/specs/unit/models/maps/Geohash.spec.js",
     "./js/specs/unit/models/maps/assets/CesiumGeohash.spec.js",
