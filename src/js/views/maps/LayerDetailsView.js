@@ -12,7 +12,7 @@ define([
   "views/maps/LayerInfoView",
   "views/maps/LayerNavigationView",
   "views/maps/LegendView",
-], function (
+], (
   $,
   _,
   Backbone,
@@ -24,7 +24,7 @@ define([
   LayerInfoView,
   LayerNavigationView,
   LegendView,
-) {
+) => {
   /**
    * @class LayerDetailsView
    * @classdesc A panel with additional information about a Layer (a Map Asset like
@@ -32,12 +32,12 @@ define([
    * the map, such as the opacity.
    * @classcategory Views/Maps
    * @name LayerDetailsView
-   * @extends Backbone.View
+   * @augments Backbone.View
    * @screenshot views/maps/LayerDetailsView.png
    * @since 2.18.0
    * @constructs
    */
-  var LayerDetailsView = Backbone.View.extend(
+  const LayerDetailsView = Backbone.View.extend(
     /** @lends LayerDetailsView.prototype */ {
       /**
        * The type of View this is
@@ -149,11 +149,11 @@ define([
        * selector': 'function'.
        * @returns {Object}
        */
-      events: function () {
-        var events = {};
+      events() {
+        const events = {};
         // Close the layer details panel when the toggle button is clicked. Get the
         // class of the toggle button from the classes property set in this view.
-        events["click ." + this.classes.toggle] = "close";
+        events[`click .${this.classes.toggle}`] = "close";
         return events;
       },
 
@@ -167,30 +167,30 @@ define([
        * Executed when a new LayerDetailsView is created
        * @param {Object} [options] - A literal object with options to pass to the view
        */
-      initialize: function (options) {
+      initialize(options) {
         try {
           // Get all the options and apply them to this view
-          if (typeof options == "object") {
-            for (const [key, value] of Object.entries(options)) {
-              this[key] = value;
-            }
+          if (typeof options === "object") {
+            Object.keys(options).forEach((key) => {
+              this[key] = options[key];
+            });
           }
         } catch (e) {
           console.log(
-            "A LayerDetailsView failed to initialize. Error message: " + e,
+            `A LayerDetailsView failed to initialize. Error message: ${e}`,
           );
         }
       },
 
       /**
        * Renders this view
-       * @return {LayerDetailsView} Returns the rendered view element
+       * @returns {LayerDetailsView} Returns the rendered view element
        */
-      render: function () {
+      render() {
         try {
           // Save a reference to this view
-          var view = this;
-          var model = this.model;
+          const view = this;
+          const { model } = this;
 
           // Show the layer details box as open if the view is set to have it open
           // already
@@ -210,21 +210,21 @@ define([
 
           // Select elements in the template that we will need to manipulate
           const sectionsContainer = this.el.querySelector(
-            "." + this.classes.sections,
+            `.${this.classes.sections}`,
           );
-          const labelEl = this.el.querySelector("." + this.classes.label);
+          const labelEl = this.el.querySelector(`.${this.classes.label}`);
 
           // Render each section in the Details panel
           this.renderedSections = _.clone(this.sections);
 
           // Remove and do not render opacity section if showOpacitySlider is false
-          if (model.get("showOpacitySlider") === false) {
+          if (model && model.get("showOpacitySlider") === false) {
             this.renderedSections = this.renderedSections.filter(
               (item) => item.label !== "Opacity",
             );
           }
 
-          this.renderedSections.forEach(function (section) {
+          this.renderedSections.forEach((section) => {
             const detailSection = new LayerDetailView({
               label: section.label,
               contentView: section.view,
@@ -250,15 +250,13 @@ define([
           this.listenTo(model, "change:status", function (model, status) {
             const hideIfErrorSections = _.filter(
               this.renderedSections,
-              function (section) {
-                return section.hideIfError;
-              },
+              (section) => section.hideIfError,
             );
             let displayProperty = "";
             if (status === "error") {
               displayProperty = "none";
             }
-            hideIfErrorSections.forEach(function (section) {
+            hideIfErrorSections.forEach((section) => {
               section.renderedView.el.style.display = displayProperty;
             });
           });
@@ -273,8 +271,7 @@ define([
               noticeEl.classList.add(this.classes.notification);
               noticeEl.innerText = notice.message;
               if (notice.style) {
-                const badgeClass =
-                  this.classes.notification + "--" + notice.style;
+                const badgeClass = `${this.classes.notification}--${notice.style}`;
                 noticeEl.classList.add(badgeClass);
               }
               sectionsContainer.prepend(noticeEl);
@@ -285,7 +282,7 @@ define([
               badge.classList.add(this.classes.badge);
               badge.innerText = notice.badge;
               if (notice.style) {
-                const badgeClass = this.classes.badge + "--" + notice.style;
+                const badgeClass = `${this.classes.badge}--${notice.style}`;
                 badge.classList.add(badgeClass);
               }
               labelEl.append(badge);
@@ -296,8 +293,8 @@ define([
         } catch (error) {
           console.log(
             "There was an error rendering a LayerDetailsView" +
-              ". Error details: " +
-              error,
+            ". Error details: " +
+            error,
           );
         }
       },
@@ -306,7 +303,7 @@ define([
        * Show/expand the Layer Details panel. Opening the panel also changes the
        * MapAsset model's 'selected attribute' to true.
        */
-      open: function () {
+      open() {
         try {
           this.el.classList.add(this.classes.open);
           this.isOpen = true;
@@ -316,9 +313,8 @@ define([
           }
         } catch (error) {
           console.log(
-            "There was an error opening the LayerDetailsView" +
-              ". Error details: " +
-              error,
+            `There was an error opening the LayerDetailsView` +
+            `. Error details: ${error}`,
           );
         }
       },
@@ -327,7 +323,7 @@ define([
        * Hide/collapse the Layer Details panel. Closing the panel also changes the
        * MapAsset model's 'selected attribute' to false.
        */
-      close: function () {
+      close() {
         try {
           this.el.classList.remove(this.classes.open);
           this.isOpen = false;
@@ -337,9 +333,8 @@ define([
           }
         } catch (error) {
           console.log(
-            "There was an error closing the LayerDetailsView" +
-              ". Error details: " +
-              error,
+            `There was an error closing the LayerDetailsView` +
+            `. Error details: ${error}`,
           );
         }
       },
@@ -351,10 +346,10 @@ define([
        * view. If set to null, then the view will be rendered without any layer
        * information.
        */
-      updateModel: function (newModel) {
+      updateModel(newModel) {
         try {
           // Remove listeners from sub-views
-          this.renderedSections.forEach(function (section) {
+          this.renderedSections.forEach((section) => {
             if (
               section.renderedView &&
               typeof section.renderedView.onClose === "function"
@@ -366,9 +361,8 @@ define([
           this.render();
         } catch (error) {
           console.log(
-            "There was an error updating the MapAsset model in a LayerDetailsView" +
-              ". Error details: " +
-              error,
+            `There was an error updating the MapAsset model in a LayerDetailsView` +
+            `. Error details: ${error}`,
           );
         }
       },

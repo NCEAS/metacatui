@@ -273,6 +273,19 @@ define([
        * used instead (see {@link MapModel#defaults}).
        */
       initialize(config) {
+        config.layers = [
+          {
+            "label": "Local Stories",
+            "layerId": "ls",
+            "type": "GeoJsonDataSource",
+            "opacity": 0.75,
+            "showOpacitySlider": false,
+            "clickFeatureAction": "showDetails",
+            "cesiumOptions": {
+              "data": "https://www.leonetwork.org/en/explore/posts?query=&type=TWEET&type=POST&type=ARTICLE&mode=geojson_compact&region=&polygon=&bbox=&minlat=&maxlat=&near=&radius=&categories=PERMAFROST%7cPermafrost+Change&categories_anyOrAll=ANY&fromdate=&todate="
+            }
+          }
+        ]
         try {
           if (config && config instanceof Object) {
             if (isNonEmptyArray(config.layerCategories)) {
@@ -395,7 +408,8 @@ define([
       getLayerGroups() {
         if (this.has("layerCategories")) {
           return this.get("layerCategories").getMapAssets();
-        } else if (this.has("layers")) {
+        }
+        if (this.has("layers")) {
           return [this.get("layers")];
         }
         return [];
