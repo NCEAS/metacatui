@@ -147,7 +147,7 @@ define([
        * Creates an object that gives the events this view will listen to and the
        * associated function to call. Each entry in the object has the format 'event
        * selector': 'function'.
-       * @returns {Object}
+       * @returns {object}
        */
       events() {
         const events = {};
@@ -165,7 +165,7 @@ define([
 
       /**
        * Executed when a new LayerDetailsView is created
-       * @param {Object} [options] - A literal object with options to pass to the view
+       * @param {object} [options] - A literal object with options to pass to the view
        */
       initialize(options) {
         try {
@@ -292,9 +292,8 @@ define([
           return this;
         } catch (error) {
           console.log(
-            "There was an error rendering a LayerDetailsView" +
-            ". Error details: " +
-            error,
+            `There was an error rendering a LayerDetailsView` +
+              `. Error details: ${error}`,
           );
         }
       },
@@ -314,7 +313,7 @@ define([
         } catch (error) {
           console.log(
             `There was an error opening the LayerDetailsView` +
-            `. Error details: ${error}`,
+              `. Error details: ${error}`,
           );
         }
       },
@@ -334,7 +333,7 @@ define([
         } catch (error) {
           console.log(
             `There was an error closing the LayerDetailsView` +
-            `. Error details: ${error}`,
+              `. Error details: ${error}`,
           );
         }
       },
@@ -362,7 +361,7 @@ define([
         } catch (error) {
           console.log(
             `There was an error updating the MapAsset model in a LayerDetailsView` +
-            `. Error details: ${error}`,
+              `. Error details: ${error}`,
           );
         }
       },
