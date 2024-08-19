@@ -65,7 +65,7 @@ define([
 
       /**
        * Classes that are used to identify the HTML elements that comprise this view.
-       * @type {Object}
+       * @type {object}
        * @property {string} open The class to add to the outermost HTML element for this
        * view when the layer details view is open/expanded (not hidden)
        * @property {string} toggle The element in the template that acts as a toggle to
@@ -90,7 +90,7 @@ define([
       /**
        * Configuration for a Layer Detail section to show within this Layer Details
        * view.
-       * @typedef {Object} DetailSectionOption
+       * @typedef {object} DetailSectionOption
        * @property {string} label The name to display for this section
        * @property {Backbone.View} view Any view that will render content for the Layer
        * Detail section. This view will be passed the MapAsset model. The view should
@@ -159,7 +159,7 @@ define([
 
       /**
        * Whether or not the layer details view is open
-       * @type {Boolean}
+       * @type {boolean}
        */
       isOpen: false,
 
@@ -239,13 +239,14 @@ define([
                 detailSection.el.style.display = "none";
               }
             }
-            section.renderedView = detailSection;
+            const renderedViewEl = section.renderedView.el;
+            renderedViewEl.style.display = detailSection;
           });
 
           // Hide/show sections with the 'hideIfError' property when the status of the
           // MapAsset changes
           this.stopListening(model, "change:status");
-          this.listenTo(model, "change:status", function (model, status) {
+          this.listenTo(model, "change:status", (modelObj, status) => {
             const hideIfErrorSections = _.filter(
               this.renderedSections,
               (section) => section.hideIfError,
@@ -255,7 +256,8 @@ define([
               displayProperty = "none";
             }
             hideIfErrorSections.forEach((section) => {
-              section.renderedView.el.style.display = displayProperty;
+              const renderedViewEl = section.renderedView.el;
+              renderedViewEl.style.display = displayProperty;
             });
           });
 
@@ -291,7 +293,7 @@ define([
         } catch (error) {
           console.log(
             `There was an error rendering a LayerDetailsView` +
-            `. Error details: ${error}`,
+              `. Error details: ${error}`,
           );
         }
       },
@@ -311,7 +313,7 @@ define([
         } catch (error) {
           console.log(
             `There was an error opening the LayerDetailsView` +
-            `. Error details: ${error}`,
+              `. Error details: ${error}`,
           );
         }
       },
@@ -331,7 +333,7 @@ define([
         } catch (error) {
           console.log(
             `There was an error closing the LayerDetailsView` +
-            `. Error details: ${error}`,
+              `. Error details: ${error}`,
           );
         }
       },
@@ -359,7 +361,7 @@ define([
         } catch (error) {
           console.log(
             `There was an error updating the MapAsset model in a LayerDetailsView` +
-            `. Error details: ${error}`,
+              `. Error details: ${error}`,
           );
         }
       },
