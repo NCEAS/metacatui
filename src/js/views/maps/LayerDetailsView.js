@@ -216,7 +216,7 @@ define([
           this.renderedSections = _.clone(this.sections);
 
           // Remove and do not render opacity section if showOpacitySlider is false
-          if (model && model.get("showOpacitySlider") === false) {
+          if (model?.get("showOpacitySlider") === false) {
             this.renderedSections = this.renderedSections.filter(
               (item) => item.label !== "Opacity",
             );
@@ -291,7 +291,7 @@ define([
         } catch (error) {
           console.log(
             `There was an error rendering a LayerDetailsView` +
-              `. Error details: ${error}`,
+            `. Error details: ${error}`,
           );
         }
       },
@@ -311,7 +311,7 @@ define([
         } catch (error) {
           console.log(
             `There was an error opening the LayerDetailsView` +
-              `. Error details: ${error}`,
+            `. Error details: ${error}`,
           );
         }
       },
@@ -331,7 +331,7 @@ define([
         } catch (error) {
           console.log(
             `There was an error closing the LayerDetailsView` +
-              `. Error details: ${error}`,
+            `. Error details: ${error}`,
           );
         }
       },
@@ -359,7 +359,7 @@ define([
         } catch (error) {
           console.log(
             `There was an error updating the MapAsset model in a LayerDetailsView` +
-              `. Error details: ${error}`,
+            `. Error details: ${error}`,
           );
         }
       },
