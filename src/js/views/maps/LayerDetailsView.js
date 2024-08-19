@@ -188,8 +188,6 @@ define([
        */
       render() {
         try {
-          // Save a reference to this view
-          const view = this;
           const { model } = this;
 
           // Show the layer details box as open if the view is set to have it open
