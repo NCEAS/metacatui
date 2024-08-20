@@ -184,7 +184,7 @@ define([
 
       /**
        * Renders this view
-       * @returns {LayerDetailsView} Returns the rendered view element
+       * @returns {LayerDetailsView | null} Returns the rendered view element
        */
       render() {
         try {
@@ -295,6 +295,7 @@ define([
             `There was an error rendering a LayerDetailsView` +
               `. Error details: ${error}`,
           );
+          return null;
         }
       },
 
