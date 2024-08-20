@@ -246,7 +246,7 @@ define([
           // Hide/show sections with the 'hideIfError' property when the status of the
           // MapAsset changes
           this.stopListening(model, "change:status");
-          this.listenTo(model, "change:status", (modelObj, status) => {
+          this.listenTo(model, "change:status", (_model, status) => {
             const hideIfErrorSections = _.filter(
               this.renderedSections,
               (section) => section.hideIfError,
@@ -293,7 +293,7 @@ define([
         } catch (error) {
           console.log(
             `There was an error rendering a LayerDetailsView` +
-              `. Error details: ${error}`,
+            `. Error details: ${error}`,
           );
           return null;
         }
@@ -314,7 +314,7 @@ define([
         } catch (error) {
           console.log(
             `There was an error opening the LayerDetailsView` +
-              `. Error details: ${error}`,
+            `. Error details: ${error}`,
           );
         }
       },
@@ -334,7 +334,7 @@ define([
         } catch (error) {
           console.log(
             `There was an error closing the LayerDetailsView` +
-              `. Error details: ${error}`,
+            `. Error details: ${error}`,
           );
         }
       },
@@ -362,7 +362,7 @@ define([
         } catch (error) {
           console.log(
             `There was an error updating the MapAsset model in a LayerDetailsView` +
-              `. Error details: ${error}`,
+            `. Error details: ${error}`,
           );
         }
       },
