@@ -239,8 +239,7 @@ define([
                 detailSection.el.style.display = "none";
               }
             }
-            const renderedViewEl = section.renderedView.el;
-            renderedViewEl.style.display = detailSection;
+            section.renderedView = detailSection;
           });
 
           // Hide/show sections with the 'hideIfError' property when the status of the
