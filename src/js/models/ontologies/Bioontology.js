@@ -1,6 +1,9 @@
 "use strict";
 
-define(["backbone"], (Backbone) => {
+define(["backbone", "models/ontologies/BioontologyClass"], (
+  Backbone,
+  BioontologyClass,
+) => {
   /**
    * @class Bioontology
    * @classdesc A model that fetches data from the BioPortal API for a given
@@ -29,7 +32,7 @@ define(["backbone"], (Backbone) => {
         prevPage: null,
         nextPage: null,
         links: {},
-        collection: new Backbone.Collection(),
+        collection: new Backbone.Collection([], { model: BioontologyClass }),
         apiKey: null,
         apiBaseURL: "https://data.bioontology.org",
         subTree:
@@ -140,12 +143,14 @@ define(["backbone"], (Backbone) => {
         this.resetPageInfo();
       }
 
-      const collection = this.get("collection");
+      const collection =
+        this.get("collection") ||
+        new Backbone.Collection([], { model: BioontologyClass });
 
       if (options.replaceCollection === true) {
-        collection.reset(parsedResponse.collection);
+        collection.reset(parsedResponse.collection, { parse: true });
       } else {
-        collection.add(parsedResponse.collection);
+        collection.add(parsedResponse.collection, { parse: true });
       }
       parsedResponse.collection = collection;
       return parsedResponse;
@@ -180,37 +185,6 @@ define(["backbone"], (Backbone) => {
       const defaults = this.defaults();
       const pageAttrs = ["page", "pageCount", "prevPage", "nextPage"];
       pageAttrs.forEach((attr) => this.set(attr, defaults[attr]));
-    },
-
-    /**
-     * Queries the BioPortal API for the label of an arbitrary ontology or
-     * class.
-     * @param {string} acronym - The ontology acronym
-     * @param {string} [subTree] - The class ID, if querying for a class
-     * @returns {Promise<string>} A promise that resolves to the label of the
-     * ontology or class
-     */
-    async fetchOntologyLabel(acronym, subTree) {
-      let url = `${this.get("apiBaseURL")}/ontologies/${acronym}`;
-
-      if (subTree) {
-        url += `/classes/${encodeURIComponent(subTree)}`;
-      }
-
-      const params = {
-        apikey: this.get("apiKey"),
-        include: "name,prefLabel",
-        include_views: false,
-        display_context: false,
-        display_links: false,
-      };
-
-      url += `?${new URLSearchParams(params).toString()}`;
-
-      return fetch(url)
-        .then((response) => response.json())
-        .then((data) => data)
-        .then((data) => data.name || data.prefLabel);
     },
   });
 

@@ -8,16 +8,12 @@ define([
 ], (Backbone, Bioontology, Accordion, SearchSelect) =>
   /**
    * @class BioontologyAccordionSearchSelect
-   * @classdesc A model that handles the connection between the BioPortal API,
-   * the Accordion model that holds the BioPortal search results for display,
-   * and the SearchSelect model that determines which ontology to search.
-   * Updating the selected ontology in the SearchSelect model will trigger a new
-   * search for classes under the given ontology in the BioPortal API. When new
-   * search results are fetched, the Accordion model is updated with the new
-   * search results formatted for display in an accordion. When a class is
-   * selected in the Accordion, this model also tracks the selected ontology and
-   * class for use in other parts of the application. This model is used for the
-   * BioontologyBrowser view.
+   * @classdesc Manages interactions between the BioPortal API and UI components.
+   * It connects the SearchSelect model, which specifies the ontology for querying,
+   * with the Accordion model that displays the search results. Changes in the selected
+   * ontology trigger a new search, updating the Accordion with formatted results.
+   * This model also tracks selected ontology classes for use across the application,
+   * primarily in the BioontologyBrowser view.
    * @name  BioontologyAccordionSearchSelect
    * @augments Backbone.Model
    * @class
@@ -27,7 +23,18 @@ define([
   Backbone.Model.extend(
     /** @lends  BioontologyAccordionSearchSelect.prototype */ {
       /**
-       * @inheritdoc
+       * Default model attributes
+       * @type {object}
+       * @property {Bioontology} bioontology - The Bioontology model
+       * @property {Accordion} accordion - The Accordion model
+       * @property {SearchSelect} searchSelect - The SearchSelect model
+       * @property {BioontologyClass} selectedClass - The selected ontology class
+       * @property {string} accordionRoot - The root-level ontology or subtree when
+       * the Bioontology model is first fetched (can change when searching subtrees).
+       * @property {string} defaultSubtree - The default subtree to display when
+       * if no subtree is specified in the ontology options.
+       * @property {Array} ontologyOptions - An array of objects specifying the
+       * ontologies to choose from in the SearchSel
        */
       defaults() {
         return {
@@ -35,8 +42,7 @@ define([
           accordion: null,
           searchSelect: null,
           selectedClass: null,
-          originalOntologyRoot: null,
-          // TODO: Test if this default works for all cases
+          accordionRoot: null,
           defaultSubtree: "http://www.w3.org/2002/07/owl#Thing",
           ontologyOptions: [
             {
@@ -51,51 +57,87 @@ define([
 
       /** @inheritdoc */
       initialize(attributes, _options) {
+        // Each ontology needs a unique value for the searchSelect component
+        const defaults = this.defaults();
         const ontologyOptions =
-          attributes?.ontologyOptions || this.defaults().ontologyOptions;
-
+          attributes?.ontologyOptions || defaults.ontologyOptions;
         const updatedOntologyOptions = ontologyOptions.map((option, index) => ({
           ...option,
           value: `ontology-${index}`,
         }));
-        const firstOntology = updatedOntologyOptions[0];
 
-        this.set(
-          "bioontology",
-          new Bioontology({
-            ontology: firstOntology.ontology,
-            subTree: firstOntology.subTree,
-          }),
-        );
-        this.get("bioontology").fetch();
-        this.set(
-          "accordion",
-          new Accordion({
-            onOpening: this.fetchChildren.bind(this),
-            onChanging: this.selectSelectedClass.bind(this),
-            items: [{ title: "loading..." }], // TODO
-          }),
-        );
-        this.set(
-          "searchSelect",
-          new SearchSelect({
-            buttonStyle: true,
-            icon: "sitemap",
-            allowMulti: false,
-            allowAdditions: false,
-            clearable: false,
-            selected: [firstOntology.value],
-            inputLabel: "Browse for an ontology or class",
-            options: updatedOntologyOptions,
-          }),
-        );
+        const firstOntology = updatedOntologyOptions[0] || {};
+        const firstOntologyValue = firstOntology.value || "";
 
-        this.set(
-          "originalRoot",
-          this.get("bioontology").get("subTree") || this.get("defaultSubtree"),
-        );
-
+        this.setupBioontology(firstOntology);
+        this.setupAccordion();
+        this.setupSearchSelect(updatedOntologyOptions, firstOntologyValue);
+        this.setAccordionRoot();
         this.connect();
+      },
+
+      /**
+       * Sets up the Bioontology model with the first ontology and fetches the
+       * ontology classes.
+       * @param {object} firstOntology - The first ontology object in the
+       * ontologyOptions array.
+       */
+      setupBioontology(firstOntology) {
+        const bioontology = new Bioontology({
+          ontology: firstOntology.ontology,
+          subTree: firstOntology.subTree,
+        });
+        bioontology.fetch();
+        this.set("bioontology", bioontology);
+      },
+
+      /**
+       * Sets up the Accordion model with the first ontology and fetches the
+       * ontology classes.
+       */
+      setupAccordion() {
+        const accordion = new Accordion({
+          onOpening: this.fetchChildren.bind(this),
+          onChanging: this.selectSelectedClass.bind(this),
+          items: [{ title: "loading..." }],
+        });
+        this.set("accordion", accordion);
+      },
+
+      /**
+       * Sets up the SearchSelect model with the ontology options and the first
+       * ontology.
+       * @param {object[]} options - An array of ontology options objects to
+       * populate a search select model.
+       * @param {string} selected - The value of the first ontology to select.
+       */
+      setupSearchSelect(options, selected) {
+        const searchSelect = new SearchSelect({
+          buttonStyle: true,
+          icon: "sitemap",
+          allowMulti: false,
+          allowAdditions: false,
+          clearable: false,
+          selected: [selected],
+          inputLabel: "Browse for an ontology or class",
+          options,
+        });
+        this.set("searchSelect", searchSelect);
+      },
+
+      /**
+       * Sets the accordionRoot attribute to the root ontology or subtree when
+       * the Bioontology model is first fetched.
+       * @param {string} [subTree] - The root ontology or subtree. If not
+       * provided, current subTree of the Bioontology model is used or the
+       * default subtree.
+       */
+      setAccordionRoot(subTree) {
+        const root =
+          subTree ||
+          this.get("bioontology").get("subTree") ||
+          this.get("defaultSubtree");
+        this.set("accordionRoot", root);
       },
 
       /**
@@ -140,10 +182,9 @@ define([
        */
       selectSelectedClass(itemModel) {
         const ontologyId = itemModel.get("itemId");
-
         const ontClass = this.get("bioontology")
           .get("collection")
-          .find((cls) => cls.get("@id") === ontologyId);
+          .get(ontologyId);
         this.set("selectedClass", ontClass);
       },
 
@@ -152,47 +193,23 @@ define([
        * This method is called when the bioontology results model changes.
        */
       syncAccordion() {
+        const root = this.get("accordionRoot");
         const data = this.get("bioontology")
           .get("collection")
-          .map((cls) => this.ontologyClassToAccordionItem(cls));
+          .map((cls) => {
+            const accordionItem = cls.toAccordionItem();
+            const { parent } = accordionItem;
+            accordionItem.parent = parent === root ? "" : parent;
+            return accordionItem;
+          });
         this.get("accordion").get("items").set(data);
-      },
-
-      /**
-       * Converts an ontology class model to an accordion item model.
-       * @param {Backbone.Model} cls - The ontology class model to convert.
-       * @returns {object} Attributes for an accordion item model.
-       */
-      ontologyClassToAccordionItem(cls) {
-        const root = this.get("originalRoot");
-        const title = cls.get("prefLabel");
-        const definitions = cls.get("definition");
-        const description = definitions?.length ? definitions[0] : "";
-        const hasChildren = cls.get("hasChildren");
-        const itemId = cls.get("@id");
-        const parents = cls.get("subClassOf");
-
-        const content = hasChildren ? "loading..." : "";
-        let parent = parents?.length ? parents[0] : "";
-        parent = parent === root ? "" : parent;
-
-        return {
-          title,
-          description,
-          hasChildren,
-          itemId,
-          parent,
-          content,
-          // ID needed to prevent re-adding existing items on sync
-          id: itemId,
-        };
       },
 
       /**
        * Switches the ontology in the bioontology model to the selected ontology
        * and fetches the new ontology classes.
-       * @param {Backbone.Model} newOntology - The selected ontology model, with
-       * ontology and subTree attributes.
+       * @param {BioontolgyClass} newOntology - The selected ontology model,
+       * with ontology and subTree attributes.
        */
       switchOntology(newOntology) {
         const bioontology = this.get("bioontology");
@@ -202,7 +219,7 @@ define([
         bioontology.resetPageInfo();
         bioontology.set("ontology", newOntologyName);
         bioontology.set("subTree", newSubtree);
-        this.set("originalRoot", newSubtree || this.get("defaultSubtree"));
+        this.setAccordionRoot(newSubtree || this.get("defaultSubtree"));
         bioontology.fetch({ replaceCollection: true });
       },
     },
