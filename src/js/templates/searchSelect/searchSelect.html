@@ -1,8 +1,12 @@
+<%
+// This template is now deprecated, html is generated within the view itself.
+%>
+
 <% if (inputLabel) { %>
   <p class="subtle <%= classes.inputLabel %>"><%= inputLabel %></p>
 <% } %>
 
-<div class="fluid <%= dropdownClasses.dropdown %> <% if(allowMulti){ %> <%= dropdownClasses.multiple %> <% } %> <%= dropdownClasses.selection %> <%= dropdownClasses.search %>">
+<div class="<%= dropdownClasses.dropdown %> <% if(allowMulti){ %> <%= dropdownClasses.multiple %> <% } %> <%= dropdownClasses.selection %> <%= dropdownClasses.search %>">
   <% // Do not pre-select options by providing a value to the hidden input field. %>
   <% // This causes errors in some situations. Pre-select in the view JS instead. %>
   <input name="search-select-<%= cid %>" type="hidden">
