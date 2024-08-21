@@ -32,6 +32,12 @@ define([
         content: "content",
       },
       dropdown: $obj.dropdown.settings.className,
+      modal: {
+        ...$obj.modal.settings.className,
+        base: "modal",
+        closeButton: "close",
+        content: "content",
+      },
       // Button & card & message modules CSS only and don't have jQuery settings
       button: {
         base: "button",
@@ -61,6 +67,7 @@ define([
         styled: "styled",
         inverted: "inverted",
         mini: "mini",
+        small: "small",
         info: "info",
         raised: "raised",
         attached: "attached",

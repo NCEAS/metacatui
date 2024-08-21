@@ -42,7 +42,7 @@
 }
 /* Make sure the text element is at the top of the dropdown so that tooltips work */
 .ui.search.dropdown>.text {
-  z-index: 22;
+  z-index: 2;
 }
 /* Loading */
 .ui.loading.selection.dropdown>i.icon {
@@ -77,6 +77,10 @@
 }
 .ui .icon:not(.delete){
   color: #707070;
+}
+.ui .icon.category-icon {
+  opacity: 0.9;
+  margin-right: 1rem;
 }
 .ui.label .delete.icon:before {
   content: "\f00d";
@@ -226,3 +230,18 @@
   }
 }
 
+/* bioontology select view */
+.bioontology-select{
+  flex-wrap: wrap;
+  display: flex;
+
+  .ui.selection.dropdown {
+    flex-grow: 1;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .search-select-label{
+    flex-basis: 100%;
+  }
+}
