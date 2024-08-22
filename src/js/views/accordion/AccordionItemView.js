@@ -14,7 +14,7 @@ define(["jquery", "backbone", "semantic", "models/accordion/AccordionItem"], (
    * @augments Backbone.View
    * @class
    * @since 0.0.0
-   * @screenshot views/searchSelect/AccordionItemViewView.png // TODO
+   * @screenshot views/accordion/AccordionItemViewView.png
    */
   const AccordionItemView = Backbone.View.extend(
     /** @lends AccordionItemView.prototype */

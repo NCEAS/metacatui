@@ -128,7 +128,8 @@ define(["backbone"], (Backbone) => {
         label: this.get("prefLabel") || this.get("label") || this.get("@id"),
         description: this.get("definition")?.[0] || "",
         value: this.get("@id"),
-        // TODO: Add extras like ontology acronym & results in catalog, if available
+        // TODO: Add extras like ontology acronym & # results in catalog. Use to
+        // populate a tooltip & description for the option item.
       };
     },
 

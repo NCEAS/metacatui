@@ -17,7 +17,7 @@ define([
    * @augments Backbone.View
    * @class
    * @since 0.0.0
-   * @screenshot views/Accordion/AccordionView.png // TODO
+   * @screenshot views/accordion/AccordionView.png
    */
   const AccordionView = Backbone.View.extend(
     /** @lends AccordionView.prototype */
@@ -97,6 +97,8 @@ define([
           const callback = createCallback(callbackName);
           if (callback) {
             settings[callbackName] = callback;
+          } else {
+            delete settings[callbackName];
           }
         });
 

@@ -222,8 +222,6 @@ define(["backbone", "models/ontologies/BioontologyClass"], (
       const responses = [];
 
       ontologies.forEach(async (ontology) => {
-        // TODO: Add error handling for failed requests, continue to next
-        // ontology
         const classesToFetch = this.get("classesToFetch");
         if (!classesToFetch.length) {
           return;
@@ -232,10 +230,12 @@ define(["backbone", "models/ontologies/BioontologyClass"], (
         const response = await this.fetchClassesFromOntology(
           classesToFetch,
           ontology,
-        );
+        ).catch((error) => {
+          this.recordError(error);
+          return null;
+        });
         if (response) {
           responses.push(response);
-
           await this.addClassesFromResponse(response);
           // Update the list of classes to fetch based on what was found
           this.filterClassesToFetch();

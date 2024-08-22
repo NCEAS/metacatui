@@ -158,12 +158,12 @@ define([
         this.menu = this.createMenu();
         this.menuEl = this.menu.el;
 
-        this.el.append(this.labelEl, this.selectContainerEl);
+        this.el.append(this.labelEl || "", this.selectContainerEl || "");
         this.selectContainerEl.append(
-          this.inputEl,
-          this.iconEl,
-          this.placeholderEl,
-          this.menuEl,
+          this.inputEl || "",
+          this.iconEl || "",
+          this.placeholderEl || "",
+          this.menuEl || "",
         );
 
         this.$selectUI = $(this.selectContainerEl);

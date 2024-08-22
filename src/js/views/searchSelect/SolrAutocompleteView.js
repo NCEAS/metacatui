@@ -10,7 +10,7 @@ define([
    * @augments SearchSelect
    * @class
    * @since 0.0.0
-   * @screenshot
+   * @screenshot views/searchSelect/SolrAutocompleteView.png
    */
   const SolrAutocompleteView = SearchSelect.extend(
     /** @lends SolrAutocompleteView.prototype */

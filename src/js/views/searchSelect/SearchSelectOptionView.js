@@ -18,7 +18,7 @@ define(["backbone", "semantic", "models/searchSelect/SearchSelectOption"], (
    * @augments SearchSelect
    * @class
    * @since 0.0.0
-   * @screenshot
+   * @screenshot views/searchSelect/SearchSelectOptionView.png
    */
   return Backbone.View.extend(
     /** @lends SearchSelectOptionView.prototype */
@@ -148,7 +148,7 @@ define(["backbone", "semantic", "models/searchSelect/SearchSelectOption"], (
        * Create HTML for a tooltip for a given option.
        * @returns {string|null} An HTML string to use for the content of the
        * tooltip.
-       * TODO: Pass on other options from the parent view.
+       * TODO: Pass on other options from the parent view...
        */
       tooltipHTML() {
         return this.model.get("description") || null;

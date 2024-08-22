@@ -1,12 +1,14 @@
 "use strict";
 
 define([
+  "backbone",
   "jquery",
   "semantic",
   "models/ontologies/BioontologyBatch",
   "views/searchSelect/SolrAutocompleteView",
   "views/ontologies/BioontologyBrowserView",
 ], (
+  Backbone,
   $,
   Semantic,
   BioontologyBatch,
@@ -53,10 +55,10 @@ define([
 
       /**
        * The name of the field in the Solr schema that the user is searching.
-       * @type {string} TODO: Should we use the annotation fields configured in
-       * MetacatUI appConfig?
+       * @type {string}
        */
       queryField: "sem_annotation",
+      // TODO: Default to the anno fields configured in MetacatUI appConfig?
 
       /**
        * Set this to false to avoid fetching class labels from BioPortal. The
@@ -186,9 +188,14 @@ define([
       /**
        * Add the details of the ontology classes to the options in the select
        * element
-       * @param {Collection} collection - The collection of ontology classes
+       * @param {Collection|Array} classes - The collection of classes to add
+       * to the options
        */
-      addOptionDetails(collection) {
+      addOptionDetails(classes) {
+        if (!classes?.length) return;
+        // if collection is an array, make it a collection
+        let collection = classes;
+        if (!classes.get) collection = new Backbone.Collection(collection);
         const options = this.model.get("options");
         // Get only the options that don't already at least have a label
         const toUpdate = options.filter((option) => {
