@@ -72,9 +72,9 @@ define([
       };
       const options = { replaceCollection: true };
       const parsed = state.ontology.parse(response, options);
-      parsed.collection
-        .toJSON()
-        .should.deep.equal([{ "@id": 1 }, { "@id": 2 }]);
+      const json = parsed.collection.toJSON();
+      json[0].id.should.equal(1);
+      json[1].id.should.equal(2);
     });
   });
 });

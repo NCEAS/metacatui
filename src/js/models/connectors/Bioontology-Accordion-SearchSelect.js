@@ -97,7 +97,7 @@ define([
       setupAccordion() {
         const accordion = new Accordion({
           onOpening: this.fetchChildren.bind(this),
-          onChanging: this.selectSelectedClass.bind(this),
+          onChanging: this.setSelectedClass.bind(this),
           items: [{ title: "loading..." }],
         });
         this.set("accordion", accordion);
@@ -179,7 +179,7 @@ define([
        * in this connector to the selected class.
        * @param {Backbone.Model} itemModel - The model of the selected class.
        */
-      selectSelectedClass(itemModel) {
+      setSelectedClass(itemModel) {
         const ontologyId = itemModel.get("itemId");
         const ontClass = this.get("bioontology")
           .get("collection")

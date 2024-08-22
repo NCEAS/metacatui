@@ -86,12 +86,12 @@ define([
 
     it("moves classes to not found", () => {
       state.ontologyBatch.set({
-        termsNotFound: ["term1"],
+        classesNotFound: ["term1"],
         classesToFetch: ["term2"],
       });
       state.ontologyBatch.moveClassesToNotFound();
       state.ontologyBatch
-        .get("termsNotFound")
+        .get("classesNotFound")
         .should.deep.equal(["term1", "term2"]);
       state.ontologyBatch.get("classesToFetch").should.deep.equal([]);
     });

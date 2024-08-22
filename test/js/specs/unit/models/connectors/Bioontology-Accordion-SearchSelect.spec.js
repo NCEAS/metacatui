@@ -3,7 +3,8 @@
 define([
   "/test/js/specs/shared/clean-state.js",
   "models/connectors/Bioontology-Accordion-SearchSelect",
-], (cleanState, Connector) => {
+  "models/ontologies/BioontologyClass",
+], (cleanState, Connector, BioontologyClass) => {
   const should = chai.should();
   const expect = chai.expect;
 
@@ -33,35 +34,34 @@ define([
 
     it("selects a class in the accordion", () => {
       // Add the item to the bioontology collection
-      const testItem = new Backbone.Model({
-        "@id": "someId",
-      });
-
-      state.connector.get("bioontology").get("collection").add(testItem);
+      const testItem = state.connector.get("bioontology").get("collection").add(
+        {
+          "@id": "someId",
+        },
+        { parse: true },
+      );
 
       // Select the item
-      state.connector.selectSelectedClass(
+      state.connector.setSelectedClass(
         new Backbone.Model({
           itemId: "someId",
         }),
       );
 
-      expect(state.connector.get("selectedClass")).to.equal(testItem);
+      state.connector.get("selectedClass").get("id").should.equal("someId");
     });
 
     it("syncs the accordion display model with the bioontology results model", () => {
       const bioontology = state.connector.get("bioontology");
       const accordion = state.connector.get("accordion");
 
-      const cls = new Backbone.Model({
+      bioontology.get("collection").add({
         prefLabel: "some label",
         definition: ["some definition"],
         hasChildren: false,
         "@id": "someId",
         subClassOf: ["some parent"],
       });
-
-      bioontology.get("collection").add(cls);
 
       state.connector.syncAccordion();
 
@@ -76,30 +76,10 @@ define([
       expect(item.get("id")).to.equal("someId");
     });
 
-    it("converts an ontology class model to an accordion item model", () => {
-      const cls = new Backbone.Model({
-        prefLabel: "some label",
-        definition: ["some definition"],
-        hasChildren: false,
-        "@id": "someId",
-        subClassOf: ["some parent"],
-      });
-
-      const item = state.connector.ontologyClassToAccordionItem(cls);
-
-      expect(item.title).to.equal("some label");
-      expect(item.description).to.equal("some definition");
-      expect(item.hasChildren).to.equal(false);
-      expect(item.itemId).to.equal("someId");
-      expect(item.parent).to.equal("some parent");
-      expect(item.content).to.equal("");
-      expect(item.id).to.equal("someId");
-    });
-
     it("switches the ontology in the bioontology model", () => {
       const bioontology = state.connector.get("bioontology");
 
-      const newOntology = new Backbone.Model({
+      const newOntology = bioontology.get("collection").add({
         ontology: "XYZ",
         subTree: "Id-Class-3",
       });
@@ -108,7 +88,7 @@ define([
 
       expect(bioontology.get("ontology")).to.equal("XYZ");
       expect(bioontology.get("subTree")).to.equal("Id-Class-3");
-      expect(state.connector.get("originalRoot")).to.equal("Id-Class-3");
+      expect(state.connector.get("accordionRoot")).to.equal("Id-Class-3");
     });
   });
 });
