@@ -10,7 +10,7 @@ define(["backbone"], (Backbone) => {
    * @since 0.0.0
    * @augments Backbone.Model
    */
-  Backbone.Model.extend({
+  const BioontologyClass = Backbone.Model.extend({
     /** @lends BioontologyClass.prototype */
 
     type: "BioontologyClass",
@@ -107,7 +107,8 @@ define(["backbone"], (Backbone) => {
 
     /** @inheritdoc */
     url() {
-      // to fetch more info?
+      // TODO: We could create a mechanism to fetch more info for a specific
+      // class here.
     },
 
     /** @inheritdoc */
@@ -158,4 +159,5 @@ define(["backbone"], (Backbone) => {
       };
     },
   });
+  return BioontologyClass;
 });
