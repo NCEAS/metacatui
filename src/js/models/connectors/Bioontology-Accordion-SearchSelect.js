@@ -87,7 +87,6 @@ define([
           ontology: firstOntology.ontology,
           subTree: firstOntology.subTree,
         });
-        bioontology.fetch();
         this.set("bioontology", bioontology);
       },
 

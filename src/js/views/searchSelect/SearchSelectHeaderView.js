@@ -1,7 +1,6 @@
 "use strict";
 
 define(["backbone", "semantic"], (Backbone, Semantic) => {
-  
   // The class for the outermost element of the header.
   const BASE_CLASS = Semantic.CLASS_NAMES.dropdown.header;
 
@@ -70,9 +69,11 @@ define(["backbone", "semantic"], (Backbone, Semantic) => {
       render() {
         this.icons = {};
 
-        this.icons.category = this.createIconEl(
-          [CLASS_NAMES.icon, `${CLASS_NAMES.icon}-${this.categoryIcon}`, CLASS_NAMES.categoryIcon]
-        );
+        this.icons.category = this.createIconEl([
+          CLASS_NAMES.icon,
+          `${CLASS_NAMES.icon}-${this.categoryIcon}`,
+          CLASS_NAMES.categoryIcon,
+        ]);
         this.icons.accordion = this.createIconEl([
           CLASS_NAMES.chevronDown,
           CLASS_NAMES.accordionIcon,

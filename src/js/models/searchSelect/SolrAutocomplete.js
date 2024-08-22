@@ -53,7 +53,6 @@ define(["models/searchSelect/SearchSelect", "collections/SolrResults"], (
     },
 
     formatOptions() {
-
       const results = this.get("searchResults");
       const queryField = this.get("queryField");
       const facetArray = results.facetCounts[queryField];

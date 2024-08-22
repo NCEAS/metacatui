@@ -116,7 +116,6 @@ define(["backbone", "models/ontologies/BioontologyClass"], (
       if (displayContext === false) url += `&display_context=false`;
       if (displayLinks === false) url += `&display_links=false`;
       if (include) url += `&include=${include}`;
-
       return url;
     },
 

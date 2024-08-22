@@ -227,13 +227,15 @@ define([
        * the selected text elements in a single-select dropdown.
        * @since 0.0.0
        */
-      addClickToTexts(){
-        const showMenu = () => { this.$selectUI.dropdown("show") };
+      addClickToTexts() {
+        const showMenu = () => {
+          this.$selectUI.dropdown("show");
+        };
         const texts = this.getTexts();
-        if(!texts?.length) return;
+        if (!texts?.length) return;
         texts.forEach((text) => text.removeEventListener("click", showMenu));
         const text = this.getTexts()?.[0];
-        if(!text) return;
+        if (!text) return;
         text.addEventListener("click", showMenu);
       },
 

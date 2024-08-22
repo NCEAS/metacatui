@@ -44,12 +44,6 @@ define([
       className: BASE_CLASS,
 
       /**
-       * The HTML string to display when parts of the view are loading
-       * @type {string}
-       */
-      loadingHTML: `<i class="${CLASS_NAMES.metacatui.loader}"></i><span>Loading...</span>`,
-
-      /**
        * The HTML string to display when no term is selected
        */
       noTermHTML: `

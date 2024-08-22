@@ -1,6 +1,6 @@
-define([], () => {
-  "use strict";
+"use strict";
 
+define([], () => {
   /**
    * @namespace Utilities
    * @description A generic utility object that contains functions used throughout MetacatUI to perform useful functions,

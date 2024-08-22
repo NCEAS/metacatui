@@ -56,6 +56,8 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
      * @property {string|boolean} icon Set this to a FontAwesome icon to use
      * instead of the default dropdown (down arrow) icon. Works will with the
      * buttonStyle option.
+     * @property {boolean} fluid Set this to true to make the dropdown take up
+     * the full width of its container.
      */
     defaults() {
       return {
@@ -75,16 +77,21 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
         inputLabel: "Select a value",
         buttonStyle: false,
         icon: false,
+        fluid: true,
       };
     },
 
     /** @inheritdoc */
     initialize(attributes, _options) {
+      this.setOptionsForPreselected();
       const optionsData = attributes?.options;
       // Select options must be parsed if they are not already
       // SearchSelectOption collections
       if (optionsData && !(optionsData instanceof SearchSelectOptions)) {
-        this.updateOptions(optionsData);
+        this.set(
+          "options",
+          new SearchSelectOptions(optionsData, { parse: true }),
+        );
       }
       // Save a reference to the original submenu style to revert to when search
       // term is removed
@@ -116,14 +123,8 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
      * @param {object|object[]} options The new options to set for the dropdown
      */
     updateOptions(options) {
-      this.stopListening(this.get("options"));
       const parse = typeof options === "object" && !Array.isArray(options);
-      this.set("options", new SearchSelectOptions(options, { parse }));
-      this.listenTo(
-        this.get("options"),
-        "all",
-        this.trigger.bind(this, "change:options"),
-      );
+      this.get("options").reset(options, { parse });
     },
 
     /**
@@ -167,7 +168,7 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
      * not a multi-select dropdown, the selected value will replace any existing
      * value.
      * @param {string} value - The value to add to the selected list.
-     * @param {object} options - Additional options to be passed to the 's set
+     * @param {object} options - Additional options to be passed to the set
      * method.
      */
     addSelected(value, options = {}) {
@@ -266,6 +267,16 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
       return this.get("options").filter((model) =>
         selected.includes(model.get("value")),
       );
+    },
+
+    /**
+     * This method is set for extended models that fetch options asynchronously
+     * on search. This method should be overridden to fetch options from the API
+     * for the values that are currently selected in the dropdown. This allows
+     * those values to be populated with the correct label and icon.
+     */
+    setOptionsForPreselected() {
+      // This method should be overridden in extended models
     },
   });
 

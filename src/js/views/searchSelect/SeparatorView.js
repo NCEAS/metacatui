@@ -1,9 +1,6 @@
 "use strict";
 
-define([
-  "backbone",
-  "semantic"
-], (Backbone, _Semantic) => {
+define(["backbone", "semantic"], (Backbone, _Semantic) => {
   // Default class names for the separator element
   const BASE_CLASS = "separator";
   const CLASS_NAMES = {
