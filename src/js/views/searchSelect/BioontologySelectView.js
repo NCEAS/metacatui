@@ -68,12 +68,36 @@ define([
        */
       showClassLabels: true,
 
-      /** @inheritdoc */
+      /**
+       * The ontologies that can be searched or browsed. Each ontology needs a
+       * "label" and a "ontology" (acronym) property. Optionally, a "subTree"
+       * property can be provided to search a specific sub-tree of the ontology.
+       * @type {Array.<{label: string, ontology: string, subTree: string}>}
+       * @since 0.0.0
+       */
+      ontologies: [],
+
+      /**
+       * Initialize the view
+       * @param {object} [opts] - The options to initialize the view with
+       * @param {boolean} [opts.showClassLabels] - Set to false to avoid
+       * fetching class labels from BioPortal
+       * @param {string} [opts.queryField] - The name of the field in the Solr
+       * schema that the user is searching
+       * @param {object[]} [opts.ontologies] - The ontoloties (& sub-trees) to
+       * search for. If not provided, the defaults will be used. Each ontology
+       * needs a "label" and a "ontology" (acronym) property. Optionally, a
+       * "subTree" property can be provided to search a specific sub-tree of the
+       * ontology.
+       */
       initialize(opts = {}) {
         if (opts?.showClassLabels === false) this.showClassLabels = false;
         const attrs = opts || {};
         attrs.queryField = opts?.queryField || this.queryField;
         attrs.fluid = false;
+        if (attrs.ontologies) {
+          this.ontologies = attrs.ontologies;
+        }
         SolrAutocompleteView.prototype.initialize.call(this, attrs);
         if (this.showClassLabels) this.fetchClassLabels();
       },
@@ -84,6 +108,7 @@ define([
         this.renderButton();
         this.renderOntologyModal();
         this.addListeners();
+        return this;
       },
 
       /** Create the button to open the ontology browser */
@@ -97,8 +122,9 @@ define([
 
       /**  Render the ontology browser modal */
       renderOntologyModal() {
-        this.browser = new BioontologyBrowserView();
-
+        this.browser = new BioontologyBrowserView({
+          ontologyOptions: this.ontologies,
+        });
         const closeIcon = document.createElement("i");
         closeIcon.classList.add(...CLASS_NAMES.closeIcon);
 
@@ -176,11 +202,23 @@ define([
         if (!MetacatUI.bioontologySearch) {
           MetacatUI.bioontologySearch = new BioontologyBatch();
         }
-        const bioModel = MetacatUI.bioontologySearch;
-        this.listenTo(bioModel.get("collection"), "update", (collection) => {
-          this.addOptionDetails(collection);
-        });
-        const allClasses = await bioModel.getClasses(classesToFetch);
+        this.bioBatchModel = MetacatUI.bioontologySearch;
+
+        // Add ontologies to the batch model from the options set on this view
+        // (this.ontologies)
+        const ontologyAcronyms = this.ontologies.map(
+          (ontology) => ontology.ontology,
+        );
+        this.bioBatchModel.get("ontologies").push(...ontologyAcronyms);
+
+        this.listenTo(
+          this.bioBatchModel.get("collection"),
+          "update",
+          (collection) => {
+            this.addOptionDetails(collection);
+          },
+        );
+        const allClasses = await this.bioBatchModel.getClasses(classesToFetch);
         // If any of the classes were cached, add them to the options
         this.addOptionDetails(allClasses);
       },

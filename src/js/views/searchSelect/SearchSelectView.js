@@ -671,6 +671,20 @@ define([
       hideLoading() {
         this.$selectUI.removeClass(Semantic.CLASS_NAMES.dropdown.loading);
       },
+
+      /**
+       * Remove the selected values from the dropdown interface
+       * and from the model.
+       * @param {boolean} [silent] Set to true to prevent the dropdown and the
+       * model from triggering change events
+       * @param {boolean} [closeMenu] Set to true to close the dropdown menu
+       * @since 0.0.0
+       */
+      reset(silent = false, closeMenu = true) {
+        this.$selectUI.dropdown("clear", silent);
+        this.model.set("selected", [], { silent });
+        if (closeMenu) this.$selectUI.dropdown("hide");
+      },
     },
   );
 

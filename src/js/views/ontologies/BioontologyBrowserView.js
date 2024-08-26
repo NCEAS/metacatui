@@ -139,7 +139,7 @@ define([
        *   {
        *     label: "Measurement Types (ECSO)",
        *     ontology: "ECSO",
-       *     subtreeRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"
+       *     subTree: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"
        *    }, { ... } ]
        * });
        */
