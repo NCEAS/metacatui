@@ -29,6 +29,7 @@ define([
     popoutIcon: "popout-mode-icon",
     buttonStyle: Semantic.CLASS_NAMES.button.base,
     labeled: Semantic.CLASS_NAMES.button.labeled,
+    compact: "compact",
   };
 
   // The placeholder element needs both to work properly
@@ -459,6 +460,10 @@ define([
         classesToAdd = classesToAdd.map((c) => c.split(" ")).flat();
 
         dropdownEl.classList.add(...classesToAdd);
+
+        if (this.model.get("compact")) {
+          this.el.classList.add(CLASS_NAMES.compact);
+        }
 
         return dropdownEl;
       },

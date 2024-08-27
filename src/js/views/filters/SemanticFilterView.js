@@ -44,6 +44,7 @@ define([
           placeholderText: this.model.get("placeholder"),
           inputLabel: null,
           ontologies: this.ontologies,
+          compact: true,
         }).render();
         this.el.appendChild(this.subView.el);
         this.listenTo(

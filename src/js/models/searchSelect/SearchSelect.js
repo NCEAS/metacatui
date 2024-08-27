@@ -58,6 +58,8 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
      * buttonStyle option.
      * @property {boolean} fluid Set this to true to make the dropdown take up
      * the full width of its container.
+     * @property {boolean} compact Set this to true to make the dropdown more
+     * compact, e.g. for the filter bar in the catalog search.
      */
     defaults() {
       return {
@@ -78,6 +80,7 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
         buttonStyle: false,
         icon: false,
         fluid: true,
+        compact: false,
       };
     },
 

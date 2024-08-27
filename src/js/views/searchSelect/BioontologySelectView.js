@@ -27,6 +27,7 @@ define([
       Semantic.CLASS_NAMES.colors.blue,
       "right",
     ],
+    buttonIcon: ["icon", "icon-external-link-sign"],
     closeIcon: [Semantic.CLASS_NAMES.modal.closeButton, "icon", "icon-remove"],
     modal: [Semantic.CLASS_NAMES.base, Semantic.CLASS_NAMES.modal.base],
     modalContent: Semantic.CLASS_NAMES.modal.content,
@@ -115,7 +116,15 @@ define([
       renderButton() {
         const button = document.createElement("button");
         button.classList.add(...CLASS_NAMES.button);
-        button.innerHTML = BUTTON_TEXT;
+
+        const span = document.createElement("span");
+        span.textContent = BUTTON_TEXT;
+
+        const icon = document.createElement("i");
+        icon.classList.add(...CLASS_NAMES.buttonIcon);
+        icon.style.color = "inherit";
+
+        button.append(span, icon);
         this.el.appendChild(button);
         this.button = button;
       },
