@@ -2101,9 +2101,17 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           /**
            * The Bioportal REST API URL, which is set dynamically only if a bioportalAPIKey is configured
            * @type {string}
-           * @default "https://data.bioontology.org/search"
+           * @deprecated since 0.0.0
            */
           bioportalSearchUrl: "https://data.bioontology.org/search",
+          /**
+           * The Bioportal REST API URL, which is used for looking up ontology information
+           * @see {@link https://data.bioontology.org/documentation}
+           * @type {string}
+           * @default "https://data.bioontology.org"
+           * @since 0.0.0
+           */
+          bioportalApiBaseUrl: "https://data.bioontology.org",
           /**
            * This attribute stores cache of ontology information that is looked up in Bioportal, so that duplicate REST calls don't need to be made.
            * @type {object}

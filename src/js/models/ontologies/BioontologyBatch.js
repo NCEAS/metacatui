@@ -38,7 +38,7 @@ define(["backbone", "models/ontologies/BioontologyClass"], (
       return {
         collection: new Backbone.Collection([], { model: BioontologyClass }),
         apiKey: null,
-        apiBaseURL: "https://data.bioontology.org",
+        apiBaseURL: MetacatUI.appModel.get("bioportalApiBaseUrl"),
         ontologyPrefix: "http://data.bioontology.org/ontologies/",
         ontologies: [
           "ECSO",

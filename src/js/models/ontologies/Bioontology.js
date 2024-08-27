@@ -34,7 +34,7 @@ define(["backbone", "models/ontologies/BioontologyClass"], (
         links: {},
         collection: new Backbone.Collection([], { model: BioontologyClass }),
         apiKey: null,
-        apiBaseURL: "https://data.bioontology.org",
+        apiBaseURL: MetacatUI.appModel.get("bioportalApiBaseUrl"),
         subTree:
           "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType",
         ontology: "ECSO",
