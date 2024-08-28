@@ -174,7 +174,7 @@ define([
        */
       renderQualityReport() {
         const viewRef = this;
-        const qualityReport = this.qualityReport;
+        const { qualityReport } = this;
         if (qualityReport.runStatus !== "success") {
           this.handleQualityReportError();
           return;
@@ -196,19 +196,41 @@ define([
         const groupedResults = qualityReport.groupResults(qualityReport.models);
         const groupedByType = qualityReport.groupByType(qualityReport.models);
 
+        const checkCount = qualityReport.length;
+        const blueCount = groupedResults.BLUE?.length || 0;
+        const greenCount = groupedResults.GREEN?.length || 0;
+        const orangeCount = groupedResults.ORANGE?.length || 0;
+        const redCount = groupedResults.RED?.length || 0;
+        const extraRedText =
+          redCount > 0 ? " Please correct these issues." : "";
+        const extraOrangeText =
+          orangeCount > 0 ? " Please review these warnings." : "";
+        const totalPassable = checkCount - blueCount;
+
+        const checkWord = (num) => (num === 1 ? "check" : "checks");
+        const greenText = `Passed ${greenCount} ${checkWord(greenCount)} out of ${totalPassable} (excluding informational checks).`;
+        const orangeText = `Warning for ${orangeCount} ${checkWord(orangeCount)}. ${extraOrangeText}`;
+        const redText = `Failed ${redCount} ${checkWord(redCount)}. ${extraRedText}`;
+        const blueText = `${blueCount} informational ${checkWord(blueCount)}.`;
+
         const data = {
           objectIdentifier: qualityReport.id,
           suiteId: viewRef.suiteId,
           suiteIdList: viewRef.suiteIdList,
           suiteLabels: viewRef.suiteLabels,
-          groupedResults,
-          groupedByType,
           timestamp: _.now(),
           id: viewRef.pid,
-          checkCount: qualityReport.length,
+          groupedResults,
+          groupedByType,
+          checkCount,
+          greenText,
+          orangeText,
+          redText,
+          blueText,
         };
 
         viewRef.$el.html(viewRef.template(data));
+        viewRef.addCheckItems(groupedResults);
         viewRef.insertBreadcrumbs();
         viewRef.drawScoreChart(qualityReport.models, groupedResults);
         viewRef.showCitation();
@@ -217,10 +239,106 @@ define([
       },
 
       /**
+       * Add the check result item els to the view
+       * @param {object} groupedResults - The results grouped by status
+       * @since 0.0.0
+       */
+      addCheckItems(groupedResults) {
+        const viewRef = this;
+
+        const types = {
+          GREEN: {
+            className: "pass",
+            iconClass: "icon-check-sign success",
+            headerClass: "success",
+          },
+          ORANGE: {
+            className: "warn",
+            iconClass: "icon-exclamation",
+            headerClass: "warning",
+          },
+          RED: {
+            className: "fail",
+            iconClass: "icon-remove",
+            headerClass: "danger",
+          },
+          BLUE: {
+            className: "info-check",
+            iconClass: "icon-info",
+            headerClass: "info",
+          },
+        };
+
+        Object.keys(types).forEach((type) => {
+          const { className, iconClass, headerClass } = types[type];
+          const results = groupedResults[type];
+          const itemEls = [];
+          if (results) {
+            results.forEach((result) => {
+              const checkItemHTML = viewRef.createCheckItem(
+                result,
+                className,
+                iconClass,
+              );
+              itemEls.push(checkItemHTML);
+            });
+            viewRef
+              .$(`.list-group-item.${headerClass}`)
+              .after(itemEls.join(""));
+          }
+        });
+      },
+
+      /**
+       * Create a check item element
+       * @param {object} result - The check result
+       * @param {string} className - The class name for the check item
+       * @param {string} iconClass - The class
+       * @returns {string} The HTML for the check item
+       * @since 0.0.0
+       */
+      createCheckItem(result, className, iconClass) {
+        const outputs = result
+          .get("output")
+          .map((output) =>
+            output.type && output.type.includes("image")
+              ? `<img src="data:${output.type};base64,${output.value}" />`
+              : `<div class="check-output">${output.value}</div>`,
+          )
+          .join("");
+
+        return `
+          <li class="list-group-item check ${className} collapse row-fluid">
+            <span class="icon-stack span1">
+              <i class="${iconClass}"></i>
+            </span>
+            <span class="span6">${outputs}</span>
+            <span class="span1">
+              <a tabindex="0"
+                 role="button"
+                 class="popover-this"
+                 data-container="body"
+                 data-trigger="hover focus"
+                 data-html="true"
+                 data-title="${result.get("check").name}"
+                 data-content="${result.get("check").description}">
+                 <i class="icon icon-question-sign subtle"></i>
+              </a>
+            </span>
+            <span class="span4">
+              <span class="badge pull-right">${result.get("status")}</span>
+              <span class="badge pull-right">${result.get("check").level}</span>
+              <span class="badge pull-right">${result.get("check").type}</span>
+            </span>
+          </li>
+        `;
+      },
+
+      /**
        * Handles errors that occur when fetching the quality report
        */
       handleQualityReportError() {
-        const qualityReport = this.qualityReport;
+        const { qualityReport } = this;
         const description =
           qualityReport.errorDescription ||
           qualityReport.fetchResponse?.statusText ||
@@ -247,10 +365,12 @@ define([
         } else if (qualityReport.fetchResponse.status === 404) {
           msgText = MSG_REPORT_NOT_READY;
         } else {
-          msgText = MSG_REPORT_NOT_READY;
+          msgText = MSG_ERROR_GENERAL;
+          if (errorReport) {
+            msgText += ` ${errorReport}`;
+          }
         }
         this.showMessage(msgText);
-        return;
       },
 
       /**
@@ -357,7 +477,7 @@ define([
       /**
        * Draw a donut chart showing the distribution of checks by status
        * @param {Array} results - The array of check results
-       * @param {Object} groupedResults - The results grouped by status
+       * @param {object} groupedResults - The results grouped by status
        */
       drawScoreChart(results, groupedResults) {
         const dataCount = results.length;
