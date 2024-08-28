@@ -1,3 +1,5 @@
+"use strict";
+
 define([
   "jquery",
   "underscore",
@@ -21,7 +23,16 @@ define([
   LoadingTemplate,
   QualityReport,
 ) => {
-  "use strict";
+  const MSG_ERROR_GENERATING_REPORT =
+    "There was an error generating the assessment report.";
+  const MSG_QUEUED_REPORT =
+    "The assessment report is in the Assessment Server queue to be generated. It was queued at: ";
+  const MSG_REPORT_NOT_READY =
+    "The assessment report for this dataset is not ready yet. Try checking back in 24 hours to see these results.";
+  const MSG_ERROR_GENERAL =
+    "There was an error retrieving the assessment report for this dataset.";
+  const MSG_ERROR_DETAILS = "The Assessment Server reported this error: ";
+  const QUEUE_ERROR_DETAILS = " It was queued at: ";
 
   /**
    * @class MdqRunView
@@ -110,13 +121,12 @@ define([
         // If a suite id is request via the metacatui route, then we have to display that
         // suite, and in addition have to display all possible suites for this theme in
         // a selection list, if the user wants to view a different one.
-        this.suiteIdList = MetacatUI.appModel.get("mdqSuiteIds"); // mdqSuiteIds?
+        this.suiteIdList = MetacatUI.appModel.get("mdqSuiteIds");
         if (!this.suiteId) {
           this.suiteId = this.suiteIdList?.[0];
         }
 
         this.suiteLabels = MetacatUI.appModel.get("mdqSuiteLabels");
-        // this.url = this.mdqRunsServiceUrl + "/" + this.suiteId + "/" + this.pid;
 
         // Insert the basic template
         this.$el.html(this.template({}));
@@ -136,92 +146,111 @@ define([
           return;
         }
 
-        // Fetch a quality report from the quality server and display it.
         const root = MetacatUI.appModel.get("mdqRunsServiceUrl");
-        console.log(viewRef.suiteId);
 
         const qualityUrl = `${root}${viewRef.suiteId}/${viewRef.pid}`;
         const qualityReport = new QualityReport([], {
           url: qualityUrl,
           pid: viewRef.pid,
         });
-        console.log("Fetching quality report from: ", qualityUrl);
+        this.qualityReport = qualityReport;
+
+        this.listenToOnce(
+          qualityReport,
+          "fetchError",
+          this.handleQualityReportError,
+        );
+        this.listenToOnce(
+          qualityReport,
+          "fetchComplete",
+          this.renderQualityReport,
+        );
 
         qualityReport.fetch({ url: qualityUrl });
+      },
 
-        this.listenToOnce(qualityReport, "fetchError", () => {
-          // Inspect the results to see if a quality report was returned.
-          // If not, then submit a request to the quality engine to create the
-          // quality report for this pid/suiteId, and inform the user of this.
-          let msgText;
-          // console.log(`Error status: ${qualityReport.fetchResponse.status}`);
-          if (qualityReport.fetchResponse.status === 404) {
-            msgText =
-              "The assessment report for this dataset is not ready yet. Try checking back in 24 hours to see these results.";
-          } else {
-            msgText =
-              "There was an error retrieving the assessment report for this dataset.";
-            if (
-              typeof qualityReport.fetchResponse.statusText !== "undefined" &&
-              typeof qualityReport.fetchResponse.status !== "undefined"
-            ) {
-              if (qualityReport.fetchResponse.status !== 0)
-                msgText += `Error details: ${qualityReport.fetchResponse.statusText}`;
+      /**
+       * Render the quality report once it has been fetched
+       */
+      renderQualityReport() {
+        const viewRef = this;
+        const qualityReport = this.qualityReport;
+        if (qualityReport.runStatus !== "success") {
+          this.handleQualityReportError();
+          return;
+        }
+        viewRef.hideLoading();
+
+        // Filter out the checks with level 'METADATA', as these checks are intended
+        // to pass info to metadig-engine indexing (for search, faceting), and not intended for display.
+        qualityReport.reset(
+          _.reject(qualityReport.models, (model) => {
+            const check = model.get("check");
+            if (check.level === "METADATA") {
+              return true;
             }
+            return false;
+          }),
+        );
+
+        const groupedResults = qualityReport.groupResults(qualityReport.models);
+        const groupedByType = qualityReport.groupByType(qualityReport.models);
+
+        const data = {
+          objectIdentifier: qualityReport.id,
+          suiteId: viewRef.suiteId,
+          suiteIdList: viewRef.suiteIdList,
+          suiteLabels: viewRef.suiteLabels,
+          groupedResults,
+          groupedByType,
+          timestamp: _.now(),
+          id: viewRef.pid,
+          checkCount: qualityReport.length,
+        };
+
+        viewRef.$el.html(viewRef.template(data));
+        viewRef.insertBreadcrumbs();
+        viewRef.drawScoreChart(qualityReport.models, groupedResults);
+        viewRef.showCitation();
+        viewRef.show();
+        viewRef.$(".popover-this").popover();
+      },
+
+      /**
+       * Handles errors that occur when fetching the quality report
+       */
+      handleQualityReportError() {
+        const qualityReport = this.qualityReport;
+        const description =
+          qualityReport.errorDescription ||
+          qualityReport.fetchResponse?.statusText ||
+          "";
+        const time = qualityReport.timestamp;
+
+        const errorReport = description
+          ? `${MSG_ERROR_DETAILS}${description}`
+          : "";
+        const queueTime = time ? `${QUEUE_ERROR_DETAILS} ${time}` : "";
+
+        let msgText = "";
+
+        if (qualityReport.runStatus === "failure") {
+          msgText = `${MSG_ERROR_GENERATING_REPORT}`;
+          if (errorReport) {
+            msgText += ` ${errorReport}`;
           }
-          this.showMessage(msgText);
-        });
-        this.listenToOnce(qualityReport, "fetchComplete", () => {
-          let msgText;
-          if (qualityReport.runStatus !== "success") {
-            if (qualityReport.runStatus === "failure") {
-              msgText = `There was an error generating the assessment report. The Assessment Server reported this error: ${qualityReport.errorDescription}`;
-            } else if (qualityReport.runStatus === "queued") {
-              msgText = `The assessment report is in the Assessment Server queue to be generated. It was queued at: ${qualityReport.timestamp}`;
-            } else {
-              msgText = "There was an error retrieving the assessment report.";
-            }
-            this.showMessage(msgText);
-            return;
+        } else if (qualityReport.runStatus === "queued") {
+          msgText = `${MSG_QUEUED_REPORT} `;
+          if (queueTime) {
+            msgText += ` ${queueTime}`;
           }
-          viewRef.hideLoading();
-
-          // Filter out the checks with level 'METADATA', as these checks are intended
-          // to pass info to metadig-engine indexing (for search, faceting), and not intended for display.
-          qualityReport.reset(
-            _.reject(qualityReport.models, (model) => {
-              const check = model.get("check");
-              if (check.level === "METADATA") {
-                return true;
-              }
-              return false;
-            }),
-          );
-
-          const groupedResults = qualityReport.groupResults(
-            qualityReport.models,
-          );
-          const groupedByType = qualityReport.groupByType(qualityReport.models);
-
-          const data = {
-            objectIdentifier: qualityReport.id,
-            suiteId: viewRef.suiteId,
-            suiteIdList: viewRef.suiteIdList,
-            suiteLabels: viewRef.suiteLabels,
-            groupedResults,
-            groupedByType,
-            timestamp: _.now(),
-            id: viewRef.pid,
-            checkCount: qualityReport.length,
-          };
-
-          viewRef.$el.html(viewRef.template(data));
-          viewRef.insertBreadcrumbs();
-          viewRef.drawScoreChart(qualityReport.models, groupedResults);
-          viewRef.showCitation();
-          viewRef.show();
-          viewRef.$(".popover-this").popover();
-        });
+        } else if (qualityReport.fetchResponse.status === 404) {
+          msgText = MSG_REPORT_NOT_READY;
+        } else {
+          msgText = MSG_REPORT_NOT_READY;
+        }
+        this.showMessage(msgText);
+        return;
       },
 
       /**
@@ -391,61 +420,17 @@ define([
        * Insert breadcrumbs into the view
        */
       insertBreadcrumbs() {
-        const breadcrumbs = $(document.createElement("ol"))
-          .addClass("breadcrumb")
-          .append(
-            $(document.createElement("li"))
-              .addClass("home")
-              .append(
-                $(document.createElement("a"))
-                  .attr("href", MetacatUI.root ? MetacatUI.root : "/")
-                  .addClass("home")
-                  .text("Home"),
-              ),
-          )
-          .append(
-            $(document.createElement("li"))
-              .addClass("search")
-              .append(
-                $(document.createElement("a"))
-                  .attr(
-                    "href",
-                    `${MetacatUI.root}/data${
-                      MetacatUI.appModel.get("page") > 0
-                        ? `/page/${
-                            parseInt(MetacatUI.appModel.get("page"), 10) + 1
-                          }`
-                        : ""
-                    }`,
-                  )
-                  .addClass("search")
-                  .text("Search"),
-              ),
-          )
-          .append(
-            $(document.createElement("li")).append(
-              $(document.createElement("a"))
-                .attr(
-                  "href",
-                  `${MetacatUI.root}/view/${encodeURIComponent(this.pid)}`,
-                )
-                .addClass("inactive")
-                .text("Metadata"),
-            ),
-          )
-          .append(
-            $(document.createElement("li")).append(
-              $(document.createElement("a"))
-                .attr(
-                  "href",
-                  `${MetacatUI.root}/quality/${encodeURIComponent(this.pid)}`,
-                )
-                .addClass("inactive")
-                .text("Assessment Report"),
-            ),
-          );
-
-        this.$(this.breadcrumbContainer).html(breadcrumbs);
+        const encodedPid = encodeURIComponent(this.pid);
+        const root = MetacatUI.root || "/";
+        const breadcrumbs = `
+          <ol class="breadcrumb">
+            <li class="home"><a href="${root || "/"}" class="home">Home</a></li>
+            <li class="search"><a href="${root}/data" class="search">Search</a></li>
+            <li class="inactive"><a href="${root}/view/${encodedPid}" class="inactive">Metadata</a></li>
+            <li class="inactive"><a href="${root}/quality/${encodedPid}" class="inactive">Assessment Report</a></li>
+          </ol>
+        `;
+        this.el.querySelector(this.breadcrumbContainer).innerHTML = breadcrumbs;
       },
     },
   );
