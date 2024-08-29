@@ -336,10 +336,13 @@ define([
       async getOutputHTML(outputs) {
         const outputHTMLs = await Promise.all(
           outputs.map(async (output) => {
-            if (output.type && output.type.includes("image")) {
+            if (output?.type?.includes("image")) {
               return `<img src="data:${output.type};base64,${output.value}" />`;
             }
-            return this.getHTMLFromMarkdown(output.value);
+            if (output.type === "markdown") {
+              return this.getHTMLFromMarkdown(output.value);
+            }
+            return `<div class="check-output">${output.value}</div>`;
           }),
         );
 
