@@ -164,30 +164,31 @@ define([], () => {
 
     /**
      * Convert number of bytes into human readable format
-     *
      * @param integer bytes     Number of bytes to convert
      * @param integer precision Number of digits after the decimal separator
-     * @return string
+     * @param bytes
+     * @param precision
+     * @returns string
      */
-    bytesToSize: function (bytes, precision = 0) {
-      if (typeof bytes === "undefined") return;
+    bytesToSize(bytes, precision = 0) {
+      if (typeof bytes === "undefined") return `0 B`;
 
       if (bytes >= 0 && bytes < KIBIBYTE) {
-        return bytes + " B";
-      } else if (bytes >= KIBIBYTE && bytes < MEBIBYTE) {
-        return (bytes / KIBIBYTE).toFixed(precision) + " KiB";
-      } else if (bytes >= MEBIBYTE && bytes < GIBIBYTE) {
-        precision = 2;
-        return (bytes / MEBIBYTE).toFixed(precision) + " MiB";
-      } else if (bytes >= GIBIBYTE && bytes < TEBIBYTE) {
-        precision = 2;
-        return (bytes / GIBIBYTE).toFixed(precision) + " GiB";
-      } else if (bytes >= TEBIBYTE) {
-        precision = 2;
-        return (bytes / TEBIBYTE).toFixed(precision) + " TiB";
-      } else {
-        return bytes + " B";
+        return `${bytes} B`;
       }
+      if (bytes >= KIBIBYTE && bytes < MEBIBYTE) {
+        return `${(bytes / KIBIBYTE).toFixed(precision)} KiB`;
+      }
+      if (bytes >= MEBIBYTE && bytes < GIBIBYTE) {
+        return `${(bytes / MEBIBYTE).toFixed(precision)} MiB`;
+      }
+      if (bytes >= GIBIBYTE && bytes < TEBIBYTE) {
+        return `${(bytes / GIBIBYTE).toFixed(precision)} GiB`;
+      }
+      if (bytes >= TEBIBYTE) {
+        return `${(bytes / TEBIBYTE).toFixed(precision)} TiB`;
+      }
+      return `${bytes} B`;
     },
   };
 
