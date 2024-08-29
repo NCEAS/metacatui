@@ -271,20 +271,15 @@ define([
           },
         };
 
-        for (const type in types) {
+        Object.keys(types).forEach(async (type) => {
           const { className, iconClass, headerClass } = types[type];
           const results = groupedResults[type];
-          const itemEls = [];
           if (results) {
             // Use `map` to handle promises
             const itemEls = await Promise.all(
-              results.map(async (result) => {
-                return await viewRef.createCheckItem(
-                  result,
-                  className,
-                  iconClass,
-                );
-              }),
+              results.map(async (result) =>
+                viewRef.createCheckItem(result, className, iconClass),
+              ),
             );
 
             // Join the resolved HTML strings and append them
@@ -292,7 +287,7 @@ define([
               .$(`.list-group-item.${headerClass}`)
               .after(itemEls.join(""));
           }
-        }
+        });
       },
 
       /**
@@ -339,17 +334,18 @@ define([
        * @returns {string} The HTML for the output
        */
       async getOutputHTML(outputs) {
-        const outputHTMLs = await Promise.all(outputs.map(async (output) => {
-          if (output.type && output.type.includes("image")) {
-            return `<img src="data:${output.type};base64,${output.value}" />`;
-          } else {
-            return await this.getHTMLFromMarkdown(output.value);
-          }
-        }));
-        
+        const outputHTMLs = await Promise.all(
+          outputs.map(async (output) => {
+            if (output.type && output.type.includes("image")) {
+              return `<img src="data:${output.type};base64,${output.value}" />`;
+            }
+            return this.getHTMLFromMarkdown(output.value);
+          }),
+        );
+
         return outputHTMLs.join("");
       },
-      
+
       /**
        * Get the HTML from markdown
        * @param {string} markdown - The markdown to convert to HTML
@@ -357,10 +353,10 @@ define([
        */
       getHTMLFromMarkdown(markdown) {
         const markdownView = new MarkdownView({
-          markdown: markdown,
+          markdown,
           showTOC: false,
         }).render();
-        
+
         return new Promise((resolve) => {
           this.listenToOnce(markdownView, "mdRendered", () => {
             resolve(markdownView.el.innerHTML);
