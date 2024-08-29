@@ -177,7 +177,7 @@ define([
       async renderQualityReport() {
         const viewRef = this;
         const { qualityReport } = this;
-        if (qualityReport.runStatus !== "success") {
+        if (qualityReport?.runStatus?.toUpperCase() !== "SUCCESS") {
           this.handleQualityReportError();
           return;
         }
@@ -372,6 +372,12 @@ define([
        */
       handleQualityReportError() {
         const { qualityReport } = this;
+        let status =
+          qualityReport.runStatus || qualityReport.fetchResponse?.status;
+        if (typeof status === "string") {
+          status = status.toUpperCase();
+        }
+
         const description =
           qualityReport.errorDescription ||
           qualityReport.fetchResponse?.statusText ||
@@ -385,17 +391,17 @@ define([
 
         let msgText = "";
 
-        if (qualityReport.runStatus === "failure") {
+        if (status === "FAILURE") {
           msgText = `${MSG_ERROR_GENERATING_REPORT}`;
           if (errorReport) {
             msgText += ` ${errorReport}`;
           }
-        } else if (qualityReport.runStatus === "queued") {
+        } else if (status === "QUEUED") {
           msgText = `${MSG_QUEUED_REPORT} `;
           if (queueTime) {
             msgText += ` ${queueTime}`;
           }
-        } else if (qualityReport.fetchResponse.status === 404) {
+        } else if (status === 404) {
           msgText = MSG_REPORT_NOT_READY;
         } else {
           msgText = MSG_ERROR_GENERAL;
