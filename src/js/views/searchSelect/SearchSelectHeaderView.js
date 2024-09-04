@@ -69,11 +69,14 @@ define(["backbone", "semantic"], (Backbone, Semantic) => {
       render() {
         this.icons = {};
 
-        this.icons.category = this.createIconEl([
-          CLASS_NAMES.icon,
-          `${CLASS_NAMES.icon}-${this.categoryIcon}`,
-          CLASS_NAMES.categoryIcon,
-        ]);
+        this.icons.category = null;
+        if (this.categoryIcon) {
+          this.icons.category = this.createIconEl([
+            CLASS_NAMES.icon,
+            `${CLASS_NAMES.icon}-${this.categoryIcon}`,
+            CLASS_NAMES.categoryIcon,
+          ]);
+        }
         this.icons.accordion = this.createIconEl([
           CLASS_NAMES.chevronDown,
           CLASS_NAMES.accordionIcon,
@@ -84,7 +87,9 @@ define(["backbone", "semantic"], (Backbone, Semantic) => {
         ]);
 
         this.el.textContent = this.category;
-        this.el.prepend(this.icons.category);
+        if (this.icons.category) {
+          this.el.prepend(this.icons.category);
+        }
         this.el.append(this.icons.accordion, this.icons.popout);
 
         this.updateMode(this.mode, true);

@@ -10,6 +10,12 @@ define([
     accordion: AccordionView.prototype.className,
     searchSelect: SearchSelectView.prototype.className,
     classInfo: "class-info",
+    message: [
+      Semantic.CLASS_NAMES.base,
+      Semantic.CLASS_NAMES.variations.floating,
+      Semantic.CLASS_NAMES.message.base,
+      Semantic.CLASS_NAMES.variations.info,
+    ],
     metacatui: {
       loader: "icon-spinner icon-spin icon-on-left",
       icon: "icon",
@@ -47,7 +53,7 @@ define([
        * The HTML string to display when no term is selected
        */
       noTermHTML: `
-        <div class="${Semantic.CLASS_NAMES.base} ${Semantic.CLASS_NAMES.variations.floating} ${Semantic.CLASS_NAMES.message.base} ${Semantic.CLASS_NAMES.variations.info}">
+        <div class="${CLASS_NAMES.message.join(" ")}">
           <div class="${Semantic.CLASS_NAMES.message.header}">
             No term selected
           </div>

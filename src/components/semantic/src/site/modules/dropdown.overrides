@@ -310,6 +310,13 @@ traditional bootstrap-based filter views */
     .menu {
       width: var(--input-width);
       max-height: 20rem;
+
+      .header {
+        margin: 0.8rem 0 .1rem;
+        font-size: 0.75rem;
+        padding-left: 0.5rem;
+      }
+
     }
 
     .menu>.item {
@@ -331,4 +338,15 @@ traditional bootstrap-based filter views */
       margin:0;
     }
   }
+}
+
+.search-select.compact.bioontology-select {
+
+  /* 60px for the button element on the right */
+  >.ui.dropdown {
+    .menu {
+      width: calc(var(--input-width) + 60px);
+    }
+  }
+
 }
