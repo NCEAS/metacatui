@@ -86,6 +86,7 @@
     "./js/specs/unit/models/ontologies/BioontologyClass.spec.js",
     "./js/specs/unit/models/ontologies/BioontologyBatch.spec.js",
     "./js/specs/unit/collections/BioontologyResults.spec.js",
+    "./js/specs/unit/models/ontologies/BioontologyOntology.spec.js",
     "./js/specs/unit/models/accordion/Accordion.spec.js",
     "./js/specs/unit/models/accordion/AccordionItem.spec.js"
   ],
