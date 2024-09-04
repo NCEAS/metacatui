@@ -56,16 +56,15 @@ define([
       },
 
       /** @inheritdoc */
-      initialize(attributes, _options) {
+      initialize(attrs, _options) {
         // Each ontology needs a unique value for the searchSelect component
         const defaults = this.defaults();
         const ontologyOptions =
-          attributes?.ontologyOptions || defaults.ontologyOptions;
+          attrs?.ontologyOptions || defaults.ontologyOptions;
         const updatedOntologyOptions = ontologyOptions.map((option, index) => ({
           ...option,
           value: `ontology-${index}`,
         }));
-
         const firstOntology = updatedOntologyOptions[0] || {};
         const firstOntologyValue = firstOntology.value || "";
 
@@ -193,14 +192,8 @@ define([
        */
       syncAccordion() {
         const root = this.get("accordionRoot");
-        const data = this.get("bioontology")
-          .get("collection")
-          .map((cls) => {
-            const accordionItem = cls.toAccordionItem();
-            const { parent } = accordionItem;
-            accordionItem.parent = parent === root ? "" : parent;
-            return accordionItem;
-          });
+        const ontologyResults = this.get("bioontology").get("collection");
+        const data = ontologyResults.classesToAccordionItems(root);
         this.get("accordion").get("items").set(data);
       },
 

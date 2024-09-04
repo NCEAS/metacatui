@@ -1,8 +1,8 @@
 "use strict";
 
-define(["backbone", "models/ontologies/BioontologyClass"], (
+define(["backbone", "collections/ontologies/BioontologyResults"], (
   Backbone,
-  BioontologyClass,
+  BioontologyResults,
 ) => {
   /**
    * @class Bioontology
@@ -20,10 +20,16 @@ define(["backbone", "models/ontologies/BioontologyClass"], (
      * are detailed on the BioPortal API docs:
      * https://data.bioontology.org/documentation.
      * @returns {object} The default attributes for this model
-     * @property {"children"|"search"} queryType - The type of query to perform.
-     * Only "children" and "search" are supported.
+     * @property {"children"|"search"|"ontology"} queryType - The type of query
+     * to perform. Only "children", "search", and "ontology" are supported.
      * @property {string} searchTerm - The term to search for. Only used when
      * queryType is "search".
+     * @property {BioontologyResults} collection - The collection classes
+     * returned from the query.
+     * @property {string} subTree - The class ID to get the children of. Only
+     * used when queryType is "children". e.g.
+     * http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType
+     * @property {string} ontology - The ontology acronym to query. e.g. "ECSO"
      */
     defaults() {
       return {
@@ -32,11 +38,10 @@ define(["backbone", "models/ontologies/BioontologyClass"], (
         prevPage: null,
         nextPage: null,
         links: {},
-        collection: new Backbone.Collection([], { model: BioontologyClass }),
+        collection: new BioontologyResults(),
         apiKey: null,
         apiBaseURL: MetacatUI.appModel.get("bioportalApiBaseUrl"),
-        subTree:
-          "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType",
+        subTree: "",
         ontology: "ECSO",
         pageSize: 500,
         displayContext: false,
@@ -63,60 +68,88 @@ define(["backbone", "models/ontologies/BioontologyClass"], (
 
     /** @inheritdoc */
     url() {
-      const root = this.get("apiBaseURL");
-      const key = this.get("apiKey");
       const queryType = this.get("queryType");
-      const pageSize = this.get("pageSize");
-      const displayContext = this.get("display_context");
-      const displayLinks = this.get("display_links");
 
-      let subTree = this.get("subTree");
-      subTree = subTree ? encodeURIComponent(subTree) : null;
+      const subTree = this.encodeIfPresent(this.get("subTree"));
+      const ontology = this.encodeIfPresent(this.get("ontology"));
+      const searchTerm = this.encodeIfPresent(this.get("searchTerm"));
 
-      let ontology = this.get("ontology");
-      ontology = ontology ? encodeURIComponent(ontology) : null;
+      let queryUrl = "";
+      if (queryType === "children") {
+        queryUrl = this.buildChildrenUrl(ontology, subTree);
+      } else if (queryType === "search" && searchTerm) {
+        queryUrl = this.buildSearchUrl(searchTerm, ontology, subTree);
+      } else if (queryType === "ontology") {
+        queryUrl = `/ontologies/${ontology}?`;
+      }
 
+      const paramStr = new URLSearchParams({
+        apikey: this.get("apiKey"),
+        pagesize: this.get("pageSize"),
+        display_context: this.get("displayContext") === true,
+        display_links: this.get("displayLinks") === true,
+        include: this.getIncludeParam(queryType),
+      }).toString();
+      const root = this.get("apiBaseURL");
+      return `${root}${queryUrl}${paramStr}`;
+    },
+
+    /**
+     * Encode a value if it is exists
+     * @param {string} value - The value to encode
+     * @returns {string} The encoded value or null if the value is falsy
+     */
+    encodeIfPresent(value) {
+      return value ? encodeURIComponent(value) : null;
+    },
+
+    /**
+     * Construct the include url parameter for the BioPortal API
+     * @param {string} queryType - The type of query to perform
+     * @returns {string} The include parameter for the BioPortal API
+     */
+    getIncludeParam(queryType) {
       let include = this.get("include");
-      // subClassOf and hasChildren does not work with search queries
       if (queryType === "search") {
+        // subClassOf and hasChildren does not work with search queries
         include = include.filter(
           (item) => item !== "subClassOf" && item !== "hasChildren",
         );
       }
-      include = include?.length ? include.join(",") : null;
-      include = include ? encodeURIComponent(include) : null;
+      return include?.length ? include.join(",") : null;
+    },
 
-      let searchTerm = this.get("searchTerm");
-      searchTerm = searchTerm ? encodeURIComponent(searchTerm) : null;
-
-      let url = `${root}`;
-
-      if (queryType === "children" && ontology) {
-        url += `/ontologies/${ontology}/classes/`;
-        if (subTree) {
-          url += `${subTree}/children`;
-        } else {
-          url += `roots`;
-        }
-        url += `?`;
-      } else if (queryType === "search" && searchTerm) {
-        url += `/search?q=${searchTerm}*`;
-        if (ontology) {
-          url += `&ontologies=${ontology}`;
-          url += `&ontology=${ontology}`;
-        }
-        if (subTree) {
-          url += `&subtree_root_id=${subTree}`;
-        }
+    /**
+     * Build the URL component for a "children" query
+     * @param {string} ontology - The ontology to query, encoded
+     * @param {string} subTree - The subTree to query, encoded
+     * @returns {string} The URL component for the query
+     */
+    buildChildrenUrl(ontology, subTree) {
+      if (ontology) {
+        return subTree
+          ? `/ontologies/${ontology}/classes/${subTree}/children?`
+          : `/ontologies/${ontology}/classes/roots?`;
       }
+      return "";
+    },
 
-      url += `&apikey=${key}`;
-
-      if (pageSize) url += `&pagesize=${pageSize}`;
-      if (displayContext === false) url += `&display_context=false`;
-      if (displayLinks === false) url += `&display_links=false`;
-      if (include) url += `&include=${include}`;
-      return url;
+    /**
+     * Build the URL component for a "search" query
+     * @param {string} searchTerm - The search term, encoded
+     * @param {string} ontology - The ontology to query, encoded
+     * @param {string} subTree - The subTree to query, encoded
+     * @returns {string} The URL component
+     */
+    buildSearchUrl(searchTerm, ontology, subTree) {
+      let searchUrl = `/search?q=${searchTerm}*`;
+      if (ontology) {
+        searchUrl += `&ontologies=${ontology}&ontology=${ontology}`;
+      }
+      if (subTree) {
+        searchUrl += `&subtree_root_id=${subTree}`;
+      }
+      return `${searchUrl}&`;
     },
 
     /**
@@ -142,9 +175,7 @@ define(["backbone", "models/ontologies/BioontologyClass"], (
         this.resetPageInfo();
       }
 
-      const collection =
-        this.get("collection") ||
-        new Backbone.Collection([], { model: BioontologyClass });
+      const collection = this.get("collection") || new BioontologyResults();
 
       if (options.replaceCollection === true) {
         collection.reset(parsedResponse.collection, { parse: true });

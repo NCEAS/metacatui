@@ -7,7 +7,7 @@ define([
   const should = chai.should();
   const expect = chai.expect;
 
-  describe("Bioontology Test Suite", () => {
+  describe("Bioontology Test Suite ☎️", () => {
     const state = cleanState(() => {
       const ontology = new Bioontology({
         queryField: "children",
@@ -39,32 +39,29 @@ define([
         searchTerm: "searchTerm",
       });
       const url = state.ontology.url();
-      url.should.equal(
-        "https://base.url/search?q=searchTerm*&ontologies=ontology&ontology=ontology&subtree_root_id=subTree&apikey=key&pagesize=10&include=prefLabel%2Cdefinition",
-      );
+      const expectedUrl =
+        "https://base.url/search?q=searchTerm*&ontologies=ontology&ontology=ontology&subtree_root_id=subTree&apikey=key&pagesize=10&display_context=true&display_links=true&include=prefLabel%2Cdefinition";
+      url.should.equal(expectedUrl);
     });
 
-    if (
-      ("forms valid children URLs",
-      () => {
-        state.ontology.set({
-          apiBaseURL: "https://base.url",
-          apiKey: "key",
-          queryType: "children",
-          pageSize: 10,
-          displayContext: true,
-          displayLinks: true,
-          subTree: "subTree",
-          ontology: "ontology",
-          include: ["prefLabel", "definition"],
-          searchTerm: "searchTerm",
-        });
-        const url = state.ontology.url();
-        url.should.equal(
-          "https://base.url/ontologies/ontology/classes/subTree/children?apikey=key&pagesize=10&display_context=true&display_links=true&include=prefLabel%2Cdefinition",
-        );
-      })
-    );
+    it("forms valid children URLs", () => {
+      state.ontology.set({
+        apiBaseURL: "https://base.url",
+        apiKey: "key",
+        queryType: "children",
+        pageSize: 99,
+        displayContext: false,
+        displayLinks: false,
+        subTree: "subTree",
+        ontology: "ontology",
+        include: ["prefLabel", "definition"],
+        searchTerm: "searchTerm",
+      });
+      const url = state.ontology.url();
+      const expectedUrl =
+        "https://base.url/ontologies/ontology/classes/subTree/children?apikey=key&pagesize=99&display_context=false&display_links=false&include=prefLabel%2Cdefinition";
+      url.should.equal(expectedUrl);
+    });
 
     it("parses the response correctly", () => {
       const response = {
