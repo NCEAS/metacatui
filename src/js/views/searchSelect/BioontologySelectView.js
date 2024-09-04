@@ -28,9 +28,9 @@ define([
       "right",
     ],
     buttonIcon: ["icon", "icon-external-link-sign"],
-    closeIcon: [Semantic.CLASS_NAMES.modal.closeButton, "icon", "icon-remove"],
-    modal: [Semantic.CLASS_NAMES.base, Semantic.CLASS_NAMES.modal.base],
-    modalContent: Semantic.CLASS_NAMES.modal.content,
+    modalCloseButton: "close",
+    modal: ["modal", "hide", "bioontology-select-modal"], // Bootstrap classes
+    modalContent: "modal-body", // Bootstrap class
   };
 
   // The text to display on the button tht opens the ontology browser
@@ -133,8 +133,12 @@ define([
         this.browser = new BioontologyBrowserView({
           ontologyOptions: this.ontologies,
         });
-        const closeIcon = document.createElement("i");
-        closeIcon.classList.add(...CLASS_NAMES.closeIcon);
+        // Bootstrap modal close button
+        const closeButton = document.createElement("button");
+        closeButton.classList.add(CLASS_NAMES.modalCloseButton);
+        closeButton.setAttribute("data-dismiss", "modal");
+        closeButton.setAttribute("aria-hidden", "true");
+        closeButton.innerHTML = "&times;";
 
         const contentDiv = document.createElement("div");
         contentDiv.classList.add(CLASS_NAMES.modalContent);
@@ -142,12 +146,11 @@ define([
         const modal = document.createElement("div");
         modal.classList.add(...CLASS_NAMES.modal);
 
-        modal.appendChild(closeIcon);
-        modal.appendChild(contentDiv);
+        modal.append(contentDiv, closeButton);
         contentDiv.appendChild(this.browser.el);
-        this.el.appendChild(modal);
+        document.body.appendChild(modal);
 
-        this.modal = $(modal).modal();
+        this.modal = $(modal).modal({ show: false });
 
         this.hideOntologyBrowser();
       },
