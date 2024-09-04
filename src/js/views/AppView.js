@@ -1,5 +1,4 @@
-﻿﻿/*global define */
-define([
+﻿define([
   "jquery",
   "underscore",
   "backbone",
@@ -24,7 +23,7 @@ define([
   AppHeadTemplate,
   JsonLDTemplate,
   AppTemplate,
-  LoadingTemplate
+  LoadingTemplate,
 ) {
   "use strict";
 
@@ -34,6 +33,7 @@ define([
    * @class AppView
    * @classdesc The top-level view of the UI that contains and coordinates all other views of the UI
    * @classcategory Views
+   * @extends Backbone.View
    */
   var AppView = Backbone.View.extend(
     /** @lends AppView.prototype */ {
@@ -68,7 +68,7 @@ define([
         //Check for the LDAP sign in error message
         if (
           window.location.search.indexOf(
-            "error=Unable%20to%20authenticate%20LDAP%20user"
+            "error=Unable%20to%20authenticate%20LDAP%20user",
           ) > -1
         ) {
           window.location =
@@ -82,18 +82,22 @@ define([
 
         //Change the document title when the app changes the MetacatUI.appModel title at any time
         this.listenTo(MetacatUI.appModel, "change:title", this.changeTitle);
-        this.listenTo(MetacatUI.appModel, "change:description", this.changeDescription);
+        this.listenTo(
+          MetacatUI.appModel,
+          "change:description",
+          this.changeDescription,
+        );
 
         this.checkIncompatibility();
       },
 
       /**
-      * The JS query selector for the element inside the AppView that contains the main view contents. When a new view is routed to
-      * and displayed via {@link AppView#showView}, the view will be inserted into this element.
-      * @type {string}
-      * @default "#Content"
-      * @since 2.22.0
-      */
+       * The JS query selector for the element inside the AppView that contains the main view contents. When a new view is routed to
+       * and displayed via {@link AppView#showView}, the view will be inserted into this element.
+       * @type {string}
+       * @default "#Content"
+       * @since 2.22.0
+       */
       contentSelector: "#Content",
 
       /**
@@ -118,7 +122,7 @@ define([
       changeDescription: function () {
         $("meta[name=description]").attr(
           "content",
-          MetacatUI.appModel.get("description")
+          MetacatUI.appModel.get("description"),
         );
       },
 
@@ -139,7 +143,7 @@ define([
         //If there is no AppView element on the page, don't render the application.
         if (!this.el) {
           console.error(
-            "Not rendering the UI of the app since the AppView HTML element (AppView.el) does not exist on the page. Make sure you have the AppView element included in index.html"
+            "Not rendering the UI of the app since the AppView HTML element (AppView.el) does not exist on the page. Make sure you have the AppView element included in index.html",
           );
           return;
         }
@@ -148,15 +152,15 @@ define([
         $("head")
           .append(
             this.appHeadTemplate({
-              theme: MetacatUI.theme
-            })
+              theme: MetacatUI.theme,
+            }),
           )
           //Add the JSON-LD to the head element
           .append(
             $(document.createElement("script"))
               .attr("type", "application/ld+json")
               .attr("id", "jsonld")
-              .html(this.jsonLDTemplate())
+              .html(this.jsonLDTemplate()),
           );
 
         // set up the body
@@ -209,7 +213,7 @@ define([
       showView: function (view, viewOptions) {
         if (!this.el) {
           console.error(
-            "Not rendering the UI of the app since the AppView HTML element (AppView.el) does not exist on the page. Make sure you have the AppView element included in index.html"
+            "Not rendering the UI of the app since the AppView HTML element (AppView.el) does not exist on the page. Make sure you have the AppView element included in index.html",
           );
           return;
         }
@@ -421,7 +425,7 @@ define([
             emailOptions: emailOptions,
             remove: options.remove || false,
             includeEmail: options.includeEmail,
-          }).trim()
+          }).trim(),
         );
 
         if (options.delay) {
@@ -468,7 +472,7 @@ define([
         classes,
         container,
         delay,
-        options
+        options,
       ) {},
 
       /**
@@ -512,7 +516,7 @@ define([
                 MetacatUI.appUserModel.get("loggedIn")
               )
                 this.listenForTimeout();
-            }
+            },
           );
 
           return;
@@ -528,7 +532,7 @@ define([
                 MetacatUI.appUserModel.get("loggedIn")
               )
                 this.listenForTimeout();
-            }
+            },
           );
 
           return;
@@ -589,7 +593,7 @@ define([
                 MetacatUI.appUserModel.get("loggedIn")
               )
                 this.listenForTimeout();
-            }
+            },
           );
         }
       },
@@ -645,7 +649,7 @@ define([
           function (browserRegEx) {
             var matches = navigator.userAgent.match(browserRegEx);
             return matches && matches.length > 0;
-          }
+          },
         );
 
         if (!isUnsupportedBrowser) {
@@ -658,7 +662,7 @@ define([
             "alert-warning",
             this.$el,
             false,
-            { remove: true }
+            { remove: true },
           );
           this.$el
             .children(".alert-container")
@@ -718,10 +722,10 @@ define([
                     classes: classes,
                     msg: MetacatUI.appModel.get("temporaryMessage"),
                     includeEmail: MetacatUI.appModel.get(
-                      "temporaryMessageIncludeEmail"
+                      "temporaryMessageIncludeEmail",
                     ),
                     remove: true,
-                  })
+                  }),
                 );
 
                 //Add a class to the body in case we need to adjust other elements on the page
@@ -830,11 +834,11 @@ define([
           .stop(true, true) //stop first for it to work in FF
           .animate(
             { scrollTop: $(pageElement).offset().top - 40 - totalOffset },
-            1000
+            1000,
           );
         return false;
       },
-    }
+    },
   );
   return AppView;
 });

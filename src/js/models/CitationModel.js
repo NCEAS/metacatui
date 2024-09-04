@@ -1,11 +1,10 @@
-/* global define */
 "use strict";
 
 define(["jquery", "underscore", "backbone", "collections/Citations"], function (
   $,
   _,
   Backbone,
-  Citations
+  Citations,
 ) {
   /**
    * @class CitationModel
@@ -172,7 +171,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
                 delete item.origin;
                 // Format the authors in the origin array
                 item.originArray = item.originArray.map((author) =>
-                  this.formatAuthor(author)
+                  this.formatAuthor(author),
                 );
                 // Get the publish year
                 const date =
@@ -200,7 +199,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
         } catch (error) {
           console.log(
             "Error parsing a CitationModel. Returning response as-is.",
-            error
+            error,
           );
           return response;
         }
@@ -295,7 +294,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
               this.listenTo(
                 attrs.citationMetadata,
                 "update",
-                this.trigger.bind(this, "change")
+                this.trigger.bind(this, "change"),
               );
             }
           }
@@ -307,7 +306,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
             "Error in custom set() method on CitationModel. Will attempt to set" +
               " using with Backbone set(). Attributes and error stack trace:",
             { key, val, options },
-            error
+            error,
           );
           Backbone.Model.prototype.set.call(this, key, val, options);
         }
@@ -355,7 +354,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
           Backbone.Model.prototype.set.call(
             this,
             "sourceModel",
-            newSourceModel
+            newSourceModel,
           );
           this.populateFromModel(newSourceModel);
         } catch (error) {
@@ -399,7 +398,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
             "Error populating a CitationModel from the model: ",
             newSourceModel,
             " Error: ",
-            error
+            error,
           );
         }
       },
@@ -423,7 +422,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
           console.log(
             "Error getting year from the sourceModel. Model and error:",
             sourceModel,
-            error
+            error,
           );
           return this.defaults().year_of_publishing;
         }
@@ -458,7 +457,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
           console.log(
             "Error getting title from the sourceModel. Model and error:",
             sourceModel,
-            error
+            error,
           );
           return this.defaults().title;
         }
@@ -497,7 +496,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
           console.log(
             "Error getting journal from the sourceModel. Model and error:",
             sourceModel,
-            error
+            error,
           );
           return this.defaults().journal;
         }
@@ -541,7 +540,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
           console.log(
             "Error getting originArray from the sourceModel. Model and error:",
             sourceModel,
-            error
+            error,
           );
           return this.defaults().originArray;
         }
@@ -562,7 +561,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
           console.log(
             "Error getting the pid from the sourceModel. Model and error:",
             sourceModel,
-            error
+            error,
           );
           return this.defaults().pid;
         }
@@ -583,7 +582,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
           console.log(
             "Error getting the seriesId from the sourceModel. Model and error:",
             sourceModel,
-            error
+            error,
           );
           return this.defaults().seriesId;
         }
@@ -610,7 +609,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
           console.log(
             "Error getting the viewUrl from the sourceModel. Model and error:",
             sourceModel,
-            error
+            error,
           );
           return this.defaults().viewUrl;
         }
@@ -640,7 +639,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
           console.log(
             "There was an error formatting an author, returning " +
               "the author input as is.",
-            error
+            error,
           );
           return author;
         }
@@ -727,7 +726,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
 
         // Any remaining lowercase words are assumed to be non-dropping particles
         const nonDroppingParticles = parts.filter((part) =>
-          part.match(/^[a-z]+$/)
+          part.match(/^[a-z]+$/),
         );
         if (nonDroppingParticles.length > 0) {
           name["non-dropping-particle"] = nonDroppingParticles.join(" ");
@@ -769,7 +768,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
         } catch (error) {
           console.log(
             "There was an error getting the year from the date, returning null.",
-            error
+            error,
           );
           return null;
         }
@@ -785,7 +784,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
         try {
           if (!orcid) return false;
           const regex = new RegExp(
-            "^https?:\\/\\/orcid.org\\/(\\d{4}-){3}(\\d{3}[0-9X])$"
+            "^https?:\\/\\/orcid.org\\/(\\d{4}-){3}(\\d{3}[0-9X])$",
           );
           return regex.test(orcid);
         } catch {
@@ -827,7 +826,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
         } catch (error) {
           console.log(
             "There was an error getting the name from the orcid.",
-            error
+            error,
           );
         }
       },
@@ -853,7 +852,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
           console.log(
             `There was an error checking if the citation is from node ${node}.` +
               `Returning false.`,
-            error
+            error,
           );
           return false;
         }
@@ -877,7 +876,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
         } catch (error) {
           console.log(
             "There was an error converting the origin string to an array.",
-            error
+            error,
           );
           return this.defaults().originArray;
         }
@@ -913,7 +912,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
         } catch (error) {
           console.log(
             "There was an error converting the origin array to a string.",
-            error
+            error,
           );
           return this.defaults().origin;
         }
@@ -1029,7 +1028,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
         } catch (error) {
           console.log(
             "There was an error finding the DOI for the citation. Returning null",
-            error
+            error,
           );
           return null;
         }
@@ -1089,7 +1088,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
         }
         return "";
       },
-    }
+    },
   );
 
   return Citation;

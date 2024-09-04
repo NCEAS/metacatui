@@ -1,45 +1,51 @@
-'use strict';
+"use strict";
 
-define(
-  [
-    'underscore',
-    'backbone',
-    'text!templates/maps/viewfinder/viewfinder.html',
-    'views/maps/viewfinder/PredictionsListView',
-    'models/maps/viewfinder/ViewfinderModel',
-    "views/maps/SearchInputView",
-  ],
-  (
-    _,
-    Backbone,
-    Template,
-    PredictionsListView,
-    ViewfinderModel,
-    SearchInputView,
-  ) => {
-    // The base classname to use for this View's template elements.
-    const BASE_CLASS = 'viewfinder';
+define([
+  "underscore",
+  "backbone",
+  "text!templates/maps/viewfinder/viewfinder.html",
+  "views/maps/viewfinder/SearchView",
+  "views/maps/viewfinder/ZoomPresetsListView",
+  "views/maps/ExpansionPanelView",
+  "models/maps/ExpansionPanelsModel",
+  "models/maps/viewfinder/ViewfinderModel",
+], (
+  _,
+  Backbone,
+  Template,
+  SearchView,
+  ZoomPresetsListView,
+  ExpansionPanelView,
+  ExpansionPanelsModel,
+  ViewfinderModel,
+) => {
+  // The base classname to use for this View's template elements.
+  const BASE_CLASS = "viewfinder";
+  // The HTML classes to use for this view's HTML elements.
+  const CLASS_NAMES = {
+    searchView: `${BASE_CLASS}__search`,
+    zoomPresetsView: `${BASE_CLASS}__zoom-presets`,
+  };
 
-    /**
-     * @class ViewfinderView
-     * @classdesc ViewfinderView allows a user to search for
-     * a latitude and longitude in the map view, and find suggestions
-     * for places related to their search terms.
-     * This view requires a Google Maps API key in order to function properly,
-     * and must have the Geocoding API and Places API enabled.
-     * @classcategory Views/Maps
-     * @name ViewfinderView
-     * @extends Backbone.View
-     * @screenshot views/maps/viewfinder/ViewfinderView.png
-     * @since 2.28.0
-     * @constructs ViewfinderView
-     */
-    var ViewfinderView = Backbone.View.extend({
+  /**
+   * @class ViewfinderView
+   * @classdesc ViewfinderView allows a user to search for
+   * a latitude and longitude in the map view, and find suggestions
+   * for places related to their search terms.
+   * @classcategory Views/Maps
+   * @name ViewfinderView
+   * @extends Backbone.View
+   * @screenshot views/maps/viewfinder/ViewfinderView.png
+   * @since 2.28.0
+   * @constructs ViewfinderView
+   */
+  var ViewfinderView = Backbone.View.extend(
+    /** @lends ViewfinderView.prototype */ {
       /**
        * The type of View this is
        * @type {string}
        */
-      type: 'ViewfinderView',
+      type: "ViewfinderView",
 
       /**
        * The HTML class to use for this view's outermost element.
@@ -48,179 +54,80 @@ define(
       className: BASE_CLASS,
 
       /**
-       * The HTML classes to use for this view's HTML elements.
-       * @type {Object<string,string>}
-       */
-      classNames: {
-        predictions: `${BASE_CLASS}__predictions`,
-        searchInput: `${BASE_CLASS}__search-input`,
-      },
-
-      /** 
        * Values meant to be used by the rendered HTML template.
        */
       templateVars: {
-        classNames: {},
+        classNames: CLASS_NAMES,
       },
 
       /**
        * @typedef {Object} ViewfinderViewOptions
        * @property {Map} The Map model associated with this view allowing control
-       * of panning to different locations on the map. 
+       * of panning to different locations on the map.
        */
       initialize({ model: mapModel }) {
-        this.childPredictionViews = [];
-        this.templateVars.classNames = this.classNames;
         this.viewfinderModel = new ViewfinderModel({ mapModel });
-
-        this.setupListeners();
-
-        this.autocompleteSearch = _.debounce(() => {
-          this.viewfinderModel.autocompleteSearch(
-            this.searchInput.getInputValue()
-          );
-        }, 250 /* milliseconds */);
-      },
-
-      /** Setup all event listeners on ViewfinderModel. */
-      setupListeners() {
-        this.listenTo(this.viewfinderModel, 'selection-made', (newQuery) => {
-          this.setQuery(newQuery);
-          this.searchInput.blur();
-        });
-
-        this.listenTo(this.viewfinderModel, 'change:error', () => {
-          this.searchInput.setError(this.viewfinderModel.get('error'));
-        });
+        this.panelsModel = new ExpansionPanelsModel({ isMulti: true });
       },
 
       /**
-       * Helper function to focus input on the searh query input and ensure
+       * Get the ZoomPresetsView element.
+       * @returns {JQuery} The ZoomPresetsView element.
+       * @since 2.29.0
+       */
+      getZoomPresets() {
+        return this.$el.find(`.${CLASS_NAMES.zoomPresetsView}`);
+      },
+
+      /**
+       * Get the SearchView element.
+       * @returns {JQuery} The SearchView element.
+       */
+      getSearch() {
+        return this.$el.find(`.${CLASS_NAMES.searchView}`);
+      },
+
+      /**
+       * Helper function to focus input on the search query input and ensure
        * that the cursor is at the end of the text (as opposed to the beginning
        * which appears to be the default jQuery behavior).
+       * @since 2.29.0
        */
       focusInput() {
-        this.searchInput.focus();
+        this.searchView.focusInput();
       },
 
       /**
-       * Getter function for the list of predictions. 
-       * @return {HTMLUListElement} Returns the predictions unordered list
-       * HTML element.
+       * Render child ZoomPresetsView and append to DOM.
+       * @since 2.29.0
        */
-      getList() {
-        return this.$el.find(`.${this.classNames.predictions}`);
-      },
-
-      /**
-       * Getter function for the search query input. 
-       * @return {HTMLInputElement} Returns the search input HTML element.
-       */
-      getSearchInput() {
-        return this.$el.find(`.${this.classNames.searchInput}`);
-      },
-
-      /**
-       * Event handler to prevent cursor from jumping to beginning
-       * of an input field (default behavior).
-       */
-      keydown(event) {
-        if (event.key === 'ArrowUp') {
-          event.preventDefault();
-        }
-
-        // Unset query value since error is cleared and it should show up again
-        // if the user re-enters the same value.
-        if (this.searchInput.getInputValue() === '') {
-          this.viewfinderModel.unset('query', { silent: true });
-        }
-      },
-
-      /** Trigger the search on the ViewfinderModel. */
-      search() {
-        this.viewfinderModel.search(this.searchInput.getInputValue());
-      },
-
-      /**
-       * Event handler for Backbone.View configuration that is called whenever 
-       * the user types a key.
-       */
-      async keyup(event) {
-        if (event.key === 'Enter') {
-          this.search();
-        } else if (event.key === 'ArrowUp') {
-          this.viewfinderModel.decrementFocusIndex();
-        } else if (event.key === 'ArrowDown') {
-          this.viewfinderModel.incrementFocusIndex();
-        } else {
-          this.autocompleteSearch(this.searchInput.getInputValue());
-        }
-      },
-
-      /** Helper function to set the input field. */
-      setQuery(query) {
-        this.searchInput.setInputValue(query);
-      },
-
-      /**
-       * Show the predictions list and potentially submit a search for new
-       * Predictions to display when there is a search query.
-       */
-      showPredictionsList() {
-        this.getList().show();
-        this.viewfinderModel.autocompleteSearch(
-          this.searchInput.getInputValue()
-        );
-      },
-
-      /**
-       * Hide the predictions list unless user is selecting a list item.
-       * @param {FocusEvent} event Mouse event corresponding to a change in 
-       * focus.
-       */
-      hidePredictionsList(event) {
-        const clickedInList = this.getList()[0]?.contains(event.relatedTarget);
-        if (clickedInList) return;
-
-        this.getList().hide();
-      },
-
-      /**
-       * Render the SearchInputView. 
-       */
-      renderSearchInput() {
-        this.searchInput = new SearchInputView({
-          placeholder: "Enter coordinates or areas of interest",
-          search: text => {
-            this.viewfinderModel.search(text);
-            return false;
-          },
-          keyupCallback: event => {
-            this.keyup(event);
-          },
-          focusCallback: event => {
-            this.showPredictionsList(event);
-          },
-          blurCallback: event => {
-            this.hidePredictionsList(event);
-          },
-          keydownCallback: event => {
-            this.keydown(event);
+      renderZoomPresetsView() {
+        const zoomPresetsListView = new ZoomPresetsListView({
+          zoomPresets: this.viewfinderModel.get("zoomPresets"),
+          selectZoomPreset: (preset) => {
+            this.viewfinderModel.selectZoomPreset(preset);
           },
         });
-        this.getSearchInput().append(this.searchInput.el);
-        this.searchInput.render();
+        const expansionPanel = new ExpansionPanelView({
+          contentViewInstance: zoomPresetsListView,
+          icon: "icon-plane",
+          panelsModel: this.panelsModel,
+          title: "Zoom to...",
+          startOpen: true,
+        });
+        expansionPanel.render();
+
+        this.getZoomPresets().append(expansionPanel.el);
       },
 
-      /**
-       * Render the Prediction sub-views. 
-       */
-      renderPredictionsList() {
-        this.predictionsView = new PredictionsListView({
-          viewfinderModel: this.viewfinderModel
+      /** Render child SearchView and append to DOM. */
+      renderSearchView() {
+        this.searchView = new SearchView({
+          viewfinderModel: this.viewfinderModel,
         });
-        this.getList().html(this.predictionsView.el);
-        this.predictionsView.render();
+        this.searchView.render();
+
+        this.getSearch().append(this.searchView.el);
       },
 
       /**
@@ -231,12 +138,13 @@ define(
       render() {
         this.el.innerHTML = _.template(Template)(this.templateVars);
 
-        this.renderSearchInput();
-        this.renderPredictionsList();
-
-        this.focusInput();
+        this.renderSearchView();
+        if (this.viewfinderModel.get("zoomPresets").length) {
+          this.renderZoomPresetsView();
+        }
       },
-    });
+    },
+  );
 
-    return ViewfinderView;
-  });
+  return ViewfinderView;
+});

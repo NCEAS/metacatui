@@ -1,4 +1,3 @@
-/* global define */
 define([
   "underscore",
   "jquery",
@@ -18,7 +17,7 @@ define([
   EMLMeasurementScale,
   EMLMeasurementScaleView,
   EML211MissingValueCodesView,
-  EMLAttributeTemplate
+  EMLAttributeTemplate,
 ) {
   /**
    * @class EMLAttributeView
@@ -172,7 +171,7 @@ define([
         // Dynamically require since this view is feature-flagged off by default
         // and requires an API key
         require(["views/metadata/EMLMeasurementTypeView"], function (
-          EMLMeasurementTypeView
+          EMLMeasurementTypeView,
         ) {
           var view = new EMLMeasurementTypeView({
             model: viewRef.model,
@@ -215,7 +214,7 @@ define([
         if (Array.isArray(currentValue)) {
           // Get the position of the updated DOM element
           var index = this.$(".input[data-category='" + category + "']").index(
-            e.target
+            e.target,
           );
 
           // If there is at least one value already in the array...
@@ -298,7 +297,7 @@ define([
                   .text(errors[attr])
                   .addClass("error");
               },
-              view
+              view,
             );
 
             view.$el.addClass("error");
@@ -328,7 +327,7 @@ define([
           .removeClass("error")
           .empty();
       },
-    }
+    },
   );
 
   return EMLAttributeView;

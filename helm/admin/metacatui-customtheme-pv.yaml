@@ -1,0 +1,30 @@
+## EXAMPLE file for manually creating a Persistent Volume to store a metacatui custom theme.
+## Needed only if 'customTheme.enabled:' is set to 'true' in values.yaml.
+## EDIT this file to replace "$RELEASENAME", "$YOUR-CLUSTER-ID" and the "rootPath"
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  # See https://github.com/DataONEorg/k8s-cluster/blob/main/storage/storage.md#dataone-volume-naming-conventions
+  # cephs-{release}-{function}-{instance}, where {release} usually = {namespace}
+  name: &pv-name cephfs-$RELEASENAME-metacatui-customtheme
+spec:
+  accessModes:
+    - ReadOnlyMany
+  capacity:
+    storage: 100Mi
+  csi:
+    driver: cephfs.csi.ceph.com
+    nodeStageSecretRef:
+      # node stage secret name
+      name: csi-cephfs-$RELEASENAME-secret
+      # node stage secret namespace where above secret is created
+      namespace: ceph-csi-cephfs
+    volumeAttributes:
+      clusterID: $YOUR-CLUSTER-ID
+      fsName: cephfs
+      rootPath: /volumes/YOUR-subvol-group/YOUR-subvol/YOUR-ID/repos/YOUR_REPO/metacatui
+      staticVolume: "true"
+    volumeHandle: *pv-name
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: csi-cephfs-sc
+  volumeMode: Filesystem

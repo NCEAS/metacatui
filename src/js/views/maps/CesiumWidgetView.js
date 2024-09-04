@@ -10,7 +10,8 @@ define([
   "models/maps/assets/Cesium3DTileset",
   "models/maps/Feature",
   "text!templates/maps/cesium-widget-view.html",
-], function (
+  "common/SearchParams",
+], (
   $,
   _,
   Backbone,
@@ -19,8 +20,9 @@ define([
   MapAsset,
   Cesium3DTileset,
   Feature,
-  Template
-) {
+  Template,
+  SearchParams,
+) => {
   /**
    * @class CesiumWidgetView
    * @classdesc An interactive 2D and/or 3D map/globe rendered using CesiumJS.
@@ -28,7 +30,7 @@ define([
    * scalebar, layer list, etc.
    * @classcategory Views/Maps
    * @name CesiumWidgetView
-   * @extends Backbone.View
+   * @augments Backbone.View
    * @screenshot views/maps/CesiumWidgetView.png
    * @since 2.18.0
    * @constructs
@@ -36,7 +38,7 @@ define([
    * @fires MapInteraction#moveEnd
    * @fires MapInteraction#moveStart
    */
-  var CesiumWidgetView = Backbone.View.extend(
+  const CesiumWidgetView = Backbone.View.extend(
     /** @lends CesiumWidgetView.prototype */ {
       /**
        * The type of View this is
@@ -69,7 +71,7 @@ define([
        * function in this view that adds and renders that asset on the map,
        * given the Map Asset model. Each object in the array has two properties:
        * 'types' and 'renderFunction'.
-       * @type {Object[]}
+       * @type {object[]}
        * @property {string[]} types The list of types that can be added to the
        * map given the renderFunction
        * @property {string} renderFunction The name of the function in the view
@@ -122,7 +124,7 @@ define([
        * @param {Object} [options] - A literal object with options to pass to
        * the view
        */
-      initialize: function (options) {
+      initialize(options) {
         try {
           // Set the Cesium Ion token (required for some map features)
           Cesium.Ion.defaultAccessToken = MetacatUI.appModel.get("cesiumToken");
@@ -146,6 +148,16 @@ define([
           if (!this.interactions.get("selectedFeatures")) {
             this.interactions.selectFeatures();
           }
+
+          this.debouncedUpdateSearchParams = _.debounce(() => {
+            this.updateSearchParams();
+          }, 150 /* milliseconds */);
+
+          this.listenTo(
+            this.model,
+            "change:searchparams",
+            this.updateSearchParams,
+          );
         } catch (e) {
           console.log("Failed to initialize a CesiumWidgetView. ", e);
         }
@@ -155,7 +167,7 @@ define([
        * Renders this view
        * @return {CesiumWidgetView} Returns the rendered view element
        */
-      render: function () {
+      render() {
         try {
           // If Cesium features are disabled in the AppConfig, then exit without
           // rendering anything.
@@ -192,8 +204,14 @@ define([
           // Render the layers
           view.addLayers();
 
-          // Go to the home position, if one is set.
-          view.flyHome(0);
+          const destination = SearchParams.getDestination();
+          if (this.model.get("showShareUrl") && destination) {
+            // Go to position specified in query params.
+            view.flyTo(destination);
+          } else {
+            // Go to the home position, if one is set.
+            view.flyHome(0);
+          }
 
           // Set the map up so that selected features may be highlighted
           view.setUpSilhouettes();
@@ -210,7 +228,7 @@ define([
        * @since 2.27.0
        * @returns {Cesium.CesiumWidget} The Cesium Widget
        */
-      renderWidget: function () {
+      renderWidget() {
         const view = this;
         // Clock for timeline component & updating data sources
         view.clock = new Cesium.Clock({ shouldAnimate: false });
@@ -235,6 +253,15 @@ define([
         view.scene = view.widget.scene;
         view.camera = view.widget.camera;
 
+        if (typeof this.model.get("globeBaseColor") === "string") {
+          const baseColor = Cesium.Color.fromCssColorString(
+            this.model.get("globeBaseColor"),
+          );
+          if (baseColor) {
+            view.scene.globe.baseColor = baseColor;
+          }
+        }
+
         return view.widget;
       },
 
@@ -245,7 +272,7 @@ define([
        * @since 2.27.0
        * @returns {Cesium.DataSourceDisplay} The Cesium DataSourceDisplay
        */
-      setUpDataSourceDisplay: function () {
+      setUpDataSourceDisplay() {
         const view = this;
         view.dataSourceCollection = new Cesium.DataSourceCollection();
         view.dataSourceDisplay = new Cesium.DataSourceDisplay({
@@ -274,7 +301,7 @@ define([
        * the functions that calculates the bounding sphere and zooms to it
        * (which required to visual elements to be rendered first.)
        */
-      postRender: function () {
+      postRender() {
         try {
           const view = this;
           if (view.zoomTarget) {
@@ -291,7 +318,7 @@ define([
        * displayed.
        * @since 2.27.0
        */
-      updateAllDataSources: function () {
+      updateAllDataSources() {
         const view = this;
         const dataSources = view.dataSourceDisplay.dataSources;
         if (!dataSources || !dataSources.length) {
@@ -314,7 +341,7 @@ define([
       /**
        * Configure the lighting on the globe.
        */
-      setLighting: function () {
+      setLighting() {
         const view = this;
         // Disable HDR lighting for better performance & to keep imagery
         // consistently lit.
@@ -329,7 +356,7 @@ define([
         view.scene.preRender.addEventListener(function (scene, time) {
           view.scene.light.direction = Cesium.Cartesian3.clone(
             scene.camera.directionWC,
-            view.scene.light.direction
+            view.scene.light.direction,
           );
         });
       },
@@ -339,7 +366,7 @@ define([
        * users to click on vector features on the map to highlight them.
        * @since 2.27.0
        */
-      setUpSilhouettes: function () {
+      setUpSilhouettes() {
         try {
           // Save a reference to this view the Cesium scene
           var view = this;
@@ -355,7 +382,7 @@ define([
           scene.postProcessStages.add(
             Cesium.PostProcessStageLibrary.createSilhouetteStage([
               view.silhouettes,
-            ])
+            ]),
           );
         } catch (e) {
           console.log("Error initializing picking in a CesiumWidgetView", e);
@@ -366,14 +393,14 @@ define([
        * Listen for changes to the assets and update the map accordingly.
        * @since 2.27.0
        */
-      setAssetListeners: function () {
+      setAssetListeners() {
         const view = this;
         const model = view.model;
         const layerGroups = model.getLayerGroups();
 
         // Listen for addition or removal of layers TODO: Add similar listeners
         // for terrain
-        _.each(layerGroups, layers => {
+        _.each(layerGroups, (layers) => {
           if (layers) {
             view.stopListening(layers);
             view.listenTo(layers, "add", view.addAsset);
@@ -383,17 +410,21 @@ define([
             // etc. has been updated. Re-render the scene when this happens.
             view.listenTo(layers, "appearanceChanged", view.requestRender);
           }
-        })
+        });
         // Reset asset listeners if the layers collection is replaced
         view.stopListening(model, "change:layers change:layerCategories");
-        view.listenTo(model, "change:layers change:layerCategories", view.setAssetListeners);
+        view.listenTo(
+          model,
+          "change:layers change:layerCategories",
+          view.setAssetListeners,
+        );
       },
 
       /**
        * Remove listeners for dynamic navigation.
        * @since 2.27.0
        */
-      removeNavigationListeners: function () {
+      removeNavigationListeners() {
         this.stopListening(this.interactions, "change:zoomTarget", this.flyTo);
         if (this.removePostRenderListener) this.removePostRenderListener();
       },
@@ -405,12 +436,12 @@ define([
        * indicates that the map should navigate to a given extent.
        * @since 2.27.0
        */
-      setNavigationListeners: function () {
+      setNavigationListeners() {
         this.removeNavigationListeners();
         // Zoom functions executed after each scene render
         this.removePostRenderListener = this.scene.postRender.addEventListener(
           this.postRender,
-          this
+          this,
         );
         this.listenTo(this.interactions, "change:zoomTarget", function () {
           const target = this.interactions.get("zoomTarget");
@@ -424,7 +455,7 @@ define([
        * Remove any previously set camera listeners.
        * @since 2.27.0
        */
-      removeCameraListeners: function () {
+      removeCameraListeners() {
         if (!this.cameraListeners) this.cameraListeners = [];
         this.cameraListeners.forEach(function (removeListener) {
           removeListener();
@@ -436,7 +467,7 @@ define([
        * interactions model. Also update the scale (pixels:meters) and the view
        * extent when the camera has moved.
        */
-      setCameraListeners: function () {
+      setCameraListeners() {
         try {
           const view = this;
           const camera = view.camera;
@@ -445,22 +476,26 @@ define([
           // Remove any previously set camera listeners
           view.removeCameraListeners();
           // Amount camera must change before firing 'changed' event.
-          camera.percentChanged = 0.1;
+          camera.percentageChanged = 0.01;
 
           // Functions to run for each Cesium camera event
           const cameraEvents = {
             moveEnd: [],
             moveStart: [],
-            changed: ["updateScale", "updateViewExtent"],
+            changed: [
+              "updateScale",
+              "updateViewExtent",
+              "debouncedUpdateSearchParams",
+            ],
           };
           // add a listener that triggers the same event on the interactions
           // model, and runs any functions configured above.
-          Object.entries(cameraEvents).forEach(function ([label, functions]) {
-            const callback = function () {
+          Object.entries(cameraEvents).forEach(([label, functions]) => {
+            const callback = () => {
               // Rename because 'changed' is too similar to the Backbone event
               const eventName = label === "changed" ? "cameraChanged" : label;
               interactions.trigger(eventName);
-              functions.forEach(function (func) {
+              functions.forEach((func) => {
                 view[func].call(view);
               });
             };
@@ -476,7 +511,7 @@ define([
        * Remove any previously set mouse listeners.
        * @since 2.27.0
        */
-      removeMouseListeners: function () {
+      removeMouseListeners() {
         if (this.mouseEventHandler) this.mouseEventHandler.destroy();
       },
 
@@ -486,7 +521,7 @@ define([
        * These listeners simply update the interactions model with mouse events.
        * @since 2.27.0
        */
-      setMouseListeners: function () {
+      setMouseListeners() {
         const view = this;
         const events = Cesium.ScreenSpaceEventType;
 
@@ -511,12 +546,42 @@ define([
       },
 
       /**
+       * Update the search parameters related to the current map position
+       * and heading.
+       * @since 2.30.0
+       */
+      updateSearchParams() {
+        if (!this.model.get("showShareUrl")) return;
+
+        const { heading, pitch, positionCartographic, roll } =
+          this.scene.camera;
+
+        SearchParams.updateDestination({
+          heading: Cesium.Math.toDegrees(heading),
+          height: positionCartographic.height,
+          latitude: Cesium.Math.toDegrees(positionCartographic.latitude),
+          longitude: Cesium.Math.toDegrees(positionCartographic.longitude),
+          pitch: Cesium.Math.toDegrees(pitch),
+          roll: Cesium.Math.toDegrees(roll),
+        });
+
+        this.model.get("allLayers").forEach((layer) => {
+          const layerId = layer.get("layerId");
+          if (layerId && layer.get("visible")) {
+            SearchParams.addEnabledLayer(layerId);
+          } else {
+            SearchParams.removeEnabledLayer(layerId);
+          }
+        });
+      },
+
+      /**
        * When the mouse is moved over the map, update the interactions model
        * with the current mouse position.
        * @param {Object} event - The event object from Cesium
        * @since 2.27.0
        */
-      setMousePosition: function (position) {
+      setMousePosition(position) {
         if (!position) return;
         const view = this;
         const pickRay = view.camera.getPickRay(position);
@@ -536,7 +601,7 @@ define([
        * must pass between calls to this function.
        * @since 2.27.0
        */
-      setHoveredFeatures: function (position, delay = 200) {
+      setHoveredFeatures(position, delay = 200) {
         const view = this;
         const lastCall = this.setHoveredFeaturesLastCall || 0;
         const now = new Date().getTime();
@@ -550,7 +615,7 @@ define([
        * React when the user interacts with the map.
        * @since 2.27.0
        */
-      setInteractionListeners: function () {
+      setInteractionListeners() {
         const interactions = this.interactions;
         const hoveredFeatures = interactions.get("hoveredFeatures");
         this.stopListening(hoveredFeatures, "change update");
@@ -563,7 +628,7 @@ define([
        * @param {Object|null} hoveredFeatures - The feature that the mouse is
        * hovering over or null if the mouse is not hovering over a feature.
        */
-      updateCursor: function (hoveredFeatures) {
+      updateCursor(hoveredFeatures) {
         const view = this;
         let cursorStyle = "default";
         if (hoveredFeatures && hoveredFeatures.length) {
@@ -577,7 +642,7 @@ define([
        * model.
        * @since 2.27.0
        */
-      showSelectedFeatures: function () {
+      showSelectedFeatures() {
         // Remove highlights from previously selected 3D tiles
         view.silhouettes.selected = [];
         // Highlight the newly selected 3D tiles
@@ -593,7 +658,7 @@ define([
        * during the render function.
        * @since 2.26.0
        */
-      addLayers: function () {
+      addLayers() {
         const view = this;
 
         // Add each layer from the Map model to the Cesium widget. Render using
@@ -642,7 +707,7 @@ define([
        * asset, options to pass to Cesium Camera.flyToBoundingSphere(). See
        * {@link https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#flyToBoundingSphere}.
        */
-      flyTo: function (target, options) {
+      flyTo(target, options) {
         this.zoomTarget = target;
         this.zoomOptions = options;
         this.requestRender();
@@ -672,9 +737,8 @@ define([
        * passed to Cesium Camera.flyTo(). See
        * {@link https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#flyTo}
        */
-      completeFlight: function (target, options) {
+      completeFlight(target, options) {
         try {
-
           // A target is required
           if (!target) return;
 
@@ -708,7 +772,7 @@ define([
                   options.offset = new Cesium.HeadingPitchRange(
                     0.0,
                     -0.5,
-                    assetBoundingSphere.radius
+                    assetBoundingSphere.radius,
                   );
                 }
                 view.flyTo(assetBoundingSphere, options);
@@ -730,10 +794,10 @@ define([
             if (!displayReady) {
               // Must wait for layer to be rendered in via the dataSourceDisplay
               // before we can get the bounding sphere for the feature.
-              view.listenToOnce(layer, "change:displayReady", function () {
+              view.listenToOnce(layer, "change:displayReady", () => {
                 view.flyTo(target, options);
               });
-              return
+              return;
             }
             view.flyTo(target.get("featureObject"), options);
             return;
@@ -744,11 +808,12 @@ define([
           const entity = target instanceof Cesium.Entity ? target : target.id;
 
           if (entity instanceof Cesium.Entity) {
-
-            view.dataSourceDisplay._ready = true
-            view.getBoundingSphereFromEntity(entity).then(function (entityBoundingSphere) {
-              view.flyTo(entityBoundingSphere, options);
-            });
+            view.dataSourceDisplay._ready = true;
+            view
+              .getBoundingSphereFromEntity(entity)
+              .then((entityBoundingSphere) => {
+                view.flyTo(entityBoundingSphere, options);
+              });
             return;
           }
 
@@ -785,15 +850,15 @@ define([
         }
       },
 
-      getBoundingSphereFromEntity: function (entity) {
-        const view = this
+      getBoundingSphereFromEntity(entity) {
+        const view = this;
         const entityBoundingSphere = new Cesium.BoundingSphere();
         const readyState = Cesium.BoundingSphereState.DONE;
         function getBS() {
           return view.dataSourceDisplay.getBoundingSphere(
             entity,
             false,
-            entityBoundingSphere
+            entityBoundingSphere,
           );
         }
         // Return a promise that resolves to bounding box when it's ready.
@@ -808,11 +873,12 @@ define([
               // Search for the entity again in case it was removed and
               // re-added to the data source display.
               entity = view.getEntityById(entity.id, entity.entityCollection);
-              if(!entity) {
+              if (!entity) {
                 clearInterval(interval);
-                reject("Failed to get bounding sphere for entity, entity not found.");
+                reject(
+                  "Failed to get bounding sphere for entity, entity not found.",
+                );
               }
-
             } else {
               clearInterval(interval);
               resolve(entityBoundingSphere);
@@ -822,7 +888,7 @@ define([
               reject("Failed to get bounding sphere for entity.");
             }
           }, 100);
-        })
+        });
       },
 
       /**
@@ -833,7 +899,7 @@ define([
        * entity with that id exists in the collection.
        * @since 2.27.0
        */
-      getEntityById: function (id, collection) {
+      getEntityById(id, collection) {
         const entities = collection.values;
         for (let i = 0; i < entities.length; i++) {
           const entity = entities[i];
@@ -844,7 +910,7 @@ define([
         return null;
       },
 
-      resetZoomTarget: function () {
+      resetZoomTarget() {
         const view = this;
         view.zoomTarget = null;
         view.interactions.set("zoomTarget", null);
@@ -855,7 +921,7 @@ define([
        * Navigate to the homePosition that's set on the Map.
        * @param {number} duration The duration of the flight in seconds.
        */
-      flyHome: function (duration) {
+      flyHome(duration) {
         const home = this.model.get("homePosition");
         this.flyTo(home, { duration });
       },
@@ -867,7 +933,7 @@ define([
        * heading, pitch, and roll in degrees.
        * @param {number} duration The duration of the flight in seconds.
        */
-      positionToFlightTarget: function (position, duration) {
+      positionToFlightTarget(position, duration) {
         try {
           if (!position) {
             return null;
@@ -887,7 +953,7 @@ define([
             target.destination = Cesium.Cartesian3.fromDegrees(
               position.longitude,
               position.latitude,
-              position.height
+              position.height,
             );
 
             if (
@@ -920,7 +986,7 @@ define([
        * format that the Map model uses for the homePosition (see
        * {@link Map#defaults})
        */
-      getCameraPosition: function () {
+      getCameraPosition() {
         return this.getDegreesFromCartesian(this.camera.position);
       },
 
@@ -928,7 +994,7 @@ define([
        * Update the 'currentViewExtent' attribute in the Map model with the
        * bounding box of the currently visible area of the map.
        */
-      updateViewExtent: function () {
+      updateViewExtent() {
         try {
           this.interactions.setViewExtent(this.getViewExtent());
         } catch (e) {
@@ -942,7 +1008,7 @@ define([
        * the height/ altitude of the camera in meters.
        * @returns {MapConfig#ViewExtent} The current view extent.
        */
-      getViewExtent: function () {
+      getViewExtent() {
         const view = this;
         const scene = view.scene;
         const camera = view.camera;
@@ -967,7 +1033,7 @@ define([
         }
         var rect = camera.computeViewRectangle(
           scene.globe.ellipsoid,
-          view.scratchRectangle
+          view.scratchRectangle,
         );
         coords.north = Cesium.Math.toDegrees(rect.north);
         coords.east = Cesium.Math.toDegrees(rect.east);
@@ -996,7 +1062,7 @@ define([
             Object.values(edges).forEach(function (point) {
               if (point) {
                 edgeLatitudes.push(
-                  view.getDegreesFromCartesian(point).latitude
+                  view.getDegreesFromCartesian(point).latitude,
                 );
               }
             });
@@ -1015,10 +1081,10 @@ define([
           // If not focused directly on one of the poles, then also limit the
           // east and west sides of the bounding box
           const northPointLat = view.getDegreesFromCartesian(
-            edges.top
+            edges.top,
           ).latitude;
           const southPointLat = view.getDegreesFromCartesian(
-            edges.bottom
+            edges.bottom,
           ).latitude;
 
           if (northPointLat > 25 && southPointLat < -25) {
@@ -1046,7 +1112,7 @@ define([
        * @returns {Boolean} Returns true if the bounding box covers the entire
        * globe, false otherwise.
        */
-      coversGlobe: function (coords, latAllowance = 0.5, lonAllowance = 1) {
+      coversGlobe(coords, latAllowance = 0.5, lonAllowance = 1) {
         const maxLat = 90 - latAllowance;
         const minLat = -90 + latAllowance;
         const maxLon = 180 - lonAllowance;
@@ -1066,7 +1132,7 @@ define([
        * @returns Returns an object with the longitude and latitude in degrees,
        * as well as the height in meters
        */
-      getDegreesFromCartesian: function (cartesian) {
+      getDegreesFromCartesian(cartesian) {
         const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
         const degrees = {
           height: cartographic.height,
@@ -1081,7 +1147,7 @@ define([
         coordinates.forEach(function (coordinate) {
           if (Cesium.defined(cartographic[coordinate])) {
             degrees[coordinate] = Cesium.Math.toDegrees(
-              cartographic[coordinate]
+              cartographic[coordinate],
             );
           }
         });
@@ -1098,7 +1164,7 @@ define([
        * @returns {Cesium.Cartesian3[]} Returns an object with the top, bottom,
        * left, and right points of the globe.
        */
-      findEdges: function () {
+      findEdges() {
         try {
           const view = this;
           const canvas = view.scene.canvas;
@@ -1128,7 +1194,7 @@ define([
           console.log(
             "There was an error finding the edge points in a CesiumWidgetView" +
               ". Error details: " +
-              error
+              error,
           );
         }
       },
@@ -1140,7 +1206,7 @@ define([
        * @returns {Cesium.Cartesian3 | null} The midpoint or null if p1 or p2 is
        * not defined.
        */
-      findMidpoint: function (p1, p2) {
+      findMidpoint(p1, p2) {
         try {
           if (!p1 || !p2) {
             return null;
@@ -1162,7 +1228,7 @@ define([
           const p3a = Cesium.Cartesian3.fromRadians(
             midPt.longitude,
             midPt.latitude,
-            0.0
+            0.0,
           );
 
           return p3a;
@@ -1170,7 +1236,7 @@ define([
           console.log(
             "There was an error finding a midpoint in a CesiumWidgetView" +
               ". Error details: " +
-              error
+              error,
           );
         }
       },
@@ -1190,7 +1256,7 @@ define([
        *
        * @see {@link https://groups.google.com/g/cesium-dev/c/e2H7EefikAk}
        */
-      findPointOnGlobe: function (startCoordinates, endCoordinates) {
+      findPointOnGlobe(startCoordinates, endCoordinates) {
         const view = this;
         const camera = view.camera;
         const ellipsoid = view.scene.globe.ellipsoid;
@@ -1244,7 +1310,7 @@ define([
        * scale bar. Finds the distance between two pixels at the *bottom center*
        * of the screen.
        */
-      updateScale: function () {
+      updateScale() {
         try {
           const view = this;
           let currentScale = {
@@ -1274,7 +1340,7 @@ define([
        * of the current scene. Returns false if there was a problem getting the
        * measurement.
        */
-      pixelToMeters: function () {
+      pixelToMeters() {
         try {
           const view = this;
           const scene = view.scene;
@@ -1293,10 +1359,10 @@ define([
           const height = scene.canvas.clientHeight;
 
           const left = camera.getPickRay(
-            new Cesium.Cartesian2((width / 2) | 0, height - 1)
+            new Cesium.Cartesian2((width / 2) | 0, height - 1),
           );
           const right = camera.getPickRay(
-            new Cesium.Cartesian2((1 + width / 2) | 0, height - 1)
+            new Cesium.Cartesian2((1 + width / 2) | 0, height - 1),
           );
 
           const leftPosition = globe.pick(left, scene);
@@ -1323,7 +1389,7 @@ define([
           console.log(
             "Failed to get a pixel to meters measurement in a CesiumWidgetView" +
               ". Error details: " +
-              error
+              error,
           );
           return false;
         }
@@ -1338,7 +1404,7 @@ define([
        * @param {MapAsset} mapAsset A MapAsset layer to render in the map, such
        * as a Cesium3DTileset or a CesiumImagery model.
        */
-      addAsset: function (mapAsset) {
+      addAsset(mapAsset) {
         try {
           if (!mapAsset) {
             return;
@@ -1360,7 +1426,7 @@ define([
           if (!renderFunction || typeof renderFunction !== "function") {
             mapAsset.set(
               "statusDetails",
-              "This type of resource is not supported in the map widget."
+              "This type of resource is not supported in the map widget.",
             );
             mapAsset.set("status", "error");
             return;
@@ -1390,7 +1456,7 @@ define([
           console.error("Error rendering an asset", e, mapAsset);
           mapAsset.set(
             "statusDetails",
-            "There was a problem rendering this resource in the map widget."
+            "There was a problem rendering this resource in the map widget.",
           );
           mapAsset.set("status", "error");
         }
@@ -1401,17 +1467,17 @@ define([
        * @param {MapAsset} mapAsset - The MapAsset model removed from the map
        * @since 2.27.0
        */
-      removeAsset: function (mapAsset) {
+      removeAsset(mapAsset) {
         if (!mapAsset) return;
         // Get the cesium model from the asset
         const cesiumModel = mapAsset.get("cesiumModel");
         if (!cesiumModel) return;
         // Find the remove function for this type of asset
-        const removeFunctionName = this.mapAssetRenderFunctions.find(function (
-          option
-        ) {
-          return option.types.includes(mapAsset.get("type"));
-        })?.removeFunction;
+        const removeFunctionName = this.mapAssetRenderFunctions.find(
+          function (option) {
+            return option.types.includes(mapAsset.get("type"));
+          },
+        )?.removeFunction;
         const removeFunction = this[removeFunctionName];
         // If there is a function for this type of asset, call it
         if (removeFunction && typeof removeFunction === "function") {
@@ -1419,7 +1485,7 @@ define([
         } else {
           console.log(
             "No remove function found for this type of asset",
-            mapAsset
+            mapAsset,
           );
         }
       },
@@ -1431,7 +1497,7 @@ define([
        * @param {Cesium.TerrainProvider} cesiumModel a Cesium Terrain Provider
        * model to use for the map
        */
-      updateTerrain: function (cesiumModel) {
+      updateTerrain(cesiumModel) {
         // TODO: Add listener to the map model for when the terrain changes
         this.scene.terrainProvider = cesiumModel;
         this.requestRender();
@@ -1442,7 +1508,7 @@ define([
        * @param {Cesium.Cesium3DTileset} cesiumModel The Cesium 3D tileset model
        * that contains the information about the 3D tiles to render in the map
        */
-      add3DTileset: function (cesiumModel) {
+      add3DTileset(cesiumModel) {
         this.scene.primitives.add(cesiumModel);
       },
 
@@ -1452,7 +1518,7 @@ define([
        * to remove from the map
        * @since 2.27.0
        */
-      remove3DTileset: function (cesiumModel) {
+      remove3DTileset(cesiumModel) {
         this.scene.primitives.remove(cesiumModel);
       },
 
@@ -1461,7 +1527,7 @@ define([
        * @param {Cesium.GeoJsonDataSource} cesiumModel - The Cesium data source
        * model to render on the map
        */
-      addVectorData: function (cesiumModel) {
+      addVectorData(cesiumModel) {
         this.dataSourceCollection.add(cesiumModel);
       },
 
@@ -1471,7 +1537,7 @@ define([
        * model to remove from the map
        * @since 2.27.0
        */
-      removeVectorData: function (cesiumModel) {
+      removeVectorData(cesiumModel) {
         this.dataSourceCollection.remove(cesiumModel);
       },
 
@@ -1480,7 +1546,7 @@ define([
        * @param {Cesium.ImageryLayer} cesiumModel The Cesium imagery model to
        * render
        */
-      addImagery: function (cesiumModel) {
+      addImagery(cesiumModel) {
         this.scene.imageryLayers.add(cesiumModel);
         this.sortImagery();
       },
@@ -1491,7 +1557,7 @@ define([
        * remove from the map
        * @since 2.27.0
        */
-      removeImagery: function (cesiumModel) {
+      removeImagery(cesiumModel) {
         console.log("Removing imagery from map", cesiumModel);
         console.log("Imagery layers", this.scene.imageryLayers);
         this.scene.imageryLayers.remove(cesiumModel);
@@ -1502,12 +1568,16 @@ define([
        * that the imagery is arranged in the layers collection.
        * @since 2.21.0
        */
-      sortImagery: function () {
+      sortImagery() {
         const imageryInMap = this.scene.imageryLayers;
-        const imageryModels = _.reduce(this.model.getLayerGroups(), (models, layers) => {
+        const imageryModels = _.reduce(
+          this.model.getLayerGroups(),
+          (models, layers) => {
             models.push(...layers.getAll("CesiumImagery"));
             return models;
-          }, []);
+          },
+          [],
+        );
 
         // If there are no imagery layers, or just one, return
         if (
@@ -1543,9 +1613,9 @@ define([
        *  [tilingScheme='GeographicTilingScheme'] The tiling scheme to use.
        *  Defaults to GeographicTilingScheme.
        */
-      showImageryGrid: function (
+      showImageryGrid(
         color = "#ffffff",
-        tilingScheme = "GeographicTilingScheme"
+        tilingScheme = "GeographicTilingScheme",
       ) {
         try {
           const view = this;
@@ -1554,7 +1624,7 @@ define([
             console.log(
               `${color} is an invalid color for imagery grid. ` +
                 `Must be a hex color starting with '#'. ` +
-                `Setting color to white: '#ffffff'`
+                `Setting color to white: '#ffffff'`,
             );
             color = "#ffffff";
           }
@@ -1567,7 +1637,7 @@ define([
           if (availableTS.indexOf(tilingScheme) == -1) {
             console.log(
               `${tilingScheme} is not a valid tiling scheme ` +
-                `for the imagery grid. Using WebMercatorTilingScheme`
+                `for the imagery grid. Using WebMercatorTilingScheme`,
             );
             tilingScheme = "WebMercatorTilingScheme";
           }
@@ -1580,7 +1650,7 @@ define([
 
           const gridOutlines = new Cesium.GridImageryProvider(gridOpts);
           const gridCoords = new Cesium.TileCoordinatesImageryProvider(
-            gridOpts
+            gridOpts,
           );
           view.scene.imageryLayers.addImageryProvider(gridOutlines);
           view.scene.imageryLayers.addImageryProvider(gridCoords);
@@ -1588,11 +1658,11 @@ define([
           console.log(
             "There was an error showing the imagery grid in a CesiumWidgetView" +
               ". Error details: " +
-              error
+              error,
           );
         }
       },
-    }
+    },
   );
 
   return CesiumWidgetView;

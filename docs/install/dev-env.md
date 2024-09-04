@@ -7,6 +7,7 @@ The first task is to get a development environment set up on your machine, which
 3. [Install a local instance of MetacatUI](#install-a-local-instance-of-metacatui)
 
 ## Get familiar with MetacatUI
+
 Read about the MetacatUI software on the MetacatUI Github (https://github.com/NCEAS/metacatui) and documentation website (https://nceas.github.io/metacatui/)
 
 ## Fork the MetacatUI repository
@@ -24,6 +25,7 @@ Open the forked repository (the `metacatui` folder) in your preferred code edito
 Test that your fork is ready to work with by making a small change to a file (e.g. add a space character) and committing and pushing the commit to your fork.
 
 ## Install a local instance of MetacatUI
+
 Follow the [installation instructions](local.html) for using MetacatUI locally with a remote Metacat data repository.
 
 When you have MetacatUI running locally, you should be able to navigate in your web browser to the localhost path that you have your server running at, and you'll see MetacatUI running like this:

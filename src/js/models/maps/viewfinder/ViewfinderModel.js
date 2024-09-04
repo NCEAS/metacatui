@@ -1,27 +1,31 @@
-'use strict';
+"use strict";
 
-define(
-  [
-    'underscore',
-    'backbone',
-    'cesium',
-    'models/geocoder/GeocoderSearch',
-    'models/maps/GeoPoint'],
-  (_, Backbone, Cesium, GeocoderSearch, GeoPoint) => {
-    const EMAIL = MetacatUI.appModel.get('emailContact');
-    const NO_RESULTS_MESSAGE = 'No search results found, try using another place name.';
-    const API_ERROR = 'We\'re having trouble identifying locations on the map right now. Please reach out to support for help with this issue' + (EMAIL ? `: ${EMAIL}` : '.');
-    const PLACES_API_ERROR = API_ERROR;
-    const GEOCODING_API_ERROR = API_ERROR;
+define([
+  "underscore",
+  "backbone",
+  "cesium",
+  "models/geocoder/GeocoderSearch",
+  "models/maps/GeoPoint",
+], (_, Backbone, Cesium, GeocoderSearch, GeoPoint) => {
+  const EMAIL = MetacatUI.appModel.get("emailContact");
+  const NO_RESULTS_MESSAGE =
+    "No search results found, try using another place name.";
+  const API_ERROR =
+    "We're having trouble identifying locations on the map right now. Please reach out to support for help with this issue" +
+    (EMAIL ? `: ${EMAIL}` : ".");
+  const PLACES_API_ERROR = API_ERROR;
+  const GEOCODING_API_ERROR = API_ERROR;
 
-    /**
-    * @class ViewfinderModel
-    * @classdes ViewfinderModel maintains state for the ViewfinderView and
-    * interfaces with location searching services.
-    * @classcategory Models/Maps
-    * @since 2.28.0
-    */
-    const ViewfinderModel = Backbone.Model.extend({
+  /**
+   * @class ViewfinderModel
+   * @classdesc ViewfinderModel maintains state for the ViewfinderView and
+   * interfaces with location searching services.
+   * @classcategory Models/Maps
+   * @since 2.28.0
+   * @extends Backbone.Model
+   */
+  const ViewfinderModel = Backbone.Model.extend(
+    /** @lends ViewfinderModel.prototype */ {
       /**
        * @name ViewfinderModel#defaults
        * @type {Object}
@@ -36,11 +40,12 @@ define(
        */
       defaults() {
         return {
-          error: '',
+          error: "",
           focusIndex: -1,
           predictions: [],
-          query: '',
-        }
+          query: "",
+          zoomPresets: [],
+        };
       },
 
       /**
@@ -50,35 +55,43 @@ define(
       initialize({ mapModel }) {
         this.geocoderSearch = new GeocoderSearch();
         this.mapModel = mapModel;
+
+        this.set(
+          "zoomPresets",
+          mapModel.get("zoomPresetsCollection")?.models || [],
+        );
       },
 
-      /** 
-       * Get autocompletion predictions from the GeocoderSearch model. 
+      /**
+       * Get autocompletion predictions from the GeocoderSearch model.
        * @param {string} rawQuery is the user's search query with spaces.
        */
       async autocompleteSearch(rawQuery) {
         const query = rawQuery.trim();
-        if (this.get('query') === query) {
+        if (this.get("query") === query) {
           return;
         } else if (!query) {
-          this.set({ error: '', predictions: [], query: '', focusIndex: -1, });
+          this.set({ error: "", predictions: [], query: "", focusIndex: -1 });
           return;
         } else if (GeoPoint.couldBeLatLong(query)) {
-          this.set({ predictions: [], query: '', focusIndex: -1, });
+          this.set({ predictions: [], query: "", focusIndex: -1 });
           return;
         }
 
         // Unset error so the error will fire a change event even if it is the
         // same error as already exists.
-        this.unset('error', { silent: true });
+        this.unset("error", { silent: true });
 
         try {
           // User is looking for autocompletions.
           const predictions = await this.geocoderSearch.autocomplete(query);
-          const error = predictions.length === 0 ? NO_RESULTS_MESSAGE : '';
-          this.set({ error, focusIndex: -1, predictions, query, });
+          const error = predictions.length === 0 ? NO_RESULTS_MESSAGE : "";
+          this.set({ error, focusIndex: -1, predictions, query });
         } catch (e) {
-          if (e.code === 'REQUEST_DENIED' && e.endpoint === 'PLACES_AUTOCOMPLETE') {
+          if (
+            e.code === "REQUEST_DENIED" &&
+            e.endpoint === "PLACES_AUTOCOMPLETE"
+          ) {
             this.set({
               error: PLACES_API_ERROR,
               focusIndex: -1,
@@ -98,24 +111,24 @@ define(
 
       /**
        * Decrement the focused index with a minimum value of 0. This corresponds
-       * to an ArrowUp key down event. 
+       * to an ArrowUp key down event.
        * Note: An ArrowUp key press while the current index is -1 will
        * result in highlighting the first element in the list.
        */
       decrementFocusIndex() {
-        const currentIndex = this.get('focusIndex');
-        this.set('focusIndex', Math.max(0, currentIndex - 1));
+        const currentIndex = this.get("focusIndex");
+        this.set("focusIndex", Math.max(0, currentIndex - 1));
       },
 
       /**
        * Increment the focused index with a maximum value of the last value in
-       * the list. This corresponds to an ArrowDown key down event. 
+       * the list. This corresponds to an ArrowDown key down event.
        */
       incrementFocusIndex() {
-        const currentIndex = this.get('focusIndex');
+        const currentIndex = this.get("focusIndex");
         this.set(
-          'focusIndex',
-          Math.min(currentIndex + 1, this.get('predictions').length - 1)
+          "focusIndex",
+          Math.min(currentIndex + 1, this.get("predictions").length - 1),
         );
       },
 
@@ -124,26 +137,44 @@ define(
        * in the UI is highlighted.
        */
       resetFocusIndex() {
-        this.set('focusIndex', -1);
+        this.set("focusIndex", -1);
       },
 
-      /** 
-       * Navigate to the GeocodedLocation. 
+      /**
+       * Navigate to the GeocodedLocation.
        * @param {GeocodedLocation} geocoding is the location that corresponds
        * to the the selected prediction.
        */
       goToLocation(geocoding) {
         if (!geocoding) return;
 
-        const coords = geocoding.get('box').getCoords();
+        const coords = geocoding.get("box").getCoords();
         this.mapModel.zoomTo({
           destination: Cesium.Rectangle.fromDegrees(
             coords.west,
             coords.south,
             coords.east,
             coords.north,
-          )
+          ),
         });
+      },
+
+      /**
+       * Select a ZoomPresetModel from the list of presets and navigate there.
+       * This function hides all layers that are not to be visible according to
+       * the ZoomPresetModel configuration.
+       * @param {ZoomPresetModel} preset A user selected preset for which to
+       * enable layers and navigate.
+       */
+      selectZoomPreset(preset) {
+        const enabledLayerIds = preset.get("enabledLayerIds");
+        this.mapModel.get("allLayers").forEach((layer) => {
+          const isVisible = enabledLayerIds.includes(layer.get("layerId"));
+          // Show or hide the layer according to the preset.
+          layer.set("visible", isVisible);
+        });
+
+        this.mapModel.zoomTo(preset.get("geoPoint"));
       },
 
       /**
@@ -153,28 +184,38 @@ define(
        */
       async selectPrediction(prediction) {
         if (!prediction) return;
-
         try {
           const geocodings = await this.geocoderSearch.geocode(prediction);
 
           if (geocodings.length === 0) {
-            this.set('error', NO_RESULTS_MESSAGE)
+            this.set("error", NO_RESULTS_MESSAGE);
+            return;
+          }
+          if (geocodings.length === 0) {
+            this.set("error", NO_RESULTS_MESSAGE);
             return;
           }
 
-          this.trigger('selection-made', prediction.get('description'));
+          this.trigger("selection-made", prediction.get("description"));
           this.goToLocation(geocodings[0]);
         } catch (e) {
-          if (e.code === 'REQUEST_DENIED' && e.endpoint === 'GEOCODER_GEOCODE') {
-            this.set({ error: GEOCODING_API_ERROR, focusIndex: -1, predictions: [] });
+          if (
+            e.code === "REQUEST_DENIED" &&
+            e.endpoint === "GEOCODER_GEOCODE"
+          ) {
+            this.set({
+              error: GEOCODING_API_ERROR,
+              focusIndex: -1,
+              predictions: [],
+            });
           } else {
-            this.set('error', NO_RESULTS_MESSAGE)
+            this.set("error", NO_RESULTS_MESSAGE);
           }
         }
       },
 
       /**
-       * Event handler for Backbone.View configuration that is called whenever 
+       * Event handler for Backbone.View configuration that is called whenever
        * the user clicks the search button or hits the Enter key.
        * @param {string} value is the query string.
        */
@@ -184,34 +225,35 @@ define(
         // This is not a lat,long value, so geocode the prediction instead.
         if (!GeoPoint.couldBeLatLong(value)) {
           const focusedIndex = Math.max(0, this.get("focusIndex"));
-          this.selectPrediction(this.get('predictions')[focusedIndex]);
+          this.selectPrediction(this.get("predictions")[focusedIndex]);
           return;
         }
 
         // Unset error so the error will fire a change event even if it is the
         // same error as already exists.
-        this.unset('error', { silent: true });
+        this.unset("error", { silent: true });
 
         try {
           const geoPoint = new GeoPoint(value, { parse: true });
           geoPoint.set("height", 10000 /* meters */);
           if (geoPoint.isValid()) {
-            this.set('error', '');
+            this.set("error", "");
             this.mapModel.zoomTo(geoPoint);
             return;
           }
 
           const errors = geoPoint.validationError;
           if (errors.latitude) {
-            this.set('error', errors.latitude);
+            this.set("error", errors.latitude);
           } else if (errors.longitude) {
-            this.set('error', errors.longitude);
+            this.set("error", errors.longitude);
           }
         } catch (e) {
-          this.set('error', e.message);
+          this.set("error", e.message);
         }
       },
-    });
+    },
+  );
 
-    return ViewfinderModel;
-  });
+  return ViewfinderModel;
+});

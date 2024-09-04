@@ -1,0 +1,9 @@
+# Load all files in the "config" directory into a ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-metacatui-config-all
+  labels:
+    {{- include "metacatui.labels" . | nindent 4 }}
+data:
+  {{- (tpl (.Files.Glob "config/*").AsConfig . ) | nindent 2 }}

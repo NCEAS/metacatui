@@ -1,49 +1,40 @@
-define(["jquery",
-    "underscore",
-    "backbone",
-    'gmaps',
-    'nGeohash',
-    "text!templates/maps.html"],
-    function($, _, Backbone, gmaps, nGeohash, mapsTemplate){
+define([
+  "jquery",
+  "underscore",
+  "backbone",
+  "gmaps",
+  "nGeohash",
+  "text!templates/maps.html",
+], function ($, _, Backbone, gmaps, nGeohash, mapsTemplate) {
+  /*
+   * @class MapsView
+   * @classdesc The mapsView is the area where the the geographic coverage of the datasets that comprise the portal
+   * are displayed. The mapsView will update to match the search results when they are filtered.
+   * @classcategory Views
+   * @extends Backbone.View
+   */
+  var mapsView = Backbone.View.extend({
+    /* The Portal Logos Element */
+    el: "#maps",
 
-    /*
-     * @class MapsView
-     * @classdesc The mapsView is the area where the the geographic coverage of the datasets that comprise the portal
-     * are displayed. The mapsView will update to match the search results when they are filtered.
-     * @classcategory Views
-     */
-    var mapsView = Backbone.View.extend({
+    /* TODO: Decide if we need this */
+    type: "maps",
 
-        /* The Portal Logos Element */
-        el: "#maps",
+    /* Renders the compiled template into HTML */
+    template: _.template(mapsTemplate),
 
-        /* TODO: Decide if we need this */
-        type: "maps",
+    /* The events that this view listens to */
+    events: {},
 
-        /* Renders the compiled template into HTML */
-        template: _.template(mapsTemplate),
+    /* Construct a new instance of mapsView */
+    initialize: function () {},
 
-        /* The events that this view listens to */
-        events: {
+    /* Render the view */
+    render: function () {},
 
-        },
+    /* Close and destroy the view */
+    onClose: function () {},
+  });
 
-        /* Construct a new instance of mapsView */
-        initialize: function() {
-
-        },
-
-        /* Render the view */
-        render: function() {
-
-        },
-
-        /* Close and destroy the view */
-        onClose: function() {
-
-        }
-
-    });
-
-    return mapsView;
+  return mapsView;
 });
