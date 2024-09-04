@@ -7,7 +7,7 @@ define([
   "models/MetricsModel",
   "common/Utilities",
   "views/SearchResultView",
-  "views/searchSelect/AnnotationFilterView",
+  "views/searchSelect/BioontologySelectView",
   "text!templates/search.html",
   "text!templates/statCounts.html",
   "text!templates/pager.html",
@@ -25,7 +25,7 @@ define([
   MetricsModel,
   Utilities,
   SearchResultView,
-  AnnotationFilter,
+  BioontologySelectView,
   CatalogTemplate,
   CountTemplate,
   PagerTemplate,
@@ -415,24 +415,27 @@ define([
        * addAnnotationFilter - Add the annotation filter to the view
        */
       addAnnotationFilter: function () {
-        if (MetacatUI.appModel.get("bioportalAPIKey")) {
-          var view = this;
-          var popoverTriggerSelector =
-            "[data-category='annotation'] .expand-collapse-control";
-          if (!this.$el.find(popoverTriggerSelector)) {
-            return;
-          }
-          var annotationFilter = new AnnotationFilter({
-            popoverTriggerSelector: popoverTriggerSelector,
-          });
-          this.$el.find(popoverTriggerSelector).append(annotationFilter.el);
-          annotationFilter.render();
-          annotationFilter.off("annotationSelected");
-          annotationFilter.on("annotationSelected", function (event, item) {
-            $("#annotation_input").val(item.value);
-            view.updateTextFilters(event, item);
-          });
-        }
+        const view = this;
+        if (!MetacatUI.appModel.get("bioportalAPIKey")) return;
+        const containerSelector =
+          "[data-category='annotation'] .expand-collapse-control + .filter-input-contain";
+        const container = this.$el.find(containerSelector);
+        if (!container) return;
+        const annotationFilter = new BioontologySelectView({
+          inputLabel: "",
+          compact: true,
+        }).render();
+        container.append(annotationFilter.el);
+        const bioModel = annotationFilter.model;
+        this.stopListening(bioModel, "change:selected");
+        this.listenTo(bioModel, "change:selected", (model, selected) => {
+          const value = selected?.[0] || "";
+          const option = model.get("options").getOptionByLabelOrValue(value);
+          const filterLabel = option?.get("label") || "";
+          const mockEvent = { target: annotationFilter.el };
+          const item = { value, filterLabel };
+          view.updateTextFilters(mockEvent, item);
+        });
       },
 
       // Linked Data Object for appending the jsonld into the browser DOM
@@ -3317,6 +3320,9 @@ define([
         // If we can't find a container, then don't do anything
         if (container.length < 1) return;
 
+        const isAnnoContainer =
+          $(container).attr("data-category") == "annotation";
+
         // Expand
         if ($(container).is(".collapsed")) {
           // Toggle the visibility of the collapse/expand icons
@@ -3328,6 +3334,11 @@ define([
 
           // Increase the height of the container to expand it
           $(container).css("max-height", "3000px");
+
+          // For annotation container, allow overflow for the dropdown
+          if (isAnnoContainer) {
+            $(container).css("overflow", "visible");
+          }
         }
         // Collapse
         else {
@@ -3341,11 +3352,13 @@ define([
           } else {
             $(container).css("max-height", "1.5em");
           }
+          if (isAnnoContainer) {
+            $(container).css("overflow", "hidden");
+          }
         }
 
         $(container).toggleClass("collapsed");
       },
-
       /*
        * Either hides or shows the "clear all filters" button
        */
