@@ -2124,6 +2124,73 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           showAnnotationIndicator: false,
 
           /**
+           * The list of Bioportal ontologies that are available for searching &
+           * labeling data in the repository. These are the ontologies that will
+           * be displayed in the bioontology browser, and the ontologies that a
+           * user can search within when querying data with the sem_annotation
+           * field. Set a subTree property to limit the ontology to a particular
+           * class. For the full list of possible ontologies, see the Bioportal
+           * website: https://bioportal.bioontology.org/ontologies
+           * @type {Array.<{label: string, ontology: string, subTree: string, icon: string}>}
+           * @since 0.0.0
+           */
+          bioportalOntologies: [
+            {
+              label: "The Ecosystem Ontology",
+              ontology: "ECSO",
+              icon: "leaf",
+            },
+            {
+              label: "Sensitive Data",
+              ontology: "SENSO",
+              icon: "lock",
+            },
+            {
+              label: "Salmon",
+              ontology: "SALMON",
+              icon: "anchor",
+            },
+            {
+              label: "Arctic Report Card",
+              ontology: "ARCRC",
+              icon: "asterisk",
+            },
+            {
+              label: "ADC Academic Disciplines",
+              ontology: "ADCAD",
+              icon: "briefcase",
+            },
+            {
+              label: "MOSAiC",
+              ontology: "MOSAIC",
+              icon: "barcode",
+            },
+            {
+              label: "NCBI Organismal Classification",
+              ontology: "NCBITAXON",
+            },
+            {
+              label: "The State of Alaska's Salmon and People",
+              ontology: "SASAP",
+              icon: "group",
+            },
+            {
+              label: "Chemical Entities of Biological Interest",
+              ontology: "CHEBI",
+              icon: "beaker",
+            },
+            {
+              label: "Scientific Workflow Provenance",
+              ontology: "ProvONE",
+              icon: "code",
+            },
+            {
+              label: "Extensible Observation Ontology",
+              ontology: "OBOE",
+            },
+          ],
+
+          /**
            * A list of unsupported User-Agent regular expressions for browsers that will not work well with MetacatUI.
            * A warning message will display on the page for anyone using one of these browsers.
            * @type {RegExp[]}

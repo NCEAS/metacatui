@@ -23,10 +23,22 @@ define([
        * @type {Array.<{label: string, ontology: string, subTree: string}>}
        * @since 0.0.0
        */
-      ontologies: [],
+      ontologies: MetacatUI.appModel.get("bioportalOntologies"),
 
       /** override the template function and use subView instead */
       template() {},
+
+      /**
+       * Initialize the SemanticFilterView
+       * @param {object} [options] - The options to initialize the view with
+       * @param {Array.<{label: string, ontology: string, subTree: string}>} [options.ontologies]
+       *  - The ontologies to search for terms in
+       * @since 0.0.0
+       */
+      initialize(options = {}) {
+        if (options?.ontologies) this.ontologies = options.ontologies;
+        FilterView.prototype.initialize.call(this, options);
+      },
 
       /**
        * Render an instance of a Semantic Filter View. Note that this View

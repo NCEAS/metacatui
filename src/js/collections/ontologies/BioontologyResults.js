@@ -36,6 +36,18 @@ define([
         return new BioontologyClass(attrs, options);
       },
 
+      /**
+       * @inheritdoc
+       * @param {object} _attributes - The attributes to initialize the collection with
+       * @param {object} options - The options to initialize the collection with
+       * @param {boolean} [options.autoCache] - Whether to automatically cache new items
+       */
+      initialize(_attributes, options) {
+        if (options?.autoCache !== false) {
+          this.listenTo(this, "add", this.cache);
+        }
+      },
+
       /** @returns {BioontologyClass[]} All BioontologyClass models in this collection */
       classes() {
         return this.models.filter((model) => model.type === "BioontologyClass");
@@ -153,7 +165,6 @@ define([
           Utilities.toJSONWithoutDefaults(model, removeProps),
         );
         const cache = currentCache.concat(newItems);
-
         this.cacheWithRetry(cache);
       },
 
@@ -192,7 +203,7 @@ define([
 
       /**
        * Restore classes & ontologies from the browser's storage and adds them to
-       * the collection
+       * the collection.
        * @param {string[]} ids - The unique identifiers of the items to restore,
        * otherwise all items available in the cache will be restored.
        * @param {boolean} silent - Whether to suppress the "add" event

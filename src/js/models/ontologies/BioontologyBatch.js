@@ -1,8 +1,8 @@
 "use strict";
 
-define(["backbone", "models/ontologies/BioontologyClass"], (
+define(["backbone", "collections/ontologies/BioontologyResults"], (
   Backbone,
-  BioontologyClass,
+  BioontologyResults,
 ) => {
   /**
    * @class BioontologyBatch
@@ -27,7 +27,9 @@ define(["backbone", "models/ontologies/BioontologyClass"], (
      * If not set, the appModel's API key will be used.
      * @property {string} apiBaseURL - The base URL for the BioPortal API.
      * @property {string} ontologyPrefix - A string to prepend to ontology
-     * acronyms to form the full ontology ID for batch requests.
+     * acronyms to form the full ontology ID for batch requests. Note that this
+     * is not the same as the ontology URL, as the ID starts with http not
+     * https.
      * @property {string[]} ontologies - The ontologies to search for classes
      * in, in order of priority. Only the acronyms are needed.
      * @property {string[]} include - The fields to include in the response.
@@ -36,19 +38,11 @@ define(["backbone", "models/ontologies/BioontologyClass"], (
      */
     defaults() {
       return {
-        collection: new Backbone.Collection([], { model: BioontologyClass }),
+        collection: new BioontologyResults(),
         apiKey: null,
         apiBaseURL: MetacatUI.appModel.get("bioportalApiBaseUrl"),
         ontologyPrefix: "http://data.bioontology.org/ontologies/",
-        ontologies: [
-          "ECSO",
-          "SENSO",
-          "SALMON",
-          "ADCAD",
-          "MOSAIC",
-          "SASAP",
-          "ARCRC",
-        ],
+        ontologies: MetacatUI.appModel.get("bioportalOntologies"),
         include: ["prefLabel", "definition", "subClassOf", "hasChildren"],
         classesToFetch: [],
       };
@@ -77,15 +71,23 @@ define(["backbone", "models/ontologies/BioontologyClass"], (
      * Add classes from a response to the collection. This method is async and
      * will return a promise that resolves when the collection has been updated.
      * @param {object} response - The response from the BioPortal API
+     * @param {string|object} [ontology] - Provide to include the ontology acronym
+     * to store as an attribute on the class models
      * @returns {Promise<void>} A promise that resolves when the collection has
      * been updated
      */
-    async addClassesFromResponse(response) {
+    async addClassesFromResponse(response, ontology) {
       const collection = this.get("collection");
-      const parsedResponse = Object.values(response).flat();
+      let parsedResponse = Object.values(response).flat();
       const updated = new Promise((resolve) => {
         this.listenToOnce(this.get("collection"), "update", resolve);
       });
+      if (ontology) {
+        parsedResponse = parsedResponse.map((cls) => ({
+          ...cls,
+          ontology,
+        }));
+      }
       collection.add(parsedResponse, { parse: true });
       return updated;
     },
@@ -93,15 +95,19 @@ define(["backbone", "models/ontologies/BioontologyClass"], (
     /**
      * Create a payload for a batch request to the BioPortal API.
      * @param {string[]} classes - The classes to fetch
-     * @param {string} ontology - The ontology to search in
+     * @param {string|object} ontology - The ontology acronym or object with
+     * acronym stored in the "ontology" property
      * @returns {string} The JSON stringified payload
      */
     createBatchPayload(classes, ontology) {
+      const acronym =
+        typeof ontology === "object" ? ontology.ontology : ontology;
+      const ontologyId = `${this.get("ontologyPrefix")}${acronym}`;
       const payload = {
         "http://www.w3.org/2002/07/owl#Class": {
           collection: classes.map((cls) => ({
             class: cls,
-            ontology: `${this.get("ontologyPrefix")}${ontology}`,
+            ontology: ontologyId,
           })),
           display: this.get("include")?.join(",") || "prefLabel,definition",
         },
@@ -236,7 +242,10 @@ define(["backbone", "models/ontologies/BioontologyClass"], (
         });
         if (response) {
           responses.push(response);
-          await this.addClassesFromResponse(response);
+          await this.addClassesFromResponse(
+            response,
+            ontology.label || ontology,
+          );
           // Update the list of classes to fetch based on what was found
           this.filterClassesToFetch();
         }
@@ -297,19 +306,14 @@ define(["backbone", "models/ontologies/BioontologyClass"], (
 
     /**
      * Get the models for classes that have already been fetched from BioPortal.
-     * @param {string[]} classes - The classes to get models for
+     * @param {string[]} classes - The class IDs to get models for
      * @returns {Backbone.Model[]} The models for the classes that have already
      * been fetched
      */
     getCachedClasses(classes) {
       const collection = this.get("collection");
-      const models = [];
-      classes.forEach((cls) => {
-        const model = collection.get(cls);
-        if (model) {
-          models.push(model);
-        }
-      });
+      collection.restoreFromCache(classes);
+      const models = collection.filter((model) => classes.includes(model.id));
       return models;
     },
   });

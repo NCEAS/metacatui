@@ -76,7 +76,7 @@ define([
        * @type {Array.<{label: string, ontology: string, subTree: string}>}
        * @since 0.0.0
        */
-      ontologies: [],
+      ontologies: MetacatUI.appModel.get("bioportalOntologies"),
 
       /**
        * Initialize the view
@@ -86,10 +86,8 @@ define([
        * @param {string} [opts.queryField] - The name of the field in the Solr
        * schema that the user is searching
        * @param {object[]} [opts.ontologies] - The ontoloties (& sub-trees) to
-       * search for. If not provided, the defaults will be used. Each ontology
-       * needs a "label" and a "ontology" (acronym) property. Optionally, a
-       * "subTree" property can be provided to search a specific sub-tree of the
-       * ontology.
+       * allow users to search for. This will override the default on the BioontologyBatch model
+       * and the TODO
        */
       initialize(opts = {}) {
         if (opts?.showClassLabels === false) this.showClassLabels = false;
@@ -99,6 +97,7 @@ define([
         if (attrs.ontologies) {
           this.ontologies = attrs.ontologies;
         }
+        attrs.submenuStyle = "accordion";
         SolrAutocompleteView.prototype.initialize.call(this, attrs);
         if (this.showClassLabels) this.fetchClassLabels();
       },
@@ -206,19 +205,14 @@ define([
         const preSelected = this.model.get("selected");
         const classesToFetch = [...values, ...preSelected];
 
-        // We want to used a cached version of the classes to avoid making
-        // unnecessary requests
         if (!MetacatUI.bioontologySearch) {
           MetacatUI.bioontologySearch = new BioontologyBatch();
         }
         this.bioBatchModel = MetacatUI.bioontologySearch;
-
-        // Add ontologies to the batch model from the options set on this view
-        // (this.ontologies)
-        const ontologyAcronyms = this.ontologies.map(
+        const ontologies = this.ontologies?.map(
           (ontology) => ontology.ontology,
         );
-        this.bioBatchModel.get("ontologies").push(...ontologyAcronyms);
+        this.bioBatchModel.set("ontologies", ontologies);
 
         this.listenTo(
           this.bioBatchModel.get("collection"),
@@ -228,14 +222,13 @@ define([
           },
         );
         const allClasses = await this.bioBatchModel.getClasses(classesToFetch);
-        // If any of the classes were cached, add them to the options
         this.addOptionDetails(allClasses);
       },
 
       /**
        * Add the details of the ontology classes to the options in the select
        * element
-       * @param {Collection|Array} classes - The collection of classes to add
+       * @param {Backbone.Collection|Array} classes - The collection of classes to add
        * to the options
        */
       addOptionDetails(classes) {
@@ -262,6 +255,9 @@ define([
             option.set(newAttrs);
           }
         });
+        options.renameCategory("", "Unknown Ontology");
+        options.sortByProp("category");
+        options.trigger("update");
       },
     },
   );

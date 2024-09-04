@@ -66,6 +66,7 @@ define([
         );
         this.listenTo(this.collection, "remove", this.removeOption);
         this.listenTo(this.collection, "reset", this.render);
+        this.listenTo(this.collection, "update", this.render);
         if (opts?.mode && this.isValidMode(opts.mode)) {
           this.mode = opts.mode;
         }
@@ -74,6 +75,8 @@ define([
       /** @inheritdoc */
       render() {
         this.el.innerHTML = "";
+        this.headers = {};
+        this.optionViews = [];
         this.collection.each((option) => this.addOption(option));
         this.updateMode(this.mode, true);
         return this;
