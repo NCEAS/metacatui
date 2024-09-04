@@ -1,11 +1,11 @@
 "use strict";
 
-define(["jquery", "underscore", "backbone", "models/CitationModel"], function (
+define(["jquery", "underscore", "backbone", "models/CitationModel"], (
   $,
   _,
   Backbone,
   CitationModel,
-) {
+) => {
   /**
    * @class Citations
    * @classdesc Citations represents the Citations list
@@ -13,24 +13,25 @@ define(["jquery", "underscore", "backbone", "models/CitationModel"], function (
    * For details regarding a single Citation Entity, refer `models/CitationModel`
    * @classcategory Collections
    * @name Citations
-   * @extends Backbone.Collection
-   * @constructor
+   * @augments Backbone.Collection
+   * @class
    */
-  var Citations = Backbone.Collection.extend(
+  const Citations = Backbone.Collection.extend(
     /** @lends Citations.prototype */ {
+      // eslint-disable-next-line object-shorthand
       model: function (attrs, options) {
         // We use the inline require here in addition to the define above to
         // avoid an issue caused by the circular dependency between
         // CitationModel and Citations
-        var CitationModel = require("models/CitationModel");
+        const CitationModel = require("models/CitationModel");
         return new CitationModel(attrs, options);
       },
 
-      //The name of this type of collection
+      // The name of this type of collection
       type: "Citations",
 
       // Used for sorting the year in the reverse Chronological order
-      comparator: function (model) {
+      comparator(model) {
         return -model.get("year_of_publishing"); // Note the minus!
       },
     },
