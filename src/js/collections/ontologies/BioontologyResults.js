@@ -2,10 +2,11 @@
 
 define([
   "backbone",
+  "underscore",
   "common/Utilities",
   "models/ontologies/BioontologyClass",
   "models/ontologies/BioontologyOntology",
-], (Backbone, Utilities, BioontologyClass, BioontologyOntology) => {
+], (Backbone, _, Utilities, BioontologyClass, BioontologyOntology) => {
   // The type that defines an ontology in the BioPortal API
   const ONTOLOGY_TYPE = "http://data.bioontology.org/metadata/Ontology";
   // The number of items to remove from the cache if it is full

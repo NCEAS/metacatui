@@ -16,7 +16,7 @@ define([
   "text!templates/loading.html",
   "gmaps",
   "nGeohash",
-], function (
+], (
   $,
   _,
   Backbone,
@@ -34,7 +34,7 @@ define([
   LoadingTemplate,
   gmaps,
   nGeohash,
-) {
+) => {
   "use strict";
 
   /**
@@ -45,7 +45,7 @@ define([
    * @deprecated
    * @description This view is deprecated and will eventually be removed in a future version (likely 3.0.0)
    */
-  var DataCatalogView = Backbone.View.extend(
+  const DataCatalogView = Backbone.View.extend(
     /** @lends DataCatalogView.prototype */ {
       el: "#Content",
 
@@ -414,7 +414,7 @@ define([
       /**
        * addAnnotationFilter - Add the annotation filter to the view
        */
-      addAnnotationFilter: function () {
+      addAnnotationFilter() {
         const view = this;
         if (!MetacatUI.appModel.get("bioportalAPIKey")) return;
         const containerSelector =
@@ -3311,17 +3311,16 @@ define([
       },
 
       toggleFilterCollapse: function (e) {
+        let container = this.$(".filter-contain.collapsable");
         if (typeof e !== "undefined") {
-          var container = $(e.target).parents(".filter-contain.collapsable");
-        } else {
-          var container = this.$(".filter-contain.collapsable");
+          container = $(e.target).parents(".filter-contain.collapsable");
         }
 
         // If we can't find a container, then don't do anything
         if (container.length < 1) return;
 
         const isAnnoContainer =
-          $(container).attr("data-category") == "annotation";
+          $(container).attr("data-category") === "annotation";
 
         // Expand
         if ($(container).is(".collapsed")) {
