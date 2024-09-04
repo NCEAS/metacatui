@@ -10,6 +10,8 @@ define([
   const ONTOLOGY_TYPE = "http://data.bioontology.org/metadata/Ontology";
   // The number of items to remove from the cache if it is full
   const CACHE_REMOVAL_SIZE = 100;
+  // The number of milliseconds to wait before caching new items
+  const CACHE_DEBOUNCE_TIME = 500;
   /**
    * @class BioontologyResults
    * @classdesc A collection of items returned from the BioPortal API. So far
@@ -43,6 +45,7 @@ define([
        * @param {boolean} [options.autoCache] - Whether to automatically cache new items
        */
       initialize(_attributes, options) {
+        this.cache = _.debounce(this.cache, CACHE_DEBOUNCE_TIME);
         if (options?.autoCache !== false) {
           this.listenTo(this, "add", this.cache);
         }
