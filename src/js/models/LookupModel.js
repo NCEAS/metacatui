@@ -21,6 +21,7 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
 
       initialize: function () {},
 
+      /** deprecated */
       bioportalSearch: function (request, response, localValues, allValues) {
         // make sure we have something to lookup
         if (!MetacatUI.appModel.get("bioportalAPIKey")) {

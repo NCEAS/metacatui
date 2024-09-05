@@ -7,7 +7,9 @@ define([
   /**
    * @class SemanticFilterView
    * @classdesc Render a specialized view of a single Filter model using the
-   *   AnnotationFilterView.
+   * BioontologySelectView. Essentially acts as a connector between the Filter
+   * model and the Bioontology model. Uses logic from both the FilterView and
+   * the BioontologySelectView.
    * @classcategory Views/Filters
    * @augments FilterView
    * @screenshot views/filters/SemanticFilterView.png
@@ -43,8 +45,8 @@ define([
       /**
        * Render an instance of a Semantic Filter View. Note that this View
        * doesn't have a template and instead delegates to the
-       * AnnotationFilterView which renders a SearchSelectView which renders the
-       * BioontologySelectView.
+       * BioontologySelectView which renders a SearchSelectView which renders
+       * the BioontologySelectView.
        * @returns {SemanticFilterView} This instance
        * @since 2.22.0
        */
