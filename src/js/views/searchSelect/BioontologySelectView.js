@@ -96,6 +96,7 @@ define([
           this.ontologies = attrs.ontologies;
         }
         attrs.submenuStyle = "accordion";
+        attrs.allowAdditions = false;
         SolrAutocompleteView.prototype.initialize.call(this, attrs);
         if (this.showClassLabels) this.fetchClassLabels();
       },
