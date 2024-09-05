@@ -28,13 +28,11 @@ define([
       "right",
     ],
     buttonIcon: ["icon", "icon-external-link-sign"],
+    // Bootstrap classes
     modalCloseButton: "close",
-    modal: ["modal", "hide", "bioontology-select-modal"], // Bootstrap classes
-    modalContent: "modal-body", // Bootstrap class
+    modal: ["modal", "hide", `${BASE_CLASS}-modal`],
+    modalContent: "modal-body",
   };
-
-  // The text to display on the button tht opens the ontology browser
-  const BUTTON_TEXT = "Browse";
 
   /**
    * @class
@@ -116,14 +114,11 @@ define([
         const button = document.createElement("button");
         button.classList.add(...CLASS_NAMES.button);
 
-        const span = document.createElement("span");
-        span.textContent = BUTTON_TEXT;
-
         const icon = document.createElement("i");
         icon.classList.add(...CLASS_NAMES.buttonIcon);
         icon.style.color = "inherit";
 
-        button.append(span, icon);
+        button.appendChild(icon);
         this.el.appendChild(button);
         this.button = button;
       },

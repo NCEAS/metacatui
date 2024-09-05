@@ -9598,12 +9598,14 @@ body > #extension-is-installed {
 ** BioOntology Select View **
 ******************************************/
 
-.bioontology-select-modal .modal-body {
-  max-height: 90vh;
-}
-
-.bioontology-select-modal .close {
-  position: absolute;
-  right: 9px;
-  top: 3px;
+/* overrides to the bootstrap modal CSS */
+.bioontology-select-modal {
+  .modal-body {
+    max-height: 90vh;
+  }
+  .close {
+    position: absolute;
+    right: 9px;
+    top: 3px;
+  }
 }

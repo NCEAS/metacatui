@@ -260,21 +260,28 @@
 }
 
 /* bioontology select view */
-.bioontology-select {
-  flex-wrap: wrap;
-  display: flex;
 
+.bioontology-select {
+  display: grid;
+  grid-template-columns: auto min-content;
+  grid-template-rows: min-content min-content;
+  grid-auto-rows: min-content;
+  grid-gap: 0;
   .ui.selection.dropdown {
-    flex-grow: 1;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
   }
-
-  .search-select-label {
-    flex-basis: 100%;
+  .search-select-label, .text-info{
+    grid-column: 1 / span 2;
   }
 }
 
+.ui.right.attached.button {
+  padding: 0 5px;
+  >.icon{
+    margin:0;
+  }
+}
 
 /* the "compact" version of the search select is sized similarly to the
 traditional bootstrap-based filter views */
@@ -326,19 +333,12 @@ traditional bootstrap-based filter views */
 
   }
 
-  /* TODO: need .compact on main component */
   .ui.right.attached.button {
     --input-height: 30px;
     height: var(--input-height);
-    padding: 0 var(--icon-padding);
-    >span{
-      display:none;
-    }
-    >.icon{
-      margin:0;
-    }
   }
 }
+
 
 .search-select.compact.bioontology-select {
 
