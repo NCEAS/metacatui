@@ -3,8 +3,8 @@
 define([
   "underscore",
   "backbone",
-  "views/maps/viewfinder/ExpansionPanelView",
-  "models/maps/viewfinder/ExpansionPanelsModel",
+  "views/maps/ExpansionPanelView",
+  "models/maps/ExpansionPanelsModel",
   // The file extension is required for files loaded from the /test directory.
   "/test/js/specs/shared/clean-state.js",
 ], (_, Backbone, ExpansionPanelView, ExpansionPanelsModel, cleanState) => {

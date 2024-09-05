@@ -29,6 +29,16 @@ const airbnbRulesOverrides = {
   // We are using the AMD/RequireJS module pattern
   "import/no-amd": "off",
   "import/no-commonjs": "off",
+  // We are using RequireJS
+  "import/no-unresolved": "off",
+  // Allow unused variables if they start with an underscore
+  "no-unused-vars": [
+    "error",
+    {
+      argsIgnorePattern: "^_",
+      varsIgnorePattern: "^_",
+    },
+  ],
 };
 
 // ---------------------------------------------------------------------
@@ -46,7 +56,7 @@ const jsdocsRulesOverrides = {
 };
 
 // ---------------------------------------------------------------------
-// REQUIREJS
+// REQUIREJS:
 // Use all rules from the recommended config for RequireJS
 const requirejsConfig = {
   name: "requirejs",
@@ -59,7 +69,7 @@ const requirejsConfig = {
 };
 
 // ---------------------------------------------------------------------
-// METACATUI OVERRIDES
+// METACATUI OVERRIDES:
 const metacatuiConfig = {
   files: ["src/**/*.js"],
   languageOptions: {
