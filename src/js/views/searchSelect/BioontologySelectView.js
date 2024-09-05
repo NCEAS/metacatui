@@ -57,7 +57,6 @@ define([
        * @type {string}
        */
       queryField: "sem_annotation",
-      // TODO: Default to the anno fields configured in MetacatUI appConfig?
 
       /**
        * Set this to false to avoid fetching class labels from BioPortal. The
@@ -84,8 +83,7 @@ define([
        * @param {string} [opts.queryField] - The name of the field in the Solr
        * schema that the user is searching
        * @param {object[]} [opts.ontologies] - The ontoloties (& sub-trees) to
-       * allow users to search for. This will override the default on the BioontologyBatch model
-       * and the TODO
+       * allow users to search for.
        */
       initialize(opts = {}) {
         if (opts?.showClassLabels === false) this.showClassLabels = false;

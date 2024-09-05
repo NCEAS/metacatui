@@ -38,7 +38,7 @@ define([
    * @augments Backbone.View
    * @class
    * @since 0.0.0
-   * @screenshot views/searchSelect/BioontologyBrowserView.png // TODO
+   * @screenshot views/searchSelect/BioontologyBrowserView.png
    */
   const BioontologyBrowser = Backbone.View.extend(
     /** @lends BioontologyBrowserView.prototype */

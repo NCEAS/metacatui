@@ -252,8 +252,6 @@ define([
         if (!this.optionViews) return;
 
         if (!this.wrapperEls) this.wrapperEls = [];
-        // TODO: the class was originally added to the selectUI element.
-        // Can we change the styles to target the menu instead?
         this.$el.addClass(CLASS_NAMES.popout);
 
         Object.entries(this.optionViews).forEach(([category, optionViews]) => {
