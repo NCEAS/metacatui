@@ -499,6 +499,10 @@ define([
                   //Now show the response from the view service
                   viewRef.$(viewRef.metadataContainer).html(response);
 
+                  _.each($(response).find(".entitydetails"), function (entityEl) {
+                    var entityId = $(entityEl).data("id");
+                    viewRef.storeEntityPIDs(entityEl, entityId);
+                  });
 
                   //If there is no info from the index and there is no metadata doc rendered either, then display a message
                   if (
