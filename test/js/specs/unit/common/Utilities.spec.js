@@ -51,4 +51,44 @@ define(["../../../../../../src/js/common/Utilities"], function (EntityUtils) {
       });
     });
   });
+
+  describe("Converting bytes to human-readable size", function () {
+    it("should handle undefined bytes", function () {
+      const result = EntityUtils.bytesToSize(undefined, 2);
+      expect(result).to.equal("0 B");
+    });
+
+    it("should handle bytes less than 1 KiB", function () {
+      const result = EntityUtils.bytesToSize(512, 2);
+      expect(result).to.equal("512 B");
+    });
+
+    it("should convert bytes to KiB with precision", function () {
+      const result = EntityUtils.bytesToSize(2048, 2);
+      expect(result).to.equal("2.00 KiB");
+    });
+
+    it("should convert bytes to MiB with precision", function () {
+      const result = EntityUtils.bytesToSize(2 * 1024 * 1024, 3);
+      expect(result).to.equal("2.000 MiB");
+    });
+
+    it("should convert bytes to GiB with precision", function () {
+      const result = EntityUtils.bytesToSize(2 * 1024 * 1024 * 1024, 4);
+      expect(result).to.equal("2.0000 GiB");
+    });
+
+    it("should convert bytes to TiB with precision", function () {
+      const result = EntityUtils.bytesToSize(2 * 1024 * 1024 * 1024 * 1024, 5);
+      expect(result).to.equal("2.00000 TiB");
+    });
+
+    it("should handle very large bytes", function () {
+      const result = EntityUtils.bytesToSize(
+        2 * 1024 * 1024 * 1024 * 1024 * 1024,
+        2,
+      );
+      expect(result).to.equal("2048.00 TiB");
+    });
+  });
 });

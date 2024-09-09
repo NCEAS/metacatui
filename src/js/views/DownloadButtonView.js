@@ -5,15 +5,15 @@ define([
   "models/SolrResult",
   "models/DataONEObject",
   "models/PackageModel",
-], function ($, _, Backbone, SolrResult, DataONEObject, PackageModel) {
+], ($, _, Backbone, SolrResult, DataONEObject, PackageModel) => {
   "use strict";
 
-  var DownloadButtonView = Backbone.View.extend({
+  const DownloadButtonView = Backbone.View.extend({
     tagName: "a",
 
     className: "btn download",
 
-    initialize: function (options) {
+    initialize(options) {
       if (!options) var options = {};
       this.view = options.view || null;
       this.id = options.id || null;
@@ -25,14 +25,14 @@ define([
       click: "download",
     },
 
-    render: function () {
-      var fileName = this.model.get("fileName") || "";
+    render() {
+      let fileName = this.model.get("fileName") || "";
 
-      if (typeof fileName == "string") {
+      if (typeof fileName === "string") {
         fileName = fileName.trim();
       }
 
-      //Add the href and id attributes
+      // Add the href and id attributes
       let hrefLink = this.model.get("url");
       if (
         this.model instanceof DataONEObject &&
@@ -54,7 +54,7 @@ define([
         .attr("data-id", this.model.get("id"))
         .attr("download", fileName);
 
-      //Check for CORS downloads. For CORS, the 'download' attribute may not work,
+      // Check for CORS downloads. For CORS, the 'download' attribute may not work,
       // so open in a new tab.
       if (
         typeof hrefLink !== "undefined" &&
@@ -63,7 +63,7 @@ define([
         this.$el.attr("target", "_blank");
       }
 
-      //For packages
+      // For packages
       if (typeof this.view !== "undefined" && this.view == "actionsView") {
         this.$el.append(
           $(document.createElement("i")).addClass(
@@ -77,7 +77,7 @@ define([
         if (this.model.type == "Package") {
           this.$el.text("Download All").addClass("btn-primary");
 
-          //if the Package Model has no Solr index document associated with it, then we
+          // if the Package Model has no Solr index document associated with it, then we
           // can assume the resource map object is private. So disable the download button.
           if (!this.model.get("indexDoc")) {
             this.$el
@@ -93,18 +93,18 @@ define([
               });
           }
         }
-        //For individual DataONEObjects
+        // For individual DataONEObjects
         else {
           this.$el.text("Download");
         }
 
-        //Add a download icon
+        // Add a download icon
         this.$el.append(
           $(document.createElement("i")).addClass("icon icon-cloud-download"),
         );
       }
 
-      //If this is a Download All button for a package but it's too large, then disable the button with a message
+      // If this is a Download All button for a package but it's too large, then disable the button with a message
       if (
         this.model.type == "Package" &&
         this.model.getTotalSize() > MetacatUI.appModel.get("maxDownloadSize")
@@ -128,12 +128,11 @@ define([
       }
     },
 
-    download: function (e) {
+    download(e) {
       // Checking if the Download All button is disabled because the package is too large
-      var isDownloadDisabled =
+      const isDownloadDisabled = !!(
         this.$el.attr("disabled") === "disabled" || this.$el.is(".disabled")
-          ? true
-          : false;
+      );
 
       // Do nothing if the `disabled` attribute is set!.
       // If the download is already in progress, don't try to download again
@@ -142,41 +141,38 @@ define([
         return;
       }
 
-      //If the user isn't logged in, let the browser handle the download normally
+      // If the user isn't logged in, let the browser handle the download normally
       if (
         MetacatUI.appUserModel.get("tokenChecked") &&
         !MetacatUI.appUserModel.get("loggedIn")
       ) {
         return;
       }
-      //If the authentication hasn't been checked yet, wait for it
-      else if (!MetacatUI.appUserModel.get("tokenChecked")) {
-        var view = this;
-        this.listenTo(
-          MetacatUI.appUserModel,
-          "change:tokenChecked",
-          function () {
-            view.download(e);
-          },
-        );
+      // If the authentication hasn't been checked yet, wait for it
+      if (!MetacatUI.appUserModel.get("tokenChecked")) {
+        const view = this;
+        this.listenTo(MetacatUI.appUserModel, "change:tokenChecked", () => {
+          view.download(e);
+        });
         return;
       }
-      //If the user is logged in but the object is public, download normally
-      else if (this.model.get("isPublic")) {
-        //If this is a "Download All" button for a package, and at least object is private, then
+      // If the user is logged in but the object is public, download normally
+      if (this.model.get("isPublic")) {
+        // If this is a "Download All" button for a package, and at least object is private, then
         // we need to download via XHR with credentials
         if (this.model.type == "Package") {
-          //If we found a private object, download the package via XHR so we can send the auth token.
-          var privateObject = _.find(this.model.get("members"), function (m) {
-            return m.get("isPublic") !== true;
-          });
-          //If no private object is found, download normally.
+          // If we found a private object, download the package via XHR so we can send the auth token.
+          const privateObject = _.find(
+            this.model.get("members"),
+            (m) => m.get("isPublic") !== true,
+          );
+          // If no private object is found, download normally.
           // This may still fail when there is a private object that the logged-in user doesn't have access to.
           if (!privateObject) {
             return;
           }
         }
-        //All other object types (data and metadata objects) can be downloaded normally
+        // All other object types (data and metadata objects) can be downloaded normally
         else {
           return;
         }
@@ -184,9 +180,9 @@ define([
 
       e.preventDefault();
 
-      //Show that the download has started
+      // Show that the download has started
       this.$el.addClass("in-progress");
-      var buttonHTML = this.$el.html();
+      const buttonHTML = this.$el.html();
       if (typeof this.view !== "undefined" && this.view == "actionsView") {
         this.$el.html(
           "<i class='icon icon-on-right icon-spinner icon-spin'></i>",
@@ -197,9 +193,9 @@ define([
         );
       }
 
-      var thisRef = this;
+      const thisRef = this;
 
-      this.listenToOnce(this.model, "downloadComplete", function () {
+      this.listenToOnce(this.model, "downloadComplete", () => {
         let iconEl = "<i class='icon icon-on-right icon-ok'></i>";
         let downloadEl = "<i class='icon icon-large icon-cloud-download'></i>";
 
@@ -208,27 +204,27 @@ define([
           downloadEl = buttonHTML;
         }
 
-        //Show that the download is complete
+        // Show that the download is complete
         thisRef.$el
           .html(iconEl)
           .addClass("complete")
           .removeClass("in-progress error");
 
-        //Put the download button back to normal
-        setTimeout(function () {
-          //After one second, change the background color with an animation
+        // Put the download button back to normal
+        setTimeout(() => {
+          // After one second, change the background color with an animation
           thisRef.$el.removeClass("complete").html(downloadEl);
         }, 2000);
       });
 
-      this.listenToOnce(this.model, "downloadError", function () {
+      this.listenToOnce(this.model, "downloadError", () => {
         let iconEl = "<i class='icon icon-on-right icon-warning-sign'></i>";
 
         if (thisRef.view != "actionsView") {
           iconEl += "Error ";
         }
 
-        //Show that the download failed to compelete.
+        // Show that the download failed to compelete.
         thisRef.$el
           .html(iconEl)
           .addClass("error")
@@ -241,7 +237,7 @@ define([
           });
       });
 
-      //Fire the download event via the SolrResult model
+      // Fire the download event via the SolrResult model
       this.model.downloadWithCredentials();
     },
   });
