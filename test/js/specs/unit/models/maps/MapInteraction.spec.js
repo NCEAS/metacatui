@@ -73,4 +73,21 @@ define([
       expect(spy.args[0][1].assets.length).to.equal(3);
     });
   });
+  it("should do nothing if the action is not LEFT_CLICK", function () {
+    const model = new MapInteraction();
+    const initialClickedFeatures = model.get("clickedFeatures").models.length;
+    model.handleClick(model, "RIGHT_CLICK");
+    model
+      .get("clickedFeatures")
+      .models.length.should.equal(initialClickedFeatures);
+  });
+
+  it("should set zoomTarget if clickFeatureAction is 'zoom'", function () {
+    const model = new MapInteraction();
+    model.set("clickFeatureAction", "zoom");
+    const feature1 = new Features({ id: 1 });
+    model.set("hoveredFeatures", new Features([feature1]));
+    model.handleClick(model, "LEFT_CLICK");
+    model.get("clickFeatureAction").should.equal("zoom");
+  });
 });

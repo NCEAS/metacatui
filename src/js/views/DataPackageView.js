@@ -483,6 +483,7 @@
             titleTooltip: titleTooltip,
             downloadUrl: packageUrl,
             disablePackageDownloads: disablePackageDownloads,
+            disablePackageUrl: true,
           });
 
           this.$el.append(tableRow);
@@ -930,28 +931,29 @@
       addNestedPackages: function (dataPackage) {
         /**
          * Generates the table row for the data package header.
-         *
          * @type {null|Element}
          */
         var tableRow = null,
           /**
            * Reference to the current view.
-           *
            * @type {Object}
            */
           view = this,
           /**
            * The title of the data package.
-           *
            * @type {null|string}
            */
           title = null,
           /**
            * The URL of the data package.
-           *
            * @type {null|string}
            */
-          packageUrl = null;
+          packageUrl = null,
+          /**
+           * The URL of the nested data package.
+           * @type {null|string}
+           */
+          nestedPackageUrl = null;
 
         /**
          * The members of the data package.
@@ -989,6 +991,11 @@
             MetacatUI.appModel.get("packageServiceUrl") +
             encodeURIComponent(dataPackage.id);
 
+        // Set the nested package URL
+        if (MetacatUI.root !== undefined && dataPackage.id !== undefined)
+          nestedPackageUrl =
+            MetacatUI.root + "/view/" + encodeURIComponent(dataPackage.id);
+
         /**
          * The HTML content for the data package header.
          *
@@ -1000,6 +1007,8 @@
           titleTooltip: titleTooltip,
           disablePackageDownloads: false,
           downloadUrl: packageUrl,
+          disablePackageUrl: false,
+          packageUrl: nestedPackageUrl,
         });
         this.$el.append(tableRow);
 
@@ -1014,7 +1023,9 @@
         this.downloadButtonView.render();
 
         // Add the downloadButtonView el to the span
-        this.$el.find(".downloadAction").html(this.downloadButtonView.el);
+        this.$el
+          .find(".downloadAction[data-id='" + dataPackage.id + "']")
+          .html(this.downloadButtonView.el);
 
         // Filter out the packages from the member list
         members = _.filter(members, function (m) {

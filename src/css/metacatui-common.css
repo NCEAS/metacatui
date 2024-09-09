@@ -9528,6 +9528,10 @@ body > #extension-is-installed {
   margin-left: -4px;
 }
 
+.btn.btn-rounded.action.viewAction > i {
+  margin-left: -2px;
+}
+
 /* Data Package Item */
 .data-package-item {
   height: 38px;
