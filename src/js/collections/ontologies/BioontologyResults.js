@@ -46,9 +46,9 @@ define([
        * @param {boolean} [options.autoCache] - Whether to automatically cache new items
        */
       initialize(_attributes, options) {
-        this.cache = _.debounce(this.cache, CACHE_DEBOUNCE_TIME);
+        this.autoCache = _.debounce(this.cache, CACHE_DEBOUNCE_TIME);
         if (options?.autoCache !== false) {
-          this.listenTo(this, "add", this.cache);
+          this.listenTo(this, "add", this.autoCache);
         }
       },
 

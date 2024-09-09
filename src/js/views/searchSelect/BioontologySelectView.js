@@ -35,11 +35,12 @@ define([
   };
 
   /**
-   * @class
-   * @classdesc
+   * @class BioontologySelectView
+   * @classdesc A search select view that allows users to search for ontology
+   * classes that are indexed in Solr and to browse BioPortal ontologies. The
+   * view can be configured to show class labels from multiple ontologies.
    * @classcategory Views/SearchSelect
    * @augments SearchSelect
-   * @class
    * @since 0.0.0
    * @screenshot views/searchSelect/BioontologySelectView.png
    */
