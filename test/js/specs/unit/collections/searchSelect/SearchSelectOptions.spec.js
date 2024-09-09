@@ -80,5 +80,18 @@ define([
       const json = state.searchSelectOptions.toJSON(true);
       json.should.have.property("Category A");
     });
+
+    it("renames a category", () => {
+      state.searchSelectOptions.renameCategory("Category A", "New Category");
+      const options =
+        state.searchSelectOptions.getOptionsByCategory("New Category");
+      options.should.have.lengthOf(2);
+    });
+
+    it("sorts options by a property", () => {
+      state.searchSelectOptions.sortByProp("label");
+      const firstOption = state.searchSelectOptions.at(0);
+      firstOption.get("label").should.equal("Option 1");
+    });
   });
 });

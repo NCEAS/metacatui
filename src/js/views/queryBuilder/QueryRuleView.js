@@ -9,7 +9,7 @@ define([
   "views/filters/NumericFilterView",
   "views/filters/DateFilterView",
   "views/searchSelect/ObjectFormatSelectView",
-  "views/searchSelect/AnnotationFilterView",
+  "views/searchSelect/BioontologySelectView",
 ], (
   $,
   _,
@@ -21,7 +21,7 @@ define([
   NumericFilterView,
   DateFilterView,
   ObjectFormatSelect,
-  AnnotationFilter,
+  BioontologySelect,
 ) =>
   /**
    * @class QueryRuleView
@@ -456,11 +456,12 @@ define([
           uiFunction() {
             // A bioportalAPIKey is required for the Annotation Filter UI
             if (MetacatUI.appModel.get("bioportalAPIKey")) {
-              return new AnnotationFilter({
-                selected: this.model.get("values").slice(),
+              return new BioontologySelect({
+                selected: this.model.get("values"),
                 separator: this.model.get("operator"),
-                multiselect: true,
-                inputLabel: "Type a value",
+                allowMulti: true,
+                allowAdditions: true,
+                inputLabel: "Search for a term",
               });
               // If there's no API key, render the default UI (the last in this list)
             }

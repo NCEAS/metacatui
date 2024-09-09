@@ -52,6 +52,7 @@
     "./js/specs/unit/models/connectors/Filters-Search.spec.js",
     "./js/specs/unit/models/connectors/Map-Search-Filters.spec.js",
     "./js/specs/unit/models/connectors/Map-Search.spec.js",
+    "./js/specs/unit/models/connectors/Bioontology-Accordion-SearchSelect.spec.js",
     "./js/specs/unit/models/filters/SpatialFilter.spec.js",
     "./js/specs/unit/models/maps/Geohash.spec.js",
     "./js/specs/unit/models/maps/assets/CesiumGeohash.spec.js",
@@ -79,7 +80,15 @@
     "./js/specs/unit/models/searchSelect/SearchSelectOption.spec.js",
     "./js/specs/unit/models/searchSelect/SearchSelect.spec.js",
     "./js/specs/unit/models/searchSelect/QueryFieldSearchSelect.spec.js",
-    "./js/specs/unit/collections/searchSelect/SearchSelectOptions.spec.js"
+    "./js/specs/unit/models/searchSelect/SolrAutocomplete.spec.js",
+    "./js/specs/unit/collections/searchSelect/SearchSelectOptions.spec.js",
+    "./js/specs/unit/models/ontologies/Bioontology.spec.js",
+    "./js/specs/unit/models/ontologies/BioontologyClass.spec.js",
+    "./js/specs/unit/models/ontologies/BioontologyBatch.spec.js",
+    "./js/specs/unit/collections/BioontologyResults.spec.js",
+    "./js/specs/unit/models/ontologies/BioontologyOntology.spec.js",
+    "./js/specs/unit/models/accordion/Accordion.spec.js",
+    "./js/specs/unit/models/accordion/AccordionItem.spec.js"
   ],
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",

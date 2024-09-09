@@ -4,47 +4,39 @@ define([
   "jquery",
   "underscore",
   "backbone",
-  "views/searchSelect/SeparatorView",
-  "models/searchSelect/SearchSelect",
   "semantic",
-  `text!${MetacatUI.root}/components/semantic/dist/semantic.min.css`,
-  "text!templates/searchSelect/searchSelect.html",
-], (
-  $,
-  _,
-  Backbone,
-  SeparatorView,
-  SearchSelect,
-  _Semantic,
-  SemanticCSS,
-  Template,
-) => {
+  "views/searchSelect/SeparatorView",
+  "views/searchSelect/SearchSelectOptionsView",
+  "models/searchSelect/SearchSelect",
+], ($, _, Backbone, Semantic, SeparatorView, OptionsView, SearchSelect) => {
   // The base class for the search select view
   const BASE_CLASS = "search-select";
 
   // Class names that we use in the view, including those from the dropdown
   // module
   const CLASS_NAMES = {
-    inputLabel: `${BASE_CLASS}-label`,
+    inputLabel: [`${BASE_CLASS}-label`, "subtle"],
     popout: "popout-mode",
     accordion: "accordion-mode",
-    chevronDown: "dropdown icon icon-on-right icon-chevron-down",
-    chevronRight: "dropdown icon icon-on-right icon-chevron-right",
+    chevronDown: "icon-chevron-down",
+    chevronRight: "icon-chevron-right",
+    dropdownIconRight: [
+      Semantic.CLASS_NAMES.dropdown.base,
+      "icon",
+      "icon-on-right",
+    ],
     accordionIcon: "accordion-mode-icon",
     popoutIcon: "popout-mode-icon",
-    dropdown: $().dropdown.settings.className,
+    buttonStyle: Semantic.CLASS_NAMES.button.base,
+    labeled: Semantic.CLASS_NAMES.button.labeled,
+    compact: "compact",
   };
 
   // The placeholder element needs both to work properly
-  CLASS_NAMES.placeholder = `${CLASS_NAMES.dropdown.placeholder} ${CLASS_NAMES.dropdown.text}`;
-  // Selectors for the dropdown module
-  const DROPDOWN_SELECTORS = $().dropdown.settings.selector;
-
-  // Classes that we use from the bootstrap module
-  const BOOTSTRAP_CLASS_NAMES = {
-    collapse: "collapse",
-    collapsed: "collapsed",
-  };
+  CLASS_NAMES.placeholder = [
+    Semantic.CLASS_NAMES.dropdown.placeholder,
+    Semantic.CLASS_NAMES.dropdown.text,
+  ];
 
   // Classes to use for different types of messages
   const MESSAGE_TYPES = {
@@ -79,16 +71,10 @@ define([
   const SearchSelectView = Backbone.View.extend(
     /** @lends SearchSelectView.prototype */
     {
-      /**
-       * The type of View this is
-       * @type {string}
-       */
+      /** @inheritdoc */
       type: "SearchSelect",
 
-      /**
-       * The HTML class names for this view element
-       * @type {string}
-       */
+      /** @inheritdoc */
       className: BASE_CLASS,
 
       /**
@@ -98,13 +84,6 @@ define([
        * @since 0.0.0
        */
       ModelType: SearchSelect,
-
-      /**
-       * The max height and width of images used for each option in pixels, respectively
-       * @type {number[]}
-       * @since 0.0.0
-       */
-      imageSize: [30, 30],
 
       /**
        * Options and selected values for the search select interface show a
@@ -117,7 +96,7 @@ define([
        */
       tooltipSettings: {
         position: "top left",
-        variation: "inverted mini",
+        variation: `${Semantic.CLASS_NAMES.variations.inverted} ${Semantic.CLASS_NAMES.variations.mini}`,
         delay: {
           show: 450,
           hide: 10,
@@ -125,24 +104,9 @@ define([
         exclusive: true,
       },
 
-      /**
-       * The primary HTML template for this view. The template follows the
-       * structure specified for the semanticUI dropdown module, see:
-       * https://semantic-ui.com/modules/dropdown.html#/definition
-       * @type {Underscore.template}
-       */
-      template: _.template(Template),
-
-      /**
-       * Creates a new SearchSelectView
-       * @param {object} opts A literal object with options to pass to the view
-       */
+      /** @inheritdoc */
       initialize(opts) {
         const options = opts || {};
-
-        // TODO: Make a bundle of required CSS files for semantic UI
-        MetacatUI.appModel.addCSS(SemanticCSS, "semantic");
-
         // Set options on the view and create the model
         const { modelAttrs, viewAttrs } = this.splitModelViewOptions(options);
         if (!options.model) this.createModel(modelAttrs);
@@ -185,35 +149,32 @@ define([
 
       /** @inheritdoc */
       render() {
-        const view = this;
+        this.el.innerHTML = "";
 
-        // If we're using remote content, load the semantic API module
-        if (view.model.get("apiSettings") && !view.semanticAPILoaded) {
-          // eslint-disable-next-line import/no-dynamic-require
-          require(["semanticAPI"], (_SemanticAPI) => {
-            view.semanticAPILoaded = true;
-            view.render();
-          });
-          return this;
-        }
+        this.labelEl = this.createLabel();
+        this.selectContainerEl = this.createSelectContainer();
+        this.inputEl = this.createInput();
+        this.iconEl = this.createIcon();
+        this.placeholderEl = this.createPlaceholder();
+        this.menu = this.createMenu();
+        this.menuEl = this.menu.el;
 
-        // Render the template using the view attributes
-        this.$el.html(this.renderTemplate());
-        this.$selectUI = this.$el.find(DROPDOWN_SELECTORS.dropdown);
+        this.el.append(this.labelEl || "", this.selectContainerEl || "");
+        this.selectContainerEl.append(
+          this.inputEl || "",
+          this.iconEl || "",
+          this.placeholderEl || "",
+          this.menuEl || "",
+        );
 
-        // Start the dropdown in an inactive state. This allows us to pre-select
-        // values without triggering a change event.
+        this.$selectUI = $(this.selectContainerEl);
         this.inactivate();
         this.showLoading();
-
         this.renderSelectUI();
+        this.showSelected(true);
         this.listenToModel();
         this.listenToSelectUI();
-
-        this.updateSubmenuStyle(true);
-        this.addTooltipsToItems();
         this.checkForInvalidSelections();
-
         this.enable();
         this.hideLoading();
 
@@ -252,24 +213,63 @@ define([
             requestAnimationFrame(() => {
               view.addTooltipsToSelectionEls();
               view.addSeparators();
+              view.addClickToTexts();
             });
           },
         });
         view.$selectUI.data("view", view);
+      },
 
-        // Set the selected values in the dropdown
+      /**
+       * Because we've modified the text elements to be hoverable to show the
+       * tooltip, we needed to move them to a higher z-index which blocks the
+       * click action on the dropdown input element. This function ensures that
+       * the dropdown is shown when any part of the input is clicked, including
+       * the selected text elements in a single-select dropdown.
+       * @since 0.0.0
+       */
+      addClickToTexts() {
+        const showMenu = () => {
+          this.$selectUI.dropdown("show");
+        };
+        const texts = this.getTexts();
+        if (!texts?.length) return;
+        texts.forEach((text) => text.removeEventListener("click", showMenu));
+        const text = this.getTexts()?.[0];
+        if (!text) return;
+        text.addEventListener("click", showMenu);
+      },
+
+      /**
+       * Update the dropdown interface with the selected values from the model
+       * @param {boolean} [silent] Set to true to prevent the dropdown from
+       * triggering a change event (an infinite loop can occur if this is not set,
+       * as the dropdown will trigger a change event, which will update the model).
+       * @since 0.0.0
+       */
+      showSelected(silent = false) {
+        const enabledBefore = this.enabled;
+        this.inactivate();
+
         const selected = this.model.get("selected");
         // Add one at a time so that labels appear in the correct order
-        selected.forEach((s, i) => {
-          // trigger the change event on the last selection
-          const silent = i === selected.length - 1;
-          this.$selectUI.dropdown("set selected", s, silent);
+        selected.forEach((s) => {
+          this.$selectUI.dropdown("set selected", s);
         });
+
+        if (!silent) {
+          // trigger once to ensure the model is updated
+          this.$selectUI.dropdown("set selected", selected);
+        }
+
+        if (enabledBefore) {
+          this.enable();
+        }
       },
 
       /** @returns {HTMLElement[]} The selected label elements in a multi-select dropdown */
       getLabels() {
-        return this.$selectUI.find(DROPDOWN_SELECTORS.label).toArray();
+        return this.$selectUI.find(Semantic.DROPDOWN_SELECTORS.label).toArray();
       },
 
       /** @returns {HTMLElement[]} The selected text element in a single-select dropdown */
@@ -277,7 +277,7 @@ define([
         // default text is the placeholder
         return this.$selectUI
           .find(
-            `${DROPDOWN_SELECTORS.text}:not(.${CLASS_NAMES.dropdown.placeholder})`,
+            `${Semantic.DROPDOWN_SELECTORS.text}:not(.${Semantic.CLASS_NAMES.dropdown.placeholder})`,
           )
           .toArray();
       },
@@ -328,22 +328,31 @@ define([
        * @since 0.0.0
        */
       listenToModel() {
+        this.stopListening(this.model);
         const view = this;
-        this.listenTo(this.model, "change:options", this.render);
-        this.listenTo(
-          this.model,
-          "change:submenuStyle",
-          this.updateSubmenuStyle,
-        );
+        this.listenTo(this.model.get("options"), "add remove reset", () => {
+          // If pre-selected values were not in the options previously, then
+          // they would have been removed and/or shown as invalid selections.
+          // Re-add & check selections, after a timeout to ensure the DOM is
+          // updated.
+          requestAnimationFrame(() => {
+            view.showSelected(true);
+            view.checkForInvalidSelections();
+            // save defaults
+            view.$selectUI.dropdown("save defaults");
+            view.$selectUI.dropdown("refresh");
+          });
+        });
+        this.listenTo(this.model, "change:submenuStyle", this.updateMenuMode);
         if (this.model.get("hideEmptyCategoriesOnSearch")) {
           this.listenTo(
             this.model,
             "change:searchTerm",
             (_model, searchTerm) => {
               if (searchTerm) {
-                view.hideEmptyCategories();
+                view.menu.hideEmptyCategories();
               } else {
-                view.showAllCategories();
+                view.menu.showAllCategories();
               }
             },
           );
@@ -408,32 +417,108 @@ define([
       },
 
       /**
-       * Add tooltips to the items in the dropdown menu
+       * Create the label for the search select interface
+       * @returns {HTMLElement|null} The label element, or null if no label is
+       * specified.
        * @since 0.0.0
        */
-      addTooltipsToItems() {
-        const view = this;
-        const items = this.$el.find(`.${CLASS_NAMES.dropdown.item}`);
-        items.each((_i, item) => view.addTooltip(item));
+      createLabel() {
+        const inputLabel = this.model.get("inputLabel");
+        if (!inputLabel) return null;
+        const inputEl = document.createElement("label");
+        inputEl.classList.add(...CLASS_NAMES.inputLabel);
+        inputEl.textContent = inputLabel;
+        return inputEl;
       },
 
       /**
-       * Renders the template for the view
-       * @returns {string} The HTML for the view
+       * Create the container for the select interface
+       * @returns {HTMLElement} The select container element
        * @since 0.0.0
        */
-      renderTemplate() {
-        const templateOptionsFromModel = {
-          allowMulti: this.model.get("allowMulti"),
-          options: this.model.optionsAsJSON(true),
-          classes: CLASS_NAMES,
-          placeholderText: this.model.get("placeholderText"),
-          inputLabel: this.model.get("inputLabel"),
-          imageHeight: this.imageSize?.[0] || 30,
-          imageWidth: this.imageSize?.[1] || 30,
-        };
-        const templateOptions = _.extend({}, this, templateOptionsFromModel);
-        return this.template(templateOptions);
+      createSelectContainer() {
+        const dropdownEl = document.createElement("div");
+        let classesToAdd = [
+          Semantic.CLASS_NAMES.base,
+          Semantic.CLASS_NAMES.dropdown.dropdown,
+          Semantic.CLASS_NAMES.dropdown.search,
+          this.model.get("allowMulti")
+            ? Semantic.CLASS_NAMES.dropdown.multiple
+            : null,
+          this.model.get("fluid")
+            ? Semantic.CLASS_NAMES.variations.fluid
+            : null,
+          this.model.get("buttonStyle") ? CLASS_NAMES.buttonStyle : null,
+          this.model.get("icon") ? Semantic.CLASS_NAMES.dropdown.icon : null,
+          this.model.get("icon") ? CLASS_NAMES.labeled : null,
+          this.model.get("icon")
+            ? null
+            : Semantic.CLASS_NAMES.dropdown.selection,
+        ];
+
+        classesToAdd = classesToAdd.filter(Boolean);
+        classesToAdd = classesToAdd.map((c) => c.split(" ")).flat();
+
+        dropdownEl.classList.add(...classesToAdd);
+
+        if (this.model.get("compact")) {
+          this.el.classList.add(CLASS_NAMES.compact);
+        }
+
+        return dropdownEl;
+      },
+
+      /**
+       * Create the hidden input element that will store the selected values
+       * @returns {HTMLElement} The input element
+       * @since 0.0.0
+       */
+      createInput() {
+        const inputEl = document.createElement("input");
+        inputEl.name = `search-select-${this.cid}`;
+        inputEl.type = "hidden";
+        return inputEl;
+      },
+
+      /**
+       * Create the icon element for the select interface
+       * @returns {HTMLElement} The icon element
+       * @since 0.0.0
+       */
+      createIcon() {
+        let icon = this.model.get("icon");
+        icon = icon ? `icon-${icon}` : "dropdown";
+        const iconEl = document.createElement("i");
+        iconEl.classList.add("icon", icon);
+        return iconEl;
+      },
+
+      /**
+       * Create the placeholder element for the select interface
+       * @returns {HTMLElement} The placeholder element
+       * @since 0.0.0
+       */
+      createPlaceholder() {
+        const placeholder = this.model.get("placeholderText");
+        const placeholderEl = document.createElement("span");
+        placeholderEl.classList.add(...CLASS_NAMES.placeholder);
+        placeholderEl.textContent = placeholder;
+        return placeholderEl;
+      },
+
+      /**
+       * Create the dropdown menu for the select interface
+       * @returns {OptionsView} The dropdown menu
+       * @since 0.0.0
+       */
+      createMenu() {
+        const menu = new OptionsView({
+          collection: this.model.get("options"),
+          tooltipOptions: this.tooltipSettings,
+          mode: this.model.get("submenuStyle"),
+        });
+        menu.render();
+        return menu;
       },
 
       /**
@@ -441,16 +526,9 @@ define([
        * @param {boolean} [force] Set to true to force the view to update
        * @since 0.0.0
        */
-      updateSubmenuStyle(force = false) {
-        if (force === true) this.currentSubmenuMode = null;
-        const submenuStyle = this.model.get("submenuStyle");
-        if (submenuStyle === "popout") {
-          this.convertToPopout();
-        } else if (submenuStyle === "accordion") {
-          this.convertToAccordion();
-        } else {
-          this.convertToList();
-        }
+      updateMenuMode(force = false) {
+        const mode = this.model.get("submenuStyle");
+        this.menu.updateMode(mode, force);
       },
 
       /**
@@ -532,173 +610,16 @@ define([
         });
       },
 
-      /**
-       * Re-arrange HTML to display the full list of options in one static menu
-       */
-      convertToList() {
-        if (!this.$selectUI) {
-          return;
-        }
-        if (this.currentSubmenuMode === "list") {
-          return;
-        }
-        this.currentSubmenuMode = "list";
-
-        this.$selectUI.find(`.${CLASS_NAMES.popout} > *`).unwrap();
-        this.$selectUI.find(`.${CLASS_NAMES.accordion} > *`).unwrap();
-
-        this.$selectUI.find(`.${CLASS_NAMES.accordionIcon}`).remove();
-        this.$selectUI.find(`.${CLASS_NAMES.popoutIcon}`).remove();
-
-        this.$selectUI.removeClass(
-          `${CLASS_NAMES.popout} ${CLASS_NAMES.accordion}`,
-        );
-      },
-
-      /**
-       * Re-arrange the HTML to display category contents as sub-menus that
-       * popout to the left or right of category titles
-       */
-      convertToPopout() {
-        if (!this.$selectUI || this.currentSubmenuMode === "popout") return;
-        this.currentSubmenuMode = "popout";
-        this.$selectUI.addClass(CLASS_NAMES.popout);
-
-        const $headers = this.getItemHeaders();
-
-        if (!$headers?.length) return;
-
-        $headers.each((_i, header) => {
-          const $header = $(header);
-          const $itemGroup = $().add(
-            $header.nextUntil(`.${CLASS_NAMES.dropdown.header}`),
-          );
-          const $itemAndHeaderGroup = $header.add(
-            $header.nextUntil(`.${CLASS_NAMES.dropdown.header}`),
-          );
-          const $icon = $header.next().find(`.${CLASS_NAMES.dropdown.icon}`);
-          if ($icon && $icon.length > 0) {
-            const $headerIcon = $icon.clone().css({
-              opacity: "0.9",
-              "margin-right": "1rem",
-            });
-            $header.prepend($headerIcon[0]);
-          }
-          $itemAndHeaderGroup.wrapAll(
-            `<div class='${CLASS_NAMES.item} ${CLASS_NAMES.popout}'/>`,
-          );
-          $itemGroup.wrapAll(
-            `<div class='${CLASS_NAMES.dropdown.menu} ${CLASS_NAMES.popout}'/>`,
-          );
-          $header.append(
-            `<i class='${CLASS_NAMES.popoutIcon} ${CLASS_NAMES.chevronRight}'></i>`,
-          );
-        });
-      },
-
-      /**
-       * Re-arrange the HTML to display category items with expandable sections,
-       * similar to an accordion element.
-       */
-      convertToAccordion() {
-        if (!this.$selectUI || this.currentSubmenuMode === "accordion") return;
-
-        this.currentSubmenuMode = "accordion";
-        this.$selectUI.addClass(CLASS_NAMES.accordion);
-
-        const $headers = this.getItemHeaders();
-        if (!$headers?.length) return;
-
-        // Id to match the header to the
-        $headers.each((_i, header) => {
-          const $header = $(header);
-          // Create an ID
-          const randomNum = Math.floor(Math.random() * 100000 + 1);
-          const headerText = $header.text().replace(/\W/g, "");
-          const id = headerText + randomNum;
-
-          const $itemGroup = $().add(
-            $header.nextUntil(`.${CLASS_NAMES.dropdown.header}`),
-          );
-          const $icon = $header.next().find(`.${CLASS_NAMES.dropdown.icon}`);
-          if ($icon && $icon.length > 0) {
-            const $headerIcon = $icon
-              .clone()
-              .addClass(CLASS_NAMES.accordionIcon)
-              .css({
-                opacity: "0.9",
-                "margin-right": "1rem",
-              });
-            $header.prepend($headerIcon[0]);
-            $header.wrap(
-              `<a data-toggle='${BOOTSTRAP_CLASS_NAMES.collapse}' data-target='#${id}' class='${CLASS_NAMES.accordion} ${BOOTSTRAP_CLASS_NAMES.collapsed}'/>`,
-            );
-          }
-          $itemGroup.wrapAll(
-            `<div id='${id}' class='${CLASS_NAMES.accordion} ${BOOTSTRAP_CLASS_NAMES.collapse}'/>`,
-          );
-          $header.append(
-            `<i class='${CLASS_NAMES.accordionIcon} ${CLASS_NAMES.chevronDown}'></i>`,
-          );
-        });
-      },
-
-      /**
-       * Get the category headers in the dropdown menu
-       * @returns {JQuery} The category headers
-       * @since 0.0.0
-       */
-      getItemHeaders() {
-        return this.$selectUI.find(`.${CLASS_NAMES.dropdown.header}`);
-      },
-
-      /**
-       * In the search select interface, hide category headers that are
-       * empty, if any
-       */
-      hideEmptyCategories() {
-        const $headers = this.getItemHeaders();
-        if (!$headers?.length) return;
-
-        $headers.each((_i, header) => {
-          const $header = $(header);
-          // this is the header
-          const $itemGroup = $().add(
-            $header.nextUntil(`.${CLASS_NAMES.dropdown.header}`),
-          );
-          const $itemGroupFiltered = $().add(
-            $header.nextUntil(
-              `.${CLASS_NAMES.dropdown.header}`,
-              `.${CLASS_NAMES.dropdown.filtered}`,
-            ),
-          );
-          // If all items are filtered then also hide the header
-          if ($itemGroup.length === $itemGroupFiltered.length) {
-            $header.hide();
-          } else {
-            $header.show();
-          }
-        });
-      },
-
-      /**
-       * In the search select interface, show all category headers that we
-       * re previously empty
-       */
-      showAllCategories() {
-        this.getItemHeaders().show();
-      },
-
       /** Visually indicate that the select interface is enabled */
       enable() {
         this.enabled = true;
-        this.$selectUI.removeClass(CLASS_NAMES.dropdown.disabled);
+        this.$selectUI.removeClass(Semantic.CLASS_NAMES.dropdown.disabled);
       },
 
       /** Visually indicate that the select interface is inactive */
       inactivate() {
         this.enabled = false;
-        this.$selectUI.addClass(CLASS_NAMES.dropdown.disabled);
+        this.$selectUI.addClass(Semantic.CLASS_NAMES.dropdown.disabled);
       },
 
       /**
@@ -748,12 +669,26 @@ define([
 
       /** Visually indicate that dropdown options are loading */
       showLoading() {
-        this.$selectUI.addClass(CLASS_NAMES.dropdown.loading);
+        this.$selectUI.addClass(Semantic.CLASS_NAMES.dropdown.loading);
       },
 
       /** Remove the loading spinner set by the showLoading */
       hideLoading() {
-        this.$selectUI.removeClass(CLASS_NAMES.dropdown.loading);
+        this.$selectUI.removeClass(Semantic.CLASS_NAMES.dropdown.loading);
+      },
+
+      /**
+       * Remove the selected values from the dropdown interface
+       * and from the model.
+       * @param {boolean} [silent] Set to true to prevent the dropdown and the
+       * model from triggering change events
+       * @param {boolean} [closeMenu] Set to true to close the dropdown menu
+       * @since 0.0.0
+       */
+      reset(silent = false, closeMenu = true) {
+        this.$selectUI.dropdown("clear", silent);
+        this.model.set("selected", [], { silent });
+        if (closeMenu) this.$selectUI.dropdown("hide");
       },
     },
   );

@@ -1,6 +1,6 @@
-define([], () => {
-  "use strict";
+"use strict";
 
+define([], () => {
   const KIBIBYTE = 1024;
   const MEBIBYTE = KIBIBYTE * 1024;
   const GIBIBYTE = MEBIBYTE * 1024;
@@ -160,6 +160,64 @@ define([], () => {
         return 1; // Allow 1 decimal places
       }
       return 0; // No decimal places
+    },
+
+    /**
+     * Checks if two objects are deeply equal. Simpler than the _.isEqual function.
+     * @param {object} a - The first object to compare
+     * @param {object} b - The second object to compare
+     * @returns {boolean} True if the objects are deeply equal
+     * @since 0.0.0
+     */
+    deepEqual(a, b) {
+      if (a === b) return true;
+
+      if (Array.isArray(a) && Array.isArray(b)) {
+        // Quick check for empty arrays
+        if (a.length === 0 && b.length === 0) return true;
+        if (a.length !== b.length) return false;
+        return a.every((value, index) => this.deepEqual(value, b[index]));
+      }
+
+      if (
+        typeof a === "object" &&
+        a !== null &&
+        typeof b === "object" &&
+        b !== null
+      ) {
+        const keysA = Object.keys(a);
+        const keysB = Object.keys(b);
+
+        if (keysA.length !== keysB.length) return false;
+
+        return keysA.every(
+          (key) => keysB.includes(key) && this.deepEqual(a[key], b[key]),
+        );
+      }
+
+      return false;
+    },
+
+    /**
+     * Removes default values from a model's JSON representation
+     * @param {Backbone.Model} model - The model to remove defaults from
+     * @param {string[]} [removeProps] - An array of additional properties to remove from the model
+     * @returns {object} The JSON representation of the model with defaults removed
+     * @since 0.0.0
+     */
+    toJSONWithoutDefaults(model, removeProps = []) {
+      const json = model.toJSON();
+      const defaults = model.defaults();
+
+      Object.keys(defaults).forEach((key) => {
+        if (removeProps.includes(key)) {
+          delete json[key];
+        } else if (this.deepEqual(json[key], defaults[key])) {
+          delete json[key];
+        }
+      });
+
+      return json;
     },
 
     /**

@@ -1607,7 +1607,7 @@ svg.icon {
   width: auto;
   margin-bottom: 20px;
 }
-.sign-in.modal .close {
+.modal .close {
   font-size: 2em;
 }
 .sign-in-btns .notification,
@@ -9592,4 +9592,20 @@ body > #extension-is-installed {
 /* Tooltip */
 .data-package-file-table div.tooltip {
   white-space: wrap;
+}
+
+/******************************************
+** BioOntology Select View **
+******************************************/
+
+/* overrides to the bootstrap modal CSS */
+.bioontology-select-modal {
+  .modal-body {
+    max-height: 90vh;
+  }
+  .close {
+    position: absolute;
+    right: 9px;
+    top: 3px;
+  }
 }

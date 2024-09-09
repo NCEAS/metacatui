@@ -2,6 +2,9 @@
         User Overrides
 *******************************/
 
+.ui.dropdown .menu>.item {
+  min-height: unset;
+}
 
 @media only screen and (min-width: 768px) {
   .ui.search.dropdown .menu {
@@ -9,59 +12,69 @@
   }
 }
 
- /* Warning */
+/* Warning */
 
 .ui.dropdown.warning,
-.ui.dropdown.warning > .text,
-.ui.dropdown.warning > .default.text {
- color: #a88d07;
+.ui.dropdown.warning>.text,
+.ui.dropdown.warning>.default.text {
+  color: #a88d07;
 }
+
 .ui.selection.dropdown.warning {
- background: #fffcf6;
- border-color: #e8e3ba;
+  background: #fffcf6;
+  border-color: #e8e3ba;
 }
+
 .ui.selection.dropdown.warning:hover {
- border-color: #e8e3ba;
+  border-color: #e8e3ba;
 }
-.ui.dropdown.warning > .menu,
-.ui.dropdown.warning > .menu .menu {
- border-color: #e8e3ba;
+
+.ui.dropdown.warning>.menu,
+.ui.dropdown.warning>.menu .menu {
+  border-color: #e8e3ba;
 }
-.ui.dropdown.warning > .menu > .item {
- color: #a88d07;
+
+.ui.dropdown.warning>.menu>.item {
+  color: #a88d07;
 }
-.ui.multiple.selection.warning.dropdown > .label {
- border-color: #e8e3ba;
- background-color: white;
+
+.ui.multiple.selection.warning.dropdown>.label {
+  border-color: #e8e3ba;
+  background-color: white;
 }
-.ui.multiple.selection.error.dropdown > .label {
- background-color: white;
+
+.ui.multiple.selection.error.dropdown>.label {
+  background-color: white;
 }
+
 /* Make sure the text element is at the top of the dropdown so that tooltips work */
-.ui.search.dropdown>.text {
-  z-index: 22;
+.ui.search.dropdown>.text:not(.default) {
+  z-index: 2;
 }
+
 /* Loading */
 .ui.loading.selection.dropdown>i.icon {
-  padding: 1.17em 1.29em!important;
+  padding: 1.17em 1.29em !important;
 }
 
- /* Item Hover */
- .ui.dropdown.warning > .menu > .item:hover {
-   background-color: #fffcf2;
- }
+/* Item Hover */
+.ui.dropdown.warning>.menu>.item:hover {
+  background-color: #fffcf2;
+}
 
- /* Item Active */
- .ui.dropdown.warning > .menu .active.item {
-   background-color: #fdf1cf;
- }
- 
-.ui, .ui > * {
+/* Item Active */
+.ui.dropdown.warning>.menu .active.item {
+  background-color: #fdf1cf;
+}
+
+.ui, .ui>* {
   box-sizing: border-box;
 }
+
 .ui.multiple.dropdown {
   padding: .2em 2.1em .2em .36em;
 }
+
 .ui.label .delete.icon {
   cursor: pointer;
   margin-right: 0;
@@ -72,9 +85,16 @@
   height: 1.5rem;
   font-weight: 100;
 }
-.ui .icon:not(.delete){
+
+.ui .icon:not(.delete) {
   color: #707070;
 }
+
+.ui .icon.category-icon {
+  opacity: 0.9;
+  margin-right: 1rem;
+}
+
 .ui.label .delete.icon:before {
   content: "\f00d";
   font-family: FontAwesome;
@@ -82,12 +102,15 @@
   font-style: normal;
   opacity: 0.3;
 }
+
 .ui.label .delete.icon:hover {
   opacity: 1;
 }
+
 .ui.selection.dropdown {
   min-height: 1.5rem;
 }
+
 .ui.selection .label {
   color: #333;
   background-color: #f7f7f7;
@@ -99,9 +122,11 @@
   font-size: 0.82rem !important;
   line-height: 1 !important;
 }
+
 .ui.multiple.dropdown>.label {
   vertical-align: inherit;
 }
+
 .ui.selection .label:hover {
   color: #333;
 }
@@ -115,7 +140,7 @@
 .ui.dropdown .menu .header {
   margin: 1rem 0 .75rem;
   padding: 0 1.14285714rem;
-  color: rgba(0,0,0,.85);
+  color: rgba(0, 0, 0, .85);
   font-size: .78571429em;
   font-weight: 700;
   text-transform: uppercase;
@@ -123,17 +148,18 @@
 
 .ui.selection.dropdown .menu>.item {
   font-size: 0.86rem;
-  padding: .55rem .9rem!important;
+  padding: .55rem .9rem !important;
   min-height: 1rem;
 }
 
 /* Popout sub-menu styles */
 
-.ui.popout-mode > .menu {
+.ui.popout-mode>.menu {
   overflow: visible !important;
   max-height: unset !important;
 }
-.ui.selection.dropdown .item.popout-mode > .header {
+
+.ui.selection.dropdown .item.popout-mode>.header {
   padding: 0;
   margin: 0;
 }
@@ -148,12 +174,15 @@
   opacity: .8;
   float: right;
 }
+
 .accordion-mode-icon.icon-chevron-down::before {
   content: '\f0d7';
 }
+
 .collapsed .accordion-mode-icon.icon-chevron-down {
   transform: rotate(0deg);
 }
+
 .accordion-mode .item {
   font-size: 0.86rem;
   padding: .55rem .9rem .55rem 1.14285714rem !important;
@@ -165,16 +194,18 @@
   height: auto;
   text-align: left;
   line-height: 1em;
-  color: rgba(0,0,0,.87);
+  color: rgba(0, 0, 0, .87);
   text-transform: none;
   font-weight: 400;
   box-shadow: none;
 }
+
 .accordion-mode .item:hover {
-  background: rgba(0,0,0,.05);
-  color: rgba(0,0,0,.95);
+  background: rgba(0, 0, 0, .05);
+  color: rgba(0, 0, 0, .95);
   z-index: 13;
 }
+
 .ui.dropdown.accordion-mode .header {
   margin: .7rem 0 .7rem;
 }
@@ -183,6 +214,7 @@
 .search-select.account-select .dropdown .menu>.item {
   min-height: 1.9rem;
 }
+
 .search-select.account-select .dropdown .item .description {
   font-size: 0.7rem;
 }
@@ -198,6 +230,7 @@
   transition-duration: 0.3s;
   transition-property: background-color, color;
 }
+
 .search-select .separator--hover {
   border-radius: 4px;
   cursor: pointer;
@@ -207,14 +240,17 @@
 }
 
 @media only screen and (max-width: 767px) {
+
   /* Overwrite dropdown rule for accordion-mode */
   .ui.search.dropdown.accordion-mode .menu {
     max-height: 20rem;
   }
+
   .ui.search.dropdown.accordion-mode .header {
     white-space: normal;
   }
 }
+
 /* Small text for really small screens */
 @media only screen and (max-width: 450px) {
   .ui.multiple.search.dropdown>.text {
@@ -223,3 +259,94 @@
   }
 }
 
+/* bioontology select view */
+
+.bioontology-select {
+  display: grid;
+  grid-template-columns: auto min-content;
+  grid-template-rows: min-content min-content;
+  grid-auto-rows: min-content;
+  grid-gap: 0;
+  .ui.selection.dropdown {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .search-select-label, .text-info{
+    grid-column: 1 / span 2;
+  }
+}
+
+.ui.right.attached.button {
+  padding: 0 5px;
+  >.icon{
+    margin:0;
+  }
+}
+
+/* the "compact" version of the search select is sized similarly to the
+traditional bootstrap-based filter views */
+
+.search-select.compact {
+  /* based on the boostrap styles */
+  --input-height: 30px;
+  --input-width: 80%;
+  --font-size: 14px;
+  --padding-tb: calc((var(--input-height) - var(--font-size) - 4.5px) / 2);
+  --icon-padding: 5px;
+
+  >.ui.dropdown {
+    height: var(--input-height);
+    min-height: var(--input-height);
+    min-width: var(--input-width);
+    padding: var(--padding-tb);
+
+    >input.search {
+      padding: var(--padding-tb) !important;
+    }
+
+    >.delete.icon,
+    >.dropdown.icon,
+    >.search.icon {
+      padding: var(--icon-padding);
+    }
+
+    >.text {
+      font-size: var(--font-size);
+    }
+
+    .menu {
+      width: var(--input-width);
+      max-height: 20rem;
+
+      .header {
+        margin: 0.8rem 0 .1rem;
+        font-size: 0.75rem;
+        padding-left: 0.5rem;
+      }
+
+    }
+
+    .menu>.item {
+      font-size: calc(var(--font-size) - 1px);
+      padding: var(--padding-tb) var(--icon-padding) !important;
+    }
+
+  }
+
+  .ui.right.attached.button {
+    --input-height: 30px;
+    height: var(--input-height);
+  }
+}
+
+
+.search-select.compact.bioontology-select {
+
+  /* 60px for the button element on the right */
+  >.ui.dropdown {
+    .menu {
+      width: calc(var(--input-width) + 60px);
+    }
+  }
+
+}

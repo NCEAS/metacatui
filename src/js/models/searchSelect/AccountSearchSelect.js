@@ -22,7 +22,7 @@ define(["models/searchSelect/SearchSelect", "models/LookupModel"], (
         placeholderText: "Start typing a name",
         inputLabel: "Search for a person or group",
         allowMulti: true,
-        allowAdditions: true,
+        allowAdditions: false,
         apiSettings: {
           responseAsync: this.responseAsync.bind(this),
         },
@@ -33,7 +33,6 @@ define(["models/searchSelect/SearchSelect", "models/LookupModel"], (
     initialize() {
       if (!MetacatUI.appLookupModel)
         MetacatUI.appLookupModel = new LookupModel();
-      this.setOptionsForPreselected();
       SearchSelect.prototype.initialize.call(this);
     },
 

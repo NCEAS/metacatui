@@ -88,6 +88,25 @@ define(["backbone", "models/searchSelect/SearchSelectOption"], (
     },
 
     /**
+     * Change the name of a category for all options in the collection.
+     * @param {string} oldCategory The category to rename.
+     * @param {string} newCategory The new name for the category.
+     */
+    renameCategory(oldCategory, newCategory) {
+      const oldOptions = this.getOptionsByCategory(oldCategory);
+      oldOptions.forEach((option) => option.set("category", newCategory));
+    },
+
+    /**
+     * Sort the options by a given property.
+     * @param {string} prop - The property to sort by.
+     */
+    sortByProp(prop) {
+      this.comparator = (model) => model.get(prop);
+      this.sort();
+    },
+
+    /**
      * Checks if a given matches either a label or value in the collection of
      * options.
      * @param {string} value - The value or label to check for.

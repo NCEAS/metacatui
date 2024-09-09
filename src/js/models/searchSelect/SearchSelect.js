@@ -44,11 +44,22 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
      * be set automatically by the model during initialization.
      * @property {object|boolean} apiSettings - Settings for retrieving data via
      * API, false if not using remote content.
-     * @see {@link https://fomantic-ui.com/modules/dropdown.html#remote-settings}
+     * @see
+     * {@link https://fomantic-ui.com/modules/dropdown.html#remote-settings}
      * @see {@link https://fomantic-ui.com/behaviors/api.html#/settings}
-     * @property {string} placeholderText Text to show in the input field
-     * before any value has been entered.
+     * @property {string} placeholderText Text to show in the input field before
+     * any value has been entered.
      * @property {string} inputLabel Label for the input element.
+     * @property {boolean} buttonStyle Set this to true to render the dropdown
+     * as more of a button-like interface. This works best for single-select
+     * dropdowns.
+     * @property {string|boolean} icon Set this to a FontAwesome icon to use
+     * instead of the default dropdown (down arrow) icon. Works will with the
+     * buttonStyle option.
+     * @property {boolean} fluid Set this to true to make the dropdown take up
+     * the full width of its container.
+     * @property {boolean} compact Set this to true to make the dropdown more
+     * compact, e.g. for the filter bar in the catalog search.
      */
     defaults() {
       return {
@@ -66,16 +77,24 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
         apiSettings: false,
         placeholderText: "Search for or select a value",
         inputLabel: "Select a value",
+        buttonStyle: false,
+        icon: false,
+        fluid: true,
+        compact: false,
       };
     },
 
     /** @inheritdoc */
     initialize(attributes, _options) {
+      this.setOptionsForPreselected();
       const optionsData = attributes?.options;
       // Select options must be parsed if they are not already
       // SearchSelectOption collections
       if (optionsData && !(optionsData instanceof SearchSelectOptions)) {
-        this.updateOptions(optionsData);
+        this.set(
+          "options",
+          new SearchSelectOptions(optionsData, { parse: true }),
+        );
       }
       // Save a reference to the original submenu style to revert to when search
       // term is removed
@@ -107,14 +126,8 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
      * @param {object|object[]} options The new options to set for the dropdown
      */
     updateOptions(options) {
-      this.stopListening(this.get("options"));
       const parse = typeof options === "object" && !Array.isArray(options);
-      this.set("options", new SearchSelectOptions(options, { parse }));
-      this.listenTo(
-        this.get("options"),
-        "all",
-        this.trigger.bind(this, "change:options"),
-      );
+      this.get("options").reset(options, { parse });
     },
 
     /**
@@ -158,7 +171,7 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
      * not a multi-select dropdown, the selected value will replace any existing
      * value.
      * @param {string} value - The value to add to the selected list.
-     * @param {object} options - Additional options to be passed to the 's set
+     * @param {object} options - Additional options to be passed to the set
      * method.
      */
     addSelected(value, options = {}) {
@@ -245,6 +258,28 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
       const nextSeparator = this.getNextSeparator();
       if (!nextSeparator) return;
       this.set("separator", nextSeparator);
+    },
+
+    /**
+     * Get the selected models from the options collection.
+     * @returns {SearchSelectOption[]} - The selected models from the options
+     * collection.
+     */
+    getSelectedModels() {
+      const selected = this.get("selected");
+      return this.get("options").filter((model) =>
+        selected.includes(model.get("value")),
+      );
+    },
+
+    /**
+     * This method is set for extended models that fetch options asynchronously
+     * on search. This method should be overridden to fetch options from the API
+     * for the values that are currently selected in the dropdown. This allows
+     * those values to be populated with the correct label and icon.
+     */
+    setOptionsForPreselected() {
+      // This method should be overridden in extended models
     },
   });
 

@@ -13,6 +13,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
    * @constructor
    * @since 2.14.0
    * @screenshot views/searchSelect/AnnotationFilterView.png
+   * @deprecated since 0.0.0
    */
   return Backbone.View.extend(
     /** @lends AnnotationFilterView.prototype */

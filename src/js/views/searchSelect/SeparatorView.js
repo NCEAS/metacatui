@@ -1,10 +1,6 @@
 "use strict";
 
-define([
-  "backbone",
-  "semantic",
-  `text!${MetacatUI.root}/components/semantic/dist/semantic.min.css`,
-], (Backbone, _Semantic, SemanticCSS) => {
+define(["backbone", "semantic"], (Backbone, _Semantic) => {
   // Default class names for the separator element
   const BASE_CLASS = "separator";
   const CLASS_NAMES = {
@@ -21,7 +17,7 @@ define([
    * @augments Backbone.View
    * @class
    * @since 0.0.0
-   * @screenshot TODO
+   * @screenshot views/searchSelect/SeparatorView.png
    */
   const SeparatorView = Backbone.View.extend(
     /** @lends SeparatorView.prototype */
@@ -67,7 +63,6 @@ define([
 
       /** @inheritdoc */
       initialize(opts) {
-        MetacatUI.appModel.addCSS(SemanticCSS, "semantic");
         // Set all the options on the view
         Object.keys(opts).forEach((key) => {
           this[key] = opts[key];
