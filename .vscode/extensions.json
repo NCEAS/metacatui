@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "zentus.toggle-eslint",
+    "esbenp.prettier-vscode"
+  ]
+}
