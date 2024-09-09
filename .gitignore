@@ -15,3 +15,27 @@ src/config/dev
 docs/_site
 docs/vendor
 *.code-workspace
+
+
+# Ignore everything in src/components/semantic except the distribution files we
+# need and the src files we've modified from the npm source.
+src/components/semantic/*
+!src/components/semantic/semantic.json
+!src/components/semantic/README.md
+
+!src/components/semantic/dist/
+src/components/semantic/dist/*
+!src/components/semantic/dist/semantic.min.css
+!src/components/semantic/dist/semantic.min.js
+
+!src/components/semantic/src/
+src/components/semantic/src/*
+!src/components/semantic/src/site/
+src/components/semantic/src/site/*
+!src/components/semantic/src/site/globals/
+src/components/semantic/src/site/globals/*
+!src/components/semantic/src/site/globals/site.variables
+
+!src/components/semantic/src/site/modules/
+src/components/semantic/src/site/modules/*
+!src/components/semantic/src/site/modules/dropdown.overrides
