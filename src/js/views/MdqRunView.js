@@ -28,7 +28,7 @@ define([
   const MSG_ERROR_GENERATING_REPORT =
     "There was an error generating the assessment report.";
   const MSG_QUEUED_REPORT =
-    "The assessment report is in the Assessment Server queue to be generated. It was queued at: ";
+    "The assessment report is in the Assessment Server queue to be generated.";
   const MSG_REPORT_NOT_READY =
     "The assessment report for this dataset is not ready yet. Try checking back in 24 hours to see these results.";
   const MSG_ERROR_GENERAL =
@@ -374,6 +374,7 @@ define([
         const { qualityReport } = this;
         let status =
           qualityReport.runStatus || qualityReport.fetchResponse?.status;
+
         if (typeof status === "string") {
           status = status.toUpperCase();
         }
@@ -396,7 +397,7 @@ define([
           if (errorReport) {
             msgText += ` ${errorReport}`;
           }
-        } else if (status === "QUEUED") {
+        } else if (status === "QUEUED" || status === "PROCESSING") {
           msgText = `${MSG_QUEUED_REPORT} `;
           if (queueTime) {
             msgText += ` ${queueTime}`;
