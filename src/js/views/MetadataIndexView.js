@@ -353,7 +353,7 @@ define([
         if (typeof key === "object" && doc.get(key.field)) {
           html += view.formatAttribute(key.display, doc.get(key.field));
           populated = true;
-        } else if (doc.get(key)) {
+        } else if (doc.get(key) || doc.get(key) === 0) {
           html += view.formatAttribute(key, doc.get(key));
           populated = true;
         }
