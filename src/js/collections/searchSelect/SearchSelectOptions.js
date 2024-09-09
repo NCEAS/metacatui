@@ -9,7 +9,7 @@ define(["backbone", "models/searchSelect/SearchSelectOption"], (
    * @classdesc A collection for managing dropdown options in a search
    * select view.
    * @classcategory Collections/SearchSelect
-   * @since 0.0.0
+   * @since 2.31.0
    */
   const SearchSelectOptions = Backbone.Collection.extend({
     /** @lends SearchSelectOptions.prototype */

@@ -23,7 +23,7 @@ define([
       /**
        * The ontologies to search for terms in.
        * @type {Array.<{label: string, ontology: string, subTree: string}>}
-       * @since 0.0.0
+       * @since 2.31.0
        */
       ontologies: MetacatUI.appModel.get("bioportalOntologies"),
 
@@ -35,7 +35,7 @@ define([
        * @param {object} [options] - The options to initialize the view with
        * @param {Array.<{label: string, ontology: string, subTree: string}>} [options.ontologies]
        *  - The ontologies to search for terms in
-       * @since 0.0.0
+       * @since 2.31.0
        */
       initialize(options = {}) {
         if (options?.ontologies) this.ontologies = options.ontologies;
@@ -73,7 +73,7 @@ define([
        * Update the filter model when a class is selected in the
        * BioontologySelectView. Clear the selection/search input from the
        * SelectView and collapse the menu.
-       * @since 0.0.0
+       * @since 2.31.0
        */
       onSubViewSelection() {
         const view = this;

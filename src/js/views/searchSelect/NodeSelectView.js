@@ -41,7 +41,7 @@ define(["views/searchSelect/SearchSelectView", "models/NodeModel"], (
        * Fetch the member nodes from the NodeModel and convert them to options
        * for the searchSelect component.
        * @returns {object[]} An array of objects representing the member nodes
-       * @since 0.0.0
+       * @since 2.31.0
        */
       getNodeOptions() {
         if (!MetacatUI.nodeModel) MetacatUI.nodeModel = new NodeModel();

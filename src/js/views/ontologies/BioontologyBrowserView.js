@@ -36,7 +36,7 @@ define([
    * @classdesc An interface to browser BioPortal ontologies and classes
    * @classcategory Views/Ontologies
    * @augments Backbone.View
-   * @since 0.0.0
+   * @since 2.31.0
    * @screenshot views/ontologies/BioontologyBrowserView.png
    */
   const BioontologyBrowser = Backbone.View.extend(

@@ -167,7 +167,7 @@ define([], () => {
      * @param {object} a - The first object to compare
      * @param {object} b - The second object to compare
      * @returns {boolean} True if the objects are deeply equal
-     * @since 0.0.0
+     * @since 2.31.0
      */
     deepEqual(a, b) {
       if (a === b) return true;
@@ -203,7 +203,7 @@ define([], () => {
      * @param {Backbone.Model} model - The model to remove defaults from
      * @param {string[]} [removeProps] - An array of additional properties to remove from the model
      * @returns {object} The JSON representation of the model with defaults removed
-     * @since 0.0.0
+     * @since 2.31.0
      */
     toJSONWithoutDefaults(model, removeProps = []) {
       const json = model.toJSON();

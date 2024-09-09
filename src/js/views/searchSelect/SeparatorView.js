@@ -16,7 +16,7 @@ define(["backbone", "semantic"], (Backbone, _Semantic) => {
    * @classcategory Views/SearchSelect
    * @augments Backbone.View
    * @class
-   * @since 0.0.0
+   * @since 2.31.0
    * @screenshot views/searchSelect/SeparatorView.png
    */
   const SeparatorView = Backbone.View.extend(

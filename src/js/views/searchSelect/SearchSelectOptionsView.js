@@ -38,7 +38,7 @@ define([
    * @classcategory Views/SearchSelect
    * @augments SearchSelect
    * @class
-   * @since 0.0.0
+   * @since 2.31.0
    * @screenshot views/searchSelect/SearchSelectOptionsView.png
    */
   return Backbone.View.extend(

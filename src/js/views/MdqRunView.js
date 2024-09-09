@@ -246,7 +246,7 @@ define([
       /**
        * Add the check result item els to the view
        * @param {object} groupedResults - The results grouped by status
-       * @since 0.0.0
+       * @since 2.31.0
        */
       async addCheckItems(groupedResults) {
         const viewRef = this;
@@ -299,7 +299,7 @@ define([
        * @param {string} className - The class name for the check item
        * @param {string} iconClass - The class
        * @returns {string} The HTML for the check item
-       * @since 0.0.0
+       * @since 2.31.0
        */
       async createCheckItem(result, className, iconClass) {
         const outputs = await this.getOutputHTML(result.get("output"));

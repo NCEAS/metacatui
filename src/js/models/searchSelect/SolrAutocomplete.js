@@ -9,7 +9,7 @@ define(["models/searchSelect/SearchSelect", "collections/SolrResults"], (
    * @classdesc An extension of SearchSelect that limits the options to the
    * available values within a given Solr field.
    * @classcategory Models/SearchSelect
-   * @since 0.0.0
+   * @since 2.31.0
    * @augments Backbone.Model
    */
   const SolrAutocomplete = SearchSelect.extend({

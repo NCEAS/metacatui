@@ -18,7 +18,7 @@ define([
    * @augments Backbone.Model
    * @class
    * @classcategory Models/Connectors
-   * @since 0.0.0
+   * @since 2.31.0
    */
   Backbone.Model.extend(
     /** @lends  BioontologyAccordionSearchSelect.prototype */ {

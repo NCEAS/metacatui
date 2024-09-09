@@ -9,7 +9,7 @@ define(["backbone", "models/accordion/AccordionItem"], (
    * @augments Backbone.Model
    * @constructs
    * @augments Backbone.Model
-   * @since 0.0.0
+   * @since 2.31.0
    */
   const Accordion = Backbone.Model.extend(
     /** @lends Accordion.prototype */

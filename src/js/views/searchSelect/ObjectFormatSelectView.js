@@ -38,7 +38,7 @@ define(["views/searchSelect/SearchSelectView", "collections/ObjectFormats"], (
       /**
        * Fetch the object formats from the DataONE API and update the
        * select options on the model
-       * @since 0.0.0
+       * @since 2.31.0
        */
       getObjectFormats() {
         const view = this;

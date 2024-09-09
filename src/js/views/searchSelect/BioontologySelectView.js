@@ -41,7 +41,7 @@ define([
    * view can be configured to show class labels from multiple ontologies.
    * @classcategory Views/SearchSelect
    * @augments SearchSelect
-   * @since 0.0.0
+   * @since 2.31.0
    * @screenshot views/searchSelect/BioontologySelectView.png
    */
   return SolrAutocompleteView.extend(
@@ -72,7 +72,7 @@ define([
        * "label" and a "ontology" (acronym) property. Optionally, a "subTree"
        * property can be provided to search a specific sub-tree of the ontology.
        * @type {Array.<{label: string, ontology: string, subTree: string}>}
-       * @since 0.0.0
+       * @since 2.31.0
        */
       ontologies: MetacatUI.appModel.get("bioportalOntologies"),
 

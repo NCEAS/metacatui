@@ -5,7 +5,7 @@
  * imported, the Semantic UI library is available globally and the CSS is added to
  * the page. e.g. you can use `$('.ui.dropdown').dropdown()` in your code.
  * See usage docs at https://semantic-ui.com/introduction/getting-started.html
- * @since 0.0.0
+ * @since 2.31.0
  */
 define([
   `jquery`,

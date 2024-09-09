@@ -9,7 +9,7 @@ define([
    * @classdesc An extension of SearchSelect that sets the options to the query
    * fields (e.g. Solr fields) available for searching.
    * @classcategory Models/SearchSelect
-   * @since 0.0.0
+   * @since 2.31.0
    * @augments Backbone.Model
    */
   const QueryFieldSearchSelect = SearchSelect.extend({

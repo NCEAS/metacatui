@@ -7,7 +7,7 @@ define(["backbone"], (Backbone) => {
    * BioPortal API. All attributes not documented here are detailed on the
    * BioPortal API docs: https://data.bioontology.org/documentation.
    * @classcategory Models/Ontologies
-   * @since 0.0.0
+   * @since 2.31.0
    * @augments Backbone.Model
    */
   const BioontologyClass = Backbone.Model.extend({

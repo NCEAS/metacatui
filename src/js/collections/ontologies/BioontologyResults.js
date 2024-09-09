@@ -20,7 +20,7 @@ define([
    * @class BioontologyResults
    * @classcategory Collections/Ontologies
    * @augments Backbone.Collection
-   * @since 0.0.0
+   * @since 2.31.0
    * @class
    */
   const BioontologyResults = Backbone.Collection.extend(

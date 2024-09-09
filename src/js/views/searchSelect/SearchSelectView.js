@@ -81,7 +81,7 @@ define([
        * The constructor function for the model that this view uses. Must be a
        * SearchSelect or an extension of it.
        * @type {Backbone.Model}
-       * @since 0.0.0
+       * @since 2.31.0
        */
       ModelType: SearchSelect,
 
@@ -92,7 +92,7 @@ define([
        * configure the tooltip. Set to false to disable tooltips.
        * @see https://fomantic-ui.com/modules/popup.html#/settings
        * @type {object|boolean}
-       * @since 0.0.0
+       * @since 2.31.0
        */
       tooltipSettings: {
         position: "top left",
@@ -117,7 +117,7 @@ define([
        * Split the options passed to the view into model and view attributes.
        * @param {object} options The options passed to the view
        * @returns {object} An object with two keys: modelAttrs and viewAttrs
-       * @since 0.0.0
+       * @since 2.31.0
        */
       splitModelViewOptions(options) {
         const modelAttrNames = Object.keys(this.ModelType.prototype.defaults());
@@ -130,7 +130,7 @@ define([
        * Create a new SearchSelect model and set it on the view. If a model
        * already exists, it will be destroyed.
        * @param {object} options The options to pass to the model
-       * @since 0.0.0
+       * @since 2.31.0
        */
       createModel(options) {
         const modelAttrs = options || {};
@@ -226,7 +226,7 @@ define([
        * click action on the dropdown input element. This function ensures that
        * the dropdown is shown when any part of the input is clicked, including
        * the selected text elements in a single-select dropdown.
-       * @since 0.0.0
+       * @since 2.31.0
        */
       addClickToTexts() {
         const showMenu = () => {
@@ -245,7 +245,7 @@ define([
        * @param {boolean} [silent] Set to true to prevent the dropdown from
        * triggering a change event (an infinite loop can occur if this is not set,
        * as the dropdown will trigger a change event, which will update the model).
-       * @since 0.0.0
+       * @since 2.31.0
        */
       showSelected(silent = false) {
         const enabledBefore = this.enabled;
@@ -325,7 +325,7 @@ define([
 
       /**
        * Update the view when certain model attributes change
-       * @since 0.0.0
+       * @since 2.31.0
        */
       listenToModel() {
         this.stopListening(this.model);
@@ -361,7 +361,7 @@ define([
 
       /**
        * Listen to events from the select UI interface and update the model
-       * @since 0.0.0
+       * @since 2.31.0
        */
       listenToSelectUI() {
         // Save the active search term in the model
@@ -404,7 +404,7 @@ define([
 
       /**
        * Show an error message if the user has selected an invalid value
-       * @since 0.0.0
+       * @since 2.31.0
        */
       checkForInvalidSelections() {
         const view = this;
@@ -420,7 +420,7 @@ define([
        * Create the label for the search select interface
        * @returns {HTMLElement|null} The label element, or null if no label is
        * specified.
-       * @since 0.0.0
+       * @since 2.31.0
        */
       createLabel() {
         const inputLabel = this.model.get("inputLabel");
@@ -434,7 +434,7 @@ define([
       /**
        * Create the container for the select interface
        * @returns {HTMLElement} The select container element
-       * @since 0.0.0
+       * @since 2.31.0
        */
       createSelectContainer() {
         const dropdownEl = document.createElement("div");
@@ -471,7 +471,7 @@ define([
       /**
        * Create the hidden input element that will store the selected values
        * @returns {HTMLElement} The input element
-       * @since 0.0.0
+       * @since 2.31.0
        */
       createInput() {
         const inputEl = document.createElement("input");
@@ -483,7 +483,7 @@ define([
       /**
        * Create the icon element for the select interface
        * @returns {HTMLElement} The icon element
-       * @since 0.0.0
+       * @since 2.31.0
        */
       createIcon() {
         let icon = this.model.get("icon");
@@ -496,7 +496,7 @@ define([
       /**
        * Create the placeholder element for the select interface
        * @returns {HTMLElement} The placeholder element
-       * @since 0.0.0
+       * @since 2.31.0
        */
       createPlaceholder() {
         const placeholder = this.model.get("placeholderText");
@@ -509,7 +509,7 @@ define([
       /**
        * Create the dropdown menu for the select interface
        * @returns {OptionsView} The dropdown menu
-       * @since 0.0.0
+       * @since 2.31.0
        */
       createMenu() {
         const menu = new OptionsView({
@@ -524,7 +524,7 @@ define([
       /**
        * Convert the submenu style to the style set in the model
        * @param {boolean} [force] Set to true to force the view to update
-       * @since 0.0.0
+       * @since 2.31.0
        */
       updateMenuMode(force = false) {
         const mode = this.model.get("submenuStyle");
@@ -560,7 +560,7 @@ define([
        * @param {HTMLElement} el The text or label element
        * @returns {SearchSelectOption|null} The option model or null if not
        * found
-       * @since 0.0.0
+       * @since 2.31.0
        */
       optionFromSelectionEl(el) {
         if (!el) return null;
@@ -579,7 +579,7 @@ define([
        * @param {JQuery} _$element The element to attach the tooltip to
        * @returns {string|null} An HTML string to use for the content of the
        * tooltip.
-       * @since 0.0.0
+       * @since 2.31.0
        */
       tooltipHTML(option, _$element) {
         return option?.get("description") || null;
@@ -683,7 +683,7 @@ define([
        * @param {boolean} [silent] Set to true to prevent the dropdown and the
        * model from triggering change events
        * @param {boolean} [closeMenu] Set to true to close the dropdown menu
-       * @since 0.0.0
+       * @since 2.31.0
        */
       reset(silent = false, closeMenu = true) {
         this.$selectUI.dropdown("clear", silent);
