@@ -237,7 +237,10 @@ define([
         viewRef.drawScoreChart(qualityReport.models, groupedResults);
         viewRef.showCitation();
         viewRef.show();
-        viewRef.$(".popover-this").popover();
+        // Make sure the DOM is updated before initializing the popover
+        requestAnimationFrame(() => {
+          viewRef.$(".popover-this").popover();
+        });
       },
 
       /**
