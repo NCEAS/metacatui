@@ -395,7 +395,8 @@ define([
       getLayerGroups() {
         if (this.has("layerCategories")) {
           return this.get("layerCategories").getMapAssets();
-        } else if (this.has("layers")) {
+        }
+        if (this.has("layers")) {
           return [this.get("layers")];
         }
         return [];

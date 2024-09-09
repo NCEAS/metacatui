@@ -494,6 +494,11 @@ define([
                   // Now show the response from the view service
                   viewRef.$(viewRef.metadataContainer).html(response);
 
+                  _.each($(response).find(".entitydetails"), (entityEl) => {
+                    const entityId = $(entityEl).data("id");
+                    viewRef.storeEntityPIDs(entityEl, entityId);
+                  });
+
                   // If there is no info from the index and there is no metadata doc rendered either, then display a message
                   if (
                     viewRef.$el.is(".no-stylesheet") &&
@@ -3518,24 +3523,25 @@ define([
       },
 
       storeEntityPIDs(entityEl, entityId) {
+        let entityPID = entityId;
         // Get the entity ID if it is null or undefined
-        if (entityId == null) entityId = $(entityEl).data("id");
+        if (entityPID == null) entityPID = $(entityEl).data("id");
 
         // Perform clean up with the entity ID
-        if (entityId & (typeof entityId === "string")) {
+        if (entityPID && typeof entityPID === "string") {
           // Check and replace urn-uuid- with urn:uuid: if the string starts with urn-uuid-
-          if (entityId.startsWith("urn-uuid-")) {
-            entityId = entityId.replace("urn-uuid-", "urn:uuid:");
+          if (entityPID.startsWith("urn-uuid-")) {
+            entityPID = entityPID.replace("urn-uuid-", "urn:uuid:");
           }
 
           // Check and replace doi-10. with doi:10. if the string starts with doi-10.
-          if (entityId.startsWith("doi-10.")) {
-            entityId = entityId.replace("doi-10.", "doi:10.");
+          if (entityPID.startsWith("doi-10.")) {
+            entityPID = entityPID.replace("doi-10.", "doi:10.");
           }
         }
 
-        if (!this.entities.includes(entityId)) {
-          this.entities.push(entityId);
+        if (!this.entities.includes(entityPID)) {
+          this.entities.push(entityPID);
         }
       },
     },
