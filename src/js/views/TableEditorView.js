@@ -6,6 +6,10 @@ define([
   "markdownTableToJson",
   "text!templates/tableEditor.html",
 ], (_, $, Backbone, markdownTableFromJson, markdownTableToJson, Template) => {
+  // a utility function to check if a value is empty for sorting
+  const valIsEmpty = (x) =>
+    x === "" || x === undefined || x === null || Number.isNaN(x);
+
   /**
    * @class TableEditorView
    * @classdesc A view of an HTML textarea with markdown editor UI and preview
@@ -461,9 +465,9 @@ define([
 
       /**
        * Compare Functions for sorting - ascending
-       * @param  {number} currentCol The number of the column to sort
-       * @param  {*} a One of two items to compare
-       * @param  {*} b The second of two items to compare
+       * @param {number} currentCol The number of the column to sort
+       * @param {*} a One of two items to compare
+       * @param {*} b The second of two items to compare
        * @returns {number} A number indicating the order to place a vs b in the
        * list. It it returns less than zero, then a will be placed before b in
        * the list.
@@ -472,18 +476,19 @@ define([
         try {
           let valA = a[currentCol];
           let valB = b[currentCol];
-          if (valA === "") return 1;
-          if (valB === "") return -1;
+
+          if (valIsEmpty(valA)) return 1;
+          if (valIsEmpty(valB)) return -1;
 
           // Check for strings and numbers
-          if (Number.isNaN(valA) || Number.isNaN(valB)) {
-            valA = valA.toUpperCase();
-            valB = valB.toUpperCase();
-            if (valA < valB) return -1;
-            if (valA > valB) return 1;
-            return 0;
+          if (typeof valA === "number" && typeof valB === "number") {
+            return valA - valB;
           }
-          return valA - valB;
+          valA = String(valA).toUpperCase();
+          valB = String(valB).toUpperCase();
+          if (valA < valB) return -1;
+          if (valA > valB) return 1;
+          return 0;
         } catch (e) {
           return 0;
         }
@@ -491,10 +496,10 @@ define([
 
       /**
        * Descending compare function
-       * @param  {number} currentCol The number of the column to sort
-       * @param  {*} a              One of two items to compare
-       * @param  {*} b              The second of two items to compare
-       * @returns {number}           A number indicating the order to place a vs
+       * @param {number} currentCol The number of the column to sort
+       * @param {*} a One of two items to compare
+       * @param {*} b The second of two items to compare
+       * @returns {number} A number indicating the order to place a vs
        * b in the list. It it returns less than zero, then a will be placed
        * before b in the list.
        */
@@ -502,18 +507,18 @@ define([
         try {
           let valA = a[currentCol];
           let valB = b[currentCol];
-          if (valA === "") return 1;
-          if (valB === "") return -1;
+          if (valIsEmpty(valA)) return -1;
+          if (valIsEmpty(valB)) return 1;
 
           // Check for strings and numbers
-          if (Number.isNaN(valA) || Number.isNaN(valB)) {
-            valA = valA.toUpperCase();
-            valB = valB.toUpperCase();
-            if (valA < valB) return 1;
-            if (valA > valB) return -1;
-            return 0;
+          if (typeof valA === "number" && typeof valB === "number") {
+            return valB - valA;
           }
-          return valB - valA;
+          valA = String(valA).toUpperCase();
+          valB = String(valB).toUpperCase();
+          if (valB < valA) return -1;
+          if (valB > valA) return 1;
+          return 0;
         } catch (e) {
           return 0;
         }
