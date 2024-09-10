@@ -88,6 +88,8 @@ require.config({
     markdownTableFromJson:
       MetacatUI.root + "/components/markdown-table-from-json.min",
     markdownTableToJson: MetacatUI.root + "/components/markdown-table-to-json",
+    // robust CSV parsing
+    papaParse: MetacatUI.root + "/components/papaparse.min",
     // Polyfill required for using dropzone with older browsers
     corejs: MetacatUI.root + "/components/core-js",
     // Custom semantic bundle used for searchable multi-select dropdown component
