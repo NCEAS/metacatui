@@ -2101,7 +2101,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           /**
            * The Bioportal REST API URL, which is set dynamically only if a bioportalAPIKey is configured
            * @type {string}
-           * @deprecated since 0.0.0
+           * @deprecated since 2.31.0
            */
           bioportalSearchUrl: "https://data.bioontology.org/search",
           /**
@@ -2109,7 +2109,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @see {@link https://data.bioontology.org/documentation}
            * @type {string}
            * @default "https://data.bioontology.org"
-           * @since 0.0.0
+           * @since 2.31.0
            */
           bioportalApiBaseUrl: "https://data.bioontology.org",
           /**
@@ -2132,7 +2132,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * class. For the full list of possible ontologies, see the Bioportal
            * website: https://bioportal.bioontology.org/ontologies
            * @type {Array.<{label: string, ontology: string, subTree: string, icon: string}>}
-           * @since 0.0.0
+           * @since 2.31.0
            */
           bioportalOntologies: [
             {

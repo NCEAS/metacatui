@@ -35,12 +35,13 @@ define([
   };
 
   /**
-   * @class
-   * @classdesc
+   * @class BioontologySelectView
+   * @classdesc A search select view that allows users to search for ontology
+   * classes that are indexed in Solr and to browse BioPortal ontologies. The
+   * view can be configured to show class labels from multiple ontologies.
    * @classcategory Views/SearchSelect
    * @augments SearchSelect
-   * @class
-   * @since 0.0.0
+   * @since 2.31.0
    * @screenshot views/searchSelect/BioontologySelectView.png
    */
   return SolrAutocompleteView.extend(
@@ -71,7 +72,7 @@ define([
        * "label" and a "ontology" (acronym) property. Optionally, a "subTree"
        * property can be provided to search a specific sub-tree of the ontology.
        * @type {Array.<{label: string, ontology: string, subTree: string}>}
-       * @since 0.0.0
+       * @since 2.31.0
        */
       ontologies: MetacatUI.appModel.get("bioportalOntologies"),
 

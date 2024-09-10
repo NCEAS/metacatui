@@ -20,7 +20,7 @@ define([
    * @class BioontologyResults
    * @classcategory Collections/Ontologies
    * @augments Backbone.Collection
-   * @since 0.0.0
+   * @since 2.31.0
    * @class
    */
   const BioontologyResults = Backbone.Collection.extend(
@@ -46,9 +46,9 @@ define([
        * @param {boolean} [options.autoCache] - Whether to automatically cache new items
        */
       initialize(_attributes, options) {
-        this.cache = _.debounce(this.cache, CACHE_DEBOUNCE_TIME);
+        this.autoCache = _.debounce(this.cache, CACHE_DEBOUNCE_TIME);
         if (options?.autoCache !== false) {
-          this.listenTo(this, "add", this.cache);
+          this.listenTo(this, "add", this.autoCache);
         }
       },
 

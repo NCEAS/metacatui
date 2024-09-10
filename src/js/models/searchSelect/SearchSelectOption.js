@@ -5,7 +5,7 @@ define(["backbone"], (Backbone) => {
    * @class SelectOptionModel
    * @classdesc A model for representing an option in a search select dropdown.
    * @classcategory Models/SearchSelect
-   * @since 0.0.0
+   * @since 2.31.0
    * @augments Backbone.Model
    */
   const SearchSelectOption = Backbone.Model.extend({

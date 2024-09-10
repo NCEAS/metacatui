@@ -6,7 +6,7 @@ define(["backbone"], (Backbone) => {
    * @classcategory Models/Accordion
    * @augments Backbone.Model
    * @constructs
-   * @since 0.0.0
+   * @since 2.31.0
    */
   const AccordionItem = Backbone.Model.extend(
     /** @lends AccordionItem.prototype */

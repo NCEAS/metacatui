@@ -9,7 +9,7 @@ define(["backbone", "collections/ontologies/BioontologyResults"], (
    * @classdesc A model that fetches data from the BioPortal API for a given
    * ontology.
    * @classcategory Models/Ontologies
-   * @since 0.0.0
+   * @since 2.31.0
    * @augments Backbone.Model
    */
   const Bioontology = Backbone.Model.extend({

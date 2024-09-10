@@ -16,7 +16,7 @@ define([
    * @classcategory Views/Accordion
    * @augments Backbone.View
    * @class
-   * @since 0.0.0
+   * @since 2.31.0
    * @screenshot views/accordion/AccordionView.png
    */
   const AccordionView = Backbone.View.extend(

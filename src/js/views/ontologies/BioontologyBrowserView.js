@@ -36,12 +36,11 @@ define([
    * @classdesc An interface to browser BioPortal ontologies and classes
    * @classcategory Views/Ontologies
    * @augments Backbone.View
-   * @class
-   * @since 0.0.0
-   * @screenshot views/searchSelect/BioontologyBrowserView.png
+   * @since 2.31.0
+   * @screenshot views/ontologies/BioontologyBrowserView.png
    */
   const BioontologyBrowser = Backbone.View.extend(
-    /** @lends BioontologyBrowserView.prototype */
+    /** @lends BioontologyBrowser.prototype */
     {
       /** @inheritdoc */
       type: "BioontologyBrowser",

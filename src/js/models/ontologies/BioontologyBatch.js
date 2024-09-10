@@ -10,7 +10,7 @@ define(["backbone", "collections/ontologies/BioontologyResults"], (
    * endpoint. This can be used to store data about classes that have been
    * fetched from BioPortal, and to fetch additional classes as needed.
    * @classcategory Models/Ontologies
-   * @since 0.0.0
+   * @since 2.31.0
    * @augments Backbone.Model
    */
   const BioontologyBatch = Backbone.Model.extend({
