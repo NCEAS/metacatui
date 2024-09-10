@@ -1607,7 +1607,7 @@ svg.icon {
   width: auto;
   margin-bottom: 20px;
 }
-.sign-in.modal .close {
+.modal .close {
   font-size: 2em;
 }
 .sign-in-btns .notification,
@@ -3025,23 +3025,23 @@ ul.ncboTree {
 }
 
 /* --- multiselect annotation filter */
-.annotation-filter .searchable-select #bioportal-tree {
+.annotation-filter .search-select #bioportal-tree {
   display: block;
   margin-top: 0.5rem;
   overflow-x: auto;
 }
-.annotation-filter .searchable-select .menu {
+.annotation-filter .search-select .menu {
   min-height: 10rem;
 }
 /* We use the input in the semantic UI input interface to search */
 /* instead of the NCBO tree interface */
-.annotation-filter .searchable-select input.ncboAutocomplete {
+.annotation-filter .search-select input.ncboAutocomplete {
   display: none;
 }
 /* The contents of the dropdown menu is replaced with the annotation tree */
 /* Hide all of the menu items that semantic UI inserets */
-.annotation-filter .searchable-select .item,
-.annotation-filter .searchable-select .message {
+.annotation-filter .search-select .item,
+.annotation-filter .search-select .message {
   display: none !important;
 }
 
@@ -7065,7 +7065,7 @@ body.mapMode {
 }
 
 /*
-	Overrides for default Bootstrap styling for the searchable select
+	Overrides for default Bootstrap styling for the search select
 	component when we use it as a Portal data search filter. These overrides make
 	the component look nearly identical to other filters (that use native form
 	elements)
@@ -7094,7 +7094,7 @@ body.mapMode {
   line-height: 20px;
   margin: 4px 6px;
 }
-/* End Overrides for default Bootstrap styling for the searchable select */
+/* End Overrides for default Bootstrap styling for the search select */
 
 .filter-group .filter select {
   width: 100%;
@@ -7750,7 +7750,7 @@ Query builder & query rule view
   margin-top: 4.1rem;
 }
 
-.searchable-select-label {
+.search-select-label {
   margin: 0 0 3px 2px;
   font-size: 0.8rem;
 }
@@ -9528,6 +9528,10 @@ body > #extension-is-installed {
   margin-left: -4px;
 }
 
+.btn.btn-rounded.action.viewAction > i {
+  margin-left: -2px;
+}
+
 /* Data Package Item */
 .data-package-item {
   height: 38px;
@@ -9588,4 +9592,20 @@ body > #extension-is-installed {
 /* Tooltip */
 .data-package-file-table div.tooltip {
   white-space: wrap;
+}
+
+/******************************************
+** BioOntology Select View **
+******************************************/
+
+/* overrides to the bootstrap modal CSS */
+.bioontology-select-modal {
+  .modal-body {
+    max-height: 90vh;
+  }
+  .close {
+    position: absolute;
+    right: 9px;
+    top: 3px;
+  }
 }

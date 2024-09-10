@@ -106,6 +106,11 @@ define([
        * especially when there was an error.
        * @property {boolean} [hideInLayerList = false] Set to true to hide this asset
        * from the layer list.
+       * @property {boolean} [showOpacitySlider = true] Set to true to show opacity slider
+       * for the layer.
+       * @property {"showDetails"|"zoom"} [clickFeatureAction = null] The action to take when a user clicks on a feature on the layer. The
+       * available options are "showDetails" (show the feature details in the
+       * sidebar) or "zoom" (zoom to the feature's location).
        */
       defaults() {
         return {
@@ -130,6 +135,8 @@ define([
           status: null,
           statusDetails: null,
           hideInLayerList: false,
+          showOpacitySlider: true,
+          clickFeatureAction: null,
         };
       },
 

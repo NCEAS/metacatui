@@ -13,6 +13,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
    * @constructor
    * @since 2.14.0
    * @screenshot views/searchSelect/AnnotationFilterView.png
+   * @deprecated since 2.30.0
    */
   return Backbone.View.extend(
     /** @lends AnnotationFilterView.prototype */
@@ -59,7 +60,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
        * @type {boolean}
        * @since 2.22.0
        */
-      useSearchableSelect: false,
+      useSearchSelect: false,
 
       /**
        * The acronym of the ontology or ontologies to render a tree from.
@@ -132,7 +133,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
 
           var view = this;
 
-          if (view.multiselect || view.useSearchableSelect) {
+          if (view.multiselect || view.useSearchSelect) {
             view.createMultiselect();
           } else {
             view.setUpTree();
@@ -198,10 +199,10 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
         try {
           var view = this;
 
-          require(["views/searchSelect/SearchableSelectView"], function (
-            SearchableSelect,
+          require(["views/searchSelect/SearchSelectView"], function (
+            SearchSelect,
           ) {
-            view.multiSelectView = new SearchableSelect({
+            view.multiSelectView = new SearchSelect({
               placeholderText: view.placeholderText
                 ? view.placeholderText
                 : "Search for or select a value",
@@ -220,7 +221,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
               view.updateMultiselect.call(view);
             }
 
-            //Forward the separatorChanged event from the SearchableSelectView to this AnnotationFilterView
+            //Forward the separatorChanged event from the SearchSelectView to this AnnotationFilterView
             //(perhaps this view should have been a subclass?)
             view.multiSelectView.on("separatorChanged", (separatorText) => {
               view.trigger("separatorChanged", separatorText);
@@ -235,7 +236,7 @@ define(["jquery", "underscore", "backbone", "bioportal"], function (
       },
 
       /**
-       * updateMultiselect - Functions to run once a SearchableSelect view has
+       * updateMultiselect - Functions to run once a SearchSelect view has
        * been rendered and inserted into this view, and the labels for any
        * pre-selected annotation values have been fetched. Updates the
        * hidden menu of items and the selected items.

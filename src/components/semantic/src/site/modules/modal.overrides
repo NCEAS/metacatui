@@ -1,0 +1,14 @@
+/*******************************
+         Site Overrides
+*******************************/
+
+.ui.modal{
+  left: unset;
+  top: unset;
+}
+
+.ui.modal > .close {
+  top:0;
+  right:0;
+  z-index:2;
+}

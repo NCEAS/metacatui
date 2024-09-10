@@ -1,120 +1,78 @@
-define([
-  "jquery",
-  "underscore",
-  "backbone",
-  "views/searchSelect/SearchableSelectView",
-  "collections/ObjectFormats",
-], function ($, _, Backbone, SearchableSelect, ObjectFormats) {
+define(["views/searchSelect/SearchSelectView", "collections/ObjectFormats"], (
+  SearchSelect,
+  ObjectFormats,
+) => {
   /**
    * @class ObjectFormatSelect
    * @classdesc A select interface that allows the user to search for and
    * select a DataONE object format
    * @classcategory Views/SearchSelect
-   * @extends SearchableSelect
-   * @constructor
+   * @augments SearchSelect
+   * @class
    * @since 2.15.0
    * @screenshot views/searchSelect/ObjectFormatSelectView.png
    */
-  var ObjectFormatSelect = SearchableSelect.extend(
+  const ObjectFormatSelect = SearchSelect.extend(
     /** @lends ObjectFormatSelectView.prototype */
     {
-      /**
-       * The type of View this is
-       * @type {string}
-       */
+      /** @inheritdoc */
       type: "ObjectFormatSelect",
 
-      /**
-       * className - Returns the class names for this view element
-       *
-       * @return {string}  class names
-       */
-      className: SearchableSelect.prototype.className + " object-format-select",
+      /** @inheritdoc */
+      className: `${SearchSelect.prototype.className} object-format-select`,
+
+      /** @inheritdoc */
+      initialize(options = {}) {
+        const opts = {
+          inputLabel: "Select one or more metadata types",
+          placeholderText: "Type in a metadata type",
+          allowMulti: true,
+          allowAdditions: true,
+          ...options,
+        };
+
+        SearchSelect.prototype.initialize.call(this, opts);
+        this.getObjectFormats();
+      },
 
       /**
-       * Label for the input element
-       * @type {string}
-       * @since 2.15.0
+       * Fetch the object formats from the DataONE API and update the
+       * select options on the model
+       * @since 2.31.0
        */
-      inputLabel: "Select one or more metadata types",
+      getObjectFormats() {
+        const view = this;
+        // Ensure the object formats are cached
+        if (!MetacatUI.objectFormats)
+          MetacatUI.objectFormats = new ObjectFormats();
 
-      /**
-       * Text to show in the input field before any value has been entered
-       * @type {string}
-       * @since 2.15.0
-       */
-      placeholderText: "Type in a metadata type",
+        // eslint-disable-next-line no-underscore-dangle
+        const events = MetacatUI.objectFormats._events;
 
-      /**
-       * Whether to allow users to select more than one value
-       * @type {boolean}
-       * @since 2.15.0
-       */
-      allowMulti: true,
-
-      /**
-       * Setting to true gives users the ability to add their own options that
-       * are not listed in this.options. This can work with either single
-       * or multiple search select dropdowns
-       * @type {boolean}
-       * @default true
-       * @since 2.15.0
-       */
-      allowAdditions: true,
-
-      /**
-       * Render the view
-       *
-       * @return {ObjectFormatSelect}  Returns the view
-       * @since 2.15.0
-       */
-      render: function () {
-        try {
-          var view = this;
-
-          // Ensure the object formats are cached
-          if (typeof MetacatUI.objectFormats === "undefined") {
-            MetacatUI.objectFormats = new ObjectFormats();
-          }
-
-          // If not already synced, then get the object formats
-          if (
-            MetacatUI.objectFormats.length === 0 &&
-            !(
-              MetacatUI.objectFormats._events &&
-              MetacatUI.objectFormats._events.sync
-            )
-          ) {
-            this.listenToOnce(
-              MetacatUI.objectFormats,
-              "sync error",
-              view.render,
-            );
-            MetacatUI.objectFormats.fetch();
-            return;
-          }
-
-          var formatIds = MetacatUI.objectFormats.toJSON();
-          var options = _.chain(formatIds)
-            // Since the Query Rules automatically include a rule for formatType =
-            // "METADATA", only allow filtering datasets by specific metadata type.
-            .where({ formatType: "METADATA" })
-            .map(function (format) {
-              return {
-                label: format.formatName,
-                value: format.formatId,
-                description: format.formatId,
-              };
-            })
-            .value();
-
-          this.options = options;
-
-          SearchableSelect.prototype.render.call(view);
-        } catch (error) {
-          console.log("Error rendering an Object Format Select View.");
-          console.log(error);
+        if (!MetacatUI.objectFormats.length && !(events && events.sync)) {
+          view.listenToOnce(
+            MetacatUI.objectFormats,
+            "sync error",
+            view.getObjectFormats,
+          );
+          MetacatUI.objectFormats.fetch();
+          return;
         }
+
+        const formatIds = MetacatUI.objectFormats.toJSON();
+
+        const options = formatIds
+          // Query Rules automatically include a rule for formatType="METADATA"
+          // so subset to only METADATA formats
+          .filter((format) => format.formatType === "METADATA")
+          // Reformat for a SearchSelect
+          .map((format) => ({
+            label: format.formatName,
+            value: format.formatId,
+            description: format.formatId,
+          }));
+
+        view.updateOptions(options);
       },
     },
   );

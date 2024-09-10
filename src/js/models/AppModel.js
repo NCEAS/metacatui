@@ -2101,9 +2101,17 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           /**
            * The Bioportal REST API URL, which is set dynamically only if a bioportalAPIKey is configured
            * @type {string}
-           * @default "https://data.bioontology.org/search"
+           * @deprecated since 2.31.0
            */
           bioportalSearchUrl: "https://data.bioontology.org/search",
+          /**
+           * The Bioportal REST API URL, which is used for looking up ontology information
+           * @see {@link https://data.bioontology.org/documentation}
+           * @type {string}
+           * @default "https://data.bioontology.org"
+           * @since 2.31.0
+           */
+          bioportalApiBaseUrl: "https://data.bioontology.org",
           /**
            * This attribute stores cache of ontology information that is looked up in Bioportal, so that duplicate REST calls don't need to be made.
            * @type {object}
@@ -2114,6 +2122,73 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @type {boolean}
            */
           showAnnotationIndicator: false,
+
+          /**
+           * The list of Bioportal ontologies that are available for searching &
+           * labeling data in the repository. These are the ontologies that will
+           * be displayed in the bioontology browser, and the ontologies that a
+           * user can search within when querying data with the sem_annotation
+           * field. Set a subTree property to limit the ontology to a particular
+           * class. For the full list of possible ontologies, see the Bioportal
+           * website: https://bioportal.bioontology.org/ontologies
+           * @type {Array.<{label: string, ontology: string, subTree: string, icon: string}>}
+           * @since 2.31.0
+           */
+          bioportalOntologies: [
+            {
+              label: "The Ecosystem Ontology",
+              ontology: "ECSO",
+              icon: "leaf",
+            },
+            {
+              label: "Sensitive Data",
+              ontology: "SENSO",
+              icon: "lock",
+            },
+            {
+              label: "Salmon",
+              ontology: "SALMON",
+              icon: "anchor",
+            },
+            {
+              label: "Arctic Report Card",
+              ontology: "ARCRC",
+              icon: "asterisk",
+            },
+            {
+              label: "ADC Academic Disciplines",
+              ontology: "ADCAD",
+              icon: "briefcase",
+            },
+            {
+              label: "MOSAiC",
+              ontology: "MOSAIC",
+              icon: "barcode",
+            },
+            {
+              label: "NCBI Organismal Classification",
+              ontology: "NCBITAXON",
+            },
+            {
+              label: "The State of Alaska's Salmon and People",
+              ontology: "SASAP",
+              icon: "group",
+            },
+            {
+              label: "Chemical Entities of Biological Interest",
+              ontology: "CHEBI",
+              icon: "beaker",
+            },
+            {
+              label: "Scientific Workflow Provenance",
+              ontology: "ProvONE",
+              icon: "code",
+            },
+            {
+              label: "Extensible Observation Ontology",
+              ontology: "OBOE",
+            },
+          ],
 
           /**
            * A list of unsupported User-Agent regular expressions for browsers that will not work well with MetacatUI.

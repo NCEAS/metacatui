@@ -34,8 +34,18 @@
 
   <!-- actions cell -->
   <td class="file-actions">
+    <!-- display links for nested data package headers in actions view-->
+    <!-- disabled for regular datasets -->
+    <% if (!disablePackageUrl && packageUrl !== undefined && packageUrl) { %>
+        <span class="action" data-id="<%= id %>">
+            <a href="<%= packageUrl %>" target="_" class="btn btn-rounded action viewAction" title="View this package">
+                <i class="icon icon-large icon-external-link"></i>
+            </a>
+        </span>
+    <% } %>
+
     <% if (!disablePackageDownloads) { %>
-      <span class="action downloadAction"></span>
+      <span class="action downloadAction" data-id="<%= id %>"></span>
     <% } %>
   </td>
 
