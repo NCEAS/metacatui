@@ -4,12 +4,20 @@ define([
   "backbone",
   "markdownTableFromJson",
   "markdownTableToJson",
+  "papaParse",
   "text!templates/tableEditor.html",
-], (_, $, Backbone, markdownTableFromJson, markdownTableToJson, Template) => {
+], (
+  _,
+  $,
+  Backbone,
+  markdownTableFromJson,
+  markdownTableToJson,
+  PapaParse,
+  Template,
+) => {
   // a utility function to check if a value is empty for sorting
   const valIsEmpty = (x) =>
     x === "" || x === undefined || x === null || Number.isNaN(x);
-
   /**
    * @class TableEditorView
    * @classdesc A view of an HTML textarea with markdown editor UI and preview
@@ -95,6 +103,7 @@ define([
        * @param {object} options - A literal object with options to pass to the
        * view
        * @param {string} options.markdown - A markdown table to edit.
+       * @param {string} options.csv - A CSV table to edit.
        * @param {string} options.tableData - The table data as a stringified
        * JSON in the form of an array of arrays. Only used if markdown is not
        * provided.
@@ -123,15 +132,40 @@ define([
         // If initalized with markdown, convert to JSON and use as table data
         // Parse the table string into a javascript object so that we can pass
         // it into the table editor view to be edited by the user.
-        if (this.markdown && this.markdown.length > 0) {
-          const tableArray = this.getJSONfromMarkdown(this.markdown);
-          if (tableArray && Array.isArray(tableArray) && tableArray.length) {
-            this.saveData(tableArray);
-            this.createSpreadsheet();
-            // Add the column that we use for row numbers in the editor
-            this.addColumn(0, "left");
-          }
+        if (this.markdown?.length) {
+          this.renderFromMarkdown(this.markdown);
+        } else if (this.csv?.length) {
+          this.renderFromCSV(this.csv);
         } else {
+          // defaults to empty table
+          this.createSpreadsheet();
+        }
+      },
+
+      /**
+       * Show the table from a configured markdown string
+       * @param {string} markdown - The markdown string to render as a table
+       * @since 0.0.0
+       */
+      renderFromMarkdown(markdown) {
+        const tableArray = this.getJSONfromMarkdown(markdown);
+        if (tableArray && Array.isArray(tableArray) && tableArray.length) {
+          this.saveData(tableArray);
+          this.createSpreadsheet();
+          // Add the column that we use for row numbers in the editor
+          this.addColumn(0, "left");
+        }
+      },
+
+      /**
+       * Show the table from a configured CSV file
+       * @param {string} csv - The CSV string to render as a table
+       * @since 0.0.0
+       */
+      renderFromCSV(csv) {
+        const tableArray = this.getJSONfromCSV(csv);
+        if (tableArray && Array.isArray(tableArray) && tableArray.length) {
+          this.saveData(tableArray);
           this.createSpreadsheet();
         }
       },
@@ -554,7 +588,7 @@ define([
       /**
        * Converts a given markdown table string to JSON.
        * @param  {string} markdown description
-       * @returns {Array}          The markdown table as an array of arrays,
+       * @returns {Array} The markdown table as an array of arrays,
        * where the header is the first array and each row is an array that
        * follows.
        */
@@ -564,6 +598,18 @@ define([
         // TODO: Add alignment information to the view, returned as
         // parsedMarkdown.align
         return parsedMarkdown.table;
+      },
+
+      /**
+       * Converts data to an array of arrays from a CSV
+       * @param  {string} csv The table data as a CSV string
+       * @returns {string} The table data as a CSV string
+       * @since 0.0.0
+       */
+      getJSONfromCSV(csv) {
+        const parsedCSV = PapaParse.parse(csv);
+        if (!parsedCSV) return null;
+        return parsedCSV.data;
       },
 
       /**
