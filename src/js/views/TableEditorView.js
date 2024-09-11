@@ -15,6 +15,11 @@ define([
   PapaParse,
   Template,
 ) => {
+  // Classes used for elements we will manipulate
+  const CLASS_NAMES = {
+    button: "dropbtn",
+    controls: "spreadsheet-controls",
+  };
   // a utility function to check if a value is empty for sorting
   const valIsEmpty = (x) =>
     x === "" || x === undefined || x === null || Number.isNaN(x);
@@ -102,15 +107,16 @@ define([
        * @constructs TableEditorView
        * @param {object} options - A literal object with options to pass to the
        * view
-       * @param {string} options.markdown - A markdown table to edit.
-       * @param {string} options.csv - A CSV table to edit.
-       * @param {string} options.tableData - The table data as a stringified
+       * @param {string} [options.markdown] - A markdown table to edit.
+       * @param {string} [options.csv] - A CSV table to edit.
+       * @param {string} [options.tableData] - The table data as a stringified
        * JSON in the form of an array of arrays. Only used if markdown is not
        * provided.
+       * @param {boolean} [options.viewMode] - Set this to true to inactivate
+       * editing of the table.
        */
       initialize(options = {}) {
         const mergedOptions = { ...this.defaults, ...options };
-
         Object.keys(mergedOptions).forEach((key) => {
           this[key] = mergedOptions[key];
         });
@@ -125,6 +131,7 @@ define([
           .html(
             this.template({
               cid: this.cid,
+              controlsClass: CLASS_NAMES.controls,
             }),
           )
           .data("view", this);
@@ -139,6 +146,10 @@ define([
         } else {
           // defaults to empty table
           this.createSpreadsheet();
+        }
+
+        if (this.viewMode) {
+          this.deactivateEditing();
         }
       },
 
@@ -197,6 +208,20 @@ define([
         this.createTableBody(tableBody, this.rowCount, this.colCount);
 
         this.populateTable();
+      },
+
+      /**
+       * Turn off functionality that allows the user to edit the table values,
+       * add or remove rows or columns.
+       */
+      deactivateEditing() {
+        const tableCells = this.el.querySelectorAll("td, th > span");
+        const menuButtons = this.el.querySelectorAll(`.${CLASS_NAMES.button}`);
+        const controls = this.el.querySelectorAll(`.${CLASS_NAMES.controls}`);
+
+        tableCells.forEach((td) => (td.contentEditable = false));
+        menuButtons.forEach((btn) => (btn.style.display = "none"));
+        controls.forEach((control) => (control.style.display = "none"));
       },
 
       /**
@@ -324,7 +349,7 @@ define([
             const dropDownDiv = document.createElement("div");
             dropDownDiv.setAttribute("class", "dropdown");
             dropDownDiv.innerHTML = `
-            <button class="dropbtn" id="col-dropbtn-${i}">
+            <button class="${CLASS_NAMES.button}" id="col-dropbtn-${i}">
               <i class="icon pointer icon-caret-down"></i>
             </button>
               <div id="col-dropdown-${i}" class="dropdown-content">
