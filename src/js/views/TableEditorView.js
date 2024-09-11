@@ -19,6 +19,9 @@ define([
   const CLASS_NAMES = {
     button: "dropbtn",
     controls: "spreadsheet-controls",
+    colOption: "col-dropdown-option",
+    sortButton: "col-sort",
+    rowHeader: "row-header",
   };
   // a utility function to check if a value is empty for sorting
   const valIsEmpty = (x) =>
@@ -147,10 +150,6 @@ define([
           // defaults to empty table
           this.createSpreadsheet();
         }
-
-        if (this.viewMode) {
-          this.deactivateEditing();
-        }
       },
 
       /**
@@ -208,6 +207,11 @@ define([
         this.createTableBody(tableBody, this.rowCount, this.colCount);
 
         this.populateTable();
+
+        // If in view mode, remove editing functionality
+        if (this.viewMode) {
+          this.deactivateEditing();
+        }
       },
 
       /**
@@ -216,12 +220,26 @@ define([
        */
       deactivateEditing() {
         const tableCells = this.el.querySelectorAll("td, th > span");
-        const menuButtons = this.el.querySelectorAll(`.${CLASS_NAMES.button}`);
         const controls = this.el.querySelectorAll(`.${CLASS_NAMES.controls}`);
 
-        tableCells.forEach((td) => (td.contentEditable = false));
-        menuButtons.forEach((btn) => (btn.style.display = "none"));
-        controls.forEach((control) => (control.style.display = "none"));
+        tableCells.forEach((td) => td.setAttribute("contentEditable", "false"));
+        controls.forEach((control) =>
+          control.style.setProperty("display", "none"),
+        );
+
+        // Hide every button except the sort button in the columns
+        this.el
+          .querySelectorAll(
+            `.${CLASS_NAMES.colOption}:not(.${CLASS_NAMES.sortButton})`,
+          )
+          .forEach((btn) => {
+            btn.style.setProperty("display", "none");
+          });
+
+        // Hide row controls
+        this.$el
+          .find(`.${CLASS_NAMES.rowHeader} .${CLASS_NAMES.button}`)
+          .hide();
       },
 
       /**
@@ -353,10 +371,10 @@ define([
               <i class="icon pointer icon-caret-down"></i>
             </button>
               <div id="col-dropdown-${i}" class="dropdown-content">
-                <button class="col-dropdown-option col-insert-left"><i class="icon icon-long-arrow-left icon-on-left"></i>Insert 1 column left</button>
-                <button class="col-dropdown-option col-insert-right"><i class="icon icon-long-arrow-right icon-on-left"></i>Insert 1 column right</button>
-                <button class="col-dropdown-option col-sort"><i class="icon icon-sort-by-attributes icon-on-left"></i>Sort column</button>
-                <button class="col-dropdown-option col-delete"><i class="icon icon-remove icon-on-left"></i>Delete column</button>
+                <button class="${CLASS_NAMES.colOption} col-insert-left"><i class="icon icon-long-arrow-left icon-on-left"></i>Insert 1 column left</button>
+                <button class="${CLASS_NAMES.colOption} col-insert-right"><i class="icon icon-long-arrow-right icon-on-left"></i>Insert 1 column right</button>
+                <button class="${CLASS_NAMES.colOption} ${CLASS_NAMES.sortButton}"><i class="icon icon-sort-by-attributes icon-on-left"></i>Sort column</button>
+                <button class="${CLASS_NAMES.colOption} col-delete"><i class="icon icon-remove icon-on-left"></i>Delete column</button>
               </div>
             `;
             th.appendChild(span);
@@ -397,7 +415,7 @@ define([
             `;
             cell.appendChild(span);
             cell.appendChild(dropDownDiv);
-            cell.setAttribute("class", "row-header");
+            cell.setAttribute("class", CLASS_NAMES.rowHeader);
           } else {
             cell.contentEditable = true;
           }
@@ -690,14 +708,14 @@ define([
             document
               .getElementById(`col-dropdown-${idArr[2]}`)
               .classList.toggle("show");
-          } else if (classes.contains("col-dropdown-option")) {
+          } else if (classes.contains(CLASS_NAMES.colOption)) {
             const index = e.target.parentNode.id.split("-")[2];
 
             if (classes.contains("col-insert-left")) {
               view.addColumn(index, "left");
             } else if (classes.contains("col-insert-right")) {
               view.addColumn(index, "right");
-            } else if (classes.contains("col-sort")) {
+            } else if (classes.contains(CLASS_NAMES.sortButton)) {
               view.sortColumn(index);
             } else if (classes.contains("col-delete")) {
               view.deleteColumn(index);
