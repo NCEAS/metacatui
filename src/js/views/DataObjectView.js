@@ -12,9 +12,12 @@ define([
   const CLASS_NAMES = {
     base: BASE_CLASS,
     well: "well", // Bootstrap class
+    downloadButton: ["btn", "download"],
+    downloadIcon: ["icon", "icon-cloud-download"],
   };
 
   // User-facing text
+  const DOWNLOAD_BUTTON_TEXT = "Download";
   const LOADING_MESSAGE = "Loading data...";
   const ERROR_TITLE = "Uh oh 😕";
   const ERROR_MESSAGE =
@@ -59,9 +62,12 @@ define([
        * Initializes the DataObjectView
        * @param {object} options - Options for the view
        * @param {SolrResult} options.model - A SolrResult model
+       * @param {Element} [options.buttonContainer] - The container for the
+       * download button (defaults to the view's element)
        */
       initialize(options) {
         this.model = options.model;
+        this.buttonContainer = options.buttonContainer || this.el;
         // TODO: We get format from the response headers, should we compare it,
         // or prevent downloading the object if it's not a supported type?
         // this.format = this.model.get("formatId") ||
@@ -73,7 +79,7 @@ define([
         this.$el.empty();
         this.showLoading();
         this.downloadObject()
-          .then((response) => this.renderObject(response))
+          .then((response) => this.handleResponse(response))
           .catch((error) => this.showError(error?.message || error));
         return this;
       },
@@ -114,6 +120,25 @@ define([
       },
 
       /**
+       * Handle the response from the DataONE object API. Renders the data and
+       * shows the download button if the response is successful.
+       * @param {Response} response - The response from the DataONE object API
+       */
+      handleResponse(response) {
+        if (response.ok) {
+          this.hideLoading();
+          this.$el.html("");
+          // Response can only be consumed once (e.g. to text), so keep a copy
+          // to convert to a blob for downloading if user requests it.
+          this.response = response.clone();
+          this.renderObject(response);
+          this.renderDownloadButton();
+        } else {
+          this.showError(response.statusText);
+        }
+      },
+
+      /**
        * With the already fetched DataONE object, check the format and render
        * the object accordingly.
        * @param {Response} response - The response from the DataONE object API
@@ -121,7 +146,6 @@ define([
       renderObject(response) {
         try {
           this.hideLoading();
-          this.response = response;
           const format = response.headers.get("Content-Type");
           if (format === "text/csv") {
             response.text().then((text) => {
@@ -132,6 +156,23 @@ define([
         } catch (error) {
           this.showError(error?.message || error);
         }
+      },
+
+      /** Renders a download button */
+      renderDownloadButton() {
+        const view = this;
+        const downloadButton = document.createElement("a");
+        downloadButton.textContent = DOWNLOAD_BUTTON_TEXT;
+        downloadButton.classList.add(...CLASS_NAMES.downloadButton);
+        const icon = document.createElement("i");
+        icon.classList.add(...CLASS_NAMES.downloadIcon);
+        downloadButton.appendChild(icon);
+        downloadButton.onclick = (e) => {
+          e.preventDefault();
+          const response = view.response.clone();
+          view.model.downloadFromResposne(response);
+        };
+        this.buttonContainer.appendChild(downloadButton);
       },
 
       /**
@@ -148,7 +189,6 @@ define([
           viewMode: true,
           csv: this.csv,
         });
-        this.el.innerHTML = "";
         this.el.appendChild(this.table.render().el);
       },
     },

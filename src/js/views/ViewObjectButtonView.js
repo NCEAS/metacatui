@@ -8,7 +8,8 @@ define(["jquery", "backbone", "views/DataObjectView"], (
   // The base class for the view
   const BASE_CLASS = "view-data-button";
   const CLASS_NAMES = {
-    button: [BASE_CLASS, "btn"],
+    base: [BASE_CLASS, "btn"],
+    button: ["btn"],
     icon: ["icon", "icon-eye-open"],
     modal: ["modal", "hide", "fade", "full-screen"],
     header: ["modal-header"],
@@ -17,6 +18,7 @@ define(["jquery", "backbone", "views/DataObjectView"], (
     footer: ["modal-footer"],
   };
   const BUTTON_TEXT = "View";
+  const CLOSE_BUTTON_TEXT = "Close";
 
   /**
    * @class ViewDataButtonView
@@ -35,7 +37,7 @@ define(["jquery", "backbone", "views/DataObjectView"], (
       type: "ViewDataButtonView",
 
       /** @inheritdoc */
-      className: CLASS_NAMES.button.join(" "),
+      className: CLASS_NAMES.base.join(" "),
 
       /** @inheritdoc */
       tagName: "a",
@@ -62,7 +64,9 @@ define(["jquery", "backbone", "views/DataObjectView"], (
             <div class="${CLASS_NAMES.body.join(" ")}">
               <p>loading...</p>
             </div>
-            <div class="${CLASS_NAMES.footer.join(" ")}"></div>
+            <div class="${CLASS_NAMES.footer.join(" ")}">
+              <button class="${CLASS_NAMES.button.join(" ")}" data-dismiss="modal" aria-hidden="true">${CLOSE_BUTTON_TEXT}</button>
+            </div>
           </div>`;
       },
 
@@ -94,8 +98,10 @@ define(["jquery", "backbone", "views/DataObjectView"], (
         });
         const modal = $(modalHTML).modal();
         const modalBody = modal.find(`.${CLASS_NAMES.body.join(".")}`);
+        const modalFooter = modal.find(`.${CLASS_NAMES.footer.join(".")}`)[0];
         const objectView = new DataObjectView({
           model: this.model,
+          buttonContainer: modalFooter
         });
         modalBody.empty();
         modalBody.append(objectView.render().el);

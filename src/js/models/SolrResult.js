@@ -283,34 +283,10 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * request.
        */
       async downloadWithCredentials() {
-        const model = this;
-
         // Call the new getBlob method and handle the response
-        const response = await this.fetchDataObjectWithCredentials();
-        const blob = await response.blob();
-        const filename = this.getFileNameFromResponse(response);
-
-        // For IE, we need to use the navigator API
-        if (navigator && navigator.msSaveOrOpenBlob) {
-          navigator.msSaveOrOpenBlob(blob, filename);
-        } else {
-          // Other browsers can download it via a link
-          const a = document.createElement("a");
-          a.href = window.URL.createObjectURL(blob);
-          a.download = filename;
-          a.style.display = "none";
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-        }
-
-        // Track this event
-        model.trigger("downloadComplete");
-        MetacatUI.analytics?.trackEvent(
-          "download",
-          "Download DataONEObject",
-          model.get("id"),
-        );
+        this.fetchDataObjectWithCredentials()
+          .then((response) => this.downloadFromResposne(response))
+          .catch((error) => this.handleDownloadError(error));
       },
 
       /**
@@ -368,6 +344,55 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
         }
         filename = filename.trim().replace(/ /g, "_");
         return filename;
+      },
+
+      /**
+       * Download data onto the user's computer from the response object
+       * @param {Response} response - The response object from the fetch request
+       * @since 0.0.0
+       */
+      async downloadFromResposne(response) {
+        const model = this;
+        const blob = await response.blob();
+        const filename = this.getFileNameFromResponse(response);
+
+        // For IE, we need to use the navigator API
+        if (navigator && navigator.msSaveOrOpenBlob) {
+          navigator.msSaveOrOpenBlob(blob, filename);
+        } else {
+          // Other browsers can download it via a link
+          const a = document.createElement("a");
+          const url = URL.createObjectURL(blob);
+          a.href = url;
+          a.download = filename;
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        }
+
+        // Track this event
+        model.trigger("downloadComplete");
+        MetacatUI.analytics?.trackEvent(
+          "download",
+          "Download DataONEObject",
+          model.get("id"),
+        );
+      },
+
+      /**
+       * Handle an error that occurs when downloading the object
+       * @param {Error} e - The error that occurred
+       * @since 0.0.0
+       */
+      handleDownloadError(e) {
+        const model = this;
+        model.trigger("downloadError");
+        // Track the error
+        MetacatUI.analytics?.trackException(
+          `Download DataONEObject error: ${e || ""}`,
+          model.get("id"),
+          true,
+        );
       },
 
       getInfo: function (fields) {

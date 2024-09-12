@@ -9665,4 +9665,10 @@ body > #extension-is-installed {
   > .alert-container {
     margin: 3rem;
   }
+  > .btn.download {
+    grid-row: 2;
+    justify-self: right;
+    margin-right: 1rem;
+    margin-top: 1rem;
+  }
 }
