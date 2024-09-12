@@ -1,8 +1,25 @@
 "use strict";
 
-define(["backbone", "views/TableEditorView"], (Backbone, TableEditorView) => {
-  // The base class for the view
+define([
+  "underscore",
+  "backbone",
+  "views/TableEditorView",
+  "text!templates/loading.html",
+  "text!templates/alert.html",
+], (_, Backbone, TableEditorView, LoadingTemplate, AlertTemplate) => {
+  // The classes used by this view
   const BASE_CLASS = "object-view";
+  const CLASS_NAMES = {
+    base: BASE_CLASS,
+    well: "well", // Bootstrap class
+  };
+
+  // User-facing text
+  const LOADING_MESSAGE = "Loading data...";
+  const ERROR_TITLE = "Uh oh 😕";
+  const ERROR_MESSAGE =
+    "There was an error displaying the object. Please try again later or send us an email.";
+  const MORE_DETAILS_PREFIX = "More details: ";
 
   /**
    * @class DataObjectView
@@ -21,10 +38,22 @@ define(["backbone", "views/TableEditorView"], (Backbone, TableEditorView) => {
       type: "DataObjectView",
 
       /** @inheritdoc */
-      className: BASE_CLASS,
+      className: CLASS_NAMES.base,
 
       /** @inheritdoc */
       tagName: "div",
+
+      /**
+       * The template for the loading spinner
+       * @type {UnderscoreTemplate}
+       */
+      loadingTemplate: _.template(LoadingTemplate),
+
+      /**
+       * The template for the alert message
+       * @type {UnderscoreTemplate}
+       */
+      alertTemplate: _.template(AlertTemplate),
 
       /**
        * Initializes the DataObjectView
@@ -42,8 +71,46 @@ define(["backbone", "views/TableEditorView"], (Backbone, TableEditorView) => {
       /** @inheritdoc */
       render() {
         this.$el.empty();
-        this.downloadObject().then((response) => this.renderObject(response));
+        this.showLoading();
+        this.downloadObject()
+          .then((response) => this.renderObject(response))
+          .catch((error) => this.showError(error?.message || error));
         return this;
+      },
+
+      /** Indicate that the data is loading */
+      showLoading() {
+        this.$el.html(
+          this.loadingTemplate({
+            msg: LOADING_MESSAGE,
+          }),
+        );
+        this.el.classList.add(CLASS_NAMES.well);
+      },
+
+      /** Remove the loading spinner */
+      hideLoading() {
+        this.el.classList.remove(CLASS_NAMES.well);
+      },
+
+      /**
+       * Display an error message to the user
+       * @param {string} message - The error message to display
+       */
+      showError(message) {
+        this.hideLoading();
+        const alertTitle = `<center><h3>${ERROR_TITLE}</h3></center>`;
+        let alertMessage = alertTitle + ERROR_MESSAGE;
+        if (message) {
+          alertMessage += `<br><br>${MORE_DETAILS_PREFIX}${message}`;
+        }
+        this.$el.html(
+          this.alertTemplate({
+            includeEmail: true,
+            msg: alertMessage,
+            remove: false,
+          }),
+        );
       },
 
       /**
@@ -52,12 +119,18 @@ define(["backbone", "views/TableEditorView"], (Backbone, TableEditorView) => {
        * @param {Response} response - The response from the DataONE object API
        */
       renderObject(response) {
-        const format = response.headers.get("Content-Type");
-        if (format === "text/csv") {
-          response.text().then((text) => {
-            this.csv = text;
-            this.showTable();
-          });
+        try {
+          this.hideLoading();
+          this.response = response;
+          const format = response.headers.get("Content-Type");
+          if (format === "text/csv") {
+            response.text().then((text) => {
+              this.csv = text;
+              this.showTable();
+            });
+          }
+        } catch (error) {
+          this.showError(error?.message || error);
         }
       },
 

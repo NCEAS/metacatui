@@ -2625,7 +2625,7 @@ section#user-citations {
   display: flex;
   flex-wrap: wrap;
 
-  >a:not(:first-child) {
+  > a:not(:first-child) {
     margin-left: 0.7rem;
   }
 }
@@ -9651,10 +9651,18 @@ body > #extension-is-installed {
   }
 }
 
-
 /******************************************
 ** Data Object View **
 ******************************************/
 .object-view {
   height: 100%;
+  display: grid;
+  align-items: center;
+  > .notification {
+    font-size: 1.6rem;
+    margin: 3rem;
+  }
+  > .alert-container {
+    margin: 3rem;
+  }
 }
