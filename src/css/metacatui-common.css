@@ -3509,8 +3509,22 @@ add font awesome close icon */
 * Table Editor View
 ********************************************/
 
+.table-editor {
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 1rem;
+}
+
 .table-editor .spreadsheet {
-  margin: 1rem 2rem 2rem 0.5rem;
+  margin: 1rem 0 0.5rem 0;
+  width: 100%;
+  max-width: 90vw;
+  height: 100%;
+  overflow: scroll;
+  border: 1px solid #ddd;
+  box-sizing: border-box;
+  border-radius: 5px;
 }
 
 .table-editor .table {
@@ -3622,10 +3636,6 @@ add font awesome close icon */
   margin-left: 0;
   line-height: 120%;
   color: #555;
-}
-
-.table-editor .spreadsheet-controls {
-  margin-left: 0.5rem;
 }
 
 /******************************************
@@ -9608,4 +9618,37 @@ body > #extension-is-installed {
     right: 9px;
     top: 3px;
   }
+}
+
+/******************************************
+** Full screen modal **
+******************************************/
+/* used for the DataObjectView in the ViewObjectButton View */
+
+.modal.full-screen {
+  display: flex;
+  flex-direction: column;
+  width: 90vw;
+  height: 90vh;
+  /* important needed to override the top: 10% from bootstrap */
+  top: 50% !important;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* to unset the absolute left margin from bootstrap */
+  margin-left: unset;
+
+  .modal-body {
+    /* Body takes up remaining space and allows scrolling */
+    flex: 1 1 auto;
+    /* bootstrap overwrite */
+    max-height: unset;
+  }
+}
+
+
+/******************************************
+** Data Object View **
+******************************************/
+.object-view {
+  height: 100%;
 }
