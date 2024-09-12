@@ -21,6 +21,7 @@ define([
   "views/citations/CitationModalView",
   "views/AnnotationView",
   "views/MarkdownView",
+  "views/ViewObjectButtonView",
   "text!templates/metadata/metadata.html",
   "text!templates/dataSource.html",
   "text!templates/publishDOI.html",
@@ -57,6 +58,7 @@ define([
   CitationModalView,
   AnnotationView,
   MarkdownView,
+  ViewObjectButtonView,
   MetadataTemplate,
   DataSourceTemplate,
   PublishDoiTemplate,
@@ -2711,11 +2713,6 @@ define([
             );
             const container = viewRef.findEntityDetailsContainer(objID);
 
-            const downloadButton = new DownloadButtonView({
-              model: solrResult,
-            });
-            downloadButton.render();
-
             // Insert the data display HTML and the anchor tag to mark this spot
             // on the page
             if (container) {
@@ -2763,14 +2760,9 @@ define([
               }
 
               $(container).prepend(anchor);
-
-              const nameLabel = $(container).find(
-                "label:contains('Entity Name')",
-              );
-              if (nameLabel.length) {
-                $(nameLabel).parent().after(downloadButton.el);
-              }
             }
+
+            this.renderDataInteractionButtons(solrResult, container);
           });
 
           //= === Initialize the fancybox images ===== We will be checking every
@@ -2838,6 +2830,40 @@ define([
             );
           }
         });
+      },
+
+      /**
+       * Insert the buttons to download and view the data object
+       * @param {SolrResult} solrResult - The SolrResult model for the object
+       * @param {Element} container - The DOM element that contains the object's
+       * metadata
+       * @since 0.0.0
+       */
+      renderDataInteractionButtons(solrResult, container) {
+        if (!solrResult || !container) return;
+        const buttonsContainer = document.createElement("div");
+        buttonsContainer.classList.add(
+          "control-group",
+          "data-interaction-buttons",
+        );
+        const nameLabel = $(container).find("label:contains('Entity Name')");
+        // Create a button to download the data object
+        const downloadButton = new DownloadButtonView({
+          model: solrResult,
+        });
+        downloadButton.render();
+        const viewButton = new ViewObjectButtonView({
+          model: solrResult,
+          modalContainer: this.$el,
+        });
+        viewButton.render();
+
+        $(buttonsContainer).append(downloadButton.el, viewButton.el);
+        if (nameLabel.length) {
+          $(nameLabel).parent().after(buttonsContainer);
+        } else {
+          $(container).prepend(buttonsContainer);
+        }
       },
 
       /** Remove ecogrid links and replace them with workable links */

@@ -2619,9 +2619,15 @@ section#user-citations {
 .entitydetails > .control-group {
   clear: both;
 }
-.entitydetails a.download {
+
+.data-interaction-buttons {
   margin-left: 180px;
-  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+
+  >a:not(:first-child) {
+    margin-left: 0.7rem;
+  }
 }
 .form-horizontal .entitydetails > label {
   text-align: left;
