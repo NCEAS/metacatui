@@ -297,7 +297,7 @@ define([
         downloadButton.onclick = (e) => {
           e.preventDefault();
           const response = view.response.clone();
-          view.model.downloadFromResposne(response);
+          view.model.downloadFromResponse(response);
         };
         this.buttonContainer.appendChild(downloadButton);
       },

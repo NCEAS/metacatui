@@ -281,11 +281,13 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
       /**
        * Download this object while sending the user's auth token in the
        * request.
+       * @returns {Promise} A promise that resolves to the response object
+       * @since 0.0.0
        */
       async downloadWithCredentials() {
         // Call the new getBlob method and handle the response
-        this.fetchDataObjectWithCredentials()
-          .then((response) => this.downloadFromResposne(response))
+        return this.fetchDataObjectWithCredentials()
+          .then((response) => this.downloadFromResponse(response))
           .catch((error) => this.handleDownloadError(error));
       },
 
@@ -349,9 +351,10 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
       /**
        * Download data onto the user's computer from the response object
        * @param {Response} response - The response object from the fetch request
+       * @returns {Response} The response object
        * @since 0.0.0
        */
-      async downloadFromResposne(response) {
+      async downloadFromResponse(response) {
         const model = this;
         const blob = await response.blob();
         const filename = this.getFileNameFromResponse(response);
@@ -377,6 +380,8 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           "Download DataONEObject",
           model.get("id"),
         );
+
+        return response;
       },
 
       /**
@@ -575,7 +580,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
             model.set("size", $(data).find("size").text() || "");
 
             //Get the entity name
-            model.set("filename", $(data).find("filename").text() || "");
+            model.set("fileName", $(data).find("filename").text() || "");
 
             //Check if this is a metadata doc
             var formatId = $(data).find("formatid").text() || "",
