@@ -6,6 +6,7 @@ define([
   "markdownTableToJson",
   "papaParse",
   "text!templates/tableEditor.html",
+  "text!templates/alert.html",
 ], (
   _,
   $,
@@ -14,6 +15,7 @@ define([
   markdownTableToJson,
   PapaParse,
   Template,
+  AlertTemplate,
 ) => {
   // Classes used for elements we will manipulate
   const CLASS_NAMES = {
@@ -26,6 +28,11 @@ define([
   // a utility function to check if a value is empty for sorting
   const valIsEmpty = (x) =>
     x === "" || x === undefined || x === null || Number.isNaN(x);
+  // Alert message for too many cells
+  const tooManyCellsMessage = (newRowCount, originalRowCount) =>
+    `<strong>Note:</strong> This table has been truncated to ${newRowCount} rows (from the original ${originalRowCount} rows) to prevent performance issues.`;
+  // The maximum number of cells allowed in the table
+  const NUM_CELL_LIMIT = 50000;
   /**
    * @class TableEditorView
    * @classdesc A view of an HTML textarea with markdown editor UI and preview
@@ -56,6 +63,13 @@ define([
        * @type {Underscore.Template}
        */
       template: _.template(Template),
+
+      /**
+       * The template for the alert message
+       * @type {Underscore.Template}
+       * @since 0.0.0
+       */
+      alertTemplate: _.template(AlertTemplate),
 
       /**
        * The current number of rows displayed in the spreadsheet, including the
@@ -188,6 +202,15 @@ define([
 
         this.rowCount = spreadsheetData.length - 1 || this.initialRowCount;
         this.colCount = spreadsheetData[0].length - 1 || this.initialColCount;
+
+        if (this.rowCount * this.colCount > NUM_CELL_LIMIT) {
+          const newRowCount = Math.ceil(NUM_CELL_LIMIT / this.colCount);
+          this.originalRowCount = this.rowCount;
+          this.rowCount = newRowCount;
+          this.showMessage(
+            tooManyCellsMessage(newRowCount, this.originalRowCount),
+          );
+        }
 
         const tableHeaderElement = this.$el.find(".table-headers")[0];
         const tableBodyElement = this.$el.find(".table-body")[0];
@@ -761,6 +784,36 @@ define([
           }
         }
         return firstColEmpty;
+      },
+
+      /**
+       * Display an alert at the top of the table
+       * @param {string} message The message to display
+       * @param {string} [type] The class to apply to the alert
+       * @param {boolean} [showEmail] Whether to show the email address
+       * @param {boolean} [triggerError] Set to true to trigger an error event
+       * on the view with the message
+       * @since 0.0.0
+       */
+      showMessage(
+        message,
+        type = "info",
+        showEmail = false,
+        triggerError = false,
+      ) {
+        if (this.alert) {
+          this.alert.remove();
+        }
+        this.alert = document.createElement("div");
+        this.alert.innerHTML = this.alertTemplate({
+          classes: `alert-${type}`,
+          msg: message,
+          includeEmail: showEmail,
+        });
+        this.el.prepend(this.alert);
+        if (triggerError) {
+          this.trigger("error", message);
+        }
       },
 
       /**
