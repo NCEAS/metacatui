@@ -79,8 +79,22 @@ define(["jquery", "backbone", "views/DataObjectView"], (
         this.modalContainer = options.modalContainer || document.body;
       },
 
+      /**
+       * @see DataObjectView#checkSizeAndFormat
+       * @returns {boolean} True if the object is a valid type and size
+       */
+      isValidSizeAndFormat() {
+        this.formatMap = DataObjectView.prototype.formatMap;
+        this.sizeLimit = DataObjectView.prototype.sizeLimit;
+        return DataObjectView.prototype.isValidSizeAndFormat.call(this);
+      },
+
       /** @inheritdoc */
       render() {
+        if (this.isValidSizeAndFormat() !== true) {
+          this.el.style.display = "none";
+          return this;
+        }
         this.el.innerHTML = BUTTON_TEXT;
         const icon = document.createElement("i");
         icon.classList.add(...CLASS_NAMES.icon);
@@ -101,7 +115,7 @@ define(["jquery", "backbone", "views/DataObjectView"], (
         const modalFooter = modal.find(`.${CLASS_NAMES.footer.join(".")}`)[0];
         const objectView = new DataObjectView({
           model: this.model,
-          buttonContainer: modalFooter
+          buttonContainer: modalFooter,
         });
         modalBody.empty();
         modalBody.append(objectView.render().el);

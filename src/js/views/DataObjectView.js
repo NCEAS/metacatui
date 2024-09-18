@@ -125,7 +125,7 @@ define([
 
         const supportedFormats = Object.values(this.formatMap).flat();
         const formatValid = supportedFormats.includes(format);
-        if (sizeValid && format) {
+        if (sizeValid && formatValid) {
           return true;
         }
         const errors = {};
