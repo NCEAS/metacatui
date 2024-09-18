@@ -22,12 +22,15 @@
              </tbody>
       </table>
     </section>
+    <!-- if view mode -->
+    <% if (!viewMode) { %>
     <section class="<%= controlsClass %>">
       <button class="btn btn-danger btn-small"
               id="reset">
               Clear & reset table
       </button>
     </section>
+    <% } %>
   <!-- </div>
   <div class="tab-pane" id="insert-table-csv-<%=cid%>">
     <textarea class="table-text"></textarea>

@@ -133,6 +133,7 @@ define([
             this.template({
               cid: this.cid,
               controlsClass: CLASS_NAMES.controls,
+              viewMode: this.viewMode,
             }),
           )
           .data("view", this);
@@ -203,14 +204,7 @@ define([
         tableBody.innerHTML = "";
 
         tableHeaders.appendChild(this.createHeaderRow(this.colCount));
-        this.createTableBody(tableBody, this.rowCount, this.colCount);
-
-        this.populateTable();
-
-        // If in view mode, remove editing functionality
-        if (this.viewMode) {
-          this.deactivateEditing();
-        }
+        this.createTableBody(tableBody);
       },
 
       /**
@@ -246,10 +240,13 @@ define([
        */
       populateTable() {
         const data = this.getData();
-        if (data === undefined || data === null) return;
+        if (!data?.length) return;
 
-        for (let i = 0; i < data.length; i += 1) {
-          for (let j = 1; j < data[i].length; j += 1) {
+        const rows = this.rowCount + 1 || data.length;
+        const cols = this.colCount + 1 || data[0].length;
+
+        for (let i = 0; i < rows; i += 1) {
+          for (let j = 1; j < cols; j += 1) {
             const cell = this.$el.find(`#r-${i}-${j}`)[0];
             let value = data[i][j];
             if (i > 0) {
@@ -352,34 +349,24 @@ define([
        * @returns {HTMLElement} The header row element
        */
       createHeaderRow() {
+        const headerData = this.getData()[0];
         const tr = document.createElement("tr");
         tr.setAttribute("id", "r-0");
         for (let i = 0; i <= this.colCount; i += 1) {
           const th = document.createElement("th");
+          tr.appendChild(th);
           th.setAttribute("id", `r-0-${i}`);
           th.setAttribute("class", `${i === 0 ? "" : "column-header"}`);
           if (i !== 0) {
             const span = document.createElement("span");
-            span.innerHTML = `Col ${i}`;
-            span.setAttribute("class", "column-header-span");
-            span.setAttribute("contentEditable", "true");
-            const dropDownDiv = document.createElement("div");
-            dropDownDiv.setAttribute("class", "dropdown");
-            dropDownDiv.innerHTML = `
-            <button class="${CLASS_NAMES.button}" id="col-dropbtn-${i}">
-              <i class="icon pointer icon-caret-down"></i>
-            </button>
-              <div id="col-dropdown-${i}" class="dropdown-content">
-                <button class="${CLASS_NAMES.colOption} col-insert-left"><i class="icon icon-long-arrow-left icon-on-left"></i>Insert 1 column left</button>
-                <button class="${CLASS_NAMES.colOption} col-insert-right"><i class="icon icon-long-arrow-right icon-on-left"></i>Insert 1 column right</button>
-                <button class="${CLASS_NAMES.colOption} ${CLASS_NAMES.sortButton}"><i class="icon icon-sort-by-attributes icon-on-left"></i>Sort column</button>
-                <button class="${CLASS_NAMES.colOption} col-delete"><i class="icon icon-remove icon-on-left"></i>Delete column</button>
-              </div>
-            `;
             th.appendChild(span);
-            th.appendChild(dropDownDiv);
+            span.innerHTML = headerData[i] || `Col ${i}`;
+            span.setAttribute("class", "column-header-span");
+            if (!this.viewMode) {
+              span.setAttribute("contentEditable", "true");
+            }
+            th.appendChild(this.createColDropdown(i));
           }
-          tr.appendChild(th);
         }
         return tr;
       },
@@ -388,40 +375,41 @@ define([
        * Create a row for the table
        * @param {number} rowNum The table row number to add to the table, where
        * 0 is the header row
+       * @param {Array} rowData The data for the row
        * @returns {HTMLElement} The row element
        */
-      createTableBodyRow(rowNum) {
+      createTableBodyRow(rowNum, rowData) {
+        const fragment = document.createDocumentFragment(); // Create a document fragment
         const tr = document.createElement("tr");
         tr.setAttribute("id", `r-${rowNum}`);
+
         for (let i = 0; i <= this.colCount; i += 1) {
-          const cell = document.createElement(`${i === 0 ? "th" : "td"}`);
-          // header
-          if (i === 0) {
-            cell.contentEditable = false;
-            const span = document.createElement("span");
-            const dropDownDiv = document.createElement("div");
-            span.innerHTML = rowNum;
-            dropDownDiv.setAttribute("class", "dropdown");
-            dropDownDiv.innerHTML = `
-            <button class="dropbtn" id="row-dropbtn-${rowNum}">
-              <i class="icon pointer icon-caret-right"></i>
-            </button>
-              <div id="row-dropdown-${rowNum}" class="dropdown-content">
-                <button class="row-dropdown-option row-insert-top"><i class="icon icon-long-arrow-up icon-on-left"></i>Insert 1 row above</button>
-                <button class="row-dropdown-option row-insert-bottom"><i class="icon icon-long-arrow-down icon-on-left"></i>Insert 1 row below</button>
-                <button class="row-dropdown-option row-delete"><i class="icon icon-remove icon-on-left"></i>Delete row</button>
-              </div>
-            `;
-            cell.appendChild(span);
-            cell.appendChild(dropDownDiv);
-            cell.setAttribute("class", CLASS_NAMES.rowHeader);
-          } else {
-            cell.contentEditable = true;
-          }
+          const cell = document.createElement(i === 0 ? "th" : "td");
           cell.setAttribute("id", `r-${rowNum}-${i}`);
           tr.appendChild(cell);
+          cell.contentEditable = false;
+
+          if (i === 0) {
+            const span = document.createElement("span");
+            span.textContent = rowNum;
+
+            // Append elements to the cell
+            cell.appendChild(span);
+            cell.classList.add(CLASS_NAMES.rowHeader);
+
+            if (!this.viewMode) {
+              cell.appendChild(this.createRowDropdown(rowNum));
+            }
+          } else {
+            cell.innerHTML = rowData[i] || "";
+            if (!this.viewMode) {
+              cell.contentEditable = true;
+            }
+          }
         }
-        return tr;
+
+        fragment.appendChild(tr);
+        return fragment;
       },
 
       /**
@@ -429,9 +417,112 @@ define([
        * @param  {HTMLElement} tableBody A table HTML Element
        */
       createTableBody(tableBody) {
+        const data = this.getData();
+        if (!data?.length) return;
+        const fragment = document.createDocumentFragment();
+
         for (let rowNum = 1; rowNum <= this.rowCount; rowNum += 1) {
-          tableBody.appendChild(this.createTableBodyRow(rowNum));
+          const rowData = data[rowNum];
+          const rowFragment = this.createTableBodyRow(rowNum, rowData);
+          fragment.appendChild(rowFragment);
         }
+
+        tableBody.appendChild(fragment);
+      },
+
+      /**
+       * Create a dropdown menu for the row
+       * @param {number} rowNum The row number to add the dropdown to
+       * @returns {HTMLElement} The dropdown element
+       * @since 0.0.0
+       */
+      createRowDropdown(rowNum) {
+        const dropDownDiv = document.createElement("div");
+        dropDownDiv.classList.add("dropdown");
+
+        const button = document.createElement("button");
+        button.classList.add("dropbtn");
+        button.id = `row-dropbtn${this.cid}-${rowNum}`;
+        button.innerHTML = '<i class="icon pointer icon-caret-right"></i>';
+
+        const dropdownContent = document.createElement("div");
+        dropdownContent.id = `row-dropdown${this.cid}-${rowNum}`;
+        dropdownContent.classList.add("dropdown-content");
+
+        // Add the dropdown options
+        const insertTop = document.createElement("button");
+        insertTop.classList.add("row-dropdown-option", "row-insert-top");
+        insertTop.innerHTML =
+          '<i class="icon icon-long-arrow-up icon-on-left"></i>Insert 1 row above';
+
+        const insertBottom = document.createElement("button");
+        insertBottom.classList.add("row-dropdown-option", "row-insert-bottom");
+        insertBottom.innerHTML =
+          '<i class="icon icon-long-arrow-down icon-on-left"></i>Insert 1 row below';
+
+        const deleteRow = document.createElement("button");
+        deleteRow.classList.add("row-dropdown-option", "row-delete");
+        deleteRow.innerHTML =
+          '<i class="icon icon-remove icon-on-left"></i>Delete row';
+
+        // Append the options to the dropdown
+        dropdownContent.append(insertTop, insertBottom, deleteRow);
+        dropDownDiv.append(button, dropdownContent);
+        return dropDownDiv;
+      },
+
+      /**
+       * Create a dropdown menu for the header row
+       * @param {number} colNum The column number to add the dropdown to
+       * @returns {HTMLElement} The dropdown element
+       * @since 0.0.0
+       */
+      createColDropdown(colNum) {
+        const dropDownDiv = document.createElement("div");
+        dropDownDiv.setAttribute("class", "dropdown");
+        let buttons = [
+          {
+            class: "col-insert-left",
+            icon: "long-arrow-left",
+            text: "Insert 1 column left",
+            viewMode: false,
+          },
+          {
+            class: "col-insert-right",
+            icon: "long-arrow-right",
+            text: "Insert 1 column right",
+            viewMode: false,
+          },
+          {
+            class: "col-delete",
+            icon: "remove",
+            text: "Delete column",
+            viewMode: false,
+          },
+          {
+            class: "col-sort",
+            icon: "sort",
+            text: "Sort column",
+            viewMode: true,
+          },
+        ];
+        if (this.viewMode) {
+          buttons = buttons.filter((button) => button.viewMode);
+        }
+        const buttonEls = buttons.map(
+          (button) =>
+            `<button class="${CLASS_NAMES.colOption} ${button.class}"><i class="icon icon-${button.icon} icon-on-left"></i>${button.text}</button>`,
+        );
+
+        dropDownDiv.innerHTML = `
+          <button class="${CLASS_NAMES.button}" id="col-dropbtn-${colNum}">
+            <i class="icon pointer icon-caret-down"></i>
+          </button>
+            <div id="col-dropdown${this.cid}-${colNum}" class="dropdown-content">
+              ${buttonEls.join("")}
+            </div>
+          `;
+        return dropDownDiv;
       },
 
       /**
