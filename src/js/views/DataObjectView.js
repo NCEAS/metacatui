@@ -3,10 +3,18 @@
 define([
   "underscore",
   "backbone",
+  "models/SolrResult",
   "views/TableEditorView",
   "text!templates/loading.html",
   "text!templates/alert.html",
-], (_, Backbone, TableEditorView, LoadingTemplate, AlertTemplate) => {
+], (
+  _,
+  Backbone,
+  SolrResult,
+  TableEditorView,
+  LoadingTemplate,
+  AlertTemplate,
+) => {
   // The classes used by this view
   const BASE_CLASS = "object-view";
   const CLASS_NAMES = {
@@ -27,6 +35,12 @@ define([
   const MORE_DETAILS_PREFIX = "<strong>More details: </strong>";
   const FILE_TYPE_ERROR = "This file type is not supported.";
   const FILE_SIZE_ERROR = "This file is too large to display.";
+  const GETINFO_ERROR =
+    "There was an error retrieving metadata for this data object.";
+
+  // Fields for metadata values that we require to display the object
+  const REQUIRED_FIELDS = ["formatId", "size"];
+  const OPTIONAL_FIELDS = ["fileName"];
 
   /**
    * @class DataObjectView
@@ -84,12 +98,17 @@ define([
        * Initializes the DataObjectView
        * @param {object} options - Options for the view
        * @param {SolrResult} options.model - A SolrResult model
+       * @param {string} options.id - The ID of the DataONE object to view. Used
+       * to create a SolrResult model if one is not provided.
        * @param {Element} [options.buttonContainer] - The container for the
        * download button (defaults to the view's element)
        */
       initialize(options) {
         this.model = options.model;
         this.buttonContainer = options.buttonContainer || this.el;
+        if (!this.model && options.id) {
+          this.model = new SolrResult({ id: options.id });
+        }
       },
 
       /**
@@ -121,6 +140,12 @@ define([
 
       /** @inheritdoc */
       render() {
+        // If missing formatId, size, filename, query Solr first
+        if (!this.hasRequiredMetadata()) {
+          this.fetchMetadata(this.render);
+          return this;
+        }
+
         const valid = this.isValidSizeAndFormat();
 
         if (valid !== true) {
@@ -133,6 +158,47 @@ define([
           .then((response) => this.handleResponse(response))
           .catch((error) => this.showError(error?.message || error));
         return this;
+      },
+
+      /**
+       * Checks if the model has the required metadata fields
+       * @returns {boolean} True if the model has the required metadata fields
+       * and they are not empty
+       */
+      hasRequiredMetadata() {
+        if (!this.model) return false;
+        return REQUIRED_FIELDS.every((field) => {
+          const val = this.model.get(field);
+          return val && val !== 0;
+        });
+      },
+
+      /**
+       * Fetches the metadata for the object
+       * @param {Function} callback - The function to call when the metadata is
+       * fetched
+       */
+      fetchMetadata(callback) {
+        const view = this;
+        const { model } = view;
+        view.stopListening(model);
+        const fields = REQUIRED_FIELDS.concat(OPTIONAL_FIELDS).join(",");
+
+        view.listenTo(model, "sync", () => {
+          if (view.hasRequiredMetadata()) {
+            callback.call(view);
+          } else {
+            view.showError(GETINFO_ERROR);
+          }
+          view.stopListening(model);
+        });
+
+        view.listenTo(model, "getInfoError", () => {
+          view.showError(GETINFO_ERROR);
+          view.stopListening(model);
+        });
+
+        model.getInfo(fields);
       },
 
       /**
