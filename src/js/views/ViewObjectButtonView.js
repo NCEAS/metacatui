@@ -16,6 +16,7 @@ define(["jquery", "backbone", "views/DataObjectView"], (
     closeButton: ["close"],
     body: ["modal-body"],
     footer: ["modal-footer"],
+    titleIcon: ["icon", "icon-on-left"],
   };
   const BUTTON_TEXT = "View";
   const CLOSE_BUTTON_TEXT = "Close";
@@ -52,14 +53,15 @@ define(["jquery", "backbone", "views/DataObjectView"], (
        * clicked. The modal will contain a DataObjectView.
        * @param {object} options - Options for the modal
        * @param {string} options.title - The title of the modal
+       * @param {string} options.icon - The icon for the title
        * @returns {string} The HTML for the modal
        */
-      modalTemplate({ title = "Data" } = {}) {
+      modalTemplate({ title = "Data", icon = "file-text" } = {}) {
         const id = `modal-${this.model.cid}`;
         return `<div id="${id}" class="${CLASS_NAMES.modal.join(" ")}">
             <div class="${CLASS_NAMES.header.join(" ")}">
               <button type="button" class="${CLASS_NAMES.closeButton.join(" ")}" data-dismiss="modal">&times;</button>
-              <h3>${title}</h3>
+              <h3><i class="${CLASS_NAMES.titleIcon.join(" ")} icon-${icon}"></i>${title}</h3>
             </div>
             <div class="${CLASS_NAMES.body.join(" ")}">
               <p>loading...</p>
@@ -108,7 +110,9 @@ define(["jquery", "backbone", "views/DataObjectView"], (
        */
       renderModal() {
         const modalHTML = this.modalTemplate({
-          title: this.model.get("title") || "Data",
+          title:
+            this.model.get("title") || this.model.get("fileName") || "Data",
+          icon: "table",
         });
         const modal = $(modalHTML).modal();
         const modalBody = modal.find(`.${CLASS_NAMES.body.join(".")}`);
