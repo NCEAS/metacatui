@@ -14,15 +14,19 @@ define([
     well: "well", // Bootstrap class
     downloadButton: ["btn", "download"],
     downloadIcon: ["icon", "icon-cloud-download"],
+    loadingContainer: ["notification", "loading"],
   };
 
   // User-facing text
   const DOWNLOAD_BUTTON_TEXT = "Download";
-  const LOADING_MESSAGE = "Loading data...";
+  const LOADING_MESSAGE = "Downloading data...";
+  const PARSE_RESPONSE_MESSAGE = "Parsing data...";
   const ERROR_TITLE = "Uh oh 😕";
   const ERROR_MESSAGE =
     "There was an error displaying the object. Please try again later or send us an email.";
-  const MORE_DETAILS_PREFIX = "More details: ";
+  const MORE_DETAILS_PREFIX = "<strong>More details: </strong>";
+  const FILE_TYPE_ERROR = "This file type is not supported.";
+  const FILE_SIZE_ERROR = "This file is too large to display.";
 
   /**
    * @class DataObjectView
@@ -59,6 +63,24 @@ define([
       alertTemplate: _.template(AlertTemplate),
 
       /**
+       * The file size limit for viewing files, in bytes. If the file is larger
+       * than this limit, the object will not be displayed. Default is 20 megabytes.
+       * @type {number|null}
+       */
+      sizeLimit: 20971520,
+
+      /**
+       * The data formats that are supported by this view, mapped to the
+       * functions that render them, i.e. { renderFunction: [format1, format2]
+       * }. Formats should include all relevant DataONE object formats as well
+       * as the possible Content-Type values from the headers of the response.
+       * @type {object}
+       */
+      formatMap: {
+        renderTable: ["text/csv", "text/tsv", "text/tab-separated-values"],
+      },
+
+      /**
        * Initializes the DataObjectView
        * @param {object} options - Options for the view
        * @param {SolrResult} options.model - A SolrResult model
@@ -68,27 +90,59 @@ define([
       initialize(options) {
         this.model = options.model;
         this.buttonContainer = options.buttonContainer || this.el;
-        // TODO: We get format from the response headers, should we compare it,
-        // or prevent downloading the object if it's not a supported type?
-        // this.format = this.model.get("formatId") ||
-        // this.model.get("mediaType");
+      },
+
+      /**
+       * Checks if the size and format of the object are valid
+       * @returns {boolean|object} True if the size and format are valid, or an
+       * object with error messages if they are not
+       */
+      isValidSizeAndFormat() {
+        const format =
+          this.model.get("formatId") || this.model.get("mediaType");
+        const size = this.model.get("size");
+
+        const sizeValid = !this.sizeLimit || size <= this.sizeLimit;
+
+        const supportedFormats = Object.values(this.formatMap).flat();
+        const formatValid = supportedFormats.includes(format);
+        if (sizeValid && format) {
+          return true;
+        }
+        const errors = {};
+        if (!sizeValid) {
+          errors.sizeValid = FILE_SIZE_ERROR;
+        }
+        if (!formatValid) {
+          errors.formatValid = FILE_TYPE_ERROR;
+        }
+        return errors;
       },
 
       /** @inheritdoc */
       render() {
+        const valid = this.isValidSizeAndFormat();
+
+        if (valid !== true) {
+          this.showError(Object.values(valid).join(" "));
+          return this;
+        }
         this.$el.empty();
-        this.showLoading();
+        this.showLoading(LOADING_MESSAGE);
         this.downloadObject()
           .then((response) => this.handleResponse(response))
           .catch((error) => this.showError(error?.message || error));
         return this;
       },
 
-      /** Indicate that the data is loading */
-      showLoading() {
+      /**
+       * Indicate that the data is loading
+       * @param {string} [message] - The message to display while loading
+       */
+      showLoading(message) {
         this.$el.html(
           this.loadingTemplate({
-            msg: LOADING_MESSAGE,
+            msg: message || LOADING_MESSAGE,
           }),
         );
         this.el.classList.add(CLASS_NAMES.well);
@@ -97,6 +151,7 @@ define([
       /** Remove the loading spinner */
       hideLoading() {
         this.el.classList.remove(CLASS_NAMES.well);
+        this.$el.find(`.${CLASS_NAMES.loadingContainer.join(".")}`).remove();
       },
 
       /**
@@ -145,14 +200,20 @@ define([
        */
       renderObject(response) {
         try {
-          this.hideLoading();
+          this.showLoading(PARSE_RESPONSE_MESSAGE);
           const format = response.headers.get("Content-Type");
-          if (format === "text/csv") {
-            response.text().then((text) => {
-              this.csv = text;
-              this.showTable();
-            });
+
+          // Map format to render function
+          const methods = this.formatMap;
+          // Find the key which includes the format in the array value
+          const method = Object.keys(methods).find((key) =>
+            methods[key].includes(format),
+          );
+          if (!method) {
+            throw new Error(FILE_TYPE_ERROR);
           }
+
+          this[method](response);
         } catch (error) {
           this.showError(error?.message || error);
         }
@@ -183,13 +244,25 @@ define([
         return this.model.fetchDataObjectWithCredentials();
       },
 
-      /** Shows the CSV file as a table */
-      showTable() {
-        this.table = new TableEditorView({
-          viewMode: true,
-          csv: this.csv,
+      /**
+       * Shows the CSV file as a table
+       * @param {Response} response - The response from the DataONE object API
+       */
+      renderTable(response) {
+        response.text().then((text) => {
+          this.csv = text;
+          this.hideLoading();
+          this.table = new TableEditorView({
+            viewMode: true,
+            csv: this.csv,
+          });
+          this.listenTo(this.table, "error", (message) => {
+            this.showError(message);
+            requestAnimationFrame(() => this.table.remove());
+          });
+          this.table.render();
+          this.el.appendChild(this.table.el);
         });
-        this.el.appendChild(this.table.render().el);
       },
     },
   );
