@@ -759,13 +759,32 @@ define([
       /**
        * Converts data to an array of arrays from a CSV
        * @param  {string} csv The table data as a CSV string
-       * @returns {string} The table data as a CSV string
+       * @param {boolean} addRowNumbers - if true, adds a row number column to
+       * the left of the table
+       * @returns {Array} The table data as a CSV string
        * @since 0.0.0
        */
-      getJSONfromCSV(csv) {
-        const parsedCSV = PapaParse.parse(csv);
+      getJSONfromCSV(csv, addRowNumbers = true) {
+        const view = this;
+        // https://www.papaparse.com/docs#config
+        const parsedCSV = PapaParse.parse(csv, {
+          skipEmptyLines: "greedy",
+          error: (err) =>
+            view.showMessage("error", err?.message || err, false, true),
+        });
         if (!parsedCSV) return null;
-        return parsedCSV.data;
+        const { data, errors } = parsedCSV;
+
+        if (addRowNumbers) {
+          for (let i = 0; i < data.length; i += 1) {
+            data[i].unshift(i);
+          }
+        }
+        if (errors?.length) {
+          const triggerError = !data?.length;
+          this.showMessage(errors[0].message, "warning", false, triggerError);
+        }
+        return data;
       },
 
       /**
@@ -849,11 +868,10 @@ define([
           } else if (classes.contains("dropbtn")) {
             const idArr = e.target.id.split("-");
             document
-              .getElementById(`col-dropdown-${idArr[2]}`)
+              .getElementById(`col-dropdown${this.cid}-${idArr[2]}`)
               .classList.toggle("show");
           } else if (classes.contains(CLASS_NAMES.colOption)) {
-            const index = e.target.parentNode.id.split("-")[2];
-
+            const index = parseInt(e.target.parentNode.id.split("-")[2], 10);
             if (classes.contains("col-insert-left")) {
               view.addColumn(index, "left");
             } else if (classes.contains("col-insert-right")) {
@@ -881,10 +899,10 @@ define([
           if (classes.contains("dropbtn")) {
             const idArr = e.target.id.split("-");
             view.$el
-              .find(`#row-dropdown-${idArr[2]}`)[0]
+              .find(`#row-dropdown${this.cid}-${idArr[2]}`)[0]
               .classList.toggle("show");
           } else if (classes.contains("row-dropdown-option")) {
-            const index = parseInt(e.target.parentNode.id.split("-"), 10)[2];
+            const index = parseInt(e.target.parentNode.id.split("-")[2], 10);
             if (classes.contains("row-insert-top")) {
               view.addRow(index, "top");
             }
