@@ -63,32 +63,34 @@ define([
        */
       buttons: [
         {
-          name: "draw", // === mode
+          name: "remove",
+          label: "Remove Point",
+          icon: "eraser",
+        },
+        {
+          name: "move",
+          label: "Move Point",
+          icon: "move",
+        },
+         {
+          name: "draw",
           label: "Draw Polygon",
           icon: "pencil",
         },
-        // {
-        //   name: "move",
-        //   label: "Move Point",
-        //   icon: "move",
-        // },
-        // {
-        //   name: "remove",
-        //   label: "Remove Point",
-        //   icon: "eraser",
-        // },
+        {
+          name: "save",
+          label: "Save",
+          icon: "save",
+          method: "savetocsv",
+        },
+
         {
           name: "clear",
           label: "Clear Polygon",
           icon: "trash",
           method: "reset",
         },
-        {
-          name: "save",
-          label: "Save",
-          icon: "save",
-          method: "save",
-        },
+
       ],
 
       /**
@@ -318,13 +320,77 @@ define([
        * @param {Function} callback - The callback function to send the polygon
        * coordinates to.
        */
-      save: function (callback) {
+      // save: function (callback) {
+      //   this.setMode(false);
+      //   if (callback && typeof callback === "function") {
+      //     callback(this.points.toJSON());
+      //   }
+      // },
+      savetocsv: function (callback) {
         this.setMode(false);
-        if (callback && typeof callback === "function") {
-          callback(this.points.toJSON());
-        }
-      },
 
+        // Convert JSON to CSV
+        function convertToCSV(jsonData) {
+          console.log("Converting JSON data to CSV...");
+          console.log("Raw JSON data:", jsonData);
+          var polygon = jsonData.reverse().map(function(i){
+            return [
+              i.longitude,i.latitude,
+            ];
+          });
+          polygon.push([
+            jsonData[0].longitude,
+            jsonData[0].latitude
+          ]);
+
+          var data = {
+            "type": "FeatureCollection",
+            "features": [
+              {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                  "coordinates": [
+                    polygon
+                  ],
+                  "type": "Polygon"
+                }
+              }
+            ]
+          };
+
+          return data;
+        }
+
+        // Create and download CSV
+        function downloadCSV(csvData, filename) {
+          console.log("Downloading CSV...");
+          const blob = new Blob([JSON.stringify(csvData)], { type: 'text/json' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          console.log("CSV Download complete.");
+        }
+
+        // Get JSON data from layer
+        const jsonData = this.points.toJSON();
+        console.log("JSON data from layer.toJSON():", jsonData);
+
+        // Convert JSON data to CSV and download it
+        const data = convertToCSV(jsonData);
+        downloadCSV(data, 'data.json');
+
+        // Invoke the callback if it exists
+        if (callback && typeof callback === "function") {
+          callback(jsonData);
+        } else {
+          console.log("No callback provided, proceeding without it.");
+        }
+      }
+      ,
       /**
        * Toggles the mode of the draw tool.
        * @param {string} mode - The mode to toggle to.

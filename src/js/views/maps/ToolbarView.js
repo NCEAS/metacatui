@@ -10,6 +10,7 @@ define([
   // Sub-views - TODO: import these as needed
   "views/maps/LayersPanelView",
   "views/maps/HelpPanelView",
+  "views/maps/DrawToolView",
   "views/maps/viewfinder/ViewfinderView",
   "views/maps/ShareUrlView",
 ], (
@@ -22,6 +23,7 @@ define([
   // Sub-views
   LayersPanelView,
   HelpPanel,
+  DrawTool,
   ViewfinderView,
   ShareUrlView,
 ) => {
@@ -179,12 +181,12 @@ define([
           },
         },
         // We can enable to the draw tool once we have a use case for it
-        // {
-        //   label: 'Draw',
-        //   icon: 'pencil',
-        //   view: DrawTool,
-        //   viewOptions: {}
-        // },
+        {
+          label: 'Draw',
+          icon: 'pencil',
+          view: DrawTool,
+          viewOptions: {}
+        },
         {
           label: "Help",
           icon: "question-sign",

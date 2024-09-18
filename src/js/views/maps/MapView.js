@@ -175,6 +175,7 @@ define([
         const view = this;
         const interactions = view.model.get("interactions");
         const features = view.model.getSelectedFeatures();
+        console.log('feature',features)
 
         view.featureInfo = new FeatureInfoView({
           el: view.subElements.featureInfoContainer,
