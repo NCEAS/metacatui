@@ -1,4 +1,3 @@
-/* global define */
 define(["models/analytics/Analytics"], function (Analytics) {
   /**
    * @class GoogleAnalytics
@@ -113,7 +112,7 @@ define(["models/analytics/Analytics"], function (Analytics) {
           page_title: title,
         });
       },
-    }
+    },
   );
 
   return GoogleAnalytics;

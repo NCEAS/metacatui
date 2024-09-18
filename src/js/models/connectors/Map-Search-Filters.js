@@ -1,4 +1,3 @@
-/*global define */
 define([
   "backbone",
   "models/maps/Map",
@@ -16,7 +15,7 @@ define([
   MapSearchConnector,
   FiltersSearchConnector,
   FiltersMapConnector,
-  FilterGroup
+  FilterGroup,
 ) {
   "use strict";
 
@@ -165,7 +164,7 @@ define([
        */
       setConnectors: function (
         addGeohashLayer = true,
-        addSpatialFilter = true
+        addSpatialFilter = true,
       ) {
         const map = this.get("map");
         const searchResults = this.get("searchResults");
@@ -173,15 +172,15 @@ define([
 
         this.set(
           "mapSearchConnector",
-          new MapSearchConnector({ map, searchResults }, { addGeohashLayer })
+          new MapSearchConnector({ map, searchResults }, { addGeohashLayer }),
         );
         this.set(
           "filtersSearchConnector",
-          new FiltersSearchConnector({ filters, searchResults })
+          new FiltersSearchConnector({ filters, searchResults }),
         );
         this.set(
           "filtersMapConnector",
-          new FiltersMapConnector({ filters, map }, { addSpatialFilter })
+          new FiltersMapConnector({ filters, map }, { addSpatialFilter }),
         );
       },
 
@@ -328,6 +327,6 @@ define([
       removeSpatialFilter: function () {
         this.get("filtersMapConnector").removeSpatialFilter();
       },
-    }
+    },
   );
 });

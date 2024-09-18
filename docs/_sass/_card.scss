@@ -1,20 +1,19 @@
-.cards{
+.cards {
   display: flex;
   justify-content: center;
 }
-.card{
+.card {
   max-width: 150px;
   justify-content: center;
   display: grid;
   margin: $padding;
-
 
   a {
     justify-self: center;
     align-self: center;
   }
 
-  svg{
+  svg {
     color: $primary-brand-on-dark;
     fill: $primary-brand-on-dark;
     max-width: 100%;
@@ -22,7 +21,7 @@
     height: auto;
   }
 
-  .name{
+  .name {
     text-align: center;
     color: $neutral;
     margin-top: $padding;

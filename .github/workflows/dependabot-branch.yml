@@ -1,0 +1,19 @@
+name: Change Dependabot branch to develop
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+jobs:
+  check-branch:
+    if: startsWith(github.head_ref, 'dependabot/')
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: Vankka/pr-target-branch-action@v3
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+          target: main
+          change-to: develop

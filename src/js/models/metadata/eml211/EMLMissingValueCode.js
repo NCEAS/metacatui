@@ -6,6 +6,7 @@ define(["backbone"], function (Backbone) {
    * @see https://eml.ecoinformatics.org/schema/eml-attribute_xsd.html
    * @classcategory Models/Metadata/EML211
    * @since 2.26.0
+   * @extends Backbone.Model
    */
   var EMLMissingValueCode = Backbone.Model.extend(
     /** @lends EMLMissingValueCode.prototype */ {
@@ -127,7 +128,7 @@ define(["backbone"], function (Backbone) {
 
         return Object.keys(errors).length > 0 ? errors : undefined;
       },
-    }
+    },
   );
 
   return EMLMissingValueCode;

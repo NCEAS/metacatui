@@ -1,9 +1,8 @@
-/* global define */
 define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
   $,
   _,
   Backbone,
-  DataONEObject
+  DataONEObject,
 ) {
   /**
    * @class EMLGeoCoverage
@@ -37,7 +36,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
             "change:west " +
             "change:south " +
             "change:north",
-          this.trickleUpChange
+          this.trickleUpChange,
         );
       },
 
@@ -82,22 +81,26 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
        * than the South latitude
        * @property {string} crossesAntiMeridian - When the bounding box crosses
        * the anti-meridian
-       * @property {string} containsPole - When the bounding box contains the
-       * North or South pole
-       * @since x.x.x
+       * @since 2.27.0
        */
       errorMessages: {
-        "default": "Please correct the geographic coverage.",
-        "north": "Northwest latitude out of range, must be >-90 and <90. Please correct the latitude.",
-        "east": "Southeast longitude out of range (-180 to 180). Please adjust the longitude.",
-        "south": "Southeast latitude out of range, must be >-90 and <90. Please correct the latitude.",
-        "west": "Northwest longitude out of range (-180 to 180). Check and correct the longitude.",
-        "missing": "Latitude and longitude are required for each coordinate. Please complete all fields.",
-        "description": "Missing location description. Please add a brief description.",
-        "needPair": "Location requires at least one coordinate pair. Please add coordinates.",
-        "northSouthReversed": "North latitude should be greater than South. Please swap the values.",
-        "crossesAntiMeridian": "Bounding box crosses the anti-meridian. Please use multiple boxes that meet at the anti-meridian instead.",
-        "containsPole": "Coordinates include a pole. Latitudes should be >-90 and <90."
+        default: "Please correct the geographic coverage.",
+        north:
+          "Northwest latitude out of range, must be >-90 and <90. Please correct the latitude.",
+        east: "Southeast longitude out of range (-180 to 180). Please adjust the longitude.",
+        south:
+          "Southeast latitude out of range, must be >-90 and <90. Please correct the latitude.",
+        west: "Northwest longitude out of range (-180 to 180). Check and correct the longitude.",
+        missing:
+          "Latitude and longitude are required for each coordinate. Please complete all fields.",
+        description:
+          "Missing location description. Please add a brief description.",
+        needPair:
+          "Location requires at least one coordinate pair. Please add coordinates.",
+        northSouthReversed:
+          "North latitude should be greater than South. Please swap the values.",
+        crossesAntiMeridian:
+          "Bounding box crosses the anti-meridian. Please use multiple boxes that meet at the anti-meridian instead.",
       },
 
       /**
@@ -211,8 +214,8 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
         if (!objectDOM.children("geographicdescription").length)
           objectDOM.append(
             $(document.createElement("geographicdescription")).text(
-              this.get("description")
-            )
+              this.get("description"),
+            ),
           );
         else
           objectDOM
@@ -232,17 +235,17 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
         //Add the four coordinate values
         $(boundingCoordinates).append(
           $(document.createElement("westboundingcoordinate")).text(
-            this.get("west")
+            this.get("west"),
           ),
           $(document.createElement("eastboundingcoordinate")).text(
-            this.get("east")
+            this.get("east"),
           ),
           $(document.createElement("northboundingcoordinate")).text(
-            this.get("north")
+            this.get("north"),
           ),
           $(document.createElement("southboundingcoordinate")).text(
-            this.get("south")
-          )
+            this.get("south"),
+          ),
         );
 
         return objectDOM;
@@ -408,8 +411,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
         else if (!pointStatuses.south.isSet && pointStatuses.east.isSet)
           errors.south = this.getErrorMessage("missing");
 
-        // Verify latitudes: north should be > south. Don't allow bounding boxes
-        // to contain the north or south poles (doesn't really work)
+        // Verify latitudes: north should be > south.
         if (
           pointStatuses.north.isSet &&
           pointStatuses.south.isSet &&
@@ -418,14 +420,6 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
         ) {
           if (pointStatuses.north.value < pointStatuses.south.value) {
             const msg = this.getErrorMessage("northSouthReversed");
-            errors.north = msg;
-            errors.south = msg;
-          }
-          if (
-            pointStatuses.north.value == 90 ||
-            pointStatuses.south.value == -90
-          ) {
-            const msg = this.getErrorMessage("containsPole");
             errors.north = msg;
             errors.south = msg;
           }
@@ -524,7 +518,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
       /**
        * Climbs up the model hierarchy until it finds the EML model
        *
-       * @return {EML211 or false} - Returns the EML 211 Model or false if not
+       * @return {EML211|false} - Returns the EML 211 Model or false if not
        * found
        */
       getParentEML: function () {
@@ -556,7 +550,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
       formatXML: function (xmlString) {
         return DataONEObject.prototype.formatXML.call(this, xmlString);
       },
-    }
+    },
   );
 
   return EMLGeoCoverage;

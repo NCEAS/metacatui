@@ -1,4 +1,3 @@
-/*global define */
 define(["backbone"], function (Backbone) {
   "use strict";
   /**
@@ -73,7 +72,7 @@ define(["backbone"], function (Backbone) {
         for (let opt of this.sortOptions) {
           select.insertAdjacentHTML(
             "beforeend",
-            `<option value="${opt.value}">${opt.label}</option>`
+            `<option value="${opt.value}">${opt.label}</option>`,
           );
         }
 
@@ -121,6 +120,6 @@ define(["backbone"], function (Backbone) {
       show: function () {
         this.el.style.visibility = "visible";
       },
-    }
+    },
   );
 });

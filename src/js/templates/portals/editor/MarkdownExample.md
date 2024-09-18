@@ -6,7 +6,7 @@ Markdown is a simple way to format text.
 
 ## Level 2 Header
 
-For example, *this text will be italic* and **this text will be bold**. Here is a link to [DataOne](https://www.dataone.org), and here is an equation written using the TeX language: $$ y =X\beta + \epsilon $$.
+For example, _this text will be italic_ and **this text will be bold**. Here is a link to [DataOne](https://www.dataone.org), and here is an equation written using the TeX language: $$ y =X\beta + \epsilon $$.
 
 Add an image like so: ![DataOne logo](https://www.dataone.org/sites/default/files/d1-logo-v8_aligned_left.png)
 
@@ -18,25 +18,28 @@ print(my_string)
 ```
 
 Here is how to make a table:
-| Tables | Are | Cool  |
+| Tables | Are | Cool |
 | ------ | --- | ----- |
-| x      | a   | $1600 |
-| y      | b   |   $12 |
-| z      | c   | $1600 |
+| x | a | $1600 |
+| y | b | $12 |
+| z | c | $1600 |
 
 The following is an unordered list:
-* List item a
-* List item b
-* List item c
-    * You can create nested lists by indenting list items by four spaces.
-    * Sub-item 2
+
+- List item a
+- List item b
+- List item c
+  - You can create nested lists by indenting list items by four spaces.
+  - Sub-item 2
 
 This is a numbered list:
+
 1. First
 2. Second
 3. Third
 
 To quote some text, just start a line with a `>` character. In the words of Grace Hopper:
+
 > information is more valuable than the hardware which processes it.
 
 You can even add emojis :smile:!

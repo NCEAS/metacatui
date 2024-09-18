@@ -1,912 +1,918 @@
 /* Smartphones (portrait) ----------- */
-@media only screen and (max-width : 768px) {
+@media only screen and (max-width: 768px) {
+  /************** Metadata View ****************/
+  .form-horizontal .control-label {
+    float: none;
+    text-align: left;
+    width: 100%;
+    font-weight: bold; /*Because labels/titles become less apparent when in the mobile design*/
+  }
+  .form-horizontal .controls {
+    margin-left: 0px;
+  }
+  .form-horizontal .controls-well .table td {
+    display: block;
+    padding: 4px;
+  }
+  .attributeList .span2 {
+    width: 40%;
+    overflow: hidden;
+  }
+  .attributeList .tab-content {
+    width: 55%;
+    overflow: visible;
+  }
+  .entitydetails {
+    width: 100%;
+    margin: 0px;
+    box-sizing: border-box;
+  }
+  .entitydetails > h4 > .title {
+    width: 83%;
+  }
+  .entitydetails > h4 > i {
+    width: 10%;
+  }
+  .entitydetails > h4 > .btn {
+    float: none;
+  }
+  .control-group ~ .thumbnail {
+    width: 100%;
+    box-sizing: border-box;
+    margin-left: 0px;
+  }
+  .breadcrumb {
+    margin-top: 20px;
+    margin-left: 10px;
+    width: 95%;
+    width: calc(100% - 50px);
+  }
 
-	/************** Metadata View ****************/
-	.form-horizontal .control-label{
-		float: none;
-		text-align: left;
-		width: 100%;
-		font-weight: bold; /*Because labels/titles become less apparent when in the mobile design*/
-	}
-	.form-horizontal .controls{
-		margin-left: 0px;
-	}
-	.form-horizontal .controls-well .table td{
-		display: block;
-		padding: 4px;
-	}
-	.attributeList .span2{
-		width: 40%;
-		overflow: hidden;
-	}
-	.attributeList .tab-content{
-		width: 55%;
-		overflow: visible;
-	}
-	.entitydetails{
-	    width: 100%;
-	    margin: 0px;
-	    box-sizing: border-box;
-	}
-	.entitydetails > h4 > .title{
-		width: 83%;
-	}
-	.entitydetails > h4 > i{
-		width: 10%;
-	}
-	.entitydetails > h4 > .btn{
-		float: none;
-	}
-	.control-group ~ .thumbnail{
-		width: 100%;
-		box-sizing: border-box;
-    	margin-left: 0px;
-	}
-	.breadcrumb{
-		margin-top: 20px;
-		margin-left: 10px;
-		width: 95%;
-		width: calc(100% - 50px);
-	}
+  /************** Footer ****************/
+  #Footer {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
 
-	/************** Footer ****************/
-	#Footer{
-		overflow-x: hidden;
-		max-width: 100vw;
-	}
-
-	/************** Navbar ****************/
-	#Navbar{
-		width: 100%;
-		position: relative;
-		margin: 0px;
-	}
-	.navbar,
-	.navbar-inner{
-		padding: 0px;
-		margin: 0px;
-	}
-	.nav{
-		width: 100%;
-		flex-direction: column;
+  /************** Navbar ****************/
+  #Navbar {
+    width: 100%;
+    position: relative;
+    margin: 0px;
+  }
+  .navbar,
+  .navbar-inner {
+    padding: 0px;
+    margin: 0px;
+  }
+  .nav {
+    width: 100%;
+    flex-direction: column;
     display: flex;
-	}
-	.navbar li{
-		width: 100%;
-		text-align: center;
-		border-bottom: 1px solid #FFF;
-	}
-	#Header{
-		position: relative;
-	}
-	.nav .right .dropdown-menu{
-		width: 100%;
-	}
+  }
+  .navbar li {
+    width: 100%;
+    text-align: center;
+    border-bottom: 1px solid #fff;
+  }
+  #Header {
+    position: relative;
+  }
+  .nav .right .dropdown-menu {
+    width: 100%;
+  }
 
-	.navbar .nav {
-		margin-right: 0;
-	}
+  .navbar .nav {
+    margin-right: 0;
+  }
 
-	.navbar .nav ul.dropdown-menu {
-		/* ensure the dropdown menu is covers width of viewport regardless of parent's width */
-		position: absolute;
-		left: 50%;
-		right: 50%;
-		margin-left: -50vw;
-		margin-right: -50vw;
-		width: 100vw;
-	}
-
-	.navbar .nav ul.dropdown-menu li > a {
-		padding: 10px;
-		width: auto;
-	}
-
-	a.dropdown-toggle.user {
-    margin: 4px 0 9px 0;
-	}
-
-	.dropdown-header {
-		padding: 3px 0;
-	}
-
-	/* put the drop down menu triangle in the middle  */
-	.navbar .nav>li>.dropdown-menu:before {
+  .navbar .nav ul.dropdown-menu {
+    /* ensure the dropdown menu is covers width of viewport regardless of parent's width */
+    position: absolute;
     left: 50%;
-	}
-	.navbar .nav>li>.dropdown-menu:after {
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    width: 100vw;
+  }
+
+  .navbar .nav ul.dropdown-menu li > a {
+    padding: 10px;
+    width: auto;
+  }
+
+  a.dropdown-toggle.user {
+    margin: 4px 0 9px 0;
+  }
+
+  .dropdown-header {
+    padding: 3px 0;
+  }
+
+  /* put the drop down menu triangle in the middle  */
+  .navbar .nav > li > .dropdown-menu:before {
+    left: 50%;
+  }
+  .navbar .nav > li > .dropdown-menu:after {
     left: calc(50% + 1px);
-	}
+  }
 
-	/* edit portal button */
-	.PortalView #Navbar .nav .edit-portal-link-container.minimal-nav{
-		display: flex;
-		justify-content: center;
-	}
+  /* edit portal button */
+  .PortalView #Navbar .nav .edit-portal-link-container.minimal-nav {
+    display: flex;
+    justify-content: center;
+  }
 
+  /*************** User menu ***********/
 
-	/*************** User menu ***********/
+  #Content > .nav-tabs {
+    flex-direction: row;
+  }
 
-	#Content > .nav-tabs {
-		flex-direction: row;
-	}
+  #Content .span8.subsection {
+    width: 100%;
+    margin-left: 0px;
+  }
 
-	#Content .span8.subsection {
-	    width: 100%;
-			margin-left: 0px;
-	}
+  #Content .panel.panel-default.span3 {
+    width: 100%;
+    margin-left: 0px;
+  }
 
-	#Content .panel.panel-default.span3 {
-	   width: 100%;
-		 margin-left: 0px;
-	}
-
-	/*************** Sign In box ***********/
-	#signinPopup {
+  /*************** Sign In box ***********/
+  #signinPopup {
     width: 100vw;
     box-sizing: border-box;
     top: 50px;
-    position:fixed;
+    position: fixed;
     left: 0;
-		margin: 0;
-	}
-
-
-	/*************** Portals ***********/
-
-	/* portal list in settings */
-
-	.my-portals-container.panel-body {
-		padding: 0px 10px;
+    margin: 0;
   }
 
-	.create-btn-container .btn {
+  /*************** Portals ***********/
+
+  /* portal list in settings */
+
+  .my-portals-container.panel-body {
+    padding: 0px 10px;
+  }
+
+  .create-btn-container .btn {
     float: center;
     margin: 10px 10px;
-	}
+  }
 
-	/* Hide table headers (but not display: none;, for accessibility) */
+  /* Hide table headers (but not display: none;, for accessibility) */
   .my-portals-container table thead {
-		position: absolute;
-		top: -9999px;
-		left: -9999px;
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
   }
 
   .my-portals-container table tr {
-		border-bottom: 1px solid #dddddd;
-		position: relative;
-		padding-left: 90px; /* space for logo */
-		padding-right: 50px; /* space for button */
-		min-height: 90px;
-		height: auto;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
+    border-bottom: 1px solid #dddddd;
+    position: relative;
+    padding-left: 90px; /* space for logo */
+    padding-right: 50px; /* space for button */
+    min-height: 90px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
-	.my-portals-container tr:nth-child(odd) {
-		background: #f9f9f9;
-	}
+  .my-portals-container tr:nth-child(odd) {
+    background: #f9f9f9;
+  }
 
-	.my-portals-container tr:first-child {
-		border-top: 1px solid #dddddd;
-	}
+  .my-portals-container tr:first-child {
+    border-top: 1px solid #dddddd;
+  }
 
   .my-portals-container table td {
-		background-color: inherit !important; /* to overwrite bootstrap's striped table colors */
+    background-color: inherit !important; /* to overwrite bootstrap's striped table colors */
     border: 0px;
-		width: 100%;
-		box-sizing: border-box;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-	/* move logos to the left of the row */
-	.my-portals-container table td.logo {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		top: 0;
-		left: 0;
-		width: 90px;
-		position: absolute;
-		height: 100%;
-		display: flex;
-	}
+  /* move logos to the left of the row */
+  .my-portals-container table td.logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 0;
+    left: 0;
+    width: 90px;
+    position: absolute;
+    height: 100%;
+    display: flex;
+  }
 
-	/* move buttons to the right of the row */
-	.my-portals-container table td.controls {
-		display: flex;
-		align-items: center;
-		order: 3;
-		padding: 1px 5px 5px 0px;
-		top: 0;
-		right: 0;
-		width: 50px;
-		position: absolute;
-		height: 100%;
-	}
+  /* move buttons to the right of the row */
+  .my-portals-container table td.controls {
+    display: flex;
+    align-items: center;
+    order: 3;
+    padding: 1px 5px 5px 0px;
+    top: 0;
+    right: 0;
+    width: 50px;
+    position: absolute;
+    height: 100%;
+  }
 
-	.my-portals-container table td.controls .btn {
-		padding: 4px 9px;
-	}
+  .my-portals-container table td.controls .btn {
+    padding: 4px 9px;
+  }
 
-	.my-portals-container table td.title {
-		padding: 8px 5px 1px 0px;
-		order: 1;
-		/* hide the end of very long titles */
-		max-height: 190px;
+  .my-portals-container table td.title {
+    padding: 8px 5px 1px 0px;
+    order: 1;
+    /* hide the end of very long titles */
+    max-height: 190px;
     overflow: hidden;
     position: relative;
-	}
+  }
 
-	td.title:after {
-		content: "...";
-		position: absolute;
-		top: 169px;
-		right: 0;
-		background: inherit;
-	}
+  td.title:after {
+    content: "...";
+    position: absolute;
+    top: 169px;
+    right: 0;
+    background: inherit;
+  }
 
-	.my-portals-container table td.portal-label {
-		padding: 1px 5px 8px 0px;
-		order: 2;
-	}
+  .my-portals-container table td.portal-label {
+    padding: 1px 5px 8px 0px;
+    order: 2;
+  }
 
-	.my-portals-container table td.portal-label::before {
-		content: "ID: ";
-	}
+  .my-portals-container table td.portal-label::before {
+    content: "ID: ";
+  }
 
-	/* end portal list */
+  /* end portal list */
 
-	/* .PortalView #Navbar .nav {
+  /* .PortalView #Navbar .nav {
 		float: none;
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
 		flex-wrap: wrap;
 	} */
-	.Portal.Editor #Navbar .nav,
-	.PortalView #Navbar .nav{
+  .Portal.Editor #Navbar .nav,
+  .PortalView #Navbar .nav {
     display: flex;
     flex-direction: column;
     align-items: center;
     margin-bottom: 5px;
     background-color: #f1f1f1;
-		justify-content: space-evenly;
-		border-top: 1px solid #ebebeb;
-		border-bottom: 1px solid #ebebeb;
-	}
+    justify-content: space-evenly;
+    border-top: 1px solid #ebebeb;
+    border-bottom: 1px solid #ebebeb;
+  }
 
-	.PortalView #Navbar li.minimal-nav,
-	.Portal.Editor #Navbar li.minimal-nav {
+  .PortalView #Navbar li.minimal-nav,
+  .Portal.Editor #Navbar li.minimal-nav {
     border-bottom: none;
-		width: auto;
-	}
+    width: auto;
+  }
 
-	.portal-view {
-		width:100%;
-		margin-left: 0;
-	}
+  .portal-view {
+    width: 100%;
+    margin-left: 0;
+  }
 
-	/* Portal header */
+  /* Portal header */
 
-	.Portal.Editor #editor-header,
-	.PortalView .portal-view #portal-header-container {
-		padding: 0px;
-	}
+  .Portal.Editor #editor-header,
+  .PortalView .portal-view #portal-header-container {
+    padding: 0px;
+  }
 
-	.Portal.Editor #editor-header,
-	.PortalView #portal-header-container .row{
-		text-align: center;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		width: 100%;
-		box-sizing: border-box;
-		margin: 0;
-	}
+  .Portal.Editor #editor-header,
+  .PortalView #portal-header-container .row {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+  }
 
-	.PortalView #portal-header-container .row{
-		padding: 60px 5px 60px 5px;
-	}
+  .PortalView #portal-header-container .row {
+    padding: 60px 5px 60px 5px;
+  }
 
-	.Portal.Editor #editor-header{
-		padding: 40px 5px 40px 5px;
-	}
+  .Portal.Editor #editor-header {
+    padding: 40px 5px 40px 5px;
+  }
 
-	.Portal.Editor #editor-header .logo-editor-container,
-	.PortalView #portal-header-container .row .portal-logo {
-		max-width: 80px;
-		max-height: 100%;
-		margin: 0px 0px 25px 0px;
-	}
+  .Portal.Editor #editor-header .logo-editor-container,
+  .PortalView #portal-header-container .row .portal-logo {
+    max-width: 80px;
+    max-height: 100%;
+    margin: 0px 0px 25px 0px;
+  }
 
-	.Portal.Editor #editor-header .logo-editor-container {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
+  .Portal.Editor #editor-header .logo-editor-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
-	.PortalView #portal-header-container .portal-title{
-		margin: 0px 3px 0px 3px;
-		font-size: 35px;
-		line-height: 1.2;
-	}
+  .PortalView #portal-header-container .portal-title {
+    margin: 0px 3px 0px 3px;
+    font-size: 35px;
+    line-height: 1.2;
+  }
 
-	.Portal.Editor .title-container {
-		width: 100%;
-		padding-left: 5px;
-		padding-right: 5px;
-		box-sizing: border-box;
-	}
+  .Portal.Editor .title-container {
+    width: 100%;
+    padding-left: 5px;
+    padding-right: 5px;
+    box-sizing: border-box;
+  }
 
-	.Portal.Editor #editor-header h5 {
-		margin: 5px 0px;
-		text-align: left;
-	}
+  .Portal.Editor #editor-header h5 {
+    margin: 5px 0px;
+    text-align: left;
+  }
 
-	/* Portal & portal editor navigation ('tabs') */
+  /* Portal & portal editor navigation ('tabs') */
 
-	.Editor.Portal .section-links-toggle-container,
-	.PortalView .section-links-container {
-		width: 100%;
-		background: var(--portal-primary-color);
-		color: white;
-		position: fixed;
-		box-shadow: 0px 1px 12px 3px rgba(0,0,0,0.3);
-		z-index: 12; /* so it stays above footer and editor dropzone elements*/
-		transition: bottom 0.3s;
-	}
+  .Editor.Portal .section-links-toggle-container,
+  .PortalView .section-links-container {
+    width: 100%;
+    background: var(--portal-primary-color);
+    color: white;
+    position: fixed;
+    box-shadow: 0px 1px 12px 3px rgba(0, 0, 0, 0.3);
+    z-index: 12; /* so it stays above footer and editor dropzone elements*/
+    transition: bottom 0.3s;
+  }
 
-	/* Default position of portal pages nav on mobile. */
-	/* This will be changed by PortalEditorView */
-	.PortalView .section-links-container,
-	.Editor.Portal .section-links-toggle-container {
-		bottom: 0;
-		padding-left: 0;
-	}
+  /* Default position of portal pages nav on mobile. */
+  /* This will be changed by PortalEditorView */
+  .PortalView .section-links-container,
+  .Editor.Portal .section-links-toggle-container {
+    bottom: 0;
+    padding-left: 0;
+  }
 
-	.PortalView #portal-section-tabs,
-	.Editor.Portal	#portal-section-tabs {
-		display: flex;
-		flex-direction: column;
-		flex-wrap: nowrap;
-	}
+  .PortalView #portal-section-tabs,
+  .Editor.Portal #portal-section-tabs {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
 
-	.Editor.Portal .show-sections-toggle,
-	.PortalView .show-sections-toggle{
-		visibility: visible;
-		display: block;
-		text-align: center;
-		padding: 10px;
-		font-size: 14px;
-		cursor: pointer;
-	}
+  .Editor.Portal .show-sections-toggle,
+  .PortalView .show-sections-toggle {
+    visibility: visible;
+    display: block;
+    text-align: center;
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+  }
 
-	/* .Editor.Portal #portal-section-tabs .section-links-container > li > a, */
-	/* .Editor.Portal #portal-section-tabs .section-links-container > li, */
-	.Editor.Portal #portal-section-tabs .section-link-container {
-		width: 100%;
-		border-top-right-radius: 0px;
-		border-top-left-radius: 0px;
-		background: white;
-	}
+  /* .Editor.Portal #portal-section-tabs .section-links-container > li > a, */
+  /* .Editor.Portal #portal-section-tabs .section-links-container > li, */
+  .Editor.Portal #portal-section-tabs .section-link-container {
+    width: 100%;
+    border-top-right-radius: 0px;
+    border-top-left-radius: 0px;
+    background: white;
+  }
 
-	.Editor.Portal #portal-section-tabs a.portal-section-link {
-		width: calc(100% - 65px);
-		text-align: left;
-	}
+  .Editor.Portal #portal-section-tabs a.portal-section-link {
+    width: calc(100% - 65px);
+    text-align: left;
+  }
 
-	.Editor.Portal #portal-section-tabs .portal-section-link,
-	.Editor.Portal #portal-section-tabs .section-menu-link,
-	.port-editor-sections .section-link-container .handle {
-		color: #555;
-	}
+  .Editor.Portal #portal-section-tabs .portal-section-link,
+  .Editor.Portal #portal-section-tabs .section-menu-link,
+  .port-editor-sections .section-link-container .handle {
+    color: #555;
+  }
 
-	.Editor.Portal #portal-section-tabs .section-menu-link {
-		padding: 8px 10px;
-	}
+  .Editor.Portal #portal-section-tabs .section-menu-link {
+    padding: 8px 10px;
+  }
 
-	.Editor.Portal .port-editor-sections .section-link-container .dropdown-menu > li > a {
-		border-radius: 6px;
-		padding: 8px;
-	}
+  .Editor.Portal
+    .port-editor-sections
+    .section-link-container
+    .dropdown-menu
+    > li
+    > a {
+    border-radius: 6px;
+    padding: 8px;
+  }
 
-	.section-link-container .popover.fade.right.in{
-		left: 0 !important; 
-		right: 0 !important; 
-		margin-left: auto !important; 
-		margin-right: auto !important; 
-		top: -100% !important;
-		box-sizing: content-box;
-		
-	}
-	.section-link-container .popover.fade.right.in > .arrow {
-		display: none;
-	}
-	.section-link-container .popover.fade.right.in p{
-		color: #555;
-	}
+  .section-link-container .popover.fade.right.in {
+    left: 0 !important;
+    right: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    top: -100% !important;
+    box-sizing: content-box;
+  }
+  .section-link-container .popover.fade.right.in > .arrow {
+    display: none;
+  }
+  .section-link-container .popover.fade.right.in p {
+    color: #555;
+  }
 
-	.Editor.Portal ul.section-links-container > li.active,
-	.Editor.Portal ul.section-links-container > li:hover {
-		background: var(--portal-secondary-color) !important;
-	}
-	.Editor.Portal ul.section-links-container > li:hover > a,
-	.Editor.Portal ul.section-links-container > li.active > a {
-		font-weight: bolder;
-		color: white !important;
-	}
+  .Editor.Portal ul.section-links-container > li.active,
+  .Editor.Portal ul.section-links-container > li:hover {
+    background: var(--portal-secondary-color) !important;
+  }
+  .Editor.Portal ul.section-links-container > li:hover > a,
+  .Editor.Portal ul.section-links-container > li.active > a {
+    font-weight: bolder;
+    color: white !important;
+  }
 
-	#portal-section-tabs .section-link-container.page-AddPage .portal-section-link {
-		width: unset;
-		margin-left: 0px !important;
-	}
+  #portal-section-tabs
+    .section-link-container.page-AddPage
+    .portal-section-link {
+    width: unset;
+    margin-left: 0px !important;
+  }
 
-	#portal-section-tabs .section-link-container.page-AddPage .icon {
-		font-size: 1em;
-		margin-right: 5px;
-	}
+  #portal-section-tabs .section-link-container.page-AddPage .icon {
+    font-size: 1em;
+    margin-right: 5px;
+  }
 
-	#portal-section-tabs .section-link-container.page-AddPage .portal-section-link::after{
-		content: " Add a page"
-	}
+  #portal-section-tabs
+    .section-link-container.page-AddPage
+    .portal-section-link::after {
+    content: " Add a page";
+  }
 
-	.Editor.Portal #portal-section-tabs .section-menu-link {
-		float: right;
-	}
+  .Editor.Portal #portal-section-tabs .section-menu-link {
+    float: right;
+  }
 
-	/* Portal markdown section */
+  /* Portal markdown section */
 
-	.portal-display-text {
-		padding: 0.5rem;
-		text-align: center;
-	}
+  .portal-display-text {
+    padding: 0.5rem;
+    text-align: center;
+  }
 
-	.portal-display-text h2 {
-		font-size: 1.5em;
-		line-height: 1.4;
-		padding: 10px 2px;
-	}
+  .portal-display-text h2 {
+    font-size: 1.5em;
+    line-height: 1.4;
+    padding: 10px 2px;
+  }
 
-	.tab-pane.portal-section-view {
+  .tab-pane.portal-section-view {
     width: 100vw;
-		overflow-y: scroll;
-		overflow-x: hidden;
-	}
-	.portal-section-content {
+    overflow-y: scroll;
+    overflow-x: hidden;
+  }
+  .portal-section-content {
     display: flex;
     flex-direction: column;
     width: 100vw;
     padding: 0;
-	}
+  }
 
-	.toc .mobile {
-		display: flex;
-		flex-direction: row;
-		width: 100vw;
-		margin: 0;
-		background-color: #2c7e90;
-		background-color: var(--portal-secondary-color);
-		color: white;
-	}
+  .toc .mobile {
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+    margin: 0;
+    background-color: #2c7e90;
+    background-color: var(--portal-secondary-color);
+    color: white;
+  }
 
-	.toc .mobile a,
-	.toc .mobile a:hover {
-		color: white;
-	}
+  .toc .mobile a,
+  .toc .mobile a:hover {
+    color: white;
+  }
 
-	.toc .desktop {
-	  display: none;
-	}
+  .toc .desktop {
+    display: none;
+  }
 
-	.toc-ul li, .toc-ul a {
-		background-color: transparent;
-	}
+  .toc-ul li,
+  .toc-ul a {
+    background-color: transparent;
+  }
 
-	.mobile .toc-ul, .mobile  .toc-ul {
+  .mobile .toc-ul,
+  .mobile .toc-ul {
     position: sticky;
     position: -webkit-sticky;
     background-color: transparent;
     margin-left: 0;
     padding: 0px;
-	}
+  }
 
-	.mobile .toc-ul, .mobile .toc-ul a {
-		color: #242424;
-	}
+  .mobile .toc-ul,
+  .mobile .toc-ul a {
+    color: #242424;
+  }
 
-	.mobile .toc-ul, .mobile .toc-ul li.active > a {
-		color: white;
-	}
+  .mobile .toc-ul,
+  .mobile .toc-ul li.active > a {
+    color: white;
+  }
 
-	.toc .mobile > * {
-		padding: 9px;
-		box-sizing: border-box;
-		display: flex;
-		flex-direction: row;
-		justify-content: center;
-		align-items: center;
-	}
-	.toc .mobile > *.hidden {
-		display: none;
-	}
+  .toc .mobile > * {
+    padding: 9px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
+  .toc .mobile > *.hidden {
+    display: none;
+  }
 
-	.toc .mobile > * > a {
-		padding-right: 7px;
-	}
+  .toc .mobile > * > a {
+    padding-right: 7px;
+  }
 
-	.toc .mobile > .second-level-items {
-		min-width: 48vw;
-	}
+  .toc .mobile > .second-level-items {
+    min-width: 48vw;
+  }
 
-	.toc .mobile > .second-level-items .dropdown-menu {
-		right: 0;
+  .toc .mobile > .second-level-items .dropdown-menu {
+    right: 0;
     left: unset;
     min-width: 100%;
     margin-right: 4px;
-	}
+  }
 
-	.toc .mobile > .top-level-items .dropdown-menu {
-		min-width: 100%;
-	}
+  .toc .mobile > .top-level-items .dropdown-menu {
+    min-width: 100%;
+  }
 
-	.toc .mobile > .top-level-items {
-		margin: 0;
-		min-width: 48vw;
-		max-width: 100vw;
-		padding-left: 10px;
-	}
+  .toc .mobile > .top-level-items {
+    margin: 0;
+    min-width: 48vw;
+    max-width: 100vw;
+    padding-left: 10px;
+  }
 
-	.toc .mobile > .mobile-toc-divider {
-		width: 4vw;
-	}
+  .toc .mobile > .mobile-toc-divider {
+    width: 4vw;
+  }
 
-	.toc .mobile > .mobile-toc-divider:before{
-		font-size: 21px;
-	}
+  .toc .mobile > .mobile-toc-divider:before {
+    font-size: 21px;
+  }
 
-	.nav.mobile li > a {
-		display: list-item;
-	}
+  .nav.mobile li > a {
+    display: list-item;
+  }
 
-	/* affix the TOC to the top */
-	.toc-view.affix,
-	.toc-view.affix {
+  /* affix the TOC to the top */
+  .toc-view.affix,
+  .toc-view.affix {
     top: 0px;
-	}
+  }
 
-	/* make markdown content take full width */
-	.markdown.span9 {
+  /* make markdown content take full width */
+  .markdown.span9 {
     padding: 13px 10px;
     width: 100vw;
     box-sizing: border-box;
-		margin: 0;
-		overflow-y: scroll; /* so that vw calculation includes space for scroll bar */
-	}
+    margin: 0;
+    overflow-y: scroll; /* so that vw calculation includes space for scroll bar */
+  }
 
-	.toc-view.span3.affix + .span9 {
-		margin-left: 0;
-	}
+  .toc-view.span3.affix + .span9 {
+    margin-left: 0;
+  }
 
-	.markdown code {
-		white-space: pre-wrap;
-	}
+  .markdown code {
+    white-space: pre-wrap;
+  }
 
-	#portal-sections {
+  #portal-sections {
     max-width: 100vw;
     overflow-x: hidden;
-	}
+  }
 
-	/*************** Portal Editor ***********/
+  /*************** Portal Editor ***********/
 
-	/* Decrease the padding so that content has more room on narrow screens */
-	.port-editor-section.port-editor-data {
-		padding: 5px;
-		margin-right: 30px;
-	}
+  /* Decrease the padding so that content has more room on narrow screens */
+  .port-editor-section.port-editor-data {
+    padding: 5px;
+    margin-right: 30px;
+  }
 
-	.port-editor-md textarea.markdown {
-		margin: 0;
-		width: 100%;
-	}
+  .port-editor-md textarea.markdown {
+    margin: 0;
+    width: 100%;
+  }
 
-	.Portal.Editor .port-editor-md textarea.auto-resize {
+  .Portal.Editor .port-editor-md textarea.auto-resize {
     max-height: 80px !important;
     overflow-y: scroll;
-	}
+  }
 
-	.Portal.Editor .portal-display-text {
-		margin-top: 40px;
-	}
+  .Portal.Editor .portal-display-text {
+    margin-top: 40px;
+  }
 
-	.port-editor-section.port-editor-md .dropzone .dz-message {
-		font-size: 12px;
-	}
+  .port-editor-section.port-editor-md .dropzone .dz-message {
+    font-size: 12px;
+  }
 
-	.port-editor-section  > h3 {
-		line-height: 1.2;
-		margin-bottom: 10px;
-	}
+  .port-editor-section > h3 {
+    line-height: 1.2;
+    margin-bottom: 10px;
+  }
 
-	.editor-view.portal-editor div#Metrics p,
-	.port-editor-section  > h3,
-	.port-editor-settings,
-	.port-editor-settings > .row-fluid,
-	.port-editor-md > * {
-		padding-left: 9px;
-	  padding-right: 9px;
-		margin-left: 0;
-		margin-right: 0;
-		width: 100%;
-		box-sizing: border-box;
-	}
+  .editor-view.portal-editor div#Metrics p,
+  .port-editor-section > h3,
+  .port-editor-settings,
+  .port-editor-settings > .row-fluid,
+  .port-editor-md > * {
+    padding-left: 9px;
+    padding-right: 9px;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
 
-	.portal-editor .toc {
-		margin-left: -9px !important;
-	}
+  .portal-editor .toc {
+    margin-left: -9px !important;
+  }
 
-	#Metrics metrics-figure-container {
-		max-width: 100%;
-	}
+  #Metrics metrics-figure-container {
+    max-width: 100%;
+  }
 
-	.row-fluid .span6.pagination-left {
-  		width: 100%;
-	}
-	#Content{
-		width: 100%;
-		padding-left: 0;
-		padding-right: 0;
+  .row-fluid .span6.pagination-left {
+    width: 100%;
+  }
+  #Content {
+    width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+  }
 
-	}
-
-  #portal-header-container{
+  #portal-header-container {
     margin-bottom: 0px;
   }
-  .PortalView #portal-header-container .row{
+  .PortalView #portal-header-container .row {
     padding: 0px;
   }
-  #editPortal.btn{
+  #editPortal.btn {
     margin: 10px;
   }
-  .portal-view .portal-description{
+  .portal-view .portal-description {
     padding: 10px;
     margin-right: 0px;
   }
 
-	/************** Custom search filter editor ****************/
+  /************** Custom search filter editor ****************/
 
-	.filter-editor .modal-body {
-		padding: 1rem;
-	}
-	.filter-editor .fields-container,
-	.ui-builder-choices-container {
-		grid-template-columns: 100%;
-		gap: 1rem;
-		justify-items: center;
-	}
+  .filter-editor .modal-body {
+    padding: 1rem;
+  }
+  .filter-editor .fields-container,
+  .ui-builder-choices-container {
+    grid-template-columns: 100%;
+    gap: 1rem;
+    justify-items: center;
+  }
 
-	.choice-input,
-	.choice-editor .ui-builder-container-text {
-		width: unset;
-		max-width: 206px;
-	}
+  .choice-input,
+  .choice-editor .ui-builder-container-text {
+    width: unset;
+    max-width: 206px;
+  }
 
-	/************** Search page ****************/
-	#sidebar{
-		width: 90%;
-	}
-	#results-container{
-		width: 90%;
-		margin-left: 10px;
-	}
-	.filter-contain > .filter-input-contain{
-		width: 100%;
-	}
-	.filter-contain > label{
-		font-size: 1.1em;
-	}
+  /************** Search page ****************/
+  #sidebar {
+    width: 90%;
+  }
+  #results-container {
+    width: 90%;
+    margin-left: 10px;
+  }
+  .filter-contain > .filter-input-contain {
+    width: 100%;
+  }
+  .filter-contain > label {
+    font-size: 1.1em;
+  }
 
-	/***** Stats ********/
-	.profile .format-charts .chart{
-		width: 100%;
-		float: none;
-	}
-	.profile .format-charts-container{
-		height: auto;
-	}
-	#metadata-chart, #data-chart{
-		width: 100%;
-		float: none;
-	}
-	/********* Login popup **********/
-	.fancybox-inline .span7 .well{
-		max-width: 83%;
-	}
-	.fancybox-inline > .row-fluid > .span7{
-		float: none;
-		width: 44%;
-		padding-left: 0px;
-		margin-left: 0px;
-	}
-	.fancybox-inline h2{
-		display: inline;
-	}
+  /***** Stats ********/
+  .profile .format-charts .chart {
+    width: 100%;
+    float: none;
+  }
+  .profile .format-charts-container {
+    height: auto;
+  }
+  #metadata-chart,
+  #data-chart {
+    width: 100%;
+    float: none;
+  }
+  /********* Login popup **********/
+  .fancybox-inline .span7 .well {
+    max-width: 83%;
+  }
+  .fancybox-inline > .row-fluid > .span7 {
+    float: none;
+    width: 44%;
+    padding-left: 0px;
+    margin-left: 0px;
+  }
+  .fancybox-inline h2 {
+    display: inline;
+  }
 
-	/******************************************
+  /******************************************
 	* Metrics Styling
 	********************************************/
 
-	.charts-container .charts.row-fluid {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-	}
+  .charts-container .charts.row-fluid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
-	.charts-container .span6.packages.badge-container {
-			/* width: 100%; */
-			display: flex;
-			flex-direction: column;
-	}
+  .charts-container .span6.packages.badge-container {
+    /* width: 100%; */
+    display: flex;
+    flex-direction: column;
+  }
 
-	.charts-container .row-fluid .span6 {
-			width: 100%;
-			height: 100%;
-			display: flex;
-			justify-content: center;
-			margin: 0;
-			box-sizing: border-box;
-	}
+  .charts-container .row-fluid .span6 {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    box-sizing: border-box;
+  }
 
-	.charts-container .stripe.quick-stats {
-			height: auto;
-	}
+  .charts-container .stripe.quick-stats {
+    height: auto;
+  }
 
-	.charts-container svg.circle-badge {
-			width: 220px;
-	}
+  .charts-container svg.circle-badge {
+    width: 220px;
+  }
 
-	.charts-container .temporal-coverage-chart.chart {
-		margin-left: 0;
-	}
+  .charts-container .temporal-coverage-chart.chart {
+    margin-left: 0;
+  }
 
-	.temporal-coverage-chart.chart {
-		width: 100%;
-	}
+  .temporal-coverage-chart.chart {
+    width: 100%;
+  }
 
   /************ Access Policy View *************/
-  .access-policy-view .public-toggle-container .can-toggle{
+  .access-policy-view .public-toggle-container .can-toggle {
     margin: auto;
   }
 
   /************ Editor footer (portal editor, metadata editor) *************/
-  #editor-footer{
-	grid-template-rows: auto auto;
-	grid-template-columns: 100%;
-	grid-template-areas: "save-controls" "trial-message";
-	gap: 0.4rem;
-	padding: 0.5rem;
+  #editor-footer {
+    grid-template-rows: auto auto;
+    grid-template-columns: 100%;
+    grid-template-areas: "save-controls" "trial-message";
+    gap: 0.4rem;
+    padding: 0.5rem;
   }
-  #editor-footer .free-trial-message{
-	justify-self: center;
-	font-size: 0.87rem;
+  #editor-footer .free-trial-message {
+    justify-self: center;
+    font-size: 0.87rem;
   }
-  .editor-save-controls{
-	justify-self: center;
+  .editor-save-controls {
+    justify-self: center;
   }
-  .editor-save-controls > a{
+  .editor-save-controls > a {
     font-size: 1em;
   }
 }
 
-@media only screen and (max-width : 1000px){
-	/* Editor styles */
-	.temporal-coverage .control-label span{
-		display: block;
-	}
-	.temporal-coverage .control-label {
-    	height: 4em;
-	}
+@media only screen and (max-width: 1000px) {
+  /* Editor styles */
+  .temporal-coverage .control-label span {
+    display: block;
+  }
+  .temporal-coverage .control-label {
+    height: 4em;
+  }
 
-    /******************************************
+  /******************************************
     * Metrics Controller Styling
     ********************************************/
-    /* Style for the metric button */
-    a.btn.metrics {
-        float:none;
-        width: 150px;
-        margin: 1px;
-        padding-right: 0px;
-    }
-    .btn-group+.btn-group, .btn-toolbar>.btn+.btn,
-    .btn-toolbar>.btn+.btn-group, .btn-toolbar>.btn-group+.btn {
-        margin-left: 0px;
-    }
+  /* Style for the metric button */
+  a.btn.metrics {
+    float: none;
+    width: 150px;
+    margin: 1px;
+    padding-right: 0px;
+  }
+  .btn-group + .btn-group,
+  .btn-toolbar > .btn + .btn,
+  .btn-toolbar > .btn + .btn-group,
+  .btn-toolbar > .btn-group + .btn {
+    margin-left: 0px;
+  }
 
-    .metric-well {
-        float:none;
-        flex-wrap: wrap;
-        width: 100%;
-        height: auto;
-    }
+  .metric-well {
+    float: none;
+    flex-wrap: wrap;
+    width: 100%;
+    height: auto;
+  }
 
-    /* Style for the toolbars that contains buttons in the well on either side. */
-    .metric-toolbar {
-        float:none;
-        width: 100%;
-        justify-content: center;
-        align-items: center;
-        margin-top: 0px;
-    }
-    .edit-toolbar {
-        float:none;
-        border-left: none;
-        margin-top: none;
-        justify-content: center;
-        align-items: center;
-    }
+  /* Style for the toolbars that contains buttons in the well on either side. */
+  .metric-toolbar {
+    float: none;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0px;
+  }
+  .edit-toolbar {
+    float: none;
+    border-left: none;
+    margin-top: none;
+    justify-content: center;
+    align-items: center;
+  }
 
-    .edit-toolbar >
-    #metadata-controls-container >
-    .metadata-controls-container {
-        margin-left: 0px;
-        margin-top: 5px;
-        margin-right: 0px;
-        height: 38px;
-    }
+  .edit-toolbar > #metadata-controls-container > .metadata-controls-container {
+    margin-left: 0px;
+    margin-top: 5px;
+    margin-right: 0px;
+    height: 38px;
+  }
 
-    .edit-toolbar >
-    #owner-controls-container >
-    .authority-controls {
-        width: auto;
-        height: 38px;
-        margin-top: -1px;
-        margin-right: 0px;
-        margin-left: 0px;
-    }
+  .edit-toolbar > #owner-controls-container > .authority-controls {
+    width: auto;
+    height: 38px;
+    margin-top: -1px;
+    margin-right: 0px;
+    margin-left: 0px;
+  }
 
-    .edit-toolbar >
-    #owner-controls-container >
-    .authority-controls >
-    #editMetadata {
-        margin-right: none;
-    }
-		
-		/* Query rules in the query builder */
-		.query-rule {
-			grid-template-columns: 2.2rem auto 1.3rem;
-			grid-template-rows: auto;
-			gap: 0.5rem 1rem;
-			grid-template-areas:
-				"info field remove"
-				"info operator remove"
-				"info value remove";	
-		}
+  .edit-toolbar
+    > #owner-controls-container
+    > .authority-controls
+    > #editMetadata {
+    margin-right: none;
+  }
 
-		.query-rule.rule-group{
-			grid-template-columns: 2.2rem auto 1.3rem;
-			grid-template-areas:
-				"info query-builder remove"
-				"info query-builder remove"
-				"info query-builder remove";
-		}
-		
-		.rules-container {
-			padding: 2rem 0.7rem 2rem 1rem;
-			grid-gap: 2rem;
-		}
-		
-		.query-rule .rule-info {
-			font-size: 0.7rem;
-		}
+  /* Query rules in the query builder */
+  .query-rule {
+    grid-template-columns: 2.2rem auto 1.3rem;
+    grid-template-rows: auto;
+    gap: 0.5rem 1rem;
+    grid-template-areas:
+      "info field remove"
+      "info operator remove"
+      "info value remove";
+  }
 
+  .query-rule.rule-group {
+    grid-template-columns: 2.2rem auto 1.3rem;
+    grid-template-areas:
+      "info query-builder remove"
+      "info query-builder remove"
+      "info query-builder remove";
+  }
+
+  .rules-container {
+    padding: 2rem 0.7rem 2rem 1rem;
+    grid-gap: 2rem;
+  }
+
+  .query-rule .rule-info {
+    font-size: 0.7rem;
+  }
 }
 
 /* Smartphones (landscape) ----------- */
-@media only screen and (max-width : 700px){
-	/*************** General Structure ***********/
-	.row-fluid .span6.pagination-left {
-  		width: 100%;
-	}
+@media only screen and (max-width: 700px) {
+  /*************** General Structure ***********/
+  .row-fluid .span6.pagination-left {
+    width: 100%;
+  }
 
   /** Metrics **/
   #metric-modal .modal-body {
@@ -914,199 +920,179 @@
     row-gap: 40px;
     column-gap: 0px;
   }
-  #metric-modal .empty-citation-list{
+  #metric-modal .empty-citation-list {
     width: 90%;
   }
 }
 
 /* Smartphones (portrait) ----------- */
-@media only screen and (max-width : 420px) {
-
+@media only screen and (max-width: 420px) {
   .modal,
   .access-policy-view-container.modal,
-  #metric-modal{
+  #metric-modal {
     top: 5%;
     width: 90%;
     left: 5%;
     margin-left: 0px;
   }
-  .access-policy-view thead{
+  .access-policy-view thead {
     display: none;
   }
   .access-policy-view table,
   .access-policy-view tbody,
   .access-policy-view tr,
-  .access-policy-view td{
+  .access-policy-view td {
     display: block;
   }
-  .access-policy-view td{
+  .access-policy-view td {
     border-top-width: 0px;
   }
-  .access-policy-view .subject{
-    font-size: .8em;
+  .access-policy-view .subject {
+    font-size: 0.8em;
     color: #999;
     padding-top: 0px;
     padding-bottom: 0px;
     line-height: 1.5em;
   }
-  .access-policy-view .access{
+  .access-policy-view .access {
     width: 80%;
     display: inline-block;
     box-sizing: border-box;
     padding-top: 0px;
   }
-  .access-policy-view .remove-rule{
+  .access-policy-view .remove-rule {
     width: 20%;
     display: inline-block;
     box-sizing: border-box;
     padding-top: 0px;
   }
-  .access-policy-view .access-rule{
-    border-bottom: 1px solid #CCC;
+  .access-policy-view .access-rule {
+    border-bottom: 1px solid #ccc;
   }
-  .access-policy-view .access-rule.new .access{
+  .access-policy-view .access-rule.new .access {
     width: 80%;
     display: inline-block;
     box-sizing: border-box;
   }
   .access-policy-view .access-rule.new .access select,
-  .access-policy-view .access-rule.new .add-rule .add{
+  .access-policy-view .access-rule.new .add-rule .add {
     margin-top: 0px;
   }
-  .access-policy-view .access-rule.new .add-rule{
+  .access-policy-view .access-rule.new .add-rule {
     width: 20%;
     display: inline-block;
     box-sizing: border-box;
     padding-top: 0px;
   }
 
-  #mainContent .form-input{
+  #mainContent .form-input {
     grid-template-columns: 80% 20%;
   }
-  #mainContent input{
+  #mainContent input {
     font-size: 1.5em;
   }
-
 }
 
 /**********
 * These styles control the mobile navigation
 **********/
-@media only screen and (min-width : 900px) and (max-width : 1050px) {
+@media only screen and (min-width: 900px) and (max-width: 1050px) {
   /* Collapse the repo title into multiple lines, once we get to a certain window width */
-  .navbar .title{
+  .navbar .title {
     display: inline-block;
     max-width: 140px;
     font-size: 1.1em;
     line-height: 1em;
   }
   /* Make the nav links a bit smaller */
-  .navbar .nav > li > a{
+  .navbar .nav > li > a {
     font-size: 1.1em;
   }
 }
-@media only screen and (max-width : 900px) {
-
-    /* At this window width, show the mobile nav hamburger menu and hide the non-mobile nav links */
-    #nav-trigger{
-      display: block;
-    }
-    #main-nav{
-      display: none;
-    }
-    /* Dropdown menus in mobile nav should change from popover-style dropdowns to listed links */
-    #main-nav .dropdown-menu {
-      display: block;
-      position: relative;
-      background-color: transparent;
-      border: 0px;
-      box-shadow: none;
-      margin-left: -5%;
-      width: auto;
-    }
-    /* Hide dropdown headers, dividers, borders, and the caret icon */
-    #main-nav .dropdown-header,
-    #main-nav .divider{
-      display: none;
-    }
-    #Navbar .dropdown-menu:before, #Navbar .dropdown-menu:after{
-      content: none;
-    }
-    #main-nav .dropdown-menu > li{
-      border-bottom: 0px;
-    }
-    /* Dropdown menu links should be white */
-    #main-nav .dropdown-menu > li > a{
-      color: #FFF;
-      text-align: left;
-    }
-    /* Set a height on input forms in the nav*/
-    #main-nav form{
-      height: 40px;
-    }
+@media only screen and (max-width: 900px) {
+  /* At this window width, show the mobile nav hamburger menu and hide the non-mobile nav links */
+  #nav-trigger {
+    display: block;
+  }
+  #main-nav {
+    display: none;
+  }
+  /* Dropdown menus in mobile nav should change from popover-style dropdowns to listed links */
+  #main-nav .dropdown-menu {
+    display: block;
+    position: relative;
+    background-color: transparent;
+    border: 0px;
+    box-shadow: none;
+    margin-left: -5%;
+    width: auto;
+  }
+  /* Hide dropdown headers, dividers, borders, and the caret icon */
+  #main-nav .dropdown-header,
+  #main-nav .divider {
+    display: none;
+  }
+  #Navbar .dropdown-menu:before,
+  #Navbar .dropdown-menu:after {
+    content: none;
+  }
+  #main-nav .dropdown-menu > li {
+    border-bottom: 0px;
+  }
+  /* Dropdown menu links should be white */
+  #main-nav .dropdown-menu > li > a {
+    color: #fff;
+    text-align: left;
+  }
+  /* Set a height on input forms in the nav*/
+  #main-nav form {
+    height: 40px;
+  }
 }
 
 /* iPads (portrait and landscape) ----------- */
-@media only screen
-and (min-width : 768px)
-and (max-width : 1024px) {
-/* STYLES GO HERE */
+@media only screen and (min-width: 768px) and (max-width: 1024px) {
+  /* STYLES GO HERE */
 }
 
 /* iPads (landscape) ----------- */
-@media only screen
-and (min-width : 768px)
-and (max-width : 1024px)
-and (orientation : landscape) {
-/* STYLES GO HERE */
+@media only screen and (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+  /* STYLES GO HERE */
 }
 
 /* iPads (portrait) ----------- */
-@media only screen
-and (min-width : 768px)
-and (max-width : 1024px)
-and (orientation : portrait) {
-/* STYLES GO HERE */
+@media only screen and (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  /* STYLES GO HERE */
 }
 
 /* Desktops and laptops ----------- */
-@media only screen
-and (min-width : 1224px) {
-/* STYLES GO HERE */
+@media only screen and (min-width: 1224px) {
+  /* STYLES GO HERE */
 }
 
 /* Large screens ----------- */
-@media only screen
-and (min-width : 1824px) {
-/* STYLES GO HERE */
+@media only screen and (min-width: 1824px) {
+  /* STYLES GO HERE */
   #portals-list-container {
-      width: 50%;
-      margin: auto;
+    width: 50%;
+    margin: auto;
   }
 }
 
 /* iPhone 5 (portrait &amp; landscape)----------- */
-@media only screen
-and (min-width : 320px)
-and (max-width : 568px) {
+@media only screen and (min-width: 320px) and (max-width: 568px) {
   .access-policy-view-container.modal .modal-body,
-  .modal .modal-body{
+  .modal .modal-body {
     max-height: 350px;
   }
 }
 
 /* iPhone 5 (landscape)----------- */
-@media only screen
-and (min-width : 320px)
-and (max-width : 568px)
-and (orientation : landscape) {
-/* STYLES GO HERE */
+@media only screen and (min-width: 320px) and (max-width: 568px) and (orientation: landscape) {
+  /* STYLES GO HERE */
 }
 
 /* iPhone 5 (portrait)----------- */
-@media only screen
-and (min-width : 320px)
-and (max-width : 568px)
-and (orientation : portrait) {
-/* STYLES GO HERE */
+@media only screen and (min-width: 320px) and (max-width: 568px) and (orientation: portrait) {
+  /* STYLES GO HERE */
 }

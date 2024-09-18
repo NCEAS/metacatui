@@ -46,7 +46,6 @@ define([
           .at(1)
           .get("codeExplanation")
           .should.equal("Technician error");
-        
       });
     });
 
@@ -55,27 +54,24 @@ define([
         this.emlMissingValueCodes.add({
           code: "9999",
           codeExplanation: "Sensor down",
-        })
+        });
         var errors = this.emlMissingValueCodes.validate();
 
         expect(errors).to.be.null;
       });
 
       it("should validate invalid EMLMissingValueCodes", function () {
-        
         this.emlMissingValueCodes.add({
           code: "",
           codeExplanation: "Sensor down",
-        })
+        });
 
         var errors = this.emlMissingValueCodes.validate();
 
         errors.should.be.an("object");
         errors.should.have.property("missingValueCode");
         errors.missingValueCode.should.be.a("string");
-
       });
     });
-
   });
 });

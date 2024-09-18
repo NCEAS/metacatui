@@ -25,7 +25,7 @@ define([
   DataCatalogView,
   FilterGroupsView,
   template,
-  nGeohash
+  nGeohash,
 ) {
   /**
    * @class DataCatalogViewWithFilters
@@ -150,7 +150,7 @@ define([
           isMySearch:
             _.indexOf(
               this.searchModel.get("username"),
-              MetacatUI.appUserModel.get("username")
+              MetacatUI.appUserModel.get("username"),
             ) > -1,
           loading: loadingHTML,
           searchModelRef: this.searchModel,
@@ -159,7 +159,7 @@ define([
             MetacatUI.theme == "dataone" ? "Member Node" : "Data source",
         };
         compiledEl = this.template(
-          _.extend(this.searchModel.toJSON(), templateVars)
+          _.extend(this.searchModel.toJSON(), templateVars),
         );
         this.$el.html(compiledEl);
 
@@ -217,12 +217,12 @@ define([
         // Listen to changes in the Search model Filters to trigger a search
         this.stopListening(
           this.searchModel.get("filters"),
-          "add remove update reset change"
+          "add remove update reset change",
         );
         this.listenTo(
           this.searchModel.get("filters"),
           "add remove update reset change",
-          this.triggerSearch
+          this.triggerSearch,
         );
 
         // Listen to the MetacatUI.appModel for the search trigger
@@ -231,7 +231,7 @@ define([
         this.listenTo(
           MetacatUI.appUserModel,
           "change:loggedIn",
-          this.triggerSearch
+          this.triggerSearch,
         );
 
         // and go to a certain page if we have it
@@ -278,7 +278,7 @@ define([
             // Add the Filters to the array
             allFilters = _.union(allFilters, filterGroup.get("filters").models);
           },
-          this
+          this,
         );
 
         // Add the filters to the Search model
@@ -359,7 +359,7 @@ define([
             "northBoundCoord",
             "southBoundCoord",
             "eastBoundCoord",
-            "westBoundCoord"
+            "westBoundCoord",
           );
         }
         // Set the field list on the SolrResults collection as a comma-separated
@@ -415,7 +415,7 @@ define([
 
         var spatialFilter = _.findWhere(
           this.searchModel.get("filters").models,
-          { type: "SpatialFilter" }
+          { type: "SpatialFilter" },
         );
 
         if (isOn) {
@@ -439,7 +439,7 @@ define([
         google.maps.event.trigger(this.mapModel.get("map"), "idle");
 
         // Track this event
-        MetacatUI.analytics?.trackEvent("map", (isOn ? "on" : "off"));
+        MetacatUI.analytics?.trackEvent("map", isOn ? "on" : "off");
       },
 
       /**
@@ -645,7 +645,7 @@ define([
                 west,
                 north,
                 east,
-                precision
+                precision,
               );
             }
 
@@ -677,7 +677,7 @@ define([
                       viewRef.$(".toggle-map-filter").prop("checked", false);
                       viewRef.toggleMapFilter();
                     }
-                  }
+                  },
                 );
               }
             }
@@ -717,7 +717,7 @@ define([
           viewRef.hasDragged = true;
         });
       },
-    }
+    },
   );
   return DataCatalogViewWithFilters;
 });

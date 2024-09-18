@@ -1,9 +1,8 @@
 "use strict";
 
-/*global define */
 define(["cesium", "models/connectors/GeoPoints-Cesium"], function (
   Cesium,
-  GeoPointsCesiumConnector
+  GeoPointsCesiumConnector,
 ) {
   /**
    * @class GeoPointsCesiumPointsConnector
@@ -15,7 +14,7 @@ define(["cesium", "models/connectors/GeoPoints-Cesium"], function (
    * @extends GeoPointsCesiumConnector
    * @constructor
    * @classcategory Models/Connectors
-   * @since x.x.x
+   * @since 2.27.0
    */
   return GeoPointsCesiumConnector.extend(
     /** @lends GeoPointsCesiumPointsConnector.prototype */ {
@@ -164,6 +163,6 @@ define(["cesium", "models/connectors/GeoPoints-Cesium"], function (
           console.log("Failed to remove a point from a CesiumVectorData.", e);
         }
       },
-    }
+    },
   );
 });

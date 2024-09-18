@@ -140,7 +140,7 @@ define([
           console.log(
             "There was an error initializing a AssetColorPalette model" +
               ". Error details: " +
-              error
+              error,
           );
         }
       },
@@ -284,8 +284,7 @@ define([
       getDefaultColor: function () {
         return this.get("colors").getDefaultColor().get("color");
       },
-
-    }
+    },
   );
 
   return AssetColorPalette;

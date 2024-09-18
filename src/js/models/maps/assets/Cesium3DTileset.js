@@ -1,429 +1,423 @@
-'use strict';
+"use strict";
 
-define(
-  [
-    'cesium',
-    'models/maps/assets/MapAsset',
-    'models/maps/AssetColorPalette',
-    'collections/maps/VectorFilters'
-  ],
-  function (
-    Cesium,
-    MapAsset,
-    AssetColorPalette,
-    VectorFilters
-  ) {
-    /**
-     * @classdesc A Cesium3DTileset Model is a special type of vector layer that can be used in
-     * Cesium maps, and that follows the 3d-tiles specification. See
-     * {@link https://github.com/CesiumGS/3d-tiles}
-     * @classcategory Models/Maps/Assets
-     * @class Cesium3DTileset
-     * @name Cesium3DTileset
-     * @extends MapAsset
-     * @since 2.18.0
-     * @constructor
-    */
-    var Cesium3DTileset = MapAsset.extend(
-      /** @lends Cesium3DTileset.prototype */ {
+define([
+  "cesium",
+  "models/maps/assets/MapAsset",
+  "models/maps/AssetColorPalette",
+  "collections/maps/VectorFilters",
+], function (Cesium, MapAsset, AssetColorPalette, VectorFilters) {
+  /**
+   * @classdesc A Cesium3DTileset Model is a special type of vector layer that can be used in
+   * Cesium maps, and that follows the 3d-tiles specification. See
+   * {@link https://github.com/CesiumGS/3d-tiles}
+   * @classcategory Models/Maps/Assets
+   * @class Cesium3DTileset
+   * @name Cesium3DTileset
+   * @extends MapAsset
+   * @since 2.18.0
+   * @constructor
+   */
+  var Cesium3DTileset = MapAsset.extend(
+    /** @lends Cesium3DTileset.prototype */ {
+      /**
+       * The name of this type of model
+       * @type {string}
+       */
+      type: "Cesium3DTileset",
 
-        /**
-         * The name of this type of model
-         * @type {string}
-        */
-        type: 'Cesium3DTileset',
+      /**
+       * Options that are supported for creating 3D tilesets. The object will be passed
+       * to `Cesium.Cesium3DTileset(options)` as options, so the properties listed in
+       * the Cesium3DTileset documentation are also supported, see
+       * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileset.html}
+       * @typedef {Object} Cesium3DTileset#cesiumOptions
+       * @property {string|number} ionAssetId - If this tileset is hosted by Cesium Ion,
+       * then Ion asset ID.
+       * @property {string} cesiumToken - If this tileset is hosted by Cesium Ion, then
+       * the token needed to access this resource. If one is not set, then the default
+       * set in the repository's {@link AppConfig#cesiumToken} will be used.
+       */
 
-        /**
-         * Options that are supported for creating 3D tilesets. The object will be passed
-         * to `Cesium.Cesium3DTileset(options)` as options, so the properties listed in
-         * the Cesium3DTileset documentation are also supported, see
-         * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileset.html}
-         * @typedef {Object} Cesium3DTileset#cesiumOptions
-         * @property {string|number} ionAssetId - If this tileset is hosted by Cesium Ion,
-         * then Ion asset ID. 
-         * @property {string} cesiumToken - If this tileset is hosted by Cesium Ion, then
-         * the token needed to access this resource. If one is not set, then the default
-         * set in the repository's {@link AppConfig#cesiumToken} will be used.
-         */
+      /**
+       * Default attributes for Cesium3DTileset models
+       * @name Cesium3DTileset#defaults
+       * @extends MapAsset#defaults
+       * @type {Object}
+       * @property {'Cesium3DTileset'} type The format of the data. Must be
+       * 'Cesium3DTileset'.
+       * @property {VectorFilters} [filters=new VectorFilters()] A set of conditions
+       * used to show or hide specific features of this tileset.
+       * @property {AssetColorPalette} [colorPalette=new AssetColorPalette()] The color
+       * or colors mapped to attributes of this asset. Used to style the features and to
+       * make a legend.
+       * @property {Cesium.Cesium3DTileset} cesiumModel A model created and used by
+       * Cesium that organizes the data to display in the Cesium Widget. See
+       * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileset.html}
+       * @property {Cesium3DTileset#cesiumOptions} cesiumOptions options are passed
+       * to the function that creates the Cesium model. The properties of options are
+       * specific to each type of asset.
+       */
+      defaults: function () {
+        return Object.assign({}, this.constructor.__super__.defaults(), {
+          type: "Cesium3DTileset",
+          filters: new VectorFilters(),
+          cesiumModel: null,
+          cesiumOptions: {},
+          colorPalette: new AssetColorPalette(),
+          icon: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m12.6 12.8 4.9 5c.2.2.2.6 0 .8l-5 5c-.2.1-.5.1-.8 0l-4.9-5a.6.6 0 0 1 0-.8l5-5c.2-.2.5-.2.8 0ZM6.3 6.6l5 5v.7l-5 5c-.2.2-.6.2-.8 0l-5-5a.6.6 0 0 1 0-.8l5-5c.2-.1.6-.1.8 0Zm11 7.8 1.7 1.8c.3.2.3.6 0 .8l-.2.3c-.2.2-.6.2-.8 0l-1.8-1.8c-.2-.3-.2-.6 0-.9l.2-.2c.3-.2.6-.2.9 0ZM22 9.7l1.7 1.8c.3.2.3.6 0 .8l-3.3 3.4c-.2.2-.6.2-.9 0l-1.7-1.8a.6.6 0 0 1 0-.8L21 9.7c.3-.2.6-.2.9 0Zm-6-.2 1.7 1.7c.3.3.3.6 0 .9l-2 2c-.2.2-.6.2-.9 0l-1.7-1.8c-.2-.2-.3-.6 0-.8l2-2c.3-.3.6-.3.9 0ZM12.6.3l4.9 5c.2.2.2.5 0 .8l-5 4.9c-.2.2-.5.2-.8 0L6.8 6a.6.6 0 0 1 0-.8l5-4.9c.2-.2.5-.2.8 0Zm6.2 6.3 1.8 1.7c.2.3.2.7 0 1L19 10.7c-.3.3-.7.3-1 0L16.6 9c-.3-.2-.3-.6 0-1l1.4-1.3c.3-.3.7-.3 1 0Z"/></svg>',
+          featureType: Cesium.Cesium3DTileFeature,
+        });
+      },
 
-        /**
-         * Default attributes for Cesium3DTileset models
-         * @name Cesium3DTileset#defaults
-         * @extends MapAsset#defaults
-         * @type {Object}
-         * @property {'Cesium3DTileset'} type The format of the data. Must be
-         * 'Cesium3DTileset'.
-         * @property {VectorFilters} [filters=new VectorFilters()] A set of conditions
-         * used to show or hide specific features of this tileset.
-         * @property {AssetColorPalette} [colorPalette=new AssetColorPalette()] The color
-         * or colors mapped to attributes of this asset. Used to style the features and to
-         * make a legend.
-         * @property {Cesium.Cesium3DTileset} cesiumModel A model created and used by
-         * Cesium that organizes the data to display in the Cesium Widget. See
-         * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileset.html}
-         * @property {Cesium3DTileset#cesiumOptions} cesiumOptions options are passed
-         * to the function that creates the Cesium model. The properties of options are
-         * specific to each type of asset.
-        */
-        defaults: function () {
-          return Object.assign(
-            {},
-            this.constructor.__super__.defaults(),
-            {
-              type: 'Cesium3DTileset',
-              filters: new VectorFilters(),
-              cesiumModel: null,
-              cesiumOptions: {},
-              colorPalette: new AssetColorPalette(),
-              icon: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m12.6 12.8 4.9 5c.2.2.2.6 0 .8l-5 5c-.2.1-.5.1-.8 0l-4.9-5a.6.6 0 0 1 0-.8l5-5c.2-.2.5-.2.8 0ZM6.3 6.6l5 5v.7l-5 5c-.2.2-.6.2-.8 0l-5-5a.6.6 0 0 1 0-.8l5-5c.2-.1.6-.1.8 0Zm11 7.8 1.7 1.8c.3.2.3.6 0 .8l-.2.3c-.2.2-.6.2-.8 0l-1.8-1.8c-.2-.3-.2-.6 0-.9l.2-.2c.3-.2.6-.2.9 0ZM22 9.7l1.7 1.8c.3.2.3.6 0 .8l-3.3 3.4c-.2.2-.6.2-.9 0l-1.7-1.8a.6.6 0 0 1 0-.8L21 9.7c.3-.2.6-.2.9 0Zm-6-.2 1.7 1.7c.3.3.3.6 0 .9l-2 2c-.2.2-.6.2-.9 0l-1.7-1.8c-.2-.2-.3-.6 0-.8l2-2c.3-.3.6-.3.9 0ZM12.6.3l4.9 5c.2.2.2.5 0 .8l-5 4.9c-.2.2-.5.2-.8 0L6.8 6a.6.6 0 0 1 0-.8l5-4.9c.2-.2.5-.2.8 0Zm6.2 6.3 1.8 1.7c.2.3.2.7 0 1L19 10.7c-.3.3-.7.3-1 0L16.6 9c-.3-.2-.3-.6 0-1l1.4-1.3c.3-.3.7-.3 1 0Z"/></svg>',
-              featureType: Cesium.Cesium3DTileFeature
-            }
+      /**
+       * Executed when a new Cesium3DTileset model is created.
+       * @param {MapConfig#MapAssetConfig} [assetConfig] The initial values of the
+       * attributes, which will be set on the model.
+       */
+      initialize: function (assetConfig) {
+        try {
+          MapAsset.prototype.initialize.call(this, assetConfig);
+
+          if (assetConfig.filters) {
+            this.set("filters", new VectorFilters(assetConfig.filters));
+          }
+
+          this.createCesiumModel();
+        } catch (error) {
+          console.log(
+            "There was an error initializing a 3DTileset model" +
+              ". Error details: " +
+              error,
           );
-        },
-
-        /**
-         * Executed when a new Cesium3DTileset model is created.
-         * @param {MapConfig#MapAssetConfig} [assetConfig] The initial values of the
-         * attributes, which will be set on the model.
-         */
-        initialize: function (assetConfig) {
-          try {
-
-            MapAsset.prototype.initialize.call(this, assetConfig);
-
-            if (assetConfig.filters) {
-              this.set('filters', new VectorFilters(assetConfig.filters))
-            }
-
-            this.createCesiumModel();
-          }
-          catch (error) {
-            console.log(
-              'There was an error initializing a 3DTileset model' +
-              '. Error details: ' + error
-            );
-          }
-        },
-
-        /**
-         * Creates a Cesium.Cesium3DTileset model and sets it to this model's
-         * 'cesiumModel' attribute. This cesiumModel contains all the information required
-         * for Cesium to render tiles. See
-         * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileset.html?classFilter=3Dtiles}
-         * @param {Boolean} recreate - Set recreate to true to force the function create
-         * the Cesium Model again. Otherwise, if a cesium model already exists, that is
-         * returned instead.
-         */
-        createCesiumModel: function (recreate = false) {
-
-          try {
-
-            // If the cesium model already exists, don't create it again unless specified
-            const currentModel = this.get('cesiumModel')
-            if (!recreate && currentModel) return currentModel
-
-            const model = this;
-            const cesiumOptions = this.getCesiumOptions();
-            let cesiumModel = null
-
-            if (!cesiumOptions) {
-              model.set('status', 'error');
-              model.set('statusDetails', 'No options were set for this tileset.');
-              return;
-            }
-
-            model.resetStatus();
-
-            // If this tileset is a Cesium Ion resource set the url from the asset Id
-            cesiumOptions.url = this.getCesiumURL(cesiumOptions) || cesiumOptions.url;
-
-            cesiumModel = new Cesium.Cesium3DTileset(cesiumOptions)
-            model.set('cesiumModel', cesiumModel)
-            cesiumModel.readyPromise
-              .then(function () {
-                // Let the map views know that the tileset is ready to render
-                model.set('status', 'ready');
-                // Listen to changes in the opacity, color, etc
-                model.setListeners();
-                // Set the initial visibility, opacity, filters, and colors
-                model.updateAppearance();
-              })
-              .otherwise(function (error) {
-                // See https://cesium.com/learn/cesiumjs/ref-doc/RequestErrorEvent.html
-                let details = error;
-                // Write a helpful error message
-                switch (error.statusCode) {
-                  case 404:
-                    details = 'The resource was not found (error code 404).'
-                    break;
-                  case 500:
-                    details = 'There was a server error (error code 500).'
-                    break;
-                }
-                model.set('status', 'error');
-                model.set('statusDetails', details)
-              })
-          }
-          catch (error) {
-            console.log(
-              'Failed to create a Cesium Model within a 3D Tileset model' +
-              '. Error details: ' + error
-            );
-          }
-        },
-
-
-        /**
-         * Checks whether there is an asset ID for a Cesium Ion resource and if
-         * so, return the URL to the resource.
-         * @returns {string} The URL to the Cesium Ion resource
-         * @since 2.26.0
-         */
-        getCesiumURL: function () {
-          try {
-            const cesiumOptions = this.getCesiumOptions();
-            if (!cesiumOptions || !cesiumOptions.ionAssetId) return null
-            // The Cesium Ion ID of the resource to access
-            const assetId = Number(cesiumOptions.ionAssetId)
-            // Options to pass to Cesium's fromAssetId function. Access token
-            // needs to be set before requesting cesium ion resources
-            const ionResourceOptions = {
-              accessToken: cesiumOptions.cesiumToken ||
-                MetacatUI.appModel.get('cesiumToken')
-            }
-            // Create the new URL and set it on the model options
-            return Cesium.IonResource.fromAssetId(assetId, ionResourceOptions);
-          }
-          catch (error) {
-            console.log(
-              'There was an error settings a Cesium URL in a Cesium3DTileset' +
-              '. Error details: ' + error
-            );
-          }
-        },
-
-        /**
-         * Set listeners that update the cesium model when the backbone model is updated.
-         */
-        setListeners: function () {
-          try {
-
-            // call the super method
-            this.constructor.__super__.setListeners.call(this);
-
-            // When opacity, color, or visibility changes (will also update the filters)
-            this.stopListening(this, 'change:opacity change:color change:visible')
-            this.listenTo(
-              this, 'change:opacity change:color change:visible', this.updateAppearance
-            )
-
-            // When filters change
-            this.stopListening(this.get('filters'), 'update')
-            this.listenTo(this.get('filters'), 'update', this.updateFeatureVisibility)
-
-          }
-          catch (error) {
-            console.log(
-              'There was an error setting listeners in a Cesium3DTileset' +
-              '. Error details: ' + error
-            );
-          }
-        },
-
-        /**
-         * Sets a new Cesium3DTileStyle on the Cesium 3D tileset model's style property,
-         * based on the attributes set on this model. 
-         */
-        updateAppearance: function () {
-          try {
-            const model = this;
-            // The style set on the Cesium 3D tileset needs to be updated to show the
-            // changes on a Cesium map.
-            const cesiumModel = model.get('cesiumModel')
-
-            if(!cesiumModel) return
-
-            // If the layer isn't visible at all, don't bother setting up colors or
-            // filters. Just set every feature to hidden.
-            if (!model.isVisible()) {
-              cesiumModel.style = new Cesium.Cesium3DTileStyle({
-                show: false
-              });
-              // Indicate that the layer is hidden if the opacity is zero by updating the
-              // visibility property
-              if (model.get('opacity') === 0) {
-                model.set('visible', false);
-              }
-
-              // Let the map and/or other parent views know that a change has been made
-              // that requires the map to be re-rendered
-              model.trigger('appearanceChanged')
-            } else {
-              // Set a new 3D style with a  function that Cesium will use to shade each
-              // feature.
-              cesiumModel.style = new Cesium.Cesium3DTileStyle({
-                color: {
-                  evaluateColor: model.getColorFunction(),
-                }
-              });
-              // Since the style has to be reset, re-add the filters expression. This also
-              // triggers the appearanceChanged event
-              model.updateFeatureVisibility()
-            }
-
-          }
-          catch (error) {
-            console.log(
-              'There was an error updating a 3D Tile style property in a Cesium3DTileset' +
-              '. Error details: ' + error
-            );
-          }
-        },
-
-        /**
-         * Updates the Cesium style set on this tileset. Adds a new expression to the
-         * show property that will filter the features based on the filters set on this
-         * model.
-         */
-        updateFeatureVisibility: function () {
-          try {
-
-            const model = this;
-            const cesiumModel = this.get('cesiumModel')
-            const filters = this.get('filters')
-
-            // If there are no filters, just set the show property to true
-            if (!filters || !filters.length) {
-              cesiumModel.style.show = true
-            } else {
-              const expression = new Cesium.StyleExpression()
-              expression.evaluate = function (feature) {
-                const properties = model.getPropertiesFromFeature(feature)
-                return model.featureIsVisible(properties)
-              }
-              cesiumModel.style.show = expression
-            }
-            model.trigger('appearanceChanged')
-
-          }
-          catch (error) {
-            console.log(
-              'There was an error  in a Cesium3DTileset' +
-              '. Error details: ' + error
-            );
-          }
-        },
-
-        /**
-         * Given a feature from a Cesium 3D tileset, returns any properties that are set
-         * on the feature, similar to an attributes table.
-         * @param {Cesium.Cesium3DTileFeature} feature A Cesium 3D Tile feature
-         * @returns {Object} An object containing key-value mapping of property names to
-         * properties.
-         */
-        getPropertiesFromFeature: function(feature) {
-          if (!this.usesFeatureType(feature)) return null
-          let properties = {};
-          feature.getPropertyNames().forEach(function (propertyName) {
-            properties[propertyName] = feature.getProperty(propertyName)
-          })
-          properties = this.addCustomProperties(properties)
-          return properties
-        },
-
-        /**
-         * Return the label for a feature from a Cesium 3D tileset
-         * @param {Cesium.Cesium3DTileFeature} feature A Cesium 3D Tile feature
-         * @returns {string} The label
-         * @since 2.25.0
-         */
-        getLabelFromFeature: function (feature) {
-          if (!this.usesFeatureType(feature)) return null
-          return feature.getProperty('name') || feature.getProperty('label') || null
-        },
-
-        /**
-         * Return the Cesium3DTileset model for a feature from a Cesium 3D tileset
-         * @param {Cesium.Cesium3DTileFeature} feature A Cesium 3D Tile feature
-         * @returns {Cesium3DTileset} The model
-         * @since 2.25.0
-         */
-        getCesiumModelFromFeature: function (feature) {
-          if (!this.usesFeatureType(feature)) return null
-          return feature.primitive
-        },
-
-        /**
-         * Return the ID used by Cesium for a feature from a Cesium 3D tileset
-         * @param {Cesium.Cesium3DTileFeature} feature A Cesium 3D Tile feature
-         * @returns {string} The ID
-         * @since 2.25.0
-         */
-        getIDFromFeature: function (feature) {
-          if (!this.usesFeatureType(feature)) return null
-          return feature.pickId ? feature.pickId.key : null
-        },
-
-        /**
-         * Creates a function that takes a Cesium3DTileFeature (see
-         * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileFeature.html}) and
-         * returns a Cesium color based on the colorPalette property set on this model.
-         * The returned function is designed to be used as the evaluateColor function that
-         * is set in the color property of a Cesium3DTileStyle StyleExpression. See
-         * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileStyle.html#color}
-         * @returns {function} A Cesium 3dTile evaluate color function
-         */
-        getColorFunction: function () {
-          try {
-            const model = this;
-            // Opacity of the entire layer is set by using it as the alpha for each color
-            const opacity = model.get('opacity')
-
-            const evaluateColor = function (feature) {
-              const properties = model.getPropertiesFromFeature(feature);
-              let featureOpacity = opacity;
-              // If the feature is currently selected, set the opacity to max (otherwise the
-              // 'silhouette' borders in the map do not show in the Cesium widget)
-              if (model.featureIsSelected(feature)) {
-                featureOpacity = 1
-              }
-              const rgb = model.getColor(properties)
-              if (rgb) {
-                return new Cesium.Color(rgb.red, rgb.green, rgb.blue, featureOpacity);
-              } else {
-                return new Cesium.Color();
-              }
-            }
-            return evaluateColor
-          }
-          catch (error) {
-            console.log(
-              'There was an error creating a color function in a Cesium3DTileset model' +
-              '. Error details: ' + error
-            );
-          }
-        },
-
-        /**
-        * Gets a Cesium Bounding Sphere that can be used to navigate to view the full
-        * extent of the tileset. See
-        * {@link https://cesium.com/learn/cesiumjs/ref-doc/BoundingSphere.html}.
-        * @returns {Promise} Returns a promise that resolves to a Cesium Bounding Sphere
-        * when ready
-        */
-        getBoundingSphere: function () {
-          const model = this;
-          return this.whenReady()
-            .then(function (model) {
-              const tileset = model.get('cesiumModel')
-              const bSphere = Cesium.BoundingSphere.clone(tileset.boundingSphere);
-              return bSphere
-            })
         }
+      },
 
-      });
+      /**
+       * Creates a Cesium.Cesium3DTileset model and sets it to this model's
+       * 'cesiumModel' attribute. This cesiumModel contains all the information required
+       * for Cesium to render tiles. See
+       * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileset.html?classFilter=3Dtiles}
+       * @param {Boolean} recreate - Set recreate to true to force the function create
+       * the Cesium Model again. Otherwise, if a cesium model already exists, that is
+       * returned instead.
+       */
+      createCesiumModel: function (recreate = false) {
+        try {
+          // If the cesium model already exists, don't create it again unless specified
+          const currentModel = this.get("cesiumModel");
+          if (!recreate && currentModel) return currentModel;
 
-    return Cesium3DTileset;
+          const model = this;
+          const cesiumOptions = this.getCesiumOptions();
+          let cesiumModel = null;
 
-  }
-);
+          if (!cesiumOptions) {
+            model.set("status", "error");
+            model.set("statusDetails", "No options were set for this tileset.");
+            return;
+          }
+
+          model.resetStatus();
+
+          // If this tileset is a Cesium Ion resource set the url from the asset Id
+          cesiumOptions.url =
+            this.getCesiumURL(cesiumOptions) || cesiumOptions.url;
+
+          cesiumModel = new Cesium.Cesium3DTileset(cesiumOptions);
+          model.set("cesiumModel", cesiumModel);
+          cesiumModel.readyPromise
+            .then(function () {
+              // Let the map views know that the tileset is ready to render
+              model.set("status", "ready");
+              // Listen to changes in the opacity, color, etc
+              model.setListeners();
+              // Set the initial visibility, opacity, filters, and colors
+              model.updateAppearance();
+            })
+            .otherwise(function (error) {
+              // See https://cesium.com/learn/cesiumjs/ref-doc/RequestErrorEvent.html
+              let details = error;
+              // Write a helpful error message
+              switch (error.statusCode) {
+                case 404:
+                  details = "The resource was not found (error code 404).";
+                  break;
+                case 500:
+                  details = "There was a server error (error code 500).";
+                  break;
+              }
+              model.set("status", "error");
+              model.set("statusDetails", details);
+            });
+        } catch (error) {
+          console.log(
+            "Failed to create a Cesium Model within a 3D Tileset model" +
+              ". Error details: " +
+              error,
+          );
+        }
+      },
+
+      /**
+       * Checks whether there is an asset ID for a Cesium Ion resource and if
+       * so, return the URL to the resource.
+       * @returns {string} The URL to the Cesium Ion resource
+       * @since 2.26.0
+       */
+      getCesiumURL: function () {
+        try {
+          const cesiumOptions = this.getCesiumOptions();
+          if (!cesiumOptions || !cesiumOptions.ionAssetId) return null;
+          // The Cesium Ion ID of the resource to access
+          const assetId = Number(cesiumOptions.ionAssetId);
+          // Options to pass to Cesium's fromAssetId function. Access token
+          // needs to be set before requesting cesium ion resources
+          const ionResourceOptions = {
+            accessToken:
+              cesiumOptions.cesiumToken ||
+              MetacatUI.appModel.get("cesiumToken"),
+          };
+          // Create the new URL and set it on the model options
+          return Cesium.IonResource.fromAssetId(assetId, ionResourceOptions);
+        } catch (error) {
+          console.log(
+            "There was an error settings a Cesium URL in a Cesium3DTileset" +
+              ". Error details: " +
+              error,
+          );
+        }
+      },
+
+      /**
+       * Set listeners that update the cesium model when the backbone model is updated.
+       */
+      setListeners: function () {
+        try {
+          // call the super method
+          this.constructor.__super__.setListeners.call(this);
+
+          // When opacity, color, or visibility changes (will also update the filters)
+          this.stopListening(
+            this,
+            "change:opacity change:color change:visible",
+          );
+          this.listenTo(
+            this,
+            "change:opacity change:color change:visible",
+            this.updateAppearance,
+          );
+
+          // When filters change
+          this.stopListening(this.get("filters"), "update");
+          this.listenTo(
+            this.get("filters"),
+            "update",
+            this.updateFeatureVisibility,
+          );
+        } catch (error) {
+          console.log(
+            "There was an error setting listeners in a Cesium3DTileset" +
+              ". Error details: " +
+              error,
+          );
+        }
+      },
+
+      /**
+       * Sets a new Cesium3DTileStyle on the Cesium 3D tileset model's style property,
+       * based on the attributes set on this model.
+       */
+      updateAppearance: function () {
+        try {
+          const model = this;
+          // The style set on the Cesium 3D tileset needs to be updated to show the
+          // changes on a Cesium map.
+          const cesiumModel = model.get("cesiumModel");
+
+          if (!cesiumModel) return;
+
+          // If the layer isn't visible at all, don't bother setting up colors or
+          // filters. Just set every feature to hidden.
+          if (!model.isVisible()) {
+            cesiumModel.style = new Cesium.Cesium3DTileStyle({
+              show: false,
+            });
+            // Indicate that the layer is hidden if the opacity is zero by updating the
+            // visibility property
+            if (model.get("opacity") === 0) {
+              model.set("visible", false);
+            }
+
+            // Let the map and/or other parent views know that a change has been made
+            // that requires the map to be re-rendered
+            model.trigger("appearanceChanged");
+          } else {
+            // Set a new 3D style with a  function that Cesium will use to shade each
+            // feature.
+            cesiumModel.style = new Cesium.Cesium3DTileStyle({
+              color: {
+                evaluateColor: model.getColorFunction(),
+              },
+            });
+            // Since the style has to be reset, re-add the filters expression. This also
+            // triggers the appearanceChanged event
+            model.updateFeatureVisibility();
+          }
+        } catch (error) {
+          console.log(
+            "There was an error updating a 3D Tile style property in a Cesium3DTileset" +
+              ". Error details: " +
+              error,
+          );
+        }
+      },
+
+      /**
+       * Updates the Cesium style set on this tileset. Adds a new expression to the
+       * show property that will filter the features based on the filters set on this
+       * model.
+       */
+      updateFeatureVisibility: function () {
+        try {
+          const model = this;
+          const cesiumModel = this.get("cesiumModel");
+          const filters = this.get("filters");
+
+          // If there are no filters, just set the show property to true
+          if (!filters || !filters.length) {
+            cesiumModel.style.show = true;
+          } else {
+            const expression = new Cesium.StyleExpression();
+            expression.evaluate = function (feature) {
+              const properties = model.getPropertiesFromFeature(feature);
+              return model.featureIsVisible(properties);
+            };
+            cesiumModel.style.show = expression;
+          }
+          model.trigger("appearanceChanged");
+        } catch (error) {
+          console.log(
+            "There was an error  in a Cesium3DTileset" +
+              ". Error details: " +
+              error,
+          );
+        }
+      },
+
+      /**
+       * Given a feature from a Cesium 3D tileset, returns any properties that are set
+       * on the feature, similar to an attributes table.
+       * @param {Cesium.Cesium3DTileFeature} feature A Cesium 3D Tile feature
+       * @returns {Object} An object containing key-value mapping of property names to
+       * properties.
+       */
+      getPropertiesFromFeature: function (feature) {
+        if (!this.usesFeatureType(feature)) return null;
+        let properties = {};
+        feature.getPropertyNames().forEach(function (propertyName) {
+          properties[propertyName] = feature.getProperty(propertyName);
+        });
+        properties = this.addCustomProperties(properties);
+        return properties;
+      },
+
+      /**
+       * Return the label for a feature from a Cesium 3D tileset
+       * @param {Cesium.Cesium3DTileFeature} feature A Cesium 3D Tile feature
+       * @returns {string} The label
+       * @since 2.25.0
+       */
+      getLabelFromFeature: function (feature) {
+        if (!this.usesFeatureType(feature)) return null;
+        return (
+          feature.getProperty("name") || feature.getProperty("label") || null
+        );
+      },
+
+      /**
+       * Return the Cesium3DTileset model for a feature from a Cesium 3D tileset
+       * @param {Cesium.Cesium3DTileFeature} feature A Cesium 3D Tile feature
+       * @returns {Cesium3DTileset} The model
+       * @since 2.25.0
+       */
+      getCesiumModelFromFeature: function (feature) {
+        if (!this.usesFeatureType(feature)) return null;
+        return feature.primitive;
+      },
+
+      /**
+       * Return the ID used by Cesium for a feature from a Cesium 3D tileset
+       * @param {Cesium.Cesium3DTileFeature} feature A Cesium 3D Tile feature
+       * @returns {string} The ID
+       * @since 2.25.0
+       */
+      getIDFromFeature: function (feature) {
+        if (!this.usesFeatureType(feature)) return null;
+        return feature.pickId ? feature.pickId.key : null;
+      },
+
+      /**
+       * Creates a function that takes a Cesium3DTileFeature (see
+       * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileFeature.html}) and
+       * returns a Cesium color based on the colorPalette property set on this model.
+       * The returned function is designed to be used as the evaluateColor function that
+       * is set in the color property of a Cesium3DTileStyle StyleExpression. See
+       * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileStyle.html#color}
+       * @returns {function} A Cesium 3dTile evaluate color function
+       */
+      getColorFunction: function () {
+        try {
+          const model = this;
+          // Opacity of the entire layer is set by using it as the alpha for each color
+          const opacity = model.get("opacity");
+
+          const evaluateColor = function (feature) {
+            const properties = model.getPropertiesFromFeature(feature);
+            let featureOpacity = opacity;
+            // If the feature is currently selected, set the opacity to max (otherwise the
+            // 'silhouette' borders in the map do not show in the Cesium widget)
+            if (model.featureIsSelected(feature)) {
+              featureOpacity = 1;
+            }
+            const rgb = model.getColor(properties);
+            if (rgb) {
+              return new Cesium.Color(
+                rgb.red,
+                rgb.green,
+                rgb.blue,
+                featureOpacity,
+              );
+            } else {
+              return new Cesium.Color();
+            }
+          };
+          return evaluateColor;
+        } catch (error) {
+          console.log(
+            "There was an error creating a color function in a Cesium3DTileset model" +
+              ". Error details: " +
+              error,
+          );
+        }
+      },
+
+      /**
+       * Gets a Cesium Bounding Sphere that can be used to navigate to view the full
+       * extent of the tileset. See
+       * {@link https://cesium.com/learn/cesiumjs/ref-doc/BoundingSphere.html}.
+       * @returns {Promise} Returns a promise that resolves to a Cesium Bounding Sphere
+       * when ready
+       */
+      getBoundingSphere: function () {
+        const model = this;
+        return this.whenReady().then(function (model) {
+          const tileset = model.get("cesiumModel");
+          const bSphere = Cesium.BoundingSphere.clone(tileset.boundingSphere);
+          return bSphere;
+        });
+      },
+    },
+  );
+
+  return Cesium3DTileset;
+});

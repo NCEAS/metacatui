@@ -5,10 +5,12 @@ id: accesspolicy
 ---
 
 Jump to:
+
 1. [Setting a default access policy](#setting-a-default-access-policy-for-uploads)
 2. [Hiding a group or person in the access policy](#hiding-a-group-or-person-in-the-access-policy-editor)
 
-------
+---
+
 ## Setting a default access policy for uploads
 
 When data files, metadata documents, and resource maps are uploaded to your repository
@@ -24,62 +26,74 @@ with the following attributes:
 The values of these attributes will be serialized to the system metadata of each object uploaded via the MetacatUI editor.
 
 This default access policy makes all objects publicly readable:
-  ```javascript
-  [{
+
+```javascript
+[
+  {
     subject: "public",
     read: true,
     write: false,
-    changePermission: false
-  }]
-  ```
+    changePermission: false,
+  },
+];
+```
 
 The above access policy will be serialized into the system metadata as:
-  ```xml
-    <accessPolicy>
-      <allow>
-        <subject>public</subject>
-        <permission>read</permission>
-      </allow>
-    </accessPolicy>
-  ```
+
+```xml
+  <accessPolicy>
+    <allow>
+      <subject>public</subject>
+      <permission>read</permission>
+    </allow>
+  </accessPolicy>
+```
 
 #### Examples:
+
 - Make all objects publicly viewable
 
   ```js
-    defaultAccessPolicy: [{
+  defaultAccessPolicy: [
+    {
       subject: "public",
       read: true,
       write: false,
-      changePermission: false
-    }]
+      changePermission: false,
+    },
+  ];
   ```
+
 - Make all objects private
 
   ```js
-    defaultAccessPolicy: [{
+  defaultAccessPolicy: [
+    {
       subject: "public",
       read: false,
       write: false,
-      changePermission: false
-    }]
+      changePermission: false,
+    },
+  ];
   ```
 
 - Make all objects private but give an administrative group access to view, edit, and edit ownership
 
   ```js
-    defaultAccessPolicy: [{
+  defaultAccessPolicy: [
+    {
       subject: "public",
       read: false,
       write: false,
-      changePermission: false
+      changePermission: false,
     },
     {
       subject: "CN=data-admins,DC=dataone,DC=org", //Your admin group ID/subject
       read: true,
       write: true,
-      changePermission: true
-    }]
+      changePermission: true,
+    },
+  ];
   ```
 
 ## Hiding a group or person in the access policy editor
@@ -87,6 +101,7 @@ The above access policy will be serialized into the system metadata as:
 Sometimes it is helpful to hide a group or person, such as repository managers and admins, in the Access Policy editor (i.e. the "Share" or "Sharing Options" panel) so that non-admins cannot remove that person from the access policy.
 
 Add group or person subjects that should be hidden to the [`hiddenSubjectsInAccessPolicy`](https://nceas.github.io/metacatui/docs/AppConfig.html#hiddenSubjectsInAccessPolicy) array in the `AppConfig`.
+
 ### Example
 
 This repository has an admin group, `CN=arctic-data-admins,DC=dataone,DC=org`, which is hidden in the MetacatUI configuration.
@@ -95,6 +110,6 @@ The researcher Bart Simpson uploaded a dataset and does not see the admin group 
 
 ![Researcher's view](images/accpol/researcherview.png)
 
-But all people in the  `CN=arctic-data-admins,DC=dataone,DC=org` group can see the group in the Sharing panel:
+But all people in the `CN=arctic-data-admins,DC=dataone,DC=org` group can see the group in the Sharing panel:
 
 ![Admin's view](images/accpol/adminview.png)

@@ -15,7 +15,7 @@ define([
   APATemplate,
   ArchivedTemplate,
   APAInTextTemplate,
-  InTextArchivedTemplate
+  InTextArchivedTemplate,
 ) {
   "use strict";
 
@@ -397,7 +397,7 @@ define([
        * display all authors.
        * @since 2.23.0
        */
-      renderAPA: function (options, template, maxAuthors=20) {
+      renderAPA: function (options, template, maxAuthors = 20) {
         // Format the authors for display
         options.origin = this.CSLNamesToAPA(options.originArray, maxAuthors);
         this.el.innerHTML = template(options);
@@ -442,7 +442,7 @@ define([
        */
       addCitationMetadata: function (citationMetadata) {
         const citationMetaEl = this.el.querySelector(
-          "." + this.citationMetadataClass
+          "." + this.citationMetadataClass,
         );
         if (citationMetaEl) {
           // Render a CitationView for each citationMetadata
@@ -508,7 +508,7 @@ define([
        * string for display in an APA citation.
        * @param {object[]} authors - An array of CSL JSON name objects
        * @returns {string} The formatted author string or an empty string if
-       * there are no authors 
+       * there are no authors
        * @param {number} [maxAuthors=20] - The maximum number of authors to
        * display. If there are more than this number of authors, then the
        * remaining authors will be replaced with an ellipsis. The default is 20
@@ -516,7 +516,7 @@ define([
        * display all authors.
        * @since 2.23.0
        */
-      CSLNamesToAPA: function (authors, maxAuthors=20) {
+      CSLNamesToAPA: function (authors, maxAuthors = 20) {
         // Format authors as a proper APA style citation:
         if (!authors) return "";
 
@@ -638,7 +638,7 @@ define([
         name = name && given ? `${given} ${name}` : name;
         return name || literal;
       },
-    }
+    },
   );
 
   return CitationView;

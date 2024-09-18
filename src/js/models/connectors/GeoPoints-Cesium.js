@@ -1,6 +1,5 @@
 "use strict";
 
-/*global define */
 define([
   "backbone",
   "cesium",
@@ -15,7 +14,7 @@ define([
    * @extends Backbone.Model
    * @constructor
    * @classcategory Models/Connectors
-   * @since x.x.x
+   * @since 2.27.0
    */
   return Backbone.Model.extend(
     /** @lends GeoPointsCesiumConnector.prototype */ {
@@ -162,6 +161,6 @@ define([
           console.warn('Error handling a "' + eventName + '" event.', e);
         }
       },
-    }
+    },
   );
 });

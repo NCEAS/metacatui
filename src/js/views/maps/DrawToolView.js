@@ -1,11 +1,11 @@
 "use strict";
 
-define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connectors/GeoPoints-CesiumPoints", "collections/maps/GeoPoints"], function (
-  Backbone,
-  GeoPointsVectorData,
-  GeoPointsCesiumPoints,
-  GeoPoints
-) {
+define([
+  "backbone",
+  "models/connectors/GeoPoints-CesiumPolygon",
+  "models/connectors/GeoPoints-CesiumPoints",
+  "collections/maps/GeoPoints",
+], function (Backbone, GeoPointsVectorData, GeoPointsCesiumPoints, GeoPoints) {
   /**
    * @class DrawTool
    * @classdesc The DrawTool view allows a user to draw an arbitrary polygon on
@@ -15,7 +15,7 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
    * @name DrawTool
    * @extends Backbone.View
    * @screenshot views/maps/DrawTool.png
-   * @since x.x.x
+   * @since 2.27.0
    * @constructs DrawTool
    */
   var DrawTool = Backbone.View.extend(
@@ -63,32 +63,34 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
        */
       buttons: [
         {
-          name: "draw", // === mode
+          name: "remove",
+          label: "Remove Point",
+          icon: "eraser",
+        },
+        {
+          name: "move",
+          label: "Move Point",
+          icon: "move",
+        },
+         {
+          name: "draw",
           label: "Draw Polygon",
           icon: "pencil",
         },
-        // {
-        //   name: "move",
-        //   label: "Move Point",
-        //   icon: "move",
-        // },
-        // {
-        //   name: "remove",
-        //   label: "Remove Point",
-        //   icon: "eraser",
-        // },
+        {
+          name: "save",
+          label: "Save",
+          icon: "save",
+          method: "savetocsv",
+        },
+
         {
           name: "clear",
           label: "Clear Polygon",
           icon: "trash",
           method: "reset",
         },
-        {
-          name: "save",
-          label: "Save",
-          icon: "save",
-          method: "save",
-        },
+
       ],
 
       /**
@@ -202,7 +204,7 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
               },
             ],
           },
-        })
+        });
       },
 
       /**
@@ -212,7 +214,7 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
        * @returns {GeoPointsVectorData} The connector
        */
       setUpConnectors: function () {
-        const points = this.points = new GeoPoints();
+        const points = (this.points = new GeoPoints());
         this.polygonConnector = new GeoPointsVectorData({
           layer: this.layer,
           geoPoints: points,
@@ -269,7 +271,7 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
        * @returns {DrawTool} Returns the view
        */
       render: function () {
-        if(!this.mapModel) {
+        if (!this.mapModel) {
           this.showError("No map model was provided.");
           return this;
         }
@@ -283,7 +285,8 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
        * @param {string} [message] - The error message to show to the user.
        */
       showError: function (message) {
-        const str = `<i class="icon-warning-sign icon-left"></i>` +
+        const str =
+          `<i class="icon-warning-sign icon-left"></i>` +
           `<span> The draw tool is not available. ${message}</span>`;
         this.el.innerHTML = str;
       },
@@ -296,16 +299,16 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
         const el = this.el;
 
         // Create the buttons
-        view.buttons.forEach(options => {
+        view.buttons.forEach((options) => {
           const button = document.createElement("button");
           button.className = this.buttonClass;
           button.innerHTML = `<i class="icon icon-${options.icon}"></i> ${options.label}`;
           button.addEventListener("click", function () {
             const method = options.method;
-            if(method) view[method]();
+            if (method) view[method]();
             else view.toggleMode(options.name);
           });
-          if(!view.buttonEls) view.buttonEls = {};
+          if (!view.buttonEls) view.buttonEls = {};
           view.buttonEls[options.name + "Button"] = button;
           el.appendChild(button);
         });
@@ -317,13 +320,77 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
        * @param {Function} callback - The callback function to send the polygon
        * coordinates to.
        */
-      save: function (callback) {
+      // save: function (callback) {
+      //   this.setMode(false);
+      //   if (callback && typeof callback === "function") {
+      //     callback(this.points.toJSON());
+      //   }
+      // },
+      savetocsv: function (callback) {
         this.setMode(false);
-        if(callback && typeof callback === "function") {
-          callback(this.points.toJSON());
-        }
-      },
 
+        // Convert JSON to CSV
+        function convertToCSV(jsonData) {
+          console.log("Converting JSON data to CSV...");
+          console.log("Raw JSON data:", jsonData);
+          var polygon = jsonData.reverse().map(function(i){
+            return [
+              i.longitude,i.latitude,
+            ];
+          });
+          polygon.push([
+            jsonData[0].longitude,
+            jsonData[0].latitude
+          ]);
+
+          var data = {
+            "type": "FeatureCollection",
+            "features": [
+              {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                  "coordinates": [
+                    polygon
+                  ],
+                  "type": "Polygon"
+                }
+              }
+            ]
+          };
+
+          return data;
+        }
+
+        // Create and download CSV
+        function downloadCSV(csvData, filename) {
+          console.log("Downloading CSV...");
+          const blob = new Blob([JSON.stringify(csvData)], { type: 'text/json' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          console.log("CSV Download complete.");
+        }
+
+        // Get JSON data from layer
+        const jsonData = this.points.toJSON();
+        console.log("JSON data from layer.toJSON():", jsonData);
+
+        // Convert JSON data to CSV and download it
+        const data = convertToCSV(jsonData);
+        downloadCSV(data, 'data.json');
+
+        // Invoke the callback if it exists
+        if (callback && typeof callback === "function") {
+          callback(jsonData);
+        } else {
+          console.log("No callback provided, proceeding without it.");
+        }
+      }
+      ,
       /**
        * Toggles the mode of the draw tool.
        * @param {string} mode - The mode to toggle to.
@@ -360,7 +427,7 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
        */
       activateButton: function (buttonName) {
         const buttonEl = this.buttonEls[buttonName + "Button"];
-        if(!buttonEl) return;
+        if (!buttonEl) return;
         this.resetButtonStyles();
         buttonEl.classList.add(this.buttonClassActive);
       },
@@ -410,7 +477,7 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
           "change:latitude change:longitude",
           () => {
             view.handleClick();
-          }
+          },
         );
         this.listeningForClicks = true;
         // When the clickedPosition GeoPoint model or the MapInteractions model
@@ -423,7 +490,7 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
               view.handleClick();
               view.setClickListeners();
             }
-          }
+          },
         );
         handler.listenToOnce(this.mapModel, "change:interactions", function () {
           if (view.listeningForClicks) {
@@ -465,7 +532,7 @@ define(["backbone", "models/connectors/GeoPoints-CesiumPolygon", "models/connect
         this.removeLayer();
         this.removeClickListeners();
       },
-    }
+    },
   );
 
   return DrawTool;

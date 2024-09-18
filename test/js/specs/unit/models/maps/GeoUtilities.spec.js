@@ -1,7 +1,6 @@
-
-define([
-  "../../../../../../../../src/js/models/maps/GeoUtilities",
-], function (GeoUtilities) {
+define(["../../../../../../../../src/js/models/maps/GeoUtilities"], function (
+  GeoUtilities,
+) {
   // Configure the Chai assertion library
   var should = chai.should();
   var expect = chai.expect;

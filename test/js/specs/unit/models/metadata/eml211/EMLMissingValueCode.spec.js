@@ -31,7 +31,7 @@ define([
           {
             objectDOM: xmlString,
           },
-          { parse: true }
+          { parse: true },
         );
         emlMissingValueCode.get("code").should.equal("9999");
         emlMissingValueCode
@@ -49,7 +49,7 @@ define([
         var xmlString = emlMissingValueCode.serialize();
         xmlString.should.be.a("string");
         xmlString.should.equal(
-          "<missingValueCode><code>9999</code><codeExplanation>Missing value</codeExplanation></missingValueCode>"
+          "<missingValueCode><code>9999</code><codeExplanation>Missing value</codeExplanation></missingValueCode>",
         );
       });
     });

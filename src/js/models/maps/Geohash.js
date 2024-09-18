@@ -79,7 +79,7 @@ define([
         // Must use prototype.get to avoid infinite loop
         const properties = Backbone.Model.prototype.get.call(
           this,
-          "properties"
+          "properties",
         );
         return properties?.hasOwnProperty(key);
       },
@@ -160,7 +160,7 @@ define([
             new Geohash({
               hashString: hashString + i.toString(32),
               properties: keepProperties ? this.get("properties") : {},
-            })
+            }),
           );
         }
         return geohashes;
@@ -300,7 +300,7 @@ define([
         const id = properties["hashString"];
 
         const ecefCoordinates = rectangle.map((coord) =>
-          this.geodeticToECEF(coord)
+          this.geodeticToECEF(coord),
         );
         const ecefPosition = this.geodeticToECEF([
           point.longitude,
@@ -349,7 +349,7 @@ define([
       geodeticToECEF: function (coord) {
         return GeoUtilities.prototype.geodeticToECEF(coord);
       },
-    }
+    },
   );
 
   return Geohash;

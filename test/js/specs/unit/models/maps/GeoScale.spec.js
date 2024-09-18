@@ -1,6 +1,6 @@
-define([
-  "../../../../../../../../src/js/models/maps/GeoScale",
-], function (GeoScale) {
+define(["../../../../../../../../src/js/models/maps/GeoScale"], function (
+  GeoScale,
+) {
   // Configure the Chai assertion library
   var should = chai.should();
   var expect = chai.expect;
@@ -22,7 +22,7 @@ define([
       it("should validate a valid GeoScale", function () {
         var scale = new GeoScale({
           pixel: 1,
-          meters: 1
+          meters: 1,
         });
         scale.isValid().should.be.true;
       });
@@ -30,7 +30,7 @@ define([
       it("should invalidate a GeoScale with an invalid pixel scale", function () {
         var scale = new GeoScale({
           pixel: -1,
-          meters: 1
+          meters: 1,
         });
         scale.isValid().should.be.false;
       });
@@ -38,7 +38,7 @@ define([
       it("should invalidate a GeoScale with an invalid meters scale", function () {
         var scale = new GeoScale({
           pixel: 1,
-          meters: -1
+          meters: -1,
         });
         scale.isValid().should.be.false;
       });

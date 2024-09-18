@@ -2,7 +2,7 @@
 
 define(["backbone", "text!templates/maps/cesium-nav-help.html"], function (
   Backbone,
-  NavHelpTemplate
+  NavHelpTemplate,
 ) {
   /**
    * @class MapHelpPanel
@@ -12,7 +12,7 @@ define(["backbone", "text!templates/maps/cesium-nav-help.html"], function (
    * @name MapHelpPanel
    * @extends Backbone.View
    * @screenshot views/maps/MapHelpPanel.png
-   * @since x.x.x
+   * @since 2.27.0
    * @constructs MapHelpPanel
    */
   var MapHelpPanel = Backbone.View.extend(
@@ -49,7 +49,6 @@ define(["backbone", "text!templates/maps/cesium-nav-help.html"], function (
             this[option] = options[option];
           }
         });
-
       },
 
       /**
@@ -144,10 +143,10 @@ define(["backbone", "text!templates/maps/cesium-nav-help.html"], function (
 
           const sectionEl = document.createElement("section");
           sectionEl.classList.add("map-help-panel__section");
-          sectionEl.innerHTML = `<h3 class="map-help-panel__title">${section.title}</h3>
+          sectionEl.innerHTML = `<h3 class="toolbar__content-header">${section.title}</h3>
               <div class="${contentContainerClass}"></div>`;
           const contentEl = sectionEl.querySelector(
-            "." + contentContainerClass
+            "." + contentContainerClass,
           );
           renderMethod.call(view, contentEl);
 
@@ -249,7 +248,7 @@ define(["backbone", "text!templates/maps/cesium-nav-help.html"], function (
         if (!buttonEl) return;
         buttonEl.classList.add("map-view__button--active");
       },
-    }
+    },
   );
 
   return MapHelpPanel;

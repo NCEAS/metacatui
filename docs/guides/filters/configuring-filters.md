@@ -32,7 +32,6 @@ This section gives information on how to configure the options that are availabl
 
 Add the Solr field name to [`AppConfig.collectionQueryExcludeFields`](https://nceas.github.io/metacatui/docs/AppConfig.html#collectionQueryExcludeFields). This will also hide the field from the Query Builder.
 
-
 ### Adding a new Solr field to the custom filter builder
 
 When a new Solr field is added to the Solr schema, it will automatically get added to the `General`, or default, category in the custom filter builder and it can be used with any filter type (free text, dropdown, year slider, etc). There are several places to configure the Solr field so that it works as intended:

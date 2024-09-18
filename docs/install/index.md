@@ -11,6 +11,7 @@ is bundled in the Metacat release.
 ## Step 2. Configure MetacatUI
 
 ### For MetacatUI v2.12.0 and later
+
 MetacatUI will work out-of-box without a configuration file, but if you have customized
 any part of the Metacat installation process, you may need to configure MetacatUI.
 
@@ -20,33 +21,34 @@ all available config options.
 
 A quick-start `config.js` could look like:
 
-  ```javascript
-    MetacatUI.AppConfig = {
-      //The path to the root location of MetacatUI, i.e. where index.html is
-      root: "/",
-      //The path to the root location of Metacat, i.e. name of the Metacat Tomcat webapp
-      metacatContext: "/metacat",
-      //Your Google Maps API key, for map features
-      mapKey: "YOUR-GOOGLE-MAPS-KEY"
-    }
-  ```
+```javascript
+MetacatUI.AppConfig = {
+  //The path to the root location of MetacatUI, i.e. where index.html is
+  root: "/",
+  //The path to the root location of Metacat, i.e. name of the Metacat Tomcat webapp
+  metacatContext: "/metacat",
+  //Your Google Maps API key, for map features
+  mapKey: "YOUR-GOOGLE-MAPS-KEY",
+};
+```
 
 Change the `appConfigPath` in `index.html` to the location where you will be deploying your `config.js` file.
 
-  ```html
-  ...
-  <script type="text/javascript">
-    // The path to your configuration file for MetacatUI. This can be any web-accessible location.
-    var appConfigPath = "https://my-repo.org/config.js";
-  </script>
-  ...
-  ```
+```html
+...
+<script type="text/javascript">
+  // The path to your configuration file for MetacatUI. This can be any web-accessible location.
+  var appConfigPath = "https://my-repo.org/config.js";
+</script>
+...
+```
 
 ### For MetacatUI v2.11.5 and earlier
+
 See the [config documentation for MetacatUI 2.11.5 and earlier](configuration/pre-2.12.0.html)
 
 > MetacatUI 2.12.0+ can still be configured via index.html like it used to, but that will be deprecated in future releases.
-It's recommended that MetacatUI be configured via an external config.js file in v 2.12.0 and later.
+> It's recommended that MetacatUI be configured via an external config.js file in v 2.12.0 and later.
 
 ## Step 3. Configure Apache for MetacatUI
 
@@ -54,10 +56,10 @@ Follow the steps in the [Apache configuration instructions](apache).
 
 Then, move the MetacatUI files in the `src` directory to the Apache web directory. Example:
 
-  ```bash
-   cd metacatui-2.11.2
-   mv -rf src/* /var/www/
-  ```
+```bash
+ cd metacatui-2.11.2
+ mv -rf src/* /var/www/
+```
 
 ## Step 4. DONE!
 

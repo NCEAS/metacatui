@@ -62,7 +62,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         } catch (error) {
           console.log(
             "Failed to check if a Feature model is the default.",
-            error
+            error,
           );
         }
       },
@@ -83,7 +83,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           console.log(
             "There was an error reset a Feature model to default" +
               ". Error details: " +
-              error
+              error,
           );
         }
       },
@@ -99,7 +99,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
        * @param {MapAssets} assets - A MapAssets collection to use to extract
        * feature attributes from a feature object.
        * @returns {object} - The JSON object of all the Feature attributes
-       * @since x.x.x
+       * @since 2.27.0
        */
       attrsFromFeatureObject: function (feature, assets) {
         if (feature instanceof Feature) {
@@ -139,7 +139,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           if (input.featureObject && options.assets) {
             const attrs = this.attrsFromFeatureObject(
               input.featureObject,
-              options.assets
+              options.assets,
             );
             input = Object.assign({}, input, attrs);
           }
@@ -149,7 +149,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           console.log("Failed to parse a Feature model", error);
         }
       },
-    }
+    },
   );
 
   return Feature;

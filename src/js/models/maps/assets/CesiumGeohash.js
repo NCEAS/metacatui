@@ -19,7 +19,7 @@ define([
   AssetColorPalette,
   AssetColor,
   Geohash,
-  Geohashes
+  Geohashes,
 ) {
   /**
    * @classdesc A Geohash Model represents a geohash layer in a map.
@@ -127,7 +127,7 @@ define([
        * For the property of interest (e.g. count) Get the min and max values
        * from the geohashes collection and update the color palette.
        * @since 2.25.0
-       * 
+       *
        */
       updateColorRangeValues: function () {
         const colorPalette = this.get("colorPalette");
@@ -152,7 +152,7 @@ define([
        */
       getPrecision: function () {
         const limit = this.get("maxGeoHashes");
-        const geohashes = this.get("geohashes")
+        const geohashes = this.get("geohashes");
         const area = this.getViewExtent().getArea();
         return geohashes.getMaxPrecision(area, limit);
       },
@@ -190,7 +190,7 @@ define([
             function () {
               this.updateColorRangeValues();
               this.createCesiumModel(true);
-            }
+            },
           );
         } catch (error) {
           console.log("Failed to set listeners in CesiumGeohash", error);
@@ -205,7 +205,7 @@ define([
        * to those that are within the current map extent.
        * @returns {Geohashes} The geohashes to display.
        */
-      getGeohashes: function(limitToExtent = true) {
+      getGeohashes: function (limitToExtent = true) {
         let geohashes = this.get("geohashes");
         if (limitToExtent) {
           geohashes = this.getGeohashesForExtent();
@@ -229,7 +229,7 @@ define([
        * @returns {GeoBoundingBox} The current map extent
        */
       getViewExtent: function () {
-        return this.get("mapModel")?.get("interactions")?.get("viewExtent")
+        return this.get("mapModel")?.get("interactions")?.get("viewExtent");
       },
 
       /**
@@ -277,7 +277,8 @@ define([
           // Set the GeoJSON representing geohashes on the model
           const cesiumOptions = this.getCesiumOptions();
           const type = model.get("type");
-          const data = type === "GeoJsonDataSource" ? this.getGeoJSON() : this.getCZML();
+          const data =
+            type === "GeoJsonDataSource" ? this.getGeoJSON() : this.getCZML();
           cesiumOptions["data"] = data;
           cesiumOptions["height"] = 0;
           model.set("cesiumOptions", cesiumOptions);
@@ -296,10 +297,15 @@ define([
        */
       selectGeohashes: function (geohashes) {
         try {
-          const toSelect = [...new Set(geohashes.map((geohash) => {
-            const parent = this.get("geohashes").getContainingGeohash(geohash);
-            return parent?.get("hashString");
-          }, this))];
+          const toSelect = [
+            ...new Set(
+              geohashes.map((geohash) => {
+                const parent =
+                  this.get("geohashes").getContainingGeohash(geohash);
+                return parent?.get("hashString");
+              }, this),
+            ),
+          ];
           const entities = this.get("cesiumModel").entities.values;
           const selected = entities.filter((entity) => {
             const hashString = this.getPropertiesFromFeature(entity).hashString;
@@ -313,6 +319,6 @@ define([
           console.log("Error selecting geohashes", e);
         }
       },
-    }
+    },
   );
 });

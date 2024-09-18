@@ -1,9 +1,24 @@
 <!-- Icon column -->
-<% if ( typeof type !== "undefined" && type !== null && type == "Metadata" ) { %>
+<% if ( viewType === "edit" && typeof type !== "undefined" && type !== null && type == "Metadata" ) { %>
     <% var indentFolder = nodeLevel * 40; %>
     <td class="type-icon">
         <i class="icon icon-chevron-down open toggle-rows" style="padding-left:<%=indentFolder %>px"></i>
         <i class="icon-large icon-folder-open"></i></td>
+
+<% } else if (viewType === "view" && icon !== "undefined") { %>
+	<% if ( type !== "Metadata" ) {
+		indentFile = (nodeLevel + 1) * 25;
+		%>
+		<td class="type-icon">
+			<i class="<%= icon %>" style="padding-left:<%=indentFile %>px"></i>
+		</td>
+	<% } else { %>
+		<td class="type-icon">
+			<a class="expand-control control" ><i class="icon icon-caret-right"></i></a>
+			<a class="collapse-control control" ><i class="icon icon-caret-down"></i></a>
+			<i class="icon-file" style="padding-left:<%=indentFile %>px"></i>
+		</td>
+	<% } %>
 
 <% } else { %>
     <% var indentFile = (nodeLevel + 1) * 40; %>
@@ -17,7 +32,7 @@
 <% var filenameEditable = "false" %>
 <% var filenameTitle = "You are not authorized to rename this file" %>
 
-<% if (canRename) { %>
+<% if (viewType === "edit" && canRename) { %>
 	<% fileClasses = fileClasses + " canRename" %>
 	<% var filenameEditable = "true" %>
 	<% var filenameTitle = "Click to rename" %>
@@ -50,83 +65,112 @@
 
 <% } %>
 <!-- Type column -->
-<% if (type && type != "Metadata") { %>
+<% if (viewType === "edit" && type && type != "Metadata") { %>
     <td class="type"><%= type %></td>
+<% } else if (viewType === "view" && fileType) { %>
+    <td class="type"><%= fileType %></td>
 <% } else { %>
-    <td class="type"></td>
-
-<% } %>
-<!-- Privacy/Sharing column -->
-<% if( MetacatUI.appModel.get("allowAccessPolicyChanges")){ %>
-<td class="sharing">
-	<button type="button" class="btn access-policy-control"><i class="icon-group"></i> Share</button>
-</td>
+	<td class="type"></td>
 <% } %>
 
 
-<!-- Guide or Status column -->
-<td class="status">
-	<%  if( uploadStatus == "p" ){ %>
-		<div class="progress progress-striped active">
-			<div class="bar" style="width: <%=uploadProgress%>%;"></div>
-		</div>
-	<% } else if( (!uploadStatus || uploadStatus == "c" || uploadStatus == "q") && type != "Metadata" && numAttributes == 0 ) { %>
-		<i class="icon icon-circle-blank warning icon-large"></i>
-	<% } else if( uploadStatus == "w" && type != "Metadata" ) { %>
-		<i class="icon icon-warning-sign warning icon-large"></i>
-	<% } else if( type != "Metadata" && numAttributes > 0 && hasInvalidAttribute ) { %>
-		<i class="icon icon-exclamation-sign danger icon-large"></i>
-	<% } else if( type != "Metadata" && numAttributes > 0 && !hasInvalidAttribute && entityIsValid ) { %>
-		<i class="icon icon-ok-circle success icon-large"></i>
-	<% } else if( type != "Metadata" && !entityIsValid ) { %>
-		<i class="icon icon-exclamation-sign danger icon-large"></i>
-	<% } else if( uploadStatus == "c" ) { %>
-		<i class="icon icon-ok-circle success icon-large"></i>
-	<% } else if( uploadStatus == "e" ) { %>
-		<i class="icon icon-exclamation-sign danger error icon-large"></i>
-	<% } else if( uploadStatus == "l" && type != "Metadata"){ %>
-		<i class="icon icon-circle-blank icon-large"></i>
+<% if (viewType === "edit") { %>
+	<!-- Privacy/Sharing column -->
+	<% if( MetacatUI.appModel.get("allowAccessPolicyChanges")){ %>
+		<td class="sharing">
+			<button type="button" class="btn access-policy-control"><i class="icon-group"></i> Share</button>
+		</td>
 	<% } %>
-</td>
 
-<!-- Button column -->
-<td class="controls">
-        <% if ( typeof formatType !== "undefined" && formatType !== null && formatType.toLowerCase() === "metadata" ) { %>
 
-          <input class="file-upload" type="file" multiple style="display:none; height: 0px; width: 0px" / >
+	<!-- Guide or Status column -->
+	<td class="status">
+		<%  if( uploadStatus == "p" ){ %>
+			<div class="progress progress-striped active">
+				<div class="bar" style="width: <%=uploadProgress%>%;"></div>
+			</div>
+		<% } else if( (!uploadStatus || uploadStatus == "c" || uploadStatus == "q") && type != "Metadata" && numAttributes == 0 ) { %>
+			<i class="icon icon-circle-blank warning icon-large"></i>
+		<% } else if( uploadStatus == "w" && type != "Metadata" ) { %>
+			<i class="icon icon-warning-sign warning icon-large"></i>
+		<% } else if( type != "Metadata" && numAttributes > 0 && hasInvalidAttribute ) { %>
+			<i class="icon icon-exclamation-sign danger icon-large"></i>
+		<% } else if( type != "Metadata" && numAttributes > 0 && !hasInvalidAttribute && entityIsValid ) { %>
+			<i class="icon icon-ok-circle success icon-large"></i>
+		<% } else if( type != "Metadata" && !entityIsValid ) { %>
+			<i class="icon icon-exclamation-sign danger icon-large"></i>
+		<% } else if( uploadStatus == "c" ) { %>
+			<i class="icon icon-ok-circle success icon-large"></i>
+		<% } else if( uploadStatus == "e" ) { %>
+			<i class="icon icon-exclamation-sign danger error icon-large"></i>
+		<% } else if( uploadStatus == "l" && type != "Metadata"){ %>
+			<i class="icon icon-circle-blank icon-large"></i>
+		<% } %>
+	</td>
 
-          <button type="button" class="addFiles btn btn-primary" title="Add Files to this dataset">
-              <i class="icon icon-large icon-plus icon-on-left"></i>
-              <span>Add Files</span>
-          </button>
+	<!-- Button column -->
+	<td class="controls">
+			<% if ( typeof formatType !== "undefined" && formatType !== null && formatType.toLowerCase() === "metadata" ) { %>
 
-        <% }
-        else { %>
+			<input class="file-upload" type="file" multiple style="display:none; height: 0px; width: 0px" / >
 
-         <div class="btn-group">
-           <% if( hasInvalidAttribute || !entityIsValid ){ %>
-             <button class="btn edit error">Describe</button>
-           <%  } else if( (!uploadStatus || uploadStatus == "c" || uploadStatus == "q" || uploadStatus == "w") && type != "Metadata" && numAttributes == 0 ){ %>
-				  <button class="btn edit warning" title="Describe this file and the data in it">Describe</button>
-    			 <% } else { %>
-    			 	<button class="btn edit" title="Describe this file and the data in it">Describe</button>
-    			 <% } %>
+			<button type="button" class="addFiles btn btn-primary" title="Add Files to this dataset">
+				<i class="icon icon-large icon-plus icon-on-left"></i>
+				<span>Add Files</span>
+			</button>
 
-    			 <button class="btn dropdown-toggle" data-toggle="dropdown">
-             <span class="caret"></span>
-    			 </button>
+			<% }
+			else { %>
 
-    			 <ul class="dropdown-menu">
-						 <input class="file-replace" type="file" style="display:none; height: 0px; width: 0px" />
+			<div class="btn-group">
+			<% if( hasInvalidAttribute || !entityIsValid ){ %>
+				<button class="btn edit error">Describe</button>
+			<%  } else if( (!uploadStatus || uploadStatus == "c" || uploadStatus == "q" || uploadStatus == "w") && type != "Metadata" && numAttributes == 0 ){ %>
+					<button class="btn edit warning" title="Describe this file and the data in it">Describe</button>
+					<% } else { %>
+						<button class="btn edit" title="Describe this file and the data in it">Describe</button>
+					<% } %>
 
-						 <% if (canWrite) { %>
-							<li><a href="" class="replace replaceFile" title="Replace this file with another">Replace</a></li>
-						 <% } else { %>
-							<li><a href="" class="replace replaceFile muted disabled">Replace</a></li>
-							<% } %>
-    			   <li><a href="" class="remove removeFiles" title="Remove this file from the dataset">Remove</a></li>
-    			 </ul>
-			   </div>
+					<button class="btn dropdown-toggle" data-toggle="dropdown">
+				<span class="caret"></span>
+					</button>
 
-        <% } %>
-</td>
+					<ul class="dropdown-menu">
+							<input class="file-replace" type="file" style="display:none; height: 0px; width: 0px" />
+
+							<% if (canWrite) { %>
+								<li><a href="" class="replace replaceFile" title="Replace this file with another">Replace</a></li>
+							<% } else { %>
+								<li><a href="" class="replace replaceFile muted disabled">Replace</a></li>
+								<% } %>
+					<li><a href="" class="remove removeFiles" title="Remove this file from the dataset">Remove</a></li>
+					</ul>
+				</div>
+
+			<% } %>
+	</td>
+
+<% } else if (viewType == "view") { %>
+	<% if (memberRowMetrics !== undefined) { %>
+		<td class="metrics-count downloads" data-id="<%= id %>">
+			<span class="packageTable-resultItem badge ">
+				<i class='catalog-metric-icon <%= metricIcon %>'></i> <%= memberRowMetrics %> 
+			</span>	
+		</td>
+	<% } else { %>
+		<td class="metrics-count downloads" data-id="<%= id %>">
+			
+		</td>
+	<% } %>
+	<td class="file-actions">
+		<% if (isMetadata !== undefined && !isMetadata) { %>
+			<a class="btn btn-rounded action preview" href="<%= moreInfoLink %>" data-id="<%= id %>"><i class="icon icon-large icon-info"></i></a>
+		<% } %>
+
+		<% if (downloadUrl !== undefined ) { %>
+			<a class="btn btn-rounded action downloadAction" href="<%= downloadUrl %>" data-id="<%= id %>"><i class="icon icon-large icon-cloud-download"></i></a>
+		<% } %>
+
+
+	</td>
+<% } %>

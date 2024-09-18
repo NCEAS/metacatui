@@ -1,4 +1,3 @@
-/*global define */
 define([
   "jquery",
   "underscore",
@@ -47,7 +46,7 @@ define([
       metricStatTemplate: _.template(
         `<span class='catalog badge'>
           <i class='catalog-metric-icon <%=metricIcon%>'></i> <%=metricValue%>
-        </span>`
+        </span>`,
       ),
 
       /**
@@ -133,7 +132,7 @@ define([
           json.sem_annotation.length > 0;
 
         json.showAnnotationIndicator = MetacatUI.appModel.get(
-          "showAnnotationIndicator"
+          "showAnnotationIndicator",
         );
 
         // Find the member node object
@@ -152,7 +151,7 @@ define([
             json.documents,
             this.model.get("id"),
             this.model.get("seriesId"),
-            this.model.get("resourceMap")
+            this.model.get("resourceMap"),
           );
           json.numDataFiles = dataFileIDs.length;
           json.dataFilesMessage =
@@ -233,7 +232,7 @@ define([
                   .substring(0, this.model.get("abstract").indexOf(" ", 250)) +
                 "...";
           var content = $(document.createElement("div")).append(
-            $(document.createElement("p")).text(abridgedAbstract)
+            $(document.createElement("p")).text(abridgedAbstract),
           );
 
           this.$(".popover-this.abstract").popover({
@@ -310,10 +309,10 @@ define([
               this.metricStatTemplate({
                 metricValue: MetacatUI.appView.numberAbbreviator(
                   citationCount,
-                  1
+                  1,
                 ),
                 metricIcon: "icon-quote-right",
-              })
+              }),
             )
             .tooltip({
               placement: "top",
@@ -328,10 +327,10 @@ define([
               this.metricStatTemplate({
                 metricValue: MetacatUI.appView.numberAbbreviator(
                   downloadCount,
-                  1
+                  1,
                 ),
                 metricIcon: "icon-cloud-download",
-              })
+              }),
             )
             .tooltip({
               placement: "top",
@@ -346,7 +345,7 @@ define([
               this.metricStatTemplate({
                 metricValue: MetacatUI.appView.numberAbbreviator(viewCount, 1),
                 metricIcon: "icon-eye-open",
-              })
+              }),
             )
             .tooltip({
               placement: "top",
@@ -388,7 +387,7 @@ define([
        * @param {Event} e - The mouseover or mouseout event
        */
       toggleShowOnMap: function (e) {
-        this.model.set("showOnMap", e.type === "mouseover")
+        this.model.set("showOnMap", e.type === "mouseover");
       },
 
       /**
@@ -441,7 +440,7 @@ define([
                 if (pkgFileName.lastIndexOf(".") > 0)
                   pkgFileName = pkgFileName.substring(
                     0,
-                    pkgFileName.lastIndexOf(".")
+                    pkgFileName.lastIndexOf("."),
                   );
 
                 var packageModel = new Package({
@@ -555,6 +554,6 @@ define([
       onClose: function () {
         this.clear();
       },
-    }
+    },
   );
 });

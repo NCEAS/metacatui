@@ -1,4 +1,4 @@
 {
-    "baseUrl": "https://dev.nceas.ucsb.edu",
-    "metacatContext": "knb"
+  "baseUrl": "https://dev.nceas.ucsb.edu",
+  "metacatContext": "knb"
 }

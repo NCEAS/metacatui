@@ -1,11 +1,11 @@
-:root{
-  --deprecated: #D62828;
-  --neutral: #EEEAD2;
+:root {
+  --deprecated: #d62828;
+  --neutral: #eeead2;
   --neutral-dark: #003049;
   --info-light: #e4edd9;
   --info-dark: #684500;
-  --primary-brand: #FCBF49;
-  --primary-brand-on-dark: #FCBF49;
+  --primary-brand: #fcbf49;
+  --primary-brand-on-dark: #fcbf49;
   --primary-brand-dark: #684500;
   --secondary-brand: #2a9989;
 }
@@ -14,21 +14,21 @@ Color pallete:
 https://coolors.co/003049-2a9989-fcbf49-eae2b7-d62828
 */
 
-body{
+body {
   margin: 0px;
   font-family: "Open Sans", Helvetica, Arial, sans-serif;
   display: grid;
   grid-template-columns: 20% 80%;
-  background-color: #FFF;
+  background-color: #fff;
   color: var(--neutral-dark);
 }
-#main{
+#main {
   float: none;
   width: auto;
   height: 100vh;
   overflow-y: auto;
 }
-#nav{
+#nav {
   float: none;
   width: auto;
   height: 100vh;
@@ -38,55 +38,63 @@ body{
   padding-top: 20px;
   border: 0px;
 }
-nav h2{
+nav h2 {
   font-size: 1em;
 }
 nav h3 {
-    color: var(--neutral);
-    font-size: 1.5em;
-    margin-top: 20px;
-    margin-bottom: 0px;
-    font-weight: bold;
-    letter-spacing: 0;
+  color: var(--neutral);
+  font-size: 1.5em;
+  margin-top: 20px;
+  margin-bottom: 0px;
+  font-weight: bold;
+  letter-spacing: 0;
 }
-nav ul a, nav ul a:visited, nav ul a:active, nav h3, nav a{
+nav ul a,
+nav ul a:visited,
+nav ul a:active,
+nav h3,
+nav a {
   font-family: inherit;
   color: var(--neutral);
-  font-size: .95em;
+  font-size: 0.95em;
 }
 .category-heading ~ li:not(.category-heading) {
-    margin-left: 10px;
+  margin-left: 10px;
 }
 .category-heading {
   color: var(--neutral);
   margin-top: 10px;
   font-weight: bold;
-  font-size: .95em;
+  font-size: 0.95em;
 }
-.category-heading[data-category='Deprecated']{
+.category-heading[data-category="Deprecated"] {
   color: var(--deprecated);
   font-style: italic;
 }
-.important{
+.important {
   color: var(--deprecated);
 }
-h1, h2, h3, h4{
+h1,
+h2,
+h3,
+h4 {
   color: var(--neutral-dark);
 }
-h1{
+h1 {
   font-family: inherit;
   font-size: 2em;
   letter-spacing: normal;
-  border-bottom: 1px solid #DDD;
+  border-bottom: 1px solid #ddd;
   padding-bottom: 20px;
 }
-h2, h3.subsection-title{
+h2,
+h3.subsection-title {
   font-weight: normal;
 }
-header{
+header {
   padding: 0px;
 }
-.class-description{
+.class-description {
   font-size: 1em;
   line-height: inherit;
   padding: 20px;
@@ -95,71 +103,71 @@ header{
   color: var(--primary-brand-dark);
 }
 .description + h5 {
-    font-weight: bold;
-    font-size: 1em;
-    display: inline;
-    margin-right: 20px;
+  font-weight: bold;
+  font-size: 1em;
+  display: inline;
+  margin-right: 20px;
 }
-.description + h5 + ul{
+.description + h5 + ul {
   list-style: none;
-    display: inline;
-    padding: 0px;
+  display: inline;
+  padding: 0px;
 }
-.description + h5 + ul li{
+.description + h5 + ul li {
   list-style: none;
   display: inline;
 }
-.name{
+.name {
   padding: 10px 20px;
-background-color: var(--neutral-dark);
-border-bottom: 1px solid var(--neutral);
+  background-color: var(--neutral-dark);
+  border-bottom: 1px solid var(--neutral);
 }
 h4.name {
-    color: var(--neutral);
+  color: var(--neutral);
 }
-.name .type-signature a{
+.name .type-signature a {
   color: var(--primary-brand-on-dark);
 }
-pre{
+pre {
   background-color: #eee;
   padding: 20px;
   border-radius: 4px;
   border: 1px solid #ddd;
 }
-table{
+table {
   width: 100%;
 }
-thead th{
+thead th {
   color: #fff;
   background-color: #272727;
   border-color: #000000;
   vertical-align: bottom;
   border-bottom: 2px solid #dee2e6;
-  padding: .75rem;
+  padding: 0.75rem;
 }
 .props thead th,
 .params thead th {
-    background-color: var(--neutral);
-    color: var(--neutral-dark);
-    border: 0px;
-    border-image-width: 0px;
-    border-bottom: 1px solid var(--neutral);
+  background-color: var(--neutral);
+  color: var(--neutral-dark);
+  border: 0px;
+  border-image-width: 0px;
+  border-bottom: 1px solid var(--neutral);
 }
-table td{
-  padding: .75rem;
+table td {
+  padding: 0.75rem;
   vertical-align: top;
 }
-td.name{
+td.name {
   background-color: var(--neutral);
 }
-.class-screenshot{
+.class-screenshot {
   margin-top: 20px;
   margin-bottom: 20px;
 }
-.class-screenshot h3{
+.class-screenshot h3 {
   text-align: center;
 }
-.class-screenshot img{
+.class-screenshot img {
   margin: auto;
   display: flex;
   max-width: 600px;
@@ -167,10 +175,10 @@ td.name{
   border-radius: 4px;
   padding: 10px;
 }
-section{
+section {
   background-color: transparent;
 }
-.link-icon svg{
+.link-icon svg {
   height: 1em;
   vertical-align: middle;
 }

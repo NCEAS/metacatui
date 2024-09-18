@@ -2,13 +2,14 @@
 
 define(["backbone", "models/metadata/eml211/EMLMissingValueCode"], function (
   Backbone,
-  EMLMissingValueCode
+  EMLMissingValueCode,
 ) {
   /**
    * @class EMLMissingValueCodes
    * @classdesc A collection of EMLMissingValueCodes.
    * @classcategory Collections/Metadata/EML
    * @since 2.26.0
+   * @extends Backbone.Collection
    */
   var EMLMissingValueCodes = Backbone.Collection.extend(
     /** @lends EMLMissingValueCodes.prototype */
@@ -78,7 +79,7 @@ define(["backbone", "models/metadata/eml211/EMLMissingValueCode"], function (
         // For now, if there is at least one error, just return the first one
         return errors.length ? errors[0] : null;
       },
-    }
+    },
   );
 
   return EMLMissingValueCodes;

@@ -19,7 +19,7 @@ define([
   CesiumVectorData,
   CesiumImagery,
   CesiumTerrain,
-  CesiumGeohash
+  CesiumGeohash,
 ) {
   /**
    * @class MapAssets
@@ -55,7 +55,11 @@ define([
               model: Cesium3DTileset,
             },
             {
-              types: ["GeoJsonDataSource", "CzmlDataSource", "CustomDataSource"],
+              types: [
+                "GeoJsonDataSource",
+                "CzmlDataSource",
+                "CustomDataSource",
+              ],
               model: CesiumVectorData,
             },
             {
@@ -119,13 +123,13 @@ define([
                   otherModel.set("selected", false);
                 });
               }
-            }
+            },
           );
         } catch (error) {
           console.log(
             "There was an error initializing a MapAssets collection" +
               ". Error details: " +
-              error
+              error,
           );
         }
       },
@@ -178,7 +182,7 @@ define([
           console.log(
             "Failed to get all of the MapAssets in a MapAssets collection." +
               " Returning all models in the asset collection." +
-              e
+              e,
           );
           return this.models;
         }
@@ -238,7 +242,7 @@ define([
           return asset?.getFeatureAttributes(feature);
         });
       },
-    }
+    },
   );
 
   return MapAssets;

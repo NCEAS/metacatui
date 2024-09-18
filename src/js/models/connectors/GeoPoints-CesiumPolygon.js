@@ -1,9 +1,8 @@
 "use strict";
 
-/*global define */
 define(["cesium", "models/connectors/GeoPoints-Cesium"], function (
   Cesium,
-  GeoPointsCesiumConnector
+  GeoPointsCesiumConnector,
 ) {
   /**
    * @class GeoPointsCesiumPolygonConnector
@@ -15,7 +14,7 @@ define(["cesium", "models/connectors/GeoPoints-Cesium"], function (
    * @extends GeoPointsCesiumConnector
    * @constructor
    * @classcategory Models/Connectors
-   * @since x.x.x
+   * @since 2.27.0
    */
   return GeoPointsCesiumConnector.extend(
     /** @lends GeoPointsCesiumPolygonConnector.prototype */ {
@@ -70,6 +69,6 @@ define(["cesium", "models/connectors/GeoPoints-Cesium"], function (
         this.get("polygon") || this.addPolygon();
         this.get("layer").updateAppearance();
       },
-    }
+    },
   );
 });
