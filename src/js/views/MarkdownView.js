@@ -179,6 +179,7 @@ define([
           "footnotes",
           "showdown-citation",
           "showdown-images",
+          "showdown-iframes",
         ];
 
         var numTestsTodo = SDextensions.length;
@@ -219,6 +220,8 @@ define([
           regexCitation = /\[@.+\]/;
         // test for any <h.> tags
         (regexHtags = new RegExp("#\\s")), (regexImages = /!\[.*\]\(\S+\)/);
+        // test for anything that looks like an iframe. Keep it very general.
+        const regexIframes = /<iframe.*?src="(.*?)"(.*?)><\/iframe>/g;
 
         // ================================================================
         // Test for and load each as required each showdown extension
@@ -341,6 +344,15 @@ define([
           });
         } else {
           updateExtensionList("showdown-images", (required = false));
+        }
+
+        // --- Test for iframes --- //
+        if (regexIframes.test(markdown)) {
+          require(["showdownIframes"], function (showdownIframes) {
+            updateExtensionList("showdown-iframes", (required = true));
+          });
+        } else {
+          updateExtensionList("showdown-iframes", (required = false));
         }
       },
 
