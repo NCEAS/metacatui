@@ -2625,7 +2625,7 @@ section#user-citations {
   display: flex;
   flex-wrap: wrap;
 
-  >a:not(:first-child) {
+  > a:not(:first-child) {
     margin-left: 0.7rem;
   }
 }
@@ -9650,7 +9650,6 @@ body > #extension-is-installed {
     max-height: unset;
   }
 }
-
 
 /******************************************
 ** Data Object View **
