@@ -1,11 +1,11 @@
-define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
+define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
   /**
    * @class SolrResult
    * @classdesc A single result from the Solr search service
    * @classcategory Models
    * @extends Backbone.Model
    */
-  var SolrResult = Backbone.Model.extend(
+  const SolrResult = Backbone.Model.extend(
     /** @lends SolrResult.prototype */ {
       // This model contains all of the attributes found in the SOLR 'docs' field inside of the SOLR response element
       defaults: {
@@ -278,103 +278,96 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         );
       },
 
-      /*
-       * This method will download this object while sending the user's auth token in the request.
+      /**
+       * Download this object while sending the user's auth token in the
+       * request.
        */
-      downloadWithCredentials: function () {
-        //if(this.get("isPublic")) return;
+      async downloadWithCredentials() {
+        const model = this;
 
-        //Get info about this object
-        var url = this.get("url"),
-          model = this;
+        // Call the new getBlob method and handle the response
+        const response = await this.fetchDataObjectWithCredentials();
+        const blob = await response.blob();
+        const filename = this.getFileNameFromResponse(response);
 
-        //Create an XHR
-        var xhr = new XMLHttpRequest();
+        // For IE, we need to use the navigator API
+        if (navigator && navigator.msSaveOrOpenBlob) {
+          navigator.msSaveOrOpenBlob(blob, filename);
+        } else {
+          // Other browsers can download it via a link
+          const a = document.createElement("a");
+          a.href = window.URL.createObjectURL(blob);
+          a.download = filename;
+          a.style.display = "none";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        }
 
-        //Open and send the request with the user's auth token
-        xhr.open("GET", url);
+        // Track this event
+        model.trigger("downloadComplete");
+        MetacatUI.analytics?.trackEvent(
+          "download",
+          "Download DataONEObject",
+          model.get("id"),
+        );
+      },
 
-        if (MetacatUI.appUserModel.get("loggedIn")) xhr.withCredentials = true;
+      /**
+       * This method will fetch this object while sending the user's auth token
+       * in the request. The data can then be downloaded or displayed in the
+       * browser
+       * @returns {Promise} A promise that resolves when the data is fetched
+       * @since 0.0.0
+       */
+      fetchDataObjectWithCredentials() {
+        const url = this.get("url");
+        const token = MetacatUI.appUserModel.get("token") || "";
+        const method = "GET";
 
-        //When the XHR is ready, create a link with the raw data (Blob) and click the link to download
-        xhr.onload = function () {
-          if (this.status == 404) {
-            this.onerror.call(this);
-            return;
+        return new Promise((resolve, reject) => {
+          const headers = {};
+          if (token) {
+            headers.Authorization = `Bearer ${token}`;
           }
 
-          //Get the file name to save this file as
-          var filename = xhr.getResponseHeader("Content-Disposition");
+          fetch(url, { method, headers })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`Failed to fetch: ${response.statusText}`);
+              }
+              resolve(response);
+            })
+            .catch((error) => {
+              reject(error);
+            });
+        });
+      },
 
-          if (!filename) {
-            filename =
-              model.get("fileName") ||
-              model.get("title") ||
-              model.get("id") ||
-              "download";
-          } else
-            filename = filename
-              .substring(filename.indexOf("filename=") + 9)
-              .replace(/"/g, "");
+      /**
+       * Get the filename from the response headers or default to the model's
+       * title, id, or "download"
+       * @param {Response} response - The response object from the fetch request
+       * @returns {string} The filename to save the file as
+       * @since 0.0.0
+       */
+      getFileNameFromResponse(response) {
+        const model = this;
+        let filename = response.headers.get("Content-Disposition");
 
-          //Replace any whitespaces
-          filename = filename.trim().replace(/ /g, "_");
-
-          //For IE, we need to use the navigator API
-          if (navigator && navigator.msSaveOrOpenBlob) {
-            navigator.msSaveOrOpenBlob(xhr.response, filename);
-          }
-          //Other browsers can download it via a link
-          else {
-            var a = document.createElement("a");
-            a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
-
-            // Set the file name.
-            a.download = filename;
-
-            a.style.display = "none";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-          }
-
-          model.trigger("downloadComplete");
-
-          // Track this event
-          MetacatUI.analytics?.trackEvent(
-            "download",
-            "Download DataONEObject",
-            model.get("id"),
-          );
-        };
-
-        xhr.onerror = function (e) {
-          model.trigger("downloadError");
-
-          // Track the error
-          MetacatUI.analytics?.trackException(
-            `Download DataONEObject error: ${e || ""}`,
-            model.get("id"),
-            true,
-          );
-        };
-
-        xhr.onprogress = function (e) {
-          if (e.lengthComputable) {
-            var percent = (e.loaded / e.total) * 100;
-            model.set("downloadPercent", percent);
-          }
-        };
-
-        xhr.responseType = "blob";
-
-        if (MetacatUI.appUserModel.get("loggedIn"))
-          xhr.setRequestHeader(
-            "Authorization",
-            "Bearer " + MetacatUI.appUserModel.get("token"),
-          );
-
-        xhr.send();
+        if (!filename) {
+          filename =
+            model.get("fileName") ||
+            model.get("title") ||
+            model.get("id") ||
+            "download";
+        } else {
+          filename = filename
+            .substring(filename.indexOf("filename=") + 9)
+            .replace(/"/g, "");
+        }
+        filename = filename.trim().replace(/ /g, "_");
+        return filename;
       },
 
       getInfo: function (fields) {

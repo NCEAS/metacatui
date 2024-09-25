@@ -125,9 +125,7 @@ define([
         });
       },
 
-      /**
-       * Renders the tableEditor - add UI for creating and editing tables
-       */
+      /** @inheritdoc */
       render() {
         // Insert the template into the view
         this.$el
@@ -150,6 +148,7 @@ define([
           // defaults to empty table
           this.createSpreadsheet();
         }
+        return this;
       },
 
       /**
