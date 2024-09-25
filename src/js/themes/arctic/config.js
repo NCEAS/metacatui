@@ -101,6 +101,8 @@ MetacatUI.AppConfig = Object.assign(
 
     // CesiumMap
     enableCesium: true,
+    cesiumToken:
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMTE3MTBiYy1iODY1LTQxNjMtODUzNS0yMzM1NGE3M2JhMWIiLCJpZCI6NjkzOTcsImlhdCI6MTY3ODkwMDg5M30.xzIlG_tPIzB9FmYPzPTzOJ49R2J4yIG2y0ittFqdbMc",
     useDeprecatedDataCatalogView: false,
     catalogSearchMapOptions: {
       clickFeatureAction: "zoom",

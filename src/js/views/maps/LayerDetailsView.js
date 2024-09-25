@@ -11,7 +11,6 @@ define([
   "views/maps/LayerOpacityView",
   "views/maps/LayerInfoView",
   "views/maps/LayerNavigationView",
-  "views/maps/LegendView",
 ], (
   $,
   _,
@@ -23,7 +22,6 @@ define([
   LayerOpacityView,
   LayerInfoView,
   LayerNavigationView,
-  LegendView,
 ) => {
   /**
    * @class LayerDetailsView
@@ -121,13 +119,6 @@ define([
           hideIfError: true,
         },
         {
-          label: "Legend",
-          view: LegendView,
-          collapsible: false,
-          showTitle: true,
-          hideIfError: true,
-        },
-        {
           label: "Opacity",
           view: LayerOpacityView,
           collapsible: false,
@@ -143,12 +134,7 @@ define([
         },
       ],
 
-      /**
-       * Creates an object that gives the events this view will listen to and the
-       * associated function to call. Each entry in the object has the format 'event
-       * selector': 'function'.
-       * @returns {object}
-       */
+      /** @inheritdoc */
       events() {
         const events = {};
         // Close the layer details panel when the toggle button is clicked. Get the
@@ -168,134 +154,106 @@ define([
        * @param {object} [options] - A literal object with options to pass to the view
        */
       initialize(options) {
-        try {
-          // Get all the options and apply them to this view
-          if (typeof options === "object") {
-            Object.keys(options).forEach((key) => {
-              this[key] = options[key];
-            });
-          }
-        } catch (e) {
-          console.log(
-            `A LayerDetailsView failed to initialize. Error message: ${e}`,
-          );
+        // Get all the options and apply them to this view
+        if (typeof options === "object") {
+          Object.assign(this, options);
         }
       },
 
       /**
        * Renders this view
-       * @returns {LayerDetailsView | null} Returns the rendered view element
+       * @returns {LayerDetailsView} Returns the rendered view element
        */
       render() {
-        try {
-          const { model } = this;
+        const { model } = this;
 
-          // Show the layer details box as open if the view is set to have it open
-          // already
-          if (this.isOpen) {
-            this.el.classList.add(this.classes.open);
-          }
-
-          // Insert the template into the view
-          this.$el.html(
-            this.template({
-              label: model ? model.get("label") || "" : "",
-            }),
-          );
-
-          // Ensure the view's main element has the given class name
-          this.el.classList.add(this.className);
-
-          // Select elements in the template that we will need to manipulate
-          const sectionsContainer = this.el.querySelector(
-            `.${this.classes.sections}`,
-          );
-          const labelEl = this.el.querySelector(`.${this.classes.label}`);
-
-          // Render each section in the Details panel
-          this.renderedSections = _.clone(this.sections);
-
-          // Remove and do not render opacity section if showOpacitySlider is false
-          if (model?.get("showOpacitySlider") === false) {
-            this.renderedSections = this.renderedSections.filter(
-              (item) => item.label !== "Opacity",
-            );
-          }
-
-          this.renderedSections.forEach((section) => {
-            const detailSection = new LayerDetailView({
-              label: section.label,
-              contentView: section.view,
-              model,
-              collapsible: section.collapsible,
-              showTitle: section.showTitle,
-            });
-            sectionsContainer.append(detailSection.el);
-            detailSection.render();
-            // Hide the section if there is an error with the asset, and this section
-            // does make sense to show for a layer that can't be displayed
-            if (section.hideIfError && model) {
-              if (model && model.get("status") === "error") {
-                detailSection.el.style.display = "none";
-              }
-            }
-            section.renderedView = detailSection;
-          });
-
-          // Hide/show sections with the 'hideIfError' property when the status of the
-          // MapAsset changes
-          this.stopListening(model, "change:status");
-          this.listenTo(model, "change:status", (_model, status) => {
-            const hideIfErrorSections = _.filter(
-              this.renderedSections,
-              (section) => section.hideIfError,
-            );
-            let displayProperty = "";
-            if (status === "error") {
-              displayProperty = "none";
-            }
-            hideIfErrorSections.forEach((section) => {
-              const renderedViewEl = section.renderedView.el;
-              renderedViewEl.style.display = displayProperty;
-            });
-          });
-
-          // If this layer has a notification, show the badge and notification
-          // message
-          const notice = model ? model.get("notification") : null;
-          if (notice && (notice.message || notice.badge)) {
-            // message
-            if (notice.message) {
-              const noticeEl = document.createElement("div");
-              noticeEl.classList.add(this.classes.notification);
-              noticeEl.innerText = notice.message;
-              if (notice.style) {
-                const badgeClass = `${this.classes.notification}--${notice.style}`;
-                noticeEl.classList.add(badgeClass);
-              }
-              sectionsContainer.prepend(noticeEl);
-            }
-            // badge
-            if (notice.badge) {
-              const badge = document.createElement("span");
-              badge.classList.add(this.classes.badge);
-              badge.innerText = notice.badge;
-              if (notice.style) {
-                const badgeClass = `${this.classes.badge}--${notice.style}`;
-                badge.classList.add(badgeClass);
-              }
-              labelEl.append(badge);
-            }
-          }
-
-          return this;
-        } catch (error) {
-          console.log(
-            `There was an error rendering a LayerDetailsView` +
-              `. Error details: ${error}`,
-          );
-          return null;
+        // Show the layer details box as open if the view is set to have it open
+        // already
+        if (this.isOpen) {
+          this.el.classList.add(this.classes.open);
         }
+
+        // Insert the template into the view
+        this.$el.html(
+          this.template({
+            label: model ? model.get("label") || "" : "",
+          }),
+        );
+
+        // Ensure the view's main element has the given class name
+        this.el.classList.add(this.className);
+
+        // Select elements in the template that we will need to manipulate
+        const sectionsContainer = this.el.querySelector(
+          `.${this.classes.sections}`,
+        );
+        const labelEl = this.el.querySelector(`.${this.classes.label}`);
+
+        this.renderedSections = this.sections.map((section) => {
+          const detailSection = new LayerDetailView({
+            label: section.label,
+            contentView: section.view,
+            model,
+            collapsible: section.collapsible,
+            showTitle: section.showTitle,
+          });
+          sectionsContainer.append(detailSection.el);
+          detailSection.render();
+          // Hide the section if there is an error with the asset, and this section
+          // does make sense to show for a layer that can't be displayed
+          if (section.hideIfError && model) {
+            if (model && model.get("status") === "error") {
+              detailSection.el.style.display = "none";
+            }
+          }
+          return { ...section, renderedView: detailSection };
+        });
+
+        // Hide/show sections with the 'hideIfError' property when the status of the
+        // MapAsset changes
+        this.stopListening(model, "change:status");
+        this.listenTo(model, "change:status", (_model, status) => {
+          let displayProperty = "";
+          if (status === "error") {
+            displayProperty = "none";
+          }
+          this.renderedSections.forEach((section) => {
+            if (section.hideIfError) {
+              // eslint-disable-next-line no-param-reassign
+              section.renderedView.el.style.display = displayProperty;
+            }
+          });
+        });
+
+        // If this layer has a notification, show the badge and notification
+        // message
+        const notice = model ? model.get("notification") : null;
+        if (notice && (notice.message || notice.badge)) {
+          // message
+          if (notice.message) {
+            const noticeEl = document.createElement("div");
+            noticeEl.classList.add(this.classes.notification);
+            noticeEl.innerText = notice.message;
+            if (notice.style) {
+              const badgeClass = `${this.classes.notification}--${notice.style}`;
+              noticeEl.classList.add(badgeClass);
+            }
+            sectionsContainer.prepend(noticeEl);
+          }
+          // badge
+          if (notice.badge) {
+            const badge = document.createElement("span");
+            badge.classList.add(this.classes.badge);
+            badge.innerText = notice.badge;
+            if (notice.style) {
+              const badgeClass = `${this.classes.badge}--${notice.style}`;
+              badge.classList.add(badgeClass);
+            }
+            labelEl.append(badge);
+          }
+        }
+
+        return this;
       },
 
       /**
@@ -303,18 +261,11 @@ define([
        * MapAsset model's 'selected attribute' to true.
        */
       open() {
-        try {
-          this.el.classList.add(this.classes.open);
-          this.isOpen = true;
-          // Ensure that the model is marked as selected
-          if (this.model) {
-            this.model.set("selected", true);
-          }
-        } catch (error) {
-          console.log(
-            `There was an error opening the LayerDetailsView` +
-              `. Error details: ${error}`,
-          );
+        this.el.classList.add(this.classes.open);
+        this.isOpen = true;
+        // Ensure that the model is marked as selected
+        if (this.model) {
+          this.model.set("selected", true);
         }
       },
 
@@ -323,18 +274,11 @@ define([
        * MapAsset model's 'selected attribute' to false.
        */
       close() {
-        try {
-          this.el.classList.remove(this.classes.open);
-          this.isOpen = false;
-          // Ensure that the model is not marked as selected
-          if (this.model) {
-            this.model.set("selected", false);
-          }
-        } catch (error) {
-          console.log(
-            `There was an error closing the LayerDetailsView` +
-              `. Error details: ${error}`,
-          );
+        this.el.classList.remove(this.classes.open);
+        this.isOpen = false;
+        // Ensure that the model is not marked as selected
+        if (this.model) {
+          this.model.set("selected", false);
         }
       },
 
@@ -346,24 +290,17 @@ define([
        * information.
        */
       updateModel(newModel) {
-        try {
-          // Remove listeners from sub-views
-          this.renderedSections.forEach((section) => {
-            if (
-              section.renderedView &&
-              typeof section.renderedView.onClose === "function"
-            ) {
-              section.renderedView.onClose();
-            }
-          });
-          this.model = newModel;
-          this.render();
-        } catch (error) {
-          console.log(
-            `There was an error updating the MapAsset model in a LayerDetailsView` +
-              `. Error details: ${error}`,
-          );
-        }
+        // Remove listeners from sub-views
+        this.renderedSections.forEach((section) => {
+          if (
+            section.renderedView &&
+            typeof section.renderedView.onClose === "function"
+          ) {
+            section.renderedView.onClose();
+          }
+        });
+        this.model = newModel;
+        this.render();
       },
     },
   );
