@@ -291,7 +291,7 @@ define([
           description:
             "Allow people to select a search term from a list of options",
           filterTypes: ["filter"],
-          blockedFields: [...MetacatUI.appModel.get("querySemanticFields")],
+          blockedFields: [],
           modelFunction: function (attrs) {
             return new ChoiceFilter(attrs);
           },
