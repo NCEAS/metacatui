@@ -281,36 +281,14 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
       /**
        * Download this object while sending the user's auth token in the
        * request.
+       * @returns {Promise} A promise that resolves to the response object
+       * @since 0.0.0
        */
       async downloadWithCredentials() {
-        const model = this;
-
         // Call the new getBlob method and handle the response
-        const response = await this.fetchDataObjectWithCredentials();
-        const blob = await response.blob();
-        const filename = this.getFileNameFromResponse(response);
-
-        // For IE, we need to use the navigator API
-        if (navigator && navigator.msSaveOrOpenBlob) {
-          navigator.msSaveOrOpenBlob(blob, filename);
-        } else {
-          // Other browsers can download it via a link
-          const a = document.createElement("a");
-          a.href = window.URL.createObjectURL(blob);
-          a.download = filename;
-          a.style.display = "none";
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-        }
-
-        // Track this event
-        model.trigger("downloadComplete");
-        MetacatUI.analytics?.trackEvent(
-          "download",
-          "Download DataONEObject",
-          model.get("id"),
-        );
+        return this.fetchDataObjectWithCredentials()
+          .then((response) => this.downloadFromResponse(response))
+          .catch((error) => this.handleDownloadError(error));
       },
 
       /**
@@ -368,6 +346,58 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
         }
         filename = filename.trim().replace(/ /g, "_");
         return filename;
+      },
+
+      /**
+       * Download data onto the user's computer from the response object
+       * @param {Response} response - The response object from the fetch request
+       * @returns {Response} The response object
+       * @since 0.0.0
+       */
+      async downloadFromResponse(response) {
+        const model = this;
+        const blob = await response.blob();
+        const filename = this.getFileNameFromResponse(response);
+
+        // For IE, we need to use the navigator API
+        if (navigator && navigator.msSaveOrOpenBlob) {
+          navigator.msSaveOrOpenBlob(blob, filename);
+        } else {
+          // Other browsers can download it via a link
+          const a = document.createElement("a");
+          const url = URL.createObjectURL(blob);
+          a.href = url;
+          a.download = filename;
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        }
+
+        // Track this event
+        model.trigger("downloadComplete");
+        MetacatUI.analytics?.trackEvent(
+          "download",
+          "Download DataONEObject",
+          model.get("id"),
+        );
+
+        return response;
+      },
+
+      /**
+       * Handle an error that occurs when downloading the object
+       * @param {Error} e - The error that occurred
+       * @since 0.0.0
+       */
+      handleDownloadError(e) {
+        const model = this;
+        model.trigger("downloadError");
+        // Track the error
+        MetacatUI.analytics?.trackException(
+          `Download DataONEObject error: ${e || ""}`,
+          model.get("id"),
+          true,
+        );
       },
 
       getInfo: function (fields) {
@@ -550,7 +580,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
             model.set("size", $(data).find("size").text() || "");
 
             //Get the entity name
-            model.set("filename", $(data).find("filename").text() || "");
+            model.set("fileName", $(data).find("filename").text() || "");
 
             //Check if this is a metadata doc
             var formatId = $(data).find("formatid").text() || "",

@@ -3519,11 +3519,13 @@ add font awesome close icon */
   height: 100%;
   overflow: hidden;
   box-sizing: border-box;
-  padding: 1rem;
+  padding: 0.7rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .table-editor .spreadsheet {
-  margin: 1rem 0 0.5rem 0;
+  margin: 0.7rem 0 0.5rem 0;
   width: 100%;
   max-width: 90vw;
   height: 100%;
@@ -3531,6 +3533,12 @@ add font awesome close icon */
   border: 1px solid #ddd;
   box-sizing: border-box;
   border-radius: 5px;
+}
+
+.table-editor .alert {
+  margin: -10px 0 0 0;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.85rem;
 }
 
 .table-editor .table {
@@ -9656,4 +9664,19 @@ body > #extension-is-installed {
 ******************************************/
 .object-view {
   height: 100%;
+  display: grid;
+  align-items: center;
+  > .notification {
+    font-size: 1.6rem;
+    margin: 3rem;
+  }
+  > .alert-container {
+    margin: 3rem;
+  }
+  > .btn.download {
+    grid-row: 2;
+    justify-self: right;
+    margin-right: 1rem;
+    margin-top: 1rem;
+  }
 }
