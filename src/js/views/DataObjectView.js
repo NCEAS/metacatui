@@ -50,7 +50,7 @@ define([
    * @augments Backbone.View
    * @class
    * @since 0.0.0
-   * @screenshot views/DataObjectView.png //TODO
+   * @screenshot views/DataObjectView.png
    */
   const DataObjectView = Backbone.View.extend(
     /** @lends DataObjectView.prototype */

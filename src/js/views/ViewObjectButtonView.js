@@ -29,7 +29,7 @@ define(["jquery", "backbone", "views/DataObjectView"], (
    * @augments Backbone.View
    * @class
    * @since 0.0.0
-   * @screenshot views/ViewDataButtonView.png //TODO
+   * @screenshot views/ViewDataButtonView.png
    */
   const ViewDataButtonView = Backbone.View.extend(
     /** @lends ViewDataButtonView.prototype */
