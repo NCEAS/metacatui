@@ -1747,10 +1747,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @type {string[]}
            * @since 0.0.0
            */
-          trustedContentSources: [
-            "https://www.youtube.com/embed/*",
-            "https://player.vimeo.com/video/*",
-          ],
+          trustedContentSources: [],
 
           /** If true, then archived content is available in the search index.
            * Set to false if this MetacatUI is using a Metacat version before 2.10.0
