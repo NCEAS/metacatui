@@ -29,7 +29,6 @@ define([
   "text!templates/newerVersion.html",
   "text!templates/loading.html",
   "text!templates/metadataControls.html",
-  "text!templates/metadataInfoIcons.html",
   "text!templates/alert.html",
   "text!templates/editMetadata.html",
   "text!templates/dataDisplay.html",
@@ -67,7 +66,6 @@ define([
   VersionTemplate,
   LoadingTemplate,
   ControlsTemplate,
-  MetadataInfoIconsTemplate,
   AlertTemplate,
   EditMetadataTemplate,
   DataDisplayTemplate,
@@ -119,7 +117,6 @@ define([
       versionTemplate: _.template(VersionTemplate),
       loadingTemplate: _.template(LoadingTemplate),
       controlsTemplate: _.template(ControlsTemplate),
-      infoIconsTemplate: _.template(MetadataInfoIconsTemplate),
       dataSourceTemplate: _.template(DataSourceTemplate),
       editMetadataTemplate: _.template(EditMetadataTemplate),
       dataDisplayTemplate: _.template(DataDisplayTemplate),
@@ -1808,12 +1805,7 @@ define([
         $(this.controlsContainer).html(controlsContainer);
 
         // Insert the info icons
-        const metricsWell = this.$(".metrics-container");
-        metricsWell.append(
-          this.infoIconsTemplate({
-            model: this.model.toJSON(),
-          }),
-        );
+        this.renderInfoIcons();
 
         if (MetacatUI.appModel.get("showWholeTaleFeatures")) {
           this.createWholeTaleButton();
@@ -1837,6 +1829,75 @@ define([
             false,
           );
         }
+      },
+
+      /**
+       * Add the info icons to the metadata controls panel. Shows if the dataset
+       * is private or archived.
+       * @since 0.0.0
+       */
+      renderInfoIcons() {
+        const isPrivate = !this.model.get("isPublic");
+        const isArchived = this.model.get("archived");
+        if (!isPrivate && !isArchived) return;
+
+        if (isPrivate) {
+          this.addInfoIcon(
+            "private",
+            "icon-lock",
+            "private",
+            "This is a private dataset.",
+          );
+        }
+        if (isArchived) {
+          this.addInfoIcon(
+            "archived",
+            "icon-trash",
+            "danger",
+            "This dataset has been archived.",
+          );
+        }
+      },
+
+      /**
+       * Add an info icon to the metadata controls panel.
+       * @param {string} iconType - The type of icon to add.
+       * @param {string} iconClass - The class
+       * @param {string} baseClass - The base class
+       * @param {string} titleText - The text to display when the icon is hovered
+       * over.
+       * @returns {HTMLElement} The icon element that was added to the view.
+       * @since 0.0.0
+       */
+      addInfoIcon(iconType, iconClass, baseClass, titleText) {
+        const iconHTML = `<span class="${iconType} icons">
+            <span class="icon-stack ${iconType} tooltip-this"
+                  data-toggle="tooltip"
+                  data-placement="top"
+                  data-container="#metadata-controls-container"
+                  title="${titleText}">
+              <i class="icon icon-circle icon-stack-base ${baseClass}"></i>
+              <i class="icon ${iconClass} icon-stack-top"></i>
+            </span>
+          </span>`;
+
+        // Convert the string into DOM element so we can return it
+        const range = document.createRange();
+        const newIconFragment = range.createContextualFragment(iconHTML);
+        const newIcon = newIconFragment.firstChild;
+
+        if (!this.infoIconContainer) {
+          const container = this.$(".metrics-container");
+          const iconContainer = $(document.createElement("span")).addClass(
+            "info-icons",
+          );
+          container.prepend(iconContainer);
+          this.infoIconContainer = iconContainer;
+        }
+
+        this.infoIconContainer.append(newIcon);
+
+        return newIcon;
       },
 
       /**

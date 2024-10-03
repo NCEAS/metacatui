@@ -12,6 +12,13 @@ define(["backbone"], (Backbone) => {
   // dataset field means
   const CANONICAL_TOOLTIP_TEXT =
     "The original dataset this version was derived from. This dataset is essentially a duplicate of the original.";
+  // The text to display in the info tooltip to explain what the info icon means
+  const INFO_ICON_TOOLTIP_TEXT =
+    "This dataset is essentially a duplicate of of another, original dataset.";
+  // The class to use for the info icon
+  const INFO_ICON_CLASS = "info";
+  // The bootstrap icon name to use for the info icon
+  const INFO_ICON_NAME = "icon-copy";
 
   // The following properties are used to identify parts of the MetadataView.
   // If the MetadataView changes, these properties may need to be updated.
@@ -23,6 +30,7 @@ define(["backbone"], (Backbone) => {
     fieldItem: "control-group",
     fieldLabel: "control-label",
     fieldValue: ["controls", "controls-well"],
+    fieldInfoIcon: ["tooltip-this", "icon", "icon-info-sign"],
   };
 
   /**
@@ -227,11 +235,20 @@ define(["backbone"], (Backbone) => {
       },
 
       /**
-       * Adds a badge to the header of the MetadataView to indicate that the
-       * dataset being displayed is essentially a duplicate of another dataset.
+       * Adds a icon to the header of the MetadataView to indicate that the
+       * dataset being displayed is essentially a duplicate
        */
       addInfoIcon() {
-        // TODO
+        if (this.infoIcon) {
+          // Do not re-add the info icon if it already exists
+          return;
+        }
+        this.infoIcon = this.metadataView.addInfoIcon(
+          "duplicate",
+          INFO_ICON_NAME,
+          INFO_ICON_CLASS,
+          INFO_ICON_TOOLTIP_TEXT,
+        );
       },
 
       // TODO: Do we need to remove the view from the DOM when the MetadataView
