@@ -22,6 +22,7 @@ define([
   "views/AnnotationView",
   "views/MarkdownView",
   "views/ViewObjectButtonView",
+  "views/CanonicalDatasetHandlerView",
   "text!templates/metadata/metadata.html",
   "text!templates/dataSource.html",
   "text!templates/publishDOI.html",
@@ -59,6 +60,7 @@ define([
   AnnotationView,
   MarkdownView,
   ViewObjectButtonView,
+  CanonicalDatasetHandlerView,
   MetadataTemplate,
   DataSourceTemplate,
   PublishDoiTemplate,
@@ -189,6 +191,16 @@ define([
         this.once("metadataLoaded", () => {
           this.createAnnotationViews();
           this.insertMarkdownViews();
+          // Modifies the view to indicate that this is a dataset is essentially
+          // a duplicate of another dataset, if applicable
+          if (!this.canonicalDatasetHandler) {
+            // The view should only be created once, but "metadataLoaded" can be
+            // triggered multiple times
+            this.canonicalDatasetHandler = new CanonicalDatasetHandlerView({
+              metadataView: this,
+            });
+          }
+          this.canonicalDatasetHandler.render();
         });
 
         // Listen to when the package table has been rendered
