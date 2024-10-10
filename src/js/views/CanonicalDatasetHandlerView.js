@@ -1,4 +1,4 @@
-define(["backbone"], (Backbone) => {
+define(["backbone", "models/CitationModel"], (Backbone, CitationModel) => {
   // The "Type" property of the annotation view
   const ANNO_VIEW_TYPE = "AnnotationView";
   // The URI for the schema.org:sameAs annotation
@@ -15,6 +15,11 @@ define(["backbone"], (Backbone) => {
   // The text to display in the info tooltip to explain what the info icon means
   const INFO_ICON_TOOLTIP_TEXT =
     "This dataset is essentially a duplicate of of another, original dataset.";
+  // In the citation modal, the heading to use for the dataone version citation
+  const CITATION_TITLE_DATAONE = "This Version of the Dataset";
+  // In the citation modal, the heading to use for the canonical dataset
+  // citation
+  const CITATION_TITLE_CANONICAL = "Canonical Dataset";
   // The class to use for the info icon
   const INFO_ICON_CLASS = "info";
   // The bootstrap icon name to use for the info icon
@@ -25,6 +30,9 @@ define(["backbone"], (Backbone) => {
 
   // The name of the property on the MetadataView that contains subviews
   const SUBVIEW_PROP = "subviews";
+  // The name of the property on the MetadataView that contains the citation
+  // modal
+  const CITATION_MODAL_PROP = "citationModal";
   // Class names used in the MetadataView that we also need to use in this view
   const METADATA_VIEW_CLASS_NAMES = {
     fieldItem: "control-group",
@@ -245,13 +253,36 @@ define(["backbone"], (Backbone) => {
         return item;
       },
 
+      /** Open the citation modal. */
+      openCitationModal() {
+        this.metadataView[CITATION_MODAL_PROP].show();
+      },
+
       /**
        * Modifies the CitationModalView to add the citation information for the
        * canonical dataset in addition to the citation information for the
        * current dataset.
        */
       modifyCitationModal() {
-        // TODO
+        // The CitationModalView is recreated each time it is shown.
+        const citationModalView = this.metadataView[CITATION_MODAL_PROP];
+        this.listenToOnce(citationModalView, "rendered", () => {
+          citationModalView.canonicalDatasetMods = true;
+          // Add heading for each citation
+          const heading = document.createElement("h5");
+          heading.textContent = CITATION_TITLE_DATAONE;
+          citationModalView.citationContainer.prepend(heading);
+
+          // Add the citation for the canonical dataset
+          const headingOriginal = document.createElement("h5");
+          headingOriginal.textContent = CITATION_TITLE_CANONICAL;
+          citationModalView.citationContainer.append(headingOriginal);
+
+          const testCitationModel = new CitationModel({
+            // TODO: Add citation info for the canonical dataset
+          });
+          citationModalView.insertCitation(testCitationModel);
+        });
       },
 
       /**
@@ -265,6 +296,8 @@ define(["backbone"], (Backbone) => {
           INFO_ICON_CLASS,
           INFO_ICON_TOOLTIP_TEXT,
         );
+        infoIcon.style.cursor = "pointer";
+        infoIcon.addEventListener("click", () => this.openCitationModal());
         return infoIcon;
       },
 

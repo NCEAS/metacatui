@@ -131,7 +131,6 @@ define([
         // Set listeners
         this.$el.off("shown");
         this.$el.on("shown", this.renderView.bind(this));
-        this.show();
         return this;
       },
 
@@ -176,6 +175,7 @@ define([
 
           this.insertCitation();
           this.listenForCopy();
+          this.trigger("rendered");
         } catch (e) {
           console.error("Failed to render the Citation Modal View: ", e);
           MetacatUI.appView.showAlert({
@@ -191,22 +191,24 @@ define([
       },
 
       /**
-       * Insert the citation view into the modal
+       * Insert the citation view into the modal. This can be used by parent
+       * views to insert additional citation views into the modal.
+       * @param {CitationModel} model - The citation model to use. If not
+       * provided, the model passed to the view will be used.
        */
-      insertCitation: function () {
+      insertCitation: function (model) {
         const container = this.citationContainer;
         if (!container) return;
 
         // Create a new CitationView
         var citationView = new CitationView({
-          model: this.model,
+          model: model || this.model,
           style: this.style,
           createTitleLink: false,
         });
 
         // Render the CitationView
         citationView.render();
-
         // Insert the CitationView into the modal
         container.appendChild(citationView.el);
       },

@@ -1818,17 +1818,18 @@ define([
         // Show the citation modal with the ability to copy the citation text
         // when the "Copy Citation" button is clicked
         const citeButton = this.el.querySelector("#cite-this-dataset-btn");
+        this.citationModal = new CitationModalView({
+          model: this.model,
+          createLink: true,
+        });
+        this.subviews.push(this.citationModal);
+        this.citationModal.render();
         if (citeButton) {
           citeButton.removeEventListener("click", this.citationModal);
           citeButton.addEventListener(
             "click",
             () => {
-              this.citationModal = new CitationModalView({
-                model: this.model,
-                createLink: true,
-              });
-              this.subviews.push(this.citationModal);
-              this.citationModal.render();
+              this.citationModal.show();
             },
             false,
           );
@@ -1890,16 +1891,16 @@ define([
         const newIconFragment = range.createContextualFragment(iconHTML);
         const newIcon = newIconFragment.firstChild;
 
-        if (!this.infoIconContainer) {
-          const container = this.$(".metrics-container");
-          const iconContainer = $(document.createElement("span")).addClass(
-            "info-icons",
+        const iconContainerClass = "info-icons";
+        let iconContainer = this.el.querySelector(`.${iconContainerClass}`);
+        if (!iconContainer) {
+          iconContainer = $(document.createElement("span")).addClass(
+            iconContainerClass,
           );
-          container.prepend(iconContainer);
-          this.infoIconContainer = iconContainer;
+          this.$(".metrics-container").prepend(iconContainer);
         }
 
-        this.infoIconContainer.append(newIcon);
+        iconContainer.append(newIcon);
 
         return newIcon;
       },
