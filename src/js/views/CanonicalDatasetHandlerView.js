@@ -102,14 +102,26 @@ define(["backbone"], (Backbone) => {
 
       /** @inheritdoc */
       render() {
-        if (this.detectCanonicalDataset()) {
-          this.getCitationInfo();
-          this.addFieldItem();
-          this.modifyCitationModal();
-          this.addInfoIcon();
-          this.removeAnnotations();
-        }
+        // In case it's a re-render, remove any modifications made previously
+        this.reset();
+        const hasCanonical = this.detectCanonicalDataset();
+        if (!hasCanonical) return this;
+        this.getCitationInfo();
+        this.fieldItem = this.addFieldItem();
+        this.modifyCitationModal();
+        this.infoIcon = this.addInfoIcon();
+        this.hideAnnotations();
         return this;
+      },
+
+      /**
+       * Resets the MetadataView to its original state by removing any changes
+       * made by this view.
+       */
+      reset() {
+        this.fieldItem?.remove();
+        this.infoIcon?.remove();
+        this.showAnnotations();
       },
 
       /**
@@ -121,11 +133,6 @@ define(["backbone"], (Backbone) => {
        * otherwise.
        */
       detectCanonicalDataset() {
-        if (this.canonicalUri) {
-          // On re-render, annotations might already be removed, leading to a
-          // false negative if we try to re-detect the canonical dataset.
-          return true;
-        }
         // The annotation views provide the URI and value of annotations on the
         // metadata. We consider the dataset to be canonical if the sameAs and
         // derivedFrom annotations both point to the same URI.
@@ -146,7 +153,7 @@ define(["backbone"], (Backbone) => {
        */
       getAnnotationViews() {
         return this.metadataView[SUBVIEW_PROP].filter(
-          (view) => view.type === ANNO_VIEW_TYPE,
+          (view) => view?.type === ANNO_VIEW_TYPE,
         );
       },
 
@@ -182,20 +189,30 @@ define(["backbone"], (Backbone) => {
       },
 
       /**
-       * Removes the sameAs and derivedFrom annotations from the MetadataView.
+       * Hides the sameAs and derivedFrom annotations from the MetadataView.
        * This is done to prevent redundancy in the metadata display.
        */
-      removeAnnotations() {
+      hideAnnotations() {
         // Sometimes the MetadataView re-renders, so we must always query for
         // the annotation views when we want to remove them.
         const sameAsAnno = this.getSameAsAnnotationView();
         const derivedFromAnno = this.getDerivedFromAnnotationView();
         if (sameAsAnno?.value.uri === this.canonicalUri) {
-          sameAsAnno.remove();
+          sameAsAnno.el.style.display = "none";
+          this.hiddenSameAs = sameAsAnno;
         }
         if (derivedFromAnno?.value.uri === this.canonicalUri) {
-          derivedFromAnno.remove();
+          derivedFromAnno.el.style.display = "none";
+          this.hiddenDerivedFrom = derivedFromAnno;
         }
+      },
+
+      /** Show previously hidden annotations in the MetadataView. */
+      showAnnotations() {
+        this.hiddenSameAs?.el.style.removeProperty("display");
+        this.hiddenSameAs = null;
+        this.hiddenDerivedFrom?.el.style.removeProperty("display");
+        this.hiddenDerivedFrom = null;
       },
 
       /**
@@ -210,6 +227,11 @@ define(["backbone"], (Backbone) => {
           METADATA_VIEW_CLASS_NAMES,
         );
 
+        // Vivify the item so we can reference it later
+        const range = document.createRange();
+        const fragment = range.createContextualFragment(itemHTML);
+        const item = fragment.firstElementChild;
+
         // Find the parent item that contains the field name the view should
         // be inserted before
         const labels = Array.from(
@@ -219,10 +241,8 @@ define(["backbone"], (Backbone) => {
           (label) => label.textContent.trim() === this.insertFieldBefore,
         );
         // Insert the new field item before the label
-        insertBeforeLabel.parentElement.insertAdjacentHTML(
-          "beforebegin",
-          itemHTML,
-        );
+        insertBeforeLabel.parentElement.before(item);
+        return item;
       },
 
       /**
@@ -239,21 +259,20 @@ define(["backbone"], (Backbone) => {
        * dataset being displayed is essentially a duplicate
        */
       addInfoIcon() {
-        if (this.infoIcon) {
-          // Do not re-add the info icon if it already exists
-          return;
-        }
-        this.infoIcon = this.metadataView.addInfoIcon(
+        const infoIcon = this.metadataView.addInfoIcon(
           "duplicate",
           INFO_ICON_NAME,
           INFO_ICON_CLASS,
           INFO_ICON_TOOLTIP_TEXT,
         );
+        return infoIcon;
       },
 
-      // TODO: Do we need to remove the view from the DOM when the MetadataView
-      // is removed? Do we need methods to undo the changes made by this view?
-      remove() {},
+      /** Called when the view is removed. */
+      onClose() {
+        this.reset();
+        this.remove();
+      },
     },
   );
 
