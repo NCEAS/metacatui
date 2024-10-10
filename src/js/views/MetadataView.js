@@ -168,6 +168,13 @@ define([
 
       /** @inheritdoc */
       render() {
+        if (this.isRendering) {
+          // If we re-render before the first render is complete the view breaks
+          this.stopListening(this, "renderComplete", this.render);
+          this.listenToOnce(this, "renderComplete", this.render);
+          return;
+        }
+        this.isRendering = true;
         this.stopListening();
 
         MetacatUI.appModel.set("headerType", "default");
@@ -185,19 +192,14 @@ define([
         this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.render);
 
         // Listen to when the metadata has been rendered
-        this.once("metadataLoaded", () => {
+        this.listenToOnce(this, "metadataLoaded", () => {
           this.createAnnotationViews();
           this.insertMarkdownViews();
           // Modifies the view to indicate that this is a dataset is essentially
           // a duplicate of another dataset, if applicable
-          if (!this.canonicalDatasetHandler) {
-            // The view should only be created once, but "metadataLoaded" can be
-            // triggered multiple times
-            this.canonicalDatasetHandler = new CanonicalDatasetHandlerView({
-              metadataView: this,
-            });
-          }
-          this.canonicalDatasetHandler.render();
+          this.canonicalDatasetHandler = new CanonicalDatasetHandlerView({
+            metadataView: this,
+          }).render();
         });
 
         // Listen to when the package table has been rendered
@@ -540,14 +542,16 @@ define([
 
                   viewRef.alterMarkup();
 
-                  viewRef.trigger("metadataLoaded");
-
                   // Add a map of the spatial coverage
                   if (gmaps) viewRef.insertSpatialCoverageMap();
 
                   // Injects Clipboard objects into DOM elements returned from
                   // the View Service
                   viewRef.insertCopiables();
+
+                  viewRef.trigger("metadataLoaded");
+                  viewRef.isRendering = false;
+                  viewRef.trigger("renderComplete");
                 }
               } catch (e) {
                 MetacatUI.analytics?.trackException(
