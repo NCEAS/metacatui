@@ -58,7 +58,7 @@ define([
    * @augments Backbone.View
    * @class
    * @since 0.0.0
-   * @screenshot views/CanonicalDatasetHandlerViewView.png TODO
+   * @screenshot views/CanonicalDatasetHandlerViewView.png
    */
   const CanonicalDatasetHandlerView = Backbone.View.extend(
     /** @lends CanonicalDatasetHandlerView.prototype */
