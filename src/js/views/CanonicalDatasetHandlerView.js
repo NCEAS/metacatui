@@ -1,8 +1,9 @@
-define(["backbone", "models/CitationModel", "models/CrossRefModel"], (
-  Backbone,
-  CitationModel,
-  CrossRefModel,
-) => {
+define([
+  "backbone",
+  "views/CitationView",
+  "models/CitationModel",
+  "models/CrossRefModel",
+], (Backbone, CitationView, CitationModel, CrossRefModel) => {
   // The "Type" property of the annotation view
   const ANNO_VIEW_TYPE = "AnnotationView";
   // The URI for the schema.org:sameAs annotation
@@ -119,10 +120,10 @@ define(["backbone", "models/CitationModel", "models/CrossRefModel"], (
         this.reset();
         const hasCanonical = this.detectCanonicalDataset();
         if (!hasCanonical) return this;
-        this.getCitationInfo();
         this.fieldItem = this.addFieldItem();
-        this.modifyCitationModal();
         this.infoIcon = this.addInfoIcon();
+        this.getCitationInfo();
+        this.modifyCitationModal();
         this.hideAnnotations();
         return this;
       },
@@ -248,8 +249,10 @@ define(["backbone", "models/CitationModel", "models/CrossRefModel"], (
         this.crossRef = new CrossRefModel({
           doi: this.canonicalUri,
         });
+        this.stopListening(this.crossRef);
         this.listenToOnce(this.crossRef, "sync", () => {
           view.citationModel.setSourceModel(this.crossRef);
+          view.updateFieldItemWithCitation();
         });
         this.crossRef.fetch();
       },
@@ -318,6 +321,29 @@ define(["backbone", "models/CitationModel", "models/CrossRefModel"], (
         // Insert the new field item before the label
         insertBeforeLabel.parentElement.before(item);
         return item;
+      },
+
+      /**
+       * Replaces the DOI in the field item with a full citation for the
+       * canonical dataset.
+       */
+      updateFieldItemWithCitation() {
+        const { citationModel, fieldItem } = this;
+        if (!fieldItem) return;
+
+        const citationView = new CitationView({
+          model: citationModel,
+          className: "canonical-citation",
+          createTitleLink: false,
+          openLinkInNewTab: true,
+        }).render();
+
+        // Replace the DOI with the citation
+        const fieldValueEl = fieldItem.querySelector(
+          `.${METADATA_VIEW_CLASS_NAMES.fieldValue.join(".")}`,
+        );
+        fieldValueEl.innerHTML = "";
+        fieldValueEl.appendChild(citationView.el);
       },
 
       /** Open the citation modal. */
