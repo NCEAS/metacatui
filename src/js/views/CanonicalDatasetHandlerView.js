@@ -136,6 +136,7 @@ define(["backbone", "models/CitationModel", "models/CrossRefModel"], (
         this.infoIcon?.remove();
         this.showAnnotations();
         this.citationModel.reset();
+        this.canonicalUri = null;
       },
 
       /**
@@ -147,18 +148,64 @@ define(["backbone", "models/CitationModel", "models/CrossRefModel"], (
        * otherwise.
        */
       detectCanonicalDataset() {
+        const matches = this.findCanonicalAnnotations();
+        if (!matches) return false;
+        this.canonicalUri = matches.uri;
+        return true;
+      },
+
+      /**
+       * Given a set annotation views for the sameAs property and a set of
+       * annotation views for the derivedFrom property, this method finds any
+       * matches between the two sets. A match is found if the URI of the sameAs
+       * annotation is the same as the URI of the derivedFrom annotation.
+       * @returns {{sameAs: AnnotationView, derivedFrom: AnnotationView, uri: string}}
+       * An object containing the matching sameAs and derivedFrom annotation and
+       * the URI they share.
+       */
+      findCanonicalAnnotations() {
         // The annotation views provide the URI and value of annotations on the
         // metadata. We consider the dataset to be canonical if the sameAs and
         // derivedFrom annotations both point to the same URI.
-        const sameAsAnno = this.getSameAsAnnotationView();
-        if (!sameAsAnno) return false;
-        const derivedFromAnno = this.getDerivedFromAnnotationView();
-        if (!derivedFromAnno) return false;
-        const sameAsUri = sameAsAnno.value.uri;
-        const derivedFromUri = derivedFromAnno.value.uri;
-        if (sameAsUri !== derivedFromUri) return false;
-        this.canonicalUri = sameAsUri;
-        return true;
+        const sameAs = this.getSameAsAnnotationViews();
+        if (!sameAs?.length) return null;
+        const derivedFrom = this.getDerivedFromAnnotationViews();
+        if (!derivedFrom?.length) return null;
+
+        const sameAsUnique = this.removeDuplicateAnnotations(sameAs);
+        const derivedFromUnique = this.removeDuplicateAnnotations(derivedFrom);
+
+        // Find any matches between the two sets
+        const matches = [];
+        sameAsUnique.forEach((sameAsAnno) => {
+          derivedFromUnique.forEach((derivedFromAnno) => {
+            if (sameAsAnno.value.uri === derivedFromAnno.value.uri) {
+              matches.push({
+                sameAs: sameAsAnno,
+                derivedFrom: derivedFromAnno,
+                uri: sameAsAnno.value.uri,
+              });
+            }
+          });
+        });
+        // There can only be one canonical dataset. If multiple matches are
+        // found, we cannot determine the canonical dataset.
+        if (!matches.length || matches.length > 1) return null;
+        return matches[0];
+      },
+
+      /**
+       * Removes duplicate annotations from an array of AnnotationView instances.
+       * @param {AnnotationView[]} annotationViews An array of AnnotationView all
+       * with the same property URI.
+       * @returns {AnnotationView[]} An array of AnnotationView instances with
+       * duplicates removed.
+       */
+      removeDuplicateAnnotations(annotationViews) {
+        return annotationViews.filter(
+          (anno, i, self) =>
+            i === self.findIndex((a) => a.value.uri === anno.value.uri),
+        );
       },
 
       /**
@@ -173,20 +220,20 @@ define(["backbone", "models/CitationModel", "models/CrossRefModel"], (
 
       /**
        * Gets the AnnotationView for the schema.org:sameAs annotation.
-       * @returns {AnnotationView} The AnnotationView instance for the sameAs
+       * @returns {AnnotationView[]} An array of sameAs AnnotationViews.
        */
-      getSameAsAnnotationView() {
-        return this.getAnnotationViews().find(
+      getSameAsAnnotationViews() {
+        return this.getAnnotationViews().filter(
           (view) => view.property.uri === SCHEMA_ORG_SAME_AS,
         );
       },
 
       /**
        * Gets the AnnotationView for the prov:wasDerivedFrom annotation.
-       * @returns {AnnotationView} The AnnotationView instance for derivedFrom
+       * @returns {AnnotationView[]} An array of derivedFrom AnnotationViews.
        */
-      getDerivedFromAnnotationView() {
-        return this.getAnnotationViews().find(
+      getDerivedFromAnnotationViews() {
+        return this.getAnnotationViews().filter(
           (view) => view.property.uri === PROV_WAS_DERIVED_FROM,
         );
       },
@@ -214,16 +261,24 @@ define(["backbone", "models/CitationModel", "models/CrossRefModel"], (
       hideAnnotations() {
         // Sometimes the MetadataView re-renders, so we must always query for
         // the annotation views when we want to remove them.
-        const sameAsAnno = this.getSameAsAnnotationView();
-        const derivedFromAnno = this.getDerivedFromAnnotationView();
-        if (sameAsAnno?.value.uri === this.canonicalUri) {
-          sameAsAnno.el.style.display = "none";
-          this.hiddenSameAs = sameAsAnno;
-        }
-        if (derivedFromAnno?.value.uri === this.canonicalUri) {
-          derivedFromAnno.el.style.display = "none";
-          this.hiddenDerivedFrom = derivedFromAnno;
-        }
+        const sameAs = this.getSameAsAnnotationViews();
+        const derivedFrom = this.getDerivedFromAnnotationViews();
+        sameAs.forEach((sameAsAnno) => {
+          if (sameAsAnno?.value.uri === this.canonicalUri) {
+            const view = sameAsAnno;
+            view.el.style.display = "none";
+            if (!this.hiddenSameAs) this.hiddenSameAs = [];
+            this.hiddenSameAs.push(sameAsAnno);
+          }
+        });
+        derivedFrom.forEach((derivedFromAnno) => {
+          if (derivedFromAnno?.value.uri === this.canonicalUri) {
+            const view = derivedFromAnno;
+            view.el.style.display = "none";
+            if (!this.hiddenDerivedFrom) this.hiddenDerivedFrom = [];
+            this.hiddenDerivedFrom.push(derivedFromAnno);
+          }
+        });
       },
 
       /** Show previously hidden annotations in the MetadataView. */
@@ -235,7 +290,8 @@ define(["backbone", "models/CitationModel", "models/CrossRefModel"], (
       },
 
       /**
-       * Adds a "row" in the MetadataView to display the canonical dataset URI.
+       * Add a row in the MetadataView to display the canonical dataset URI
+       * @returns {Element} The field item element that was added to the view.
        */
       addFieldItem() {
         const { canonicalUri, fieldItemTemplate } = this;
@@ -296,6 +352,7 @@ define(["backbone", "models/CitationModel", "models/CrossRefModel"], (
       /**
        * Adds a icon to the header of the MetadataView to indicate that the
        * dataset being displayed is essentially a duplicate
+       * @returns {Element} The info icon element that was added to the view.
        */
       addInfoIcon() {
         const infoIcon = this.metadataView.addInfoIcon(
