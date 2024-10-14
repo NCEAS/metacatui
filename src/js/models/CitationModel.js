@@ -1125,6 +1125,13 @@ define(["underscore", "backbone"], (_, Backbone) => {
         }
         return "";
       },
+
+      /** Set the model back to its defaults */
+      reset() {
+        this.clear({ silent: true });
+        this.set(this.defaults(), { silent: true });
+        this.trigger("change");
+      },
     },
   );
 

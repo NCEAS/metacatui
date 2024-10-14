@@ -1,4 +1,8 @@
-define(["backbone", "models/CitationModel"], (Backbone, CitationModel) => {
+define(["backbone", "models/CitationModel", "models/CrossRefModel"], (
+  Backbone,
+  CitationModel,
+  CrossRefModel,
+) => {
   // The "Type" property of the annotation view
   const ANNO_VIEW_TYPE = "AnnotationView";
   // The URI for the schema.org:sameAs annotation
@@ -101,6 +105,7 @@ define(["backbone", "models/CitationModel"], (Backbone, CitationModel) => {
        */
       initialize(options) {
         this.metadataView = options?.metadataView;
+        this.citationModel = new CitationModel();
         if (!this.metadataView) {
           throw new Error(
             "The CanonicalDatasetHandlerView requires a MetadataView instance.",
@@ -130,6 +135,7 @@ define(["backbone", "models/CitationModel"], (Backbone, CitationModel) => {
         this.fieldItem?.remove();
         this.infoIcon?.remove();
         this.showAnnotations();
+        this.citationModel.reset();
       },
 
       /**
@@ -191,9 +197,14 @@ define(["backbone", "models/CitationModel"], (Backbone, CitationModel) => {
        * this information in a CitationModel instance.
        */
       getCitationInfo() {
-        // TODO: Get citation info from the canonical dataset
-        // what API can we use to get this info?
-        // this.citationModel = new CitationModel({});
+        const view = this;
+        this.crossRef = new CrossRefModel({
+          doi: this.canonicalUri,
+        });
+        this.listenToOnce(this.crossRef, "sync", () => {
+          view.citationModel.setSourceModel(this.crossRef);
+        });
+        this.crossRef.fetch();
       },
 
       /**
@@ -264,6 +275,7 @@ define(["backbone", "models/CitationModel"], (Backbone, CitationModel) => {
        * current dataset.
        */
       modifyCitationModal() {
+        const view = this;
         // The CitationModalView is recreated each time it is shown.
         const citationModalView = this.metadataView[CITATION_MODAL_PROP];
         this.listenToOnce(citationModalView, "rendered", () => {
@@ -277,11 +289,7 @@ define(["backbone", "models/CitationModel"], (Backbone, CitationModel) => {
           const headingOriginal = document.createElement("h5");
           headingOriginal.textContent = CITATION_TITLE_CANONICAL;
           citationModalView.citationContainer.append(headingOriginal);
-
-          const testCitationModel = new CitationModel({
-            // TODO: Add citation info for the canonical dataset
-          });
-          citationModalView.insertCitation(testCitationModel);
+          citationModalView.insertCitation(view.citationModel);
         });
       },
 

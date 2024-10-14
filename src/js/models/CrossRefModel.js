@@ -53,6 +53,7 @@ define(["backbone"], (Backbone) => {
         const cachedResponse = this.getCachedResponse(doi);
         if (cachedResponse) {
           this.set(cachedResponse);
+          this.trigger("sync");
           return;
         }
 
