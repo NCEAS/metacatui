@@ -302,6 +302,13 @@ define([
         );
         $(overviewEl).find(".altids").append(altIdsEls);
 
+        // Canonical Identifier
+        const canonicalIdEl = this.createBasicTextFields(
+          "canonicalDataset",
+          "Add a new canonical identifier",
+        );
+        $(overviewEl).find(".canonical-id").append(canonicalIdEl);
+
         //Usage
         //Find the model value that matches a radio button and check it
         // Note the replace() call removing newlines and replacing them with a single space
@@ -1909,7 +1916,7 @@ define([
                   .addClass("basic-text");
               textRow.append(input.clone().val(value));
 
-              if (category != "title")
+              if (category !== "title" && category !== "canonicalDataset")
                 textRow.append(
                   this.createRemoveButton(
                     null,
@@ -1922,7 +1929,11 @@ define([
               textContainer.append(textRow);
 
               //At the end, append an empty input for the user to add a new one
-              if (i + 1 == allModelValues.length && category != "title") {
+              if (
+                i + 1 == allModelValues.length &&
+                category !== "title" &&
+                category !== "canonicalDataset"
+              ) {
                 var newRow = $(
                   $(document.createElement("div")).addClass("basic-text-row"),
                 );
@@ -2006,7 +2017,12 @@ define([
         }
 
         //Add another blank text input
-        if ($(e.target).is(".new") && value != "" && category != "title") {
+        if (
+          $(e.target).is(".new") &&
+          value != "" &&
+          category != "title" &&
+          category !== "canonicalDataset"
+        ) {
           $(e.target).removeClass("new");
           this.addBasicText(e);
         }
@@ -2036,12 +2052,12 @@ define([
           allBasicTexts = $(
             ".basic-text.new[data-category='" + category + "']",
           );
-
         //Only show one new row at a time
         if (allBasicTexts.length == 1 && !allBasicTexts.val()) return;
         else if (allBasicTexts.length > 1) return;
         //We are only supporting one title right now
-        else if (category == "title") return;
+        else if (category === "title" || category === "canonicalDataset")
+          return;
 
         //Add another blank text input
         var newRow = $(document.createElement("div")).addClass(
