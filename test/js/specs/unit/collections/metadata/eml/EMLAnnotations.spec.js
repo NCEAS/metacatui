@@ -7,7 +7,10 @@ define([
   const should = chai.should();
   const expect = chai.expect;
 
-  describe("Accordion Test Suite", () => {
+  const SCHEMA_ORG_SAME_AS = "http://www.w3.org/2002/07/owl#sameAs";
+  const PROV_WAS_DERIVED_FROM = "http://www.w3.org/ns/prov#wasDerivedFrom";
+
+  describe("EML Annotations Test Suite", () => {
     const state = cleanState(() => {
       const annotations = new EMLAnnotations({
         propertyLabel: "Property Label",
@@ -44,6 +47,69 @@ define([
     it("removes annotations", () => {
       state.annotations.remove(state.annotations.at(0));
       state.annotations.length.should.equal(0);
+    });
+
+    it("finds annotations by property", () => {
+      state.annotations
+        .findByProperty("http://example.com/property")
+        .length.should.equal(1);
+    });
+
+    it("adds canonical dataset annotations", () => {
+      const annotations =
+        state.annotations.addCanonicalDatasetAnnotation("http://example.com");
+      state.annotations.length.should.equal(3);
+      annotations[0].get("propertyURI").should.equal(PROV_WAS_DERIVED_FROM);
+      annotations[0].get("valueURI").should.equal("http://example.com");
+      annotations[1].get("propertyURI").should.equal(SCHEMA_ORG_SAME_AS);
+      annotations[1].get("valueURI").should.equal("http://example.com");
+    });
+
+    it("finds canonical dataset annotations", () => {
+      state.annotations.addCanonicalDatasetAnnotation("http://example.com");
+      const annotations = state.annotations.findCanonicalDatasetAnnotation();
+      annotations.should.have.property("derived");
+      annotations.should.have.property("same");
+      annotations.derived.get("valueURI").should.equal("http://example.com");
+      annotations.same.get("valueURI").should.equal("http://example.com");
+      annotations.derived
+        .get("propertyURI")
+        .should.equal(PROV_WAS_DERIVED_FROM);
+      annotations.same.get("propertyURI").should.equal(SCHEMA_ORG_SAME_AS);
+    });
+
+    it("updates canonical dataset annotations", () => {
+      state.annotations.addCanonicalDatasetAnnotation("http://example.com");
+      state.annotations.updateCanonicalDataset("http://newexample.com");
+      state.annotations.getCanonicalURI().should.equal("http://newexample.com");
+    });
+
+    it("removes canonical dataset annotations", () => {
+      state.annotations.addCanonicalDatasetAnnotation("http://example.com");
+      state.annotations.removeCanonicalDatasetAnnotation();
+      state.annotations.length.should.equal(1);
+    });
+
+    it("gets the URI of the canonical dataset", () => {
+      state.annotations.addCanonicalDatasetAnnotation("http://example.com");
+      state.annotations.getCanonicalURI().should.equal("http://example.com");
+    });
+
+    it("adds annotations if they didn't exist when updating", () => {
+      state.annotations.updateCanonicalDataset("http://example.com");
+      state.annotations.length.should.equal(3);
+    });
+
+    it("removes canonical dataset annotations if the ID is falsy", () => {
+      state.annotations.addCanonicalDatasetAnnotation("http://example.com");
+      state.annotations.updateCanonicalDataset("");
+      state.annotations.length.should.equal(1);
+    });
+
+    it("does not update canonical dataset annotations if the ID is the same", () => {
+      state.annotations.addCanonicalDatasetAnnotation("http://example.com");
+      state.annotations.updateCanonicalDataset("http://example.com");
+      state.annotations.length.should.equal(3);
     });
   });
 });
