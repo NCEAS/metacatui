@@ -12,6 +12,7 @@ define(['showdown', 'xss'], function (showdown, xss) {
     var options = {
       css: false,
       allowList: {
+        iframe: ["src", "width", "height", "frameborder", "allowfullscreen"],
         a: ["target", "href", "title", "class", "target"],
         abbr: ["title"],
         address: [],
