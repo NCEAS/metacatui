@@ -23,7 +23,8 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
       },
 
       initialize: function (attributes, opions) {
-        this.on("change", this.trickleUpChange);
+        this.stopListening(this, "change", this.trickleUpChange);
+        this.listenTo(this, "change", this.trickleUpChange);
       },
 
       parse: function (attributes, options) {
@@ -175,7 +176,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
 
       /* Let the top level package know of attribute changes from this object */
       trickleUpChange: function () {
-        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+        MetacatUI.rootDataPackage.packageModel?.set("changed", true);
       },
     },
   );

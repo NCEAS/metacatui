@@ -86,6 +86,7 @@ define([
           methods: new EMLMethods(), // An EMLMethods objects
           project: null, // An EMLProject object,
           annotations: null, // Dataset-level annotations
+          canonicalDataset: null,
           dataSensitivityPropertyURI:
             "http://purl.dataone.org/odo/SENSO_00000005",
           nodeOrder: [
@@ -143,6 +144,13 @@ define([
           this.set("synced", true);
         });
 
+        this.stopListening(this, "change:canonicalDataset");
+        this.listenTo(
+          this,
+          "change:canonicalDataset",
+          this.updateCanonicalDataset,
+        );
+
         //Create a Unit collection
         if (!this.units.length) this.createUnits();
       },
@@ -158,6 +166,17 @@ define([
           MetacatUI.appModel.get("objectServiceUrl") +
           encodeURIComponent(identifier)
         );
+      },
+
+      updateCanonicalDataset() {
+        let uri = this.get("canonicalDataset");
+        uri = uri?.length ? uri[0] : null;
+        let annotations = this.get("annotations");
+        if (!annotations) {
+          annotations = new EMLAnnotations();
+          this.set("annotations", annotations);
+        }
+        annotations.updateCanonicalDataset(uri);
       },
 
       /*
@@ -731,6 +750,16 @@ define([
               //If it's the first value for this field, then create a new array
               else modelJSON[convertedName] = [this.toJson(thisNode)];
             } else modelJSON[convertedName] = this.toJson(thisNode);
+          }
+        }
+
+        // Once all the nodes have been parsed, check if any of the annotations
+        // make up a canonical dataset reference
+        const annotations = modelJSON["annotations"];
+        if (annotations) {
+          const canonicalDataset = annotations.getCanonicalURI();
+          if (canonicalDataset) {
+            modelJSON["canonicalDataset"] = canonicalDataset;
           }
         }
 

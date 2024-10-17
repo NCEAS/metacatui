@@ -33,6 +33,7 @@
     "./js/specs/unit/models/metadata/eml211/EMLParty.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLTemporalCoverage.spec.js",
     "./js/specs/unit/collections/metadata/eml/EMLMissingValueCodes.spec.js",
+    "./js/specs/unit/collections/metadata/eml/EMLAnnotations.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLMissingValueCode.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLDistribution.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLGeoCoverage.spec.js",
