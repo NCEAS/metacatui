@@ -172,7 +172,7 @@ define([
           // If we re-render before the first render is complete the view breaks
           this.stopListening(this, "renderComplete", this.render);
           this.listenToOnce(this, "renderComplete", this.render);
-          return;
+          return this;
         }
         this.isRendering = true;
         this.stopListening();

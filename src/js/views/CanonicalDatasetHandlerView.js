@@ -11,15 +11,12 @@ define([
   // The URI for the prov:wasDerivedFrom annotation
   const PROV_WAS_DERIVED_FROM = "http://www.w3.org/ns/prov#wasDerivedFrom";
 
-  // What to call the field that links to the original dataset
-  const CANONICAL_LABEL = "Canonical Dataset";
-  // The text to display in the info tooltip to explain what the canonical
-  // dataset field means
-  const CANONICAL_TOOLTIP_TEXT =
-    "The original dataset this version was derived from. This dataset is essentially a duplicate of the original.";
+  // The text to show in the alert box at the top of the MetadataView
+  const ALERT_TEXT =
+    "This version of the dataset is a replica or minor variant of the original dataset:";
   // The text to display in the info tooltip to explain what the info icon means
   const INFO_ICON_TOOLTIP_TEXT =
-    "This dataset is essentially a duplicate of of another, original dataset.";
+    "This dataset is replica or minor variant of another, original dataset.";
   // In the citation modal, the heading to use for the dataone version citation
   const CITATION_TITLE_DATAONE = "This Version of the Dataset";
   // In the citation modal, the heading to use for the canonical dataset
@@ -30,20 +27,23 @@ define([
   // The bootstrap icon name to use for the info icon
   const INFO_ICON_NAME = "icon-copy";
 
+  // Class names used in this view
+  const CLASS_NAMES = {
+    alertBox: ["alert", "alert-info", "alert-block"], // TODO: need alert-block?
+    alertIcon: ["icon", "icon-info-sign", "icon-on-left"],
+    alertCitation: "canonical-citation",
+  };
+
   // The following properties are used to identify parts of the MetadataView.
   // If the MetadataView changes, these properties may need to be updated.
-
-  // The name of the property on the MetadataView that contains subviews
-  const SUBVIEW_PROP = "subviews";
-  // The name of the property on the MetadataView that contains the citation
-  // modal
-  const CITATION_MODAL_PROP = "citationModal";
-  // Class names used in the MetadataView that we also need to use in this view
-  const METADATA_VIEW_CLASS_NAMES = {
-    fieldItem: "control-group",
-    fieldLabel: "control-label",
-    fieldValue: ["controls", "controls-well"],
-    fieldInfoIcon: ["tooltip-this", "icon", "icon-info-sign"],
+  const METADATA_VIEW = {
+    // The selector for the container that contains the info icons and metrics buttons
+    controlsSelector: "#metadata-controls-container",
+    // The name of the property on the MetadataView that contains the citation
+    // modal
+    citationModalProp: "citationModal",
+    // The name of the property on the MetadataView that contains subviews
+    subviewProp: "subviews",
   };
 
   /**
@@ -73,32 +73,6 @@ define([
       metdataView: null,
 
       /**
-       * The value of the label to insert the canonical dataset field before.
-       * @type {string}
-       */
-      insertFieldBefore: "Identifier",
-
-      /**
-       * Creates a field item for the MetadataView.
-       * @param {string} label - The label for the field.
-       * @param {string} value - The value for the field.
-       * @param {string} tooltipText - The text to display in the info tooltip.
-       * @param {object} classes - The classes to apply to the field item.
-       * @returns {string} The HTML for the field item.
-       */
-      fieldItemTemplate(label, value, tooltipText, classes) {
-        return `<div class="${classes.fieldItem}">
-          <label class="${classes.fieldLabel}">
-            ${label}
-            <span style="display: inline-block; width: 1em; text-align: center;">
-              <i class="${classes.fieldInfoIcon.join(" ")}" data-toggle="tooltip" title="${tooltipText}"></i>
-            </span>
-          </label>
-          <div class="${classes.fieldValue.join(" ")}">${value}</div>
-        </div>`;
-      },
-
-      /**
        * Initialize the CanonicalDatasetHandlerView.
        * @param {object} options - A set of options to initialize the view with.
        * @param {MetadataView} options.metadataView - The MetadataView instance
@@ -120,8 +94,8 @@ define([
         this.reset();
         const hasCanonical = this.detectCanonicalDataset();
         if (!hasCanonical) return this;
-        this.fieldItem = this.addFieldItem();
         this.infoIcon = this.addInfoIcon();
+        this.alertBox = this.addAlertBox();
         this.getCitationInfo();
         this.modifyCitationModal();
         this.hideAnnotations();
@@ -133,8 +107,8 @@ define([
        * made by this view.
        */
       reset() {
-        this.fieldItem?.remove();
         this.infoIcon?.remove();
+        this.alertBox?.remove();
         this.showAnnotations();
         this.citationModel.reset();
         this.canonicalUri = null;
@@ -214,7 +188,7 @@ define([
        * @returns {AnnotationView[]} An array of AnnotationView instances.
        */
       getAnnotationViews() {
-        return this.metadataView[SUBVIEW_PROP].filter(
+        return this.metadataView[METADATA_VIEW.subviewProp].filter(
           (view) => view?.type === ANNO_VIEW_TYPE,
         );
       },
@@ -252,7 +226,7 @@ define([
         this.stopListening(this.crossRef);
         this.listenToOnce(this.crossRef, "sync", () => {
           view.citationModel.setSourceModel(this.crossRef);
-          view.updateFieldItemWithCitation();
+          view.updateAlertBox();
         });
         this.crossRef.fetch();
       },
@@ -293,62 +267,67 @@ define([
       },
 
       /**
-       * Add a row in the MetadataView to display the canonical dataset URI
-       * @returns {Element} The field item element that was added to the view.
+       * Adds an alert box to the top of the MetadataView to indicate that the
+       * dataset being displayed is a replica or minor variant of the original
+       * dataset.
+       * @returns {Element} The alert box element that was added to the view.
        */
-      addFieldItem() {
-        const { canonicalUri, fieldItemTemplate } = this;
-        const itemHTML = fieldItemTemplate(
-          CANONICAL_LABEL,
-          `<a href="${canonicalUri}">${canonicalUri}</a>`,
-          CANONICAL_TOOLTIP_TEXT,
-          METADATA_VIEW_CLASS_NAMES,
+      addAlertBox() {
+        const controls = this.metadataView.el.querySelector(
+          METADATA_VIEW.controlsSelector,
         );
 
-        // Vivify the item so we can reference it later
-        const range = document.createRange();
-        const fragment = range.createContextualFragment(itemHTML);
-        const item = fragment.firstElementChild;
+        const alertBox = document.createElement("section");
+        alertBox.classList.add(...CLASS_NAMES.alertBox);
 
-        // Find the parent item that contains the field name the view should
-        // be inserted before
-        const labels = Array.from(
-          this.metadataView.el.querySelectorAll("label"),
-        );
-        const insertBeforeLabel = labels.find(
-          (label) => label.textContent.trim() === this.insertFieldBefore,
-        );
-        // Insert the new field item before the label
-        insertBeforeLabel.parentElement.before(item);
-        return item;
+        const icon = document.createElement("i");
+        icon.classList.add(...CLASS_NAMES.alertIcon);
+
+        const heading = document.createElement("h5");
+        heading.textContent = ALERT_TEXT;
+
+        // Add a div that will contain the citation information
+        const citeContainer = document.createElement("div");
+        citeContainer.classList.add(CLASS_NAMES.alertCitation);
+        // Just add the URI for now
+        citeContainer.textContent = this.canonicalUri;
+
+        heading.prepend(icon);
+        alertBox.append(heading, citeContainer);
+
+        alertBox.style.marginTop = "-1rem";
+        heading.style.marginTop = "0";
+        citeContainer.style.marginLeft = "1rem";
+
+        this.alertBox = alertBox;
+
+        // Insert the citation view before the metadata controls
+        controls.before(alertBox);
+
+        return alertBox;
       },
 
-      /**
-       * Replaces the DOI in the field item with a full citation for the
-       * canonical dataset.
-       */
-      updateFieldItemWithCitation() {
-        const { citationModel, fieldItem } = this;
-        if (!fieldItem) return;
-
+      /** Updates the citation information in the alert box. */
+      updateAlertBox() {
+        const alertBox = this.alertBox || this.addAlertBox();
+        const citeContainer = alertBox.querySelector(
+          `.${CLASS_NAMES.alertCitation}`,
+        );
+        const { citationModel } = this;
         const citationView = new CitationView({
           model: citationModel,
-          className: "canonical-citation",
+          // Don't use styles from default class
+          className: "",
           createTitleLink: false,
           openLinkInNewTab: true,
         }).render();
-
-        // Replace the DOI with the citation
-        const fieldValueEl = fieldItem.querySelector(
-          `.${METADATA_VIEW_CLASS_NAMES.fieldValue.join(".")}`,
-        );
-        fieldValueEl.innerHTML = "";
-        fieldValueEl.appendChild(citationView.el);
+        citeContainer.innerHTML = "";
+        citeContainer.appendChild(citationView.el);
       },
 
       /** Open the citation modal. */
       openCitationModal() {
-        this.metadataView[CITATION_MODAL_PROP].show();
+        this.metadataView[METADATA_VIEW.citationModalProp].show();
       },
 
       /**
@@ -359,7 +338,8 @@ define([
       modifyCitationModal() {
         const view = this;
         // The CitationModalView is recreated each time it is shown.
-        const citationModalView = this.metadataView[CITATION_MODAL_PROP];
+        const citationModalView =
+          this.metadataView[METADATA_VIEW.citationModalProp];
         this.listenToOnce(citationModalView, "rendered", () => {
           citationModalView.canonicalDatasetMods = true;
           // Add heading for each citation
