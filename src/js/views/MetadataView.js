@@ -427,7 +427,9 @@ define([
         });
 
         // Listen to 404 and 401 errors when we get the metadata object
+        this.stopListening(model, "404");
         this.listenToOnce(model, "404", this.showNotFound);
+        this.stopListening(model, "401");
         this.listenToOnce(model, "401", this.showIsPrivate);
 
         // Fetch the model
@@ -780,6 +782,11 @@ define([
         // bit until we show a 401 msg, in case this content is their private
         // content
         if (!MetacatUI.appUserModel.get("checked")) {
+          this.stopListening(
+            MetacatUI.appUserModel,
+            "change:checked",
+            this.showIsPrivate,
+          );
           this.listenToOnce(
             MetacatUI.appUserModel,
             "change:checked",
@@ -787,6 +794,8 @@ define([
           );
           return;
         }
+        this.isRendering = false;
+        this.trigger("renderComplete");
 
         let msg = "";
 
