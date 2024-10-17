@@ -629,7 +629,11 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], (
           if (typeof author.toCSLJSON === "function") {
             author = author.toCSLJSON();
           } else if (typeof author === "string") {
-            author = this.nameStrToCSLJSON(author);
+            // author = this.nameStrToCSLJSON(author);
+
+            // It's too difficult to parse a string when it could be a name or
+            // an organization. Just return the string. See issue #2106
+            author = { literal: author };
           }
 
           return author;
