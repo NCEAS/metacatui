@@ -368,10 +368,12 @@ define([
           citationModalView.citationContainer.prepend(heading);
 
           // Add the citation for the canonical dataset
+          citationModalView.insertCitation(view.citationModel, false);
+
+          // Add a heading for the canonical dataset citation
           const headingOriginal = document.createElement("h5");
           headingOriginal.textContent = CITATION_TITLE_CANONICAL;
-          citationModalView.citationContainer.append(headingOriginal);
-          citationModalView.insertCitation(view.citationModel);
+          citationModalView.citationContainer.prepend(headingOriginal);
         });
       },
 

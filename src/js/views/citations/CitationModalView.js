@@ -6,7 +6,7 @@ define([
   "models/CitationModel",
   "views/CitationView",
   "text!templates/citations/citationModal.html",
-], function ($, _, Backbone, Clipboard, Citation, CitationView, Template) {
+], ($, _, Backbone, Clipboard, Citation, CitationView, Template) => {
   "use strict";
 
   /**
@@ -17,7 +17,7 @@ define([
    * @classcategory Views
    * @extends Backbone.View
    */
-  var CitationModalView = Backbone.View.extend(
+  const CitationModalView = Backbone.View.extend(
     /** @lends CitationModalView.prototype */ {
       /**
        * Classes to add to the modal
@@ -195,22 +195,34 @@ define([
        * views to insert additional citation views into the modal.
        * @param {CitationModel} model - The citation model to use. If not
        * provided, the model passed to the view will be used.
+       * @param {boolean} after - If true, the citation will be inserted after
+       * any existing citations. If false, the citation will be inserted before
+       * any existing citations.
+       * @returns {CitationView} - Returns the CitationView that was inserted
+       * into the modal
        */
-      insertCitation: function (model) {
+      insertCitation(model, after = true) {
         const container = this.citationContainer;
-        if (!container) return;
+        if (!container) return null;
 
         // Create a new CitationView
-        var citationView = new CitationView({
+        const citationView = new CitationView({
           model: model || this.model,
           style: this.style,
           createTitleLink: false,
         });
 
         // Render the CitationView
-        citationView.render();
+        const citationEl = citationView.render().el;
+
         // Insert the CitationView into the modal
-        container.appendChild(citationView.el);
+        if (after) {
+          container.appendChild(citationEl);
+        } else {
+          container.prepend(citationEl);
+        }
+
+        return citationView;
       },
 
       /**
