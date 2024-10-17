@@ -6,7 +6,7 @@ define([
   "models/CitationModel",
   "views/CitationView",
   "text!templates/citations/citationModal.html",
-], function ($, _, Backbone, Clipboard, Citation, CitationView, Template) {
+], ($, _, Backbone, Clipboard, Citation, CitationView, Template) => {
   "use strict";
 
   /**
@@ -17,7 +17,7 @@ define([
    * @classcategory Views
    * @extends Backbone.View
    */
-  var CitationModalView = Backbone.View.extend(
+  const CitationModalView = Backbone.View.extend(
     /** @lends CitationModalView.prototype */ {
       /**
        * Classes to add to the modal
@@ -131,7 +131,6 @@ define([
         // Set listeners
         this.$el.off("shown");
         this.$el.on("shown", this.renderView.bind(this));
-        this.show();
         return this;
       },
 
@@ -176,6 +175,7 @@ define([
 
           this.insertCitation();
           this.listenForCopy();
+          this.trigger("rendered");
         } catch (e) {
           console.error("Failed to render the Citation Modal View: ", e);
           MetacatUI.appView.showAlert({
@@ -191,24 +191,38 @@ define([
       },
 
       /**
-       * Insert the citation view into the modal
+       * Insert the citation view into the modal. This can be used by parent
+       * views to insert additional citation views into the modal.
+       * @param {CitationModel} model - The citation model to use. If not
+       * provided, the model passed to the view will be used.
+       * @param {boolean} after - If true, the citation will be inserted after
+       * any existing citations. If false, the citation will be inserted before
+       * any existing citations.
+       * @returns {CitationView} - Returns the CitationView that was inserted
+       * into the modal
        */
-      insertCitation: function () {
+      insertCitation(model, after = true) {
         const container = this.citationContainer;
-        if (!container) return;
+        if (!container) return null;
 
         // Create a new CitationView
-        var citationView = new CitationView({
-          model: this.model,
+        const citationView = new CitationView({
+          model: model || this.model,
           style: this.style,
           createTitleLink: false,
         });
 
         // Render the CitationView
-        citationView.render();
+        const citationEl = citationView.render().el;
 
         // Insert the CitationView into the modal
-        container.appendChild(citationView.el);
+        if (after) {
+          container.appendChild(citationEl);
+        } else {
+          container.prepend(citationEl);
+        }
+
+        return citationView;
       },
 
       /**

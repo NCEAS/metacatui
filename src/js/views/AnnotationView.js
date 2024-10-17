@@ -16,6 +16,11 @@ define([
    */
   var AnnotationView = Backbone.View.extend(
     /** @lends AnnotationView.prototype */ {
+      /**
+       * The type of View this is
+       * @type {string}
+       */
+      type: "AnnotationView",
       className: "annotation-view",
       annotationPopoverTemplate: _.template(AnnotationPopoverTemplate),
 

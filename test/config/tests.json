@@ -18,6 +18,7 @@
     "./js/specs/unit/models/filters/Filter.spec.js",
     "./js/specs/unit/models/filters/NumericFilter.spec.js",
     "./js/specs/unit/models/CitationModel.spec.js",
+    "./js/specs/unit/models/CrossRefModel.spec.js",
     "./js/specs/unit/collections/ProjectList.spec.js",
     "./js/specs/unit/collections/DataPackage.spec.js",
     "./js/specs/unit/models/project/Project.spec.js",

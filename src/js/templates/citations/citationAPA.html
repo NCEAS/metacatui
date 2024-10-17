@@ -8,11 +8,18 @@ const dataID = pid ? ` data-id="${pid}"` : '';
 
 let titleHTML = title ? `<span class="${titleClass}"${dataID}><i>${title}</i></span>. ` : '';
 
-let journalHTML = journal ? `<span class="publisher">${journal}. </span>` : '';
+let issueHTML = issue ? issue : '';
+issueHTML = volume && issue ? `(${issue})` : '';
 
-let volumeHTML = volume ? `<span class="publisher">Vol. ${volume}. </span>` : '';
+let volumeIssueHTML = volume || issueHTML ? `<span class="volume">${volume}${issueHTML}</span>` : '';
 
-let pageHTML = page ? `<span class="publisher">pp. ${page}. </span>` : '';
+let pageHTML = page ? `<span class="page">${page}</span>` : '';
+
+let journalHTML = journal || '';
+journalHTML = volumeIssueHTML || pageHTML ? `${journalHTML}, ` : journalHTML;
+journalHTML = volumeIssueHTML ? `${journalHTML}${volumeIssueHTML}` : journalHTML;
+journalHTML = pageHTML ? `${journalHTML}, ${pageHTML}` : journalHTML;
+journalHTML = journalHTML ? `<span class="publisher">${journalHTML}. </span>` : journalHTML;
 
 let seriesIdHTML = seriesId || '';
 if (seriesId) {
@@ -34,7 +41,7 @@ if (pid) {
 const idHTML = seriesIdHTML || pidHTML ? `<span class="id">${seriesIdHTML}${pidHTML}</span>` : '';
 
 %>
-<%= originHTML + pubHTML + titleHTML + journalHTML + volumeHTML + pageHTML + idHTML %>
+<%= originHTML + pubHTML + titleHTML + journalHTML + idHTML %>
 <%if(citationMetadata){%>
   <br>
   <span>Cites Data: </span>
