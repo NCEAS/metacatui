@@ -1,9 +1,9 @@
 require([
-  "../../../../../../../../src/js/models/CitationModel",
-  "../../../../../../../../src/js/collections/Citations",
-  "../../../../../../../../src/js/models/metadata/eml211/EML211",
-  "../../../../../../../../src/js/models/metadata/eml211/EMLParty",
-  "../../../../../../../../src/js/models/SolrResult",
+  "models/CitationModel",
+  "collections/Citations",
+  "models/metadata/eml211/EML211",
+  "models/metadata/eml211/EMLParty",
+  "models/SolrResult",
 ], function (Citation, Citations, EML211, EMLParty, SolrResult) {
   // Configure the Chai assertion library
   var should = chai.should();
@@ -91,12 +91,12 @@ require([
       });
 
       it("should convert the origin to CSL JSON", function () {
+        // We convert to a literal for now because it's too challenging to
+        // parse first and last names from a string when the strings could also
+        // be an organization.
         const author =
           cmParsed.citationMetadata.models[0].get("originArray")[0];
-        author.should.deep.equal({
-          family: "LastName",
-          given: "FirstName",
-        });
+        author.should.deep.equal({ literal: "FirstName LastName" });
       });
 
       it("should add the doi prefix to the pid", function () {
@@ -116,12 +116,9 @@ require([
 
       it("should convert origin to CSL JSON", function () {
         citation.set("origin", "FirstName LastName");
-        citation.get("originArray").should.deep.equal([
-          {
-            family: "LastName",
-            given: "FirstName",
-          },
-        ]);
+        citation
+          .get("originArray")
+          .should.deep.equal([{ literal: "FirstName LastName" }]);
       });
 
       it("should automatically set DOI URLS from DOIs", function () {
@@ -236,8 +233,7 @@ require([
 
       it("should set the originArray", function () {
         const csl = citation.get("originArray")[0];
-        csl.family.should.equal("LastName");
-        csl.given.should.equal("FirstName");
+        csl.literal.should.equal("FirstName LastName");
       });
 
       it("should set the pid", function () {
