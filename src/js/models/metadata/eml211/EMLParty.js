@@ -886,7 +886,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
           this.get("type") == "associatedParty"
             ? this.get("roles")
             : [this.get("type")];
-        for (role of roles) {
+        for (let role of roles) {
           let requiredFields = MetacatUI.appModel.get(
             "emlEditorRequiredFields_EMLParty",
           )[role];
@@ -895,6 +895,17 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
             if (!currentVal || !currentVal?.length) {
               errors[field] =
                 `Provide a${["a", "e", "i", "o", "u"].includes(field.charAt(0)) ? "n " : " "} ${field}. `;
+            }
+          });
+        }
+
+        // If there is an email address, validate it
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const email = this.get("email");
+        if (email?.length) {
+          email.forEach((emailAddress) => {
+            if (!emailAddress.match(emailRegex)) {
+              errors.email = "Provide a valid email address.";
             }
           });
         }
