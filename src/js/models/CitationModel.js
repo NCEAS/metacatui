@@ -1,11 +1,6 @@
 "use strict";
 
-define(["jquery", "underscore", "backbone", "collections/Citations"], (
-  $,
-  _,
-  Backbone,
-  Citations,
-) => {
+define(["underscore", "backbone"], (_, Backbone) => {
   /**
    * @class CitationModel
    * @classdesc A Citation Model represents a single Citation Object returned by
@@ -52,6 +47,8 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], (
        * published
        * @property {number|string} volume - The volume of the journal where the
        * document was published
+       * @property {number|string} issue - The issue of the journal where the
+       * document was published
        * @property {number} page - The page of the journal where the document was
        * published
        * @property {Citations} citationMetadata - When this Citation Model refers
@@ -91,6 +88,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], (
           publisher: null,
           journal: null,
           volume: null,
+          issue: null,
           page: null,
           citationMetadata: null,
           sourceModel: null,
@@ -118,6 +116,8 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], (
           pid: this.getPidFromSourceModel,
           seriesId: this.getSeriesIdFromSourceModel,
           originArray: this.getOriginArrayFromSourceModel,
+          volume: this.getVolumeFromSourceModel,
+          issue: this.getIssueFromSourceModel,
           view_url: this.getViewUrlFromSourceModel,
         };
       },
@@ -412,10 +412,15 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], (
        */
       getYearFromSourceModel(sourceModel) {
         try {
-          const year =
+          let year =
             this.yearFromDate(sourceModel.get("pubDate")) ||
             this.yearFromDate(sourceModel.get("dateUploaded")) ||
             this.yearFromDate(sourceModel.get("datePublished"));
+          // for cross ref
+          const created = sourceModel.get("created");
+          if (!year && created) {
+            year = created?.["date-parts"]?.[0]?.[0];
+          }
           return year;
         } catch (error) {
           console.log(
@@ -476,6 +481,12 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], (
       getJournalFromSourceModel(sourceModel) {
         try {
           let journal = null;
+          journal = sourceModel.get("journal");
+
+          // cross ref
+          journal = sourceModel.get("container-title")?.[0];
+          if (journal) return journal;
+
           const datasource = sourceModel.get("datasource");
           const mn = MetacatUI.nodeModel.getMember(datasource);
           const currentMN = MetacatUI.nodeModel.get("currentMemberNode");
@@ -519,6 +530,8 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], (
             sourceModel.get("creator") ||
             // If it's a science metadata model or solr results, use origin
             sourceModel.get("origin") ||
+            // If it's a cross ref model, use author
+            sourceModel.get("author") ||
             "";
 
           // otherwise, this is probably a base D1 object model. Don't use
@@ -554,7 +567,11 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], (
       getPidFromSourceModel(sourceModel) {
         try {
           const pid =
-            sourceModel.get("id") || sourceModel.get("identifier") || null;
+            sourceModel.get("id") ||
+            sourceModel.get("identifier") ||
+            sourceModel.get("doi") ||
+            sourceModel.get("DOI") ||
+            null;
           return pid;
         } catch (error) {
           console.log(
@@ -585,6 +602,26 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], (
           );
           return this.defaults().seriesId;
         }
+      },
+
+      /**
+       * Get the volume from the sourceModel.
+       * @param {Backbone.Model} sourceModel - The model to get the volume from
+       * @returns {number|string} - The volume
+       * @since 0.0.0
+       */
+      getVolumeFromSourceModel(sourceModel) {
+        return sourceModel.get("volume") || null;
+      },
+
+      /**
+       * Get the issue from the sourceModel.
+       * @param {Backbone.Model} sourceModel - The model to get the issue from
+       * @returns {number|string} - The issue
+       * @since 0.0.0
+       */
+      getIssueFromSourceModel(sourceModel) {
+        return sourceModel.get("issue") || null;
       },
 
       /**
@@ -1079,18 +1116,25 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], (
       /**
        * Get the main identifier for the citation. This will check the model for
        * the following attributes and return the first that is not empty: pid,
-       * seriesId, source_url.
+       * seriesId, source_url, doi, DOI
        * @returns {string} Returns the main identifier for the citation or an
        * empty string.
        * @since 2.23.0
        */
       getID() {
-        const idSources = ["pid", "seriesId", "source_url"];
+        const idSources = ["pid", "seriesId", "source_url", "doi", "DOI"];
         for (let i = 0; i < idSources.length; i++) {
           const id = this.get(idSources[i]);
           if (id) return id;
         }
         return "";
+      },
+
+      /** Set the model back to its defaults */
+      reset() {
+        this.clear({ silent: true });
+        this.set(this.defaults(), { silent: true });
+        this.trigger("change");
       },
     },
   );
