@@ -155,6 +155,14 @@ MetacatUI.AppConfig = Object.assign(
     displayDatasetEditButton: false,
     displayDatasetControls: false,
     displayDatasetQualityMetric: true,
+
+    // iFrames in portals
+    trustedContentSources: [
+      "https://*ecoinformatics.org*",
+      "https://*arcticdata.io",
+      "https://cosima.nceas.ucsb.edu*",
+      "https://sasap-data.shinyapps.io/board_of_fisheries/",
+    ],
   },
   MetacatUI.AppConfig || {},
 );

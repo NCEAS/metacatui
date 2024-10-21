@@ -260,6 +260,12 @@ MetacatUI.AppConfig = Object.assign(
 
     //Google Analytics
     googleAnalyticsKey: "G-12EKQM14SH",
+
+    // iFrames in portals
+    trustedContentSources: [
+      "https://*arcticdata.io",
+      "https://cosima.nceas.ucsb.edu*",
+    ],
   },
   MetacatUI.AppConfig || {},
 );
