@@ -1662,6 +1662,12 @@ define([
           );
         }
       },
+
+      /** Remove nav and mouse listeners when the view is closed */
+      onClose() {
+        this.removeMouseListeners();
+        this.removeNavigationListeners();
+      },
     },
   );
 
