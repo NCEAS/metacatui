@@ -771,7 +771,8 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
       },
 
       clearJSONLD: function () {
-        $("#jsonld").remove();
+        MetacatUI.appView.schemaOrg.removeExistingJsonldEls();
+        MetacatUI.appView.schemaOrg.setSchemaFromTemplate();
       },
 
       clearHighwirePressMetaTags: function () {
