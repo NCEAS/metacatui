@@ -406,7 +406,7 @@ define([
           }
 
           // Add LinkedData to the page
-          this.addLinkedData();
+          MetacatUI.appView.schemaOrg.setSchema("DataCatalog");
 
           // Render the template
           this.$el.html(
@@ -660,62 +660,6 @@ define([
       },
 
       /**
-       * Linked Data Object for appending the jsonld into the browser DOM
-       * @since 2.22.0
-       */
-      addLinkedData: function () {
-        try {
-          // JSON Linked Data Object
-          let elJSON = {
-            "@context": {
-              "@vocab": "http://schema.org/",
-            },
-            "@type": "DataCatalog",
-          };
-
-          // Find the MN info from the CN Node list
-          let members = MetacatUI.nodeModel.get("members"),
-            nodeModelObject;
-
-          for (let i = 0; i < members.length; i++) {
-            if (
-              members[i].identifier ==
-              MetacatUI.nodeModel.get("currentMemberNode")
-            ) {
-              nodeModelObject = members[i];
-            }
-          }
-          if (nodeModelObject) {
-            // "keywords": "", "provider": "",
-            let conditionalData = {
-              description: nodeModelObject.description,
-              identifier: nodeModelObject.identifier,
-              image: nodeModelObject.logo,
-              name: nodeModelObject.name,
-              url: nodeModelObject.url,
-            };
-            $.extend(elJSON, conditionalData);
-          }
-
-          // Check if the jsonld already exists from the previous data view If
-          // not create a new script tag and append otherwise replace the text
-          // for the script
-          if (!document.getElementById("jsonld")) {
-            var el = document.createElement("script");
-            el.type = "application/ld+json";
-            el.id = "jsonld";
-            el.text = JSON.stringify(elJSON);
-            document.querySelector("head").appendChild(el);
-          } else {
-            var script = document.getElementById("jsonld");
-            script.text = JSON.stringify(elJSON);
-          }
-        } catch (e) {
-          console.error("Couldn't add linked data to search. ", e);
-        }
-      },
-
-      /**
        * Shows or hide the filters
        * @param {boolean} show - Optionally provide the desired choice of
        * whether the filters should be shown (true) or hidden (false). If not
@@ -892,7 +836,7 @@ define([
             .classList.remove(this.bodyClass, this.hideMapClass);
 
           // Remove the JSON-LD from the page
-          document.getElementById("jsonld")?.remove();
+          MetacatUI.appView.schemaOrg.removeExistingJsonldEls();
         } catch (e) {
           console.error("Couldn't close search view. ", e);
         }

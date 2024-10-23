@@ -1,6 +1,10 @@
 "use strict";
 
-define(["backbone", "models/schemaOrg/SchemaOrg"], (Backbone, SchemaOrg) => {
+define([
+  "backbone",
+  "models/schemaOrg/SchemaOrg",
+  "text!templates/jsonld.txt",
+], (Backbone, SchemaOrg, jsonLDTemplate) => {
   const SCRIPT_TYPE = "application/ld+json";
   const JSON_LD_ID = "jsonld";
   /**
@@ -24,6 +28,12 @@ define(["backbone", "models/schemaOrg/SchemaOrg"], (Backbone, SchemaOrg) => {
         this.stopListening();
         this.listenTo(this.model, "change", this.updateJsonldEl);
       },
+
+      /**
+       * Default JSON LD to use for pages that don't have a specific schema.
+       * @type {string}
+       */
+      template: jsonLDTemplate,
 
       /**
        * Checks if the JSON-LD feature is enabled in the MetacatUI configuration.
@@ -56,12 +66,12 @@ define(["backbone", "models/schemaOrg/SchemaOrg"], (Backbone, SchemaOrg) => {
 
       /**
        * Sets the schema based on a template.
-       * @param {string} template - The template to use for the schema. This
-       * must be stringified JSON that follows the schema.org schema.
        */
-      setSchemaFromTemplate(template) {
+      setSchemaFromTemplate() {
         if (!this.isEnabled()) return;
-        if (typeof template === "string") {
+        const template = this.template.trim();
+        if (!template) return;
+        if (typeof template === "string" && template.length > 0) {
           this.model.setSchemaFromTemplate(template);
         }
       },

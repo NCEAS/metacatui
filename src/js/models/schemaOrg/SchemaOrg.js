@@ -141,8 +141,13 @@ define(["backbone"], (Backbone) => {
         this.reset();
         return;
       }
-      if (typeof template === "string") {
-        this.set(JSON.parse(template));
+      try {
+        if (typeof template === "string") {
+          this.set(JSON.parse(template));
+        }
+      } catch (e) {
+        this.model.set("parseError", e);
+        this.reset();
       }
     },
 
