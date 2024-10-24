@@ -42,6 +42,38 @@ define(["underscore", "backbone", "models/metadata/eml211/EMLAnnotation"], (
       },
 
       /**
+       * Find all annotations that have the same property & value URIs & labels.
+       * Only returns the models that are duplicates, not the original. The original
+       * is the first instance found in the collection.
+       * @returns {EMLAnnotation[]} An array of EMLAnnotations that are duplicates.
+       * @since 0.0.0
+       */
+      getDuplicates() {
+        const duplicates = [];
+        this.forEach((annotation) => {
+          const propertyURI = annotation.get("propertyURI");
+          const valueURI = annotation.get("valueURI");
+          const propertyLabel = annotation.get("propertyLabel");
+          const valueLabel = annotation.get("valueLabel");
+
+          const found = this.filter(
+            (a) =>
+              a.get("propertyURI") === propertyURI &&
+              a.get("valueURI") === valueURI &&
+              a.get("propertyLabel") === propertyLabel &&
+              a.get("valueLabel") === valueLabel &&
+              a.id !== annotation.id,
+          );
+
+          if (found.length) {
+            duplicates.push(...found);
+          }
+        });
+
+        return duplicates;
+      },
+
+      /**
        * Removes the EMLAnnotation from this collection that has the same
        * propertyURI as the given annotation. Then adds the given annotation to
        * the collection. If no duplicate is found, the given annotation is still
@@ -90,12 +122,14 @@ define(["underscore", "backbone", "models/metadata/eml211/EMLAnnotation"], (
             propertyURI: PROV_WAS_DERIVED_FROM,
             valueLabel: sourceId,
             valueURI: sourceId,
+            isCanonicalDataset: true,
           },
           {
             propertyLabel: "sameAs",
             propertyURI: SCHEMA_ORG_SAME_AS,
             valueLabel: sourceId,
             valueURI: sourceId,
+            isCanonicalDataset: true,
           },
         ]);
       },
@@ -132,7 +166,14 @@ define(["underscore", "backbone", "models/metadata/eml211/EMLAnnotation"], (
         // canonical dataset.
         if (pairs.length > 1 || !pairs.length) return null;
 
-        // There is only one pair, so return it
+        // There is only one pair left in this case
+        const canonAnnos = pairs[0];
+
+        // Make sure each annotation has the isCanonicalDataset flag set,
+        // we will use it later, e.g. in validation
+        canonAnnos.derived.set("isCanonicalDataset", true);
+        canonAnnos.same.set("isCanonicalDataset", true);
+
         return pairs[0];
       },
 
@@ -186,6 +227,31 @@ define(["underscore", "backbone", "models/metadata/eml211/EMLAnnotation"], (
       getCanonicalURI() {
         const canonical = this.findCanonicalDatasetAnnotation();
         return canonical?.uri;
+      },
+
+      /** @inheritdoc */
+      validate() {
+        // Remove any totally empty annotations
+        this.remove(this.filter((annotation) => annotation.isEmpty()));
+
+        // Remove annotations with the same value URI & property URI
+        const duplicates = this.getDuplicates();
+        if (duplicates.length) {
+          this.remove(duplicates);
+        }
+
+        // Validate each annotation
+        const errors = this.map((annotation) => annotation.validate());
+
+        // Remove any empty errors
+        const filteredErrors = errors.filter((error) => error);
+
+        // Each annotation validation is an array, flatten them to one array
+        const flatErrors = [].concat(...filteredErrors);
+
+        if (!filteredErrors.length) return null;
+
+        return flatErrors;
       },
     },
   );
