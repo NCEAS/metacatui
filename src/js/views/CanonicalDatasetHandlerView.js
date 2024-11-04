@@ -220,6 +220,13 @@ define([
        */
       getCitationInfo() {
         const view = this;
+        // Set the URL as the url for now, incase it is not a DOI or we fail to
+        // fetch the citation information.
+        this.citationModel.set({
+          pid: this.canonicalUri,
+          pid_url: this.canonicalUri,
+        });
+
         this.crossRef = new CrossRefModel({
           doi: this.canonicalUri,
         });
