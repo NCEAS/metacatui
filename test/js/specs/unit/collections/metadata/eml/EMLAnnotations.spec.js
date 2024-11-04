@@ -111,5 +111,38 @@ define([
       state.annotations.updateCanonicalDataset("http://example.com");
       state.annotations.length.should.equal(3);
     });
+
+    it("returns null if there are no validation errors", () => {
+      const errors = state.annotations.validate();
+      expect(errors).to.be.null;
+    });
+
+    it("shows validation errors if canonical dataset is not a valid URI", () => {
+      state.annotations.addCanonicalDatasetAnnotation("not-a-valid-uri");
+      const errors = state.annotations.validate();
+      expect(errors).to.be.an("array");
+      expect(errors.length).to.equal(1);
+      expect(errors[0].attr).to.equal("canonicalDataset");
+    });
+
+    it("removes duplicates during validation", () => {
+      state.annotations.add([
+        {
+          propertyLabel: "Property Label",
+          propertyURI: "http://example.com/property",
+          valueLabel: "Value Label",
+          valueURI: "http://example.com/value",
+        },
+        {
+          propertyLabel: "Property Label",
+          propertyURI: "http://example.com/property",
+          valueLabel: "Value Label",
+          valueURI: "http://example.com/value",
+        },
+      ]);
+      const errors = state.annotations.validate();
+      expect(errors).to.be.null;
+      expect(state.annotations.length).to.equal(1);
+    });
   });
 });

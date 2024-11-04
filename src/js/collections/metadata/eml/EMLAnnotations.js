@@ -49,24 +49,27 @@ define(["underscore", "backbone", "models/metadata/eml211/EMLAnnotation"], (
        * @since 0.0.0
        */
       getDuplicates() {
-        const duplicates = [];
-        this.forEach((annotation) => {
-          const propertyURI = annotation.get("propertyURI");
-          const valueURI = annotation.get("valueURI");
-          const propertyLabel = annotation.get("propertyLabel");
-          const valueLabel = annotation.get("valueLabel");
+        const groups = {};
+        let duplicates = [];
 
-          const found = this.filter(
-            (a) =>
-              a.get("propertyURI") === propertyURI &&
-              a.get("valueURI") === valueURI &&
-              a.get("propertyLabel") === propertyLabel &&
-              a.get("valueLabel") === valueLabel &&
-              a.id !== annotation.id,
-          );
+        // Group models by their serialized attributes
+        this.each((model) => {
+          // Serialize the model's attributes to create a unique key
+          const key = JSON.stringify(model.attributes);
 
-          if (found.length) {
-            duplicates.push(...found);
+          // Group models by the serialized key
+          if (groups[key]) {
+            groups[key].push(model);
+          } else {
+            groups[key] = [model];
+          }
+        });
+
+        // Identify duplicates in each group
+        Object.values(groups).forEach((group) => {
+          if (group.length > 1) {
+            // Add all but one model from each group to the duplicates array
+            duplicates = duplicates.concat(group.slice(1));
           }
         });
 
