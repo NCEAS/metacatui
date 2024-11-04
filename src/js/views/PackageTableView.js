@@ -2,10 +2,11 @@ define([
   "jquery",
   "underscore",
   "backbone",
+  "common/Utilities",
   "models/PackageModel",
   "views/DownloadButtonView",
   "text!templates/downloadContents.html",
-], function ($, _, Backbone, Package, DownloadButtonView, Template) {
+], function ($, _, Backbone, Utilities, Package, DownloadButtonView, Template) {
   "use strict";
 
   var PackageTable = Backbone.View.extend({
@@ -401,7 +402,8 @@ define([
 
       //File size cell
       var sizeCell = $(document.createElement("td")).addClass("size");
-      var size = memberModel.bytesToSize();
+      var size = Utilities.bytesToSize(memberModel.get("size"));
+      memberModel.set("sizeStr", size);
       $(sizeCell).text(size);
       $(tr).append(sizeCell);
 

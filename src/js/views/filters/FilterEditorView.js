@@ -291,7 +291,7 @@ define([
           description:
             "Allow people to select a search term from a list of options",
           filterTypes: ["filter"],
-          blockedFields: [...MetacatUI.appModel.get("querySemanticFields")],
+          blockedFields: [],
           modelFunction: function (attrs) {
             return new ChoiceFilter(attrs);
           },
@@ -701,19 +701,21 @@ define([
             inputLabel: "Select one or more metadata fields",
             excludeFields: view.excludeFields,
             addFields: view.specialFields,
-            separatorText: view.model.get("fieldsOperator"),
+            separator: view.model.get("fieldsOperator"),
           });
           view.modalEl
             .find("." + view.classes.fieldsContainer)
             .append(view.fieldInput.el);
           view.fieldInput.render();
 
-          // When the field input is changed, limit UI options to options that match
-          // this field type
-          view.fieldInput.off("changeSelection");
-          view.fieldInput.on("changeSelection", function (selectedFields) {
-            view.handleFieldChange.call(view, selectedFields);
-          });
+          this.stopListening(view.fieldInput.model, "change:selected");
+          this.listenTo(
+            view.fieldInput.model,
+            "change:selected",
+            function (_model, newSelectedFields) {
+              view.handleFieldChange.call(view, newSelectedFields);
+            },
+          );
         } catch (error) {
           console.log(
             "There was an error rendering a fields input in a FilterEditorView" +
@@ -922,9 +924,9 @@ define([
             newModelAttrs = selectedUI.draftModel.toJSON();
 
           // Set the new fields
-          newModelAttrs.fields = _.clone(this.fieldInput.selected);
+          newModelAttrs.fields = _.clone(this.fieldInput.model.get("selected"));
           // set the new fieldsOperator
-          newModelAttrs.fieldsOperator = this.fieldInput.separatorText;
+          newModelAttrs.fieldsOperator = this.fieldInput.model.get("separator");
 
           delete newModelAttrs.objectDOM;
           delete newModelAttrs.cid;

@@ -1,11 +1,19 @@
+"use strict";
+
 define([
-  "../../../../../../../../src/js/models/metadata/eml211/EMLParty",
-], function (EMLParty) {
+  "/test/js/specs/shared/clean-state.js",
+  "models/metadata/eml211/EMLParty",
+], function (cleanState, EMLParty) {
   // Configure the Chai assertion library
   var should = chai.should();
   var expect = chai.expect;
 
   describe("EMLParty Test Suite", function () {
+    const state = cleanState(() => {
+      const party = new EMLParty();
+      return { party };
+    }, beforeEach);
+
     describe("Creating", function () {
       it("should be created from the logged in user");
     });
@@ -36,6 +44,11 @@ define([
       it("can require an email");
       it("can require a country");
       it("can require a user id (ORCID)");
+
+      it("should require a valid email", function () {
+        state.party.set("email", ["not an email"]);
+        state.party.isValid().should.be.false;
+      });
     });
   });
 });

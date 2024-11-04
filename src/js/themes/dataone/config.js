@@ -6,7 +6,7 @@ MetacatUI.AppConfig = Object.assign(
     title: "DataONE Data Catalog",
     theme: "dataone",
     baseUrl: "https://search.dataone.org",
-    mapKey: "AIzaSyDuQ9r_7EeSfspKYs2SET7sv4c8FysLIk4",
+    mapKey: "AIzaSyB61wRRIFZngUXO81ipq3ljUjsClKcT9mk",
     repositoryName: "DataONE Data Catalog",
     emailContact: "support@dataone.org",
     nodeId: "urn:node:CN",

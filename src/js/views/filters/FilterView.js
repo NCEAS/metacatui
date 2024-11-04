@@ -202,6 +202,7 @@ define([
 
           if (!templateVars) {
             var templateVars = this.model.toJSON();
+            templateVars.id = this.model.cid;
           }
 
           // Pass the mode (e.g. "edit", "uiBuilder") to the template, as well

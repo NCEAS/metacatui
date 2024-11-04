@@ -1,11 +1,11 @@
 "use strict";
 
-define(["jquery", "underscore", "backbone", "collections/Citations"], function (
+define(["jquery", "underscore", "backbone", "collections/Citations"], (
   $,
   _,
   Backbone,
   Citations,
-) {
+) => {
   /**
    * @class CitationModel
    * @classdesc A Citation Model represents a single Citation Object returned by
@@ -14,10 +14,10 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
    * those models. A Citation Model can represent a citation to a local
    * MetacatUI object, or an external document or publication.
    * @classcategory Models
-   * @extends Backbone.Model
+   * @augments Backbone.Model
    * @see https://app.swaggerhub.com/apis/nenuji/data-metrics
    */
-  var Citation = Backbone.Model.extend(
+  const Citation = Backbone.Model.extend(
     /** @lends CitationModel.prototype */ {
       /**
        * The name of this type of model
@@ -28,7 +28,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
       /**
        * The default Citation fields
        * @name CitationModel#defaults
-       * @type {Object}
+       * @type {object}
        * @property {string} origin - text of authors who published the source
        * dataset / document / article
        * @property {string[]} originArray - array of authors who published the
@@ -79,7 +79,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * the URL to the DOI landing page for the object being cited. This will
        * automatically be set when the seriesId attribute is set.
        */
-      defaults: function () {
+      defaults() {
         return {
           origin: null,
           originArray: [],
@@ -107,10 +107,10 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * functions that return the value of an attribute for this Citation Model
        * given a source model. The source model can be a SolrResultsModel, a
        * DataONEObjectModel, or an extension of either of those models.
-       * @returns {Object} - An object that maps the name of the CitationModel
+       * @returns {object} - An object that maps the name of the CitationModel
        * attribute to the function that returns the value for that attribute.
        */
-      attrGetters: function () {
+      attrGetters() {
         return {
           year_of_publishing: this.getYearFromSourceModel,
           title: this.getTitleFromSourceModel,
@@ -125,11 +125,11 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
       /**
        * Override the default Backbone.Model.parse() method to convert the
        * citationMetadata object into a nested collection of CitationModels.
-       * @param {Object} response - The response from the metrics-service API
-       * @param {Object} options - Options to pass to the parse() method.
-       * @returns {Object} The parsed response
+       * @param {object} response - The response from the metrics-service API
+       * @param {object} options - Options to pass to the parse() method.
+       * @returns {object} The parsed response
        */
-      parse: function (response) {
+      parse(response) {
         try {
           // strings that need formatting when coming from the metrics-service:
           const toFormat = ["journal", "page", "volume", "publisher"];
@@ -147,7 +147,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
               sID = this.URLtoDOI(sID);
             }
             if (!sID.startsWith("doi:")) {
-              sID = "doi:" + sID;
+              sID = `doi:${sID}`;
             }
             response.source_id = sID;
           }
@@ -155,6 +155,11 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
           // Format the citation metadata = DataONE datasets cited by this
           // citation (external document)
           const cm = response.citationMetadata;
+
+          // We use the inline require here in addition to the define above to
+          // avoid an issue caused by the circular dependency between
+          // CitationModel and Citations
+          const Citations = require("collections/Citations");
           if (cm) {
             if (cm && !(cm instanceof Citations)) {
               const citationMetadata = Object.entries(cm).map(([pid, data]) => {
@@ -179,11 +184,10 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
                 // exists for the given PID.
                 // DOIs from the metrics service are not prefixed with "doi:"
                 if (this.isDOI(pid) && !pid.startsWith("doi:")) {
-                  pid = "doi:" + pid;
+                  pid = `doi:${pid}`;
                 }
                 item.pid = pid;
-                item.view_url =
-                  MetacatUI.root + "/view/" + encodeURIComponent(pid);
+                item.view_url = `${MetacatUI.root}/view/${encodeURIComponent(pid)}`;
 
                 return item;
               });
@@ -207,15 +211,14 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * including: origin and originArray; pid and pid_url; seriesId and
        * seriesId_url. This method will prevent the sourceModel attribute from
        * being set here.
-       *
-       * @param {string|Object} key - The attribute name to set, or an object of
+       * @param {string | object} key - The attribute name to set, or an object of
        * attribute names and values to set.
-       * @param {string|number|Object} val - The value to set the attribute to.
-       * @param {Object} options - Options to pass to the set() method.
+       * @param {string | number | object} val - The value to set the attribute to.
+       * @param {object} options - Options to pass to the set() method.
        * @see https://backbonejs.org/#Model-set
        * @since 2.23.0
        */
-      set: function (key, val, options) {
+      set(key, val, options) {
         try {
           if (key == null) return this;
 
@@ -248,7 +251,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
           ) {
             const strToArray = this.originToArray(attrs.origin);
             const arrayToStr = this.originArrayToString(attrs.originArray);
-            if (!!arrayToStr) {
+            if (arrayToStr) {
               attrs.origin = arrayToStr;
             } else {
               attrs.originArray = strToArray;
@@ -367,9 +370,10 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * SolrResult or a model that is a DataONEObject or an extended
        * DataONEObject. If no model is passed, then the model will be reset to the
        * default attributes.
+       * @param newSourceModel
        * @since 2.23.0
        */
-      populateFromModel: function (newSourceModel) {
+      populateFromModel(newSourceModel) {
         try {
           // Populate this model from the new sourceModel
 
@@ -403,7 +407,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * dateUploaded (both in SolrResult & ScienceMetadata/EML models). Lastly
        * check datePublished (found in ScienceMetadata/EML models only.)
        * @param {Backbone.Model} sourceModel - The model to get the year from
-       * @returns {Number} - The year
+       * @returns {number} - The year
        * @since 2.23.0
        */
       getYearFromSourceModel(sourceModel) {
@@ -426,7 +430,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
       /**
        * Get the title from the sourceModel
        * @param {Backbone.Model} sourceModel - The model to get the title from
-       * @returns {String} - The title
+       * @returns {string} - The title
        * @since 2.23.0
        */
       getTitleFromSourceModel(sourceModel) {
@@ -444,8 +448,8 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
             ext = ext ? ext[0].replace(".", "").toUpperCase() : ext;
             // Remove the extension and replace underscores with spaces
             fn = fn.replace(extRegex, "").replace(/_+/g, " ");
-            title = fn ? fn : title;
-            title = title && ext ? title + " [" + ext + "]" : title;
+            title = fn || title;
+            title = title && ext ? `${title} [${ext}]` : title;
           }
           return title;
         } catch (error) {
@@ -466,7 +470,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * If it is, then use the repository name. If there is no datasource
        * attribute, then use the current member node's name.
        * @param {Backbone.Model} sourceModel - The model to get the journal from
-       * @returns {String} - The journal
+       * @returns {string} - The journal
        * @since 2.23.0
        */
       getJournalFromSourceModel(sourceModel) {
@@ -544,7 +548,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
       /**
        * Get the pid from the sourceModel. First look for id, then identifier.
        * @param {Backbone.Model} sourceModel - The model to get the pid from
-       * @returns {String} - The pid
+       * @returns {string} - The pid
        * @since 2.23.0
        */
       getPidFromSourceModel(sourceModel) {
@@ -566,7 +570,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * Get the seriesId from the sourceModel. Simply looks for the seriesId
        * attribute.
        * @param {Backbone.Model} sourceModel - The model to get the seriesId from
-       * @returns {String} - The seriesId
+       * @returns {string} - The seriesId
        * @since 2.23.0
        */
       getSeriesIdFromSourceModel(sourceModel) {
@@ -589,7 +593,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * models, as  well as Portal models. If the sourceModel doesn't have a
        * createViewURL() method, then use the default viewUrl (null)
        * @param {Backbone.Model} sourceModel - The model to get the viewUrl from
-       * @returns {String} - The viewUrl, or null if the sourceModel doesn't have
+       * @returns {string} - The viewUrl, or null if the sourceModel doesn't have
        * a createViewURL() method.
        * @since 2.23.0
        */
@@ -597,9 +601,8 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
         try {
           if (sourceModel && sourceModel.createViewURL) {
             return sourceModel.createViewURL();
-          } else {
-            return this.defaults().viewUrl;
           }
+          return this.defaults().viewUrl;
         } catch (error) {
           console.log(
             "Error getting the viewUrl from the sourceModel. Model and error:",
@@ -616,7 +619,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @returns {string} Returns the author as a string if it was an EMLParty
        * with any incorrectly escaped characters corrected.
        */
-      formatAuthor: function (author) {
+      formatAuthor(author) {
         try {
           // Update the origin array asynchonously if the author is an ORCID
           if (this.isOrcid(author)) this.originArrayFromOrcid(author);
@@ -626,7 +629,11 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
           if (typeof author.toCSLJSON === "function") {
             author = author.toCSLJSON();
           } else if (typeof author === "string") {
-            author = this.nameStrToCSLJSON(author);
+            // author = this.nameStrToCSLJSON(author);
+
+            // It's too difficult to parse a string when it could be a name or
+            // an organization. Just return the string. See issue #2106
+            author = { literal: author };
           }
 
           return author;
@@ -649,7 +656,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * it exists.
        * @since 2.23.0
        */
-      formatTitle: function (title) {
+      formatTitle(title) {
         if (!title) return "";
         return title.replace(/\.+$/, "").trim();
       },
@@ -663,7 +670,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * with an empty string.
        * @since 2.23.0
        */
-      formatMetricsServiceString: function (str) {
+      formatMetricsServiceString(str) {
         if (!str) return "";
         // The metrics service returns "NULL" if there is no data
         str = str === "NULL" ? "" : str;
@@ -688,13 +695,13 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * K. W. Li", "J.R. Lovvorn". Last name prefixes like "van" or "de" are
        * stored as a "non-dropping particle". See:
        * {@link https://citeproc-js.readthedocs.io/en/latest/csl-json/markup.html#name-variables}
-       *
        * @param {str} author The author string to convert
-       * @returns {Object} Returns an object with the author's name in CSL JSON
+       * @param str
+       * @returns {object} Returns an object with the author's name in CSL JSON
        * format.
        * @since 2.23.0
        */
-      nameStrToCSLJSON: function (str) {
+      nameStrToCSLJSON(str) {
         if (!str) return null;
         const name = {};
         str = this.formatMetricsServiceString(str);
@@ -703,7 +710,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
         // name, first name". Move the first name to the front of the string.
         if (str.split(",").length == 2) {
           const parts = str.split(",");
-          str = parts[1].trim() + " " + parts[0].trim();
+          str = `${parts[1].trim()} ${parts[0].trim()}`;
         }
 
         const parts = str
@@ -738,12 +745,12 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
 
       /**
        * Given a date, extract the year as a number.
-       * @param {Date|String|Number} date The date to extract the year from
-       * @returns {Number} Returns the year as a number, or null if the date is
+       * @param {Date | string | number} date The date to extract the year from
+       * @returns {number} Returns the year as a number, or null if the date is
        * invalid.
        * @since 2.23.0
        */
-      yearFromDate: function (date) {
+      yearFromDate(date) {
         try {
           if (!date) return null;
           // If Date is already a year (Number object with 4 digits), return it
@@ -751,7 +758,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
             return date;
           }
           // If it is a string with 4 digits, return it as an integer. Use regex.
-          if (typeof date == "string" && /^\d{4}$/.test(date)) {
+          if (typeof date === "string" && /^\d{4}$/.test(date)) {
             return parseInt(date);
           }
           // Check if the date is a Date object
@@ -775,7 +782,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @returns {boolean} Returns true if the ORCID is valid, false otherwise
        * @since 2.23.0
        */
-      isOrcid: function (orcid) {
+      isOrcid(orcid) {
         try {
           if (!orcid) return false;
           const regex = new RegExp(
@@ -794,7 +801,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @param {string} orcid The ORCID to get the name for
        * @since 2.23.0
        */
-      originArrayFromOrcid: function (orcid) {
+      originArrayFromOrcid(orcid) {
         try {
           const request = { term: orcid };
           const model = this;
@@ -803,7 +810,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
             let name = null;
             if (response) {
               if (Array.isArray(response)) {
-                const label = response[0].label;
+                const { label } = response[0];
                 if (label) {
                   // Name is the format "Min Liew
                   // (http://orcid.org/0000-0002-5156-4610)" We want to return
@@ -834,7 +841,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * the given node
        * @since 2.23.0
        */
-      isFromNode: function (node) {
+      isFromNode(node) {
         try {
           const sourceModel = this.get("sourceModel");
           return (
@@ -861,12 +868,12 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @returns {Array} - An array of authors
        * @since 2.23.0
        */
-      originToArray: function (origin) {
+      originToArray(origin) {
         try {
           if (!origin) {
             return this.defaults().originArray;
           }
-          let originArray = origin ? origin.split(", ") : [];
+          const originArray = origin ? origin.split(", ") : [];
           return originArray.map((author) => this.formatAuthor(author));
         } catch (error) {
           console.log(
@@ -879,11 +886,12 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
 
       /**
        * Convert the origin array to a string.
+       * @param originArray
        * @returns {string} - The origin string. If a falsy value is passed in,
        * then the default origin attribute of the model is returned.
        * @since 2.23.0
        */
-      originArrayToString: function (originArray) {
+      originArrayToString(originArray) {
         try {
           if (!originArray || !originArray.length) {
             return this.defaults().origin;
@@ -895,9 +903,9 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
             .map((a) => {
               if (!a) return null;
               const ndp = a["non-dropping-particle"];
-              let name =
-                (a.given ? a.given + " " : "") +
-                (ndp ? ndp + " " : "") +
+              const name =
+                (a.given ? `${a.given} ` : "") +
+                (ndp ? `${ndp} ` : "") +
                 (a.family ? a.family : "");
               return (name || a.literal || "").trim();
             })
@@ -921,7 +929,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @see AppModel#archivedContentIsIndexed
        * @since 2.23.0
        */
-      isArchivedAndNotIndexed: function () {
+      isArchivedAndNotIndexed() {
         return this.isArchived() && !this.archivedContentIsIndexed();
       },
 
@@ -932,7 +940,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * that is true.
        * @since 2.23.0
        */
-      isArchived: function () {
+      isArchived() {
         return (
           this.sourceModel &&
           this.sourceModel.get &&
@@ -947,7 +955,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * index.
        * @since 2.23.0
        */
-      archivedContentIsIndexed: function () {
+      archivedContentIsIndexed() {
         return MetacatUI.appModel.get("archivedContentIsIndexed");
       },
 
@@ -958,7 +966,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @returns {string} - The DOI string without any prefixes.
        * @since 2.23.0
        */
-      removeAllDOIPrefixes: function (str) {
+      removeAllDOIPrefixes(str) {
         if (!str) return "";
         // Remove https and http prefixes
         str = str.replace(/^(https?:\/\/)?/, "");
@@ -972,10 +980,11 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
       /**
        * Check if a string is a valid DOI.
        * @param {string} doi - The string to check.
+       * @param str
        * @returns {boolean} - True if the string is a valid DOI, false otherwise.
        * @since 2.23.0
        */
-      isDOI: function (str) {
+      isDOI(str) {
         return MetacatUI.appModel.isDOI(str);
       },
 
@@ -989,7 +998,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @returns {string} - The DOI URL
        * @since 2.23.0
        */
-      DOItoURL: function (str) {
+      DOItoURL(str) {
         return MetacatUI.appModel.DOItoURL(str);
       },
 
@@ -1002,7 +1011,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @returns {string} - The DOI string, including the "doi:" prefix
        * @since 2.23.0
        */
-      URLtoDOI: function (url) {
+      URLtoDOI(url) {
         return MetacatUI.appModel.URLtoDOI(url);
       },
 
@@ -1012,7 +1021,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * of the pid, if it is a DOI. Otherwise, returns null.
        * @since 2.23.0
        */
-      findDOI: function () {
+      findDOI() {
         try {
           if (!this.sourceModel || !this.sourceModel.isDOI) return null;
           const seriesID = this.get("seriesId");
@@ -1034,8 +1043,8 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @returns {boolean} - True if the citation has a DOI
        * @since 2.23.0
        */
-      hasDOI: function () {
-        return this.findDOI() ? true : false;
+      hasDOI() {
+        return !!this.findDOI();
       },
 
       /**
@@ -1047,7 +1056,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @since 2.23.0
        * @see DataONEObject#getUploadStatus
        */
-      getUploadStatus: function () {
+      getUploadStatus() {
         return this.sourceModel ? this.sourceModel.get("uploadStatus") : null;
       },
 
@@ -1058,7 +1067,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * @returns {string} Returns the URL for the citation or an empty string.
        * @since 2.23.0
        */
-      getURL: function () {
+      getURL() {
         const urlSources = ["view_url", "source_url", "sid_url", "pid_url"];
         for (let i = 0; i < urlSources.length; i++) {
           const url = this.get(urlSources[i]);
@@ -1075,7 +1084,7 @@ define(["jquery", "underscore", "backbone", "collections/Citations"], function (
        * empty string.
        * @since 2.23.0
        */
-      getID: function () {
+      getID() {
         const idSources = ["pid", "seriesId", "source_url"];
         for (let i = 0; i < idSources.length; i++) {
           const id = this.get(idSources[i]);

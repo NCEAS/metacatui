@@ -1,11 +1,11 @@
-define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
+define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
   /**
    * @class SolrResult
    * @classdesc A single result from the Solr search service
    * @classcategory Models
    * @extends Backbone.Model
    */
-  var SolrResult = Backbone.Model.extend(
+  const SolrResult = Backbone.Model.extend(
     /** @lends SolrResult.prototype */ {
       // This model contains all of the attributes found in the SOLR 'docs' field inside of the SOLR response element
       defaults: {
@@ -278,103 +278,126 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         );
       },
 
-      /*
-       * This method will download this object while sending the user's auth token in the request.
+      /**
+       * Download this object while sending the user's auth token in the
+       * request.
+       * @returns {Promise} A promise that resolves to the response object
+       * @since 0.0.0
        */
-      downloadWithCredentials: function () {
-        //if(this.get("isPublic")) return;
+      async downloadWithCredentials() {
+        // Call the new getBlob method and handle the response
+        return this.fetchDataObjectWithCredentials()
+          .then((response) => this.downloadFromResponse(response))
+          .catch((error) => this.handleDownloadError(error));
+      },
 
-        //Get info about this object
-        var url = this.get("url"),
-          model = this;
+      /**
+       * This method will fetch this object while sending the user's auth token
+       * in the request. The data can then be downloaded or displayed in the
+       * browser
+       * @returns {Promise} A promise that resolves when the data is fetched
+       * @since 0.0.0
+       */
+      fetchDataObjectWithCredentials() {
+        const url = this.get("url");
+        const token = MetacatUI.appUserModel.get("token") || "";
+        const method = "GET";
 
-        //Create an XHR
-        var xhr = new XMLHttpRequest();
-
-        //Open and send the request with the user's auth token
-        xhr.open("GET", url);
-
-        if (MetacatUI.appUserModel.get("loggedIn")) xhr.withCredentials = true;
-
-        //When the XHR is ready, create a link with the raw data (Blob) and click the link to download
-        xhr.onload = function () {
-          if (this.status == 404) {
-            this.onerror.call(this);
-            return;
+        return new Promise((resolve, reject) => {
+          const headers = {};
+          if (token) {
+            headers.Authorization = `Bearer ${token}`;
           }
 
-          //Get the file name to save this file as
-          var filename = xhr.getResponseHeader("Content-Disposition");
+          fetch(url, { method, headers })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`Failed to fetch: ${response.statusText}`);
+              }
+              resolve(response);
+            })
+            .catch((error) => {
+              reject(error);
+            });
+        });
+      },
 
-          if (!filename) {
-            filename =
-              model.get("fileName") ||
-              model.get("title") ||
-              model.get("id") ||
-              "download";
-          } else
-            filename = filename
-              .substring(filename.indexOf("filename=") + 9)
-              .replace(/"/g, "");
+      /**
+       * Get the filename from the response headers or default to the model's
+       * title, id, or "download"
+       * @param {Response} response - The response object from the fetch request
+       * @returns {string} The filename to save the file as
+       * @since 0.0.0
+       */
+      getFileNameFromResponse(response) {
+        const model = this;
+        let filename = response.headers.get("Content-Disposition");
 
-          //Replace any whitespaces
-          filename = filename.trim().replace(/ /g, "_");
+        if (!filename) {
+          filename =
+            model.get("fileName") ||
+            model.get("title") ||
+            model.get("id") ||
+            "download";
+        } else {
+          filename = filename
+            .substring(filename.indexOf("filename=") + 9)
+            .replace(/"/g, "");
+        }
+        filename = filename.trim().replace(/ /g, "_");
+        return filename;
+      },
 
-          //For IE, we need to use the navigator API
-          if (navigator && navigator.msSaveOrOpenBlob) {
-            navigator.msSaveOrOpenBlob(xhr.response, filename);
-          }
-          //Other browsers can download it via a link
-          else {
-            var a = document.createElement("a");
-            a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
+      /**
+       * Download data onto the user's computer from the response object
+       * @param {Response} response - The response object from the fetch request
+       * @returns {Response} The response object
+       * @since 0.0.0
+       */
+      async downloadFromResponse(response) {
+        const model = this;
+        const blob = await response.blob();
+        const filename = this.getFileNameFromResponse(response);
 
-            // Set the file name.
-            a.download = filename;
+        // For IE, we need to use the navigator API
+        if (navigator && navigator.msSaveOrOpenBlob) {
+          navigator.msSaveOrOpenBlob(blob, filename);
+        } else {
+          // Other browsers can download it via a link
+          const a = document.createElement("a");
+          const url = URL.createObjectURL(blob);
+          a.href = url;
+          a.download = filename;
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        }
 
-            a.style.display = "none";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-          }
+        // Track this event
+        model.trigger("downloadComplete");
+        MetacatUI.analytics?.trackEvent(
+          "download",
+          "Download DataONEObject",
+          model.get("id"),
+        );
 
-          model.trigger("downloadComplete");
+        return response;
+      },
 
-          // Track this event
-          MetacatUI.analytics?.trackEvent(
-            "download",
-            "Download DataONEObject",
-            model.get("id"),
-          );
-        };
-
-        xhr.onerror = function (e) {
-          model.trigger("downloadError");
-
-          // Track the error
-          MetacatUI.analytics?.trackException(
-            `Download DataONEObject error: ${e || ""}`,
-            model.get("id"),
-            true,
-          );
-        };
-
-        xhr.onprogress = function (e) {
-          if (e.lengthComputable) {
-            var percent = (e.loaded / e.total) * 100;
-            model.set("downloadPercent", percent);
-          }
-        };
-
-        xhr.responseType = "blob";
-
-        if (MetacatUI.appUserModel.get("loggedIn"))
-          xhr.setRequestHeader(
-            "Authorization",
-            "Bearer " + MetacatUI.appUserModel.get("token"),
-          );
-
-        xhr.send();
+      /**
+       * Handle an error that occurs when downloading the object
+       * @param {Error} e - The error that occurred
+       * @since 0.0.0
+       */
+      handleDownloadError(e) {
+        const model = this;
+        model.trigger("downloadError");
+        // Track the error
+        MetacatUI.analytics?.trackException(
+          `Download DataONEObject error: ${e || ""}`,
+          model.get("id"),
+          true,
+        );
       },
 
       getInfo: function (fields) {
@@ -557,7 +580,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
             model.set("size", $(data).find("size").text() || "");
 
             //Get the entity name
-            model.set("filename", $(data).find("filename").text() || "");
+            model.set("fileName", $(data).find("filename").text() || "");
 
             //Check if this is a metadata doc
             var formatId = $(data).find("formatid").text() || "",
@@ -858,38 +881,6 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
 
         //If nothing works so far, return an empty array
         return [];
-      },
-
-      /****************************/
-
-      /**
-       * Convert number of bytes into human readable format
-       *
-       * @param integer bytes     Number of bytes to convert
-       * @param integer precision Number of digits after the decimal separator
-       * @return string
-       */
-      bytesToSize: function (bytes, precision) {
-        var kibibyte = 1024;
-        var mebibyte = kibibyte * 1024;
-        var gibibyte = mebibyte * 1024;
-        var tebibyte = gibibyte * 1024;
-
-        if (typeof bytes === "undefined") var bytes = this.get("size");
-
-        if (bytes >= 0 && bytes < kibibyte) {
-          return bytes + " B";
-        } else if (bytes >= kibibyte && bytes < mebibyte) {
-          return (bytes / kibibyte).toFixed(precision) + " KiB";
-        } else if (bytes >= mebibyte && bytes < gibibyte) {
-          return (bytes / mebibyte).toFixed(precision) + " MiB";
-        } else if (bytes >= gibibyte && bytes < tebibyte) {
-          return (bytes / gibibyte).toFixed(precision) + " GiB";
-        } else if (bytes >= tebibyte) {
-          return (bytes / tebibyte).toFixed(precision) + " TiB";
-        } else {
-          return bytes + " B";
-        }
       },
     },
   );

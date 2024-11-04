@@ -8,7 +8,7 @@ Markdown is a simple way to format text.
 
 For example, _this text will be italic_ and **this text will be bold**. Here is a link to [DataOne](https://www.dataone.org), and here is an equation written using the TeX language: $$ y =X\beta + \epsilon $$.
 
-Add an image like so: ![DataOne logo](https://www.dataone.org/sites/default/files/d1-logo-v8_aligned_left.png)
+Add an image like so: ![DataOne logo](https://www.dataone.org/uploads/dataone-logo-color.png)
 
 Show in-line code using `single backticks`, or show it as a separate block using triple backticks:
 

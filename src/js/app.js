@@ -88,12 +88,12 @@ require.config({
     markdownTableFromJson:
       MetacatUI.root + "/components/markdown-table-from-json.min",
     markdownTableToJson: MetacatUI.root + "/components/markdown-table-to-json",
+    // robust CSV parsing
+    papaParse: MetacatUI.root + "/components/papaparse.min",
     // Polyfill required for using dropzone with older browsers
     corejs: MetacatUI.root + "/components/core-js",
-    // Searchable multi-select dropdown component
-    semanticUItransition:
-      MetacatUI.root + "/components/semanticUI/transition.min",
-    semanticUIdropdown: MetacatUI.root + "/components/semanticUI/dropdown.min",
+    // Custom semantic bundle used for searchable multi-select dropdown component
+    semantic: `${MetacatUI.root}/js/common/Semantic`,
     // To make elements drag and drop, sortable
     sortable: MetacatUI.root + "/components/sortable.min",
     //Cesium
