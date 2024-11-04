@@ -115,10 +115,6 @@ define(["underscore", "backbone", "models/metadata/eml211/EMLAnnotation"], (
        */
       addCanonicalDatasetAnnotation(sourceId) {
         if (!sourceId) return null;
-        // TODO: Check that sourceId is a valid DOI or URL
-
-        // TODO: Check that there is not already a canonical dataset annotation
-        // before adding a new one, since there should only be one.
         return this.add([
           {
             propertyLabel: "derivedFrom",
@@ -159,7 +155,6 @@ define(["underscore", "backbone", "models/metadata/eml211/EMLAnnotation"], (
         derivedFrom.forEach((derived) => {
           sameAs.forEach((same) => {
             if (derived.get("valueURI") === same.get("valueURI")) {
-              // TODO? Check that the URI is a valid DOI or URL
               pairs.push({ derived, same, uri: derived.get("valueURI") });
             }
           });
