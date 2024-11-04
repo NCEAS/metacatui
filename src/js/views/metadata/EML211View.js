@@ -309,6 +309,30 @@ define([
         );
         $(overviewEl).find(".canonical-id").append(canonicalIdEl);
 
+        // Show canonical dataset error message on change
+        this.stopListening(this.model, "change:canonicalDataset");
+        this.listenTo(this.model, "change:canonicalDataset", () => {
+          const annotations = this.model.get("annotations");
+          const annoErrors = annotations.validate();
+          const canonicalError = annoErrors?.filter(
+            (e) => e.attr === "canonicalDataset",
+          );
+
+          if (canonicalError) {
+            const container = canonicalIdEl.parent();
+            const input = canonicalIdEl.find("input");
+            const notification = container.find(".notification");
+            notification.addClass("error").text(canonicalError[0].message);
+            input.addClass("error");
+
+            // When the user starts typing, remove the error message
+            input.one("keyup", () => {
+              notification.removeClass("error").text("");
+              input.removeClass("error");
+            });
+          }
+        });
+
         //Usage
         //Find the model value that matches a radio button and check it
         // Note the replace() call removing newlines and replacing them with a single space

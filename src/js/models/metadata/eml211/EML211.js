@@ -168,6 +168,10 @@ define([
         );
       },
 
+      /**
+       * Update the canonoical dataset URI in the annotations collection to
+       * match the canonicalDataset value on this model.
+       */
       updateCanonicalDataset() {
         let uri = this.get("canonicalDataset");
         uri = uri?.length ? uri[0] : null;
@@ -1708,33 +1712,41 @@ define([
         // Validate the EMLAnnotation models
         const annotations = this.get("annotations");
         const annotationErrors = annotations.validate();
-        if (annotationErrors) {
-          // Put canonicalDataset annotation errors in their own category
-          // so they can be displayed in the special canonicalDataset field.
-          const canonicalErrors = [];
-          const errorsToRemove = [];
-          // Check for a canonicalDataset annotation error
-          annotationErrors.forEach((annotationError, i) => {
-            if (annotationError.isCanonicalDataset) {
-              canonicalErrors.push(annotationError);
-              errorsToRemove.push(i);
-            }
-          });
-          // Remove canonicalDataset errors from the annotation errors
-          // backwards so we don't mess up the indexes.
-          errorsToRemove.reverse().forEach((i) => {
-            annotationErrors.splice(i, 1);
-          });
+        // if (annotationErrors) {
+        //   // Put canonicalDataset annotation errors in their own category
+        //   // so they can be displayed in the special canonicalDataset field.
+        //   const canonicalErrors = [];
+        //   const errorsToRemove = [];
+        //   // Check for a canonicalDataset annotation error
+        //   annotationErrors.forEach((annotationError, i) => {
+        //     if (annotationError.isCanonicalDataset) {
+        //       canonicalErrors.push(annotationError);
+        //       errorsToRemove.push(i);
+        //     }
+        //   });
+        //   // Remove canonicalDataset errors from the annotation errors
+        //   // backwards so we don't mess up the indexes.
+        //   errorsToRemove.reverse().forEach((i) => {
+        //     annotationErrors.splice(i, 1);
+        //   });
 
-          if (canonicalErrors.length) {
-            // The two canonicalDataset errors are the same, so just show one.
-            errors.canonicalDataset = canonicalErrors[0].message;
-          }
-        }
+        //   if (canonicalErrors.length) {
+        //     // The two canonicalDataset errors are the same, so just show one.
+        //     errors.canonicalDataset = canonicalErrors[0].message;
+        //   }
+        // }
         // Add the rest of the annotation errors if there are any
         // non-canonical left
         if (annotationErrors.length) {
-          errors.annotations = annotationErrors;
+          errors.annotations = annotationErrors.filter(
+            (e) => e.attr !== "canonicalDataset",
+          );
+          const canonicalError = annotationErrors.find(
+            (e) => e.attr === "canonicalDataset",
+          );
+          if (canonicalError) {
+            errors.canonicalDataset = canonicalError.message;
+          }
         }
 
         //Check the required fields for this MetacatUI configuration

@@ -251,6 +251,32 @@ define(["underscore", "backbone", "models/metadata/eml211/EMLAnnotation"], (
 
         if (!filteredErrors.length) return null;
 
+        // Put canonicalDataset annotation errors in their own category
+        // so they can be displayed in the special canonicalDataset field.
+        const canonicalErrors = [];
+        const errorsToRemove = [];
+        // Check for a canonicalDataset annotation error
+        flatErrors.forEach((annotationError, i) => {
+          if (annotationError.isCanonicalDataset) {
+            canonicalErrors.push(annotationError);
+            errorsToRemove.push(i);
+          }
+        });
+
+        // Remove canonicalDataset errors from the annotation errors
+        // backwards so we don't mess up the indexes.
+        errorsToRemove.reverse().forEach((i) => {
+          flatErrors.splice(i, 1);
+        });
+
+        if (canonicalErrors.length) {
+          // The two canonicalDataset errors are the same, so just show one.
+          flatErrors.push({
+            attr: "canonicalDataset",
+            message: canonicalErrors[0].message,
+          });
+        }
+
         return flatErrors;
       },
     },
