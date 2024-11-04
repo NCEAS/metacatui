@@ -2,7 +2,10 @@ MetacatUI.AppConfig = {
   {{- $ignoreList := list "enabled" "theme" "root" "baseUrl" "metacatContext" "d1CNBaseUrl" -}}
   {{- range $key, $value := .Values.appConfig }}
       {{- if not (has $key $ignoreList) }}
-          {{- if eq (typeOf $value) "string" }}
+          {{- if regexFind "new\\s+[A-Za-z]+\\s*\\(" (printf "%v" $value) }}
+              {{/* don't put quotes around JS object declarations -- e.g.: new Date(... */}}
+              {{- $key | nindent 4 }}: {{ $value }}
+          {{- else if eq (typeOf $value) "string" }}
               {{- $key | nindent 4 }}: {{ $value | quote }},
           {{- else }}
               {{- $key | nindent 4 }}: {{ $value }},
