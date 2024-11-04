@@ -65,7 +65,7 @@ global:
 ## @param appConfig The MetacatUI.AppConfig optional override settings
 ##
 ## Optional configuration. Note you can define any attributes here, to override those that appear
-## in config.js, provided they are of the form: 'key: stringValue,' or 'key: intValue,'.
+## in config.js, provided they are of the form: 'key: stringValue' or 'key: intValue'.
 ##
 ## See full listing in AppModel.js:
 ## https://github.com/NCEAS/metacatui/blob/main/src/js/models/AppModel.js
