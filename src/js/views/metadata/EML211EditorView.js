@@ -43,10 +43,22 @@ define([
    */
   const EML211EditorView = EditorView.extend(
     /** @lends EML211EditorView.prototype */ {
+      /**
+       * The type of View this is
+       * @type {string}
+       */
       type: "EML211Editor",
 
-      /* The initial editor layout */
+      /**
+       * The initial editor layout
+       * @type {UnderscoreTemplate}
+       */
       template: _.template(EditorTemplate),
+
+      /**
+       * The template for the submit message
+       * @type {UnderscoreTemplate}
+       */
       editorSubmitMessageTemplate: _.template(EditorSubmitMessageTemplate),
 
       /**
@@ -66,7 +78,7 @@ define([
       }),
 
       /**
-        The identifier of the root package EML being rendered
+       * The identifier of the root package EML being rendered
        * @type {string}
        */
       pid: null,
@@ -93,9 +105,7 @@ define([
         return this;
       },
 
-      /**
-       * Create a new EML model for this view
-       */
+      /** Create a new EML model for this view */
       createModel() {
         let model = null;
         // If no pid is given, create a new EML model
@@ -280,9 +290,7 @@ define([
         }
       },
 
-      /**
-       * @inheritdoc
-       */
+      /** @inheritdoc */
       isAccessPolicyEditEnabled() {
         if (!MetacatUI.appModel.get("allowAccessPolicyChanges")) {
           return false;
@@ -366,8 +374,7 @@ define([
           // 1B. If the root data package does not contain the metadata the user
           // is trying to edit, then create a new data package.
           else {
-            // this is a helpful message for debugging submission errors for
-            // now.
+            // helpful message for debugging submission errors for now.
             // eslint-disable-next-line no-console
             console.log(
               `Resource map ids could not be found for ${scimetaModel.id}, creating a new resource map.`,
@@ -414,7 +421,8 @@ define([
           !MetacatUI.rootDataPackage ||
           !MetacatUI.rootDataPackage.packageModel
         ) {
-          // "Could not get the latest verion of the resource map because no resource map is saved.",
+          // "Could not get the latest verion of the resource map because no
+          // resource map is saved.",
           return;
         }
         // Make sure we have the latest version of the resource map before we
@@ -460,9 +468,9 @@ define([
 
           // If there is no access policy, it hasn't been fetched yet, so wait
           if (!metadataAccPolicy.length) {
-            // If the model is of ScienceMetadata class, we need to wait for
-            // the "replace" function, which happens when the model is fetched
-            // and an EML211 model is created to replace it.
+            // If the model is of ScienceMetadata class, we need to wait for the
+            // "replace" function, which happens when the model is fetched and
+            // an EML211 model is created to replace it.
             if (this.model.type === "ScienceMetadata") {
               this.listenTo(this.model, "replace", () => {
                 this.listenToOnce(this.model, "sysMetaUpdated", () => {
@@ -522,11 +530,7 @@ define([
         );
       },
 
-      renderChildren() {},
-
-      /**
-       * Render the Data Package View and insert it into this view
-       */
+      /** Render the Data Package View and insert it into this view */
       renderDataPackage() {
         const view = this;
 
@@ -593,12 +597,6 @@ define([
 
         // Save the view as a subview
         this.subviews.push(this.dataPackageView);
-
-        this.listenTo(
-          MetacatUI.rootDataPackage.packageModel,
-          "change:childPackages",
-          this.renderChildren,
-        );
       },
 
       /**
@@ -1126,9 +1124,7 @@ define([
         }
       },
 
-      /**
-       * Shows a message if the user is not authorized to edit this package
-       */
+      /** Shows a message if the user is not authorized to edit this package */
       notAuthorized() {
         // Don't show the not authorized message if the user is authorized to
         // edit the EML and the resource map
@@ -1196,9 +1192,7 @@ define([
         }
       },
 
-      /**
-       * Show any errors that occured when trying to save changes
-       */
+      /** Show any errors that occured when trying to save changes */
       showValidation() {
         // First clear all the error messaging
         this.$(".notification.error").empty();
@@ -1284,9 +1278,7 @@ define([
         }
       },
 
-      /**
-       * @inheritdoc
-       */
+      /** @inheritdoc */
       hasUnsavedChanges() {
         // If the form hasn't been edited, we can close this view without
         // confirmation
@@ -1298,9 +1290,7 @@ define([
         return false;
       },
 
-      /**
-       *  @inheritdoc
-       */
+      /** @inheritdoc */
       onClose() {
         // Execute the parent class onClose() function
         // EditorView.prototype.onClose.call(this);
@@ -1340,8 +1330,8 @@ define([
       },
 
       /**
-       *  Handle "fileLoadError" events by alerting the user and removing the
-       * row from the data package table.
+       * Handle "fileLoadError" events by alerting the user and removing the row
+       * from the data package table.
        * @param  {DataONEObject} item The model item passed by the fileLoadError
        * event
        */
@@ -1404,18 +1394,15 @@ define([
         });
       },
 
-      /**
-       * Save a draft of the parent EML model
-       */
+      /** Save a draft of the parent EML model */
       saveDraft() {
         const view = this;
 
         const title = this.model.get("title") || "No title";
-        // Create a clone of the model that we will use for serialization.
-        // Don't serialize the model that is currently being edited, since
-        // serialize may make changes to the model that should not happen
-        // until the user is ready to save (e.g. - create a contact if there
-        // is not one)
+        // Create a clone of the model that we will use for serialization. Don't
+        // serialize the model that is currently being edited, since serialize
+        // may make changes to the model that should not happen until the user
+        // is ready to save (e.g. - create a contact if there is not one)
         const draftModel = this.model.clone();
 
         LocalForage.setItem(this.model.get("id"), {
