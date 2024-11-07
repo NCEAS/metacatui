@@ -1,5 +1,4 @@
 define([
-  "underscore",
   "jquery",
   "backbone",
   "localforage",
@@ -12,11 +11,8 @@ define([
   "views/DataPackageView",
   "views/metadata/EML211View",
   "views/metadata/EMLEntityView",
-  "text!templates/editor.html",
   "collections/ObjectFormats",
-  "text!templates/editorSubmitMessage.html",
 ], (
-  _,
   $,
   Backbone,
   LocalForage,
@@ -29,9 +25,7 @@ define([
   DataPackageView,
   EMLView,
   EMLEntityView,
-  EditorTemplate,
   ObjectFormats,
-  EditorSubmitMessageTemplate,
 ) => {
   /**
    * @class EML211EditorView
@@ -50,16 +44,52 @@ define([
       type: "EML211Editor",
 
       /**
-       * The initial editor layout
-       * @type {UnderscoreTemplate}
+       * A method that returns the initial template for the editor view
+       * @param {object} attrs - An object containing the attributes to render
+       * @param {string} attrs.loading - The loading message to display
+       * @param {string} attrs.submitButtonText - The text to display on the
+       * submit button
        */
-      template: _.template(EditorTemplate),
+      template(attrs) {
+        return `<article class="editor-view">
+          <header id="editor-header">
+            <div id="breadcrumb-container"></div>
+            <div id="citation-container" class="citation-container"></div>
+            <div id="data-source-container" class="data-source"></div>
+            <div id="controls-container" class="controls"></div>
+            <div class="access-policy-view-container"></div>
+            <div class="clear"></div>
+          </header>
+          <section id="editor-body">
+            <div id="data-package-container"></div>
+            <div id="metadata-container">${attrs.loading}</div>
+          </section>
+          <section id="editor-footer" class="editor-controls hidden">
+            <div class="editor-save-controls">
+              <a class="btn btn-primary save" id="save-editor">${attrs.submitButtonText}</a>
+            </div>
+          </section>
+        </article>`;
+      },
 
       /**
-       * The template for the submit message
-       * @type {UnderscoreTemplate}
+       * Returns the template for the message to display after the editor has
+       * been submitted
+       * @param {object} attrs - An object containing the attributes to render
+       * @param {string} attrs.messageText - The message to display
+       * @param {string} attrs.viewURL - The URL to view the dataset
+       * @param {string} attrs.buttonText - The text to display on the button
        */
-      editorSubmitMessageTemplate: _.template(EditorSubmitMessageTemplate),
+      editorSubmitMessageTemplate(attrs) {
+        return `<div class="container">
+          <p>${attrs.messageText}</p>
+          <p>
+            <a class="btn btn-large btn-primary center" href="${attrs.viewURL}">
+              ${attrs.buttonText}
+            </a>
+          </p>
+        </div>`;
+      },
 
       /**
        * The text to use in the editor submit button
@@ -72,7 +102,7 @@ define([
        * call. This view will inherit events from the parent class, EditorView.
        * @type {object}
        */
-      events: _.extend(EditorView.prototype.events, {
+      events: Object.assign(EditorView.prototype.events, {
         change: "saveDraft",
         "click .data-package-item .edit": "showEntity",
       }),
@@ -304,12 +334,8 @@ define([
           "allowAccessPolicyChangesDatasetsForSubjects",
         );
         if (Array.isArray(limitedTo) && limitedTo.length) {
-          return (
-            _.intersection(
-              limitedTo,
-              MetacatUI.appUserModel.get("allIdentitiesAndGroups"),
-            ).length > 0
-          );
+          const allIds = MetacatUI.appUserModel.get("allIdentitiesAndGroups");
+          return limitedTo.filter((id) => allIds.includes(id)).length > 0;
         }
         return true;
       },
@@ -358,13 +384,9 @@ define([
           // a previously unsaved map, then getLatestVersion will result in a
           // 404.
           if (
-            MetacatUI.rootDataPackage &&
-            MetacatUI.rootDataPackage.pluck &&
+            MetacatUI.rootDataPackage?.pluck &&
             !MetacatUI.rootDataPackage.packageModel.isNew() &&
-            _.contains(
-              MetacatUI.rootDataPackage.pluck("id"),
-              this.model.get("id"),
-            )
+            MetacatUI.rootDataPackage.pluck("id").includes(this.model.get("id"))
           ) {
             // Remove the cached system metadata XML so we retrieve it again
             MetacatUI.rootDataPackage.packageModel.set("sysMetaXML", null);
@@ -704,8 +726,7 @@ define([
        * @param {Backbone.Model} model - The model to render
        */
       renderDataPackageItem(model) {
-        const hasPackageSubView = _.find(
-          this.subviews,
+        const hasPackageSubView = this.subviews.find(
           (subview) => subview.id === "data-package-table",
           model,
         );
@@ -877,7 +898,9 @@ define([
         });
 
         // Rerender the CitationView
-        const citationView = _.where(this.subviews, { type: "Citation" });
+        const citationView = this.subviews.filter(
+          (subview) => subview.type === "Citation",
+        );
         if (citationView.length) {
           citationView[0].createTitleLink = true;
           citationView[0].render();
@@ -913,8 +936,7 @@ define([
         // more informative than the usual message
         if (
           failedModels.length &&
-          _.every(
-            failedModels,
+          failedModels.every(
             (m) =>
               m.get("type") === "Data" &&
               m.get("errorMessage").indexOf("network issue") > -1,
@@ -922,18 +944,11 @@ define([
         ) {
           // Create a list of file names for the files that failed to upload
           const failedFileList = $(document.createElement("ul"));
-
-          _.each(
-            failedModels,
-            (failedModel) => {
-              failedFileList.append(
-                $(document.createElement("li")).text(
-                  failedModel.get("fileName"),
-                ),
-              );
-            },
-            this,
-          );
+          failedModels?.forEach((failedModel) => {
+            failedFileList.append(
+              $(document.createElement("li")).text(failedModel.get("fileName")),
+            );
+          }, this);
 
           // Make the error message
           messageParagraph.text(
@@ -945,14 +960,10 @@ define([
         // resource map model and it failed to upload due to a network issue,
         // show a more specific error message
         else if (
-          _.find(
-            failedModels,
-            (m) => {
-              const msg = m.get("errorMessage") || "";
-              return m === this.model && msg.indexOf("network issue") > -1;
-            },
-            this,
-          ) ||
+          failedModels.find((m) => {
+            const msg = m.get("errorMessage") || "";
+            return m === this.model && msg.indexOf("network issue") > -1;
+          }, this) ||
           (MetacatUI.rootDataPackage.packageModel.get("uploadStatus") === "e" &&
             MetacatUI.rootDataPackage.packageModel
               .get("errorMessage")
@@ -1202,64 +1213,59 @@ define([
 
         const errors = this.model.validationError;
 
-        _.each(
-          errors,
-          (errorMsg, category) => {
-            const categoryEls = this.$(`[data-category='${category}']`);
-            const dataItemRow = categoryEls.parents(".data-package-item");
+        errors?.forEach((errorMsg, category) => {
+          const categoryEls = this.$(`[data-category='${category}']`);
+          const dataItemRow = categoryEls.parents(".data-package-item");
 
-            // If this field is in a DataItemView, then delegate to that view
-            if (dataItemRow.length && dataItemRow.data("view")) {
-              dataItemRow.data("view").showValidation(category, errorMsg);
-              return;
-            }
-            const elsWithViews = _.filter(
-              categoryEls,
-              (el) =>
-                $(el).data("view") &&
-                $(el).data("view").showValidation &&
-                !$(el).data("view").isNew,
-            );
+          // If this field is in a DataItemView, then delegate to that view
+          if (dataItemRow.length && dataItemRow.data("view")) {
+            dataItemRow.data("view").showValidation(category, errorMsg);
+            return;
+          }
+          const elsWithViews = categoryEls.filter(
+            (el) =>
+              $(el).data("view") &&
+              $(el).data("view").showValidation &&
+              !$(el).data("view").isNew,
+          );
 
-            if (elsWithViews.length) {
-              _.each(elsWithViews, (el) => {
-                $(el).data("view").showValidation();
-              });
-            } else if (categoryEls.length) {
-              // Show the error message
-              categoryEls
-                .filter(".notification")
-                .addClass("error")
-                .text(errorMsg);
-
-              // Add the error message to inputs
-              categoryEls.filter("textarea, input").addClass("error");
-            }
-
-            // Get the link in the table of contents navigation
-            let navigationLink = this.$(
-              `.side-nav-item[data-category='${category}']`,
-            );
-
-            if (!navigationLink.length) {
-              const section = categoryEls.parents("[data-section]");
-              navigationLink = this.$(
-                `.side-nav-item.${$(section).attr("data-section")}`,
-              );
-            }
-
-            // Show the error icon in the table of contents
-            navigationLink
+          if (elsWithViews.length) {
+            elsWithViews.forEach((el) => {
+              $(el).data("view").showValidation();
+            });
+          } else if (categoryEls.length) {
+            // Show the error message
+            categoryEls
+              .filter(".notification")
               .addClass("error")
-              .find(".icon")
-              .addClass("error")
-              .show();
+              .text(errorMsg);
 
-            this.model.off(`change:${category}`, this.model.checkValidity);
-            this.model.once(`change:${category}`, this.model.checkValidity);
-          },
-          this,
-        );
+            // Add the error message to inputs
+            categoryEls.filter("textarea, input").addClass("error");
+          }
+
+          // Get the link in the table of contents navigation
+          let navigationLink = this.$(
+            `.side-nav-item[data-category='${category}']`,
+          );
+
+          if (!navigationLink.length) {
+            const section = categoryEls.parents("[data-section]");
+            navigationLink = this.$(
+              `.side-nav-item.${$(section).attr("data-section")}`,
+            );
+          }
+
+          // Show the error icon in the table of contents
+          navigationLink
+            .addClass("error")
+            .find(".icon")
+            .addClass("error")
+            .show();
+
+          this.model.off(`change:${category}`, this.model.checkValidity);
+          this.model.once(`change:${category}`, this.model.checkValidity);
+        }, this);
 
         if (errors) {
           // Create a list of errors to display in the error message shown to
@@ -1320,7 +1326,7 @@ define([
         this.model = null;
 
         // Close each subview
-        _.each(this.subviews, (subview) => {
+        this.subviews?.forEach((subview) => {
           if (subview.onClose) subview.onClose();
         });
 
@@ -1431,12 +1437,16 @@ define([
         })
           .then(() => {
             // Sort by datetime
-            drafts = _.sortBy(drafts, (draft) =>
-              draft.value.datetime.toString(),
-            ).reverse();
+            drafts = drafts
+              .sort((a, b) =>
+                a.value.datetime
+                  .toString()
+                  .localeCompare(b.value.datetime.toString()),
+              )
+              .reverse();
           })
           .then(() => {
-            _.each(drafts, (draft, i) => {
+            drafts?.forEach((draft, i) => {
               const age = new Date() - new Date(draft.value.datetime);
               const isOld = age / 2678400000 > 1; // ~31days
 
@@ -1485,9 +1495,10 @@ define([
        * editor
        */
       getRequiredFields() {
-        const requiredFields = _.clone(
-          MetacatUI.appModel.get("emlEditorRequiredFields"),
-        );
+        // clone the required fields from the AppConfig
+        const requiredFields = {
+          ...MetacatUI.appModel.get("emlEditorRequiredFields"),
+        };
 
         // Add required fields for Custom Methods, which are configured in a
         // different property of the AppConfig
