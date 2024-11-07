@@ -49,6 +49,7 @@ define([
        * @param {string} attrs.loading - The loading message to display
        * @param {string} attrs.submitButtonText - The text to display on the
        * submit button
+       * @returns {string} The HTML template for the editor view
        */
       template(attrs) {
         return `<article class="editor-view">
@@ -79,6 +80,7 @@ define([
        * @param {string} attrs.messageText - The message to display
        * @param {string} attrs.viewURL - The URL to view the dataset
        * @param {string} attrs.buttonText - The text to display on the button
+       * @returns {string} The HTML template for the submit message
        */
       editorSubmitMessageTemplate(attrs) {
         return `<div class="container">
