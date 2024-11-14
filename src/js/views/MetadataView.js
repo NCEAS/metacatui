@@ -2042,7 +2042,7 @@ define([
         const packageSources = dataPackage.sourcePackages;
         const packageDerivations = dataPackage.derivationPackages;
 
-        if (Object.keys(packageSources).length) {
+        if (packageSources && Object.keys(packageSources).length) {
           const sourceProvChart = new ProvChart({
             sources: packageSources,
             context: dataPackage,
@@ -2053,7 +2053,7 @@ define([
           this.subviews.push(sourceProvChart);
           this.$(this.articleContainer).before(sourceProvChart.render().el);
         }
-        if (Object.keys(packageDerivations).length) {
+        if (packageDerivations && Object.keys(packageDerivations).length) {
           const derivationProvChart = new ProvChart({
             derivations: packageDerivations,
             context: dataPackage,
@@ -2066,8 +2066,8 @@ define([
         }
 
         if (
-          dataPackage.sources.length ||
-          dataPackage.derivations.length ||
+          dataPackage?.sources.length ||
+          dataPackage?.derivations.length ||
           editModeOn
         ) {
           // Draw the provenance charts for each member of this package at an
