@@ -80,6 +80,8 @@ require.config({
       "/components/showdown/extensions/showdown-xss-filter/xss.min",
     showdownHtags:
       MetacatUI.root + "/components/showdown/extensions/showdown-htags",
+    showdownIframes:
+      MetacatUI.root + "/components/showdown/extensions/showdown-iframes",
     // woofmark - markdown editor
     woofmark: MetacatUI.root + "/components/woofmark.min",
     // drop zone creates drag and drop areas
