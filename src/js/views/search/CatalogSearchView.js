@@ -893,6 +893,9 @@ define([
 
           // Remove the JSON-LD from the page
           document.getElementById("jsonld")?.remove();
+
+          // Remove the map
+          this.mapView?.onClose();
         } catch (e) {
           console.error("Couldn't close search view. ", e);
         }
