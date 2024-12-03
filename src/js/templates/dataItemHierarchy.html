@@ -1,6 +1,6 @@
 <!-- Icon & Files column -->
 <td>
-	<% if (nodeLevel !== "undefined") { 
+	<% if (nodeLevel !== "undefined") {
 			if (isFolder) {
 				var indentFile = (nodeLevel) * 30 + 10;
 			}
@@ -13,17 +13,17 @@
 		}
 	%>
 	<span style="padding-left:<%=indentFile %>px">
-		<% if (icon !== "undefined") { 
+		<% if (icon !== "undefined") {
 			%>
-				<% if (isFolder) { 
+				<% if (isFolder) {
 					%>
 					<a class="expand-control control" style="display:none"><i class="icon icon-caret-right"></i></a>
 					<a class="collapse-control control" ><i class="icon icon-caret-down"></i></a>
 					<i class="<%= icon %>" ></i>
-				<% } else { 
+				<% } else {
 					%>
 					<i class="<%= icon %>"></i>
-				<% } 
+				<% }
 					%>
 
 		<% } else { %>
@@ -50,16 +50,18 @@
 	<td class="type"></td>
 <% } %>
 
+<% if( MetacatUI.appModel.get("displayDatasetMetrics") ){ %>
 <% if (memberRowMetrics !== undefined && memberRowMetrics > 0) { %>
 	<td class="metrics-count downloads" data-id="<%= id %>">
 		<span class="packageTable-resultItem badge ">
-			<i class='catalog-metric-icon <%= metricIcon %>'></i> <%= memberRowMetrics %> 
-		</span>	
+			<i class='catalog-metric-icon <%= metricIcon %>'></i> <%= memberRowMetrics %>
+		</span>
 	</td>
 <% } else { %>
 	<td class="metrics-count downloads" data-id="<%= id %>">
-		
+
 	</td>
+<% } %>
 <% } %>
 
 <td class="file-actions">

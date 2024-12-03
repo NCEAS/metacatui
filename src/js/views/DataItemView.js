@@ -535,7 +535,7 @@ define([
 
             // Insert metrics for this item,
             // if the model has already been fethced.
-            if (this.metricsModel.get("views") !== null) {
+            if (this.metricsModel != null && this.metricsModel.get("views") !== null) {
               metricToolTip = this.getMemberRowMetrics(view.id);
               attributes.memberRowMetrics = metricToolTip.split(" ")[0];
             } else {
