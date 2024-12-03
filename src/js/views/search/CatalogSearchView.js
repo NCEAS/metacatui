@@ -837,6 +837,9 @@ define([
 
           // Remove the JSON-LD from the page
           MetacatUI.appView.schemaOrg.removeExistingJsonldEls();
+
+          // Remove the map
+          this.mapView?.onClose();
         } catch (e) {
           console.error("Couldn't close search view. ", e);
         }

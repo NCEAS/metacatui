@@ -1733,6 +1733,24 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            */
           feverUrl: "",
 
+          /**
+           * A list of trusted content sources from which MetacatUI can safely
+           * embed external content. This property is used to define URLs or URL
+           * patterns that are considered secure for embedding content in
+           * iframes, especially when rendering user-generated Markdown content.
+           *
+           * Each source in the list can include wildcards (`*`) to match any
+           * subdomain or path. For example, `"https://*.dataone.org/*"` matches
+           * any subdomain of `dataone.org` over HTTPS, and `"*arcticdata.io*"`
+           * matches any URL containing `arcticdata.io`.
+           *
+           * Set to an empty array or a falsy value to disable all embedded content.
+           *
+           * @type {string[]}
+           * @since 0.0.0
+           */
+          trustedContentSources: [],
+
           /** If true, then archived content is available in the search index.
            * Set to false if this MetacatUI is using a Metacat version before 2.10.0
            * @type {boolean}

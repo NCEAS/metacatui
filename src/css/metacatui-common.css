@@ -74,6 +74,9 @@ a:hover {
 .icon.warning {
   color: #ffbc00;
 }
+.icon.info {
+  color: #3a87ad;
+}
 .list-group-item.success {
   background-color: #dff0d8;
 }
@@ -1963,11 +1966,10 @@ div.analyze.dropdown.open button.dropdown.btn.btn-secondary.dropdown-toggle {
 }
 .controls-container .info-icons .icon-stack .icon-stack-top {
   color: #fff;
-  font-size: 0.75em;
-  margin-top: -15px;
+  font-size: 0.7em;
 }
 .controls-container .info-icons .icon-stack .icon-stack-base {
-  font-size: 1.25em;
+  font-size: 1.5em;
 }
 .metadata-controls-container {
   position: relative;
