@@ -1116,8 +1116,10 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           searchMapTileHue: "192",
 
           /**
-           * If true, the dataset landing pages will generate Schema.org-compliant JSONLD
-           * and insert it into the page.
+           * If true, the dataset landing pages and data catalog view will
+           * generate Schema.org-compliant JSONLD and insert it into the page.
+           * If there is a JSONLD template for the app, it will also be
+           * inserted. This is useful for search engines and other web crawlers.
            * @type {boolean}
            * @default true
            */
