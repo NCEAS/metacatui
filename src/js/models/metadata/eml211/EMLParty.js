@@ -1,9 +1,9 @@
-define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
+define(["jquery", "underscore", "backbone", "models/DataONEObject"], (
   $,
   _,
   Backbone,
   DataONEObject,
-) {
+) => {
   /**
    * @class EMLParty
    * @classcategory Models/Metadata/EML211
@@ -13,7 +13,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
    * @extends Backbone.Model
    * @constructor
    */
-  var EMLParty = Backbone.Model.extend(
+  const EMLParty = Backbone.Model.extend(
     /** @lends EMLParty.prototype */ {
       defaults: function () {
         return {
@@ -561,9 +561,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
         );
 
         //user ID
-        var userId = Array.isArray(this.get("userId"))
-          ? this.get("userId")
-          : [this.get("userId")];
+        var userId = this.getUserIdArray();
         _.each(
           userId,
           function (id) {
@@ -578,37 +576,15 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
               this.getEMLPosition(objectDOM, "userid").after(idNode);
             }
 
-            //If this is an orcid identifier, format it correctly
-            if (this.isOrcid(id)) {
+            // If this is an orcid identifier, format it correctly
+            const validOrcid = this.validateOrcid(id, true);
+            // validOrcid will be false if the ORCID is invalid, and a correctly
+            // formatted ORCID if it is valid
+            if (validOrcid) {
               // Add the directory attribute
               idNode.attr("directory", "https://orcid.org");
-
-              //If this ORCID does not start with "http"
-              if (id.indexOf("http") == -1) {
-                //If this is an ORCID with just the 16-digit numbers and hyphens, then add
-                // the https://orcid.org/ prefix to it
-                if (id.length == 19) {
-                  id = "https://orcid.org/" + id;
-                }
-                //If it starts with "orcid.org", then add the "https://" prefix
-                else if (id.indexOf("orcid.org") == 0) {
-                  id = "https://" + id;
-                }
-                //If it starts with "www.orcid.org", then add the "https" prefix and remove the "www"
-                else if (id.indexOf("www.orcid.org") == 0) {
-                  id = "https://" + id.replace("www.orcid.org", "orcid.org");
-                }
-              }
-
-              //If there is a "www", remove it
-              if (id.indexOf("www.orcid.org") > -1) {
-                id = id.replace("www.orcid.org", "orcid.org");
-              }
-
-              //If it has the http:// prefix, add the 's' for secure protocol
-              if (id.indexOf("http://") == 0) {
-                id = id.replace("http", "https");
-              }
+              // Check the orcid ID and standardize it if possible
+              id = validOrcid;
             } else {
               idNode.attr("directory", "unknown");
             }
@@ -910,7 +886,74 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
           });
         }
 
+        // If there is an ORCID, ensure it is valid
+        const userId = this.getUserIdArray();
+        userId.forEach((id) => {
+          if (this.isOrcid(id) && !this.validateOrcid(id)) {
+            errors.userId =
+              "Provide a valid ORCID in the format https://orcid.org/0000-0000-0000-0000.";
+          }
+        });
+
         return Object.keys(errors)?.length ? errors : false;
+      },
+
+      /**
+       * Get the userId attribute and ensure it is an array
+       * @returns {string[]} - An array of userIds
+       * @since 0.0.0
+       */
+      getUserIdArray() {
+        const userId = this.get("userId");
+        if (!userId) return [];
+        if (Array.isArray(userId)) return userId;
+        return [userId];
+      },
+
+      /**
+       * Validate an ORCID string. The following formats are valid according to
+       * {@link https://support.orcid.org/hc/en-us/articles/17697515256855-I-entered-my-ORCID-iD-in-a-form-and-it-said-it-s-invalid}.
+       * - Full URL (http): http://orcid.org/0000-0000-0000-0000
+       * - Full URL (https): https://orcid.org/0000-0000-0000-0000
+       * - Numbers only, with hyphens: 0000-0000-0000-0000.
+       *
+       * The last character in the ORCID iD is a checksum. This checksum must be
+       * the digits 0-9 or the letter X, which represents the value 10.
+       * @param {string} orcid - The ORCID iD to validate
+       * @param {boolean} standardize - If true, the ORCID iD will be
+       * standardized to the https://orcid.org/0000-0000-0000-0000 format.
+       * @returns {string|boolean} - Returns false if the ORCID iD is invalid, or
+       * the string if it is valid. If standardize is true, the returned orcid
+       * will be the standardized URL.
+       * @since 0.0.0
+       */
+      validateOrcid(orcid, standardize = false) {
+        // isOrcid doesn't allow for the id without orcid.org
+        if (!this.isOrcid(orcid) && !/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/) {
+          return false;
+        }
+
+        // Find the 0000-0000-0000-0000 part of the string
+        const id = orcid.match(/\d.*[\dX]$/)?.[0];
+        // The ORCID must follow the 0000-0000-0000-0000 format exactly
+        if (!id?.match(/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/)) return false;
+
+        // Only the digits + hypen pattern is valid
+        if (id === orcid && !standardize) return orcid;
+
+        // Assuming the ORCID is valid at this point, we can standardize it
+        if (standardize) return `https://orcid.org/${id}`;
+
+        // Both the HTTP and HTTPS URL formats are valid
+        if (
+          orcid.match(/^https?:\/\/orcid.org\/\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/)
+        ) {
+          return orcid;
+        }
+
+        // Remaining options are that the ORCID includes orcid.org but not the
+        // entire https or http URL, which makes it invalid.
+        return orcid;
       },
 
       isOrcid: function (username) {
