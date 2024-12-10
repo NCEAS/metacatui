@@ -515,33 +515,46 @@
 
       /**
        * Add all the files and folders
-       * @param sortedFilePathObj
+       * @param sortedFilePathObj - An object where keys are folder paths and values are arrays of file IDs
        */
       addFilesAndFolders(sortedFilePathObj) {
+        // Return false if the input object is not provided
         if (!sortedFilePathObj) return false;
-        const insertedPath = new Array();
-        const pathMap = new Object();
-        pathMap[""] = "";
 
+        // Initialize an array to keep track of inserted paths
+        const insertedPath = new Array();
+
+        // Initialize an object to map folder paths
+        const pathMap = new Object();
+        pathMap[""] = ""; // Root path
+
+        // Iterate over each key (folder path) in the sortedFilePathObj
         for (const key of Object.keys(sortedFilePathObj)) {
-          // add folder
+          // Split the folder path into an array of folder names
           const pathArray = key.split("/");
-          // skip the first empty value
+          let currentPath = "";
+
+          // Iterate over each folder name in the pathArray
           for (let i = 0; i < pathArray.length; i++) {
+            // Skip empty values
             if (pathArray[i].length < 1) continue;
 
-            if (!(pathArray[i] in pathMap)) {
-              // insert path
+            // Construct the current path
+            currentPath = currentPath ? `${currentPath}/${pathArray[i]}` : pathArray[i];
+
+            // If the current path is not in pathMap, create a new folder
+            if (!(currentPath in pathMap)) {
               var dataItemView;
               var itemPath;
 
-              // root
+              // Determine the itemPath for the folder
               if (i == 0) {
-                itemPath = "";
+                itemPath = ""; // Root folder
               } else {
-                itemPath = pathMap[pathArray[i - 1]];
+                itemPath = pathMap[pathArray.slice(0, i).join("/")];
               }
 
+              // Create a new DataItemView for the folder
               dataItemView = new DataItemView({
                 mode: this.mode,
                 itemName: pathArray[i],
@@ -551,20 +564,22 @@
                 dataPackageId: this.dataPackage.id,
               });
 
-              this.subviews[pathArray[i]] = dataItemView; // keep track of all views
-
+              // Add the DataItemView to subviews and append it to the DOM
+              this.subviews[currentPath] = dataItemView;
               this.$el.append(dataItemView.render().el);
 
+              // Trigger an event to indicate a folder has been added
               this.trigger("addOne");
 
-              pathMap[pathArray[i]] = `${itemPath}/${pathArray[i]}`;
+              // Update the pathMap with the new path
+              pathMap[currentPath] = `${itemPath}/${pathArray[i]}`;
             }
           }
 
-          // add files in the folder
+          // Get the array of file IDs for the current folder
           const itemArray = sortedFilePathObj[key];
 
-          // Add metadata object at the top of the file table
+          // Add metadata object at the top of the file table if applicable
           if (
             key == "" &&
             this.metaId !== "undefined" &&
@@ -574,6 +589,7 @@
             this.addOne(this.dataPackage.get(item));
           }
 
+          // Iterate over each file ID in the itemArray and add it to the view
           for (let i = 0; i < itemArray.length; i++) {
             const item = itemArray[i];
             this.addOne(this.dataPackage.get(item));
