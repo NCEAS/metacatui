@@ -5,8 +5,9 @@ define([
   "underscore",
   "backbone",
   "semantic",
+  "models/ontologies/Bioontology",
   "text!templates/bioportalAnnotationTemplate.html",
-], ($, _, Backbone, _Semantic, AnnotationPopupTemplate) => {
+], ($, _, Backbone, _Semantic, Bioontology, AnnotationPopupTemplate) => {
   /**
    * @class AnnotationView
    * @classdesc A view of a single semantic annotation for a metadata field. It
@@ -28,8 +29,8 @@ define([
       className: "annotation-view",
 
       /**
-       * The template for the popup content that appears when the user clicks
-       * on the annotation.
+       * The template for the popup content that appears when the user clicks on
+       * the annotation.
        * @type {UnderscoreTemplate}
        */
       popupTemplate: _.template(AnnotationPopupTemplate),
@@ -55,8 +56,8 @@ define([
        * "property" or "value".
        * @property {jQuery|null} el - The jQuery element associated with this
        * part.
-       * @property {jQuery|null} popup - The popup instance associated with
-       * this part, if created.
+       * @property {jQuery|null} popup - The popup instance associated with this
+       * part, if created.
        * @property {string|null} label - The human-readable label for this part.
        * @property {string|null} uri - The URI associated with this part.
        * @property {string|null} definition - A textual definition or
@@ -96,6 +97,15 @@ define([
             ontologyName: null,
             resolved: false,
           };
+        });
+
+        // Set up a model to query the BioPortal API
+        this.bioontology = new Bioontology({
+          ontology: null,
+          queryType: "search",
+          pageSize: 100,
+          include: ["definition"],
+          displayLinks: true,
         });
       },
 
@@ -142,10 +152,9 @@ define([
        * Click handler for when the user clicks either the property or the value
        * portion of the pill.
        *
-       * If the popup hasn't yet been created for either, we create the
-       * popup and query BioPortal for more information. Otherwise, we do
-       * nothing and Semantic's default popup handling is triggered, showing
-       * the popup.
+       * If the popup hasn't yet been created for either, we create the popup
+       * and query BioPortal for more information. Otherwise, we do nothing and
+       * Semantic's default popup handling is triggered, showing the popup.
        * @param {Event} e - Click event
        */
       handleClick(e) {
@@ -214,98 +223,6 @@ define([
       },
 
       /**
-       * Find a definition for the value URI either from cache or from
-       * Bioportal. Updates the popup if necessary.
-       * @param {"property"|"value"} annotationPart - The annotation part to
-       * query for a definition.
-       */
-      queryAndUpdate(annotationPart) {
-        const popupTarget = this[annotationPart];
-
-        if (popupTarget.resolved) {
-          return;
-        }
-
-        const viewRef = this;
-        const cache = MetacatUI.appModel.get("bioportalLookupCache");
-        const token = MetacatUI.appModel.get("bioportalAPIKey");
-
-        // Attempt to grab from cache first
-        if (cache && cache[popupTarget.uri]) {
-          popupTarget.definition = cache[popupTarget.uri].definition;
-          popupTarget.ontology = cache[popupTarget.uri].links.ontology;
-
-          // Try to get a simpler name for the ontology, rather than just using
-          // the ontology URI, which is all Bioportal gives back
-          popupTarget.ontologyName = this.getFriendlyOntologyName(
-            cache[popupTarget.uri].links.ontology,
-          );
-          popupTarget.resolved = true;
-          viewRef.updatePopup(annotationPart);
-
-          return;
-        }
-
-        // Verify token before moving on
-        if (typeof token !== "string" || token.length === 0) {
-          popupTarget.resolved = true;
-
-          return;
-        }
-
-        // Query the API and handle the response TODO: Looks like we should
-        // proxy this so the token doesn't leak
-        const url = `${MetacatUI.appModel.get(
-          "bioportalSearchUrl",
-        )}?q=${encodeURIComponent(popupTarget.uri)}&apikey=${token}`;
-
-        $.get(url, (data) => {
-          let match = null;
-
-          // Verify response structure before trusting it
-          if (
-            !data.collection ||
-            !data.collection.length ||
-            !data.collection.length > 0
-          ) {
-            return;
-          }
-
-          // Find the first match by URI
-          match = _.find(
-            data.collection,
-            (result) => result["@id"] && result["@id"] === popupTarget.uri,
-          );
-
-          // Verify structure of response looks right and bail out if it doesn't
-          if (
-            !match ||
-            !match.definition ||
-            !match.definition.length ||
-            !match.definition.length > 0
-          ) {
-            popupTarget.resolved = true;
-
-            return;
-          }
-
-          const [definition] = match.definition;
-          popupTarget.definition = definition;
-          popupTarget.ontology = match.links.ontology;
-
-          // Try to get a simpler name for the ontology, rather than just using
-          // the ontology URI, which is all Bioportal gives back
-          popupTarget.ontologyName = viewRef.getFriendlyOntologyName(
-            match.links.ontology,
-          );
-
-          popupTarget.resolved = true;
-          viewRef.updateCache(popupTarget.uri, match);
-          viewRef.updatePopup(annotationPart);
-        });
-      },
-
-      /**
        * Update the popup data and raw HTML.
        * @param {"property"|"value"} annotationPart - The annotation part to
        * update
@@ -314,13 +231,8 @@ define([
         const popupTarget = this[annotationPart];
 
         const newContent = this.popupTemplate({
+          ...popupTarget,
           context: this.context,
-          label: popupTarget.label,
-          uri: popupTarget.uri,
-          definition: popupTarget.definition,
-          ontology: popupTarget.ontology,
-          ontologyName: popupTarget.ontologyName,
-          resolved: popupTarget.resolved,
           propertyURI: this.property.uri,
           propertyLabel: this.property.label,
           valueURI: this.value.uri,
@@ -332,16 +244,97 @@ define([
       },
 
       /**
-       * Update the cache for a given term.
-       * @param {string} term - The term URI
-       * @param {object} match - The BioPortal match object for the term
+       * Find a definition for the value URI either from cache or from
+       * Bioportal. Updates the popup if necessary.
+       * @param {"property"|"value"} annotationPart - The annotation part to
+       * query for a definition.
        */
-      updateCache(term, match) {
-        const cache = MetacatUI.appModel.get("bioportalLookupCache");
+      async queryAndUpdate(annotationPart) {
+        const popupTarget = this[annotationPart];
 
-        if (cache && typeof term === "string" && typeof match === "string") {
-          cache[term] = match;
+        // Don't re-query if we already have a definition
+        if (popupTarget.resolved) return;
+
+        // Get the BiontologyClass model from either the cache or BioPortal
+        const bioClass = await this.findClass(annotationPart);
+        const definition = bioClass?.get("definition");
+
+        if (!bioClass || !definition?.length) {
+          popupTarget.resolved = true;
+          return;
         }
+
+        const ontology =
+          bioClass.get("ontology") || bioClass.get("links")?.ontology;
+        const ontologyName = this.getFriendlyOntologyName(ontology);
+
+        Object.assign(popupTarget, {
+          definition: definition[0],
+          ontology,
+          ontologyName,
+          resolved: true,
+        });
+
+        this.updatePopup(annotationPart);
+      },
+
+      /**
+       * Find a BioPortal class for the given annotation part, either from the
+       * cache or by fetching it.
+       * @param {"property"|"value"} annotationPart - The annotation part to
+       * find a class for
+       * @returns {Promise<BioontologyClass|null>} The BioontologyClass model
+       * for the annotation part, or null if it could not be found.
+       * @since 0.0.0
+       */
+      async findClass(annotationPart) {
+        const { uri } = this[annotationPart];
+
+        // Don't re-fetch if we already have class info
+        const cachedClass = this.getClassFromCache(uri);
+        if (cachedClass) return cachedClass;
+
+        // Fetch from BioPortal otherwise
+        return this.fetchClass(uri);
+      },
+
+      /**
+       * Get a BioPortal class from the cache.
+       * @param {string} uri - The URI of the class to get from the cache
+       * @returns {BioontologyClass|null} The BioontologyClass model for the
+       * given URI, or null if it could not be found.
+       * @since 0.0.0
+       */
+      getClassFromCache(uri) {
+        const cachedClasses = this.bioontology
+          .get("collection")
+          .restoreFromCache([uri]);
+
+        // We need a definition for the popup, otherwise we must fetch it
+        return cachedClasses.find((cls) => cls.get("definition")?.length);
+      },
+
+      /**
+       * Fetch a BioPortal class from the BioPortal API.
+       * @param {string} uri - The URI of the class to fetch
+       * @returns {Promise<BioontologyClass|null>} The BioontologyClass model
+       * for the given URI, or null if it could not be found.
+       * @since 0.0.0
+       */
+      fetchClass(uri) {
+        this.bioontology.set({ searchTerm: uri });
+
+        return new Promise((resolve, reject) => {
+          this.listenToOnce(this.bioontology, "sync", (bioontology) => {
+            resolve(bioontology.get("collection").get(uri));
+          });
+
+          this.bioontology.fetch({
+            error: (_model, response) => {
+              reject(response);
+            },
+          });
+        });
       },
 
       /**
@@ -371,10 +364,7 @@ define([
        * @returns {string} A friendly name for the ontology
        */
       getFriendlyOntologyName(uri) {
-        if (typeof uri === "string") {
-          return uri;
-        }
-
+        if (typeof uri !== "string") return uri;
         return uri.replace("http://data.bioontology.org/ontologies/", "");
       },
     },
