@@ -85,6 +85,7 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
         });
       },
 
+      /** @deprecated */
       bioportalExpand: function (term) {
         // make sure we have something to lookup
         if (!MetacatUI.appModel.get("bioportalAPIKey")) {
@@ -151,6 +152,7 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
         return terms;
       },
 
+      /** @deprecated */
       bioportalGetConcepts: function (uri, callback) {
         var concepts = this.get("concepts")[uri];
 
@@ -200,6 +202,7 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
         });
       },
 
+      /** @deprecated */
       bioportalGetConceptsBatch: function (uris, callback) {
         // make sure we have something to lookup
         if (!MetacatUI.appModel.get("bioportalBatchUrl")) {
