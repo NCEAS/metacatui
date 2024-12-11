@@ -69,19 +69,37 @@ define([
        */
 
       /**
-       * The property part of the annotation
+       * The property part of the annotation. Created in initialize.
        * @type {AnnotationPart}
        */
-      property: null,
+      property: {},
 
       /**
-       * The value part of the annotation
+       * The value part of the annotation. Created in initialize.
        * @type {AnnotationPart}
        */
-      value: null,
+      value: {},
+
+      initialize() {
+        // Set up the annotation parts
+        const annotationParts = ["property", "value"];
+        annotationParts.forEach((part) => {
+          this[part] = {
+            type: part,
+            el: null,
+            popover: null,
+            label: null,
+            uri: null,
+            definition: null,
+            ontology: null,
+            ontologyName: null,
+            resolved: false,
+          };
+        });
+      },
 
       /** @inheritdoc */
-      initialize() {
+      render() {
         // Detect legacy pill DOM structure with the old arrow,
         //
         //     ┌───────────┬───────┬───┐
@@ -93,40 +111,15 @@ define([
         if (this.$el.find(".annotation-findmore").length > 0) {
           this.$el.find(".annotation-findmore").remove();
           this.$el.find(".annotation-value").attr("style", "color: white");
-
-          return;
+          return this;
         }
-
-        this.property = {
-          type: "property",
-          el: null,
-          popover: null,
-          label: null,
-          uri: null,
-          definition: null,
-          ontology: null,
-          ontologyName: null,
-          resolved: false,
-        };
-
-        this.value = {
-          type: "value",
-          el: null,
-          popover: null,
-          label: null,
-          uri: null,
-          definition: null,
-          ontology: null,
-          ontologyName: null,
-          resolved: false,
-        };
 
         this.property.el = this.$el.children(".annotation-property");
         this.value.el = this.$el.children(".annotation-value");
 
         // Bail now if things aren't set up right
         if (!this.property.el || !this.value.el) {
-          return;
+          return this;
         }
 
         this.context = this.$el.data("context");
@@ -141,6 +134,7 @@ define([
         if (this.context) {
           this.context = this.context.replace("&lt;", "<").replace("&gt;", ">");
         }
+        return this;
       },
 
       /**
@@ -158,26 +152,26 @@ define([
           return;
         }
 
-        if (e.target.className === "annotation-property") {
-          if (this.property.popover) {
-            return;
-          }
+        let annotationPart = null;
+        const classes = e.target.classList;
+        const propertyClasses = ["annotation-property"];
+        const valueClasses = ["annotation-value", "annotation-value-text"];
 
-          this.createPopover("property");
-          this.property.popover.popover("show");
-          this.queryAndUpdate("property");
-        } else if (
-          e.target.className === "annotation-value" ||
-          e.target.className === "annotation-value-text"
-        ) {
-          if (this.value.popover) {
-            return;
-          }
-
-          this.createPopover("value");
-          this.value.popover.popover("show");
-          this.queryAndUpdate("value");
+        if (propertyClasses.some((cls) => classes.contains(cls))) {
+          annotationPart = "property";
+        } else if (valueClasses.some((cls) => classes.contains(cls))) {
+          annotationPart = "value";
         }
+
+        if (!annotationPart) return;
+
+        if (this[annotationPart].popover) {
+          return;
+        }
+
+        this.createPopover(annotationPart);
+        this[annotationPart].popover.popover("show");
+        this.queryAndUpdate(annotationPart);
       },
 
       /**
@@ -329,8 +323,8 @@ define([
           ontology: popoverTarget.ontology,
           ontologyName: popoverTarget.ontologyName,
           resolved: popoverTarget.resolved,
-          propertyURI: popoverTarget.uri,
-          propertyLabel: popoverTarget.label,
+          propertyURI: this.property.uri,
+          propertyLabel: this.property.label,
           valueURI: this.value.uri,
           valueLabel: this.value.label,
         });
