@@ -4,8 +4,9 @@ define([
   "jquery",
   "underscore",
   "backbone",
+  "semantic",
   "text!templates/bioportalAnnotationTemplate.html",
-], ($, _, Backbone, AnnotationPopoverTemplate) => {
+], ($, _, Backbone, _Semantic, AnnotationPopupTemplate) => {
   /**
    * @class AnnotationView
    * @classdesc A view of a single semantic annotation for a metadata field. It
@@ -27,16 +28,16 @@ define([
       className: "annotation-view",
 
       /**
-       * The template for the popover content that appears when the user clicks
+       * The template for the popup content that appears when the user clicks
        * on the annotation.
        * @type {UnderscoreTemplate}
        */
-      popoverTemplate: _.template(AnnotationPopoverTemplate),
+      popupTemplate: _.template(AnnotationPopupTemplate),
 
       /** @inheritdoc */
       events: {
         click: "handleClick",
-        "click .annotation-popover-findmore": "findMore",
+        "click .annotation-popup-findmore": "findMore",
       },
 
       /**
@@ -54,7 +55,7 @@ define([
        * "property" or "value".
        * @property {jQuery|null} el - The jQuery element associated with this
        * part.
-       * @property {jQuery|null} popover - The popover instance associated with
+       * @property {jQuery|null} popup - The popup instance associated with
        * this part, if created.
        * @property {string|null} label - The human-readable label for this part.
        * @property {string|null} uri - The URI associated with this part.
@@ -87,7 +88,7 @@ define([
           this[part] = {
             type: part,
             el: null,
-            popover: null,
+            popup: null,
             label: null,
             uri: null,
             definition: null,
@@ -141,10 +142,10 @@ define([
        * Click handler for when the user clicks either the property or the value
        * portion of the pill.
        *
-       * If the popover hasn't yet been created for either, we create the
-       * popover and query BioPortal for more information. Otherwise, we do
-       * nothing and Bootstrap's default popover handling is triggered, showing
-       * the popover.
+       * If the popup hasn't yet been created for either, we create the
+       * popup and query BioPortal for more information. Otherwise, we do
+       * nothing and Semantic's default popup handling is triggered, showing
+       * the popup.
        * @param {Event} e - Click event
        */
       handleClick(e) {
@@ -152,69 +153,76 @@ define([
           return;
         }
 
+        // Determine which part of the annotation was clicked, the property or
+        // the value
         let annotationPart = null;
         const classes = e.target.classList;
         const propertyClasses = ["annotation-property"];
         const valueClasses = ["annotation-value", "annotation-value-text"];
-
         if (propertyClasses.some((cls) => classes.contains(cls))) {
           annotationPart = "property";
         } else if (valueClasses.some((cls) => classes.contains(cls))) {
           annotationPart = "value";
         }
 
-        if (!annotationPart) return;
-
-        if (this[annotationPart].popover) {
+        // Don't re-create the popup if it already exists or if we can't
+        // determine which part was clicked
+        if (!annotationPart || this[annotationPart].el.popup("exists")) {
           return;
         }
 
-        this.createPopover(annotationPart);
-        this[annotationPart].popover.popover("show");
+        // Create & show the popup and query BioPortal for more information
+        this.createPopup(annotationPart);
         this.queryAndUpdate(annotationPart);
+        this.updatePopup(annotationPart);
+        this.showPopup(annotationPart);
       },
 
       /**
-       * Update the value popover with the current state
-       * @param {"property"|"value"} annotationPart - Which annotation part to
-       * create a popover for.
+       * Create a new popup for the given annotation part.
+       * @param {"property"|"value"} annotationPart Which annotation part to
+       * create a popup for.
        */
-      createPopover(annotationPart) {
-        const popoverTarget = this[annotationPart];
+      createPopup(annotationPart) {
+        const popupTarget = this[annotationPart];
 
-        const newContent = this.popoverTemplate({
-          context: this.context,
-          label: popoverTarget.label,
-          uri: popoverTarget.uri,
-          definition: popoverTarget.definition,
-          ontology: popoverTarget.ontology,
-          ontologyName: popoverTarget.ontologyName,
-          resolved: popoverTarget.resolved,
-          propertyURI: this.property.uri,
-          propertyLabel: this.property.label,
-          valueURI: this.value.uri,
-          valueLabel: this.value.label,
+        if (popupTarget.el.popup("exists")) return;
+
+        popupTarget.el.popup({
+          on: "click",
+          content: "Loading...",
+          variation: "mini",
+          context: this.$el,
+          // Close all other popups when this one is shown
+          exclusive: true,
+          // Keep the content in the DOM even when hidden so we don't need to
+          // recreate it every time
+          preserve: true,
         });
 
-        popoverTarget.el.data("content", newContent);
+        popupTarget.popup = popupTarget.el.popup("get popup");
+      },
 
-        popoverTarget.popover = popoverTarget.el.popover({
-          container: popoverTarget.el,
-          delay: 500,
-          trigger: "click",
-        });
+      /**
+       * Show the popup for the given annotation part.
+       * @param {"property"|"value"} annotationPart - The annotation part to
+       * show the popup for.
+       * @since 0.0.0
+       */
+      showPopup(annotationPart) {
+        this[annotationPart].el.popup("show");
       },
 
       /**
        * Find a definition for the value URI either from cache or from
-       * Bioportal. Updates the popover if necessary.
+       * Bioportal. Updates the popup if necessary.
        * @param {"property"|"value"} annotationPart - The annotation part to
        * query for a definition.
        */
       queryAndUpdate(annotationPart) {
-        const popoverTarget = this[annotationPart];
+        const popupTarget = this[annotationPart];
 
-        if (popoverTarget.resolved) {
+        if (popupTarget.resolved) {
           return;
         }
 
@@ -223,24 +231,24 @@ define([
         const token = MetacatUI.appModel.get("bioportalAPIKey");
 
         // Attempt to grab from cache first
-        if (cache && cache[popoverTarget.uri]) {
-          popoverTarget.definition = cache[popoverTarget.uri].definition;
-          popoverTarget.ontology = cache[popoverTarget.uri].links.ontology;
+        if (cache && cache[popupTarget.uri]) {
+          popupTarget.definition = cache[popupTarget.uri].definition;
+          popupTarget.ontology = cache[popupTarget.uri].links.ontology;
 
           // Try to get a simpler name for the ontology, rather than just using
           // the ontology URI, which is all Bioportal gives back
-          popoverTarget.ontologyName = this.getFriendlyOntologyName(
-            cache[popoverTarget.uri].links.ontology,
+          popupTarget.ontologyName = this.getFriendlyOntologyName(
+            cache[popupTarget.uri].links.ontology,
           );
-          popoverTarget.resolved = true;
-          viewRef.updatePopover(annotationPart);
+          popupTarget.resolved = true;
+          viewRef.updatePopup(annotationPart);
 
           return;
         }
 
         // Verify token before moving on
         if (typeof token !== "string" || token.length === 0) {
-          popoverTarget.resolved = true;
+          popupTarget.resolved = true;
 
           return;
         }
@@ -249,7 +257,7 @@ define([
         // proxy this so the token doesn't leak
         const url = `${MetacatUI.appModel.get(
           "bioportalSearchUrl",
-        )}?q=${encodeURIComponent(popoverTarget.uri)}&apikey=${token}`;
+        )}?q=${encodeURIComponent(popupTarget.uri)}&apikey=${token}`;
 
         $.get(url, (data) => {
           let match = null;
@@ -266,7 +274,7 @@ define([
           // Find the first match by URI
           match = _.find(
             data.collection,
-            (result) => result["@id"] && result["@id"] === popoverTarget.uri,
+            (result) => result["@id"] && result["@id"] === popupTarget.uri,
           );
 
           // Verify structure of response looks right and bail out if it doesn't
@@ -276,79 +284,51 @@ define([
             !match.definition.length ||
             !match.definition.length > 0
           ) {
-            popoverTarget.resolved = true;
+            popupTarget.resolved = true;
 
             return;
           }
 
           const [definition] = match.definition;
-          popoverTarget.definition = definition;
-          popoverTarget.ontology = match.links.ontology;
+          popupTarget.definition = definition;
+          popupTarget.ontology = match.links.ontology;
 
           // Try to get a simpler name for the ontology, rather than just using
           // the ontology URI, which is all Bioportal gives back
-          popoverTarget.ontologyName = viewRef.getFriendlyOntologyName(
+          popupTarget.ontologyName = viewRef.getFriendlyOntologyName(
             match.links.ontology,
           );
 
-          popoverTarget.resolved = true;
-          viewRef.updateCache(popoverTarget.uri, match);
-          viewRef.updatePopover(annotationPart);
+          popupTarget.resolved = true;
+          viewRef.updateCache(popupTarget.uri, match);
+          viewRef.updatePopup(annotationPart);
         });
       },
 
       /**
-       * Update the popover data and raw HTML. This is necessary because we want
-       * to create the popover before we fetch the data to populate it from
-       * BioPortal and Bootstrap Popovers are designed to be static.
-       *
-       * The main trick I had to figure out here was that I could access the
-       * underlying content member of the popover with
-       * popoverData.options.content which wasn't documented in the API.
+       * Update the popup data and raw HTML.
        * @param {"property"|"value"} annotationPart - The annotation part to
        * update
        */
-      updatePopover(annotationPart) {
-        const popoverTarget = this[annotationPart];
+      updatePopup(annotationPart) {
+        const popupTarget = this[annotationPart];
 
-        const popoverContent = $(popoverTarget.popover).find(
-          ".popover-content",
-        );
-
-        const newContent = this.popoverTemplate({
+        const newContent = this.popupTemplate({
           context: this.context,
-          label: popoverTarget.label,
-          uri: popoverTarget.uri,
-          definition: popoverTarget.definition,
-          ontology: popoverTarget.ontology,
-          ontologyName: popoverTarget.ontologyName,
-          resolved: popoverTarget.resolved,
+          label: popupTarget.label,
+          uri: popupTarget.uri,
+          definition: popupTarget.definition,
+          ontology: popupTarget.ontology,
+          ontologyName: popupTarget.ontologyName,
+          resolved: popupTarget.resolved,
           propertyURI: this.property.uri,
           propertyLabel: this.property.label,
           valueURI: this.value.uri,
           valueLabel: this.value.label,
+          annotationPart,
         });
 
-        // Update both the existing DOM and the underlying data attribute in
-        // order to persist the updated content between displays of the popover
-
-        // Update the Popover first
-        //
-        // This is a hack to work around the fact that we're updating the
-        // content of the popover after it is created. I read the source for
-        // Bootstrap's Popover and it showed the popover is generated from the
-        // data-popover attribute's content which has an options.content member
-        // we can modify directly
-        const popoverData = $(popoverTarget.el).data("popover");
-
-        if (popoverData && popoverData.options && popoverData.options) {
-          popoverData.options.content = newContent;
-        }
-
-        $(popoverTarget.el).data("popover", popoverData);
-
-        // Then update the DOM on the open popover
-        $(popoverContent).html(newContent);
+        popupTarget.el?.popup("change content", newContent);
       },
 
       /**
@@ -371,26 +351,8 @@ define([
       findMore(e) {
         e.preventDefault();
 
-        // Find the URI we need to filter on. Try the value first
-        let parent = $(e.target).parents(".annotation-value");
-
-        // Fall back to finding the URI from the property
-        if (parent.length <= 0) {
-          parent = $(e.target).parents(".annotation-property");
-        }
-
-        // Bail if we found neither
-        if (parent.length <= 0) {
-          return;
-        }
-
-        // Now grab the label and URI and filter
-        const label = $(parent).data("label");
-        const uri = $(parent).data("uri");
-
-        if (!label || !uri) {
-          return;
-        }
+        const { uri, label } = e.target.dataset;
+        if (!label || !uri) return;
 
         // Direct the user towards a search for the annotation
         MetacatUI.appSearchModel.clear();
