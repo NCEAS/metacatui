@@ -102,6 +102,7 @@
           this.packageTitle = options.packageTitle || "";
           this.nested =
             typeof options.nested === "undefined" ? false : options.nested;
+          this.nestedPckgs = options.nestedPckgs || {};
           this.metricsModel = options.metricsModel;
 
           // set the package model
@@ -180,8 +181,21 @@
         } else {
           // check for nessted datasets
 
-          if (this.nested) {
-            this.getNestedPackages();
+          if (this.nested && this.nestedPckgs) {
+            // iterate over the list of child packages and add their members
+            for (const pkg of this.nestedPckgs) {
+              if (pkg.get("pending")) {
+                this.listenToOnce(
+                  pkg,
+                  "complete",
+                  this.addNestedPackages,
+                  pkg,
+                );
+              }
+              else {
+                this.addNestedPackages(pkg);
+              }
+            }
           }
         }
 
@@ -887,41 +901,6 @@
           }
         } catch (e) {
           console.error(e);
-        }
-      },
-
-      /**
-       * Retrieves and processes nested packages for the current package.
-       * @since 2.28.0
-       */
-      getNestedPackages() {
-        const nestedPackages = new Array();
-        const nestedPackageIds = new Array();
-        this.nestedPackages = nestedPackages;
-
-        // get all the child packages for this resource map
-        const childPackages = this.dataPackage.filter(
-          (m) => m.get("formatType") === "RESOURCE",
-        );
-
-        // iterate over the list of child packages and add their members
-        for (const ite in childPackages) {
-          const childPkg = childPackages[ite];
-          if (!nestedPackageIds.includes(childPkg.get("id"))) {
-            const nestedPackage = new PackageModel();
-            nestedPackage.set("id", childPkg.get("id"));
-            nestedPackage.setURL();
-            nestedPackage.getMembers();
-            nestedPackages.push(nestedPackage);
-            nestedPackageIds.push(childPkg.get("id"));
-
-            this.listenToOnce(
-              nestedPackage,
-              "change:members",
-              this.addNestedPackages,
-              nestedPackage,
-            );
-          }
         }
       },
 

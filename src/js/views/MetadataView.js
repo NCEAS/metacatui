@@ -969,6 +969,8 @@ define([
                   : "";
                 options.title = `Files in this dataset ${title}`;
                 options.nested = true;
+                options.nestedPckgs = nestedPckgsToDisplay;
+
                 this.insertPackageTable(packageModel, options);
               }
             } else {
@@ -1073,10 +1075,12 @@ define([
             options.disablePackageDownloads || false;
           var nested =
             typeof options.nested === "undefined" ? false : options.nested;
+          var nestedPckgs = options.nestedPckgs || [];
         } else
           var title = "",
             nested = false,
-            disablePackageDownloads = false;
+            disablePackageDownloads = false,
+            nestedPckgs = [];
 
         //* * Draw the package table **//
         const tableView = new DataPackageView({
@@ -1089,6 +1093,7 @@ define([
           title,
           packageTitle: this.model.get("title"),
           nested,
+          nestedPckgs,
           metricsModel: this.metricsModel,
         });
 
