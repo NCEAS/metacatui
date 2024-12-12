@@ -8,6 +8,10 @@ define([
   "models/ontologies/Bioontology",
   "text!templates/bioportalAnnotationTemplate.html",
 ], ($, _, Backbone, _Semantic, Bioontology, AnnotationPopupTemplate) => {
+  const CLASS_NAMES = {
+    property: ["annotation-property"],
+    value: ["annotation-value", "annotation-value-text"],
+  };
   /**
    * @class AnnotationView
    * @classdesc A view of a single semantic annotation for a metadata field. It
@@ -82,6 +86,7 @@ define([
        */
       value: {},
 
+      /** @inheritdoc */
       initialize() {
         // Set up the annotation parts
         const annotationParts = ["property", "value"];
@@ -111,6 +116,9 @@ define([
 
       /** @inheritdoc */
       render() {
+        // make main el position relative this.$el.css("position", "relative");
+        // this.$el.css("display", "block");
+
         // Detect legacy pill DOM structure with the old arrow,
         //
         //     ┌───────────┬───────┬───┐
@@ -125,19 +133,46 @@ define([
           return this;
         }
 
-        this.property.el = this.$el.children(".annotation-property");
-        this.value.el = this.$el.children(".annotation-value");
+        this.setAnnotationDataFromDOM();
+
+        return this;
+      },
+
+      /**
+       * Given the DOM element that was passed in (via {el: ...}), extract the
+       * label and URI for both the annoation property and value.
+       * @since 0.0.0
+       */
+      setAnnotationDataFromDOM() {
+        const propertyClasses = CLASS_NAMES.property
+          .map((cls) => `.${cls}`)
+          .join(", ");
+        const valueClasses = CLASS_NAMES.value
+          .map((cls) => `.${cls}`)
+          .join(", ");
+        const propertyEl = this.$el.find(propertyClasses).first();
+        const valueEl = this.$el.find(valueClasses).first();
 
         // Bail now if things aren't set up right
-        if (!this.property.el || !this.value.el) {
-          return this;
-        }
+        if (!propertyEl || !valueEl) return;
 
-        this.context = this.$el.data("context");
-        this.property.label = this.property.el.data("label");
-        this.property.uri = this.property.el.data("uri");
-        this.value.label = this.value.el.data("label");
-        this.value.uri = this.value.el.data("uri");
+        // Some elements passed in have data direct on the main element
+        const annotationData = this.$el.data();
+        const { propertyLabel, propertyUri, valueLabel, valueUri, context } =
+          annotationData;
+
+        // If the data is not on the main element, it may be on the children.
+        const propertyData = propertyEl.data();
+        const valueData = valueEl.data();
+
+        // Set the values we've found on the view's annotation part objects
+        this.context = context;
+        this.property.label = propertyLabel || propertyData.label;
+        this.property.uri = propertyUri || propertyData.uri;
+        this.value.label = valueLabel || valueData.label;
+        this.value.uri = valueUri || valueData.uri;
+        this.value.el = valueEl;
+        this.property.el = propertyEl;
 
         // Decode HTML tags in the context string, which is passed in as an HTML
         // attribute from the XSLT so it needs encoding of some sort Note: Only
@@ -145,7 +180,6 @@ define([
         if (this.context) {
           this.context = this.context.replace("&lt;", "<").replace("&gt;", ">");
         }
-        return this;
       },
 
       /**
@@ -166,11 +200,9 @@ define([
         // the value
         let annotationPart = null;
         const classes = e.target.classList;
-        const propertyClasses = ["annotation-property"];
-        const valueClasses = ["annotation-value", "annotation-value-text"];
-        if (propertyClasses.some((cls) => classes.contains(cls))) {
+        if (CLASS_NAMES.property.some((cls) => classes.contains(cls))) {
           annotationPart = "property";
-        } else if (valueClasses.some((cls) => classes.contains(cls))) {
+        } else if (CLASS_NAMES.value.some((cls) => classes.contains(cls))) {
           annotationPart = "value";
         }
 
@@ -197,11 +229,16 @@ define([
 
         if (popupTarget.el.popup("exists")) return;
 
+        // The parent annotation element must have a position set for the popup
+        // to be positioned correctly, particularly in the Attribute editor modal.
+        this.$el.css("position", "relative");
+
         popupTarget.el.popup({
           on: "click",
           content: "Loading...",
           variation: "mini",
-          context: this.$el,
+          // Create popup within this view (rather than at the end of the body)
+          inline: true,
           // Close all other popups when this one is shown
           exclusive: true,
           // Keep the content in the DOM even when hidden so we don't need to
@@ -289,6 +326,9 @@ define([
        */
       async findClass(annotationPart) {
         const { uri } = this[annotationPart];
+
+        // Can't make a query without a URI to search for
+        if (!uri) return null;
 
         // Don't re-fetch if we already have class info
         const cachedClass = this.getClassFromCache(uri);
