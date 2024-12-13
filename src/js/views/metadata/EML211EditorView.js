@@ -552,6 +552,12 @@ define([
           "change:numLoadingFiles",
           this.toggleEnableControls,
         );
+
+        this.listenTo(
+          MetacatUI.rootDataPackage.packageModel,
+          "change:numLoadingFileMetadata",
+          this.toggleEnableControls,
+        );
       },
 
       renderChildren: function (model, options) {},
@@ -1215,15 +1221,19 @@ define([
       toggleEnableControls: function () {
         if (MetacatUI.rootDataPackage.packageModel.get("isLoadingFiles")) {
           let noun =
-            MetacatUI.rootDataPackage.packageModel.get("numLoadingFiles") > 1
-              ? " files"
-              : " file";
+              MetacatUI.rootDataPackage.packageModel.get("numLoadingFiles") > 1
+                  ? " files"
+                  : " file";
           this.disableControls(
-            "Waiting for " +
+              "Waiting for " +
               MetacatUI.rootDataPackage.packageModel.get("numLoadingFiles") +
               noun +
               " to upload...",
           );
+        } else if (MetacatUI.rootDataPackage.packageModel.get("numLoadingFileMetadata") >0) {
+          this.disableControls("Waiting for " +
+              MetacatUI.rootDataPackage.packageModel.get("numLoadingFileMetadata") +
+              " file metadata to load...");
         } else {
           this.enableControls();
         }
