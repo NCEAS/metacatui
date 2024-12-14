@@ -433,7 +433,6 @@ define([
         }
       },
 
-
       /**
        * Fetches member models in batches to avoid fetching all members simultaneously.
        *
@@ -442,6 +441,7 @@ define([
        * @param {number} [batchSize=10] - The number of models to fetch in each batch.
        * @param {number} [timeout=5000] - The timeout for each fetch request in milliseconds.
        * @param {number} [maxRetries=3] - The maximum number of retries for each fetch request.
+       * @since 0.0.0
        */
       fetchMemberModels(models, index = 0, batchSize = 10, timeout = 5000, maxRetries = 3) {
         // Update the number of file metadata items being loaded
@@ -823,8 +823,7 @@ define([
           // Collection is set to false
           if (this.fetchModels !== false) {
             // Start fetching member models
-            this.fetchMemberModels.call(this, models, 0, MetacatUI.appModel.get("batchModeValue"));
-
+            this.fetchMemberModels.call(this, models, 0, MetacatUI.appModel.get("batchSizeFetch"));
           }
         } catch (error) {
           // TODO: Handle the error

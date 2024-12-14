@@ -552,7 +552,6 @@ define([
           "change:numLoadingFiles",
           this.toggleEnableControls,
         );
-
         this.listenTo(
           MetacatUI.rootDataPackage.packageModel,
           "change:numLoadingFileMetadata",

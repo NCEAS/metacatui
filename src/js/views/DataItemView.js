@@ -777,6 +777,84 @@ define([
       },
 
       /**
+       * Method to handle batch file uploads.
+       * This method processes files independently to avoid being slowed down by large files.
+       *
+       * @param {FileList} fileList - The list of files to be uploaded.
+       * @param {number} [batchSize=10] - The number of files to upload concurrently.
+       * @since 0.0.0
+       */
+      uploadFilesInBatch(fileList, batchSize = 10) {
+        const view = this;
+        let currentIndex = 0; // Index of the current file being processed
+        let activeUploads = 0; // Counter for the number of active uploads
+
+        // If batchSize is 0, set it to the total number of files
+        if (batchSize == 0) batchSize = fileList.length;
+
+        /**
+         * Function to upload the next file in the list.
+         * This function is called recursively to ensure that the number of concurrent uploads
+         * does not exceed the batch size.
+         */
+        function uploadNextFile() {
+          // If all files have been processed, return
+          if (currentIndex >= fileList.length) {
+            return;
+          }
+
+          // If the number of active uploads is less than the batch size, start a new upload
+          if (activeUploads < batchSize) {
+            const dataONEObject = fileList[currentIndex];
+            currentIndex++; // Move to the next file
+            activeUploads++; // Increment the active uploads counter
+
+            // Create a new Promise to handle the file upload
+            new Promise((resolve, reject) => {
+              // If the file needs to be uploaded and its checksum is not calculated
+              if (dataONEObject.get("uploadFile") && !dataONEObject.get("checksum")) {
+                // Stop listening to previous checksumCalculated events
+                dataONEObject.stopListening(dataONEObject, "checksumCalculated");
+                // Listen to the checksumCalculated event to start the upload
+                dataONEObject.listenToOnce(dataONEObject, "checksumCalculated", () => {
+                  dataONEObject.save(); // Save the file
+                  // Listen to changes in the uploadStatus to resolve the Promise
+                  dataONEObject.listenTo(dataONEObject, "change:uploadStatus", () => {
+                    if (dataONEObject.get("uploadStatus") !== "p" && dataONEObject.get("uploadStatus") !== "q" && dataONEObject.get("uploadStatus") !== "l") {
+                      resolve(); // Resolve the Promise when the upload is complete
+                    }
+                  });
+                });
+                try {
+                  dataONEObject.calculateChecksum(); // Calculate the checksum
+                } catch (exception) {
+                  reject(exception); // Reject the Promise if an error occurs
+                }
+              } else {
+                resolve(); // Resolve the Promise if the file does not need to be uploaded
+              }
+            })
+            .then(() => {
+              activeUploads--; // Decrement the active uploads counter
+              uploadNextFile(); // Start the next file upload
+            })
+            .catch((error) => {
+              console.error("Error uploading file:", error);
+              activeUploads--; // Decrement the active uploads counter
+              uploadNextFile(); // Start the next file upload
+            });
+
+            uploadNextFile(); // Start the next file upload
+          }
+        }
+
+        // Start the initial batch of uploads
+        for (let i = 0; i < batchSize; i++) {
+          uploadNextFile();
+        }
+      },
+
+      /**
                 With a file list from the file picker or drag and drop,
                 add the files to the collection
                 @param {Event} event
@@ -805,60 +883,46 @@ define([
         if (typeof event.delegateTarget.dataset.id !== "undefined") {
           this.parentSciMeta = this.getParentScienceMetadata(event);
           this.collection = this.getParentDataPackage(event);
+          // Queue the files for upload
+          const queueFilesPromise = new Promise((resolve) => {
+            _.each(
+              fileList,
+              function (file) {
+                var uploadStatus = "l",
+                  errorMessage = "";
 
-          // Read each file, and make a DataONEObject
-          _.each(
-            fileList,
-            function (file) {
-              var uploadStatus = "l",
-                errorMessage = "";
-
-              if (file.size == 0) {
-                uploadStatus = "e";
-                errorMessage =
-                  "This is an empty file. It won't be included in the dataset.";
-              }
-
-              var dataONEObject = new DataONEObject({
-                synced: true,
-                type: "Data",
-                fileName: file.name,
-                size: file.size,
-                mediaType: file.type,
-                uploadFile: file,
-                uploadStatus: uploadStatus,
-                errorMessage: errorMessage,
-                isDocumentedBy: [this.parentSciMeta.id],
-                isDocumentedByModels: [this.parentSciMeta],
-                resourceMap: [this.collection.packageModel.id],
-              });
-
-              // Add it to the parent collection
-              this.collection.add(dataONEObject);
-
-              // Asychronously calculate the checksum
-              if (
-                dataONEObject.get("uploadFile") &&
-                !dataONEObject.get("checksum")
-              ) {
-                dataONEObject.stopListening(
-                  dataONEObject,
-                  "checksumCalculated",
-                );
-                dataONEObject.listenToOnce(
-                  dataONEObject,
-                  "checksumCalculated",
-                  dataONEObject.save,
-                );
-                try {
-                  dataONEObject.calculateChecksum();
-                } catch (exception) {
-                  // TODO: Fail gracefully here for the user
+                if (file.size == 0) {
+                  uploadStatus = "e";
+                  errorMessage =
+                    "This is an empty file. It won't be included in the dataset.";
                 }
-              }
-            },
-            this,
-          );
+
+                var dataONEObject = new DataONEObject({
+                  synced: true,
+                  type: "Data",
+                  fileName: file.name,
+                  size: file.size,
+                  mediaType: file.type,
+                  uploadFile: file,
+                  uploadStatus: uploadStatus,
+                  errorMessage: errorMessage,
+                  isDocumentedBy: [this.parentSciMeta.id],
+                  isDocumentedByModels: [this.parentSciMeta],
+                  resourceMap: [this.collection.packageModel.id],
+                });
+
+                // Add it to the parent collection
+                this.collection.add(dataONEObject);
+              },
+              this,
+            );
+            resolve();
+          });
+
+          queueFilesPromise.then(() => {
+            // Call the batch upload method
+            this.uploadFilesInBatch(this.collection.models, MetacatUI.appModel.get('batchSizeUpload'));
+          });
         }
       },
 

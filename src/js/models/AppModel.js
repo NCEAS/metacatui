@@ -2434,7 +2434,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            */
           packageFormat: "application%2Fbagit-1.0",
           /**
-           * Whether to batch requests to the DataONE API. This is an experimental feature
+           * Whether to batch fetch requests to the DataONE API. This is an experimental feature
            * and should be used with caution.  If set to a number greater than 0, MetacatUI will
            * batch requests to the DataONE API and send them in groups of this size. This can
            * improve performance when making many requests to the DataONE API, but can also
@@ -2447,8 +2447,26 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @type {number}
            * @default 0
            * @example 20
+           * @since 0.0.0
            */
-          batchModeValue: 0,
+          batchSizeFetch: 0,
+          /**
+           * Whether to batch uploads to the DataONE API. This is an experimental feature
+           * and should be used with caution.  If set to a number greater than 0, MetacatUI will
+           * batch uploads to the DataONE API and send them in groups of this size. This can
+           * improve performance when uploading many files to the DataONE API, but can also
+           * cause issues if the requests are too large or if the DataONE API is not able to
+           * handle the batched requests.
+           *
+           * Currently, this feature is only used in the DataPackageModel when uploading files
+           * to the DataONE API.
+           *
+           * @type {number}
+           * @default 0
+           * @example 20
+           * @since 0.0.0
+           */
+          batchSizeUpload: 0,
         },
         MetacatUI.AppConfig,
       ),
