@@ -415,7 +415,6 @@ define([
         }
       },
 
-
       /**
        * Fetches member models in batches to avoid fetching all members simultaneously.
        *
@@ -800,8 +799,7 @@ define([
           // Don't fetch each member model if the fetchModels property on this Collection is set to false
           if (this.fetchModels !== false) {
             // Start fetching member models
-            this.fetchMemberModels.call(this, models, 0, MetacatUI.appModel.get("batchModeValue"));
-
+            this.fetchMemberModels.call(this, models, 0, MetacatUI.appModel.get("batchSizeFetch"));
           }
         } catch (error) {
           console.log(error);
