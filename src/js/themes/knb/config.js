@@ -89,6 +89,13 @@ MetacatUI.AppConfig = Object.assign(
     limitPortalsToSubjects: ["CN=knb-data-admins,DC=dataone,DC=org"],
     portalEditNotAuthCreateMessage:
       "Creating new portals is a feature currently only available to a select group of Beta testers. You should still be able to access your existing portals. Please contact us with any questions at the email address below.",
+
+    // iFrames in portals
+    trustedContentSources: [
+      "https://*ecoinformatics.org*",
+      "https://cosima.nceas.ucsb.edu*",
+      "https://sasap-data.shinyapps.io/board_of_fisheries/",
+    ],
   },
   MetacatUI.AppConfig,
 );

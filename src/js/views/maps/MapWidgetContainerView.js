@@ -49,6 +49,7 @@ define([
           model: this.model,
         });
         mapWidget.render();
+        this.mapWidget = mapWidget;
       },
 
       /** Renders legend overlay. */
@@ -58,6 +59,7 @@ define([
         });
         legendContainerView.render();
         this.$el.append(legendContainerView.el);
+        this.legendContainerView = legendContainerView;
       },
 
       /**
@@ -80,6 +82,7 @@ define([
           pointModel: interactions.get("mousePosition"),
         });
         scaleBar.render();
+        this.scaleBar = scaleBar;
         this.$el.append(scaleBar.el);
 
         // If the interaction model or relevant sub-models are ever completely
@@ -94,6 +97,20 @@ define([
           "change:interactions",
           this.renderScaleBar,
         );
+      },
+
+      /** Call the onClose method of each subview. */
+      onClose() {
+        const subViews = [
+          this.scaleBar,
+          this.legendContainerView,
+          this.mapWidget,
+        ];
+        subViews.forEach((subView) => {
+          if (subView && typeof subView.onClose === "function") {
+            subView.onClose();
+          }
+        });
       },
     },
   );

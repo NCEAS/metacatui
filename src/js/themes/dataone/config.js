@@ -16,6 +16,10 @@ MetacatUI.AppConfig = Object.assign(
     enableCILogonSignIn: false,
     showSignInHelp: false,
 
+    // Cesium map for portals
+    cesiumToken:
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMTE3MTBiYy1iODY1LTQxNjMtODUzNS0yMzM1NGE3M2JhMWIiLCJpZCI6NjkzOTcsImlhdCI6MTY3ODkwMDg5M30.xzIlG_tPIzB9FmYPzPTzOJ49R2J4yIG2y0ittFqdbMc",
+
     //Temp message
     temporaryMessageContainer: "#Navbar",
 
@@ -155,6 +159,14 @@ MetacatUI.AppConfig = Object.assign(
     displayDatasetEditButton: false,
     displayDatasetControls: false,
     displayDatasetQualityMetric: true,
+
+    // iFrames in portals
+    trustedContentSources: [
+      "https://*ecoinformatics.org*",
+      "https://*arcticdata.io",
+      "https://cosima.nceas.ucsb.edu*",
+      "https://sasap-data.shinyapps.io/board_of_fisheries/",
+    ],
   },
   MetacatUI.AppConfig || {},
 );

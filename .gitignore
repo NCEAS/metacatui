@@ -10,6 +10,7 @@ src/js/themes/cerp
 src/js/themes/drp
 src/js/themes/sctld
 src/js/themes/smithsonian
+src/js/themes/cib
 node_modules
 src/config/dev
 docs/_site

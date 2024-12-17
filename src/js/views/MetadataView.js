@@ -22,13 +22,13 @@ define([
   "views/AnnotationView",
   "views/MarkdownView",
   "views/ViewObjectButtonView",
+  "views/CanonicalDatasetHandlerView",
   "text!templates/metadata/metadata.html",
   "text!templates/dataSource.html",
   "text!templates/publishDOI.html",
   "text!templates/newerVersion.html",
   "text!templates/loading.html",
   "text!templates/metadataControls.html",
-  "text!templates/metadataInfoIcons.html",
   "text!templates/alert.html",
   "text!templates/editMetadata.html",
   "text!templates/dataDisplay.html",
@@ -59,13 +59,13 @@ define([
   AnnotationView,
   MarkdownView,
   ViewObjectButtonView,
+  CanonicalDatasetHandlerView,
   MetadataTemplate,
   DataSourceTemplate,
   PublishDoiTemplate,
   VersionTemplate,
   LoadingTemplate,
   ControlsTemplate,
-  MetadataInfoIconsTemplate,
   AlertTemplate,
   EditMetadataTemplate,
   DataDisplayTemplate,
@@ -117,7 +117,6 @@ define([
       versionTemplate: _.template(VersionTemplate),
       loadingTemplate: _.template(LoadingTemplate),
       controlsTemplate: _.template(ControlsTemplate),
-      infoIconsTemplate: _.template(MetadataInfoIconsTemplate),
       dataSourceTemplate: _.template(DataSourceTemplate),
       editMetadataTemplate: _.template(EditMetadataTemplate),
       dataDisplayTemplate: _.template(DataDisplayTemplate),
@@ -169,6 +168,13 @@ define([
 
       /** @inheritdoc */
       render() {
+        if (this.isRendering) {
+          // If we re-render before the first render is complete the view breaks
+          this.stopListening(this, "renderComplete", this.render);
+          this.listenToOnce(this, "renderComplete", this.render);
+          return this;
+        }
+        this.isRendering = true;
         this.stopListening();
 
         MetacatUI.appModel.set("headerType", "default");
@@ -186,9 +192,14 @@ define([
         this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.render);
 
         // Listen to when the metadata has been rendered
-        this.once("metadataLoaded", () => {
+        this.listenToOnce(this, "metadataLoaded", () => {
           this.createAnnotationViews();
           this.insertMarkdownViews();
+          // Modifies the view to indicate that this is a dataset is essentially
+          // a duplicate of another dataset, if applicable
+          this.canonicalDatasetHandler = new CanonicalDatasetHandlerView({
+            metadataView: this,
+          }).render();
         });
 
         // Listen to when the package table has been rendered
@@ -416,7 +427,9 @@ define([
         });
 
         // Listen to 404 and 401 errors when we get the metadata object
+        this.stopListening(model, "404");
         this.listenToOnce(model, "404", this.showNotFound);
+        this.stopListening(model, "401");
         this.listenToOnce(model, "401", this.showIsPrivate);
 
         // Fetch the model
@@ -531,14 +544,16 @@ define([
 
                   viewRef.alterMarkup();
 
-                  viewRef.trigger("metadataLoaded");
-
                   // Add a map of the spatial coverage
                   if (gmaps) viewRef.insertSpatialCoverageMap();
 
                   // Injects Clipboard objects into DOM elements returned from
                   // the View Service
                   viewRef.insertCopiables();
+
+                  viewRef.trigger("metadataLoaded");
+                  viewRef.isRendering = false;
+                  viewRef.trigger("renderComplete");
                 }
               } catch (e) {
                 MetacatUI.analytics?.trackException(
@@ -767,6 +782,11 @@ define([
         // bit until we show a 401 msg, in case this content is their private
         // content
         if (!MetacatUI.appUserModel.get("checked")) {
+          this.stopListening(
+            MetacatUI.appUserModel,
+            "change:checked",
+            this.showIsPrivate,
+          );
           this.listenToOnce(
             MetacatUI.appUserModel,
             "change:checked",
@@ -774,6 +794,8 @@ define([
           );
           return;
         }
+        this.isRendering = false;
+        this.trigger("renderComplete");
 
         let msg = "";
 
@@ -1796,12 +1818,7 @@ define([
         $(this.controlsContainer).html(controlsContainer);
 
         // Insert the info icons
-        const metricsWell = this.$(".metrics-container");
-        metricsWell.append(
-          this.infoIconsTemplate({
-            model: this.model.toJSON(),
-          }),
-        );
+        this.renderInfoIcons();
 
         if (MetacatUI.appModel.get("showWholeTaleFeatures")) {
           this.createWholeTaleButton();
@@ -1810,21 +1827,91 @@ define([
         // Show the citation modal with the ability to copy the citation text
         // when the "Copy Citation" button is clicked
         const citeButton = this.el.querySelector("#cite-this-dataset-btn");
+        this.citationModal = new CitationModalView({
+          model: this.model,
+          createLink: true,
+        });
+        this.subviews.push(this.citationModal);
+        this.citationModal.render();
         if (citeButton) {
           citeButton.removeEventListener("click", this.citationModal);
           citeButton.addEventListener(
             "click",
             () => {
-              this.citationModal = new CitationModalView({
-                model: this.model,
-                createLink: true,
-              });
-              this.subviews.push(this.citationModal);
-              this.citationModal.render();
+              this.citationModal.show();
             },
             false,
           );
         }
+      },
+
+      /**
+       * Add the info icons to the metadata controls panel. Shows if the dataset
+       * is private or archived.
+       * @since 0.0.0
+       */
+      renderInfoIcons() {
+        const isPrivate = !this.model.get("isPublic");
+        const isArchived = this.model.get("archived");
+        if (!isPrivate && !isArchived) return;
+
+        if (isPrivate) {
+          this.addInfoIcon(
+            "private",
+            "icon-lock",
+            "private",
+            "This is a private dataset.",
+          );
+        }
+        if (isArchived) {
+          this.addInfoIcon(
+            "archived",
+            "icon-trash",
+            "danger",
+            "This dataset has been archived.",
+          );
+        }
+      },
+
+      /**
+       * Add an info icon to the metadata controls panel.
+       * @param {string} iconType - The type of icon to add.
+       * @param {string} iconClass - The class
+       * @param {string} baseClass - The base class
+       * @param {string} titleText - The text to display when the icon is hovered
+       * over.
+       * @returns {HTMLElement} The icon element that was added to the view.
+       * @since 0.0.0
+       */
+      addInfoIcon(iconType, iconClass, baseClass, titleText) {
+        const iconHTML = `<span class="${iconType} icons">
+            <span class="icon-stack ${iconType} tooltip-this"
+                  data-toggle="tooltip"
+                  data-placement="top"
+                  data-container="#metadata-controls-container"
+                  title="${titleText}">
+              <i class="icon icon-circle icon-stack-base ${baseClass}"></i>
+              <i class="icon ${iconClass} icon-stack-top"></i>
+            </span>
+          </span>`;
+
+        // Convert the string into DOM element so we can return it
+        const range = document.createRange();
+        const newIconFragment = range.createContextualFragment(iconHTML);
+        const newIcon = newIconFragment.firstChild;
+
+        const iconContainerClass = "info-icons";
+        let iconContainer = this.el.querySelector(`.${iconContainerClass}`);
+        if (!iconContainer) {
+          iconContainer = $(document.createElement("span")).addClass(
+            iconContainerClass,
+          );
+          this.$(".metrics-container").prepend(iconContainer);
+        }
+
+        iconContainer.append(newIcon);
+
+        return newIcon;
       },
 
       /**
@@ -2042,7 +2129,7 @@ define([
         const packageSources = dataPackage.sourcePackages;
         const packageDerivations = dataPackage.derivationPackages;
 
-        if (Object.keys(packageSources).length) {
+        if (packageSources && Object.keys(packageSources).length) {
           const sourceProvChart = new ProvChart({
             sources: packageSources,
             context: dataPackage,
@@ -2053,7 +2140,7 @@ define([
           this.subviews.push(sourceProvChart);
           this.$(this.articleContainer).before(sourceProvChart.render().el);
         }
-        if (Object.keys(packageDerivations).length) {
+        if (packageDerivations && Object.keys(packageDerivations).length) {
           const derivationProvChart = new ProvChart({
             derivations: packageDerivations,
             context: dataPackage,
@@ -2066,8 +2153,8 @@ define([
         }
 
         if (
-          dataPackage.sources.length ||
-          dataPackage.derivations.length ||
+          dataPackage?.sources.length ||
+          dataPackage?.derivations.length ||
           editModeOn
         ) {
           // Draw the provenance charts for each member of this package at an
