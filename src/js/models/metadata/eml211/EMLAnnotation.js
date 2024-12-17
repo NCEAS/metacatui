@@ -67,7 +67,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
 
         const emptyErrorMsg = (label) => `${label} must be set.`;
         const uriErrorMsg = (label) =>
-          `${label} should be an HTTP(S) URI, for example: http://example.com`;
+          `${label} should be an HTTP(S) URI, for example: https://doi.org/xxxx.`;
 
         const isValidURI = (uri) => uri.match(/http[s]?:\/\/.+/) !== null;
 
