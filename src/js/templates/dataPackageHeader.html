@@ -1,6 +1,6 @@
 ﻿<tr class="file-header data-package-item" data-id="<%= id %>">
 
-  <% 
+  <%
     var indentFile = 10;
   %>
   <!-- file cell -->
@@ -28,9 +28,11 @@
   </td>
 
   <!-- metrics cell -->
-  <td>
+<% if( MetacatUI.appModel.get("displayDatasetMetrics") ){ %>
+	<td class="metrics-count downloads" data-id="<%= id %>">
 
-  </td>
+	</td>
+<% } %>
 
   <!-- actions cell -->
   <td class="file-actions">
