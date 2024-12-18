@@ -808,8 +808,8 @@ define([
 
         var nodeNameMap = this.nodeNameMap();
 
-        //Serialize the basic text fields
-        var basicText = ["alternateIdentifier", "title"];
+        // Serialize the basic text fields
+        const basicText = ["alternateIdentifier", "title", "shortName"];
         _.each(
           basicText,
           function (fieldName) {
