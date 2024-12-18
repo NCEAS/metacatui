@@ -2133,8 +2133,8 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            */
           bioportalApiBaseUrl: "https://data.bioontology.org",
           /**
-           * This attribute stores cache of ontology information that is looked up in Bioportal, so that duplicate REST calls don't need to be made.
-           * @type {object}
+           * Make use of the Bioontology model to cache the results of Bioportal API calls
+           * @deprecated since 0.0.0
            */
           bioportalLookupCache: {},
           /**
