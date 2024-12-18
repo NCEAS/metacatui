@@ -58,6 +58,7 @@
     "./js/specs/unit/models/filters/SpatialFilter.spec.js",
     "./js/specs/unit/models/maps/Geohash.spec.js",
     "./js/specs/unit/models/maps/assets/CesiumGeohash.spec.js",
+    "./js/specs/unit/models/schemaOrg/SchemaOrg.spec.js",
     "./js/specs/unit/common/Utilities.spec.js",
     "./js/specs/unit/common/IconUtilities.spec.js",
     "./js/specs/unit/common/SearchParams.spec.js",
