@@ -50,5 +50,67 @@ define([
         state.party.isValid().should.be.false;
       });
     });
+
+    describe("ORCID Validation", function () {
+      it("should validate a valid ORCID", function () {
+        state.party
+          .validateOrcid("0000-0000-0000-0000")
+          .should.equal("0000-0000-0000-0000");
+        state.party
+          .validateOrcid("https://orcid.org/0000-0000-0000-0000")
+          .should.equal("https://orcid.org/0000-0000-0000-0000");
+        state.party
+          .validateOrcid("http://orcid.org/0000-0000-0000-0000")
+          .should.be.equal("http://orcid.org/0000-0000-0000-0000");
+        state.party
+          .validateOrcid("0000-0000-0000-000X")
+          .should.equal("0000-0000-0000-000X");
+      });
+
+      it("should standardize a valid ORCID", function () {
+        state.party
+          .validateOrcid("0000-0000-0000-0000", true)
+          .should.equal("https://orcid.org/0000-0000-0000-0000");
+        state.party
+          .validateOrcid("https://orcid.org/0000-0000-0000-0000", true)
+          .should.equal("https://orcid.org/0000-0000-0000-0000");
+        state.party
+          .validateOrcid("http://orcid.org/0000-0000-0000-0000", true)
+          .should.equal("https://orcid.org/0000-0000-0000-0000");
+      });
+
+      it("should invalidate an invalid ORCID", function () {
+        state.party.validateOrcid("0000-0000-0000-000").should.be.false;
+        state.party.validateOrcid("0000-0000-0000-0000X").should.be.false;
+        state.party.validateOrcid("0000-0000-0000-0000-").should.be.false;
+        state.party.validateOrcid("0000-0000-0000-0000-0000").should.be.false;
+        state.party.validateOrcid("0000-0000-0000-0000-0000X").should.be.false;
+        state.party.validateOrcid("https://orcid.org/0000-0000-0000-0000-0000")
+          .should.be.false;
+        state.party.validateOrcid("http://orcid.org/0000-0000-0000-0000-0000")
+          .should.be.false;
+      });
+    });
+
+    describe("Miscellaneous", function () {
+      it("The getUserIdArray method should return an array if the userId is not set", function () {
+        state.party.getUserIdArray().should.deep.equal([]);
+      });
+
+      it("The getUserIdArray method should return an array for a single user ID", function () {
+        state.party.set("userId", "0000-0000-0000-0000");
+        state.party.getUserIdArray().should.deep.equal(["0000-0000-0000-0000"]);
+      });
+
+      it("The getUserIdArray method should return an array for multiple user IDs", function () {
+        state.party.set("userId", [
+          "0000-0000-0000-0000",
+          "0000-0000-0000-0001",
+        ]);
+        state.party
+          .getUserIdArray()
+          .should.deep.equal(["0000-0000-0000-0000", "0000-0000-0000-0001"]);
+      });
+    });
   });
 });
