@@ -6,9 +6,9 @@
   "views/NavbarView",
   "views/FooterView",
   "views/SignInView",
+  "views/schemaOrg/SchemaOrgView",
   "text!templates/alert.html",
   "text!templates/appHead.html",
-  "text!templates/jsonld.txt",
   "text!templates/app.html",
   "text!templates/loading.html",
 ], function (
@@ -19,9 +19,9 @@
   NavbarView,
   FooterView,
   SignInView,
+  SchemaOrgView,
   AlertTemplate,
   AppHeadTemplate,
-  JsonLDTemplate,
   AppTemplate,
   LoadingTemplate,
 ) {
@@ -45,7 +45,6 @@
       template: _.template(AppTemplate),
       alertTemplate: _.template(AlertTemplate),
       appHeadTemplate: _.template(AppHeadTemplate),
-      jsonLDTemplate: _.template(JsonLDTemplate),
       loadingTemplate: _.template(LoadingTemplate),
 
       events: {
@@ -148,20 +147,17 @@
           return;
         }
 
-        // set up the head - make sure to prepend, otherwise the CSS may be out of order!
-        $("head")
-          .append(
-            this.appHeadTemplate({
-              theme: MetacatUI.theme,
-            }),
-          )
-          //Add the JSON-LD to the head element
-          .append(
-            $(document.createElement("script"))
-              .attr("type", "application/ld+json")
-              .attr("id", "jsonld")
-              .html(this.jsonLDTemplate()),
-          );
+        // set up the head
+        $("head").append(
+          this.appHeadTemplate({
+            theme: MetacatUI.theme,
+          }),
+        );
+
+        // Add schema.org JSON-LD to the head
+        this.schemaOrg = new SchemaOrgView();
+        this.schemaOrg.render();
+        this.schemaOrg.setSchemaFromTemplate();
 
         // set up the body
         this.$el.append(this.template());
