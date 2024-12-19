@@ -8,7 +8,7 @@ define([
   "views/DownloadButtonView",
   "text!templates/dataItem.html",
   "text!templates/dataItemHierarchy.html",
-], function (
+], (
   _,
   $,
   Backbone,
@@ -18,19 +18,19 @@ define([
   DownloadButtonView,
   DataItemTemplate,
   DataItemHierarchy,
-) {
+) => {
   /**
-        * @class DataItemView
-        * @classdesc    A DataItemView represents a single data item in a data package as a single row of
+   * @class DataItemView
+   * @classdesc    A DataItemView represents a single data item in a data package as a single row of
             a nested table.  An item may represent a metadata object (as a folder), or a data
             object described by the metadata (as a file).  Every metadata DataItemView has a
             resource map associated with it that describes the relationships between the
             aggregated metadata and data objects.
-        * @classcategory Views
-        * @constructor
-        * @screenshot views/DataItemView.png
-        */
-  var DataItemView = Backbone.View.extend(
+   * @classcategory Views
+   * @class
+   * @screenshot views/DataItemView.png
+   */
+  const DataItemView = Backbone.View.extend(
     /** @lends DataItemView.prototype */ {
       tagName: "tr",
 
@@ -44,7 +44,7 @@ define([
       /** The HTML template for a data item */
       dataItemHierarchyTemplate: _.template(DataItemHierarchy),
 
-      //Templates
+      // Templates
       metricTemplate: _.template(
         "<span class='packageTable-resultItem badge '>" +
           "<i class='catalog-metric-icon <%= metricIcon %>'>" +
@@ -88,9 +88,12 @@ define([
         "click .downloadAction": "downloadFile",
       },
 
-      /** Initialize the object - post constructor */
-      initialize: function (options) {
-        if (typeof options == "undefined") var options = {};
+      /**
+       * Initialize the object - post constructor
+       * @param options
+       */
+      initialize (options) {
+        if (typeof options === "undefined") var options = {};
 
         this.model = options.model || new DataONEObject();
         this.currentlyViewing = options.currentlyViewing || null;
@@ -105,26 +108,27 @@ define([
         this.parentEditorView = options.parentEditorView || null;
         this.dataPackageId = options.dataPackageId || null;
 
-        if (!(typeof options.metricsModel == "undefined")) {
+        if (!(typeof options.metricsModel === "undefined")) {
           this.metricsModel = options.metricsModel;
         }
       },
 
-      /** Renders a DataItemView for the given DataONEObject
+      /**
+       * Renders a DataItemView for the given DataONEObject
        * @param {DataONEObject} model
        */
-      render: function (model) {
-        //Prevent duplicate listeners
+      render (model) {
+        // Prevent duplicate listeners
         this.stopListening();
 
         if (this.itemType === "folder") {
           // Set the data-id for identifying events to model ids
           this.$el.attr(
             "data-id",
-            (this.itemPath ? this.itemPath : "") + "/" + this.itemName,
+            `${this.itemPath ? this.itemPath : ""  }/${  this.itemName}`,
           );
           this.$el.attr("data-parent", this.itemPath ? this.itemPath : "");
-          this.$el.attr("data-category", "entities-" + this.itemName);
+          this.$el.attr("data-category", `entities-${  this.itemName}`);
 
           var attributes = new Object();
           attributes.fileType = undefined;
@@ -163,9 +167,9 @@ define([
         } else {
           // Set the data-id for identifying events to model ids
           this.$el.attr("data-id", this.model.get("id"));
-          this.$el.attr("data-category", "entities-" + this.model.get("id"));
+          this.$el.attr("data-category", `entities-${  this.model.get("id")}`);
 
-          //Destroy the old tooltip
+          // Destroy the old tooltip
           this.$(".status .icon, .status .progress")
             .tooltip("hide")
             .tooltip("destroy");
@@ -181,12 +185,12 @@ define([
             attributes.isMetadata = true;
           }
 
-          //Format the title
+          // Format the title
           if (Array.isArray(attributes.title)) {
             attributes.title = attributes.title[0];
           }
 
-          //Set some defaults
+          // Set some defaults
           attributes.numAttributes = 0;
           attributes.entityIsValid = true;
           attributes.hasInvalidAttribute = false;
@@ -198,7 +202,7 @@ define([
             // Note: .canWrite is set here (at render) instead of at init
             // because render will get called a few times during page load
             // as the app updates what it knows about the object
-            let accessPolicy = this.model.get("accessPolicy");
+            const accessPolicy = this.model.get("accessPolicy");
             if (accessPolicy) {
               attributes.canWrite = accessPolicy.isAuthorized("write");
               this.canWrite = attributes.canWrite;
@@ -213,11 +217,11 @@ define([
             this.canShare = this.canShareItem();
             attributes.canShare = this.canShare;
 
-            //Get the number of attributes for this item
+            // Get the number of attributes for this item
             if (this.model.type != "EML") {
-              //Get the parent EML model
+              // Get the parent EML model
               if (this.parentEML) {
-                var parentEML = this.parentEML;
+                var {parentEML} = this;
               } else {
                 var parentEML = MetacatUI.rootDataPackage.where({
                   id: Array.isArray(this.model.get("isDocumentedBy"))
@@ -228,22 +232,22 @@ define([
 
               if (Array.isArray(parentEML)) parentEML = parentEML[0];
 
-              //If we found a parent EML model
+              // If we found a parent EML model
               if (parentEML && parentEML.type == "EML") {
                 this.parentEML = parentEML;
 
-                //Find the EMLEntity model for this data item
-                var entity =
+                // Find the EMLEntity model for this data item
+                const entity =
                   this.model.get("metadataEntity") ||
                   parentEML.getEntity(this.model);
 
-                //If we found an EMLEntity model
+                // If we found an EMLEntity model
                 if (entity) {
                   this.entity = entity;
 
-                  //Get the file name from the metadata if it is not in the model
+                  // Get the file name from the metadata if it is not in the model
                   if (!this.model.get("fileName")) {
-                    var fileName = "";
+                    let fileName = "";
 
                     if (entity.get("physicalObjectName"))
                       fileName = entity.get("physicalObjectName");
@@ -254,12 +258,12 @@ define([
                     this.model.set("fileName", fileName);
                   }
 
-                  //Get the number of attributes for this entity
+                  // Get the number of attributes for this entity
                   attributes.numAttributes = entity.get("attributeList").length;
-                  //Determine if the entity model is valid
+                  // Determine if the entity model is valid
                   attributes.entityIsValid = entity.isValid();
 
-                  //Listen to changes to certain attributes of this EMLEntity model
+                  // Listen to changes to certain attributes of this EMLEntity model
                   // to re-render this view
                   this.stopListening(entity);
                   this.listenTo(
@@ -268,34 +272,34 @@ define([
                     this.render,
                   );
 
-                  //Check if there are any invalid attribute models
-                  //Also listen to each attribute model
+                  // Check if there are any invalid attribute models
+                  // Also listen to each attribute model
                   _.each(
                     entity.get("attributeList"),
                     function (attr) {
-                      var isValid = attr.isValid();
+                      const isValid = attr.isValid();
 
-                      //Mark that this entity has at least one invalid attribute
+                      // Mark that this entity has at least one invalid attribute
                       if (!attributes.hasInvalidAttribute && !isValid)
                         attributes.hasInvalidAttribute = true;
 
                       this.stopListening(attr);
 
-                      //Listen to when the validation status changes and rerender
+                      // Listen to when the validation status changes and rerender
                       if (isValid) this.listenTo(attr, "invalid", this.render);
                       else this.listenTo(attr, "valid", this.render);
                     },
                     this,
                   );
 
-                  //If there are no attributes now, rerender when one is added
+                  // If there are no attributes now, rerender when one is added
                   this.listenTo(entity, "change:attributeList", this.render);
                 } else {
-                  //Rerender when an entity is added
+                  // Rerender when an entity is added
                   this.listenTo(this.model, "change:entities", this.render);
                 }
               } else {
-                //When the package is complete, rerender
+                // When the package is complete, rerender
                 this.listenTo(
                   MetacatUI.rootDataPackage,
                   "add:EML",
@@ -306,14 +310,14 @@ define([
 
             this.$el.html(this.template(attributes));
 
-            //Initialize dropdowns
+            // Initialize dropdowns
             this.$el.find(".dropdown-toggle").dropdown();
 
-            //Render the Share button
+            // Render the Share button
             this.renderShareControl();
 
             if (this.model.get("type") == "Metadata") {
-              //Add the title data-attribute attribute to the name cell
+              // Add the title data-attribute attribute to the name cell
               this.$el.find(".name").attr("data-attribute", "title");
               this.$el.addClass("folder");
             } else {
@@ -332,12 +336,12 @@ define([
                 container: "body",
               });
 
-            //Check if the data package is in progress of being uploaded
+            // Check if the data package is in progress of being uploaded
             this.toggleSaving();
 
-            //Create tooltips based on the upload status
-            var uploadStatus = this.model.get("uploadStatus"),
-              errorMessage = this.model.get("errorMessage");
+            // Create tooltips based on the upload status
+            const uploadStatus = this.model.get("uploadStatus");
+              let errorMessage = this.model.get("errorMessage");
 
             // Use a friendlier message for 401 errors (the one returned is a little hard to understand)
             if (this.model.get("sysMetaErrorCode") == 401) {
@@ -345,32 +349,32 @@ define([
               /** @todo Do an object update when someone has write permission but not changePermission and is trying to change the system metadata (but not the access policy)  */
               if (accessPolicy && accessPolicy.isAuthorized("write")) {
                 errorMessage =
-                  "The owner of this data file has not given you permission to rename it or change the " +
-                  MetacatUI.appModel.get("accessPolicyName") +
-                  ".";
+                  `The owner of this data file has not given you permission to rename it or change the ${ 
+                  MetacatUI.appModel.get("accessPolicyName") 
+                  }.`;
                 // Otherwise, assume they only have read access
               } else {
                 errorMessage =
-                  "The owner of this data file has not given you permission to edit this data file or change the " +
-                  MetacatUI.appModel.get("accessPolicyName") +
-                  ".";
+                  `The owner of this data file has not given you permission to edit this data file or change the ${ 
+                  MetacatUI.appModel.get("accessPolicyName") 
+                  }.`;
               }
             }
 
             // When there's an error or a warninig
             if (uploadStatus == "e" && errorMessage) {
-              var tooltipClass = uploadStatus == "e" ? "error" : "";
+              const tooltipClass = uploadStatus == "e" ? "error" : "";
 
               this.$(".status .icon").tooltip({
                 placement: "top",
                 trigger: "hover",
                 html: true,
                 title:
-                  "<div class='status-tooltip " +
-                  tooltipClass +
-                  "'><h6>Issue saving:</h6><div>" +
-                  errorMessage +
-                  "</div></div>",
+                  `<div class='status-tooltip ${ 
+                  tooltipClass 
+                  }'><h6>Issue saving:</h6><div>${ 
+                  errorMessage 
+                  }</div></div>`,
                 container: "body",
               });
 
@@ -424,20 +428,20 @@ define([
 
               this.$el.addClass("loading");
             } else if (uploadStatus == "p") {
-              var model = this.model;
+              var {model} = this;
 
               this.$(".status .progress").tooltip({
                 placement: "top",
                 trigger: "hover",
                 html: true,
-                title: function () {
+                title () {
                   if (model.get("numSaveAttempts") > 0) {
                     return (
-                      "<div class='status-tooltip'>Something went wrong during upload. <br/> Trying again... (attempt " +
-                      (model.get("numSaveAttempts") + 1) +
-                      " of 3)</div>"
+                      `<div class='status-tooltip'>Something went wrong during upload. <br/> Trying again... (attempt ${ 
+                      model.get("numSaveAttempts") + 1 
+                      } of 3)</div>`
                     );
-                  } else if (model.get("uploadProgress")) {
+                  } if (model.get("uploadProgress")) {
                     var percentDone = model.get("uploadProgress").toString();
                     if (percentDone.indexOf(".") > -1)
                       percentDone = percentDone.substring(
@@ -447,9 +451,9 @@ define([
                   } else var percentDone = "0";
 
                   return (
-                    "<div class='status-tooltip'>Uploading: " +
-                    percentDone +
-                    "%</div>"
+                    `<div class='status-tooltip'>Uploading: ${ 
+                    percentDone 
+                    }%</div>`
                   );
                 },
                 container: "body",
@@ -460,21 +464,21 @@ define([
               this.$el.removeClass("loading");
             }
 
-            //Listen to changes to the upload progress of this object
+            // Listen to changes to the upload progress of this object
             this.listenTo(
               this.model,
               "change:uploadProgress",
               this.showUploadProgress,
             );
 
-            //Listen to changes to the upload status of the entire package
+            // Listen to changes to the upload status of the entire package
             this.listenTo(
               MetacatUI.rootDataPackage.packageModel,
               "change:uploadStatus",
               this.toggleSaving,
             );
 
-            //listen for changes to rerender the view
+            // listen for changes to rerender the view
             this.listenTo(
               this.model,
               "change:fileName change:title change:id change:formatType " +
@@ -484,7 +488,7 @@ define([
             ); // render changes to the item
 
             var view = this;
-            this.listenTo(this.model, "replace", function (newModel) {
+            this.listenTo(this.model, "replace", (newModel) => {
               view.model = newModel;
               view.render();
             });
@@ -496,28 +500,28 @@ define([
               this.model.getFormat() == "metadata" ||
               this.model.get("id") == this.currentlyViewing
             ) {
-              attributes.title = "Metadata: " + this.model.get("fileName");
+              attributes.title = `Metadata: ${  this.model.get("fileName")}`;
               attributes.icon = "icon-file-text";
               attributes.metricIcon = "icon-eye-open";
               this.isMetadata = true;
               this.$el.attr("data-packageId", this.dataPackageId);
             }
 
-            var objectTitleTooltip =
+            const objectTitleTooltip =
               attributes.title || attributes.fileName || attributes.id;
             attributes.objectTitle =
               objectTitleTooltip.length > 150
-                ? objectTitleTooltip.slice(0, 75) +
-                  "..." +
+                ? `${objectTitleTooltip.slice(0, 75) 
+                  }...${ 
                   objectTitleTooltip.slice(
                     objectTitleTooltip.length - 75,
                     objectTitleTooltip.length,
-                  )
+                  )}`
                 : objectTitleTooltip;
 
             attributes.fileType = this.model.getFormat();
             attributes.isFolder = false;
-            //Determine the icon type based on format type
+            // Determine the icon type based on format type
             if (this.model.getFormat() == "program")
               attributes.icon = "icon-code";
             else if (this.model.getFormat() == "data")
@@ -530,8 +534,8 @@ define([
 
             attributes.id = this.model.get("id");
             attributes.memberRowMetrics = null;
-            var metricToolTip = null,
-              view = this;
+            let metricToolTip = null;
+              var view = this;
 
             // Insert metrics for this item,
             // if the model has already been fethced.
@@ -543,8 +547,8 @@ define([
               // If the fetch() is still in progress.
               this.listenTo(this.metricsModel, "sync", function () {
                 metricToolTip = this.getMemberRowMetrics(view.id);
-                let readsCell = this.$(
-                  '.metrics-count.downloads[data-id="' + view.id + '"]',
+                const readsCell = this.$(
+                  `.metrics-count.downloads[data-id="${  view.id  }"]`,
                 );
                 metricToolTip = view.getMemberRowMetrics(view.id);
                 if (typeof metricToolTip !== "undefined" && metricToolTip)
@@ -586,7 +590,7 @@ define([
                 }
 
                 // var parent = itemPathParts[itemPathParts.length - 2];
-                var parentPath = itemPathParts.slice(0, -1).join("/");
+                const parentPath = itemPathParts.slice(0, -1).join("/");
 
                 if (parentPath !== undefined) {
                   this.$el.attr("data-parent", parentPath);
@@ -610,11 +614,11 @@ define([
 
             const id = this.model.get("id");
             const infoLink =
-              MetacatUI.root +
-              "/view/" +
-              encodeURIComponent(this.currentlyViewing) +
-              "#" +
-              encodeURIComponent(id);
+              `${MetacatUI.root 
+              }/view/${ 
+              encodeURIComponent(this.currentlyViewing) 
+              }#${ 
+              encodeURIComponent(id)}`;
             attributes.moreInfoLink = infoLink;
 
             attributes.insertInfoIcon = this.insertInfoIcon;
@@ -652,16 +656,16 @@ define([
        * Renders a button that opens the AccessPolicyView for editing permissions on this data item
        * @since 2.15.0
        */
-      renderShareControl: function () {
-        //Get the Share button element
-        var shareButton = this.$(".sharing button");
+      renderShareControl () {
+        // Get the Share button element
+        const shareButton = this.$(".sharing button");
 
         if (
           this.parentEditorView &&
           this.parentEditorView.isAccessPolicyEditEnabled()
         ) {
-          //Start a title for the button tooltip
-          var sharebuttonTitle;
+          // Start a title for the button tooltip
+          let sharebuttonTitle;
 
           // If the user is not authorized to change the permissions of
           // this object, then disable the share button
@@ -687,7 +691,7 @@ define([
       },
 
       /** Close the view and remove it from the DOM */
-      onClose: function () {
+      onClose () {
         this.remove(); // remove for the DOM, stop listening
         this.off(); // remove callbacks, prevent zombies
       },
@@ -695,16 +699,16 @@ define([
       /**
               Generate a unique id for each data item in the table
               TODO: This could be replaced with the DataONE identifier
-            */
-      generateId: function () {
-        var idStr = ""; // the id to return
-        var length = 30; // the length of the generated string
-        var chars =
+       */
+      generateId () {
+        let idStr = ""; // the id to return
+        const length = 30; // the length of the generated string
+        const chars =
           "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz".split(
             "",
           );
 
-        for (var i = 0; i < length; i++) {
+        for (let i = 0; i < length; i++) {
           idStr += chars[Math.floor(Math.random() * chars.length)];
         }
 
@@ -713,21 +717,20 @@ define([
 
       /**
        * Update the folder name based on the scimeta title
-       *
        * @param e The event triggering this method
        */
-      updateName: function (e) {
-        var enteredText = this.cleanInput($(e.target).text().trim());
+      updateName (e) {
+        const enteredText = this.cleanInput($(e.target).text().trim());
 
         // Set the title if this item is metadata or set the file name
         // if its not
         if (this.model.get("type") == "Metadata") {
-          var title = this.model.get("title");
+          const title = this.model.get("title");
 
           // Get the current title which is either an array of titles
           // or a single string. When it's an array of strings, we
           // use the first as the canonical title
-          var currentTitle = Array.isArray(title) ? title[0] : title;
+          const currentTitle = Array.isArray(title) ? title[0] : title;
 
           // Don't set the title if it hasn't changed or is empty
           if (
@@ -739,7 +742,7 @@ define([
             // that aren't Arrays into Arrays
             if (
               (Array.isArray(title) && title.length < 2) ||
-              typeof title == "string"
+              typeof title === "string"
             ) {
               this.model.set("title", [enteredText]);
             } else {
@@ -763,10 +766,10 @@ define([
                 Handle the add file event, showing the file picker dialog
                 Multiple files are allowed using the shift and or option/alt key
                 @param {Event} event
-            */
-      handleAddFiles: function (event) {
+       */
+      handleAddFiles (event) {
         event.stopPropagation();
-        var fileUploadElement = this.$(".file-upload");
+        const fileUploadElement = this.$(".file-upload");
 
         fileUploadElement.val("");
 
@@ -779,9 +782,8 @@ define([
       /**
        * Method to handle batch file uploads.
        * This method processes files independently to avoid being slowed down by large files.
-       *
        * @param {FileList} fileList - The list of files to be uploaded.
-       * @param {number} [batchSize=10] - The number of files to upload concurrently.
+       * @param {number} [batchSize] - The number of files to upload concurrently.
        * @since 0.0.0
        */
       uploadFilesInBatch(fileList, batchSize = 10) {
@@ -858,11 +860,11 @@ define([
                 With a file list from the file picker or drag and drop,
                 add the files to the collection
                 @param {Event} event
-            */
-      addFiles: function (event) {
-        var fileList, // The list of chosen files
-          parentDataPackage, // The id of the first resource of this row's scimeta
-          self = this; // A reference to this view
+       */
+      addFiles (event) {
+        let fileList; // The list of chosen files
+          let parentDataPackage; // The id of the first resource of this row's scimeta
+          const self = this; // A reference to this view
 
         event.stopPropagation();
         event.preventDefault();
@@ -871,11 +873,9 @@ define([
           fileList = event.originalEvent.dataTransfer.files;
 
           // handle file picker files
-        } else {
-          if (event.target) {
+        } else if (event.target) {
             fileList = event.target.files;
           }
-        }
         this.$el.removeClass("droppable");
 
         // Find the correct collection to add to. Use JQuery's delegateTarget
@@ -888,8 +888,8 @@ define([
             _.each(
               fileList,
               function (file) {
-                var uploadStatus = "l",
-                  errorMessage = "";
+                let uploadStatus = "l";
+                  let errorMessage = "";
 
                 if (file.size == 0) {
                   uploadStatus = "e";
@@ -897,15 +897,15 @@ define([
                     "This is an empty file. It won't be included in the dataset.";
                 }
 
-                var dataONEObject = new DataONEObject({
+                const dataONEObject = new DataONEObject({
                   synced: true,
                   type: "Data",
                   fileName: file.name,
                   size: file.size,
                   mediaType: file.type,
                   uploadFile: file,
-                  uploadStatus: uploadStatus,
-                  errorMessage: errorMessage,
+                  uploadStatus,
+                  errorMessage,
                   isDocumentedBy: [this.parentSciMeta.id],
                   isDocumentedByModels: [this.parentSciMeta],
                   resourceMap: [this.collection.packageModel.id],
@@ -927,13 +927,16 @@ define([
       },
 
       /** Show the drop zone for this row in the table */
-      showDropzone: function () {
+      showDropzone () {
         if (this.model.get("type") !== "Metadata") return;
         this.$el.addClass("droppable");
       },
 
-      /** Hide the drop zone for this row in the table */
-      hideDropzone: function (event) {
+      /**
+       * Hide the drop zone for this row in the table
+       * @param event
+       */
+      hideDropzone (event) {
         if (this.model.get("type") !== "Metadata") return;
         this.$el.removeClass("droppable");
       },
@@ -944,10 +947,9 @@ define([
        *
        * Called indirectly via the "click" event on elements with the
        * class .replaceFile. See this View's events map.
-       *
        * @param {MouseEvent} event Browser Click event
        */
-      handleReplace: function (event) {
+      handleReplace (event) {
         event.stopPropagation();
 
         // Stop immediately if we know the user doesn't have privs
@@ -956,7 +958,7 @@ define([
           return;
         }
 
-        var fileReplaceElement = $(event.target)
+        const fileReplaceElement = $(event.target)
           .parents(".dropdown-menu")
           .children(".file-replace");
 
@@ -985,10 +987,9 @@ define([
        * mistakes that would cause the editor to get into a broken state.
        * On error, we attempt to return the editor back to its pre-replace
        * state.
-       *
        * @param {Event} event
        */
-      replaceFile: function (event) {
+      replaceFile (event) {
         event.stopPropagation();
         event.preventDefault();
 
@@ -996,7 +997,7 @@ define([
           return;
         }
 
-        var fileList = event.target.files;
+        const fileList = event.target.files;
 
         // Pre-check fileList value to make sure we can work with it
         if (fileList.length != 1) {
@@ -1010,11 +1011,11 @@ define([
         }
 
         // Save uploadStatus for reverting if need to
-        var oldUploadStatus = this.model.get("uploadStatus");
+        const oldUploadStatus = this.model.get("uploadStatus");
 
-        var file = fileList[0],
-          uploadStatus = "q",
-          errorMessage = "";
+        const file = fileList[0];
+          let uploadStatus = "q";
+          let errorMessage = "";
 
         if (file.size == 0) {
           uploadStatus = "e";
@@ -1030,7 +1031,7 @@ define([
         }
 
         // Copy model attributes aside for reverting on error
-        var newAttributes = {
+        const newAttributes = {
           synced: false,
           fileName: file.name,
           size: file.size,
@@ -1038,15 +1039,15 @@ define([
           uploadFile: file,
           hasContentChanges: true,
           checksum: null,
-          uploadStatus: uploadStatus,
+          uploadStatus,
           sysMetaUploadStatus: "c", // I set this so DataPackage::save
           // wouldn't try to update the sysmeta after the update
-          errorMessage: errorMessage,
+          errorMessage,
         };
 
         // Save a copy of the attributes we're changing so we can revert
         // later if we encounter an exception
-        var oldAttributes = {};
+        const oldAttributes = {};
         _.each(
           Object.keys(newAttributes),
           function (k) {
@@ -1055,7 +1056,7 @@ define([
           this,
         );
 
-        oldAttributes["uploadStatus"] = oldUploadStatus;
+        oldAttributes.uploadStatus = oldUploadStatus;
 
         try {
           this.model.set(newAttributes);
@@ -1066,7 +1067,7 @@ define([
           // Grab a reference to the entity in the EML for the object
           // we're replacing
           this.parentSciMeta = this.getParentScienceMetadata(event);
-          var entity = null;
+          let entity = null;
 
           if (this.parentSciMeta) {
             entity = this.parentSciMeta.getEntity(this.model);
@@ -1094,7 +1095,7 @@ define([
           MetacatUI.rootDataPackage.packageModel.set("changed", true);
 
           // Last, provided a visual indication the replace was completed
-          var describeButton = this.$el
+          const describeButton = this.$el
             .children(".controls")
             .children(".btn-group")
             .children("button.edit")
@@ -1104,14 +1105,14 @@ define([
             return;
           }
 
-          var oldText = describeButton.html();
+          const oldText = describeButton.html();
 
           describeButton.html('<i class="icon icon-ok success" /> Replaced');
 
-          var previousBtnClasses = describeButton.attr("class");
+          const previousBtnClasses = describeButton.attr("class");
           describeButton.removeClass("warning error").addClass("message");
 
-          window.setTimeout(function () {
+          window.setTimeout(() => {
             describeButton.html(oldText);
             describeButton.addClass(previousBtnClasses).removeClass("message");
           }, 3000);
@@ -1127,18 +1128,18 @@ define([
           this.render();
         }
 
-        return;
+        
       },
 
       /**
              Handle remove events for this row in the data package table
               @param {Event} event
-             */
-      handleRemove: function (event) {
-        var eventId, // The id of the row of this event
-          removalIds = [], // The list of target ids to remove
-          dataONEObject, // The model represented by this row
-          documents; // The list of ids documented by this row (if meta)
+       */
+      handleRemove (event) {
+        let eventId; // The id of the row of this event
+          const removalIds = []; // The list of target ids to remove
+          let dataONEObject; // The model represented by this row
+          let documents; // The list of ids documented by this row (if meta)
 
         event.stopPropagation();
         event.preventDefault();
@@ -1177,9 +1178,9 @@ define([
             _.each(documents, removalIds.push());
           }
         }
-        //Data objects may need to be removed from the EML model entities list
+        // Data objects may need to be removed from the EML model entities list
         else if (dataONEObject && this.parentSciMeta.type == "EML") {
-          var matchingEntity = this.parentSciMeta.getEntity(dataONEObject);
+          const matchingEntity = this.parentSciMeta.getEntity(dataONEObject);
 
           if (matchingEntity) this.parentSciMeta.removeEntity(matchingEntity);
         }
@@ -1188,8 +1189,8 @@ define([
         _.each(
           removalIds,
           function (id) {
-            var documents = this.parentSciMeta.get("documents");
-            var index = documents.indexOf(id);
+            const documents = this.parentSciMeta.get("documents");
+            const index = documents.indexOf(id);
             if (index > -1) {
               this.parentSciMeta.get("documents").splice(index, 1);
             }
@@ -1215,11 +1216,11 @@ define([
        * data or metadata row of the UI event
        *   @param {Event} event
        */
-      getParentScienceMetadata: function (event) {
-        var parentMetadata, // The parent metadata array in the collection
-          eventModels, // The models associated with the event's table row
-          eventModel, // The model associated with the event's table row
-          parentSciMeta; // The parent science metadata for the event model
+      getParentScienceMetadata (event) {
+        let parentMetadata; // The parent metadata array in the collection
+          let eventModels; // The models associated with the event's table row
+          let eventModel; // The model associated with the event's table row
+          let parentSciMeta; // The parent science metadata for the event model
 
         if (typeof event.delegateTarget.dataset.id !== "undefined") {
           eventModels = MetacatUI.rootDataPackage.where({
@@ -1235,7 +1236,7 @@ define([
           // Is this a Data or Metadata model?
           if (eventModel.get && eventModel.get("type") === "Metadata") {
             return eventModel;
-          } else {
+          } 
             // It's data, get the parent scimeta
             parentMetadata = MetacatUI.rootDataPackage.where({
               id: Array.isArray(eventModel.get("isDocumentedBy"))
@@ -1246,15 +1247,15 @@ define([
             if (parentMetadata.length > 0) {
               parentSciMeta = parentMetadata[0];
               return parentSciMeta;
-            } else {
-              //If there is only one metadata model in the root data package, then use that metadata model
-              var metadataModels = MetacatUI.rootDataPackage.where({
+            } 
+              // If there is only one metadata model in the root data package, then use that metadata model
+              const metadataModels = MetacatUI.rootDataPackage.where({
                 type: "Metadata",
               });
 
               if (metadataModels.length == 1) return metadataModels[0];
-            }
-          }
+            
+          
         }
       },
 
@@ -1263,8 +1264,8 @@ define([
        * data or metadata row of the UI event
        *  @param {Event} event
        */
-      getParentDataPackage: function (event) {
-        var parentSciMeta, parenResourceMaps, parentResourceMapId;
+      getParentDataPackage (event) {
+        let parentSciMeta; let parenResourceMaps; let parentResourceMapId;
 
         if (typeof event.delegateTarget.dataset.id !== "undefined") {
           parentSciMeta = this.getParentScienceMetadata(event);
@@ -1295,28 +1296,28 @@ define([
             return MetacatUI.rootDataPackage;
 
             // A nested package
-          } else {
+          } 
             return MetacatUI.rootDataPackage.where({
               id: parentResourceMapId,
             })[0];
-          }
+          
         }
       },
 
       /**
        * Removes invalid characters and formatting from the given input string
        * @param {string} input The string to clean
-       * @return {string}
+       * @returns {string}
        */
-      cleanInput: function (input) {
+      cleanInput (input) {
         // 1. remove line breaks / Mso classes
-        var stringStripper = /(\n|\r| class=(")?Mso[a-zA-Z]+(")?)/g;
-        var output = input.replace(stringStripper, " ");
+        const stringStripper = /(\n|\r| class=(")?Mso[a-zA-Z]+(")?)/g;
+        let output = input.replace(stringStripper, " ");
 
         // 2. strip Word generated HTML comments
-        var commentSripper = new RegExp("<!--(.*?)-->", "g");
+        const commentSripper = new RegExp("<!--(.*?)-->", "g");
         output = output.replace(commentSripper, "");
-        var tagStripper = new RegExp(
+        let tagStripper = new RegExp(
           "<(/)*(meta|link|span|\\?xml:|st1:|o:|font)(.*?)>",
           "gi",
         );
@@ -1325,7 +1326,7 @@ define([
         output = output.replace(tagStripper, "");
 
         // 4. Remove everything in between and including tags '<style(.)style(.)>'
-        var badTags = [
+        const badTags = [
           "style",
           "script",
           "applet",
@@ -1336,17 +1337,17 @@ define([
 
         for (var i = 0; i < badTags.length; i++) {
           tagStripper = new RegExp(
-            "<" + badTags[i] + ".*?" + badTags[i] + "(.*?)>",
+            `<${  badTags[i]  }.*?${  badTags[i]  }(.*?)>`,
             "gi",
           );
           output = output.replace(tagStripper, "");
         }
 
         // 5. remove attributes ' style="..."'
-        var badAttributes = ["style", "start"];
+        const badAttributes = ["style", "start"];
         for (var i = 0; i < badAttributes.length; i++) {
-          var attributeStripper = new RegExp(
-            " " + badAttributes[i] + '="(.*?)"',
+          const attributeStripper = new RegExp(
+            ` ${  badAttributes[i]  }="(.*?)"`,
             "gi",
           );
           output = output.replace(attributeStripper, "");
@@ -1360,7 +1361,7 @@ define([
       /**
        * Style this table row to indicate it will be removed
        */
-      previewRemove: function () {
+      previewRemove () {
         this.$el.toggleClass("remove-preview");
       },
 
@@ -1369,8 +1370,8 @@ define([
        * an 'empty' class, and remove it when the user focuses back out.
        * @param {Event} e
        */
-      emptyName: function (e) {
-        var editableCell = this.$(".canRename [contenteditable]");
+      emptyName (e) {
+        const editableCell = this.$(".canRename [contenteditable]");
 
         editableCell.tooltip("hide");
 
@@ -1379,7 +1380,7 @@ define([
             .attr("data-original-text", editableCell.text().trim())
             .text("")
             .addClass("empty")
-            .on("focusout", function () {
+            .on("focusout", () => {
               if (!editableCell.text())
                 editableCell
                   .text(editableCell.attr("data-original-text"))
@@ -1390,38 +1391,35 @@ define([
 
       /**
        * Changes the access policy of a data object based on user input.
-       *
        * @param {Event} e - The event that triggered this function as a callback
        */
-      changeAccessPolicy: function (e) {
+      changeAccessPolicy (e) {
         if (typeof e === "undefined" || !e) return;
 
-        var accessPolicy = this.model.get("accessPolicy");
+        const accessPolicy = this.model.get("accessPolicy");
 
-        var makePublic = $(e.target).prop("checked");
+        const makePublic = $(e.target).prop("checked");
 
-        //If the user has chosen to make this object private
+        // If the user has chosen to make this object private
         if (!makePublic) {
           if (accessPolicy) {
-            //Make the access policy private
+            // Make the access policy private
             accessPolicy.makePrivate();
           } else {
-            //Create an access policy from the default settings
+            // Create an access policy from the default settings
             this.model.createAccessPolicy();
-            //Make the access policy private
+            // Make the access policy private
             this.model.get("accessPolicy").makePrivate();
           }
-        } else {
-          if (accessPolicy) {
-            //Make the access policy public
+        } else if (accessPolicy) {
+            // Make the access policy public
             accessPolicy.makePublic();
           } else {
-            //Create an access policy from the default settings
+            // Create an access policy from the default settings
             this.model.createAccessPolicy();
-            //Make the access policy public
+            // Make the access policy public
             this.model.get("accessPolicy").makePublic();
           }
-        }
       },
 
       /**
@@ -1429,28 +1427,28 @@ define([
        * @param {string} attr The modal attribute that has been validated
        * @param {string} errorMsg The validation error message to display
        */
-      showValidation: function (attr, errorMsg) {
-        //Find the element that is required
-        var requiredEl = this.$("[data-category='" + attr + "']").addClass(
+      showValidation (attr, errorMsg) {
+        // Find the element that is required
+        const requiredEl = this.$(`[data-category='${  attr  }']`).addClass(
           "error",
         );
 
-        //When it is updated, remove the error styling
-        this.listenToOnce(this.model, "change:" + attr, this.hideRequired);
+        // When it is updated, remove the error styling
+        this.listenToOnce(this.model, `change:${  attr}`, this.hideRequired);
       },
 
       /**
        * Hides the 'required' styling from this view
        */
-      hideRequired: function () {
-        //Remove the error styling
+      hideRequired () {
+        // Remove the error styling
         this.$("[contenteditable].error").removeClass("error");
       },
 
       /**
        * Show the data item as saving
        */
-      showSaving: function () {
+      showSaving () {
         this.$(".controls button").prop("disabled", true);
 
         if (this.model.get("type") != "Metadata")
@@ -1464,17 +1462,17 @@ define([
       /**
        * Hides the styles applied in {@link DataItemView#showSaving}
        */
-      hideSaving: function () {
+      hideSaving () {
         this.$(".controls button").prop("disabled", false);
         this.$(".disable-layer").remove();
 
-        //Make the name cell editable again
+        // Make the name cell editable again
         this.$(".canRename > div").prop("contenteditable", true);
 
         this.$el.removeClass("error-saving");
       },
 
-      toggleSaving: function () {
+      toggleSaving () {
         if (
           this.model.get("uploadStatus") == "p" ||
           this.model.get("uploadStatus") == "l" ||
@@ -1492,13 +1490,13 @@ define([
       /**
        * Shows the current progress of the file upload
        */
-      showUploadProgress: function () {
+      showUploadProgress () {
         if (this.model.get("numSaveAttempts") > 0) {
           this.$(".progress .bar").css("width", "100%");
         } else {
           this.$(".progress .bar").css(
             "width",
-            this.model.get("uploadProgress") + "%",
+            `${this.model.get("uploadProgress")  }%`,
           );
         }
       },
@@ -1513,65 +1511,64 @@ define([
        * not. If metadata (ie type is EML), also checks that the resource
        * map can be shared. Otherwise, only checks if the data item can be
        * shared.
-       *
-       * @return {boolean} Whether the item can be shared
+       * @returns {boolean} Whether the item can be shared
        * @since 2.15.0
        */
-      canShareItem: function () {
+      canShareItem () {
         if (this.parentEditorView) {
           if (this.parentEditorView.isAccessPolicyEditEnabled()) {
             if (this.model.type === "EML") {
               // Check whether we can share the resource map
-              var pkgModel = MetacatUI.rootDataPackage.packageModel,
-                pkgAccessPolicy = pkgModel.get("accessPolicy");
+              const pkgModel = MetacatUI.rootDataPackage.packageModel;
+                const pkgAccessPolicy = pkgModel.get("accessPolicy");
 
-              var canShareResourceMap =
+              const canShareResourceMap =
                 pkgModel.isNew() ||
                 (pkgAccessPolicy &&
                   pkgAccessPolicy.isAuthorized("changePermission"));
 
               // Check whether we can share the metadata
-              var modelAccessPolicy = this.model.get("accessPolicy");
-              var canShareMetadata =
+              const modelAccessPolicy = this.model.get("accessPolicy");
+              const canShareMetadata =
                 this.model.isNew() ||
                 (modelAccessPolicy &&
                   modelAccessPolicy.isAuthorized("changePermission"));
 
               // Only return true if we can share both
               return canShareMetadata && canShareResourceMap;
-            } else {
+            } 
               return (
                 this.model.get("accessPolicy") &&
                 this.model.get("accessPolicy").isAuthorized("changePermission")
               );
-            }
+            
           }
         }
       },
 
-      downloadFile: function (e) {
+      downloadFile (e) {
         this.downloadButtonView.download(e);
       },
 
       // Member row metrics for the package table
       // Retrieving information from the Metrics Model's result details
-      getMemberRowMetrics: function (id) {
+      getMemberRowMetrics (id) {
         if (typeof this.metricsModel !== "undefined") {
-          var metricsResultDetails = this.metricsModel.get("resultDetails");
+          const metricsResultDetails = this.metricsModel.get("resultDetails");
 
           if (
             typeof metricsResultDetails !== "undefined" &&
             metricsResultDetails
           ) {
-            var metricsPackageDetails =
-              metricsResultDetails["metrics_package_counts"];
+            const metricsPackageDetails =
+              metricsResultDetails.metrics_package_counts;
 
-            var objectLevelMetrics = metricsPackageDetails[id];
+            const objectLevelMetrics = metricsPackageDetails[id];
             if (typeof objectLevelMetrics !== "undefined") {
               if (this.isMetadata) {
-                var reads = objectLevelMetrics["viewCount"];
+                var reads = objectLevelMetrics.viewCount;
               } else {
-                var reads = objectLevelMetrics["downloadCount"];
+                var reads = objectLevelMetrics.downloadCount;
               }
             } else {
               var reads = 0;

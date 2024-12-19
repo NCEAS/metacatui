@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 define([
   "jquery",
@@ -435,12 +435,11 @@ define([
 
       /**
        * Fetches member models in batches to avoid fetching all members simultaneously.
-       *
        * @param {Array} models - The array of member models to fetch.
-       * @param {number} [index=0] - The current index of the model being fetched.
-       * @param {number} [batchSize=10] - The number of models to fetch in each batch.
-       * @param {number} [timeout=5000] - The timeout for each fetch request in milliseconds.
-       * @param {number} [maxRetries=3] - The maximum number of retries for each fetch request.
+       * @param {number} [index] - The current index of the model being fetched.
+       * @param {number} [batchSize] - The number of models to fetch in each batch.
+       * @param {number} [timeout] - The timeout for each fetch request in milliseconds.
+       * @param {number} [maxRetries] - The maximum number of retries for each fetch request.
        * @since 0.0.0
        */
       fetchMemberModels(models, index = 0, batchSize = 10, timeout = 5000, maxRetries = 3) {
@@ -454,15 +453,15 @@ define([
         }
 
         // If batchSize is 0, set it to the total number of models
-        if (batchSize == 0) batchSize = models.length;
+        let batchSizeAdjust = batchSize;
+        if (batchSizeAdjust === 0) batchSizeAdjust = models.length;
 
         const collection = this;
         // Slice the models array to get the current batch
-        const batch = models.slice(index, index + batchSize);
+        const batch = models.slice(index, index + batchSizeAdjust);
 
         // Create an array of promises for fetching each model in the batch
-        const fetchPromises = batch.map((memberModel) => {
-          return new Promise((resolve, reject) => {
+        const fetchPromises = batch.map((memberModel) => new Promise((resolve, reject) => {
             const attemptFetch = (retriesLeft) => {
               // Create a promise for the fetch request
               const fetchPromise = new Promise((fetchResolve, fetchReject) => {
@@ -473,8 +472,8 @@ define([
                       const newModel = collection.getMember(oldModel);
 
                       // If the type of the old model is different from the new model
-                      if (oldModel.type != newModel.type) {
-                        if (newModel.type == "DataPackage") {
+                      if (oldModel.type !== newModel.type) {
+                        if (newModel.type === "DataPackage") {
                           // If the new model is a DataPackage, replace the old model with the new one
                           oldModel.trigger("replace", newModel);
                           fetchResolve();
@@ -487,7 +486,7 @@ define([
                             collection.remove(oldModel);
                             collection.add(fetchedModel);
                             oldModel.trigger("replace", newModel);
-                            if (newModel.type == "EML") collection.trigger("add:EML");
+                            if (newModel.type === "EML") collection.trigger("add:EML");
                             fetchResolve();
                           });
                         }
@@ -495,7 +494,7 @@ define([
                         // If the type of the old model is the same as the new model, merge the new model into the collection
                         newModel.set("synced", true);
                         collection.add(newModel, { merge: true });
-                        if (newModel.type == "EML") collection.trigger("add:EML");
+                        if (newModel.type === "EML") collection.trigger("add:EML");
                         fetchResolve();
                       }
                     });
@@ -505,7 +504,7 @@ define([
               });
 
               // Create a promise for the timeout
-              const timeoutPromise = new Promise((_, timeoutReject) => {
+              const timeoutPromise = new Promise((__, timeoutReject) => {
                 setTimeout(() => timeoutReject(new Error("Fetch timed out")), timeout);
               });
 
@@ -515,11 +514,9 @@ define([
                 .catch((error) => {
                   if (retriesLeft > 0) {
                     // Retry the fetch if there are retries left
-                    console.warn(`Retrying fetch for model: ${memberModel.id}, retries left: ${retriesLeft}, error: ${error}`);
                     attemptFetch(retriesLeft - 1);
                   } else {
                     // Reject the promise if all retries are exhausted
-                    console.error(`Failed to fetch model: ${memberModel.id} after ${maxRetries} retries, error: ${error}`);
                     reject(error);
                   }
                 });
@@ -527,19 +524,22 @@ define([
 
             // Start the fetch attempt with the maximum number of retries
             attemptFetch(maxRetries);
-          });
-        });
+          }));
 
         // Once all fetch promises are resolved, fetch the next batch
         Promise.allSettled(fetchPromises).then((results) => {
           const errors = results.filter(result => result.status === "rejected");
           if (errors.length > 0) {
+            /* eslint-disable */
             console.error("Error fetching member models:", errors);
+            /* eslint-enable */
           }
           // Fetch the next batch of models
-          this.fetchMemberModels.call(collection, models, index + batchSize, batchSize, timeout, maxRetries);
+          this.fetchMemberModels.call(collection, models, index + batchSizeAdjust, batchSizeAdjust, timeout, maxRetries);
         }).catch((error) => {
+          /* eslint-disable */
           console.error("Error fetching member models:", error);
+          /* eslint-enable */
         });
       },
 
@@ -602,7 +602,6 @@ define([
         return Backbone.Collection.prototype.fetch
           .call(this, fetchOptions)
           .fail(() =>
-              console.log("Fetch failed. Retrying with user login details..."),
             // If the initial fetch fails, retry with user login details
             retryFetch(),
           );
