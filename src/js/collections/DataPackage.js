@@ -454,7 +454,7 @@ define([
 
         // If batchSize is 0, set it to the total number of models
         let batchSizeAdjust = batchSize;
-        if (batchSizeAdjust === 0) batchSizeAdjust = models.length;
+        if (batchSizeAdjust === 0 && index === 0) batchSizeAdjust = models.length;
 
         const collection = this;
         // Slice the models array to get the current batch

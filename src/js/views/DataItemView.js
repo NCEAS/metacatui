@@ -792,7 +792,7 @@ define([
         let activeUploads = 0; // Counter for the number of active uploads
 
         // If batchSize is 0, set it to the total number of files
-        if (batchSize == 0) batchSize = fileList.length;
+        if (batchSize === 0) batchSize = fileList.length;
 
         /**
          * Function to upload the next file in the list.
@@ -1128,7 +1128,7 @@ define([
           this.render();
         }
 
-        
+
       },
 
       /**
@@ -1236,7 +1236,7 @@ define([
           // Is this a Data or Metadata model?
           if (eventModel.get && eventModel.get("type") === "Metadata") {
             return eventModel;
-          } 
+          }
             // It's data, get the parent scimeta
             parentMetadata = MetacatUI.rootDataPackage.where({
               id: Array.isArray(eventModel.get("isDocumentedBy"))
@@ -1247,15 +1247,15 @@ define([
             if (parentMetadata.length > 0) {
               parentSciMeta = parentMetadata[0];
               return parentSciMeta;
-            } 
+            }
               // If there is only one metadata model in the root data package, then use that metadata model
               const metadataModels = MetacatUI.rootDataPackage.where({
                 type: "Metadata",
               });
 
               if (metadataModels.length == 1) return metadataModels[0];
-            
-          
+
+
         }
       },
 
@@ -1296,11 +1296,11 @@ define([
             return MetacatUI.rootDataPackage;
 
             // A nested package
-          } 
+          }
             return MetacatUI.rootDataPackage.where({
               id: parentResourceMapId,
             })[0];
-          
+
         }
       },
 
@@ -1536,12 +1536,12 @@ define([
 
               // Only return true if we can share both
               return canShareMetadata && canShareResourceMap;
-            } 
+            }
               return (
                 this.model.get("accessPolicy") &&
                 this.model.get("accessPolicy").isAuthorized("changePermission")
               );
-            
+
           }
         }
       },
