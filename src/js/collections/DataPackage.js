@@ -442,7 +442,13 @@ define([
        * @param {number} [maxRetries] - The maximum number of retries for each fetch request.
        * @since 0.0.0
        */
-      fetchMemberModels(models, index = 0, batchSize = 10, timeout = 5000, maxRetries = 3) {
+      fetchMemberModels(
+        models,
+        index = 0,
+        batchSize = 10,
+        timeout = 5000,
+        maxRetries = 3,
+      ) {
         // Update the number of file metadata items being loaded
         this.packageModel.set("numLoadingFileMetadata", models.length - index);
 
@@ -454,93 +460,116 @@ define([
 
         // If batchSize is 0, set it to the total number of models
         let batchSizeAdjust = batchSize;
-        if (batchSizeAdjust === 0 && index === 0) batchSizeAdjust = models.length;
+        if (batchSizeAdjust === 0 && index === 0)
+          batchSizeAdjust = models.length;
 
         const collection = this;
         // Slice the models array to get the current batch
         const batch = models.slice(index, index + batchSizeAdjust);
 
         // Create an array of promises for fetching each model in the batch
-        const fetchPromises = batch.map((memberModel) => new Promise((resolve, reject) => {
-            const attemptFetch = (retriesLeft) => {
-              // Create a promise for the fetch request
-              const fetchPromise = new Promise((fetchResolve, fetchReject) => {
-                memberModel.fetch({
-                  success: () => {
-                    // Once the model is synced, handle the response
-                    memberModel.once("sync", (oldModel) => {
-                      const newModel = collection.getMember(oldModel);
+        const fetchPromises = batch.map(
+          (memberModel) =>
+            new Promise((resolve, reject) => {
+              const attemptFetch = (retriesLeft) => {
+                // Create a promise for the fetch request
+                const fetchPromise = new Promise(
+                  (fetchResolve, fetchReject) => {
+                    memberModel.fetch({
+                      success: () => {
+                        // Once the model is synced, handle the response
+                        memberModel.once("sync", (oldModel) => {
+                          const newModel = collection.getMember(oldModel);
 
-                      // If the type of the old model is different from the new model
-                      if (oldModel.type !== newModel.type) {
-                        if (newModel.type === "DataPackage") {
-                          // If the new model is a DataPackage, replace the old model with the new one
-                          oldModel.trigger("replace", newModel);
-                          fetchResolve();
-                        } else {
-                          // Otherwise, fetch the new model and replace the old model with the new one
-                          newModel.set("synced", false);
-                          newModel.fetch();
-                          newModel.once("sync", (fetchedModel) => {
-                            fetchedModel.set("synced", true);
-                            collection.remove(oldModel);
-                            collection.add(fetchedModel);
-                            oldModel.trigger("replace", newModel);
-                            if (newModel.type === "EML") collection.trigger("add:EML");
+                          // If the type of the old model is different from the new model
+                          if (oldModel.type !== newModel.type) {
+                            if (newModel.type === "DataPackage") {
+                              // If the new model is a DataPackage, replace the old model with the new one
+                              oldModel.trigger("replace", newModel);
+                              fetchResolve();
+                            } else {
+                              // Otherwise, fetch the new model and replace the old model with the new one
+                              newModel.set("synced", false);
+                              newModel.fetch();
+                              newModel.once("sync", (fetchedModel) => {
+                                fetchedModel.set("synced", true);
+                                collection.remove(oldModel);
+                                collection.add(fetchedModel);
+                                oldModel.trigger("replace", newModel);
+                                if (newModel.type === "EML")
+                                  collection.trigger("add:EML");
+                                fetchResolve();
+                              });
+                            }
+                          } else {
+                            // If the type of the old model is the same as the new model, merge the new model into the collection
+                            newModel.set("synced", true);
+                            collection.add(newModel, { merge: true });
+                            if (newModel.type === "EML")
+                              collection.trigger("add:EML");
                             fetchResolve();
-                          });
-                        }
-                      } else {
-                        // If the type of the old model is the same as the new model, merge the new model into the collection
-                        newModel.set("synced", true);
-                        collection.add(newModel, { merge: true });
-                        if (newModel.type === "EML") collection.trigger("add:EML");
-                        fetchResolve();
-                      }
+                          }
+                        });
+                      },
+                      error: (model, response) =>
+                        fetchReject(new Error(response.statusText)),
                     });
                   },
-                  error: (model, response) => fetchReject(new Error(response.statusText))
+                );
+
+                // Create a promise for the timeout
+                const timeoutPromise = new Promise((__, timeoutReject) => {
+                  setTimeout(
+                    () => timeoutReject(new Error("Fetch timed out")),
+                    timeout,
+                  );
                 });
-              });
 
-              // Create a promise for the timeout
-              const timeoutPromise = new Promise((__, timeoutReject) => {
-                setTimeout(() => timeoutReject(new Error("Fetch timed out")), timeout);
-              });
+                // Race the fetch promise against the timeout promise
+                Promise.race([fetchPromise, timeoutPromise])
+                  .then(resolve)
+                  .catch((error) => {
+                    if (retriesLeft > 0) {
+                      // Retry the fetch if there are retries left
+                      attemptFetch(retriesLeft - 1);
+                    } else {
+                      // Reject the promise if all retries are exhausted
+                      reject(error);
+                    }
+                  });
+              };
 
-              // Race the fetch promise against the timeout promise
-              Promise.race([fetchPromise, timeoutPromise])
-                .then(resolve)
-                .catch((error) => {
-                  if (retriesLeft > 0) {
-                    // Retry the fetch if there are retries left
-                    attemptFetch(retriesLeft - 1);
-                  } else {
-                    // Reject the promise if all retries are exhausted
-                    reject(error);
-                  }
-                });
-            };
-
-            // Start the fetch attempt with the maximum number of retries
-            attemptFetch(maxRetries);
-          }));
+              // Start the fetch attempt with the maximum number of retries
+              attemptFetch(maxRetries);
+            }),
+        );
 
         // Once all fetch promises are resolved, fetch the next batch
-        Promise.allSettled(fetchPromises).then((results) => {
-          const errors = results.filter(result => result.status === "rejected");
-          if (errors.length > 0) {
+        Promise.allSettled(fetchPromises)
+          .then((results) => {
+            const errors = results.filter(
+              (result) => result.status === "rejected",
+            );
+            if (errors.length > 0) {
+              /* eslint-disable */
+              console.error("Error fetching member models:", errors);
+              /* eslint-enable */
+            }
+            // Fetch the next batch of models
+            this.fetchMemberModels.call(
+              collection,
+              models,
+              index + batchSizeAdjust,
+              batchSizeAdjust,
+              timeout,
+              maxRetries,
+            );
+          })
+          .catch((error) => {
             /* eslint-disable */
-            console.error("Error fetching member models:", errors);
+            console.error("Error fetching member models:", error);
             /* eslint-enable */
-          }
-          // Fetch the next batch of models
-          this.fetchMemberModels.call(collection, models, index + batchSizeAdjust, batchSizeAdjust, timeout, maxRetries);
-        }).catch((error) => {
-          /* eslint-disable */
-          console.error("Error fetching member models:", error);
-          /* eslint-enable */
-        });
+          });
       },
 
       /**
@@ -822,7 +851,12 @@ define([
           // Collection is set to false
           if (this.fetchModels !== false) {
             // Start fetching member models
-            this.fetchMemberModels.call(this, models, 0, MetacatUI.appModel.get("batchSizeFetch"));
+            this.fetchMemberModels.call(
+              this,
+              models,
+              0,
+              MetacatUI.appModel.get("batchSizeFetch"),
+            );
           }
         } catch (error) {
           // TODO: Handle the error
@@ -3764,7 +3798,6 @@ define([
 
         this.packageModel.updateSysMeta();
       },
-
 
       /**
        * Tracks the upload status of DataONEObject models in this collection. If

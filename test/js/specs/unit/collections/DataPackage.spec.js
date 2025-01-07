@@ -77,7 +77,11 @@ define([
         dataPackage.fetchMemberModels(models, 0, 2, 5000, maxRetries);
 
         setTimeout(function () {
-          console.log("[should retry fetching member models on failure] "+ fetchCallCount + " fetch calls");
+          console.log(
+            "[should retry fetching member models on failure] " +
+              fetchCallCount +
+              " fetch calls",
+          );
           expect(fetchCallCount).to.equal(models.length * (maxRetries + 1)); // 2 models * 3 retries
           DataONEObject.prototype.fetch = originalFetch;
           done();
@@ -85,28 +89,43 @@ define([
       });
 
       it("should trigger complete event after fetching all models", function (done) {
-        const models = [new DataONEObject({identifier: "1"}), new DataONEObject({identifier: "2"})];
+        const models = [
+          new DataONEObject({ identifier: "1" }),
+          new DataONEObject({ identifier: "2" }),
+        ];
         const originalFetch = DataONEObject.prototype.fetch;
         let fetchCallCount = 0;
         let completeEventTriggered = false;
         let maxRetries = 3;
 
         DataONEObject.prototype.fetch = function (options) {
-          console.log("[should trigger complete event after fetching all models] fetching model: " + this.get("identifier"));
+          console.log(
+            "[should trigger complete event after fetching all models] fetching model: " +
+              this.get("identifier"),
+          );
           fetchCallCount++;
           options.success();
         };
 
         dataPackage.triggerComplete = function () {
           completeEventTriggered = true;
-          console.log("[should trigger complete event after fetching all models] complete event triggered");
+          console.log(
+            "[should trigger complete event after fetching all models] complete event triggered",
+          );
         };
 
         dataPackage.fetchMemberModels(models, 0, 2, 100, maxRetries);
 
         setTimeout(function () {
-          console.log("[should trigger complete event after fetching all models] "+ fetchCallCount + " fetch calls");
-          console.log("[should trigger complete event after fetching all models] "+ completeEventTriggered);
+          console.log(
+            "[should trigger complete event after fetching all models] " +
+              fetchCallCount +
+              " fetch calls",
+          );
+          console.log(
+            "[should trigger complete event after fetching all models] " +
+              completeEventTriggered,
+          );
           expect(fetchCallCount).to.equal(models.length * (maxRetries + 1));
           expect(completeEventTriggered).to.be.true;
           DataONEObject.prototype.fetch = originalFetch;
