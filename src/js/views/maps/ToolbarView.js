@@ -10,6 +10,8 @@ define([
   // Sub-views - TODO: import these as needed
   "views/maps/LayersPanelView",
   "views/maps/HelpPanelView",
+  "views/maps/DrawToolView",
+  "views/maps/DownloadPanelView",
   "views/maps/viewfinder/ViewfinderView",
   "views/maps/ShareUrlView",
 ], (
@@ -22,6 +24,8 @@ define([
   // Sub-views
   LayersPanelView,
   HelpPanel,
+  DrawTool,
+  DownloadPanelView,
   ViewfinderView,
   ShareUrlView,
 ) => {
@@ -97,6 +101,7 @@ define([
         linkActive: "toolbar__link--active",
         content: "toolbar__content",
         contentActive: "toolbar__content--active",
+        // drawContainer: "draw__all-content",
       },
 
       /**
@@ -179,12 +184,15 @@ define([
           },
         },
         // We can enable to the draw tool once we have a use case for it
-        // {
-        //   label: 'Draw',
-        //   icon: 'pencil',
-        //   view: DrawTool,
-        //   viewOptions: {}
-        // },
+        {
+          label: 'Draw',
+          icon: 'pencil',
+          // view: DownloadTool,
+          view: DownloadPanelView,
+          viewOptions: {
+            showDownloadPanel: "model.showDownloadPanel",
+          }
+        },
         {
           label: "Help",
           icon: "question-sign",

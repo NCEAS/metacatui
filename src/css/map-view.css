@@ -517,6 +517,7 @@ represents 1 unit of the given distance measurement. */
 
 .toolbar__content--active {
   display: flex;
+  position: relative;
 }
 
 .toolbar__link {
@@ -1426,12 +1427,97 @@ other class: .ui-slider-range */
  * Panel for drawing polygons in the map
  *
  */
+ .draw__all-content {
+  display: flex;
+  position: absolute; /* Or relative, fixed, or sticky based on your layout */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  bottom: 5px; /* Adjust to move it down from the top */
+  width: 100%; /* Adjust the size of the container */
+  /* height: auto; */
+  height: 80px;
+  padding: 0.5rem;
+  /* border: 1px solid #191919;  */
+  border-top: 0.1px solid #948989; /* Add only a top border */
+  /* z-index: 1000; Ensure it appears above other elements */
+  /* background-color: #7D7D7D; */
+}
 
 .draw-tool {
-  display: grid;
+  display: flex;
   grid-auto-rows: min-content;
   grid-gap: 1rem;
+  /* background-color: #12CAD6; */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
 }
+
+.custom-circle {
+  display: inline-flex; /* Centers the icon within the circle */
+  align-items: center;
+  justify-content: center;
+  width: 50px; /* Adjust size */
+  height: 50px; /* Adjust size */
+  border-radius: 50%; /* Makes it a perfect circle */
+  padding: 0.5rem;
+  /* background-color: #f0f0f0; Circle background color */
+  background-color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
+  border: 2px solid var(--portal-col-primary-3);
+  color: #333; /* Icon color */
+  font-size: 18px; /* Adjust icon size */
+  border: 1px solid var(--portal-col-primary-2);
+}
+/* Style the button labels */
+.draw-button-label {
+  display: none; /* Hide the label by default */
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.7); /* Optional: Add a semi-transparent background */
+  color: #fff; /* Label text color */
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10;
+  transform: translateY(-100%); /* Position the label above the button */
+  margin-top: -8px;
+}
+
+/* Positioning relative to button */
+button {
+  position: relative;
+}
+
+/* Show the label when hovering over the button */
+button:hover .draw-button-label {
+  display: inline-block;
+}
+/* 
+.toolbar__link {
+  position: relative;
+  cursor: pointer;
+  height: var(--map-size-toolbar-link);
+  width: var(--map-size-toolbar-link);
+  background-color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
+  padding: 0.5rem;
+  border-radius: var(--map-border-radius-small);
+  border: 1px solid var(--portal-col-primary-2);
+}
+
+.toolbar__link:hover {
+  background-color: var(
+    --portal-col-primary-2,
+    var(--map-col-bkg-lighter__deprecate)
+  );
+}
+
+.toolbar__link--active {
+  background-color: var(
+    --portal-col-primary-6,
+    var(--map-col-highlight__deprecate)
+  );
+  color: var(--portal-col-primary-3);
+} */
+
 
 /*****************************************************************************************
  *
