@@ -23,7 +23,8 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
       },
 
       initialize: function (attributes, opions) {
-        this.on("change", this.trickleUpChange);
+        this.stopListening(this, "change", this.trickleUpChange);
+        this.listenTo(this, "change", this.trickleUpChange);
       },
 
       parse: function (attributes, options) {
@@ -54,65 +55,63 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         return attributes;
       },
 
-      validate: function () {
-        var errors = [];
+      validate() {
+        const errors = [];
 
         if (this.isEmpty()) {
           this.trigger("valid");
-
-          return;
+          return null;
         }
 
-        var propertyURI = this.get("propertyURI");
+        const isCanonicalDataset = this.get("isCanonicalDataset");
 
-        if (!propertyURI || propertyURI.length <= 0) {
-          errors.push({
-            category: "propertyURI",
-            message: "Property URI must be set.",
-          });
-        } else if (propertyURI.match(/http[s]?:\/\/.+/) === null) {
-          errors.push({
-            category: "propertyURI",
-            message: "Property URI should be an HTTP(S) URI.",
-          });
-        }
+        const emptyErrorMsg = (label) => `${label} must be set.`;
+        const uriErrorMsg = (label) =>
+          `${label} should be an HTTP(S) URI, for example: https://doi.org/xxxx.`;
 
-        var propertyLabel = this.get("propertyLabel");
+        const isValidURI = (uri) => uri.match(/http[s]?:\/\/.+/) !== null;
 
-        if (!propertyLabel || propertyLabel.length <= 0) {
-          errors.push({
-            category: "propertyLabel",
-            message: "Property Label must be set.",
-          });
-        }
+        // Both URIs must be set and must be valid URIs
+        const uriAttrs = [
+          { attr: "propertyURI", label: "Property URI" },
+          { attr: "valueURI", label: "Value URI" },
+        ];
+        uriAttrs.forEach(({ attr, label }) => {
+          const uri = this.get(attr);
+          if (!uri || uri.length <= 0) {
+            errors.push({
+              attr,
+              message: emptyErrorMsg(label),
+              isCanonicalDataset,
+            });
+          } else if (!isValidURI(uri)) {
+            errors.push({
+              attr,
+              message: uriErrorMsg(label),
+              isCanonicalDataset,
+            });
+          }
+        });
 
-        var valueURI = this.get("valueURI");
-
-        if (!valueURI || valueURI.length <= 0) {
-          errors.push({
-            category: "valueURI",
-            message: "Value URI must be set.",
-          });
-        } else if (valueURI.match(/http[s]?:\/\/.+/) === null) {
-          errors.push({
-            category: "valueURI",
-            message: "Value URI should be an HTTP(S) URI.",
-          });
-        }
-
-        var valueLabel = this.get("valueLabel");
-
-        if (!valueLabel || valueLabel.length <= 0) {
-          errors.push({
-            category: "valueLabel",
-            message: "Value Label must be set.",
-          });
-        }
+        // Both labels must be set to a string
+        const labelAttrs = [
+          { attr: "propertyLabel", label: "Property Label" },
+          { attr: "valueLabel", label: "Value Label" },
+        ];
+        labelAttrs.forEach(({ attr, label }) => {
+          const value = this.get(attr);
+          if (!value || value.length <= 0) {
+            errors.push({
+              attr,
+              message: emptyErrorMsg(label),
+              isCanonicalDataset,
+            });
+          }
+        });
 
         if (errors.length === 0) {
           this.trigger("valid");
-
-          return;
+          return null;
         }
 
         return errors;
@@ -175,7 +174,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
 
       /* Let the top level package know of attribute changes from this object */
       trickleUpChange: function () {
-        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+        MetacatUI.rootDataPackage.packageModel?.set("changed", true);
       },
     },
   );
