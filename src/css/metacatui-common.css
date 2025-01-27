@@ -1855,6 +1855,12 @@ body > .alert-container {
 .attributeList > .row-fluid > .span10 {
   width: 72%;
 }
+.attributeList .tab-content {
+  /* for the annotation view popups in entities on the metadata page to be
+  displayed in full */
+  overflow: visible;
+}
+
 .attributeListTable tr td:last-child a {
   white-space: nowrap;
   max-width: 100%;

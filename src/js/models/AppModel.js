@@ -1116,8 +1116,10 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           searchMapTileHue: "192",
 
           /**
-           * If true, the dataset landing pages will generate Schema.org-compliant JSONLD
-           * and insert it into the page.
+           * If true, the dataset landing pages and data catalog view will
+           * generate Schema.org-compliant JSONLD and insert it into the page.
+           * If there is a JSONLD template for the app, it will also be
+           * inserted. This is useful for search engines and other web crawlers.
            * @type {boolean}
            * @default true
            */
@@ -2131,8 +2133,8 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            */
           bioportalApiBaseUrl: "https://data.bioontology.org",
           /**
-           * This attribute stores cache of ontology information that is looked up in Bioportal, so that duplicate REST calls don't need to be made.
-           * @type {object}
+           * Make use of the Bioontology model to cache the results of Bioportal API calls
+           * @deprecated since 0.0.0
            */
           bioportalLookupCache: {},
           /**
@@ -2431,6 +2433,40 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @example application%2Fbagit-097
            */
           packageFormat: "application%2Fbagit-1.0",
+          /**
+           * Whether to batch fetch requests to the DataONE API. This is an experimental feature
+           * and should be used with caution.  If set to a number greater than 0, MetacatUI will
+           * batch requests to the DataONE API and send them in groups of this size. This can
+           * improve performance when making many requests to the DataONE API, but can also
+           * cause issues if the requests are too large or if the DataONE API is not able to
+           * handle the batched requests.
+           *
+           * Currently, this feature is only used in the DataPackageModel when fetching the
+           * list of DataONE member models.
+           *
+           * @type {number}
+           * @default 0
+           * @example 20
+           * @since 0.0.0
+           */
+          batchSizeFetch: 0,
+          /**
+           * Whether to batch uploads to the DataONE API. This is an experimental feature
+           * and should be used with caution.  If set to a number greater than 0, MetacatUI will
+           * batch uploads to the DataONE API and send them in groups of this size. This can
+           * improve performance when uploading many files to the DataONE API, but can also
+           * cause issues if the requests are too large or if the DataONE API is not able to
+           * handle the batched requests.
+           *
+           * Currently, this feature is only used in the DataPackageModel when uploading files
+           * to the DataONE API.
+           *
+           * @type {number}
+           * @default 0
+           * @example 20
+           * @since 0.0.0
+           */
+          batchSizeUpload: 0,
         },
         MetacatUI.AppConfig,
       ),
