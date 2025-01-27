@@ -3445,7 +3445,7 @@ define([
         _.each($(".annotation"), (annoEl) => {
           const newView = new AnnotationView({
             el: annoEl,
-          });
+          }).render();
           viewRef.subviews.push(newView);
         });
       },
