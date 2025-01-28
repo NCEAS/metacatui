@@ -1199,25 +1199,20 @@ define([
        * @since 2.17.1
        */
       toggleEnableControls() {
-        if (MetacatUI.rootDataPackage.packageModel.get("isLoadingFiles")) {
-          const noun =
-            MetacatUI.rootDataPackage.packageModel.get("numLoadingFiles") > 1
-              ? " files"
-              : " file";
-          this.disableControls(
-            `Waiting for ${MetacatUI.rootDataPackage.packageModel.get(
-              "numLoadingFiles",
-            )}${noun} to upload...`,
-          );
-        } else if (
-          MetacatUI.rootDataPackage.packageModel.get("numLoadingFileMetadata") >
-          0
-        ) {
-          this.disableControls(
-            `Waiting for ${MetacatUI.rootDataPackage.packageModel.get(
-              "numLoadingFileMetadata",
-            )} file metadata to load...`,
-          );
+        const packageModel = MetacatUI.rootDataPackage.packageModel;
+        const numLoadingMetadata = packageModel.get("numLoadingFileMetadata");
+        const numLoadingFiles = packageModel.get("numLoadingFiles");
+        const isLoadingMetadata = numLoadingMetadata > 0;
+        const isLoadingFiles = packageModel.get("isLoadingFiles");
+
+        if (isLoadingFiles) {
+          const noun = numLoadingFiles > 1 ? "files" : "file";
+          const message = `Waiting for ${numLoadingFiles} ${noun} to upload...`;
+          this.disableControls(message);
+        } else if (isLoadingMetadata) {
+          const noun = numLoadingMetadata > 1 ? "files" : "file";
+          const message = `Waiting for metadata from ${numLoadingMetadata} ${noun} to load...`;
+          this.disableControls(message);
         } else {
           this.enableControls();
         }
