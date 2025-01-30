@@ -114,7 +114,7 @@ kubectl config use-context "rancher-desktop"
 
 3. After waiting a few seconds for the release to get up and running, use your browser to view MetacatUI at [http://localhost:8080/](http://localhost:8080/), where you should see MetacatUI using the KNB theme.
 
-   ***NOTE**: You have not yet provided details of an existing Metacat back-end for MetacatUI to contact, so you will therefore see an error message on [the search page](http://localhost:8080/data), saying `Something went wrong while getting the list of datasets` - this is expected, and can be ignored.* However, if you want to resolve this...
+   **\*NOTE**: You have not yet provided details of an existing Metacat back-end for MetacatUI to contact, so you will therefore see an error message on [the search page](http://localhost:8080/data), saying `Something went wrong while getting the list of datasets` - this is expected, and can be ignored.\* However, if you want to resolve this...
 
 4. Create a file (named `my-values.yaml`), and add the following content. Helm will use these values to override the corresponding ones in the default `values.yaml`. The rest will remain unchanged:
 
