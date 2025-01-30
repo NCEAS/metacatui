@@ -125,6 +125,7 @@ kubectl config use-context "rancher-desktop"
      d1ClientCnUrl: "https://cn-stage.test.dataone.org/cn"
      metacatAppContext: "knb"
    ```
+
 5. Upgrade the Helm chart, using the `my-values.yaml` file:
 
    ```shell
