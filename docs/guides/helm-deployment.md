@@ -17,7 +17,7 @@ MetacatUI can be deployed in a docker container on Kubernetes, in addition to de
 
 ### Images and Containers
 
-An **image** is essentially a blueprint or template that defines how to create a new container. Think of it like a recipe book - just as a recipe tells you how to make a specific dish, an image provides the instructions for creating  a container with a specific set of characteristics, such as which software packages are installed.
+An **image** is essentially a blueprint or template that defines how to create a new container. Think of it like a recipe book - just as a recipe tells you how to make a specific dish, an image provides the instructions for creating a container with a specific set of characteristics, such as which software packages are installed.
 
 A **container** is the actual instance of an image that's running and executing code. It's a lightweight, portable, and isolated execution environment that packages an application and its dependencies together, allowing consistent deployment across different computing platforms and environments.  Once you create a container from an image, it can run independently and be managed separately. Containers can be run on any machine that has the container runtime installed, regardless of the underlying operating system or hardware.
 
