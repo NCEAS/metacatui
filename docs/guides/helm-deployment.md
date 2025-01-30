@@ -143,9 +143,9 @@ Ensure port-forwarding is still running (see step 2), and you should simply be a
 > NAME                               READY   STATUS    RESTARTS   AGE
 > mcui-metacatui-557545c55-tk7wg     1/1     Running   0          3m24s
 > ```
-> 
+>
 > If the "AGE" does not reflect your most-recent `helm upgrade`, you may need to delete the pod with `kubectl delete pod <podname>`:
-> 
+>
 > ```shell
 > $ kubectl delete pod mcui-metacatui-557545c55-tk7wg    ## copy your pod name from above
 > ```
