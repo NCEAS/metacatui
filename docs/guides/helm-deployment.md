@@ -137,7 +137,7 @@ Ensure port-forwarding is still running (see step 2), and you should simply be a
 > **\*TIP:** the `upgrade` command should restart the metacatui pod, if settings have changed since the previous release. However, sometimes this may not work as expected, and you may need to `delete` the pod manually, thus prompting K8s to re-create it with the new settings.\*
 
 > You can check the status of the pods with `kubectl get pods`:
-> 
+>
 > ```shell
 > $ kubectl get pods
 > NAME                               READY   STATUS    RESTARTS   AGE
@@ -149,17 +149,17 @@ Ensure port-forwarding is still running (see step 2), and you should simply be a
 > ```shell
 > $ kubectl delete pod mcui-metacatui-557545c55-tk7wg    ## copy your pod name from above
 > ```
-> 
+>
 > ...and then monitor the new pod startup using `kubectl get pods` again, until you see `READY` change from `0/1` to `1/1`.
 >
 > Alternatively, instead of using `helm upgrade`, you can delete the release with `helm delete mcui`, and then re-install it with the original `helm install` command.
-
 
 ## Configuration
 
 Complete documentation for configuring the Helm chart can be found in the [Helm README file](https://github.com/NCEAS/metacatui/blob/main/helm/README.md), and within the comments in the [values.yaml file](https://github.com/NCEAS/metacatui/blob/main/helm/values.yaml).
 
 For example, the Helm chart supports the following different configuration options:
+
 ### Setting or Overriding MetacatUI's config.js values
 
 * Any entries of the form `key: stringValue`, or `key: intValue` provided in the `appConfig:` section of `values.yaml` will be automatically incorporated into MetacatUI's `config.js` file, overriding any existing entries with the same name. Example:
