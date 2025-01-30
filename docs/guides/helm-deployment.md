@@ -26,6 +26,7 @@ A **container** is the actual instance of an image that's running and executing 
 #### Simple example of running a container on a local machine:
 
 Ensure you already installed Rancher Desktop - see [Prerequisites](#prerequisites), above - and then type `docker run hello-world` to run the example "hello-world" container, and you should see the following:
+
 ```shell
 $ docker run hello-world
 Unable to find image 'hello-world:latest' locally
