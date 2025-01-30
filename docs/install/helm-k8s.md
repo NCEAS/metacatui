@@ -1,9 +1,4 @@
----
-layout: guide
-title: Helm Deployment on Kubernetes
-id: helm
-toc: true
----
+# Helm Install on Kubernetes (Local or Remote)
 
 MetacatUI can be deployed in a docker container on Kubernetes, in addition to deploying in traditional server environments. Helm is used to simplify Kubernetes deployment. This guide provides a very brief introductory overview of Docker, Kubernetes and Helm, and summarizes the steps to deploy MetacatUI using Helm, either to a local machine, or to a remote Kubernetes cluster.
 
