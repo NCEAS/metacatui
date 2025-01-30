@@ -67,10 +67,10 @@ global:
 
 ## Step 4. Upgrade the Release, with the New Values:
 
-   ```shell
-   helm upgrade mcui  -f my-values.yaml  oci://ghcr.io/nceas/charts/metacatui --version 1.0.2
-   # or if deploying from the local repo, use ./helm instead of oci://... and --version (see Step 1)
-   ```
+```shell
+helm upgrade mcui  -f my-values.yaml  oci://ghcr.io/nceas/charts/metacatui --version 1.0.2
+# or if deploying from the local repo, use ./helm instead of oci://... and --version (see Step 1)
+```
 
 Ensure port-forwarding is still running (see Step 2), and you should simply be able to refresh your browser to see the updated version at [http://localhost:8080/](http://localhost:8080/). You should now see MetacatUI using the Arctic Data Center theme, and [the search page](http://localhost:8080/data) should be populated with test data from [https://dev.nceas.ucsb.edu/](https://dev.nceas.ucsb.edu/data)
 
