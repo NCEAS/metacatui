@@ -59,10 +59,10 @@ Create a file (named `my-values.yaml`), and add the following content. Helm will
 
 ```yaml
 global:
- metacatUiThemeName: "arctic"
- metacatExternalBaseUrl: "https://dev.nceas.ucsb.edu/"
- metacatAppContext: "knb"
- d1ClientCnUrl: "https://cn-stage.test.dataone.org/cn"
+  metacatUiThemeName: "arctic"
+  metacatExternalBaseUrl: "https://dev.nceas.ucsb.edu/"
+  metacatAppContext: "knb"
+  d1ClientCnUrl: "https://cn-stage.test.dataone.org/cn"
 ```
 
 ## Step 4. Upgrade the Release, with the New Values:
