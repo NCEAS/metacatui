@@ -181,7 +181,6 @@ For example, the Helm chart supports the following different configuration optio
   appConfig:
     enabled: false
   ```
-  
   ...and manually create your own configMap named `<YourReleaseName>-metacatui-config-js`, containing your complete custom config.js file:
 
   ```shell
