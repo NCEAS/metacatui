@@ -178,8 +178,8 @@ For example, the Helm chart supports the following different configuration optio
 - If you need to provide more-complex overrides, you can set:
 
   ```yaml
-    appConfig:
-      enabled: false
+  appConfig:
+    enabled: false
   ```
   
   ...and manually create your own configMap named `<YourReleaseName>-metacatui-config-js`, containing your complete custom config.js file:
