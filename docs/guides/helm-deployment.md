@@ -73,6 +73,7 @@ Many ready-made charts are publicly available in various Helm Repositories. Exam
 * [The Bitnami Library for Kubernetes](https://github.com/bitnami/charts/tree/main/bitnami)
 
 #### Basic Helm Commands
+
 ```shell
 # install a chart
 helm install <releasename> <chartname>
@@ -85,7 +86,9 @@ helm delete <releasename>
 ```
 
 ## Minimal Example: Deploy MetacatUI
+
 It is very easy to deploy MetacatUI via Helm. The steps are exactly the same, whether you want to deploy to a remote Kubernetes cluster, or to one running on you local machine. Ensure you already installed Rancher Desktop - see [Prerequisites](#prerequisites), above, and then ensure you are using the correct Kubernetes context, so you deploy to the right place. Use `kubectl config get-contexts` to see all the available contexts, and `kubectl config use-context <contextname>` to switch to the correct one; for example:
+
 ```shell
 kubectl config use-context "rancher-desktop"
 ```
@@ -93,22 +96,27 @@ kubectl config use-context "rancher-desktop"
 ### Steps - Same for Local Machine or Remote Cluster
 
 1. Install the Helm chart:
+
    ```shell
    # Using a specific release version from GitHub
    # (e.g. v1.0.2 - see https://github.com/NCEAS/metacatui/releases).
    $ helm install mcui oci://ghcr.io/nceas/charts/metacatui --version 1.0.2
    ```
+   
 2. Set up port forwarding, to map port 80 of the K8s deployment to port 8080 on your local machine:
+
    ```shell
    ## Do this in a separate terminal window. Assumes your deployment is named 'mcui', but
    ## you can check with `kubectl get services`
    $ kubectl port-forward service/mcui-metacatui 8080:80
    ```
+   
 3. After waiting a few seconds for the release to get up and running, use your browser to view MetacatUI at [http://localhost:8080/](http://localhost:8080/), where you should see MetacatUI using the KNB theme.
 
    ***NOTE**: You have not yet provided details of an existing Metacat back-end for MetacatUI to contact, so you will therefore see an error message on [the search page](http://localhost:8080/data), saying `Something went wrong while getting the list of datasets` - this is expected, and can be ignored.* However, if you want to resolve this...
 
 4. Create a file (named `my-values.yaml`), and add the following content. Helm will use these values to override the corresponding ones in the default `values.yaml`. The rest will remain unchanged:
+
    ```yaml
    global:
      metacatUiThemeName: "arctic"
@@ -116,7 +124,9 @@ kubectl config use-context "rancher-desktop"
      d1ClientCnUrl: "https://cn-stage.test.dataone.org/cn"
      metacatAppContext: "knb"
    ```
+   
 5. Upgrade the Helm chart, using the `my-values.yaml` file:
+
    ```shell
    $ helm upgrade mcui  -f my-values.yaml  oci://ghcr.io/nceas/charts/metacatui --version 1.0.2
    ```
@@ -126,15 +136,19 @@ Ensure port-forwarding is still running (see step 2), and you should simply be a
 > ***TIP:** the `upgrade` command should restart the metacatui pod, if settings have changed since the previous release. However, sometimes this may not work as expected, and you may need to `delete` the pod manually, thus prompting K8s to re-create it with the new settings.*
 
 > You can check the status of the pods with `kubectl get pods`:
+> 
 > ```shell
 > $ kubectl get pods
 > NAME                               READY   STATUS    RESTARTS   AGE
 > mcui-metacatui-557545c55-tk7wg     1/1     Running   0          3m24s
 > ```
+> 
 > If the "AGE" does not reflect your most-recent `helm upgrade`, you may need to delete the pod with `kubectl delete pod <podname>`:
+> 
 > ```shell
 > $ kubectl delete pod mcui-metacatui-557545c55-tk7wg    ## copy your pod name from above
 > ```
+> 
 > ...and then monitor the new pod startup using `kubectl get pods` again, until you see `READY` change from `0/1` to `1/1`.
 >
 > Alternatively, instead of using `helm upgrade`, you can delete the release with `helm delete mcui`, and then re-install it with the original `helm install` command.
@@ -148,6 +162,7 @@ For example, the Helm chart supports the following different configuration optio
 ### Setting or Overriding MetacatUI's config.js values
 
 * Any entries of the form `key: stringValue`, or `key: intValue` provided in the `appConfig:` section of `values.yaml` will be automatically incorporated into MetacatUI's `config.js` file, overriding any existing entries with the same name. Example:
+
   ```yaml
   appConfig:
     temporaryMessage: "<h5>THIS IS A TEST SITE! DO NOT USE FOR VALUABLE DATASETS!</h5>"
@@ -156,27 +171,34 @@ For example, the Helm chart supports the following different configuration optio
     showDatasetPublicToggle: true
     showDatasetPublicToggleForSubjects: []
   ```
+  
   ***NOTE**: There are a few specific values (such as the `theme`, `root`, `baseUrl` etc) which must NOT be set in the `appConfig:` section of `values.yaml`, but should instead be set in the `global:` section (and with different names, e.g. `metacatUiThemeName`, `metacatUiWebRoot`, `metacatExternalBaseUrl` etc.). Please see the related comments in the [values.yaml file](https://github.com/NCEAS/metacatui/blob/main/helm/values.yaml) for specific details.*
 
 * If you need to provide more-complex overrides, you can set:
+
   ```yaml
     appConfig:
       enabled: false
   ```
+  
   ...and manually create your own configMap named `<YourReleaseName>-metacatui-config-js`, containing your complete custom config.js file:
+
   ```shell
   kubectl create configmap  <yourReleaseName>-metacatui-config-js \
             --from-file=config.js=<yourCustomConfig.js>
   ```
 
 ### Using a Custom Theme
+
   * If you wish to deploy MetacatUI with your own custom theme, instead of using one of the themes that are provided, see [the Helm README section on "Using a Custom Theme"](https://github.com/NCEAS/metacatui/blob/main/helm/README.md#using-a-custom-theme).
   * See [the MetacatUI documentation](/install/configuration/index.html) for help with creating custom themes.
 
 ### Development on Localhost
+
 You can set up the chart to use your own copy of the MetacatUI source files on your local machine, thus allowing you to edit the source files, and have changes be immediately visible in the browser. See the [Helm README section on "Development on Localhost"](https://github.com/NCEAS/metacatui/blob/main/helm/README.md#development-on-localhost) for details.
 
 ---
+
 ## Useful links
 
 - [Helm Documentation](https://helm.sh/docs/)
