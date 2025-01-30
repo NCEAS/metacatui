@@ -190,8 +190,8 @@ For example, the Helm chart supports the following different configuration optio
 
 ### Using a Custom Theme
 
-  * If you wish to deploy MetacatUI with your own custom theme, instead of using one of the themes that are provided, see [the Helm README section on "Using a Custom Theme"](https://github.com/NCEAS/metacatui/blob/main/helm/README.md#using-a-custom-theme).
-  * See [the MetacatUI documentation](/install/configuration/index.html) for help with creating custom themes.
+- If you wish to deploy MetacatUI with your own custom theme, instead of using one of the themes that are provided, see [the Helm README section on "Using a Custom Theme"](https://github.com/NCEAS/metacatui/blob/main/helm/README.md#using-a-custom-theme).
+- See [the MetacatUI documentation](/install/configuration/index.html) for help with creating custom themes.
 
 ### Development on Localhost
 
