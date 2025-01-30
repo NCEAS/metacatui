@@ -69,8 +69,9 @@ While Kubernetes greatly simplifies deployment, many manual steps may still be r
 (You can think of it as the K8s equivalent of `Homebrew`, `apt`, or `WinGet`.)
 
 Many ready-made charts are publicly available in various Helm Repositories. Examples include:
-* [The Artifact Hub](https://artifacthub.io/packages/search?kind=0&sort=relevance&page=1) - publicly-available charts from many repos
-* [The Bitnami Library for Kubernetes](https://github.com/bitnami/charts/tree/main/bitnami)
+
+- [The Artifact Hub](https://artifacthub.io/packages/search?kind=0&sort=relevance&page=1) - publicly-available charts from many repos
+- [The Bitnami Library for Kubernetes](https://github.com/bitnami/charts/tree/main/bitnami)
 
 #### Basic Helm Commands
 
