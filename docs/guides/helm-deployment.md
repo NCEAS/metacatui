@@ -162,7 +162,7 @@ For example, the Helm chart supports the following different configuration optio
 
 ### Setting or Overriding MetacatUI's config.js values
 
-* Any entries of the form `key: stringValue`, or `key: intValue` provided in the `appConfig:` section of `values.yaml` will be automatically incorporated into MetacatUI's `config.js` file, overriding any existing entries with the same name. Example:
+- Any entries of the form `key: stringValue`, or `key: intValue` provided in the `appConfig:` section of `values.yaml` will be automatically incorporated into MetacatUI's `config.js` file, overriding any existing entries with the same name. Example:
 
   ```yaml
   appConfig:
@@ -175,7 +175,7 @@ For example, the Helm chart supports the following different configuration optio
   
   ***NOTE**: There are a few specific values (such as the `theme`, `root`, `baseUrl` etc) which must NOT be set in the `appConfig:` section of `values.yaml`, but should instead be set in the `global:` section (and with different names, e.g. `metacatUiThemeName`, `metacatUiWebRoot`, `metacatExternalBaseUrl` etc.). Please see the related comments in the [values.yaml file](https://github.com/NCEAS/metacatui/blob/main/helm/values.yaml) for specific details.*
 
-* If you need to provide more-complex overrides, you can set:
+- If you need to provide more-complex overrides, you can set:
 
   ```yaml
     appConfig:
