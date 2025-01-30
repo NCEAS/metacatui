@@ -103,7 +103,6 @@ kubectl config use-context "rancher-desktop"
    # (e.g. v1.0.2 - see https://github.com/NCEAS/metacatui/releases).
    $ helm install mcui oci://ghcr.io/nceas/charts/metacatui --version 1.0.2
    ```
-   
 2. Set up port forwarding, to map port 80 of the K8s deployment to port 8080 on your local machine:
 
    ```shell
