@@ -52,12 +52,13 @@ To generate this message, Docker took the following steps:
 Kubernetes (also known as K8s) is an open-source tool that helps you run and manage multiple containers together efficiently. It takes care of deploying, scaling, and keeping your containerized applications running smoothly, allowing you to focus on building or using your software, rather than dealing with infrastructure complexities.
 
 #### Key Features
-* **Pods**: The smallest deployable units in Kubernetes are named **Pods**. Each pod may contain one or more **containers**.
-* **Automated deployment**: Kubernetes handles the deployment of these pods across a cluster of worker machines called **nodes**, ensuring efficient resource allocation.
-* **Scaling**: It automatically scales applications up or down based on demand, optimizing resource usage.
-* **Self-healing**: Kubernetes monitors container health and automatically restarts failed containers or reschedules them when nodes fail.
-Load balancing: It distributes network traffic to ensure stable application performance.
-* **Storage orchestration**: Kubernetes can automatically mount storage systems of your choice, whether from local storage, public cloud providers, or network storage systems.
+
+- **Pods**: The smallest deployable units in Kubernetes are named **Pods**. Each pod may contain one or more **containers**.
+- **Automated deployment**: Kubernetes handles the deployment of these pods across a cluster of worker machines called **nodes**, ensuring efficient resource allocation.
+- **Scaling**: It automatically scales applications up or down based on demand, optimizing resource usage.
+- **Self-healing**: Kubernetes monitors container health and automatically restarts failed containers or reschedules them when nodes fail.
+  Load balancing: It distributes network traffic to ensure stable application performance.
+- **Storage orchestration**: Kubernetes can automatically mount storage systems of your choice, whether from local storage, public cloud providers, or network storage systems.
 
 While Kubernetes greatly simplifies deployment, many manual steps may still be required in order to deploy and manage applications, especially those with many components. This is where **Helm** comes in...
 
