@@ -114,7 +114,7 @@ kubectl config use-context "rancher-desktop"
 
 3. After waiting a few seconds for the release to get up and running, use your browser to view MetacatUI at [http://localhost:8080/](http://localhost:8080/), where you should see MetacatUI using the KNB theme.
 
-   **\*NOTE**: You have not yet provided details of an existing Metacat back-end for MetacatUI to contact, so you will therefore see an error message on [the search page](http://localhost:8080/data), saying `Something went wrong while getting the list of datasets` - this is expected, and can be ignored.\* However, if you want to resolve this...
+   > ***NOTE**: You have not yet provided details of an existing Metacat back-end for MetacatUI to contact, so you will therefore see an error message on [the search page](http://localhost:8080/data), saying `Something went wrong while getting the list of datasets` - this is expected, and can be ignored.* However, if you want to resolve this...
 
 4. Create a file (named `my-values.yaml`), and add the following content. Helm will use these values to override the corresponding ones in the default `values.yaml`. The rest will remain unchanged:
 
@@ -173,7 +173,7 @@ For example, the Helm chart supports the following different configuration optio
     showDatasetPublicToggleForSubjects: []
   ```
   
-  ***NOTE**: There are a few specific values (such as the `theme`, `root`, `baseUrl` etc) which must NOT be set in the `appConfig:` section of `values.yaml`, but should instead be set in the `global:` section (and with different names, e.g. `metacatUiThemeName`, `metacatUiWebRoot`, `metacatExternalBaseUrl` etc.). Please see the related comments in the [values.yaml file](https://github.com/NCEAS/metacatui/blob/main/helm/values.yaml) for specific details.*
+> ***NOTE**: There are a few specific values (such as the `theme`, `root`, `baseUrl` etc) which must NOT be set in the `appConfig:` section of `values.yaml`, but should instead be set in the `global:` section (and with different names, e.g. `metacatUiThemeName`, `metacatUiWebRoot`, `metacatExternalBaseUrl` etc.). Please see the related comments in the [values.yaml file](https://github.com/NCEAS/metacatui/blob/main/helm/values.yaml) for specific details.*
 
 - If you need to provide more-complex overrides, you can set:
 
