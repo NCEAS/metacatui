@@ -134,7 +134,7 @@ kubectl config use-context "rancher-desktop"
 
 Ensure port-forwarding is still running (see step 2), and you should simply be able to refresh your browser to see the updated version at [http://localhost:8080/](http://localhost:8080/). You should now see MetacatUI using the Arctic Data Center theme, and [the search page](http://localhost:8080/data) should be populated with test data from [https://dev.nceas.ucsb.edu/](https://dev.nceas.ucsb.edu/data)
 
-> ***TIP:** the `upgrade` command should restart the metacatui pod, if settings have changed since the previous release. However, sometimes this may not work as expected, and you may need to `delete` the pod manually, thus prompting K8s to re-create it with the new settings.*
+> **\*TIP:** the `upgrade` command should restart the metacatui pod, if settings have changed since the previous release. However, sometimes this may not work as expected, and you may need to `delete` the pod manually, thus prompting K8s to re-create it with the new settings.\*
 
 > You can check the status of the pods with `kubectl get pods`:
 > 
