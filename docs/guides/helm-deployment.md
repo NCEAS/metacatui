@@ -8,9 +8,10 @@ toc: true
 MetacatUI can be deployed in a docker container on Kubernetes, in addition to deploying in traditional server environments. Helm is used to simplify Kubernetes deployment. This guide provides a very brief introductory overview of Docker, Kubernetes and Helm, and summarizes the steps to deploy MetacatUI using Helm, either to a local machine, or to a remote Kubernetes cluster.
 
 ## Prerequisites
-* You will need `helm`, `docker` and `kubectl` already installed and running on your local machine, along with access to a Kubernetes cluster.
-* We recommend installing [Rancher Desktop](https://rancherdesktop.io/)), which provides `helm`, `docker` and `kubectl` functionality, in addition to creating a Kubernetes cluster on your local machine (see `Preferences->Kubernetes->Enable Kubernetes`).
-* If you are instead deploying to a remote Kubernetes cluster, make sure you have the necessary permissions to deploy to that cluster (and also install Rancher Desktop to your local machine, to provide the necessary tools).
+
+- You will need `helm`, `docker` and `kubectl` already installed and running on your local machine, along with access to a Kubernetes cluster.
+- We recommend installing [Rancher Desktop](https://rancherdesktop.io/)), which provides `helm`, `docker` and `kubectl` functionality, in addition to creating a Kubernetes cluster on your local machine (see `Preferences->Kubernetes->Enable Kubernetes`).
+- If you are instead deploying to a remote Kubernetes cluster, make sure you have the necessary permissions to deploy to that cluster (and also install Rancher Desktop to your local machine, to provide the necessary tools).
 
 ## Brief Overview of Images, Containers, Kubernetes and Helm
 
