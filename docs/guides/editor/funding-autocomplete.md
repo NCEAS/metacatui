@@ -1,4 +1,9 @@
-# Setting Up a Proxy for NSF Award API in MetacatUI
+---
+layout: guide
+title: Setting Up a Proxy for NSF Award API in MetacatUI
+id: funding-autocomplete
+toc: true
+---
 
 MetacatUI integrates with the NSF (National Science Foundation) Award API to fetch award information. Since the NSF Award API does not support CORS (Cross-Origin Resource Sharing) or JSONP (JSON with Padding), it's necessary to set up a server-side proxy. This documentation guides you through setting up an Apache proxy to enable this functionality in MetacatUI.
 
