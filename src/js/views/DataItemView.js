@@ -773,7 +773,7 @@ define([
        * This method processes files independently to avoid being slowed down by large files.
        * @param {FileList} fileList - The list of files to be uploaded.
        * @param {number} [batchSize] - The number of files to upload concurrently.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       uploadFilesInBatch(fileList, batchSize = 10) {
         const view = this;

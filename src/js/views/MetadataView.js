@@ -1845,7 +1845,7 @@ define([
       /**
        * Add the info icons to the metadata controls panel. Shows if the dataset
        * is private or archived.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       renderInfoIcons() {
         const isPrivate = !this.model.get("isPublic");
@@ -1878,7 +1878,7 @@ define([
        * @param {string} titleText - The text to display when the icon is hovered
        * over.
        * @returns {HTMLElement} The icon element that was added to the view.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       addInfoIcon(iconType, iconClass, baseClass, titleText) {
         const iconHTML = `<span class="${iconType} icons">
@@ -2921,7 +2921,7 @@ define([
        * @param {SolrResult} solrResult - The SolrResult model for the object
        * @param {Element} container - The DOM element that contains the object's
        * metadata
-       * @since 0.0.0
+       * @since 2.32.0
        */
       renderDataInteractionButtons(solrResult, container) {
         if (!solrResult || !container) return;

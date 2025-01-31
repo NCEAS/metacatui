@@ -28,7 +28,7 @@ define(["jquery", "backbone", "views/DataObjectView"], (
    * @classcategory Views
    * @augments Backbone.View
    * @class
-   * @since 0.0.0
+   * @since 2.32.0
    * @screenshot views/ViewDataButtonView.png
    */
   const ViewDataButtonView = Backbone.View.extend(

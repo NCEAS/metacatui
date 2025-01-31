@@ -7,7 +7,7 @@ define(["backbone"], (Backbone) => {
    * @augments Backbone.Model
    * @constructs
    * @augments Backbone.Model
-   * @since 0.0.0
+   * @since 2.32.0
    */
   const CrossRef = Backbone.Model.extend(
     /** @lends CrossRef.prototype */

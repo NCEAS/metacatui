@@ -11,7 +11,7 @@ define(["backbone"], (Backbone) => {
    * @classdesc Creates a schema.org model for inserting JSON-LD into the
    * document head.
    * @classcategory Models/schemaOrg
-   * @since 0.0.0
+   * @since 2.32.0
    * @augments Backbone.Model
    */
   const SchemaOrgModel = Backbone.Model.extend({

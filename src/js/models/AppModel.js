@@ -1747,7 +1747,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * Set to an empty array or a falsy value to disable all embedded content.
            *
            * @type {string[]}
-           * @since 0.0.0
+           * @since 2.32.0
            */
           trustedContentSources: [],
 
@@ -2447,7 +2447,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @type {number}
            * @default 0
            * @example 20
-           * @since 0.0.0
+           * @since 2.32.0
            */
           batchSizeFetch: 0,
           /**
@@ -2464,7 +2464,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @type {number}
            * @default 0
            * @example 20
-           * @since 0.0.0
+           * @since 2.32.0
            */
           batchSizeUpload: 0,
         },

@@ -46,7 +46,7 @@ define(["underscore", "backbone", "models/metadata/eml211/EMLAnnotation"], (
        * Only returns the models that are duplicates, not the original. The original
        * is the first instance found in the collection.
        * @returns {EMLAnnotation[]} An array of EMLAnnotations that are duplicates.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       getDuplicates() {
         const groups = {};
@@ -99,7 +99,7 @@ define(["underscore", "backbone", "models/metadata/eml211/EMLAnnotation"], (
        * @param {string} propertyURI The propertyURI to search for.
        * @returns {EMLAnnotation[]} An array of EMLAnnotations with the given
        * propertyURI.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       findByProperty(propertyURI) {
         return this.where({ propertyURI });
@@ -111,7 +111,7 @@ define(["underscore", "backbone", "models/metadata/eml211/EMLAnnotation"], (
        * current EML doc being essentially a duplicate version.
        * @param {string} sourceId The DOI or URL of the canonical dataset.
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.32.0
        */
       addCanonicalDatasetAnnotation(sourceId) {
         if (!sourceId) return null;
@@ -139,7 +139,7 @@ define(["underscore", "backbone", "models/metadata/eml211/EMLAnnotation"], (
        * "sameAs" annotation with the same DOI or URL for the valueURI.
        * @returns {object} An object with the derivedFrom and sameAs
        * annotations.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       findCanonicalDatasetAnnotation() {
         // There must be at least one derivedFrom and one sameAs annotation
@@ -182,7 +182,7 @@ define(["underscore", "backbone", "models/metadata/eml211/EMLAnnotation"], (
        * @param {string} newSourceId The DOI or URL of the canonical dataset.
        * @returns {object} An object with the derivedFrom and sameAs annotations
        * if the canonical dataset annotations were updated.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       updateCanonicalDataset(newSourceId) {
         if (!newSourceId) {
@@ -209,7 +209,7 @@ define(["underscore", "backbone", "models/metadata/eml211/EMLAnnotation"], (
        * Removes the canonical dataset annotations from this collection.
        * @returns {EMLAnnotation[]} The canonical dataset annotations that were
        * removed.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       removeCanonicalDatasetAnnotation() {
         const canonical = this.findCanonicalDatasetAnnotation();
@@ -220,7 +220,7 @@ define(["underscore", "backbone", "models/metadata/eml211/EMLAnnotation"], (
       /**
        * Returns the URI of the canonical dataset.
        * @returns {string} The URI of the canonical dataset.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       getCanonicalURI() {
         const canonical = this.findCanonicalDatasetAnnotation();

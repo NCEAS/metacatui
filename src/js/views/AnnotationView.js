@@ -141,7 +141,7 @@ define([
       /**
        * Given the DOM element that was passed in (via {el: ...}), extract the
        * label and URI for both the annoation property and value.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       setAnnotationDataFromDOM() {
         const propertyClasses = CLASS_NAMES.property
@@ -253,7 +253,7 @@ define([
        * Show the popup for the given annotation part.
        * @param {"property"|"value"} annotationPart - The annotation part to
        * show the popup for.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       showPopup(annotationPart) {
         this[annotationPart].el.popup("show");
@@ -322,7 +322,7 @@ define([
        * find a class for
        * @returns {Promise<BioontologyClass|null>} The BioontologyClass model
        * for the annotation part, or null if it could not be found.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       async findClass(annotationPart) {
         const { uri } = this[annotationPart];
@@ -343,7 +343,7 @@ define([
        * @param {string} uri - The URI of the class to get from the cache
        * @returns {BioontologyClass|null} The BioontologyClass model for the
        * given URI, or null if it could not be found.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       getClassFromCache(uri) {
         const cachedClasses = this.bioontology
@@ -359,7 +359,7 @@ define([
        * @param {string} uri - The URI of the class to fetch
        * @returns {Promise<BioontologyClass|null>} The BioontologyClass model
        * for the given URI, or null if it could not be found.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       fetchClass(uri) {
         this.bioontology.set({ searchTerm: uri });

@@ -282,7 +282,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * Download this object while sending the user's auth token in the
        * request.
        * @returns {Promise} A promise that resolves to the response object
-       * @since 0.0.0
+       * @since 2.32.0
        */
       async downloadWithCredentials() {
         // Call the new getBlob method and handle the response
@@ -296,7 +296,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * in the request. The data can then be downloaded or displayed in the
        * browser
        * @returns {Promise} A promise that resolves when the data is fetched
-       * @since 0.0.0
+       * @since 2.32.0
        */
       fetchDataObjectWithCredentials() {
         const url = this.get("url");
@@ -327,7 +327,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * title, id, or "download"
        * @param {Response} response - The response object from the fetch request
        * @returns {string} The filename to save the file as
-       * @since 0.0.0
+       * @since 2.32.0
        */
       getFileNameFromResponse(response) {
         const model = this;
@@ -352,7 +352,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * Download data onto the user's computer from the response object
        * @param {Response} response - The response object from the fetch request
        * @returns {Response} The response object
-       * @since 0.0.0
+       * @since 2.32.0
        */
       async downloadFromResponse(response) {
         const model = this;
@@ -387,7 +387,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
       /**
        * Handle an error that occurs when downloading the object
        * @param {Error} e - The error that occurred
-       * @since 0.0.0
+       * @since 2.32.0
        */
       handleDownloadError(e) {
         const model = this;
