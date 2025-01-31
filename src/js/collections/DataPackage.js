@@ -440,7 +440,7 @@ define([
        * @param {number} [batchSize] - The number of models to fetch in each batch.
        * @param {number} [timeout] - The timeout for each fetch request in milliseconds.
        * @param {number} [maxRetries] - The maximum number of retries for each fetch request.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       fetchMemberModels(
         models,

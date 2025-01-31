@@ -901,7 +901,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], (
       /**
        * Get the userId attribute and ensure it is an array
        * @returns {string[]} - An array of userIds
-       * @since 0.0.0
+       * @since 2.32.0
        */
       getUserIdArray() {
         const userId = this.get("userId");
@@ -925,7 +925,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], (
        * @returns {string|boolean} - Returns false if the ORCID iD is invalid, or
        * the string if it is valid. If standardize is true, the returned orcid
        * will be the standardized URL.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       validateOrcid(orcid, standardize = false) {
         // isOrcid doesn't allow for the id without orcid.org

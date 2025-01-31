@@ -67,7 +67,7 @@ define([
       /**
        * The template for the alert message
        * @type {Underscore.Template}
-       * @since 0.0.0
+       * @since 2.32.0
        */
       alertTemplate: _.template(AlertTemplate),
 
@@ -169,7 +169,7 @@ define([
       /**
        * Show the table from a configured markdown string
        * @param {string} markdown - The markdown string to render as a table
-       * @since 0.0.0
+       * @since 2.32.0
        */
       renderFromMarkdown(markdown) {
         const tableArray = this.getJSONfromMarkdown(markdown);
@@ -184,7 +184,7 @@ define([
       /**
        * Show the table from a configured CSV file
        * @param {string} csv - The CSV string to render as a table
-       * @since 0.0.0
+       * @since 2.32.0
        */
       renderFromCSV(csv) {
         const tableArray = this.getJSONfromCSV(csv);
@@ -457,7 +457,7 @@ define([
        * Create a dropdown menu for the row
        * @param {number} rowNum The row number to add the dropdown to
        * @returns {HTMLElement} The dropdown element
-       * @since 0.0.0
+       * @since 2.32.0
        */
       createRowDropdown(rowNum) {
         const dropDownDiv = document.createElement("div");
@@ -498,7 +498,7 @@ define([
        * Create a dropdown menu for the header row
        * @param {number} colNum The column number to add the dropdown to
        * @returns {HTMLElement} The dropdown element
-       * @since 0.0.0
+       * @since 2.32.0
        */
       createColDropdown(colNum) {
         const dropDownDiv = document.createElement("div");
@@ -762,7 +762,7 @@ define([
        * @param {boolean} addRowNumbers - if true, adds a row number column to
        * the left of the table
        * @returns {Array} The table data as a CSV string
-       * @since 0.0.0
+       * @since 2.32.0
        */
       getJSONfromCSV(csv, addRowNumbers = true) {
         const view = this;
@@ -812,7 +812,7 @@ define([
        * @param {boolean} [showEmail] Whether to show the email address
        * @param {boolean} [triggerError] Set to true to trigger an error event
        * on the view with the message
-       * @since 0.0.0
+       * @since 2.32.0
        */
       showMessage(
         message,

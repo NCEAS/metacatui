@@ -608,7 +608,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
        * Get the volume from the sourceModel.
        * @param {Backbone.Model} sourceModel - The model to get the volume from
        * @returns {number|string} - The volume
-       * @since 0.0.0
+       * @since 2.32.0
        */
       getVolumeFromSourceModel(sourceModel) {
         return sourceModel.get("volume") || null;
@@ -618,7 +618,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
        * Get the issue from the sourceModel.
        * @param {Backbone.Model} sourceModel - The model to get the issue from
        * @returns {number|string} - The issue
-       * @since 0.0.0
+       * @since 2.32.0
        */
       getIssueFromSourceModel(sourceModel) {
         return sourceModel.get("issue") || null;

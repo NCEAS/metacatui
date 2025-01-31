@@ -16,7 +16,7 @@ define([
    * @classcategory Views/Maps
    * @name SchemaOrgView
    * @augments Backbone.View
-   * @since 0.0.0
+   * @since 2.32.0
    * @constructs SchemaOrgView
    */
   const SchemaOrgView = Backbone.View.extend(
@@ -57,7 +57,7 @@ define([
        * If neither "Dataset" nor "DataCatalog" is provided, the schema will be
        * set to the default schema.
        * @param {object} model - The model to use for the schema.
-       * @since 0.0.0
+       * @since 2.32.0
        */
       setSchema(type, model = null) {
         if (!this.isEnabled()) return;
