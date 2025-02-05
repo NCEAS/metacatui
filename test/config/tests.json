@@ -92,7 +92,8 @@
     "./js/specs/unit/models/ontologies/BioontologyOntology.spec.js",
     "./js/specs/unit/models/accordion/Accordion.spec.js",
     "./js/specs/unit/models/accordion/AccordionItem.spec.js",
-    "./js/specs/unit/views/DataItemView.spec.js"
+    "./js/specs/unit/views/DataItemView.spec.js",
+    "./js/specs/unit/views/metadata/EML211EditorView.spec.js"
   ],
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",
