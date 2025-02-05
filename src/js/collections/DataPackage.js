@@ -573,67 +573,94 @@ define([
       },
 
       /**
-       * Overload fetch calls for a DataPackage
-       * @param {object} [options] - Optional options for this fetch that get
-       * sent with the XHR request
-       * @property {boolean} fetchModels - If false, this fetch will not fetch
-       * each model in the collection. It will only get the resource map object.
-       * @property {boolean} fromIndex - If true, the collection will be fetched
-       * from Solr rather than fetching the system metadata of each model.
-       * Useful when you only need to retrieve limited information about each
-       * package member. Set query-specific parameters on the `solrResults`
-       * SolrResults set on this collection.
-       * @returns {jqXHR} The jQuery XMLHttpRequest for the request
+       *  Overload fetch calls for a DataPackage
+       *
+       *  This fetch function will fetch the resource map RDF XML for this package
+       *
+       *  + Example 1: `this.fetch();`
+       *  + Example 2: `this.fetch({fetchModels: false});`
+       *  + Example 3: `this.fetch({fromIndex: true});`
+       *  + Example 4:
+       *    ```
+       *    this.fetch()
+       *      .then(function() {
+       *      console.log("Fetch complete!");
+       *    })
+       *    .catch(function() {
+       *      console.log("Fetch failed!");
+       *    });
+       *    ```
+       *
+       * @param {object} [options] - Optional options for this fetch that get sent with the XHR request
+       *  @property {boolean} fetchModels - If false, this fetch will not fetch
+       *  each model in the collection. It will only get the resource map object.
+       *  @property {boolean} fromIndex - If true, the collection will be fetched from Solr rather than
+       *  fetching the system metadata of each model. Useful when you only need to retrieve limited information about
+       *  each package member. Set query-specific parameters on the `solrResults` SolrResults set on this collection.
+       * @return {Promise} A promise that resolves when the fetch is complete
        */
-      fetch(options = {}) {
-        // Fetch the system metadata for this resource map
-        this.packageModel.fetch();
+      fetch(options) {
+        return new Promise((resolve, reject) => {
+          // Fetch the system metadata for this resource map
+          this.packageModel.fetch();
 
-        const fetchOptions = { dataType: "text", ...options };
+          if (typeof options === "object") {
+            // If the fetchModels property is set to false,
+            if (options.fetchModels === false) {
+              // Save the property to the Collection itself so it is accessible in other functions
+              this.fetchModels = false;
+              // Remove the property from the options Object since we don't want to send it with the XHR
+              delete options.fetchModels;
+              this.once("reset", () => {
+                this.triggerComplete();
+                resolve();
+              });
+            }
+            // If the fetchFromIndex property is set to true
+            else if (options.fromIndex) {
+              this.fetchFromIndex();
+              resolve();
+              return;
+            }
+          }
 
-        // If the fetchModels property is set to false,
-        if (fetchOptions.fetchModels === false) {
-          // Save the property to the Collection itself so it is accessible in
-          // other functions
-          this.fetchModels = false;
-          // Remove the property from the options Object since we don't want to
-          // send it with the XHR
-          delete fetchOptions.fetchModels;
-          this.once("reset", this.triggerComplete);
-        }
-        // If the fetchFromIndex property is set to true
-        else if (fetchOptions.fromIndex) {
-          this.fetchFromIndex();
-          return null;
-        }
+          // Set some custom fetch options
+          const fetchOptions = _.extend({ dataType: "text" }, options);
 
-        const thisPackage = this;
+          const thisPackage = this;
 
-        // Function to retry fetching with user login details if the initial
-        // fetch fails eslint-disable-next-line func-names
-        const retryFetch = () => {
-          // Add the authorization options
-          const authFetchOptions = _.extend(
-            fetchOptions,
-            MetacatUI.appUserModel.createAjaxSettings(),
-          );
+          // Function to retry fetching with user login details if the initial fetch fails
+          const retryFetch = function () {
+            // Add the authorization options
+            const authFetchOptions = _.extend(
+              fetchOptions,
+              MetacatUI.appUserModel.createAjaxSettings(),
+            );
 
-          // Fetch the resource map RDF XML with user login details
-          return Backbone.Collection.prototype.fetch
-            .call(thisPackage, authFetchOptions)
+            // Fetch the resource map RDF XML with user login details
+            return Backbone.Collection.prototype.fetch
+              .call(thisPackage, authFetchOptions)
+              .fail(() => {
+                // trigger failure()
+                console.log("Fetch failed");
+
+                thisPackage.trigger("fetchFailed", thisPackage);
+                reject();
+              });
+          };
+
+          // Fetch the resource map RDF XML
+          Backbone.Collection.prototype.fetch
+            .call(this, fetchOptions)
+            .done(() => resolve())
             .fail(() => {
-              // TODO: Handle the fetch failure!
-              thisPackage.trigger("fetchFailed", thisPackage);
+              console.log("Fetch failed. Retrying with user login details...");
+              // If the initial fetch fails, retry with user login details
+              retryFetch()
+                .done(() => resolve())
+                .fail(() => reject());
             });
-        };
-
-        // Fetch the resource map RDF XML
-        return Backbone.Collection.prototype.fetch
-          .call(this, fetchOptions)
-          .fail(() =>
-            // If the initial fetch fails, retry with user login details
-            retryFetch(),
-          );
+        });
       },
 
       /**
