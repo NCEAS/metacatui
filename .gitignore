@@ -11,6 +11,8 @@ src/js/themes/drp
 src/js/themes/sctld
 src/js/themes/smithsonian
 src/js/themes/cib
+src/js/themes/esa
+src/js/themes/goa
 node_modules
 src/config/dev
 docs/_site
