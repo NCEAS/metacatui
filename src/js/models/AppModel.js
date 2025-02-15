@@ -2337,6 +2337,11 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
             "urn:node:CA_OPC",
             "urn:node:ESS_DIVE",
             "urn:node:CERP_SFWMD",
+            "urn:node:SFWMD",
+            "urn:node:DRP",
+            "urn:node:SI",
+            "urn:node:CIB",
+            "urn:node:SCTLD",
           ],
 
           /**
