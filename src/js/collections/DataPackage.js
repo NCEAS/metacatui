@@ -573,7 +573,6 @@ define([
       handleMemberFetchError(failedModels, errors) {
         // eslint-disable-next-line no-console
         console.error("Error fetching models", failedModels, errors);
-        console.log(errors[0].stack);
 
         // TODO show error message to user
         failedModels.forEach((model, i) => {
