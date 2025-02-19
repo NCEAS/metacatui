@@ -174,7 +174,9 @@ define([
        */
       updateCanonicalDataset() {
         let uri = this.get("canonicalDataset");
-        uri = uri?.length ? uri[0] : null;
+        if (uri && Array.isArray(uri) && uri.length) {
+          [uri] = uri;
+        }
         let annotations = this.get("annotations");
         if (!annotations) {
           annotations = new EMLAnnotations();
