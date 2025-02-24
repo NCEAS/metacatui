@@ -760,6 +760,7 @@ define([
        * replaced, the listeners would be reset.
        */
       setListeners() {
+        const view = this;
         this.listenTo(this.model, "change:uploadStatus", this.showControls);
 
         // Register a listener for any attribute change
@@ -767,6 +768,11 @@ define([
 
         // Register a listener to save drafts on change
         this.model.on("change", this.model.saveDraft, this.model);
+
+        this.stopListening(this.model, "change:errorMessage");
+        this.listenTo(this.model, "change:errorMessage", () => {
+          view.loadError(this.model.get("errorMessage"));
+        });
 
         // If any attributes have changed (including nested objects), show the
         // controls
@@ -1030,6 +1036,25 @@ define([
 
         // Reset the Saving styling
         this.hideSaving();
+      },
+
+      /**
+       * When there is an error loading the metadata, show an error message
+       * rather than letting the spinner spin forever
+       * @param {string} errorMsg - The error message to display
+       * @since 0.0.0
+       */
+      loadError(errorMsg) {
+        if (!errorMsg) return;
+        const metadataContainer = this.$("#metadata-container");
+        MetacatUI.appView.showAlert(
+          errorMsg,
+          "alert-error",
+          metadataContainer,
+          null,
+        );
+        // Hide the loading spinner & message
+        this.$(".loading").hide();
       },
 
       /**
