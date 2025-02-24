@@ -2433,6 +2433,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @example application%2Fbagit-097
            */
           packageFormat: "application%2Fbagit-1.0",
+
           /**
            * Whether to batch fetch requests to the DataONE API. This is an experimental feature
            * and should be used with caution.  If set to a number greater than 0, MetacatUI will
@@ -2450,6 +2451,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @since 2.32.0
            */
           batchSizeFetch: 0,
+
           /**
            * Whether to batch uploads to the DataONE API. This is an experimental feature
            * and should be used with caution.  If set to a number greater than 0, MetacatUI will
@@ -2467,6 +2469,15 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @since 2.32.0
            */
           batchSizeUpload: 0,
+
+          /**
+           * The timeout in milliseconds for file downloads. If set to anything
+           * other than a number greater than 0, the file download will not
+           * timeout (i.e. it will wait indefinitely for the file to download).
+           * @type {number}
+           * @since 0.0.0
+           */
+          fileDownloadTimeout: 0,
         },
         MetacatUI.AppConfig,
       ),

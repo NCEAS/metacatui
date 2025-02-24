@@ -313,6 +313,21 @@ define([
             expect(err.message).to.equal("Fetch timed out");
           });
       });
+
+      it("should never timeout if a valid timeout is not provided", async function () {
+        // Stub fetch to resolve after a short delay
+        state.dataObject.fetch = sinon.stub().callsFake(state.fakeFetchSuccess);
+
+        // Pass an invalid timeout (e.g., 0) so that the timeout branch is skipped
+        const result = await state.dataPackage.fetchWithRetryAndTimeout(
+          state.dataObject,
+          1,
+          0,
+        );
+
+        // The fetch should have completed successfully
+        expect(result).to.equal(state.dataObject);
+      });
     });
 
     describe("handleMemberFetchError", function () {
