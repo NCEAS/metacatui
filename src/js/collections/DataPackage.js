@@ -582,13 +582,12 @@ define([
        * @since 0.0.0
        */
       handleMemberFetchError(failedModels, errors) {
-        // eslint-disable-next-line no-console
-        console.error("Error fetching models", failedModels, errors);
-
-        // TODO show error message to user
         failedModels.forEach((model, i) => {
-          const error =
+          let error =
             errors?.[i] || errors?.[errors.length - 1] || "Fetch failed";
+          if (error.message === "abort") {
+            error = "This file took too long to load. Please try again.";
+          }
           model.set("synced", false);
           if (!model.get("errorMessage")) {
             model.set("errorMessage", error.message || error);
