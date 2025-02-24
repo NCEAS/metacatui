@@ -440,7 +440,8 @@ define([
        * @param {number} [batchSize] - The number of models to fetch in each
        * batch.
        * @param {number} [timeout] -The timeout for each fetch request in
-       * milliseconds.
+       * milliseconds. If set to anything other than a positive number greater
+       * than 0, the fetch will never timeout.
        * @param {number} [maxRetries] - The maximum number of retries for each
        * fetch request.
        * @returns {Promise} A promise that resolves when all models have been
@@ -456,8 +457,9 @@ define([
         const numModels = models.length;
         // If batchSize is 0, fetch everything at once
         const effectiveBatchSize = batchSize || numModels;
-        // Ensure a minimum timeout of 1 second
-        const effectiveTimeout = Math.max(timeout, 5000);
+        // If timeout is 0, falsey, or not a positive number, then fetch without
+        // a timeout (i.e., wait indefinitely)
+        const effectiveTimeout = timeout;
 
         // Loading count is used to show users progress of fetching
         this.updateLoadingCount(numModels);
@@ -518,7 +520,9 @@ define([
        * model with a timeout, aborting the fetch if it takes too long.
        * @param {DataONEObject} memberModel - The model to fetch
        * @param {number} maxRetries - The maximum number of retries
-       * @param {number} timeout - The timeout in milliseconds
+       * @param {number} timeout - The timeout in milliseconds. If set to
+       * anything other than a positive number greater than 0, the fetch will
+       * not have a timeout (i.e., will wait indefinitely)
        * @param {number} [attempt] - The current attempt number
        * @returns {DataONEObject} The fetched model
        * @since 0.0.0
@@ -535,7 +539,12 @@ define([
           // Kick off the real fetch plus a timeout
           const { fetchPromise, xhrRef } = this.fetchPromise(memberModel);
 
-          const timerPromise = new Promise((resolve, reject) => {
+          // if timeout is not a number > 0, then wait for fetch indefinitely
+          if (typeof timeout !== "number" || timeout <= 0) {
+            return await fetchPromise;
+          }
+
+          const timerPromise = new Promise((_resolve, reject) => {
             timerId = setTimeout(() => {
               if (xhrRef?.abort) {
                 xhrRef.abort();
@@ -559,7 +568,9 @@ define([
             attempt + 1,
           );
         } finally {
-          clearTimeout(timerId);
+          if (timerId) {
+            clearTimeout(timerId);
+          }
         }
       },
 
@@ -607,7 +618,8 @@ define([
        * @param {number} maxRetries - The maximum number of retries for each
        * fetch request
        * @param {number} timeout - The timeout for each fetch request in
-       * milliseconds
+       * milliseconds. If set to anything other than a positive number greater
+       * than 0, the fetch will never timeout
        * @returns {DataONEObject} The updated model
        * @since 0.0.0
        */
@@ -991,8 +1003,8 @@ define([
             this.fetchMemberModels.call(
               this,
               models,
-              0,
               MetacatUI.appModel.get("batchSizeFetch"),
+              MetacatUI.appModel.get("fileDownloadTimeout") || 0,
             );
           }
         } catch (error) {
