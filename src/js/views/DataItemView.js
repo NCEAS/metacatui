@@ -471,7 +471,7 @@ define([
               this.model,
               "change:fileName change:title change:id change:formatType " +
                 "change:formatId change:type change:resourceMap change:documents change:isDocumentedBy " +
-                "change:size change:nodeLevel change:uploadStatus",
+                "change:size change:nodeLevel change:uploadStatus change:errorMessage",
               this.render,
             ); // render changes to the item
 
@@ -637,6 +637,10 @@ define([
           view: this,
           model: this.model,
         });
+
+        if (this.model.get("errorMessage")) {
+          this.showError(this.model.get("errorMessage"));
+        }
 
         return this;
       },
@@ -1442,6 +1446,24 @@ define([
 
         // When it is updated, remove the error styling
         this.listenToOnce(this.model, `change:${attr}`, this.hideRequired);
+      },
+
+      /**
+       * Show an error, e.g. if the file can't be fetched
+       * @param {string} message The error message to display
+       * @since 0.0.0
+       */
+      showError(message) {
+        this.$el.removeClass("loading");
+        const nameColumn = this.$(".name");
+        nameColumn.addClass("error");
+        // Append an error message
+        this.errorEl = $(document.createElement("div"))
+          .addClass("error-message")
+          .text(`There was an error: ${message}`);
+        nameColumn.append(this.errorEl);
+        const icon = this.$(".type-icon");
+        icon.addClass("error");
       },
 
       /**
