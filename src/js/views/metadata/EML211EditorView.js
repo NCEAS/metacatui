@@ -1199,7 +1199,7 @@ define([
        * @since 2.17.1
        */
       toggleEnableControls() {
-        const packageModel = MetacatUI.rootDataPackage.packageModel;
+        const { packageModel } = MetacatUI.rootDataPackage;
         const numLoadingMetadata = packageModel.get("numLoadingFileMetadata");
         const numLoadingFiles = packageModel.get("numLoadingFiles");
         const isLoadingMetadata = numLoadingMetadata > 0;
@@ -1261,9 +1261,8 @@ define([
 
       /**
        * Log an error message for a specific category
-       *
-       * @param category - The category of the error
-       * @param errorMsg - The error message to display
+       * @param {string} category - The category of the error
+       * @param {string} errorMsg - The error message to display
        * @since 0.0.0
        */
       showError(category, errorMsg) {
@@ -1315,9 +1314,8 @@ define([
 
       /**
        * Recursively log the leaf errors in the error object
-       *
-       * @param category - The category of the error
-       * @param errorObj - The object containing the error messages
+       * @param {string} category - The category of the error
+       * @param {string} errorObj - The object containing the error messages
        * @since 0.0.0
        */
       showLeafErrors(category, errorObj) {
