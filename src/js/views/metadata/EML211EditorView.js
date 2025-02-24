@@ -1264,6 +1264,7 @@ define([
        *
        * @param category - The category of the error
        * @param errorMsg - The error message to display
+       * @since 0.0.0
        */
       showError(category, errorMsg) {
         const categoryEls = this.$(`[data-category='${category}']`);
