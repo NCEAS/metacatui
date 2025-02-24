@@ -1317,6 +1317,7 @@ define([
        *
        * @param category - The category of the error
        * @param errorObj - The object containing the error messages
+       * @since 0.0.0
        */
       showLeafErrors(category, errorObj) {
         Object.entries(errorObj).forEach(([subCategory, subErrorMsg]) => {
