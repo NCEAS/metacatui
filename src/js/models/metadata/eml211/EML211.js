@@ -1711,9 +1711,9 @@ define([
           }
         }
 
-        // Validate the EMLAnnotation models
+        // Validate the EMLAnnotation models, checking for the canonical dataset
         const annotations = this.get("annotations");
-        const annotationErrors = annotations.validate();
+        const annotationErrors = annotations ? annotations.validate() : [];
 
         if (annotationErrors?.length) {
           errors.annotations = annotationErrors.filter(
