@@ -1915,19 +1915,18 @@
        * Sends an AJAX request to fetch the system metadata for this EML object.
        * Will not trigger a sync event since it does not use
        * Backbone.Model.fetch. Triggers a custom "sysMetaUpdated" event instead.
-       * @param {Object} options - options for the AJAX request
+       * @param {object} options - options for the AJAX request
        * @param {Function} options.success - The success callback function
        * @param {Function} options.error - The error callback function
        * @since 2.32.1
        */
-      fetchSystemMetadata: function (options = {}) {
+      fetchSystemMetadata(options = {}) {
         const model = this;
         const requestOptions = { ...options };
         const metaUrl = MetacatUI.appModel.get("metaServiceUrl");
         const id = encodeURIComponent(this.get("id"));
         const ajaxSettings = MetacatUI.appUserModel.createAjaxSettings();
-        const success = requestOptions.success;
-        const error = requestOptions.error;
+        const { success, error } = requestOptions;
 
         // If there are callbacks in the options, merge them with the success
         // and error callbacks required for this function
