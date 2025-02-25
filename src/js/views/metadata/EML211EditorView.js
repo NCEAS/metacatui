@@ -1237,7 +1237,7 @@ define([
         } else if (isLoadingMetadata) {
           const noun = numLoadingMetadata > 1 ? "files" : "file";
           const message = `Waiting for metadata from ${numLoadingMetadata} ${noun} to load...`;
-          this.disableControls(message);
+          this.disableControls(message, "File metadata is loading.");
         } else {
           this.enableControls();
         }
