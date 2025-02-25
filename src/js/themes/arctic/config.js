@@ -99,6 +99,10 @@ MetacatUI.AppConfig = Object.assign(
       "isPrivate",
     ],
 
+    // Batching
+    batchSizeFetch: 30,
+    batchSizeUpload: 10,
+
     // CesiumMap
     enableCesium: true,
     cesiumToken:
