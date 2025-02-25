@@ -2180,7 +2180,7 @@
           bioportalApiBaseUrl: "https://data.bioontology.org",
           /**
            * Make use of the Bioontology model to cache the results of Bioportal API calls
-           * @deprecated since 0.0.0
+           * @deprecated since 2.32.0
            */
           bioportalLookupCache: {},
           /**
@@ -2383,6 +2383,11 @@
             "urn:node:CA_OPC",
             "urn:node:ESS_DIVE",
             "urn:node:CERP_SFWMD",
+            "urn:node:SFWMD",
+            "urn:node:DRP",
+            "urn:node:SI",
+            "urn:node:CIB",
+            "urn:node:SCTLD",
           ],
 
           /**
@@ -2479,6 +2484,7 @@
            * @example application%2Fbagit-097
            */
           packageFormat: "application%2Fbagit-1.0",
+
           /**
            * Whether to batch fetch requests to the DataONE API. This is an experimental feature
            * and should be used with caution.  If set to a number greater than 0, MetacatUI will
@@ -2496,6 +2502,7 @@
            * @since 2.32.0
            */
           batchSizeFetch: 0,
+
           /**
            * Whether to batch uploads to the DataONE API. This is an experimental feature
            * and should be used with caution.  If set to a number greater than 0, MetacatUI will
@@ -2513,6 +2520,15 @@
            * @since 2.32.0
            */
           batchSizeUpload: 0,
+
+          /**
+           * The timeout in milliseconds for file downloads. If set to anything
+           * other than a number greater than 0, the file download will not
+           * timeout (i.e. it will wait indefinitely for the file to download).
+           * @type {number}
+           * @since 2.32.1
+           */
+          fileDownloadTimeout: 0,
         },
         MetacatUI.AppConfig,
       ),

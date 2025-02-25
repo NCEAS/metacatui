@@ -1042,7 +1042,7 @@ define([
        * When there is an error loading the metadata, show an error message
        * rather than letting the spinner spin forever
        * @param {string} errorMsg - The error message to display
-       * @since 0.0.0
+       * @since 2.32.1
        */
       loadError(errorMsg) {
         if (!errorMsg) return;
@@ -1288,7 +1288,7 @@ define([
        * Log an error message for a specific category
        * @param {string} category - The category of the error
        * @param {string} errorMsg - The error message to display
-       * @since 0.0.0
+       * @since 2.32.1
        */
       showError(category, errorMsg) {
         const categoryEls = this.$(`[data-category='${category}']`);
@@ -1341,7 +1341,7 @@ define([
        * Recursively log the leaf errors in the error object
        * @param {string} category - The category of the error
        * @param {string} errorObj - The object containing the error messages
-       * @since 0.0.0
+       * @since 2.32.1
        */
       showLeafErrors(category, errorObj) {
         Object.entries(errorObj).forEach(([subCategory, subErrorMsg]) => {

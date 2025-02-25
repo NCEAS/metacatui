@@ -1872,7 +1872,7 @@ define([
        * @param {Object} options - options for the AJAX request
        * @param {Function} options.success - The success callback function
        * @param {Function} options.error - The error callback function
-       * @since 0.0.0
+       * @since 2.32.1
        */
       fetchSystemMetadata: function (options = {}) {
         const model = this;
