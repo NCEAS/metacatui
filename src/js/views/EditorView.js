@@ -452,7 +452,7 @@ define([
             trigger: "hover focus click",
             html: false,
             title:
-              "Adding files disabled. " + tooltipMessage + " Please wait...",
+              `Adding files disabled. ${  tooltipMessage  } Please wait...`,
             container: "body",
             delay: 600,
           });
