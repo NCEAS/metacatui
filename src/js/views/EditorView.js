@@ -446,7 +446,7 @@ define([
         this.$(".addFiles")
           .addClass("btn-disabled")
           .parent()
-          //Add a tooltip to the parent element since tooltips won't work on a disabled button
+          // Add a tooltip to the parent element since tooltips won't work on a disabled button
           .tooltip({
             placement: "top",
             trigger: "hover focus click",
