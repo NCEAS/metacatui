@@ -1865,39 +1865,47 @@ define([
         );
       },
 
-      /*
+      /**
        * Sends an AJAX request to fetch the system metadata for this EML object.
-       * Will not trigger a sync event since it does not use Backbone.Model.fetch
+       * Will not trigger a sync event since it does not use
+       * Backbone.Model.fetch. Triggers a custom "sysMetaUpdated" event instead.
+       * @param {Object} options - options for the AJAX request
+       * @param {Function} options.success - The success callback function
+       * @param {Function} options.error - The error callback function
+       * @since 0.0.0
        */
-      fetchSystemMetadata: function (options) {
-        if (!options) var options = {};
-        else options = _.clone(options);
+      fetchSystemMetadata: function (options = {}) {
+        const model = this;
+        const requestOptions = { ...options };
+        const metaUrl = MetacatUI.appModel.get("metaServiceUrl");
+        const id = encodeURIComponent(this.get("id"));
+        const ajaxSettings = MetacatUI.appUserModel.createAjaxSettings();
+        const success = requestOptions.success;
+        const error = requestOptions.error;
 
-        var model = this,
-          fetchOptions = _.extend(
-            {
-              url:
-                MetacatUI.appModel.get("metaServiceUrl") +
-                encodeURIComponent(this.get("id")),
-              dataType: "text",
-              success: function (response) {
-                model.set(DataONEObject.prototype.parse.call(model, response));
+        // If there are callbacks in the options, merge them with the success
+        // and error callbacks required for this function
+        requestOptions.success = (response) => {
+          this.set(DataONEObject.prototype.parse.call(this, response));
+          model.trigger("sysMetaUpdated");
+          if (typeof success === "function") success();
+        };
+        requestOptions.error = () => {
+          this.trigger("error");
+          if (typeof error === "function") error();
+        };
 
-                //Trigger a custom event that the sys meta was updated
-                model.trigger("sysMetaUpdated");
-              },
-              error: function () {
-                model.trigger("error");
-              },
-            },
-            options,
-          );
-
-        //Add the authorization header and other AJAX settings
-        _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings());
+        // Make the AJAX request
+        const fetchOptions = {
+          ...requestOptions,
+          ...ajaxSettings,
+          url: `${metaUrl}${id}`,
+          dataType: "text",
+        };
 
         $.ajax(fetchOptions);
       },
+
       /*
        * Returns the nofde in the given EML document that the given node type
        * should be inserted after
