@@ -438,7 +438,7 @@ define([
             placement: "top",
             trigger: "hover focus click",
             html: false,
-            title: "Saving is disabled. " + tooltipMessage + " Please wait...",
+            title: `Saving is disabled. ${  tooltipMessage  } Please wait...`,
             container: "body",
             delay: 600,
           });
