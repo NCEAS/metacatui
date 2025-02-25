@@ -442,7 +442,7 @@ define([
             container: "body",
             delay: 600,
           });
-        //When the package is saved, revert the Add button back to normal
+        // When the package is saved, revert the Add button back to normal
         this.$(".addFiles")
           .addClass("btn-disabled")
           .parent()
