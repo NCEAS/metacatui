@@ -223,6 +223,9 @@
         if (uri &amp;&amp; Array.isArray(uri) &amp;&amp; uri.length) {
           [uri] = uri;
         }
+        if (uri &amp;&amp; Array.isArray(uri) &amp;&amp; uri.length) {
+          [uri] = uri;
+        }
         let annotations = this.get("annotations");
         if (!annotations) {
           annotations = new EMLAnnotations();
@@ -1758,7 +1761,9 @@
         }
 
         // Validate the EMLAnnotation models, checking for the canonical dataset
+        // Validate the EMLAnnotation models, checking for the canonical dataset
         const annotations = this.get("annotations");
+        const annotationErrors = annotations ? annotations.validate() : [];
         const annotationErrors = annotations ? annotations.validate() : [];
 
         if (annotationErrors?.length) {
@@ -1912,6 +1917,7 @@
       },
 
       /**
+      /**
        * Sends an AJAX request to fetch the system metadata for this EML object.
        * Will not trigger a sync event since it does not use
        * Backbone.Model.fetch. Triggers a custom "sysMetaUpdated" event instead.
@@ -1950,6 +1956,7 @@
 
         $.ajax(fetchOptions);
       },
+
 
       /*
        * Returns the nofde in the given EML document that the given node type
