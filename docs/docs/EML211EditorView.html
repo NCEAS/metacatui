@@ -1389,7 +1389,7 @@ by LocalForage and removing any beyond a hardcoded limit.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1443">line 1443</a>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1497">line 1497</a>
     </li></ul></dd>
     
 
@@ -3049,7 +3049,7 @@ special fields that may be configured elsewhere. (e.g. the
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1512">line 1512</a>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1566">line 1566</a>
     </li></ul></dd>
     
 
@@ -3217,7 +3217,7 @@ event</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1359">line 1359</a>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1413">line 1413</a>
     </li></ul></dd>
     
 
@@ -3362,7 +3362,7 @@ event</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1389">line 1389</a>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1443">line 1443</a>
     </li></ul></dd>
     
 
@@ -4175,6 +4175,153 @@ the type of object being edited.
     
 
     
+    <h4 class="name" id="loadError">
+      <a href="#loadError" class="link-icon">
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
+
+      </a>
+      <span class="type-signature"></span>loadError<span class="signature">(errorMsg)</span><span class="type-signature"></span>
+    </h4>
+    
+
+    
+
+
+
+<div class="description">
+    When there is an error loading the metadata, show an error message
+rather than letting the spinner spin forever
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>errorMsg</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The error message to display</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.32.1</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1047">line 1047</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="notAuthorized">
       <a href="#notAuthorized" class="link-icon">
         <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
@@ -4233,7 +4380,7 @@ the type of object being edited.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1150">line 1150</a>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1175">line 1175</a>
     </li></ul></dd>
     
 
@@ -5792,7 +5939,7 @@ if not authorized, render the not authorized message.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line869">line 869</a>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line875">line 875</a>
     </li></ul></dd>
     
 
@@ -5886,7 +6033,7 @@ if not authorized, render the not authorized message.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1419">line 1419</a>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1473">line 1473</a>
     </li></ul></dd>
     
 
@@ -6035,7 +6182,7 @@ function</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line932">line 932</a>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line938">line 938</a>
     </li></ul></dd>
     
 
@@ -6187,7 +6334,7 @@ collection that was just saved</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line886">line 886</a>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line892">line 892</a>
     </li></ul></dd>
     
 
@@ -6443,7 +6590,7 @@ and the subclass tweaks it.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1494">line 1494</a>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1548">line 1548</a>
     </li></ul></dd>
     
 
@@ -6685,7 +6832,176 @@ and the subclass tweaks it.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1079">line 1079</a>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1104">line 1104</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="showError">
+      <a href="#showError" class="link-icon">
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
+
+      </a>
+      <span class="type-signature"></span>showError<span class="signature">(category, errorMsg)</span><span class="type-signature"></span>
+    </h4>
+    
+
+    
+
+
+
+<div class="description">
+    Log an error message for a specific category
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>category</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The category of the error</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>errorMsg</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The error message to display</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.32.1</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1293">line 1293</a>
     </li></ul></dd>
     
 
@@ -6779,7 +7095,176 @@ and the subclass tweaks it.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1038">line 1038</a>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1063">line 1063</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="showLeafErrors">
+      <a href="#showLeafErrors" class="link-icon">
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
+
+      </a>
+      <span class="type-signature"></span>showLeafErrors<span class="signature">(category, errorObj)</span><span class="type-signature"></span>
+    </h4>
+    
+
+    
+
+
+
+<div class="description">
+    Recursively log the leaf errors in the error object
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>category</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The category of the error</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>errorObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The object containing the error messages</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.32.1</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1346">line 1346</a>
     </li></ul></dd>
     
 
@@ -7303,7 +7788,7 @@ and the subclass tweaks it.
 
 
 <div class="description">
-    Show any errors that occured when trying to save changes
+    Show any errors that occurred when trying to save changes
 </div>
 
 
@@ -7352,7 +7837,7 @@ and the subclass tweaks it.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1222">line 1222</a>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1250">line 1250</a>
     </li></ul></dd>
     
 
@@ -7684,7 +8169,7 @@ submit button</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1184">line 1184</a>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1209">line 1209</a>
     </li></ul></dd>
     
 
@@ -7782,7 +8267,7 @@ disabled based on various attributes of the DataPackage and its models.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1201">line 1201</a>
+        <a href="src_js_views_metadata_EML211EditorView.js.html">src/js/views/metadata/EML211EditorView.js</a>, <a href="src_js_views_metadata_EML211EditorView.js.html#line1226">line 1226</a>
     </li></ul></dd>
     
 

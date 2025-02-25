@@ -2134,7 +2134,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           bioportalApiBaseUrl: "https://data.bioontology.org",
           /**
            * Make use of the Bioontology model to cache the results of Bioportal API calls
-           * @deprecated since 0.0.0
+           * @deprecated since 2.32.0
            */
           bioportalLookupCache: {},
           /**
@@ -2480,7 +2480,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * other than a number greater than 0, the file download will not
            * timeout (i.e. it will wait indefinitely for the file to download).
            * @type {number}
-           * @since 0.0.0
+           * @since 2.32.1
            */
           fileDownloadTimeout: 0,
         },

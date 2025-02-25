@@ -1451,7 +1451,7 @@ define([
       /**
        * Show an error, e.g. if the file can't be fetched
        * @param {string} message The error message to display
-       * @since 0.0.0
+       * @since 2.32.1
        */
       showError(message) {
         this.$el.removeClass("loading");

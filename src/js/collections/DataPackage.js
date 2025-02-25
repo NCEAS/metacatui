@@ -525,7 +525,7 @@ define([
        * not have a timeout (i.e., will wait indefinitely)
        * @param {number} [attempt] - The current attempt number
        * @returns {DataONEObject} The fetched model
-       * @since 0.0.0
+       * @since 2.32.1
        */
       async fetchWithRetryAndTimeout(
         memberModel,
@@ -579,7 +579,7 @@ define([
        * @param {DataONEObject[]} failedModels - The models that were being
        * fetched
        * @param {Error[]} errors - The errors that occurred
-       * @since 0.0.0
+       * @since 2.32.1
        */
       handleMemberFetchError(failedModels, errors) {
         failedModels.forEach((model, i) => {
@@ -599,7 +599,7 @@ define([
        * Sets the numLoadingFileMetadata attribute on the package model
        * @param {number} num - The number of models that are currently being
        * fetched
-       * @since 0.0.0
+       * @since 2.32.1
        */
       updateLoadingCount(num) {
         this.packageModel.set("numLoadingFileMetadata", num);
@@ -620,7 +620,7 @@ define([
        * milliseconds. If set to anything other than a positive number greater
        * than 0, the fetch will never timeout
        * @returns {DataONEObject} The updated model
-       * @since 0.0.0
+       * @since 2.32.1
        */
       async updateMemberModelType(memberModel, maxRetries, timeout) {
         const newMemberModel = this.getMember(memberModel);
@@ -670,7 +670,7 @@ define([
        * resolves when the fetch is complete, along with the XHR object
        * @param {DataONEObject} model - The model to fetch
        * @returns {object} An object with a promise and an XHR reference
-       * @since 0.0.0
+       * @since 2.32.1
        */
       fetchPromise(model) {
         let xhrRef;
