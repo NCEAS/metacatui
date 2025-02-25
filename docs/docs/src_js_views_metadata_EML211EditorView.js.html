@@ -806,6 +806,7 @@
        * replaced, the listeners would be reset.
        */
       setListeners() {
+        const view = this;
         this.listenTo(this.model, "change:uploadStatus", this.showControls);
 
         // Register a listener for any attribute change
@@ -813,6 +814,11 @@
 
         // Register a listener to save drafts on change
         this.model.on("change", this.model.saveDraft, this.model);
+
+        this.stopListening(this.model, "change:errorMessage");
+        this.listenTo(this.model, "change:errorMessage", () => {
+          view.loadError(this.model.get("errorMessage"));
+        });
 
         // If any attributes have changed (including nested objects), show the
         // controls
@@ -1079,6 +1085,25 @@
       },
 
       /**
+       * When there is an error loading the metadata, show an error message
+       * rather than letting the spinner spin forever
+       * @param {string} errorMsg - The error message to display
+       * @since 2.32.1
+       */
+      loadError(errorMsg) {
+        if (!errorMsg) return;
+        const metadataContainer = this.$("#metadata-container");
+        MetacatUI.appView.showAlert(
+          errorMsg,
+          "alert-error",
+          metadataContainer,
+          null,
+        );
+        // Hide the loading spinner &amp; message
+        this.$(".loading").hide();
+      },
+
+      /**
        * Find the most recently updated version of the metadata
        */
       showLatestVersion() {
@@ -1245,7 +1270,7 @@
        * @since 2.17.1
        */
       toggleEnableControls() {
-        const packageModel = MetacatUI.rootDataPackage.packageModel;
+        const { packageModel } = MetacatUI.rootDataPackage;
         const numLoadingMetadata = packageModel.get("numLoadingFileMetadata");
         const numLoadingFiles = packageModel.get("numLoadingFiles");
         const isLoadingMetadata = numLoadingMetadata > 0;
@@ -1264,7 +1289,10 @@
         }
       },
 
-      /** Show any errors that occured when trying to save changes */
+      /**
+       * Show any errors that occurred when trying to save changes
+       *
+       */
       showValidation() {
         // First clear all the error messaging
         this.$(".notification.error").empty();
@@ -1274,75 +1302,101 @@
 
         const errors = this.model.validationError;
 
-        errors?.forEach((errorMsg, category) => {
-          const categoryEls = this.$(`[data-category='${category}']`);
-          const dataItemRow = categoryEls.parents(".data-package-item");
+        if (errors &amp;&amp; typeof errors === "object") {
+          Object.entries(errors).forEach(([category, errorMsg]) => {
+            if (typeof errorMsg === "string") {
+              // Handle string error messages
+              this.showError(category, errorMsg);
+            } else if (typeof errorMsg === "object") {
+              // Handle object error messages by iterating over leaf nodes
+              this.showLeafErrors(category, errorMsg);
+            }
+          });
 
-          // If this field is in a DataItemView, then delegate to that view
-          if (dataItemRow.length &amp;&amp; dataItemRow.data("view")) {
-            dataItemRow.data("view").showValidation(category, errorMsg);
-            return;
-          }
-          const elsWithViews = categoryEls.filter(
-            (el) =>
-              $(el).data("view") &amp;&amp;
-              $(el).data("view").showValidation &amp;&amp;
-              !$(el).data("view").isNew,
-          );
+          if (Object.keys(errors).length) {
+            // Create a list of errors to display in the error message shown to the user
+            const errorList = `&lt;ul>${this.getErrorListItem(errors)}&lt;/ul>`;
 
-          if (elsWithViews.length) {
-            elsWithViews.forEach((el) => {
-              $(el).data("view").showValidation();
-            });
-          } else if (categoryEls.length) {
-            // Show the error message
-            categoryEls
-              .filter(".notification")
-              .addClass("error")
-              .text(errorMsg);
-
-            // Add the error message to inputs
-            categoryEls.filter("textarea, input").addClass("error");
-          }
-
-          // Get the link in the table of contents navigation
-          let navigationLink = this.$(
-            `.side-nav-item[data-category='${category}']`,
-          );
-
-          if (!navigationLink.length) {
-            const section = categoryEls.parents("[data-section]");
-            navigationLink = this.$(
-              `.side-nav-item.${$(section).attr("data-section")}`,
+            MetacatUI.appView.showAlert(
+              `Fix the errors flagged below before submitting: ${errorList}`,
+              "alert-error",
+              this.$el,
+              null,
+              {
+                remove: true,
+              },
             );
           }
+        }
+      },
 
-          // Show the error icon in the table of contents
-          navigationLink
-            .addClass("error")
-            .find(".icon")
-            .addClass("error")
-            .show();
+      /**
+       * Log an error message for a specific category
+       * @param {string} category - The category of the error
+       * @param {string} errorMsg - The error message to display
+       * @since 2.32.1
+       */
+      showError(category, errorMsg) {
+        const categoryEls = this.$(`[data-category='${category}']`);
+        const dataItemRow = categoryEls.parents(".data-package-item");
 
-          this.model.off(`change:${category}`, this.model.checkValidity);
-          this.model.once(`change:${category}`, this.model.checkValidity);
-        }, this);
+        // If this field is in a DataItemView, then delegate to that view
+        if (dataItemRow.length &amp;&amp; dataItemRow.data("view")) {
+          dataItemRow.data("view").showValidation(category, errorMsg);
+          return;
+        }
+        const elsWithViews = categoryEls.filter(
+          (el) =>
+            $(el).data("view") &amp;&amp;
+            $(el).data("view").showValidation &amp;&amp;
+            !$(el).data("view").isNew,
+        );
 
-        if (errors) {
-          // Create a list of errors to display in the error message shown to
-          // the user
-          const errorList = `&lt;ul>${this.getErrorListItem(errors)}&lt;/ul>`;
+        if (elsWithViews.length) {
+          elsWithViews.forEach((el) => {
+            $(el).data("view").showValidation();
+          });
+        } else if (categoryEls.length) {
+          // Show the error message
+          categoryEls.filter(".notification").addClass("error").text(errorMsg);
 
-          MetacatUI.appView.showAlert(
-            `Fix the errors flagged below before submitting: ${errorList}`,
-            "alert-error",
-            this.$el,
-            null,
-            {
-              remove: true,
-            },
+          // Add the error message to inputs
+          categoryEls.filter("textarea, input").addClass("error");
+        }
+
+        // Get the link in the table of contents navigation
+        let navigationLink = this.$(
+          `.side-nav-item[data-category='${category}']`,
+        );
+
+        if (!navigationLink.length) {
+          const section = categoryEls.parents("[data-section]");
+          navigationLink = this.$(
+            `.side-nav-item.${$(section).attr("data-section")}`,
           );
         }
+
+        // Show the error icon in the table of contents
+        navigationLink.addClass("error").find(".icon").addClass("error").show();
+
+        this.model.off(`change:${category}`, this.model.checkValidity);
+        this.model.once(`change:${category}`, this.model.checkValidity);
+      },
+
+      /**
+       * Recursively log the leaf errors in the error object
+       * @param {string} category - The category of the error
+       * @param {string} errorObj - The object containing the error messages
+       * @since 2.32.1
+       */
+      showLeafErrors(category, errorObj) {
+        Object.entries(errorObj).forEach(([subCategory, subErrorMsg]) => {
+          if (typeof subErrorMsg === "string") {
+            this.showError(`${category}`, subErrorMsg);
+          } else if (typeof subErrorMsg === "object") {
+            this.showLeafErrors(`${subCategory}`, subErrorMsg);
+          }
+        });
       },
 
       /** @inheritdoc */

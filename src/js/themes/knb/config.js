@@ -50,6 +50,9 @@ MetacatUI.AppConfig = Object.assign(
     hiddenSubjectsInAccessPolicy: ["CN=knb-data-admins,DC=dataone,DC=org"],
     allowChangeRightsHolder: false,
     enableMeasurementTypeView: true,
+    // Batching
+    batchSizeFetch: 30,
+    batchSizeUpload: 10,
 
     //Searching
     disableQueryPOSTs: false,

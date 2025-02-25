@@ -480,206 +480,354 @@ define([
       },
 
       /**
-       * Fetches member models in batches to avoid fetching all members simultaneously.
-       * @param {Array} models - The array of member models to fetch.
-       * @param {number} [index] - The current index of the model being fetched.
-       * @param {number} [batchSize] - The number of models to fetch in each batch.
-       * @param {number} [timeout] - The timeout for each fetch request in milliseconds.
-       * @param {number} [maxRetries] - The maximum number of retries for each fetch request.
+       * Fetches member models in batches to avoid fetching all members
+       * simultaneously.
+       * @param {Backbone.Model[]} models The array of member models to fetch.
+       * @param {number} [batchSize] - The number of models to fetch in each
+       * batch.
+       * @param {number} [timeout] -The timeout for each fetch request in
+       * milliseconds. If set to anything other than a positive number greater
+       * than 0, the fetch will never timeout.
+       * @param {number} [maxRetries] - The maximum number of retries for each
+       * fetch request.
+       * @returns {Promise} A promise that resolves when all models have been
+       * fetched.
        * @since 2.32.0
        */
-      fetchMemberModels(
+      async fetchMemberModels(
         models,
-        index = 0,
         batchSize = 10,
         timeout = 5000,
         maxRetries = 3,
       ) {
-        // Update the number of file metadata items being loaded
-        this.packageModel.set("numLoadingFileMetadata", models.length - index);
+        const numModels = models.length;
+        // If batchSize is 0, fetch everything at once
+        const effectiveBatchSize = batchSize || numModels;
+        // If timeout is 0, falsey, or not a positive number, then fetch without
+        // a timeout (i.e., wait indefinitely)
+        const effectiveTimeout = timeout;
 
-        // If the index is greater than or equal to the length of the models array, stop fetching
-        if (index >= models.length) {
-          this.triggerComplete();
-          return;
+        // Loading count is used to show users progress of fetching
+        this.updateLoadingCount(numModels);
+
+        // Models will be fetched asynchonously within batches; batches are
+        // processed sequentially
+        for (let i = 0; i &lt; numModels; i += effectiveBatchSize) {
+          const batch = models.slice(i, i + effectiveBatchSize);
+          // Fetch all models in the batch
+          const fetchPromises = batch.map((memberModel) =>
+            this.fetchMemberModel(memberModel, maxRetries, effectiveTimeout),
+          );
+
+          // Await the entire batch of fetches to complete before moving to the
+          // next batch
+          /* eslint-disable-next-line no-await-in-loop */
+          const results = await Promise.allSettled(fetchPromises);
+
+          // Handle any rejections
+          const errors = results.filter((r) => r.status === "rejected");
+          if (errors.length > 0) {
+            this.handleMemberFetchError(batch, errors);
+          }
+
+          const modelsProcessed = i + effectiveBatchSize;
+          this.updateLoadingCount(Math.max(0, numModels - modelsProcessed));
         }
 
-        // If batchSize is 0, set it to the total number of models
-        let batchSizeAdjust = batchSize;
-        if (batchSizeAdjust === 0 &amp;&amp; index === 0)
-          batchSizeAdjust = models.length;
+        this.triggerComplete();
 
-        const collection = this;
-        // Slice the models array to get the current batch
-        const batch = models.slice(index, index + batchSizeAdjust);
+        return this;
+      },
 
-        // Create an array of promises for fetching each model in the batch
-        const fetchPromises = batch.map(
-          (memberModel) =>
-            new Promise((resolve, reject) => {
-              const attemptFetch = (retriesLeft) => {
-                // Create a promise for the fetch request
-                const fetchPromise = new Promise(
-                  (fetchResolve, fetchReject) => {
-                    memberModel.fetch({
-                      success: () => {
-                        // Once the model is synced, handle the response
-                        memberModel.once("sync", (oldModel) => {
-                          const newModel = collection.getMember(oldModel);
-
-                          // If the type of the old model is different from the new model
-                          if (oldModel.type !== newModel.type) {
-                            if (newModel.type === "DataPackage") {
-                              // If the new model is a DataPackage, replace the old model with the new one
-                              oldModel.trigger("replace", newModel);
-                              fetchResolve();
-                            } else {
-                              // Otherwise, fetch the new model and replace the old model with the new one
-                              newModel.set("synced", false);
-                              newModel.fetch();
-                              newModel.once("sync", (fetchedModel) => {
-                                fetchedModel.set("synced", true);
-                                collection.remove(oldModel);
-                                collection.add(fetchedModel);
-                                oldModel.trigger("replace", newModel);
-                                if (newModel.type === "EML")
-                                  collection.trigger("add:EML");
-                                fetchResolve();
-                              });
-                            }
-                          } else {
-                            // If the type of the old model is the same as the new model, merge the new model into the collection
-                            newModel.set("synced", true);
-                            collection.add(newModel, { merge: true });
-                            if (newModel.type === "EML")
-                              collection.trigger("add:EML");
-                            fetchResolve();
-                          }
-                        });
-                      },
-                      error: (model, response) =>
-                        fetchReject(new Error(response.statusText)),
-                    });
-                  },
-                );
-
-                // Create a promise for the timeout
-                const timeoutPromise = new Promise((__, timeoutReject) => {
-                  setTimeout(
-                    () => timeoutReject(new Error("Fetch timed out")),
-                    timeout,
-                  );
-                });
-
-                // Race the fetch promise against the timeout promise
-                Promise.race([fetchPromise, timeoutPromise])
-                  .then(resolve)
-                  .catch((error) => {
-                    if (retriesLeft > 0) {
-                      // Retry the fetch if there are retries left
-                      attemptFetch(retriesLeft - 1);
-                    } else {
-                      // Reject the promise if all retries are exhausted
-                      reject(error);
-                    }
-                  });
-              };
-
-              // Start the fetch attempt with the maximum number of retries
-              attemptFetch(maxRetries);
-            }),
-        );
-
-        // Once all fetch promises are resolved, fetch the next batch
-        Promise.allSettled(fetchPromises)
-          .then((results) => {
-            const errors = results.filter(
-              (result) => result.status === "rejected",
-            );
-            if (errors.length > 0) {
-              /* eslint-disable */
-              console.error("Error fetching member models:", errors);
-              /* eslint-enable */
-            }
-            // Fetch the next batch of models
-            this.fetchMemberModels.call(
-              collection,
-              models,
-              index + batchSizeAdjust,
-              batchSizeAdjust,
-              timeout,
-              maxRetries,
-            );
-          })
-          .catch((error) => {
-            /* eslint-disable */
-            console.error("Error fetching member models:", error);
-            /* eslint-enable */
-          });
+      async fetchMemberModel(memberModel, maxRetries, effectiveTimeout) {
+        try {
+          // First wait for the model data to be fetched &amp; synced
+          await this.fetchWithRetryAndTimeout(
+            memberModel,
+            maxRetries,
+            effectiveTimeout,
+          );
+          // Make sure the model is the correct type &amp; merged into the
+          // collection. Fetch again if type changed.
+          const newModel = await this.updateMemberModelType(
+            memberModel,
+            maxRetries,
+            effectiveTimeout,
+          );
+          return newModel;
+        } catch (err) {
+          this.handleMemberFetchError([memberModel], [err]);
+          return null;
+        }
       },
 
       /**
-       * Overload fetch calls for a DataPackage
-       * @param {object} [options] - Optional options for this fetch that get
-       * sent with the XHR request
-       * @property {boolean} fetchModels - If false, this fetch will not fetch
-       * each model in the collection. It will only get the resource map object.
-       * @property {boolean} fromIndex - If true, the collection will be fetched
-       * from Solr rather than fetching the system metadata of each model.
-       * Useful when you only need to retrieve limited information about each
-       * package member. Set query-specific parameters on the `solrResults`
-       * SolrResults set on this collection.
-       * @returns {jqXHR} The jQuery XMLHttpRequest for the request
+       * Fetch a model with a timeout and a maximum number of retries. Fetch a
+       * model with a timeout, aborting the fetch if it takes too long.
+       * @param {DataONEObject} memberModel - The model to fetch
+       * @param {number} maxRetries - The maximum number of retries
+       * @param {number} timeout - The timeout in milliseconds. If set to
+       * anything other than a positive number greater than 0, the fetch will
+       * not have a timeout (i.e., will wait indefinitely)
+       * @param {number} [attempt] - The current attempt number
+       * @returns {DataONEObject} The fetched model
+       * @since 2.32.1
        */
-      fetch(options = {}) {
-        // Fetch the system metadata for this resource map
-        this.packageModel.fetch();
+      async fetchWithRetryAndTimeout(
+        memberModel,
+        maxRetries,
+        timeout,
+        attempt = 0,
+      ) {
+        let timerId;
 
-        const fetchOptions = { dataType: "text", ...options };
+        try {
+          // Kick off the real fetch plus a timeout
+          const { fetchPromise, xhrRef } = this.fetchPromise(memberModel);
 
-        // If the fetchModels property is set to false,
-        if (fetchOptions.fetchModels === false) {
-          // Save the property to the Collection itself so it is accessible in
-          // other functions
-          this.fetchModels = false;
-          // Remove the property from the options Object since we don't want to
-          // send it with the XHR
-          delete fetchOptions.fetchModels;
-          this.once("reset", this.triggerComplete);
+          // if timeout is not a number > 0, then wait for fetch indefinitely
+          if (typeof timeout !== "number" || timeout &lt;= 0) {
+            return await fetchPromise;
+          }
+
+          const timerPromise = new Promise((_resolve, reject) => {
+            timerId = setTimeout(() => {
+              if (xhrRef?.abort) {
+                xhrRef.abort();
+              }
+              reject(new Error("Fetch timed out"));
+            }, timeout);
+          });
+          // Wait for whichever finishes first
+          return await Promise.race([fetchPromise, timerPromise]);
+        } catch (err) {
+          // Retry if we still have attempts left
+          if (attempt >= maxRetries - 1) {
+            throw err;
+          }
+          // Recursively call ourselves with an incremented attempt count
+          return this.fetchWithRetryAndTimeout.call(
+            this,
+            memberModel,
+            maxRetries,
+            timeout,
+            attempt + 1,
+          );
+        } finally {
+          if (timerId) {
+            clearTimeout(timerId);
+          }
         }
-        // If the fetchFromIndex property is set to true
-        else if (fetchOptions.fromIndex) {
-          this.fetchFromIndex();
+      },
+
+      /**
+       * Handle errors that occur when fetching member models
+       * @param {DataONEObject[]} failedModels - The models that were being
+       * fetched
+       * @param {Error[]} errors - The errors that occurred
+       * @since 2.32.1
+       */
+      handleMemberFetchError(failedModels, errors) {
+        failedModels.forEach((model, i) => {
+          let error =
+            errors?.[i] || errors?.[errors.length - 1] || "Fetch failed";
+          if (error.message === "abort") {
+            error = "This file took too long to load. Please try again.";
+          }
+          model.set("synced", false);
+          if (!model.get("errorMessage")) {
+            model.set("errorMessage", error.message || error);
+          }
+        });
+      },
+
+      /**
+       * Sets the numLoadingFileMetadata attribute on the package model
+       * @param {number} num - The number of models that are currently being
+       * fetched
+       * @since 2.32.1
+       */
+      updateLoadingCount(num) {
+        this.packageModel.set("numLoadingFileMetadata", num);
+      },
+
+      /**
+       * After a member model is fetched, determine whether it needs to:
+       *   1) be merged into the collection (the type did NOT change)
+       *   2) replace the old model (the type changed to DataPackage)
+       *   3) be fetched again, waited for, and then replaced in the collection
+       *      (the type from the server is different from the type in the
+       *      collection) Then resolve the promise when the model is fully
+       *      handled.
+       * @param {DataONEObject} memberModel - The model to potentially replace
+       * @param {number} maxRetries - The maximum number of retries for each
+       * fetch request
+       * @param {number} timeout - The timeout for each fetch request in
+       * milliseconds. If set to anything other than a positive number greater
+       * than 0, the fetch will never timeout
+       * @returns {DataONEObject} The updated model
+       * @since 2.32.1
+       */
+      async updateMemberModelType(memberModel, maxRetries, timeout) {
+        const newMemberModel = this.getMember(memberModel);
+
+        // 1) If the type did NOT change, just merge the new model
+        if (memberModel.type === newMemberModel.type) {
+          newMemberModel.set("synced", true);
+          this.add(newMemberModel, { merge: true });
+          if (newMemberModel.type === "EML") {
+            this.trigger("add:EML");
+          }
+          return newMemberModel;
+        }
+
+        // 2) If it changed to "DataPackage", replace the old model directly
+        if (newMemberModel.type === "DataPackage") {
+          memberModel.trigger("replace", newMemberModel);
+          return newMemberModel;
+        }
+
+        // 3) Otherwise (type changed but NOT to DataPackage), we fetch the
+        //    newMemberModel, wait for its sync, then replace in the collection.
+        newMemberModel.set("synced", false);
+
+        try {
+          await this.fetchWithRetryAndTimeout(
+            newMemberModel,
+            maxRetries,
+            timeout,
+          );
+          this.remove(memberModel);
+          this.add(newMemberModel);
+          newMemberModel.set("synced", true);
+          memberModel.trigger("replace", newMemberModel);
+          if (newMemberModel.type === "EML") {
+            this.trigger("add:EML");
+          }
+          return newMemberModel;
+        } catch (fetchErr) {
+          this.handleMemberFetchError([memberModel], [fetchErr]);
           return null;
         }
+      },
 
-        const thisPackage = this;
+      /**
+       * Fetch a model using Backbone's fetch method but return a promise that
+       * resolves when the fetch is complete, along with the XHR object
+       * @param {DataONEObject} model - The model to fetch
+       * @returns {object} An object with a promise and an XHR reference
+       * @since 2.32.1
+       */
+      fetchPromise(model) {
+        let xhrRef;
+        const fetchPromise = new Promise((resolve, reject) => {
+          xhrRef = model.fetch({
+            success: () => {
+              this.listenToOnce(model, "sync", () => {
+                resolve(model);
+              });
+            },
+            error: (m, response) => {
+              reject(new Error(response?.statusText || "Model fetch failed"));
+            },
+          });
+        });
+        return { fetchPromise, xhrRef };
+      },
 
-        // Function to retry fetching with user login details if the initial
-        // fetch fails eslint-disable-next-line func-names
-        const retryFetch = () => {
-          // Add the authorization options
-          const authFetchOptions = _.extend(
-            fetchOptions,
-            MetacatUI.appUserModel.createAjaxSettings(),
-          );
+      /**
+       *  Overload fetch calls for a DataPackage
+       *
+       *  This fetch function will fetch the resource map RDF XML for this
+       *  package
+       *
+       *  + Example 1: `this.fetch();`
+       *  + Example 2: `this.fetch({fetchModels: false});`
+       *  + Example 3: `this.fetch({fromIndex: true});`
+       *  + Example 4:
+       *  ```
+       *  this.fetch()
+       *  .then(function() {
+       *  console.log("Fetch complete!");
+       *  })
+       *  .catch(function() {
+       *  console.log("Fetch failed!");
+       *  });
+       *  ```
+       * @param {object} [sourceOptions] - Optional options for this fetch that get
+       * sent with the XHR request
+       *  @property {boolean} fetchModels - If false, this fetch will not fetch
+       *  each model in the collection. It will only get the resource map
+       *  object.
+       *  @property {boolean} fromIndex - If true, the collection will be
+       *  fetched from Solr rather than fetching the system metadata of each
+       *  model. Useful when you only need to retrieve limited information about
+       *  each package member. Set query-specific parameters on the
+       *  `solrResults` SolrResults set on this collection.
+       * @returns {Promise} A promise that resolves when the fetch is complete
+       */
+      fetch(sourceOptions) {
+        const options = sourceOptions || {};
+        return new Promise((resolve, reject) => {
+          // Fetch the system metadata for this resource map
+          this.packageModel.fetch();
 
-          // Fetch the resource map RDF XML with user login details
-          return Backbone.Collection.prototype.fetch
-            .call(thisPackage, authFetchOptions)
+          if (typeof options === "object") {
+            // If the fetchModels property is set to false,
+            if (options.fetchModels === false) {
+              // Save the property to the Collection itself so it is accessible
+              // in other functions
+              this.fetchModels = false;
+              // Remove the property from the options Object since we don't want
+              // to send it with the XHR
+              delete options.fetchModels;
+              this.once("reset", () => {
+                this.triggerComplete();
+                resolve();
+              });
+            }
+            // If the fetchFromIndex property is set to true
+            else if (options.fromIndex) {
+              this.fetchFromIndex();
+              resolve();
+              return;
+            }
+          }
+
+          // Set some custom fetch options
+          const fetchOptions = _.extend({ dataType: "text" }, options);
+
+          const thisPackage = this;
+
+          // Function to retry fetching with user login details if the initial
+          // fetch fails
+          const retryFetch = () => {
+            // Add the authorization options
+            const authFetchOptions = _.extend(
+              fetchOptions,
+              MetacatUI.appUserModel.createAjaxSettings(),
+            );
+
+            // Fetch the resource map RDF XML with user login details
+            return Backbone.Collection.prototype.fetch
+              .call(thisPackage, authFetchOptions)
+              .fail(() => {
+                thisPackage.trigger("fetchFailed", thisPackage);
+                reject();
+              });
+          };
+
+          // Fetch the resource map RDF XML
+          Backbone.Collection.prototype.fetch
+            .call(this, fetchOptions)
+            .done(() => resolve())
             .fail(() => {
-              // TODO: Handle the fetch failure!
-              thisPackage.trigger("fetchFailed", thisPackage);
+              // If the initial fetch fails, retry with user login details
+              retryFetch()
+                .done(() => resolve())
+                .fail(() => reject());
             });
-        };
-
-        // Fetch the resource map RDF XML
-        return Backbone.Collection.prototype.fetch
-          .call(this, fetchOptions)
-          .fail(() =>
-            // If the initial fetch fails, retry with user login details
-            retryFetch(),
-          );
+        });
       },
 
       /**
@@ -900,12 +1048,13 @@ define([
             this.fetchMemberModels.call(
               this,
               models,
-              0,
               MetacatUI.appModel.get("batchSizeFetch"),
+              MetacatUI.appModel.get("fileDownloadTimeout") || 0,
             );
           }
         } catch (error) {
-          // TODO: Handle the error
+          // eslint-disable-next-line no-console
+          console.error("Error parsing the RDF/XML", error);
         }
 
         // trigger complete if fetchModel is false and this is the only object
@@ -1236,7 +1385,8 @@ define([
             );
           }
         } catch (error) {
-          // TODO: Handle the error
+          // eslint-disable-next-line no-console
+          console.error("Error parsing the provenance relationships", error);
         }
       },
 
@@ -2107,7 +2257,7 @@ define([
 
         // Check if the collection is done being retrieved
         const notSynced = this.reject(
-          (m) => m.get("synced") || m.get("id") === model.get("id"),
+          (m) => m.get("synced") || m.get("id") === model?.get("id"),
         );
 
         // If there are any models that are not synced yet, the collection is
@@ -3655,7 +3805,8 @@ define([
       /**
        * Actions ot perform when a DataONEObject model is added to this
        * collection
-       * @param {DataONEObject} dataONEObject - The DataONEObject model that was added
+       * @param {DataONEObject} dataONEObject - The DataONEObject model that was
+       * added
        */
       handleAdd(dataONEObject) {
         const metadataModel = this.find((m) => m.get("type") === "Metadata");
