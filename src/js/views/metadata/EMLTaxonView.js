@@ -1,22 +1,35 @@
 define([
-  "backbone",
+  "jquery",
   "underscore",
+  "backbone",
+  "views/searchSelect/SearchSelectView",
   "models/metadata/eml211/EMLTaxonCoverage",
   "text!templates/metadata/taxonomicCoverage.html",
   "text!templates/metadata/taxonomicClassificationTable.html",
   "text!templates/metadata/taxonomicClassificationRow.html",
 ], (
-  Backbone,
+  $,
   _,
+  Backbone,
+  SearchSelect,
   EMLTaxonCoverage,
   TaxonomicCoverageTemplate,
   TaxonomicClassificationTableTemplate,
   TaxonomicClassificationRowTemplate,
 ) => {
+  /**
+   * @class EMLTaxonView
+   * @classdesc A Backbone View that renders the taxonomic coverage section of
+   * an EML model. This view is used to create, edit, and delete taxonomic
+   * classifications in the EML model. It also provides a "quick add" interface
+   * for adding common taxa to the taxonomic coverage section. Logic oiginally
+   * included in the EML211EditorView.
+   * @augments Backbone.View
+   * @since 0.0.0
+   */
   const EMLTaxonView = Backbone.View.extend(
     /** @lends EMLTaxonView.prototype */ {
-      className: "",
-
+      /** @inheritdoc */
       events: {
         "change .taxonomic-coverage": "updateTaxonCoverage",
         "keyup .taxonomic-coverage .new input": "addNewTaxon",
@@ -27,15 +40,30 @@ define([
         "mouseout .taxonomic-coverage .remove": "previewTaxonRemove",
       },
 
+      /**
+       * The template for the taxonomic coverage section
+       * @type {UnderscoreTemplate}
+       */
       taxonomicCoverageTemplate: _.template(TaxonomicCoverageTemplate),
+
+      /**
+       * The template for the taxonomic classification table
+       * @type {UnderscoreTemplate}
+       */
       taxonomicClassificationTableTemplate: _.template(
         TaxonomicClassificationTableTemplate,
       ),
+
+      /**
+       * The template for the taxonomic classification row
+       * @type {UnderscoreTemplate}
+       */
       taxonomicClassificationRowTemplate: _.template(
         TaxonomicClassificationRowTemplate,
       ),
 
-      initialize: function (options = {}) {
+      /** @inheritdoc */
+      initialize(options = {}) {
         this.parentModel = options.parentModel;
         this.taxonArray = this.getTaxonArray(options);
         this.edit = options.edit || false;
@@ -43,7 +71,7 @@ define([
         // If duplicates are removed while saving, make sure to re-render the
         // taxa
         const view = this;
-        this.taxonArray.forEach(function (taxonCov) {
+        this.taxonArray.forEach((taxonCov) => {
           this.stopListening(taxonCov);
           this.listenTo(
             taxonCov,
@@ -53,8 +81,13 @@ define([
         }, view);
       },
 
-      getTaxonArray: function (options = {}) {
-        let taxonArray = options?.taxonArray;
+      /**
+       * Get the taxon coverage array from the options or the parent model
+       * @param {object} options - The options passed to the view
+       * @returns {EMLTaxonCoverage[]} An array of EMLTaxonCoverage models
+       */
+      getTaxonArray(options = {}) {
+        const taxonArray = options?.taxonArray;
 
         // Don't need  to make a new taxon array if we already have one
         if (
@@ -77,26 +110,19 @@ define([
         return [new EMLTaxonCoverage()];
       },
 
-      /*
-       * Renders the Taxa section of the page
-       */
-      render: function () {
+      /** @inheritdoc */
+      render() {
         const view = this;
-        const el = this.el;
-        const $el = this.$el;
+        const { el } = this;
+        const { $el } = this;
 
         el.innerHTML = `<h2>Taxa</h2>`;
 
         this.taxonArray.forEach((coverage) => {
-          const x = this.createTaxonomicCoverage(coverage);
-          $el.append(x);
+          $el.append(this.createTaxonomicCoverage(coverage));
         });
 
-        // updating the indexes of taxa-tables before rendering the information on page(view).
-        var taxaNums = this.$(".editor-header-index");
-        for (var i = 0; i < taxaNums.length; i++) {
-          $(taxaNums[i]).text(i + 1);
-        }
+        this.updateTaxaNumbering();
 
         // Insert the quick-add taxon options, if any are configured for this
         // theme. See {@link AppModel#quickAddTaxa}
@@ -105,9 +131,29 @@ define([
         return this;
       },
 
-      // Creates a table to hold a single EMLTaxonCoverage element (table) for
-      // each root-level taxonomicClassification
-      createTaxonomicCoverage: function (coverage) {
+      /**
+       * Update the numbering of the taxa in the taxonomic coverage section
+       * @returns {HTMLElement[]} An array of the taxon numbering elements
+       * @since 0.0.0
+       */
+      updateTaxaNumbering() {
+        const taxaNums = this.el.querySelectorAll(".editor-header-index");
+        taxaNums.forEach((taxaNum, i) => {
+          const element = taxaNum;
+          element.textContent = i + 1;
+        });
+
+        return taxaNums;
+      },
+
+      /**
+       * Creates a table to hold a single EMLTaxonCoverage element (table) for
+       * each root-level taxonomicClassification
+       * @param {EMLTaxonCoverage} coverage - An EMLTaxonCoverage model
+       * @returns {jQuery} A jQuery object containing the HTML for the taxonomic
+       * coverage section
+       */
+      createTaxonomicCoverage(coverage) {
         const finishedEls = $(
           this.taxonomicCoverageTemplate({
             generalTaxonomicCoverage:
@@ -118,39 +164,40 @@ define([
 
         coverageEl.data({ model: coverage });
 
-        var classifications = coverage.get("taxonomicClassification");
+        const classifications = coverage.get("taxonomicClassification");
 
         // Makes a table... for the root level
-        for (var i = 0; i < classifications.length; i++) {
+        classifications.forEach((classification) => {
           coverageEl.append(
-            this.createTaxonomicClassificationTable(classifications[i]),
+            this.createTaxonomicClassificationTable(classification),
           );
-        }
+        }, this);
 
         // Create a new, blank table for another taxonomicClassification
-        var newTableEl = this.createTaxonomicClassificationTable();
+        const newTableEl = this.createTaxonomicClassificationTable();
 
         coverageEl.append(newTableEl);
 
         return finishedEls;
       },
 
-      createTaxonomicClassificationTable: function (classification) {
-        // updating the taxonomic table indexes before adding a new table to the page.
-        var taxaNums = this.$(".editor-header-index");
-
-        for (var i = 0; i < taxaNums.length; i++) {
-          $(taxaNums[i]).text(i + 1);
-        }
+      /**
+       * Create the HTML for a taxonomic coverage table
+       * @param {EMLTaxonCoverage} classification - An EMLTaxonCoverage model
+       * @returns {jQuery} A jQuery object containing the HTML for a taxonomic
+       * coverage table
+       */
+      createTaxonomicClassificationTable(classification) {
+        const taxaNums = this.updateTaxaNumbering();
 
         // Adding the taxoSpeciesCounter to the table header for enhancement of the view
-        var finishedEl = $(
+        const finishedEl = $(
           '<div class="row-striped root-taxonomic-classification-container"></div>',
         );
         $(finishedEl).append(
-          '<h6>Species <span class="editor-header-index">' +
-            (taxaNums.length + 1) +
-            "</span> </h6>",
+          `<h6>Species <span class="editor-header-index">${
+            taxaNums.length + 1
+          }</span> </h6>`,
         );
 
         // Add a remove button if this is not a new table
@@ -165,35 +212,36 @@ define([
           );
         }
 
-        var tableEl = $(this.taxonomicClassificationTableTemplate());
-        var tableBodyEl = $(document.createElement("tbody"));
+        const tableEl = $(this.taxonomicClassificationTableTemplate());
+        const tableBodyEl = $(document.createElement("tbody"));
 
-        var queue = [classification],
-          rows = [],
-          cur;
+        const queue = [classification];
+        const rows = [];
+        let cur;
 
         while (queue.length > 0) {
           cur = queue.pop();
 
           // I threw this in here so I can this function without an
           // argument to generate a new table from scratch
-          if (typeof cur === "undefined") {
-            continue;
-          }
-          cur.taxonRankName = cur.taxonRankName?.toLowerCase();
-          rows.push(cur);
-          if (cur.taxonomicClassification) {
-            for (var i = 0; i < cur.taxonomicClassification.length; i++) {
-              queue.push(cur.taxonomicClassification[i]);
+          if (cur) {
+            cur.taxonRankName = cur.taxonRankName?.toLowerCase();
+            rows.push(cur);
+            if (cur.taxonomicClassification) {
+              Object.entries(cur.taxonomicClassification).forEach(
+                ([_taxonRank, taxonClass]) => {
+                  queue.push(taxonClass);
+                },
+              );
             }
           }
         }
 
-        for (var j = 0; j < rows.length; j++) {
-          tableBodyEl.append(this.makeTaxonomicClassificationRow(rows[j]));
-        }
+        rows.forEach((row) => {
+          tableBodyEl.append(this.makeTaxonomicClassificationRow(row));
+        });
 
-        var newRowEl = this.makeNewTaxonomicClassificationRow();
+        const newRowEl = this.makeNewTaxonomicClassificationRow();
 
         $(tableBodyEl).append(newRowEl);
         $(tableEl).append(tableBodyEl);
@@ -209,36 +257,35 @@ define([
       },
 
       /**
+       * @external TaxonomicClassification
+       * @see EMLTaxonCoverage.TaxonomicClassification
+       */
+
+      /**
        * Create the HTML for a single row in a taxonomicClassification table
-       * @param {EMLTaxonCoverage#taxonomicClassification} classification A
-       * classification object from an EMLTaxonCoverage model, may include
-       * a taxonRank, taxonValue, taxonId, commonName, and nested
-       * taxonomicClassification objects
-       * @returns {jQuery} A jQuery object containing the HTML for a single
-       * row in a taxonomicClassification table
+       * @param {TaxonomicClassification} classification A classification object
+       * from an EMLTaxonCoverage model, may include a taxonRank, taxonValue,
+       * taxonId, commonName, and nested taxonomicClassification objects
+       * @returns {jQuery} A jQuery object containing the HTML for a single row
+       * in a taxonomicClassification table
        * @since 2.24.0
        */
-      makeTaxonomicClassificationRow: function (classification) {
-        try {
-          if (!classification) classification = {};
-          var finishedEl = $(
-            this.taxonomicClassificationRowTemplate({
-              taxonRankName: classification.taxonRankName || "",
-              taxonRankValue: classification.taxonRankValue || "",
-            }),
-          );
-          // Save a reference to other taxon attributes that we need to keep
-          // when serializing the model
-          if (classification.taxonId) {
-            $(finishedEl).data("taxonId", classification.taxonId);
-          }
-          if (classification.commonName) {
-            $(finishedEl).data("commonName", classification.commonName);
-          }
-          return finishedEl;
-        } catch (e) {
-          console.log("Error making taxonomic classification row: ", e);
+      makeTaxonomicClassificationRow(classification = {}) {
+        const finishedEl = $(
+          this.taxonomicClassificationRowTemplate({
+            taxonRankName: classification.taxonRankName || "",
+            taxonRankValue: classification.taxonRankValue || "",
+          }),
+        );
+        // Save a reference to other taxon attributes that we need to keep
+        // when serializing the model
+        if (classification.taxonId) {
+          $(finishedEl).data("taxonId", classification.taxonId);
         }
+        if (classification.commonName) {
+          $(finishedEl).data("commonName", classification.commonName);
+        }
+        return finishedEl;
       },
 
       /**
@@ -247,25 +294,35 @@ define([
        * in a taxonomicClassification table
        * @since 2.24.0
        */
-      makeNewTaxonomicClassificationRow: function () {
+      makeNewTaxonomicClassificationRow() {
         const row = this.makeTaxonomicClassificationRow({});
         $(row).addClass("new");
         return row;
       },
 
-      /* Update the underlying model and DOM for an EML TaxonomicCoverage
-        section. This method handles updating the underlying TaxonomicCoverage
-        models when the user changes form fields as well as inserting new
-        form fields automatically when the user needs them.
+      /**
+       * Update the underlying model and DOM for an EML TaxonomicCoverage
+       * section. This method handles updating the underlying TaxonomicCoverage
+       * models when the user changes form fields as well as inserting new
+       * form fields automatically when the user needs them.
+       *
+       * Since a dataset has multiple TaxonomicCoverage elements at the dataset
+       * level, each Taxonomic Coverage is represented by a table element and
+       * all taxonomicClassifications within are rows in that table.
+       *
+       * TODO: Finish this function
+       * TODO: Link this function into the DOM
+       * @param {object} options - An object with the following properties:
+       * - target: The target element that was changed
+       * - coverage: The taxonomic coverage element that was changed
+       */
+      updateTaxonCoverage(options) {
+        let coverage;
+        let model;
+        let value;
+        let e;
+        let classificationEl;
 
-        Since a dataset has multiple TaxonomicCoverage elements at the dataset
-        level, each Taxonomic Coverage is represented by a table element and
-        all taxonomicClassifications within are rows in that table.
-
-        TODO: Finish this function
-        TODO: Link this function into the DOM
-        */
-      updateTaxonCoverage: function (options) {
         if (options.target) {
           // Ignore the event if the target is a quick add taxon UI element.
           const quickAddEl = $(this.taxonQuickAddEl);
@@ -273,28 +330,27 @@ define([
             return;
           }
 
-          var e = options;
+          e = options;
 
-          /*  Getting `model` here is different than in other places because
-              the thing being updated is an `input` or `select` element which
-              is part of a `taxonomicClassification`. The model is
-              `TaxonCoverage` which has one or more
-              `taxonomicClassifications`. So we have to walk up to the
-              hierarchy from input < td < tr < tbody < table < div to get at
-              the underlying TaxonCoverage model.
-            */
-          var coverage = $(e.target).parents(".taxonomic-coverage"),
-            classificationEl = $(e.target).parents(
-              ".root-taxonomic-classification",
-            ),
-            model = $(coverage).data("model") || this.parentModel,
-            category = $(e.target).attr("data-category"),
-            value = this.parentModel?.cleanXMLText($(e.target).val());
+          // Getting `model` here is different than in other places because the
+          // thing being updated is an `input` or `select` element which is part
+          // of a `taxonomicClassification`. The model is `TaxonCoverage` which
+          // has one or more `taxonomicClassifications`. So we have to walk up
+          // to the hierarchy from input < td < tr < tbody < table < div to get
+          // at the underlying TaxonCoverage model.
 
-          //We can't update anything without a coverage, or
-          //classification
-          if (!coverage) return false;
-          if (!classificationEl) return false;
+          coverage = $(e.target).parents(".taxonomic-coverage");
+          classificationEl = $(e.target).parents(
+            ".root-taxonomic-classification",
+          );
+          model = $(coverage).data("model") || this.parentModel;
+          const category = $(e.target).attr("data-category");
+          value = this.parentModel?.cleanXMLText($(e.target).val());
+
+          // We can't update anything without a coverage, or
+          // classification
+          if (!coverage) return;
+          if (!classificationEl) return;
 
           // Use `category` to determine if we're updating the generalTaxonomicCoverage or
           // the taxonomicClassification
@@ -304,35 +360,34 @@ define([
             return;
           }
         } else {
-          var coverage = options.coverage,
-            model = $(coverage).data("model");
+          coverage = options.coverage;
+          model = $(coverage).data("model");
         }
 
         // Find all of the root-level taxonomicClassifications
-        var classificationTables = $(coverage).find(
+        const classificationTables = $(coverage).find(
           ".root-taxonomic-classification",
         );
 
-        if (!classificationTables) return false;
+        if (!classificationTables) return;
 
-        //TODO :This should probably (at least) be in its own View and
-        //definitely refactored into tidy functions.*/
+        // TODO: This should be refactored into tidy functions.
 
-        var rows,
-          collectedClassifications = [];
+        let rows;
+        const collectedClassifications = [];
 
-        for (var i = 0; i < classificationTables.length; i++) {
-          rows = $(classificationTables[i]).find("tbody tr");
+        Array.from(classificationTables).forEach((classificationTable) => {
+          rows = $(classificationTable).find("tbody tr");
 
-          if (!rows) continue;
+          if (!rows) return;
 
-          var topLevelClassification = {},
-            classification = topLevelClassification,
-            currentRank,
-            currentValue;
+          const topLevelClassification = {};
+          let classification = topLevelClassification;
+          let currentRank;
+          let currentValue;
 
-          for (var j = 0; j < rows.length; j++) {
-            const thisRow = rows[j];
+          Array.from(rows).forEach((row, j) => {
+            const thisRow = row;
 
             currentRank =
               this.parentModel?.cleanXMLText($(thisRow).find("select").val()) ||
@@ -347,13 +402,13 @@ define([
 
             // Skip over rows with empty Rank or Value
             if (!currentRank.length || !currentValue.length) {
-              continue;
+              return;
             }
 
-            //After the first row, start nesting taxonomicClassification objects
+            // After the first row, start nesting taxonomicClassification objects
             if (j > 0) {
               classification.taxonomicClassification = [{}];
-              classification = classification.taxonomicClassification[0];
+              [classification] = classification.taxonomicClassification;
             }
 
             // Add it to the classification object
@@ -361,12 +416,13 @@ define([
             classification.taxonRankValue = currentValue;
             classification.taxonId = taxonId;
             classification.commonName = commonName;
-          }
+          });
 
-          //Add the top level classification to the array
-          if (Object.keys(topLevelClassification).length)
+          // Add the top level classification to the array
+          if (Object.keys(topLevelClassification).length) {
             collectedClassifications.push(topLevelClassification);
-        }
+          }
+        });
 
         if (
           !_.isEqual(
@@ -383,7 +439,7 @@ define([
         if (value) {
           // Add a new row if this is itself a new row
           if ($(e.target).parents("tr").first().is(".new")) {
-            var newRowEl = this.makeNewTaxonomicClassificationRow();
+            const newRowEl = this.makeNewTaxonomicClassificationRow();
             $(e.target).parents("tbody").first().append(newRowEl);
             $(e.target).parents("tr").first().removeClass("new");
           }
@@ -413,7 +469,7 @@ define([
        * included in the taxonomic coverage are available for selection.
        * @since 2.24.0
        */
-      updateQuickAddTaxa: function () {
+      updateQuickAddTaxa() {
         const selects = this.taxonSelects;
         if (!selects || !selects.length) return;
         const taxa = this.getTaxonQuickAddOptions();
@@ -423,17 +479,18 @@ define([
         });
       },
 
-      /*
+      /**
        * Adds a new row and/or table to the taxonomic coverage section
+       * @param {Event} e - The event that triggered this function
        */
-      addNewTaxon: function (e) {
+      addNewTaxon(e) {
         // Don't do anything if the current classification doesn't have new content
         if ($(e.target).val().trim() === "") return;
 
         // If the row is new, add a new row to the table
         if ($(e.target).parents("tr").is(".new")) {
-          var newRow = this.makeNewTaxonomicClassificationRow();
-          //Append the new row and remove the new class from the old row
+          const newRow = this.makeNewTaxonomicClassificationRow();
+          // Append the new row and remove the new class from the old row
           $(e.target).parents("tr").removeClass("new").after(newRow);
         }
       },
@@ -443,7 +500,7 @@ define([
        * taxonomic coverage section. Only renders if there is a list of taxa
        * configured in the appModel.
        */
-      renderTaxaQuickAdd: function () {
+      renderTaxaQuickAdd() {
         const view = this;
         // To render the taxon select, the view must be in editor mode and we
         // need a list of taxa configured for the theme
@@ -487,7 +544,7 @@ define([
 
         // Update the taxon coverage when the button is clicked
         const onButtonClick = () => {
-          const taxonSelects = view.taxonSelects;
+          const { taxonSelects } = view;
           if (!taxonSelects || !taxonSelects.length) return;
           const selectedItems = taxonSelects
             .map((select) => select.model.get("selected"))
@@ -515,107 +572,88 @@ define([
 
         // Create the search selects
         view.taxonSelects = [];
-        const componentPath = "views/searchSelect/SearchSelectView";
-        require([componentPath], function (SearchSelect) {
-          quickAddTaxa.forEach((taxaList, i) => {
-            try {
-              const taxaInput = new SearchSelect({
-                options: taxaList.options,
-                placeholderText: taxaList.placeholder,
-                inputLabel: taxaList.label,
-                allowMulti: true,
-                allowAdditions: true,
-                separatorTextOptions: false,
-                selected: [],
-              });
-              container.appendChild(taxaInput.el);
-              taxaInput.render();
-              view.taxonSelects.push(taxaInput);
-            } catch (e) {
-              console.log("Failed to create taxon select: ", e);
-            }
-          });
+        quickAddTaxa.forEach((taxaList) => {
+          try {
+            const taxaInput = new SearchSelect({
+              options: taxaList.options,
+              placeholderText: taxaList.placeholder,
+              inputLabel: taxaList.label,
+              allowMulti: true,
+              allowAdditions: true,
+              separatorTextOptions: false,
+              selected: [],
+            });
+            container.appendChild(taxaInput.el);
+            taxaInput.render();
+            view.taxonSelects.push(taxaInput);
+          } catch (e) {
+            // Skip this taxa list if it can't be rendered
+            view.taxonSelects.push(`Error: ${e}`);
+          }
         });
       },
 
       /**
        * Get the list of options for the taxon quick add interface. Filter
        * out any that have already been added to the taxonomic coverage.
-       * @returns {Object[]} An array of search select options
+       * @returns {object[]} An array of search select options
        * @since 2.24.0
        */
-      getTaxonQuickAddOptions: function () {
+      getTaxonQuickAddOptions() {
         const quickAddTaxa = MetacatUI.appModel.getQuickAddTaxa();
-        if (!quickAddTaxa || !quickAddTaxa.length) return;
-        // TODO:
+        if (!quickAddTaxa || !quickAddTaxa.length) return null;
+
         const coverages = this.parentModel?.get("taxonCoverage");
-        for (const taxaList of quickAddTaxa) {
+        const quickAddTaxaOpts = quickAddTaxa.map((taxaList) => {
           const opts = [];
-          for (const taxon of taxaList.taxa) {
+          taxaList.taxa.forEach((taxon) => {
             // check that it is not a duplicate in any coverages
-            let isDuplicate = false;
-            for (cov of coverages) {
-              if (cov.isDuplicate(taxon)) {
-                isDuplicate = true;
-                break;
-              }
-            }
+            const isDuplicate = coverages.some((cov) => cov.isDuplicate(taxon));
             if (!isDuplicate) {
               opts.push(this.taxonOptionToSearchSelectItem(taxon));
             }
-          }
-          taxaList.options = opts;
-        }
-        return quickAddTaxa;
+          });
+          // clone so we don't modify the original
+          const newTaxaList = { ...taxaList };
+          newTaxaList.options = opts;
+          return newTaxaList;
+        });
+        return quickAddTaxaOpts;
       },
 
       /**
        * Reformats a taxon option, as provided in the appModel
        * {@link AppModel#quickAddTaxa}, as a search select item.
-       * @param {Object} option A single taxon classification with at least a
+       * @param {object} option A single taxon classification with at least a
        * taxonRankValue and taxonRankName. It may also have a taxonId (object
        * with provider and value) and a commonName.
-       * @returns {Object} A search select item with label, value, and
+       * @returns {object} A search select item with label, value, and
        * description properties.
        */
-      taxonOptionToSearchSelectItem: function (option) {
-        try {
-          // option must have a taxonRankValue and taxonRankName or it is invalid
-          if (!option.taxonRankValue || !option.taxonRankName) {
-            console.log("Invalid taxon option: ", option);
-            return null;
-          }
-          // Create a description
-          let description = option.taxonRankName + ": " + option.taxonRankValue;
-          if (option.taxonId) {
-            description +=
-              " (" +
-              option.taxonId.provider +
-              ": " +
-              option.taxonId.value +
-              ")";
-          }
-          // search select doesn't work with some of the json characters
-          const val = encodeURIComponent(JSON.stringify(option));
-          return {
-            label: option.commonName || option.taxonRankValue,
-            value: val,
-            description: description,
-          };
-        } catch (e) {
-          console.log(
-            "Failed to reformat taxon option as search select item: ",
-            e,
-          );
+      taxonOptionToSearchSelectItem(option) {
+        // option must have a taxonRankValue and taxonRankName or it is invalid
+        if (!option.taxonRankValue || !option.taxonRankName) {
           return null;
         }
+        // Create a description
+        let description = `${option.taxonRankName}: ${option.taxonRankValue}`;
+        if (option.taxonId) {
+          description += ` (${option.taxonId.provider}: ${option.taxonId.value})`;
+        }
+        // search select doesn't work with some of the json characters
+        const val = encodeURIComponent(JSON.stringify(option));
+        return {
+          label: option.commonName || option.taxonRankValue,
+          value: val,
+          description,
+        };
       },
 
       /**
        * Add new taxa to the EML model and re-render the taxa section. The new
        * taxa will be added to the first <taxonomicCoverage> element in the EML
        * model. If there is no <taxonomicCoverage> element, one will be created.
-       * @param {Object[]} newClassifications - An array of objects with any of
+       * @param {object[]} newClassifications - An array of objects with any of
        * the following properties:
        *  - taxonRankName: (sting) The name of the taxonomic rank, e.g.
        *    "Kingdom"
@@ -637,7 +675,7 @@ define([
        *    value: "202423"
        *  }]);
        */
-      addTaxa: function (newClassifications) {
+      addTaxa(newClassifications) {
         // TODO: validate the new taxon before adding it to the model?
         const taxonCoverages = this.parentModel?.get("taxonCoverage");
         // We expect that there is already a taxonCoverage array on the model.
@@ -664,54 +702,53 @@ define([
         this.render();
       },
 
-      removeTaxonRank: function (e) {
-        var row = $(e.target).parents(".taxonomic-coverage-row"),
-          coverageEl = $(row).parents(".taxonomic-coverage"),
-          view = this;
+      /**
+       * Remove a taxonomic classification from the EML model
+       * @param {Event} e - The event that triggered this function
+       */
+      removeTaxonRank(e) {
+        const row = $(e.target).parents(".taxonomic-coverage-row");
+        const coverageEl = $(row).parents(".taxonomic-coverage");
+        const view = this;
 
-        //Animate the row away and then remove it
-        row.slideUp("fast", function () {
+        // Animate the row away and then remove it
+        row.slideUp("fast", () => {
           row.remove();
           view.updateTaxonCoverage({ coverage: coverageEl });
         });
       },
 
-      /*
+      /**
        * After the user focuses out, show validation help, if needed
+       * @param {Event} e - The event that triggered this function
        */
-      showTaxonValidation: function (e) {
-        //Get the text inputs and select menus
-        var row = $(e.target).parents("tr"),
-          allInputs = row.find("input, select"),
-          tableContainer = $(e.target).parents("table"),
-          errorInputs = [];
+      showTaxonValidation(e) {
+        // Get the text inputs and select menus
+        const row = $(e.target).parents("tr");
+        const allInputs = row.find("input, select");
+        const tableContainer = $(e.target).parents("table");
+        const errorInputs = [];
 
-        //If none of the inputs have a value and this is a new row, then do nothing
-        if (
-          _.every(allInputs, function (i) {
-            return !i.value;
-          }) &&
-          row.is(".new")
-        )
-          return;
+        // If none of the inputs have a value and this is a new row, then do nothing
+        if (_.every(allInputs, (i) => !i.value) && row.is(".new")) return;
 
-        //Add the error styling to any input with no value
-        _.each(allInputs, function (input) {
+        // Add the error styling to any input with no value
+        _.each(allInputs, (input) => {
           // Keep track of the number of clicks of each input element so we only show the
           // error message after the user has focused on both input elements
           if (!input.value) errorInputs.push(input);
         });
 
         if (errorInputs.length) {
-          //Show the error message after a brief delay
-          setTimeout(function () {
-            //If the user focused on another element in the same row, don't do anything
+          // Show the error message after a brief delay
+          setTimeout(() => {
+            // If the user focused on another element in the same row, don't do anything
             if (_.contains(allInputs, document.activeElement)) return;
 
-            //Add the error styling
+            // Add the error styling
             $(errorInputs).addClass("error");
 
-            //Add the error message
+            // Add the error message
             if (!tableContainer.prev(".notification").length) {
               tableContainer.before(
                 $(document.createElement("p"))
@@ -728,8 +765,13 @@ define([
         }
       },
 
-      previewTaxonRemove: function (e) {
-        var removeBtn = $(e.target);
+      /**
+       * Indicate that a taxonomic classification is about to be removed if the
+       * button is clicked
+       * @param {Event} e - The event that triggered this function
+       */
+      previewTaxonRemove(e) {
+        const removeBtn = $(e.target);
 
         if (removeBtn.parent().is(".root-taxonomic-classification")) {
           removeBtn.parent().toggleClass("remove-preview");
@@ -740,18 +782,25 @@ define([
         }
       },
 
-      // TODO: duplicated from parent view
-      /* Creates "Remove" buttons for removing non-required sections
-        of the EML from the DOM */
-      createRemoveButton: function (submodel, attribute, selector, container) {
+      /**
+       * Creates "Remove" buttons for removing non-required sectionsof the EML
+       * from the DOM
+       * @param {string} submodel - The name of the submodel to remove
+       * @param {string} attribute - The name of the attribute to remove
+       * @param {string} selector - The selector for the element to remove
+       * @param {string} container - The selector for the container element
+       * @returns {jQuery} A jQuery object containing the remove button
+       * // TODO: duplicate of EML211EditorView#createRemove
+       */
+      createRemoveButton(submodel, attribute, selector, container) {
         return $(document.createElement("span"))
           .addClass("icon icon-remove remove pointer")
           .attr("title", "Remove")
           .data({
-            submodel: submodel,
-            attribute: attribute,
-            selector: selector,
-            container: container,
+            submodel,
+            attribute,
+            selector,
+            container,
           });
       },
     },
