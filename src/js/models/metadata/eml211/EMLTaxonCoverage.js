@@ -5,8 +5,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
   DataONEObject,
 ) {
   /**
-   * @name taxonomicClassification
-   * @type {Object}
+   * @typedef {Object} TaxonomicClassification
    * @property {string} taxonRankName - The name of the taxonomic rank, for
    * example, Domain, Kingdom, etc.
    * @property {string} taxonRankValue - The value for the given taxonomic rank,
