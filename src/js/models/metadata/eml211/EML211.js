@@ -2632,6 +2632,43 @@ define([
           return undefined;
         }
       },
+
+      /**
+       * Checks if there is at least one taxon coverage model in the EML model
+       * @returns {boolean} - True if there is at least one taxon coverage model
+       * in the EML model
+       * @since 0.0.0
+       */
+      hasTaxonomicCoverage() {
+        const taxonCoverage = this.get("taxonCoverage");
+        return (
+          Array.isArray(taxonCoverage) &&
+          taxonCoverage?.length > 0 &&
+          taxonCoverage[0] instanceof EMLTaxonCoverage
+        );
+      },
+
+      /**
+       * Create a new taxon coverage model and add it to the EML model within an
+       * array on the taxonCoverage attribute. If there is already a non-empty
+       * array of taxon coverage models, this function will not add a new one
+       * and will return false instead.
+       * @param {boolean} [silent] - Whether to suppress the change event
+       * when adding the taxon coverage model to the EML model
+       * @returns {EMLTaxonCoverage[] | false} - The new EMLTaxonCoverage model
+       * that was added to the EML model, or false if a new model was not added
+       * @since 0.0.0
+       */
+      addTaxonomicCoverage(silent = false) {
+        if (this.hasTaxonomicCoverage()) return false;
+        const taxonCov = [
+          new EMLTaxonCoverage({
+            parentModel: this,
+          }),
+        ];
+        this.set("taxonCoverage", taxonCov, { silent });
+        return taxonCov;
+      },
     },
   );
 
