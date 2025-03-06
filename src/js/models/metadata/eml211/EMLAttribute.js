@@ -217,7 +217,7 @@ define([
           $objectDOM.children("missingvaluecode"),
         );
 
-        [attributes.objectDOM] = $objectDOM;
+        [attributes.objectDOM] = Array.from($objectDOM[0]);
 
         return attributes;
       },
@@ -450,7 +450,7 @@ define([
           // Find the measurementScale child or create a new one
           measurementScaleNodes = $(objectDOM).children("measurementscale");
           if (measurementScaleNodes.length) {
-            [measurementScaleNode] = measurementScaleNodes;
+            [measurementScaleNode] = Array.from(measurementScaleNodes);
           } else {
             measurementScaleNode = document.createElement("measurementscale");
             nodeToInsertAfter = this.getEMLPosition(
