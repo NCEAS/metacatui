@@ -1989,7 +1989,7 @@ define([
         // Open and send the request with the user's auth token
         xhr.open("GET", url);
 
-        if (MetacatUI.appUserModel.get("loggedIn")) xhr.withCredentials = true;
+        // if (MetacatUI.appUserModel.get("loggedIn")) xhr.withCredentials = true;
 
         // When the XHR is ready, create a link with the raw data (Blob) and click the link to download
         xhr.onload = function () {

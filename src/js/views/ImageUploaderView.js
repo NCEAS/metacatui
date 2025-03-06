@@ -237,7 +237,7 @@ define([
               "This file type is not allowed. Please select an image file",
             autoProcessQueue: true,
             previewTemplate: previewTemplate,
-            withCredentials: true,
+            // withCredentials: true,
             paramName: "object",
             hiddenInputContainer: this.el,
 

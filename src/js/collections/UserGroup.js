@@ -222,9 +222,9 @@ define(["jquery", "underscore", "backbone", "models/UserModel"], function (
           cache: false,
           contentType: false,
           processData: false,
-          xhrFields: {
-            withCredentials: true,
-          },
+          // xhrFields: {
+          //   withCredentials: true,
+          // },
           headers: {
             Authorization: "Bearer " + MetacatUI.appUserModel.get("token"),
           },

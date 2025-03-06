@@ -2360,7 +2360,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @default false
            * @since 2.18.0
            */
-          enableCesium: true,
+          enableCesium: false,
 
           /**
            * Your Access Token for the Cesium API, which can be retrieved from

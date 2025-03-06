@@ -631,7 +631,7 @@ define([
           type: "GET",
           dataType: "text",
           xhrFields: {
-            withCredentials: true,
+            // withCredentials: true,
           },
           url: tokenUrl,
           data: {},
@@ -872,9 +872,9 @@ define([
         // ajax call to map
         var requestSettings = {
           type: "POST",
-          xhrFields: {
-            withCredentials: true,
-          },
+          // xhrFields: {
+          //   withCredentials: true,
+          // },
           headers: {
             Authorization: "Bearer " + this.get("token"),
           },
@@ -1009,9 +1009,9 @@ define([
         if (!this.get("token")) return {};
 
         return {
-          xhrFields: {
-            withCredentials: true,
-          },
+          // xhrFields: {
+          //   withCredentials: true,
+          // },
           headers: {
             Authorization: "Bearer " + this.get("token"),
           },

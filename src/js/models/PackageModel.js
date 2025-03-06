@@ -1583,7 +1583,7 @@ define([
 
         // Create an XHR
         const xhr = new XMLHttpRequest();
-        xhr.withCredentials = true;
+        // xhr.withCredentials = true;
 
         // When the XHR is ready, create a link with the raw data (Blob) and click the link to download
         xhr.onload = function () {

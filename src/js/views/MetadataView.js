@@ -2823,7 +2823,7 @@ define([
                 if (!solrResult.get("isPublic")) {
                   // Create an XHR
                   const xhr = new XMLHttpRequest();
-                  xhr.withCredentials = true;
+                  // xhr.withCredentials = true;
 
                   xhr.onload = () => {
                     if (xhr.response)
@@ -3000,7 +3000,7 @@ define([
             url: publishServiceUrl + pid,
             type: "PUT",
             xhrFields: {
-              withCredentials: true,
+              // withCredentials: true,
             },
             success(data, _textStatus, _xhr) {
               // the response should have new identifier in it
