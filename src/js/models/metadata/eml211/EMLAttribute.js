@@ -7,7 +7,7 @@ define([
   "models/metadata/eml211/EMLAnnotation",
   "collections/metadata/eml/EMLMissingValueCodes",
   "models/DataONEObject",
-], function (
+], (
   $,
   _,
   Backbone,
@@ -16,7 +16,7 @@ define([
   EMLAnnotation,
   EMLMissingValueCodes,
   DataONEObject,
-) {
+) => {
   /**
    * @class EMLAttribute
    * @classdesc EMLAttribute represents a data attribute within an entity, such as
@@ -24,33 +24,54 @@ define([
    * @see https://eml.ecoinformatics.org/schema/eml-attribute_xsd.html
    * @classcategory Models/Metadata/EML211
    */
-  var EMLAttribute = Backbone.Model.extend(
+  const EMLAttribute = Backbone.Model.extend(
     /** @lends EMLAttribute.prototype */ {
-      /* Attributes of an EML attribute object */
-      defaults: function () {
+      /**
+       * Attributes of an EML attribute object
+       * @returns {object} - The EMLAttribute attributes
+       * @property {string} xmlID - The XML id of the attribute
+       * @property {string} attributeName - The name of the attribute
+       * @property {Array} attributeLabel - Zero or more human readable labels
+       * @property {string} attributeDefinition - The definition of the attribute
+       * @property {Array} storageType - Zero or more storage types
+       * @property {Array} typeSystem - Zero or more system types for storage type
+       * @property {EMLMeasurementScale} measurementScale - An EML{Non}NumericDomain
+       * or EMLDateTimeDomain object
+       * @property {EMLMissingValueCodes} missingValueCodes - An EMLMissingValueCodes
+       * collection
+       * @property {EMLAccuracy} accuracy - An EMLAccuracy object
+       * @property {EMLCoverage} coverage - An EMLCoverage object
+       * @property {Array} methods - Zero or more EMLMethods objects
+       * @property {string} references - A reference to another EMLAttribute by id
+       * @property {Array} annotation - Zero or more EMLAnnotation objects
+       * @property {string} type - The element type in the DOM
+       * @property {EML211} parentModel - The parent model this attribute belongs to
+       * @property {Element} objectXML - The serialized XML of this EML attribute
+       * @property {Element} objectDOM - The DOM of this EML attribute
+       * @property {Array} nodeOrder - The order of the top level XML element nodes
+       */
+      defaults() {
         return {
-          /* Attributes from EML */
-          xmlID: null, // The XML id of the attribute
+          // Attributes from EML
+          xmlID: null,
           attributeName: null,
-          attributeLabel: [], // Zero or more human readable labels
+          attributeLabel: [],
           attributeDefinition: null,
-          storageType: [], // Zero or more storage types
-          typeSystem: [], // Zero or more system types for storage type
-          measurementScale: null, // An EML{Non}NumericDomain or EMLDateTimeDomain object
-          missingValueCodes: new EMLMissingValueCodes(), // An EMLMissingValueCodes collection
-          accuracy: null, // An EMLAccuracy object
-          coverage: null, // an EMLCoverage object
-          methods: [], // Zero or more EMLMethods objects
-          references: null, // A reference to another EMLAttribute by id (needs work)
-          annotation: [], // Zero or more EMLAnnotation objects
-
-          /* Attributes not from EML */
-          type: "attribute", // The element type in the DOM
-          parentModel: null, // The parent model this attribute belongs to
-          objectXML: null, // The serialized XML of this EML attribute
-          objectDOM: null, // The DOM of this EML attribute
+          storageType: [],
+          typeSystem: [],
+          measurementScale: null,
+          missingValueCodes: new EMLMissingValueCodes(),
+          accuracy: null,
+          coverage: null,
+          methods: [],
+          references: null,
+          annotation: [],
+          // Attributes not from EML
+          type: "attribute",
+          parentModel: null,
+          objectXML: null,
+          objectDOM: null,
           nodeOrder: [
-            // The order of the top level XML element nodes
             "attributeName",
             "attributeLabel",
             "attributeDefinition",
@@ -65,10 +86,11 @@ define([
         };
       },
 
-      /*
+      /**
        * The map of lower case to camel case node names
        * needed to deal with parsing issues with $.parseHTML().
        * Use this until we can figure out issues with $.parseXML().
+       * @type {object}
        */
       nodeNameMap: {
         attributename: "attributeName",
@@ -83,12 +105,8 @@ define([
         valueuri: "valueURI",
       },
 
-      /* Initialize an EMLAttribute object */
-      initialize: function (attributes, options) {
-        if (!attributes) {
-          var attributes = {};
-        }
-
+      /** @inheritdoc */
+      initialize(attributes = {}) {
         // If initialized with missingValueCode as an array, convert it to a collection
         if (
           attributes.missingValueCodes &&
@@ -121,11 +139,11 @@ define([
         );
       },
 
-      /*
-       * Parse the incoming attribute's XML elements
-       */
-      parse: function (attributes, options) {
-        var $objectDOM;
+      /** @inheritdoc */
+      parse(attrs = {}) {
+        // copy the attributes so we can modify them
+        const attributes = { ...attrs };
+        let $objectDOM;
 
         if (attributes.objectDOM) {
           $objectDOM = $(attributes.objectDOM);
@@ -145,8 +163,8 @@ define([
 
         // Add the attributeLabel
         attributes.attributeLabel = [];
-        var attributeLabels = $objectDOM.children("attributelabel");
-        _.each(attributeLabels, function (attributeLabel) {
+        const attributeLabels = $objectDOM.children("attributelabel");
+        _.each(attributeLabels, (attributeLabel) => {
           attributes.attributeLabel.push(attributeLabel.textContent);
         });
 
@@ -158,14 +176,14 @@ define([
         // Add the storageType
         attributes.storageType = [];
         attributes.typeSystem = [];
-        var storageTypes = $objectDOM.children("storagetype");
-        _.each(storageTypes, function (storageType) {
+        const storageTypes = $objectDOM.children("storagetype");
+        _.each(storageTypes, (storageType) => {
           attributes.storageType.push(storageType.textContent);
-          var type = $(storageType).attr("typesystem");
+          const type = $(storageType).attr("typesystem");
           attributes.typeSystem.push(type || null);
         });
 
-        var measurementScale = $objectDOM.find("measurementscale")[0];
+        const measurementScale = $objectDOM.find("measurementscale")[0];
         if (measurementScale) {
           attributes.measurementScale = EMLMeasurementScale.getInstance(
             measurementScale.outerHTML,
@@ -174,13 +192,13 @@ define([
         }
 
         // Add annotations
-        var annotations = $objectDOM.children("annotation");
+        const annotations = $objectDOM.children("annotation");
         attributes.annotation = [];
 
         _.each(
           annotations,
-          function (anno) {
-            annotation = new EMLAnnotation(
+          (anno) => {
+            const annotation = new EMLAnnotation(
               {
                 objectDOM: anno,
                 objectXML: anno.outerHTML,
@@ -199,29 +217,35 @@ define([
           $objectDOM.children("missingvaluecode"),
         );
 
-        attributes.objectDOM = $objectDOM[0];
+        [attributes.objectDOM] = $objectDOM;
 
         return attributes;
       },
 
-      serialize: function () {
-        var objectDOM = this.updateDOM(),
-          xmlString = objectDOM.outerHTML;
+      serialize() {
+        const objectDOM = this.updateDOM();
+        let xmlString = objectDOM.outerHTML;
 
-        //Camel-case the XML
+        // Camel-case the XML
         xmlString = this.formatXML(xmlString);
 
         return xmlString;
       },
 
-      /* Copy the original XML and update fields in a DOM object */
-      updateDOM: function (objectDOM) {
-        var nodeToInsertAfter;
-        var type = this.get("type") || "attribute";
+      /**
+       * Copy the original XML and update fields in a DOM object
+       * with the current model values
+       * @param {Element} [dom] - The original DOM object to update
+       * @returns {Element} The updated DOM object
+       */
+      updateDOM(dom) {
+        let objectDOM = dom;
+        let nodeToInsertAfter;
+        const type = this.get("type") || "attribute";
         if (!objectDOM) {
           objectDOM = this.get("objectDOM");
         }
-        var objectXML = this.get("objectXML");
+        const objectXML = this.get("objectXML");
 
         // If present, use the cached DOM
         if (objectDOM) {
@@ -237,14 +261,14 @@ define([
         }
 
         // update the id attribute
-        var xmlID = this.get("xmlID");
+        const xmlID = this.get("xmlID");
         if (xmlID) {
           $(objectDOM).attr("id", xmlID);
         }
 
         // Update the attributeName
         if (
-          typeof this.get("attributeName") == "string" &&
+          typeof this.get("attributeName") === "string" &&
           this.get("attributeName").trim().length
         ) {
           if ($(objectDOM).find("attributename").length) {
@@ -267,7 +291,7 @@ define([
             }
           }
         }
-        //If there is no attribute name, return an empty string because it
+        // If there is no attribute name, return an empty string because it
         // is invalid
         else {
           return "";
@@ -275,7 +299,7 @@ define([
 
         // Update the attributeLabels
         nodeToInsertAfter = undefined;
-        var attributeLabels = this.get("attributeLabel");
+        let attributeLabels = this.get("attributeLabel");
         if (attributeLabels) {
           if (attributeLabels.length) {
             // Copy and reverse the array for inserting
@@ -289,16 +313,16 @@ define([
 
             if (!nodeToInsertAfter) {
               // Add the new list back in
-              _.each(attributeLabels, function (attributeLabel) {
-                //If there is an empty string or falsey value in the label, don't add it to the XML
+              _.each(attributeLabels, (attributeLabel) => {
+                // If there is an empty string or falsey value in the label, don't add it to the XML
                 // We check purposefuly for falsey types (instead of just doing !attributeLabel) because
                 // it's ok to serialize labels that are the number 0.
                 if (
-                  (typeof attributeLabel == "string" &&
+                  (typeof attributeLabel === "string" &&
                     !attributeLabel.trim().length) ||
                   attributeLabel === false ||
                   attributeLabel === null ||
-                  typeof attributeLabel == "undefined"
+                  typeof attributeLabel === "undefined"
                 ) {
                   return;
                 }
@@ -311,16 +335,16 @@ define([
               });
             } else {
               // Add the new list back in after its previous sibling
-              _.each(attributeLabels, function (attributeLabel) {
-                //If there is an empty string or falsey value in the label, don't add it to the XML
+              _.each(attributeLabels, (attributeLabel) => {
+                // If there is an empty string or falsey value in the label, don't add it to the XML
                 // We check purposefuly for falsey types (instead of just doing !attributeLabel) because
                 // it's ok to serialize labels that are the number 0.
                 if (
-                  (typeof attributeLabel == "string" &&
+                  (typeof attributeLabel === "string" &&
                     !attributeLabel.trim().length) ||
                   attributeLabel === false ||
                   attributeLabel === null ||
-                  typeof attributeLabel == "undefined"
+                  typeof attributeLabel === "undefined"
                 ) {
                   return;
                 }
@@ -333,12 +357,12 @@ define([
               });
             }
           }
-          //If the label array is empty, remove all the labels from the DOM
+          // If the label array is empty, remove all the labels from the DOM
           else {
             $(objectDOM).find("attributelabel").remove();
           }
         }
-        //If there is no attribute label, remove them from the DOM
+        // If there is no attribute label, remove them from the DOM
         else {
           $(objectDOM).find("attributelabel").remove();
         }
@@ -379,7 +403,7 @@ define([
 
         // Update the storageTypes
         nodeToInsertAfter = undefined;
-        var storageTypes = this.get("storageTypes");
+        let storageTypes = this.get("storageTypes");
         if (storageTypes) {
           if (storageTypes.length) {
             // Copy and reverse the array for inserting
@@ -390,7 +414,7 @@ define([
 
             if (!nodeToInsertAfter) {
               // Add the new list back in
-              _.each(storageTypes, function (storageType) {
+              _.each(storageTypes, (storageType) => {
                 if (!storageType) return;
 
                 $(objectDOM).append(
@@ -399,7 +423,7 @@ define([
               });
             } else {
               // Add the new list back in after its previous sibling
-              _.each(storageTypes, function (storageType) {
+              _.each(storageTypes, (storageType) => {
                 if (!storageType) return;
 
                 $(nodeToInsertAfter).after(
@@ -409,7 +433,7 @@ define([
             }
           }
         }
-        /*If there are no storage types, remove them all from the DOM.
+        /* If there are no storage types, remove them all from the DOM.
                 TODO: Uncomment this out when storage type is supported in editor
                 else{
                   $(objectDOM).find("storagetype").remove();
@@ -418,15 +442,15 @@ define([
 
         // Update the measurementScale
         nodeToInsertAfter = undefined;
-        var measurementScale = this.get("measurementScale");
-        var measurementScaleNodes;
-        var measurementScaleNode;
-        var domainNode;
+        const measurementScale = this.get("measurementScale");
+        let measurementScaleNodes;
+        let measurementScaleNode;
+        let domainNode;
         if (typeof measurementScale !== "undefined" && measurementScale) {
           // Find the measurementScale child or create a new one
           measurementScaleNodes = $(objectDOM).children("measurementscale");
           if (measurementScaleNodes.length) {
-            measurementScaleNode = measurementScaleNodes[0];
+            [measurementScaleNode] = measurementScaleNodes;
           } else {
             measurementScaleNode = document.createElement("measurementscale");
             nodeToInsertAfter = this.getEMLPosition(
@@ -447,24 +471,22 @@ define([
             $(measurementScaleNode).children().remove();
             $(measurementScaleNode).append(domainNode);
           }
-        } else {
-          console.log("No measurementScale object has been defined.");
         }
 
         // Update annotations
-        var annotation = this.get("annotation");
+        const annotation = this.get("annotation");
 
         // Always remove all annotations to start with
         $(objectDOM).children("annotation").remove();
 
         _.each(
           annotation,
-          function (anno) {
+          (anno) => {
             if (anno.isEmpty()) {
               return;
             }
 
-            var after = this.getEMLPosition(objectDOM, "annotation");
+            const after = this.getEMLPosition(objectDOM, "annotation");
             $(after).after(anno.updateDOM());
           },
           this,
@@ -472,10 +494,10 @@ define([
 
         // Update the missingValueCodes
         nodeToInsertAfter = undefined;
-        var missingValueCodes = this.get("missingValueCodes");
+        const missingValueCodes = this.get("missingValueCodes");
         $(objectDOM).children("missingvaluecode").remove();
         if (missingValueCodes) {
-          var missingValueCodeNodes = missingValueCodes.updateDOM();
+          const missingValueCodeNodes = missingValueCodes.updateDOM();
           if (missingValueCodeNodes) {
             nodeToInsertAfter = this.getEMLPosition(
               objectDOM,
@@ -492,87 +514,95 @@ define([
         return objectDOM;
       },
 
-      /*
-       * Get the DOM node preceding the given nodeName
-       * to find what position in the EML document
-       * the named node should be appended
+      /**
+       * Get the DOM node preceding the given nodeName to find what position in
+       * the EML document the named node should be appended
+       * @param {Element} objectDOM - The DOM of the EML document
+       * @param {string} nodeName - The name of the node to find the position of
+       * @returns {Element} The DOM node to insert the named node after
+       * or undefined if the node should be appended to the end of the objectDOM
        */
-      getEMLPosition: function (objectDOM, nodeName) {
-        var nodeOrder = this.get("nodeOrder");
+      getEMLPosition(objectDOM, nodeName) {
+        const nodeOrder = this.get("nodeOrder");
 
-        var position = _.indexOf(nodeOrder, nodeName);
+        const position = _.indexOf(nodeOrder, nodeName);
 
         // Append to the bottom if not found
-        if (position == -1) {
+        if (position === -1) {
           return $(objectDOM).children().last()[0];
         }
 
         // Otherwise, go through each node in the node list and find the
         // position where this node will be inserted after
-        for (var i = position - 1; i >= 0; i--) {
+        for (let i = position - 1; i >= 0; i -= 1) {
           if ($(objectDOM).find(nodeOrder[i].toLowerCase()).length) {
             return $(objectDOM).find(nodeOrder[i].toLowerCase()).last()[0];
           }
         }
+        return undefined;
       },
 
-      formatXML: function (xmlString) {
+      /**
+       * Format the given XML string
+       * @param {string} xmlString - The XML string to format
+       * @returns {string} The formatted XML string
+       */
+      formatXML(xmlString) {
         return DataONEObject.prototype.formatXML.call(this, xmlString);
       },
 
-      validate: function () {
-        var errors = {};
+      /** @inheritdoc */
+      validate() {
+        const errors = {};
 
-        //If there is no attribute name, add that error message
+        // If there is no attribute name, add that error message
         if (!this.get("attributeName"))
           errors.attributeName = "Provide a name for this attribute.";
 
-        //If there is no attribute definition, add that error message
+        // If there is no attribute definition, add that error message
         if (!this.get("attributeDefinition"))
           errors.attributeDefinition =
             "Provide a definition for this attribute.";
 
-        //Get the EML measurement scale model
-        var measurementScaleModel = this.get("measurementScale");
+        // Get the EML measurement scale model
+        const measurementScaleModel = this.get("measurementScale");
 
         // If there is no measurement scale model, then add that error message
         if (!measurementScaleModel) {
           errors.measurementScale =
             "Choose a measurement scale category for this attribute.";
-        } else {
-          if (!measurementScaleModel.isValid()) {
-            errors.measurementScale = "More information is needed.";
-          }
+        } else if (!measurementScaleModel.isValid()) {
+          errors.measurementScale = "More information is needed.";
         }
 
         // Validate the missing value codes
-        var missingValueCodesErrors = this.get("missingValueCodes")?.validate();
+        const missingValueCodesErrors =
+          this.get("missingValueCodes")?.validate();
         if (missingValueCodesErrors) {
           // Just display the first error message
-          errors.missingValueCodes = Object.values(missingValueCodesErrors)[0];
+          [errors.missingValueCodes] = Object.values(missingValueCodesErrors);
         }
 
         // If there is a measurement scale model and it is valid and there are no other
         // errors, then trigger this model as valid and exit.
         if (!Object.keys(errors).length) {
           this.trigger("valid", this);
-          return;
-        } else {
-          //If there is at least one error, then return the errors object
-          return errors;
+          return null;
         }
+        // If there is at least one error, then return the errors object
+        return errors;
       },
 
-      /*
+      /**
        * Validates each of the EMLAnnotation models on this model
-       *
-       * @return {Array} - Returns an array of error messages for all the EMLAnnotation models
+       * @returns {Array} - Returns an array of error messages for all the
+       * EMLAnnotation models
        */
-      validateAnnotations: function () {
-        var errors = [];
+      validateAnnotations() {
+        const errors = [];
 
-        //Validate each of the EMLAttributes
-        _.each(this.get("annotation"), function (anno) {
+        // Validate each of the EMLAttributes
+        _.each(this.get("annotation"), (anno) => {
           if (anno.isValid()) {
             return;
           }
@@ -583,30 +613,31 @@ define([
         return errors;
       },
 
-      /*
+      /**
        * Climbs up the model heirarchy until it finds the EML model
-       *
-       * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+       * @returns {EML211|false} - Returns the EML 211 Model or false if not
+       * found
        */
-      getParentEML: function () {
-        var emlModel = this.get("parentModel"),
-          tries = 0;
+      getParentEML() {
+        let emlModel = this.get("parentModel");
+        let tries = 0;
 
         while (emlModel.type !== "EML" && tries < 6) {
           emlModel = emlModel.get("parentModel");
-          tries++;
+          tries += 1;
         }
 
-        if (emlModel && emlModel.type == "EML") return emlModel;
-        else return false;
+        if (emlModel && emlModel.type === "EML") return emlModel;
+        return false;
       },
 
-      /* Let the top level package know of attribute changes from this object */
-      trickleUpChange: function () {
+      /** Let the top level package know of attribute changes from this object */
+      trickleUpChange() {
         MetacatUI.rootDataPackage.packageModel.set("changed", true);
       },
 
-      createID: function () {
+      /** Set a new UUID on the xmlID property */
+      createID() {
         this.set("xmlID", uuid.v4());
       },
     },
