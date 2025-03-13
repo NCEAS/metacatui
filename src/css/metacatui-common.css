@@ -1585,7 +1585,7 @@ svg.icon {
 }
 .scroll-y {
   overflow-y: scroll;
-  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
 }
 .inline input,
 .inline label {
@@ -1691,10 +1691,10 @@ svg.icon {
 }
 
 #search_btn_main {
-  -webkit-border-radius: 0 8px 8px 0;
-  -moz-border-radius: 0 15px 15px 0;
+  border-radius: 0 8px 8px 0;
+  border-radius: 0 15px 15px 0;
   border-left: 0px;
-  -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
   height: 100%;
   padding: 4px;
   align-content: center;
@@ -5673,7 +5673,7 @@ div.markdown pre {
 ********************************************/
 #downloadContents .controls-well {
   overflow-x: scroll;
-  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
 }
 .download-contents {
   float: none;
@@ -6612,7 +6612,7 @@ body.mapMode {
   border-right: 1px solid #ccc;
   overflow-x: hidden;
   overflow-y: overlay;
-  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
 }
 #sidebar > * {
   padding-left: 10px;
@@ -7410,7 +7410,7 @@ body.mapMode {
   padding: 10px;
   list-style: none;
   overflow-y: scroll;
-  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
   max-height: 150px;
   z-index: 99999;
   overflow-x: hidden;
