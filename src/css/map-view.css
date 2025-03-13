@@ -154,7 +154,7 @@
   margin: 0;
   overflow: visible;
   text-transform: none;
-  -webkit-appearance: button;
+  appearance: button;
   border: 0;
   border-radius: var(--map-border-radius-big);
   background: var(--portal-col-neutral-00, var(--map-col-buttons__deprecate));
@@ -362,9 +362,6 @@
  *
  */
 
-.cesium-widget-view {
-}
-
 .cesium-widget-view > .cesium-widget {
   width: 100%;
   height: 100%;
@@ -439,11 +436,6 @@ represents 1 unit of the given distance measurement. */
   height: 0.25rem;
   transition: width 0.3s ease-in-out;
   background-color: var(--portal-col-neutral-4, var(--map-col-text__deprecate));
-}
-
-/* The elements that contains the distance measurement */
-
-.scale-bar__distance {
 }
 
 /*****************************************************************************************
