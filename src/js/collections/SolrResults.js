@@ -44,6 +44,7 @@ define([
         this.maxYear = options.maxYear || new Date().getFullYear();
         this.queryServiceUrl =
           options.queryServiceUrl || MetacatUI.appModel.get("queryServiceUrl");
+        this.maxQueryLengthGETs = MetacatUI.appModel.get("maxQueryLengthGETs");
 
         if (MetacatUI.appModel.get("defaultSearchFields")?.length)
           this.fields = MetacatUI.appModel.get("defaultSearchFields").join(",");
@@ -270,7 +271,7 @@ define([
 
         let usePOST =
           this.usePOST ||
-          (this.currentquery.length > 1500 &&
+          (this.currentquery.length > this.maxQueryLengthGETs &&
             !MetacatUI.appModel.get("disableQueryPOSTs"));
 
         if (usePOST) {

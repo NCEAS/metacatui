@@ -255,6 +255,15 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            */
           disableQueryPOSTs: false,
 
+          /**
+           * If set to a value smaller than or equal to the current Solr query
+           * length, the app will send POST HTTP requests to the
+           * Solr search index via the `/query/solr` DataONE API.
+           * Set disableQueryPOSTs to true if using Metacat 2.10.2 or earlier
+           * @type {number}
+           */
+          maxQueryLengthGETs: 1500,
+
           /** If set to true, some parts of the app will use the Solr Join Query syntax
            * when sending queries to the `/query/solr` DataONE API.
            * If this is not enabled, then some parts of the UI may not work if a query has too
