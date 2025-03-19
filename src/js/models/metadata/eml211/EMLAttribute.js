@@ -87,6 +87,25 @@ define([
       },
 
       /**
+       * Checks whether the model is just an empty shell
+       * @returns {boolean} - True if the model is empty, false if it has data
+       */
+      isEmpty() {
+        return (
+          !this.get("attributeName") &&
+          !this.get("attributeLabel").length &&
+          !this.get("attributeDefinition") &&
+          !this.get("storageType").length &&
+          !this.get("measurementScale") &&
+          !this.get("missingValueCodes").hasNonEmptyModels() &&
+          !this.get("accuracy") &&
+          !this.get("coverage") &&
+          !this.get("methods").length &&
+          !this.get("annotation").length
+        );
+      },
+
+      /**
        * The map of lower case to camel case node names
        * needed to deal with parsing issues with $.parseHTML().
        * Use this until we can figure out issues with $.parseXML().
@@ -553,6 +572,8 @@ define([
 
       /** @inheritdoc */
       validate() {
+        if (this.isEmpty()) return null;
+
         const errors = {};
 
         // If there is no attribute name, add that error message
