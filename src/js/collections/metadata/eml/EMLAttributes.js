@@ -1,9 +1,10 @@
 "use strict";
 
-define(["backbone", "models/metadata/eml211/EMLAttribute"], (
-  Backbone,
-  EMLAttribute,
-) => {
+define([
+  "backbone",
+  "models/metadata/eml211/EMLAttribute",
+  "models/DataONEObject",
+], (Backbone, EMLAttribute, DataONEObject) => {
   /**
    * @class EMLAttributes
    * @classdesc A collection of EMLAttributes.
@@ -44,15 +45,19 @@ define(["backbone", "models/metadata/eml211/EMLAttribute"], (
        * Add an attribute to the collection
        * @param {object} attributes - The model attributes of the new EML
        * attribute, optional. May include the parentModel
+       * @param {object} options - Options to pass to the add method
        * @returns {EMLAttribute} The newly added attribute
        */
-      addAttribute(attributes = {}) {
+      addAttribute(attributes = {}, options = {}) {
         // A parent (entity) model is required for some of Attribute's methods
-        const attributesWithParent = { ...attributes };
-        if (!attributesWithParent.parentModel) {
-          attributesWithParent.parentModel = this.getParentModel();
+        const modifiedAttrs = { ...attributes };
+        if (!modifiedAttrs.parentModel) {
+          modifiedAttrs.parentModel = this.getParentModel();
         }
-        return this.add(attributesWithParent);
+        if (!modifiedAttrs.xmlID) {
+          modifiedAttrs.xmlID = DataONEObject.generateId();
+        }
+        return this.add(modifiedAttrs, options);
       },
 
       /**
@@ -89,6 +94,34 @@ define(["backbone", "models/metadata/eml211/EMLAttribute"], (
        */
       hasNonEmptyAttributes() {
         return this.some((attr) => !attr.isEmpty());
+      },
+
+      /**
+       * Given an array of strings, update the names of the attributes in the
+       * collection to match the array. If the number of names in the array
+       * exceeds the number of attributes in the collection, new attributes will
+       * be added to the collection. If the number of names is less than the
+       * number of attributes in the collection, the extra attributes will be
+       * removed.
+       * @param {string[]} names - An array of new attribute names
+       * @param {EMLEntity} parentModel - The model that contains this
+       * collection
+       * @param {object} options - Options to pass to the add, remove, and set
+       * methods
+       */
+      updateNames(names, parentModel, options = {}) {
+        const modelsToRemove = this.models.slice(names.length);
+        // Remove extra attributes
+        this.remove(modelsToRemove, options);
+        // Update the names of the existing attributes
+        this.each((attribute, index) => {
+          attribute.set("attributeName", names[index], options);
+        });
+        // Add new attributes
+        names.slice(this.length).forEach((name) => {
+          this.add({ attributeName: name, parentModel }, options);
+        });
+        this.trigger("namesUpdated");
       },
 
       /** @inheritdoc */

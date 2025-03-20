@@ -254,6 +254,9 @@ define([
         ) {
           this.model.set(category, newValue);
         }
+
+        this.model.set("isNew", false);
+        this.isNew = false;
       },
 
       /**
@@ -314,6 +317,16 @@ define([
         this.$(`[data-category='${category}'] .notification`)
           .removeClass("error")
           .empty();
+      },
+
+      /** Display the view */
+      show() {
+        this.$el.show();
+      },
+
+      /** Hide the view */
+      hide() {
+        this.$el.hide();
       },
     },
   );
