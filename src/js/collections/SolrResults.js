@@ -53,13 +53,9 @@ define([
         if (MetacatUI.appModel.get("disableQueryPOSTs")) {
           this.usePOST = false;
         }
-        //If this collection was initialized with the usePOST option, use POSTs here
-        else if (options.usePOST) {
-          this.usePOST = true;
-        }
-        //Otherwise default to using GET
+        //Otherwise default to using POST
         else {
-          this.usePOST = false;
+          this.usePOST = true;
         }
       },
 
@@ -268,12 +264,7 @@ define([
           reset: true,
         };
 
-        let usePOST =
-          this.usePOST ||
-          (this.currentquery.length > 1500 &&
-            !MetacatUI.appModel.get("disableQueryPOSTs"));
-
-        if (usePOST) {
+        if (this.usePOST) {
           options.type = "POST";
 
           var queryData = new FormData();
