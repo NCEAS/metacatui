@@ -4,7 +4,8 @@ define([
   "backbone",
   "models/DataONEObject",
   "models/metadata/eml211/EMLAttribute",
-], ($, _, Backbone, DataONEObject, EMLAttribute) => {
+  "collections/metadata/eml/EMLAttributes",
+], ($, _, Backbone, DataONEObject, EMLAttribute, EMLAttributes) => {
   /**
    * @class EMLEntity
    * @classdesc EMLEntity represents an abstract data entity, corresponding with
@@ -37,7 +38,8 @@ define([
        * EML{Geo|Taxon|Temporal}Coverage objects
        * @property {EMLMethod} methods - Zero or one EMLMethod object
        * @property {Array} additionalInfo - Zero to many EMLText objects
-       * @property {Array} attributeList - Zero to many EMLAttribute objects
+       * @property {EMLAttributes} attributeList - Zero to many EMLAttribute
+       * objects as a collection
        * @property {Array} constraint - Zero to many EMLConstraint objects
        * @property {string} references - A reference to another EMLEntity by id
        * (needs work)
@@ -69,7 +71,7 @@ define([
           coverage: [],
           methods: null,
           additionalInfo: [],
-          attributeList: [],
+          attributeList: new EMLAttributes(),
           constraint: [],
           references: null,
 
@@ -125,7 +127,6 @@ define([
             "change:coverage " +
             "change:methods " +
             "change:additionalInfo " +
-            "change:attributeList " +
             "change:constraint " +
             "change:references",
           EMLEntity.trickleUpChange,
@@ -151,6 +152,19 @@ define([
             );
           }
 
+          // Pass on changes to the parent model when the attribute list is
+          // replaced or updated
+          this.listenTo(this, "change:attributeList", () => {
+            this.trickleUpChange();
+            const attrListCollection = this.get("attributeList");
+            this.stopListening(attrListCollection, "update");
+            this.listenTo(attrListCollection, "update", () => {
+              this.trigger("change:attributeList");
+            });
+          });
+          this.listenToOnce(this.get("attributeList"), "update", () => {
+            this.trigger("change:attributeList");
+          });
           // Listen to changes on the file name
           model.listenTo(dataONEObj, "change:fileName", model.updateFileName);
         });
@@ -246,28 +260,15 @@ define([
           attributes.formatName = formatNode.text();
         }
 
-        // Add the attributeList
-        const attributeList = $objectDOM.find("attributelist");
-        let attribute; // An individual EML attribute
-        attributes.attributeList = [];
-        if (attributeList.length) {
-          _.each(
-            attributeList[0].children,
-            (attr) => {
-              attribute = new EMLAttribute(
-                {
-                  objectDOM: attr,
-                  objectXML: attr.outerHTML,
-                  parentModel: this,
-                },
-                { parse: true },
-              );
-              // Can't use this.addAttribute() here (no this yet)
-              attributes.attributeList.push(attribute);
-            },
-            this,
-          );
+        // Attribute list expects a DOM node not jQuery object
+        const attributeList = $objectDOM.find("attributelist").get(0);
+        if (attributeList) {
+          attributes.attributeList = new EMLAttributes(attributeList, {
+            parse: true,
+            parentModel: this,
+          });
         }
+
         return attributes;
       },
 
@@ -278,13 +279,9 @@ define([
        * @param {number} index - The index to insert the attribute at
        */
       addAttribute(attribute, index) {
-        if (typeof index === "undefined") {
-          this.get("attributeList").push(attribute);
-        } else {
-          this.get("attributeList").splice(index, attribute);
-        }
-
-        this.trigger("change:attributeList");
+        const options = !index && index !== 0 ? {} : { at: index };
+        attribute.set("parentModel", this);
+        this.get("attributeList").add(attribute, options);
       },
 
       /**
@@ -293,20 +290,8 @@ define([
        * this model's attributeList
        */
       removeAttribute(attribute) {
-        // Get the index of the EMLAttribute in the array
-        const attrIndex = this.get("attributeList").indexOf(attribute);
-
-        // If this attribute model does not exist in the attribute list, don't
-        // do anything
-        if (attrIndex === -1) {
-          return;
-        }
-
         // Remove that index from the array
-        this.get("attributeList").splice(attrIndex, 1);
-
-        // Trickle the change up the model chain
-        this.trickleUpChange();
+        this.get("attributeList").remove(attribute);
       },
 
       /** @inheritdoc */
@@ -334,16 +319,7 @@ define([
        * EMlAttribute models
        */
       validateAttributes() {
-        const errors = [];
-
-        // Validate each of the EMLAttributes
-        _.each(this.get("attributeList"), (attribute) => {
-          if (!attribute.isValid()) {
-            errors.push(attribute.validationError);
-          }
-        });
-
-        return errors;
+        return this.get("attributeList").validate();
       },
 
       /**
@@ -488,39 +464,31 @@ define([
         }
 
         // Update the attributeList section
-        const attributeList = this.get("attributeList");
-        const attributeListInDOM = $(objectDOM).children("attributelist");
-        let attributeListNode;
-        if (attributeListInDOM.length) {
-          [attributeListNode] = Array.from(attributeListInDOM[0]);
-          $(attributeListNode).children().remove(); // Each attr will be replaced
+        const attrListCollection = this.get("attributeList");
+        const $attrList = $(objectDOM).find("attributelist");
+
+        // If the attributeList is empty, remove it from the DOM
+        if (
+          !attrListCollection?.length ||
+          !attrListCollection?.hasNonEmptyAttributes()
+        ) {
+          $attrList.remove();
         } else {
-          attributeListNode = document.createElement("attributeList");
-          nodeToInsertAfter = this.getEMLPosition(objectDOM, "attributeList");
-          if (!nodeToInsertAfter) {
-            $(objectDOM).append(attributeListNode);
-          } else {
-            $(nodeToInsertAfter).after(attributeListNode);
+          // Attribute list coll expects a DOM node not jQuery object
+          const newAttrListDOM = attrListCollection.updateDOM($attrList.get(0));
+
+          // If there wasn't already an attributeList in the DOM, add the new
+          // one created by the collection
+          if (!$attrList.length) {
+            nodeToInsertAfter = this.getEMLPosition(objectDOM, "attributeList");
+            if (!nodeToInsertAfter) {
+              $(objectDOM).append(newAttrListDOM);
+            } else {
+              $(nodeToInsertAfter).after(newAttrListDOM);
+            }
           }
+          // Otherwise, the dom was updated in place
         }
-
-        let updatedAttrDOM;
-        if (attributeList.length) {
-          // Add each attribute
-          _.each(
-            attributeList,
-            (attribute) => {
-              updatedAttrDOM = attribute.updateDOM();
-              $(attributeListNode).append(updatedAttrDOM);
-            },
-            this,
-          );
-        } else {
-          // Attributes are not defined, remove them from the DOM
-          attributeListNode.remove();
-        }
-
-        // TODO: Update the constraint section
 
         return objectDOM;
       },
