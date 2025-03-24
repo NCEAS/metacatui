@@ -380,7 +380,7 @@ define([
         drawButtonEl.classList.remove(this.buttonClassDisable);
         clearButtonEl.classList.add(this.buttonClassDisable);
         saveButtonEl.classList.add(this.buttonClassDisable);
-        view.activateButton("draw");
+        this.activateButton("draw");
       },
 
       /**
