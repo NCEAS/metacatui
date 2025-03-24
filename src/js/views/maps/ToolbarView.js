@@ -185,13 +185,14 @@ define([
         },
         // We can enable to the draw tool once we have a use case for it
         {
-          label: 'Draw',
-          icon: 'pencil',
+          label: 'Download',
+          icon: 'cloud-download',
           // view: DownloadTool,
           view: DownloadPanelView,
-          viewOptions: {
-            showDownloadPanel: "model.showDownloadPanel",
-          }
+          viewOptions: {}
+          // viewOptions: {
+          //   showDownloadPanel: "model.showDownloadPanel",
+          // }
         },
         {
           label: "Help",
@@ -379,12 +380,25 @@ define([
        */
       handleLinkClick(sectionEl) {
         try {
+         
           var toolbarOpen = this.isOpen;
           var sectionActive = sectionEl.isActive;
-          if (toolbarOpen && sectionActive) {
+          const drawPanel = document.querySelector(".draw__tool-panel"); //check if there is another way to get this from sectionEl
+          const downloadPanel = document.querySelector(".download-panel");
+          var drawToolStatus;
+
+          if(sectionEl.contentEl.querySelector(".draw__tool-panel") && sectionActive)
+          {
+            drawToolStatus = sectionActive;
+            sectionActive = false; 
+          }
+          
+          //if (toolbarOpen && sectionActive) { //edited out by Shirly
+          if (toolbarOpen && sectionActive && !sectionEl.contentEl.querySelector(".draw__tool-panel")) {
             this.close();
             return;
           }
+          
           if (!toolbarOpen && sectionEl.contentEl) {
             this.open();
           }
@@ -392,7 +406,37 @@ define([
             if (sectionEl.contentEl) {
               this.inactivateAllSections();
             }
+            
             this.activateSection(sectionEl);
+            //added by shirly
+           
+            if (sectionEl.contentEl.querySelector(".draw__tool-panel") && !sectionActive) {
+         
+            if (drawPanel.style.visibility === "") {
+                drawPanel.style.visibility = "visible";
+                downloadPanel.style.visibility = 'visible';        
+              }
+              else if (drawPanel.style.visibility == "visible" ) {
+                drawPanel.style.visibility = "hidden";
+                downloadPanel.style.visibility = 'hidden';
+                const toolbarLinks = document.querySelector(".toolbar__links");
+                const sectionEl = toolbarLinks.children[2];
+                sectionEl.classList.remove("toolbar__link--active"); // Change the toolbar link to inactive
+                sectionEl.classList.remove("toolbar__content--active");
+              }
+              else if(drawPanel.style.visibility == "hidden" && drawToolStatus)
+              {
+                const drawButtonEl = document.querySelector(".draw__button");                 
+                drawPanel.style.visibility = "visible";
+                downloadPanel.style.visibility = 'visible';
+                drawButtonEl.classList.add("draw__button--active");
+              }
+              this.activateSection(this.sectionElements[0]);
+            } 
+      
+            //end add by shirly
+            //this.activateSection(sectionEl);
+
           }
         } catch (error) {
           console.log(

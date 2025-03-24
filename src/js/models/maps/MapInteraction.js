@@ -333,12 +333,14 @@ define([
           if (features instanceof Features) {
             features = features.filter((f) => !f.isDefault());
           }
-
           // Empty collection if features array is empty (and replace is true)
           if (!features || features.length === 0) {
             if (replace) model.get(type).set([], { remove: true });
             return;
           }
+
+          // alert("This is where the error is happening....");
+          
 
           // Ignore if new features are identical to the current features
           const currentFeatures = model.get(type);

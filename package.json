@@ -8,6 +8,7 @@
     "cheerio": "^1.0.0-rc.11",
     "express": "^4.21.2",
     "fomantic-ui": "^2.9.4-beta.65",
+    "jszip": "^3.10.1",
     "puppeteer": "^22.11.2",
     "sinon": "^17.0.1"
   },

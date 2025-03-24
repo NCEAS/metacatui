@@ -49,6 +49,7 @@ define(["cesium", "models/connectors/GeoPoints-Cesium"], function (
        */
       handleCollectionChange(eventName, collection, options) {
         try {
+          // alert("Point change");
           // For merges and resets, just remove all points and re-add them
           if (!options?.add && !options?.remove) {
             this.resetLayerPoints();

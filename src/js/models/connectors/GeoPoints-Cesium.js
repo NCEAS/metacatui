@@ -108,7 +108,6 @@ define([
       connect: function () {
         try {
           this.disconnect();
-
           // Listen for changes to the points collection and update the layer
           const geoPoints = this.get("geoPoints");
           const events = ["update", "reset"];

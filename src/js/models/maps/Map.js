@@ -273,6 +273,29 @@ define([
        * used instead (see {@link MapModel#defaults}).
        */
       initialize(config) {
+
+        /**
+        * Block: overwrite layerCategories property to nothing and add layers with the
+        * layers property instead.
+        * This is to enable the draw functionality in production.
+        */
+        // config.layerCategories = null;
+        // config.layers = [
+        //   {
+        //     visible: false,
+        //     label: "Satellite imagery",
+        //     type: "IonImageryProvider",
+        //     cesiumOptions: {
+        //       ionAssetId: "2",
+        //     },
+        //   },
+        //   {
+        //     label: "Base map",
+        //     type: "OpenStreetMapImageryProvider",
+        //     attribution: "OpenStreetMap",
+        //   },
+        // ]; // End Block
+
         try {
           if (config && config instanceof Object) {
             if (isNonEmptyArray(config.layerCategories)) {
@@ -283,6 +306,8 @@ define([
               this.set("layerCategories", assetCategories);
               this.unset("layers");
               this.set("allLayers", assetCategories.getMapAssetsFlat());
+
+
             } else if (isNonEmptyArray(config.layers)) {
               const layers = new MapAssets(config.layers);
               this.set("layers", layers);
@@ -394,7 +419,7 @@ define([
        */
       getLayerGroups() {
         if (this.has("layerCategories")) {
-          return this.get("layerCategories").getMapAssets();
+          return this.get("layerCategories").getMapAssets();       
         }
         if (this.has("layers")) {
           return [this.get("layers")];
@@ -413,9 +438,12 @@ define([
        * @since 2.25.0
        */
       addAsset(asset) {
-        const layers = this.get("layers") || this.resetLayers();
+        // const layers = this.get("layers") || this.resetLayers();
+        const layersCategoriesCollection = this.get("layerCategories").at(0);
+        const layers = layersCategoriesCollection.get("mapAssets");
         return layers.addAsset(asset, this);
       },
+
 
       /**
        * Remove a layer from the map.

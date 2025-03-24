@@ -66,6 +66,7 @@ define(["cesium", "models/connectors/GeoPoints-Cesium"], function (
        * the GeoPoints collection.
        */
       handleCollectionChange: function () {
+
         this.get("polygon") || this.addPolygon();
         this.get("layer").updateAppearance();
       },
