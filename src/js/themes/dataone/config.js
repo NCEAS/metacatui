@@ -6,7 +6,7 @@ MetacatUI.AppConfig = Object.assign(
     title: "DataONE Data Catalog",
     theme: "dataone",
     baseUrl: "https://search.dataone.org",
-    mapKey: "AIzaSyDuQ9r_7EeSfspKYs2SET7sv4c8FysLIk4",
+    mapKey: "AIzaSyB61wRRIFZngUXO81ipq3ljUjsClKcT9mk",
     repositoryName: "DataONE Data Catalog",
     emailContact: "support@dataone.org",
     nodeId: "urn:node:CN",
@@ -15,6 +15,10 @@ MetacatUI.AppConfig = Object.assign(
     enableMonitorStatus: false,
     enableCILogonSignIn: false,
     showSignInHelp: false,
+
+    // Cesium map for portals
+    cesiumToken:
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMTE3MTBiYy1iODY1LTQxNjMtODUzNS0yMzM1NGE3M2JhMWIiLCJpZCI6NjkzOTcsImlhdCI6MTY3ODkwMDg5M30.xzIlG_tPIzB9FmYPzPTzOJ49R2J4yIG2y0ittFqdbMc",
 
     //Temp message
     temporaryMessageContainer: "#Navbar",
@@ -155,6 +159,14 @@ MetacatUI.AppConfig = Object.assign(
     displayDatasetEditButton: false,
     displayDatasetControls: false,
     displayDatasetQualityMetric: true,
+
+    // iFrames in portals
+    trustedContentSources: [
+      "https://*ecoinformatics.org*",
+      "https://*arcticdata.io",
+      "https://cosima.nceas.ucsb.edu*",
+      "https://sasap-data.shinyapps.io/board_of_fisheries/",
+    ],
   },
   MetacatUI.AppConfig || {},
 );

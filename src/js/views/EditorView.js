@@ -413,14 +413,22 @@ define([
           .removeClass("btn-disabled")
           .parent()
           .tooltip("destroy");
+        this.$(".addFiles")
+          .removeClass("btn-disabled")
+          .parent()
+          .tooltip("destroy");
       },
 
       /**
        * Disable the Save button and display a message to explain why
        * @param {string} [message] - A short text message to display in the Save button
+       * @param {string} tooltipMessage -- A message that is the reason for buttons being disabled. This message will be displayed in a tooltip.
        * @since 2.17.1
        */
-      disableControls: function (message) {
+      disableControls: function (
+        message,
+        tooltipMessage = "Files are uploading.",
+      ) {
         //When the package is saved, revert the Save button back to normal
         this.$("#save-editor")
           .html(message || "Waiting for files to finish uploading...")
@@ -430,8 +438,21 @@ define([
             placement: "top",
             trigger: "hover focus click",
             html: false,
+            title: `Saving is disabled. ${  tooltipMessage  } Please wait...`,
+            container: "body",
+            delay: 600,
+          });
+        // When the package is saved, revert the Add button back to normal
+        this.$(".addFiles")
+          .addClass("btn-disabled")
+          .parent()
+          // Add a tooltip to the parent element since tooltips won't work on a disabled button
+          .tooltip({
+            placement: "top",
+            trigger: "hover focus click",
+            html: false,
             title:
-              "Saving is disabled while files are uploading. Please wait...",
+              `Adding files disabled. ${  tooltipMessage  } Please wait...`,
             container: "body",
             delay: 600,
           });

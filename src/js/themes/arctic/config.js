@@ -99,8 +99,14 @@ MetacatUI.AppConfig = Object.assign(
       "isPrivate",
     ],
 
+    // Batching
+    batchSizeFetch: 30,
+    batchSizeUpload: 10,
+
     // CesiumMap
     enableCesium: true,
+    cesiumToken:
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMTE3MTBiYy1iODY1LTQxNjMtODUzNS0yMzM1NGE3M2JhMWIiLCJpZCI6NjkzOTcsImlhdCI6MTY3ODkwMDg5M30.xzIlG_tPIzB9FmYPzPTzOJ49R2J4yIG2y0ittFqdbMc",
     useDeprecatedDataCatalogView: false,
     catalogSearchMapOptions: {
       clickFeatureAction: "zoom",
@@ -258,6 +264,12 @@ MetacatUI.AppConfig = Object.assign(
 
     //Google Analytics
     googleAnalyticsKey: "G-12EKQM14SH",
+
+    // iFrames in portals
+    trustedContentSources: [
+      "https://*arcticdata.io",
+      "https://cosima.nceas.ucsb.edu*",
+    ],
   },
   MetacatUI.AppConfig || {},
 );

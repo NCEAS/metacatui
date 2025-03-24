@@ -408,6 +408,8 @@ define([
 
         this.addAnnotationFilter();
 
+        MetacatUI.appView.schemaOrg.setSchema("DataCatalog");
+
         return this;
       },
 
@@ -436,53 +438,6 @@ define([
           const item = { value, filterLabel };
           view.updateTextFilters(mockEvent, item);
         });
-      },
-
-      // Linked Data Object for appending the jsonld into the browser DOM
-      getLinkedData() {
-        // Find the MN info from the CN Node list
-        const members = MetacatUI.nodeModel.get("members");
-        for (let i = 0; i < members.length; i++) {
-          if (
-            members[i].identifier ==
-            MetacatUI.nodeModel.get("currentMemberNode")
-          ) {
-            var nodeModelObject = members[i];
-          }
-        }
-
-        // JSON Linked Data Object
-        const elJSON = {
-          "@context": {
-            "@vocab": "http://schema.org/",
-          },
-          "@type": "DataCatalog",
-        };
-        if (nodeModelObject) {
-          // "keywords": "",
-          // "provider": "",
-          const conditionalData = {
-            description: nodeModelObject.description,
-            identifier: nodeModelObject.identifier,
-            image: nodeModelObject.logo,
-            name: nodeModelObject.name,
-            url: nodeModelObject.url,
-          };
-          $.extend(elJSON, conditionalData);
-        }
-
-        // Check if the jsonld already exists from the previous data view
-        // If not create a new script tag and append otherwise replace the text for the script
-        if (!document.getElementById("jsonld")) {
-          const el = document.createElement("script");
-          el.type = "application/ld+json";
-          el.id = "jsonld";
-          el.text = JSON.stringify(elJSON);
-          document.querySelector("head").appendChild(el);
-        } else {
-          const script = document.getElementById("jsonld");
-          script.text = JSON.stringify(elJSON);
-        }
       },
 
       /*
@@ -687,7 +642,6 @@ define([
         const provSearchResults = new SearchResults(null, {
           query: provSearchModel.getQuery(),
           searchLogs: false,
-          usePOST: true,
           rows: 150,
           fields: `${provSearchModel.getProvFlList()},id,resourceMap`,
         });

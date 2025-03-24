@@ -20,7 +20,8 @@
 	<div class="span4">
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-email">E-mail</label>
-			<input type="email" id="<%=uniqueId%>-email" name="E-mail" class="span12 tooltip-this" data-attribute="email" placeholder="Email" />
+			<input type="email" id="<%=uniqueId%>-email" name="E-mail" class="span12
+			tooltip-this" data-attribute="email" placeholder="Email" pattern="[^@]+@[^@]+\.[a-zA-Z]{2,6}" />
 		</div>
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-website">Website</label>

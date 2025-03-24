@@ -18,6 +18,7 @@
     "./js/specs/unit/models/filters/Filter.spec.js",
     "./js/specs/unit/models/filters/NumericFilter.spec.js",
     "./js/specs/unit/models/CitationModel.spec.js",
+    "./js/specs/unit/models/CrossRefModel.spec.js",
     "./js/specs/unit/collections/ProjectList.spec.js",
     "./js/specs/unit/collections/DataPackage.spec.js",
     "./js/specs/unit/models/project/Project.spec.js",
@@ -33,6 +34,7 @@
     "./js/specs/unit/models/metadata/eml211/EMLParty.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLTemporalCoverage.spec.js",
     "./js/specs/unit/collections/metadata/eml/EMLMissingValueCodes.spec.js",
+    "./js/specs/unit/collections/metadata/eml/EMLAnnotations.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLMissingValueCode.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLDistribution.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLGeoCoverage.spec.js",
@@ -56,6 +58,7 @@
     "./js/specs/unit/models/filters/SpatialFilter.spec.js",
     "./js/specs/unit/models/maps/Geohash.spec.js",
     "./js/specs/unit/models/maps/assets/CesiumGeohash.spec.js",
+    "./js/specs/unit/models/schemaOrg/SchemaOrg.spec.js",
     "./js/specs/unit/common/Utilities.spec.js",
     "./js/specs/unit/common/IconUtilities.spec.js",
     "./js/specs/unit/common/SearchParams.spec.js",
@@ -88,7 +91,9 @@
     "./js/specs/unit/collections/BioontologyResults.spec.js",
     "./js/specs/unit/models/ontologies/BioontologyOntology.spec.js",
     "./js/specs/unit/models/accordion/Accordion.spec.js",
-    "./js/specs/unit/models/accordion/AccordionItem.spec.js"
+    "./js/specs/unit/models/accordion/AccordionItem.spec.js",
+    "./js/specs/unit/views/DataItemView.spec.js",
+    "./js/specs/unit/views/metadata/EML211EditorView.spec.js"
   ],
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",

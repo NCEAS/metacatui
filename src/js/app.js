@@ -80,6 +80,8 @@ require.config({
       "/components/showdown/extensions/showdown-xss-filter/xss.min",
     showdownHtags:
       MetacatUI.root + "/components/showdown/extensions/showdown-htags",
+    showdownIframes:
+      MetacatUI.root + "/components/showdown/extensions/showdown-iframes",
     // woofmark - markdown editor
     woofmark: MetacatUI.root + "/components/woofmark.min",
     // drop zone creates drag and drop areas
@@ -88,6 +90,8 @@ require.config({
     markdownTableFromJson:
       MetacatUI.root + "/components/markdown-table-from-json.min",
     markdownTableToJson: MetacatUI.root + "/components/markdown-table-to-json",
+    // robust CSV parsing
+    papaParse: MetacatUI.root + "/components/papaparse.min",
     // Polyfill required for using dropzone with older browsers
     corejs: MetacatUI.root + "/components/core-js",
     // Custom semantic bundle used for searchable multi-select dropdown component
