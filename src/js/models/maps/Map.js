@@ -273,12 +273,11 @@ define([
        * used instead (see {@link MapModel#defaults}).
        */
       initialize(config) {
-
         /**
-        * Block: overwrite layerCategories property to nothing and add layers with the
-        * layers property instead.
-        * This is to enable the draw functionality in production.
-        */
+         * Block: overwrite layerCategories property to nothing and add layers with the
+         * layers property instead.
+         * This is to enable the draw functionality in production.
+         */
         // config.layerCategories = null;
         // config.layers = [
         //   {
@@ -306,8 +305,6 @@ define([
               this.set("layerCategories", assetCategories);
               this.unset("layers");
               this.set("allLayers", assetCategories.getMapAssetsFlat());
-
-
             } else if (isNonEmptyArray(config.layers)) {
               const layers = new MapAssets(config.layers);
               this.set("layers", layers);
@@ -419,7 +416,7 @@ define([
        */
       getLayerGroups() {
         if (this.has("layerCategories")) {
-          return this.get("layerCategories").getMapAssets();       
+          return this.get("layerCategories").getMapAssets();
         }
         if (this.has("layers")) {
           return [this.get("layers")];
@@ -443,7 +440,6 @@ define([
         const layers = layersCategoriesCollection.get("mapAssets");
         return layers.addAsset(asset, this);
       },
-
 
       /**
        * Remove a layer from the map.

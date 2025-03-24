@@ -607,7 +607,7 @@ define([
         if (now - lastCall < delay) return;
         this.setHoveredFeaturesLastCall = now;
         const pickedFeature = view.scene.pick(position);
-      
+
         view.interactions.setHoveredFeatures([pickedFeature]);
       },
 
@@ -621,7 +621,6 @@ define([
         this.stopListening(hoveredFeatures, "change update");
         this.listenTo(hoveredFeatures, "change update", this.updateCursor);
       },
-
 
       /**
        * Change the cursor to a pointer when the mouse is hovering over a
