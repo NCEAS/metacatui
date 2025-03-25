@@ -137,6 +137,8 @@ define([
           dataONEObject,
           parentModel: options.parentModel || this.getParentModel(),
           xmlID: dataONEObject.getXMLSafeID(),
+          // Important: Adding as a generic entity creates invalid EML
+          type: "otherEntity",
         });
         this.stopListening(dataONEObject);
         this.listenTo(dataONEObject, "errorSaving", () => {
