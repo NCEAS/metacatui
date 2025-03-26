@@ -654,7 +654,7 @@ define([
 
       /** Let the top level package know of attribute changes from this object */
       trickleUpChange() {
-        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+        MetacatUI.rootDataPackage.packageModel?.set("changed", true);
       },
 
       /** Set a new UUID on the xmlID property */

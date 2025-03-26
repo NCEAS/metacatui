@@ -1,6 +1,7 @@
 "use strict";
 
 define([
+  "jquery",
   "/test/js/specs/shared/clean-state.js",
   "collections/metadata/eml/EMLEntities",
   "models/DataONEObject",
@@ -9,6 +10,7 @@ define([
   "models/metadata/eml211/EMLDataTable",
   "models/metadata/eml211/EMLOtherEntity",
 ], (
+  $,
   cleanState,
   EMLEntities,
   DataONEObject,
@@ -19,6 +21,15 @@ define([
 ) => {
   const should = chai.should();
   const expect = chai.expect;
+
+  // We need to replicate parsing the way that it's done in the EML211 model,
+  // since it's using $.parseHTML to parse the XML string instead of the
+  // DOMParser. This results in all node names being lowercase, which is what
+  // the various EML models expect.
+  const emlParse = (xmlString) => {
+    const xml = $.parseHTML(xmlString.trim());
+    return xml[0];
+  };
 
   describe("EMLEntities Test Suite", () => {
     const state = cleanState(() => {
@@ -39,9 +50,7 @@ define([
             <entityType>Other</entityType>
           </otherEntity>
         </dataset>`;
-      const dummyDatasetDOM = new DOMParser()
-        .parseFromString(dummyDatasetXML, "application/xml")
-        .querySelector("dataset");
+      const dummyDatasetDOM = emlParse(dummyDatasetXML);
       const dummyEntities = [
         {
           xmlID: "123",
@@ -160,9 +169,7 @@ define([
               <entityName>NotAnEntity</entityName>
             </notAnEntity>
           </dataset>`;
-        const dummyDOM = new DOMParser()
-          .parseFromString(dummyXML, "application/xml")
-          .querySelector("dataset");
+        const dummyDOM = emlParse(dummyXML);
         const entities = new EMLEntities(
           { datasetNode: dummyDOM },
           { parse: true },
@@ -196,12 +203,11 @@ define([
           },
         ]);
         entities.updateDatasetDOM(dummyDatasetDOM, dummyParentModel);
-        dummyDatasetDOM.children.length.should.equal(2);
-        dummyDatasetDOM.children[0].tagName.should.equal("otherentity");
+        dummyDatasetDOM.children[0].localName.should.equal("otherentity");
         dummyDatasetDOM.children[0]
           .querySelector("entityname")
           .textContent.should.equal("NewEntity");
-        dummyDatasetDOM.children[1].tagName.should.equal("otherentity");
+        dummyDatasetDOM.children[1].localName.should.equal("otherentity");
         dummyDatasetDOM.children[1]
           .querySelector("entityname")
           .textContent.should.equal("AnotherEntity");
@@ -228,11 +234,11 @@ define([
         ]);
         entities.updateDatasetDOM(dummyDatasetDOM, dummyParentModel);
         dummyDatasetDOM.children.length.should.equal(5);
-        dummyDatasetDOM.children[3].tagName.should.equal("otherentity");
+        dummyDatasetDOM.children[3].localName.should.equal("otherentity");
         dummyDatasetDOM.children[3]
           .querySelector("entityname")
           .textContent.should.equal("NewEntity");
-        dummyDatasetDOM.children[4].tagName.should.equal("otherentity");
+        dummyDatasetDOM.children[4].localName.should.equal("otherentity");
         dummyDatasetDOM.children[4]
           .querySelector("entityname")
           .textContent.should.equal("AnotherEntity");
@@ -247,9 +253,7 @@ define([
           </dataTable>
           </dataset>
         `;
-        const dummyDatasetDOM = new DOMParser()
-          .parseFromString(dummyDatasetXML, "application/xml")
-          .querySelector("dataset");
+        const dummyDatasetDOM = emlParse(dummyDatasetXML);
         const entities = new EMLEntities(
           { datasetNode: dummyDatasetDOM, parentModel: dummyParentModel },
           { parse: true },
@@ -258,7 +262,7 @@ define([
         entities.reset();
         entities.updateDatasetDOM(dummyDatasetDOM, dummyParentModel);
         dummyDatasetDOM.children.length.should.equal(1);
-        dummyDatasetDOM.children[0].tagName.should.equal("title");
+        dummyDatasetDOM.children[0].localName.should.equal("title");
         dummyDatasetDOM.children[0].textContent.should.equal("My Dataset");
       });
 

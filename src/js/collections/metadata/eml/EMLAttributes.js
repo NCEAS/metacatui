@@ -1,10 +1,11 @@
 "use strict";
 
 define([
+  "jquery",
   "backbone",
   "models/metadata/eml211/EMLAttribute",
   "models/DataONEObject",
-], (Backbone, EMLAttribute, DataONEObject) => {
+], ($, Backbone, EMLAttribute, DataONEObject) => {
   /**
    * @class EMLAttributes
    * @classdesc A collection of EMLAttributes.
@@ -20,7 +21,15 @@ define([
 
       /** @inheritdoc */
       parse(response, options) {
-        const attributeNodes = response.getElementsByTagName("attribute");
+        let attributeListDOM = response;
+        if (!attributeListDOM) return [];
+        if (typeof attributeListDOM === "string") {
+          // parse with jquery so node names are lowercase as expected by the
+          // attribute model
+          attributeListDOM = $.parseHTML(response)[0];
+        }
+        const attributeNodes =
+          attributeListDOM.getElementsByTagName("attribute");
         return Array.from(attributeNodes).map((attr) => ({
           objectDOM: attr,
           objectXML: attr.outerHTML,
@@ -145,7 +154,9 @@ define([
        * @returns {object} The updated XML DOM object
        */
       updateDOM(currentDOM) {
-        const dom = currentDOM ?? document.createElement("attributeList");
+        const dom = currentDOM
+          ? currentDOM.cloneNode(true)
+          : document.createElement("attributeList");
 
         if (dom.childNodes.length) {
           // Remove all existing attributes
