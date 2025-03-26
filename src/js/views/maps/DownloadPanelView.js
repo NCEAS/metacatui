@@ -916,7 +916,7 @@ define([
 
               function updateTextbox(fileSizeDetails) {
                 // alert(fileSizeDetails);
-                fileSizeInfoBox.textContent = `Estimated file size: ${fileSizeDetails / 1000} MB`;
+                fileSizeInfoBox.textContent = `Download file size ≤ ${fileSizeDetails / 1000} MB`;
               }
 
               // Append elements
