@@ -1410,7 +1410,7 @@ other class: .ui-slider-range */
  * Panel for drawing polygons in the map
  *
  */
- .draw__tool-panel {
+.draw__tool-panel {
   display: flex;
   position: absolute; /* Or relative, fixed, or sticky based on your layout */
   justify-content: center; /* Center horizontally */
@@ -1432,8 +1432,8 @@ other class: .ui-slider-range */
   display: flex;
   /* grid-auto-rows: min-content; */
   /* grid-gap: 1rem; */
-  justify-content: center; 
-  align-items: center; 
+  justify-content: center;
+  align-items: center;
   /* margin: 0 50px; */
 }
 
@@ -1475,25 +1475,29 @@ other class: .ui-slider-range */
 }
 
 .custom-circle {
-  display: inline-flex; 
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 50px; 
-  height: 50px; 
-  border-radius: 50%; 
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
   padding: 0.5rem;
   background-color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
   border: 2px solid var(--portal-col-primary-3);
-  color: #333; 
-  font-size: 20px; 
+  color: #333;
+  font-size: 20px;
   border: 1px solid var(--portal-col-primary-2);
 }
-
 
 .draw-button-label {
   display: none; /* Hide the label by default */
   position: absolute;
-  background-color: rgba(0, 0, 0, 0.7); /* Optional: Add a semi-transparent background */
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.7
+  ); /* Optional: Add a semi-transparent background */
   color: #fff; /* Label text color */
   padding: 4px 8px;
   border-radius: 4px;
@@ -1534,7 +1538,7 @@ other class: .ui-slider-range */
   border-width: 1px 0;
   /* overflow: auto; */
   border-top: 1px solid
-      var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
+    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
   /* background-color: #f0eded;  */
   background-color: var(--portal-col-primary-1, var(--map-col-bkg__deprecate));
 }
@@ -1559,14 +1563,13 @@ other class: .ui-slider-range */
   margin-right: 30px;
 }
 
-
 .header-container {
   display: flex;
   justify-content: space-between; /* Push label and button apart */
   align-items: center;
   width: 100%;
   padding-top: 15px;
-  margin-left: 30px; 
+  margin-left: 30px;
   /* margin-bottom: 5px; */
 }
 
@@ -1604,12 +1607,12 @@ other class: .ui-slider-range */
   display: block; /* To display the panel below */
   width: calc(100% - 80px);
   margin-top: 0px; /* Adds spacing from header */
-  margin-left: 40px; 
-  margin-right: 40px; 
+  margin-left: 40px;
+  margin-right: 40px;
   padding-top: 0;
   color: black;
   border-bottom: 1px solid
-  var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
+    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
   font-size: 0.825rem;
   font-weight: 400;
   margin: 0 0.5rem;
@@ -1620,23 +1623,22 @@ other class: .ui-slider-range */
   /* white-space: nowrap; */
 }
 
-
 .download-data-list {
   display: block; /* Ensure it appears below */
   /* width: 100%; */
   width: calc(100% - 80px);
   margin-top: 0px; /* Adds spacing from header */
-  margin-left: 40px; 
-  margin-right: 40px; 
+  margin-left: 40px;
+  margin-right: 40px;
   padding-top: 0;
   color: black;
   border-bottom: 1px solid
-  var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
+    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
   overflow-y: auto; /* Enable vertical scrolling */
   max-height: 150px; /* Fixed height for the list */
-   /* Styling the scrollbar */
-   scrollbar-width: thin; /* For Firefox */
-   scrollbar-color: #888 #f0f0f0; /* For Firefox */
+  /* Styling the scrollbar */
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: #888 #f0f0f0; /* For Firefox */
   /* grid-template-columns: 3rem auto;
   gap: 1rem;
   align-items: center;
@@ -1671,7 +1673,7 @@ other class: .ui-slider-range */
 .checkbox-item input {
   margin-top: 3px;
   cursor: pointer;
-  width: 14px;  
+  width: 14px;
   height: 14px;
   display: inline-block;
   vertical-align: middle;
@@ -1743,7 +1745,7 @@ other class: .ui-slider-range */
     /* padding: 0 1.5rem; */
     padding: 0;
     border: none;
-    gap: 8px; 
+    gap: 8px;
 
     &:hover {
       background-color: var(--portal-col-primary-1, #15324e);
@@ -1817,11 +1819,11 @@ other class: .ui-slider-range */
   /* gap: 2px;  */
   padding-left: 20px;
   justify-content: flex-end; /* Align items at the bottom */
-  height: 100%;           /* Ensure the container has height to align */
+  height: 100%; /* Ensure the container has height to align */
 }
 .downloads-dropdown-wrapper label {
-  font-size: 12px; 
-  white-space: nowrap; 
+  font-size: 12px;
+  white-space: nowrap;
   margin-bottom: 10px;
   color: var(--portal-col-neutral-7);
 }
@@ -1832,7 +1834,7 @@ other class: .ui-slider-range */
   width: 65%; /* Adjust based on container */
   max-width: 120px; /* Prevents it from getting too wide */
   height: 18px;
-  background-color: #FAF9F6; 
+  background-color: #faf9f6;
   color: var(--portal-col-neutral-7);
   /* border: 1px solid var(--portal-col-primary-6, var(--map-col-highlight__deprecate)); */
   border: 1px solid #ccc; /* Light border for the dropdown */
@@ -1848,8 +1850,8 @@ other class: .ui-slider-range */
   /* padding-top: -5px; */
   line-height: 0;
   font-size: 10px;
-  width: 100%;               
-  min-height: 12px;          
+  width: 100%;
+  min-height: 12px;
   /* padding: 10px;              */
   /* border: 1px solid #ccc;    
   border-radius: 8px;        
@@ -1870,7 +1872,10 @@ other class: .ui-slider-range */
 .progress-bar {
   width: 0%;
   height: 18px;
-  background-color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
+  background-color: var(
+    --portal-col-primary-6,
+    var(--map-col-text__deprecate)
+  ) !important;
   text-align: center;
   color: white;
   line-height: 18px;

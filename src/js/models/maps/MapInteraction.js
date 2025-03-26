@@ -177,12 +177,12 @@ define([
         const hoveredFeatures = this.get("hoveredFeatures").models;
         this.setClickedFeatures(hoveredFeatures);
         const clickAction = this.get("mapModel")?.get("clickFeatureAction");
-        
+
         if (clickAction === "showDetails") {
           this.selectFeatures(hoveredFeatures);
         } else if (clickAction === "zoom") {
           this.set("zoomTarget", hoveredFeatures[0]);
-        } 
+        }
         // Added by Shirly --  Custom behavior for double-click
         else if (action === "LEFT_DOUBLE_CLICK") {
           this.set("previousAction", "LEFT_DOUBLE_CLICK");
@@ -340,7 +340,6 @@ define([
           }
 
           // alert("This is where the error is happening....");
-          
 
           // Ignore if new features are identical to the current features
           const currentFeatures = model.get(type);

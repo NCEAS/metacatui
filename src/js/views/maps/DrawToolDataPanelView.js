@@ -1,14 +1,14 @@
 "use strict";
 
 define([
-    "jquery",
-    "underscore",
-    "backbone",
-    "text!templates/maps/draw-tool-data-panel.html",
+  "jquery",
+  "underscore",
+  "backbone",
+  "text!templates/maps/draw-tool-data-panel.html",
   "views/maps/MapView",
 ], (
-    $,                        // jQuery assigned here
-    _, 
+  $, // jQuery assigned here
+  _,
   Backbone,
   Template,
   MapView,
@@ -36,14 +36,13 @@ define([
        * @type {string}
        */
       className: "draw-tool-data-panel",
-            
+
       /**
        * The primary HTML template for this view. The template must have two element,
        * one with the contentContainer class, and one with the linksContainer class.
        * @type {Underscore.template}
        */
-            template: _.template(Template),
-
+      template: _.template(Template),
 
       /**
        * @typedef {Object} DrawToolDataPanelViewOptions
@@ -59,30 +58,23 @@ define([
        * is passed an object with relevant view state.
        * */
       render() {
+        try {
+          // Save a reference to this view
+          var view = this;
 
-        try
-        {
-            // Save a reference to this view
-            var view = this;
+          // Insert the template into the view
+          this.$el.html(this.template({}));
 
-            // Insert the template into the view
-            this.$el.html(this.template({}));
-
-            // Ensure the view's main element has the given class name
-            this.el.classList.add(this.className);
-
+          // Ensure the view's main element has the given class name
+          this.el.classList.add(this.className);
+        } catch (error) {
+          console.log(
+            "There was an error rendering a DrawToolPanelView" +
+              ". Error details: " +
+              error,
+          );
         }
-        catch (error) {
-            console.log(
-              "There was an error rendering a DrawToolPanelView" +
-                ". Error details: " +
-                error,
-            );
-          }
-    
       },
-
-
     },
   );
 
