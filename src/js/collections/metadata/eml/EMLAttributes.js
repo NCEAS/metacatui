@@ -26,6 +26,7 @@ define([
         if (typeof attributeListDOM === "string") {
           // parse with jquery so node names are lowercase as expected by the
           // attribute model
+          // eslint-disable-next-line prefer-destructuring
           attributeListDOM = $.parseHTML(response)[0];
         }
         const attributeNodes =
@@ -174,6 +175,17 @@ define([
         });
 
         return dom;
+      },
+
+      /**
+       * Serialize the collection of attributes to an XML string
+       * @returns {string} The XML string representing the collection of
+       * attributes
+       */
+      serialize() {
+        const newDOM = this.updateDOM();
+        const serializer = new XMLSerializer();
+        return serializer.serializeToString(newDOM);
       },
     },
   );

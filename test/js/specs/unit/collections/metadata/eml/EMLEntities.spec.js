@@ -562,5 +562,360 @@ define([
         entities.getByFileName("My Data.csv").length.should.equal(2);
       });
     });
+
+    describe("getAllFileNames", () => {
+      it("should return the names of all the entities in the collection", () => {
+        const { entities } = state;
+        entities.add({ entityName: "MyData.csv" });
+        entities.add({ entityName: "OtherData.csv" });
+        entities
+          .getAllFileNames()
+          .should.deep.equal(["MyData.csv", "OtherData.csv"]);
+      });
+
+      it("should return the physical object names if entity names are not set", () => {
+        const { entities } = state;
+        entities.add({ physicalObjectName: "MyData.csv" });
+        entities.add({ physicalObjectName: "OtherData.csv" });
+        entities
+          .getAllFileNames()
+          .should.deep.equal(["MyData.csv", "OtherData.csv"]);
+      });
+    });
+
+    describe("copyAttributeList", () => {
+      it("should copy the attribute list to from one entity to others", () => {
+        const { entities, dummyParentModel } = state;
+        // Attributes must be valid to be copied
+        const xml = `
+          <dataset>
+            <dataTable>
+              <entityName>first</entityName>
+              <attributeList>
+                <attribute id="dummyAttr1">
+                  <attributeName>attr1</attributeName>
+                  <attributeDefinition>Def attr1</attributeDefinition>
+                  <measurementScale>
+                    <dateTime>
+                      <formatString>MM</formatString>
+                    </dateTime>
+                  </measurementScale>
+                </attribute>
+                <attribute id="dummyAttr2">
+                  <attributeName>attr2</attributeName>
+                  <attributeDefinition>Def attr2</attributeDefinition>
+                  <measurementScale>
+                    <dateTime>
+                      <formatString>YYYY</formatString>
+                    </dateTime>
+                  </measurementScale>
+                </attribute>
+              </attributeList>
+            </dataTable>
+            <otherEntity>
+              <entityName>second</entityName>
+              <entityType>someType</entityType>
+            </otherEntity>
+          </dataset>
+        `;
+        // Set up and confirm the initial state
+        entities.add(
+          { datasetNode: emlParse(xml), parentModel: dummyParentModel },
+          { parse: true },
+        );
+        entities.length.should.equal(2);
+        entities.at(0).get("attributeList").length.should.equal(2);
+        entities.at(1).get("attributeList").length.should.equal(0);
+        // Do the copy
+        entities.copyAttributeList(entities.at(0), [entities.at(1)]);
+        // Check the results
+        entities.at(0).get("attributeList").length.should.equal(2);
+        entities.at(1).get("attributeList").length.should.equal(2);
+        // Test attribute 1 copied correctly
+        const toAttr1 = entities.at(1).get("attributeList").at(0);
+        const ms1 = toAttr1.get("measurementScale");
+        toAttr1.get("attributeName").should.equal("attr1");
+        toAttr1.get("attributeDefinition").should.equal("Def attr1");
+        ms1.get("measurementScale").should.equal("datetime");
+        ms1.get("formatString").should.equal("MM");
+        // Test attribute 2 copied correctly
+        const toAttr2 = entities.at(1).get("attributeList").at(1);
+        const ms2 = toAttr2.get("measurementScale");
+        toAttr2.get("attributeName").should.equal("attr2");
+        toAttr2.get("attributeDefinition").should.equal("Def attr2");
+        ms2.get("measurementScale").should.equal("datetime");
+        ms2.get("formatString").should.equal("YYYY");
+      });
+
+      it("should handle complicated attribute lists", () => {
+        const { entities } = state;
+        const xml = `
+          <dataset>
+            <dataTable id="dummy-dataTable-001">
+              <entityName>dummy_data.csv</entityName>
+              <attributeList>
+                <attribute id="dummyAttr1">
+                  <attributeName>GenericAttribute1</attributeName>
+                  <attributeDefinition>Generic description for attribute one</attributeDefinition>
+                  <measurementScale>
+                    <nominal>
+                      <nonNumericDomain>
+                        <textDomain>
+                          <definition>Generic text domain</definition>
+                          <pattern>.*</pattern>
+                        </textDomain>
+                      </nonNumericDomain>
+                    </nominal>
+                  </measurementScale>
+                  <annotation>
+                    <propertyURI label="genericAnnotation">http://example.org/annotation/property1</propertyURI>
+                    <valueURI label="genericAnnotationValue">http://example.org/annotation/value1</valueURI>
+                  </annotation>
+                </attribute>
+                <attribute id="dummyAttr2">
+                  <attributeName>GenericAttribute2</attributeName>
+                  <attributeDefinition>Generic description for attribute two</attributeDefinition>
+                  <measurementScale>
+                    <dateTime>
+                      <formatString>YYYY-MM-DD</formatString>
+                    </dateTime>
+                  </measurementScale>
+                  <annotation>
+                    <propertyURI label="genericAnnotation">http://example.org/annotation/property2</propertyURI>
+                    <valueURI label="genericAnnotationValue">http://example.org/annotation/value2</valueURI>
+                  </annotation>
+                </attribute>
+              </attributeList>
+            </dataTable>
+            <otherEntity>
+              <entityName>An entity with no attributes</entityName>
+            </otherEntity>
+          </dataset>
+        `;
+
+        entities.add({ datasetNode: emlParse(xml) }, { parse: true });
+
+        const attrList0 = entities.at(0).get("attributeList");
+        const attrList1 = entities.at(1).get("attributeList");
+        attrList0.length.should.equal(2);
+        attrList1.length.should.equal(0);
+
+        entities.copyAttributeList(entities.at(0), [entities.at(1)]);
+
+        attrList1.length.should.equal(2);
+        attrList1.at(0).get("attributeName").should.equal("GenericAttribute1");
+        attrList1
+          .at(0)
+          .get("attributeDefinition")
+          .should.equal("Generic description for attribute one");
+        attrList1.at(0).get("measurementScale").should.be.an("object");
+        attrList1
+          .at(0)
+          .get("measurementScale")
+          .get("nonNumericDomain")[0]
+          .textDomain.definition.should.equal("Generic text domain");
+        attrList1
+          .at(0)
+          .get("annotation")[0]
+          .get("propertyURI")
+          .should.equal("http://example.org/annotation/property1");
+        attrList1
+          .at(0)
+          .get("annotation")[0]
+          .get("valueURI")
+          .should.equal("http://example.org/annotation/value1");
+      });
+
+      it("should create independent copies of the attribute list that will not affect the original", () => {
+        const { entities } = state;
+        const xml = `
+          <dataset>
+            <dataTable>
+              <entityName>first</entityName>
+              <attributeList>
+                <attribute id="dummyAttr1">
+                  <attributeName>GenericAttribute1</attributeName>
+                  <attributeDefinition>Generic description for attribute one</attributeDefinition>
+                  <measurementScale>
+                    <nominal>
+                      <nonNumericDomain>
+                        <textDomain>
+                          <definition>Generic text domain</definition>
+                          <pattern>.*</pattern>
+                        </textDomain>
+                      </nonNumericDomain>
+                    </nominal>
+                  </measurementScale>
+                </attribute>
+              </attributeList>
+            </dataTable>
+            <otherEntity>
+              <entityName>An entity with no attributes</entityName>
+            </otherEntity>
+          </dataset>
+        `;
+        entities.add({ datasetNode: emlParse(xml) }, { parse: true });
+        const entityWithAttrs = entities.at(0);
+        const otherEnts = [entities.at(1)];
+        entities.copyAttributeList(entityWithAttrs, otherEnts);
+
+        // Modify the copied attribute list and check that the original is not
+        // affected
+        const copiedAttrs = entities.at(1).get("attributeList");
+        copiedAttrs.at(0).set("attributeName", "ModifiedName");
+        copiedAttrs.at(0).get("attributeName").should.equal("ModifiedName");
+        entityWithAttrs
+          .get("attributeList")
+          .at(0)
+          .get("attributeName")
+          .should.not.equal("ModifiedName");
+
+        // Measurement scale is a model and should not be copied by reference
+        const copiedMS = copiedAttrs.at(0).get("measurementScale");
+        copiedMS.set("measurementScale", "ModifiedType");
+        copiedMS.get("measurementScale").should.equal("ModifiedType");
+        entityWithAttrs
+          .get("attributeList")
+          .at(0)
+          .get("measurementScale")
+          .get("measurementScale")
+          .should.not.equal("ModifiedType");
+      });
+
+      it("should not duplicate xml IDs when copying attribute lists", () => {
+        const { entities, dummyParentModel } = state;
+        const xml = `
+        <dataset>
+          <dataTable>
+            <entityName>first</entityName>
+            <attributeList>
+              <attribute id="XML_ID_1">
+                <attributeName>attr1</attributeName>
+                <attributeDefinition>definition1</attributeDefinition>
+                <measurementScale>
+                  <dateTime>
+                    <formatString>yyyy-MM-dd</formatString>
+                  </dateTime>
+                </measurementScale>
+              </attribute>
+            </attributeList>
+          </dataTable>
+          <otherEntity>
+            <entityName>second</entityName>
+            <entityType>someType</entityType>
+          </otherEntity>
+        </dataset>
+        `;
+        entities.add(
+          { datasetNode: emlParse(xml), parentModel: dummyParentModel },
+          { parse: true },
+        );
+        // Check that the xml IDs are as expected
+        entities
+          .at(0)
+          .get("attributeList")
+          .at(0)
+          .get("xmlID")
+          .should.equal("XML_ID_1");
+        entities.at(1).get("attributeList").length.should.equal(0);
+        entities.copyAttributeList(entities.at(0), [entities.at(1)]);
+        // Check that the ID did not get duplicated
+        const newID = entities.at(1).get("attributeList").at(0).get("xmlID");
+        should.not.exist(newID);
+      });
+
+      it("should throw an error if the source attribute list contains invalid attributes", () => {
+        const { entities } = state;
+        const xml = `
+          <dataset>
+            <otherEntity>
+              <entityName>first</entityName>
+              <attributeList>
+                <attribute>
+                  <attributeName>Missing elements</attributeName>
+                </attribute>
+              </attributeList>
+            </otherEntity>
+            <dataTable>
+              <entityName>An entity with no attributes</entityName>
+            </dataTable>
+          </dataset>
+        `;
+        entities.add({ datasetNode: emlParse(xml) }, { parse: true });
+        // We expect an error named "InvalidAttributeList" to be thrown
+        expect(() =>
+          entities.copyAttributeList(entities.at(0), [entities.at(1)]),
+        )
+          .to.throw(Error)
+          .with.property("name", "InvalidAttributeListError");
+      });
+
+      it("should not copy attributes if the source entity attribute list is empty", () => {
+        const { entities } = state;
+        const xml = `
+          <dataset>
+            <dataTable>
+              <entityName>first</entityName>
+            </dataTable>
+            <otherEntity>
+              <entityName>second</entityName>
+              <attributeList>
+                <attribute>
+                  <attributeName>ExistingAttribute</attributeName>
+                </attribute>
+              </attributeList>
+            </otherEntity>
+          </dataset>
+        `;
+        entities.add({ datasetNode: emlParse(xml) }, { parse: true });
+        entities.at(0).get("attributeList").length.should.equal(0);
+        entities.at(1).get("attributeList").length.should.equal(1);
+        entities.copyAttributeList(entities.at(0), [entities.at(1)]);
+        entities.at(0).get("attributeList").length.should.equal(0);
+        entities.at(1).get("attributeList").length.should.equal(1);
+      });
+
+      it("should overwrite existing attributes if the target entity already has attributes", () => {
+        const { entities } = state;
+        const xml = `
+          <dataset>
+            <dataTable>
+              <entityName>first</entityName>
+              <attributeList>
+                <attribute>
+                  <attributeName>ExistingAttribute</attributeName>
+                  <attributeDefinition>Definition for existing attribute</attributeDefinition>
+                  <measurementScale>
+                    <dateTime>
+                      <formatString>yyyy-MM-dd</formatString>
+                    </dateTime>
+                  </measurementScale>
+                </attribute>
+              </attributeList>
+            </dataTable>
+            <otherEntity>
+              <entityName>second</entityName>
+              <attributeList>
+                <attribute>
+                  <attributeName>OverwrittenAttribute</attributeName>
+                </attribute>
+              </attributeList>
+            </otherEntity>
+          </dataset>
+        `;
+        entities.add({ datasetNode: emlParse(xml) }, { parse: true });
+        entities.at(0).get("attributeList").length.should.equal(1);
+        entities.at(1).get("attributeList").length.should.equal(1);
+        entities.copyAttributeList(entities.at(0), [entities.at(1)]);
+        entities.at(0).get("attributeList").length.should.equal(1);
+        entities.at(1).get("attributeList").length.should.equal(1);
+        entities
+          .at(1)
+          .get("attributeList")
+          .at(0)
+          .get("attributeName")
+          .should.equal("ExistingAttribute");
+      });
+    });
   });
 });

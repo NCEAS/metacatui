@@ -17,6 +17,19 @@ define([
   ];
 
   /**
+   * @class InvalidAttributeListError
+   * @classdesc An error that is thrown when an invalid attribute list is
+   * encountered.
+   * @classcategory Errors
+   */
+  class InvalidAttributeListError extends Error {
+    constructor(message) {
+      super(message);
+      this.name = "InvalidAttributeListError";
+    }
+  }
+
+  /**
    * @class EMLEntities
    * @classdesc A collection of EMLEntities.
    * @classcategory Collections/Metadata/EML
@@ -309,7 +322,11 @@ define([
         return this.some((model) => !model.isEmpty());
       },
 
-      // WIP
+      /**
+       * Get the names of all the entities in the collection.
+       * @returns {string[]} The names of all the entities in the collection,
+       * either the entityName or physicalObjectName for each entity
+       */
       getAllFileNames() {
         return this.map(
           (entity) =>
@@ -317,10 +334,48 @@ define([
         );
       },
 
-      // WIP
-      copyAttributeList(from, to) {
-        to.each((entity) => {
-          entity.get("attributeList").reset(from.get("attributeList").toJSON()); // TODO: or clone/deepClone
+      /**
+       * Duplicate the attribute list from a source entity to given target
+       * entities in this collection. Any attributes in the target entities will
+       * be removed and replaced with the source attributes. Remove events will
+       * be triggered on the target entities. The attributes are copied over as
+       * a deep copy, so changes to the new target attributes will not affect
+       * the source attributes. If any xmlIDs are present in the copied
+       * attributes, they will be removed.
+       * @param {EMLEntity} source - The entity to copy attributes from. Must
+       * contain at least one non-empty attribute.
+       * @param {EMLEntity[]} targets - The entities to copy attributes to
+       * @param {boolean} [errorIfInvalid] - If true (default), an error will be
+       * thrown if any attributes from the source entity are invalid. If set to
+       * false, only valid attributes will be copied over, and invalid
+       * attributes will be ignored.
+       */
+      copyAttributeList(source, targets, errorIfInvalid = true) {
+        if (!source || !targets) return;
+
+        const sourceAttrs = source.get("attributeList");
+        if (!sourceAttrs?.length || !sourceAttrs?.hasNonEmptyAttributes())
+          return;
+
+        // Invalid attributes can't be serialized and so can't be copied. Must
+        // serialize to create deep copies of the attributes.
+        if (
+          errorIfInvalid &&
+          source.get("attributeList").all((attr) => !attr.isValid())
+        ) {
+          const errors = source.get("attributeList").validate();
+          throw new InvalidAttributeListError(
+            errors.join ? errors.join("\n") : "Invalid attribute list",
+          );
+        }
+        const attrsStr = source.get("attributeList").serialize();
+        targets.forEach((entity) => {
+          const attrList = entity.get("attributeList");
+          // Use remove rather than reset to trigger events
+          attrList.remove(attrList.models);
+          attrList.add(attrsStr, { parse: true });
+          // remove xmlID from the target attributes
+          attrList.each((attr) => attr.unset("xmlID"));
         });
       },
     },
