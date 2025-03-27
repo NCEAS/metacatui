@@ -337,7 +337,7 @@ define([
         // Set the first section to active if the toolbar is open.
         if (this.isOpen) {
           this.el.classList.add(this.classes.open);
-          // view.handleLinkClick(this.sectionElements[0]); // TODO
+          view.handleLinkClick(this.sectionElements[0]);
         }
 
         return this;
