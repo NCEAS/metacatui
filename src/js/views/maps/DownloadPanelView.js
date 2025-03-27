@@ -712,6 +712,15 @@ define([
             //   value.attributes?.cesiumOptions?.url?.split("WGS1984Quad")[0],
             // );
             // alert(this.geotiffDownloadLinks[value.attributes.layerId][1]);
+            if (
+              this.layerDownloadLinks[value.attributes.layerId] &&
+              this.layerDownloadLinks[value.attributes.layerId].length > 1
+            ) {
+              wmtsDownloadLink =
+                this.layerDownloadLinks[value.attributes.layerId][1];
+            } else {
+              wmtsDownloadLink = null; // the production PDG demo config has layers that currently do not have WMTS layers
+            }
             let selectedLayer = {
               layerID: value.attributes.layerId,
               ID: value.attributes.id
@@ -724,8 +733,7 @@ define([
               ),
               fullDownloadLink: value.attributes.moreInfoLink,
               pngDownloadLink: value.attributes.cesiumOptions.url,
-              wmtsDownloadLink:
-                this.layerDownloadLinks[value.attributes.layerId][1],
+              wmtsDownloadLink: wmtsDownloadLink,
             };
             selectedLayersList.push(selectedLayer);
           }
