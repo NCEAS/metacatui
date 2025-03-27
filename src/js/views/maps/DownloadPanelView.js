@@ -3,7 +3,7 @@
 define([
   "underscore",
   "backbone",
-  "collections/jszip",
+  "jszip",
   "text!templates/maps/download-panel.html",
   "models/connectors/GeoPoints-CesiumPolygon",
   "models/connectors/GeoPoints-CesiumPoints",
