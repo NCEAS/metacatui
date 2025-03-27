@@ -101,6 +101,10 @@ define([
         linkActive: "toolbar__link--active",
         content: "toolbar__content",
         contentActive: "toolbar__content--active",
+        layerPanel: "layers-panel",
+        drawButton: ".draw__button",
+        drawButtonActive: "draw__button--active",
+        drawToolPanel: ".draw__tool-panel",
         // drawContainer: "draw__all-content",
       },
 
@@ -382,25 +386,43 @@ define([
         try {
           var toolbarOpen = this.isOpen;
           var sectionActive = sectionEl.isActive;
-          const drawPanel = document.querySelector(".draw__tool-panel"); //check if there is another way to get this from sectionEl
+          const drawPanel = document.querySelector(this.classes.drawToolPanel); //check if there is another way to get this from sectionEl
           const downloadPanel = document.querySelector(".download-panel");
           var drawToolStatus;
-
+          this.sectionElements.forEach((section) => {
+            const els = section.contentEl?.querySelectorAll("*") || [];
+            const hasLayerClass = Array.from(els).some((el) =>
+              el.classList.contains("layers-panel"),
+            );
+            const hasDrawClass = Array.from(els).some((el) =>
+              el.classList.contains("draw__tool-panel"),
+            );
+            if (hasLayerClass) {
+              this.layerSection = section;
+            }
+            if (hasDrawClass) {
+              this.drawSection = section;
+            }
+          });
           if (
+            // sectionEl.contentEl.querySelector(this.classes.drawToolPanel) &&
             sectionEl.contentEl.querySelector(".draw__tool-panel") &&
             sectionActive
           ) {
             drawToolStatus = sectionActive;
             sectionActive = false;
           }
-
-          //if (toolbarOpen && sectionActive) { //edited out by Shirly
           if (
             toolbarOpen &&
             sectionActive &&
-            !sectionEl.contentEl.querySelector(".draw__tool-panel")
+            !sectionEl.contentEl.querySelector(this.classes.drawToolPanel)
           ) {
             this.close();
+            if (drawPanel.style.visibility == "visible") {
+              drawPanel.style.visibility = "hidden";
+              downloadPanel.style.visibility = "hidden";
+              this.drawSection.linkEl.classList.remove(this.classes.linkActive); // Change the toolbar link to inactive
+            }
             return;
           }
 
@@ -411,37 +433,50 @@ define([
             if (sectionEl.contentEl) {
               this.inactivateAllSections();
             }
-
             this.activateSection(sectionEl);
-            //added by shirly
 
             if (
-              sectionEl.contentEl.querySelector(".draw__tool-panel") &&
+              !sectionEl.contentEl.querySelector(this.classes.drawToolPanel) &&
+              drawPanel.style.visibility == "visible"
+            ) {
+              drawPanel.style.visibility = "hidden";
+              downloadPanel.style.visibility = "hidden";
+              this.drawSection.linkEl.classList.remove(this.classes.linkActive); // Change the toolbar link to inactive
+            }
+
+            if (
+              sectionEl.contentEl.querySelector(this.classes.drawToolPanel) &&
               !sectionActive
             ) {
+              const toolbarLinks = document.getElementsByClassName(
+                this.linksContainer,
+              );
               if (drawPanel.style.visibility === "") {
                 drawPanel.style.visibility = "visible";
                 downloadPanel.style.visibility = "visible";
               } else if (drawPanel.style.visibility == "visible") {
                 drawPanel.style.visibility = "hidden";
                 downloadPanel.style.visibility = "hidden";
-                const toolbarLinks = document.querySelector(".toolbar__links");
-                const sectionEl = toolbarLinks.children[2];
-                sectionEl.classList.remove("toolbar__link--active"); // Change the toolbar link to inactive
-                sectionEl.classList.remove("toolbar__content--active");
+                this.drawSection.linkEl.classList.remove(
+                  this.classes.linkActive,
+                ); // Change the toolbar link to inactive
               } else if (
-                drawPanel.style.visibility == "hidden" &&
-                drawToolStatus
+                drawPanel.style.visibility == "hidden"
+                // &&
+                // drawToolStatus
               ) {
+                // const drawButtonEl = document.getElementsByClassName(
+                //   this.classes.drawButton,
+                // );
                 const drawButtonEl = document.querySelector(".draw__button");
                 drawPanel.style.visibility = "visible";
                 downloadPanel.style.visibility = "visible";
-                drawButtonEl.classList.add("draw__button--active");
+                drawButtonEl.classList.add(this.classes.drawButtonActive);
               }
-              this.activateSection(this.sectionElements[0]);
+              // Activate the Layer Panel when Draw Tool is selected
+              this.activateSection(this.layerSection);
             }
 
-            //end add by shirly
             //this.activateSection(sectionEl);
           }
         } catch (error) {
@@ -449,6 +484,7 @@ define([
             "There was an error handling a toolbar link click in a ToolbarView" +
               ". Error details: " +
               error,
+            sectionEl,
           );
         }
       },
