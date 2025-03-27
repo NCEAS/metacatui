@@ -35,7 +35,7 @@ define([
    * including the available layers, plus UI for changing the settings of a map.
    * @classcategory Views/Maps
    * @name ToolbarView
-   * @extends Backbone.View
+   * @augments Backbone.View
    * @screenshot views/maps/ToolbarView.png
    * @since 2.18.0
    * @constructs
@@ -70,9 +70,8 @@ define([
 
       /**
        * The classes of the sub-elements that combined to create a toolbar view.
-       *
        * @name ToolbarView#classes
-       * @type {Object}
+       * @type {object}
        * @property {string} open The class to add to the view when the toolbar is open
        * (and the content is visible)
        * @property {string} contentContainer The element that contains all containers
@@ -114,11 +113,8 @@ define([
        * Uses viewBox attribute and not width/height; 2) Sets fill or stroke to
        * "currentColor" in the svg element, no styles included elsewhere, 3) Has the
        * required xmlns attribute
-       *
        * @typedef {string} MapIconString
-       *
        * @see {@link https://fontawesome.com/v3.2/icons/}
-       *
        * @example
        * '<svg viewBox="0 0 400 110" fill="currentColor"><path d="M0 0h300v100H0z"/></svg>'
        * @example
@@ -128,8 +124,7 @@ define([
       /**
        * Options/settings that are used to create a toolbar section and its associated
        * link/tab.
-       *
-       * @typedef {Object} SectionOption
+       * @typedef {object} SectionOption
        * @property {string} label The name of this section to show to the user.
        * @property {MapIconString} icon The icon to show in the link (tab) for this
        * section
@@ -140,18 +135,17 @@ define([
        * 'label', 'icon', and 'model', respectively. To pass a specific attribute from
        * the Map model, use a string with the syntax 'model.desiredAttribute'. For
        * example, 'model.layers' will be converted to view.model.get('layers')
-       * @property {function} [action] A function to call when the link/tab is clicked.
+       * @property {Function} [action] A function to call when the link/tab is clicked.
        * This can be provided instead of a view and viewOptions, in which case no
        * toolbar section will be created. The function will be passed the view and the
        * Map model as arguments.
-       * @property {function} [isVisible] A function that determines whether this
+       * @property {Function} [isVisible] A function that determines whether this
        * section should be visible in the toolbar.
        */
 
       /**
        * The sections displayed in the toolbar will be created based on the options set
        * in this array.
-       *
        * @type {SectionOption[]}
        */
       sectionOptions: [
@@ -159,7 +153,7 @@ define([
           label: "Viewfinder",
           icon: "globe",
           view: ViewfinderView,
-          action(view, model) {
+          action(view, _model) {
             const sectionEl = this;
             view.defaultActivationAction(sectionEl);
             sectionEl.sectionView.focusInput();
@@ -244,134 +238,121 @@ define([
       /**
        * Whether or not the toolbar menu is opened. This will get updated when the user
        * interacts with the toolbar links.
-       * @type {Boolean}
+       * @type {boolean}
        */
       isOpen: false,
 
       /**
        * Executed when a new ToolbarView is created
-       * @param {Object} [options] - A literal object with options to pass to the view
+       * @param {object} [options] - A literal object with options to pass to the view
        */
       initialize(options) {
-        try {
-          // Get all the options and apply them to this view
-          if (typeof options == "object") {
-            for (const [key, value] of Object.entries(options)) {
-              this[key] = value;
-            }
-          }
-          if (!this.model || !(this.model instanceof Map)) {
-            this.model = new Map();
-          }
-
-          if (this.model.get("toolbarOpen") === true) {
-            this.isOpen = true;
-          }
-
-          // Check whether each section should be shown, defaulting to true.
-          this.sections = this.sectionOptions.filter((section) => {
-            return typeof section.isVisible === "function"
-              ? section.isVisible(this.model)
-              : true;
+        // Get all the options and apply them to this view
+        if (typeof options === "object") {
+          Object.keys(options).forEach((key) => {
+            this[key] = options[key];
           });
-        } catch (e) {
-          console.log("Error initializing a ToolbarView", e);
         }
+        if (!this.model || !(this.model instanceof Map)) {
+          this.model = new Map();
+        }
+
+        if (this.model.get("toolbarOpen") === true) {
+          this.isOpen = true;
+        }
+
+        // Check whether each section should be shown, defaulting to true.
+        this.sections = this.sectionOptions.filter((section) =>
+          typeof section.isVisible === "function"
+            ? section.isVisible(this.model)
+            : true,
+        );
       },
 
       /**
        * Renders this view
-       * @return {ToolbarView} Returns the rendered view element
+       * @returns {ToolbarView} Returns the rendered view element
        */
       render() {
-        try {
-          // Save a reference to this view
-          var view = this;
+        // Save a reference to this view
+        const view = this;
 
-          // Insert the template into the view
-          this.$el.html(this.template({}));
+        // Insert the template into the view
+        this.$el.html(this.template({}));
 
-          // Ensure the view's main element has the given class name
-          this.el.classList.add(this.className);
+        // Ensure the view's main element has the given class name
+        this.el.classList.add(this.className);
 
-          // Select and save a reference to the elements that will contain the
-          // links/tabs and the section content.
-          this.contentContainer = document.querySelector(
-            "." + view.classes.contentContainer,
-          );
-          this.linksContainer = document.querySelector(
-            "." + view.classes.linksContainer,
-          );
+        // Select and save a reference to the elements that will contain the
+        // links/tabs and the section content.
+        this.contentContainer = document.querySelector(
+          `.${view.classes.contentContainer}`,
+        );
+        this.linksContainer = document.querySelector(
+          `.${view.classes.linksContainer}`,
+        );
 
-          // sectionElements will store the section link, section content element, and
-          // the status of the given section (whether it is active or not)
-          this.sectionElements = [];
+        // sectionElements will store the section link, section content element, and
+        // the status of the given section (whether it is active or not)
+        this.sectionElements = [];
 
-          // For each section configured in the view's sections property, create a link
-          // and render the content. Set a listener for when the link is clicked.
-          this.sections.forEach(function (sectionOption) {
-            // Render the link and content elements
-            var linkEl = view.renderSectionLink(sectionOption);
-            var action = sectionOption.action;
-            let contentEl = null;
-            let sectionView;
-            if (sectionOption.view) {
-              const { contentContainer, sectionContent } =
-                view.renderSectionContent(sectionOption);
-              contentEl = contentContainer;
-              sectionView = sectionContent;
-            }
-            // Set the section to false to start
-            var isActive = false;
-            // Save a reference to these elements and their status. sectionEl is an
-            // object that has type SectionElement (documented in comments below)
-            var sectionEl = {
-              linkEl,
-              contentEl,
-              isActive,
-              action,
-              sectionView,
-            };
-            view.sectionElements.push(sectionEl);
-            // Attach the link and content to the view
-            if (contentEl) {
-              view.contentContainer.appendChild(contentEl);
-            }
-            view.linksContainer.appendChild(linkEl);
-            // Add a listener that shows the section when the link is clicked
-            linkEl.addEventListener("click", function () {
-              view.handleLinkClick(sectionEl);
-            });
-          });
-
-          // Set the toolbar to open, depending on what is initially set in view.isOpen.
-          // Set the first section to active if the toolbar is open.
-          if (this.isOpen) {
-            this.el.classList.add(this.classes.open);
-            view.handleLinkClick(this.sectionElements[0]);
+        // For each section configured in the view's sections property, create a link
+        // and render the content. Set a listener for when the link is clicked.
+        this.sections.forEach((sectionOption) => {
+          // Render the link and content elements
+          const linkEl = view.renderSectionLink(sectionOption);
+          const { action } = sectionOption;
+          let contentEl = null;
+          let sectionView;
+          if (sectionOption.view) {
+            const { contentContainer, sectionContent } =
+              view.renderSectionContent(sectionOption);
+            contentEl = contentContainer;
+            sectionView = sectionContent;
           }
+          // Set the section to false to start
+          const isActive = false;
+          // Save a reference to these elements and their status. sectionEl is an
+          // object that has type SectionElement (documented in comments below)
+          const sectionEl = {
+            linkEl,
+            contentEl,
+            isActive,
+            action,
+            sectionView,
+          };
+          view.sectionElements.push(sectionEl);
+          // Attach the link and content to the view
+          if (contentEl) {
+            view.contentContainer.appendChild(contentEl);
+          }
+          view.linksContainer.appendChild(linkEl);
+          // Add a listener that shows the section when the link is clicked
+          linkEl.addEventListener("click", () => {
+            view.handleLinkClick(sectionEl);
+          });
+        });
 
-          return this;
-        } catch (error) {
-          console.log(
-            "There was an error rendering a ToolbarView" +
-              ". Error details: " +
-              error,
-          );
+        // Set the toolbar to open, depending on what is initially set in view.isOpen.
+        // Set the first section to active if the toolbar is open.
+        if (this.isOpen) {
+          this.el.classList.add(this.classes.open);
+          // view.handleLinkClick(this.sectionElements[0]); // TODO
         }
+
+        return this;
       },
 
       /**
        * A reference to all of the elements required to make up a toolbar section: the
        * section content and the section link (i.e. tab); as well as the status of the
        * section: active or in active.
-       *
-       * @typedef {Object} SectionElement
+       * @typedef {object} SectionElement
        * @property {HTMLElement} contentEl The element that contains the toolbar
        * section's content (the content rendered by the associated view)
        * @property {HTMLElement} linkEl The element that acts as a link to show the
        * section's content, and open/close the toolbar.
-       * @property {Boolean} isActive True if this is the active section, false
+       * @property {boolean} isActive True if this is the active section, false
        * otherwise.
        * @property {Backbone.View} sectionView The associated Backbone.View instance.
        */
@@ -380,112 +361,98 @@ define([
        * Executed when any one of the tabs/links are clicked. Opens the toolbar if it's
        * closed, closes it if the active section is clicked, and otherwise activates the
        * clicked section content.
-       * @param {SectionElement} sectionEl
+       * @param {SectionElement} sectionEl The section that was clicked
        */
       handleLinkClick(sectionEl) {
-        try {
-          var toolbarOpen = this.isOpen;
-          var sectionActive = sectionEl.isActive;
-          const drawPanel = document.querySelector(this.classes.drawToolPanel); //check if there is another way to get this from sectionEl
-          const downloadPanel = document.querySelector(".download-panel");
-          var drawToolStatus;
-          this.sectionElements.forEach((section) => {
-            const els = section.contentEl?.querySelectorAll("*") || [];
-            const hasLayerClass = Array.from(els).some((el) =>
-              el.classList.contains("layers-panel"),
-            );
-            const hasDrawClass = Array.from(els).some((el) =>
-              el.classList.contains("draw__tool-panel"),
-            );
-            if (hasLayerClass) {
-              this.layerSection = section;
-            }
-            if (hasDrawClass) {
-              this.drawSection = section;
-            }
-          });
-          if (
-            // sectionEl.contentEl.querySelector(this.classes.drawToolPanel) &&
-            sectionEl.contentEl.querySelector(".draw__tool-panel") &&
-            sectionActive
-          ) {
-            drawToolStatus = sectionActive;
-            sectionActive = false;
-          }
-          if (
-            toolbarOpen &&
-            sectionActive &&
-            !sectionEl.contentEl.querySelector(this.classes.drawToolPanel)
-          ) {
-            this.close();
-            if (drawPanel.style.visibility == "visible") {
-              drawPanel.style.visibility = "hidden";
-              downloadPanel.style.visibility = "hidden";
-              this.drawSection.linkEl.classList.remove(this.classes.linkActive); // Change the toolbar link to inactive
-            }
-            return;
-          }
+        const toolbarOpen = this.isOpen;
 
-          if (!toolbarOpen && sectionEl.contentEl) {
-            this.open();
-          }
-          if (!sectionActive) {
-            if (sectionEl.contentEl) {
-              this.inactivateAllSections();
-            }
-            this.activateSection(sectionEl);
+        let sectionActive = sectionEl.isActive;
+        const drawPanel = document.querySelector(this.classes.drawToolPanel); // check if there is another way to get this from sectionEl
+        const downloadPanel = document.querySelector(".download-panel");
 
-            if (
-              !sectionEl.contentEl.querySelector(this.classes.drawToolPanel) &&
-              drawPanel.style.visibility == "visible"
-            ) {
-              drawPanel.style.visibility = "hidden";
-              downloadPanel.style.visibility = "hidden";
-              this.drawSection.linkEl.classList.remove(this.classes.linkActive); // Change the toolbar link to inactive
-            }
-
-            if (
-              sectionEl.contentEl.querySelector(this.classes.drawToolPanel) &&
-              !sectionActive
-            ) {
-              const toolbarLinks = document.getElementsByClassName(
-                this.linksContainer,
-              );
-              if (drawPanel.style.visibility === "") {
-                drawPanel.style.visibility = "visible";
-                downloadPanel.style.visibility = "visible";
-              } else if (drawPanel.style.visibility == "visible") {
-                drawPanel.style.visibility = "hidden";
-                downloadPanel.style.visibility = "hidden";
-                this.drawSection.linkEl.classList.remove(
-                  this.classes.linkActive,
-                ); // Change the toolbar link to inactive
-              } else if (
-                drawPanel.style.visibility == "hidden"
-                // &&
-                // drawToolStatus
-              ) {
-                // const drawButtonEl = document.getElementsByClassName(
-                //   this.classes.drawButton,
-                // );
-                const drawButtonEl = document.querySelector(".draw__button");
-                drawPanel.style.visibility = "visible";
-                downloadPanel.style.visibility = "visible";
-                drawButtonEl.classList.add(this.classes.drawButtonActive);
-              }
-              // Activate the Layer Panel when Draw Tool is selected
-              this.activateSection(this.layerSection);
-            }
-
-            //this.activateSection(sectionEl);
-          }
-        } catch (error) {
-          console.log(
-            "There was an error handling a toolbar link click in a ToolbarView" +
-              ". Error details: " +
-              error,
-            sectionEl,
+        this.sectionElements.forEach((section) => {
+          const els = section.contentEl?.querySelectorAll("*") || [];
+          const hasLayerClass = Array.from(els).some((el) =>
+            el.classList.contains("layers-panel"),
           );
+          const hasDrawClass = Array.from(els).some((el) =>
+            el.classList.contains("draw__tool-panel"),
+          );
+          if (hasLayerClass) {
+            this.layerSection = section;
+          }
+          if (hasDrawClass) {
+            this.drawSection = section;
+          }
+        });
+        if (
+          // sectionEl.contentEl.querySelector(this.classes.drawToolPanel) &&
+          sectionEl.contentEl.querySelector(".draw__tool-panel") &&
+          sectionActive
+        ) {
+          sectionActive = false;
+        }
+        if (
+          toolbarOpen &&
+          sectionActive &&
+          !sectionEl.contentEl.querySelector(this.classes.drawToolPanel)
+        ) {
+          this.close();
+          if (drawPanel.style.visibility === "visible") {
+            drawPanel.style.visibility = "hidden";
+            downloadPanel.style.visibility = "hidden";
+            this.drawSection.linkEl.classList.remove(this.classes.linkActive); // Change the toolbar link to inactive
+          }
+          return;
+        }
+
+        if (!toolbarOpen && sectionEl.contentEl) {
+          this.open();
+        }
+        if (!sectionActive) {
+          if (sectionEl.contentEl) {
+            this.inactivateAllSections();
+          }
+          this.activateSection(sectionEl);
+
+          if (
+            !sectionEl.contentEl.querySelector(this.classes.drawToolPanel) &&
+            drawPanel.style.visibility === "visible"
+          ) {
+            drawPanel.style.visibility = "hidden";
+            downloadPanel.style.visibility = "hidden";
+            this.drawSection.linkEl.classList.remove(this.classes.linkActive); // Change the toolbar link to inactive
+          }
+
+          if (
+            sectionEl.contentEl.querySelector(this.classes.drawToolPanel) &&
+            !sectionActive
+          ) {
+            if (drawPanel.style.visibility === "") {
+              drawPanel.style.visibility = "visible";
+              downloadPanel.style.visibility = "visible";
+            } else if (drawPanel.style.visibility === "visible") {
+              drawPanel.style.visibility = "hidden";
+              downloadPanel.style.visibility = "hidden";
+              this.drawSection.linkEl.classList.remove(this.classes.linkActive); // Change the toolbar link to inactive
+            } else if (
+              drawPanel.style.visibility === "hidden"
+              // &&
+              // drawToolStatus
+            ) {
+              // const drawButtonEl = document.getElementsByClassName(
+              //   this.classes.drawButton,
+              // );
+              const drawButtonEl = document.querySelector(".draw__button");
+              drawPanel.style.visibility = "visible";
+              downloadPanel.style.visibility = "visible";
+              drawButtonEl.classList.add(this.classes.drawButtonActive);
+            }
+            // Activate the Layer Panel when Draw Tool is selected
+            this.activateSection(this.layerSection);
+          }
+
+          // this.activateSection(sectionEl);
         }
       },
 
@@ -496,29 +463,21 @@ define([
        * @returns {HTMLElement} Returns the link element
        */
       renderSectionLink(sectionOption) {
-        try {
-          // Create a container, label
-          const link = document.createElement("div");
-          const title = document.createElement("div");
-          // Create the icon
-          const icon = this.createIcon(sectionOption.icon);
+        // Create a container, label
+        const link = document.createElement("div");
+        const title = document.createElement("div");
+        // Create the icon
+        const icon = this.createIcon(sectionOption.icon);
 
-          // Add the relevant classes
-          link.classList.add(this.classes.link);
-          title.classList.add(this.classes.linkTitle);
-          // Add the label text
-          title.textContent = sectionOption.label;
+        // Add the relevant classes
+        link.classList.add(this.classes.link);
+        title.classList.add(this.classes.linkTitle);
+        // Add the label text
+        title.textContent = sectionOption.label;
 
-          link.append(icon, title);
+        link.append(icon, title);
 
-          return link;
-        } catch (error) {
-          console.log(
-            "There was an error rendering a section link in a ToolbarView" +
-              ". Error details: " +
-              error,
-          );
-        }
+        return link;
       },
 
       /**
@@ -545,23 +504,18 @@ define([
               // If the icon is not an SVG, assume it's the name for a Font Awesome icon
             } else {
               icon = document.createElement("i");
-              icon.className = "icon-" + iconString;
+              icon.className = `icon-${iconString}`;
             }
           }
           icon.classList.add(this.classes.linkIcon);
           return icon;
         } catch (error) {
-          console.log(
-            "There was an error  in a ToolbarView" +
-              ". Error details: " +
-              error,
-          );
           return document.createElement("span");
         }
       },
 
       /**
-       * @typedef {Object} SectionContentReturnType
+       * @typedef {object} SectionContentReturnType
        * @property {HTMLElement} contentContainer - The content container HTML
        * element.
        * @property {Backbone.View} sectionContent - The Backbone.View instance
@@ -576,71 +530,50 @@ define([
        * rendered view, and the Backbone.View itself.
        */
       renderSectionContent(sectionOption) {
-        try {
-          const view = this;
-          // Create the container for the toolbar section content
-          var contentContainer = document.createElement("div");
-          // Add the class that identifies a toolbar section's content
-          contentContainer.classList.add(this.classes.content);
-          // Render the toolbar section view
-          // Merge the icon and label with the other section options
-          var viewOptions = Object.assign(
-            {
-              label: sectionOption.label,
-              icon: sectionOption.icon,
-              model: this.model,
-            },
-            sectionOption.viewOptions,
-          );
-          // Convert any values in the form of 'model.someAttribute' to the model
-          // attribute that is specified.
-          for (const [key, value] of Object.entries(viewOptions)) {
-            if (typeof value === "string" && value.startsWith("model.")) {
-              const attr = value.replace(/^model\./, "");
-              viewOptions[key] = view.model.get(attr);
-            }
+        const view = this;
+        // Create the container for the toolbar section content
+        const contentContainer = document.createElement("div");
+        // Add the class that identifies a toolbar section's content
+        contentContainer.classList.add(this.classes.content);
+        // Render the toolbar section view
+        // Merge the icon and label with the other section options
+        const viewOptions = {
+          label: sectionOption.label,
+          icon: sectionOption.icon,
+          model: this.model,
+          ...sectionOption.viewOptions,
+        };
+        // Convert any values in the form of 'model.someAttribute' to the model
+        // attribute that is specified.
+        Object.entries(viewOptions).forEach(([key, value]) => {
+          if (typeof value === "string" && value.startsWith("model.")) {
+            const attr = value.replace(/^model\./, "");
+            viewOptions[key] = view.model.get(attr);
           }
-          var sectionContent = new sectionOption.view(viewOptions);
-          contentContainer.appendChild(sectionContent.el);
-          sectionContent.render();
-          return { contentContainer, sectionContent };
-        } catch (error) {
-          console.log("Error rendering ToolbarView section", error);
-        }
+        });
+        const SectionView = sectionOption.view;
+        const sectionContent = new SectionView(viewOptions);
+        contentContainer.appendChild(sectionContent.el);
+        sectionContent.render();
+        return { contentContainer, sectionContent };
       },
 
       /**
        * Opens the toolbar and displays the content of the active toolbar section
        */
       open() {
-        try {
-          this.isOpen = true;
-          this.el.classList.add(this.classes.open);
-        } catch (error) {
-          console.log(
-            "There was an error opening a ToolbarView" +
-              ". Error details: " +
-              error,
-          );
-        }
+        this.isOpen = true;
+        this.el.classList.add(this.classes.open);
       },
 
       /**
        * Closes the toolbar. Also inactivates all sections.
        */
       close() {
-        try {
-          this.isOpen = false;
-          this.el.classList.remove(this.classes.open);
-          // Ensure that no section is active when the toolbar is closed
-          this.inactivateAllSections();
-        } catch (error) {
-          console.log(
-            "There was an error closing a ToolbarView" +
-              ". Error details: " +
-              error,
-          );
-        }
+        this.isOpen = false;
+        this.el.classList.remove(this.classes.open);
+        // Ensure that no section is active when the toolbar is closed
+        this.inactivateAllSections();
       },
 
       /**
@@ -649,16 +582,12 @@ define([
        */
       activateSection(sectionEl) {
         if (!sectionEl) return;
-        try {
-          if (sectionEl.action && typeof sectionEl.action === "function") {
-            const view = this;
-            const model = this.model;
-            sectionEl.action(view, model);
-          } else {
-            this.defaultActivationAction(sectionEl);
-          }
-        } catch (error) {
-          console.log("Failed to show a section in a ToolbarView", error);
+        if (sectionEl.action && typeof sectionEl.action === "function") {
+          const view = this;
+          const { model } = this;
+          sectionEl.action(view, model);
+        } else {
+          this.defaultActivationAction(sectionEl);
         }
       },
 
@@ -667,9 +596,10 @@ define([
        * @param {SectionElement} sectionEl The section to activate
        */
       defaultActivationAction(sectionEl) {
-        sectionEl.isActive = true;
-        sectionEl.contentEl.classList.add(this.classes.contentActive);
-        sectionEl.linkEl.classList.add(this.classes.linkActive);
+        const el = sectionEl;
+        el.isActive = true;
+        el.contentEl.classList.add(this.classes.contentActive);
+        el.linkEl.classList.add(this.classes.linkActive);
       },
 
       /**
@@ -677,18 +607,11 @@ define([
        * @param {SectionElement} sectionEl The section to inactivate
        */
       inactivateSection(sectionEl) {
-        try {
-          sectionEl.isActive = false;
-          if (sectionEl.contentEl) {
-            sectionEl.contentEl.classList.remove(this.classes.contentActive);
-            sectionEl.linkEl.classList.remove(this.classes.linkActive);
-          }
-        } catch (error) {
-          console.log(
-            "There was an error showing a toolbar section in a ToolbarView" +
-              ". Error details: " +
-              error,
-          );
+        const el = sectionEl;
+        el.isActive = false;
+        if (sectionEl.contentEl) {
+          sectionEl.contentEl.classList.remove(this.classes.contentActive);
+          sectionEl.linkEl.classList.remove(this.classes.linkActive);
         }
       },
 
@@ -696,18 +619,10 @@ define([
        * Hide all of the sections in a toolbar view
        */
       inactivateAllSections() {
-        try {
-          const view = this;
-          this.sectionElements.forEach((sectionEl) => {
-            view.inactivateSection(sectionEl);
-          });
-        } catch (error) {
-          console.log(
-            "There was an error hiding toolbar sections in a ToolbarView" +
-              ". Error details: " +
-              error,
-          );
-        }
+        const view = this;
+        this.sectionElements.forEach((sectionEl) => {
+          view.inactivateSection(sectionEl);
+        });
       },
     },
   );

@@ -1,6 +1,7 @@
 "use strict";
 
 define([
+  "underscore",
   "backbone",
   "collections/jszip",
   "text!templates/maps/download-panel.html",
@@ -8,6 +9,7 @@ define([
   "models/connectors/GeoPoints-CesiumPoints",
   "collections/maps/GeoPoints",
 ], (
+  _,
   Backbone,
   JSZip,
   Template,
@@ -22,7 +24,7 @@ define([
    * the map using a connected CesiumVectorData model.
    * @classcategory Views/Maps
    * @name DownloadPanelView
-   * @extends Backbone.View
+   * @augments Backbone.View
    * @screenshot views/maps/DrawTool.png
    * @since 2.28.0
    * @constructs DownloadPanelView
@@ -69,7 +71,7 @@ define([
       dataPanelClass: "download-panel",
 
       /**
-       * @typedef {Object} DrawToolButtonOptions
+       * @typedef {object} DrawToolButtonOptions
        * @property {Map} The Map model that contains layers information.
        * @property {string} name - The name of the button. This should be the
        * same as the mode that the button will activate (if the button is
@@ -107,7 +109,7 @@ define([
        * The buttons that have been rendered in the toolbar. Formatted as an
        * object with the button name as the key and the button element as the
        * value.
-       * @type {Object}
+       * @type {object}
        */
       buttonEls: {},
 
@@ -277,27 +279,27 @@ define([
         swi: [
           null,
           "https://arcticdata.io/data/tiles/10.18739/A2037V/WMTSCapabilities.xml",
-        ], //surface water
+        ], // surface water
         dlbns1419: [
           null,
           "https://arcticdata.io/data/tiles/10.18739/A2K35MF71/WMTSCapabilities.xml",
-        ], //drained lake basins
+        ], // drained lake basins
         avg: [
           null,
           "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
-        ], //average Terrestrial Net CO2 Balance
+        ], // average Terrestrial Net CO2 Balance
         fire: [
           null,
           "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
-        ], //average Fire Emissions
+        ], // average Fire Emissions
         trend: [
           null,
           "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
-        ], //trends In Terrestrial Net CO2 Balance
+        ], // trends In Terrestrial Net CO2 Balance
       },
       /**
        * Initializes the DrawTool
-       * @param {Object} options - A literal object with options to pass to the
+       * @param {object} options - A literal object with options to pass to the
        * view
        * @param {Map} options.model - The Cesium map model to draw on. This must
        * be the same model that the mapWidget is using.
@@ -306,12 +308,8 @@ define([
        * tool.
        */
 
-      initialize: function (options) {
-        this.mapModel = options.model;
-        if (!this.mapModel) {
-          console.warn("No map model was provided.");
-          return;
-        }
+      initialize(options) {
+        this.mapModel = options.model || new Map();
         // Add models & collections and add interactions, layer, connector,
         // points, and originalAction properties to this view
         this.setUpMapModel();
@@ -323,7 +321,7 @@ define([
        * Sets up the map model and adds the interactions and originalAction
        * properties to this view.
        */
-      setUpMapModel: function () {
+      setUpMapModel() {
         this.originalAction = this.mapModel.get("clickFeatureAction");
         this.interactions =
           this.mapModel.get("interactions") ||
@@ -336,7 +334,7 @@ define([
        * @returns {CesiumVectorData} The CesiumVectorData model that will
        * display the polygon that is being drawn.
        */
-      setUpLayer: function () {
+      setUpLayer() {
         this.layer = this.mapModel.addAsset({
           type: "CustomDataSource",
           label: "Your Polygon",
@@ -353,6 +351,7 @@ define([
             ],
           },
         });
+        return this.layer;
       },
 
       /**
@@ -361,8 +360,9 @@ define([
        * this view.
        * @returns {GeoPointsVectorData} The connector
        */
-      setUpConnectors: function () {
-        const points = (this.points = new GeoPoints());
+      setUpConnectors() {
+        const points = new GeoPoints();
+        this.points = points;
         this.polygonConnector = new GeoPointsVectorData({
           layer: this.layer,
           geoPoints: points,
@@ -379,25 +379,25 @@ define([
 
       /**
        * Adds a point to the polygon that is being drawn.
-       * @param {Object} point - The point to add to the polygon. This should
+       * @param {object} point - The point to add to the polygon. This should
        * have a latitude and longitude property.
        * @returns {GeoPoint} The GeoPoint model that was added to the polygon.
        */
-      addPoint: function (point) {
+      addPoint(point) {
         return this.points?.addPoint(point);
       },
 
       /**
        * Clears the polygon that is being drawn.
        */
-      clearPoints: function () {
+      clearPoints() {
         this.points?.reset(null);
       },
 
       /**
        * Resets the draw tool to its initial state.
        */
-      reset: function () {
+      reset() {
         this.setMode(false);
         this.clearPoints();
         this.removeClickListeners();
@@ -407,9 +407,9 @@ define([
 
         document.querySelector(".download-data-list").innerHTML = "";
         this.resetButtonStyles();
-        const drawButtonEl = this.buttonEls["draw" + "Button"];
-        const clearButtonEl = this.buttonEls["clear" + "Button"];
-        const saveButtonEl = this.buttonEls["save" + "Button"];
+        const drawButtonEl = this.buttonEls.drawButton;
+        const clearButtonEl = this.buttonEls.clearButton;
+        const saveButtonEl = this.buttonEls.saveButton;
         drawButtonEl.classList.remove(this.buttonClassDisable);
         clearButtonEl.classList.add(this.buttonClassDisable);
         saveButtonEl.classList.add(this.buttonClassDisable);
@@ -419,7 +419,7 @@ define([
       /**
        * Removes the polygon object from the map
        */
-      removeLayer: function () {
+      removeLayer() {
         if (!this.mapModel || !this.layer) return;
         this.polygonConnector.disconnect();
         this.polygonConnector.set("vectorLayer", null);
@@ -429,11 +429,12 @@ define([
       },
 
       /**
-       * Render the view by updating the HTML of the element.
-       * The new HTML is computed from an HTML template that
-       * is passed an object with relevant view state.
-       * */
-      render: function () {
+       * Render the view by updating the HTML of the element. The new HTML is
+       * computed from an HTML template that is passed an object with relevant
+       * view state.
+       * @returns {DownloadPanelView} This view
+       */
+      render() {
         // Insert the template into the view
         if (!this.mapModel) {
           this.showError("No map model was provided.");
@@ -450,7 +451,7 @@ define([
        * or any other error occurs.
        * @param {string} [message] - The error message to show to the user.
        */
-      showError: function (message) {
+      showError(message) {
         const str =
           `<i class="icon-warning-sign icon-left"></i>` +
           `<span> The draw tool is not available. ${message}</span>`;
@@ -461,7 +462,7 @@ define([
        * Toggles the mode of the draw tool.
        * @param {string} mode - The mode to toggle to.
        */
-      toggleMode: function (mode) {
+      toggleMode(mode) {
         if (this.mode === mode) {
           this.setMode(false);
         } else {
@@ -475,7 +476,7 @@ define([
        * @param {string|boolean} mode - The mode to set. This can be "draw" or
        * false to indicate that the draw tool should not be active.
        */
-      setMode: function (mode) {
+      setMode(mode) {
         if (this.mode === mode) return;
         this.mode = mode;
         if (mode) {
@@ -490,10 +491,10 @@ define([
       /**
        * Sets the style of the button with the given name to indicate that it is
        * active.
-       * @param buttonName
+       * @param {string} buttonName - The name of the button to activate.
        */
-      activateButton: function (buttonName) {
-        const buttonEl = this.buttonEls[buttonName + "Button"];
+      activateButton(buttonName) {
+        const buttonEl = this.buttonEls[`${buttonName}Button`];
         if (!buttonEl) return;
         // this.resetButtonStyles();
         buttonEl.classList.add(this.buttonClassActive);
@@ -503,23 +504,23 @@ define([
        * Resets the styles of all of the buttons to indicate that they are not
        * active.
        */
-      resetButtonStyles: function () {
+      resetButtonStyles() {
         // Iterate through the buttonEls object and reset the styles
-        for (const button in this.buttonEls) {
-          if (this.buttonEls.hasOwnProperty(button)) {
+        Object.keys(this.buttonEls).forEach((button) => {
+          if (Object.prototype.hasOwnProperty.call(this.buttonEls, button)) {
             const buttonEl = this.buttonEls[button];
             buttonEl.classList.remove(this.buttonClassActive);
           }
-        }
+        });
       },
 
       /**
        * Removes the click listeners from the map model and sets the
        * clickFeatureAction back to its original value.
        */
-      removeClickListeners: function () {
+      removeClickListeners() {
         const handler = this.clickHandler;
-        const originalAction = this.originalAction;
+        const { originalAction } = this;
         if (handler) {
           handler.stopListening();
           handler.clear();
@@ -533,10 +534,11 @@ define([
        * Set listeners to call the handleClick method when the user clicks on
        * the map.
        */
-      setClickListeners: function () {
+      setClickListeners() {
         const view = this;
-        const handler = (this.clickHandler = new Backbone.Model());
-        const interactions = this.interactions;
+        const handler = new Backbone.Model();
+        this.clickHandler = handler;
+        const { interactions } = this;
         const clickedPosition = interactions.get("clickedPosition");
         this.mapModel.set("clickFeatureAction", null);
         handler.listenTo(
@@ -550,18 +552,14 @@ define([
         this.listeningForClicks = true;
         // When the clickedPosition GeoPoint model or the MapInteractions model
         // is replaced, restart the listeners on the new model.
-        handler.listenToOnce(
-          interactions,
-          "change:clickedPosition",
-          function () {
-            if (view.listeningForClicks) {
-              view.handleClick();
-              view.setClickListeners();
-            }
-          },
-        );
+        handler.listenToOnce(interactions, "change:clickedPosition", () => {
+          if (view.listeningForClicks) {
+            view.handleClick();
+            view.setClickListeners();
+          }
+        });
 
-        handler.listenToOnce(this.mapModel, "change:interactions", function () {
+        handler.listenToOnce(this.mapModel, "change:interactions", () => {
           if (view.listeningForClicks) {
             view.handleClick();
             view.setClickListeners();
@@ -569,8 +567,8 @@ define([
         });
 
         // added by Shirly - listed to changes in previousAction
-        handler.listenTo(interactions, "change:previousAction", function () {
-          if (interactions.get("previousAction") == "LEFT_DOUBLE_CLICK") {
+        handler.listenTo(interactions, "change:previousAction", () => {
+          if (interactions.get("previousAction") === "LEFT_DOUBLE_CLICK") {
             view.generatePreviewPanel();
           }
         });
@@ -579,11 +577,11 @@ define([
       /**
        * Handles a click on the map. If the draw tool is active, it will add the
        * coordinates of the click to the polygon being drawn.
-       * @param {Number} [throttle=50] - The number of milliseconds to block
+       * @param {number} [throttle=50] - The number of milliseconds to block
        * clicks for after a click is handled. This prevents double clicks.
        */
 
-      handleClick: function (throttle = 50) {
+      handleClick(throttle = 50) {
         // Prevent double clicks
         if (this.clickActionBlocked) return;
         this.clickActionBlocked = true;
@@ -608,12 +606,9 @@ define([
       renderToolbar() {
         // alert("Rendering draw toolbar");
         const view = this;
-        const el = this.el;
+        const { el } = this;
         const drawContainer = this.el.querySelector(".draw-tool");
-        if (!drawContainer) {
-          console.error("Error: .draw__tool-panel container not found");
-          return;
-        }
+        if (!drawContainer) return;
         // Create the buttons
         view.buttons.forEach((options) => {
           const button = document.createElement("button");
@@ -624,33 +619,34 @@ define([
                 <i class="icon icon-${options.icon}"></i>
               </span> 
               <span class="draw-button-label">${options.label}</span> `;
-          button.addEventListener("click", function () {
-            const method = options.method;
+          button.addEventListener("click", () => {
+            const { method } = options;
             if (method) view[method]();
             else view.toggleMode(options.name);
           });
           if (!view.buttonEls) view.buttonEls = {};
-          view.buttonEls[options.name + "Button"] = button;
+          view.buttonEls[`${options.name}Button`] = button;
           el.appendChild(button);
         });
-        const saveButtonEl = this.buttonEls["save" + "Button"];
-        const clearButtonEl = this.buttonEls["clear" + "Button"];
+        const saveButtonEl = this.buttonEls.saveButton;
+        const clearButtonEl = this.buttonEls.clearButton;
+
         saveButtonEl.classList.add(this.buttonClassDisable);
         clearButtonEl.classList.add(this.buttonClassDisable);
         view.activateButton("draw");
 
-        view.generatePreviewPanel;
+        view.generatePreviewPanel();
         const closeDownloadPanelButton = this.el.querySelector(
           ".download-panel-close__button",
         );
-        closeDownloadPanelButton.addEventListener("click", function () {
+        closeDownloadPanelButton.addEventListener("click", () => {
           view.close();
         });
       },
 
       close() {
         const toolbarLinks = document.querySelector(this.classes.toolbarLink);
-        const sectionEl = toolbarLinks.children[3]; //TO DO: this is a temporary fix. This should use the HTML class/element ID instead of an index
+        const sectionEl = toolbarLinks.children[3]; // TO DO: this is a temporary fix. This should use the HTML class/element ID instead of an index
         sectionEl.classList.remove(this.classes.toolbarLinkActive); // Change the toolbar link to inactive
         sectionEl.classList.remove(this.classes.toolbarContentActive);
         this.reset();
@@ -662,14 +658,20 @@ define([
         downloadPanel.style.visibility = this.displayOptions.invisible; // this needs to be moved to CSS
       },
 
+      /**
+       * Generates the preview panel for downloading selected map layers.
+       * Retrieves the selected layers, removes duplicates, and dynamically
+       * creates a user interface for selecting resolution, file type, and
+       * initiating downloads. It also handles UI interactions such as toggling
+       * panels, enabling/disabling buttons, and updating file size information
+       * based on user selections.
+       */
       generatePreviewPanel() {
         const view = this;
-        const jsonData = this.points.toJSON();
-        var selectedResolution;
-        var selectedFileFormat;
-        this.clearButtonEl = this.buttonEls["clear" + "Button"];
-        this.saveButtonEl = this.buttonEls["save" + "Button"];
-        this.drawButtonEl = this.buttonEls["draw" + "Button"];
+        let selectedResolution;
+        this.clearButtonEl = this.buttonEls.clearButton;
+        this.saveButtonEl = this.buttonEls.saveButton;
+        this.drawButtonEl = this.buttonEls.drawButton;
         this.clearButtonEl.classList.remove(this.buttonClassDisable);
 
         // // Get all elements with class 'layer-item--shown' within 'layer-category-list'
@@ -684,23 +686,24 @@ define([
         //   })
         //   .filter(Boolean); // Remove nulls in case of missing title spans
 
-        /** Get the selected layers from the Layer Panel View and retreive the following information
+        /**
+         * Get the selected layers from the Layer Panel View and retreive the following information
          * layerID - layer identifier
          * downloadLink - the link for accesssing dataset that is tiled
          * layerName - full name of the layer
          * fullDownloadLink - download link for the entire dataset
          */
         let selectedLayersList = [];
-        const layerList = this.mapModel.attributes.allLayers._byId; // Retrieve to get layer details
+
         // alert("Display layer list");
         // console.log(layerList);
 
-        Object.entries(layerList).forEach(([key, value]) => {
+        this.mapModel.get("allLayers").forEach((value) => {
           // if(value?.attributes?.originalVisibility === true && value.attributes.type === "WebMapTileServiceImageryProvider") {
           if (
             value.attributes?.visible === true &&
             value.attributes.type === "WebMapTileServiceImageryProvider" &&
-            value.attributes.label != "Alaska High Resolution Imagery"
+            value.attributes.label !== "Alaska High Resolution Imagery"
           ) {
             // if (value.attributes.label === "Infrastructure") {
             //   wmtsLink =
@@ -712,16 +715,17 @@ define([
             //   value.attributes?.cesiumOptions?.url?.split("WGS1984Quad")[0],
             // );
             // alert(this.geotiffDownloadLinks[value.attributes.layerId][1]);
+            let wmtsDownloadLink;
             if (
               this.layerDownloadLinks[value.attributes.layerId] &&
               this.layerDownloadLinks[value.attributes.layerId].length > 1
             ) {
-              wmtsDownloadLink =
-                this.layerDownloadLinks[value.attributes.layerId][1];
+              [, wmtsDownloadLink] =
+                this.layerDownloadLinks[value.attributes.layerId] || [];
             } else {
               wmtsDownloadLink = null; // the production PDG demo config has layers that currently do not have WMTS layers
             }
-            let selectedLayer = {
+            const selectedLayer = {
               layerID: value.attributes.layerId,
               ID: value.attributes.id
                 ? value.attributes.id.split("/").pop()
@@ -733,7 +737,7 @@ define([
               ),
               fullDownloadLink: value.attributes.moreInfoLink,
               pngDownloadLink: value.attributes.cesiumOptions.url,
-              wmtsDownloadLink: wmtsDownloadLink,
+              wmtsDownloadLink,
             };
             selectedLayersList.push(selectedLayer);
           }
@@ -749,14 +753,6 @@ define([
           this.classes.toolbarLinkActive,
         );
         const downloadDataPanel = document.querySelector(".download-data-list");
-        const closeDownloadPanelButton = document.querySelector(
-          ".download-panel-close__button",
-        );
-        closeDownloadPanelButton.addEventListener("click", function () {
-          view.close();
-        });
-        // this.saveButtonEl = this.buttonEls["save" + "Button"];
-        // this.drawButtonEl = this.buttonEls["draw" + "Button"];
 
         if (panel && toolbarContainer) {
           toolbarContainer.appendChild(panel); // Move panel into .toolbar__all-content
@@ -778,31 +774,9 @@ define([
             this.clearButtonEl.classList.remove(this.buttonClassDisable);
             view.activateButton("clear");
           } else {
-            function layerSelection(saveButtonEl, buttonClassDisable, layerID) {
-              const checkboxes = document.querySelectorAll(
-                ".download-expansion-panel__checkbox",
-              );
-              const isAnyChecked = Array.from(checkboxes).some(
-                (checkbox) => checkbox.checked,
-              );
-              if (isAnyChecked) {
-                saveButtonEl.classList.remove(buttonClassDisable);
-                view.activateButton("save");
-                view.activateButton("clear");
-              } else {
-                view.resetButtonStyles();
-                saveButtonEl.classList.add(buttonClassDisable);
-                view.activateButton("clear");
-              }
-              if (layerID in view.dataDownloadLinks) {
-                delete view.dataDownloadLinks[layerID];
-                // alert("Deleted download links for " + layerID);
-              }
-            }
-
             // Loop through selected data layers
             selectedLayersList.forEach((item) => {
-              let fileTypeOptions = {
+              const fileTypeOptions = {
                 tif: "Geotiff",
                 png: "PNG",
                 wmts: "WMTS file",
@@ -920,14 +894,7 @@ define([
 
               fileTypeDropdownWrapper.appendChild(fileTypeLabel);
               fileTypeDropdownWrapper.appendChild(fileTypeDropdown);
-              fileTypeDropdown.disabled = true; //initially setting it to true
-
-              // Handle change event for "File Type" dropdown
-              fileTypeDropdown.addEventListener("change", function () {
-                selectedFileFormat = fileTypeDropdown.value;
-              });
-
-              fileTypeDropdown.disabled = true; //initially setting it to true
+              fileTypeDropdown.disabled = true; // initially setting it to true
 
               const dropdownContainer = document.createElement("div");
               dropdownContainer.classList.add(this.classes.dropdownContainer);
@@ -952,7 +919,7 @@ define([
                   // Disable fileTypeDropdown if necessary
                   fileTypeDropdown.disabled = true;
                 }
-                layerSelection(
+                view.layerSelection(
                   this.saveButtonEl,
                   this.buttonClassDisable,
                   layerItemSelectBox.dataset.layerId,
@@ -967,7 +934,7 @@ define([
               layerItemSelectContent.appendChild(fileSizeInfoBox);
 
               // Handle change event for "Resolution" dropdown
-              resolutionDropdown.addEventListener("change", function () {
+              resolutionDropdown.addEventListener("change", () => {
                 selectedResolution = resolutionDropdown.value;
                 if (selectedResolution !== "") {
                   fileTypeDropdown.disabled = false; // Enable the fileTypeDropdown
@@ -976,7 +943,7 @@ define([
               });
 
               // Update approximate file size when a file type is selected in fileTypeDropdown
-              fileTypeDropdown.addEventListener("change", function () {
+              fileTypeDropdown.addEventListener("change", () => {
                 const fileSize = view.getRawFileSize(
                   resolutionDropdown.value,
                   fileTypeDropdown.value,
@@ -987,17 +954,12 @@ define([
                   layerItemSelectBox.dataset.layerName,
                   layerItemSelectBox.dataset.wmtsDownloadLink,
                 );
-                updateTextbox(fileSize, fileTypeDropdown.value);
+                view.updateTextbox(
+                  fileSizeInfoBox,
+                  fileSize,
+                  fileTypeDropdown.value,
+                );
               });
-
-              function updateTextbox(fileSizeDetails, fileType) {
-                // alert(fileSizeDetails);
-                if (fileType === "wmts") {
-                  fileSizeInfoBox.textContent = `Single WMTS file ≈ ${fileSizeDetails} KB`;
-                } else {
-                  fileSizeInfoBox.textContent = `Download file size ≤ ${(fileSizeDetails / 1000).toFixed(2)} MB`;
-                }
-              }
 
               // Append elements
               downloadDataPanelContainer.appendChild(layerItem);
@@ -1013,7 +975,7 @@ define([
             document.querySelector(".download-data-list__panel").textContent =
               "Select products below and click 'Download'. Access full downloads (including original shapefiles) in the Layers panel above. ";
 
-            //Progress Bar
+            // Progress Bar
             const dataListPanel = document.querySelector(
               ".download-data-list__panel",
             );
@@ -1039,13 +1001,73 @@ define([
 
             // Add the provided method as a click event listener
 
-            this.saveButtonEl.addEventListener("click", function () {
+            this.saveButtonEl.addEventListener("click", () => {
               view.downloadData();
             });
           }
         }
       },
 
+      /**
+       * Handles the selection of map layers and updates the state of the save button
+       * and other UI elements based on whether any checkboxes are checked.
+       * @param {HTMLElement} saveButtonEl - The save button element to enable or disable.
+       * @param {string} buttonClassDisable - The CSS class name used to disable the save button.
+       * @param {string} layerID - The ID of the map layer being interacted with.
+       */
+      layerSelection(saveButtonEl, buttonClassDisable, layerID) {
+        const view = this;
+        const checkboxes = document.querySelectorAll(
+          ".download-expansion-panel__checkbox",
+        );
+        const isAnyChecked = Array.from(checkboxes).some(
+          (checkbox) => checkbox.checked,
+        );
+        if (isAnyChecked) {
+          saveButtonEl.classList.remove(buttonClassDisable);
+          view.activateButton("save");
+          view.activateButton("clear");
+        } else {
+          view.resetButtonStyles();
+          saveButtonEl.classList.add(buttonClassDisable);
+          view.activateButton("clear");
+        }
+        if (layerID in view.dataDownloadLinks) {
+          delete view.dataDownloadLinks[layerID];
+          // alert("Deleted download links for " + layerID);
+        }
+      },
+
+      /**
+       * Updates the text content of the provided info box with file size details
+       * and file type information.
+       * @param {HTMLElement} infoBox - The HTML element where the file size information will be displayed.
+       * @param {number} fileSizeDetails - The size of the file in kilobytes (KB).
+       * @param {string} fileType - The type of the file (e.g., "wmts").
+       */
+      updateTextbox(infoBox, fileSizeDetails, fileType) {
+        const fileSizeInfoBox = infoBox;
+        if (fileType === "wmts") {
+          fileSizeInfoBox.textContent = `Single WMTS file ≈ ${fileSizeDetails} KB`;
+        } else {
+          fileSizeInfoBox.textContent = `Download file size ≤ ${(fileSizeDetails / 1000).toFixed(2)} MB`;
+        }
+      },
+
+      /**
+       * Calculates the total file size for a given map layer based on the file type, zoom level, and bounding box.
+       * Generates URLs for individual tiles or retrieves a single download link for the layer.
+       * Updates the `dataDownloadLinks` object with the generated URLs and metadata for the specified layer.
+       * @param {number} zoomLevel - The zoom level for the map tiles.
+       * @param {string} fileType - The type of file to download (e.g., "png", "tif", "wmts").
+       * @param {string} layerID - The unique identifier for the map layer.
+       * @param {string} fullDownloadLink - The full download link for the layer.
+       * @param {string} pngDownloadLink - The template URL for downloading PNG tiles.
+       * @param {string} id - A unique identifier for the layer or dataset.
+       * @param {string} layerName - The name of the map layer.
+       * @param {string} [_wmtsDownloadLink] - (Optional) The WMTS download link for the layer. Currently unused.
+       * @returns {number} The total file size for the specified layer in bytes.
+       */
       getRawFileSize(
         zoomLevel,
         fileType,
@@ -1054,7 +1076,7 @@ define([
         pngDownloadLink,
         id,
         layerName,
-        wmtsDownloadLink,
+        _wmtsDownloadLink, // TODO: Leading underscore indicates that this parameter is not used. Remove if it is later used in this function.
       ) {
         const layerSelectBoxes = document.querySelectorAll(
           ".download-expansion-panel__checkbox",
@@ -1068,36 +1090,34 @@ define([
         let totalFileSize;
         const urls = [];
         let baseURL;
-        if (fileType != "wmts") {
+        if (fileType !== "wmts") {
           this.tileDetails = this.getTileCoordinates(
             this.boundingBox,
             zoomLevel,
           );
 
-          const tileXWest = this.tileDetails["tileX_West"];
-          const tileXEast = this.tileDetails["tileX_East"];
-          const tileYNorth = this.tileDetails["tileY_North"];
-          const tileYSouth = this.tileDetails["tileY_South"];
+          const { tileXWest, tileXEast, tileYNorth, tileYSouth } =
+            this.tileDetails;
 
           // Generate TileMatrix entries for each tile in range
           if (fileType === "png") {
-            baseURL = pngDownloadLink.split("{")[0];
+            [baseURL] = pngDownloadLink.split("{");
           } else if (fileType === "tif") {
-            baseURL = this.layerDownloadLinks[layerID][0];
+            [baseURL] = this.layerDownloadLinks[layerID];
           }
 
-          for (let x = tileXWest; x <= tileXEast; x++) {
-            for (let y = tileYNorth; y <= tileYSouth; y++) {
+          for (let x = tileXWest; x <= tileXEast; x += 1) {
+            for (let y = tileYNorth; y <= tileYSouth; y += 1) {
               // pngDownloadLink = "https://arcticdata.io/data/tiles/10.18739/A2KW57K57/WGS1984Quad/{TileMatrix}/{TileCol}/{TileRow}.png"
 
-              let resourceURL = `${baseURL}${zoomLevel}/${x}/${y}.${fileType}`;
+              const resourceURL = `${baseURL}${zoomLevel}/${x}/${y}.${fileType}`;
               urls.push(resourceURL);
             }
           }
           const urlCount = urls.length;
           totalFileSize = urlCount * this.fileSizes[fileType];
         } else {
-          //alert(this.layerDownloadLinks[layerID][1]);
+          // alert(this.layerDownloadLinks[layerID][1]);
           urls.push(this.layerDownloadLinks[layerID][1]);
           totalFileSize = this.fileSizes[fileType];
         }
@@ -1108,9 +1128,9 @@ define([
           const selectedLayerIDs = Array.from(selectedLayerSelectBoxes).map(
             (checkbox) => checkbox.dataset.layerId,
           );
-          Object.keys(this.dataDownloadLinks).forEach((layerID) => {
-            if (!selectedLayerIDs.includes(layerID)) {
-              delete this.dataDownloadLinks[layerID];
+          Object.keys(this.dataDownloadLinks).forEach((downloadLink) => {
+            if (!selectedLayerIDs.includes(downloadLink)) {
+              delete this.dataDownloadLinks[downloadLink];
               // alert("Successfully deleted" + layerID);
             }
           });
@@ -1118,13 +1138,13 @@ define([
 
         // Store or update URLs for the given layerID
         this.dataDownloadLinks[layerID] = {
-          urls: urls, // URLs for the data
-          fullDownloadLink: fullDownloadLink, // Full download link
-          pngDownloadLink: pngDownloadLink, // PNG download link
-          id: id, // Layer ID or any other unique identifier
+          urls, // URLs for the data
+          fullDownloadLink, // Full download link
+          pngDownloadLink, // PNG download link
+          id, // Layer ID or any other unique identifier
           baseURL: baseURL || null,
-          layerName: layerName,
-          fileType: fileType,
+          layerName,
+          fileType,
           fileSize: totalFileSize,
         };
 
@@ -1137,31 +1157,51 @@ define([
         return totalFileSize;
       },
 
-      // Function to get Polygon from json
+      /**
+       * Converts an array of geographic points into a polygon representation.
+       * The input array is reversed, and the first point is appended to the end
+       * to close the polygon.
+       * @param {object[]} jsonData - An array of objects representing geographic points.
+       * Each object should have `longitude` and `latitude` properties.
+       * @returns {number[][]} An array of arrays representing the polygon.
+       */
       getPolygon(jsonData) {
         // this.jsonData = this.points.toJSON();
-        var polygon = jsonData.reverse().map(function (i) {
-          return [i.longitude, i.latitude];
-        });
+        const polygon = jsonData
+          .reverse()
+          .map((i) => [i.longitude, i.latitude]);
         polygon.push([jsonData[0].longitude, jsonData[0].latitude]);
         // Return a polygon
         return polygon;
       },
 
+      /**
+       * Calculates the bounding box of a given polygon.
+       * @param {number[][]} polygon - An array of points representing the
+       * polygon, where each point is an array of two numbers [longitude,
+       * latitude].
+       * @returns {object} An object representing the bounding box with the
+       * following properties:
+       *   - {number} west - The minimum longitude (x-coordinate).
+       *   - {number} south - The minimum latitude (y-coordinate).
+       *   - {number} east - The maximum longitude (x-coordinate).
+       *   - {number} north - The maximum latitude (y-coordinate).
+       */
       getBoundingBox(polygon) {
-        let minX = Infinity,
-          minY = Infinity;
-        let maxX = -Infinity,
-          maxY = -Infinity;
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
 
         // Iterate through each point in the polygon to find min/max coordinates
         polygon.forEach((point) => {
           // console.log("Get point coordinates");
           // console.log(point[0]);
-          if (point[0] < minX) minX = point[0];
-          if (point[1] < minY) minY = point[1];
-          if (point[0] > maxX) maxX = point[0];
-          if (point[1] > maxY) maxY = point[1];
+          const [longitude, latitude] = point;
+          if (longitude < minX) minX = longitude;
+          if (latitude < minY) minY = latitude;
+          if (longitude > maxX) maxX = longitude;
+          if (latitude > maxY) maxY = latitude;
         });
         // Return the bounding box as an object
         return {
@@ -1172,202 +1212,277 @@ define([
         };
       },
 
+      /**
+       * Converts geographic coordinates (longitude and latitude) into tile coordinates
+       * for a given zoom level, based on the WGS1984Quad tiling scheme.
+       * @param {number} lon - The longitude in degrees, ranging from -180 to 180.
+       * @param {number} lat - The latitude in degrees, ranging from -90 to 90.
+       * @param {number} zoom - The zoom level, where higher values represent greater detail.
+       * @returns {{x: number, y: number, z: number}} An object containing the tile coordinates:
+       *   - `x`: The horizontal tile index.
+       *   - `y`: The vertical tile index (inverted for WGS84).
+       *   - `z`: The zoom level.
+       */
+      tileFromLatLon(lon, lat, zoom) {
+        const resolution = 180 / 2 ** zoom; // WGS1984Quad uses 180° range
+        const x = Math.floor((lon + 180) / resolution);
+        const y = Math.floor((90 - lat) / resolution); // Y is inverted for WGS84
+        return { x, y, z: zoom };
+      },
+
+      /**
+       * Calculates the tile coordinates for a given bounding box and zoom
+       * level.
+       * @param {object} boundingBox - The geographical bounding box.
+       * @param {number} boundingBox.west - The western longitude
+       * @param {number} boundingBox.east - The eastern longitude
+       * @param {number} boundingBox.south - The southern latitude
+       * @param {number} boundingBox.north - The northern latitude
+       * @param {number} zoomLevel - The zoom level for which to calculate the
+       * tile coordinates.
+       * @returns {object} An object containing the zoom level and the tile
+       * coordinates:
+       * - `zoom`: The zoom level.
+       * - `tileXWest`: The tile column for the western edge.
+       * - `tileXEast`: The tile column for the eastern edge.
+       * - `tileYSouth`: The tile row for the southern edge.
+       * - `tileYNorth`: The tile row for the northern edge.
+       */
       getTileCoordinates(boundingBox, zoomLevel) {
-        var n = Math.pow(2, zoomLevel);
-
-        const tileFromLatLon = (lon, lat, zoom) => {
-          const resolution = 180 / Math.pow(2, zoom); // WGS1984Quad uses 180° range
-          const x = Math.floor((lon + 180) / resolution);
-          const y = Math.floor((90 - lat) / resolution); // Y is inverted for WGS84
-          return { x, y, z: zoom };
-        };
-
-        const west = boundingBox.west;
-        const east = boundingBox.east;
-        const south = boundingBox.south;
-        const north = boundingBox.north;
+        const { west } = boundingBox;
+        const { east } = boundingBox;
+        const { south } = boundingBox;
+        const { north } = boundingBox;
 
         // Get tiles for each edge of the bounding box
-        const tileXWest = tileFromLatLon(west, (north + south) / 2, zoomLevel); // West edge
-        const tileXEast = tileFromLatLon(east, (north + south) / 2, zoomLevel); // East edge
-        const tileYNorth = tileFromLatLon((west + east) / 2, north, zoomLevel); // North edge
-        const tileYSouth = tileFromLatLon((west + east) / 2, south, zoomLevel); // South edge;
+        const tileXWest = this.tileFromLatLon(
+          west,
+          (north + south) / 2,
+          zoomLevel,
+        ); // West edge
+        const tileXEast = this.tileFromLatLon(
+          east,
+          (north + south) / 2,
+          zoomLevel,
+        ); // East edge
+        const tileYNorth = this.tileFromLatLon(
+          (west + east) / 2,
+          north,
+          zoomLevel,
+        ); // North edge
+        const tileYSouth = this.tileFromLatLon(
+          (west + east) / 2,
+          south,
+          zoomLevel,
+        ); // South edge;
 
         // Return TileMatrix (zoom level) and TileCol, TileRow
         return {
           zoom: zoomLevel,
-          tileX_West: tileXWest.x, // or choose one of the calculated tileX values based on your needs
-          tileY_South: tileYSouth.y, // or choose one of the calculated tileY values based on your needs
-          tileX_East: tileXEast.x, // or choose one of the calculated tileX values based on your needs
-          tileY_North: tileYNorth.y, // or choose one of the calculated tileY values based on your needs
+          tileXWest: tileXWest.x, // or choose one of the calculated tileX values based on your needs
+          tileYSouth: tileYSouth.y, // or choose one of the calculated tileY values based on your needs
+          tileXEast: tileXEast.x, // or choose one of the calculated tileX values based on your needs
+          tileYNorth: tileYNorth.y, // or choose one of the calculated tileY values based on your needs
         };
       },
 
-      // Function to handle submit button click
+      /**
+       * Downloads data for each layer specified in `dataDownloadLinks` and
+       * provides progress updates. This function iterates through the
+       * `dataDownloadLinks` object, retrieves data for each layer, and
+       * generates a ZIP file for download. It updates a progress bar to reflect
+       * the download status and handles errors or cases where no data is
+       * available.
+       * @returns {Promise} Resolves when all data layers have been processed.
+       * @property {object} dataDownloadLinks - An object containing data layer
+       * information.
+       * @property {string} dataDownloadLinks.layerID - The unique identifier
+       * for the data layer.
+       * @property {object} dataDownloadLinks.data - Metadata for the data
+       * layer.
+       * @property {string[]} dataDownloadLinks.data.urls - Array of URLs to
+       * retrieve data from.
+       * @property {string} dataDownloadLinks.data.baseURL - Base URL for the
+       * data layer.
+       * @property {string} dataDownloadLinks.data.fileType - The file type of
+       * the data (e.g., "zip").
+       * @property {number} dataDownloadLinks.data.fileSize - The size of the
+       * data file in bytes.
+       * @property {string} dataDownloadLinks.data.layerName - The name of the
+       * data layer.
+       */
       async downloadData() {
-        async function retrieveDataFromURL(
-          layerID,
-          urls,
-          baseURL,
-          fileType,
-          onProgress,
-        ) {
-          //Fetch data files from URLs
-          var zip = new JSZip(); // Initialize JSZip
-          for (let i = 0; i < urls.length; i++) {
-            const url = urls[i];
-            try {
-              const response = await fetch(url);
-              if (!response.ok) {
-                // If the status code is 404 or other errors, skip or handle accordingly
-                if (response.status === 404) {
-                  console.log(`URL not found: ${url}`);
-                  return; // Skip processing for 404
-                } else {
-                  console.error("Fetch error:", response.statusText);
-                  continue;
-                }
-              }
-
-              const contentLength = response.headers.get("Content-Length");
-              const totalBytes = contentLength
-                ? parseInt(contentLength, 10)
-                : null;
-              let loadedBytes = 0;
-
-              const reader = response.body.getReader();
-              const chunks = [];
-
-              while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                chunks.push(value);
-                loadedBytes += value.length;
-
-                if (onProgress && totalBytes) {
-                  const progress = Math.floor((loadedBytes / totalBytes) * 100);
-                  onProgress(progress); // Update progress
-                }
-              }
-
-              const blob = new Blob(chunks);
-              const urlParts = url.split(baseURL).filter((part) => part !== "");
-              let fileName;
-              // Sanitize URL to avoid unwanted folder hierarchy issues
-              const sanitizedUrl = url.replace(/[:\/?&=]/g, "_"); // Replaces special characters
-              //const fileName = urlParts.slice(-3).join("_");
-              if (fileType === "wmts") {
-                // alert(url);
-                fileName = `${layerID}/${sanitizedUrl}`;
-              } else {
-                fileName = `${layerID}/WGS1984Quad/${urlParts.slice(-3).join("_")}`;
-              }
-
-              // const fileName = `${layerID}/${view.tileMatrixSet || "defaultTileMatrix"}/${urlParts.slice(-3).join("_")}`;
-
-              zip.file(fileName, blob);
-            } catch (error) {
-              console.error(`Error fetching ${url}:`, error);
-            }
-          }
-          return zip;
-        }
-
+        const view = this;
         const downloadStatusContainer = document.querySelector(
           ".download-status-container",
         );
         // Loop through each layerID in dataDownloadLinks and process them individually
-        for (const [layerID, data] of Object.entries(this.dataDownloadLinks)) {
-          // Show the progress bar for the current layer
-          downloadStatusContainer.style.display = "block"; // Show progress container
-          // Reset progress bar for each new layer
-          const progressBar = document.querySelector(".progress-bar");
-          progressBar.classList.remove("progress-bar-no-data");
-          progressBar.classList.add("progress-bar");
-          progressBar.style.width = "0%";
-          if (data.fileSize < 1050000) {
-            // If file size is approximately over a GB then do not download
-            if (data.urls && data.urls.length > 0) {
-              // Show the progress bar for the current layer
-              // downloadStatusContainer.style.display = "block"; // Show progress container
+        Object.entries(this.dataDownloadLinks).forEach(
+          async ([layerID, data]) => {
+            // Show the progress bar for the current layer
+            downloadStatusContainer.style.display = "block"; // Show progress container
+            // Reset progress bar for each new layer
+            const progressBar = document.querySelector(".progress-bar");
+            progressBar.classList.remove("progress-bar-no-data");
+            progressBar.classList.add("progress-bar");
+            progressBar.style.width = "0%";
+            if (data.fileSize < 1050000) {
+              // If file size is approximately over a GB then do not download
+              if (data.urls && data.urls.length > 0) {
+                // Show the progress bar for the current layer
+                // downloadStatusContainer.style.display = "block"; // Show progress container
 
-              // Reset progress bar for each new layer
-              // const progressBar = document.querySelector(".progress-bar");
-              // progressBar.classList.remove("progress-bar-no-data");
-              // progressBar.classList.add("progress-bar");
-              progressBar.style.width = "0%";
-              progressBar.textContent = `Retrieving data for ${data.layerName} (0%)`;
+                // Reset progress bar for each new layer
+                // const progressBar = document.querySelector(".progress-bar");
+                // progressBar.classList.remove("progress-bar-no-data");
+                // progressBar.classList.add("progress-bar");
+                progressBar.style.width = "0%";
+                progressBar.textContent = `Retrieving data for ${data.layerName} (0%)`;
 
-              // Create a function to update the progress bar
-              const updateProgressBar = (progress) => {
-                progressBar.style.width = `${progress}%`;
-                progressBar.textContent = `Downloading data for ${data.layerName} (${progress}%)`;
-              };
+                // Create a function to update the progress bar
+                const updateProgressBar = (progress) => {
+                  progressBar.style.width = `${progress}%`;
+                  progressBar.textContent = `Downloading data for ${data.layerName} (${progress}%)`;
+                };
 
-              // Start progress tracking
-              updateProgressBar(0);
+                // Start progress tracking
+                updateProgressBar(0);
 
-              try {
-                const layerZip = await retrieveDataFromURL(
-                  layerID,
-                  data.urls,
-                  data.baseURL,
-                  data.fileType,
-                  (progress) => {
-                    // Progress tracking callback function
-                    updateProgressBar(progress);
-                  },
-                );
-
-                if (Object.keys(layerZip.files).length > 0) {
-                  console.log(
-                    `The ZIP for layer ${data.layerName} contains ${Object.keys(layerZip.files).length} file(s). Ready to download.`,
+                try {
+                  const layerZip = await view.retrieveDataFromURL(
+                    layerID,
+                    data.urls,
+                    data.baseURL,
+                    data.fileType,
+                    (progress) => {
+                      // Progress tracking callback function
+                      updateProgressBar(progress);
+                    },
                   );
 
-                  // Generate the ZIP file for this layerID
-                  layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
-                    progressBar.style.width = "100%";
-                    progressBar.textContent = "Download Complete!";
+                  if (Object.keys(layerZip.files).length > 0) {
+                    const numFiles = Object.keys(layerZip.files).length;
+                    progressBar.textContent = `Generating ZIP file for ${data.layerName} (${numFiles} files)...`;
 
-                    // Create a download link for the ZIP file
-                    const link = document.createElement("a");
-                    link.href = URL.createObjectURL(zipBlob);
-                    link.download = `${layerID}.zip`;
-                    link.click();
-                  });
-                } else {
+                    // Generate the ZIP file for this layerID
+                    layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
+                      progressBar.style.width = "100%";
+                      progressBar.textContent = "Download Complete!";
+
+                      // Create a download link for the ZIP file
+                      const link = document.createElement("a");
+                      link.href = URL.createObjectURL(zipBlob);
+                      link.download = `${layerID}.zip`;
+                      link.click();
+                    });
+                  } else {
+                    progressBar.classList.remove("progress-bar");
+                    progressBar.classList.add("progress-bar-no-data");
+                    progressBar.style.width = "100%";
+                    progressBar.textContent = `No data files are available for selected data layer(s) within area of interest.`;
+                  }
+                } catch (error) {
                   progressBar.classList.remove("progress-bar");
                   progressBar.classList.add("progress-bar-no-data");
                   progressBar.style.width = "100%";
-                  progressBar.textContent = `No data files are available for selected data layer(s) within area of interest.`;
-                  console.log(`No files were added for ${data.layerName}`);
+                  progressBar.textContent = `Failed to download data files for selected data layer(s) within area of interest.`;
                 }
-              } catch (error) {
-                console.error(
-                  `Error downloading data files for ${data.layerName}:`,
-                  error,
-                );
+              } else {
                 progressBar.classList.remove("progress-bar");
                 progressBar.classList.add("progress-bar-no-data");
                 progressBar.style.width = "100%";
-                progressBar.textContent = `Failed to download data files for selected data layer(s) within area of interest.`;
+                progressBar.textContent = `No data available for selected data layer(s) within area of interest.`;
               }
             } else {
               progressBar.classList.remove("progress-bar");
               progressBar.classList.add("progress-bar-no-data");
               progressBar.style.width = "100%";
-              progressBar.textContent = `No data available for selected data layer(s) within area of interest.`;
-              console.log(`No URLs available for ${data.layerName}`);
+              progressBar.textContent = `File size for ${data.layerName} > 1 GB. Select lower resolution/ draw smaller AOI.`;
             }
-          } else {
-            progressBar.classList.remove("progress-bar");
-            progressBar.classList.add("progress-bar-no-data");
-            progressBar.style.width = "100%";
-            progressBar.textContent = `File size for ${data.layerName} > 1 GB. Select lower resolution/ draw smaller AOI.`;
-            console.log(`Download data size is too large`);
+          },
+        );
+      },
+
+      /**
+       * Retrieves data from a list of URLs, processes the data, and packages it
+       * into a ZIP file.
+       * @param {string} layerID - The identifier for the layer being processed.
+       * @param {string[]} urls - An array of URLs to fetch data from.
+       * @param {string} baseURL - The base URL used to sanitize and structure
+       * file paths.
+       * @param {string} fileType - The type of file being processed (e.g.,
+       * "wmts").
+       * @param {function(number): void} [onProgress] - Optional callback
+       * function to report download progress as a percentage.
+       * @returns {Promise<JSZip>} A promise that resolves to a JSZip instance
+       * containing the downloaded files.
+       * @throws {Error} If there is an issue with fetching or processing the
+       * data.
+       */
+      async retrieveDataFromURL(layerID, urls, baseURL, fileType, onProgress) {
+        // Initialize JSZip
+        const zip = new JSZip();
+
+        // Create an array of promises
+        const fetchPromises = urls.map(async (url) => {
+          const response = await fetch(url);
+          if (!response.ok) {
+            if (response.status === 404) {
+              // We can safely skip 404 errors because we don't expect all
+              // URLs to be valid
+              return null;
+            }
+            // Other errors should be handled
+            throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
           }
-        }
+
+          const contentLength = response.headers.get("Content-Length");
+          const totalBytes = contentLength ? parseInt(contentLength, 10) : null;
+          let loadedBytes = 0;
+
+          const reader = response.body.getReader();
+          const chunks = [];
+
+          let done = false;
+          while (!done) {
+            // Streaming must be sequential, so we await each chunk.
+            // eslint-disable-next-line no-await-in-loop
+            const { done: isDone, value } = await reader.read();
+            done = isDone;
+            if (value) {
+              chunks.push(value);
+              loadedBytes += value.length;
+
+              if (onProgress && totalBytes) {
+                const progress = Math.floor((loadedBytes / totalBytes) * 100);
+                onProgress(progress); // Update progress
+              }
+            }
+          }
+
+          const blob = new Blob(chunks);
+          const urlParts = url.split(baseURL).filter((part) => part !== "");
+          // Sanitize URL to avoid unwanted folder hierarchy issues
+          const sanitizedUrl = url.replace(/[:/?&=]/g, "_");
+          const fileName =
+            fileType === "wmts"
+              ? `${layerID}/${sanitizedUrl}`
+              : `${layerID}/WGS1984Quad/${urlParts.slice(-3).join("_")}`;
+
+          return { fileName, blob };
+        });
+
+        // Wait for all fetches to complete
+        const results = await Promise.all(fetchPromises);
+
+        // Add files to zip
+        results.forEach((result) => {
+          if (result) {
+            zip.file(result.fileName, result.blob);
+          }
+        });
+
+        return zip;
       },
 
       // /**
