@@ -186,6 +186,7 @@ define([
       fileSizes: {
         tif: 513,
         png: 2.7,
+        wmts: 15,
       },
 
       /**
@@ -239,11 +240,11 @@ define([
         15: "4.78 m/px",
       },
 
-      fileTypeOptions: {
-        tif: "Geotiff",
-        png: "PNG",
-        wmts: "WMTS file",
-      },
+      // fileTypeOptions: {
+      //   tif: "Geotiff",
+      //   png: "PNG",
+      //   wmts: "WMTS file",
+      // },
 
       resolutionDropdownOptions: {
         resolutionDropdownLabel: "Resolution",
@@ -257,11 +258,42 @@ define([
         fileTypeDropdownDefaultText: "Select File Type",
       },
 
-      geotiffDownloadLinks: {
-        A2KW57K57:
-          "https://arcticdata.io/data/10.18739/A2KW57K57/iwp_geotiff_high/WGS1984Quad/", // iwp
-        A21J97929:
-          "https://arcticdata.io/data/10.18739/A21J97929/output/geotiff/WGS1984Quad/", // infrastructure
+      /**
+       * The download links for all the tiled datasets
+       * key: layer ID
+       * value 0: geotiff link
+       * value 1: wmts link
+       */
+
+      layerDownloadLinks: {
+        iwp: [
+          "https://arcticdata.io/data/10.18739/A2KW57K57/iwp_geotiff_high/WGS1984Quad/",
+          "https://arcticdata.io/data/tiles/10.18739/A2KW57K57/WMTSCapabilities.xml",
+        ], // iwp
+        infrastructure: [
+          "https://arcticdata.io/data/10.18739/A21J97929/output/geotiff/WGS1984Quad/",
+          "https://arcticdata.io/data/tiles/10.18739/A21J97929/WMTSCapabilities.xml",
+        ], // infrastructure
+        swi: [
+          null,
+          "https://arcticdata.io/data/tiles/10.18739/A2037V/WMTSCapabilities.xml",
+        ], //surface water
+        dlbns1419: [
+          null,
+          "https://arcticdata.io/data/tiles/10.18739/A2K35MF71/WMTSCapabilities.xml",
+        ], //drained lake basins
+        avg: [
+          null,
+          "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
+        ], //average Terrestrial Net CO2 Balance
+        fire: [
+          null,
+          "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
+        ], //average Fire Emissions
+        trend: [
+          null,
+          "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
+        ], //trends In Terrestrial Net CO2 Balance
       },
       /**
        * Initializes the DrawTool
@@ -618,7 +650,7 @@ define([
 
       close() {
         const toolbarLinks = document.querySelector(this.classes.toolbarLink);
-        const sectionEl = toolbarLinks.children[2];
+        const sectionEl = toolbarLinks.children[3]; //TO DO: this is a temporary fix. This should use the HTML class/element ID instead of an index
         sectionEl.classList.remove(this.classes.toolbarLinkActive); // Change the toolbar link to inactive
         sectionEl.classList.remove(this.classes.toolbarContentActive);
         this.reset();
@@ -636,19 +668,21 @@ define([
         var selectedResolution;
         var selectedFileFormat;
         this.clearButtonEl = this.buttonEls["clear" + "Button"];
+        this.saveButtonEl = this.buttonEls["save" + "Button"];
+        this.drawButtonEl = this.buttonEls["draw" + "Button"];
         this.clearButtonEl.classList.remove(this.buttonClassDisable);
 
-        // Get all elements with class 'layer-item--shown' within 'layer-category-list'
-        const selectedLayerItems = document.querySelectorAll(
-          ".layer-category-list .layer-item--shown",
-        );
-        // Extract titles from nested span elements
-        const titles = Array.from(selectedLayerItems)
-          .map((item) => {
-            const titleSpan = item.querySelector(".layer-item__label-text");
-            return titleSpan ? titleSpan.textContent.trim() : null;
-          })
-          .filter(Boolean); // Remove nulls in case of missing title spans
+        // // Get all elements with class 'layer-item--shown' within 'layer-category-list'
+        // const selectedLayerItems = document.querySelectorAll(
+        //   ".layer-category-list .layer-item--shown",
+        // );
+        // // Extract titles from nested span elements
+        // const titles = Array.from(selectedLayerItems)
+        //   .map((item) => {
+        //     const titleSpan = item.querySelector(".layer-item__label-text");
+        //     return titleSpan ? titleSpan.textContent.trim() : null;
+        //   })
+        //   .filter(Boolean); // Remove nulls in case of missing title spans
 
         /** Get the selected layers from the Layer Panel View and retreive the following information
          * layerID - layer identifier
@@ -664,18 +698,34 @@ define([
         Object.entries(layerList).forEach(([key, value]) => {
           // if(value?.attributes?.originalVisibility === true && value.attributes.type === "WebMapTileServiceImageryProvider") {
           if (
-            titles.includes(value?.attributes?.label) &&
-            value.attributes.type === "WebMapTileServiceImageryProvider"
+            value.attributes?.visible === true &&
+            value.attributes.type === "WebMapTileServiceImageryProvider" &&
+            value.attributes.label != "Alaska High Resolution Imagery"
           ) {
+            // if (value.attributes.label === "Infrastructure") {
+            //   wmtsLink =
+            //     value.attributes?.cesiumOptions?.url?.split("SACHI_v2")[0];
+            // }
+            // alert(value.attributes.label);
+            // console.log(value.attributes.label);
+            // alert(
+            //   value.attributes?.cesiumOptions?.url?.split("WGS1984Quad")[0],
+            // );
+            // alert(this.geotiffDownloadLinks[value.attributes.layerId][1]);
             let selectedLayer = {
               layerID: value.attributes.layerId,
               ID: value.attributes.id
                 ? value.attributes.id.split("/").pop()
                 : null,
               downloadLink: value.attributes.downloadLink,
-              layerName: value.attributes.label,
+              layerName: value.attributes.label.replace(
+                "<sub>2</sub>",
+                "\u2082",
+              ),
               fullDownloadLink: value.attributes.moreInfoLink,
               pngDownloadLink: value.attributes.cesiumOptions.url,
+              wmtsDownloadLink:
+                this.layerDownloadLinks[value.attributes.layerId][1],
             };
             selectedLayersList.push(selectedLayer);
           }
@@ -685,7 +735,6 @@ define([
           (layer, index, self) =>
             index === self.findIndex((l) => l.layerID === layer.layerID),
         );
-
         /** Create download tool panel */
         const panel = document.querySelector(this.classes.downloadPanel);
         const toolbarContainer = document.querySelector(
@@ -706,13 +755,8 @@ define([
         }
 
         if (downloadDataPanel) {
-          // TESTING the new button
           this.resetButtonStyles();
-          this.saveButtonEl = this.buttonEls["save" + "Button"];
-          this.drawButtonEl = this.buttonEls["draw" + "Button"];
-
           this.drawButtonEl.classList.add(this.buttonClassDisable);
-          //  saveButtonEl.classList.add(this.buttonClassDisable);
           this.clearButtonEl.classList.remove(this.buttonClassDisable);
           view.activateButton("clear");
 
@@ -723,10 +767,10 @@ define([
             view.resetButtonStyles();
             // saveButtonEl.disabled = true;
             this.drawButtonEl.classList.add(this.buttonClassDisable);
-            this.classList.add(this.buttonClassDisable);
+            this.clearButtonEl.classList.remove(this.buttonClassDisable);
             view.activateButton("clear");
           } else {
-            function layerSelection(saveButtonEl, buttonClassDisable) {
+            function layerSelection(saveButtonEl, buttonClassDisable, layerID) {
               const checkboxes = document.querySelectorAll(
                 ".download-expansion-panel__checkbox",
               );
@@ -738,15 +782,24 @@ define([
                 view.activateButton("save");
                 view.activateButton("clear");
               } else {
-                alert("Adding disable");
                 view.resetButtonStyles();
                 saveButtonEl.classList.add(buttonClassDisable);
                 view.activateButton("clear");
+              }
+              if (layerID in view.dataDownloadLinks) {
+                delete view.dataDownloadLinks[layerID];
+                // alert("Deleted download links for " + layerID);
               }
             }
 
             // Loop through selected data layers
             selectedLayersList.forEach((item) => {
+              let fileTypeOptions = {
+                tif: "Geotiff",
+                png: "PNG",
+                wmts: "WMTS file",
+              };
+
               // Create panel container for each layer that intersects the bounding box
               const downloadDataPanelContainer = document.createElement("div");
               downloadDataPanelContainer.classList.add(
@@ -768,6 +821,8 @@ define([
                 item.fullDownloadLink;
               layerItemSelectBox.dataset.pngDownloadLink = item.pngDownloadLink;
               layerItemSelectBox.dataset.id = item.ID;
+              layerItemSelectBox.dataset.wmtsDownloadLink =
+                item.wmtsDownloadLink;
 
               const layerItemSpan = document.createElement("span");
               layerItemSpan.classList.add(this.classes.layerItemTitle);
@@ -828,6 +883,14 @@ define([
               const fileTypeDropdown = document.createElement("select");
               fileTypeDropdown.classList.add(this.classes.dropdown);
 
+              // Check if all first values in layerDownloadLinks are null
+              const hasValidTifLinkForLayer =
+                this.layerDownloadLinks[item.layerID]?.[0] !== null;
+              // Remove 'tif' key if no valid Geotiff links exist
+              if (!hasValidTifLinkForLayer) {
+                delete fileTypeOptions.tif;
+              }
+
               // Add a default select option
               const defaultFileTypeOption = document.createElement("option");
               defaultFileTypeOption.value =
@@ -838,7 +901,7 @@ define([
               defaultFileTypeOption.selected = true; // Make it the default selection
               fileTypeDropdown.appendChild(defaultFileTypeOption);
 
-              Object.entries(this.fileTypeOptions).forEach(
+              Object.entries(fileTypeOptions).forEach(
                 ([fileType, fileTypeName]) => {
                   const option = document.createElement("option");
                   option.value = fileType;
@@ -881,7 +944,11 @@ define([
                   // Disable fileTypeDropdown if necessary
                   fileTypeDropdown.disabled = true;
                 }
-                layerSelection(this.saveButtonEl, this.buttonClassDisable); // Update Save button state
+                layerSelection(
+                  this.saveButtonEl,
+                  this.buttonClassDisable,
+                  layerItemSelectBox.dataset.layerId,
+                ); // Update Save button state
               });
 
               // Textbox to display file size
@@ -910,13 +977,18 @@ define([
                   layerItemSelectBox.dataset.pngDownloadLink,
                   layerItemSelectBox.dataset.id,
                   layerItemSelectBox.dataset.layerName,
+                  layerItemSelectBox.dataset.wmtsDownloadLink,
                 );
-                updateTextbox(fileSize);
+                updateTextbox(fileSize, fileTypeDropdown.value);
               });
 
-              function updateTextbox(fileSizeDetails) {
+              function updateTextbox(fileSizeDetails, fileType) {
                 // alert(fileSizeDetails);
-                fileSizeInfoBox.textContent = `Download file size ≤ ${fileSizeDetails / 1000} MB`;
+                if (fileType === "wmts") {
+                  fileSizeInfoBox.textContent = `Single WMTS file ≈ ${fileSizeDetails} KB`;
+                } else {
+                  fileSizeInfoBox.textContent = `Download file size ≤ ${(fileSizeDetails / 1000).toFixed(2)} MB`;
+                }
               }
 
               // Append elements
@@ -974,6 +1046,7 @@ define([
         pngDownloadLink,
         id,
         layerName,
+        wmtsDownloadLink,
       ) {
         const layerSelectBoxes = document.querySelectorAll(
           ".download-expansion-panel__checkbox",
@@ -985,6 +1058,8 @@ define([
         this.polygon = this.getPolygon(this.points.toJSON());
         this.boundingBox = this.getBoundingBox(this.polygon);
         let totalFileSize;
+        const urls = [];
+        let baseURL;
         if (fileType != "wmts") {
           this.tileDetails = this.getTileCoordinates(
             this.boundingBox,
@@ -997,15 +1072,12 @@ define([
           const tileYSouth = this.tileDetails["tileY_South"];
 
           // Generate TileMatrix entries for each tile in range
-          const urls = [];
-          let baseURL;
           if (fileType === "png") {
             baseURL = pngDownloadLink.split("{")[0];
           } else if (fileType === "tif") {
-            baseURL = this.geotiffDownloadLinks[id];
+            baseURL = this.layerDownloadLinks[layerID][0];
           }
 
-          // let baseURL = pngDownloadLink.split('{')[0];
           for (let x = tileXWest; x <= tileXEast; x++) {
             for (let y = tileYNorth; y <= tileYSouth; y++) {
               // pngDownloadLink = "https://arcticdata.io/data/tiles/10.18739/A2KW57K57/WGS1984Quad/{TileMatrix}/{TileCol}/{TileRow}.png"
@@ -1014,36 +1086,45 @@ define([
               urls.push(resourceURL);
             }
           }
-
-          // Update this.dataDownloadLinks
-          // If the layerID in dataDownloadLinks is not in the selectedLayerIDs list, remove it
-          if (selectedLayerSelectBoxes.length > 1) {
-            const selectedLayerIDs = Array.from(selectedLayerSelectBoxes).map(
-              (checkbox) => checkbox.dataset.layerId,
-            );
-            Object.keys(this.dataDownloadLinks).forEach((layerID) => {
-              if (!selectedLayerIDs.includes(layerID)) {
-                delete this.dataDownloadLinks[layerID];
-              }
-            });
-          }
-
-          // Store or update URLs for the given layerID
-          this.dataDownloadLinks[layerID] = {
-            urls: urls, // URLs for the data
-            fullDownloadLink: fullDownloadLink, // Full download link
-            pngDownloadLink: pngDownloadLink, // PNG download link
-            id: id, // Layer ID or any other unique identifier
-            baseURL: baseURL,
-            layerName: layerName,
-          };
           const urlCount = urls.length;
-          // alert(fileType);
-          // alert(this.fileSizes.tif);
           totalFileSize = urlCount * this.fileSizes[fileType];
         } else {
-          totalFileSize = "Irrelevant - This is a single file";
+          //alert(this.layerDownloadLinks[layerID][1]);
+          urls.push(this.layerDownloadLinks[layerID][1]);
+          totalFileSize = this.fileSizes[fileType];
         }
+
+        // Update this.dataDownloadLinks
+        // If the layerID in dataDownloadLinks is not in the selectedLayerIDs list, remove it
+        if (selectedLayerSelectBoxes.length > 1) {
+          const selectedLayerIDs = Array.from(selectedLayerSelectBoxes).map(
+            (checkbox) => checkbox.dataset.layerId,
+          );
+          Object.keys(this.dataDownloadLinks).forEach((layerID) => {
+            if (!selectedLayerIDs.includes(layerID)) {
+              delete this.dataDownloadLinks[layerID];
+              // alert("Successfully deleted" + layerID);
+            }
+          });
+        }
+
+        // Store or update URLs for the given layerID
+        this.dataDownloadLinks[layerID] = {
+          urls: urls, // URLs for the data
+          fullDownloadLink: fullDownloadLink, // Full download link
+          pngDownloadLink: pngDownloadLink, // PNG download link
+          id: id, // Layer ID or any other unique identifier
+          baseURL: baseURL || null,
+          layerName: layerName,
+          fileType: fileType,
+          fileSize: totalFileSize,
+        };
+
+        // } else {
+        //   alert(this.layerDownloadLinks[layerID][1]);
+        //   urls.push(this.layerDownloadLinks[layerID][1]);
+        //   totalFileSize = "Irrelevant - This is a single file";
+        // }
 
         return totalFileSize;
       },
@@ -1116,7 +1197,13 @@ define([
 
       // Function to handle submit button click
       async downloadData() {
-        async function retrieveDataFromURL(layerID, urls, baseURL, onProgress) {
+        async function retrieveDataFromURL(
+          layerID,
+          urls,
+          baseURL,
+          fileType,
+          onProgress,
+        ) {
           //Fetch data files from URLs
           var zip = new JSZip(); // Initialize JSZip
           for (let i = 0; i < urls.length; i++) {
@@ -1133,14 +1220,6 @@ define([
                   continue;
                 }
               }
-              //   const blob = await response.blob();
-              //   const urlParts = url.split(baseURL).filter(part => part !== "");
-              //   const fileName = urlParts.slice(-3).join("_");
-
-              //   zip.file(fileName, blob);
-              // } catch (error) {
-              //   console.error(`Error fetching ${url}:`, error);
-              // }
 
               const contentLength = response.headers.get("Content-Length");
               const totalBytes = contentLength
@@ -1166,7 +1245,18 @@ define([
 
               const blob = new Blob(chunks);
               const urlParts = url.split(baseURL).filter((part) => part !== "");
-              const fileName = urlParts.slice(-3).join("_");
+              let fileName;
+              // Sanitize URL to avoid unwanted folder hierarchy issues
+              const sanitizedUrl = url.replace(/[:\/?&=]/g, "_"); // Replaces special characters
+              //const fileName = urlParts.slice(-3).join("_");
+              if (fileType === "wmts") {
+                // alert(url);
+                fileName = `${layerID}/${sanitizedUrl}`;
+              } else {
+                fileName = `${layerID}/WGS1984Quad/${urlParts.slice(-3).join("_")}`;
+              }
+
+              // const fileName = `${layerID}/${view.tileMatrixSet || "defaultTileMatrix"}/${urlParts.slice(-3).join("_")}`;
 
               zip.file(fileName, blob);
             } catch (error) {
@@ -1181,64 +1271,93 @@ define([
         );
         // Loop through each layerID in dataDownloadLinks and process them individually
         for (const [layerID, data] of Object.entries(this.dataDownloadLinks)) {
-          if (data.urls && data.urls.length > 0) {
-            // Show the progress bar for the current layer
-            downloadStatusContainer.style.display = "block"; // Show progress container
+          // Show the progress bar for the current layer
+          downloadStatusContainer.style.display = "block"; // Show progress container
+          // Reset progress bar for each new layer
+          const progressBar = document.querySelector(".progress-bar");
+          progressBar.classList.remove("progress-bar-no-data");
+          progressBar.classList.add("progress-bar");
+          progressBar.style.width = "0%";
+          if (data.fileSize < 1050000) {
+            // If file size is approximately over a GB then do not download
+            if (data.urls && data.urls.length > 0) {
+              // Show the progress bar for the current layer
+              // downloadStatusContainer.style.display = "block"; // Show progress container
 
-            // Reset progress bar for each new layer
-            const progressBar = document.querySelector(".progress-bar");
-            progressBar.style.width = "0%";
-            progressBar.textContent = `Retrieving data for ${data.layerName} (0%)`;
+              // Reset progress bar for each new layer
+              // const progressBar = document.querySelector(".progress-bar");
+              // progressBar.classList.remove("progress-bar-no-data");
+              // progressBar.classList.add("progress-bar");
+              progressBar.style.width = "0%";
+              progressBar.textContent = `Retrieving data for ${data.layerName} (0%)`;
 
-            // Create a function to update the progress bar
-            const updateProgressBar = (progress) => {
-              progressBar.style.width = `${progress}%`;
-              progressBar.textContent = `Downloading data for ${data.layerName} (${progress}%)`;
-            };
+              // Create a function to update the progress bar
+              const updateProgressBar = (progress) => {
+                progressBar.style.width = `${progress}%`;
+                progressBar.textContent = `Downloading data for ${data.layerName} (${progress}%)`;
+              };
 
-            // Start progress tracking
-            updateProgressBar(0);
+              // Start progress tracking
+              updateProgressBar(0);
 
-            try {
-              const layerZip = await retrieveDataFromURL(
-                layerID,
-                data.urls,
-                data.baseURL,
-                (progress) => {
-                  // Progress tracking callback function
-                  updateProgressBar(progress);
-                },
-              );
-
-              if (Object.keys(layerZip.files).length > 0) {
-                console.log(
-                  `The ZIP for layer ${data.layerName} contains ${Object.keys(layerZip.files).length} file(s). Ready to download.`,
+              try {
+                const layerZip = await retrieveDataFromURL(
+                  layerID,
+                  data.urls,
+                  data.baseURL,
+                  data.fileType,
+                  (progress) => {
+                    // Progress tracking callback function
+                    updateProgressBar(progress);
+                  },
                 );
 
-                // Generate the ZIP file for this layerID
-                layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
-                  progressBar.style.width = "100%";
-                  progressBar.textContent = "Download Complete!";
+                if (Object.keys(layerZip.files).length > 0) {
+                  console.log(
+                    `The ZIP for layer ${data.layerName} contains ${Object.keys(layerZip.files).length} file(s). Ready to download.`,
+                  );
 
-                  // Create a download link for the ZIP file
-                  const link = document.createElement("a");
-                  link.href = URL.createObjectURL(zipBlob);
-                  link.download = `${layerID}.zip`;
-                  link.click();
-                });
-              } else {
-                progressBar.textContent = `No data files are available for ${data.layerName} at the selected resolution.`;
-                console.log(`No files were added for ${data.layerName}`);
+                  // Generate the ZIP file for this layerID
+                  layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
+                    progressBar.style.width = "100%";
+                    progressBar.textContent = "Download Complete!";
+
+                    // Create a download link for the ZIP file
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(zipBlob);
+                    link.download = `${layerID}.zip`;
+                    link.click();
+                  });
+                } else {
+                  progressBar.classList.remove("progress-bar");
+                  progressBar.classList.add("progress-bar-no-data");
+                  progressBar.style.width = "100%";
+                  progressBar.textContent = `No data files are available for selected data layer(s) within area of interest.`;
+                  console.log(`No files were added for ${data.layerName}`);
+                }
+              } catch (error) {
+                console.error(
+                  `Error downloading data files for ${data.layerName}:`,
+                  error,
+                );
+                progressBar.classList.remove("progress-bar");
+                progressBar.classList.add("progress-bar-no-data");
+                progressBar.style.width = "100%";
+                progressBar.textContent = `Failed to download data files for selected data layer(s) within area of interest.`;
               }
-            } catch (error) {
-              console.error(
-                `Error downloading data files for ${data.layerName}:`,
-                error,
-              );
-              progressBar.textContent = `Failed to download ${data.layerName}.`;
+            } else {
+              progressBar.classList.remove("progress-bar");
+              progressBar.classList.add("progress-bar-no-data");
+              progressBar.style.width = "100%";
+              progressBar.textContent = `No data available for selected data layer(s) within area of interest.`;
+              console.log(`No URLs available for ${data.layerName}`);
             }
           } else {
-            console.log(`No URLs available for ${data.layerName}`);
+            progressBar.classList.remove("progress-bar");
+            progressBar.classList.add("progress-bar-no-data");
+            progressBar.style.width = "100%";
+            progressBar.textContent = `File size for ${data.layerName} > 1 GB. Select lower resolution/ draw smaller AOI.`;
+            console.log(`Download data size is too large`);
           }
         }
       },

@@ -1883,6 +1883,17 @@ other class: .ui-slider-range */
   border-radius: 5px;
   transition: width 0.4s;
 }
+.progress-bar-no-data {
+  width: 0%;
+  height: 18px;
+  text-align: center;
+  color: rgb(3, 3, 3);
+  line-height: 18px;
+  font-size: 10px;
+  border-radius: 5px;
+  transition: width 0.4s;
+  background-color: rgba(255, 255, 0, 0.172);
+}
 .draw__button--disable {
   /* background-color: gray; */
   color: gray;
