@@ -365,7 +365,6 @@ define([
        */
       handleLinkClick(sectionEl) {
         const toolbarOpen = this.isOpen;
-
         let sectionActive = sectionEl.isActive;
         const drawPanel = document.querySelector(this.classes.drawToolPanel); // check if there is another way to get this from sectionEl
         const downloadPanel = document.querySelector(".download-panel");
@@ -385,8 +384,8 @@ define([
             this.drawSection = section;
           }
         });
+
         if (
-          // sectionEl.contentEl.querySelector(this.classes.drawToolPanel) &&
           sectionEl.contentEl.querySelector(".draw__tool-panel") &&
           sectionActive
         ) {
@@ -435,14 +434,7 @@ define([
               drawPanel.style.visibility = "hidden";
               downloadPanel.style.visibility = "hidden";
               this.drawSection.linkEl.classList.remove(this.classes.linkActive); // Change the toolbar link to inactive
-            } else if (
-              drawPanel.style.visibility === "hidden"
-              // &&
-              // drawToolStatus
-            ) {
-              // const drawButtonEl = document.getElementsByClassName(
-              //   this.classes.drawButton,
-              // );
+            } else if (drawPanel.style.visibility === "hidden") {
               const drawButtonEl = document.querySelector(".draw__button");
               drawPanel.style.visibility = "visible";
               downloadPanel.style.visibility = "visible";

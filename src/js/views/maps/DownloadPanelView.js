@@ -413,7 +413,6 @@ define([
         drawButtonEl.classList.remove(this.buttonClassDisable);
         clearButtonEl.classList.add(this.buttonClassDisable);
         saveButtonEl.classList.add(this.buttonClassDisable);
-        this.activateButton("draw");
       },
 
       /**
@@ -633,7 +632,7 @@ define([
 
         saveButtonEl.classList.add(this.buttonClassDisable);
         clearButtonEl.classList.add(this.buttonClassDisable);
-        view.activateButton("draw");
+        // view.activateButton("draw"); // Removing as we only want the button to have the active symbol (blue circle border) upon user clicking it
 
         view.generatePreviewPanel();
         const closeDownloadPanelButton = this.el.querySelector(
@@ -672,7 +671,6 @@ define([
         this.clearButtonEl = this.buttonEls.clearButton;
         this.saveButtonEl = this.buttonEls.saveButton;
         this.drawButtonEl = this.buttonEls.drawButton;
-        this.clearButtonEl.classList.remove(this.buttonClassDisable);
 
         // // Get all elements with class 'layer-item--shown' within 'layer-category-list'
         // const selectedLayerItems = document.querySelectorAll(
