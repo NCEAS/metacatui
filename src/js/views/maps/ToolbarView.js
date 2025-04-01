@@ -438,7 +438,7 @@ define([
               const drawButtonEl = document.querySelector(".draw__button");
               drawPanel.style.visibility = "visible";
               downloadPanel.style.visibility = "visible";
-              drawButtonEl.classList.add(this.classes.drawButtonActive);
+              // drawButtonEl.classList.add(this.classes.drawButtonActive);
             }
             // Activate the Layer Panel when Draw Tool is selected
             this.activateSection(this.layerSection);
