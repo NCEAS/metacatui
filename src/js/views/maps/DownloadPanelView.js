@@ -1173,7 +1173,7 @@ define([
           } else if (fileType === "tif") {
             [baseURL] = this.layerDownloadLinks[layerID];
           } else if (fileType === "gpkg") {
-            [baseURL] = gpkgDownloadLink.split("{");
+            [baseURL] = gpkgDownloadLink.split("15/"); //TO DO - find a better way to get base URL once services are accessed through Map Model
           }
 
           for (let x = tileXWest; x <= tileXEast; x += 1) {
