@@ -859,7 +859,8 @@ define([
                 this.fileTypeDropdownOptions.fileTypeDropdownLabel;
 
               const fileTypeDropdown = document.createElement("select");
-              fileTypeDropdown.classList.add(this.classes.dropdown);
+              // fileTypeDropdown.classList.add(this.classes.dropdown);
+              fileTypeDropdown.classList.add("fileType-downloads-dropdown");
 
               // Check if all first values in layerDownloadLinks are null
               const hasValidTifLinkForLayer =
@@ -915,11 +916,11 @@ define([
                   // Disable fileTypeDropdown if necessary
                   fileTypeDropdown.disabled = true;
                 }
-                view.layerSelection(
-                  this.saveButtonEl,
-                  this.buttonClassDisable,
-                  layerItemSelectBox.dataset.layerId,
-                ); // Update Save button state
+                // view.layerSelection(
+                //   this.saveButtonEl,
+                //   this.buttonClassDisable,
+                //   layerItemSelectBox.dataset.layerId,
+                // ); // Update Save button state -- moving this to fileType drop-down change event
               });
 
               // Textbox to display file size
@@ -956,6 +957,12 @@ define([
                   fileSize,
                   fileTypeDropdown.value,
                 );
+                view.layerSelection(
+                  this.saveButtonEl,
+                  this.buttonClassDisable,
+                  layerItemSelectBox.dataset.layerId,
+                  fileTypeDropdown.value,
+                ); // Update Save button state -- moved from layer check-box change event
               });
 
               // Append elements
@@ -1012,7 +1019,7 @@ define([
        * @param {string} buttonClassDisable - The CSS class name used to disable the save button.
        * @param {string} layerID - The ID of the map layer being interacted with.
        */
-      layerSelection(saveButtonEl, buttonClassDisable, layerID) {
+      layerSelection(saveButtonEl, buttonClassDisable, layerID, fileType) {
         const view = this;
         const checkboxes = document.querySelectorAll(
           ".download-expansion-panel__checkbox",
@@ -1020,13 +1027,30 @@ define([
         const isAnyChecked = Array.from(checkboxes).some(
           (checkbox) => checkbox.checked,
         );
-        if (isAnyChecked) {
-          saveButtonEl.classList.remove(buttonClassDisable);
-          view.activateButton("save");
-          view.activateButton("clear");
-        } else {
+        const dropdowns = document.querySelectorAll(
+          ".downloads-dropdown-container .fileType-downloads-dropdown",
+        );
+
+        const isPNGorTIFSelected = Array.from(dropdowns).some((dropdown) =>
+          ["png", "tif"].includes(dropdown.value.toLowerCase()),
+        );
+        // if (isAnyChecked) {
+        //   saveButtonEl.classList.remove(buttonClassDisable);
+        //   view.activateButton("save");
+        //   view.activateButton("clear");
+        // } else {
+        //   view.resetButtonStyles();
+        //   saveButtonEl.classList.add(buttonClassDisable);
+        //   view.activateButton("clear");
+        // }
+        if (!isPNGorTIFSelected) {
           view.resetButtonStyles();
           saveButtonEl.classList.add(buttonClassDisable);
+          // view.activateButton("save");
+          view.activateButton("clear");
+        } else {
+          saveButtonEl.classList.remove(buttonClassDisable);
+          view.activateButton("save");
           view.activateButton("clear");
         }
         if (layerID in view.dataDownloadLinks) {
@@ -1045,9 +1069,24 @@ define([
       updateTextbox(infoBox, fileSizeDetails, fileType) {
         const fileSizeInfoBox = infoBox;
         if (fileType === "wmts") {
-          fileSizeInfoBox.textContent = `Single WMTS file ≈ ${fileSizeDetails} KB`;
+          fileSizeInfoBox.innerHTML = `
+            <span id="fileSizeText">${fileSizeDetails}</span>
+            <i id="copyWMTS" class="icon-copy" title="Copy to Clipboard"></i>
+          `;
+
+          // Add event listener for copying
+          document.getElementById("copyWMTS").addEventListener("click", () => {
+            const textToCopy =
+              document.getElementById("fileSizeText").textContent;
+            navigator.clipboard
+              .writeText(textToCopy)
+              .then(() => {
+                alert("Copied to clipboard!");
+              })
+              .catch((err) => console.error("Copy failed:", err));
+          });
         } else {
-          fileSizeInfoBox.textContent = `Download file size ≤ ${(fileSizeDetails / 1000).toFixed(2)} MB`;
+          fileSizeInfoBox.textContent = `Maximum download file size ≤ ${(fileSizeDetails / 1000).toFixed(2)} MB`;
         }
       },
 
@@ -1074,7 +1113,7 @@ define([
         pngDownloadLink,
         id,
         layerName,
-        _wmtsDownloadLink, // TODO: Leading underscore indicates that this parameter is not used. Remove if it is later used in this function.
+        wmtsDownloadLink,
         metadataPid,
       ) {
         const layerSelectBoxes = document.querySelectorAll(
@@ -1116,8 +1155,10 @@ define([
           const urlCount = urls.length;
           totalFileSize = urlCount * this.fileSizes[fileType];
         } else {
-          urls.push(this.layerDownloadLinks[layerID][1]);
-          totalFileSize = this.fileSizes[fileType];
+          // urls.push(this.layerDownloadLinks[layerID][1]);
+          // totalFileSize = this.fileSizes[fileType];
+          // update -- instead of downloading the WMTS file, just provide the URL (below the dropdowns)
+          totalFileSize = wmtsDownloadLink;
         }
 
         // Update this.dataDownloadLinks
@@ -1142,7 +1183,7 @@ define([
           zoomLevel: zoomLevel,
           baseURL: baseURL || null,
           layerName,
-          fileType,
+          fileType: fileType,
           fileSize: totalFileSize,
           metadataPid: metadataPid,
         };
@@ -1313,110 +1354,115 @@ define([
         // Loop through each layerID in dataDownloadLinks and process them individually
         Object.entries(this.dataDownloadLinks).forEach(
           async ([layerID, data]) => {
-            // Show the progress bar for the current layer
-            downloadStatusContainer.style.display = "block"; // Show progress container
-            // Reset progress bar for each new layer
-            const progressBar = document.querySelector(".progress-bar");
-            progressBar.classList.remove("progress-bar-no-data");
-            progressBar.classList.add("progress-bar");
-            progressBar.style.width = "0%";
-            if (data.fileSize < 1050000) {
-              // If file size is approximately over a GB then do not download
-              if (data.urls && data.urls.length > 0) {
-                // Show the progress bar for the current layer
-                // downloadStatusContainer.style.display = "block"; // Show progress container
+            if (data.fileType !== "wmts") {
+              // Show the progress bar for the current layer
+              downloadStatusContainer.style.display = "block"; // Show progress container
+              // Reset progress bar for each new layer
+              const progressBar = document.querySelector(".progress-bar");
+              progressBar.classList.remove("progress-bar-no-data");
+              progressBar.classList.add("progress-bar");
+              progressBar.style.width = "0%";
+              if (data.fileSize < 1050000) {
+                // If file size is approximately over a GB then do not download
+                if (data.urls && data.urls.length > 0) {
+                  // Show the progress bar for the current layer
+                  // downloadStatusContainer.style.display = "block"; // Show progress container
 
-                // Reset progress bar for each new layer
-                // const progressBar = document.querySelector(".progress-bar");
-                // progressBar.classList.remove("progress-bar-no-data");
-                // progressBar.classList.add("progress-bar");
-                progressBar.style.width = "0%";
-                progressBar.textContent = `Retrieving data for ${data.layerName} (0%)`;
+                  // Reset progress bar for each new layer
+                  // const progressBar = document.querySelector(".progress-bar");
+                  // progressBar.classList.remove("progress-bar-no-data");
+                  // progressBar.classList.add("progress-bar");
+                  progressBar.style.width = "0%";
+                  progressBar.textContent = `Retrieving data for ${data.layerName} (0%)`;
 
-                // Create a function to update the progress bar
-                const updateProgressBar = (progress) => {
-                  progressBar.style.width = `${progress}%`;
-                  progressBar.textContent = `Downloading data for ${data.layerName} (${progress}%)`;
-                };
+                  // Create a function to update the progress bar
+                  const updateProgressBar = (progress) => {
+                    progressBar.style.width = `${progress}%`;
+                    progressBar.textContent = `Downloading data for ${data.layerName} (${progress}%)`;
+                  };
 
-                // Start progress tracking
-                updateProgressBar(0);
+                  // Start progress tracking
+                  updateProgressBar(0);
 
-                try {
-                  const layerZip = await view.retrieveDataFromURL(
-                    layerID,
-                    data.urls,
-                    data.baseURL,
-                    data.fileType,
-                    (progress) => {
-                      // Progress tracking callback function
-                      updateProgressBar(progress);
-                    },
-                  );
+                  try {
+                    const layerZip = await view.retrieveDataFromURL(
+                      layerID,
+                      data.urls,
+                      data.baseURL,
+                      data.fileType,
+                      (progress) => {
+                        // Progress tracking callback function
+                        updateProgressBar(progress);
+                      },
+                    );
 
-                  if (Object.keys(layerZip.files).length > 0) {
-                    const numFiles = Object.keys(layerZip.files).length;
-                    progressBar.textContent = `Generating ZIP file for ${data.layerName} (${numFiles} files)...`;
+                    if (Object.keys(layerZip.files).length > 0) {
+                      const numFiles = Object.keys(layerZip.files).length;
+                      progressBar.textContent = `Generating ZIP file for ${data.layerName} (${numFiles} files)...`;
 
-                    // Fetch metadata file from metadataPid and add it to the ZIP
-                    const metadataUrl = `${this.objectServiceUrl}${data.metadataPid}`;
-                    fetch(metadataUrl)
-                      .then((response) => {
-                        if (!response.ok) {
-                          throw new Error(
-                            `Failed to fetch metadata for ${layerID}: ${response.statusText}`,
+                      // Fetch metadata file from metadataPid and add it to the ZIP
+                      const metadataUrl = `${this.objectServiceUrl}${data.metadataPid}`;
+                      fetch(metadataUrl)
+                        .then((response) => {
+                          if (!response.ok) {
+                            throw new Error(
+                              `Failed to fetch metadata for ${layerID}: ${response.statusText}`,
+                            );
+                          }
+                          return response.blob();
+                        })
+                        .then((metadataBlob) => {
+                          // Add metadata file at the top level of the ZIP
+                          layerZip.file(
+                            `${layerID}_metadata.eml`,
+                            metadataBlob,
                           );
-                        }
-                        return response.blob();
-                      })
-                      .then((metadataBlob) => {
-                        // Add metadata file at the top level of the ZIP
-                        layerZip.file(`${layerID}_metadata.eml`, metadataBlob);
-                      })
-                      .catch((error) => {
-                        console.error(
-                          "Error fetching metadata for ${layerID}:",
-                          error,
-                        );
-                      })
-                      .finally(() => {
-                        // Generate the ZIP file for this layerID after adding metadata
-                        layerZip
-                          .generateAsync({ type: "blob" })
-                          .then((zipBlob) => {
-                            progressBar.style.width = "100%";
-                            progressBar.textContent = "Download Complete!";
+                        })
+                        .catch((error) => {
+                          console.error(
+                            "Error fetching metadata for ${layerID}:",
+                            error,
+                          );
+                        })
+                        .finally(() => {
+                          // Generate the ZIP file for this layerID after adding metadata
+                          layerZip
+                            .generateAsync({ type: "blob" })
+                            .then((zipBlob) => {
+                              progressBar.style.width = "100%";
+                              progressBar.textContent = "Download Complete!";
 
-                            // Create a download link for the ZIP file
-                            const link = document.createElement("a");
-                            link.href = URL.createObjectURL(zipBlob);
-                            link.download = `${layerID}_${data.fileType}_zoom-level-${data.zoomLevel}.zip`;
-                            link.click();
-                          });
-                      });
-                  } else {
+                              // Create a download link for the ZIP file
+                              const link = document.createElement("a");
+                              link.href = URL.createObjectURL(zipBlob);
+                              link.download = `${layerID}_${data.fileType}_zoom-level-${data.zoomLevel}.zip`;
+                              link.click();
+                            });
+                        });
+                    } else {
+                      progressBar.classList.remove("progress-bar");
+                      progressBar.classList.add("progress-bar-no-data");
+                      progressBar.style.width = "100%";
+                      progressBar.textContent = `No data files are available for selected data layer(s) within area of interest.`;
+                    }
+                  } catch (error) {
                     progressBar.classList.remove("progress-bar");
                     progressBar.classList.add("progress-bar-no-data");
                     progressBar.style.width = "100%";
-                    progressBar.textContent = `No data files are available for selected data layer(s) within area of interest.`;
+                    progressBar.textContent = `Failed to download data files for selected data layer(s) within area of interest.`;
                   }
-                } catch (error) {
+                } else {
                   progressBar.classList.remove("progress-bar");
                   progressBar.classList.add("progress-bar-no-data");
                   progressBar.style.width = "100%";
-                  progressBar.textContent = `Failed to download data files for selected data layer(s) within area of interest.`;
+                  progressBar.textContent = `No data available for selected data layer(s) within area of interest.`;
                 }
               } else {
                 progressBar.classList.remove("progress-bar");
                 progressBar.classList.add("progress-bar-no-data");
                 progressBar.style.width = "100%";
-                progressBar.textContent = `No data available for selected data layer(s) within area of interest.`;
+                progressBar.textContent = `File size for ${data.layerName} > 1 GB. Select lower resolution/ draw smaller AOI.`;
               }
-            } else {
-              progressBar.classList.remove("progress-bar");
-              progressBar.classList.add("progress-bar-no-data");
-              progressBar.style.width = "100%";
-              progressBar.textContent = `File size for ${data.layerName} > 1 GB. Select lower resolution/ draw smaller AOI.`;
             }
           },
         );
