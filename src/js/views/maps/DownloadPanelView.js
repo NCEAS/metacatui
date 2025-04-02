@@ -189,6 +189,7 @@ define([
         tif: 513,
         png: 2.7,
         wmts: 15,
+        gpkg: 180,
       },
 
       /**
@@ -271,30 +272,37 @@ define([
         iwp: [
           "https://arcticdata.io/data/10.18739/A2KW57K57/iwp_geotiff_high/WGS1984Quad/",
           "https://arcticdata.io/data/tiles/10.18739/A2KW57K57/WMTSCapabilities.xml",
+          "https://arcticdata.io/data/10.18739/A2KW57K57/iwp_geopackage_high/WGS1984Quad/",
         ], // iwp
         infrastructure: [
           "https://arcticdata.io/data/10.18739/A21J97929/output/geotiff/WGS1984Quad/",
           "https://arcticdata.io/data/tiles/10.18739/A21J97929/WMTSCapabilities.xml",
+          null,
         ], // infrastructure
         swi: [
           null,
           "https://arcticdata.io/data/tiles/10.18739/A2037V/WMTSCapabilities.xml",
+          null,
         ], // surface water
         dlbns1419: [
           null,
           "https://arcticdata.io/data/tiles/10.18739/A2K35MF71/WMTSCapabilities.xml",
+          null,
         ], // drained lake basins
         avg: [
           null,
           "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
+          null,
         ], // average Terrestrial Net CO2 Balance
         fire: [
           null,
           "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
+          null,
         ], // average Fire Emissions
         trend: [
           null,
           "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
+          null,
         ], // trends In Terrestrial Net CO2 Balance
       },
       /**
@@ -719,6 +727,14 @@ define([
             } else {
               wmtsDownloadLink = null; // the production PDG demo config has layers that currently do not have WMTS layers
             }
+            let geopckgService = null;
+
+            if (value.attributes && Array.isArray(value.attributes.services)) {
+              geopckgService = value.attributes.services.find(
+                (service) => service.type === "geopackage",
+              );
+            }
+
             const selectedLayer = {
               layerID: value.attributes.layerId,
               ID: value.attributes.id
@@ -733,6 +749,7 @@ define([
               pngDownloadLink: value.attributes.cesiumOptions.url,
               wmtsDownloadLink,
               metadataPid: value.attributes.metadataPid,
+              gpkgDownloadLink: geopckgService ? geopckgService.endpoint : null,
             };
             selectedLayersList.push(selectedLayer);
           }
@@ -775,6 +792,7 @@ define([
                 tif: "Geotiff",
                 png: "PNG",
                 wmts: "WMTS file",
+                gpkg: "Geopackage",
               };
 
               // Create panel container for each layer that intersects the bounding box
@@ -800,6 +818,8 @@ define([
               layerItemSelectBox.dataset.id = item.ID;
               layerItemSelectBox.dataset.wmtsDownloadLink =
                 item.wmtsDownloadLink;
+              layerItemSelectBox.dataset.gpkgDownloadLink =
+                item.gpkgDownloadLink;
               layerItemSelectBox.dataset.metadataPid = item.metadataPid;
 
               const layerItemSpan = document.createElement("span");
@@ -862,12 +882,20 @@ define([
               // fileTypeDropdown.classList.add(this.classes.dropdown);
               fileTypeDropdown.classList.add("fileType-downloads-dropdown");
 
-              // Check if all first values in layerDownloadLinks are null
+              // Check if tif download link exists for the data layer
               const hasValidTifLinkForLayer =
                 this.layerDownloadLinks[item.layerID]?.[0] !== null;
               // Remove 'tif' key if no valid Geotiff links exist
               if (!hasValidTifLinkForLayer) {
                 delete fileTypeOptions.tif;
+              }
+
+              // Check if gpkg download link exists for the data layer
+              const hasValidGpkgLinkForLayer =
+                this.layerDownloadLinks[item.layerID]?.[2] !== null;
+              // Remove 'gpkg' key if no valid Geopackage links exist
+              if (!hasValidGpkgLinkForLayer) {
+                delete fileTypeOptions.gpkg;
               }
 
               // Add a default select option
@@ -941,12 +969,19 @@ define([
 
               // Update approximate file size when a file type is selected in fileTypeDropdown
               fileTypeDropdown.addEventListener("change", () => {
+                view.layerSelection(
+                  this.saveButtonEl,
+                  this.buttonClassDisable,
+                  layerItemSelectBox.dataset.layerId,
+                  fileTypeDropdown.value,
+                ); // Update Save button state -- moved from layer check-box change event
                 const fileSize = view.getRawFileSize(
                   resolutionDropdown.value,
                   fileTypeDropdown.value,
                   layerItemSelectBox.dataset.layerId,
                   layerItemSelectBox.dataset.fullDownloadLink,
                   layerItemSelectBox.dataset.pngDownloadLink,
+                  layerItemSelectBox.dataset.gpkgDownloadLink,
                   layerItemSelectBox.dataset.id,
                   layerItemSelectBox.dataset.layerName,
                   layerItemSelectBox.dataset.wmtsDownloadLink,
@@ -957,12 +992,6 @@ define([
                   fileSize,
                   fileTypeDropdown.value,
                 );
-                view.layerSelection(
-                  this.saveButtonEl,
-                  this.buttonClassDisable,
-                  layerItemSelectBox.dataset.layerId,
-                  fileTypeDropdown.value,
-                ); // Update Save button state -- moved from layer check-box change event
               });
 
               // Append elements
@@ -1032,7 +1061,7 @@ define([
         );
 
         const isPNGorTIFSelected = Array.from(dropdowns).some((dropdown) =>
-          ["png", "tif"].includes(dropdown.value.toLowerCase()),
+          ["png", "tif", "gpkg"].includes(dropdown.value.toLowerCase()),
         );
         // if (isAnyChecked) {
         //   saveButtonEl.classList.remove(buttonClassDisable);
@@ -1111,6 +1140,7 @@ define([
         layerID,
         fullDownloadLink,
         pngDownloadLink,
+        gpkgDownloadLink,
         id,
         layerName,
         wmtsDownloadLink,
@@ -1142,6 +1172,8 @@ define([
             [baseURL] = pngDownloadLink.split("{");
           } else if (fileType === "tif") {
             [baseURL] = this.layerDownloadLinks[layerID];
+          } else if (fileType === "gpkg") {
+            [baseURL] = gpkgDownloadLink.split("{");
           }
 
           for (let x = tileXWest; x <= tileXEast; x += 1) {
