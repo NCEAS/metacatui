@@ -1139,6 +1139,7 @@ define([
           fullDownloadLink, // Full download link
           pngDownloadLink, // PNG download link
           id, // Layer ID or any other unique identifier
+          zoomLevel: zoomLevel,
           baseURL: baseURL || null,
           layerName,
           fileType,
@@ -1389,7 +1390,7 @@ define([
                             // Create a download link for the ZIP file
                             const link = document.createElement("a");
                             link.href = URL.createObjectURL(zipBlob);
-                            link.download = `${layerID}.zip`;
+                            link.download = `${layerID}_${data.fileType}_zoom-level-${data.zoomLevel}.zip`;
                             link.click();
                           });
                       });
