@@ -298,6 +298,11 @@ define([
         ], // trends In Terrestrial Net CO2 Balance
       },
       /**
+       * The objectServiceUrl from the MapModel
+       * @type {string}
+       */
+      objectServiceUrl: "",
+      /**
        * Initializes the DrawTool
        * @param {object} options - A literal object with options to pass to the
        * view
@@ -310,6 +315,7 @@ define([
 
       initialize(options) {
         this.mapModel = options.model || new Map();
+        this.objectServiceUrl = MetacatUI.appModel.get("objectServiceUrl");
         // Add models & collections and add interactions, layer, connector,
         // points, and originalAction properties to this view
         this.setUpMapModel();
@@ -694,7 +700,7 @@ define([
         let selectedLayersList = [];
 
         // alert("Display layer list");
-        // console.log(layerList);
+        // console.log(this.mapModel.get("allLayers"));
 
         this.mapModel.get("allLayers").forEach((value) => {
           // if(value?.attributes?.originalVisibility === true && value.attributes.type === "WebMapTileServiceImageryProvider") {
@@ -703,16 +709,6 @@ define([
             value.attributes.type === "WebMapTileServiceImageryProvider" &&
             value.attributes.label !== "Alaska High Resolution Imagery"
           ) {
-            // if (value.attributes.label === "Infrastructure") {
-            //   wmtsLink =
-            //     value.attributes?.cesiumOptions?.url?.split("SACHI_v2")[0];
-            // }
-            // alert(value.attributes.label);
-            // console.log(value.attributes.label);
-            // alert(
-            //   value.attributes?.cesiumOptions?.url?.split("WGS1984Quad")[0],
-            // );
-            // alert(this.geotiffDownloadLinks[value.attributes.layerId][1]);
             let wmtsDownloadLink;
             if (
               this.layerDownloadLinks[value.attributes.layerId] &&
@@ -736,6 +732,7 @@ define([
               fullDownloadLink: value.attributes.moreInfoLink,
               pngDownloadLink: value.attributes.cesiumOptions.url,
               wmtsDownloadLink,
+              metadataPid: value.attributes.metadataPid,
             };
             selectedLayersList.push(selectedLayer);
           }
@@ -803,10 +800,11 @@ define([
               layerItemSelectBox.dataset.id = item.ID;
               layerItemSelectBox.dataset.wmtsDownloadLink =
                 item.wmtsDownloadLink;
+              layerItemSelectBox.dataset.metadataPid = item.metadataPid;
 
               const layerItemSpan = document.createElement("span");
               layerItemSpan.classList.add(this.classes.layerItemTitle);
-              layerItemSpan.textContent = item.layerName; // TO DO - edit to remove special characters
+              layerItemSpan.textContent = item.layerName;
 
               layerItem.appendChild(layerItemSelectBox);
               layerItem.appendChild(layerItemSpan);
@@ -951,6 +949,7 @@ define([
                   layerItemSelectBox.dataset.id,
                   layerItemSelectBox.dataset.layerName,
                   layerItemSelectBox.dataset.wmtsDownloadLink,
+                  layerItemSelectBox.dataset.metadataPid,
                 );
                 view.updateTextbox(
                   fileSizeInfoBox,
@@ -1058,12 +1057,13 @@ define([
        * Updates the `dataDownloadLinks` object with the generated URLs and metadata for the specified layer.
        * @param {number} zoomLevel - The zoom level for the map tiles.
        * @param {string} fileType - The type of file to download (e.g., "png", "tif", "wmts").
-       * @param {string} layerID - The unique identifier for the map layer.
+       * @param {string} layerID - The unique identifier for the data layer.
        * @param {string} fullDownloadLink - The full download link for the layer.
        * @param {string} pngDownloadLink - The template URL for downloading PNG tiles.
        * @param {string} id - A unique identifier for the layer or dataset.
-       * @param {string} layerName - The name of the map layer.
+       * @param {string} layerName - The name of the data layer.
        * @param {string} [_wmtsDownloadLink] - (Optional) The WMTS download link for the layer. Currently unused.
+       * * @param {string} metadataPid - The metadataPid of the data layer.
        * @returns {number} The total file size for the specified layer in bytes.
        */
       getRawFileSize(
@@ -1075,6 +1075,7 @@ define([
         id,
         layerName,
         _wmtsDownloadLink, // TODO: Leading underscore indicates that this parameter is not used. Remove if it is later used in this function.
+        metadataPid,
       ) {
         const layerSelectBoxes = document.querySelectorAll(
           ".download-expansion-panel__checkbox",
@@ -1115,7 +1116,6 @@ define([
           const urlCount = urls.length;
           totalFileSize = urlCount * this.fileSizes[fileType];
         } else {
-          // alert(this.layerDownloadLinks[layerID][1]);
           urls.push(this.layerDownloadLinks[layerID][1]);
           totalFileSize = this.fileSizes[fileType];
         }
@@ -1133,7 +1133,6 @@ define([
             }
           });
         }
-
         // Store or update URLs for the given layerID
         this.dataDownloadLinks[layerID] = {
           urls, // URLs for the data
@@ -1144,14 +1143,8 @@ define([
           layerName,
           fileType,
           fileSize: totalFileSize,
+          metadataPid: metadataPid,
         };
-
-        // } else {
-        //   alert(this.layerDownloadLinks[layerID][1]);
-        //   urls.push(this.layerDownloadLinks[layerID][1]);
-        //   totalFileSize = "Irrelevant - This is a single file";
-        // }
-
         return totalFileSize;
       },
 
@@ -1308,6 +1301,8 @@ define([
        * data file in bytes.
        * @property {string} dataDownloadLinks.data.layerName - The name of the
        * data layer.
+       * * @property {string} dataDownloadLinks.data.metadataPid - The metadata pid of the
+       * data layer.
        */
       async downloadData() {
         const view = this;
@@ -1362,17 +1357,42 @@ define([
                     const numFiles = Object.keys(layerZip.files).length;
                     progressBar.textContent = `Generating ZIP file for ${data.layerName} (${numFiles} files)...`;
 
-                    // Generate the ZIP file for this layerID
-                    layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
-                      progressBar.style.width = "100%";
-                      progressBar.textContent = "Download Complete!";
+                    // Fetch metadata file from metadataPid and add it to the ZIP
+                    const metadataUrl = `${this.objectServiceUrl}${data.metadataPid}`;
+                    fetch(metadataUrl)
+                      .then((response) => {
+                        if (!response.ok) {
+                          throw new Error(
+                            `Failed to fetch metadata for ${layerID}: ${response.statusText}`,
+                          );
+                        }
+                        return response.blob();
+                      })
+                      .then((metadataBlob) => {
+                        // Add metadata file at the top level of the ZIP
+                        layerZip.file(`${layerID}_metadata.eml`, metadataBlob);
+                      })
+                      .catch((error) => {
+                        console.error(
+                          "Error fetching metadata for ${layerID}:",
+                          error,
+                        );
+                      })
+                      .finally(() => {
+                        // Generate the ZIP file for this layerID after adding metadata
+                        layerZip
+                          .generateAsync({ type: "blob" })
+                          .then((zipBlob) => {
+                            progressBar.style.width = "100%";
+                            progressBar.textContent = "Download Complete!";
 
-                      // Create a download link for the ZIP file
-                      const link = document.createElement("a");
-                      link.href = URL.createObjectURL(zipBlob);
-                      link.download = `${layerID}.zip`;
-                      link.click();
-                    });
+                            // Create a download link for the ZIP file
+                            const link = document.createElement("a");
+                            link.href = URL.createObjectURL(zipBlob);
+                            link.download = `${layerID}.zip`;
+                            link.click();
+                          });
+                      });
                   } else {
                     progressBar.classList.remove("progress-bar");
                     progressBar.classList.add("progress-bar-no-data");
