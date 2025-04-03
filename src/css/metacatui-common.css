@@ -113,6 +113,12 @@ a:hover {
 td.center {
   text-align: center;
 }
+.nav-pill {
+  list-style: none;
+}
+.nav-pills {
+  margin-left: 0;
+}
 /******************************************
 ** General Structure ***
 ******************************************/
@@ -529,13 +535,7 @@ svg.icon {
   height: 1em;
   vertical-align: text-top;
 }
-.pill {
-  border-radius: 5px;
-  width: auto;
-  display: inline;
-  padding: 0.25em 0.5em;
-  text-shadow: none;
-}
+
 /* Data Tag Icons */
 .data-tag {
   height: 1.25em;
@@ -8390,6 +8390,8 @@ textarea.medium {
 .Editor .checkbox {
   clear: both;
   margin: 1em auto;
+  margin: 0.2rem auto;
+  margin-left: 10px;
 }
 .Editor .checkbox input {
   padding: 0px;
@@ -8515,9 +8517,6 @@ textarea.medium {
 .attribute-menu-item.active a {
   background-color: #1e254f;
   color: white;
-}
-.attribute-menu-item .add {
-  display: none;
 }
 .attribute-menu-item .remove {
   position: absolute;
@@ -8927,13 +8926,7 @@ textarea.medium {
   .tab-pane {
     height: 100%;
   }
-  .attribute-container {
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-    display: grid;
-    grid-template-columns: 170px auto;
-  }
+
   .entity-container {
     .nav-tabs {
       margin-bottom: 0px;
@@ -9027,6 +9020,47 @@ textarea.medium {
   }
   .eml-measurement-scale .full-width {
     width: 100%;
+  }
+}
+
+.autofill-button {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 0;
+  /* height: 3rem; */
+  /* padding: 1rem; */
+  font-size: 0.95rem;
+  line-height: 1.6rem;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.1rem;
+}
+.autofill-button.selected {
+  background-color: #1f254f;
+  color: white;
+}
+
+.attribute-container {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 170px auto;
+  grid-template-areas: "attribute-menu attribute-content";
+}
+
+.autofill-attributes {
+  padding: 3rem;
+  overflow: scroll;
+  display: block;
+  grid-area: attribute-content;
+
+  .button-container {
+    display: flex;
+    justify-content: end;
+    margin-top: 1rem;
+  }
+  .tab-content {
+    margin-top: 1rem;
   }
 }
 

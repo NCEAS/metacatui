@@ -526,6 +526,26 @@ define([
       },
 
       /**
+       * Get the file name for the entity
+       * @returns {string} - The file name for the entity
+       */
+      getFileName() {
+        return (
+          this.get("entityName") ||
+          this.get("physicalObjectName") ||
+          this.get("dataONEObject").get("fileName")
+        );
+      },
+
+      /**
+       * Get the id for the entity
+       * @returns {string} - The id for the entity
+       */
+      getId() {
+        return this.get("xmlID") || this.get("dataONEObject")?.get("id");
+      },
+
+      /**
        * Get the DOM node preceding the given nodeName to find what position in
        * the EML document the named node should be appended
        * @param {object} objectDOM - The DOM object to search

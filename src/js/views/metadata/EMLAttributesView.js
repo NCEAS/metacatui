@@ -4,8 +4,15 @@ define([
   "semantic",
   "collections/metadata/eml/EMLAttributes",
   "views/metadata/EMLAttributeView",
-  "common/Utilities",
-], (Backbone, $, Semantic, EMLAttributes, EMLAttributeView, Utilities) => {
+  "views/metadata/AutofillAttributesView",
+], (
+  Backbone,
+  $,
+  Semantic,
+  EMLAttributes,
+  EMLAttributeView,
+  AutofillAttributesView,
+) => {
   /**
    * @class EMLAttributesView
    * @classdesc An EMLAttributesView displays the info about all attributes in
@@ -16,11 +23,11 @@ define([
    */
 
   const STRINGS = {
-    fillButton: "Fill Attributes",
-    copyToButton: "Copy to ...",
     addAttribute: "Add Attribute",
     newAttribute: "New Attribute",
   };
+
+  // TODO: remove class names that are in autofill
 
   const CLASS_NAMES = {
     menuContainer: "attribute-menu-container",
@@ -50,6 +57,9 @@ define([
     error: "error",
     remove: "remove",
     previewRemove: "remove-preview",
+
+    autofillButton: "autofill-button",
+    autofillContainer: "autofill-attributes",
   };
 
   const BOOTSTRAP_CLASS_NAMES = {
@@ -63,15 +73,28 @@ define([
     buttonPrimary: "btn-primary",
   };
 
+  // TODO
+  const ICONS = {
+    warning: "warning-sign",
+    remove: "remove",
+    add: "plus",
+    magic: "magic",
+    error: "exclamation-sign",
+    onLeft: "on-left",
+    processing: "time",
+    success: "ok",
+  };
+
+  // Prefix to add ato all ICONS
+  const ICON_PREFIX = "icon-";
+
   const EMLAttributesView = Backbone.View.extend(
     /** @lends EMLAttributesView.prototype */ {
-      tagName: "div",
-
       /**
        * The className to add to the view container
        * @type {string}
        */
-      className: "",
+      className: "attribute-container",
 
       /**
        * Settings for the semantic UI popup used to indicate that an attribute
@@ -90,13 +113,6 @@ define([
       },
 
       /**
-       * A list of file formats that can be auto-filled with attribute
-       * information
-       * @type {string[]}
-       */
-      fillableFormats: ["text/csv"],
-
-      /**
        * The events this view will listen to and the associated function to
        * call.
        * @type {object}
@@ -109,6 +125,7 @@ define([
         e[`mouseover .${CN.menuItem} .${CN.remove}`] = "previewAttrRemove";
         e[`mouseout .${CN.menuItem} .${CN.remove}`] = "previewAttrRemove";
         e[`click .${CN.menuItem}`] = "handleMenuItemClick";
+        e[`click .${CN.autofillButton}`] = "showAutofill";
         return e;
       },
 
@@ -122,18 +139,17 @@ define([
         const CN = CLASS_NAMES;
         const BC = BOOTSTRAP_CLASS_NAMES;
         template.innerHTML = `
-        
           <div class="${CN.menuContainer}">
             <div class="${CN.actionButtonsContainer}">
-              <div class="${CN.fillButtonContainer}">
-              </div>
               <div class="${CN.copyButtonContainer}">
               </div>
+              <a href="#" class="${BC.button} ${BC.buttonPrimary} ${CN.autofillButton}"><i class="${ICONS.magic} ${ICONS.onLeft}"></i>Auto-Fill...</a>
             </div>
             <ul class="${CN.menu} ${BC.sideNavItems}">
             </ul>
           </div>
-          <div class="${CN.attributeList}"></div>`;
+          <div class="${CN.attributeList}"></div>
+          <div class="${CN.autofillContainer}" style="display: none;"></div>`;
         return template.content;
       },
 
@@ -166,41 +182,27 @@ define([
       },
 
       /**
-       * The template for the fill button
-       * @type {string}
-       */
-      fillButtonTemplateString: `<button class="
-        ${BOOTSTRAP_CLASS_NAMES.button}
-        ${BOOTSTRAP_CLASS_NAMES.buttonPrimary}
-        ${CLASS_NAMES.fillButton}
-        ">
-          <i class="${CLASS_NAMES.iconMagic}"></i> ${STRINGS.fillButton}
-        </button>`,
-
-      /**
-       * The template for the copy to button
-       * @type {string}
-       */
-      copyToButtonTemplateString: `<button class="
-        ${BOOTSTRAP_CLASS_NAMES.button}
-        ${BOOTSTRAP_CLASS_NAMES.buttonPrimary}
-        ${CLASS_NAMES.copyButton}
-        ">
-          <i class="${CLASS_NAMES.iconMagic}"></i> ${STRINGS.copyToButton}
-        </button>`,
-
-      /**
        * Creates a new EMLAttributesView
        * @param {object} options - A literal object with options to pass to the
        * view
-       * @param {EMLAttribute} [options.model] - The EMLAttribute model to
-       * display. If none is provided, an empty EMLAttribute will be created.
+       * @param {EMLAttributes} options.collection - The collection of
+       * EMLAttribute models to display
+       * @param {EMLEntity} options.parentModel - The entity model to which
+       * these attributes belong
        * @param {boolean} [options.isNew] - Set to true if this is a new
        * attribute
        */
       initialize(options = {}) {
         this.collection = options.collection || new EMLAttributes();
         this.parentModel = options.parentModel;
+
+        // Prefix all the icons
+        // TODO - fix all instances that were using CLASS_NAMES, use ICONS
+        if (!Object.values(ICONS)[0].startsWith(ICON_PREFIX)) {
+          Object.keys(ICONS).forEach((key) => {
+            ICONS[key] = `${ICON_PREFIX}${ICONS[key]}`;
+          });
+        }
       },
 
       /**
@@ -223,10 +225,12 @@ define([
             `.${CN.copyButtonContainer}`,
           ),
           list: this.el.querySelector(`.${CN.attributeList}`),
+          autofill: this.el.querySelector(`.${CN.autofillContainer}`),
+          autofillButton: this.el.querySelector(`.${CN.autofillButton}`),
         };
 
         this.renderAttributes();
-        this.renderFillButton();
+        this.renderAutofill();
 
         return this;
       },
@@ -249,7 +253,6 @@ define([
 
         // Add a new attribute for editing if there isn't one already
         this.collection.addNewAttribute(this.parentModel);
-
         // Render Attribute views for each model
         this.collection.models.forEach(this.renderAttribute, this);
 
@@ -258,9 +261,15 @@ define([
           this.showAttribute(this.collection.at(0));
         }
 
-        // Listen to changes in the collection
+        this.listenToAttributes();
+      },
+
+      /** Set up event listeners for the collection and its models */
+      listenToAttributes() {
         this.listenTo(this.collection, "add", this.renderAttribute);
         this.listenTo(this.collection, "remove", this.removeAttribute);
+        this.listenTo(this.collection, "sort", this.orderAttributeMenu);
+        this.listenTo(this.collection, "namesUpdated", this.renderAttributes);
       },
 
       stopListeningToAttributes() {
@@ -320,6 +329,22 @@ define([
 
         // Hide the attribute when to start
         this.hideAttribute(attributeModel);
+      },
+
+      /**
+       * Render the autofill view and save a reference to it
+       * @returns {AutofillAttributesView} The autofill view
+       */
+      renderAutofill() {
+        const autofillContainer = this.els.autofill;
+        autofillContainer.innerHTML = "<div></div>";
+        const el = autofillContainer.querySelector("div");
+        this.autoFill = new AutofillAttributesView({
+          el,
+          collection: this.collection,
+          parentModel: this.parentModel,
+        }).render();
+        return this.autoFill;
       },
 
       /**
@@ -400,7 +425,41 @@ define([
         // Find the panel associated with the clicked menu item and show it
         const menuItem = e.currentTarget;
         const attrId = menuItem.getAttribute("data-id");
+        this.hideAutofill();
         this.showAttribute(this.collection.get(attrId));
+      },
+
+      /**
+       * Display the autofill view, hide the attributes.
+       */
+      showAutofill() {
+        this.hideAllAttributes();
+        this.renderAutofill();
+        this.validatePreviousAttribute();
+        // Hide the attribute list
+        this.els.list.style.display = "none";
+        // Show the autofill view
+        this.els.autofill.style.display = "block";
+        // Show auto-fill button as active
+        this.els.autofillButton.classList.add(BOOTSTRAP_CLASS_NAMES.active);
+      },
+
+      /**
+       * Hide the autofill view and show the attributes
+       */
+      hideAutofill() {
+        if (this.autoFill) {
+          this.autoFill.onClose();
+          this.autoFill.remove();
+          this.autoFill = null;
+        }
+
+        // Show the list again
+        this.els.list.style.display = "block";
+        // Hide the autofill view
+        this.els.autofill.style.display = "none";
+        // Remove active status from the autofill button
+        this.els.autofillButton.classList.remove(BOOTSTRAP_CLASS_NAMES.active);
       },
 
       /**
@@ -484,7 +543,7 @@ define([
         const activeAttrTab = this.el.querySelector(
           `.${BOOTSTRAP_CLASS_NAMES.active}.${CLASS_NAMES.menuItem}`,
         );
-        const activeID = activeAttrTab.getAttribute("data-id");
+        const activeID = activeAttrTab?.getAttribute("data-id");
         // get the model associated with the active attribute
         if (activeID) {
           const activeModel = this.collection.get(activeID);
@@ -554,173 +613,34 @@ define([
           .classList.toggle(CLASS_NAMES.previewRemove);
       },
 
-      /**
-       * Render the fill button if the format is fillable
-       */
-      renderFillButton() {
-        const { parentModel } = this;
-        const formatGuess =
-          parentModel.get("dataONEObject")?.get("formatId") ||
-          parentModel.get("entityType");
-        if (!this.fillableFormats.includes(formatGuess)) return;
-
-        this.els.fillButtonContainer.innerHTML =
-          this.fillButtonTemplateString.trim();
-      },
-
-      /** Handle the click event on the fill button */
-      handleFill() {
-        const view = this;
-        const d1Object = this.parentModel.get("dataONEObject");
-
-        if (!d1Object) return;
-
-        const file = d1Object.get("uploadFile");
-
-        try {
-          if (!file) {
-            this.handleFillViaFetch();
-          } else {
-            this.handleFillViaFile(file);
-          }
-        } catch (error) {
-          view.updateFillButton(
-            `<i class="${CLASS_NAMES.iconWarning}"></i> Couldn't fill`,
+      /** Re-order the menu items to match the order of the collection */
+      orderAttributeMenu() {
+        const menuItems = this.els.menu.querySelectorAll(
+          `.${CLASS_NAMES.menuItem}`,
+        );
+        const menuItemsArray = Array.from(menuItems);
+        this.collection.each((model) => {
+          const menuItem = menuItemsArray.find(
+            (item) => item.getAttribute("data-id") === model.cid,
           );
-        }
-      },
-
-      /**
-       * Handle the fill event using a File object
-       * @param {File} file - A File object to fill from
-       * @since 2.15.0
-       */
-      handleFillViaFile(file) {
-        const view = this;
-
-        Utilities.readSlice(file, this, (event) => {
-          if (event.target.readyState !== FileReader.DONE) {
-            return;
+          if (menuItem) {
+            this.els.menu.appendChild(menuItem);
           }
-
-          view.tryParseAndFillAttributeNames.bind(view)(event.target.result);
         });
       },
 
-      /**
-       * Handle the fill event by fetching the object
-       * @since 2.15.0
-       */
-      handleFillViaFetch() {
-        const view = this;
-        const objServiceUrl = MetacatUI.appModel.get("objectServiceUrl");
-        const fileId = this.parentModel.get("dataONEObject").get("id");
-        const url = `${objServiceUrl}${encodeURIComponent(fileId)}`;
-
-        this.updateFillButton(
-          `<i class="${CLASS_NAMES.iconProcessing}"></i> Please wait...`,
-          true,
-        );
-        this.disableFillButton();
-
-        fetch(url, MetacatUI.appUserModel.createFetchSettings())
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("Network response was not ok");
-            }
-            return response.text();
-          })
-          .then(view.tryParseAndFillAttributeNames.bind(this))
-          .catch((_e) => {
-            view.updateFillButton(
-              `<i class="${CLASS_NAMES.iconWarning}"></i> Couldn't fill`,
-            );
-          });
-      },
-
-      /**
-       * Attempt to parse header and fill attributes names
-       * @param {string} content - Part of a file to attempt to parse
-       * @since 2.15.0
-       */
-      tryParseAndFillAttributeNames(content) {
-        const names = Utilities.tryParseCSVHeader(content);
-
-        if (names.length === 0) {
-          this.updateFillButton(
-            `<i class="${CLASS_NAMES.iconWarning}"></i> Couldn't fill`,
-          );
-        } else {
-          this.updateFillButton(
-            `<i class=${CLASS_NAMES.iconSuccess}></i> Filled!`,
-          );
+      // TODO: Do we need this?
+      onClose() {
+        // Remove all event listeners
+        this.stopListeningToAttributes();
+        // Remove empty attribute models
+        this.collection.removeEmptyAttributes();
+        // Remove the autofill view
+        if (this.autoFill) {
+          this.autoFill.onClose();
+          this.autoFill.remove();
+          this.autoFill = null;
         }
-
-        // Make sure the button is enabled
-        this.enableFillButton();
-
-        this.updateAttributeNames(names);
-      },
-
-      /**
-       * Update attribute names from an array. This will update existing
-       * attributes' names or create new attributes as needed. This also
-       * performs a full re-render.
-       * @param {string[]} names - A list of names to apply
-       * @since 2.15.0
-       */
-      updateAttributeNames(names) {
-        if (!names) return;
-        this.listenToOnce(
-          this.collection,
-          "namesUpdated",
-          this.renderAttributes,
-        );
-        // Silent because we will re-render the view after this
-        this.collection.updateNames(names, this.parentModel, { silent: true });
-      },
-
-      /**
-       * Update the Fill button temporarily and set it back to the default. Used
-       * to show success or failure of the filling operation
-       * @param {string} messageHTML - HTML template string to set temporarily
-       * @param {boolean} disableTimeout - If true, the timeout will not be set
-       * @since 2.15.0
-       */
-      updateFillButton(messageHTML, disableTimeout) {
-        const view = this;
-        const button = this.els.fillButtonContainer.querySelector(
-          `.${CLASS_NAMES.fillButton}`,
-        );
-        button.innerHTML = messageHTML;
-
-        if (!disableTimeout) {
-          window.setTimeout(() => {
-            view.renderFillButton();
-          }, 3000);
-        }
-      },
-
-      /**
-       * Disable the Fill Attributes button
-       * @since 2.15.0
-       */
-      disableFillButton() {
-        const button = this.els.fillButtonContainer.querySelector(
-          `.${CLASS_NAMES.fillButton}`,
-        );
-        button.disabled = true;
-      },
-
-      /**
-       * Enable the Fill Attributes button
-       * @since 2.15.0
-       */
-      enableFillButton() {
-        const button = this.els.fillButtonContainer.querySelector(
-          `.${CLASS_NAMES.fillButton}`,
-        );
-        button.disabled = false;
       },
     },
   );
