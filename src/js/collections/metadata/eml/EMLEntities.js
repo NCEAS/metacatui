@@ -335,6 +335,18 @@ define([
       },
 
       /**
+       * Get all entities in the collection that have valid attributes. An
+       * entity with no attributes is considered valid.
+       * @returns {EMLEntity[]} The entities that have valid attributes
+       */
+      getEntitiesWithValidAttributes() {
+        return this.filter((entity) => {
+          const attrList = entity.get("attributeList");
+          return attrList && attrList.isValid();
+        });
+      },
+
+      /**
        * Duplicate the attribute list from a source entity to given target
        * entities in this collection. Any attributes in the target entities will
        * be removed and replaced with the source attributes. Remove events will
@@ -376,6 +388,8 @@ define([
           attrList.add(attrsStr, { parse: true });
           // remove xmlID from the target attributes
           attrList.each((attr) => attr.unset("xmlID"));
+          // Reference to entity model required for attr & sub-models
+          attrList.each((attr) => attr.set("parentModel", entity));
         });
       },
     },

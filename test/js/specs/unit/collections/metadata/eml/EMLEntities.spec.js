@@ -917,5 +917,65 @@ define([
           .should.equal("ExistingAttribute");
       });
     });
+
+    // write a test for getEntitiesWithValidAttributes
+    describe("getEntitiesWithValidAttributes", () => {
+      it("should return entities with valid attributes", () => {
+        const { entities } = state;
+        const xml = `
+          <dataset>
+            <dataTable>
+              <entityName>first</entityName>
+              <attributeList>
+                <attribute id="dummyAttr1">
+                  <attributeName>attr1</attributeName>
+                  <attributeDefinition>Def attr1</attributeDefinition>
+                  <measurementScale>
+                    <dateTime>
+                      <formatString>MM</formatString>
+                    </dateTime>
+                  </measurementScale>
+                </attribute>
+              </attributeList>
+            </dataTable>
+            <otherEntity>
+              <entityName>second</entityName>
+              <entityType>someType</entityType>
+              <attributeList>
+                <attribute id="notValid">
+                  <attributeName>attr2</attributeName>
+                </attribute>
+              </attributeList>
+            </otherEntity>
+          </dataset>`;
+        entities.add({ datasetNode: emlParse(xml) }, { parse: true });
+        entities.getEntitiesWithValidAttributes().length.should.equal(1);
+      });
+
+      it("should return an empty array if no entities have valid attributes", () => {
+        const { entities } = state;
+        const xml = `
+          <dataset>
+            <dataTable>
+              <entityName>first</entityName>
+              <attributeList>
+                <attribute id="dummyAttr1">
+                  <attributeName>notvalid</attributeName>
+                </attribute>
+              </attributeList>
+            </dataTable>
+            <otherEntity>
+              <entityName>second</entityName>
+              <entityType>someType</entityType>
+              <attributeList>
+              <attribute id="dummyAttr1">
+                <attributeName>notvalid</attributeName>
+              </attribute>
+            </otherEntity>
+          </dataset>`;
+        entities.add({ datasetNode: emlParse(xml) }, { parse: true });
+        entities.getEntitiesWithValidAttributes().length.should.equal(0);
+      });
+    });
   });
 });
