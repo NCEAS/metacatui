@@ -1410,40 +1410,6 @@ other class: .ui-slider-range */
  * Panel for drawing polygons in the map
  *
  */
-.draw__tool-panel {
-  display: flex;
-  position: absolute; /* Or relative, fixed, or sticky based on your layout */
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
-  bottom: 5px; /* Adjust to move it down from the top */
-  width: 100%; /* Adjust the size of the container */
-  /* height: auto; */
-  height: 80px;
-  padding: 0.5rem;
-  /* border: 1px solid #191919;  */
-  /* border-top: 0.1px solid #948989; */
-  /* background-color: #7D7D7D; */
-  z-index: 1;
-  background-color: var(--portal-col-primary-1, var(--map-col-bkg__deprecate));
-  /* gap: 50px;  */
-}
-
-.draw-tool {
-  display: flex;
-  /* grid-auto-rows: min-content; */
-  /* grid-gap: 1rem; */
-  justify-content: center;
-  align-items: center;
-  /* margin: 0 50px; */
-}
-
-.icon-pencil {
-  color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
-}
-
-.icon-trash {
-  color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
-}
 
 .draw__button {
   position: relative;
@@ -1453,7 +1419,6 @@ other class: .ui-slider-range */
   margin: 0;
   overflow: visible;
   text-transform: none;
-  -webkit-appearance: button;
   border: 0;
   border-radius: 50%;
   background: var(--portal-col-neutral-00, var(--map-col-buttons__deprecate));
@@ -1463,7 +1428,20 @@ other class: .ui-slider-range */
   padding: 0.25rem 0.25rem;
   cursor: pointer;
   margin: 0 25px;
-  /* gap: 8px;  */
+}
+
+.draw-tool {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .icon {
+    color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
+  }
+
+  .draw__button--disable .icon {
+    color: var(--portal-col-neutral-4, var(--map-col-text__deprecate));
+  }
 }
 
 .draw__button--active {
@@ -1516,30 +1494,19 @@ other class: .ui-slider-range */
 
 .download-panel {
   display: flex;
-  /* position: absolute;  */
   position: fixed;
-  /* width: 100%; */
   width: var(--map-width-toolbar-wide);
   left: 0;
-  right: 0;
   flex-direction: column;
-  /* border: 1px solid #ccc; 
-  background-color: #fff; 
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);  */
-  z-index: 2; /* Ensure it appears above other elements */
-  /* overflow: hidden;  */
+  padding-bottom: 1rem;
+  z-index: 2;
   align-items: center;
   justify-content: space-between; /* Pushes elements apart */
   gap: 20px;
-  bottom: 80px;
-  /* height: 200px; */
-  /* border: solid
-      var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate)); */
+  bottom: 0;
   border-width: 1px 0;
-  /* overflow: auto; */
   border-top: 1px solid
     var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
-  /* background-color: #f0eded;  */
   background-color: var(--portal-col-primary-1, var(--map-col-bkg__deprecate));
 }
 
@@ -1551,7 +1518,6 @@ other class: .ui-slider-range */
   margin: 0;
   overflow: visible;
   text-transform: none;
-  -webkit-appearance: button;
   border: 0;
   border-radius: var(--map-border-radius-big);
   background: var(--portal-col-neutral-00, var(--map-col-buttons__deprecate));
@@ -1570,7 +1536,6 @@ other class: .ui-slider-range */
   width: 100%;
   padding-top: 15px;
   margin-left: 30px;
-  /* margin-bottom: 5px; */
 }
 
 /* Group icon and label in a flex container */
@@ -1581,25 +1546,24 @@ other class: .ui-slider-range */
 }
 
 .download__label {
-  /* the important is needed to overwrite more specific styles set on portal title tags */
-  color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
   margin: 0;
-  /* font-size: 1.33rem; */
   font-size: 20px;
   font-weight: 700;
-  /* line-height: 1.25; */
-  /* padding: 1rem 1.5rem; */
   text-transform: capitalize;
   flex-grow: 1; /* Allows it to take up available space */
-  /* text-align: center;  */
   vertical-align: middle; /* Ensures inline alignment */
   margin-bottom: 3px;
 }
 
+.download-panel .label-container {
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
+  .download__label {
+    color: currentColor;
+  }
+}
+
 .icon-download-alt {
   font-size: 20px; /* Adjust icon size */
-  color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
-  /* margin-left: 30px; */
   vertical-align: bottom; /* Ensures inline alignment */
 }
 
@@ -1922,6 +1886,12 @@ other class: .ui-slider-range */
   /* background-color: gray; */
   color: gray;
   cursor: not-allowed;
+  trash {
+    color: var(
+      --portal-col-primary-6,
+      var(--map-col-text__deprecate)
+    ) !important;
+  }
 }
 #copyWMTS {
   background: none;

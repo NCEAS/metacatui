@@ -1,7 +1,6 @@
 "use strict";
 
 define([
-  "jquery",
   "underscore",
   "backbone",
   "text!templates/maps/toolbar.html",
@@ -10,12 +9,10 @@ define([
   // Sub-views - TODO: import these as needed
   "views/maps/LayersPanelView",
   "views/maps/HelpPanelView",
-  "views/maps/DrawToolView",
   "views/maps/DownloadPanelView",
   "views/maps/viewfinder/ViewfinderView",
   "views/maps/ShareUrlView",
 ], (
-  $,
   _,
   Backbone,
   Template,
@@ -24,7 +21,6 @@ define([
   // Sub-views
   LayersPanelView,
   HelpPanel,
-  DrawTool,
   DownloadPanelView,
   ViewfinderView,
   ShareUrlView,
@@ -100,11 +96,6 @@ define([
         linkActive: "toolbar__link--active",
         content: "toolbar__content",
         contentActive: "toolbar__content--active",
-        layerPanel: "layers-panel",
-        drawButton: ".draw__button",
-        drawButtonActive: "draw__button--active",
-        drawToolPanel: ".draw__tool-panel",
-        // drawContainer: "draw__all-content",
       },
 
       /**
@@ -185,12 +176,27 @@ define([
         {
           label: "Download",
           icon: "cloud-download",
-          // view: DownloadTool,
           view: DownloadPanelView,
           viewOptions: {},
-          // viewOptions: {
-          //   showDownloadPanel: "model.showDownloadPanel",
-          // }
+          action(view) {
+            // Show both the layer and download panels
+            const layerSectionEl = view.sectionElements.find(
+              (sectionEl) => sectionEl.linkEl.textContent === "Layers",
+            );
+            const downloadSectionEl = view.sectionElements.find(
+              (sectionEl) => sectionEl.linkEl.textContent === "Download",
+            );
+            view.inactivateAllSections();
+            view.defaultActivationAction(layerSectionEl);
+            view.defaultActivationAction(downloadSectionEl);
+          },
+          isVisible(_model) {
+            // TODO: Add an option to show or hide the download panel
+            // to the map model. It should be false by default, but
+            // we should update the PDG portal to true.
+            // return model.get("showDownloadPanel");
+            return true;
+          },
         },
         {
           label: "Help",
@@ -301,6 +307,7 @@ define([
         this.sections.forEach((sectionOption) => {
           // Render the link and content elements
           const linkEl = view.renderSectionLink(sectionOption);
+
           const { action } = sectionOption;
           let contentEl = null;
           let sectionView;
@@ -365,46 +372,11 @@ define([
        */
       handleLinkClick(sectionEl) {
         const toolbarOpen = this.isOpen;
-        let sectionActive = sectionEl.isActive;
-        const drawPanel = document.querySelector(this.classes.drawToolPanel); // check if there is another way to get this from sectionEl
-        const downloadPanel = document.querySelector(".download-panel");
-
-        this.sectionElements.forEach((section) => {
-          const els = section.contentEl?.querySelectorAll("*") || [];
-          const hasLayerClass = Array.from(els).some((el) =>
-            el.classList.contains("layers-panel"),
-          );
-          const hasDrawClass = Array.from(els).some((el) =>
-            el.classList.contains("draw__tool-panel"),
-          );
-          if (hasLayerClass) {
-            this.layerSection = section;
-          }
-          if (hasDrawClass) {
-            this.drawSection = section;
-          }
-        });
-
-        if (
-          sectionEl.contentEl.querySelector(".draw__tool-panel") &&
-          sectionActive
-        ) {
-          sectionActive = false;
-        }
-        if (
-          toolbarOpen &&
-          sectionActive &&
-          !sectionEl.contentEl.querySelector(this.classes.drawToolPanel)
-        ) {
+        const sectionActive = sectionEl.isActive;
+        if (toolbarOpen && sectionActive) {
           this.close();
-          if (drawPanel.style.visibility === "visible") {
-            drawPanel.style.visibility = "hidden";
-            downloadPanel.style.visibility = "hidden";
-            this.drawSection.linkEl.classList.remove(this.classes.linkActive); // Change the toolbar link to inactive
-          }
           return;
         }
-
         if (!toolbarOpen && sectionEl.contentEl) {
           this.open();
         }
@@ -413,38 +385,6 @@ define([
             this.inactivateAllSections();
           }
           this.activateSection(sectionEl);
-
-          if (
-            !sectionEl.contentEl.querySelector(this.classes.drawToolPanel) &&
-            drawPanel.style.visibility === "visible"
-          ) {
-            drawPanel.style.visibility = "hidden";
-            downloadPanel.style.visibility = "hidden";
-            this.drawSection.linkEl.classList.remove(this.classes.linkActive); // Change the toolbar link to inactive
-          }
-
-          if (
-            sectionEl.contentEl.querySelector(this.classes.drawToolPanel) &&
-            !sectionActive
-          ) {
-            if (drawPanel.style.visibility === "") {
-              drawPanel.style.visibility = "visible";
-              downloadPanel.style.visibility = "visible";
-            } else if (drawPanel.style.visibility === "visible") {
-              drawPanel.style.visibility = "hidden";
-              downloadPanel.style.visibility = "hidden";
-              this.drawSection.linkEl.classList.remove(this.classes.linkActive); // Change the toolbar link to inactive
-            } else if (drawPanel.style.visibility === "hidden") {
-              // const drawButtonEl = document.querySelector(".draw__button");
-              drawPanel.style.visibility = "visible";
-              downloadPanel.style.visibility = "visible";
-              // drawButtonEl.classList.add(this.classes.drawButtonActive);
-            }
-            // Activate the Layer Panel when Draw Tool is selected
-            this.activateSection(this.layerSection);
-          }
-
-          // this.activateSection(sectionEl);
         }
       },
 

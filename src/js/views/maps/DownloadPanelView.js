@@ -41,8 +41,7 @@ define([
        * The HTML classes to use for this view's element
        * @type {string}
        */
-      // className: "draw-tool",
-      className: "draw__tool-panel",
+      className: "download-panel",
 
       /**
        * Class to use for the buttons
@@ -206,8 +205,6 @@ define([
         toolbarLink: ".toolbar__links",
         toolbarLinkActive: "toolbar__link--active",
         toolbarContentActive: "toolbar__content--active",
-        drawPanel: ".draw__tool-panel",
-        downloadPanel: ".download-panel",
         layerItemPanel: "download-expansion-panel",
         layerItemPanelToggle: "download-expansion-panel__toggle",
         layerItemCheckbox: "download-expansion-panel__checkbox",
@@ -619,7 +616,6 @@ define([
       renderToolbar() {
         // alert("Rendering draw toolbar");
         const view = this;
-        const { el } = this;
         const drawContainer = this.el.querySelector(".draw-tool");
         if (!drawContainer) return;
         // Create the buttons
@@ -639,7 +635,7 @@ define([
           });
           if (!view.buttonEls) view.buttonEls = {};
           view.buttonEls[`${options.name}Button`] = button;
-          el.appendChild(button);
+          drawContainer.appendChild(button);
         });
         const saveButtonEl = this.buttonEls.saveButton;
         const clearButtonEl = this.buttonEls.clearButton;
@@ -663,12 +659,7 @@ define([
         sectionEl.classList.remove(this.classes.toolbarLinkActive); // Change the toolbar link to inactive
         sectionEl.classList.remove(this.classes.toolbarContentActive);
         this.reset();
-        const drawPanel = document.querySelector(this.classes.drawPanel);
-        const downloadPanel = document.querySelector(
-          this.classes.downloadPanel,
-        );
-        drawPanel.style.visibility = this.displayOptions.invisible; // this needs to be moved to CSS
-        downloadPanel.style.visibility = this.displayOptions.invisible; // this needs to be moved to CSS
+        this.el.style.visibility = this.displayOptions.invisible; // this needs to be moved to CSS
       },
 
       /**
