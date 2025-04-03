@@ -1006,7 +1006,7 @@ define([
             });
             // Update the text of download-data-list__panel
             document.querySelector(".download-data-list__panel").textContent =
-              "Select products below and click 'Download'. Access full downloads (including original shapefiles) in the Layers panel above. ";
+              "Select products below and click 'Download'. To download full datasets (including original shapefiles) please use the Layers panel above. ";
 
             // Progress Bar
             const dataListPanel = document.querySelector(
