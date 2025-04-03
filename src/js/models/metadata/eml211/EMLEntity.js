@@ -151,22 +151,31 @@ define([
               "change:fileName",
             );
           }
-
-          // Pass on changes to the parent model when the attribute list is
-          // replaced or updated
-          this.listenTo(this, "change:attributeList", () => {
-            this.trickleUpChange();
-            const attrListCollection = this.get("attributeList");
-            this.stopListening(attrListCollection, "update");
-            this.listenTo(attrListCollection, "update", () => {
-              this.trigger("change:attributeList");
-            });
-          });
-          this.listenToOnce(this.get("attributeList"), "update", () => {
-            this.trigger("change:attributeList");
-          });
           // Listen to changes on the file name
           model.listenTo(dataONEObj, "change:fileName", model.updateFileName);
+        });
+
+        this.listenToAttributeList();
+      },
+
+      /**
+       * Listen to changes on the attributeList collection and trigger change
+       * events on the parent model and collection
+       */
+      listenToAttributeList() {
+        const attrList = this.get("attributeList");
+        this.stopListening(attrList, "update change");
+        this.listenTo(attrList, "update change", () => {
+          this.trickleUpChange();
+          this.trigger("change", this, this.get("attributeList"));
+          this.collection.trigger("update", this, this.get("attributeList"));
+        });
+        this.listenTo(this, "change:attributeList", () => {
+          const previousList = this.previous("attributeList");
+          if (previousList) {
+            this.stopListening(previousList, "update change");
+          }
+          this.listenToAttributeList();
         });
       },
 

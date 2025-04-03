@@ -136,26 +136,50 @@ define([
           );
         }
 
-        this.stopListening(this.get("missingValueCodes"));
-        this.listenTo(
-          this.get("missingValueCodes"),
-          "update",
-          this.trickleUpChange,
-        );
-        this.on(
-          "change:attributeName " +
-            "change:attributeLabel " +
-            "change:attributeDefinition " +
-            "change:storageType " +
-            "change:measurementScale " +
-            "change:missingValueCodes " +
-            "change:accuracy " +
-            "change:coverage " +
-            "change:methods " +
-            "change:references " +
-            "change:annotation",
-          this.trickleUpChange,
-        );
+        this.listenToMissingValueCodes();
+        const attrsToListenTo = [
+          "xmlID ",
+          "attributeLabel ",
+          "attributeDefinition ",
+          "storageType ",
+          "measurementScale ",
+          "accuracy ",
+          "coverage ",
+          "methods ",
+          "references ",
+          "annotation",
+        ];
+        const listenStr = attrsToListenTo
+          .map((attr) => `change:${attr}`)
+          .join(" ");
+        this.stopListening(this, listenStr);
+        this.listenTo(this, listenStr, this.trickleUpChange);
+      },
+
+      /**
+       * Listen to changes on the missingValueCodes collection and trigger a
+       * change on this model and the collection
+       */
+      listenToMissingValueCodes() {
+        const missingValueCodes = this.get("missingValueCodes");
+        this.stopListening(missingValueCodes, "update change");
+        this.listenTo(missingValueCodes, "update change", () => {
+          this.trigger("change", this, this.get("missingValueCodes"));
+          this.collection.trigger(
+            "update",
+            this,
+            this.get("missingValueCodes"),
+          );
+          this.trickleUpChange();
+        });
+        this.stopListening(this, "change:missingValueCodes");
+        this.listenTo(this, "change:missingValueCodes", () => {
+          const previousList = this.previous("missingValueCodes");
+          if (previousList) {
+            this.stopListening(previousList, "update change");
+          }
+          this.listenToMissingValueCodes();
+        });
       },
 
       /** @inheritdoc */

@@ -207,6 +207,9 @@ define([
 
         // If the current value is an array...
         if (Array.isArray(currentValue)) {
+          // Clone the value so that when we set it on the model, it triggers
+          // the expected change events
+          let newArray = [...currentValue];
           // Get the position of the updated DOM element
           const index = this.$(`.input[data-category='${category}']`).index(
             e.target,
@@ -223,14 +226,11 @@ define([
             ) {
               // Remove one element at this index instead of inserting an empty
               // value
-              const newArray = currentValue.splice(index, 1);
-
-              // Set the new array on the model
-              this.model.set(category, newArray);
+              newArray = newArray.splice(index, 1);
             }
             // Otherwise, insert the value in the array at the calculated index
             else {
-              currentValue[index] = newValue;
+              newArray[index] = newValue;
             }
           }
           // Otherwise if it's an empty array AND there is a value to set...
@@ -240,11 +240,9 @@ define([
             newValue !== null
           ) {
             // Push the new value into this array
-            currentValue.push(newValue);
+            newArray.push(newValue);
           }
-
-          // Trigger a change on this model attribute
-          this.model.trigger(`change:${category}`);
+          this.model.set(category, newArray);
         }
         // If the value is not an array check that there is an actual value here
         else if (
