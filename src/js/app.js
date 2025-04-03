@@ -101,6 +101,7 @@ require.config({
     //Cesium
     cesium:
       "https://cesium.com/downloads/cesiumjs/releases/1.91/Build/Cesium/Cesium",
+    jszip: `${MetacatUI.root}/components/jszip.min`,
     //Have a null fallback for our d3 components for browsers that don't support SVG
     d3: MetacatUI.d3URL,
     LineChart: ["views/LineChartView", null],

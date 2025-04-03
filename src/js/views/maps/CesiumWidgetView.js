@@ -174,7 +174,6 @@ define([
           if (!MetacatUI.appModel.get("enableCesium")) {
             return;
           }
-
           // Save a reference to this view
           const view = this;
 
@@ -608,6 +607,7 @@ define([
         if (now - lastCall < delay) return;
         this.setHoveredFeaturesLastCall = now;
         const pickedFeature = view.scene.pick(position);
+
         view.interactions.setHoveredFeatures([pickedFeature]);
       },
 
