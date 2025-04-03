@@ -973,7 +973,7 @@ define([
                   this.saveButtonEl,
                   this.buttonClassDisable,
                   layerItemSelectBox.dataset.layerId,
-                  fileTypeDropdown.value,
+                  // fileTypeDropdown.value,
                 ); // Update Save button state -- moved from layer check-box change event
                 const fileSize = view.getRawFileSize(
                   resolutionDropdown.value,
@@ -1048,14 +1048,14 @@ define([
        * @param {string} buttonClassDisable - The CSS class name used to disable the save button.
        * @param {string} layerID - The ID of the map layer being interacted with.
        */
-      layerSelection(saveButtonEl, buttonClassDisable, layerID, fileType) {
+      layerSelection(saveButtonEl, buttonClassDisable, layerID) {
         const view = this;
-        const checkboxes = document.querySelectorAll(
-          ".download-expansion-panel__checkbox",
-        );
-        const isAnyChecked = Array.from(checkboxes).some(
-          (checkbox) => checkbox.checked,
-        );
+        // const checkboxes = document.querySelectorAll(
+        //   ".download-expansion-panel__checkbox",
+        // );
+        // const isAnyChecked = Array.from(checkboxes).some(
+        //   (checkbox) => checkbox.checked,
+        // );
         const dropdowns = document.querySelectorAll(
           ".downloads-dropdown-container .fileType-downloads-dropdown",
         );
@@ -1141,8 +1141,8 @@ define([
        * @returns {number} The total file size for the specified layer in bytes.
        */
       getRawFileSize(
-        zoomLevel,
-        fileType,
+        resolution,
+        fileFormat,
         layerID,
         fullDownloadLink,
         pngDownloadLink,
@@ -1150,7 +1150,7 @@ define([
         id,
         layerName,
         wmtsDownloadLink,
-        metadataPid,
+        metadataURL,
       ) {
         const layerSelectBoxes = document.querySelectorAll(
           ".download-expansion-panel__checkbox",
@@ -1164,34 +1164,34 @@ define([
         let totalFileSize;
         const urls = [];
         let baseURL;
-        if (fileType !== "wmts") {
+        if (fileFormat !== "wmts") {
           this.tileDetails = this.getTileCoordinates(
             this.boundingBox,
-            zoomLevel,
+            resolution,
           );
 
           const { tileXWest, tileXEast, tileYNorth, tileYSouth } =
             this.tileDetails;
 
           // Generate TileMatrix entries for each tile in range
-          if (fileType === "png") {
+          if (fileFormat === "png") {
             [baseURL] = pngDownloadLink.split("{");
-          } else if (fileType === "tif") {
+          } else if (fileFormat === "tif") {
             [baseURL] = this.layerDownloadLinks[layerID];
-          } else if (fileType === "gpkg") {
-            [baseURL] = gpkgDownloadLink.split("15/"); //TO DO - find a better way to get base URL once services are accessed through Map Model
+          } else if (fileFormat === "gpkg") {
+            [baseURL] = gpkgDownloadLink.split("15/"); // TO DO - find a better way to get base URL once services are accessed through Map Model
           }
 
           for (let x = tileXWest; x <= tileXEast; x += 1) {
             for (let y = tileYNorth; y <= tileYSouth; y += 1) {
               // pngDownloadLink = "https://arcticdata.io/data/tiles/10.18739/A2KW57K57/WGS1984Quad/{TileMatrix}/{TileCol}/{TileRow}.png"
 
-              const resourceURL = `${baseURL}${zoomLevel}/${x}/${y}.${fileType}`;
+              const resourceURL = `${baseURL}${resolution}/${x}/${y}.${fileFormat}`;
               urls.push(resourceURL);
             }
           }
           const urlCount = urls.length;
-          totalFileSize = urlCount * this.fileSizes[fileType];
+          totalFileSize = urlCount * this.fileSizes[fileFormat];
         } else {
           // urls.push(this.layerDownloadLinks[layerID][1]);
           // totalFileSize = this.fileSizes[fileType];
@@ -1218,12 +1218,12 @@ define([
           fullDownloadLink, // Full download link
           pngDownloadLink, // PNG download link
           id, // Layer ID or any other unique identifier
-          zoomLevel: zoomLevel,
+          zoomLevel: resolution,
           baseURL: baseURL || null,
           layerName,
-          fileType: fileType,
+          fileType: fileFormat,
           fileSize: totalFileSize,
-          metadataPid: metadataPid,
+          metadataPid: metadataURL,
         };
         return totalFileSize;
       },
@@ -1458,7 +1458,7 @@ define([
                         })
                         .catch((error) => {
                           console.error(
-                            "Error fetching metadata for ${layerID}:",
+                            `Error fetching metadata for ${layerID}:`,
                             error,
                           );
                         })

@@ -435,7 +435,7 @@ define([
               downloadPanel.style.visibility = "hidden";
               this.drawSection.linkEl.classList.remove(this.classes.linkActive); // Change the toolbar link to inactive
             } else if (drawPanel.style.visibility === "hidden") {
-              const drawButtonEl = document.querySelector(".draw__button");
+              // const drawButtonEl = document.querySelector(".draw__button");
               drawPanel.style.visibility = "visible";
               downloadPanel.style.visibility = "visible";
               // drawButtonEl.classList.add(this.classes.drawButtonActive);
