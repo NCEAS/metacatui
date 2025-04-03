@@ -39,6 +39,21 @@ define([
       },
 
       /**
+       * Ensure new models are always at the end of the collection.
+       * @param {EMLAttribute} model - The model to compare
+       * @returns {number} A value greater than 0 if the model is new, 0
+       * otherwise
+       */
+      comparator(model) {
+        // If the model is new, return a value greater than 0 to sort it to the end
+        if (model.get("isNew")) {
+          return 1;
+        }
+        // Otherwise, return 0 to keep the order of the existing models
+        return 0;
+      },
+
+      /**
        * Get the model that contains this collection. Searches through all of
        * the attributes in the collection to find the one that has the
        * parentModel set.
@@ -107,6 +122,15 @@ define([
       },
 
       /**
+       * Remove all attributes that are empty
+       * @returns {EMLAttribute[]} The removed attributes
+       */
+      removeEmptyAttributes() {
+        const emptyAttributes = this.filter((attr) => attr.isEmpty());
+        return this.remove(emptyAttributes);
+      },
+
+      /**
        * Given an array of strings, update the names of the attributes in the
        * collection to match the array. If the number of names in the array
        * exceeds the number of attributes in the collection, new attributes will
@@ -145,6 +169,20 @@ define([
           }
         });
         return errors;
+      },
+
+      /**
+       * Check if the collection is valid. If not, set the validationError
+       * property to the validation errors.
+       * @returns {boolean} True if the collection is valid, false otherwise
+       */
+      isValid() {
+        const errors = this.validate();
+        if (errors.length) {
+          this.validationError = errors;
+          return false;
+        }
+        return true;
       },
 
       /**

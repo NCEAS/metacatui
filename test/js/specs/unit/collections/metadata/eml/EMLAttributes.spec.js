@@ -245,5 +245,46 @@ define([
         expect(updatedDOM.childNodes.length).to.equal(0);
       });
     });
+
+    describe("comparator", () => {
+      it("should sort new models to the end of the collection", () => {
+        const newModel = new Backbone.Model({ isNew: true });
+        const existingModel = new Backbone.Model({ isNew: false });
+        state.emlAttributes.reset([newModel, existingModel]);
+        state.emlAttributes.sort();
+        expect(state.emlAttributes.at(0)).to.equal(existingModel);
+        expect(state.emlAttributes.at(1)).to.equal(newModel);
+      });
+    });
+
+    describe("removeEmptyAttributes", () => {
+      it("should remove all empty attributes from the collection", () => {
+        const emptyModel = new Backbone.Model();
+        emptyModel.isEmpty = () => true;
+        const nonEmptyModel = new Backbone.Model();
+        nonEmptyModel.isEmpty = () => false;
+        state.emlAttributes.reset([emptyModel, nonEmptyModel]);
+        const removed = state.emlAttributes.removeEmptyAttributes();
+        expect(removed).to.include(emptyModel);
+        expect(state.emlAttributes.models).to.not.include(emptyModel);
+        expect(state.emlAttributes.models).to.include(nonEmptyModel);
+      });
+    });
+
+    describe("isValid", () => {
+      it("should return true if all attributes are valid", () => {
+        const validModel = new Backbone.Model();
+        validModel.isValid = () => true;
+        state.emlAttributes.reset([validModel]);
+        expect(state.emlAttributes.isValid()).to.be.true;
+      });
+
+      it("should return false if any attribute is invalid", () => {
+        const invalidModel = new Backbone.Model();
+        invalidModel.isValid = () => false;
+        state.emlAttributes.reset([invalidModel]);
+        expect(state.emlAttributes.isValid()).to.be.false;
+      });
+    });
   });
 });

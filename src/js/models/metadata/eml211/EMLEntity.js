@@ -574,7 +574,7 @@ define([
 
       /** Pass any change events up to the parent EML model */
       trickleUpChange() {
-        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+        MetacatUI.rootDataPackage?.packageModel?.set("changed", true);
       },
     },
   );
