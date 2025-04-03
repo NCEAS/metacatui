@@ -962,12 +962,10 @@ define([
               }
             });
 
-            // Remove existing taxon coverage nodes that don't have an
-            // accompanying model
+            // Remove existing taxon coverage nodes that don't have an accompanying model
             this.removeExtraNodes(existingTaxonCov, this.get("taxonCoverage"));
           }
-          // If all the taxon coverages are empty, remove the parent
-          // taxonomicCoverage node
+          // If all the taxon coverages are empty, remove the parent taxonomicCoverage node
           else if (
             !sortedTaxonModels.notEmpty ||
             sortedTaxonModels.notEmpty.length == 0
@@ -2462,15 +2460,52 @@ define([
             const found = annotations.where({
               propertyURI: this.get("dataSensitivityPropertyURI"),
             });
-            if (!found || !found.length) {
-            } else {
+            if (found?.length) {
               return found;
             }
-          } else {
           }
+          return undefined;
         } catch (e) {
           console.error("Failed to get Data Sensitivity from EML model: ", e);
+          return undefined;
         }
+      },
+
+      /**
+       * Checks if there is at least one taxon coverage model in the EML model
+       * @returns {boolean} - True if there is at least one taxon coverage model
+       * in the EML model
+       * @since 0.0.0
+       */
+      hasTaxonomicCoverage() {
+        const taxonCoverage = this.get("taxonCoverage");
+        return (
+          Array.isArray(taxonCoverage) &&
+          taxonCoverage?.length > 0 &&
+          taxonCoverage[0] instanceof EMLTaxonCoverage
+        );
+      },
+
+      /**
+       * Create a new taxon coverage model and add it to the EML model within an
+       * array on the taxonCoverage attribute. If there is already a non-empty
+       * array of taxon coverage models, this function will not add a new one
+       * and will return false instead.
+       * @param {boolean} [silent] - Whether to suppress the change event
+       * when adding the taxon coverage model to the EML model
+       * @returns {EMLTaxonCoverage[] | false} - The new EMLTaxonCoverage model
+       * that was added to the EML model, or false if a new model was not added
+       * @since 0.0.0
+       */
+      addTaxonomicCoverage(silent = false) {
+        if (this.hasTaxonomicCoverage()) return false;
+        const taxonCov = [
+          new EMLTaxonCoverage({
+            parentModel: this,
+          }),
+        ];
+        this.set("taxonCoverage", taxonCov, { silent });
+        return taxonCov;
       },
     },
   );
