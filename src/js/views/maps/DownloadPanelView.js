@@ -1446,7 +1446,7 @@ define([
                         .then((metadataBlob) => {
                           // Add metadata file at the top level of the ZIP
                           layerZip.file(
-                            `${layerID}_metadata.eml`,
+                            `${layerID}_metadata.xml`,
                             metadataBlob,
                           );
                         })
