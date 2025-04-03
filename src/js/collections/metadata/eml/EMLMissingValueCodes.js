@@ -64,6 +64,14 @@ define(["backbone", "models/metadata/eml211/EMLMissingValueCode"], function (
       },
 
       /**
+       * Check if the collection has models with data
+       * @returns {boolean} False if all models are empty, true otherwise
+       */
+      hasNonEmptyModels() {
+        return this.some((model) => !model.isEmpty());
+      },
+
+      /**
        * Validate the collection of missing value codes. This will remove any
        * empty models from the collection.
        * @returns {Array} An array of error messages
