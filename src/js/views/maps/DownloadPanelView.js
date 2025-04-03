@@ -1115,7 +1115,13 @@ define([
               .catch((err) => console.error("Copy failed:", err));
           });
         } else {
-          fileSizeInfoBox.textContent = `Maximum download file size ≤ ${(fileSizeDetails / 1000).toFixed(2)} MB`;
+          const optionalComment = "Use WMTS for accessing large data volume";
+          if (fileSizeDetails > 1050000) {
+            fileSizeInfoBox.textContent = `Maximum download file size ≤ ${(fileSizeDetails / 1000000).toFixed(2)} GB. ${optionalComment}.`;
+          } else {
+            fileSizeInfoBox.textContent = `Maximum download file size ≤ ${(fileSizeDetails / 1000).toFixed(2)} MB.`;
+          }
+          // fileSizeInfoBox.textContent = `Maximum download file size ≤ ${(fileSizeDetails / 1000).toFixed(2)} MB`;
         }
       },
 
