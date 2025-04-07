@@ -8,7 +8,7 @@
     "cheerio": "^1.0.0-rc.11",
     "express": "^4.21.1",
     "fomantic-ui": "^2.9.4-beta.65",
-    "puppeteer": "^22.11.2",
+    "puppeteer": "^22.15.0",
     "sinon": "^17.0.1"
   },
   "devDependencies": {
