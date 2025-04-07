@@ -1238,9 +1238,8 @@ define([
             // [baseURL] = this.layerDownloadLinks[layerID];
             [baseURL] = tiffDownloadLink.split("{"); // test using tiff url from map config
           } else if (fileFormat === "gpkg") {
-            [baseURL] = gpkgDownloadLink.split("15/"); // TO DO - find a better way to get base URL once services are accessed through Map Model
+            [baseURL] = gpkgDownloadLink.split(this.tileMatrixSet);
           }
-
           for (let x = tileXWest; x <= tileXEast; x += 1) {
             for (let y = tileYNorth; y <= tileYSouth; y += 1) {
               // Update --  retrieving png from map config
