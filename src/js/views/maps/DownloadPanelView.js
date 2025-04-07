@@ -699,7 +699,7 @@ define([
         let selectedLayersList = [];
 
         // alert("Display layer list");
-        console.log(this.mapModel.get("allLayers"));
+        // console.log(this.mapModel.get("allLayers"));
 
         this.mapModel.get("allLayers").forEach((value) => {
           // if(value?.attributes?.originalVisibility === true && value.attributes.type === "WebMapTileServiceImageryProvider") {
@@ -1012,6 +1012,7 @@ define([
                   fileSizeInfoBox,
                   fileSize,
                   fileTypeDropdown.value,
+                  layerItemSelectBox.dataset.layerId,
                 );
               });
 
@@ -1141,9 +1142,11 @@ define([
        * @param {HTMLElement} infoBox - The HTML element where the file size information will be displayed.
        * @param {number} fileSizeDetails - The size of the file in kilobytes (KB).
        * @param {string} fileType - The type of the file (e.g., "wmts").
+       * @param {string} layerID - The ID of the map layer being interacted with.
        */
-      updateTextbox(infoBox, fileSizeDetails, fileType) {
+      updateTextbox(infoBox, fileSizeDetails, fileType, layerID) {
         const fileSizeInfoBox = infoBox;
+        const view = this;
         if (fileType === "wmts") {
           fileSizeInfoBox.innerHTML = `
             <span id="fileSizeText">${fileSizeDetails}</span>
@@ -1164,11 +1167,18 @@ define([
         } else {
           const optionalComment = "Use WMTS for accessing large data volume";
           if (fileSizeDetails > 1050000) {
-            fileSizeInfoBox.textContent = `Maximum download file size ≤ ${(fileSizeDetails / 1000000).toFixed(2)} GB. ${optionalComment}.`;
+            // fileSizeInfoBox.textContent = `Estimated download file size ≤ ${(fileSizeDetails / 1000000).toFixed(2)} GB. ${optionalComment}.`;
+            fileSizeInfoBox.textContent = `Estimated download file size > 1 GB. ${optionalComment}.`;
           } else {
             fileSizeInfoBox.textContent = `Maximum download file size ≤ ${(fileSizeDetails / 1000).toFixed(2)} MB.`;
           }
           // fileSizeInfoBox.textContent = `Maximum download file size ≤ ${(fileSizeDetails / 1000).toFixed(2)} MB`;
+        }
+
+        // Instead of disabling the Download button for large file sizes simply remove the layer from the
+        // the download list variable (i.e., dataDownloadLinks)
+        if (view.dataDownloadLinks[layerID].fileSize > 1050000) {
+          delete view.dataDownloadLinks[layerID];
         }
       },
 
