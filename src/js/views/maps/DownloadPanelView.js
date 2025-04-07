@@ -19,9 +19,9 @@ define([
 ) => {
   /**
    * @class DownloadPanelView
-   * @classdesc The DownloadPanelView allows a user to draw an arbitrary polygon on
-   * the map. The polygon is stored in a GeoPoints collection and displayed on
-   * the map using a connected CesiumVectorData model.
+   * @classdesc The DownloadPanelView allows a user to draw an arbitrary polygon
+   * on the map. The polygon is stored in a GeoPoints collection and displayed
+   * on the map using a connected CesiumVectorData model.
    * @classcategory Views/Maps
    * @name DownloadPanelView
    * @augments Backbone.View
@@ -180,8 +180,7 @@ define([
       tileMatrixSet: "WGS1984Quad",
 
       /**
-       * The file size for tiled data in geotiff format
-       * (in KB).
+       * The file size for tiled data in geotiff format (in KB).
        * @type {number}
        */
       fileSizes: {
@@ -192,14 +191,15 @@ define([
       },
 
       /**
-       * The array that store the list of URLs for each data layer
-       * that is selected for partial download.
+       * The array that store the list of URLs for each data layer that is
+       * selected for partial download.
        * @type {Array}
        */
       dataDownloadLinks: {},
 
       /**
-       * The classes of the sub-elements that combined to create the download panel view.
+       * The classes of the sub-elements that combined to create the download
+       * panel view.
        */
       classes: {
         toolbarLink: ".toolbar__links",
@@ -216,11 +216,11 @@ define([
         fileSizeBox: "downloads-textbox",
       },
 
-      displayOptions: {
-        invisible: "hidden",
-        visible: "",
-      },
-
+      /**
+       * The z levels available for download along with their approximate pixel
+       * resolution.
+       * @type {object}
+       */
       zoomLevels: {
         0: "156543.03 m/px",
         1: "78271.52 m/px",
@@ -240,84 +240,44 @@ define([
         15: "4.78 m/px",
       },
 
-      // fileTypeOptions: {
-      //   tif: "Geotiff",
-      //   png: "PNG",
-      //   wmts: "WMTS file",
-      // },
-
-      resolutionDropdownOptions: {
-        resolutionDropdownLabel: "Resolution",
-        resolutionDropdownDefaultValue: "",
-        resolutionDropdownDefaultText: "Select Resolution",
-      },
-
-      fileTypeDropdownOptions: {
-        fileTypeDropdownLabel: "File Format",
-        fileTypeDropdownDefaultValue: "",
-        fileTypeDropdownDefaultText: "Select File Type",
-      },
-
       /**
-       * The download links for all the tiled datasets
-       * key: layer ID
-       * value 0: geotiff link
-       * value 1: wmts link
+       * UI options for the dropdowns
+       * @type {object}
+       * @property {object} resolution - The resolution dropdown options
+       * @property {object} fileType - The file type dropdown options
+       * @property {string} label - The label for the dropdown
+       * @property {string} defaultValue - The default value for the dropdown
+       * @property {string} defaultText - The default text for the dropdown
        */
+      dropdownOptions: {
+        resolution: {
+          label: "Resolution",
+          defaultValue: "",
+          defaultText: "Select Resolution",
+        },
+        fileType: {
+          label: "File Format",
+          defaultValue: "",
+          defaultText: "Select File Type",
+        },
+      },
 
-      // layerDownloadLinks: {
-      //   iwp: [
-      //     "https://arcticdata.io/data/10.18739/A2KW57K57/iwp_geotiff_high/WGS1984Quad/",
-      //     "https://arcticdata.io/data/tiles/10.18739/A2KW57K57/WMTSCapabilities.xml",
-      //     "https://arcticdata.io/data/10.18739/A2KW57K57/iwp_geopackage_high/WGS1984Quad/",
-      //   ], // iwp
-      //   infrastructure: [
-      //     "https://arcticdata.io/data/10.18739/A21J97929/output/geotiff/WGS1984Quad/",
-      //     "https://arcticdata.io/data/tiles/10.18739/A21J97929/WMTSCapabilities.xml",
-      //     null,
-      //   ], // infrastructure
-      //   swi: [
-      //     null,
-      //     "https://arcticdata.io/data/tiles/10.18739/A2037V/WMTSCapabilities.xml",
-      //     null,
-      //   ], // surface water
-      //   dlbns1419: [
-      //     null,
-      //     "https://arcticdata.io/data/tiles/10.18739/A2K35MF71/WMTSCapabilities.xml",
-      //     null,
-      //   ], // drained lake basins
-      //   avg: [
-      //     null,
-      //     "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
-      //     null,
-      //   ], // average Terrestrial Net CO2 Balance
-      //   fire: [
-      //     null,
-      //     "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
-      //     null,
-      //   ], // average Fire Emissions
-      //   trend: [
-      //     null,
-      //     "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
-      //     null,
-      //   ], // trends In Terrestrial Net CO2 Balance
-      // },
       /**
        * The objectServiceUrl from the MapModel
        * @type {string}
        */
       objectServiceUrl: "",
+
       /**
        * Initializes the DrawTool
        * @param {object} options - A literal object with options to pass to the
        * view
        * @param {Map} options.model - The Cesium map model to draw on. This must
        * be the same model that the mapWidget is using.
-       * @param {CesiumWidgetView} options.cesiumWidgetView
-       * @param {string} [options.mode=false] - The initial mode of the draw
-       * tool.
+       * @param {CesiumWidgetView} options.cesiumWidgetView - The
+       * CesiumWidgetView that contains the map.
+       * @param {string} [options.mode] - The initial mode of the draw tool.
        */
-
       initialize(options) {
         this.mapModel = options.model || new Map();
         this.objectServiceUrl = MetacatUI.appModel.get("objectServiceUrl");
@@ -457,8 +417,8 @@ define([
       },
 
       /**
-       * Show an error message to the user if the map model is not available
-       * or any other error occurs.
+       * Show an error message to the user if the map model is not available or
+       * any other error occurs.
        * @param {string} [message] - The error message to show to the user.
        */
       showError(message) {
@@ -622,7 +582,6 @@ define([
         view.buttons.forEach((options) => {
           const button = document.createElement("button");
           button.className = this.buttonClass;
-          // button.innerHTML = `<i class="icon icon-${options.icon}"></i> ${options.label}`;
           button.innerHTML = `
               <span class="custom-circle">
                 <i class="icon icon-${options.icon}"></i>
@@ -642,7 +601,8 @@ define([
 
         saveButtonEl.classList.add(this.buttonClassDisable);
         clearButtonEl.classList.add(this.buttonClassDisable);
-        // view.activateButton("draw"); // Removing as we only want the button to have the active symbol (blue circle border) upon user clicking it
+        // view.activateButton("draw"); // Removing as we only want the button
+        // to have the active symbol (blue circle border) upon user clicking it
 
         view.generatePreviewPanel();
         const closeDownloadPanelButton = this.el.querySelector(
@@ -660,8 +620,8 @@ define([
       close() {
         this.reset();
         // The parent ToolbarView will handle closing the panel so it can
-        // coordinate with the layer panel and track the state of the
-        // download panel.
+        // coordinate with the layer panel and track the state of the download
+        // panel.
         this.trigger("close");
       },
 
@@ -680,32 +640,15 @@ define([
         this.saveButtonEl = this.buttonEls.saveButton;
         this.drawButtonEl = this.buttonEls.drawButton;
 
-        // // Get all elements with class 'layer-item--shown' within 'layer-category-list'
-        // const selectedLayerItems = document.querySelectorAll(
-        //   ".layer-category-list .layer-item--shown",
-        // );
-        // // Extract titles from nested span elements
-        // const titles = Array.from(selectedLayerItems)
-        //   .map((item) => {
-        //     const titleSpan = item.querySelector(".layer-item__label-text");
-        //     return titleSpan ? titleSpan.textContent.trim() : null;
-        //   })
-        //   .filter(Boolean); // Remove nulls in case of missing title spans
-
-        /**
-         * Get the selected layers from the Layer Panel View and retreive the following information
-         * layerID - layer identifier
-         * downloadLink - the link for accesssing dataset that is tiled
-         * layerName - full name of the layer
-         * fullDownloadLink - download link for the entire dataset
-         */
+        // Get the selected layers from the Layer Panel View and retreive the
+        // following information
+        //  - layerID - layer identifier
+        //  - downloadLink - the link for accesssing dataset that is tiled
+        //  - layerName - full name of the layer
+        //  - fullDownloadLink - download link for the entire dataset
         let selectedLayersList = [];
 
-        // alert("Display layer list");
-        // console.log(this.mapModel.get("allLayers"));
-
         this.mapModel.get("allLayers").forEach((value) => {
-          // if(value?.attributes?.originalVisibility === true && value.attributes.type === "WebMapTileServiceImageryProvider") {
           if (
             value.attributes?.visible === true &&
             value.attributes.type === "WebMapTileServiceImageryProvider" &&
@@ -769,12 +712,12 @@ define([
             selectedLayersList.push(selectedLayer);
           }
         });
-        /** Remove duplicate layers */
+        // Remove duplicate layers
         selectedLayersList = selectedLayersList.filter(
           (layer, index, self) =>
             index === self.findIndex((l) => l.layerID === layer.layerID),
         );
-        /** Create download tool panel */
+        // Create download tool panel
         const panel = document.querySelector(this.classes.downloadPanel);
         const toolbarContainer = document.querySelector(
           this.classes.toolbarLinkActive,
@@ -810,7 +753,8 @@ define([
                 gpkg: "Geopackage",
               };
 
-              // Create panel container for each layer that intersects the bounding box
+              // Create panel container for each layer that intersects the
+              // bounding box
               const downloadDataPanelContainer = document.createElement("div");
               downloadDataPanelContainer.classList.add(
                 this.classes.layerItemPanel,
@@ -858,7 +802,7 @@ define([
               );
               const resolutionLabel = document.createElement("label");
               resolutionLabel.textContent =
-                this.resolutionDropdownOptions.resolutionDropdownLabel;
+                this.dropdownOptions.resolution.label;
 
               const resolutionDropdown = document.createElement("select");
               resolutionDropdown.classList.add(this.classes.dropdown);
@@ -866,9 +810,9 @@ define([
               // Add a default select option
               const defaultResolutionOption = document.createElement("option");
               defaultResolutionOption.value =
-                this.resolutionDropdownOptions.resolutionDropdownDefaultValue;
+                this.dropdownOptions.resolution.value;
               defaultResolutionOption.textContent =
-                this.resolutionDropdownOptions.resolutionDropdownDefaultText;
+                this.dropdownOptions.resolution.defaultText;
               defaultResolutionOption.disabled = true; // Make it non-selectable
               defaultResolutionOption.selected = true; // Make it the default selection
               resolutionDropdown.appendChild(defaultResolutionOption);
@@ -877,7 +821,6 @@ define([
                 ([zoomLevel, pixelResolution]) => {
                   const option = document.createElement("option");
                   option.value = zoomLevel;
-                  // option.textContent = `Zoom level ${zoomLevel} - ${pixelResolution}`;
                   option.textContent = `${zoomLevel} - ${pixelResolution}`;
                   resolutionDropdown.appendChild(option);
                 },
@@ -892,41 +835,24 @@ define([
                 this.classes.dropdownWrapper,
               );
               const fileTypeLabel = document.createElement("label");
-              fileTypeLabel.textContent =
-                this.fileTypeDropdownOptions.fileTypeDropdownLabel;
+              fileTypeLabel.textContent = this.dropdownOptions.fileType.label;
 
               const fileTypeDropdown = document.createElement("select");
               // fileTypeDropdown.classList.add(this.classes.dropdown);
               fileTypeDropdown.classList.add("fileType-downloads-dropdown");
 
-              // Check if tif download link exists for the data layer. Remove 'tif' key if no valid Geotiff links exist
-              // const hasValidTifLinkForLayer =
-              //   this.layerDownloadLinks[item.layerID]?.[0] !== null;
-              // // Remove 'tif' key if no valid Geotiff links exist
-              // if (!hasValidTifLinkForLayer) {
-              //   delete fileTypeOptions.tif;
-              // }
               if (item.tiffDownloadLink == null) {
                 delete fileTypeOptions.tif;
               }
-
-              // Check if gpkg download link exists for the data layer. Remove 'gpkg' key if no valid Geopackage links exist
-              // const hasValidGpkgLinkForLayer =
-              //   this.layerDownloadLinks[item.layerID]?.[2] !== null;
-              // // Remove 'gpkg' key if no valid Geopackage links exist
-              // if (!hasValidGpkgLinkForLayer) {
-              //   delete fileTypeOptions.gpkg;
-              // }
 
               if (item.gpkgDownloadLink == null) {
                 delete fileTypeOptions.gpkg;
               }
               // Add a default select option
               const defaultFileTypeOption = document.createElement("option");
-              defaultFileTypeOption.value =
-                this.fileTypeDropdownOptions.fileTypeDropdownDefaultValue;
+              defaultFileTypeOption.value = this.dropdownOptions.fileType.value;
               defaultFileTypeOption.textContent =
-                this.fileTypeDropdownOptions.fileTypeDropdownDefaultText;
+                this.dropdownOptions.fileType.defaultText;
               defaultFileTypeOption.disabled = true; // Make it non-selectable
               defaultFileTypeOption.selected = true; // Make it the default selection
               fileTypeDropdown.appendChild(defaultFileTypeOption);
@@ -962,16 +888,12 @@ define([
                   layerItemSelectContent.style.display = "none";
                   // Reset resolution dropdown to the default value
                   resolutionDropdown.value =
-                    this.resolutionDropdownOptions.resolutionDropdownDefaultValue;
+                    this.dropdownOptions.resolution.value;
 
                   // Disable fileTypeDropdown if necessary
                   fileTypeDropdown.disabled = true;
                 }
-                view.layerSelection(
-                  this.saveButtonEl,
-                  this.buttonClassDisable,
-                  // layerItemSelectBox.dataset.layerId,
-                ); // Update Save button state
+                view.layerSelection(this.saveButtonEl, this.buttonClassDisable); // Update Save button state
               });
 
               // Textbox to display file size
@@ -990,7 +912,8 @@ define([
                 fileTypeDropdown.value = defaultFileTypeOption.value;
               });
 
-              // Update approximate file size when a file type is selected in fileTypeDropdown
+              // Update approximate file size when a file type is selected in
+              // fileTypeDropdown
               fileTypeDropdown.addEventListener("change", () => {
                 view.fileTypeSelection(
                   this.saveButtonEl,
@@ -1067,10 +990,13 @@ define([
       },
 
       /**
-       * Handles the selection of map layers and updates the state of the save button
-       * and other UI elements based on whether any checkboxes are checked.
-       * @param {HTMLElement} saveButtonEl - The save button element to enable or disable.
-       * @param {string} buttonClassDisable - The CSS class name used to disable the save button.
+       * Handles the selection of map layers and updates the state of the save
+       * button and other UI elements based on whether any checkboxes are
+       * checked.
+       * @param {HTMLElement} saveButtonEl - The save button element to enable
+       * or disable.
+       * @param {string} buttonClassDisable - The CSS class name used to disable
+       * the save button.
        */
       layerSelection(saveButtonEl, buttonClassDisable) {
         const view = this;
@@ -1108,11 +1034,15 @@ define([
       },
 
       /**
-       * Handles the selection of file type and updates the state of the save button
-       * and other UI elements based on whether any checkboxes are checked.
-       * @param {HTMLElement} saveButtonEl - The save button element to enable or disable.
-       * @param {string} buttonClassDisable - The CSS class name used to disable the save button.
-       * @param {string} layerID - The ID of the map layer being interacted with.
+       * Handles the selection of file type and updates the state of the save
+       * button and other UI elements based on whether any checkboxes are
+       * checked.
+       * @param {HTMLElement} saveButtonEl - The save button element to enable
+       * or disable.
+       * @param {string} buttonClassDisable - The CSS class name used to disable
+       * the save button.
+       * @param {string} layerID - The ID of the map layer being interacted
+       * with.
        */
       fileTypeSelection(saveButtonEl, buttonClassDisable, layerID) {
         const view = this;
@@ -1140,12 +1070,15 @@ define([
       },
 
       /**
-       * Updates the text content of the provided info box with file size details
-       * and file type information.
-       * @param {HTMLElement} infoBox - The HTML element where the file size information will be displayed.
-       * @param {number} fileSizeDetails - The size of the file in kilobytes (KB).
+       * Updates the text content of the provided info box with file size
+       * details and file type information.
+       * @param {HTMLElement} infoBox - The HTML element where the file size
+       * information will be displayed.
+       * @param {number} fileSizeDetails - The size of the file in kilobytes
+       * (KB).
        * @param {string} fileType - The type of the file (e.g., "wmts").
-       * @param {string} layerID - The ID of the map layer being interacted with.
+       * @param {string} layerID - The ID of the map layer being interacted
+       * with.
        */
       updateTextbox(infoBox, fileSizeDetails, fileType, layerID) {
         const fileSizeInfoBox = infoBox;
@@ -1163,41 +1096,64 @@ define([
             navigator.clipboard
               .writeText(textToCopy)
               .then(() => {
-                alert("Copied to clipboard!");
+                const currentContent = fileSizeInfoBox.innerHTML;
+                // alert("Copied to clipboard!");
+                fileSizeInfoBox.innerHTML = "Copied to clipboard!";
+                setTimeout(() => {
+                  fileSizeInfoBox.innerHTML = currentContent;
+                }, 2000); // Reset after 2 seconds
               })
-              .catch((err) => console.error("Copy failed:", err));
+              .catch(() => {
+                const currentContent = fileSizeInfoBox.innerHTML;
+                fileSizeInfoBox.innerHTML = "Copy failed!";
+                setTimeout(() => {
+                  fileSizeInfoBox.innerHTML = currentContent;
+                }, 2000); // Reset after 2 seconds
+              });
           });
         } else {
           const optionalComment = "Use WMTS for accessing large data volume";
           if (fileSizeDetails > 1050000) {
-            // fileSizeInfoBox.textContent = `Estimated download file size ≤ ${(fileSizeDetails / 1000000).toFixed(2)} GB. ${optionalComment}.`;
+            // fileSizeInfoBox.textContent = `Estimated download file size ≤
+            // ${(fileSizeDetails / 1000000).toFixed(2)} GB.
+            // ${optionalComment}.`;
             fileSizeInfoBox.textContent = `Estimated download file size > 1 GB. ${optionalComment}.`;
           } else {
             fileSizeInfoBox.textContent = `Maximum download file size ≤ ${(fileSizeDetails / 1000).toFixed(2)} MB.`;
           }
-          // fileSizeInfoBox.textContent = `Maximum download file size ≤ ${(fileSizeDetails / 1000).toFixed(2)} MB`;
         }
 
-        // Instead of disabling the Download button for large file sizes simply remove the layer from the
-        // the download list variable (i.e., dataDownloadLinks)
+        // Instead of disabling the Download button for large file sizes simply
+        // remove the layer from the the download list variable (i.e.,
+        // dataDownloadLinks)
         if (view.dataDownloadLinks[layerID].fileSize > 1050000) {
           delete view.dataDownloadLinks[layerID];
         }
       },
 
       /**
-       * Calculates the total file size for a given map layer based on the file type, zoom level, and bounding box.
-       * Generates URLs for individual tiles or retrieves a single download link for the layer.
-       * Updates the `dataDownloadLinks` object with the generated URLs and metadata for the specified layer.
-       * @param {number} zoomLevel - The zoom level for the map tiles.
-       * @param {string} fileType - The type of file to download (e.g., "png", "tif", "wmts").
+       * Calculates the total file size for a given map layer based on the file
+       * type, zoom level, and bounding box. Generates URLs for individual tiles
+       * or retrieves a single download link for the layer. Updates the
+       * `dataDownloadLinks` object with the generated URLs and metadata for the
+       * specified layer.
+       * @param {number} resolution - The zoom level for the map tiles.
+       * @param {string} fileFormat - The format of the file to download (e.g.,
+       * "png", "tif", "wmts").
        * @param {string} layerID - The unique identifier for the data layer.
-       * @param {string} fullDownloadLink - The full download link for the layer.
-       * @param {string} pngDownloadLink - The template URL for downloading PNG tiles.
+       * @param {string} fullDownloadLink - The full download link for the
+       * layer.
+       * @param {string} pngDownloadLink - The template URL for downloading PNG
+       * tiles.
+       * @param {string} gpkgDownloadLink - The template URL for downloading
+       * Geopackage tiles.
        * @param {string} id - A unique identifier for the layer or dataset.
        * @param {string} layerName - The name of the data layer.
-       * @param {string} [_wmtsDownloadLink] - (Optional) The WMTS download link for the layer. Currently unused.
-       * * @param {string} metadataPid - The metadataPid of the data layer.
+       * @param {string} [wmtsDownloadLink] - (Optional) The WMTS download link
+       * for the layer. Currently unused.
+       * @param {string} metadataURL - The metadata URL for the layer.
+       * @param {string} tiffDownloadLink - The template URL for downloading
+       * TIFF tiles.
        * @returns {number} The total file size for the specified layer in bytes.
        */
       getRawFileSize(
@@ -1253,14 +1209,13 @@ define([
           const urlCount = urls.length;
           totalFileSize = urlCount * this.fileSizes[fileFormat];
         } else {
-          // urls.push(this.layerDownloadLinks[layerID][1]);
-          // totalFileSize = this.fileSizes[fileType];
-          // update -- instead of downloading the WMTS file, just provide the URL (below the dropdowns)
+          // Instead of downloading the WMTS file, just provide the URL (below
+          // the dropdowns)
           totalFileSize = wmtsDownloadLink;
         }
 
-        // Update this.dataDownloadLinks
-        // If the layerID in dataDownloadLinks is not in the selectedLayerIDs list, remove it
+        // Update this.dataDownloadLinks - If the layerID in dataDownloadLinks
+        // is not in the selectedLayerIDs list, remove it
         if (selectedLayerSelectBoxes.length > 1) {
           const selectedLayerIDs = Array.from(selectedLayerSelectBoxes).map(
             (checkbox) => checkbox.dataset.layerId,
@@ -1292,8 +1247,9 @@ define([
        * Converts an array of geographic points into a polygon representation.
        * The input array is reversed, and the first point is appended to the end
        * to close the polygon.
-       * @param {object[]} jsonData - An array of objects representing geographic points.
-       * Each object should have `longitude` and `latitude` properties.
+       * @param {object[]} jsonData - An array of objects representing
+       * geographic points. Each object should have `longitude` and `latitude`
+       * properties.
        * @returns {number[][]} An array of arrays representing the polygon.
        */
       getPolygon(jsonData) {
@@ -1326,8 +1282,6 @@ define([
 
         // Iterate through each point in the polygon to find min/max coordinates
         polygon.forEach((point) => {
-          // console.log("Get point coordinates");
-          // console.log(point[0]);
           const [longitude, latitude] = point;
           if (longitude < minX) minX = longitude;
           if (latitude < minY) minY = latitude;
@@ -1344,12 +1298,16 @@ define([
       },
 
       /**
-       * Converts geographic coordinates (longitude and latitude) into tile coordinates
-       * for a given zoom level, based on the WGS1984Quad tiling scheme.
-       * @param {number} lon - The longitude in degrees, ranging from -180 to 180.
+       * Converts geographic coordinates (longitude and latitude) into tile
+       * coordinates for a given zoom level, based on the WGS1984Quad tiling
+       * scheme.
+       * @param {number} lon - The longitude in degrees, ranging from -180 to
+       * 180.
        * @param {number} lat - The latitude in degrees, ranging from -90 to 90.
-       * @param {number} zoom - The zoom level, where higher values represent greater detail.
-       * @returns {{x: number, y: number, z: number}} An object containing the tile coordinates:
+       * @param {number} zoom - The zoom level, where higher values represent
+       * greater detail.
+       * @returns {{x: number, y: number, z: number}} An object containing the
+       * tile coordinates:
        *   - `x`: The horizontal tile index.
        *   - `y`: The vertical tile index (inverted for WGS84).
        *   - `z`: The zoom level.
@@ -1441,15 +1399,16 @@ define([
        * data file in bytes.
        * @property {string} dataDownloadLinks.data.layerName - The name of the
        * data layer.
-       * * @property {string} dataDownloadLinks.data.metadataPid - The metadata pid of the
-       * data layer.
+       * @property {string} dataDownloadLinks.data.metadataPid - The metadata
+       * pid of the data layer.
        */
       async downloadData() {
         const view = this;
         const downloadStatusContainer = document.querySelector(
           ".download-status-container",
         );
-        // Loop through each layerID in dataDownloadLinks and process them individually
+        // Loop through each layerID in dataDownloadLinks and process them
+        // individually
         Object.entries(this.dataDownloadLinks).forEach(
           async ([layerID, data]) => {
             if (data.fileType !== "wmts") {
@@ -1464,12 +1423,7 @@ define([
                 // If file size is approximately over a GB then do not download
                 if (data.urls && data.urls.length > 0) {
                   // Show the progress bar for the current layer
-                  // downloadStatusContainer.style.display = "block"; // Show progress container
 
-                  // Reset progress bar for each new layer
-                  // const progressBar = document.querySelector(".progress-bar");
-                  // progressBar.classList.remove("progress-bar-no-data");
-                  // progressBar.classList.add("progress-bar");
                   progressBar.style.width = "0%";
                   progressBar.textContent = `Retrieving data for ${data.layerName} (0%)`;
 
@@ -1498,7 +1452,8 @@ define([
                       const numFiles = Object.keys(layerZip.files).length;
                       progressBar.textContent = `Generating ZIP file for ${data.layerName} (${numFiles} files)...`;
 
-                      // Fetch metadata file from metadataPid and add it to the ZIP
+                      // Fetch metadata file from metadataPid and add it to the
+                      // ZIP
                       const metadataUrl = `${this.objectServiceUrl}${data.metadataPid}`;
                       fetch(metadataUrl)
                         .then((response) => {
@@ -1523,7 +1478,8 @@ define([
                           );
                         })
                         .finally(() => {
-                          // Generate the ZIP file for this layerID after adding metadata
+                          // Generate the ZIP file for this layerID after adding
+                          // metadata
                           layerZip
                             .generateAsync({ type: "blob" })
                             .then((zipBlob) => {
@@ -1588,12 +1544,11 @@ define([
 
         // Create an array of promises
         const fetchPromises = urls.map(async (url) => {
-          console.log(url);
           const response = await fetch(url);
           if (!response.ok) {
             if (response.status === 404) {
-              // We can safely skip 404 errors because we don't expect all
-              // URLs to be valid
+              // We can safely skip 404 errors because we don't expect all URLs
+              // to be valid
               return null;
             }
             // Other errors should be handled
@@ -1648,15 +1603,6 @@ define([
 
         return zip;
       },
-
-      // /**
-      //  * Clears the polygon that is being drawn
-      //  */
-      // onClose: function () {
-
-      //   this.removeLayer();
-      //   this.removeClickListeners();
-      // },
     },
   );
 
