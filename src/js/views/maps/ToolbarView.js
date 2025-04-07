@@ -164,7 +164,7 @@ define([
         {
           label: "Reset",
           icon: "rotate-left",
-          action(view, model) {
+          action(_view, model) {
             model.flyHome();
             model.resetLayerVisibility();
           },
@@ -177,7 +177,9 @@ define([
           label: "Download",
           icon: "cloud-download",
           view: DownloadPanelView,
-          viewOptions: {},
+          viewOptions: {
+            toolbarView: this,
+          },
           action(view) {
             // Show both the layer and download panels
             const layerSectionEl = view.sectionElements.find(
@@ -189,6 +191,10 @@ define([
             view.inactivateAllSections();
             view.defaultActivationAction(layerSectionEl);
             view.defaultActivationAction(downloadSectionEl);
+            view.stopListening(downloadSectionEl.sectionView, "close");
+            view.listenToOnce(downloadSectionEl.sectionView, "close", () => {
+              view.inactivateSection(downloadSectionEl);
+            });
           },
           isVisible(_model) {
             // TODO: Add an option to show or hide the download panel

@@ -653,13 +653,16 @@ define([
         });
       },
 
+      /**
+       * Closes the download panel and resets the draw tool to its initial
+       * state.
+       */
       close() {
-        const toolbarLinks = document.querySelector(this.classes.toolbarLink);
-        const sectionEl = toolbarLinks.children[3]; // TO DO: this is a temporary fix. This should use the HTML class/element ID instead of an index
-        sectionEl.classList.remove(this.classes.toolbarLinkActive); // Change the toolbar link to inactive
-        sectionEl.classList.remove(this.classes.toolbarContentActive);
         this.reset();
-        this.el.style.visibility = this.displayOptions.invisible; // this needs to be moved to CSS
+        // The parent ToolbarView will handle closing the panel so it can
+        // coordinate with the layer panel and track the state of the
+        // download panel.
+        this.trigger("close");
       },
 
       /**
