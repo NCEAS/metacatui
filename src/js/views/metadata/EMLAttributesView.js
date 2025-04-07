@@ -243,7 +243,7 @@ define([
        */
       renderAttributes() {
         // Reset elements and event listeners in case of a re-render
-        this.stopListeningToAttributes();
+        this.stopListenToAttributesCollection();
         this.attrEls = {};
         this.els.list.innerHTML = "";
         this.els.menu.innerHTML = "";
@@ -252,7 +252,7 @@ define([
         });
 
         // Add a new attribute for editing if there isn't one already
-        this.collection.addNewAttribute(this.parentModel);
+        this.addNewAttribute();
         // Render Attribute views for each model
         this.collection.models.forEach(this.renderAttribute, this);
 
@@ -261,22 +261,80 @@ define([
           this.showAttribute(this.collection.at(0));
         }
 
-        this.listenToAttributes();
+        this.listenToAttributesCollection();
+      },
+
+      /**
+       * Adds a blank attribute to the end of the collection for the user to
+       * fill out.
+       */
+      addNewAttribute() {
+        this.collection.addNewAttribute(this.parentModel);
       },
 
       /** Set up event listeners for the collection and its models */
-      listenToAttributes() {
+      listenToAttributesCollection() {
         this.listenTo(this.collection, "add", this.renderAttribute);
         this.listenTo(this.collection, "remove", this.removeAttribute);
         this.listenTo(this.collection, "sort", this.orderAttributeMenu);
         this.listenTo(this.collection, "namesUpdated", this.renderAttributes);
       },
 
-      stopListeningToAttributes() {
-        this.collection.models.forEach((attr) => {
-          this.stopListening(attr);
-        });
+      /** Stop listening to the attributes collection */
+      stopListenToAttributesCollection() {
         this.stopListening(this.collection);
+      },
+
+      /**
+       * Sets up listeners for the specified attribute model to handle various
+       * events. Updates the UI and triggers appropriate actions when the
+       * model's state changes.
+       * @param {Backbone.Model} attributeModel - The attribute model to listen
+       * to.
+       */
+      listenToAttributeModel(attributeModel) {
+        const { menuItem } = this.attrEls[attributeModel.cid];
+        this.listenTo(attributeModel, "invalid", this.showAttributeValidation);
+        this.listenTo(attributeModel, "valid", this.hideAttributeValidation);
+        this.listenTo(attributeModel, "change:isNew", this.displayNewStatus);
+        this.listenTo(
+          attributeModel,
+          "change:attributeName",
+          (_model, value) => {
+            this.updateMenuItemLabel(menuItem, value);
+          },
+        );
+      },
+
+      /**
+       * Stops listening to events from the specified attribute model.
+       * @param {Backbone.Model} attributeModel - The attribute model to stop
+       * listening to.
+       */
+      stopListeningToAttributeModel(attributeModel) {
+        this.stopListening(attributeModel);
+      },
+
+      /**
+       * Initializes event listeners for all attribute models in the collection
+       * and the attributes collection itself.
+       */
+      startAllListeners() {
+        this.collection.models.forEach((attr) => {
+          this.listenToAttributeModel(attr);
+        });
+        this.listenToAttributesCollection();
+      },
+
+      /**
+       * Stops all event listeners associated with the attribute models in the
+       * collection and the attributes collection itself.
+       */
+      stopAllListeners() {
+        this.collection.models.forEach((attr) => {
+          this.stopListeningToAttributeModel(attr);
+        });
+        this.stopListenToAttributesCollection();
       },
 
       /**
@@ -315,17 +373,8 @@ define([
 
         // Indicate in menu item if there's a validation error; keep name of
         // attribute in sync with the model
-        this.stopListening(attributeModel);
-        this.listenTo(attributeModel, "invalid", this.showAttributeValidation);
-        this.listenTo(attributeModel, "valid", this.hideAttributeValidation);
-        this.listenTo(attributeModel, "change:isNew", this.displayNewStatus);
-        this.listenTo(
-          attributeModel,
-          "change:attributeName",
-          (_model, value) => {
-            this.updateMenuItemLabel(menuItem, value);
-          },
-        );
+        this.stopListeningToAttributeModel(attributeModel);
+        this.listenToAttributeModel(attributeModel);
 
         // Hide the attribute when to start
         this.hideAttribute(attributeModel);
@@ -409,7 +458,7 @@ define([
 
         // If the new status was removed, then we create a new attribute so the
         // user always has a blank attribute to fill out
-        this.collection.addNewAttribute(this.parentModel);
+        this.addNewAttribute();
       },
 
       /**
@@ -448,18 +497,22 @@ define([
        * Hide the autofill view and show the attributes
        */
       hideAutofill() {
-        if (this.autoFill) {
-          this.autoFill.onClose();
-          this.autoFill.remove();
-          this.autoFill = null;
-        }
-
+        this.removeAutofill();
         // Show the list again
         this.els.list.style.display = "block";
         // Hide the autofill view
         this.els.autofill.style.display = "none";
         // Remove active status from the autofill button
         this.els.autofillButton.classList.remove(BOOTSTRAP_CLASS_NAMES.active);
+      },
+
+      /** Remove the autofill view */
+      removeAutofill() {
+        if (this.autoFill) {
+          this.autoFill.onClose();
+          this.autoFill.remove();
+          this.autoFill = null;
+        }
       },
 
       /**
@@ -631,16 +684,10 @@ define([
 
       // TODO: Do we need this?
       onClose() {
-        // Remove all event listeners
-        this.stopListeningToAttributes();
         // Remove empty attribute models
         this.collection.removeEmptyAttributes();
-        // Remove the autofill view
-        if (this.autoFill) {
-          this.autoFill.onClose();
-          this.autoFill.remove();
-          this.autoFill = null;
-        }
+        this.stopAllListeners();
+        this.removeAutofill();
       },
     },
   );

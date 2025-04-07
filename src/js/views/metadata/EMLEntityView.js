@@ -87,7 +87,10 @@ define([
         this.$el.off("shown");
         this.$el.off("hidden");
         this.$el.on("hidden", () => {
-          view.showValidation();
+          view.onHide();
+        });
+        this.$el.on("shown", () => {
+          view.onShow();
         });
       },
 
@@ -236,8 +239,21 @@ define([
       /**
        * Hide the entity modal dialog
        */
-      hide() {
-        this.$el.modal("hide");
+      onHide() {
+        this.showValidation();
+        this.attributesView?.onClose();
+      },
+
+      /**
+       * Handles the logic to be executed when thw modal view is shown. Restarts
+       * existing listeners on the attributesView.
+       */
+      onShow() {
+        this.attributesView?.stopAllListeners();
+        this.attributesView?.startAllListeners();
+        // Since we remove all empty attributes when modal is closed, make sure
+        // that there is always an empty attribute to fill in
+        this.attributesView?.addNewAttribute();
       },
 
       /**
