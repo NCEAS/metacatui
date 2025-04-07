@@ -16,13 +16,6 @@ define([
       return { eml };
     }, beforeEach);
 
-    // describe("EML Required Fields", function () {
-    //   describe("EMLParty", function () {
-    //     it("requires a creator and contact");
-    //     it("can require a PI");
-    //   });
-    // });
-
     describe("Taxonomic Coverage", function () {
       it("should detect when there is not a taxonomic coverage model", function () {
         state.eml.set("taxonCoverage", []);
