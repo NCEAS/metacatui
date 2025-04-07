@@ -972,7 +972,7 @@ define([
 
               // Update approximate file size when a file type is selected in fileTypeDropdown
               fileTypeDropdown.addEventListener("change", () => {
-                view.layerSelection(
+                view.fileTypeSelection(
                   this.saveButtonEl,
                   this.buttonClassDisable,
                   layerItemSelectBox.dataset.layerId,
@@ -1051,7 +1051,7 @@ define([
        * @param {string} buttonClassDisable - The CSS class name used to disable the save button.
        * @param {string} layerID - The ID of the map layer being interacted with.
        */
-      layerSelection(saveButtonEl, buttonClassDisable, layerID) {
+      fileTypeSelection(saveButtonEl, buttonClassDisable, layerID) {
         const view = this;
         // const checkboxes = document.querySelectorAll(
         //   ".download-expansion-panel__checkbox",
