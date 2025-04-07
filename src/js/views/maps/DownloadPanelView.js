@@ -947,11 +947,11 @@ define([
                   // Disable fileTypeDropdown if necessary
                   fileTypeDropdown.disabled = true;
                 }
-                // view.layerSelection(
-                //   this.saveButtonEl,
-                //   this.buttonClassDisable,
-                //   layerItemSelectBox.dataset.layerId,
-                // ); // Update Save button state -- moving this to fileType drop-down change event
+                view.layerSelection(
+                  this.saveButtonEl,
+                  this.buttonClassDisable,
+                  // layerItemSelectBox.dataset.layerId,
+                ); // Update Save button state
               });
 
               // Textbox to display file size
@@ -1046,6 +1046,38 @@ define([
 
       /**
        * Handles the selection of map layers and updates the state of the save button
+       * and other UI elements based on whether any checkboxes are checked.
+       * @param {HTMLElement} saveButtonEl - The save button element to enable or disable.
+       * @param {string} buttonClassDisable - The CSS class name used to disable the save button.
+       */
+      layerSelection(saveButtonEl, buttonClassDisable) {
+        const view = this;
+        const checkboxes = document.querySelectorAll(
+          ".download-expansion-panel__checkbox",
+        );
+        const dropdowns = document.querySelectorAll(
+          ".downloads-dropdown-container .fileType-downloads-dropdown",
+        );
+
+        const isanyFileTypeSelected = Array.from(dropdowns).some((dropdown) =>
+          ["png", "tif", "gpkg"].includes(dropdown.value.toLowerCase()),
+        );
+        const isAnyChecked = Array.from(checkboxes).some(
+          (checkbox) => checkbox.checked,
+        );
+        if (isAnyChecked && isanyFileTypeSelected) {
+          saveButtonEl.classList.remove(buttonClassDisable);
+          view.activateButton("save");
+          view.activateButton("clear");
+        } else {
+          view.resetButtonStyles();
+          saveButtonEl.classList.add(buttonClassDisable);
+          view.activateButton("clear");
+        }
+      },
+
+      /**
+       * Handles the selection of file type and updates the state of the save button
        * and other UI elements based on whether any checkboxes are checked.
        * @param {HTMLElement} saveButtonEl - The save button element to enable or disable.
        * @param {string} buttonClassDisable - The CSS class name used to disable the save button.
