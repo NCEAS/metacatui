@@ -259,7 +259,10 @@ define([
                   }
 
                   // Get the number of attributes for this entity
-                  attributes.numAttributes = entity.get("attributeList").length;
+                  const attrList = entity.get("attributeList");
+                  attributes.numAttributes = attrList.hasNonEmptyAttributes()
+                    ? entity.get("attributeList").length
+                    : 0;
                   // Determine if the entity model is valid
                   attributes.entityIsValid = entity.isValid();
 
@@ -289,9 +292,29 @@ define([
                   }, this);
 
                   // If there are no attributes now, rerender when one is added
+                  this.stopListening(
+                    entity,
+                    "change:attributeList",
+                    this.render,
+                  );
                   this.listenTo(entity, "change:attributeList", this.render);
+                  this.stopListening(
+                    entity.get("attributeList"),
+                    "change update",
+                    this.render,
+                  );
+                  this.listenTo(
+                    entity.get("attributeList"),
+                    "change update",
+                    this.render,
+                  );
                 } else {
                   // Rerender when an entity is added
+                  this.stopListening(
+                    this.model,
+                    "change:entities",
+                    this.render,
+                  );
                   this.listenTo(this.model, "change:entities", this.render);
                 }
               } else {

@@ -27,31 +27,15 @@ define([
     newAttribute: "New Attribute",
   };
 
-  // TODO: remove class names that are in autofill
-
   const CLASS_NAMES = {
     menuContainer: "attribute-menu-container",
-    fillButtonContainer: "fill-button-container",
-    copyButtonContainer: "copy-button-container",
     actionButtonsContainer: "action-buttons",
 
     attributeList: "attribute-list",
     menu: "attribute-menu",
-    fillButton: "fill-button",
-    copyButton: "copy-button",
     menuItem: "attribute-menu-item",
     menuItemName: "name",
     ellipsis: "ellipsis",
-
-    iconRemove: "icon-remove",
-    iconAdd: "icon-plus",
-    iconMagic: "icon-magic",
-    iconError: "icon-exclamation-sign",
-    iconWarning: "icon-warning-sign",
-    iconOnLeft: "icon-on-left",
-    iconProcessing: "icon-time",
-    iconSuccess: "icon-ok",
-
     new: "new",
     add: "add",
     error: "error",
@@ -62,6 +46,7 @@ define([
     autofillContainer: "autofill-attributes",
   };
 
+  // Classes from bootstrap that are used in the view
   const BOOTSTRAP_CLASS_NAMES = {
     sideNavItems: "side-nav-items",
     sideNavItem: "side-nav-item",
@@ -73,7 +58,7 @@ define([
     buttonPrimary: "btn-primary",
   };
 
-  // TODO
+  // Fontawesome icon names used in the view
   const ICONS = {
     warning: "warning-sign",
     remove: "remove",
@@ -120,8 +105,6 @@ define([
       events() {
         const e = {};
         const CN = CLASS_NAMES;
-        e[`click .${CN.fillButton}`] = "handleFill";
-        e[`click .${CN.copyButton}`] = "showCopyTo";
         e[`mouseover .${CN.menuItem} .${CN.remove}`] = "previewAttrRemove";
         e[`mouseout .${CN.menuItem} .${CN.remove}`] = "previewAttrRemove";
         e[`click .${CN.menuItem}`] = "handleMenuItemClick";
@@ -141,8 +124,6 @@ define([
         template.innerHTML = `
           <div class="${CN.menuContainer}">
             <div class="${CN.actionButtonsContainer}">
-              <div class="${CN.copyButtonContainer}">
-              </div>
               <a href="#" class="${BC.button} ${BC.buttonPrimary} ${CN.autofillButton}"><i class="${ICONS.magic} ${ICONS.onLeft}"></i>Auto-Fill...</a>
             </div>
             <ul class="${CN.menu} ${BC.sideNavItems}">
@@ -173,9 +154,9 @@ define([
         template.innerHTML = `
           <li class="${CN.menuItem} ${BC.sideNavItem} pointer ${extraClasses}" data-id="${attrs.attrId}">
             <a class="${CN.ellipsis}">
-              <i class="${BC.icon} ${CN.iconOnLeft} ${CN.iconAdd} ${CN.add} ${BC.hidden}"></i>
+              <i class="${BC.icon} ${ICONS.onLeft} ${ICONS.add} ${CN.add} ${BC.hidden}"></i>
               <span class="name">${attrs.attributeName}</span>
-              <i class="${BC.icon} ${CN.iconRemove} ${CN.remove}"></i>
+              <i class="${BC.icon} ${ICONS.remove} ${CN.remove}"></i>
             </a>
           </li>`;
         return template.content.querySelector("li");
@@ -197,7 +178,6 @@ define([
         this.parentModel = options.parentModel;
 
         // Prefix all the icons
-        // TODO - fix all instances that were using CLASS_NAMES, use ICONS
         if (!Object.values(ICONS)[0].startsWith(ICON_PREFIX)) {
           Object.keys(ICONS).forEach((key) => {
             ICONS[key] = `${ICON_PREFIX}${ICONS[key]}`;
@@ -218,12 +198,6 @@ define([
         const CN = CLASS_NAMES;
         this.els = {
           menu: this.el.querySelector(`.${CN.menu}`),
-          fillButtonContainer: this.el.querySelector(
-            `.${CN.fillButtonContainer}`,
-          ),
-          copyButtonContainer: this.el.querySelector(
-            `.${CN.copyButtonContainer}`,
-          ),
           list: this.el.querySelector(`.${CN.attributeList}`),
           autofill: this.el.querySelector(`.${CN.autofillContainer}`),
           autofillButton: this.el.querySelector(`.${CN.autofillButton}`),
@@ -408,7 +382,7 @@ define([
           attributeName: attributeModel.get("attributeName") || "",
         });
 
-        const removeIcon = item.querySelector(`.${CLASS_NAMES.iconRemove}`);
+        const removeIcon = item.querySelector(`.${ICONS.remove}`);
 
         $(removeIcon).popup(this.removeTooltipSettings);
         return item;
@@ -467,7 +441,7 @@ define([
        */
       handleMenuItemClick(e) {
         // Check if the target is the remove icon, if so, remove the attribute
-        if (e.target.classList.contains(CLASS_NAMES.iconRemove)) {
+        if (e.target.classList.contains(ICONS.remove)) {
           this.handleRemove(e);
           return;
         }
@@ -617,9 +591,9 @@ define([
         attrEl.errorIcon = document.createElement("i");
         attrEl.errorIcon.classList.add(
           BOOTSTRAP_CLASS_NAMES.icon,
-          CLASS_NAMES.iconError,
+          ICONS.error,
           CLASS_NAMES.error,
-          CLASS_NAMES.iconOnLeft,
+          ICONS.onLeft,
         );
 
         menuLink?.classList.add(CLASS_NAMES.error);
@@ -631,6 +605,8 @@ define([
        * @param {EMLAttribute} attributeModel - The attribute model
        */
       hideAttributeValidation(attributeModel) {
+        if (!attributeModel) return;
+        if (!this.attrEls?.[attributeModel.cid]) return;
         const attrEl = this.attrEls[attributeModel.cid];
         const menuLink = attrEl.menuItem.querySelector("a");
         menuLink.classList.remove("error");
@@ -683,12 +659,17 @@ define([
         });
       },
 
-      // TODO: Do we need this?
+      /** Actions to perform when the view is removed */
       onClose() {
         // Remove empty attribute models
         this.collection.removeEmptyAttributes();
         this.stopAllListeners();
         this.removeAutofill();
+        // Destroy all popups
+        const popups = this.el.querySelectorAll(`.${CLASS_NAMES.menuItem}`);
+        popups.forEach((popup) => {
+          $(popup).popup("destroy");
+        });
       },
     },
   );

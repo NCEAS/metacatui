@@ -11,7 +11,7 @@ define([
    * @class AutofillAttributesView
    * @classdesc
    * @classcategory Views/Metadata
-   * @screenshot views/metadata/AutofillAttributesView.png // TODO:!!
+   * @screenshot views/metadata/AutofillAttributesView.png
    * @augments Backbone.View
    */
 
@@ -21,11 +21,12 @@ define([
 
   // Class names used in this view
   const CLASS_NAMES = {
-    // TODO - use BEM
-    buttonContainer: "button-container",
-    tabDynamicContent: "tab-dynamic-content",
-    notificationContainer: "autofill-notification",
-    checkboxeContainer: "checkbox-list",
+    view: "autofill-attributes",
+    buttonContainer: "autofill-attributes__button-container",
+    tabDynamicContent: "autofill-attributes_tab-dynamic-content",
+    notificationContainer: "autofill-attributes__notification",
+    checkboxeContainer: "autofill-attributes__checkbox-list",
+    copyFromSelect: "autofill-attributes__copy-from-select",
   };
 
   // Font awesome icon names
@@ -64,7 +65,7 @@ define([
        * The className to add to the view container
        * @type {string}
        */
-      className: "autofill-attributes",
+      className: CLASS_NAMES.view,
 
       /**
        * A list of file formats that can be auto-filled with attribute
@@ -272,7 +273,7 @@ define([
               tooltip: "All attributes copied successfully",
               active: true,
               timeout: BUTTON_TIMEOUT,
-              afterTimeout: "default", // TODO
+              afterTimeout: "default",
             },
             error: {
               message: "Failed to copy",
@@ -280,7 +281,7 @@ define([
               tooltip: "An error occurred while copying attributes.",
               active: false,
               timeout: BUTTON_TIMEOUT,
-              afterTimeout: "default", // TODO
+              afterTimeout: "default",
             },
             cannotCopy: {
               message: "Cannot copy attributes from files",
@@ -356,6 +357,18 @@ define([
        * @type {object}
        */
       errors: {},
+
+      /** @inheritdoc */
+      events() {
+        const events = {};
+        events[`change .${CLASS_NAMES.copyFromSelect}`] =
+          "handleCopyFromSelectChange";
+        events[`change .${CLASS_NAMES.checkboxeContainer}`] =
+          "handleCopyToCheckboxChange";
+        events[`click .${CLASS_NAMES.buttonContainer} button`] =
+          "handleActionButtonClick";
+        return events;
+      },
 
       /**
        * Creates a new AutofillAttributesView
@@ -487,6 +500,8 @@ define([
           `.${CLASS_NAMES.tabDynamicContent}`,
         );
         action.button = action.panelEl.querySelector("button");
+        // Add the action name to the button
+        action.button.dataset.action = name;
         // Set the button to the default state
         this.updateButton(action.button, action.buttonStates.default);
 
@@ -498,17 +513,28 @@ define([
           action.panelEl.classList.add(BC.active);
         }
 
-        const buttonMethod = this[action.buttonMethod];
         const renderMethod = this[action.renderMethod];
 
         if (typeof renderMethod === "function") {
           renderMethod.call(this, action);
         }
-        if (typeof buttonMethod === "function") {
-          // TODO - what can we pass? the action?
-          action.button.addEventListener("click", () => {
-            buttonMethod.call(this, action);
-          });
+      },
+
+      /**
+       * Performs the action associated with the clicked button. This method
+       * retrieves the action name from the button's data attribute and invokes
+       * the corresponding method to handle the action.
+       * @param {event} event - The event object containing the action name.
+       */
+      handleActionButtonClick(event) {
+        const button = event.currentTarget;
+        const actionName = button.dataset.action;
+        const action = this.actions[actionName];
+        if (!action) return;
+
+        const buttonMethod = this[action.buttonMethod];
+        if (action && typeof buttonMethod === "function") {
+          buttonMethod.call(this, action);
         }
       },
 
@@ -549,27 +575,32 @@ define([
           [BOOTSTRAP_CLASS_NAMES.info],
           false,
         );
+      },
 
-        // Add a single event listener to the container for all checkboxes
-        // TODO: mvoe to a handler function so we can remove it later
-        container.addEventListener("change", (event) => {
-          if (
-            event.target.tagName === "INPUT" &&
-            event.target.type === "checkbox"
-          ) {
-            // Get all currently checked checkboxes
-            const checkedValues = this.getCheckedValues(container);
-            // Update the button state based on the number of selected items
-            if (checkedValues.length > 0 && this.canCopyTo() === true) {
-              this.updateButton(
-                action.button,
-                action.buttonStates.selection(checkedValues),
-              );
-            } else {
-              this.updateButton(action.button, action.buttonStates.default);
-            }
+      /**
+       * Handles the change event for checkboxes in the "Copy To" action.
+       * Updates the button state based on the number of selected checkboxes.
+       * @param {Event} event - The change event triggered by a checkbox.
+       */
+      handleCopyToCheckboxChange(event) {
+        if (
+          event.target.tagName === "INPUT" &&
+          event.target.type === "checkbox"
+        ) {
+          const action = this.actions.copyTo;
+          const container = action.dynamicContainer;
+          // Get all currently checked checkboxes
+          const checkedValues = this.getCheckedValues(container);
+          // Update the button state based on the number of selected items
+          if (checkedValues.length > 0 && this.canCopyTo() === true) {
+            this.updateButton(
+              action.button,
+              action.buttonStates.selection(checkedValues),
+            );
+          } else {
+            this.updateButton(action.button, action.buttonStates.default);
           }
-        });
+        }
       },
 
       /**
@@ -722,6 +753,7 @@ define([
         const select = document.createElement("select");
 
         select.id = id;
+        select.classList.add(CLASS_NAMES.copyFromSelect);
 
         // Add the default option
         const option = document.createElement("option");
@@ -750,21 +782,25 @@ define([
           [BOOTSTRAP_CLASS_NAMES.info],
           false,
         );
+      },
 
-        // When the select changes, update the button to show that the
-        // attributes will be copied from file with the name selected
-        select.addEventListener("change", () => {
-          const selectedFile = select.options[select.selectedIndex].textContent;
+      /**
+       * Handles the change event for the "Copy from" select element. This
+       * function updates the button state based on the selected file and
+       * disables the button if no valid attributes are available for copying.
+       */
+      handleCopyFromSelectChange() {
+        const { select, button } = this.actions.copyFrom;
+        const selectedFile = select.options[select.selectedIndex].textContent;
 
-          if (selectedFile) {
-            this.updateButton(
-              button,
-              action.buttonStates.selection(selectedFile),
-            );
-          } else {
-            this.updateButton(button, action.buttonStates.default);
-          }
-        });
+        if (selectedFile) {
+          this.updateButton(
+            button,
+            this.actions.copyFrom.buttonStates.selection(selectedFile),
+          );
+        } else {
+          this.updateButton(button, this.actions.copyFrom.buttonStates.default);
+        }
       },
 
       /**
@@ -892,7 +928,6 @@ define([
        * the "Fill from file" action.
        */
       renderFillFromFile(action) {
-        // TODO: show file info if available
         if (!this.isFillable()) {
           this.showWrongFormat();
         } else {
@@ -997,7 +1032,6 @@ define([
           .then(view.tryParseAndFillAttributeNames.bind(this))
           .catch((e) => {
             this.errors.fetch = e;
-            // TODO: incorporate the error message. Get type and call if needed.
             this.updateButton(
               view.actions.fillFromFile.button,
               view.actions.fillFromFile.buttonStates.error,
