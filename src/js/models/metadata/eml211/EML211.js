@@ -4,6 +4,7 @@ define([
   "backbone",
   "uuid",
   "collections/Units",
+  "collections/metadata/eml/EMLEntities",
   "models/metadata/ScienceMetadata",
   "models/DataONEObject",
   "models/metadata/eml211/EMLGeoCoverage",
@@ -11,9 +12,6 @@ define([
   "models/metadata/eml211/EMLTaxonCoverage",
   "models/metadata/eml211/EMLTemporalCoverage",
   "models/metadata/eml211/EMLDistribution",
-  "models/metadata/eml211/EMLEntity",
-  "models/metadata/eml211/EMLDataTable",
-  "models/metadata/eml211/EMLOtherEntity",
   "models/metadata/eml211/EMLParty",
   "models/metadata/eml211/EMLProject",
   "models/metadata/eml211/EMLText",
@@ -26,6 +24,7 @@ define([
   Backbone,
   uuid,
   Units,
+  EMLEntities,
   ScienceMetadata,
   DataONEObject,
   EMLGeoCoverage,
@@ -33,9 +32,6 @@ define([
   EMLTaxonCoverage,
   EMLTemporalCoverage,
   EMLDistribution,
-  EMLEntity,
-  EMLDataTable,
-  EMLOtherEntity,
   EMLParty,
   EMLProject,
   EMLText,
@@ -81,7 +77,7 @@ define([
           temporalCoverage: [], // an array of EMLTempCoverage models
           taxonCoverage: [], // an array of EMLTaxonCoverages
           purpose: [],
-          entities: [], // An array of EMLEntities
+          entities: new EMLEntities(),
           pubplace: null,
           methods: new EMLMethods(), // An EMLMethods objects
           project: null, // An EMLProject object,
@@ -150,6 +146,13 @@ define([
           "change:canonicalDataset",
           this.updateCanonicalDataset,
         );
+
+        this.listenTo(this, "change:entities", () => {
+          this.trickleUpChange();
+          this.listenTo(this.get("entities"), "update", () => {
+            this.trickleUpChange();
+          });
+        });
 
         // Create a Unit collection
         if (!this.units.length) this.createUnits();
@@ -543,14 +546,6 @@ define([
           "publisher",
         ];
         const emlDistribution = ["distribution"];
-        const emlEntities = [
-          "datatable",
-          "otherentity",
-          "spatialvector",
-          "spatialraster",
-          "storedprocedure",
-          "view",
-        ];
         const emlText = ["abstract", "additionalinfo"];
         const emlMethods = ["methods"];
 
@@ -692,50 +687,6 @@ define([
             // the model if(_.contains(this.get("intellRightsOptions"), value))
             modelJSON.intellectualRights = value;
           }
-          // Parse Entities
-          else if (_.contains(emlEntities, thisNode.localName)) {
-            // Start an array of Entities
-            if (typeof modelJSON.entities === "undefined")
-              modelJSON.entities = [];
-
-            // Create the model
-            var entityModel;
-            if (thisNode.localName == "otherentity") {
-              entityModel = new EMLOtherEntity(
-                {
-                  objectDOM: thisNode,
-                  parentModel: model,
-                },
-                {
-                  parse: true,
-                },
-              );
-            } else if (thisNode.localName == "datatable") {
-              entityModel = new EMLDataTable(
-                {
-                  objectDOM: thisNode,
-                  parentModel: model,
-                },
-                {
-                  parse: true,
-                },
-              );
-            } else {
-              entityModel = new EMLEntity(
-                {
-                  objectDOM: thisNode,
-                  parentModel: model,
-                  entityType: "application/octet-stream",
-                  type: thisNode.localName,
-                },
-                {
-                  parse: true,
-                },
-              );
-            }
-
-            modelJSON.entities.push(entityModel);
-          }
           // Parse dataset-level annotations
           else if (thisNode.localName === "annotation") {
             if (!modelJSON.annotations) {
@@ -761,6 +712,12 @@ define([
               else modelJSON[convertedName] = [this.toJson(thisNode)];
             } else modelJSON[convertedName] = this.toJson(thisNode);
           }
+
+          // Find & parse all of the entities in the dataset
+          modelJSON.entities = new EMLEntities(
+            { parentModel: model, datasetNode: datasetEl.get(0) },
+            { parse: true },
+          );
         }
 
         // Once all the nodes have been parsed, check if any of the annotations
@@ -1173,45 +1130,11 @@ define([
           );
         }
 
-        // Get the existing taxon coverage nodes from the EML
-        const existingEntities = datasetNode.find(
-          "otherEntity, dataTable, spatialRaster, spatialVector, storedProcedure, view",
-        );
-
         // Serialize the entities
-        _.each(
-          this.get("entities"),
-          function (entity, position) {
-            // Update the existing node if it exists
-            if (existingEntities.length - 1 >= position) {
-              // Remove the entity from the EML
-              $(existingEntities[position]).detach();
-              // Insert it into the correct position
-              this.getEMLPosition(eml, entity.get("type").toLowerCase()).after(
-                entity.updateDOM(),
-              );
-            }
-            // Or, append new nodes
-            else {
-              // Inser the entity into the correct position
-              this.getEMLPosition(eml, entity.get("type").toLowerCase()).after(
-                entity.updateDOM(),
-              );
-            }
-          },
-          this,
+        this.get("entities").updateDatasetDOM(
+          datasetNode.get(0), // Expects a DOM node not a jQuery object
+          eml,
         );
-
-        // Remove extra entities that have been removed
-        const numExtraEntities =
-          existingEntities.length - this.get("entities").length;
-        for (
-          let i = existingEntities.length - numExtraEntities;
-          i < existingEntities.length;
-          i++
-        ) {
-          $(existingEntities)[i].remove();
-        }
 
         // Do a final check to make sure there are no duplicate ids in the EML
         const elementsWithIDs = $(eml).find("[id]");
@@ -1698,14 +1621,10 @@ define([
           errors = _.extend(errors, taxonModel.validationError);
         }
 
-        // Validate each EMLEntity model
-        _.each(this.get("entities"), (entityModel) => {
-          if (!entityModel.isValid()) {
-            if (!errors.entities)
-              errors.entities = [entityModel.validationError];
-            else errors.entities.push(entityModel.validationError);
-          }
-        });
+        const entityErrors = this.get("entities")?.validate();
+        if (entityErrors?.length) {
+          errors.entities = entityErrors;
+        }
 
         // Validate the EML Methods
         const emlMethods = this.get("methods");
@@ -1948,199 +1867,64 @@ define([
         return false;
       },
 
-      /*
-       Add an entity into the EML 2.1.1 object
-      */
+      /**
+       * Add an entity into the entities collection
+       * @param {EMLOtherEntity | object} emlEntity The entity to add
+       * @param {number} [position] The position to add the entity at in the
+       * entities array. If not provided, the entity will be added to the end.
+       */
       addEntity(emlEntity, position) {
-        // Get the current list of entities
-        const currentEntities = this.get("entities");
-
-        if (typeof position === "undefined" || position == -1)
-          currentEntities.push(emlEntity);
-        // Add the entity model to the entity array
-        else currentEntities.splice(position, 0, emlEntity);
-
-        this.trigger("change:entities");
-
-        this.trickleUpChange();
-
-        return this;
+        if (!emlEntity) return;
+        // If no position, or if negative, add to the end.
+        const entities = this.get("entities");
+        const positionCorrected =
+          position < 0 ? entities.length : position || entities.length;
+        entities.add(emlEntity, { at: positionCorrected });
       },
 
-      /*
-       Remove an entity from the EML 2.1.1 object
-      */
+      /**
+       * Remove an entity from the entities collection
+       * @param {EMLOtherEntity} emlEntity The entity to remove
+       */
       removeEntity(emlEntity) {
-        if (!emlEntity || typeof emlEntity !== "object") return;
-
-        // Get the current list of entities
-        let entities = this.get("entities");
-
-        entities = _.without(entities, emlEntity);
-
-        this.set("entities", entities);
+        if (!emlEntity) return;
+        this.get("entities").remove(emlEntity);
       },
 
-      /*
-       * Find the entity model for a given DataONEObject
+      /**
+       * Find the entity model for a given DataONEObject model
+       * @param {DataONEObject} dataONEObj - The DataONEObject model to find an
+       * entity for
+       * @returns {EMLOtherEntity|false} The entity model for the given
+       * DataONEObject model or false if not found
        */
       getEntity(dataONEObj) {
-        // If an EMLEntity model has been found for this object before, then
-        // return it
-        if (dataONEObj.get("metadataEntity")) {
-          dataONEObj.get("metadataEntity").set("dataONEObject", dataONEObj);
-          return dataONEObj.get("metadataEntity");
-        }
-
-        const entity = _.find(
-          this.get("entities"),
-          function (e) {
-            // Matches of the checksum or identifier are definite matches
-            if (e.get("xmlID") == dataONEObj.getXMLSafeID()) return true;
-            if (
-              e.get("physicalMD5Checksum") &&
-              e.get("physicalMD5Checksum") == dataONEObj.get("checksum") &&
-              dataONEObj.get("checksumAlgorithm").toUpperCase() == "MD5"
-            )
-              return true;
-            if (
-              e.get("downloadID") &&
-              e.get("downloadID") == dataONEObj.get("id")
-            )
-              return true;
-
-            // Get the file name from the EML for this entity
-            const fileNameFromEML =
-              e.get("physicalObjectName") || e.get("entityName");
-
-            // If the EML file name matches the DataONEObject file name
-            if (
-              fileNameFromEML &&
-              dataONEObj.get("fileName") &&
-              (fileNameFromEML.toLowerCase() ==
-                dataONEObj.get("fileName").toLowerCase() ||
-                fileNameFromEML.replace(/ /g, "_").toLowerCase() ==
-                  dataONEObj.get("fileName").toLowerCase())
-            ) {
-              // Get an array of all the other entities in this EML
-              const otherEntities = _.without(this.get("entities"), e);
-
-              // If this entity name matches the dataone object file name, AND
-              // no other dataone object file name matches, then we can assume
-              // this is the entity element for this file.
-              const otherMatchingEntity = _.find(otherEntities, (otherE) => {
-                // Get the file name from the EML for the other entities
-                const otherFileNameFromEML =
-                  otherE.get("physicalObjectName") || otherE.get("entityName");
-
-                // If the file names match, return true
-                if (
-                  otherFileNameFromEML == dataONEObj.get("fileName") ||
-                  otherFileNameFromEML.replace(/ /g, "_") ==
-                    dataONEObj.get("fileName")
-                )
-                  return true;
-              });
-
-              // If this entity's file name didn't match any other file names in
-              // the EML, then this entity is a match for the given
-              // dataONEObject
-              if (!otherMatchingEntity) return true;
-            }
-          },
-          this,
+        return this.get("entities").getByDataONEObject(
+          dataONEObj,
+          this.get("collections")?.[0],
         );
-
-        // If we found an entity, give it an ID and return it
-        if (entity) {
-          // If this entity has been matched to another DataONEObject already,
-          // then don't match it again
-          if (entity.get("dataONEObject") == dataONEObj) {
-            return entity;
-          }
-          // If this entity has been matched to a different DataONEObject
-          // already, then don't match it again. i.e. We will not override
-          // existing entity<->DataONEObject pairings
-          if (entity.get("dataONEObject")) {
-            return;
-          }
-          entity.set("dataONEObject", dataONEObj);
-
-          // Create an XML-safe ID and set it on the Entity model
-          const entityID = this.getUniqueEntityId(dataONEObj);
-          entity.set("xmlID", entityID);
-
-          // Save a reference to this entity so we don't have to refind it later
-          dataONEObj.set("metadataEntity", entity);
-
-          return entity;
-        }
-
-        // See if one data object is of this type in the package
-        const matchingTypes = _.filter(
-          this.get("entities"),
-          (e) =>
-            e.get("formatName") ==
-            (dataONEObj.get("formatId") || dataONEObj.get("mediaType")),
-        );
-
-        if (matchingTypes.length == 1) {
-          // Create an XML-safe ID and set it on the Entity model
-          matchingTypes[0].set("xmlID", dataONEObj.getXMLSafeID());
-
-          return matchingTypes[0];
-        }
-
-        // If this EML is in a DataPackage with only one other DataONEObject,
-        // and there is only one entity in the EML, then we can assume they are
-        // the same entity
-        if (this.get("entities").length == 1) {
-          if (
-            this.get("collections")[0] &&
-            this.get("collections")[0].type == "DataPackage" &&
-            this.get("collections")[0].length == 2 &&
-            _.contains(this.get("collections")[0].models, dataONEObj)
-          ) {
-            return this.get("entities")[0];
-          }
-        }
-
-        return false;
       },
 
+      /**
+       * Create an entity model for a given DataONEObject model and add it to the
+       * entities collection
+       * @param {DataONEObject} dataONEObject - The DataONEObject model to create
+       * an entity for
+       * @returns {EMLOtherEntity} The entity model created
+       */
       createEntity(dataONEObject) {
-        // Add or append an entity to the parent's entity list
-        const entityModel = new EMLOtherEntity({
-          entityName: dataONEObject.get("fileName"),
-          entityType:
-            dataONEObject.get("formatId") ||
-            dataONEObject.get("mediaType") ||
-            "application/octet-stream",
-          dataONEObject,
+        return this.get("entities").addFromDataONEObject(dataONEObject, {
           parentModel: this,
-          xmlID: dataONEObject.getXMLSafeID(),
-        });
-
-        this.addEntity(entityModel);
-
-        // If this DataONEObject fails to upload, remove the EML entity
-        this.listenTo(dataONEObject, "errorSaving", function () {
-          this.removeEntity(dataONEObject.get("metadataEntity"));
-
-          // Listen for a successful save so the entity can be added back
-          this.listenToOnce(dataONEObject, "successSaving", function () {
-            this.addEntity(dataONEObject.get("metadataEntity"));
-          });
         });
       },
 
-      /*
+      /**
        * Creates an XML-safe identifier that is unique to this EML document,
        * based on the given DataONEObject model. It is intended for EML entity
        * nodes in particular.
-       *
-       * @param {DataONEObject} - a DataONEObject model that this EML documents
-       * @return {string} - an identifier string unique to this EML document
+       * @param {DataONEObject} dataONEObject - a DataONEObject model that this
+       * EML documents
+       * @returns {string} - an identifier string unique to this EML document
        */
       getUniqueEntityId(dataONEObject) {
         let uniqueId = "";
@@ -2687,6 +2471,43 @@ define([
           console.error("Failed to get Data Sensitivity from EML model: ", e);
           return undefined;
         }
+      },
+
+      /**
+       * Checks if there is at least one taxon coverage model in the EML model
+       * @returns {boolean} - True if there is at least one taxon coverage model
+       * in the EML model
+       * @since 0.0.0
+       */
+      hasTaxonomicCoverage() {
+        const taxonCoverage = this.get("taxonCoverage");
+        return (
+          Array.isArray(taxonCoverage) &&
+          taxonCoverage?.length > 0 &&
+          taxonCoverage[0] instanceof EMLTaxonCoverage
+        );
+      },
+
+      /**
+       * Create a new taxon coverage model and add it to the EML model within an
+       * array on the taxonCoverage attribute. If there is already a non-empty
+       * array of taxon coverage models, this function will not add a new one
+       * and will return false instead.
+       * @param {boolean} [silent] - Whether to suppress the change event when
+       * adding the taxon coverage model to the EML model
+       * @returns {EMLTaxonCoverage[] | false} - The new EMLTaxonCoverage model
+       * that was added to the EML model, or false if a new model was not added
+       * @since 0.0.0
+       */
+      addTaxonomicCoverage(silent = false) {
+        if (this.hasTaxonomicCoverage()) return false;
+        const taxonCov = [
+          new EMLTaxonCoverage({
+            parentModel: this,
+          }),
+        ];
+        this.set("taxonCoverage", taxonCov, { silent });
+        return taxonCov;
       },
 
       /**

@@ -7,8 +7,9 @@ define([
   "models/metadata/eml211/EMLMeasurementScale",
   "views/metadata/EMLMeasurementScaleView",
   "views/metadata/EML211MissingValueCodesView",
+  "views/metadata/EMLMeasurementTypeView",
   "text!templates/metadata/eml-attribute.html",
-], function (
+], (
   _,
   $,
   Backbone,
@@ -17,17 +18,18 @@ define([
   EMLMeasurementScale,
   EMLMeasurementScaleView,
   EML211MissingValueCodesView,
+  EMLMeasurementTypeView,
   EMLAttributeTemplate,
-) {
+) => {
   /**
    * @class EMLAttributeView
    * @classdesc An EMLAttributeView displays the info about one attribute in a
    * data object
    * @classcategory Views/Metadata
    * @screenshot views/metadata/EMLAttributeView.png
-   * @extends Backbone.View
+   * @augments Backbone.View
    */
-  var EMLAttributeView = Backbone.View.extend(
+  const EMLAttributeView = Backbone.View.extend(
     /** @lends EMLAttributeView.prototype */ {
       tagName: "div",
 
@@ -46,7 +48,7 @@ define([
       /**
        * The events this view will listen to and the associated function to
        * call.
-       * @type {Object}
+       * @type {object}
        */
       events: {
         "change .input": "updateModel",
@@ -57,17 +59,15 @@ define([
 
       /**
        * Creates a new EMLAttributeView
-       * @param {Object} options - A literal object with options to pass to the
+       * @param {object} options - A literal object with options to pass to the
        * view
        * @param {EMLAttribute} [options.model] - The EMLAttribute model to
        * display. If none is provided, an empty EMLAttribute will be created.
-       * @param {boolean} [options.isNew=false] - Set to true if this is a new
+       * @param {boolean} [options.isNew] - Set to true if this is a new
        * attribute
        */
-      initialize: function (options) {
-        if (!options || typeof options != "object") options = {};
-        this.isNew =
-          options.isNew == true ? true : options.model ? false : true;
+      initialize(options = {}) {
+        this.isNew = options.isNew === true ? true : !options.model;
         this.model =
           options.model ||
           new EMLAttribute({ xmlID: DataONEObject.generateId() });
@@ -75,10 +75,10 @@ define([
 
       /**
        * Renders this view
-       * @return {EMLAttributeView} A reference to this view
+       * @returns {EMLAttributeView} A reference to this view
        */
-      render: function () {
-        var templateInfo = {
+      render() {
+        const templateInfo = {
           title: this.model.get("attributeName")
             ? this.model.get("attributeName")
             : "Add New Attribute",
@@ -87,12 +87,12 @@ define([
         _.extend(templateInfo, this.model.toJSON());
 
         // Render the template
-        var viewHTML = this.template(templateInfo);
+        const viewHTML = this.template(templateInfo);
 
         // Insert the template HTML
         this.$el.html(viewHTML);
 
-        var measurementScaleModel = this.model.get("measurementScale");
+        let measurementScaleModel = this.model.get("measurementScale");
 
         if (!this.model.get("measurementScale")) {
           // Create a new EMLMeasurementScale model if this is a new attribute
@@ -104,7 +104,7 @@ define([
 
         // Create an EMLMeasurementScaleView for this attribute's measurement
         // scale
-        var measurementScaleView = new EMLMeasurementScaleView({
+        const measurementScaleView = new EMLMeasurementScaleView({
           model: measurementScaleModel,
           parentView: this,
         });
@@ -129,13 +129,15 @@ define([
 
         // Save a reference to this model's id in the DOM
         this.$el.attr("data-attribute-id", this.model.cid);
+
+        return this;
       },
 
       /**
        * After this view has been rendered, add the MeasurementTypeView and
        * render the MeasurementScaleView
        */
-      postRender: function () {
+      postRender() {
         this.measurementScaleView.postRender();
         this.renderMeasurementTypeView();
       },
@@ -150,7 +152,7 @@ define([
        * limited by BioPortal because every MeasurementTypeView hits BioPortal's
        * API on render.
        */
-      renderMeasurementTypeView: function () {
+      renderMeasurementTypeView() {
         if (
           !(
             MetacatUI.appModel.get("enableMeasurementTypeView") &&
@@ -160,26 +162,19 @@ define([
           return;
         }
 
-        var viewRef = this,
-          containerEl = viewRef.$(".measurement-type-container");
+        const viewRef = this;
+        const containerEl = viewRef.$(".measurement-type-container");
 
         // Only insert a new view if we haven't already
         if (!containerEl.is(":empty")) {
           return;
         }
 
-        // Dynamically require since this view is feature-flagged off by default
-        // and requires an API key
-        require(["views/metadata/EMLMeasurementTypeView"], function (
-          EMLMeasurementTypeView,
-        ) {
-          var view = new EMLMeasurementTypeView({
-            model: viewRef.model,
-          });
-
-          view.render();
-          containerEl.html(view.el);
+        const view = new EMLMeasurementTypeView({
+          model: viewRef.model,
         });
+        view.render();
+        containerEl.html(view.el);
       },
 
       /**
@@ -187,33 +182,36 @@ define([
        * changed.
        * @param {Event} e - The event that was triggered by the user
        */
-      updateModel: function (e) {
+      updateModel(e) {
         if (!e) return;
 
-        var emlModel = this.model.get("parentModel"),
-          tries = 0;
+        let emlModel = this.model.get("parentModel");
+        let tries = 0;
 
         while (emlModel.type !== "EML" && tries < 6) {
           emlModel = emlModel.get("parentModel");
-          tries++;
+          tries += 1;
         }
 
-        var newValue = emlModel
-            ? emlModel.cleanXMLText($(e.target).val())
-            : $(e.target).val(),
-          category = $(e.target).attr("data-category"),
-          currentValue = this.model.get(category);
+        let newValue = emlModel
+          ? emlModel.cleanXMLText($(e.target).val())
+          : $(e.target).val();
+        const category = $(e.target).attr("data-category");
+        const currentValue = this.model.get(category);
 
         // If the new value is just a string of space characters, then set it to
         // an empty string
-        if (typeof newValue == "string" && !newValue.trim().length) {
+        if (typeof newValue === "string" && !newValue.trim().length) {
           newValue = "";
         }
 
         // If the current value is an array...
         if (Array.isArray(currentValue)) {
+          // Clone the value so that when we set it on the model, it triggers
+          // the expected change events
+          let newArray = [...currentValue];
           // Get the position of the updated DOM element
-          var index = this.$(".input[data-category='" + category + "']").index(
+          const index = this.$(`.input[data-category='${category}']`).index(
             e.target,
           );
 
@@ -222,55 +220,50 @@ define([
             // If the new value is a falsey value, then don't' set it on the
             // model
             if (
-              typeof newValue == "undefined" ||
+              typeof newValue === "undefined" ||
               newValue === false ||
               newValue === null
             ) {
               // Remove one element at this index instead of inserting an empty
               // value
-              var newArray = currentValue.splice(index, 1);
-
-              // Set the new array on the model
-              this.model.set(category, newArray);
+              newArray = newArray.splice(index, 1);
             }
             // Otherwise, insert the value in the array at the calculated index
             else {
-              currentValue[index] = newValue;
+              newArray[index] = newValue;
             }
           }
           // Otherwise if it's an empty array AND there is a value to set...
           else if (
-            typeof newValue != "undefined" &&
+            typeof newValue !== "undefined" &&
             newValue !== false &&
             newValue !== null
           ) {
             // Push the new value into this array
-            currentValue.push(newValue);
+            newArray.push(newValue);
           }
+          this.model.set(category, newArray);
+        }
+        // If the value is not an array check that there is an actual value here
+        else if (
+          typeof newValue !== "undefined" &&
+          newValue !== false &&
+          newValue !== null
+        ) {
+          this.model.set(category, newValue);
+        }
 
-          // Trigger a change on this model attribute
-          this.model.trigger("change:" + category);
-        }
-        // If the value is not an array...
-        else {
-          // Check that there is an actual value here
-          if (
-            typeof newValue != "undefined" &&
-            newValue !== false &&
-            newValue !== null
-          ) {
-            this.model.set(category, newValue);
-          }
-        }
+        this.model.set("isNew", false);
+        this.isNew = false;
       },
 
       /**
        * Shows validation errors on this view
        */
-      showValidation: function () {
-        var view = this;
+      showValidation() {
+        const view = this;
 
-        setTimeout(function () {
+        setTimeout(() => {
           // If the user focused on another element in this view, don't do
           // anything
           if (_.contains($(document.activeElement).parents(), view.el)) return;
@@ -281,19 +274,15 @@ define([
           view.$(".notification").text("");
 
           if (!view.model.isValid()) {
-            var errors = view.model.validationError;
+            const errors = view.model.validationError;
 
             _.each(
               Object.keys(errors),
-              function (attr) {
+              (attr) => {
+                view.$(`.input[data-category='${attr}']`).addClass("error");
+                view.$(`.radio [data-category='${attr}']`).addClass("error");
                 view
-                  .$(".input[data-category='" + attr + "']")
-                  .addClass("error");
-                view
-                  .$(".radio [data-category='" + attr + "']")
-                  .addClass("error");
-                view
-                  .$("[data-category='" + attr + "'] .notification")
+                  .$(`[data-category='${attr}'] .notification`)
                   .text(errors[attr])
                   .addClass("error");
               },
@@ -317,15 +306,25 @@ define([
        * Hides validation errors on this view
        * @param {Event} e - The event that was triggered by the user
        */
-      hideValidation: function (e) {
-        var input = $(e.target),
-          category = input.attr("data-category");
+      hideValidation(e) {
+        const input = $(e.target);
+        const category = input.attr("data-category");
 
         input.removeClass("error");
 
-        this.$("[data-category='" + category + "'] .notification")
+        this.$(`[data-category='${category}'] .notification`)
           .removeClass("error")
           .empty();
+      },
+
+      /** Display the view */
+      show() {
+        this.$el.show();
+      },
+
+      /** Hide the view */
+      hide() {
+        this.$el.hide();
       },
     },
   );
