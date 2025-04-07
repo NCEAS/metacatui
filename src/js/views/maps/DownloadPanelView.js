@@ -265,43 +265,43 @@ define([
        * value 1: wmts link
        */
 
-      layerDownloadLinks: {
-        iwp: [
-          "https://arcticdata.io/data/10.18739/A2KW57K57/iwp_geotiff_high/WGS1984Quad/",
-          "https://arcticdata.io/data/tiles/10.18739/A2KW57K57/WMTSCapabilities.xml",
-          "https://arcticdata.io/data/10.18739/A2KW57K57/iwp_geopackage_high/WGS1984Quad/",
-        ], // iwp
-        infrastructure: [
-          "https://arcticdata.io/data/10.18739/A21J97929/output/geotiff/WGS1984Quad/",
-          "https://arcticdata.io/data/tiles/10.18739/A21J97929/WMTSCapabilities.xml",
-          null,
-        ], // infrastructure
-        swi: [
-          null,
-          "https://arcticdata.io/data/tiles/10.18739/A2037V/WMTSCapabilities.xml",
-          null,
-        ], // surface water
-        dlbns1419: [
-          null,
-          "https://arcticdata.io/data/tiles/10.18739/A2K35MF71/WMTSCapabilities.xml",
-          null,
-        ], // drained lake basins
-        avg: [
-          null,
-          "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
-          null,
-        ], // average Terrestrial Net CO2 Balance
-        fire: [
-          null,
-          "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
-          null,
-        ], // average Fire Emissions
-        trend: [
-          null,
-          "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
-          null,
-        ], // trends In Terrestrial Net CO2 Balance
-      },
+      // layerDownloadLinks: {
+      //   iwp: [
+      //     "https://arcticdata.io/data/10.18739/A2KW57K57/iwp_geotiff_high/WGS1984Quad/",
+      //     "https://arcticdata.io/data/tiles/10.18739/A2KW57K57/WMTSCapabilities.xml",
+      //     "https://arcticdata.io/data/10.18739/A2KW57K57/iwp_geopackage_high/WGS1984Quad/",
+      //   ], // iwp
+      //   infrastructure: [
+      //     "https://arcticdata.io/data/10.18739/A21J97929/output/geotiff/WGS1984Quad/",
+      //     "https://arcticdata.io/data/tiles/10.18739/A21J97929/WMTSCapabilities.xml",
+      //     null,
+      //   ], // infrastructure
+      //   swi: [
+      //     null,
+      //     "https://arcticdata.io/data/tiles/10.18739/A2037V/WMTSCapabilities.xml",
+      //     null,
+      //   ], // surface water
+      //   dlbns1419: [
+      //     null,
+      //     "https://arcticdata.io/data/tiles/10.18739/A2K35MF71/WMTSCapabilities.xml",
+      //     null,
+      //   ], // drained lake basins
+      //   avg: [
+      //     null,
+      //     "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
+      //     null,
+      //   ], // average Terrestrial Net CO2 Balance
+      //   fire: [
+      //     null,
+      //     "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
+      //     null,
+      //   ], // average Fire Emissions
+      //   trend: [
+      //     null,
+      //     "https://arcticdata.io/data/tiles/10.3334/ORNLDAAC/2377/WMTSCapabilities.xml",
+      //     null,
+      //   ], // trends In Terrestrial Net CO2 Balance
+      // },
       /**
        * The objectServiceUrl from the MapModel
        * @type {string}
@@ -726,9 +726,17 @@ define([
             } else {
               pngDownloadLink = null;
             }
-
+            // Get Geotiff download link from map config
+            let tiffService;
+            if (value.attributes && Array.isArray(value.attributes.services)) {
+              tiffService = value.attributes.services.find(
+                (service) => service.type === "geotiff",
+              );
+            } else {
+              tiffService = null;
+            }
+            // Get Geopackage download link from map config
             let geopckgService = null;
-
             if (value.attributes && Array.isArray(value.attributes.services)) {
               geopckgService = value.attributes.services.find(
                 (service) => service.type === "geopackage",
@@ -753,6 +761,7 @@ define([
               wmtsDownloadLink,
               metadataPid: value.attributes.metadataPid,
               gpkgDownloadLink: geopckgService ? geopckgService.endpoint : null,
+              tiffDownloadLink: tiffService ? tiffService.endpoint : null,
             };
             selectedLayersList.push(selectedLayer);
           }
@@ -823,6 +832,8 @@ define([
                 item.wmtsDownloadLink;
               layerItemSelectBox.dataset.gpkgDownloadLink =
                 item.gpkgDownloadLink;
+              layerItemSelectBox.dataset.tiffDownloadLink =
+                item.tiffDownloadLink;
               layerItemSelectBox.dataset.metadataPid = item.metadataPid;
 
               const layerItemSpan = document.createElement("span");
@@ -885,22 +896,28 @@ define([
               // fileTypeDropdown.classList.add(this.classes.dropdown);
               fileTypeDropdown.classList.add("fileType-downloads-dropdown");
 
-              // Check if tif download link exists for the data layer
-              const hasValidTifLinkForLayer =
-                this.layerDownloadLinks[item.layerID]?.[0] !== null;
-              // Remove 'tif' key if no valid Geotiff links exist
-              if (!hasValidTifLinkForLayer) {
+              // Check if tif download link exists for the data layer. Remove 'tif' key if no valid Geotiff links exist
+              // const hasValidTifLinkForLayer =
+              //   this.layerDownloadLinks[item.layerID]?.[0] !== null;
+              // // Remove 'tif' key if no valid Geotiff links exist
+              // if (!hasValidTifLinkForLayer) {
+              //   delete fileTypeOptions.tif;
+              // }
+              if (item.tiffDownloadLink == null) {
                 delete fileTypeOptions.tif;
               }
 
-              // Check if gpkg download link exists for the data layer
-              const hasValidGpkgLinkForLayer =
-                this.layerDownloadLinks[item.layerID]?.[2] !== null;
-              // Remove 'gpkg' key if no valid Geopackage links exist
-              if (!hasValidGpkgLinkForLayer) {
+              // Check if gpkg download link exists for the data layer. Remove 'gpkg' key if no valid Geopackage links exist
+              // const hasValidGpkgLinkForLayer =
+              //   this.layerDownloadLinks[item.layerID]?.[2] !== null;
+              // // Remove 'gpkg' key if no valid Geopackage links exist
+              // if (!hasValidGpkgLinkForLayer) {
+              //   delete fileTypeOptions.gpkg;
+              // }
+
+              if (item.gpkgDownloadLink == null) {
                 delete fileTypeOptions.gpkg;
               }
-
               // Add a default select option
               const defaultFileTypeOption = document.createElement("option");
               defaultFileTypeOption.value =
@@ -989,6 +1006,7 @@ define([
                   layerItemSelectBox.dataset.layerName,
                   layerItemSelectBox.dataset.wmtsDownloadLink,
                   layerItemSelectBox.dataset.metadataPid,
+                  layerItemSelectBox.dataset.tiffDownloadLink,
                 );
                 view.updateTextbox(
                   fileSizeInfoBox,
@@ -1180,6 +1198,7 @@ define([
         layerName,
         wmtsDownloadLink,
         metadataURL,
+        tiffDownloadLink,
       ) {
         const layerSelectBoxes = document.querySelectorAll(
           ".download-expansion-panel__checkbox",
@@ -1206,7 +1225,8 @@ define([
           if (fileFormat === "png") {
             [baseURL] = pngDownloadLink.split("{");
           } else if (fileFormat === "tif") {
-            [baseURL] = this.layerDownloadLinks[layerID];
+            // [baseURL] = this.layerDownloadLinks[layerID];
+            [baseURL] = tiffDownloadLink.split("{"); // test using tiff url from map config
           } else if (fileFormat === "gpkg") {
             [baseURL] = gpkgDownloadLink.split("15/"); // TO DO - find a better way to get base URL once services are accessed through Map Model
           }
