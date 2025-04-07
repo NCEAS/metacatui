@@ -746,9 +746,6 @@ button.btn-primary a {
 .eml-entity .nav-tabs li.active a {
   border-top: 2px solid #1e254f;
 }
-.attribute-menu-item .remove {
-  background-color: rgba(49, 61, 129, 0.6);
-}
 .eml-party .party-menu .dropdown-menu > li > a:hover {
   color: #12238e;
 }
