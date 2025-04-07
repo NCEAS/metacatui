@@ -5,7 +5,7 @@ define([
   "jws",
   "models/Search",
   "collections/SolrResults",
-], function ($, _, Backbone, JWS, SearchModel, SearchResults) {
+], ($, _, Backbone, JWS, SearchModel, SearchResults) => {
   "use strict";
 
   /**
@@ -14,7 +14,7 @@ define([
    * @extends Backbone.Model
    * @constructor
    */
-  var UserModel = Backbone.Model.extend(
+  const UserModel = Backbone.Model.extend(
     /** @lends UserModel.prototype */ {
       defaults: function () {
         return {
@@ -1014,6 +1014,24 @@ define([
           },
           headers: {
             Authorization: "Bearer " + this.get("token"),
+          },
+        };
+      },
+
+      /**
+       * Creates the settings object to be used in a fetch() call to the DataONE
+       * API
+       * @returns {object} The settings object to be passed to the fetch()
+       * function
+       */
+      createFetchSettings() {
+        const token = this.get("token");
+        if (!token) return {};
+
+        return {
+          credentials: "include",
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
         };
       },

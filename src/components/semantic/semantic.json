@@ -19,5 +19,5 @@
   "autoInstall": true,
   "rtl": false,
   "components": ["card", "dropdown", "popup", "transition", "api", "accordion", "button", "grid", "message"],
-  "version": "2.9.4-beta.65+f622ea8"
+  "version": "2.9.4"
 }
