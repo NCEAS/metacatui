@@ -1055,6 +1055,9 @@ define([
         const checkboxes = document.querySelectorAll(
           ".download-expansion-panel__checkbox",
         );
+        const isAnyChecked = Array.from(checkboxes).some(
+          (checkbox) => checkbox.checked,
+        );
         const dropdowns = document.querySelectorAll(
           ".downloads-dropdown-container .fileType-downloads-dropdown",
         );
@@ -1062,9 +1065,7 @@ define([
         const isanyFileTypeSelected = Array.from(dropdowns).some((dropdown) =>
           ["png", "tif", "gpkg"].includes(dropdown.value.toLowerCase()),
         );
-        const isAnyChecked = Array.from(checkboxes).some(
-          (checkbox) => checkbox.checked,
-        );
+
         if (isAnyChecked && isanyFileTypeSelected) {
           saveButtonEl.classList.remove(buttonClassDisable);
           view.activateButton("save");
@@ -1074,6 +1075,14 @@ define([
           saveButtonEl.classList.add(buttonClassDisable);
           view.activateButton("clear");
         }
+
+        const uncheckedLayerIds = Array.from(checkboxes)
+          .filter((checkbox) => !checkbox.checked)
+          .map((checkbox) => checkbox.dataset.layerId);
+
+        uncheckedLayerIds.forEach((layerID) => {
+          delete view.dataDownloadLinks[layerID];
+        });
       },
 
       /**
@@ -1085,12 +1094,6 @@ define([
        */
       fileTypeSelection(saveButtonEl, buttonClassDisable, layerID) {
         const view = this;
-        // const checkboxes = document.querySelectorAll(
-        //   ".download-expansion-panel__checkbox",
-        // );
-        // const isAnyChecked = Array.from(checkboxes).some(
-        //   (checkbox) => checkbox.checked,
-        // );
         const dropdowns = document.querySelectorAll(
           ".downloads-dropdown-container .fileType-downloads-dropdown",
         );
@@ -1098,15 +1101,6 @@ define([
         const isPNGorTIFSelected = Array.from(dropdowns).some((dropdown) =>
           ["png", "tif", "gpkg"].includes(dropdown.value.toLowerCase()),
         );
-        // if (isAnyChecked) {
-        //   saveButtonEl.classList.remove(buttonClassDisable);
-        //   view.activateButton("save");
-        //   view.activateButton("clear");
-        // } else {
-        //   view.resetButtonStyles();
-        //   saveButtonEl.classList.add(buttonClassDisable);
-        //   view.activateButton("clear");
-        // }
         if (!isPNGorTIFSelected) {
           view.resetButtonStyles();
           saveButtonEl.classList.add(buttonClassDisable);
