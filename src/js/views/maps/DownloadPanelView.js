@@ -699,7 +699,7 @@ define([
         let selectedLayersList = [];
 
         // alert("Display layer list");
-        // console.log(this.mapModel.get("allLayers"));
+        console.log(this.mapModel.get("allLayers"));
 
         this.mapModel.get("allLayers").forEach((value) => {
           // if(value?.attributes?.originalVisibility === true && value.attributes.type === "WebMapTileServiceImageryProvider") {
@@ -709,14 +709,23 @@ define([
             value.attributes.label !== "Alaska High Resolution Imagery"
           ) {
             let wmtsDownloadLink;
-            if (
-              this.layerDownloadLinks[value.attributes.layerId] &&
-              this.layerDownloadLinks[value.attributes.layerId].length > 1
-            ) {
-              [, wmtsDownloadLink] =
-                this.layerDownloadLinks[value.attributes.layerId] || [];
+            // Testing to retreive WMTS link from Map config
+            // if (
+            //   this.layerDownloadLinks[value.attributes.layerId] &&
+            //   this.layerDownloadLinks[value.attributes.layerId].length > 1
+            // ) {
+            //   [, wmtsDownloadLink] =
+            //     this.layerDownloadLinks[value.attributes.layerId] || [];
+            // } else {
+            //   wmtsDownloadLink = null; // the production PDG demo config has layers that currently do not have WMTS layers
+            // }
+
+            if (value.attributes && Array.isArray(value.attributes.services)) {
+              wmtsDownloadLink = value.attributes.services.find(
+                (service) => service.type === "wmts",
+              ).endpoint;
             } else {
-              wmtsDownloadLink = null; // the production PDG demo config has layers that currently do not have WMTS layers
+              wmtsDownloadLink = null;
             }
             let geopckgService = null;
 
@@ -724,6 +733,8 @@ define([
               geopckgService = value.attributes.services.find(
                 (service) => service.type === "geopackage",
               );
+            } else {
+              geopckgService = null;
             }
 
             const selectedLayer = {
