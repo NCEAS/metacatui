@@ -25,6 +25,7 @@ define([
     buttonContainer: "button-container",
     tabDynamicContent: "tab-dynamic-content",
     notificationContainer: "autofill-notification",
+    checkboxeContainer: "checkbox-list",
   };
 
   // Font awesome icon names
@@ -223,12 +224,16 @@ define([
               icon: ICONS.success,
               tooltip: "Attribute names filled successfully",
               active: true,
+              timeout: BUTTON_TIMEOUT,
+              afterTimeout: "default",
             },
             error: {
               message: "Failed to fill",
               icon: ICONS.warning,
               tooltip: "An error occurred while fetching the file.",
               active: false,
+              timeout: BUTTON_TIMEOUT,
+              afterTimeout: "default",
             },
             unsupportedFormat: (thisFormat, allowedFormats) => ({
               message: `Cannot fill attributes from ${thisFormat} files`,
@@ -321,6 +326,8 @@ define([
               icon: ICONS.success,
               tooltip: "All attributes copied successfully",
               active: true,
+              timeout: BUTTON_TIMEOUT,
+              afterTimeout: "default",
             },
             error: {
               message: "Failed to copy",
@@ -329,7 +336,7 @@ define([
                 "Check that this file has valid attributes and that there are other files to copy to.",
               active: false,
               timeout: BUTTON_TIMEOUT,
-              afterTimeout: "default", // TODO
+              afterTimeout: "default",
             },
           },
         },
@@ -342,6 +349,13 @@ define([
        * @type {object}
        */
       actions: {},
+
+      /**
+       * Records any errors that occur during the autofill process. This object
+       * is used to store error messages and other relevant information.
+       * @type {object}
+       */
+      errors: {},
 
       /**
        * Creates a new AutofillAttributesView
@@ -367,6 +381,10 @@ define([
         // Do the same for the icons in the actions objects' buttonStates
         Object.keys(this.actionConfig).forEach((action) => {
           const actionObj = this.actionConfig[action];
+          // Add the prefix to the icon
+          if (actionObj.icon && !actionObj.icon.startsWith(ICON_PREFIX)) {
+            actionObj.icon = `${ICON_PREFIX}${actionObj.icon}`;
+          }
           Object.keys(actionObj.buttonStates).forEach((state) => {
             const stateObj = actionObj.buttonStates[state];
             if (stateObj.icon && !stateObj.icon.startsWith(ICON_PREFIX)) {
@@ -400,6 +418,11 @@ define([
         return this;
       },
 
+      /**
+       * Handles the update of entity panels by re-rendering all non-active panels.
+       * This method identifies the currently active panel and iterates over the
+       * available actions to re-render the panels that are not active.
+       */
       handleEntityUpdate() {
         // Get the active panel and re-render the other two
         const activePanel = this.els.actionPanelsContainer.querySelector(
@@ -417,6 +440,7 @@ define([
           }
         });
       },
+
       /**
        * Renders all actions defined in the actionConfig object. This method
        * creates tabs and panels for each action and sets up event listeners.
@@ -515,7 +539,7 @@ define([
         });
 
         // Set the container's innerHTML
-        container.innerHTML = checkboxes.join("");
+        container.innerHTML = `<div class="${CLASS_NAMES.checkboxeContainer}">${checkboxes.join("")}</div>`;
         // Start the button inactive
         this.updateButton(action.button, action.buttonStates.default);
         // Warn that this will overwrite existing attributes
@@ -649,9 +673,9 @@ define([
           entities.copyAttributeList(thisEntity, selectedEntities, true);
           this.updateButton(action.button, action.buttonStates.success);
         } catch (error) {
-          console.log(error);
-          // TODO: Get the error type. and call if needed. Include errors
+          // Get the error type. and call if needed. Include errors
           // message in tooltip.
+          this.errors.copyTo = error;
           this.updateButton(action.button, action.buttonStates.error);
         }
       },
@@ -822,8 +846,7 @@ define([
           entities.copyAttributeList(selectedEntity, [thisEntity], true);
           this.updateButton(action.button, action.buttonStates.success);
         } catch (error) {
-          console.log(error); // TODO: Get the error type. and call if needed.
-          // Include errors message in tooltip.
+          this.errors.copyFrom = error;
           this.updateButton(action.button, action.buttonStates.error);
         }
       },
@@ -928,10 +951,7 @@ define([
             this.handleFillViaFile(file);
           }
         } catch (error) {
-          console.log(error);
-
-          // TODO Get the error type. and call if needed. Include errors message
-          // in tooltip.
+          this.errors.fillFromFile = error;
           const action = this.actions.fillFromFile;
           this.updateButton(action.button, action.buttonStates.error);
         }
@@ -946,8 +966,6 @@ define([
 
         Utilities.readSlice(file, this, (event) => {
           if (event.target.readyState !== FileReader.DONE) {
-            console.log("FileReader not done");
-
             return;
           }
 
@@ -977,9 +995,8 @@ define([
             return response.text();
           })
           .then(view.tryParseAndFillAttributeNames.bind(this))
-          .catch((_e) => {
-            console.log(_e);
-
+          .catch((e) => {
+            this.errors.fetch = e;
             // TODO: incorporate the error message. Get type and call if needed.
             this.updateButton(
               view.actions.fillFromFile.button,
@@ -1020,10 +1037,11 @@ define([
 
       /**
        * Updates a button to show a new status.
-       * @param {HTMLElement} button - The button to update.
+       * @param {HTMLElement} buttonEl - The button to update.
        * @param {ButtonState} state - The new state to set for the button.
        */
-      updateButton(button, state) {
+      updateButton(buttonEl, state) {
+        const button = buttonEl;
         // Store the default state if it doesn't already exist
         if (!button.dataset.defaultState) {
           button.dataset.defaultState = JSON.stringify(state);

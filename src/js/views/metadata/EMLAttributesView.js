@@ -611,8 +611,9 @@ define([
        */
       showAttributeValidation(attributeModel) {
         const attrEl = this.attrEls[attributeModel.cid];
-        const menuLink = attrEl.menuItem.querySelector("a");
-        if (menuLink.classList.contains("error")) return;
+        const menuLink = attrEl?.menuItem.querySelector("a");
+        if (menuLink?.classList.contains("error")) return;
+        if (!attrEl) return;
         attrEl.errorIcon = document.createElement("i");
         attrEl.errorIcon.classList.add(
           BOOTSTRAP_CLASS_NAMES.icon,
@@ -621,7 +622,7 @@ define([
           CLASS_NAMES.iconOnLeft,
         );
 
-        menuLink.classList.add(CLASS_NAMES.error);
+        menuLink?.classList.add(CLASS_NAMES.error);
         menuLink.prepend(attrEl.errorIcon);
       },
 
