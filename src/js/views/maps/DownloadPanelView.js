@@ -709,17 +709,7 @@ define([
             value.attributes.label !== "Alaska High Resolution Imagery"
           ) {
             let wmtsDownloadLink;
-            // Testing to retreive WMTS link from Map config
-            // if (
-            //   this.layerDownloadLinks[value.attributes.layerId] &&
-            //   this.layerDownloadLinks[value.attributes.layerId].length > 1
-            // ) {
-            //   [, wmtsDownloadLink] =
-            //     this.layerDownloadLinks[value.attributes.layerId] || [];
-            // } else {
-            //   wmtsDownloadLink = null; // the production PDG demo config has layers that currently do not have WMTS layers
-            // }
-
+            // Get WMTS service from map config
             if (value.attributes && Array.isArray(value.attributes.services)) {
               wmtsDownloadLink = value.attributes.services.find(
                 (service) => service.type === "wmts",
@@ -727,6 +717,16 @@ define([
             } else {
               wmtsDownloadLink = null;
             }
+            // Get PNG download link from map config
+            let pngDownloadLink;
+            if (value.attributes && Array.isArray(value.attributes.services)) {
+              pngDownloadLink = value.attributes.services.find(
+                (service) => service.type === "png",
+              ).endpoint;
+            } else {
+              pngDownloadLink = null;
+            }
+
             let geopckgService = null;
 
             if (value.attributes && Array.isArray(value.attributes.services)) {
@@ -748,7 +748,8 @@ define([
                 "\u2082",
               ),
               fullDownloadLink: value.attributes.moreInfoLink,
-              pngDownloadLink: value.attributes.cesiumOptions.url,
+              // pngDownloadLink: value.attributes.cesiumOptions.url,
+              pngDownloadLink,
               wmtsDownloadLink,
               metadataPid: value.attributes.metadataPid,
               gpkgDownloadLink: geopckgService ? geopckgService.endpoint : null,
@@ -1186,9 +1187,8 @@ define([
 
           for (let x = tileXWest; x <= tileXEast; x += 1) {
             for (let y = tileYNorth; y <= tileYSouth; y += 1) {
-              // pngDownloadLink = "https://arcticdata.io/data/tiles/10.18739/A2KW57K57/WGS1984Quad/{TileMatrix}/{TileCol}/{TileRow}.png"
-
-              const resourceURL = `${baseURL}${resolution}/${x}/${y}.${fileFormat}`;
+              // Update --  retrieving png from map config
+              const resourceURL = `${baseURL}${this.tileMatrixSet}/${resolution}/${x}/${y}.${fileFormat}`;
               urls.push(resourceURL);
             }
           }
@@ -1530,6 +1530,7 @@ define([
 
         // Create an array of promises
         const fetchPromises = urls.map(async (url) => {
+          console.log(url);
           const response = await fetch(url);
           if (!response.ok) {
             if (response.status === 404) {
