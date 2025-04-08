@@ -477,6 +477,8 @@ represents 1 unit of the given distance measurement. */
   display: none;
   overflow: hidden;
   pointer-events: all;
+  /* added by shirly */
+  position: relative;
 }
 
 @media only screen and (min-width: 31.5rem) {
@@ -509,6 +511,7 @@ represents 1 unit of the given distance measurement. */
 
 .toolbar__content--active {
   display: flex;
+  position: relative;
 }
 
 .toolbar__link {
@@ -1408,12 +1411,476 @@ other class: .ui-slider-range */
  *
  */
 
-.draw-tool {
-  display: grid;
-  grid-auto-rows: min-content;
-  grid-gap: 1rem;
+.draw__button {
+  position: relative;
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1.15;
+  margin: 0;
+  overflow: visible;
+  text-transform: none;
+  border: 0;
+  border-radius: 50%;
+  background: var(--portal-col-neutral-00, var(--map-col-buttons__deprecate));
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
+  white-space: nowrap;
+  text-decoration: none;
+  padding: 0.25rem 0.25rem;
+  cursor: pointer;
+  margin: 0 25px;
 }
 
+.draw-tool {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .icon {
+    color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
+  }
+
+  .draw__button--disable .icon {
+    color: var(--portal-col-neutral-4, var(--map-col-text__deprecate));
+  }
+}
+
+.draw__button--active {
+  background-color: var(
+    --portal-col-primary-6,
+    var(--map-col-highlight__deprecate)
+  );
+  color: var(--portal-col-neutral-00);
+}
+
+.custom-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  padding: 0.5rem;
+  background-color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
+  border: 2px solid var(--portal-col-primary-3);
+  color: #333;
+  font-size: 20px;
+  border: 1px solid var(--portal-col-primary-2);
+}
+
+.draw-button-label {
+  display: none; /* Hide the label by default */
+  position: absolute;
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.7
+  ); /* Optional: Add a semi-transparent background */
+  color: #fff; /* Label text color */
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10;
+  bottom: 120%; /* Move label above the button */
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 5px;
+}
+
+.draw__button:hover .draw-button-label {
+  display: block;
+}
+
+.download-panel {
+  display: flex;
+  position: fixed;
+  width: var(--map-width-toolbar-wide);
+  left: 0;
+  flex-direction: column;
+  padding-bottom: 1rem;
+  z-index: 2;
+  align-items: center;
+  justify-content: space-between; /* Pushes elements apart */
+  gap: 20px;
+  bottom: 0;
+  border-width: 1px 0;
+  border-top: 1px solid
+    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
+  background-color: var(--portal-col-primary-1, var(--map-col-bkg__deprecate));
+}
+
+.download-panel-close__button {
+  /* override default button styles */
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1.15;
+  margin: 0;
+  overflow: visible;
+  text-transform: none;
+  border: 0;
+  border-radius: var(--map-border-radius-big);
+  background: var(--portal-col-neutral-00, var(--map-col-buttons__deprecate));
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
+  white-space: nowrap;
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  margin-right: 30px;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between; /* Push label and button apart */
+  align-items: center;
+  width: 100%;
+  padding-top: 15px;
+  margin-left: 30px;
+}
+
+/* Group icon and label in a flex container */
+.label-container {
+  display: flex;
+  align-items: center; /* Ensures both icon & text align properly */
+  gap: 8px; /* Adds spacing between icon and text */
+}
+
+.download__label {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: capitalize;
+  flex-grow: 1; /* Allows it to take up available space */
+  vertical-align: middle; /* Ensures inline alignment */
+  margin-bottom: 3px;
+}
+
+.download-panel .label-container {
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
+  .download__label {
+    color: currentColor;
+  }
+}
+
+.icon-download-alt {
+  font-size: 20px; /* Adjust icon size */
+  vertical-align: bottom; /* Ensures inline alignment */
+}
+
+.download-data-list__panel {
+  display: block; /* To display the panel below */
+  width: calc(100% - 80px);
+  margin-top: 0px; /* Adds spacing from header */
+  margin-left: 40px;
+  margin-right: 40px;
+  padding-top: 0;
+  color: black;
+  border-bottom: 1px solid
+    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
+  font-size: 0.825rem;
+  font-weight: 400;
+  margin: 0 0.5rem;
+  color: var(--portal-col-neutral-7);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* white-space: nowrap; */
+}
+
+.download-data-list {
+  display: block; /* Ensure it appears below */
+  /* width: 100%; */
+  width: calc(100% - 80px);
+  margin-top: 0px; /* Adds spacing from header */
+  margin-left: 40px;
+  margin-right: 40px;
+  padding-top: 0;
+  color: black;
+  border-bottom: 1px solid
+    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
+  overflow-y: auto; /* Enable vertical scrolling */
+  max-height: 150px; /* Fixed height for the list */
+  /* Styling the scrollbar */
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: #888 #f0f0f0; /* For Firefox */
+  /* grid-template-columns: 3rem auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.5rem 0; */
+}
+
+/* For Chrome, Edge, and Safari */
+.download-data-list::-webkit-scrollbar {
+  width: 12px; /* Width of the scrollbar */
+}
+
+.download-data-list::-webkit-scrollbar-track {
+  background: #f0f0f0; /* Background of the scrollbar track */
+}
+
+.download-data-list::-webkit-scrollbar-thumb {
+  background-color: #888; /* Color of the scrollbar thumb */
+  border-radius: 6px; /* Rounded edges */
+  border: 2px solid #f0f0f0; /* Adds some space between thumb and track */
+}
+
+.download-data-list::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Darker thumb when hovered */
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-item input {
+  margin-top: 3px;
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  vertical-align: middle;
+  position: relative;
+}
+
+.checkbox-item label {
+  /* font-size: 14px; */
+  margin-top: 5px;
+  cursor: pointer;
+  font-size: 0.825rem;
+  font-weight: 400;
+  color: var(--portal-col-neutral-7);
+  text-overflow: ellipsis;
+  line-height: 16px; /* Matches checkbox height */
+  display: inline-block;
+}
+
+.download-submit-btn {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: var(--portal-col-primary-6, var(--map-col-bkg__deprecate));
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 20px;
+  width: calc(100% - 80px);
+}
+
+.download-submit-btn:hover {
+  background-color: var(--portal-col-primary-3, var(--map-col-bkg__deprecate));
+}
+
+.download-submit-btn:disabled {
+  background-color: gray; /* Change color to indicate disabled state */
+  cursor: not-allowed;
+  opacity: 0.6; /* Reduce opacity to make it look disabled */
+}
+
+.download-expansion-panel__title {
+  font-size: 13px; /* Adjust font size */
+  color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
+  flex-grow: 1; /* Allow it to take up all available space */
+  width: 100%; /* Ensure it takes the full width of the parent */
+  text-align: left; /* Adjust text alignment as needed */
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Show "..." if text overflows */
+  padding: 0; /* Ensure no extra padding */
+  margin: 0; /* Ensure it starts from the same left edge */
+}
+
+.download-expansion-panel {
+  box-shadow: 0 1px
+    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate)) inset;
+  border-bottom: 1px solid
+    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
+  font-size: 1rem;
+
+  .download-expansion-panel__toggle {
+    display: grid;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1rem;
+    grid-template-columns: min-content auto min-content;
+    /* padding: 0 1.5rem; */
+    padding: 0;
+    border: none;
+    gap: 8px;
+
+    &:hover {
+      background-color: var(--portal-col-primary-1, #15324e);
+      transition: background-color 0.3s ease-in-out;
+    }
+  }
+
+  &.show-content {
+    .download-expansion-panel__content {
+      display: block;
+    }
+
+    .icon-caret-down {
+      display: block;
+    }
+
+    .icon-caret-up {
+      display: none;
+    }
+  }
+
+  .icon-caret-down {
+    display: none;
+  }
+
+  .icon-caret-up {
+    display: block;
+  }
+  .download-expansion-panel__icon {
+    fill: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
+    color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
+    height: 2rem;
+    width: 2rem;
+    margin: 0.25rem;
+    margin-right: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .download-expansion-panel__icon > svg {
+    height: 1rem;
+  }
+
+  .download-expansion-panel__icon-toggle {
+    width: 2rem;
+    display: flex;
+    justify-content: center;
+    color: var(--portal-col-neutral-6);
+  }
+
+  .download-expansion-panel__content {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+}
+.download-expansion-panel__checkbox {
+  margin-right: 8px; /* Adjust spacing as needed */
+}
+
+.downloads-dropdown-container {
+  padding-top: 5px;
+  display: flex;
+  gap: 20px; /* Space between dropdowns */
+}
+
+.downloads-dropdown-wrapper {
+  color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
+  display: flex;
+  align-items: center; /* Align label and dropdown vertically */
+  /* gap: 2px;  */
+  padding-left: 20px;
+  justify-content: flex-end; /* Align items at the bottom */
+  height: 100%; /* Ensure the container has height to align */
+}
+.downloads-dropdown-wrapper label {
+  font-size: 12px;
+  white-space: nowrap;
+  margin-bottom: 0;
+  color: var(--portal-col-neutral-7);
+}
+
+.downloads-dropdown {
+  margin-bottom: 0;
+  padding: 0px 2px; /* Add padding for better appearance */
+  font-size: 10px;
+  width: 65%; /* Adjust based on container */
+  max-width: 120px; /* Prevents it from getting too wide */
+  height: 18px;
+  background-color: #faf9f6;
+  color: var(--portal-col-neutral-7);
+  border: 1px solid #ccc; /* Light border for the dropdown */
+  border-radius: 4px; /* Rounded corners */
+  margin-left: 5px;
+}
+
+.downloads-dropdown option {
+  font-size: 12px; /* Adjust option font size */
+  color: var(--portal-col-neutral-7);
+}
+
+.downloads-textbox {
+  margin: 5px 6px 8px 16px;
+  padding: 3px 5px;
+  line-height: 1;
+  font-size: 10px;
+  min-height: 12px;
+  display: block;
+}
+
+.wmts-copy {
+  background: var(--portal-col-neutral-1, var(--map-col-text__deprecate));
+  border-radius: 5px;
+  border: 1px solid
+    var(--portal-col-primary-2, var(--map-col-bkg-lightest__deprecate));
+  display: flex;
+  justify-content: space-between;
+}
+
+.download-status-container {
+  width: 100%;
+  background-color: #c8c7c7c4;
+  border-radius: 5px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  width: 0%;
+  height: 18px;
+  background-color: var(
+    --portal-col-primary-6,
+    var(--map-col-text__deprecate)
+  ) !important;
+  text-align: center;
+  color: white;
+  line-height: 18px;
+  font-size: 10px;
+  border-radius: 5px;
+  transition: width 0.4s;
+}
+.progress-bar-no-data {
+  width: 0%;
+  height: 18px;
+  text-align: center;
+  color: rgb(3, 3, 3);
+  line-height: 18px;
+  font-size: 10px;
+  border-radius: 5px;
+  transition: width 0.4s;
+  background-color: rgba(255, 255, 0, 0.172);
+}
+.draw__button--disable {
+  /* background-color: gray; */
+  color: gray;
+  cursor: not-allowed;
+  trash {
+    color: var(
+      --portal-col-primary-6,
+      var(--map-col-text__deprecate)
+    ) !important;
+  }
+}
+#copyWMTS {
+  cursor: pointer;
+  color: var(--portal-col-neutral-7);
+}
+
+#copyWMTS:hover {
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
+}
 /*****************************************************************************************
  *
  * Help panel

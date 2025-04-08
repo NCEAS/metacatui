@@ -171,23 +171,47 @@ define([
        * All except LEFT_CLICK are ignored.
        */
       handleClick: function (m, action) {
-        if (action !== "LEFT_CLICK") return;
+        // updated by Shirly - testing
+        if (action !== "LEFT_CLICK" && action !== "LEFT_DOUBLE_CLICK") return;
         // Clone the models in hovered features and set them as clicked features
         const hoveredFeatures = this.get("hoveredFeatures").models;
         this.setClickedFeatures(hoveredFeatures);
+
+        // First check if there is specific action set for the layer.
         let clickAction = this.get("hoveredFeatures")
-          ?.models[0].get("mapAsset")
+          ?.at(0)
+          ?.get("mapAsset")
           ?.get("clickFeatureAction");
+        // Default to the mapModel action otherwise.
         if (clickAction == null) {
           clickAction = this.get("mapModel")?.get("clickFeatureAction");
         }
+
+        if (this.get("preventClickAction")) {
+          clickAction = false;
+        }
+
         if (clickAction === "showDetails") {
           this.selectFeatures(hoveredFeatures);
         } else if (clickAction === "zoom") {
           this.set("zoomTarget", hoveredFeatures[0]);
         }
+        // Added by Shirly --  Custom behavior for double-click
+        else if (action === "LEFT_DOUBLE_CLICK") {
+          this.set("previousAction", "LEFT_DOUBLE_CLICK");
+        }
         // TODO: throttle this?
         this.setClickedPositionFromMousePosition();
+      },
+
+      /** Prevent any action from happening when the user clicks a feature */
+      preventClickAction() {
+        this.set("preventClickAction", true);
+      },
+
+      /** Enable click actions on features if previous prevented */
+      enableClickAction() {
+        this.set("preventClickAction", false);
       },
 
       /**
@@ -332,7 +356,6 @@ define([
           if (features instanceof Features) {
             features = features.filter((f) => !f.isDefault());
           }
-
           // Empty collection if features array is empty (and replace is true)
           if (!features || features.length === 0) {
             if (replace) model.get(type).set([], { remove: true });

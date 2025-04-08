@@ -83,6 +83,9 @@ define([
        * users to click on map features to show more information about them. If
        * true, the {@link MapView} will render a {@link FeatureInfoView} and
        * will initialize "picking" in the {@link CesiumWidgetView}.
+       * @property {boolean} [showDownloadPanel=false] - Set to true to enable
+       * the partial download panel, see {@link DownloadPanelView}.
+       * `showLayerList` must also be set to true.
        * @property {string} [clickFeatureAction="showDetails"] - The default
        * action to take when a user clicks on a feature on the map. The
        * available options are "showDetails" (show the feature details in the
@@ -214,6 +217,9 @@ define([
        * scale bar.
        * @property {boolean} [showFeatureInfo=true] - Whether or not to allow
        * users to click on map features to show more information about them.
+       * @property {boolean} [showDownloadPanel=false] Whether or not to show
+       * users the panel that allows partial download of data. `showLayerList`
+       * must also be set to true.
        * @property {string} [clickFeatureAction="showDetails"] - The default
        * action to take when a user clicks on a feature on the map. The
        * available options are "showDetails" (show the feature details in the
@@ -257,6 +263,7 @@ define([
           toolbarOpen: false,
           showScaleBar: true,
           showFeatureInfo: true,
+          showDownloadPanel: false,
           clickFeatureAction: "showDetails",
           showNavHelp: true,
           showFeedback: false,
@@ -290,6 +297,9 @@ define([
               this.unset("layerCategories");
               this.set("allLayers", layers);
             }
+            // TODO: listen to changes in layerCategories and layers to update
+            // allLayers. This will be necessary when we allow users to add &
+            // remove layers.
 
             if (isNonEmptyArray(config.terrains)) {
               this.set("terrains", new MapAssets(config.terrains));
@@ -405,15 +415,20 @@ define([
       /**
        * Add a layer or other asset to the map. This is the best way to add a
        * layer to the map because it will ensure that this map model is set on
-       * the layer model.
+       * the layer model. If the map is using layer categories, the layer
+       * will be added to the first category.
        * @todo Enable adding a terrain asset.
-       * @param {Object | MapAsset} asset - A map asset model or object with
+       * @param {object | MapAsset} asset - A map asset model or object with
        * attributes to set on a new map asset model.
        * @returns {MapAsset} The new layer model.
        * @since 2.25.0
        */
       addAsset(asset) {
-        const layers = this.get("layers") || this.resetLayers();
+        const categories = this.get("layerCategories");
+        let layers = categories?.at(0)?.get("mapAssets");
+        if (!layers) {
+          layers = this.get("layers") || this.resetLayers();
+        }
         return layers.addAsset(asset, this);
       },
 

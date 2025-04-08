@@ -438,7 +438,7 @@ define([
             placement: "top",
             trigger: "hover focus click",
             html: false,
-            title: `Saving is disabled. ${  tooltipMessage  } Please wait...`,
+            title: `Saving is disabled. ${tooltipMessage} Please wait...`,
             container: "body",
             delay: 600,
           });
@@ -451,8 +451,7 @@ define([
             placement: "top",
             trigger: "hover focus click",
             html: false,
-            title:
-              `Adding files disabled. ${  tooltipMessage  } Please wait...`,
+            title: `Adding files disabled. ${tooltipMessage} Please wait...`,
             container: "body",
             delay: 600,
           });
