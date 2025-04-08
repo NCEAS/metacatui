@@ -427,17 +427,20 @@ define([
       /**
        * Add a layer or other asset to the map. This is the best way to add a
        * layer to the map because it will ensure that this map model is set on
-       * the layer model.
+       * the layer model. If the map is using layer categories, the layer
+       * will be added to the first category.
        * @todo Enable adding a terrain asset.
-       * @param {Object | MapAsset} asset - A map asset model or object with
+       * @param {object | MapAsset} asset - A map asset model or object with
        * attributes to set on a new map asset model.
        * @returns {MapAsset} The new layer model.
        * @since 2.25.0
        */
       addAsset(asset) {
-        // const layers = this.get("layers") || this.resetLayers();
-        const layersCategoriesCollection = this.get("layerCategories").at(0);
-        const layers = layersCategoriesCollection.get("mapAssets");
+        const categories = this.get("layerCategories");
+        let layers = categories?.at(0)?.get("mapAssets");
+        if (!layers) {
+          layers = this.get("layers") || this.resetLayers();
+        }
         return layers.addAsset(asset, this);
       },
 
