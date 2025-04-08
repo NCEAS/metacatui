@@ -22,6 +22,10 @@ define([
     button: "draw__button",
     buttonFocus: "draw__button--active",
     buttonDisable: "draw__button--disable",
+    layerItemPanelToggle: "download-expansion-panel__toggle",
+    layerItemCheckbox: "download-expansion-panel__checkbox",
+    resolutionDropdown: "resolution-dropdown",
+    fileTypeDropdown: "fileType-downloads-dropdown",
   };
 
   /**
@@ -123,6 +127,7 @@ define([
         const events = {};
         const CN = CLASS_NAMES;
         events[`click .${CN.button}`] = "handleButtonClick";
+        events[`click .${CN.layerItemPanelToggle}`] = "toggleLayerSection";
         return events;
       },
 
@@ -228,8 +233,6 @@ define([
         toolbarLinkActive: "toolbar__link--active",
         toolbarContentActive: "toolbar__content--active",
         layerItemPanel: "download-expansion-panel",
-        layerItemPanelToggle: "download-expansion-panel__toggle",
-        layerItemCheckbox: "download-expansion-panel__checkbox",
         layerItemTitle: "download-expansion-panel__title",
         layerItemContent: "download-expansion-panel__content",
         dropdownWrapper: "downloads-dropdown-wrapper",
@@ -477,13 +480,19 @@ define([
        * @param {boolean} [draw] - If true, the draw tool will be turned on. If
        * false, it will be turned off. If not provided, the draw tool will
        * toggle to the opposite of the current state.
+       * @param {"enabled"|"deactivated"} [offStatus] - The status to set the
+       * button to when the toggle is off.
        */
-      toggleDraw(draw) {
+      toggleDraw(draw, offStatus = "enabled") {
         const buttonEl = this.buttonEls.drawButton;
         if (!buttonEl) return;
 
-        // if the button is deactivated, do nothing
-        if (buttonEl.classList.contains(CLASS_NAMES.buttonDisable)) {
+        // if the button is deactivated, do nothing, unless a boolean is
+        // explicitly passed, i.e. it's not a simple click event.
+        if (
+          buttonEl.dataset.status === "deactivated" &&
+          typeof draw !== "boolean"
+        ) {
           return;
         }
 
@@ -501,7 +510,7 @@ define([
           // Turn off drawing mode
           this.draw = false;
           this.removeClickListeners();
-          this.setButtonStatus("draw", "enabled");
+          this.setButtonStatus("draw", offStatus);
         }
       },
 
@@ -530,7 +539,7 @@ define([
         // Special case for the draw button, which sets the draw mode
         if (name === "draw") {
           const turnOnDraw = status === "focused";
-          this.toggleDraw(turnOnDraw);
+          this.toggleDraw(turnOnDraw, status);
         }
       },
 
@@ -600,7 +609,6 @@ define([
           }
         });
 
-        // added by Shirly - listed to changes in previousAction
         handler.listenTo(interactions, "change:previousAction", () => {
           if (interactions.get("previousAction") === "LEFT_DOUBLE_CLICK") {
             view.generatePreviewPanel();
@@ -792,7 +800,7 @@ define([
           this.setButtonStatuses({
             draw: "deactivated",
             clear: "enabled",
-            save: "enabled",
+            save: "deactivated",
           });
 
           if (!selectedLayersList.length) {
@@ -821,12 +829,12 @@ define([
                 this.classes.layerItemPanel,
               );
               const layerItem = document.createElement("div");
-              layerItem.classList.add(this.classes.layerItemPanelToggle);
+              layerItem.classList.add(CLASS_NAMES.layerItemPanelToggle);
 
               // Create checkbox that allows user to select the layer
               const layerItemSelectBox = document.createElement("input");
               layerItemSelectBox.type = "checkbox";
-              layerItemSelectBox.classList.add(this.classes.layerItemCheckbox);
+              layerItemSelectBox.classList.add(CLASS_NAMES.layerItemCheckbox);
 
               // Attach layer attributes to the checkbox
               layerItemSelectBox.dataset.layerId = item.layerID;
@@ -867,11 +875,12 @@ define([
 
               const resolutionDropdown = document.createElement("select");
               resolutionDropdown.classList.add(this.classes.dropdown);
+              resolutionDropdown.classList.add(CLASS_NAMES.resolutionDropdown);
 
               // Add a default select option
               const defaultResolutionOption = document.createElement("option");
               defaultResolutionOption.value =
-                this.dropdownOptions.resolution.value;
+                this.dropdownOptions.resolution.defaultValue;
               defaultResolutionOption.textContent =
                 this.dropdownOptions.resolution.defaultText;
               defaultResolutionOption.disabled = true; // Make it non-selectable
@@ -900,7 +909,7 @@ define([
 
               const fileTypeDropdown = document.createElement("select");
               // fileTypeDropdown.classList.add(this.classes.dropdown);
-              fileTypeDropdown.classList.add("fileType-downloads-dropdown");
+              fileTypeDropdown.classList.add(CLASS_NAMES.fileTypeDropdown);
 
               if (item.tiffDownloadLink == null) {
                 delete fileTypeOptions.tif;
@@ -911,7 +920,8 @@ define([
               }
               // Add a default select option
               const defaultFileTypeOption = document.createElement("option");
-              defaultFileTypeOption.value = this.dropdownOptions.fileType.value;
+              defaultFileTypeOption.value =
+                this.dropdownOptions.fileType.defaultValue;
               defaultFileTypeOption.textContent =
                 this.dropdownOptions.fileType.defaultText;
               defaultFileTypeOption.disabled = true; // Make it non-selectable
@@ -938,24 +948,6 @@ define([
               dropdownContainer.appendChild(resolutionDropdownWrapper);
               dropdownContainer.appendChild(fileTypeDropdownWrapper);
               layerItemSelectContent.appendChild(dropdownContainer);
-
-              // Add event listener to toggle expansion panel visibility
-              layerItemSelectBox.addEventListener("change", () => {
-                if (layerItemSelectBox.checked) {
-                  downloadDataPanelContainer.classList.add("show-content"); // Open panel when checkbox is checked
-                  layerItemSelectContent.style.display = "block";
-                } else {
-                  downloadDataPanelContainer.classList.remove("show-content"); // Close panel when checkbox is unchecked
-                  layerItemSelectContent.style.display = "none";
-                  // Reset resolution dropdown to the default value
-                  resolutionDropdown.value =
-                    this.dropdownOptions.resolution.value;
-
-                  // Disable fileTypeDropdown if necessary
-                  fileTypeDropdown.disabled = true;
-                }
-                view.layerSelection(); // Update Save button state
-              });
 
               // Textbox to display file size
               const fileSizeInfoBox = document.createElement("label");
@@ -1042,6 +1034,46 @@ define([
             dataListPanel.appendChild(downloadStatusContainer);
           }
         }
+      },
+
+      /**
+       * Open or close the data/layer item in the list of downloadable layers.
+       * @param {Event} event - The click event that triggered this function.
+       */
+      toggleLayerSection(event) {
+        // TODO: Use the accordion view to handle this
+        const view = this;
+        const itemToggle = event.currentTarget;
+        const itemContent = itemToggle.nextElementSibling;
+        const checkbox = itemToggle.querySelector(
+          `.${CLASS_NAMES.layerItemCheckbox}`,
+        );
+        const resolutionDropdown = itemContent.querySelector(
+          `.${CLASS_NAMES.resolutionDropdown}`,
+        );
+        const fileTypeDropdown = itemContent.querySelector(
+          `.${CLASS_NAMES.fileTypeDropdown}`,
+        );
+
+        const isOpen = itemToggle.classList.contains("show-content");
+
+        // If it's open, close it
+        if (isOpen) {
+          // Close it
+          itemToggle.classList.remove("show-content");
+          itemContent.style.display = "none";
+          checkbox.checked = false; // Uncheck the checkbox
+        } else {
+          itemToggle.classList.add("show-content");
+          itemContent.style.display = "block";
+          checkbox.checked = true; // Check the checkbox
+          // Reset resolution dropdown to the default value
+          resolutionDropdown.value =
+            this.dropdownOptions.resolution.defaultValue;
+          // Disable fileTypeDropdown if necessary
+          fileTypeDropdown.disabled = true;
+        }
+        view.layerSelection(); // Update Save button state
       },
 
       /**
