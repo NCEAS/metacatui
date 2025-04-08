@@ -7,7 +7,7 @@ define([], () => {
    * throughout MetacatUI to perform useful functions related to XML, but not
    * used to store or manipulate any state about the application.
    * @type {object}
-   * @since 0.0.0
+   * @since 2.33.0
    */
   const XMLUtilities = /** @lends XMLUtilities.prototype */ {
     /**

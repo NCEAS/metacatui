@@ -33,7 +33,7 @@ define([
    * @class EMLEntities
    * @classdesc A collection of EMLEntities.
    * @classcategory Collections/Metadata/EML
-   * @since 0.0.0
+   * @since 2.33.0
    * @augments Backbone.Collection
    */
   const EMLEntities = Backbone.Collection.extend(

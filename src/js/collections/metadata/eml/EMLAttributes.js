@@ -10,7 +10,7 @@ define([
    * @class EMLAttributes
    * @classdesc A collection of EMLAttributes.
    * @classcategory Collections/Metadata/EML
-   * @since 0.0.0
+   * @since 2.33.0
    * @augments Backbone.Collection
    */
   const EMLAttributes = Backbone.Collection.extend(

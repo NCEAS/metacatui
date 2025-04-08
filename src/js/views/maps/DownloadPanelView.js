@@ -42,7 +42,7 @@ define([
    * @name DownloadPanelView
    * @augments Backbone.View
    * @screenshot views/maps/DownloadPanelView.png
-   * @since 0.0.0
+   * @since 2.33.0
    * @constructs DownloadPanelView
    */
   const DownloadPanelView = Backbone.View.extend(

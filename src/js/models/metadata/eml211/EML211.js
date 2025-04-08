@@ -2477,7 +2477,7 @@ define([
        * Checks if there is at least one taxon coverage model in the EML model
        * @returns {boolean} - True if there is at least one taxon coverage model
        * in the EML model
-       * @since 0.0.0
+       * @since 2.33.0
        */
       hasTaxonomicCoverage() {
         const taxonCoverage = this.get("taxonCoverage");
@@ -2497,7 +2497,7 @@ define([
        * adding the taxon coverage model to the EML model
        * @returns {EMLTaxonCoverage[] | false} - The new EMLTaxonCoverage model
        * that was added to the EML model, or false if a new model was not added
-       * @since 0.0.0
+       * @since 2.33.0
        */
       addTaxonomicCoverage(silent = false) {
         if (this.hasTaxonomicCoverage()) return false;

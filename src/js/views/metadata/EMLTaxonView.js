@@ -25,7 +25,7 @@ define([
    * for adding common taxa to the taxonomic coverage section. Logic oiginally
    * included in the EML211EditorView.
    * @augments Backbone.View
-   * @since 0.0.0
+   * @since 2.33.0
    */
   const EMLTaxonView = Backbone.View.extend(
     /** @lends EMLTaxonView.prototype */ {
@@ -134,7 +134,7 @@ define([
       /**
        * Update the numbering of the taxa in the taxonomic coverage section
        * @returns {HTMLElement[]} An array of the taxon numbering elements
-       * @since 0.0.0
+       * @since 2.33.0
        */
       updateTaxaNumbering() {
         const taxaNums = this.el.querySelectorAll(".editor-header-index");
