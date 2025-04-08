@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: src/js/views/maps/DownloadPanelView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="/metacatui/assets/css/styles.css">
+    <link type="text/css" rel="stylesheet" href="styles/style.css">
+</head>
+
+<body>
+
+<nav id="nav">
+    <a href="/">
+      <div class="logo">
+<svg class="cat" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="cat" class="svg-inline--fa fa-cat fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M290.59 192c-20.18 0-106.82 1.98-162.59 85.95V192c0-52.94-43.06-96-96-96-17.67 0-32 14.33-32 32s14.33 32 32 32c17.64 0 32 14.36 32 32v256c0 35.3 28.7 64 64 64h176c8.84 0 16-7.16 16-16v-16c0-17.67-14.33-32-32-32h-32l128-96v144c0 8.84 7.16 16 16 16h32c8.84 0 16-7.16 16-16V289.86c-10.29 2.67-20.89 4.54-32 4.54-61.81 0-113.52-44.05-125.41-102.4zM448 96h-64l-64-64v134.4c0 53.02 42.98 96 96 96s96-42.98 96-96V32l-64 64zm-72 80c-8.84 0-16-7.16-16-16s7.16-16 16-16 16 7.16 16 16-7.16 16-16 16zm80 0c-8.84 0-16-7.16-16-16s7.16-16 16-16 16 7.16 16 16-7.16 16-16 16z"></path></svg>
+
+<svg width="459px" height="53px" viewBox="0 0 459 53" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g id="metacatui" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M16.492,52 C17.212,52 17.812,51.748 18.292,51.244 C18.772,50.74 19.012,50.128 19.012,49.408 L19.012,49.408 L18.94,22.912 L30.82,37.816 C31.204,38.344 31.72,38.764 32.368,39.076 C33.016,39.388 33.7,39.544 34.42,39.544 C35.908,39.544 37.132,38.896 38.092,37.6 L38.092,37.6 L49.684,22.912 L49.684,49.408 C49.684,50.128 49.96,50.74 50.512,51.244 C51.064,51.748 51.7,52 52.42,52 L52.42,52 L62.068,52 C62.788,52 63.388,51.748 63.868,51.244 C64.348,50.74 64.588,50.128 64.588,49.408 L64.588,49.408 L64.588,4.12 C64.588,3.448 64.336,2.86 63.832,2.356 C63.328,1.852 62.74,1.6 62.068,1.6 L62.068,1.6 L52.348,1.6 C51.388,1.6 50.56,1.648 49.864,1.744 C49.168,1.84 48.532,2.152 47.956,2.68 L47.956,2.68 L33.916,17.296 L20.524,2.608 C20.332,2.368 19.972,2.14 19.444,1.924 C18.916,1.708 18.412,1.6 17.932,1.6 L17.932,1.6 L6.772,1.6 C6.052,1.6 5.44,1.852 4.936,2.356 C4.432,2.86 4.18,3.448 4.18,4.12 L4.18,4.12 L4.18,49.408 C4.18,50.08 4.432,50.68 4.936,51.208 C5.44,51.736 6.052,52 6.772,52 L6.772,52 L16.492,52 Z M110.74,52 C111.556,52 112.264,51.676 112.864,51.028 C113.464,50.38 113.764,49.624 113.764,48.76 L113.764,48.76 L113.764,42.568 C113.764,41.608 113.464,40.828 112.864,40.228 C112.264,39.628 111.556,39.328 110.74,39.328 L110.74,39.328 L89.428,39.328 L89.428,32.92 L109.732,32.92 C110.5,32.92 111.184,32.596 111.784,31.948 C112.384,31.3 112.684,30.568 112.684,29.752 L112.684,29.752 L112.684,23.488 C112.684,22.576 112.384,21.82 111.784,21.22 C111.184,20.62 110.5,20.32 109.732,20.32 L109.732,20.32 L89.428,20.32 L89.428,14.488 L110.74,14.488 C111.508,14.488 112.204,14.164 112.828,13.516 C113.452,12.868 113.764,12.136 113.764,11.32 L113.764,11.32 L113.764,5.056 C113.764,4.144 113.464,3.388 112.864,2.788 C112.264,2.188 111.556,1.888 110.74,1.888 L110.74,1.888 L76.756,1.888 C75.94,1.888 75.232,2.188 74.632,2.788 C74.032,3.388 73.732,4.144 73.732,5.056 L73.732,5.056 L73.732,48.76 C73.732,49.624 74.032,50.38 74.632,51.028 C75.232,51.676 75.94,52 76.756,52 L76.756,52 L110.74,52 Z M147.604,52 C148.42,52 149.104,51.688 149.656,51.064 C150.208,50.44 150.484,49.672 150.484,48.76 L150.484,48.76 L150.484,16.216 L161.86,16.216 C162.676,16.216 163.396,15.904 164.02,15.28 C164.644,14.656 164.956,13.936 164.956,13.12 L164.956,13.12 L164.956,4.768 C164.956,4 164.644,3.316 164.02,2.716 C163.396,2.116 162.676,1.816 161.86,1.816 L161.86,1.816 L124.132,1.816 C123.22,1.816 122.464,2.104 121.864,2.68 C121.264,3.256 120.964,3.952 120.964,4.768 L120.964,4.768 L120.964,13.12 C120.964,13.936 121.264,14.656 121.864,15.28 C122.464,15.904 123.22,16.216 124.132,16.216 L124.132,16.216 L135.652,16.216 L135.148,48.832 C135.148,49.744 135.424,50.5 135.976,51.1 C136.528,51.7 137.212,52 138.028,52 L138.028,52 L147.604,52 Z M175.828,52 C176.836,52 177.676,51.82 178.348,51.46 C179.02,51.1 179.452,50.584 179.644,49.912 L179.644,49.912 L181.876,42.712 L197.932,42.712 L200.164,49.912 C200.356,50.584 200.8,51.1 201.496,51.46 C202.192,51.82 203.044,52 204.052,52 L204.052,52 L213.916,52 C215.836,51.712 216.796,50.704 216.796,48.976 C216.796,48.304 216.676,47.596 216.436,46.852 C216.196,46.108 216.052,45.616 216.004,45.376 L216.004,45.376 L199.876,4.84 C199.588,3.976 199.036,3.232 198.22,2.608 C197.404,1.984 196.372,1.648 195.124,1.6 L195.124,1.6 L184.756,1.6 C183.604,1.648 182.608,1.948 181.768,2.5 C180.928,3.052 180.292,3.832 179.86,4.84 L179.86,4.84 L163.876,45.376 C163.828,45.472 163.672,45.916 163.408,46.708 C163.144,47.5 163.012,48.304 163.012,49.12 C163.012,50.752 163.948,51.712 165.82,52 L165.82,52 L175.828,52 Z M195.34,30.544 L184.036,30.544 L189.652,13.624 L195.34,30.544 Z M245.38,53.08 C250.612,53.08 255.652,51.544 260.5,48.472 C261.22,47.944 261.58,47.296 261.58,46.528 C261.58,45.808 261.292,45.16 260.716,44.584 L260.716,44.584 L252.796,36.808 C252.364,36.376 251.836,36.16 251.212,36.16 C250.78,36.16 250.372,36.256 249.988,36.448 C248.356,37.12 246.796,37.456 245.308,37.456 C243.244,37.456 241.348,36.952 239.62,35.944 C237.892,34.936 236.512,33.58 235.48,31.876 C234.448,30.172 233.932,28.336 233.932,26.368 C233.932,24.352 234.436,22.504 235.444,20.824 C236.452,19.144 237.832,17.812 239.584,16.828 C241.336,15.844 243.244,15.352 245.308,15.352 C246.892,15.352 248.332,15.64 249.628,16.216 C250.012,16.408 250.444,16.504 250.924,16.504 C251.548,16.504 252.1,16.264 252.58,15.784 L252.58,15.784 L259.636,8.008 C260.164,7.384 260.428,6.76 260.428,6.136 C260.428,5.224 259.996,4.528 259.132,4.048 C254.86,1.552 250.276,0.304 245.38,0.304 C240.532,0.304 236.032,1.492 231.88,3.868 C227.728,6.244 224.44,9.448 222.016,13.48 C219.592,17.512 218.38,21.904 218.38,26.656 C218.38,31.408 219.592,35.812 222.016,39.868 C224.44,43.924 227.728,47.14 231.88,49.516 C236.032,51.892 240.532,53.08 245.38,53.08 Z M279.796,52 C280.804,52 281.644,51.82 282.316,51.46 C282.988,51.1 283.42,50.584 283.612,49.912 L283.612,49.912 L285.844,42.712 L301.9,42.712 L304.132,49.912 C304.324,50.584 304.768,51.1 305.464,51.46 C306.16,51.82 307.012,52 308.02,52 L308.02,52 L317.884,52 C319.804,51.712 320.764,50.704 320.764,48.976 C320.764,48.304 320.644,47.596 320.404,46.852 C320.164,46.108 320.02,45.616 319.972,45.376 L319.972,45.376 L303.844,4.84 C303.556,3.976 303.004,3.232 302.188,2.608 C301.372,1.984 300.34,1.648 299.092,1.6 L299.092,1.6 L288.724,1.6 C287.572,1.648 286.576,1.948 285.736,2.5 C284.896,3.052 284.26,3.832 283.828,4.84 L283.828,4.84 L267.844,45.376 C267.796,45.472 267.64,45.916 267.376,46.708 C267.112,47.5 266.98,48.304 266.98,49.12 C266.98,50.752 267.916,51.712 269.788,52 L269.788,52 L279.796,52 Z M299.308,30.544 L288.004,30.544 L293.62,13.624 L299.308,30.544 Z M352.588,52 C353.404,52 354.088,51.688 354.64,51.064 C355.192,50.44 355.468,49.672 355.468,48.76 L355.468,48.76 L355.468,16.216 L366.844,16.216 C367.66,16.216 368.38,15.904 369.004,15.28 C369.628,14.656 369.94,13.936 369.94,13.12 L369.94,13.12 L369.94,4.768 C369.94,4 369.628,3.316 369.004,2.716 C368.38,2.116 367.66,1.816 366.844,1.816 L366.844,1.816 L329.116,1.816 C328.204,1.816 327.448,2.104 326.848,2.68 C326.248,3.256 325.948,3.952 325.948,4.768 L325.948,4.768 L325.948,13.12 C325.948,13.936 326.248,14.656 326.848,15.28 C327.448,15.904 328.204,16.216 329.116,16.216 L329.116,16.216 L340.636,16.216 L340.132,48.832 C340.132,49.744 340.408,50.5 340.96,51.1 C341.512,51.7 342.196,52 343.012,52 L343.012,52 L352.588,52 Z M402.052,52.792 C408.1,52.792 412.912,51.628 416.488,49.3 C420.064,46.972 422.536,44.068 423.904,40.588 C425.272,37.108 425.932,33.424 425.884,29.536 C425.884,29.5309474 425.883967,29.5237673 425.8839,29.5144598 L425.883102,29.4330859 C425.879911,29.1480111 425.868211,28.3183158 425.848,26.944 C425.8294,25.6792 425.818008,22.91524 425.813823,18.65212 L425.813103,17.80828 C425.812997,17.66452 425.8129,17.5192 425.81281,17.37232 L425.812,3.904 C425.86,3.184 425.632,2.62 425.128,2.212 C424.624,1.804 423.916,1.6 423.004,1.6 L423.004,1.6 L413.428,1.6 C412.612,1.6 411.904,1.828 411.304,2.284 C410.704,2.74 410.404,3.28 410.404,3.904 L410.404,3.904 L410.26,27.808 C410.26,34.144 407.476,37.312 401.908,37.312 C399.076,37.312 396.832,36.412 395.176,34.612 C393.52,32.812 392.668,30.352 392.62,27.232 L392.62,27.232 L392.332,3.76 C392.332,3.088 392.068,2.56 391.54,2.176 C391.012,1.792 390.268,1.6 389.308,1.6 L389.308,1.6 L379.876,1.6 C378.244,1.6 377.428,2.32 377.428,3.76 L377.428,3.76 L377.5,28.816 C377.5,33.04 378.376,36.964 380.128,40.588 C381.88,44.212 384.592,47.152 388.264,49.408 C391.936,51.664 396.532,52.792 402.052,52.792 Z M449.284,52.144 C450.148,52.144 450.88,51.844 451.48,51.244 C452.08,50.644 452.38,49.84 452.38,48.832 L452.38,48.832 L452.38,4.912 C452.38,4 452.08,3.22 451.48,2.572 C450.88,1.924 450.148,1.6 449.284,1.6 L449.284,1.6 L439.42,1.6 C438.46,1.6 437.692,1.924 437.116,2.572 C436.54,3.22 436.252,4 436.252,4.912 L436.252,4.912 L436.252,48.832 C436.252,49.84 436.54,50.644 437.116,51.244 C437.692,51.844 438.46,52.144 439.42,52.144 L439.42,52.144 L449.284,52.144 Z" id="metacatui" fill="#FCBF49" fill-rule="nonzero"></path>
+    </g>
+</svg>
+</logo>
+
+    </a>
+    <h3>Externals</h3><ul><li><a href="external-TaxonomicClassification.html">TaxonomicClassification</a></li></ul><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="IconUtilities.html">IconUtilities</a></li><li><a href="MapConfig.html">MapConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="SearchParams.html">SearchParams</a></li><li><a href="Utilities.html">Utilities</a></li><li><a href="XMLUtilities.html">XMLUtilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="ProjectList.html">ProjectList</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/Geohashes'>Collections/Geohashes</li><li><a href="Geohashes.html">Geohashes</a></li><li class='category-heading' data-category='Collections/Maps'>Collections/Maps</li><li><a href="AssetCategories.html">AssetCategories</a></li><li><a href="AssetColors.html">AssetColors</a></li><li><a href="Features.html">Features</a></li><li><a href="GeoPoints.html">GeoPoints</a></li><li><a href="MapAssets.html">MapAssets</a></li><li><a href="VectorFilters.html">VectorFilters</a></li><li><a href="ZoomPresets.html">ZoomPresets</a></li><li class='category-heading' data-category='Collections/Metadata/EML'>Collections/Metadata/EML</li><li><a href="EMLAnnotations.html">EMLAnnotations</a></li><li><a href="EMLAttributes.html">EMLAttributes</a></li><li><a href="EMLEntities.html">EMLEntities</a></li><li><a href="EMLMissingValueCodes.html">EMLMissingValueCodes</a></li><li class='category-heading' data-category='Collections/Ontologies'>Collections/Ontologies</li><li><a href="BioontologyResults.html">BioontologyResults</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Collections/SearchSelect'>Collections/SearchSelect</li><li><a href="SearchSelectOptions.html">SearchSelectOptions</a></li><li class='category-heading' data-category='Errors'>Errors</li><li><a href="InvalidAttributeListError.html">InvalidAttributeListError</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="Accordion.html">Accordion</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="CitationModel.html">CitationModel</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="CrossRef.html">CrossRef</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="Metrics.html">Metrics</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Accordion'>Models/Accordion</li><li><a href="AccordionItem.html">AccordionItem</a></li><li class='category-heading' data-category='Models/Analytics'>Models/Analytics</li><li><a href="Analytics.html">Analytics</a></li><li><a href="GoogleAnalytics.html">GoogleAnalytics</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Connectors'>Models/Connectors</li><li><a href="BioontologyAccordionSearchSelect.html">BioontologyAccordionSearchSelect</a></li><li><a href="FiltersMapConnector.html">FiltersMapConnector</a></li><li><a href="FiltersSearchConnector.html">FiltersSearchConnector</a></li><li><a href="GeoPointsCesiumConnector.html">GeoPointsCesiumConnector</a></li><li><a href="GeoPointsCesiumPointsConnector.html">GeoPointsCesiumPointsConnector</a></li><li><a href="GeoPointsCesiumPolygonConnector.html">GeoPointsCesiumPolygonConnector</a></li><li><a href="MapSearchConnector.html">MapSearchConnector</a></li><li><a href="MapSearchFiltersConnector.html">MapSearchFiltersConnector</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Geocoder'>Models/Geocoder</li><li><a href="GeocodedLocation.html">GeocodedLocation</a></li><li><a href="GeocoderSearch.html">GeocoderSearch</a></li><li><a href="GoogleMapsAutocompleter.html">GoogleMapsAutocompleter</a></li><li><a href="GoogleMapsGeocoder.html">GoogleMapsGeocoder</a></li><li><a href="Prediction.html">Prediction</a></li><li class='category-heading' data-category='Models/Geohashes'>Models/Geohashes</li><li><a href="Geohash.html">Geohash</a></li><li class='category-heading' data-category='Models/Maps'>Models/Maps</li><li><a href="AssetCategory.html">AssetCategory</a></li><li><a href="AssetColor.html">AssetColor</a></li><li><a href="AssetColorPalette.html">AssetColorPalette</a></li><li><a href="ExpansionPanelsModel.html">ExpansionPanelsModel</a></li><li><a href="Feature.html">Feature</a></li><li><a href="GeoBoundingBox.html">GeoBoundingBox</a></li><li><a href="GeoPoint.html">GeoPoint</a></li><li><a href="GeoScale.html">GeoScale</a></li><li><a href="GeoUtilities.html">GeoUtilities</a></li><li><a href="MapInteraction.html">MapInteraction</a></li><li><a href="MapModel.html">MapModel</a></li><li><a href="VectorFilter.html">VectorFilter</a></li><li><a href="ViewfinderModel.html">ViewfinderModel</a></li><li><a href="ZoomPresetModel.html">ZoomPresetModel</a></li><li class='category-heading' data-category='Models/Maps/Assets'>Models/Maps/Assets</li><li><a href="Cesium3DTileset.html">Cesium3DTileset</a></li><li><a href="CesiumGeohash.html">CesiumGeohash</a></li><li><a href="CesiumImagery.html">CesiumImagery</a></li><li><a href="CesiumTerrain.html">CesiumTerrain</a></li><li><a href="CesiumVectorData.html">CesiumVectorData</a></li><li><a href="MapAsset.html">MapAsset</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML'>Models/Metadata/EML</li><li><a href="EMLMethodStep.html">EMLMethodStep</a></li><li><a href="EMLSpecializedText.html">EMLSpecializedText</a></li><li><a href="EMLTaxonCoverage.html">EMLTaxonCoverage</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAnnotation.html">EMLAnnotation</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLDistribution.html">EMLDistribution</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLMethods.html">EMLMethods</a></li><li><a href="EMLMissingValueCode.html">EMLMissingValueCode</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLParty.html">EMLParty</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLText211.html">EMLText211</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Ontologies'>Models/Ontologies</li><li><a href="BioOntology.html">BioOntology</a></li><li><a href="Bioontology_.html">Bioontology</a></li><li><a href="BioontologyBatch.html">BioontologyBatch</a></li><li><a href="BioontologyClass.html">BioontologyClass</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/Projects'>Models/Projects</li><li><a href="Project.html">Project</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Models/SearchSelect'>Models/SearchSelect</li><li><a href="AccountSearchSelect.html">AccountSearchSelect</a></li><li><a href="QueryFieldSearchSelect.html">QueryFieldSearchSelect</a></li><li><a href="SearchSelect.html">SearchSelect</a></li><li><a href="SelectOptionModel.html">SelectOptionModel</a></li><li><a href="SolrAutocomplete.html">SolrAutocomplete</a></li><li class='category-heading' data-category='Models/schemaOrg'>Models/schemaOrg</li><li><a href="SchemaOrgModel.html">SchemaOrgModel</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AnnotationView.html">AnnotationView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="CanonicalDatasetHandlerView.html">CanonicalDatasetHandlerView</a></li><li><a href="CatalogSearchView.html">CatalogSearchView</a></li><li><a href="CitationHeaderView.html">CitationHeaderView</a></li><li><a href="CitationListView.html">CitationListView</a></li><li><a href="CitationModalView.html">CitationModalView</a></li><li><a href="CitationView.html">CitationView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView.html">DataCatalogView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataObjectView.html">DataObjectView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="FooterView.html">FooterView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MdqRunView.html">MdqRunView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricView.html">MetricView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="SearchResultView.html">SearchResultView</a></li><li><a href="SignInView.html">SignInView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="UserGroupView.html">UserGroupView</a></li><li><a href="UserView.html">UserView</a></li><li><a href="ViewDataButtonView.html">ViewDataButtonView</a></li><li class='category-heading' data-category='Views/Accordion'>Views/Accordion</li><li><a href="AccordionItemView.html">AccordionItemView</a></li><li><a href="AccordionView.html">AccordionView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterEditorView.html">FilterEditorView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="SemanticFilterView.html">SemanticFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Maps'>Views/Maps</li><li><a href="CesiumWidgetView.html">CesiumWidgetView</a></li><li><a href="DownloadPanelView.html">DownloadPanelView</a></li><li><a href="FeatureInfoView.html">FeatureInfoView</a></li><li><a href="LayerCategoryListView.html">LayerCategoryListView</a></li><li><a href="LayerDetailView.html">LayerDetailView</a></li><li><a href="LayerDetailsView.html">LayerDetailsView</a></li><li><a href="LayerInfoView.html">LayerInfoView</a></li><li><a href="LayerItemView.html">LayerItemView</a></li><li><a href="LayerListView.html">LayerListView</a></li><li><a href="LayerNavigationView.html">LayerNavigationView</a></li><li><a href="LayerOpacityView.html">LayerOpacityView</a></li><li><a href="LayersPanelView.html">LayersPanelView</a></li><li><a href="MapHelpPanel.html">MapHelpPanel</a></li><li><a href="MapView.html">MapView</a></li><li><a href="MapWidgetContainerView.html">MapWidgetContainerView</a></li><li><a href="PredictionView.html">PredictionView</a></li><li><a href="PredictionsListView.html">PredictionsListView</a></li><li><a href="ScaleBarView.html">ScaleBarView</a></li><li><a href="SchemaOrgView.html">SchemaOrgView</a></li><li><a href="SearchInputView.html">SearchInputView</a></li><li><a href="SearchView.html">SearchView</a></li><li><a href="ShareUrlView.html">ShareUrlView</a></li><li><a href="ToolbarView.html">ToolbarView</a></li><li><a href="ViewfinderView.html">ViewfinderView</a></li><li class='category-heading' data-category='Views/Maps/Legend'>Views/Maps/Legend</li><li><a href="CategoricalSwatchView.html">CategoricalSwatchView</a></li><li><a href="ContinuousSwatchView.html">ContinuousSwatchView</a></li><li><a href="LayerLegendView.html">LayerLegendView</a></li><li><a href="LegendContainerView.html">LegendContainerView</a></li><li class='category-heading' data-category='Views/Maps/Viewfinder'>Views/Maps/Viewfinder</li><li><a href="ExpansionPanelView.html">ExpansionPanelView</a></li><li><a href="ZoomPresetView.html">ZoomPresetView</a></li><li><a href="ZoomPresetsListView.html">ZoomPresetsListView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="AutofillAttributesView.html">AutofillAttributesView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLAttributesView.html">EMLAttributesView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMeasurementTypeView.html">EMLMeasurementTypeView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLMissingValueCodeView.html">EMLMissingValueCodeView</a></li><li><a href="EMLMissingValueCodesView.html">EMLMissingValueCodesView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="EMlGeoCoverageView_.html">EMlGeoCoverageView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Ontologies'>Views/Ontologies</li><li><a href="BioontologyBrowser.html">BioontologyBrowser</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li><a href="PortalsSearchView.html">PortalsSearchView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li class='category-heading' data-category='Views/Projects'>Views/Projects</li><li><a href="ProjectView.html">ProjectView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilderView.html">QueryBuilderView</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/Search'>Views/Search</li><li><a href="SearchResultsPagerView.html">SearchResultsPagerView</a></li><li><a href="SearchResultsView.html">SearchResultsView</a></li><li><a href="SorterView.html">SorterView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AccountSelectView.html">AccountSelectView</a></li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="BioontologySelectView.html">BioontologySelectView</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="ObjectFormatSelect.html">ObjectFormatSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchSelectView.html">SearchSelectView</a></li><li><a href="SeparatorView.html">SeparatorView</a></li><li><a href="EMLTaxonView.html">EMLTaxonView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="AnnotatorView.html">AnnotatorView</a></li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addClassesFromResponse">addClassesFromResponse</a></li><li><a href="global.html#addFields">addFields</a></li><li><a href="global.html#addSelected">addSelected</a></li><li><a href="global.html#adjustDescriptionLength">adjustDescriptionLength</a></li><li><a href="global.html#appConfigPath">appConfigPath</a></li><li><a href="global.html#buildChildrenUrl">buildChildrenUrl</a></li><li><a href="global.html#buildSearchUrl">buildSearchUrl</a></li><li><a href="global.html#canChangeSeparator">canChangeSeparator</a></li><li><a href="global.html#changeSubmenuOnSearch">changeSubmenuOnSearch</a></li><li><a href="global.html#couldBeLatLong">couldBeLatLong</a></li><li><a href="global.html#createBatchPayload">createBatchPayload</a></li><li><a href="global.html#createHeaders">createHeaders</a></li><li><a href="global.html#defaults">defaults</a></li><li><a href="global.html#encodeIfPresent">encodeIfPresent</a></li><li><a href="global.html#excludeFields">excludeFields</a></li><li><a href="global.html#fetchClasses">fetchClasses</a></li><li><a href="global.html#fetchClassesFromOntology">fetchClassesFromOntology</a></li><li><a href="global.html#fetchFromOntologies">fetchFromOntologies</a></li><li><a href="global.html#fetchQueryFields">fetchQueryFields</a></li><li><a href="global.html#fieldToOption">fieldToOption</a></li><li><a href="global.html#filterClassesToFetch">filterClassesToFetch</a></li><li><a href="global.html#finalizeFetch">finalizeFetch</a></li><li><a href="global.html#formatResult">formatResult</a></li><li><a href="global.html#formatResults">formatResults</a></li><li><a href="global.html#generateGeoJSONPoint">generateGeoJSONPoint</a></li><li><a href="global.html#generateGeoJSONPolygon">generateGeoJSONPolygon</a></li><li><a href="global.html#generateGeoJSONString">generateGeoJSONString</a></li><li><a href="global.html#generateIdentifier">generateIdentifier</a></li><li><a href="global.html#generateSpatialCoverage">generateSpatialCoverage</a></li><li><a href="global.html#getAccountDetails">getAccountDetails</a></li><li><a href="global.html#getCachedClasses">getCachedClasses</a></li><li><a href="global.html#getCategoryNames">getCategoryNames</a></li><li><a href="global.html#getChildren">getChildren</a></li><li><a href="global.html#getClasses">getClasses</a></li><li><a href="global.html#getDOIURL">getDOIURL</a></li><li><a href="global.html#getIncludeParam">getIncludeParam</a></li><li><a href="global.html#getNextPage">getNextPage</a></li><li><a href="global.html#getNextSeparator">getNextSeparator</a></li><li><a href="global.html#getOptionByLabelOrValue">getOptionByLabelOrValue</a></li><li><a href="global.html#getOptionsByCategory">getOptionsByCategory</a></li><li><a href="global.html#getQueryFieldOptions">getQueryFieldOptions</a></li><li><a href="global.html#getSelectedModels">getSelectedModels</a></li><li><a href="global.html#hasInvalidSelections">hasInvalidSelections</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#initializeFetch">initializeFetch</a></li><li><a href="global.html#isValidValue">isValidValue</a></li><li><a href="global.html#model">model</a></li><li><a href="global.html#moveClassesToNotFound">moveClassesToNotFound</a></li><li><a href="global.html#optionsAsJSON">optionsAsJSON</a></li><li><a href="global.html#padDescription">padDescription</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#recordError">recordError</a></li><li><a href="global.html#removeSelected">removeSelected</a></li><li><a href="global.html#renameCategory">renameCategory</a></li><li><a href="global.html#reset">reset</a></li><li><a href="global.html#resetPageInfo">resetPageInfo</a></li><li><a href="global.html#responseAsync">responseAsync</a></li><li><a href="global.html#separatorRequired">separatorRequired</a></li><li><a href="global.html#serialize">serialize</a></li><li><a href="global.html#setAddedFieldDetails">setAddedFieldDetails</a></li><li><a href="global.html#setDataCatalogSchema">setDataCatalogSchema</a></li><li><a href="global.html#setDatasetSchema">setDatasetSchema</a></li><li><a href="global.html#setNextSeparator">setNextSeparator</a></li><li><a href="global.html#setOptionsForPreselected">setOptionsForPreselected</a></li><li><a href="global.html#setSchema">setSchema</a></li><li><a href="global.html#setSchemaFromTemplate">setSchemaFromTemplate</a></li><li><a href="global.html#setSelected">setSelected</a></li><li><a href="global.html#sortByProp">sortByProp</a></li><li><a href="global.html#sortFields">sortFields</a></li><li><a href="global.html#toAccordionItem">toAccordionItem</a></li><li><a href="global.html#toJSON">toJSON</a></li><li><a href="global.html#toSearchSelectOption">toSearchSelectOption</a></li><li><a href="global.html#truncateDescription">truncateDescription</a></li><li><a href="global.html#updateOptions">updateOptions</a></li><li><a href="global.html#url">url</a></li><li><a href="global.html#waitForFetchComplete">waitForFetchComplete</a></li></ul>
+</nav>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/js/views/maps/DownloadPanelView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+
+define([
+  "underscore",
+  "backbone",
+  "jszip",
+  "text!templates/maps/download-panel.html",
+  "models/connectors/GeoPoints-CesiumPolygon",
+  "models/connectors/GeoPoints-CesiumPoints",
+  "collections/maps/GeoPoints",
+], (
+  _,
+  Backbone,
+  JSZip,
+  Template,
+  GeoPointsVectorData,
+  GeoPointsCesiumPoints,
+  GeoPoints,
+) => {
+  // Classes used in the view
+  const CLASS_NAMES = {
+    button: "draw__button",
+    buttonFocus: "draw__button--active",
+    buttonDisable: "draw__button--disable",
+    layerItemPanelToggle: "download-expansion-panel__toggle",
+    layerItemCheckbox: "download-expansion-panel__checkbox",
+    dropdown: "downloads-dropdown",
+    resolutionDropdown: "resolution-dropdown",
+    fileTypeDropdown: "fileType-downloads-dropdown",
+    error: "error",
+    wmtsCopy: "wmts-copy",
+  };
+
+  /**
+   * @class DownloadPanelView
+   * @classdesc The DownloadPanelView allows a user to draw an arbitrary polygon
+   * on the map and download the data within that polygon. The user can select
+   * the resolution and file type of the data to download. The view is
+   * responsible for rendering the buttons, handling user interactions, and
+   * generating the download links for the selected data.
+   * @classcategory Views/Maps
+   * @name DownloadPanelView
+   * @augments Backbone.View
+   * @screenshot views/maps/DownloadPanelView.png
+   * @since 2.33.0
+   * @constructs DownloadPanelView
+   */
+  const DownloadPanelView = Backbone.View.extend(
+    /** @lends DownloadPanelView.prototype */ {
+      /**
+       * The type of View this is
+       * @type {string}
+       */
+      type: "DownloadPanelView",
+
+      /**
+       * The HTML classes to use for this view's element
+       * @type {string}
+       */
+      className: "download-panel",
+
+      /**
+       * Class to use for the buttons
+       * @type {string}
+       */
+      buttonClass: "draw__button ",
+
+      /**
+       * Class to use for the active button
+       * @type {string}
+       */
+      buttonClassActive: "draw__button--active",
+
+      /**
+       * Class to disable button
+       * @type {string}
+       */
+      buttonClassDisable: "draw__button--disable",
+
+      /**
+       * The HTML classes to use for this data panel element
+       * @type {string}
+       */
+      dataPanelClass: "download-panel",
+
+      /**
+       * The maximum size of the download in bytes. If download is estimated to exceed
+       * this size, the download will be blocked.
+       * @type {number}
+       */
+      downloadSizeLimit: 1050000, // 1 GB
+
+      /**
+       * @typedef {object} DrawToolButtonOptions
+       * @property {Map} The Map model that contains layers information.
+       * @property {string} name - The name of the button. This should be the
+       * same as the mode that the button will activate (if the button is
+       * supposed to activate a mode).
+       * @property {string} label - The label to display on the button.
+       * @property {string} icon - The name of the icon to display on the
+       * button.
+       * @property {string} [method] - The name of the method to call when the
+       * button is clicked. If this is not provided, the button will toggle the
+       * mode of the draw tool.
+       * @property {boolean} [blockMethodIfDeactivated] - If true, the button's
+       * method won't run if the button is in the deactivated state.
+       */
+
+      /**
+       * The buttons to display in the toolbar.
+       * @type {DrawToolButtonOptions[]}
+       */
+      buttons: [
+        {
+          name: "draw",
+          label: "Draw Area of Interest",
+          icon: "pencil",
+          method: "toggleDraw",
+          blockMethodIfDeactivated: false,
+        },
+        {
+          name: "clear",
+          label: "Clear Area of Interest",
+          icon: "trash",
+          method: "reset",
+          blockMethodIfDeactivated: true,
+        },
+        {
+          name: "save",
+          label: "Download",
+          icon: "download-alt",
+          method: "downloadData",
+          blockMethodIfDeactivated: true,
+        },
+      ],
+
+      /** @inheritdoc */
+      events() {
+        const events = {};
+        const CN = CLASS_NAMES;
+        events[`click .${CN.button}`] = "handleButtonClick";
+        events[`click .${CN.layerItemPanelToggle}`] = "toggleLayerSection";
+        return events;
+      },
+
+      /**
+       * The buttons that have been rendered in the toolbar. Formatted as an
+       * object with the button name as the key and the button element as the
+       * value.
+       * @type {object}
+       */
+      buttonEls: {},
+
+      /**
+       * The current mode of the draw tool. This can be "draw", "move",
+       * "remove", or "add" - any of the "name" properties of the buttons array,
+       * excluding buttons like "clear" and "save" that have a method property.
+       */
+      mode: false,
+
+      /**
+       * The Cesium map model to draw on. This must be the same model that the
+       * mapWidget is using.
+       * @type {Map}
+       */
+      mapModel: undefined,
+
+      /**
+       * The primary HTML template for this view
+       * @type {Underscore.template}
+       */
+      template: _.template(Template),
+
+      /**
+       * A reference to the MapInteraction model on the MapModel that is used to
+       * listen for clicks on the map.
+       * @type {MapInteraction}
+       */
+      interactions: undefined,
+
+      /**
+       * The CesiumVectorData model that will display the polygon that is being
+       * drawn.
+       * @type {CesiumVectorData}
+       */
+      layer: undefined,
+
+      /**
+       * The GeoPoints collection that stores the points of the polygon that is
+       * being drawn.
+       * @type {GeoPoints}
+       */
+      points: undefined,
+
+      /**
+       * The GeoPoints collection that stores the points of the polygon that is
+       * being drawn.
+       * @type {MapInteraction}
+       */
+      mapinteraction: undefined,
+
+      /**
+       * The color of the polygon that is being drawn as a hex string.
+       * @type {string}
+       */
+      color: "#a31840",
+
+      /**
+       * The initial opacity of the polygon that is being drawn. A number
+       * between 0 and 1.
+       * @type {number}
+       */
+      opacity: 0.3,
+
+      /**
+       * The TileMatrixSet.
+       * @type {string}
+       */
+      tileMatrixSet: "WGS1984Quad",
+
+      /**
+       * The file size for tiled data in geotiff format (in KB).
+       * @type {number}
+       */
+      fileSizes: {
+        tif: 513,
+        png: 2.7,
+        wmts: 15,
+        gpkg: 180,
+      },
+
+      /**
+       * The array that store the list of URLs for each data layer that is
+       * selected for partial download.
+       * @type {Array}
+       */
+      dataDownloadLinks: {},
+
+      /**
+       * The classes of the sub-elements that combined to create the download
+       * panel view.
+       */
+      classes: {
+        toolbarLink: ".toolbar__links",
+        toolbarLinkActive: "toolbar__link--active",
+        toolbarContentActive: "toolbar__content--active",
+        layerItemPanel: "download-expansion-panel",
+        layerItemTitle: "download-expansion-panel__title",
+        layerItemContent: "download-expansion-panel__content",
+        dropdownWrapper: "downloads-dropdown-wrapper",
+        dropdownContainer: "downloads-dropdown-container",
+        fileSizeBox: "downloads-textbox",
+      },
+
+      /**
+       * The z levels available for download along with their approximate pixel
+       * resolution.
+       * @type {object}
+       */
+      zoomLevels: {
+        0: "156543.03 m/px",
+        1: "78271.52 m/px",
+        2: "39135.76 m/px",
+        3: "19567.88 m/px",
+        4: "9783.94 m/px",
+        5: "4891.97 m/px",
+        6: "2445.98 m/px",
+        7: "1222.99 m/px",
+        8: "611.49 m/px",
+        9: "305.75 m/px",
+        10: "152.87 m/px",
+        11: "76.44 m/px",
+        12: "38.22 m/px",
+        13: "19.12 m/px",
+        14: "9.55 m/px",
+        15: "4.78 m/px",
+      },
+
+      /**
+       * UI options for the dropdowns
+       * @type {object}
+       * @property {object} resolution - The resolution dropdown options
+       * @property {object} fileType - The file type dropdown options
+       * @property {string} label - The label for the dropdown
+       * @property {string} defaultValue - The default value for the dropdown
+       * @property {string} defaultText - The default text for the dropdown
+       */
+      dropdownOptions: {
+        resolution: {
+          label: "Resolution",
+          defaultValue: "",
+          defaultText: "Select Resolution",
+        },
+        fileType: {
+          label: "File Format",
+          defaultValue: "",
+          defaultText: "Select File Type",
+        },
+      },
+
+      /**
+       * The objectServiceUrl from the MapModel
+       * @type {string}
+       */
+      objectServiceUrl: "",
+
+      /**
+       * Initializes the DrawTool
+       * @param {object} options - A literal object with options to pass to the
+       * view
+       * @param {Map} options.model - The Cesium map model to draw on. This must
+       * be the same model that the mapWidget is using.
+       * @param {CesiumWidgetView} options.cesiumWidgetView - The
+       * CesiumWidgetView that contains the map.
+       * @param {string} [options.mode] - The initial mode of the draw tool.
+       */
+      initialize(options) {
+        this.mapModel = options.model || new Map();
+        this.objectServiceUrl = MetacatUI.appModel.get("objectServiceUrl");
+        // Add models &amp; collections, interactions, layer, connector, points
+        this.setUpMapModel();
+        this.setUpLayer();
+        this.setUpConnectors();
+      },
+
+      /** Adds reference to interaction model to view */
+      setUpMapModel() {
+        this.interactions =
+          this.mapModel.get("interactions") ||
+          this.mapModel.setUpInteractions();
+      },
+
+      /**
+       * Sets up the layer to show the polygon on the map that is being drawn.
+       * Adds the layer property to this view.
+       * @returns {CesiumVectorData} The CesiumVectorData model that will
+       * display the polygon that is being drawn.
+       */
+      setUpLayer() {
+        this.layer = this.mapModel.addAsset({
+          type: "CustomDataSource",
+          label: "Your Polygon",
+          description: "The polygon that you are drawing on the map",
+          hideInLayerList: true,
+          outlineColor: this.color,
+          highlightColor: this.color,
+          opacity: this.opacity,
+          colorPalette: {
+            colors: [
+              {
+                color: this.color,
+              },
+            ],
+          },
+        });
+        return this.layer;
+      },
+
+      /**
+       * Sets up the connector to connect the GeoPoints collection to the
+       * CesiumVectorData model. Adds the connector and points properties to
+       * this view.
+       * @returns {GeoPointsVectorData} The connector
+       */
+      setUpConnectors() {
+        const points = new GeoPoints();
+        this.points = points;
+        this.polygonConnector = new GeoPointsVectorData({
+          layer: this.layer,
+          geoPoints: points,
+        });
+        this.pointsConnector = new GeoPointsCesiumPoints({
+          layer: this.layer,
+          geoPoints: points,
+        });
+        this.polygonConnector.connect();
+        this.pointsConnector.connect();
+
+        return this.connector;
+      },
+
+      /**
+       * Adds a point to the polygon that is being drawn.
+       * @param {object} point - The point to add to the polygon. This should
+       * have a latitude and longitude property.
+       * @returns {GeoPoint} The GeoPoint model that was added to the polygon.
+       */
+      addPoint(point) {
+        return this.points?.addPoint(point);
+      },
+
+      /**
+       * Clears the polygon that is being drawn.
+       */
+      clearPoints() {
+        this.points?.reset(null);
+      },
+
+      /**
+       * Resets the draw tool to its initial state.
+       */
+      reset() {
+        this.toggleDraw(true);
+        this.clearPoints();
+        this.removeClickListeners();
+
+        document.querySelector(".download-data-list__panel").textContent =
+          "Draw Area of Interest: Single-click to add vertices, double-click to complete.";
+
+        document.querySelector(".download-data-list").innerHTML = "";
+        this.setButtonStatuses({
+          draw: "enabled",
+          clear: "deactivated",
+          save: "deactivated",
+        });
+      },
+
+      /**
+       * Removes the polygon object from the map
+       */
+      removeLayer() {
+        if (!this.mapModel || !this.layer) return;
+        this.polygonConnector.disconnect();
+        this.polygonConnector.set("vectorLayer", null);
+        this.pointsConnector.disconnect();
+        this.pointsConnector.set("vectorLayer", null);
+        this.mapModel.removeAsset(this.layer);
+      },
+
+      /**
+       * Render the view by updating the HTML of the element. The new HTML is
+       * computed from an HTML template that is passed an object with relevant
+       * view state.
+       * @returns {DownloadPanelView} This view
+       */
+      render() {
+        // Insert the template into the view
+        if (!this.mapModel) {
+          this.showError("No map model was provided.");
+          return this;
+        }
+        this.$el.html(this.template());
+
+        this.renderToolbar();
+        return this;
+      },
+
+      /**
+       * Show an error message to the user if the map model is not available or
+       * any other error occurs.
+       * @param {string} [message] - The error message to show to the user.
+       */
+      showError(message) {
+        const str =
+          `&lt;i class="icon-warning-sign icon-left">&lt;/i>` +
+          `&lt;span> The draw tool is not available. ${message}&lt;/span>`;
+        this.el.innerHTML = str;
+      },
+
+      /**
+       * Handles a click on a button in the toolbar. If the button has a
+       * method property, it will call that method. Otherwise, it will toggle the
+       * mode of the draw tool.
+       * @param {Event} event - The click event.
+       */
+      handleButtonClick(event) {
+        const button = event.currentTarget;
+        const { name } = button.dataset;
+        if (!name) return;
+        const options = this.buttons.find((btn) => btn.name === name);
+        const methodName = options.method;
+        const method = this[methodName];
+        if (typeof method === "function") {
+          if (
+            options.blockMethodIfDeactivated &amp;&amp;
+            button.dataset.status === "deactivated"
+          ) {
+            return;
+          }
+          method.call(this, event);
+        }
+      },
+
+      /**
+       * Toggles the draw tool on and off.
+       * @param {boolean} [draw] - If true, the draw tool will be turned on. If
+       * false, it will be turned off. If not provided, the draw tool will
+       * toggle to the opposite of the current state.
+       * @param {"enabled"|"deactivated"} [offStatus] - The status to set the
+       * button to when the toggle is off.
+       */
+      toggleDraw(draw, offStatus = "enabled") {
+        const buttonEl = this.buttonEls.drawButton;
+        if (!buttonEl) return;
+
+        // if the button is deactivated, do nothing, unless a boolean is
+        // explicitly passed, i.e. it's not a simple click event.
+        if (
+          buttonEl.dataset.status === "deactivated" &amp;&amp;
+          typeof draw !== "boolean"
+        ) {
+          return;
+        }
+
+        // If a boolean is passed, use that to determine whether to turn on or
+        // off the draw tool. Otherwise, switch to the opposite of the current
+        // state.
+        const turnOn = typeof draw === "boolean" ? draw : !this.draw;
+
+        if (turnOn) {
+          // Turn on drawing mode
+          this.draw = true;
+          this.setClickListeners();
+          this.setButtonStatus("draw", "focused");
+        } else {
+          // Turn off drawing mode
+          this.draw = false;
+          this.removeClickListeners();
+          this.setButtonStatus("draw", offStatus);
+        }
+      },
+
+      /**
+       * Sets the status of the button to either "enabled", "deactivated", or
+       * "focused".
+       * @param {string} name - The name of the button to set the status for.
+       * @param {"enabled"|"deactivated"|"focused"} status - The status to set
+       * the button to.
+       */
+      setButtonStatus(name, status) {
+        const buttonEl = this.buttonEls[`${name}Button`];
+        if (!buttonEl || buttonEl.dataset.status === status) return;
+
+        // Reset all button styles - default to enabled
+        buttonEl.classList.remove(CLASS_NAMES.buttonFocus);
+        buttonEl.classList.remove(CLASS_NAMES.buttonDisable);
+        buttonEl.dataset.status = status;
+
+        if (status === "deactivated") {
+          buttonEl.classList.add(CLASS_NAMES.buttonDisable);
+        } else if (status === "focused") {
+          buttonEl.classList.add(CLASS_NAMES.buttonFocus);
+        }
+
+        // Special case for the draw button, which sets the draw mode
+        if (name === "draw") {
+          const turnOnDraw = status === "focused";
+          this.toggleDraw(turnOnDraw, status);
+        }
+      },
+
+      /**
+       * Set the status on multiple buttons at once
+       * @param {object} statues - An object with the button names as keys and
+       * the status as values
+       */
+      setButtonStatuses(statues) {
+        Object.entries(statues).forEach(([name, status]) => {
+          this.setButtonStatus(name, status);
+        });
+      },
+
+      /**
+       * Removes the click listeners from the map model and sets the
+       * clickFeatureAction back to its original value.
+       */
+      removeClickListeners() {
+        const handler = this.clickHandler;
+        if (handler) {
+          handler.stopListening();
+          handler.clear();
+          this.clickHandler = null;
+        }
+        this.interactions.enableClickAction();
+        this.listeningForClicks = false;
+      },
+
+      /**
+       * Set listeners to call the handleClick method when the user clicks on
+       * the map.
+       */
+      setClickListeners() {
+        const view = this;
+        // Remove click listeners first so that we don't have duplicated
+        // listeners performing the same action
+        view.removeClickListeners();
+        const handler = new Backbone.Model();
+        this.clickHandler = handler;
+        const { interactions } = this;
+        const clickedPosition = interactions.get("clickedPosition");
+        this.interactions.preventClickAction();
+        handler.listenTo(
+          clickedPosition,
+          "change:latitude change:longitude",
+          () => {
+            view.handleClick();
+          },
+        );
+
+        this.listeningForClicks = true;
+        // When the clickedPosition GeoPoint model or the MapInteractions model
+        // is replaced, restart the listeners on the new model.
+        handler.listenToOnce(interactions, "change:clickedPosition", () => {
+          if (view.listeningForClicks) {
+            view.handleClick();
+            view.setClickListeners();
+          }
+        });
+
+        handler.listenToOnce(this.mapModel, "change:interactions", () => {
+          if (view.listeningForClicks) {
+            view.handleClick();
+            view.setClickListeners();
+          }
+        });
+
+        handler.listenTo(interactions, "change:previousAction", () => {
+          if (interactions.get("previousAction") === "LEFT_DOUBLE_CLICK") {
+            view.generatePreviewPanel();
+          }
+        });
+      },
+
+      /**
+       * Handles a click on the map. If the draw tool is active, it will add the
+       * coordinates of the click to the polygon being drawn.
+       * @param {number} [throttle=50] - The number of milliseconds to block
+       * clicks for after a click is handled. This prevents double clicks.
+       */
+
+      handleClick(throttle = 50) {
+        // Prevent double clicks
+        if (this.clickActionBlocked) return;
+        this.clickActionBlocked = true;
+        setTimeout(() => {
+          this.clickActionBlocked = false;
+        }, throttle);
+        // Add the point to the polygon
+        if (this.draw === true) {
+          const point = this.interactions.get("clickedPosition");
+          this.addPoint({
+            latitude: point.get("latitude"),
+            longitude: point.get("longitude"),
+            height: point.get("height"),
+            mapWidgetCoords: point.get("mapWidgetCoords"),
+          });
+        }
+      },
+
+      /**
+       * Create and insert the buttons for drawing and clearing the polygon.
+       */
+      renderToolbar() {
+        // alert("Rendering draw toolbar");
+        const view = this;
+        const drawContainer = this.el.querySelector(".draw-tool");
+        if (!drawContainer) return;
+        // Create the buttons
+        view.buttons.forEach((options) => {
+          const button = document.createElement("button");
+          button.className = this.buttonClass;
+          button.innerHTML = `
+              &lt;span class="custom-circle">
+                &lt;i class="icon icon-${options.icon}">&lt;/i>
+              &lt;/span> 
+              &lt;span class="draw-button-label">${options.label}&lt;/span> `;
+          button.dataset.name = options.name;
+          if (!view.buttonEls) view.buttonEls = {};
+          view.buttonEls[`${options.name}Button`] = button;
+          drawContainer.appendChild(button);
+        });
+
+        // Set the buttons to the default state
+        this.setButtonStatuses({
+          draw: "enabled",
+          clear: "deactivated",
+          save: "deactivated",
+        });
+
+        view.generatePreviewPanel();
+        const closeDownloadPanelButton = this.el.querySelector(
+          ".download-panel-close__button",
+        );
+        closeDownloadPanelButton.addEventListener("click", () => {
+          view.close();
+        });
+      },
+
+      /**
+       * Closes the download panel and resets the draw tool to its initial
+       * state.
+       */
+      close() {
+        this.reset();
+        // The parent ToolbarView will handle closing the panel so it can
+        // coordinate with the layer panel and track the state of the download
+        // panel.
+        this.trigger("close");
+      },
+
+      /**
+       * Generates the preview panel for downloading selected map layers.
+       * Retrieves the selected layers, removes duplicates, and dynamically
+       * creates a user interface for selecting resolution, file type, and
+       * initiating downloads. It also handles UI interactions such as toggling
+       * panels, enabling/disabling buttons, and updating file size information
+       * based on user selections.
+       */
+      generatePreviewPanel() {
+        const view = this;
+        let selectedResolution;
+        this.clearButtonEl = this.buttonEls.clearButton;
+        this.saveButtonEl = this.buttonEls.saveButton;
+        this.drawButtonEl = this.buttonEls.drawButton;
+
+        // Get the selected layers from the Layer Panel View and retreive the
+        // following information
+        //  - layerID - layer identifier
+        //  - downloadLink - the link for accesssing dataset that is tiled
+        //  - layerName - full name of the layer
+        //  - fullDownloadLink - download link for the entire dataset
+        let selectedLayersList = [];
+
+        this.mapModel.get("allLayers").forEach((value) => {
+          // value is the map layer
+
+          // Re-generate the preview panel when the layer visibility changes.
+          view.stopListening(
+            value,
+            "change:visible",
+            view.generatePreviewPanel,
+          );
+          view.listenTo(value, "change:visible", view.generatePreviewPanel);
+          if (
+            value.attributes?.visible === true &amp;&amp;
+            value.attributes.type === "WebMapTileServiceImageryProvider" &amp;&amp;
+            value.attributes.label !== "Alaska High Resolution Imagery"
+            // &amp;&amp;
+            // "metadataPid" in value.attributes // Instead of not including data layers without metadataPid, rather during download skip the metadata doc download
+          ) {
+            let wmtsDownloadLink;
+            // Get WMTS service from map config
+            if (value.attributes &amp;&amp; Array.isArray(value.attributes.services)) {
+              wmtsDownloadLink = value.attributes.services.find(
+                (service) => service.type === "wmts",
+              ).endpoint;
+            } else {
+              wmtsDownloadLink = null;
+            }
+            // Get PNG download link from map config
+            let pngDownloadLink;
+            if (value.attributes &amp;&amp; Array.isArray(value.attributes.services)) {
+              pngDownloadLink = value.attributes.services.find(
+                (service) => service.type === "png",
+              ).endpoint;
+            } else {
+              pngDownloadLink = null;
+            }
+            // Get Geotiff download link from map config
+            let tiffService;
+            if (value.attributes &amp;&amp; Array.isArray(value.attributes.services)) {
+              tiffService = value.attributes.services.find(
+                (service) => service.type === "geotiff",
+              );
+            } else {
+              tiffService = null;
+            }
+            // Get Geopackage download link from map config
+            let geopckgService = null;
+            if (value.attributes &amp;&amp; Array.isArray(value.attributes.services)) {
+              geopckgService = value.attributes.services.find(
+                (service) => service.type === "geopackage",
+              );
+            } else {
+              geopckgService = null;
+            }
+
+            const selectedLayer = {
+              layerID: value.attributes.layerId,
+              ID: value.attributes.id
+                ? value.attributes.id.split("/").pop()
+                : null,
+              downloadLink: value.attributes.downloadLink,
+              layerName: value.attributes.label.replace(
+                "&lt;sub>2&lt;/sub>",
+                "\u2082",
+              ),
+              fullDownloadLink: value.attributes.moreInfoLink,
+              // pngDownloadLink: value.attributes.cesiumOptions.url,
+              pngDownloadLink,
+              wmtsDownloadLink,
+              metadataPid: value.attributes.metadataPid,
+              gpkgDownloadLink: geopckgService ? geopckgService.endpoint : null,
+              tiffDownloadLink: tiffService ? tiffService.endpoint : null,
+            };
+            selectedLayersList.push(selectedLayer);
+          }
+        });
+        // Remove duplicate layers
+        selectedLayersList = selectedLayersList.filter(
+          (layer, index, self) =>
+            index === self.findIndex((l) => l.layerID === layer.layerID),
+        );
+        // Create download tool panel
+        const downloadDataPanel = document.querySelector(".download-data-list");
+
+        if (!downloadDataPanel) return;
+
+        // Clear any previously added layer items in case of a rerender
+        downloadDataPanel.innerHTML = "";
+
+        // If there is no polygon on the map, quit here.
+        if (!this.points.length) return;
+
+        this.setButtonStatuses({
+          draw: "deactivated",
+          clear: "enabled",
+          save: "deactivated",
+        });
+
+        if (!selectedLayersList.length) {
+          // Update the text of download-data-list__panel
+          document.querySelector(".download-data-list__panel").textContent =
+            "No layers are available for download. Click on layers in the list above to make them visible on the Map and available for download. Only select layers have data products available for download.";
+          view.setButtonStatuses({
+            save: "deactivated",
+            draw: "deactivated",
+            clear: "enabled",
+          });
+        } else {
+          // Loop through selected data layers
+          selectedLayersList.forEach((item) => {
+            const fileTypeOptions = {
+              tif: "Geotiff",
+              png: "PNG",
+              wmts: "WMTS file",
+              gpkg: "Geopackage",
+            };
+
+            // Create panel container for each layer that intersects the
+            // bounding box
+            const downloadDataPanelContainer = document.createElement("div");
+            downloadDataPanelContainer.classList.add(
+              this.classes.layerItemPanel,
+            );
+            const layerItem = document.createElement("div");
+            layerItem.classList.add(CLASS_NAMES.layerItemPanelToggle);
+
+            // Create checkbox that allows user to select the layer
+            const layerItemSelectBox = document.createElement("input");
+            layerItemSelectBox.type = "checkbox";
+            layerItemSelectBox.classList.add(CLASS_NAMES.layerItemCheckbox);
+
+            // Attach layer attributes to the checkbox
+            layerItemSelectBox.dataset.layerId = item.layerID;
+            layerItemSelectBox.dataset.downloadLink = item.downloadLink;
+            layerItemSelectBox.dataset.layerName = item.layerName;
+            layerItemSelectBox.dataset.fullDownloadLink = item.fullDownloadLink;
+            layerItemSelectBox.dataset.pngDownloadLink = item.pngDownloadLink;
+            layerItemSelectBox.dataset.id = item.ID;
+            layerItemSelectBox.dataset.wmtsDownloadLink = item.wmtsDownloadLink;
+            layerItemSelectBox.dataset.gpkgDownloadLink = item.gpkgDownloadLink;
+            layerItemSelectBox.dataset.tiffDownloadLink = item.tiffDownloadLink;
+            layerItemSelectBox.dataset.metadataPid = item.metadataPid;
+
+            const layerItemSpan = document.createElement("span");
+            layerItemSpan.classList.add(this.classes.layerItemTitle);
+            layerItemSpan.textContent = item.layerName;
+
+            layerItem.appendChild(layerItemSelectBox);
+            layerItem.appendChild(layerItemSpan);
+
+            const layerItemSelectContent = document.createElement("div");
+            layerItemSelectContent.classList.add(this.classes.layerItemContent);
+
+            // Create the "Resolution" dropdown
+            const resolutionDropdownWrapper = document.createElement("div");
+            resolutionDropdownWrapper.classList.add(
+              this.classes.dropdownWrapper,
+            );
+            const resolutionLabel = document.createElement("label");
+            resolutionLabel.textContent = this.dropdownOptions.resolution.label;
+
+            const resolutionDropdown = document.createElement("select");
+            resolutionDropdown.classList.add(CLASS_NAMES.dropdown);
+            resolutionDropdown.classList.add(CLASS_NAMES.resolutionDropdown);
+
+            // Add a default select option
+            const defaultResolutionOption = document.createElement("option");
+            defaultResolutionOption.value =
+              this.dropdownOptions.resolution.defaultValue;
+            defaultResolutionOption.textContent =
+              this.dropdownOptions.resolution.defaultText;
+            defaultResolutionOption.disabled = true; // Make it non-selectable
+            defaultResolutionOption.selected = true; // Make it the default selection
+            resolutionDropdown.appendChild(defaultResolutionOption);
+
+            Object.entries(this.zoomLevels).forEach(
+              ([zoomLevel, pixelResolution]) => {
+                const option = document.createElement("option");
+                option.value = zoomLevel;
+                option.textContent = `${zoomLevel} - ${pixelResolution}`;
+                resolutionDropdown.appendChild(option);
+              },
+            );
+
+            resolutionDropdownWrapper.appendChild(resolutionLabel);
+            resolutionDropdownWrapper.appendChild(resolutionDropdown);
+
+            // Create the "File Type" dropdown
+            const fileTypeDropdownWrapper = document.createElement("div");
+            fileTypeDropdownWrapper.classList.add(this.classes.dropdownWrapper);
+            const fileTypeLabel = document.createElement("label");
+            fileTypeLabel.textContent = this.dropdownOptions.fileType.label;
+
+            const fileTypeDropdown = document.createElement("select");
+            fileTypeDropdown.classList.add(CLASS_NAMES.dropdown);
+            fileTypeDropdown.classList.add(CLASS_NAMES.fileTypeDropdown);
+
+            if (item.tiffDownloadLink == null) {
+              delete fileTypeOptions.tif;
+            }
+
+            if (item.gpkgDownloadLink == null) {
+              delete fileTypeOptions.gpkg;
+            }
+            // Add a default select option
+            const defaultFileTypeOption = document.createElement("option");
+            defaultFileTypeOption.value =
+              this.dropdownOptions.fileType.defaultValue;
+            defaultFileTypeOption.textContent =
+              this.dropdownOptions.fileType.defaultText;
+            defaultFileTypeOption.disabled = true; // Make it non-selectable
+            defaultFileTypeOption.selected = true; // Make it the default selection
+            fileTypeDropdown.appendChild(defaultFileTypeOption);
+
+            Object.entries(fileTypeOptions).forEach(
+              ([fileType, fileTypeName]) => {
+                const option = document.createElement("option");
+                option.value = fileType;
+                option.textContent = fileTypeName;
+                fileTypeDropdown.appendChild(option);
+              },
+            );
+
+            fileTypeDropdownWrapper.appendChild(fileTypeLabel);
+            fileTypeDropdownWrapper.appendChild(fileTypeDropdown);
+            fileTypeDropdown.disabled = true; // initially setting it to true
+
+            const dropdownContainer = document.createElement("div");
+            dropdownContainer.classList.add(this.classes.dropdownContainer);
+
+            // Append both dropdown wrappers
+            dropdownContainer.appendChild(resolutionDropdownWrapper);
+            dropdownContainer.appendChild(fileTypeDropdownWrapper);
+            layerItemSelectContent.appendChild(dropdownContainer);
+
+            // Textbox to display file size
+            const fileSizeInfoBox = document.createElement("label");
+            fileSizeInfoBox.classList.add(this.classes.fileSizeBox);
+            fileSizeInfoBox.textContent =
+              "Select resolution and file format to download...";
+            layerItemSelectContent.appendChild(fileSizeInfoBox);
+
+            // Handle change event for "Resolution" dropdown
+            resolutionDropdown.addEventListener("change", () => {
+              selectedResolution = resolutionDropdown.value;
+              if (selectedResolution !== "") {
+                fileTypeDropdown.disabled = false; // Enable the fileTypeDropdown
+              }
+              fileTypeDropdown.value = defaultFileTypeOption.value;
+            });
+
+            // Update approximate file size when a file type is selected in
+            // fileTypeDropdown
+            fileTypeDropdown.addEventListener("change", () => {
+              view.fileTypeSelection(layerItemSelectBox.dataset.layerId); // Update Save button state -- moved from layer check-box change event
+              const fileSize = view.getRawFileSize(
+                resolutionDropdown.value,
+                fileTypeDropdown.value,
+                layerItemSelectBox.dataset.layerId,
+                layerItemSelectBox.dataset.fullDownloadLink,
+                layerItemSelectBox.dataset.pngDownloadLink,
+                layerItemSelectBox.dataset.gpkgDownloadLink,
+                layerItemSelectBox.dataset.id,
+                layerItemSelectBox.dataset.layerName,
+                layerItemSelectBox.dataset.wmtsDownloadLink,
+                layerItemSelectBox.dataset.metadataPid,
+                layerItemSelectBox.dataset.tiffDownloadLink,
+              );
+              view.updateTextbox(
+                fileSizeInfoBox,
+                fileSize,
+                fileTypeDropdown.value,
+                layerItemSelectBox.dataset.layerId,
+              );
+            });
+
+            // Append elements
+            downloadDataPanelContainer.appendChild(layerItem);
+            downloadDataPanelContainer.appendChild(layerItemSelectContent);
+            downloadDataPanel.appendChild(downloadDataPanelContainer);
+
+            // Toggle the expansion panel content on click
+            layerItem.addEventListener("click", () => {
+              downloadDataPanelContainer.classList.toggle("show-content");
+            });
+          });
+          // Update the text of download-data-list__panel
+          document.querySelector(".download-data-list__panel").textContent =
+            "Select products below and click the download button. To download full datasets (including original shapefiles) please use the Layers panel above. ";
+
+          // Progress Bar
+          const dataListPanel = document.querySelector(
+            ".download-data-list__panel",
+          );
+          // Create the download status bar container
+          const downloadStatusContainer = document.createElement("div");
+          downloadStatusContainer.classList.add("download-status-container");
+          downloadStatusContainer.style.display = "none"; // Hidden by default
+
+          // Create the progress bar element
+          const progressBar = document.createElement("div");
+          progressBar.classList.add("progress-bar");
+          progressBar.style.width = "0%"; // Initial width
+          progressBar.textContent = "0%"; // Initial text
+
+          downloadStatusContainer.appendChild(progressBar);
+          dataListPanel.appendChild(downloadStatusContainer);
+
+          // Save reference to the progress bar and related elements for
+          // updating later.
+          view.downloadStatusContainer = downloadStatusContainer;
+          view.progressBar = progressBar;
+        }
+      },
+
+      /**
+       * Open or close the data/layer item in the list of downloadable layers.
+       * @param {Event} event - The click event that triggered this function.
+       */
+      toggleLayerSection(event) {
+        // TODO: Use the accordion view to handle this
+        const view = this;
+        const itemToggle = event.currentTarget;
+        const itemContent = itemToggle.nextElementSibling;
+        const checkbox = itemToggle.querySelector(
+          `.${CLASS_NAMES.layerItemCheckbox}`,
+        );
+        const resolutionDropdown = itemContent.querySelector(
+          `.${CLASS_NAMES.resolutionDropdown}`,
+        );
+        const fileTypeDropdown = itemContent.querySelector(
+          `.${CLASS_NAMES.fileTypeDropdown}`,
+        );
+
+        const isOpen = itemToggle.classList.contains("show-content");
+
+        // If it's open, close it
+        if (isOpen) {
+          // Close it
+          itemToggle.classList.remove("show-content");
+          itemContent.style.display = "none";
+          checkbox.checked = false; // Uncheck the checkbox
+        } else {
+          itemToggle.classList.add("show-content");
+          itemContent.style.display = "block";
+          checkbox.checked = true; // Check the checkbox
+          // Reset resolution dropdown to the default value
+          resolutionDropdown.value =
+            this.dropdownOptions.resolution.defaultValue;
+          // Disable fileTypeDropdown if necessary
+          fileTypeDropdown.disabled = true;
+        }
+        view.layerSelection(); // Update Save button state
+      },
+
+      /**
+       * Handles the selection of map layers and updates the state of the save
+       * button and other UI elements based on whether any checkboxes are
+       * checked.
+       */
+      layerSelection() {
+        const view = this;
+        const checkboxes = document.querySelectorAll(
+          ".download-expansion-panel__checkbox",
+        );
+        const isAnyChecked = Array.from(checkboxes).some(
+          (checkbox) => checkbox.checked,
+        );
+        const dropdowns = document.querySelectorAll(
+          ".downloads-dropdown-container .fileType-downloads-dropdown",
+        );
+
+        const isanyFileTypeSelected = Array.from(dropdowns).some((dropdown) =>
+          ["png", "tif", "gpkg"].includes(dropdown.value.toLowerCase()),
+        );
+
+        if (isAnyChecked &amp;&amp; isanyFileTypeSelected) {
+          view.setButtonStatuses({
+            draw: "deactivated",
+            save: "enabled",
+            clear: "enabled",
+          });
+        } else {
+          view.setButtonStatuses({
+            draw: "deactivated",
+            save: "deactivated",
+            clear: "enabled",
+          });
+        }
+
+        const uncheckedLayerIds = Array.from(checkboxes)
+          .filter((checkbox) => !checkbox.checked)
+          .map((checkbox) => checkbox.dataset.layerId);
+
+        uncheckedLayerIds.forEach((layerID) => {
+          delete view.dataDownloadLinks[layerID];
+        });
+      },
+
+      /**
+       * Handles the selection of file type and updates the state of the save
+       * button and other UI elements based on whether any checkboxes are
+       * checked.
+       * @param {string} layerID - The ID of the map layer being interacted
+       * with.
+       */
+      fileTypeSelection(layerID) {
+        const view = this;
+        const dropdowns = document.querySelectorAll(
+          ".downloads-dropdown-container .fileType-downloads-dropdown",
+        );
+
+        const isPNGorTIFSelected = Array.from(dropdowns).some((dropdown) =>
+          ["png", "tif", "gpkg"].includes(dropdown.value.toLowerCase()),
+        );
+        if (!isPNGorTIFSelected) {
+          view.setButtonStatuses({
+            draw: "deactivated",
+            save: "deactivated",
+            clear: "enabled",
+          });
+        } else {
+          view.setButtonStatuses({
+            draw: "deactivated",
+            save: "enabled",
+            clear: "enabled",
+          });
+        }
+        if (layerID in view.dataDownloadLinks) {
+          delete view.dataDownloadLinks[layerID];
+          // alert("Deleted download links for " + layerID);
+        }
+      },
+
+      /**
+       * Updates the text content of the provided info box with file size
+       * details and file type information.
+       * @param {HTMLElement} infoBox - The HTML element where the file size
+       * information will be displayed.
+       * @param {number} fileSizeDetails - The size of the file in kilobytes
+       * (KB).
+       * @param {string} fileType - The type of the file (e.g., "wmts").
+       * @param {string} layerID - The ID of the map layer being interacted
+       * with.
+       */
+      updateTextbox(infoBox, fileSizeDetails, fileType, layerID) {
+        const fileSizeInfoBox = infoBox;
+        if (!fileSizeInfoBox) return;
+        fileSizeInfoBox.classList.remove(CLASS_NAMES.error);
+        fileSizeInfoBox.classList.remove(CLASS_NAMES.wmtsCopy);
+        const view = this;
+        if (fileType === "wmts") {
+          fileSizeInfoBox.innerHTML = `
+            &lt;span id="fileSizeText">${fileSizeDetails}&lt;/span>
+            &lt;i id="copyWMTS" class="icon-copy" title="Copy to Clipboard">&lt;/i>
+          `;
+          fileSizeInfoBox.classList.add(CLASS_NAMES.wmtsCopy);
+
+          // Add event listener for copying
+          document.getElementById("copyWMTS").addEventListener("click", () => {
+            const textToCopy =
+              document.getElementById("fileSizeText").textContent;
+            navigator.clipboard
+              .writeText(textToCopy)
+              .then(() => {
+                const currentContent = fileSizeInfoBox.innerHTML;
+                // alert("Copied to clipboard!");
+                fileSizeInfoBox.innerHTML = "Copied to clipboard!";
+                setTimeout(() => {
+                  fileSizeInfoBox.innerHTML = currentContent;
+                }, 2000); // Reset after 2 seconds
+              })
+              .catch(() => {
+                const currentContent = fileSizeInfoBox.innerHTML;
+                fileSizeInfoBox.innerHTML = "Copy failed!";
+                setTimeout(() => {
+                  fileSizeInfoBox.innerHTML = currentContent;
+                }, 2000); // Reset after 2 seconds
+              });
+          });
+        } else {
+          const optionalComment =
+            "Use WMTS for accessing large data volume or re-draw AOI.";
+          const maxSizeGB = `${(view.downloadSizeLimit / 1e9).toFixed(2)} GB`;
+          if (fileSizeDetails > view.downloadSizeLimit) {
+            fileSizeInfoBox.textContent = `Download size is too big ( > ${maxSizeGB}). ${optionalComment}.`;
+            fileSizeInfoBox.classList.add(CLASS_NAMES.error);
+          } else {
+            fileSizeInfoBox.textContent = `Estimated download file size is ≤ ${(fileSizeDetails / 1000).toFixed(2)} MB.`;
+          }
+        }
+
+        // Instead of disabling the Download button for large file sizes simply
+        // remove the layer from the the download list variable (i.e.,
+        // dataDownloadLinks)
+        if (view.dataDownloadLinks[layerID].fileSize > view.downloadSizeLimit) {
+          delete view.dataDownloadLinks[layerID];
+        }
+      },
+
+      /**
+       * Calculates the total file size for a given map layer based on the file
+       * type, zoom level, and bounding box. Generates URLs for individual tiles
+       * or retrieves a single download link for the layer. Updates the
+       * `dataDownloadLinks` object with the generated URLs and metadata for the
+       * specified layer.
+       * @param {number} resolution - The zoom level for the map tiles.
+       * @param {string} fileFormat - The format of the file to download (e.g.,
+       * "png", "tif", "wmts").
+       * @param {string} layerID - The unique identifier for the data layer.
+       * @param {string} fullDownloadLink - The full download link for the
+       * layer.
+       * @param {string} pngDownloadLink - The template URL for downloading PNG
+       * tiles.
+       * @param {string} gpkgDownloadLink - The template URL for downloading
+       * Geopackage tiles.
+       * @param {string} id - A unique identifier for the layer or dataset.
+       * @param {string} layerName - The name of the data layer.
+       * @param {string} [wmtsDownloadLink] - (Optional) The WMTS download link
+       * for the layer. Currently unused.
+       * @param {string} metadataURL - The metadata URL for the layer.
+       * @param {string} tiffDownloadLink - The template URL for downloading
+       * TIFF tiles.
+       * @returns {number} The total file size for the specified layer in bytes.
+       */
+      getRawFileSize(
+        resolution,
+        fileFormat,
+        layerID,
+        fullDownloadLink,
+        pngDownloadLink,
+        gpkgDownloadLink,
+        id,
+        layerName,
+        wmtsDownloadLink,
+        metadataURL,
+        tiffDownloadLink,
+      ) {
+        const layerSelectBoxes = document.querySelectorAll(
+          ".download-expansion-panel__checkbox",
+        );
+        const selectedLayerSelectBoxes = Array.from(layerSelectBoxes).filter(
+          (checkbox) => checkbox.checked,
+        );
+
+        this.polygon = this.getPolygon(this.points.toJSON());
+        this.boundingBox = this.getBoundingBox(this.polygon);
+        let totalFileSize;
+        const urls = [];
+        let baseURL;
+        if (fileFormat !== "wmts") {
+          this.tileDetails = this.getTileCoordinates(
+            this.boundingBox,
+            resolution,
+          );
+
+          const { tileXWest, tileXEast, tileYNorth, tileYSouth } =
+            this.tileDetails;
+
+          // Generate TileMatrix entries for each tile in range
+          if (fileFormat === "png") {
+            [baseURL] = pngDownloadLink.split("{");
+          } else if (fileFormat === "tif") {
+            // [baseURL] = this.layerDownloadLinks[layerID];
+            [baseURL] = tiffDownloadLink.split("{"); // test using tiff url from map config
+          } else if (fileFormat === "gpkg") {
+            [baseURL] = gpkgDownloadLink.split(this.tileMatrixSet);
+          }
+          for (let x = tileXWest; x &lt;= tileXEast; x += 1) {
+            for (let y = tileYNorth; y &lt;= tileYSouth; y += 1) {
+              // Update --  retrieving png from map config
+              const resourceURL = `${baseURL}${this.tileMatrixSet}/${resolution}/${x}/${y}.${fileFormat}`;
+              urls.push(resourceURL);
+            }
+          }
+          const urlCount = urls.length;
+          totalFileSize = urlCount * this.fileSizes[fileFormat];
+        } else {
+          // Instead of downloading the WMTS file, just provide the URL (below
+          // the dropdowns)
+          totalFileSize = wmtsDownloadLink;
+        }
+
+        // Update this.dataDownloadLinks - If the layerID in dataDownloadLinks
+        // is not in the selectedLayerIDs list, remove it
+        if (selectedLayerSelectBoxes.length > 1) {
+          const selectedLayerIDs = Array.from(selectedLayerSelectBoxes).map(
+            (checkbox) => checkbox.dataset.layerId,
+          );
+          Object.keys(this.dataDownloadLinks).forEach((downloadLink) => {
+            if (!selectedLayerIDs.includes(downloadLink)) {
+              delete this.dataDownloadLinks[downloadLink];
+              // alert("Successfully deleted" + layerID);
+            }
+          });
+        }
+        // Store or update URLs for the given layerID
+        this.dataDownloadLinks[layerID] = {
+          urls, // URLs for the data
+          fullDownloadLink, // Full download link
+          pngDownloadLink, // PNG download link
+          id, // Layer ID or any other unique identifier
+          zoomLevel: resolution,
+          baseURL: baseURL || null,
+          layerName,
+          fileType: fileFormat,
+          fileSize: totalFileSize,
+          metadataPid: metadataURL,
+        };
+        return totalFileSize;
+      },
+
+      /**
+       * Converts an array of geographic points into a polygon representation.
+       * The input array is reversed, and the first point is appended to the end
+       * to close the polygon.
+       * @param {object[]} jsonData - An array of objects representing
+       * geographic points. Each object should have `longitude` and `latitude`
+       * properties.
+       * @returns {number[][]} An array of arrays representing the polygon.
+       */
+      getPolygon(jsonData) {
+        // this.jsonData = this.points.toJSON();
+        const polygon = jsonData
+          .reverse()
+          .map((i) => [i.longitude, i.latitude]);
+        polygon.push([jsonData[0].longitude, jsonData[0].latitude]);
+        // Return a polygon
+        return polygon;
+      },
+
+      /**
+       * Calculates the bounding box of a given polygon.
+       * @param {number[][]} polygon - An array of points representing the
+       * polygon, where each point is an array of two numbers [longitude,
+       * latitude].
+       * @returns {object} An object representing the bounding box with the
+       * following properties:
+       *   - {number} west - The minimum longitude (x-coordinate).
+       *   - {number} south - The minimum latitude (y-coordinate).
+       *   - {number} east - The maximum longitude (x-coordinate).
+       *   - {number} north - The maximum latitude (y-coordinate).
+       */
+      getBoundingBox(polygon) {
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
+
+        // Iterate through each point in the polygon to find min/max coordinates
+        polygon.forEach((point) => {
+          const [longitude, latitude] = point;
+          if (longitude &lt; minX) minX = longitude;
+          if (latitude &lt; minY) minY = latitude;
+          if (longitude > maxX) maxX = longitude;
+          if (latitude > maxY) maxY = latitude;
+        });
+        // Return the bounding box as an object
+        return {
+          west: minX,
+          south: minY,
+          east: maxX,
+          north: maxY,
+        };
+      },
+
+      /**
+       * Converts geographic coordinates (longitude and latitude) into tile
+       * coordinates for a given zoom level, based on the WGS1984Quad tiling
+       * scheme.
+       * @param {number} lon - The longitude in degrees, ranging from -180 to
+       * 180.
+       * @param {number} lat - The latitude in degrees, ranging from -90 to 90.
+       * @param {number} zoom - The zoom level, where higher values represent
+       * greater detail.
+       * @returns {{x: number, y: number, z: number}} An object containing the
+       * tile coordinates:
+       *   - `x`: The horizontal tile index.
+       *   - `y`: The vertical tile index (inverted for WGS84).
+       *   - `z`: The zoom level.
+       */
+      tileFromLatLon(lon, lat, zoom) {
+        const resolution = 180 / 2 ** zoom; // WGS1984Quad uses 180° range
+        const x = Math.floor((lon + 180) / resolution);
+        const y = Math.floor((90 - lat) / resolution); // Y is inverted for WGS84
+        return { x, y, z: zoom };
+      },
+
+      /**
+       * Calculates the tile coordinates for a given bounding box and zoom
+       * level.
+       * @param {object} boundingBox - The geographical bounding box.
+       * @param {number} boundingBox.west - The western longitude
+       * @param {number} boundingBox.east - The eastern longitude
+       * @param {number} boundingBox.south - The southern latitude
+       * @param {number} boundingBox.north - The northern latitude
+       * @param {number} zoomLevel - The zoom level for which to calculate the
+       * tile coordinates.
+       * @returns {object} An object containing the zoom level and the tile
+       * coordinates:
+       * - `zoom`: The zoom level.
+       * - `tileXWest`: The tile column for the western edge.
+       * - `tileXEast`: The tile column for the eastern edge.
+       * - `tileYSouth`: The tile row for the southern edge.
+       * - `tileYNorth`: The tile row for the northern edge.
+       */
+      getTileCoordinates(boundingBox, zoomLevel) {
+        const { west } = boundingBox;
+        const { east } = boundingBox;
+        const { south } = boundingBox;
+        const { north } = boundingBox;
+
+        // Get tiles for each edge of the bounding box
+        const tileXWest = this.tileFromLatLon(
+          west,
+          (north + south) / 2,
+          zoomLevel,
+        ); // West edge
+        const tileXEast = this.tileFromLatLon(
+          east,
+          (north + south) / 2,
+          zoomLevel,
+        ); // East edge
+        const tileYNorth = this.tileFromLatLon(
+          (west + east) / 2,
+          north,
+          zoomLevel,
+        ); // North edge
+        const tileYSouth = this.tileFromLatLon(
+          (west + east) / 2,
+          south,
+          zoomLevel,
+        ); // South edge;
+
+        // Return TileMatrix (zoom level) and TileCol, TileRow
+        return {
+          zoom: zoomLevel,
+          tileXWest: tileXWest.x, // or choose one of the calculated tileX values based on your needs
+          tileYSouth: tileYSouth.y, // or choose one of the calculated tileY values based on your needs
+          tileXEast: tileXEast.x, // or choose one of the calculated tileX values based on your needs
+          tileYNorth: tileYNorth.y, // or choose one of the calculated tileY values based on your needs
+        };
+      },
+
+      /**
+       * Downloads data for each layer specified in `dataDownloadLinks` and
+       * provides progress updates. This function iterates through the
+       * `dataDownloadLinks` object, retrieves data for each layer, and
+       * generates a ZIP file for download. It updates a progress bar to reflect
+       * the download status and handles errors or cases where no data is
+       * available.
+       * @returns {Promise} Resolves when all data layers have been processed.
+       * @property {object} dataDownloadLinks - An object containing data layer
+       * information.
+       * @property {string} dataDownloadLinks.layerID - The unique identifier
+       * for the data layer.
+       * @property {object} dataDownloadLinks.data - Metadata for the data
+       * layer.
+       * @property {string[]} dataDownloadLinks.data.urls - Array of URLs to
+       * retrieve data from.
+       * @property {string} dataDownloadLinks.data.baseURL - Base URL for the
+       * data layer.
+       * @property {string} dataDownloadLinks.data.fileType - The file type of
+       * the data (e.g., "zip").
+       * @property {number} dataDownloadLinks.data.fileSize - The size of the
+       * data file in bytes.
+       * @property {string} dataDownloadLinks.data.layerName - The name of the
+       * data layer.
+       * @property {string} dataDownloadLinks.data.metadataPid - The metadata
+       * pid of the data layer.
+       */
+      async downloadData() {
+        const view = this;
+        // Loop through each layerID in dataDownloadLinks and process them
+        // individually
+        Object.entries(this.dataDownloadLinks).forEach(
+          async ([layerID, data]) => {
+            // WMTS files - provide a service url instead of a download
+            if (data.fileType === "wmts") {
+              return;
+            }
+
+            // If file size is approximately over a GB then do not download
+            if (data.fileSize >= view.downloadSizeLimit) {
+              const maxSizeGB = `${(view.downloadSizeLimit / 1e9).toFixed(2)} GB`;
+              view.updateStatusBar({
+                error: true,
+                message: `File size for ${data.layerName} > the max download size, ${maxSizeGB}. Select lower resolution/ draw smaller AOI.`,
+              });
+              return;
+            }
+
+            // If no URL for the layers, nothing to download
+            if (!data.urls?.length) {
+              view.updateStatusBar({
+                error: true,
+                message:
+                  "No data available for selected data layer(s) within area of interest.",
+              });
+              return;
+            }
+
+            // Show the progress bar for the current layer
+            const updateStatusBar = (progress) => {
+              view.updateStatusBar({
+                progress,
+                message: `Downloading data for ${data.layerName} (${progress}%)`,
+              });
+            };
+            // Start progress tracking
+            updateStatusBar(0);
+
+            try {
+              const layerZip = await view.retrieveDataFromURL(
+                layerID,
+                data.urls,
+                data.baseURL,
+                data.fileType,
+                (progress) => {
+                  // Progress tracking callback function
+                  updateStatusBar(progress);
+                },
+              );
+
+              // Stop if no data
+              if (!Object.keys(layerZip.files).length) {
+                view.updateStatusBar({
+                  message:
+                    "No data available for selected data layer(s) within area of interest.",
+                  error: true,
+                });
+                return;
+              }
+
+              const numFiles = Object.keys(layerZip.files).length;
+              view.updateStatusBar({
+                message: `Generating ZIP file for ${data.layerName} (${numFiles} files)...`,
+              });
+
+              if (data.metadataPid) {
+                const metadataUrl = `${this.objectServiceUrl}${data.metadataPid}`;
+                fetch(metadataUrl)
+                  .then((response) => {
+                    if (!response.ok) {
+                      throw new Error(
+                        `Failed to fetch metadata for ${layerID}: ${response.statusText}`,
+                      );
+                    }
+                    return response.blob();
+                  })
+                  .then((metadataBlob) => {
+                    layerZip.file(`${layerID}_metadata.xml`, metadataBlob);
+                  })
+                  .catch((error) => {
+                    let message = `Error fetching metadata for ${layerID}`;
+                    if (error.message) {
+                      message += `: ${error.message}`;
+                    }
+
+                    view.updateStatusBar({
+                      error: true,
+                      message,
+                    });
+                  })
+                  .finally(() => {
+                    // Always generate the ZIP, regardless of metadata result
+                    layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
+                      view.updateStatusBar({
+                        message: "Download Complete!",
+                        progress: 100,
+                      });
+                      const link = document.createElement("a");
+                      link.href = URL.createObjectURL(zipBlob);
+                      link.download = `${layerID}_${data.fileType}_zoom-level-${data.zoomLevel}.zip`;
+                      link.click();
+                    });
+                  });
+              } else {
+                // No metadata to fetch, just generate the ZIP
+                layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
+                  view.updateStatusBar({
+                    message: "Download Complete!",
+                    progress: 100,
+                  });
+                  const link = document.createElement("a");
+                  link.href = URL.createObjectURL(zipBlob);
+                  link.download = `${layerID}_${data.fileType}_zoom-level-${data.zoomLevel}.zip`;
+                  link.click();
+                });
+              }
+            } catch (error) {
+              let message =
+                "Failed to download data files for selected data layer(s) within area of interest. ";
+              if (error.message) {
+                message += error.message;
+              }
+
+              view.updateStatusBar({
+                message,
+                error: true,
+              });
+            }
+          },
+        );
+      },
+
+      /**
+       * Updates the status bar with a message, progress, and visibility
+       * options.
+       * @param {object} options - The options for updating the status bar.
+       * @param {string} [options.message] - The message to display in the
+       * status bar.
+       * @param {number|null} [options.progress] - The progress percentage
+       * (0-100) to display. Ignored if a message is provided.
+       * @param {boolean} [options.show] - Whether to show or hide the status
+       * bar.
+       * @param {boolean} [options.error] - Whether the status bar should
+       * indicate an error state.
+       */
+      updateStatusBar({
+        message = "",
+        progress = null,
+        show = true,
+        error = false,
+      }) {
+        const view = this;
+        const { downloadStatusContainer, progressBar } = view;
+
+        if (show) {
+          downloadStatusContainer.style.display = "block";
+        } else {
+          downloadStatusContainer.style.display = "none";
+          return;
+        }
+
+        if (error) {
+          progressBar.classList.remove("progress-bar");
+          progressBar.classList.add("progress-bar-no-data");
+        } else {
+          progressBar.classList.remove("progress-bar-no-data");
+          progressBar.classList.add("progress-bar");
+        }
+
+        if (typeof progress === "number") {
+          progressBar.style.width = `${progress}%`;
+          if (progress > 0) {
+            progressBar.textContent = `Progress: ${progress}%`;
+          } else {
+            progressBar.textContent = "";
+          }
+          progressBar.classList.remove("progress-bar-no-data");
+          progressBar.classList.add("progress-bar");
+        } else {
+          progressBar.style.width = "100%";
+        }
+
+        if (message) {
+          progressBar.textContent = message;
+        }
+      },
+
+      /**
+       * Retrieves data from a list of URLs, processes the data, and packages it
+       * into a ZIP file.
+       * @param {string} layerID - The identifier for the layer being processed.
+       * @param {string[]} urls - An array of URLs to fetch data from.
+       * @param {string} baseURL - The base URL used to sanitize and structure
+       * file paths.
+       * @param {string} fileType - The type of file being processed (e.g.,
+       * "wmts").
+       * @param {function(number): void} [onProgress] - Optional callback
+       * function to report download progress as a percentage.
+       * @returns {Promise&lt;JSZip>} A promise that resolves to a JSZip instance
+       * containing the downloaded files.
+       * @throws {Error} If there is an issue with fetching or processing the
+       * data.
+       */
+      async retrieveDataFromURL(layerID, urls, baseURL, fileType, onProgress) {
+        // Initialize JSZip
+        const zip = new JSZip();
+
+        // Create an array of promises
+        const fetchPromises = urls.map(async (url) => {
+          const response = await fetch(url);
+          if (!response.ok) {
+            if (response.status === 404) {
+              // We can safely skip 404 errors because we don't expect all URLs
+              // to be valid
+              return null;
+            }
+            // Other errors should be handled
+            throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
+          }
+
+          const contentLength = response.headers.get("Content-Length");
+          const totalBytes = contentLength ? parseInt(contentLength, 10) : null;
+          let loadedBytes = 0;
+
+          const reader = response.body.getReader();
+          const chunks = [];
+
+          let done = false;
+          while (!done) {
+            // Streaming must be sequential, so we await each chunk.
+            // eslint-disable-next-line no-await-in-loop
+            const { done: isDone, value } = await reader.read();
+            done = isDone;
+            if (value) {
+              chunks.push(value);
+              loadedBytes += value.length;
+
+              if (onProgress &amp;&amp; totalBytes) {
+                const progress = Math.floor((loadedBytes / totalBytes) * 100);
+                onProgress(progress); // Update progress
+              }
+            }
+          }
+
+          const blob = new Blob(chunks);
+          const urlParts = url.split(baseURL).filter((part) => part !== "");
+          // Sanitize URL to avoid unwanted folder hierarchy issues
+          const sanitizedUrl = url.replace(/[:/?&amp;=]/g, "_");
+          const fileName =
+            fileType === "wmts"
+              ? `${layerID}/${sanitizedUrl}`
+              : `${urlParts.slice(-3).join("_")}`;
+
+          return { fileName, blob };
+        });
+
+        // Wait for all fetches to complete
+        const results = await Promise.all(fetchPromises);
+
+        // Add files to zip
+        results.forEach((result) => {
+          if (result) {
+            zip.file(result.fileName, result.blob);
+          }
+        });
+
+        return zip;
+      },
+    },
+  );
+
+  return DownloadPanelView;
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

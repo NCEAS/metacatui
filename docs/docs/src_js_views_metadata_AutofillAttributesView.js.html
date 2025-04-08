@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: src/js/views/metadata/AutofillAttributesView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="/metacatui/assets/css/styles.css">
+    <link type="text/css" rel="stylesheet" href="styles/style.css">
+</head>
+
+<body>
+
+<nav id="nav">
+    <a href="/">
+      <div class="logo">
+<svg class="cat" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="cat" class="svg-inline--fa fa-cat fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M290.59 192c-20.18 0-106.82 1.98-162.59 85.95V192c0-52.94-43.06-96-96-96-17.67 0-32 14.33-32 32s14.33 32 32 32c17.64 0 32 14.36 32 32v256c0 35.3 28.7 64 64 64h176c8.84 0 16-7.16 16-16v-16c0-17.67-14.33-32-32-32h-32l128-96v144c0 8.84 7.16 16 16 16h32c8.84 0 16-7.16 16-16V289.86c-10.29 2.67-20.89 4.54-32 4.54-61.81 0-113.52-44.05-125.41-102.4zM448 96h-64l-64-64v134.4c0 53.02 42.98 96 96 96s96-42.98 96-96V32l-64 64zm-72 80c-8.84 0-16-7.16-16-16s7.16-16 16-16 16 7.16 16 16-7.16 16-16 16zm80 0c-8.84 0-16-7.16-16-16s7.16-16 16-16 16 7.16 16 16-7.16 16-16 16z"></path></svg>
+
+<svg width="459px" height="53px" viewBox="0 0 459 53" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g id="metacatui" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M16.492,52 C17.212,52 17.812,51.748 18.292,51.244 C18.772,50.74 19.012,50.128 19.012,49.408 L19.012,49.408 L18.94,22.912 L30.82,37.816 C31.204,38.344 31.72,38.764 32.368,39.076 C33.016,39.388 33.7,39.544 34.42,39.544 C35.908,39.544 37.132,38.896 38.092,37.6 L38.092,37.6 L49.684,22.912 L49.684,49.408 C49.684,50.128 49.96,50.74 50.512,51.244 C51.064,51.748 51.7,52 52.42,52 L52.42,52 L62.068,52 C62.788,52 63.388,51.748 63.868,51.244 C64.348,50.74 64.588,50.128 64.588,49.408 L64.588,49.408 L64.588,4.12 C64.588,3.448 64.336,2.86 63.832,2.356 C63.328,1.852 62.74,1.6 62.068,1.6 L62.068,1.6 L52.348,1.6 C51.388,1.6 50.56,1.648 49.864,1.744 C49.168,1.84 48.532,2.152 47.956,2.68 L47.956,2.68 L33.916,17.296 L20.524,2.608 C20.332,2.368 19.972,2.14 19.444,1.924 C18.916,1.708 18.412,1.6 17.932,1.6 L17.932,1.6 L6.772,1.6 C6.052,1.6 5.44,1.852 4.936,2.356 C4.432,2.86 4.18,3.448 4.18,4.12 L4.18,4.12 L4.18,49.408 C4.18,50.08 4.432,50.68 4.936,51.208 C5.44,51.736 6.052,52 6.772,52 L6.772,52 L16.492,52 Z M110.74,52 C111.556,52 112.264,51.676 112.864,51.028 C113.464,50.38 113.764,49.624 113.764,48.76 L113.764,48.76 L113.764,42.568 C113.764,41.608 113.464,40.828 112.864,40.228 C112.264,39.628 111.556,39.328 110.74,39.328 L110.74,39.328 L89.428,39.328 L89.428,32.92 L109.732,32.92 C110.5,32.92 111.184,32.596 111.784,31.948 C112.384,31.3 112.684,30.568 112.684,29.752 L112.684,29.752 L112.684,23.488 C112.684,22.576 112.384,21.82 111.784,21.22 C111.184,20.62 110.5,20.32 109.732,20.32 L109.732,20.32 L89.428,20.32 L89.428,14.488 L110.74,14.488 C111.508,14.488 112.204,14.164 112.828,13.516 C113.452,12.868 113.764,12.136 113.764,11.32 L113.764,11.32 L113.764,5.056 C113.764,4.144 113.464,3.388 112.864,2.788 C112.264,2.188 111.556,1.888 110.74,1.888 L110.74,1.888 L76.756,1.888 C75.94,1.888 75.232,2.188 74.632,2.788 C74.032,3.388 73.732,4.144 73.732,5.056 L73.732,5.056 L73.732,48.76 C73.732,49.624 74.032,50.38 74.632,51.028 C75.232,51.676 75.94,52 76.756,52 L76.756,52 L110.74,52 Z M147.604,52 C148.42,52 149.104,51.688 149.656,51.064 C150.208,50.44 150.484,49.672 150.484,48.76 L150.484,48.76 L150.484,16.216 L161.86,16.216 C162.676,16.216 163.396,15.904 164.02,15.28 C164.644,14.656 164.956,13.936 164.956,13.12 L164.956,13.12 L164.956,4.768 C164.956,4 164.644,3.316 164.02,2.716 C163.396,2.116 162.676,1.816 161.86,1.816 L161.86,1.816 L124.132,1.816 C123.22,1.816 122.464,2.104 121.864,2.68 C121.264,3.256 120.964,3.952 120.964,4.768 L120.964,4.768 L120.964,13.12 C120.964,13.936 121.264,14.656 121.864,15.28 C122.464,15.904 123.22,16.216 124.132,16.216 L124.132,16.216 L135.652,16.216 L135.148,48.832 C135.148,49.744 135.424,50.5 135.976,51.1 C136.528,51.7 137.212,52 138.028,52 L138.028,52 L147.604,52 Z M175.828,52 C176.836,52 177.676,51.82 178.348,51.46 C179.02,51.1 179.452,50.584 179.644,49.912 L179.644,49.912 L181.876,42.712 L197.932,42.712 L200.164,49.912 C200.356,50.584 200.8,51.1 201.496,51.46 C202.192,51.82 203.044,52 204.052,52 L204.052,52 L213.916,52 C215.836,51.712 216.796,50.704 216.796,48.976 C216.796,48.304 216.676,47.596 216.436,46.852 C216.196,46.108 216.052,45.616 216.004,45.376 L216.004,45.376 L199.876,4.84 C199.588,3.976 199.036,3.232 198.22,2.608 C197.404,1.984 196.372,1.648 195.124,1.6 L195.124,1.6 L184.756,1.6 C183.604,1.648 182.608,1.948 181.768,2.5 C180.928,3.052 180.292,3.832 179.86,4.84 L179.86,4.84 L163.876,45.376 C163.828,45.472 163.672,45.916 163.408,46.708 C163.144,47.5 163.012,48.304 163.012,49.12 C163.012,50.752 163.948,51.712 165.82,52 L165.82,52 L175.828,52 Z M195.34,30.544 L184.036,30.544 L189.652,13.624 L195.34,30.544 Z M245.38,53.08 C250.612,53.08 255.652,51.544 260.5,48.472 C261.22,47.944 261.58,47.296 261.58,46.528 C261.58,45.808 261.292,45.16 260.716,44.584 L260.716,44.584 L252.796,36.808 C252.364,36.376 251.836,36.16 251.212,36.16 C250.78,36.16 250.372,36.256 249.988,36.448 C248.356,37.12 246.796,37.456 245.308,37.456 C243.244,37.456 241.348,36.952 239.62,35.944 C237.892,34.936 236.512,33.58 235.48,31.876 C234.448,30.172 233.932,28.336 233.932,26.368 C233.932,24.352 234.436,22.504 235.444,20.824 C236.452,19.144 237.832,17.812 239.584,16.828 C241.336,15.844 243.244,15.352 245.308,15.352 C246.892,15.352 248.332,15.64 249.628,16.216 C250.012,16.408 250.444,16.504 250.924,16.504 C251.548,16.504 252.1,16.264 252.58,15.784 L252.58,15.784 L259.636,8.008 C260.164,7.384 260.428,6.76 260.428,6.136 C260.428,5.224 259.996,4.528 259.132,4.048 C254.86,1.552 250.276,0.304 245.38,0.304 C240.532,0.304 236.032,1.492 231.88,3.868 C227.728,6.244 224.44,9.448 222.016,13.48 C219.592,17.512 218.38,21.904 218.38,26.656 C218.38,31.408 219.592,35.812 222.016,39.868 C224.44,43.924 227.728,47.14 231.88,49.516 C236.032,51.892 240.532,53.08 245.38,53.08 Z M279.796,52 C280.804,52 281.644,51.82 282.316,51.46 C282.988,51.1 283.42,50.584 283.612,49.912 L283.612,49.912 L285.844,42.712 L301.9,42.712 L304.132,49.912 C304.324,50.584 304.768,51.1 305.464,51.46 C306.16,51.82 307.012,52 308.02,52 L308.02,52 L317.884,52 C319.804,51.712 320.764,50.704 320.764,48.976 C320.764,48.304 320.644,47.596 320.404,46.852 C320.164,46.108 320.02,45.616 319.972,45.376 L319.972,45.376 L303.844,4.84 C303.556,3.976 303.004,3.232 302.188,2.608 C301.372,1.984 300.34,1.648 299.092,1.6 L299.092,1.6 L288.724,1.6 C287.572,1.648 286.576,1.948 285.736,2.5 C284.896,3.052 284.26,3.832 283.828,4.84 L283.828,4.84 L267.844,45.376 C267.796,45.472 267.64,45.916 267.376,46.708 C267.112,47.5 266.98,48.304 266.98,49.12 C266.98,50.752 267.916,51.712 269.788,52 L269.788,52 L279.796,52 Z M299.308,30.544 L288.004,30.544 L293.62,13.624 L299.308,30.544 Z M352.588,52 C353.404,52 354.088,51.688 354.64,51.064 C355.192,50.44 355.468,49.672 355.468,48.76 L355.468,48.76 L355.468,16.216 L366.844,16.216 C367.66,16.216 368.38,15.904 369.004,15.28 C369.628,14.656 369.94,13.936 369.94,13.12 L369.94,13.12 L369.94,4.768 C369.94,4 369.628,3.316 369.004,2.716 C368.38,2.116 367.66,1.816 366.844,1.816 L366.844,1.816 L329.116,1.816 C328.204,1.816 327.448,2.104 326.848,2.68 C326.248,3.256 325.948,3.952 325.948,4.768 L325.948,4.768 L325.948,13.12 C325.948,13.936 326.248,14.656 326.848,15.28 C327.448,15.904 328.204,16.216 329.116,16.216 L329.116,16.216 L340.636,16.216 L340.132,48.832 C340.132,49.744 340.408,50.5 340.96,51.1 C341.512,51.7 342.196,52 343.012,52 L343.012,52 L352.588,52 Z M402.052,52.792 C408.1,52.792 412.912,51.628 416.488,49.3 C420.064,46.972 422.536,44.068 423.904,40.588 C425.272,37.108 425.932,33.424 425.884,29.536 C425.884,29.5309474 425.883967,29.5237673 425.8839,29.5144598 L425.883102,29.4330859 C425.879911,29.1480111 425.868211,28.3183158 425.848,26.944 C425.8294,25.6792 425.818008,22.91524 425.813823,18.65212 L425.813103,17.80828 C425.812997,17.66452 425.8129,17.5192 425.81281,17.37232 L425.812,3.904 C425.86,3.184 425.632,2.62 425.128,2.212 C424.624,1.804 423.916,1.6 423.004,1.6 L423.004,1.6 L413.428,1.6 C412.612,1.6 411.904,1.828 411.304,2.284 C410.704,2.74 410.404,3.28 410.404,3.904 L410.404,3.904 L410.26,27.808 C410.26,34.144 407.476,37.312 401.908,37.312 C399.076,37.312 396.832,36.412 395.176,34.612 C393.52,32.812 392.668,30.352 392.62,27.232 L392.62,27.232 L392.332,3.76 C392.332,3.088 392.068,2.56 391.54,2.176 C391.012,1.792 390.268,1.6 389.308,1.6 L389.308,1.6 L379.876,1.6 C378.244,1.6 377.428,2.32 377.428,3.76 L377.428,3.76 L377.5,28.816 C377.5,33.04 378.376,36.964 380.128,40.588 C381.88,44.212 384.592,47.152 388.264,49.408 C391.936,51.664 396.532,52.792 402.052,52.792 Z M449.284,52.144 C450.148,52.144 450.88,51.844 451.48,51.244 C452.08,50.644 452.38,49.84 452.38,48.832 L452.38,48.832 L452.38,4.912 C452.38,4 452.08,3.22 451.48,2.572 C450.88,1.924 450.148,1.6 449.284,1.6 L449.284,1.6 L439.42,1.6 C438.46,1.6 437.692,1.924 437.116,2.572 C436.54,3.22 436.252,4 436.252,4.912 L436.252,4.912 L436.252,48.832 C436.252,49.84 436.54,50.644 437.116,51.244 C437.692,51.844 438.46,52.144 439.42,52.144 L439.42,52.144 L449.284,52.144 Z" id="metacatui" fill="#FCBF49" fill-rule="nonzero"></path>
+    </g>
+</svg>
+</logo>
+
+    </a>
+    <h3>Externals</h3><ul><li><a href="external-TaxonomicClassification.html">TaxonomicClassification</a></li></ul><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="IconUtilities.html">IconUtilities</a></li><li><a href="MapConfig.html">MapConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="SearchParams.html">SearchParams</a></li><li><a href="Utilities.html">Utilities</a></li><li><a href="XMLUtilities.html">XMLUtilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="ProjectList.html">ProjectList</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/Geohashes'>Collections/Geohashes</li><li><a href="Geohashes.html">Geohashes</a></li><li class='category-heading' data-category='Collections/Maps'>Collections/Maps</li><li><a href="AssetCategories.html">AssetCategories</a></li><li><a href="AssetColors.html">AssetColors</a></li><li><a href="Features.html">Features</a></li><li><a href="GeoPoints.html">GeoPoints</a></li><li><a href="MapAssets.html">MapAssets</a></li><li><a href="VectorFilters.html">VectorFilters</a></li><li><a href="ZoomPresets.html">ZoomPresets</a></li><li class='category-heading' data-category='Collections/Metadata/EML'>Collections/Metadata/EML</li><li><a href="EMLAnnotations.html">EMLAnnotations</a></li><li><a href="EMLAttributes.html">EMLAttributes</a></li><li><a href="EMLEntities.html">EMLEntities</a></li><li><a href="EMLMissingValueCodes.html">EMLMissingValueCodes</a></li><li class='category-heading' data-category='Collections/Ontologies'>Collections/Ontologies</li><li><a href="BioontologyResults.html">BioontologyResults</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Collections/SearchSelect'>Collections/SearchSelect</li><li><a href="SearchSelectOptions.html">SearchSelectOptions</a></li><li class='category-heading' data-category='Errors'>Errors</li><li><a href="InvalidAttributeListError.html">InvalidAttributeListError</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="Accordion.html">Accordion</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="CitationModel.html">CitationModel</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="CrossRef.html">CrossRef</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="Metrics.html">Metrics</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Accordion'>Models/Accordion</li><li><a href="AccordionItem.html">AccordionItem</a></li><li class='category-heading' data-category='Models/Analytics'>Models/Analytics</li><li><a href="Analytics.html">Analytics</a></li><li><a href="GoogleAnalytics.html">GoogleAnalytics</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Connectors'>Models/Connectors</li><li><a href="BioontologyAccordionSearchSelect.html">BioontologyAccordionSearchSelect</a></li><li><a href="FiltersMapConnector.html">FiltersMapConnector</a></li><li><a href="FiltersSearchConnector.html">FiltersSearchConnector</a></li><li><a href="GeoPointsCesiumConnector.html">GeoPointsCesiumConnector</a></li><li><a href="GeoPointsCesiumPointsConnector.html">GeoPointsCesiumPointsConnector</a></li><li><a href="GeoPointsCesiumPolygonConnector.html">GeoPointsCesiumPolygonConnector</a></li><li><a href="MapSearchConnector.html">MapSearchConnector</a></li><li><a href="MapSearchFiltersConnector.html">MapSearchFiltersConnector</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Geocoder'>Models/Geocoder</li><li><a href="GeocodedLocation.html">GeocodedLocation</a></li><li><a href="GeocoderSearch.html">GeocoderSearch</a></li><li><a href="GoogleMapsAutocompleter.html">GoogleMapsAutocompleter</a></li><li><a href="GoogleMapsGeocoder.html">GoogleMapsGeocoder</a></li><li><a href="Prediction.html">Prediction</a></li><li class='category-heading' data-category='Models/Geohashes'>Models/Geohashes</li><li><a href="Geohash.html">Geohash</a></li><li class='category-heading' data-category='Models/Maps'>Models/Maps</li><li><a href="AssetCategory.html">AssetCategory</a></li><li><a href="AssetColor.html">AssetColor</a></li><li><a href="AssetColorPalette.html">AssetColorPalette</a></li><li><a href="ExpansionPanelsModel.html">ExpansionPanelsModel</a></li><li><a href="Feature.html">Feature</a></li><li><a href="GeoBoundingBox.html">GeoBoundingBox</a></li><li><a href="GeoPoint.html">GeoPoint</a></li><li><a href="GeoScale.html">GeoScale</a></li><li><a href="GeoUtilities.html">GeoUtilities</a></li><li><a href="MapInteraction.html">MapInteraction</a></li><li><a href="MapModel.html">MapModel</a></li><li><a href="VectorFilter.html">VectorFilter</a></li><li><a href="ViewfinderModel.html">ViewfinderModel</a></li><li><a href="ZoomPresetModel.html">ZoomPresetModel</a></li><li class='category-heading' data-category='Models/Maps/Assets'>Models/Maps/Assets</li><li><a href="Cesium3DTileset.html">Cesium3DTileset</a></li><li><a href="CesiumGeohash.html">CesiumGeohash</a></li><li><a href="CesiumImagery.html">CesiumImagery</a></li><li><a href="CesiumTerrain.html">CesiumTerrain</a></li><li><a href="CesiumVectorData.html">CesiumVectorData</a></li><li><a href="MapAsset.html">MapAsset</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML'>Models/Metadata/EML</li><li><a href="EMLMethodStep.html">EMLMethodStep</a></li><li><a href="EMLSpecializedText.html">EMLSpecializedText</a></li><li><a href="EMLTaxonCoverage.html">EMLTaxonCoverage</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAnnotation.html">EMLAnnotation</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLDistribution.html">EMLDistribution</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLMethods.html">EMLMethods</a></li><li><a href="EMLMissingValueCode.html">EMLMissingValueCode</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLParty.html">EMLParty</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLText211.html">EMLText211</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Ontologies'>Models/Ontologies</li><li><a href="BioOntology.html">BioOntology</a></li><li><a href="Bioontology_.html">Bioontology</a></li><li><a href="BioontologyBatch.html">BioontologyBatch</a></li><li><a href="BioontologyClass.html">BioontologyClass</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/Projects'>Models/Projects</li><li><a href="Project.html">Project</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Models/SearchSelect'>Models/SearchSelect</li><li><a href="AccountSearchSelect.html">AccountSearchSelect</a></li><li><a href="QueryFieldSearchSelect.html">QueryFieldSearchSelect</a></li><li><a href="SearchSelect.html">SearchSelect</a></li><li><a href="SelectOptionModel.html">SelectOptionModel</a></li><li><a href="SolrAutocomplete.html">SolrAutocomplete</a></li><li class='category-heading' data-category='Models/schemaOrg'>Models/schemaOrg</li><li><a href="SchemaOrgModel.html">SchemaOrgModel</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AnnotationView.html">AnnotationView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="CanonicalDatasetHandlerView.html">CanonicalDatasetHandlerView</a></li><li><a href="CatalogSearchView.html">CatalogSearchView</a></li><li><a href="CitationHeaderView.html">CitationHeaderView</a></li><li><a href="CitationListView.html">CitationListView</a></li><li><a href="CitationModalView.html">CitationModalView</a></li><li><a href="CitationView.html">CitationView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView.html">DataCatalogView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataObjectView.html">DataObjectView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="FooterView.html">FooterView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MdqRunView.html">MdqRunView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricView.html">MetricView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="SearchResultView.html">SearchResultView</a></li><li><a href="SignInView.html">SignInView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="UserGroupView.html">UserGroupView</a></li><li><a href="UserView.html">UserView</a></li><li><a href="ViewDataButtonView.html">ViewDataButtonView</a></li><li class='category-heading' data-category='Views/Accordion'>Views/Accordion</li><li><a href="AccordionItemView.html">AccordionItemView</a></li><li><a href="AccordionView.html">AccordionView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterEditorView.html">FilterEditorView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="SemanticFilterView.html">SemanticFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Maps'>Views/Maps</li><li><a href="CesiumWidgetView.html">CesiumWidgetView</a></li><li><a href="DownloadPanelView.html">DownloadPanelView</a></li><li><a href="FeatureInfoView.html">FeatureInfoView</a></li><li><a href="LayerCategoryListView.html">LayerCategoryListView</a></li><li><a href="LayerDetailView.html">LayerDetailView</a></li><li><a href="LayerDetailsView.html">LayerDetailsView</a></li><li><a href="LayerInfoView.html">LayerInfoView</a></li><li><a href="LayerItemView.html">LayerItemView</a></li><li><a href="LayerListView.html">LayerListView</a></li><li><a href="LayerNavigationView.html">LayerNavigationView</a></li><li><a href="LayerOpacityView.html">LayerOpacityView</a></li><li><a href="LayersPanelView.html">LayersPanelView</a></li><li><a href="MapHelpPanel.html">MapHelpPanel</a></li><li><a href="MapView.html">MapView</a></li><li><a href="MapWidgetContainerView.html">MapWidgetContainerView</a></li><li><a href="PredictionView.html">PredictionView</a></li><li><a href="PredictionsListView.html">PredictionsListView</a></li><li><a href="ScaleBarView.html">ScaleBarView</a></li><li><a href="SchemaOrgView.html">SchemaOrgView</a></li><li><a href="SearchInputView.html">SearchInputView</a></li><li><a href="SearchView.html">SearchView</a></li><li><a href="ShareUrlView.html">ShareUrlView</a></li><li><a href="ToolbarView.html">ToolbarView</a></li><li><a href="ViewfinderView.html">ViewfinderView</a></li><li class='category-heading' data-category='Views/Maps/Legend'>Views/Maps/Legend</li><li><a href="CategoricalSwatchView.html">CategoricalSwatchView</a></li><li><a href="ContinuousSwatchView.html">ContinuousSwatchView</a></li><li><a href="LayerLegendView.html">LayerLegendView</a></li><li><a href="LegendContainerView.html">LegendContainerView</a></li><li class='category-heading' data-category='Views/Maps/Viewfinder'>Views/Maps/Viewfinder</li><li><a href="ExpansionPanelView.html">ExpansionPanelView</a></li><li><a href="ZoomPresetView.html">ZoomPresetView</a></li><li><a href="ZoomPresetsListView.html">ZoomPresetsListView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="AutofillAttributesView.html">AutofillAttributesView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLAttributesView.html">EMLAttributesView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMeasurementTypeView.html">EMLMeasurementTypeView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLMissingValueCodeView.html">EMLMissingValueCodeView</a></li><li><a href="EMLMissingValueCodesView.html">EMLMissingValueCodesView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="EMlGeoCoverageView_.html">EMlGeoCoverageView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Ontologies'>Views/Ontologies</li><li><a href="BioontologyBrowser.html">BioontologyBrowser</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li><a href="PortalsSearchView.html">PortalsSearchView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li class='category-heading' data-category='Views/Projects'>Views/Projects</li><li><a href="ProjectView.html">ProjectView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilderView.html">QueryBuilderView</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/Search'>Views/Search</li><li><a href="SearchResultsPagerView.html">SearchResultsPagerView</a></li><li><a href="SearchResultsView.html">SearchResultsView</a></li><li><a href="SorterView.html">SorterView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AccountSelectView.html">AccountSelectView</a></li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="BioontologySelectView.html">BioontologySelectView</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="ObjectFormatSelect.html">ObjectFormatSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchSelectView.html">SearchSelectView</a></li><li><a href="SeparatorView.html">SeparatorView</a></li><li><a href="EMLTaxonView.html">EMLTaxonView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="AnnotatorView.html">AnnotatorView</a></li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addClassesFromResponse">addClassesFromResponse</a></li><li><a href="global.html#addFields">addFields</a></li><li><a href="global.html#addSelected">addSelected</a></li><li><a href="global.html#adjustDescriptionLength">adjustDescriptionLength</a></li><li><a href="global.html#appConfigPath">appConfigPath</a></li><li><a href="global.html#buildChildrenUrl">buildChildrenUrl</a></li><li><a href="global.html#buildSearchUrl">buildSearchUrl</a></li><li><a href="global.html#canChangeSeparator">canChangeSeparator</a></li><li><a href="global.html#changeSubmenuOnSearch">changeSubmenuOnSearch</a></li><li><a href="global.html#couldBeLatLong">couldBeLatLong</a></li><li><a href="global.html#createBatchPayload">createBatchPayload</a></li><li><a href="global.html#createHeaders">createHeaders</a></li><li><a href="global.html#defaults">defaults</a></li><li><a href="global.html#encodeIfPresent">encodeIfPresent</a></li><li><a href="global.html#excludeFields">excludeFields</a></li><li><a href="global.html#fetchClasses">fetchClasses</a></li><li><a href="global.html#fetchClassesFromOntology">fetchClassesFromOntology</a></li><li><a href="global.html#fetchFromOntologies">fetchFromOntologies</a></li><li><a href="global.html#fetchQueryFields">fetchQueryFields</a></li><li><a href="global.html#fieldToOption">fieldToOption</a></li><li><a href="global.html#filterClassesToFetch">filterClassesToFetch</a></li><li><a href="global.html#finalizeFetch">finalizeFetch</a></li><li><a href="global.html#formatResult">formatResult</a></li><li><a href="global.html#formatResults">formatResults</a></li><li><a href="global.html#generateGeoJSONPoint">generateGeoJSONPoint</a></li><li><a href="global.html#generateGeoJSONPolygon">generateGeoJSONPolygon</a></li><li><a href="global.html#generateGeoJSONString">generateGeoJSONString</a></li><li><a href="global.html#generateIdentifier">generateIdentifier</a></li><li><a href="global.html#generateSpatialCoverage">generateSpatialCoverage</a></li><li><a href="global.html#getAccountDetails">getAccountDetails</a></li><li><a href="global.html#getCachedClasses">getCachedClasses</a></li><li><a href="global.html#getCategoryNames">getCategoryNames</a></li><li><a href="global.html#getChildren">getChildren</a></li><li><a href="global.html#getClasses">getClasses</a></li><li><a href="global.html#getDOIURL">getDOIURL</a></li><li><a href="global.html#getIncludeParam">getIncludeParam</a></li><li><a href="global.html#getNextPage">getNextPage</a></li><li><a href="global.html#getNextSeparator">getNextSeparator</a></li><li><a href="global.html#getOptionByLabelOrValue">getOptionByLabelOrValue</a></li><li><a href="global.html#getOptionsByCategory">getOptionsByCategory</a></li><li><a href="global.html#getQueryFieldOptions">getQueryFieldOptions</a></li><li><a href="global.html#getSelectedModels">getSelectedModels</a></li><li><a href="global.html#hasInvalidSelections">hasInvalidSelections</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#initializeFetch">initializeFetch</a></li><li><a href="global.html#isValidValue">isValidValue</a></li><li><a href="global.html#model">model</a></li><li><a href="global.html#moveClassesToNotFound">moveClassesToNotFound</a></li><li><a href="global.html#optionsAsJSON">optionsAsJSON</a></li><li><a href="global.html#padDescription">padDescription</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#recordError">recordError</a></li><li><a href="global.html#removeSelected">removeSelected</a></li><li><a href="global.html#renameCategory">renameCategory</a></li><li><a href="global.html#reset">reset</a></li><li><a href="global.html#resetPageInfo">resetPageInfo</a></li><li><a href="global.html#responseAsync">responseAsync</a></li><li><a href="global.html#separatorRequired">separatorRequired</a></li><li><a href="global.html#serialize">serialize</a></li><li><a href="global.html#setAddedFieldDetails">setAddedFieldDetails</a></li><li><a href="global.html#setDataCatalogSchema">setDataCatalogSchema</a></li><li><a href="global.html#setDatasetSchema">setDatasetSchema</a></li><li><a href="global.html#setNextSeparator">setNextSeparator</a></li><li><a href="global.html#setOptionsForPreselected">setOptionsForPreselected</a></li><li><a href="global.html#setSchema">setSchema</a></li><li><a href="global.html#setSchemaFromTemplate">setSchemaFromTemplate</a></li><li><a href="global.html#setSelected">setSelected</a></li><li><a href="global.html#sortByProp">sortByProp</a></li><li><a href="global.html#sortFields">sortFields</a></li><li><a href="global.html#toAccordionItem">toAccordionItem</a></li><li><a href="global.html#toJSON">toJSON</a></li><li><a href="global.html#toSearchSelectOption">toSearchSelectOption</a></li><li><a href="global.html#truncateDescription">truncateDescription</a></li><li><a href="global.html#updateOptions">updateOptions</a></li><li><a href="global.html#url">url</a></li><li><a href="global.html#waitForFetchComplete">waitForFetchComplete</a></li></ul>
+</nav>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/js/views/metadata/AutofillAttributesView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>define([
+  "jquery", // for semantic UI
+  "underscore", // for alert template only
+  "backbone",
+  "semantic",
+  "collections/metadata/eml/EMLAttributes",
+  "common/Utilities",
+  "text!templates/alert.html",
+], ($, _, Backbone, Semantic, EMLAttributes, Utilities, AlertTemplate) => {
+  /**
+   * @class AutofillAttributesView
+   * @classdesc
+   * @classcategory Views/Metadata
+   * @screenshot views/metadata/AutofillAttributesView.png
+   * @augments Backbone.View
+   */
+
+  // Default timeout for the button to revert to its original state
+  // after a successful action
+  const BUTTON_TIMEOUT = 3000;
+
+  // Class names used in this view
+  const CLASS_NAMES = {
+    view: "autofill-attributes",
+    buttonContainer: "autofill-attributes__button-container",
+    tabDynamicContent: "autofill-attributes_tab-dynamic-content",
+    notificationContainer: "autofill-attributes__notification",
+    checkboxeContainer: "autofill-attributes__checkbox-list",
+    copyFromSelect: "autofill-attributes__copy-from-select",
+  };
+
+  // Font awesome icon names
+  const ICONS = {
+    warning: "warning-sign",
+    magic: "magic",
+    from: "signin",
+    to: "signout",
+    onLeft: "on-left",
+    file: "file",
+    success: "check",
+    processing: "spinner",
+  };
+
+  // Prefix to add ato all ICONS
+  const ICON_PREFIX = "icon-";
+
+  // Classnames the come from bootstrap used here
+  const BOOTSTRAP_CLASS_NAMES = {
+    warning: "warning",
+    info: "alert-info",
+    button: "btn",
+    buttonPrimary: "btn-primary",
+    active: "active",
+    tabContent: "tab-content",
+    navPills: "nav-pills",
+    navPill: "nav-pill",
+    tabPane: "tab-pane",
+    well: "well",
+    checkbox: "checkbox",
+  };
+
+  const AutofillAttributesView = Backbone.View.extend(
+    /** @lends AutofillAttributesView.prototype */ {
+      /**
+       * The className to add to the view container
+       * @type {string}
+       */
+      className: CLASS_NAMES.view,
+
+      /**
+       * A list of file formats that can be auto-filled with attribute
+       * information
+       * @type {string[]}
+       */
+      fillableFormats: ["text/csv"],
+
+      /**
+       * Settings for the semantic UI popup used to indicate that an attribute
+       * will be removed when the remove button is clicked
+       * @type {object}
+       */
+      buttonTooltipSettings: {
+        content: "",
+        position: "top center",
+        variation: `${Semantic.CLASS_NAMES.variations.inverted} ${Semantic.CLASS_NAMES.variations.mini}`,
+        delay: {
+          show: 500,
+          hide: 20,
+        },
+        exclusive: true,
+      },
+
+      /**
+       * Generates the HTML template for the AutofillAttributesView.
+       * @returns {DocumentFragment} The HTML template content for the
+       * AutofillAttributesView.
+       */
+      template() {
+        const template = document.createElement("template");
+        const BC = BOOTSTRAP_CLASS_NAMES;
+        template.innerHTML = `&lt;div>&lt;ul class="${BC.navPills}">&lt;/ul>&lt;div class="${BC.tabContent}">&lt;/div>&lt;/div>`;
+        return template.content.querySelector("div");
+      },
+
+      /**
+       * Creates a Bootstrap-styled navigation tab element.
+       * @param {string} target - The ID of the target tab content to be
+       * displayed when this tab is selected.
+       * @param {string} icon - The CSS class name(s) for the icon to be
+       * displayed on the tab.
+       * @param {string} text - The text to be displayed on the tab.
+       * @returns {HTMLLIElement} - The `&lt;li>` element representing the
+       * navigation tab.
+       */
+      actionTabTemplate(target, icon, text) {
+        // Create the template
+        const template = document.createElement("template");
+        const BC = BOOTSTRAP_CLASS_NAMES;
+        template.innerHTML = `
+          &lt;li class="${BC.navPill}">
+            &lt;a data-toggle="tab" data-target="#${target}">
+              &lt;i class="${icon} ${ICONS.onLeft}">&lt;/i>${text}
+            &lt;/a>
+          &lt;/li>`;
+        return template.content.querySelector("li");
+      },
+
+      /**
+       * Creates an action panel template as a DOM element.
+       * @param {string} id - The unique identifier for the action panel.
+       * @param {string} text - The text content to display in the panel.
+       * @returns {HTMLDivElement} The generated action panel as a `div`
+       * element.
+       */
+      actionPanelTemplate(id, text) {
+        const template = document.createElement("template");
+        const CN = CLASS_NAMES;
+        const BC = BOOTSTRAP_CLASS_NAMES;
+        template.innerHTML = `
+          &lt;div class="${BC.tabPane} ${BC.well}" id="${id}">
+            &lt;p>${text}&lt;/p>
+            &lt;div class="${CN.tabDynamicContent}">&lt;/div>
+            &lt;div class="${CN.buttonContainer}">
+              &lt;button class="${BC.button} ${BC.buttonPrimary}">
+                &lt;i class="${ICONS.onLeft}">&lt;/i>&lt;span>&lt;/span>
+              &lt;/button>
+            &lt;/div>
+          &lt;/div>`;
+        return template.content.querySelector("div");
+      },
+
+      /**
+       * The template for the alert message
+       * @type {UnderscoreTemplate}
+       */
+      alertTemplate: _.template(AlertTemplate),
+
+      /**
+       * The configuration options and context for an auto-fill action available
+       * in the view.
+       * @typedef {object} Action
+       * @property {string} label - The label for the action, displayed in the
+       * UI.
+       * @property {string} text - A description of the action's purpose.
+       * @property {string} icon - The CSS class for the icon representing the
+       * action.
+       * @property {string} renderMethod - The name of the method that renders
+       * the action's UI.
+       * @property {string} buttonMethod - The name of the method that handles
+       * the button's click event.
+       * @property {HTMLElement|null} tabEl - The DOM element for the action's
+       * tab (initialized as null).
+       * @property {HTMLElement|null} actionEl - The DOM element for the
+       * action's panel (initialized as null).
+       * @property {ButtonState} buttonStates - An object containing the
+       * different states of the button, each with its own properties.
+       */
+
+      /**
+       * Properties of a button during a specific state.
+       * @typedef {object} ButtonState
+       * @property {string} message - The message to display on the button.
+       * @property {string} icon - The Font Awesome icon name to display on the button.
+       * @property {string} tooltip - The tooltip text to display when hovering over the button.
+       * @property {boolean} active - Indicates whether the button is active or not.
+       * @property {number} [timeout] - The timeout duration in milliseconds for reverting the button state.
+       * @property {ButtonState} [afterTimeout] - The state to revert to after a timeout.
+       */
+
+      /**
+       * The configuration options for the actions available in the view.
+       * @type {object}
+       * @property {Action} fillFromFile - The configuration for the "Fill from
+       * file" action.
+       * @property {Action} copyFrom - The configuration for the "Copy from"
+       * action.
+       * @property {Action} copyTo - The configuration for the "Copy to" action.
+       */
+      actionConfig: {
+        fillFromFile: {
+          label: "Fill from file",
+          text:
+            "Use the information provided in your tabular data file to fill " +
+            "in the attribute names.",
+          icon: ICONS.file,
+          renderMethod: "renderFillFromFile",
+          buttonMethod: "handleFill",
+          tabEl: null,
+          actionEl: null,
+          buttonStates: {
+            default: {
+              message: "Fill attributes from file",
+              icon: ICONS.magic,
+              tooltip: "Click to fill attributes from the uploaded file",
+              active: true,
+            },
+            loading: {
+              message: "Please wait...",
+              icon: ICONS.processing,
+              tooltip: "Fetching file contents...",
+              active: true,
+            },
+            success: {
+              message: "Filled!",
+              icon: ICONS.success,
+              tooltip: "Attribute names filled successfully",
+              active: true,
+              timeout: BUTTON_TIMEOUT,
+              afterTimeout: "default",
+            },
+            error: {
+              message: "Failed to fill",
+              icon: ICONS.warning,
+              tooltip: "An error occurred while fetching the file.",
+              active: false,
+              timeout: BUTTON_TIMEOUT,
+              afterTimeout: "default",
+            },
+            unsupportedFormat: (thisFormat, allowedFormats) => ({
+              message: `Cannot fill attributes from ${thisFormat} files`,
+              icon: ICONS.warning,
+              tooltip: `Only ${allowedFormats} files are supported for autofill at this time.`,
+              active: false,
+            }),
+          },
+        },
+        copyFrom: {
+          label: "Copy from...",
+          text:
+            "Copy all attribute information from another file to this " +
+            "one! Select a source file below",
+          icon: ICONS.from,
+          renderMethod: "renderCopyFrom",
+          buttonMethod: "handleCopyFrom",
+          tabEl: null,
+          actionEl: null,
+          buttonStates: {
+            default: {
+              message: "Copy attributes from file",
+              icon: ICONS.magic,
+              tooltip: "Select a file to copy attributes from",
+              active: false,
+            },
+            selection: (selectedFile) => ({
+              message: `Copy attributes from &lt;b>${selectedFile}&lt;/b>`,
+              icon: ICONS.magic,
+              tooltip: `All attributes will be copied from ${selectedFile} to this file`,
+              active: true,
+            }),
+            success: {
+              message: "Attributes copied!",
+              icon: ICONS.success,
+              tooltip: "All attributes copied successfully",
+              active: true,
+              timeout: BUTTON_TIMEOUT,
+              afterTimeout: "default",
+            },
+            error: {
+              message: "Failed to copy",
+              icon: ICONS.warning,
+              tooltip: "An error occurred while copying attributes.",
+              active: false,
+              timeout: BUTTON_TIMEOUT,
+              afterTimeout: "default",
+            },
+            cannotCopy: {
+              message: "Cannot copy attributes from files",
+              icon: ICONS.warning,
+              tooltip:
+                "Check that there are other files with valid attributes to copy from.",
+              active: false,
+            },
+          },
+        },
+        copyTo: {
+          label: "Copy to...",
+          text:
+            "Copy all attribute information from this file to other files in the " +
+            "package! Select target files below",
+          icon: ICONS.to,
+          renderMethod: "renderCopyTo",
+          buttonMethod: "handleCopyTo",
+          tabEl: null,
+          actionEl: null,
+          buttonStates: {
+            default: {
+              message: "Copy attributes to files",
+              icon: ICONS.magic,
+              tooltip:
+                "Select at least one file to copy this file's attributes to",
+              active: false,
+            },
+            selection: (checkedValues) => {
+              const numChecked = checkedValues.length;
+              const fileNoun = numChecked > 1 ? "files" : "file";
+              return {
+                message: `Copy attributes to &lt;b>${numChecked}&lt;/b> ${fileNoun}`,
+                icon: ICONS.magic,
+                tooltip: `Click to copy attributes to the following ${fileNoun}: ${checkedValues.join(
+                  ", ",
+                )}`,
+                active: true,
+              };
+            },
+            success: {
+              message: "Attributes copied!",
+              icon: ICONS.success,
+              tooltip: "All attributes copied successfully",
+              active: true,
+              timeout: BUTTON_TIMEOUT,
+              afterTimeout: "default",
+            },
+            error: {
+              message: "Failed to copy",
+              icon: ICONS.warning,
+              tooltip:
+                "Check that this file has valid attributes and that there are other files to copy to.",
+              active: false,
+              timeout: BUTTON_TIMEOUT,
+              afterTimeout: "default",
+            },
+          },
+        },
+      },
+
+      /**
+       * The view will populate actions with a cloned copy of the action
+       * options. It will be modified to add references to the elements created
+       * for each action. See {@link actionConfig} for the options.
+       * @type {object}
+       */
+      actions: {},
+
+      /**
+       * Records any errors that occur during the autofill process. This object
+       * is used to store error messages and other relevant information.
+       * @type {object}
+       */
+      errors: {},
+
+      /** @inheritdoc */
+      events() {
+        const events = {};
+        events[`change .${CLASS_NAMES.copyFromSelect}`] =
+          "handleCopyFromSelectChange";
+        events[`change .${CLASS_NAMES.checkboxeContainer}`] =
+          "handleCopyToCheckboxChange";
+        events[`click .${CLASS_NAMES.buttonContainer} button`] =
+          "handleActionButtonClick";
+        return events;
+      },
+
+      /**
+       * Creates a new AutofillAttributesView
+       * @param {object} options - A literal object with options to pass to the
+       * view
+       * @param {EMLAttributes} options.collection - The collection of
+       * EMLAttribute models to display
+       * @param {EMLEntity} options.parentModel - The entity model to which
+       * these attributes belong
+       * @param {boolean} [options.isNew] - Set to true if this is a new
+       * attribute
+       */
+      initialize(options = {}) {
+        this.collection = options.collection || new EMLAttributes();
+        this.parentModel = options.parentModel;
+
+        // Prefix all the icons
+        if (!Object.values(ICONS)[0].startsWith(ICON_PREFIX)) {
+          Object.keys(ICONS).forEach((key) => {
+            ICONS[key] = `${ICON_PREFIX}${ICONS[key]}`;
+          });
+        }
+        // Do the same for the icons in the actions objects' buttonStates
+        Object.keys(this.actionConfig).forEach((action) => {
+          const actionObj = this.actionConfig[action];
+          // Add the prefix to the icon
+          if (actionObj.icon &amp;&amp; !actionObj.icon.startsWith(ICON_PREFIX)) {
+            actionObj.icon = `${ICON_PREFIX}${actionObj.icon}`;
+          }
+          Object.keys(actionObj.buttonStates).forEach((state) => {
+            const stateObj = actionObj.buttonStates[state];
+            if (stateObj.icon &amp;&amp; !stateObj.icon.startsWith(ICON_PREFIX)) {
+              stateObj.icon = `${ICON_PREFIX}${stateObj.icon}`;
+            }
+          });
+        });
+      },
+
+      /** @inheritdoc */
+      render() {
+        const BC = BOOTSTRAP_CLASS_NAMES;
+
+        // Render the template
+        this.el.innerHTML = "";
+        this.el.append(this.template());
+
+        this.els = {
+          actionTabsContainer: this.el.querySelector(`.${BC.navPills}`),
+          actionPanelsContainer: this.el.querySelector(`.${BC.tabContent}`),
+        };
+
+        this.renderActions();
+        this.stopListening(this.parentModel.collection, "update");
+        this.listenTo(
+          this.parentModel.collection,
+          "update",
+          this.handleEntityUpdate,
+        );
+
+        return this;
+      },
+
+      /**
+       * Handles the update of entity panels by re-rendering all non-active panels.
+       * This method identifies the currently active panel and iterates over the
+       * available actions to re-render the panels that are not active.
+       */
+      handleEntityUpdate() {
+        // Get the active panel and re-render the other two
+        const activePanel = this.els.actionPanelsContainer.querySelector(
+          `.${BOOTSTRAP_CLASS_NAMES.active}`,
+        );
+        const activeId = activePanel.id;
+        // Iterate over the actions and re-render the non-active ones
+        Object.keys(this.actions).forEach((action) => {
+          if (action !== activeId) {
+            const actionObj = this.actions[action];
+            const renderMethod = this[actionObj.renderMethod];
+            if (typeof renderMethod === "function") {
+              renderMethod.call(this, actionObj);
+            }
+          }
+        });
+      },
+
+      /**
+       * Renders all actions defined in the actionConfig object. This method
+       * creates tabs and panels for each action and sets up event listeners.
+       */
+      renderActions() {
+        // Deep clone actionConfig to actions. Otherwise the changes may persist
+        // in other instances of this view!
+        this.actions = {};
+        Object.entries(this.actionConfig).forEach((action, i) => {
+          const name = action[0];
+          const options = action[1];
+          this.actions[name] = { ...options };
+          const activate = i === 0;
+          this.renderAction(name, activate);
+        }, this);
+      },
+
+      /**
+       * Renders an action tab and panel in the view, and sets up event
+       * listeners for the action's button.
+       * @param {string} name - The name of the action to render. Must match a
+       * key in the actionConfig object.
+       * @param {boolean} [activate] - If true, the action will be set as the
+       * active tab.
+       */
+      renderAction(name, activate = false) {
+        const BC = BOOTSTRAP_CLASS_NAMES;
+        const action = this.actions[name];
+        action.id = `${this.cid}-${name}`;
+
+        // Create the pill tab &amp; action contents
+        action.panelEl = this.actionPanelTemplate(
+          action.id,
+          action.text,
+          action.buttonIcon,
+          action.buttonText,
+        );
+        action.tabEl = this.actionTabTemplate(
+          action.id,
+          action.icon,
+          action.label,
+        );
+        action.dynamicContainer = action.panelEl.querySelector(
+          `.${CLASS_NAMES.tabDynamicContent}`,
+        );
+        action.button = action.panelEl.querySelector("button");
+        // Add the action name to the button
+        action.button.dataset.action = name;
+        // Set the button to the default state
+        this.updateButton(action.button, action.buttonStates.default);
+
+        // Append to view
+        this.els.actionTabsContainer.append(action.tabEl);
+        this.els.actionPanelsContainer.append(action.panelEl);
+        if (activate) {
+          action.tabEl.classList.add(BC.active);
+          action.panelEl.classList.add(BC.active);
+        }
+
+        const renderMethod = this[action.renderMethod];
+
+        if (typeof renderMethod === "function") {
+          renderMethod.call(this, action);
+        }
+      },
+
+      /**
+       * Performs the action associated with the clicked button. This method
+       * retrieves the action name from the button's data attribute and invokes
+       * the corresponding method to handle the action.
+       * @param {event} event - The event object containing the action name.
+       */
+      handleActionButtonClick(event) {
+        const button = event.currentTarget;
+        const actionName = button.dataset.action;
+        const action = this.actions[actionName];
+        if (!action) return;
+
+        const buttonMethod = this[action.buttonMethod];
+        if (action &amp;&amp; typeof buttonMethod === "function") {
+          buttonMethod.call(this, action);
+        }
+      },
+
+      /**
+       * Renders the "Copy to" action, which allows the user to copy attributes
+       * from the current file to other files in the package.
+       * @param {Action} action - The action object containing configuration for
+       * the "Copy to" action.
+       */
+      renderCopyTo(action) {
+        const canCopy = this.canCopyTo();
+        if (canCopy !== true) {
+          this.showCantCopyTo(canCopy);
+          return;
+        }
+
+        const BC = BOOTSTRAP_CLASS_NAMES;
+        const container = action.dynamicContainer;
+        const fileNames = this.getOtherFileNames();
+
+        // Generate checkboxes
+        const checkboxes = fileNames.map((name) => {
+          const id = `${this.cid}-copy-to-${name}`;
+          return `&lt;label class="${BC.checkbox}" html-for="${id}">
+            &lt;input type="checkbox" value="${name}" id="${id}"/>
+            ${name}
+          &lt;/label>`;
+        });
+
+        // Set the container's innerHTML
+        container.innerHTML = `&lt;div class="${CLASS_NAMES.checkboxeContainer}">${checkboxes.join("")}&lt;/div>`;
+        // Start the button inactive
+        this.updateButton(action.button, action.buttonStates.default);
+        // Warn that this will overwrite existing attributes
+        this.showNotification(
+          "copyTo",
+          "This will overwrite any existing attributes in the selected files.",
+          [BOOTSTRAP_CLASS_NAMES.info],
+          false,
+        );
+      },
+
+      /**
+       * Handles the change event for checkboxes in the "Copy To" action.
+       * Updates the button state based on the number of selected checkboxes.
+       * @param {Event} event - The change event triggered by a checkbox.
+       */
+      handleCopyToCheckboxChange(event) {
+        if (
+          event.target.tagName === "INPUT" &amp;&amp;
+          event.target.type === "checkbox"
+        ) {
+          const action = this.actions.copyTo;
+          const container = action.dynamicContainer;
+          // Get all currently checked checkboxes
+          const checkedValues = this.getCheckedValues(container);
+          // Update the button state based on the number of selected items
+          if (checkedValues.length > 0 &amp;&amp; this.canCopyTo() === true) {
+            this.updateButton(
+              action.button,
+              action.buttonStates.selection(checkedValues),
+            );
+          } else {
+            this.updateButton(action.button, action.buttonStates.default);
+          }
+        }
+      },
+
+      /**
+       * Checks whether attributes can be copied to other files.
+       * @returns {"no attributes"|"invalid attributes"|"no other files"|true}
+       * - "no attributes" if there are no attributes to copy
+       * - "invalid attributes" if the attributes are invalid
+       * - "no other files" if there are no other files to copy to
+       * - true if all checks pass
+       */
+      canCopyTo() {
+        const attributes = this.collection;
+
+        // There must be attributes to copy
+        if (
+          !attributes ||
+          attributes.length === 0 ||
+          !attributes.hasNonEmptyAttributes()
+        ) {
+          return "no attributes";
+        }
+        // All the attributes must be valid before copying
+        if (!attributes.isValid(attributes)) {
+          return "invalid attributes";
+        }
+        // There must be other files to copy to
+        const otherFileNames = this.getOtherFileNames();
+        if (otherFileNames.length === 0) {
+          return "no other files";
+        }
+        return true;
+      },
+
+      /**
+       * Displays a warning message and updates the UI when attributes cannot be
+       * copied to other files.
+       * @param {"no attributes"|"invalid attributes"|"no other files"} reason -
+       * The reason why attributes cannot be copied.
+       */
+      showCantCopyTo(reason) {
+        const action = this.actions.copyTo;
+        let { message } = action.buttonStates.error;
+        let { tooltip } = action.buttonStates.error;
+        if (reason === "no attributes") {
+          message = "Add at least one attribute to this file before copying";
+          tooltip = "One or more valid attributes are required to copy.";
+        } else if (reason === "invalid attributes") {
+          message =
+            "All attributes must be valid before copying to other files";
+          tooltip =
+            "Please fix any invalid attributes in this file before copying";
+        } else if (reason === "no other files") {
+          message =
+            "No other files to copy attributes to. Please add more files";
+          tooltip = "At least one other file is required to copy attributes";
+        }
+        this.updateButton(action.button, {
+          ...action.buttonStates.error,
+          message,
+          tooltip,
+        });
+        this.showNotification("copyTo", message, [
+          BOOTSTRAP_CLASS_NAMES.warning,
+        ]);
+      },
+
+      /**
+       * Retrieves the values of all checked checkboxes within a specified
+       * container.
+       * @param {HTMLElement} container - The container element to search for
+       * checked checkboxes.
+       * @returns {string[]} An array of values from the checked checkboxes.
+       */
+      getCheckedValues(container) {
+        // Find all checked checkboxes within the container
+        const checkedCheckboxes = container.querySelectorAll(
+          "input[type='checkbox']:checked",
+        );
+        // Map their values into an array
+        return Array.from(checkedCheckboxes).map((checkbox) => checkbox.value);
+      },
+
+      /**
+       * Handles the "Copy To" action for copying attributes from the current
+       * entity to selected entities within the collection. This function
+       * retrieves the selected entities, copies the attributes using the
+       * `copyAttributeList` method, and provides feedback to the user via
+       * button updates.
+       */
+      handleCopyTo() {
+        const action = this.actions.copyTo;
+        const selectedValues = this.getCheckedValues(action.dynamicContainer);
+
+        const thisEntity = this.parentModel;
+        const entities = thisEntity.collection;
+        const selectedEntities = entities.filter((entity) =>
+          selectedValues.includes(entity.getFileName()),
+        );
+
+        try {
+          entities.copyAttributeList(thisEntity, selectedEntities, true);
+          this.updateButton(action.button, action.buttonStates.success);
+        } catch (error) {
+          // Get the error type. and call if needed. Include errors
+          // message in tooltip.
+          this.errors.copyTo = error;
+          this.updateButton(action.button, action.buttonStates.error);
+        }
+      },
+
+      /**
+       * Checks whether attributes can be copied from other files.
+       * @returns {"no other files"|"no valid attributes"|true}
+       * - "no other files" if there are no files to copy from
+       * - "no valid attributes" if no valid attributes exist in other files
+       * - true if all checks pass
+       */
+      canCopyFrom() {
+        // There must be other files with attributes to copy from
+        const otherFileNames = this.getOtherFileNames();
+        const entities = this.parentModel.collection;
+        if (otherFileNames.length === 0) {
+          return "no other files";
+        }
+        if (entities.length === 0 || !entities.hasNonEmptyEntity()) {
+          return "no other files";
+        }
+        if (entities.getEntitiesWithValidAttributes().length === 0) {
+          return "no valid attributes";
+        }
+        return true;
+      },
+
+      /**
+       * Renders the "Copy from" action, allowing the user to copy attributes
+       * from another file to the current file.
+       * @param {Action} action - The action object containing configuration for
+       * the "Copy from" action.
+       */
+      renderCopyFrom(action) {
+        const actionRef = action;
+        const canCopy = this.canCopyFrom();
+        if (canCopy !== true) {
+          this.showCantCopyFrom(canCopy);
+          return;
+        }
+
+        const entities = this.getOtherEntities();
+        const id = `${this.cid}-copy-from`;
+        const select = document.createElement("select");
+
+        select.id = id;
+        select.classList.add(CLASS_NAMES.copyFromSelect);
+
+        // Add the default option
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "Select a file";
+        select.append(option);
+
+        // Add an option for each file
+        entities.forEach((entity) => {
+          const opt = this.createOption(entity);
+          select.append(opt);
+        }, this);
+        actionRef.dynamicContainer.innerHTML = "";
+        actionRef.dynamicContainer.append(select);
+        actionRef.select = select;
+
+        const { button } = action;
+
+        // Deactivate the button until a file is selected
+        this.updateButton(button, action.buttonStates.default);
+
+        // Warn that this will overwrite existing attributes
+        this.showNotification(
+          "copyFrom",
+          "This will overwrite any existing attributes in this file.",
+          [BOOTSTRAP_CLASS_NAMES.info],
+          false,
+        );
+      },
+
+      /**
+       * Handles the change event for the "Copy from" select element. This
+       * function updates the button state based on the selected file and
+       * disables the button if no valid attributes are available for copying.
+       */
+      handleCopyFromSelectChange() {
+        const { select, button } = this.actions.copyFrom;
+        const selectedFile = select.options[select.selectedIndex].textContent;
+
+        if (selectedFile) {
+          this.updateButton(
+            button,
+            this.actions.copyFrom.buttonStates.selection(selectedFile),
+          );
+        } else {
+          this.updateButton(button, this.actions.copyFrom.buttonStates.default);
+        }
+      },
+
+      /**
+       * Displays a message and disables the button when attributes cannot be
+       * copied.
+       * @param {string} reason - The reason why attributes cannot be copied.
+       */
+      showCantCopyFrom(reason) {
+        const action = this.actions.copyFrom;
+        let message = "Cannot copy attributes from files";
+        let tooltip =
+          "Check that there are other files with valid attributes to copy from";
+        if (reason === "no other files") {
+          message = "Add at least one other file to copy attributes from";
+          tooltip = "One or more valid files are required to copy attributes";
+        } else if (reason === "no valid attributes") {
+          message =
+            "All attributes in the selected file must be valid before copying";
+          tooltip = "One or more invalid attributes are present.";
+        }
+        this.updateButton(action.button, {
+          ...action.buttonStates.cannotCopy,
+          message,
+          tooltip,
+        });
+        this.showNotification("copyFrom", message, [
+          BOOTSTRAP_CLASS_NAMES.warning,
+        ]);
+      },
+
+      /**
+       * Creates an option element for a file in the "Copy from" dropdown.
+       * @param {object} entity - The entity model representing the file.
+       * @returns {HTMLOptionElement} The created option element.
+       */
+      createOption(entity) {
+        const name = entity.getFileName() || entity.getId();
+        const modelId = entity.cid;
+        const isValid = entity.get("attributeList").isValid();
+        const isNonEmpty = entity.get("attributeList").hasNonEmptyAttributes();
+
+        const opt = document.createElement("option");
+        opt.value = modelId;
+        opt.textContent = `${name}`;
+        if (!isValid || !isNonEmpty) {
+          let message = "Cannot copy attributes from this file";
+          if (!isValid) {
+            opt.textContent += " (INVALID ATTRIBUTES)";
+            message = "This file has invalid attributes";
+          } else if (!isNonEmpty) {
+            opt.textContent += " (NO ATTRIBUTES TO COPY)";
+            message = "This file has no attributes";
+          }
+          opt.disabled = true;
+          opt.setAttribute("data-content", message);
+        }
+
+        return opt;
+      },
+
+      /**
+       * Handles the "Copy From" action for copying attributes from a selected
+       * file to the current file.
+       * @param {Action} action - The action object containing configuration for
+       * the "Copy from" action.
+       */
+      handleCopyFrom(action) {
+        const { select } = action;
+        // - get select value
+        // - get matching entity model
+        // - use copy attributes method in collection to copy here update button
+        //   to indicate success
+        const selectedValue = select.options[select.selectedIndex].value;
+        const selectedEntity = this.parentModel.collection.get(selectedValue);
+        const thisEntity = this.parentModel;
+        const entities = thisEntity.collection;
+
+        try {
+          entities.copyAttributeList(selectedEntity, [thisEntity], true);
+          this.updateButton(action.button, action.buttonStates.success);
+        } catch (error) {
+          this.errors.copyFrom = error;
+          this.updateButton(action.button, action.buttonStates.error);
+        }
+      },
+
+      /**
+       * Retrieves the names of other files in the collection.
+       * @returns {string[]} An array of file names.
+       */
+      getOtherFileNames() {
+        return this.getOtherEntities().map(
+          (entity) =>
+            entity.get("entityName") || entity.get("physicalObjectName"),
+        );
+      },
+
+      /**
+       * Retrieves the entities representing other files in the collection.
+       * @returns {object[]} An array of entity models.
+       */
+      getOtherEntities() {
+        const entities = this.parentModel.collection;
+        const thisEntity = this.parentModel;
+        return entities.filter((entity) => entity !== thisEntity);
+      },
+
+      /**
+       * Checks whether the current file format is supported for the "Fill from
+       * file" action.
+       * @returns {boolean} True if the format is supported, false otherwise.
+       */
+      isFillable() {
+        const { parentModel } = this;
+        this.formatGuess =
+          parentModel.get("dataONEObject")?.get("formatId") ||
+          parentModel.get("entityType");
+        return this.fillableFormats.includes(this.formatGuess);
+      },
+
+      /**
+       * Renders the "Fill from file" action, allowing the user to autofill
+       * attributes from the uploaded file.
+       * @param {Action} action - The action object containing configuration for
+       * the "Fill from file" action.
+       */
+      renderFillFromFile(action) {
+        if (!this.isFillable()) {
+          this.showWrongFormat();
+        } else {
+          this.updateButton(action.button, action.buttonStates.default);
+        }
+      },
+
+      /**
+       * Displays a notification when the file format is not supported for
+       * autofill.
+       */
+      showWrongFormat() {
+        if (!this.formatGuess) this.isFillable();
+
+        const { formatGuess } = this;
+        const thisFile = formatGuess
+          ? `a ${formatGuess} file`
+          : "this filetype";
+        const allowedFormats = this.fillableFormats.join(", ");
+
+        const message = `Cannot fill attributes from ${thisFile}.
+          Only ${allowedFormats} files are supported for autofill at this time.`;
+
+        this.showNotification(
+          "fillFromFile",
+          message.replace("\n", ""),
+          [BOOTSTRAP_CLASS_NAMES.warning],
+          true,
+        );
+
+        const action = this.actions.fillFromFile;
+        this.updateButton(
+          action.button,
+          action.buttonStates.unsupportedFormat(
+            formatGuess,
+            this.fillableFormats.join(", "),
+          ),
+        );
+      },
+
+      /**
+       * Handles the "Fill from file" action by determining whether to use a
+       * File object or fetch the file contents.
+       */
+      handleFill() {
+        const d1Object = this.parentModel.get("dataONEObject");
+
+        if (!d1Object) return;
+
+        const file = d1Object.get("uploadFile");
+
+        try {
+          if (!file) {
+            this.handleFillViaFetch();
+          } else {
+            this.handleFillViaFile(file);
+          }
+        } catch (error) {
+          this.errors.fillFromFile = error;
+          const action = this.actions.fillFromFile;
+          this.updateButton(action.button, action.buttonStates.error);
+        }
+      },
+
+      /**
+       * Handles the "Fill from file" action using a File object.
+       * @param {File} file - A File object to fill from.
+       */
+      handleFillViaFile(file) {
+        const view = this;
+
+        Utilities.readSlice(file, this, (event) => {
+          if (event.target.readyState !== FileReader.DONE) {
+            return;
+          }
+
+          view.tryParseAndFillAttributeNames.bind(view)(event.target.result);
+        });
+      },
+
+      /**
+       * Handles the "Fill from file" action by fetching the file contents.
+       */
+      handleFillViaFetch() {
+        const view = this;
+        const objServiceUrl = MetacatUI.appModel.get("objectServiceUrl");
+        const fileId = this.parentModel.get("dataONEObject").get("id");
+        const url = `${objServiceUrl}${encodeURIComponent(fileId)}`;
+
+        this.updateButton(
+          view.actions.fillFromFile.button,
+          view.actions.fillFromFile.buttonStates.loading,
+        );
+
+        fetch(url, MetacatUI.appUserModel.createFetchSettings())
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.text();
+          })
+          .then(view.tryParseAndFillAttributeNames.bind(this))
+          .catch((e) => {
+            this.errors.fetch = e;
+            this.updateButton(
+              view.actions.fillFromFile.button,
+              view.actions.fillFromFile.buttonStates.error,
+            );
+          });
+      },
+
+      /**
+       * Attempts to parse the header of a file and fill attribute names.
+       * @param {string} content - The content of the file to parse.
+       */
+      tryParseAndFillAttributeNames(content) {
+        const names = Utilities.tryParseCSVHeader(content);
+
+        if (!names?.length) {
+          this.updateButton(this.actions.fillFromFile.button, {
+            ...this.actions.fillFromFile.buttonStates.error,
+            message: "No attribute names found in file",
+          });
+          return;
+        }
+
+        this.listenToOnce(this.collection, "namesUpdated", () => {
+          this.updateButton(
+            this.actions.fillFromFile.button,
+            this.actions.fillFromFile.buttonStates.success,
+          );
+          this.render();
+          this.showNotification(
+            "fillFromFile",
+            "Attribute names filled successfully",
+            [BOOTSTRAP_CLASS_NAMES.success],
+          );
+        });
+        this.collection.updateNames(names, this.parentModel);
+      },
+
+      /**
+       * Updates a button to show a new status.
+       * @param {HTMLElement} buttonEl - The button to update.
+       * @param {ButtonState} state - The new state to set for the button.
+       */
+      updateButton(buttonEl, state) {
+        const button = buttonEl;
+        // Store the default state if it doesn't already exist
+        if (!button.dataset.defaultState) {
+          button.dataset.defaultState = JSON.stringify(state);
+        }
+        const {
+          message,
+          icon,
+          tooltip,
+          active = true,
+          timeout,
+          afterTimeout,
+        } = state;
+
+        if (message &amp;&amp; message !== "") {
+          const messageEl = button.querySelector("span");
+          messageEl.innerHTML = message;
+        }
+
+        if (icon) {
+          const iconEl = button.querySelector("i");
+          // Find the icon classes
+          const iconClasses = Array.from(iconEl.classList).filter(
+            (cls) => cls.startsWith(ICON_PREFIX) &amp;&amp; cls !== ICONS.onLeft,
+          );
+          iconEl.classList.remove(...iconClasses);
+          iconEl.classList.add(icon);
+        }
+
+        if (tooltip) {
+          const tooltipSettings = {
+            content: tooltip,
+            ...this.buttonTooltipSettings,
+          };
+          button.setAttribute("data-content", tooltip);
+          $(button).popup(tooltipSettings);
+        } else if (tooltip === "") {
+          button.removeAttribute("data-content");
+          $(button).popup("destroy");
+        }
+
+        const buttonRef = button;
+        if (active) buttonRef.disabled = false;
+        else buttonRef.disabled = true;
+
+        // Handle timeout and afterTimeout
+        if (timeout > 0 &amp;&amp; afterTimeout) {
+          setTimeout(() => {
+            let nextState = afterTimeout;
+            if (afterTimeout === "default") {
+              nextState = JSON.parse(button.dataset.defaultState);
+            }
+            this.updateButton(button, nextState);
+          }, timeout);
+        }
+      },
+
+      /**
+       * Displays a notification message in the UI.
+       * @param {string} actionName - The key of the action to show the
+       * notification in.
+       * @param {string} msg - The message to show in the notification.
+       * @param {string[]} classes - The classes to add to the notification.
+       * @param {boolean} emptyContainer - Set to true to remove any existing
+       * notifications in the container.
+       */
+      showNotification(actionName, msg, classes, emptyContainer = true) {
+        const action = this.actions[actionName];
+        const { dynamicContainer } = action;
+        const notification = this.alertTemplate({
+          msg,
+          classes,
+          includeEmail: false,
+          remove: false,
+        });
+
+        // Removing any existing notification
+        const existingNotification = action.notification;
+
+        if (existingNotification) existingNotification.remove();
+        if (emptyContainer) dynamicContainer.innerHTML = "";
+        // Add the notification to the start of the container
+        dynamicContainer.insertAdjacentHTML("afterbegin", notification);
+        action.notification = dynamicContainer.firstChild;
+      },
+
+      /**
+       * Cleans up the view by removing all event listeners.
+       */
+      onClose() {
+        // remove all listeners
+        this.stopListening();
+      },
+    },
+  );
+
+  return AutofillAttributesView;
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
