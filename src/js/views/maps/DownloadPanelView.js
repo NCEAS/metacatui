@@ -732,7 +732,8 @@ define([
           if (
             value.attributes?.visible === true &&
             value.attributes.type === "WebMapTileServiceImageryProvider" &&
-            value.attributes.label !== "Alaska High Resolution Imagery"
+            value.attributes.label !== "Alaska High Resolution Imagery" &&
+            "metadataPid" in value.attributes
           ) {
             let wmtsDownloadLink;
             // Get WMTS service from map config
@@ -1586,7 +1587,6 @@ define([
                       message: "Download Complete!",
                       progress: 100,
                     });
-
                     // Create a download link for the ZIP file
                     const link = document.createElement("a");
                     link.href = URL.createObjectURL(zipBlob);
