@@ -1023,20 +1023,13 @@ define([
           progressBar.style.width = "0%"; // Initial width
           progressBar.textContent = "0%"; // Initial text
 
-          // Create the text element to show the current downloading layer
-          const downloadingText = document.createElement("div");
-          downloadingText.classList.add(this.classes.fileSizeBox);
-          downloadingText.style.marginTop = "2px"; // Add some spacing between progress bar and text
-
           downloadStatusContainer.appendChild(progressBar);
-          downloadStatusContainer.appendChild(downloadingText);
           dataListPanel.appendChild(downloadStatusContainer);
 
           // Save reference to the progress bar and related elements for
           // updating later.
           view.downloadStatusContainer = downloadStatusContainer;
           view.progressBar = progressBar;
-          view.downloadingText = downloadingText;
         }
       },
 

@@ -1502,7 +1502,7 @@ other class: .ui-slider-range */
   z-index: 2;
   align-items: center;
   justify-content: space-between; /* Pushes elements apart */
-  gap: 20px;
+  gap: 0.1rem;
   bottom: 0;
   border-width: 1px 0;
   border-top: 1px solid
@@ -1569,10 +1569,7 @@ other class: .ui-slider-range */
 
 .download-data-list__panel {
   display: block; /* To display the panel below */
-  width: calc(100% - 80px);
-  margin-top: 0px; /* Adds spacing from header */
-  margin-left: 40px;
-  margin-right: 40px;
+  width: calc(100% - 60px);
   padding-top: 0;
   color: black;
   border-bottom: 1px solid
@@ -1584,16 +1581,12 @@ other class: .ui-slider-range */
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  /* white-space: nowrap; */
 }
 
 .download-data-list {
-  display: block; /* Ensure it appears below */
-  /* width: 100%; */
-  width: calc(100% - 80px);
-  margin-top: 0px; /* Adds spacing from header */
-  margin-left: 40px;
-  margin-right: 40px;
+  display: block;
+  width: calc(100% - 60px);
+  margin: 5px 0 15px 0;
   padding-top: 0;
   color: black;
   border-bottom: 1px solid
@@ -1603,10 +1596,6 @@ other class: .ui-slider-range */
   /* Styling the scrollbar */
   scrollbar-width: thin; /* For Firefox */
   scrollbar-color: #888 #f0f0f0; /* For Firefox */
-  /* grid-template-columns: 3rem auto;
-  gap: 1rem;
-  align-items: center;
-  padding: 0.5rem 0; */
 }
 
 /* For Chrome, Edge, and Safari */
@@ -1667,7 +1656,7 @@ other class: .ui-slider-range */
   font-size: 14px;
   text-align: center;
   margin-bottom: 20px;
-  width: calc(100% - 80px);
+  width: calc(100% - 60px);
 }
 
 .download-submit-btn:hover {
@@ -1694,26 +1683,24 @@ other class: .ui-slider-range */
 }
 
 .download-expansion-panel {
-  box-shadow: 0 1px
-    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate)) inset;
-  border-bottom: 1px solid
-    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
-  font-size: 1rem;
-
+  margin-top: 10px;
   .download-expansion-panel__toggle {
     display: grid;
     align-items: center;
     cursor: pointer;
-    font-size: 1rem;
-    grid-template-columns: min-content auto min-content;
-    /* padding: 0 1.5rem; */
+    grid-template-columns: min-content auto;
     padding: 0;
     border: none;
     gap: 8px;
+    margin-top: 3px;
 
     &:hover {
       background-color: var(--portal-col-primary-1, #15324e);
       transition: background-color 0.3s ease-in-out;
+    }
+
+    input[type="checkbox"] {
+      margin: 0;
     }
   }
 
