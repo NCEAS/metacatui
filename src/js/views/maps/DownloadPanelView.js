@@ -20,6 +20,8 @@ define([
   // Classes used in the view
   const CLASS_NAMES = {
     button: "draw__button",
+    buttonFocus: "draw__button--active",
+    buttonDisable: "draw__button--disable",
   };
 
   /**
@@ -52,14 +54,12 @@ define([
        * Class to use for the buttons
        * @type {string}
        */
-      // buttonClass: "map-view__button",
       buttonClass: "draw__button ",
 
       /**
        * Class to use for the active button
        * @type {string}
        */
-      // buttonClassActive: "map-view__button--active",
       buttonClassActive: "draw__button--active",
 
       /**
@@ -86,6 +86,8 @@ define([
        * @property {string} [method] - The name of the method to call when the
        * button is clicked. If this is not provided, the button will toggle the
        * mode of the draw tool.
+       * @property {boolean} [blockMethodIfDeactivated] - If true, the button's
+       * method won't run if the button is in the deactivated state.
        */
 
       /**
@@ -97,18 +99,22 @@ define([
           name: "draw",
           label: "Draw Area of Interest",
           icon: "pencil",
+          method: "toggleDraw",
+          blockMethodIfDeactivated: false,
         },
         {
           name: "clear",
           label: "Clear Area of Interest",
           icon: "trash",
           method: "reset",
+          blockMethodIfDeactivated: true,
         },
         {
           name: "save",
           label: "Download",
           icon: "download-alt",
           method: "downloadData",
+          blockMethodIfDeactivated: true,
         },
       ],
 
@@ -385,7 +391,7 @@ define([
        * Resets the draw tool to its initial state.
        */
       reset() {
-        this.setMode(false);
+        this.toggleDraw(true);
         this.clearPoints();
         this.removeClickListeners();
 
@@ -458,39 +464,46 @@ define([
         const methodName = options.method;
         const method = this[methodName];
         if (typeof method === "function") {
+          if (
+            options.blockMethodIfDeactivated &&
+            button.dataset.status === "deactivated"
+          ) {
+            return;
+          }
           method.call(this, event);
-        } else {
-          this.toggleMode(name);
         }
       },
 
       /**
-       * Toggles the mode of the draw tool.
-       * @param {string} mode - The mode to toggle to.
+       * Toggles the draw tool on and off.
+       * @param {boolean} [draw] - If true, the draw tool will be turned on. If
+       * false, it will be turned off. If not provided, the draw tool will
+       * toggle to the opposite of the current state.
        */
-      toggleMode(mode) {
-        if (this.mode === mode) {
-          this.setMode(false);
-        } else {
-          this.setMode(mode);
-        }
-      },
+      toggleDraw(draw) {
+        const buttonEl = this.buttonEls.drawButton;
+        if (!buttonEl) return;
 
-      /**
-       * Sets the mode of the draw tool. Currently only "draw" and false are
-       * supported.
-       * @param {string|boolean} mode - The mode to set. This can be "draw" or
-       * false to indicate that the draw tool should not be active.
-       */
-      setMode(mode) {
-        if (this.mode === mode) return;
-        this.mode = mode;
-        if (mode) {
-          if (!this.listeningForClicks) this.setClickListeners();
-          this.activateButton(mode);
+        // if the button is deactivated, do nothing
+        if (buttonEl.classList.contains(CLASS_NAMES.buttonDisable)) {
+          return;
+        }
+
+        // If a boolean is passed, use that to determine whether to turn on or
+        // off the draw tool. Otherwise, switch to the opposite of the current
+        // state.
+        const turnOn = typeof draw === "boolean" ? draw : !this.draw;
+
+        if (turnOn) {
+          // Turn on drawing mode
+          this.draw = true;
+          this.setButtonStatus("draw", "focused");
+          this.setClickListeners();
         } else {
-          // this.resetButtonStyles();
+          // Turn off drawing mode
+          this.draw = false;
           this.removeClickListeners();
+          this.setButtonStatus("draw", "enabled");
         }
       },
 
@@ -500,10 +513,7 @@ define([
        * @param {string} buttonName - The name of the button to activate.
        */
       activateButton(buttonName) {
-        const buttonEl = this.buttonEls[`${buttonName}Button`];
-        if (!buttonEl) return;
-        // this.resetButtonStyles();
-        buttonEl.classList.add(this.buttonClassActive);
+        this.setButtonStatus(buttonName, "focused");
       },
 
       /**
@@ -517,6 +527,40 @@ define([
             const buttonEl = this.buttonEls[button];
             buttonEl.classList.remove(this.buttonClassActive);
           }
+        });
+      },
+
+      /**
+       * Sets the status of the button to either "enabled", "deactivated", or
+       * "focused".
+       * @param {string} name - The name of the button to set the status for.
+       * @param {"enabled"|"deactivated"|"focused"} status - The status to set
+       * the button to.
+       */
+      setButtonStatus(name, status) {
+        const buttonEl = this.buttonEls[`${name}Button`];
+        if (!buttonEl) return;
+
+        // Reset all button styles - default to enabled
+        buttonEl.classList.remove(CLASS_NAMES.buttonFocus);
+        buttonEl.classList.remove(CLASS_NAMES.buttonDisable);
+        buttonEl.dataset.status = status;
+
+        if (status === "deactivated") {
+          buttonEl.classList.add(CLASS_NAMES.buttonDisable);
+        } else if (status === "focused") {
+          buttonEl.classList.add(CLASS_NAMES.buttonFocus);
+        }
+      },
+
+      /**
+       * Set the status on multiple buttons at once
+       * @param {object} statues - An object with the button names as keys and
+       * the status as values
+       */
+      setButtonStatuses(statues) {
+        Object.entries(statues).forEach(([name, status]) => {
+          this.setButtonStatus(name, status);
         });
       },
 
@@ -595,7 +639,7 @@ define([
           this.clickActionBlocked = false;
         }, throttle);
         // Add the point to the polygon
-        if (this.mode === "draw") {
+        if (this.draw === true) {
           const point = this.interactions.get("clickedPosition");
           this.addPoint({
             latitude: point.get("latitude"),
@@ -628,11 +672,12 @@ define([
           view.buttonEls[`${options.name}Button`] = button;
           drawContainer.appendChild(button);
         });
-        const saveButtonEl = this.buttonEls.saveButton;
-        const clearButtonEl = this.buttonEls.clearButton;
 
-        saveButtonEl.classList.add(this.buttonClassDisable);
-        clearButtonEl.classList.add(this.buttonClassDisable);
+        this.setButtonStatuses({
+          draw: "enabled",
+          clear: "deactivated",
+          save: "deactivated",
+        });
 
         view.generatePreviewPanel();
         const closeDownloadPanelButton = this.el.querySelector(
