@@ -273,28 +273,6 @@ define([
        * used instead (see {@link MapModel#defaults}).
        */
       initialize(config) {
-        /**
-         * Block: overwrite layerCategories property to nothing and add layers with the
-         * layers property instead.
-         * This is to enable the draw functionality in production.
-         */
-        // config.layerCategories = null;
-        // config.layers = [
-        //   {
-        //     visible: false,
-        //     label: "Satellite imagery",
-        //     type: "IonImageryProvider",
-        //     cesiumOptions: {
-        //       ionAssetId: "2",
-        //     },
-        //   },
-        //   {
-        //     label: "Base map",
-        //     type: "OpenStreetMapImageryProvider",
-        //     attribution: "OpenStreetMap",
-        //   },
-        // ]; // End Block
-
         try {
           if (config && config instanceof Object) {
             if (isNonEmptyArray(config.layerCategories)) {
@@ -312,6 +290,9 @@ define([
               this.unset("layerCategories");
               this.set("allLayers", layers);
             }
+            // TODO: listen to changes in layerCategories and layers to update
+            // allLayers. This will be necessary when we allow users to add &
+            // remove layers.
 
             if (isNonEmptyArray(config.terrains)) {
               this.set("terrains", new MapAssets(config.terrains));

@@ -513,7 +513,17 @@ define([
           this.runVisualizers();
           return newEntity;
         } catch (e) {
-          console.log("Failed to add an entity.", e);
+          if (
+            e?.message?.startsWith("An entity with id ") &&
+            e?.name === "RuntimeError"
+          ) {
+            // Ignore these errors for now as it doesn't impact the
+            // functionality. This happens when updating a polygon with the Draw
+            // tool in the Download panel. TODO: Fix this.
+            console.log("Duplicate entity ID");
+          } else {
+            console.log("Failed to add an entity.", e);
+          }
         }
       },
 

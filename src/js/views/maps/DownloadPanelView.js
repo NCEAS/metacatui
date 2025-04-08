@@ -717,6 +717,15 @@ define([
         let selectedLayersList = [];
 
         this.mapModel.get("allLayers").forEach((value) => {
+          // value is the map layer
+
+          // Re-generate the preview panel when the layer visibility changes.
+          view.stopListening(
+            value,
+            "change:visible",
+            view.generatePreviewPanel,
+          );
+          view.listenTo(value, "change:visible", view.generatePreviewPanel);
           if (
             value.attributes?.visible === true &&
             value.attributes.type === "WebMapTileServiceImageryProvider" &&
@@ -786,15 +795,7 @@ define([
             index === self.findIndex((l) => l.layerID === layer.layerID),
         );
         // Create download tool panel
-        const panel = document.querySelector(this.classes.downloadPanel);
-        const toolbarContainer = document.querySelector(
-          this.classes.toolbarLinkActive,
-        );
         const downloadDataPanel = document.querySelector(".download-data-list");
-
-        if (panel && toolbarContainer) {
-          toolbarContainer.appendChild(panel); // Move panel into .toolbar__all-content
-        }
 
         if (downloadDataPanel) {
           this.setButtonStatuses({
@@ -806,13 +807,15 @@ define([
           if (!selectedLayersList.length) {
             // Update the text of download-data-list__panel
             document.querySelector(".download-data-list__panel").textContent =
-              "No layers are available for download. Select layers of interest in the Layer Panel before drawing an area of interest. (Note: After selections are made in the Layer Panel clear current area of interest before drawing a new one.)";
+              "No layers are available for download. Click on layers in the list above to make them visible on the Map and available for download. Only select layers have data products available for download.";
             view.setButtonStatuses({
               save: "deactivated",
               draw: "deactivated",
               clear: "enabled",
             });
           } else {
+            // Clear any previously added layer items in case of a rerender
+            downloadDataPanel.innerHTML = "";
             // Loop through selected data layers
             selectedLayersList.forEach((item) => {
               const fileTypeOptions = {
