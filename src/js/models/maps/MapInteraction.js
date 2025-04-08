@@ -176,7 +176,20 @@ define([
         // Clone the models in hovered features and set them as clicked features
         const hoveredFeatures = this.get("hoveredFeatures").models;
         this.setClickedFeatures(hoveredFeatures);
-        const clickAction = this.get("mapModel")?.get("clickFeatureAction");
+
+        // First check if there is specific action set for the layer.
+        let clickAction = this.get("hoveredFeatures")
+          ?.at(0)
+          ?.get("mapAsset")
+          ?.get("clickFeatureAction");
+        // Default to the mapModel action otherwise.
+        if (clickAction == null) {
+          clickAction = this.get("mapModel")?.get("clickFeatureAction");
+        }
+
+        if (this.get("preventClickAction")) {
+          clickAction = false;
+        }
 
         if (clickAction === "showDetails") {
           this.selectFeatures(hoveredFeatures);
@@ -189,6 +202,16 @@ define([
         }
         // TODO: throttle this?
         this.setClickedPositionFromMousePosition();
+      },
+
+      /** Prevent any action from happening when the user clicks a feature */
+      preventClickAction() {
+        this.set("preventClickAction", true);
+      },
+
+      /** Enable click actions on features if previous prevented */
+      enableClickAction() {
+        this.set("preventClickAction", false);
       },
 
       /**
@@ -338,8 +361,6 @@ define([
             if (replace) model.get(type).set([], { remove: true });
             return;
           }
-
-          // alert("This is where the error is happening....");
 
           // Ignore if new features are identical to the current features
           const currentFeatures = model.get(type);

@@ -315,19 +315,14 @@ define([
       initialize(options) {
         this.mapModel = options.model || new Map();
         this.objectServiceUrl = MetacatUI.appModel.get("objectServiceUrl");
-        // Add models & collections and add interactions, layer, connector,
-        // points, and originalAction properties to this view
+        // Add models & collections, interactions, layer, connector, points
         this.setUpMapModel();
         this.setUpLayer();
         this.setUpConnectors();
       },
 
-      /**
-       * Sets up the map model and adds the interactions and originalAction
-       * properties to this view.
-       */
+      /** Adds reference to interaction model to view */
       setUpMapModel() {
-        this.originalAction = this.mapModel.get("clickFeatureAction");
         this.interactions =
           this.mapModel.get("interactions") ||
           this.mapModel.setUpInteractions();
@@ -569,13 +564,12 @@ define([
        */
       removeClickListeners() {
         const handler = this.clickHandler;
-        const { originalAction } = this;
         if (handler) {
           handler.stopListening();
           handler.clear();
           this.clickHandler = null;
         }
-        this.mapModel.set("clickFeatureAction", originalAction);
+        this.interactions.enableClickAction();
         this.listeningForClicks = false;
       },
 
@@ -592,7 +586,7 @@ define([
         this.clickHandler = handler;
         const { interactions } = this;
         const clickedPosition = interactions.get("clickedPosition");
-        this.mapModel.set("clickFeatureAction", null);
+        this.interactions.preventClickAction();
         handler.listenTo(
           clickedPosition,
           "change:latitude change:longitude",
