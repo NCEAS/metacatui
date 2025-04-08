@@ -1676,7 +1676,7 @@ define([
           const fileName =
             fileType === "wmts"
               ? `${layerID}/${sanitizedUrl}`
-              : `${layerID}/WGS1984Quad/${urlParts.slice(-3).join("_")}`;
+              : `${urlParts.slice(-3).join("_")}`;
 
           return { fileName, blob };
         });
