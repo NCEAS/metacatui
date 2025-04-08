@@ -34,13 +34,15 @@ define([
   /**
    * @class DownloadPanelView
    * @classdesc The DownloadPanelView allows a user to draw an arbitrary polygon
-   * on the map. The polygon is stored in a GeoPoints collection and displayed
-   * on the map using a connected CesiumVectorData model.
+   * on the map and download the data within that polygon. The user can select
+   * the resolution and file type of the data to download. The view is
+   * responsible for rendering the buttons, handling user interactions, and
+   * generating the download links for the selected data.
    * @classcategory Views/Maps
    * @name DownloadPanelView
    * @augments Backbone.View
-   * @screenshot views/maps/DrawTool.png
-   * @since 2.28.0
+   * @screenshot views/maps/DownloadPanelView.png
+   * @since 0.0.0
    * @constructs DownloadPanelView
    */
   const DownloadPanelView = Backbone.View.extend(
