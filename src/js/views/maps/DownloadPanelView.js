@@ -732,8 +732,9 @@ define([
           if (
             value.attributes?.visible === true &&
             value.attributes.type === "WebMapTileServiceImageryProvider" &&
-            value.attributes.label !== "Alaska High Resolution Imagery" &&
-            "metadataPid" in value.attributes
+            value.attributes.label !== "Alaska High Resolution Imagery"
+            // &&
+            // "metadataPid" in value.attributes // Instead of not including data layers without metadataPid, rather during download skip the metadata doc download
           ) {
             let wmtsDownloadLink;
             // Get WMTS service from map config
@@ -1563,48 +1564,57 @@ define([
                 message: `Generating ZIP file for ${data.layerName} (${numFiles} files)...`,
               });
 
-              // Fetch metadata file from metadataPid and add it to the
-              // ZIP
-              const metadataUrl = `${this.objectServiceUrl}${data.metadataPid}`;
-              fetch(metadataUrl)
-                .then((response) => {
-                  if (!response.ok) {
-                    throw new Error(
-                      `Failed to fetch metadata for ${layerID}: ${response.statusText}`,
-                    );
-                  }
-                  return response.blob();
-                })
-                .then((metadataBlob) => {
-                  // Add metadata file at the top level of the ZIP
-                  layerZip.file(`${layerID}_metadata.xml`, metadataBlob);
-                })
-                .then(() => {
-                  // Generate the ZIP file for this layerID after adding
-                  // metadata
-                  layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
-                    view.updateStatusBar({
-                      message: "Download Complete!",
-                      progress: 100,
-                    });
-                    // Create a download link for the ZIP file
-                    const link = document.createElement("a");
-                    link.href = URL.createObjectURL(zipBlob);
-                    link.download = `${layerID}_${data.fileType}_zoom-level-${data.zoomLevel}.zip`;
-                    link.click();
-                  });
-                })
-                .catch((error) => {
-                  let message = `Error fetching metadata for ${layerID}`;
-                  if (error.message) {
-                    message += `: ${error.message}`;
-                  }
+              if (data.metadataPid) {
+                const metadataUrl = `${this.objectServiceUrl}${data.metadataPid}`;
+                fetch(metadataUrl)
+                  .then((response) => {
+                    if (!response.ok) {
+                      throw new Error(
+                        `Failed to fetch metadata for ${layerID}: ${response.statusText}`,
+                      );
+                    }
+                    return response.blob();
+                  })
+                  .then((metadataBlob) => {
+                    layerZip.file(`${layerID}_metadata.xml`, metadataBlob);
+                  })
+                  .catch((error) => {
+                    let message = `Error fetching metadata for ${layerID}`;
+                    if (error.message) {
+                      message += `: ${error.message}`;
+                    }
 
-                  view.updateStatusBar({
-                    error: true,
-                    message,
+                    view.updateStatusBar({
+                      error: true,
+                      message,
+                    });
+                  })
+                  .finally(() => {
+                    // Always generate the ZIP, regardless of metadata result
+                    layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
+                      view.updateStatusBar({
+                        message: "Download Complete!",
+                        progress: 100,
+                      });
+                      const link = document.createElement("a");
+                      link.href = URL.createObjectURL(zipBlob);
+                      link.download = `${layerID}_${data.fileType}_zoom-level-${data.zoomLevel}.zip`;
+                      link.click();
+                    });
                   });
+              } else {
+                // No metadata to fetch, just generate the ZIP
+                layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
+                  view.updateStatusBar({
+                    message: "Download Complete!",
+                    progress: 100,
+                  });
+                  const link = document.createElement("a");
+                  link.href = URL.createObjectURL(zipBlob);
+                  link.download = `${layerID}_${data.fileType}_zoom-level-${data.zoomLevel}.zip`;
+                  link.click();
                 });
+              }
             } catch (error) {
               let message =
                 "Failed to download data files for selected data layer(s) within area of interest. ";
