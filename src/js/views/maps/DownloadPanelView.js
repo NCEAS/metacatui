@@ -399,13 +399,11 @@ define([
           "Draw Area of Interest: Single-click to add vertices, double-click to complete.";
 
         document.querySelector(".download-data-list").innerHTML = "";
-        this.resetButtonStyles();
-        const drawButtonEl = this.buttonEls.drawButton;
-        const clearButtonEl = this.buttonEls.clearButton;
-        const saveButtonEl = this.buttonEls.saveButton;
-        drawButtonEl.classList.remove(this.buttonClassDisable);
-        clearButtonEl.classList.add(this.buttonClassDisable);
-        saveButtonEl.classList.add(this.buttonClassDisable);
+        this.setButtonStatuses({
+          draw: "enabled",
+          clear: "deactivated",
+          save: "deactivated",
+        });
       },
 
       /**
@@ -497,37 +495,14 @@ define([
         if (turnOn) {
           // Turn on drawing mode
           this.draw = true;
-          this.setButtonStatus("draw", "focused");
           this.setClickListeners();
+          this.setButtonStatus("draw", "focused");
         } else {
           // Turn off drawing mode
           this.draw = false;
           this.removeClickListeners();
           this.setButtonStatus("draw", "enabled");
         }
-      },
-
-      /**
-       * Sets the style of the button with the given name to indicate that it is
-       * active.
-       * @param {string} buttonName - The name of the button to activate.
-       */
-      activateButton(buttonName) {
-        this.setButtonStatus(buttonName, "focused");
-      },
-
-      /**
-       * Resets the styles of all of the buttons to indicate that they are not
-       * active.
-       */
-      resetButtonStyles() {
-        // Iterate through the buttonEls object and reset the styles
-        Object.keys(this.buttonEls).forEach((button) => {
-          if (Object.prototype.hasOwnProperty.call(this.buttonEls, button)) {
-            const buttonEl = this.buttonEls[button];
-            buttonEl.classList.remove(this.buttonClassActive);
-          }
-        });
       },
 
       /**
@@ -539,7 +514,7 @@ define([
        */
       setButtonStatus(name, status) {
         const buttonEl = this.buttonEls[`${name}Button`];
-        if (!buttonEl) return;
+        if (!buttonEl || buttonEl.dataset.status === status) return;
 
         // Reset all button styles - default to enabled
         buttonEl.classList.remove(CLASS_NAMES.buttonFocus);
@@ -550,6 +525,12 @@ define([
           buttonEl.classList.add(CLASS_NAMES.buttonDisable);
         } else if (status === "focused") {
           buttonEl.classList.add(CLASS_NAMES.buttonFocus);
+        }
+
+        // Special case for the draw button, which sets the draw mode
+        if (name === "draw") {
+          const turnOnDraw = status === "focused";
+          this.toggleDraw(turnOnDraw);
         }
       },
 
@@ -586,6 +567,9 @@ define([
        */
       setClickListeners() {
         const view = this;
+        // Remove click listeners first so that we don't have duplicated
+        // listeners performing the same action
+        view.removeClickListeners();
         const handler = new Backbone.Model();
         this.clickHandler = handler;
         const { interactions } = this;
@@ -673,6 +657,7 @@ define([
           drawContainer.appendChild(button);
         });
 
+        // Set the buttons to the default state
         this.setButtonStatuses({
           draw: "enabled",
           clear: "deactivated",
@@ -804,20 +789,21 @@ define([
         }
 
         if (downloadDataPanel) {
-          this.resetButtonStyles();
-          this.drawButtonEl.classList.add(this.buttonClassDisable);
-          this.clearButtonEl.classList.remove(this.buttonClassDisable);
-          view.activateButton("clear");
+          this.setButtonStatuses({
+            draw: "deactivated",
+            clear: "enabled",
+            save: "enabled",
+          });
 
           if (!selectedLayersList.length) {
             // Update the text of download-data-list__panel
             document.querySelector(".download-data-list__panel").textContent =
               "No layers are available for download. Select layers of interest in the Layer Panel before drawing an area of interest. (Note: After selections are made in the Layer Panel clear current area of interest before drawing a new one.)";
-            view.resetButtonStyles();
-            // saveButtonEl.disabled = true;
-            this.drawButtonEl.classList.add(this.buttonClassDisable);
-            this.clearButtonEl.classList.remove(this.buttonClassDisable);
-            view.activateButton("clear");
+            view.setButtonStatuses({
+              save: "deactivated",
+              draw: "deactivated",
+              clear: "enabled",
+            });
           } else {
             // Loop through selected data layers
             selectedLayersList.forEach((item) => {
@@ -968,7 +954,7 @@ define([
                   // Disable fileTypeDropdown if necessary
                   fileTypeDropdown.disabled = true;
                 }
-                view.layerSelection(this.saveButtonEl, this.buttonClassDisable); // Update Save button state
+                view.layerSelection(); // Update Save button state
               });
 
               // Textbox to display file size
@@ -1062,12 +1048,8 @@ define([
        * Handles the selection of map layers and updates the state of the save
        * button and other UI elements based on whether any checkboxes are
        * checked.
-       * @param {HTMLElement} saveButtonEl - The save button element to enable
-       * or disable.
-       * @param {string} buttonClassDisable - The CSS class name used to disable
-       * the save button.
        */
-      layerSelection(saveButtonEl, buttonClassDisable) {
+      layerSelection() {
         const view = this;
         const checkboxes = document.querySelectorAll(
           ".download-expansion-panel__checkbox",
@@ -1084,13 +1066,17 @@ define([
         );
 
         if (isAnyChecked && isanyFileTypeSelected) {
-          saveButtonEl.classList.remove(buttonClassDisable);
-          view.activateButton("save");
-          view.activateButton("clear");
+          view.setButtonStatuses({
+            draw: "deactivated",
+            save: "enabled",
+            clear: "enabled",
+          });
         } else {
-          view.resetButtonStyles();
-          saveButtonEl.classList.add(buttonClassDisable);
-          view.activateButton("clear");
+          view.setButtonStatuses({
+            draw: "deactivated",
+            save: "deactivated",
+            clear: "enabled",
+          });
         }
 
         const uncheckedLayerIds = Array.from(checkboxes)
@@ -1123,14 +1109,17 @@ define([
           ["png", "tif", "gpkg"].includes(dropdown.value.toLowerCase()),
         );
         if (!isPNGorTIFSelected) {
-          view.resetButtonStyles();
-          saveButtonEl.classList.add(buttonClassDisable);
-          // view.activateButton("save");
-          view.activateButton("clear");
+          view.setButtonStatuses({
+            draw: "deactivated",
+            save: "deactivated",
+            clear: "enabled",
+          });
         } else {
-          saveButtonEl.classList.remove(buttonClassDisable);
-          view.activateButton("save");
-          view.activateButton("clear");
+          view.setButtonStatuses({
+            draw: "deactivated",
+            save: "enabled",
+            clear: "enabled",
+          });
         }
         if (layerID in view.dataDownloadLinks) {
           delete view.dataDownloadLinks[layerID];
