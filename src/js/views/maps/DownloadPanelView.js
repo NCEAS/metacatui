@@ -17,6 +17,11 @@ define([
   GeoPointsCesiumPoints,
   GeoPoints,
 ) => {
+  // Classes used in the view
+  const CLASS_NAMES = {
+    button: "draw__button",
+  };
+
   /**
    * @class DownloadPanelView
    * @classdesc The DownloadPanelView allows a user to draw an arbitrary polygon
@@ -83,12 +88,15 @@ define([
        * mode of the draw tool.
        */
 
+      /**
+       * The buttons to display in the toolbar.
+       * @type {DrawToolButtonOptions[]}
+       */
       buttons: [
         {
-          name: "draw", // === mode
+          name: "draw",
           label: "Draw Area of Interest",
           icon: "pencil",
-          // icon: "draw-polygon",
         },
         {
           name: "clear",
@@ -100,9 +108,17 @@ define([
           name: "save",
           label: "Download",
           icon: "download-alt",
-          method: "save",
+          method: "downloadData",
         },
       ],
+
+      /** @inheritdoc */
+      events() {
+        const events = {};
+        const CN = CLASS_NAMES;
+        events[`click .${CN.button}`] = "handleButtonClick";
+        return events;
+      },
 
       /**
        * The buttons that have been rendered in the toolbar. Formatted as an
@@ -429,6 +445,26 @@ define([
       },
 
       /**
+       * Handles a click on a button in the toolbar. If the button has a
+       * method property, it will call that method. Otherwise, it will toggle the
+       * mode of the draw tool.
+       * @param {Event} event - The click event.
+       */
+      handleButtonClick(event) {
+        const button = event.currentTarget;
+        const { name } = button.dataset;
+        if (!name) return;
+        const options = this.buttons.find((btn) => btn.name === name);
+        const methodName = options.method;
+        const method = this[methodName];
+        if (typeof method === "function") {
+          method.call(this, event);
+        } else {
+          this.toggleMode(name);
+        }
+      },
+
+      /**
        * Toggles the mode of the draw tool.
        * @param {string} mode - The mode to toggle to.
        */
@@ -587,11 +623,7 @@ define([
                 <i class="icon icon-${options.icon}"></i>
               </span> 
               <span class="draw-button-label">${options.label}</span> `;
-          button.addEventListener("click", () => {
-            const { method } = options;
-            if (method) view[method]();
-            else view.toggleMode(options.name);
-          });
+          button.dataset.name = options.name;
           if (!view.buttonEls) view.buttonEls = {};
           view.buttonEls[`${options.name}Button`] = button;
           drawContainer.appendChild(button);
@@ -601,8 +633,6 @@ define([
 
         saveButtonEl.classList.add(this.buttonClassDisable);
         clearButtonEl.classList.add(this.buttonClassDisable);
-        // view.activateButton("draw"); // Removing as we only want the button
-        // to have the active symbol (blue circle border) upon user clicking it
 
         view.generatePreviewPanel();
         const closeDownloadPanelButton = this.el.querySelector(
@@ -979,12 +1009,6 @@ define([
             downloadStatusContainer.appendChild(progressBar);
             downloadStatusContainer.appendChild(downloadingText);
             dataListPanel.appendChild(downloadStatusContainer);
-
-            // Add the provided method as a click event listener
-
-            this.saveButtonEl.addEventListener("click", () => {
-              view.downloadData();
-            });
           }
         }
       },
