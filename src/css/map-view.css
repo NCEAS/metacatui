@@ -1788,11 +1788,12 @@ other class: .ui-slider-range */
 .downloads-dropdown-wrapper label {
   font-size: 12px;
   white-space: nowrap;
-  margin-bottom: 10px;
+  margin-bottom: 0;
   color: var(--portal-col-neutral-7);
 }
 
 .downloads-dropdown {
+  margin-bottom: 0;
   padding: 0px 2px; /* Add padding for better appearance */
   font-size: 10px;
   width: 65%; /* Adjust based on container */
@@ -1800,58 +1801,37 @@ other class: .ui-slider-range */
   height: 18px;
   background-color: #faf9f6;
   color: var(--portal-col-neutral-7);
-  /* border: 1px solid var(--portal-col-primary-6, var(--map-col-highlight__deprecate)); */
   border: 1px solid #ccc; /* Light border for the dropdown */
   border-radius: 4px; /* Rounded corners */
   margin-left: 5px;
 }
+
 .downloads-dropdown option {
   font-size: 12px; /* Adjust option font size */
   color: var(--portal-col-neutral-7);
 }
 
-.fileType-downloads-dropdown {
-  padding: 0px 2px; /* Add padding for better appearance */
-  font-size: 10px;
-  width: 65%; /* Adjust based on container */
-  max-width: 120px; /* Prevents it from getting too wide */
-  height: 18px;
-  background-color: #faf9f6;
-  color: var(--portal-col-neutral-7);
-  /* border: 1px solid var(--portal-col-primary-6, var(--map-col-highlight__deprecate)); */
-  border: 1px solid #ccc; /* Light border for the dropdown */
-  border-radius: 4px; /* Rounded corners */
-  margin-left: 5px;
-}
-.fileType-downloads-dropdown option {
-  font-size: 12px; /* Adjust option font size */
-  color: var(--portal-col-neutral-7);
-}
 .downloads-textbox {
-  padding-left: 25px;
-  /* padding-top: -5px; */
-  line-height: 0;
+  margin: 5px 6px 8px 16px;
+  padding: 3px 5px;
+  line-height: 1;
   font-size: 10px;
-  /* width: 100%; */
   min-height: 12px;
-  /* padding: 10px;              */
-  /* border: 1px solid #ccc;    
-  border-radius: 8px;        
-  resize: vertical;            */
-  background-color: var(--portal-col-primary-1, var(--map-col-bkg__deprecate));
-  /* transition: border-color 0.3s; */
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-  white-space: normal;
-  word-break: break-all;
-  max-width: 100%;
   display: block;
+}
+
+.wmts-copy {
+  background: var(--portal-col-neutral-1, var(--map-col-text__deprecate));
+  border-radius: 5px;
+  border: 1px solid
+    var(--portal-col-primary-2, var(--map-col-bkg-lightest__deprecate));
+  display: flex;
+  justify-content: space-between;
 }
 
 .download-status-container {
   width: 100%;
   background-color: #c8c7c7c4;
-  /* border: 1px solid #b5b4b4e2; */
   border-radius: 5px;
   margin-top: 10px;
   overflow: hidden;
@@ -1894,13 +1874,7 @@ other class: .ui-slider-range */
   }
 }
 #copyWMTS {
-  background: none;
-  border: none;
   cursor: pointer;
-  font-size: 10px; /* Adjust the icon size */
-  padding: 2px 4px; /* Reduce padding */
-  margin-left: 5px; /* Space between text and button */
-  vertical-align: middle; /* Align with text */
   color: var(--portal-col-neutral-7);
 }
 
