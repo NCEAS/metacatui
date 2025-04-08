@@ -83,6 +83,9 @@ define([
        * users to click on map features to show more information about them. If
        * true, the {@link MapView} will render a {@link FeatureInfoView} and
        * will initialize "picking" in the {@link CesiumWidgetView}.
+       * @property {boolean} [showDownloadPanel=false] - Set to true to enable
+       * the partial download panel, see {@link DownloadPanelView}.
+       * `showLayerList` must also be set to true.
        * @property {string} [clickFeatureAction="showDetails"] - The default
        * action to take when a user clicks on a feature on the map. The
        * available options are "showDetails" (show the feature details in the
@@ -214,6 +217,9 @@ define([
        * scale bar.
        * @property {boolean} [showFeatureInfo=true] - Whether or not to allow
        * users to click on map features to show more information about them.
+       * @property {boolean} [showDownloadPanel=false] Whether or not to show
+       * users the panel that allows partial download of data. `showLayerList`
+       * must also be set to true.
        * @property {string} [clickFeatureAction="showDetails"] - The default
        * action to take when a user clicks on a feature on the map. The
        * available options are "showDetails" (show the feature details in the
@@ -257,6 +263,7 @@ define([
           toolbarOpen: false,
           showScaleBar: true,
           showFeatureInfo: true,
+          showDownloadPanel: false,
           clickFeatureAction: "showDetails",
           showNavHelp: true,
           showFeedback: false,

@@ -196,12 +196,8 @@ define([
               view.inactivateSection(downloadSectionEl);
             });
           },
-          isVisible(_model) {
-            // TODO: Add an option to show or hide the download panel
-            // to the map model. It should be false by default, but
-            // we should update the PDG portal to true.
-            // return model.get("showDownloadPanel");
-            return true;
+          isVisible(model) {
+            return model.get("showDownloadPanel") && model.get("showLayerList");
           },
         },
         {
