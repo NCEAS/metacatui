@@ -85,17 +85,19 @@ define([
        * schema that the user is searching
        * @param {object[]} [opts.ontologies] - The ontoloties (& sub-trees) to
        * allow users to search for.
+       * @param {boolean} [opts.allowAdditions] - Set to true to allow users to
+       * add any text to the select element. False by default.
        */
       initialize(opts = {}) {
         if (opts?.showClassLabels === false) this.showClassLabels = false;
         const attrs = opts || {};
+        attrs.allowAdditions = opts?.allowAdditions === true;
         attrs.queryField = opts?.queryField || this.queryField;
         attrs.fluid = false;
         if (attrs.ontologies) {
           this.ontologies = attrs.ontologies;
         }
         attrs.submenuStyle = "accordion";
-        attrs.allowAdditions = false;
         SolrAutocompleteView.prototype.initialize.call(this, attrs);
         if (this.showClassLabels) this.fetchClassLabels();
       },
