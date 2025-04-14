@@ -712,13 +712,13 @@ define([
               else modelJSON[convertedName] = [this.toJson(thisNode)];
             } else modelJSON[convertedName] = this.toJson(thisNode);
           }
-
-          // Find & parse all of the entities in the dataset
-          modelJSON.entities = new EMLEntities(
-            { parentModel: model, datasetNode: datasetEl.get(0) },
-            { parse: true },
-          );
         }
+
+        // Find & parse all of the entities in the dataset
+        modelJSON.entities = new EMLEntities(
+          { parentModel: model, datasetNode: datasetEl.get(0) },
+          { parse: true },
+        );
 
         // Once all the nodes have been parsed, check if any of the annotations
         // make up a canonical dataset reference

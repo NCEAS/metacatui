@@ -495,8 +495,10 @@ define([
             } else {
               $(nodeToInsertAfter).after(newAttrListDOM);
             }
+          } else {
+            // Otherwise, update the existing attributeList
+            $attrList.replaceWith(newAttrListDOM);
           }
-          // Otherwise, the dom was updated in place
         }
 
         return objectDOM;
