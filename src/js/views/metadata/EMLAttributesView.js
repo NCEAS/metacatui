@@ -200,7 +200,6 @@ define([
 
         this.renderAttributes();
         this.renderAutofill();
-        this.renderNewAttributeButton();
 
         return this;
       },
@@ -230,6 +229,9 @@ define([
         }
 
         this.listenToAttributesCollection();
+
+        // Render the new attribute button here because it is part of the menu
+        this.renderNewAttributeButton();
       },
 
       /**
@@ -239,6 +241,10 @@ define([
        * @since 0.0.0
        */
       renderNewAttributeButton() {
+        if (this.els.addAttributeButton) {
+          this.els.addAttributeButton.remove();
+          this.els.addAttributeButton = null;
+        }
         const CN = CLASS_NAMES;
         const BC = BOOTSTRAP_CLASS_NAMES;
         const button = this.menuItemTemplate({
