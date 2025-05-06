@@ -23,12 +23,6 @@ define([
       parse(response, options) {
         let attributeListDOM = response;
         if (!attributeListDOM) return [];
-        if (typeof attributeListDOM === "string") {
-          // parse with jquery so node names are lowercase as expected by the
-          // attribute model
-          // eslint-disable-next-line prefer-destructuring
-          attributeListDOM = $.parseHTML(response)[0];
-        }
         const attributeNodes =
           attributeListDOM.getElementsByTagName("attribute");
         return Array.from(attributeNodes).map((attr) => ({
@@ -67,7 +61,8 @@ define([
       },
 
       /**
-       * Add an attribute to the collection
+       * Add an attribute to the collection. Will try to set the parentModel
+       * if it is not already set.
        * @param {object} attributes - The model attributes of the new EML
        * attribute, optional. May include the parentModel
        * @param {object} options - Options to pass to the add method
@@ -188,36 +183,6 @@ define([
           return false;
         }
         return true;
-      },
-
-      /**
-       * Update the XML DOM object with the collection's attributes
-       * @param {HTMLElement} currentDOM - The current XML DOM object
-       * representing the collection of attributes. If not provided, a new XML
-       * DOM object will be created.
-       * @returns {object} The updated XML DOM object
-       */
-      updateDOM(currentDOM) {
-        const dom = currentDOM
-          ? currentDOM.cloneNode(true)
-          : document.createElement("attributeList");
-
-        if (dom.childNodes.length) {
-          // Remove all existing attributes
-          while (dom.firstChild) {
-            dom.removeChild(dom.firstChild);
-          }
-        }
-
-        // Add each attribute from the collection to the DOM
-        this.each((attribute) => {
-          if (!attribute.isEmpty()) {
-            const updatedAttrDOM = attribute.updateDOM();
-            dom.append(updatedAttrDOM);
-          }
-        });
-
-        return dom;
       },
 
       /**

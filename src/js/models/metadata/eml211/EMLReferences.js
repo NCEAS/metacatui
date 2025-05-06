@@ -160,6 +160,8 @@ define(["jquery", "backbone"], ($, Backbone) => {
         const ref = this.get("references");
         const system = this.get("system");
 
+        if (this.isEmpty()) return false;
+
         if (!ref) {
           errors.references = "The ID of the referenced element is required.";
         }

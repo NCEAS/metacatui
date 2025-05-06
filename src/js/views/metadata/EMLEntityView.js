@@ -121,7 +121,9 @@ define([
         );
 
         // Render the attributes
-        const attributesCollection = this.model.get("attributeList");
+        const attributesCollection = this.model
+          .get("attributeList")
+          ?.get("emlAttributes");
         this.attributesView = new EMLAttributesView({
           el: container,
           collection: attributesCollection,

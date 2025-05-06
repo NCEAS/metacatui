@@ -21,11 +21,26 @@ define([
    * @classdesc An error that is thrown when an invalid attribute list is
    * encountered.
    * @classcategory Errors
+   * @since 0.0.0
    */
   class InvalidAttributeListError extends Error {
     constructor(message) {
       super(message);
       this.name = "InvalidAttributeListError";
+    }
+  }
+
+  /**
+   * @class EmptyAttributeListError
+   * @classdesc An error that is thrown when an empty attribute list is
+   * encountered.
+   * @classcategory Errors
+   * @since 0.0.0
+   */
+  class EmptyAttributeListError extends Error {
+    constructor(message) {
+      super(message);
+      this.name = "EmptyAttributeListError";
     }
   }
 
@@ -366,30 +381,46 @@ define([
         if (!source || !targets) return;
 
         const sourceAttrs = source.get("attributeList");
-        if (!sourceAttrs?.length || !sourceAttrs?.hasNonEmptyAttributes())
+        if (!sourceAttrs?.hasNonEmptyAttributes()) {
+          throw new EmptyAttributeListError(
+            "Source entity has no attributes or all attributes are empty",
+          );
           return;
+        }
 
         // Invalid attributes can't be serialized and so can't be copied. Must
         // serialize to create deep copies of the attributes.
-        if (
-          errorIfInvalid &&
-          source.get("attributeList").all((attr) => !attr.isValid())
-        ) {
+        if (errorIfInvalid && sourceAttrs.validate()) {
           const errors = source.get("attributeList").validate();
           throw new InvalidAttributeListError(
             errors.join ? errors.join("\n") : "Invalid attribute list",
           );
         }
         const attrsStr = source.get("attributeList").serialize();
-        targets.forEach((entity) => {
-          const attrList = entity.get("attributeList");
+        targets.forEach((target) => {
+          const attrList = target.get("attributeList");
+          const emlAttrs = attrList.get("emlAttributes");
           // Use remove rather than reset to trigger events
-          attrList.remove(attrList.models);
-          attrList.add(attrsStr, { parse: true });
+          emlAttrs.remove(emlAttrs.models);
+          const attrDOM = new DOMParser().parseFromString(attrsStr, "text/xml");
+          emlAttrs.add(attrDOM, { parse: true });
           // remove xmlID from the target attributes
-          attrList.each((attr) => attr.unset("xmlID"));
+          emlAttrs.each((attr) => attr.unset("xmlID"));
           // Reference to entity model required for attr & sub-models
-          attrList.each((attr) => attr.set("parentModel", entity));
+          emlAttrs.each((attr) => attr.set("parentModel", target));
+        });
+      },
+
+      /**
+       * Get the attribute lists of all entities in the collection.
+       * @returns {EMLAttributeList[]} The attribute lists of all entities in the
+       * collection. If an entity does not have an attribute list, null is
+       * returned for that entity.
+       */
+      getAllAttributeLists() {
+        return this.map((entity) => {
+          const attrList = entity.get("attributeList");
+          return attrList || null;
         });
       },
     },

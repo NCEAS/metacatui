@@ -218,10 +218,9 @@ define([
         this.els.menu.innerHTML = "";
         this.collection.each((attr) => {
           attr.set("isNew", false, { silent: true });
+          // Render Attribute views for each model
+          this.renderAttribute(attr);
         });
-
-        // Render Attribute views for each model
-        this.collection.models.forEach(this.renderAttribute, this);
 
         // Show the first view, the others will be hidden
         if (this.collection.length > 1) {

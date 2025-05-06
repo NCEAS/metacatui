@@ -37,6 +37,34 @@ define([
         };
       },
 
+      /** @inheritdoc */
+      initialize() {
+        // Listen for both changes on the eml attributes collection and for
+        // replacement of the collection itself, in which case we need to reset
+        // listeners.
+        this.listenTo(this, "change:emlAttributes", this.listenToAttributes);
+        this.listenToAttributes();
+      },
+
+      /**
+       * Trigger a change:emlAttributes event on this model when the
+       * emlAttributes collection within this model adds, removes, or changes
+       * one if it's models. This event can be used to notify other views/models
+       * that the attributes collection has changed OR been replaced with a new
+       * collection.
+       */
+      listenToAttributes() {
+        const prevAttr = this.previous("emlAttributes");
+        if (prevAttr) this.stopListening(prevAttr, "update");
+
+        const attr = this.get("emlAttributes");
+        this.stopListening(attr, "update change");
+
+        this.listenToOnce(attr, "update change", () => {
+          this.trigger("change:emlAttributes", this, this.get("emlAttributes"));
+        });
+      },
+
       /**
        * Node names as they appear in the XML document mapped to how they are
        * parsed using the jquery html parser (used for historical reasons).
@@ -59,7 +87,9 @@ define([
         }
 
         // Convert the jquery object to a DOM element so we can use native DOM
-        // methods
+        // methods. Note that this will add the HTML namespace to the element
+        // (because it was originally parsed with jquery's HTMLparse) so we have
+        // to remove it during serialization.
         const dom = response.get(0);
         const id = dom.getAttribute("id");
         const parentModel = options?.parentModel;
@@ -104,7 +134,7 @@ define([
       updateDOM(currentDOM) {
         let dom = currentDOM || this.get("objectDOM");
         if (!dom) {
-          dom = document.createElement("attributeList");
+          dom = document.createElementNS(null, "attributeList");
         } else {
           dom = dom.cloneNode(true);
         }
@@ -162,9 +192,7 @@ define([
        */
       serialize() {
         const dom = this.updateDOM();
-        if (!dom) {
-          return null;
-        }
+        if (!dom) return null;
 
         // Convert the DOM element to a string
         const serializer = new XMLSerializer();
@@ -172,6 +200,9 @@ define([
 
         // Remove the XML declaration
         xmlString = xmlString.replace(/<\?xml.*?\?>/, "");
+
+        // Remove the namespace uri
+        xmlString = xmlString.replace(/xmlns="[^"]*"/, "");
 
         return DataONEObject.prototype.formatXML.call(this, xmlString);
       },

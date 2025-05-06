@@ -261,7 +261,7 @@ define([
                   // Get the number of attributes for this entity
                   const attrList = entity.get("attributeList");
                   attributes.numAttributes = attrList.hasNonEmptyAttributes()
-                    ? entity.get("attributeList").length
+                    ? entity.get("attributeList").get("emlAttributes").length
                     : 0;
                   // Determine if the entity model is valid
                   attributes.entityIsValid = entity.isValid();
@@ -277,19 +277,22 @@ define([
 
                   // Check if there are any invalid attribute models
                   // Also listen to each attribute model
-                  entity.get("attributeList").each((attr) => {
-                    const isValid = attr.isValid();
+                  entity
+                    .get("attributeList")
+                    .get("emlAttributes")
+                    .each((attr) => {
+                      const isValid = attr.isValid();
 
-                    // Mark that this entity has at least one invalid attribute
-                    if (!attributes.hasInvalidAttribute && !isValid)
-                      attributes.hasInvalidAttribute = true;
+                      // Mark that this entity has at least one invalid attribute
+                      if (!attributes.hasInvalidAttribute && !isValid)
+                        attributes.hasInvalidAttribute = true;
 
-                    this.stopListening(attr);
+                      this.stopListening(attr);
 
-                    // Listen to when the validation status changes and rerender
-                    if (isValid) this.listenTo(attr, "invalid", this.render);
-                    else this.listenTo(attr, "valid", this.render);
-                  }, this);
+                      // Listen to when the validation status changes and rerender
+                      if (isValid) this.listenTo(attr, "invalid", this.render);
+                      else this.listenTo(attr, "valid", this.render);
+                    }, this);
 
                   // If there are no attributes now, rerender when one is added
                   this.stopListening(
