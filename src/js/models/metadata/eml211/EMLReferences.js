@@ -71,7 +71,7 @@ define(["jquery", "backbone"], ($, Backbone) => {
        * @returns {EML} - The parent EML model.
        */
       getParentEML() {
-        return this.get("parentEML") || this.get("parentModel").getParentEML();
+        return this.get("parentEML") || this.get("parentModel")?.getParentEML();
       },
 
       /**

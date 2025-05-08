@@ -44,6 +44,13 @@ a:hover {
   text-shadow: none;
   font-weight: normal;
 }
+.label {
+  text-shadow: none;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0.95;
+}
 .danger,
 .error {
   color: #dc0000;
@@ -178,7 +185,12 @@ footer {
   /** Keeps the footer down **/
   min-height: 100%;
 }
-
+.right-aligned-flex-container {
+  display: flex;
+  margin-top: 1rem;
+  flex-direction: column;
+  align-items: flex-end;
+}
 /******************************************
 ** Navigation ***
 ******************************************/
@@ -320,6 +332,11 @@ header .citation {
 }
 #Content > .login > .alert-container {
   font-size: inherit;
+}
+.button-help-text {
+  font-size: 12px;
+  margin-top: 2px;
+  color: #555;
 }
 
 /******************************************
@@ -9054,11 +9071,6 @@ textarea.medium {
     margin-bottom: 0.8rem;
   }
 
-  .autofill-attributes__button-container {
-    display: flex;
-    justify-content: end;
-    margin-top: 1rem;
-  }
   .tab-content {
     margin-top: 1rem;
   }
@@ -9080,6 +9092,10 @@ textarea.medium {
       margin-left: 0;
     }
   }
+}
+
+.references-panel {
+  padding: 1rem;
 }
 
 /*******************************************

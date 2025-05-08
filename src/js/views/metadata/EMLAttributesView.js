@@ -25,6 +25,7 @@ define([
   const STRINGS = {
     addAttribute: "Add Attribute",
     newAttribute: "New Attribute",
+    linkedAttributes: "Linked Attributes",
   };
 
   const CLASS_NAMES = {
@@ -43,6 +44,10 @@ define([
     autofillButton: "autofill-button",
     autofillContainer: "autofill-attributes",
     addAttributeButton: "add-attribute-button",
+    referencesPanel: "references-panel",
+    editReferencesButton: "edit-references-button",
+    editReferencesButtonContainer: "right-aligned-flex-container",
+    buttonHelpText: "button-help-text",
   };
 
   // Classes from bootstrap that are used in the view
@@ -55,10 +60,14 @@ define([
     active: "active",
     button: "btn",
     buttonPrimary: "btn-primary",
+    info: "alert-info",
+    badge: "label",
+    well: "well",
   };
 
   // Fontawesome icon names used in the view
   const ICONS = {
+    edit: "pencil",
     warning: "warning-sign",
     remove: "remove",
     add: "plus",
@@ -67,6 +76,7 @@ define([
     onLeft: "on-left",
     processing: "time",
     success: "ok",
+    link: "link",
   };
 
   // Prefix to add ato all ICONS
@@ -108,6 +118,7 @@ define([
         e[`mouseout .${CN.menuItem} .${CN.remove}`] = "previewAttrRemove";
         e[`click .${CN.menuItem}`] = "handleMenuItemClick";
         e[`click .${CN.autofillButton}`] = "showAutofill";
+        e[`click .${CN.editReferencesButton}`] = "switchToSourceEntity";
         return e;
       },
 
@@ -158,11 +169,58 @@ define([
       },
 
       /**
+       * Creates a template for the references panel
+       * @param {string} sourceTitle - The title of the source entity
+       * @param {string[]} sourceAttrNames - The names of the attributes in the
+       * source entity
+       * @returns {HTMLElement} The references panel element
+       */
+      referencesTemplate(sourceTitle, sourceAttrNames) {
+        const attrList = sourceAttrNames
+          .map((name) => {
+            const span = document.createElement("span");
+            span.classList.add(BOOTSTRAP_CLASS_NAMES.badge, "label-info");
+            span.textContent = name;
+            return span.outerHTML;
+          })
+          .join(", ");
+        const CN = CLASS_NAMES;
+        const BC = BOOTSTRAP_CLASS_NAMES;
+        const template = document.createElement("template");
+        template.innerHTML = `
+          <div class="${CN.referencesPanel}">
+            <h3>
+              <i class="${BC.icon} ${ICONS.link} ${ICONS.onLeft}"></i>${STRINGS.linkedAttributes}
+            </h3>
+            <div class="${BC.well} ${CN.references}">
+              <p>
+                This attribute list is a <b>linked copy</b> of defined in the
+                <a class="label label-info">${sourceTitle}</a> entity. 
+                Any updates made to the source entity will automatically be reflected here.
+              </p>
+              <p>The attributes in that entity are: <b>${attrList}</b>.</p>
+              <p>To make changes, please edit the source entity directly.</p>
+            </div>
+            <div class="${CN.editReferencesButtonContainer}">
+                <a class="${BC.button} ${BC.buttonPrimary} ${CN.editReferencesButton}">
+                  <i class="${BC.icon} ${ICONS.edit} ${ICONS.onLeft}"></i> Edit Attributes in Source Entity
+                </a>
+                <div class="${CN.buttonHelpText}">You will be re-directed to '${sourceTitle}'</div>
+            </div>
+          </div>`;
+
+        return template.content.querySelector("div");
+      },
+
+      /**
        * Creates a new EMLAttributesView
        * @param {object} options - A literal object with options to pass to the
        * view
        * @param {EMLAttributes} options.collection - The collection of
        * EMLAttribute models to display
+       * @param {References} [options.references] - The reference element to
+       * display instead of the collection. Will be ignored if collection is
+       * provided.
        * @param {EMLEntity} options.parentModel - The entity model to which
        * these attributes belong
        * @param {boolean} [options.isNew] - Set to true if this is a new
@@ -170,7 +228,17 @@ define([
        */
       initialize(options = {}) {
         this.collection = options.collection || new EMLAttributes();
+
+        if (
+          options.references &&
+          !options.references.isEmpty() &&
+          (!this.collection || this.collection.length === 0)
+        ) {
+          this.references = options.references;
+          this.collection = null;
+        }
         this.parentModel = options.parentModel;
+        this.parentView = options.parentView;
 
         // Prefix all the icons
         if (!Object.values(ICONS)[0].startsWith(ICON_PREFIX)) {
@@ -198,10 +266,95 @@ define([
           autofillButton: this.el.querySelector(`.${CN.autofillButton}`),
         };
 
-        this.renderAttributes();
+        if (this.collection) {
+          this.renderAttributes();
+        } else {
+          this.renderReferences();
+        }
+
         this.renderAutofill();
 
         return this;
+      },
+
+      /**
+       * Renders the references button and panel
+       * @returns {HTMLElement|null} The references button element or null if
+       * the references' linked model can't be found
+       */
+      renderReferences() {
+        const { list, menu } = this.els;
+        const BC = BOOTSTRAP_CLASS_NAMES;
+
+        const item = this.menuItemTemplate({
+          attrId: "references",
+          attributeName: `<i class="${BC.icon} ${ICONS.link} ${ICONS.onLeft}"></i>${STRINGS.linkedAttributes}`,
+        });
+        const removeIcon = item.querySelector(`.${ICONS.remove}`);
+        removeIcon.remove();
+
+        menu.appendChild(item);
+        this.els.referencesButton = item;
+
+        const sourceAttrs = this.references.getLinkedModel();
+
+        if (!sourceAttrs) return null; // TODO: display error?
+
+        const sourceEntity = sourceAttrs?.get("parentModel");
+        const sourceTitle = sourceEntity?.get("entityName");
+        const sourceAttrNames = sourceAttrs
+          .get("emlAttributes")
+          .pluck("attributeName");
+        // TODO: Add tooltips w/ description of the attributes. Make clickable.
+
+        const refEl = this.referencesTemplate(sourceTitle, sourceAttrNames);
+        list.append(refEl);
+
+        const editButton = refEl.querySelector(
+          `.${CLASS_NAMES.editReferencesButton}`,
+        );
+        // TODO: add an unlink button.
+
+        this.els.editReferencesButton = editButton;
+        this.els.referencesButton = item;
+
+        this.els.referencesPanel = refEl;
+        this.showReferences(); // activate the button
+
+        return refEl;
+      },
+
+      /**
+       * Close the modal containing this view and open the modal for a different
+       * entity in the same entities collection. Requires that the parent
+       * EMLEntityView is on this view.
+       */
+      switchToSourceEntity() {
+        const sourceEntity = this.references
+          .getLinkedModel()
+          ?.get("parentModel");
+        if (sourceEntity) {
+          this.parentView?.switchToOtherEntityView(sourceEntity);
+        }
+      },
+
+      /** Show the references panel and hide everything else */
+      showReferences() {
+        this.hideEverything();
+        const { referencesPanel, referencesButton } = this.els;
+        if (!referencesPanel || !referencesButton) return;
+        referencesPanel.classList.remove(BOOTSTRAP_CLASS_NAMES.hidden);
+        referencesButton.classList.add(BOOTSTRAP_CLASS_NAMES.active);
+        referencesPanel.scrollIntoView();
+      },
+
+      /** Hide the references panel */
+      hideReferences() {
+        const { referencesPanel, referencesButton } = this.els;
+        if (referencesPanel)
+          referencesPanel.classList.add(BOOTSTRAP_CLASS_NAMES.hidden);
+        if (referencesButton)
+          referencesButton.classList.remove(BOOTSTRAP_CLASS_NAMES.active);
       },
 
       /**
@@ -281,15 +434,19 @@ define([
 
       /** Set up event listeners for the collection and its models */
       listenToAttributesCollection() {
-        this.listenTo(this.collection, "add", this.renderAttribute);
-        this.listenTo(this.collection, "remove", this.removeAttribute);
-        this.listenTo(this.collection, "sort", this.orderAttributeMenu);
-        this.listenTo(this.collection, "namesUpdated", this.renderAttributes);
+        if (this.collection) {
+          this.listenTo(this.collection, "add", this.renderAttribute);
+          this.listenTo(this.collection, "remove", this.removeAttribute);
+          this.listenTo(this.collection, "sort", this.orderAttributeMenu);
+          this.listenTo(this.collection, "namesUpdated", this.renderAttributes);
+        }
       },
 
       /** Stop listening to the attributes collection */
       stopListenToAttributesCollection() {
-        this.stopListening(this.collection);
+        if (this.collection) {
+          this.stopListening(this.collection);
+        }
       },
 
       /**
@@ -326,7 +483,7 @@ define([
        * and the attributes collection itself.
        */
       startAllListeners() {
-        this.collection.models.forEach((attr) => {
+        this.collection?.models.forEach((attr) => {
           this.listenToAttributeModel(attr);
         });
         this.listenToAttributesCollection();
@@ -337,7 +494,7 @@ define([
        * collection and the attributes collection itself.
        */
       stopAllListeners() {
-        this.collection.models.forEach((attr) => {
+        this.collection?.models.forEach((attr) => {
           this.stopListeningToAttributeModel(attr);
         });
         this.stopListenToAttributesCollection();
@@ -428,12 +585,17 @@ define([
         // Find the panel associated with the clicked menu item and show it
         const menuItem = e.currentTarget;
         const attrId = menuItem.getAttribute("data-id");
-        this.hideAutofill();
+        this.hideEverything();
 
         // The target would be the icon, link, etc. The item clicked would be
         // the parent li.
         const parentLi = e.target.closest(`.${CLASS_NAMES.menuItem}`);
-        // If the clicked item is the add attribute button, add a new
+        // If the target is the references menu item, show the references
+        if (parentLi === this.els.referencesButton) {
+          this.showReferences();
+          return;
+        }
+        // If the clicked item is the add attribute button, add a new attribute
         if (parentLi === this.els.addAttributeButton) {
           this.addNewAttribute();
           return;
@@ -447,7 +609,7 @@ define([
        * Display the autofill view, hide the attributes.
        */
       showAutofill() {
-        this.hideAllAttributes();
+        this.hideEverything();
         this.renderAutofill();
         this.validatePreviousAttribute();
         // Hide the attribute list
@@ -561,6 +723,9 @@ define([
 
       /** Validate the previous attribute */
       validatePreviousAttribute() {
+        // If this attribute list is references instead of attributes, there's
+        // nothing to validate
+        if (!this.collection) return;
         // find the active attribute listItem
         const activeAttrTab = this.el.querySelector(
           `.${BOOTSTRAP_CLASS_NAMES.active}.${CLASS_NAMES.menuItem}`,
@@ -622,9 +787,16 @@ define([
         menuItem.classList.remove(BOOTSTRAP_CLASS_NAMES.active);
       },
 
-      /**  Hide all attribute views */
+      /** Hide all attribute views */
       hideAllAttributes() {
-        this.collection.models.forEach(this.hideAttribute, this);
+        this.collection?.models.forEach(this.hideAttribute, this);
+      },
+
+      /** Hide the attributes, autofill view, and references panel */
+      hideEverything() {
+        this.hideAllAttributes();
+        this.hideAutofill();
+        this.hideReferences();
       },
 
       /**
@@ -659,7 +831,7 @@ define([
       /** Actions to perform when the view is removed */
       onClose() {
         // Remove empty attribute models
-        this.collection.removeEmptyAttributes();
+        this.collection?.removeEmptyAttributes();
         this.stopAllListeners();
         this.removeAutofill();
         // Destroy all popups

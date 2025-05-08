@@ -22,7 +22,7 @@ define([
   // Class names used in this view
   const CLASS_NAMES = {
     view: "autofill-attributes",
-    buttonContainer: "autofill-attributes__button-container",
+    buttonContainer: "right-aligned-flex-container",
     tabDynamicContent: "autofill-attributes_tab-dynamic-content",
     notificationContainer: "autofill-attributes__notification",
     checkboxeContainer: "autofill-attributes__checkbox-list",

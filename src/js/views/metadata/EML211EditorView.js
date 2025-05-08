@@ -853,7 +853,6 @@ define([
 
         // Set a beforeunload event only if there isn't one already
         if (!this.beforeunloadCallback) {
-          const view = this;
           // When the Window is about to be closed, show a confirmation message
           this.beforeunloadCallback = (e) => {
             if (!view.canClose()) {
@@ -1103,71 +1102,98 @@ define([
        */
       showEntity(e) {
         if (!e || !e.target) return;
+        if (this.model.type !== "EML") return;
 
-        // For EML metadata docs
-        if (this.model.type === "EML") {
-          // Get the Entity View
-          const row = $(e.target).parents(".data-package-item");
-          let entityView = row.data("entityView");
-          const dataONEObject = row.data("model");
+        // Get the Entity View
+        const row = $(e.target).parents(".data-package-item");
+        let entityView = row.data("entityView");
+        const dataONEObject = row.data("model");
 
-          if (
-            dataONEObject.get("uploadStatus") === "p" ||
-            dataONEObject.get("uploadStatus") === "l" ||
-            dataONEObject.get("uploadStatus") === "e"
-          )
-            return;
+        if (
+          dataONEObject.get("uploadStatus") === "p" ||
+          dataONEObject.get("uploadStatus") === "l" ||
+          dataONEObject.get("uploadStatus") === "e"
+        )
+          return;
 
-          // If there isn't a view yet, create one
-          if (!entityView) {
-            // Get the entity model for this data package item
-            let entityModel = this.model.getEntity(row.data("model"));
+        // If there isn't a view yet, create one
+        if (!entityView) {
+          // Get the entity model for this data package item
+          let entityModel = this.model.getEntity(row.data("model"));
 
-            // Create a new EMLOtherEntity if it doesn't exist
-            if (!entityModel) {
-              entityModel = new EMLOtherEntity({
-                entityName: dataONEObject.get("fileName"),
-                entityType:
-                  dataONEObject.get("formatId") ||
-                  dataONEObject.get("mediaType"),
-                parentModel: this.model,
-                xmlID: dataONEObject.getXMLSafeID(),
-              });
+          // Create a new EMLOtherEntity if it doesn't exist
+          if (!entityModel) {
+            entityModel = new EMLOtherEntity({
+              entityName: dataONEObject.get("fileName"),
+              entityType:
+                dataONEObject.get("formatId") || dataONEObject.get("mediaType"),
+              parentModel: this.model,
+              xmlID: dataONEObject.getXMLSafeID(),
+            });
 
-              if (!dataONEObject.get("fileName")) {
-                // Listen to changes to required fields on the otherEntity
-                // models
-                this.listenTo(entityModel, "change:entityName", () => {
-                  if (!entityModel.isValid()) return;
+            if (!dataONEObject.get("fileName")) {
+              // Listen to changes to required fields on the otherEntity
+              // models
+              this.listenTo(entityModel, "change:entityName", () => {
+                if (!entityModel.isValid()) return;
 
-                  // Get the position this entity will be in
-                  const position = $(".data-package-item.data").index(row);
-
-                  this.model.addEntity(entityModel, position);
-                });
-              } else {
                 // Get the position this entity will be in
                 const position = $(".data-package-item.data").index(row);
 
                 this.model.addEntity(entityModel, position);
-              }
-            } else {
-              entityView = new EMLEntityView({
-                model: entityModel,
-                DataONEObject: dataONEObject,
-                edit: true,
               });
+            } else {
+              // Get the position this entity will be in
+              const position = $(".data-package-item.data").index(row);
+
+              this.model.addEntity(entityModel, position);
             }
-
-            // Attach the view to the edit button so we can access it again
-            row.data("entityView", entityView);
-
-            // Render the view
-            entityView.render();
+          } else {
+            entityView = new EMLEntityView({
+              model: entityModel,
+              DataONEObject: dataONEObject,
+              edit: true,
+              parentView: this,
+            });
           }
 
-          // Show the modal window editor for this entity
-          if (entityView) entityView.show();
+          // Attach the view to the edit button so we can access it again
+          row.data("entityView", entityView);
+
+          // Render the view
+          entityView.render();
+        }
+
+        // Show the modal window editor for this entity
+        if (entityView) entityView.show();
+      },
+
+      /**
+       * Show the entity editor for a model
+       * @param {EMLEntity|EMLOtherEntity} model - The model to show
+       * @param {boolean} [switchToAttrTab] - Set to true to automatically
+       * switch to the attributes tab instead of default overview tab
+       * @since 0.0.0
+       */
+      showEntityFromModel(model, switchToAttrTab = false) {
+        const pid = model.get("dataONEObject").get("id");
+        const rows = this.$(".data-package-item");
+        const row = rows.filter((i, el) => {
+          const rowModel = $(el).data("model");
+          const rowId = $(el).data("id");
+          return rowId === pid || rowModel === model;
+        });
+        if (row.length) {
+          // Get button to mock a click event which calls showEntity(e)
+          const button = row.find("button.edit");
+          if (button?.length) {
+            button.click();
+            if (switchToAttrTab) {
+              setTimeout(() => {
+                row.data("entityView")?.showAttributesTab();
+              }, 100);
+            }
+          }
         }
       },
 
