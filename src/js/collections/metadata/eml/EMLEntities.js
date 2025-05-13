@@ -1,3 +1,5 @@
+/* eslint-disable max-classes-per-file */
+
 "use strict";
 
 define([
@@ -385,7 +387,6 @@ define([
           throw new EmptyAttributeListError(
             "Source entity has no attributes or all attributes are empty",
           );
-          return;
         }
 
         // Invalid attributes can't be serialized and so can't be copied. Must
@@ -408,6 +409,11 @@ define([
           emlAttrs.each((attr) => attr.unset("xmlID"));
           // Reference to entity model required for attr & sub-models
           emlAttrs.each((attr) => attr.set("parentModel", target));
+
+          // Invalid to have both attributes and references
+          if (attrList.hasReferences()) {
+            attrList.removeReferences();
+          }
         });
       },
 

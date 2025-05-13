@@ -2,21 +2,22 @@ define([
   "backbone",
   "jquery",
   "semantic",
-  "collections/metadata/eml/EMLAttributes",
+  "models/metadata/eml211/EMLAttributeList",
   "views/metadata/EMLAttributeView",
   "views/metadata/AutofillAttributesView",
 ], (
   Backbone,
   $,
   Semantic,
-  EMLAttributes,
+  EMLAttributeList,
   EMLAttributeView,
   AutofillAttributesView,
 ) => {
   /**
    * @class EMLAttributesView
    * @classdesc An EMLAttributesView displays the info about all attributes in
-   * an EML document.
+   * an EML document or the references. It can be used to edit attributes and to
+   * autofill from other entities or from a CSV file.
    * @classcategory Views/Metadata
    * @screenshot views/metadata/EMLAttributesView.png
    * @augments Backbone.View
@@ -227,16 +228,7 @@ define([
        * attribute
        */
       initialize(options = {}) {
-        this.collection = options.collection || new EMLAttributes();
-
-        if (
-          options.references &&
-          !options.references.isEmpty() &&
-          (!this.collection || this.collection.length === 0)
-        ) {
-          this.references = options.references;
-          this.collection = null;
-        }
+        this.model = options.model || new EMLAttributeList();
         this.parentModel = options.parentModel;
         this.parentView = options.parentView;
 
@@ -266,15 +258,24 @@ define([
           autofillButton: this.el.querySelector(`.${CN.autofillButton}`),
         };
 
-        if (this.collection) {
-          this.renderAttributes();
-        } else {
-          this.renderReferences();
-        }
-
+        this.renderReferencesOrAttributes();
         this.renderAutofill();
 
         return this;
+      },
+
+      /**
+       * Check if the attrList has references or attributes (since both are not
+       * allowed), and render the appropriate UI.
+       */
+      renderReferencesOrAttributes() {
+        if (this.model.hasReferences()) {
+          this.references = this.model.get("references");
+          this.renderReferences();
+        } else {
+          this.collection = this.model.get("emlAttributes");
+          this.renderAttributes();
+        }
       },
 
       /**
@@ -305,6 +306,7 @@ define([
         const sourceAttrNames = sourceAttrs
           .get("emlAttributes")
           .pluck("attributeName");
+
         // TODO: Add tooltips w/ description of the attributes. Make clickable.
 
         const refEl = this.referencesTemplate(sourceTitle, sourceAttrNames);
@@ -364,8 +366,9 @@ define([
        * This function can be used to re-render the attributes.
        */
       renderAttributes() {
+        if (!this.collection) return;
         // Reset elements and event listeners in case of a re-render
-        this.stopListenToAttributesCollection();
+        this.stopListeningToAttributesCollection();
         this.attrEls = {};
         this.els.list.innerHTML = "";
         this.els.menu.innerHTML = "";
@@ -443,10 +446,11 @@ define([
       },
 
       /** Stop listening to the attributes collection */
-      stopListenToAttributesCollection() {
+      stopListeningToAttributesCollection() {
         if (this.collection) {
           this.stopListening(this.collection);
         }
+        this.stopListening(this.model.get("emlAttributes"));
       },
 
       /**
@@ -487,6 +491,11 @@ define([
           this.listenToAttributeModel(attr);
         });
         this.listenToAttributesCollection();
+        this.listenTo(
+          this.model,
+          "change:references",
+          this.renderReferencesOrAttributes,
+        );
       },
 
       /**
@@ -497,7 +506,8 @@ define([
         this.collection?.models.forEach((attr) => {
           this.stopListeningToAttributeModel(attr);
         });
-        this.stopListenToAttributesCollection();
+        this.stopListeningToAttributesCollection();
+        this.stopListening(this.model, "change:references");
       },
 
       /**
@@ -550,7 +560,7 @@ define([
         const el = autofillContainer.querySelector("div");
         this.autoFill = new AutofillAttributesView({
           el,
-          collection: this.collection,
+          model: this.model,
           parentModel: this.parentModel,
         }).render();
         return this.autoFill;

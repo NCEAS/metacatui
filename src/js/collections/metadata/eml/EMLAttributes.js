@@ -21,7 +21,7 @@ define([
 
       /** @inheritdoc */
       parse(response, options) {
-        let attributeListDOM = response;
+        const attributeListDOM = response;
         if (!attributeListDOM) return [];
         const attributeNodes =
           attributeListDOM.getElementsByTagName("attribute");

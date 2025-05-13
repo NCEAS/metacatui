@@ -3,10 +3,10 @@ define([
   "underscore", // for alert template only
   "backbone",
   "semantic",
-  "collections/metadata/eml/EMLAttributes",
+  "models/metadata/eml211/EMLAttributeList",
   "common/Utilities",
   "text!templates/alert.html",
-], ($, _, Backbone, Semantic, EMLAttributes, Utilities, AlertTemplate) => {
+], ($, _, Backbone, Semantic, EMLAttributeList, Utilities, AlertTemplate) => {
   /**
    * @class AutofillAttributesView
    * @classdesc
@@ -374,15 +374,15 @@ define([
        * Creates a new AutofillAttributesView
        * @param {object} options - A literal object with options to pass to the
        * view
-       * @param {EMLAttributes} options.collection - The collection of
-       * EMLAttribute models to display
+       * @param {EMLAttributeList} options.model - The attributes model that
+       * contains the attributes collection to autofill.
        * @param {EMLEntity} options.parentModel - The entity model to which
        * these attributes belong
        * @param {boolean} [options.isNew] - Set to true if this is a new
        * attribute
        */
       initialize(options = {}) {
-        this.collection = options.collection || new EMLAttributes();
+        this.model = options.model || new EMLAttributeList();
         this.parentModel = options.parentModel;
 
         // Prefix all the icons
@@ -421,7 +421,7 @@ define([
         };
 
         this.renderActions();
-        this.stopListening(this.parentModel.collection, "update");
+        this.stopListening(this.parentModel?.collection, "update");
         this.listenTo(
           this.parentModel.collection,
           "update",
@@ -612,14 +612,10 @@ define([
        * - true if all checks pass
        */
       canCopyTo() {
-        const attributes = this.collection;
+        const attributes = this.model.get("emlAttributes");
 
         // There must be attributes to copy
-        if (
-          !attributes ||
-          attributes.length === 0 ||
-          !attributes.hasNonEmptyAttributes()
-        ) {
+        if (!this.model.hasNonEmptyAttributes()) {
           return "no attributes";
         }
         // All the attributes must be valid before copying
@@ -1066,7 +1062,7 @@ define([
             [BOOTSTRAP_CLASS_NAMES.success],
           );
         });
-        this.collection.updateNames(names, this.parentModel);
+        this.model.updateAttributeNames(names);
       },
 
       /**

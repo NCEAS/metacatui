@@ -271,12 +271,56 @@ define([
         return Object.keys(errors).length ? errors : false;
       },
 
+      /** Removes the references from the list and destroys the refs model */
+      removeReferences() {
+        const references = this.get("references");
+        if (references) {
+          references.destroy();
+          this.set("references", null);
+        }
+      },
+
       /**
        * Get the EML document that contains this attribute list
        * @returns {EML} The EML document that contains this attribute list
        */
       getParentEML() {
         return this.get("parentModel")?.getParentEML();
+      },
+
+      /**
+       * Given an array of strings, update the names of the attributes in the
+       * collection to match the array. If the number of names in the array
+       * exceeds the number of attributes in the collection, new attributes will
+       * be added to the collection. If the number of names is less than the
+       * number of attributes in the collection, the extra attributes will be
+       * removed.
+       *
+       * Better than calling updateNames on emlAttributes directly, since this
+       * method handles removing references if present and adding an attrs
+       * collection if missing
+       * @param {string[]} names - An array of new attribute names
+       */
+      updateAttributeNames(names) {
+        if (!names || !Array.isArray(names) || !names.length) {
+          throw new Error("Names must be an array");
+        }
+
+        // If there are references, remove them. updateNames will add attributes
+        // and it's illegal to have both references and attributes in the same
+        // attribute list.
+        const references = this.get("references");
+        if (references && !references.isEmpty()) {
+          this.removeReferences();
+        }
+
+        // If there's no attributes collection, create one
+        if (!this.get("emlAttributes")) {
+          this.set("emlAttributes", new EMLAttributes());
+        }
+
+        const emlAttributes = this.get("emlAttributes");
+        emlAttributes.updateNames(names, this.get("parentModel"));
       },
     },
   );
