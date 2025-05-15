@@ -71,7 +71,7 @@ define([
           coverage: [],
           methods: null,
           additionalInfo: [],
-          attributeList: new EMLAttributeList(),
+          attributeList: null,
           constraint: [],
           references: null,
 
@@ -115,7 +115,7 @@ define([
       },
 
       /** @inheritdoc */
-      initialize(_attributes, _options) {
+      initialize(attributes = {}, _options = {}) {
         // if options.parse = true, Backbone will call parse()
 
         // Register change events
@@ -155,6 +155,15 @@ define([
           model.listenTo(dataONEObj, "change:fileName", model.updateFileName);
         });
 
+        if (!attributes?.attributeList && !this.get("attributeList")) {
+          this.set(
+            "attributeList",
+            new EMLAttributeList({
+              parentModel: this,
+            }),
+          );
+        }
+
         this.listenToAttributeList();
       },
 
@@ -188,10 +197,10 @@ define([
        * <entityName>file.1.1.txt</entityName> <entityDescription>A file
        * summary</entityDescription> </otherEntity>
        * @param {object} attrs - The XML attributes
-       * @param {object} _options - Any options passed to the parse function
+       * @param {object} options - Any options passed to the parse function
        * @returns {object} - The parsed attributes
        */
-      parse(attrs, _options) {
+      parse(attrs, options) {
         const attributes = attrs || {};
         let $objectDOM;
         const { objectDOM } = attributes;
@@ -273,10 +282,14 @@ define([
         let attributeList = $objectDOM.find("attributelist");
         attributeList = attributeList.length ? attributeList : null;
 
-        attributes.attributeList = new EMLAttributeList(attributeList, {
+        const parentModel = this;
+        const opts = {
+          ...options,
           parse: true,
-          parentModel: this,
-        });
+          parentModel,
+        };
+
+        attributes.attributeList = new EMLAttributeList(attributeList, opts);
 
         return attributes;
       },
@@ -289,8 +302,9 @@ define([
        */
       addAttribute(attribute, index) {
         const options = !index && index !== 0 ? {} : { at: index };
-        attribute.set("parentModel", this);
-        this.get("attributeList").get("emlAttributes").add(attribute, options);
+        const attrList = this.get("attributeList");
+        attribute.set("parentModel", attrList);
+        attrList.get("emlAttributes").addAttribute(attribute, options);
       },
 
       /**
@@ -359,21 +373,14 @@ define([
           objectDOM = document.createElement(type);
         }
 
-        // Update the id attribute on this XML node update the id attribute
-        if (this.get("dataONEObject")) {
-          // Ideally, the EMLEntity will use the object's id in it's id
-          // attribute, so we wil switch them
-          const xmlID = this.get("dataONEObject").getXMLSafeID();
-
-          // Set the xml-safe id on the model and use it as the id attribute
-          $(objectDOM).attr("id", xmlID);
-          this.set("xmlID", xmlID);
-        }
-        // If there isn't a matching DataONEObject but there is an id set on
-        // this model, use that id
-        else if (this.get("xmlID")) {
-          $(objectDOM).attr("id", this.get("xmlID"));
-        }
+        // Ideally, the EMLEntity will use the object's id in it's id
+        // attribute, but don't replace an existing ID in case there is a
+        // reference to it in the EML.
+        const xmlID =
+          this.get("xmlID") || this.get("dataONEObject")?.getXMLSafeID();
+        // Set the xml-safe id on the model and use it as the id attribute
+        $(objectDOM).attr("id", xmlID);
+        this.set("xmlID", xmlID);
 
         // Update the alternateIdentifiers
         let altIDs = this.get("alternateIdentifier");

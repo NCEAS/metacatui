@@ -61,22 +61,34 @@ define([
       },
 
       /**
-       * Add an attribute to the collection. Will try to set the parentModel
-       * if it is not already set.
-       * @param {object} attributes - The model attributes of the new EML
-       * attribute, optional. May include the parentModel
+       * Add an attribute to the collection. Will try to set the parentModel if
+       * it is not already set.
+       * @param {object|EMLAttribute} [attributes] - The model attributes of the
+       * new EML attribute. Should include the parentModel. Or an instance of
+       * EMLAttribute.
        * @param {object} options - Options to pass to the add method
        * @returns {EMLAttribute} The newly added attribute
        */
       addAttribute(attributes = {}, options = {}) {
+        let modifiedAttrs = attributes;
         // A parent (entity) model is required for some of Attribute's methods
-        const modifiedAttrs = { ...attributes };
-        if (!modifiedAttrs.parentModel) {
-          modifiedAttrs.parentModel = this.getParentModel();
+        if (attributes instanceof EMLAttribute) {
+          if (!modifiedAttrs.get("parentModel")) {
+            modifiedAttrs.set("parentModel", this.getParentModel());
+          }
+          if (!modifiedAttrs.get("xmlID")) {
+            modifiedAttrs.set("xmlID", DataONEObject.generateId());
+          }
+        } else {
+          modifiedAttrs = { ...attributes };
+          if (!modifiedAttrs.parentModel) {
+            modifiedAttrs.parentModel = this.getParentModel();
+          }
+          if (!modifiedAttrs.xmlID) {
+            modifiedAttrs.xmlID = DataONEObject.generateId();
+          }
         }
-        if (!modifiedAttrs.xmlID) {
-          modifiedAttrs.xmlID = DataONEObject.generateId();
-        }
+
         return this.add(modifiedAttrs, options);
       },
 
@@ -138,7 +150,7 @@ define([
        * number of attributes in the collection, the extra attributes will be
        * removed.
        * @param {string[]} names - An array of new attribute names
-       * @param {EMLEntity} parentModel - The model that contains this
+       * @param {EMLAttributeList} parentModel - The model that contains this
        * collection
        * @param {object} options - Options to pass to the add, remove, and set
        * methods

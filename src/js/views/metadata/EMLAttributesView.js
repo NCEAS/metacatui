@@ -284,16 +284,31 @@ define([
        * the references' linked model can't be found
        */
       renderReferences() {
-        const { list, menu } = this.els;
         const BC = BOOTSTRAP_CLASS_NAMES;
+        const {
+          list,
+          menu,
+          addAttributeButton,
+          linkedAttrMenuItem,
+          referencesPanel,
+        } = this.els;
+
+        // In case of a re-render
+        const elsToRemove = [
+          addAttributeButton,
+          linkedAttrMenuItem,
+          referencesPanel,
+        ];
+
+        elsToRemove.forEach((el) => el?.remove());
 
         const item = this.menuItemTemplate({
           attrId: "references",
           attributeName: `<i class="${BC.icon} ${ICONS.link} ${ICONS.onLeft}"></i>${STRINGS.linkedAttributes}`,
         });
+        this.els.linkedAttrMenuItem = item;
         const removeIcon = item.querySelector(`.${ICONS.remove}`);
         removeIcon.remove();
-
         menu.appendChild(item);
         this.els.referencesButton = item;
 
@@ -310,6 +325,7 @@ define([
         // TODO: Add tooltips w/ description of the attributes. Make clickable.
 
         const refEl = this.referencesTemplate(sourceTitle, sourceAttrNames);
+        this.els.referencesPanel = refEl;
         list.append(refEl);
 
         const editButton = refEl.querySelector(
@@ -322,6 +338,17 @@ define([
 
         this.els.referencesPanel = refEl;
         this.showReferences(); // activate the button
+
+        // Keep the displayed attribute names & entity name in sync with the
+        // source entity
+        this.stopListening(sourceEntity, "change:entityName");
+        this.listenTo(sourceEntity, "change:entityName", this.renderReferences);
+        this.stopListening(sourceAttrs, "change:emlAttributes");
+        this.listenTo(
+          sourceAttrs,
+          "change:emlAttributes",
+          this.renderReferences,
+        );
 
         return refEl;
       },

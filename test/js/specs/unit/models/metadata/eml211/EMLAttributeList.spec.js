@@ -106,7 +106,8 @@ define([
         const newDOM = attrListWithRef.updateDOM();
         const nodeName = newDOM.nodeName.toLowerCase();
         expect(nodeName).to.equal("attributelist");
-        expect(newDOM.getAttribute("id")).to.equal("attrList2");
+        // ID should get removed because attrLists with references are not allowed to have IDs
+        expect(newDOM.getAttribute("id")).to.equal(null);
         const references = newDOM.getElementsByTagName("references");
         expect(references.length).to.equal(1);
         expect(references[0].textContent).to.equal("newReferenceID");

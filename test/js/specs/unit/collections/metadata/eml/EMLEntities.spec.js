@@ -628,12 +628,6 @@ define([
         const attrs0 = attrList0.get("emlAttributes");
         const attrList1 = entities.at(1).get("attributeList");
         const attrs1 = attrList1.get("emlAttributes");
-        console.log({
-          attrs0,
-          attrs1,
-          attrList0,
-          attrList1,
-        });
         attrs0.length.should.equal(2);
         attrs1.length.should.equal(0);
         // Do the copy
@@ -983,6 +977,67 @@ define([
           .at(0)
           .get("attributeName")
           .should.equal("ExistingAttribute");
+      });
+      it("should copy attributes by reference is specified to do so", () => {
+        const { entities, dummyParentModel } = state;
+        // Attributes must be valid to be copied
+        const xml = `
+          <dataset>
+            <dataTable>
+              <entityName>first</entityName>
+              <attributeList id="sourceList">
+                <attribute id="dummyAttr1">
+                  <attributeName>attr1</attributeName>
+                  <attributeDefinition>Def attr1</attributeDefinition>
+                  <measurementScale>
+                    <dateTime>
+                      <formatString>MM</formatString>
+                    </dateTime>
+                  </measurementScale>
+                </attribute>
+              </attributeList>
+            </dataTable>
+            <otherEntity>
+              <entityName>second</entityName>
+              <entityType>someType</entityType>
+            </otherEntity>
+          </dataset>
+        `;
+        // Set up and confirm the initial state
+        entities.add(
+          { datasetNode: emlParse(xml), parentModel: dummyParentModel },
+          { parse: true },
+        );
+        entities.length.should.equal(2);
+        const attrList0 = entities.at(0).get("attributeList");
+        const attrs0 = attrList0.get("emlAttributes");
+        const attrList1 = entities.at(1).get("attributeList");
+        const attrs1 = attrList1.get("emlAttributes");
+        attrs0.length.should.equal(1);
+        attrs1.length.should.equal(0);
+        // Do the copy
+        entities.copyAttributeList(
+          entities.at(0),
+          [entities.at(1)],
+          true,
+          true,
+        );
+        // Check the results
+        entities
+          .at(0)
+          .get("attributeList")
+          .get("emlAttributes")
+          .length.should.equal(1);
+        entities
+          .at(1)
+          .get("attributeList")
+          .get("emlAttributes")
+          .length.should.equal(0);
+        // Test references was created properly
+        attrList1
+          .get("references")
+          .get("references")
+          .should.equal("sourceList");
       });
     });
 

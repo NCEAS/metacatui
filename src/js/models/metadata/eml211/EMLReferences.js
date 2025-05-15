@@ -1,4 +1,8 @@
-define(["jquery", "backbone"], ($, Backbone) => {
+define(["jquery", "backbone", "common/EMLUtilities"], (
+  $,
+  Backbone,
+  EMLUtilities,
+) => {
   /**
    * @class EMLReferences
    * @classdesc A model for the EML <references> element.
@@ -18,30 +22,34 @@ define(["jquery", "backbone"], ($, Backbone) => {
        * referenced.
        * @property {string | null} system - Optional system attribute for
        * external system scoping.
-       * @property {object | null} parentEML - The parent model of this
-       * references element.
        * @property {string} objectDOM - The DOM representation of this
        * references element.
-       * @property {string} modelType - The name of the backbone model that is used
-       * to represent this the element that the reference points to. We need
-       * this to be able to find the element in the EML document that
+       * @property {string} modelType - The name of the backbone model that is
+       * used to represent this the element that the reference points to. We
+       * need this to be able to find the element in the EML document that
        * corresponds to this reference.
+       * @property {Backbone.Model} parentModel - The parent EML model of this
+       * references element, e.g. a EMLAttributeList.
        */
       defaults() {
         return {
           references: "",
           system: null,
-          parentEML: null,
           objectDOM: null,
           modelType: null,
+          parentModel: null,
         };
       },
+
+      // TODO... listen to change in xml id for linked model. Also if that model
+      // is destroyed, this reference should be invalidated or removed....
 
       /**
        * Convert the references xml to model attributes.
        * @param {HTMLElement | jQuery} response - The XML response to parse.
        * @param {object} options - Options for parsing.
-       * @param {EMLAttributeList} options.parentModel - The parent model of this references element.
+       * @param {Backbone.Model} options.parentModel - The parent model of
+       * this references element, e.g. a EMLAttributeList.
        * @returns {object} - The parsed attributes.
        */
       parse(response, options = {}) {
@@ -71,7 +79,7 @@ define(["jquery", "backbone"], ($, Backbone) => {
        * @returns {EML} - The parent EML model.
        */
       getParentEML() {
-        return this.get("parentEML") || this.get("parentModel")?.getParentEML();
+        return EMLUtilities.getParentEML(this);
       },
 
       /**
@@ -115,7 +123,7 @@ define(["jquery", "backbone"], ($, Backbone) => {
        * @returns {jQuery | null} - The linked DOM element or null if not found.
        */
       getLinkedDOM() {
-        const eml = this.get("parentEML");
+        const eml = this.getParentEML();
         if (!eml) return null;
         let emlDOM = eml.get("objectDOM");
         const ref = this.get("references");
