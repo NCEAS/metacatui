@@ -94,17 +94,22 @@ define([
       },
 
       /**
-       * Add a new attribute to the collection. Only allows one new attribute
-       * to be added at a time. Returns the existing new attribute if one is
-       * already present.
-       * @param {EMLEntity} parentModel The model that contains this
-       * collection, optional
+       * Add a new attribute to the collection. Only allows one new attribute to
+       * be added at a time (unless allowMultiple is true). Returns the existing
+       * new attribute if one is already present.
+       * @param {EMLEntity} parentModel The model that contains this collection,
+       * optional
+       * @param {boolean} allowMultiple - If true, allows multiple new
+       * attributes to be added. If false, only one new attribute can be added
+       * at a time. Defaults to false.
        * @returns {EMLAttribute} The newly added attribute model
        */
-      addNewAttribute(parentModel) {
-        const existingNewAttribute = this.getNewAttribute();
-        if (existingNewAttribute) {
-          return existingNewAttribute;
+      addNewAttribute(parentModel, allowMultiple = false) {
+        if (!allowMultiple) {
+          const existingNewAttribute = this.getNewAttribute();
+          if (existingNewAttribute) {
+            return existingNewAttribute;
+          }
         }
         return this.addAttribute({
           parentModel,
