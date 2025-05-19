@@ -373,14 +373,23 @@ define([
           objectDOM = document.createElement(type);
         }
 
-        // Ideally, the EMLEntity will use the object's id in it's id
-        // attribute, but don't replace an existing ID in case there is a
-        // reference to it in the EML.
-        const xmlID =
-          this.get("xmlID") || this.get("dataONEObject")?.getXMLSafeID();
-        // Set the xml-safe id on the model and use it as the id attribute
-        $(objectDOM).attr("id", xmlID);
-        this.set("xmlID", xmlID);
+        // Update the id attribute on this XML node update the id attribute.
+        // TODO: This could impact EML <references> that refer to the original
+        // id.
+        if (this.get("dataONEObject")) {
+          // Ideally, the EMLEntity will use the object's id in it's id
+          // attribute, so we wil switch them
+          const xmlID = this.get("dataONEObject").getXMLSafeID();
+
+          // Set the xml-safe id on the model and use it as the id attribute
+          $(objectDOM).attr("id", xmlID);
+          this.set("xmlID", xmlID);
+        }
+        // If there isn't a matching DataONEObject but there is an id set on
+        // this model, use that id
+        else if (this.get("xmlID")) {
+          $(objectDOM).attr("id", this.get("xmlID"));
+        }
 
         // Update the alternateIdentifiers
         let altIDs = this.get("alternateIdentifier");

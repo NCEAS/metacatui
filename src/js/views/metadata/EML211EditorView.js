@@ -1141,21 +1141,24 @@ define([
                 const position = $(".data-package-item.data").index(row);
 
                 this.model.addEntity(entityModel, position);
-              });
-            } else {
-              // Get the position this entity will be in
-              const position = $(".data-package-item.data").index(row);
 
-              this.model.addEntity(entityModel, position);
+                this.showEntity(e);
+              });
+              return;
             }
-          } else {
-            entityView = new EMLEntityView({
-              model: entityModel,
-              DataONEObject: dataONEObject,
-              edit: true,
-              parentView: this,
-            });
+            // Get the position this entity will be in
+            const position = $(".data-package-item.data").index(row);
+            this.model.addEntity(entityModel, position);
+            this.showEntity(e);
+            return;
           }
+
+          entityView = new EMLEntityView({
+            model: entityModel,
+            DataONEObject: dataONEObject,
+            edit: true,
+            parentView: this,
+          });
 
           // Attach the view to the edit button so we can access it again
           row.data("entityView", entityView);
