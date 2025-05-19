@@ -27,12 +27,14 @@ define([
     addAttribute: "Add Attribute",
     newAttribute: "New Attribute",
     linkedAttributes: "Linked Attributes",
+    addAttributeHelp: "Describe the first attribute in this entity",
   };
 
   const CLASS_NAMES = {
     menuContainer: "attribute-menu-container",
     actionButtonsContainer: "action-buttons",
     attributeList: "attribute-list",
+    addAttributeHelp: "add-attribute-help",
     menu: "attribute-menu",
     menuItem: "attribute-menu-item",
     menuItemName: "name",
@@ -78,6 +80,7 @@ define([
     processing: "time",
     success: "ok",
     link: "link",
+    info: "info-sign",
   };
 
   // Prefix to add ato all ICONS
@@ -120,6 +123,7 @@ define([
         e[`click .${CN.menuItem}`] = "handleMenuItemClick";
         e[`click .${CN.autofillButton}`] = "showAutofill";
         e[`click .${CN.editReferencesButton}`] = "switchToSourceEntity";
+        e[`click .${CN.addAttributeHelp} a`] = "addNewAttribute";
         return e;
       },
 
@@ -405,34 +409,84 @@ define([
           this.renderAttribute(attr);
         });
 
+        this.renderAddAttributeMessage();
+
         // Show the first view, the others will be hidden
-        if (this.collection.length > 1) {
+        if (this.collection.length > 0) {
           this.showAttribute(this.collection.at(0));
+        } else {
+          this.showAddAttributeMessage();
         }
 
         this.listenToAttributesCollection();
 
-        // Render the new attribute button here because it is part of the menu
-        this.renderNewAttributeButton();
-      },
-
-      /**
-       * Adds a list item that appears like a button that always remains at the
-       * bottom of the menu. This button is used to add a new attribute.
-       * @returns {HTMLElement} The button element
-       * @since 0.0.0
-       */
-      renderNewAttributeButton() {
+        // Render the new attribute button here because it is part of the menu.
+        // The button is a list item that always remains at the bottom of the menu.
         if (this.els.addAttributeButton) {
           this.els.addAttributeButton.remove();
           this.els.addAttributeButton = null;
         }
+        const button = this.createNewAttributeButton([
+          CLASS_NAMES.addAttributeButton,
+          CLASS_NAMES.new,
+        ]);
+        this.els.menu.appendChild(button);
+        this.els.addAttributeButton = button;
+      },
+
+      /**
+       * When there are no attrbutes yet, show a message to the user to help
+       * them add an attribute. Include a button to add a new attribute.
+       */
+      renderAddAttributeMessage() {
+        if (this.els.addAttributePanel) {
+          this.els.addAttributePanel.remove();
+          this.els.addAttributePanel = null;
+        }
         const CN = CLASS_NAMES;
         const BC = BOOTSTRAP_CLASS_NAMES;
+        const message = document.createElement("div");
+        message.classList.add(BC.well, CN.addAttributeHelp);
+
+        message.innerHTML = `
+          <p><i class="${BC.icon} ${ICONS.info} ${ICONS.onLeft}"></i>${STRINGS.addAttributeHelp}</p>
+          <a class="${BC.button} ${BC.buttonPrimary}"><i class="${ICONS.add} ${ICONS.onLeft}"></i>${STRINGS.addAttribute}</a>
+        `;
+        const button = message.querySelector("a");
+        message.appendChild(button);
+        this.els.list.appendChild(message);
+        this.els.addAttributePanel = message;
+      },
+
+      /** Show the add attribute help message */
+      showAddAttributeMessage() {
+        if (this.els.addAttributePanel) {
+          this.els.addAttributePanel.style.display = "block";
+        } else {
+          this.renderAddAttributeMessage();
+        }
+      },
+
+      /** Hide the add attribute help message */
+      hideAddAttributeMessage() {
+        if (this.els.addAttributePanel) {
+          this.els.addAttributePanel.style.display = "none";
+        }
+      },
+
+      /**
+       * Creates an instance of an add attribute button.
+       * @param {string[]} classes - Extra classes to add to the button
+       * @returns {HTMLElement} The add attribute button element
+       */
+      createNewAttributeButton(classes) {
+        const CN = CLASS_NAMES;
+        const BC = BOOTSTRAP_CLASS_NAMES;
+        const classesStr = classes?.length ? classes.join(" ") : "";
         const button = this.menuItemTemplate({
           attrId: "add-attribute-button",
           attributeName: STRINGS.addAttribute,
-          classes: `${CN.addAttributeButton} ${CN.new}`,
+          classes: classesStr,
         });
         // Add an add icon to the button Prepend it within the <a> tag
         const iconHtml = document.createElement("i");
@@ -443,9 +497,6 @@ define([
         // Find the remove icon and remove it
         const removeIcon = button.querySelector(`.${CN.remove}`);
         removeIcon?.remove();
-        this.els.menu.appendChild(button);
-
-        this.els.addAttributeButton = button;
         return button;
       },
 
@@ -690,7 +741,8 @@ define([
       },
 
       /**
-       * Remove an attribute from the view
+       * Remove an attribute from the view that was just removed from the
+       * collection
        * @param {EMLAttribute} attributeModel - The attribute model
        */
       removeAttribute(attributeModel) {
@@ -699,20 +751,13 @@ define([
         const menuItemActive = menuItem.classList.contains(
           BOOTSTRAP_CLASS_NAMES.active,
         );
-        if (menuItemActive) {
-          // Display the next model, the one before it, or the first model
-          const index = this.collection.indexOf(attributeModel);
-          const newIndex =
-            index < this.collection.length - 1
-              ? index + 1
-              : Math.max(index - 1, 0);
-          const attrToShow = this.collection.at(newIndex);
-          if (attrToShow) {
-            this.showAttribute(attrToShow);
-          } else {
-            this.hideAllAttributes();
-          }
+        if (menuItemActive && this.collection.length > 0) {
+          this.showAttribute(this.collection.at(0));
         }
+        if (this.collection.length === 0) {
+          this.showAddAttributeMessage();
+        }
+
         listItem.remove();
         menuItem.remove();
         this.stopListening(attributeModel);
@@ -744,7 +789,7 @@ define([
        * @param {EMLAttribute} attributeModel - The attribute model
        */
       showAttribute(attributeModel) {
-        this.hideAllAttributes();
+        this.hideEverything();
         const { listItem, menuItem } = this.attrEls[attributeModel.cid];
         listItem.show();
         menuItem.classList.add(BOOTSTRAP_CLASS_NAMES.active);
@@ -834,6 +879,7 @@ define([
         this.hideAllAttributes();
         this.hideAutofill();
         this.hideReferences();
+        this.hideAddAttributeMessage();
       },
 
       /**

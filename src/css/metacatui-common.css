@@ -8547,6 +8547,15 @@ textarea.medium {
 .attribute-menu-item.new:hover .remove {
   display: none;
 }
+
+.add-attribute-help {
+  text-align: center;
+  margin: 3rem;
+  .add-attribute-button {
+    background-color: inherit !important;
+  }
+}
+
 .eml-attribute .non-numeric-domain.error {
   color: inherit;
   border-color: red;
@@ -8999,7 +9008,7 @@ textarea.medium {
   .add-attribute-button {
     position: sticky;
     bottom: 0;
-    background: #eee;
+    background: inherit;
     font-weight: 600;
   }
   .eml-attribute input {
