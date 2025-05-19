@@ -4,9 +4,19 @@ define([
   "backbone",
   "semantic",
   "models/metadata/eml211/EMLAttributeList",
+  "views/uiElements/ToggleView",
   "common/Utilities",
   "text!templates/alert.html",
-], ($, _, Backbone, Semantic, EMLAttributeList, Utilities, AlertTemplate) => {
+], (
+  $,
+  _,
+  Backbone,
+  Semantic,
+  EMLAttributeList,
+  ToggleView,
+  Utilities,
+  AlertTemplate,
+) => {
   /**
    * @class AutofillAttributesView
    * @classdesc
@@ -566,6 +576,13 @@ define([
 
         // Set the container's innerHTML
         container.innerHTML = `<div class="${CLASS_NAMES.checkboxeContainer}">${checkboxes.join("")}</div>`;
+
+        // Add a toggle for switching between copy by ref and copy by value
+        if (this.els.copyToToggle) this.els.copyToToggle.remove();
+        const toggle = this.createCopyByRefToggle();
+        container.prepend(toggle.el);
+        this.els.copyToToggle = toggle;
+
         // Start the button inactive
         this.updateButton(action.button, action.buttonStates.default);
         // Warn that this will overwrite existing attributes
@@ -689,6 +706,8 @@ define([
       handleCopyTo() {
         const action = this.actions.copyTo;
         const selectedValues = this.getCheckedValues(action.dynamicContainer);
+        const copyBy = this.els.copyToToggle.selected;
+        const byRef = copyBy === "byRef";
 
         const thisEntity = this.parentModel;
         const entities = thisEntity.collection;
@@ -697,7 +716,7 @@ define([
         );
 
         try {
-          entities.copyAttributeList(thisEntity, selectedEntities, true);
+          entities.copyAttributeList(thisEntity, selectedEntities, true, byRef);
           this.updateButton(action.button, action.buttonStates.success);
         } catch (error) {
           // Get the error type. and call if needed. Include errors
@@ -738,18 +757,29 @@ define([
        */
       renderCopyFrom(action) {
         const actionRef = action;
+        const container = actionRef.dynamicContainer;
         const canCopy = this.canCopyFrom();
         if (canCopy !== true) {
           this.showCantCopyFrom(canCopy);
           return;
         }
 
+        // Get entities we can copy from
         const entities = this.getOtherEntities();
         const id = `${this.cid}-copy-from`;
         const select = document.createElement("select");
 
         select.id = id;
         select.classList.add(CLASS_NAMES.copyFromSelect);
+
+        // Empty the container incase it was already rendered once
+        container.innerHTML = "";
+
+        // Add a toggle for switching between copy by ref and copy by value
+        if (this.els.copyFromToggle) this.els.copyFromToggle.remove();
+        const toggle = this.createCopyByRefToggle();
+        container.append(toggle.el);
+        this.els.copyFromToggle = toggle;
 
         // Add the default option
         const option = document.createElement("option");
@@ -762,13 +792,12 @@ define([
           const opt = this.createOption(entity);
           select.append(opt);
         }, this);
-        actionRef.dynamicContainer.innerHTML = "";
-        actionRef.dynamicContainer.append(select);
+
+        container.append(select);
         actionRef.select = select;
 
-        const { button } = action;
-
         // Deactivate the button until a file is selected
+        const { button } = action;
         this.updateButton(button, action.buttonStates.default);
 
         // Warn that this will overwrite existing attributes
@@ -778,6 +807,33 @@ define([
           [BOOTSTRAP_CLASS_NAMES.info],
           false,
         );
+      },
+
+      /**
+       * Creates a toggle for selecting between copying attributes by reference
+       * or by value.
+       * @returns {ToggleView} The created ToggleView instance.
+       */
+      createCopyByRefToggle() {
+        return new ToggleView({
+          selected: "byValue",
+          options: [
+            {
+              value: "byRef",
+              label: "Link Attributes",
+              description:
+                "Linked attributes will stay up-to-date with changes made to the original.",
+              icon: "link",
+            },
+            {
+              value: "byValue",
+              label: "Copy Attributes",
+              description:
+                "Make a one-time copy: changes to the original attributes won't affect the copy.",
+              icon: "copy",
+            },
+          ],
+        }).render();
       },
 
       /**
@@ -865,17 +921,16 @@ define([
        */
       handleCopyFrom(action) {
         const { select } = action;
-        // - get select value
-        // - get matching entity model
-        // - use copy attributes method in collection to copy here update button
-        //   to indicate success
         const selectedValue = select.options[select.selectedIndex].value;
         const selectedEntity = this.parentModel.collection.get(selectedValue);
         const thisEntity = this.parentModel;
         const entities = thisEntity.collection;
 
+        const copyBy = this.els.copyFromToggle.selected;
+        const byRef = copyBy === "byRef";
+
         try {
-          entities.copyAttributeList(selectedEntity, [thisEntity], true);
+          entities.copyAttributeList(selectedEntity, [thisEntity], true, byRef);
           this.updateButton(action.button, action.buttonStates.success);
         } catch (error) {
           this.errors.copyFrom = error;
