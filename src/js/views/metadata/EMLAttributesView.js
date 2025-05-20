@@ -30,7 +30,6 @@ define([
   const CLASS_NAMES = {
     menuContainer: "attribute-menu-container",
     actionButtonsContainer: "action-buttons",
-
     attributeList: "attribute-list",
     menu: "attribute-menu",
     menuItem: "attribute-menu-item",
@@ -41,9 +40,9 @@ define([
     error: "error",
     remove: "remove",
     previewRemove: "remove-preview",
-
     autofillButton: "autofill-button",
     autofillContainer: "autofill-attributes",
+    addAttributeButton: "add-attribute-button",
   };
 
   // Classes from bootstrap that are used in the view
@@ -126,8 +125,7 @@ define([
             <div class="${CN.actionButtonsContainer}">
               <a href="#" class="${BC.button} ${BC.buttonPrimary} ${CN.autofillButton}"><i class="${ICONS.magic} ${ICONS.onLeft}"></i>Auto-Fill...</a>
             </div>
-            <ul class="${CN.menu} ${BC.sideNavItems}">
-            </ul>
+            <ul class="${CN.menu} ${BC.sideNavItems}"></ul>
           </div>
           <div class="${CN.attributeList}"></div>
           <div class="${CN.autofillContainer}" style="display: none;"></div>`;
@@ -142,8 +140,6 @@ define([
        * separated by spaces
        * @param {string} attrs.attrId - The if of the attribute
        * @param {string} attrs.attributeName - The name of the attribute
-       * @param {string} attrs.attributeDescription - The description of the
-       * attribute
        * @returns {HTMLElement} The HTML template for an attribute
        */
       menuItemTemplate(attrs) {
@@ -154,7 +150,6 @@ define([
         template.innerHTML = `
           <li class="${CN.menuItem} ${BC.sideNavItem} pointer ${extraClasses}" data-id="${attrs.attrId}">
             <a class="${CN.ellipsis}">
-              <i class="${BC.icon} ${ICONS.onLeft} ${ICONS.add} ${CN.add} ${BC.hidden}"></i>
               <span class="name">${attrs.attributeName}</span>
               <i class="${BC.icon} ${ICONS.remove} ${CN.remove}"></i>
             </a>
@@ -225,8 +220,6 @@ define([
           attr.set("isNew", false, { silent: true });
         });
 
-        // Add a new attribute for editing if there isn't one already
-        this.addNewAttribute();
         // Render Attribute views for each model
         this.collection.models.forEach(this.renderAttribute, this);
 
@@ -236,6 +229,42 @@ define([
         }
 
         this.listenToAttributesCollection();
+
+        // Render the new attribute button here because it is part of the menu
+        this.renderNewAttributeButton();
+      },
+
+      /**
+       * Adds a list item that appears like a button that always remains at the
+       * bottom of the menu. This button is used to add a new attribute.
+       * @returns {HTMLElement} The button element
+       * @since 0.0.0
+       */
+      renderNewAttributeButton() {
+        if (this.els.addAttributeButton) {
+          this.els.addAttributeButton.remove();
+          this.els.addAttributeButton = null;
+        }
+        const CN = CLASS_NAMES;
+        const BC = BOOTSTRAP_CLASS_NAMES;
+        const button = this.menuItemTemplate({
+          attrId: "add-attribute-button",
+          attributeName: STRINGS.addAttribute,
+          classes: `${CN.addAttributeButton} ${CN.new}`,
+        });
+        // Add an add icon to the button Prepend it within the <a> tag
+        const iconHtml = document.createElement("i");
+        iconHtml.classList.add(BC.icon, ICONS.onLeft, ICONS.add, CN.add);
+        const buttonLink = button.querySelector(`.${CN.ellipsis}`);
+        buttonLink.prepend(iconHtml);
+
+        // Find the remove icon and remove it
+        const removeIcon = button.querySelector(`.${CN.remove}`);
+        removeIcon?.remove();
+        this.els.menu.appendChild(button);
+
+        this.els.addAttributeButton = button;
+        return button;
       },
 
       /**
@@ -243,7 +272,12 @@ define([
        * fill out.
        */
       addNewAttribute() {
-        this.collection.addNewAttribute(this.parentModel);
+        this.listenToOnce(this.collection, "add", (model) => {
+          const { menuItem } = this.attrEls[model.cid];
+          this.updateMenuItemLabel(menuItem, STRINGS.newAttribute);
+          this.showAttribute(model);
+        });
+        this.collection.addNewAttribute(this.parentModel, true);
       },
 
       /** Set up event listeners for the collection and its models */
@@ -270,7 +304,6 @@ define([
         const { menuItem } = this.attrEls[attributeModel.cid];
         this.listenTo(attributeModel, "invalid", this.showAttributeValidation);
         this.listenTo(attributeModel, "valid", this.hideAttributeValidation);
-        this.listenTo(attributeModel, "change:isNew", this.displayNewStatus);
         this.listenTo(
           attributeModel,
           "change:attributeName",
@@ -338,9 +371,6 @@ define([
           menuItem,
         };
 
-        // Make sure the new status is reflected
-        this.displayNewStatus(attributeModel);
-
         // Always scroll to the bottom of the menu so that the add attribute
         // button is always visible
         menuItem.scrollIntoView();
@@ -381,58 +411,9 @@ define([
           attrId: attributeModel.cid,
           attributeName: attributeModel.get("attributeName") || "",
         });
-
         const removeIcon = item.querySelector(`.${ICONS.remove}`);
-
         $(removeIcon).popup(this.removeTooltipSettings);
         return item;
-      },
-
-      /**
-       * Display the new status for an attribute
-       * @param {EMLAttribute} attributeModel - The attribute model
-       */
-      displayNewStatus(attributeModel) {
-        const isNew = attributeModel.get("isNew");
-        const { menuItem } = this.attrEls[attributeModel.cid];
-        if (isNew) {
-          this.showAsNew(menuItem);
-        } else {
-          this.removeNewStatus(menuItem);
-        }
-      },
-
-      /**
-       * Show an attribute as new
-       * @param {HTMLElement} menuItem - The menu item element
-       */
-      showAsNew(menuItem) {
-        const CN = CLASS_NAMES;
-        const BC = BOOTSTRAP_CLASS_NAMES;
-        const menuEl = menuItem;
-        menuEl.classList.add(CN.new);
-        menuEl.querySelector(`.${CN.menuItemName}`).textContent =
-          "Add Attribute";
-        // Find the add icon and remove the hidden class
-        menuEl.querySelector(`.${CN.add}`)?.classList.remove(BC.hidden);
-      },
-
-      /**
-       * Remove the new status from an attribute
-       * @param {HTMLElement} menuItem - The menu item element
-       */
-      removeNewStatus(menuItem) {
-        menuItem.classList.remove("new");
-        if (this.getMenuItemLabel(menuItem) === STRINGS.addAttribute) {
-          this.updateMenuItemLabel(menuItem, STRINGS.newAttribute);
-        }
-        menuItem
-          .querySelector(`.${CLASS_NAMES.add}`)
-          .classList.add(BOOTSTRAP_CLASS_NAMES.hidden);
-
-        // If the new status was removed, then we create a new attribute so the
-        // user always has a blank attribute to fill out
-        this.addNewAttribute();
       },
 
       /**
@@ -449,6 +430,17 @@ define([
         const menuItem = e.currentTarget;
         const attrId = menuItem.getAttribute("data-id");
         this.hideAutofill();
+
+        // The target would be the icon, link, etc. The item clicked would be
+        // the parent li.
+        const parentLi = e.target.closest(`.${CLASS_NAMES.menuItem}`);
+        // If the clicked item is the add attribute button, add a new
+        if (parentLi === this.els.addAttributeButton) {
+          this.addNewAttribute();
+          return;
+        }
+
+        // Otherwise it's an attribute menu item, so show the attribute
         this.showAttribute(this.collection.get(attrId));
       },
 
@@ -505,7 +497,6 @@ define([
        */
       removeAttribute(attributeModel) {
         const { listItem, menuItem } = this.attrEls[attributeModel.cid];
-
         // If the item is active, show the next item
         const menuItemActive = menuItem.classList.contains(
           BOOTSTRAP_CLASS_NAMES.active,
@@ -517,7 +508,12 @@ define([
             index < this.collection.length - 1
               ? index + 1
               : Math.max(index - 1, 0);
-          this.showAttribute(this.collection.at(newIndex));
+          const attrToShow = this.collection.at(newIndex);
+          if (attrToShow) {
+            this.showAttribute(attrToShow);
+          } else {
+            this.hideAllAttributes();
+          }
         }
         listItem.remove();
         menuItem.remove();
@@ -657,6 +653,8 @@ define([
             this.els.menu.appendChild(menuItem);
           }
         });
+        // Finally ensure that the add attribute button is at the end
+        this.els.menu.appendChild(this.els.addAttributeButton);
       },
 
       /** Actions to perform when the view is removed */
