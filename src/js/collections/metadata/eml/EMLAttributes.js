@@ -21,14 +21,8 @@ define([
 
       /** @inheritdoc */
       parse(response, options) {
-        let attributeListDOM = response;
+        const attributeListDOM = response;
         if (!attributeListDOM) return [];
-        if (typeof attributeListDOM === "string") {
-          // parse with jquery so node names are lowercase as expected by the
-          // attribute model
-          // eslint-disable-next-line prefer-destructuring
-          attributeListDOM = $.parseHTML(response)[0];
-        }
         const attributeNodes =
           attributeListDOM.getElementsByTagName("attribute");
         return Array.from(attributeNodes).map((attr) => ({
@@ -67,21 +61,34 @@ define([
       },
 
       /**
-       * Add an attribute to the collection
-       * @param {object} attributes - The model attributes of the new EML
-       * attribute, optional. May include the parentModel
+       * Add an attribute to the collection. Will try to set the parentModel if
+       * it is not already set.
+       * @param {object|EMLAttribute} [attributes] - The model attributes of the
+       * new EML attribute. Should include the parentModel. Or an instance of
+       * EMLAttribute.
        * @param {object} options - Options to pass to the add method
        * @returns {EMLAttribute} The newly added attribute
        */
       addAttribute(attributes = {}, options = {}) {
+        let modifiedAttrs = attributes;
         // A parent (entity) model is required for some of Attribute's methods
-        const modifiedAttrs = { ...attributes };
-        if (!modifiedAttrs.parentModel) {
-          modifiedAttrs.parentModel = this.getParentModel();
+        if (attributes instanceof EMLAttribute) {
+          if (!modifiedAttrs.get("parentModel")) {
+            modifiedAttrs.set("parentModel", this.getParentModel());
+          }
+          if (!modifiedAttrs.get("xmlID")) {
+            modifiedAttrs.set("xmlID", DataONEObject.generateId());
+          }
+        } else {
+          modifiedAttrs = { ...attributes };
+          if (!modifiedAttrs.parentModel) {
+            modifiedAttrs.parentModel = this.getParentModel();
+          }
+          if (!modifiedAttrs.xmlID) {
+            modifiedAttrs.xmlID = DataONEObject.generateId();
+          }
         }
-        if (!modifiedAttrs.xmlID) {
-          modifiedAttrs.xmlID = DataONEObject.generateId();
-        }
+
         return this.add(modifiedAttrs, options);
       },
 
@@ -94,17 +101,22 @@ define([
       },
 
       /**
-       * Add a new attribute to the collection. Only allows one new attribute
-       * to be added at a time. Returns the existing new attribute if one is
-       * already present.
-       * @param {EMLEntity} parentModel The model that contains this
-       * collection, optional
+       * Add a new attribute to the collection. Only allows one new attribute to
+       * be added at a time (unless allowMultiple is true). Returns the existing
+       * new attribute if one is already present.
+       * @param {EMLEntity} parentModel The model that contains this collection,
+       * optional
+       * @param {boolean} allowMultiple - If true, allows multiple new
+       * attributes to be added. If false, only one new attribute can be added
+       * at a time. Defaults to false.
        * @returns {EMLAttribute} The newly added attribute model
        */
-      addNewAttribute(parentModel) {
-        const existingNewAttribute = this.getNewAttribute();
-        if (existingNewAttribute) {
-          return existingNewAttribute;
+      addNewAttribute(parentModel, allowMultiple = false) {
+        if (!allowMultiple) {
+          const existingNewAttribute = this.getNewAttribute();
+          if (existingNewAttribute) {
+            return existingNewAttribute;
+          }
         }
         return this.addAttribute({
           parentModel,
@@ -138,7 +150,7 @@ define([
        * number of attributes in the collection, the extra attributes will be
        * removed.
        * @param {string[]} names - An array of new attribute names
-       * @param {EMLEntity} parentModel - The model that contains this
+       * @param {EMLAttributeList} parentModel - The model that contains this
        * collection
        * @param {object} options - Options to pass to the add, remove, and set
        * methods
@@ -183,36 +195,6 @@ define([
           return false;
         }
         return true;
-      },
-
-      /**
-       * Update the XML DOM object with the collection's attributes
-       * @param {HTMLElement} currentDOM - The current XML DOM object
-       * representing the collection of attributes. If not provided, a new XML
-       * DOM object will be created.
-       * @returns {object} The updated XML DOM object
-       */
-      updateDOM(currentDOM) {
-        const dom = currentDOM
-          ? currentDOM.cloneNode(true)
-          : document.createElement("attributeList");
-
-        if (dom.childNodes.length) {
-          // Remove all existing attributes
-          while (dom.firstChild) {
-            dom.removeChild(dom.firstChild);
-          }
-        }
-
-        // Add each attribute from the collection to the DOM
-        this.each((attribute) => {
-          if (!attribute.isEmpty()) {
-            const updatedAttrDOM = attribute.updateDOM();
-            dom.append(updatedAttrDOM);
-          }
-        });
-
-        return dom;
       },
 
       /**

@@ -2245,13 +2245,16 @@ define([
           @param xmlString  The XML string with reference elements to transform
       */
       dereference(xmlString) {
-        let referencesList; // the array of references elements in the document
         let referencedID; // The id of the referenced element
         let referencesParentEl; // The parent of the given references element
         let referencedEl; // The referenced DOM to be copied
 
+        // To allow for gradual support for references, we will skip
+        // dereferencing certain reference types as they are implemented.
+        const referenceTypesToSkip = ["attributeList"];
+
         const xmlDOM = $.parseXML(xmlString);
-        referencesList = xmlDOM.getElementsByTagName("references");
+        let referencesList = xmlDOM.getElementsByTagName("references");
 
         if (referencesList.length) {
           // Process each references elements
@@ -2265,7 +2268,10 @@ define([
               referencesEl = referencesList[0];
               referencedID = $(referencesEl).text();
               referencesParentEl = $(referencesEl).parent()[0];
-              if (typeof referencedID !== "undefined" && referencedID != "") {
+              if (
+                referencedID &&
+                !referenceTypesToSkip.includes(referencesParentEl.nodeName)
+              ) {
                 referencedEl = xmlDOM.getElementById(referencedID);
                 if (typeof referencedEl !== "undefined") {
                   // Clone the referenced element and replace the references

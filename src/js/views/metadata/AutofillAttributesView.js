@@ -3,10 +3,20 @@ define([
   "underscore", // for alert template only
   "backbone",
   "semantic",
-  "collections/metadata/eml/EMLAttributes",
+  "models/metadata/eml211/EMLAttributeList",
+  "views/uiElements/ToggleView",
   "common/Utilities",
   "text!templates/alert.html",
-], ($, _, Backbone, Semantic, EMLAttributes, Utilities, AlertTemplate) => {
+], (
+  $,
+  _,
+  Backbone,
+  Semantic,
+  EMLAttributeList,
+  ToggleView,
+  Utilities,
+  AlertTemplate,
+) => {
   /**
    * @class AutofillAttributesView
    * @classdesc
@@ -22,7 +32,7 @@ define([
   // Class names used in this view
   const CLASS_NAMES = {
     view: "autofill-attributes",
-    buttonContainer: "autofill-attributes__button-container",
+    buttonContainer: "right-aligned-flex-container",
     tabDynamicContent: "autofill-attributes_tab-dynamic-content",
     notificationContainer: "autofill-attributes__notification",
     checkboxeContainer: "autofill-attributes__checkbox-list",
@@ -374,15 +384,15 @@ define([
        * Creates a new AutofillAttributesView
        * @param {object} options - A literal object with options to pass to the
        * view
-       * @param {EMLAttributes} options.collection - The collection of
-       * EMLAttribute models to display
+       * @param {EMLAttributeList} options.model - The attributes model that
+       * contains the attributes collection to autofill.
        * @param {EMLEntity} options.parentModel - The entity model to which
        * these attributes belong
        * @param {boolean} [options.isNew] - Set to true if this is a new
        * attribute
        */
       initialize(options = {}) {
-        this.collection = options.collection || new EMLAttributes();
+        this.model = options.model || new EMLAttributeList();
         this.parentModel = options.parentModel;
 
         // Prefix all the icons
@@ -421,7 +431,7 @@ define([
         };
 
         this.renderActions();
-        this.stopListening(this.parentModel.collection, "update");
+        this.stopListening(this.parentModel?.collection, "update");
         this.listenTo(
           this.parentModel.collection,
           "update",
@@ -566,6 +576,13 @@ define([
 
         // Set the container's innerHTML
         container.innerHTML = `<div class="${CLASS_NAMES.checkboxeContainer}">${checkboxes.join("")}</div>`;
+
+        // Add a toggle for switching between copy by ref and copy by value
+        if (this.els.copyToToggle) this.els.copyToToggle.remove();
+        const toggle = this.createCopyByRefToggle();
+        container.prepend(toggle.el);
+        this.els.copyToToggle = toggle;
+
         // Start the button inactive
         this.updateButton(action.button, action.buttonStates.default);
         // Warn that this will overwrite existing attributes
@@ -612,14 +629,10 @@ define([
        * - true if all checks pass
        */
       canCopyTo() {
-        const attributes = this.collection;
+        const attributes = this.model.get("emlAttributes");
 
         // There must be attributes to copy
-        if (
-          !attributes ||
-          attributes.length === 0 ||
-          !attributes.hasNonEmptyAttributes()
-        ) {
+        if (!this.model.hasNonEmptyAttributes()) {
           return "no attributes";
         }
         // All the attributes must be valid before copying
@@ -693,6 +706,8 @@ define([
       handleCopyTo() {
         const action = this.actions.copyTo;
         const selectedValues = this.getCheckedValues(action.dynamicContainer);
+        const copyBy = this.els.copyToToggle.selected;
+        const byRef = copyBy === "byRef";
 
         const thisEntity = this.parentModel;
         const entities = thisEntity.collection;
@@ -701,7 +716,7 @@ define([
         );
 
         try {
-          entities.copyAttributeList(thisEntity, selectedEntities, true);
+          entities.copyAttributeList(thisEntity, selectedEntities, true, byRef);
           this.updateButton(action.button, action.buttonStates.success);
         } catch (error) {
           // Get the error type. and call if needed. Include errors
@@ -742,18 +757,29 @@ define([
        */
       renderCopyFrom(action) {
         const actionRef = action;
+        const container = actionRef.dynamicContainer;
         const canCopy = this.canCopyFrom();
         if (canCopy !== true) {
           this.showCantCopyFrom(canCopy);
           return;
         }
 
+        // Get entities we can copy from
         const entities = this.getOtherEntities();
         const id = `${this.cid}-copy-from`;
         const select = document.createElement("select");
 
         select.id = id;
         select.classList.add(CLASS_NAMES.copyFromSelect);
+
+        // Empty the container incase it was already rendered once
+        container.innerHTML = "";
+
+        // Add a toggle for switching between copy by ref and copy by value
+        if (this.els.copyFromToggle) this.els.copyFromToggle.remove();
+        const toggle = this.createCopyByRefToggle();
+        container.append(toggle.el);
+        this.els.copyFromToggle = toggle;
 
         // Add the default option
         const option = document.createElement("option");
@@ -766,13 +792,12 @@ define([
           const opt = this.createOption(entity);
           select.append(opt);
         }, this);
-        actionRef.dynamicContainer.innerHTML = "";
-        actionRef.dynamicContainer.append(select);
+
+        container.append(select);
         actionRef.select = select;
 
-        const { button } = action;
-
         // Deactivate the button until a file is selected
+        const { button } = action;
         this.updateButton(button, action.buttonStates.default);
 
         // Warn that this will overwrite existing attributes
@@ -782,6 +807,33 @@ define([
           [BOOTSTRAP_CLASS_NAMES.info],
           false,
         );
+      },
+
+      /**
+       * Creates a toggle for selecting between copying attributes by reference
+       * or by value.
+       * @returns {ToggleView} The created ToggleView instance.
+       */
+      createCopyByRefToggle() {
+        return new ToggleView({
+          selected: "byValue",
+          options: [
+            {
+              value: "byRef",
+              label: "Link Attributes",
+              description:
+                "Linked attributes will stay up-to-date with changes made to the original.",
+              icon: "link",
+            },
+            {
+              value: "byValue",
+              label: "Copy Attributes",
+              description:
+                "Make a one-time copy: changes to the original attributes won't affect the copy.",
+              icon: "copy",
+            },
+          ],
+        }).render();
       },
 
       /**
@@ -869,17 +921,16 @@ define([
        */
       handleCopyFrom(action) {
         const { select } = action;
-        // - get select value
-        // - get matching entity model
-        // - use copy attributes method in collection to copy here update button
-        //   to indicate success
         const selectedValue = select.options[select.selectedIndex].value;
         const selectedEntity = this.parentModel.collection.get(selectedValue);
         const thisEntity = this.parentModel;
         const entities = thisEntity.collection;
 
+        const copyBy = this.els.copyFromToggle.selected;
+        const byRef = copyBy === "byRef";
+
         try {
-          entities.copyAttributeList(selectedEntity, [thisEntity], true);
+          entities.copyAttributeList(selectedEntity, [thisEntity], true, byRef);
           this.updateButton(action.button, action.buttonStates.success);
         } catch (error) {
           this.errors.copyFrom = error;
@@ -1066,7 +1117,7 @@ define([
             [BOOTSTRAP_CLASS_NAMES.success],
           );
         });
-        this.collection.updateNames(names, this.parentModel);
+        this.model.updateAttributeNames(names);
       },
 
       /**

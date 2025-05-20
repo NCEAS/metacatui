@@ -1,8 +1,9 @@
 define([
   "models/metadata/eml211/EMLOtherEntity",
   "collections/metadata/eml/EMLAttributes",
+  "models/metadata/eml211/EMLAttributeList",
   "models/metadata/eml211/EMLAttribute",
-], function (EMLOtherEntity, EMLAttributes, EMLAttribute) {
+], function (EMLOtherEntity, EMLAttributes, EMLAttributeList, EMLAttribute) {
   // Configure the Chai assertion library
   var should = chai.should();
   var expect = chai.expect;
@@ -73,20 +74,20 @@ define([
       it("should return an attribute list", function () {
         emlOtherEntity
           .get("attributeList")
-          .should.be.an.instanceof(EMLAttributes);
-        emlOtherEntity.get("attributeList").length.should.equal(2);
-        emlOtherEntity
+          .should.be.an.instanceof(EMLAttributeList);
+        const attrsCollection = emlOtherEntity
           .get("attributeList")
-          .at(0)
-          .should.be.an.instanceof(EMLAttribute);
-        emlOtherEntity
-          .get("attributeList")
-          .at(1)
-          .should.be.an.instanceof(EMLAttribute);
+          .get("emlAttributes");
+        attrsCollection.should.be.an.instanceof(EMLAttributes);
+        attrsCollection.length.should.equal(2);
+        attrsCollection.at(0).should.be.an.instanceof(EMLAttribute);
+        attrsCollection.at(1).should.be.an.instanceof(EMLAttribute);
       });
 
       it("should return a nominal non-numeric site attribute", function () {
-        var site = emlOtherEntity.get("attributeList").at(0);
+        const attrList = emlOtherEntity.get("attributeList");
+        const attrsCollection = attrList.get("emlAttributes");
+        var site = attrsCollection.at(0);
         site.get("xmlID").should.equal("attr.1.1");
         site.get("attributeName").should.equal("site");
         site.get("attributeLabel")[0].should.equal("Site Code");
@@ -105,7 +106,7 @@ define([
         domain[0].textDomain.pattern.should.be.an("array");
         domain[0].textDomain.pattern[0].should.equal("*");
         domain[0].textDomain.source.should.equal("Any source");
-        var temp = emlOtherEntity.get("attributeList").at(1);
+        var temp = attrsCollection.at(1);
         temp.get("xmlID").should.equal("attr.2.1");
         temp.get("attributeName").should.equal("temp");
         temp.get("attributeLabel")[0].should.equal("Temperature");
