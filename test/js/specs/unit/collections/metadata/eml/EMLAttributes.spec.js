@@ -201,51 +201,6 @@ define([
       });
     });
 
-    describe("updateDOM", () => {
-      it("should create a new DOM element if currentDOM is not provided", () => {
-        // Create a model that is not empty and stubs updateDOM to return a dummy element
-        const model = new Backbone.Model();
-        model.isEmpty = () => false;
-        const dummyElem = document.createElement("div");
-        model.updateDOM = () => dummyElem;
-        state.emlAttributes.reset([model]);
-
-        const updatedDOM = state.emlAttributes.updateDOM();
-        expect(updatedDOM.tagName.toLowerCase()).to.equal("attributelist");
-        expect(updatedDOM.childNodes.length).to.equal(1);
-        expect(updatedDOM.firstChild).to.equal(dummyElem);
-      });
-
-      it("should clear existing children in the provided currentDOM before appending", () => {
-        // Prepare a current DOM with existing children
-        const currentDOM = document.createElement("attributeList");
-        const oldChild = document.createElement("p");
-        currentDOM.appendChild(oldChild);
-
-        const model = new Backbone.Model();
-        model.isEmpty = () => false;
-        const newChild = document.createElement("span");
-        model.updateDOM = () => newChild;
-        state.emlAttributes.reset([model]);
-
-        const updatedDOM = state.emlAttributes.updateDOM(currentDOM);
-        expect(updatedDOM.childNodes.length).to.equal(1);
-        expect(updatedDOM.firstChild).to.equal(newChild);
-      });
-
-      it("should not append a DOM element for an attribute that is empty", () => {
-        const currentDOM = document.createElement("attributeList");
-        const model = new Backbone.Model();
-        model.isEmpty = () => true;
-        // Even if updateDOM is defined, it should not be called when the attribute is empty.
-        model.updateDOM = () => document.createElement("p");
-        state.emlAttributes.reset([model]);
-
-        const updatedDOM = state.emlAttributes.updateDOM(currentDOM);
-        expect(updatedDOM.childNodes.length).to.equal(0);
-      });
-    });
-
     describe("comparator", () => {
       it("should sort new models to the end of the collection", () => {
         const newModel = new Backbone.Model({ isNew: true });

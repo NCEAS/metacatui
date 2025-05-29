@@ -83,7 +83,6 @@ define([
 
         // EMLOtherEntity-specific work
         var objectXML = attributes.objectXML; // The otherEntity XML fragment
-        var objectDOM; // The W3C DOM of the object XML fragment
         var $objectDOM; // The JQuery object of the XML fragment
 
         // Use the updated objectDOM if we have it
@@ -162,6 +161,8 @@ define([
       getParentEML: function () {
         var emlModel = this.get("parentModel"),
           tries = 0;
+
+        if (!emlModel) return false;
 
         while (emlModel.type !== "EML" && tries < 6) {
           emlModel = emlModel.get("parentModel");

@@ -1,0 +1,407 @@
+define([
+  "backbone",
+  "common/EMLUtilities",
+  "collections/metadata/eml/EMLAttributes",
+  "models/metadata/eml211/EMLReferences",
+  "models/DataONEObject",
+], (Backbone, EMLUtilities, EMLAttributes, EMLReferences, DataONEObject) => {
+  /**
+   * @class EMLAttributeList
+   * @classdesc A model representing the EML AttributeListType.
+   * See {@link https://eml.ecoinformatics.org/schema/eml-attribute_xsd#AttributeListType}
+   * @classcategory Models/Metadata/EML211
+   * @constructs
+   * @augments Backbone.Model
+   */
+  const EMLAttributeList = Backbone.Model.extend(
+    /** @lends EMLAttributeList.prototype */
+    {
+      /**
+       * Default attributes for this model
+       * @returns {object} Default attributes
+       * @property {string} xmlID - The XML ID of the attribute list
+       * @property {EMLAttributes} emlAttributes - The collection of EML
+       * attributes. Note: This cannot be called "attributes" because that
+       * overrides the Backbone.Model.attributes property and causes unexpected
+       * behaviour.
+       * @property {EMLReferences} references - A reference to another
+       * attributeList in the same EML document
+       * @property {EMLEntity} parentModel - The parent model of this attribute
+       * list
+       */
+      defaults() {
+        return {
+          xmlID: DataONEObject.generateId(),
+          emlAttributes: new EMLAttributes(),
+          references: null,
+          parentModel: null,
+        };
+      },
+
+      /** @inheritdoc */
+      initialize(attrs = {}, options = {}) {
+        if (!attrs?.parentModel && options?.parentModel) {
+          this.set("parentModel", options.parentModel);
+        }
+
+        // Listen for both changes on the eml attributes collection and for
+        // replacement of the collection itself, in which case we need to reset
+        // listeners.
+        this.listenTo(this, "change:emlAttributes", this.listenToAttributes);
+        this.listenToAttributes();
+
+        // Similar with references
+        this.listenTo(this, "change:references", this.listenToReferences);
+        this.listenToReferences();
+      },
+
+      /**
+       * Trigger a change:emlAttributes event on this model when the
+       * emlAttributes collection within this model adds, removes, or changes
+       * one if it's models. This event can be used to notify other views/models
+       * that the attributes collection has changed OR been replaced with a new
+       * collection.
+       */
+      listenToAttributes() {
+        // Stop listening to previous collection
+        const prevAttr = this.previous("emlAttributes");
+        if (prevAttr) this.stopListening(prevAttr);
+
+        // Get the current collection
+        const attrs = this.get("emlAttributes");
+        if (!attrs) return;
+
+        // Listen to changes in the collection
+        this.stopListening(attrs, "update change");
+        this.listenTo(attrs, "update change", () => {
+          this.trigger("change:emlAttributes", this, attrs);
+        });
+      },
+
+      /**
+       * Trigger a change:references event on this model when the references
+       * model changes which model it references. This event can be used to
+       * notify other views/models that the references model has changed or when
+       * it has been replaced with a new model.
+       */
+      listenToReferences() {
+        const prevRef = this.previous("references");
+        if (prevRef) this.stopListening(prevRef);
+
+        const ref = this.get("references");
+        if (!ref) return;
+
+        this.stopListening(ref);
+        this.listenToOnce(ref, "change:references", () => {
+          this.trigger("change:references", this, ref);
+        });
+      },
+
+      /**
+       * Node names as they appear in the XML document mapped to how they are
+       * parsed using the jquery html parser (used for historical reasons).
+       * @returns {object} A map of node names in lowercase to their
+       * corresponding xml camelCase names.
+       */
+      nodeNameMap() {
+        const nodeNames = ["attributeList", "attribute", "references"];
+        // convert to lowercase : camelCase map
+        return nodeNames.reduce((acc, nodeName) => {
+          acc[nodeName.toLowerCase()] = nodeName;
+          return acc;
+        }, {});
+      },
+
+      /** @inheritdoc */
+      parse(response, options = {}) {
+        if (!response || !response.length) {
+          return {};
+        }
+
+        // Convert the jquery object to a DOM element so we can use native DOM
+        // methods. Note the element has the HTML namespace because it was
+        // originally parsed with jquery's HTMLparse. Removed during
+        // serialization.
+        const dom = response.get(0);
+        const id = dom.getAttribute("id");
+        const parentModel = options?.parentModel;
+
+        const thisAttrList = this;
+
+        let emlAttributes = new EMLAttributes({ ...options });
+        let references = null;
+
+        // An attribute list may have references OR attributes, but not both.
+        const referencesNode = dom.getElementsByTagName("references");
+        if (referencesNode?.length) {
+          // Only one reference is allowed
+          const refNode = referencesNode[0];
+          const refOpts = {
+            ...options,
+            parentModel: thisAttrList,
+            parse: true,
+            modelType: "EMLAttributeList",
+          };
+          references = new EMLReferences(refNode, refOpts);
+        } else {
+          const collectionOpts = {
+            ...options,
+            parentModel: thisAttrList,
+            parse: true,
+          };
+          emlAttributes = new EMLAttributes(dom, collectionOpts);
+        }
+
+        return {
+          xmlID: id,
+          emlAttributes,
+          references,
+          parentModel,
+          objectDOM: dom,
+        };
+      },
+
+      /**
+       * Update the EML AttributeList DOM element with the current state of the
+       * model.
+       * @param {Element} [currentDOM] - The current DOM element to update. If
+       * not provided, the model's objectDOM will be used, or a new element will
+       * be created if none exists.
+       * @returns {Element} The updated DOM element
+       */
+      updateDOM(currentDOM) {
+        let dom = currentDOM || this.get("objectDOM");
+        if (!dom) {
+          dom = document.createElementNS(null, "attributeList");
+        } else {
+          dom = dom.cloneNode(true);
+        }
+
+        if (this.isEmpty()) {
+          dom.remove();
+          this.set("objectDOM", null);
+          return null;
+        }
+
+        if (dom.childNodes.length) {
+          // Remove all existing attributes
+          while (dom.firstChild) {
+            dom.removeChild(dom.firstChild);
+          }
+        }
+
+        const refDom = this.get("references")?.updateDOM();
+
+        let keepId = true;
+        if (refDom) {
+          // replace the existing references node with the new one
+          const oldRef = dom.getElementsByTagName("references");
+          if (oldRef.length) {
+            dom.replaceChild(refDom, oldRef[0]);
+          } else {
+            dom.appendChild(refDom);
+          }
+          // IDs on attrList nodes with references are not legal
+          keepId = false;
+          // Can only have reference OR attributes, not both
+        } else {
+          // Add each attribute from the collection to the DOM
+          this.get("emlAttributes")?.each((attribute) => {
+            if (!attribute.isEmpty()) {
+              const updatedAttrDOM = attribute.updateDOM();
+              dom.append(updatedAttrDOM);
+            }
+          });
+        }
+
+        // Set the XML ID of the attribute list
+        const xmlID = this.get("xmlID");
+        if (xmlID && keepId) {
+          dom.setAttribute("id", xmlID);
+        } else {
+          dom.removeAttribute("id");
+        }
+
+        this.set("objectDOM", dom);
+
+        return dom;
+      },
+
+      /**
+       * Serialize this model to EML XML
+       * @returns {string} XML string representing the attribute list
+       */
+      serialize() {
+        const dom = this.updateDOM();
+        if (!dom) return null;
+
+        // Convert the DOM element to a string
+        const serializer = new XMLSerializer();
+        let xmlString = serializer.serializeToString(dom);
+
+        // Remove the XML declaration
+        xmlString = xmlString.replace(/<\?xml.*?\?>/, "");
+
+        // Remove the namespace uri
+        xmlString = xmlString.replace(/xmlns="[^"]*"/, "");
+
+        return DataONEObject.prototype.formatXML.call(this, xmlString);
+      },
+
+      /**
+       * Check if the attribute list is empty. An attribute list is empty if
+       * it has no attributes and no references.
+       * @returns {boolean} True if the attribute list is empty, false
+       * otherwise
+       */
+      isEmpty() {
+        return !this.hasNonEmptyAttributes() && !this.hasReferences();
+      },
+
+      /**
+       * Check if the attribute list has any attributes that have values other
+       * than the default values.
+       * @returns {boolean} False if the attribute list is empty or the attributes
+       * are all empty, true otherwise.
+       */
+      hasNonEmptyAttributes() {
+        return this.get("emlAttributes")?.hasNonEmptyAttributes();
+      },
+
+      /**
+       * Check if the attribute list has a references element.
+       * @returns {boolean} True if the attribute list has a references with a
+       * value, false otherwise
+       */
+      hasReferences() {
+        return this.get("references") && !this.get("references").isEmpty();
+      },
+
+      /**
+       * Validate the model state to conform to the EML schema rules.
+       * @returns {object|false} Validation errors or false if valid
+       */
+      validate() {
+        if (this.isEmpty()) return false;
+
+        const errors = {};
+        const emlAttributes = this.get("emlAttributes");
+        const references = this.get("references");
+        const hasAttributes = emlAttributes?.hasNonEmptyAttributes();
+        const hasReferences = references && !references.isEmpty();
+        if (hasAttributes && hasReferences) {
+          errors.attributes =
+            "An attribute list must contain either attribute elements or references, not both.";
+          errors.references =
+            "An attribute list must contain either attribute elements or references, not both.";
+          return errors;
+        }
+
+        const refErrors = references?.validate();
+        const attributeErrors = emlAttributes?.validate();
+
+        // if there are validation errors, add them to the errors object. An
+        // empty object is valid.
+        if (refErrors && Object.keys(refErrors).length) {
+          errors.references = refErrors;
+        }
+        if (attributeErrors && Object.keys(attributeErrors).length) {
+          errors.attributes = attributeErrors;
+        }
+
+        return Object.keys(errors).length ? errors : false;
+      },
+
+      /** Removes the references from the list and destroys the refs model */
+      removeReferences() {
+        const references = this.get("references");
+        if (references) {
+          references.destroy();
+          this.set("references", null);
+        }
+      },
+
+      /** Empty the attribute list if there is one */
+      removeAttributes() {
+        const emlAttributes = this.get("emlAttributes");
+        if (emlAttributes) {
+          emlAttributes.each((attribute) => {
+            emlAttributes.remove(attribute);
+            attribute.destroy();
+          });
+        }
+      },
+
+      /**
+       * Set the references for this attribute list. This will remove any
+       * existing attributes since a list cannot have both attributes and
+       * references.
+       * @param {string} id - The ID of the referenced attribute list
+       */
+      setReferences(id) {
+        if (!id) {
+          throw new Error("ID is required to set references");
+        }
+        this.removeAttributes();
+        const references = this.get("references");
+        if (references) {
+          references.set("references", id);
+        } else {
+          this.set(
+            "references",
+            new EMLReferences({
+              references: id,
+              parentModel: this,
+              modelType: "EMLAttributeList",
+            }),
+          );
+        }
+      },
+
+      /**
+       * Get the EML document that contains this attribute list
+       * @returns {EML} The EML document that contains this attribute list
+       */
+      getParentEML() {
+        return EMLUtilities.getParentEML(this);
+      },
+
+      /**
+       * Given an array of strings, update the names of the attributes in the
+       * collection to match the array. If the number of names in the array
+       * exceeds the number of attributes in the collection, new attributes will
+       * be added to the collection. If the number of names is less than the
+       * number of attributes in the collection, the extra attributes will be
+       * removed.
+       *
+       * Better than calling updateNames on emlAttributes directly, since this
+       * method handles removing references if present and adding an attrs
+       * collection if missing
+       * @param {string[]} names - An array of new attribute names
+       */
+      updateAttributeNames(names) {
+        if (!names || !Array.isArray(names) || !names.length) {
+          throw new Error("Names must be an array");
+        }
+
+        // If there are references, remove them. updateNames will add attributes
+        // and it's illegal to have both references and attributes in the same
+        // attribute list.
+        const references = this.get("references");
+        if (references && !references.isEmpty()) {
+          this.removeReferences();
+        }
+
+        // If there's no attributes collection, create one
+        if (!this.get("emlAttributes")) {
+          this.set("emlAttributes", new EMLAttributes());
+        }
+
+        const emlAttributes = this.get("emlAttributes");
+        emlAttributes.updateNames(names, this);
+      },
+    },
+  );
+
+  return EMLAttributeList;
+});
