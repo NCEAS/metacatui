@@ -8903,7 +8903,7 @@ textarea.medium {
   }
 
   .tab-content {
-    height: calc(100% - 40px);
+    height: calc(100% - 39px);
   }
 
   .modal-body {
@@ -8963,6 +8963,7 @@ textarea.medium {
 
   .attribute-menu {
     overflow: scroll;
+    margin-bottom: 0;
   }
 
   .action-buttons {
@@ -8977,6 +8978,12 @@ textarea.medium {
     position: relative;
     display: flex;
     flex-direction: column;
+  }
+  .add-attribute-button {
+    position: sticky;
+    bottom: 0;
+    background: #eee;
+    font-weight: 600;
   }
   .eml-attribute input {
     height: auto;
