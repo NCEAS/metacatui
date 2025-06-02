@@ -3,8 +3,15 @@ define(["localforage", "models/sysmeta/SysMeta", "models/PackageModel"], (
   SysMeta,
   PackageModel,
 ) => {
-  // The name of the resource map field in the index
+  // Index field names (resource map, format ID, format type)
   const RM_FIELD = "resourceMap";
+  const FORMAT_ID_FIELD = "formatId";
+  const FORMAT_TYPE_FIELD = "formatType";
+
+  // Index values (format type = metadata, format ID for RM)
+  const METADATA_TYPE = "METADATA";
+  const RM_FORMAT_ID = "http://www.openarchives.org/ore/terms";
+
   // The prefix conventionally added to the resource map PIDs
   const RM_FILENAME_PREFIX = "resource_map_";
 
@@ -47,14 +54,19 @@ define(["localforage", "models/sysmeta/SysMeta", "models/PackageModel"], (
      * @param {string} options.metaServiceUrl - The base URL for service to get
      * System Metadata
      * @param {string} [options.token] - The token for authentication
+     * @param {object} [options.storage] - An instance of localForage to use for
+     * storage. If not provided, a new instance will be created with the name
+     * "ResourceMapResolver".
      */
     constructor(options = {}) {
       this.traceLog = [];
       this.options = options;
       // To store RM-EML pid pairs
-      this.storage = LocalForage.createInstance({
-        name: "ResourceMapResolver",
-      });
+      this.storage =
+        options.storage ||
+        LocalForage.createInstance({
+          name: "ResourceMapResolver",
+        });
     }
 
     /**
@@ -113,8 +125,11 @@ define(["localforage", "models/sysmeta/SysMeta", "models/PackageModel"], (
      * @returns {Promise<string|null>} - PID of RM if found, null otherwise
      */
     async searchIndex(emlPid) {
-      const query = encodeURIComponent(`${RM_FIELD}:* AND id:"${emlPid}"`);
-      const url = `${this.options.queryServiceUrl}q=${query}&fl=${RM_FIELD}&wt=json`;
+      const q = `id:"${emlPid}"`;
+      const fl = `${RM_FIELD},${FORMAT_ID_FIELD},${FORMAT_TYPE_FIELD}`;
+      const wt = "json";
+      const query = encodeURIComponent(`q=${q}&fl=${fl}&wt=${wt}`);
+      const url = `${this.options.queryServiceUrl}${query}`;
 
       const fetchOptions = { method: "GET" };
       if (this.options.token) {
@@ -136,20 +151,81 @@ define(["localforage", "models/sysmeta/SysMeta", "models/PackageModel"], (
           return null;
         });
 
-      if (data?.response?.docs?.length === 1) {
-        return data.response.docs[0][RM_FIELD][0];
-      }
+      const results = data?.response?.docs;
+      const numResults = results?.length;
 
-      // Trace if multiple resource maps are found or none are found
-      if (data?.response?.docs?.length > 1) {
+      // Case 1: No results found in index
+      if (!numResults) {
         this.trace({
-          pid: emlPid,
+          emlPid,
           strategy: "index",
           success: false,
-          message: `Multiple resource maps found in Solr (${data.response.docs.length}).`,
+          message: `No results from index for PID ${emlPid}.`,
         });
+        return null;
       }
 
+      // Case 2: Multiple results found (>1 objects with same ID unlikely)
+      if (numResults > 1) {
+        this.trace({
+          emlPid,
+          strategy: "index",
+          success: false,
+          message: `Multiple results found in index for PID ${emlPid} (${numResults}).`,
+        });
+        return null;
+      }
+
+      // At this point we've confirmed there's only 1 result. (!0 and <=1)
+      const result = numResults ? results[0] : null;
+      const rms = result?.[RM_FIELD] || [];
+      const numRMs = result.length || 0;
+      const formatType = result[FORMAT_TYPE_FIELD];
+      const formatId = result[FORMAT_ID_FIELD];
+
+      // Case 3: Resource map found for given EML PID
+      if (numRMs === 1) return rms[0];
+
+      // Case 4: Multiple resource maps found in index for the same EML PID
+      if (numRMs > 1) {
+        this.trace({
+          emlPid,
+          strategy: "index",
+          success: false,
+          message: `Multiple resource maps found in index for PID ${emlPid} (${numRMs}).`,
+        });
+        return null;
+      }
+
+      // Case 5: PID is for a non-Metadata object
+      if (formatType && formatType !== METADATA_TYPE) {
+        //  Case 5A: PID is for a resource map
+        if (formatId === RM_FORMAT_ID) {
+          this.trace({
+            emlPid,
+            strategy: "index",
+            success: true,
+            message: `The given PID ${emlPid} is not a metadata type, but it is a resource map.`,
+          });
+          return emlPid;
+        }
+        // Case 5B: PID is not a metadata type and not a resource map
+        this.trace({
+          emlPid,
+          strategy: "index",
+          success: false,
+          message: `The given PID ${emlPid} is not a metadata type and not a resource map.`,
+        });
+        return null;
+      }
+
+      // Case 6: All other cases, including no RM found for an EML PID
+      this.trace({
+        emlPid,
+        strategy: "index",
+        success: false,
+        message: `No resource map found in index for PID ${emlPid}.`,
+      });
       return null;
     }
 
