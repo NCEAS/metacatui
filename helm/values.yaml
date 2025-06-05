@@ -89,7 +89,7 @@ appConfig:
   ##
   enabled: true
 
-## @param themeFilesClaimName Provide source files for a custom Theme (also see 'appConfig.theme').
+## @param customTheme Provide source files for a custom Theme
 ## NOTE that global.metacatUiThemeName MUST match the theme of your custom theme
 ##
 customTheme:
@@ -129,6 +129,22 @@ customTheme:
   ##     subPath: "metacatui-themes/src/drp/js/themes/drp" # (do NOT include initial "/" in subPath)
   ##
   subPath: ""
+
+  ## @param customTheme.subPath path to 'metacatui-themes' dir (git-repo root) in mounted filesystem
+  ## Ignored unless customTheme is enabled
+  repoRootSubPath: "metacatui-themes"
+
+  ## @param customTheme.gitRepoUrl
+  ## Ignored unless customTheme is enabled
+  gitRepoUrl: "https://github.com/NCEAS/metacatui-themes.git"
+
+  ## @param customTheme.gitRevision Any string that makes sense after the command `git checkout`
+  ## - for example:
+  ##     revision: "tags/2.29.0"    =>     git checkout tags/2.29.0
+  ##     revision: "develop"        =>     git checkout develop
+  ## Ignored unless customTheme is enabled
+  ##
+  gitRevision: "main"
 
 ## @param livenessProbeEnabled Enable livenessProbe. Autoconfigured using .Values.appConfig.root
 ## To override autoconfig, keep 'livenessProbeEnabled: true', and define a livenessProbe; e.g:

@@ -36,7 +36,7 @@ spec:
       {{- if ne $source "pvc" }}
       initContainers:
         - name: get-source
-          {{- if eq $source "git" }}
+          {{- if or ( eq $source "git" ) .Values.customTheme.enabled }}
           image: alpine/git:latest
           {{- else }}
           image: busybox:latest
@@ -81,9 +81,45 @@ spec:
               sed -i \
                's|"/config/config.js"|"{{ include "metacatui.clean.root" . }}/config/config.js"|g' \
                "${DEST}"/index.html;
+              {{- if .Values.customTheme.enabled }}
+              tstart=$(date +%s);
+              echo "Starting custom theme update at $tstart";
+
+
+
+
+
+
+
+
+              DEST="/metacatui-theme/{{ .Values.customTheme.repoRootSubPath }}";
+              mkdir -p $DEST;
+              {{- if eq $source "git" }}
+               {{- $themeRepoUrl := "" }}
+               {{- $themeRev := "" }}
+               {{- if and .Values.customTheme .Values.customTheme.git }}
+                 {{- $themeRepoUrl = .Values.customTheme.gitRepoUrl }}
+                 {{- $themeRev = .Values.customTheme.gitRevision }}
+               {{- end }}
+              REPO='{{ $repoUrl | default "https://github.com/NCEAS/metacatui-themes.git" }}';
+              REV='{{ $revision | default "main" }}';
+              git clone -b $REV --depth 1 $REPO /tmp/metacatui/;
+              mv /tmp/metacatui/src/* $DEST;
+              finish=$(date +%s);
+              echo "git clone -b {{ $revision }} --depth 1 took $((finish - start)) sec";
+
+              {{- end }}
           volumeMounts:
             - name: {{ .Release.Name }}-mcui-source-files
               mountPath: /metacatui
+              {{- if .Values.customTheme.enabled }}
+            - name: {{ .Release.Name }}-mcui-custom-theme-files
+              mountPath: /metacatui-theme
+                {{- if .Values.customTheme.repoRootSubPath }}
+              subPath: {{ .Values.customTheme.repoRootSubPath }}
+                {{- end }}
+              {{- end }}
+
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
