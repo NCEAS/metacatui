@@ -21,6 +21,11 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
     "fileName",
   ];
 
+  const IS_LOCAL_FORAGE = (store) =>
+    store &&
+    typeof store.setItem === "function" &&
+    typeof store.getItem === "function";
+
   /**
    * @typedef {object} VersionResult
    * @property {string} pid - The PID of the version at the requested offset.
@@ -129,7 +134,7 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
       this.cache = new Map();
 
       // store - persistent cache (IndexedDB | localStorage)
-      if (store && !(store instanceof localforage)) {
+      if (store && !IS_LOCAL_FORAGE(store)) {
         throw new Error(
           "Invalid store provided to VersionTracker. Must be a localforage instance.",
         );
@@ -312,6 +317,7 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
      */
     async addVersion(prevPid, newPid, sysMeta = null, token = null) {
       await this.fillVersionChain(prevPid, 1, true, token);
+      await this.fillVersionChain(newPid, 1, false, token);
 
       const prevRec = await this.record(prevPid);
       const newRec = await this.record(newPid);
@@ -549,12 +555,12 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
         rec.prev = (saved.prev || []).filter(Boolean);
         rec.endNext = !!saved.endNext;
         rec.endPrev = !!saved.endPrev;
-        if (saved.meta) {
+        if (saved.sysMeta) {
           const sm = new SysMeta({
             identifier: pid,
             metaServiceUrl: this.metaServiceUrl,
           });
-          sm.data = { identifier: pid, ...saved.meta };
+          sm.data = { identifier: pid, ...saved.sysMeta };
           sm.fetched = true; // mark as fetched to skip network
           rec.sysMeta = sm;
         }
@@ -586,7 +592,7 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
         prev: rec.prev,
         endNext: rec.endNext,
         endPrev: rec.endPrev,
-        meta: leanMeta,
+        sysMeta: leanMeta,
         ts: Date.now(),
       });
     }
