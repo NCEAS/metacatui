@@ -1,6 +1,11 @@
 "use strict";
 
-define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
+define([
+  "jquery",
+  "underscore",
+  "backbone",
+  "models/sysmeta/VersionTracker",
+], function ($, _, Backbone, VersionTracker) {
   /**
    * @class UIRouter
    * @classdesc MetacatUI Router
@@ -27,6 +32,212 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         "edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)":
           "renderPortalEditor",
         drafts: "renderDrafts",
+        versionTracker: "versionTracker", // version tracker page
+      },
+
+      async versionTracker() {
+        const vt = new VersionTracker({
+          metaServiceUrl: MetacatUI.appModel.get("metaServiceUrl"),
+        });
+        let token = await MetacatUI.appUserModel.getTokenPromise();
+        this.listenTo(MetacatUI.appUserModel, "change:loggedIn", () => {
+          MetacatUI.appUserModel.getTokenPromise().then((t) => {
+            token = t;
+          });
+        });
+        // Build a UI for users to test inputting a PID and getting the version
+        // history.
+        const SPINNER = `<i class="icon-spinner icon-spin icon-large loading icon"></i>`;
+        const VersionTrackerTesterView = Backbone.View.extend({
+          template: _.template(
+            `<h1 style="margin-bottom:30px;font-weight:400;">🧪 The <code style="font-size:inherit;color:inherit;">VersionTracker</code> Test Page 🔬</h1>
+            <h4>Enter a PID to get its version history:</h4>
+            <input type="text" id="pidInput" placeholder="Enter PID here..." style="margin-bottom: 0; height: 26px; width:100%; max-width:500px;">
+            <button id="getVersionsButton" class="btn btn-primary">Get Versions</button>
+            <div id="status" class="well alert alert-info" style="margin-top: 20px">Waiting for a pid</div>
+            <div id="result" class="well" style="margin-top: 20px">Results will show here</div>`,
+          ),
+
+          versionTemplate: _.template(/* html */ `
+            <div class="version" style="margin:1em 0;padding:.75em;border:1px solid #ddd;border-radius:4px;background:#f1f6f9;">
+              <!-- PID -->
+              <p style="margin:0 0 .5em 0;">
+                <strong>PID:</strong>
+                <code><%= pid %></code>
+              </p>
+
+              <!-- Quick link bar -->
+              <p style="margin:0 0 1em 0;font-size:.9em;">
+                <strong>Links:</strong>
+                <a href="<%= viewUrl %>"   target="_blank" rel="noopener">view</a> |
+                <a href="<%= objectUrl %>" target="_blank" rel="noopener">object</a> |
+                <a href="<%= sysMetaUrl %>"target="_blank" rel="noopener">sysmeta</a>
+              </p>
+
+              <!-- Details -->
+              <table style="width:100%;border-collapse:collapse;font-size:.9em;">
+                <thead>
+                  <tr style="background:#f7f7f7;">
+                    <th style="text-align:left;padding:4px 6px;">Uploaded</th>
+                    <th style="text-align:left;padding:4px 6px;">SysMeta Modified</th>
+                    <th style="text-align:left;padding:4px 6px;">File&nbsp;name</th>
+                    <th style="text-align:left;padding:4px 6px;">Size</th>
+                    <th style="text-align:left;padding:4px 6px;">Format</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="padding:4px 6px;"><%= dateUploaded || "—" %></td>
+                    <td style="padding:4px 6px;"><%= dateModified || "—" %></td>
+                    <td style="padding:4px 6px;"><%= fileName     || "—" %></td>
+                    <td style="padding:4px 6px;"><%= size         || "—" %></td>
+                    <td style="padding:4px 6px;"><%= formatId     || "—" %></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          `),
+          events: {
+            "click #getVersionsButton": "getVersions",
+          },
+
+          render: function () {
+            this.$el.html(this.template());
+            return this;
+          },
+
+          updateResult: function (html) {
+            this.$("#result").html(html);
+          },
+
+          updateStatus: function (message, type = "info") {
+            this.$("#status").html(message);
+            this.$("#status").removeClass("alert-info alert-danger");
+            this.$("#status").addClass(`alert-${type}`);
+          },
+
+          showLoading: function (pid) {
+            this.updateStatus(
+              `${SPINNER} Getting versions for PID: <strong>${pid}</strong>...`,
+            );
+          },
+
+          showError: function (message) {
+            this.updateStatus(
+              `<p class="text-danger">❌ Error: ${message}</p>`,
+              "danger",
+            );
+          },
+
+          showComplete: function (numNext, numPrev, pid) {
+            this.updateStatus(
+              `Found <strong>${numNext}</strong> next versions and <strong>${numPrev}</strong> previous versions for PID: <strong>${pid}</strong>`,
+              "success",
+            );
+          },
+
+          showVersions: function (record) {
+            const next = record.next;
+            const prev = record.prev;
+            const thisPid = record.sysMeta.data.identifier;
+
+            let html = `<h3>Version History for PID: <strong>${thisPid}</strong></h3>`;
+            let nextVersionsHtml = "<p>No next versions found.</p>";
+            let prevVersionsHtml = "<p>No previous versions found.</p>";
+
+            if (next?.length) {
+              nextVersionsHtml = next
+                .map((v) => this.createVersionEl(v))
+                .join("");
+            }
+
+            if (prev?.length) {
+              prevVersionsHtml = prev
+                .map((v) => this.createVersionEl(v))
+                .join("");
+            }
+
+            const thisVersionHtml = this.createVersionEl(record);
+
+            html += `<h4>Next Versions:</h4>${nextVersionsHtml}`;
+            html += `<h4>Previous Versions:</h4>${prevVersionsHtml}`;
+            html += `<h4>This Version:</h4>${thisVersionHtml}`;
+            this.updateResult(html);
+          },
+
+          createVersionEl: function (record) {
+            const sysMetaData = record.sysMeta?.data || {};
+
+            const pid = sysMetaData.identifier;
+            return this.versionTemplate({
+              pid: pid,
+              created: sysMetaData?.dateCreated || "N/A",
+              dateUploaded: sysMetaData?.dateUploaded || "N/A",
+              dateModified: sysMetaData?.dateSysMetadataModified || "N/A",
+              fileName: sysMetaData?.fileName || "N/A",
+              size: sysMetaData?.size || "N/A",
+              formatId: sysMetaData?.formatId || "N/A",
+              viewUrl: `${MetacatUI.root}/view/${encodeURIComponent(pid)}`,
+              objectUrl: `${MetacatUI.appModel.get("objectServiceUrl")}${encodeURIComponent(pid)}`,
+              sysMetaUrl: `${MetacatUI.appModel.get("metaServiceUrl")}${encodeURIComponent(pid)}`,
+            });
+          },
+
+          onRecordUpdate(record) {
+            if (!record || !record.sysMeta) {
+              this.showError("No record found for the given PID.");
+            }
+            const numNext = record.next?.length || 0;
+            const numPrev = record.prev?.length || 0;
+            const complete = record.endNext && record.endPrev;
+            const pid = record.sysMeta.data.identifier;
+
+            if (complete) {
+              this.showComplete(numNext, numPrev, pid);
+            } else {
+              this.updateStatus(
+                `${SPINNER} Found ${numNext} next versions and ${numPrev} previous versions for PID: <strong>${record.sysMeta.data.identifier}</strong>. Still loading...`,
+              );
+            }
+
+            console.log(record);
+            this.showVersions(record);
+          },
+
+          getVersions: async function () {
+            // clear cache
+            await vt.clear();
+            const pid = this.$("#pidInput").val().trim();
+            if (!pid) {
+              this.$("#result").text("Please enter a PID.");
+              return;
+            }
+
+            this.showLoading(pid);
+            try {
+              vt.subscribe(pid, this.onRecordUpdate.bind(this));
+              const record = await vt.getFullChain(pid, token, true, true);
+              if (record) {
+                this.showComplete(record.next.length, record.prev.length, pid);
+                this.showVersions(record);
+              } else {
+                this.showError(
+                  `No version history found for PID: <strong>${pid}</strong>.`,
+                );
+              }
+            } catch (error) {
+              console.error("Error getting version history:", error);
+              this.showError(error.message || error);
+            }
+            // TODO - track errors - handle not found, not authorized, server error, etc.
+          },
+        });
+
+        const el = $("#Content");
+        const view = new VersionTrackerTesterView({
+          el: el,
+        });
+        view.render();
       },
 
       helpPages: {
