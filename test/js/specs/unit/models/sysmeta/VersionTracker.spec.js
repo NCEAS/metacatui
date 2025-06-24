@@ -213,14 +213,11 @@ define([
         };
 
         // Mock the SysMeta fetch
-        state.sandbox.restore();
-        state.sandbox
-          .stub(SysMeta.prototype, "fetch")
-          .callsFake(async function () {
-            this.data = sysMetaData.data;
-            return sysMetaData;
-          });
-
+        SysMeta.prototype.fetch.restore();
+        sinon.stub(SysMeta.prototype, "fetch").callsFake(async function () {
+          this.data = sysMetaData.data;
+          return sysMetaData;
+        });
         const sysMeta = await state.vt.getSysMeta(pid);
         sysMeta.data.should.have.property("obsoletedBy", "test-pid.2");
         sysMeta.data.should.have.property("obsoletes", null);
@@ -237,13 +234,11 @@ define([
         };
 
         // Mock the SysMeta fetch
-        state.sandbox.restore();
-        state.sandbox
-          .stub(SysMeta.prototype, "fetch")
-          .callsFake(async function () {
-            this.data = sysMetaData.data;
-            return sysMetaData;
-          });
+        SysMeta.prototype.fetch.restore();
+        sinon.stub(SysMeta.prototype, "fetch").callsFake(async function () {
+          this.data = sysMetaData.data;
+          return sysMetaData;
+        });
 
         // First call should fetch and cache
         const firstCall = await state.vt.getSysMeta(pid);
@@ -256,8 +251,8 @@ define([
 
       it("deduplicates concurrent getSysMeta requests", async () => {
         const pid = "concurrent.1";
-
-        state.sandbox.restore();
+        state.sandbox;
+        SysMeta.prototype.fetch.restore();
         const fetchSpy = state.sandbox
           .stub(SysMeta.prototype, "fetch")
           .resolves({ identifier: pid, data: {} });
@@ -271,10 +266,8 @@ define([
         const errorMessage = "Network error";
 
         // Mock the SysMeta fetch to throw an error
-        state.sandbox.restore();
-        state.sandbox
-          .stub(SysMeta.prototype, "fetch")
-          .rejects(new Error(errorMessage));
+        SysMeta.prototype.fetch.restore();
+        sinon.stub(SysMeta.prototype, "fetch").rejects(new Error(errorMessage));
 
         try {
           await state.vt.getSysMeta(pid);
