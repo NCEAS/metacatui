@@ -1,9 +1,9 @@
-define(["models/sysmeta/SysMeta", "localforage", "md5"], (
+define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
+  Backbone,
   SysMeta,
   localforage,
   md5,
 ) => {
-  // Defaults for VersionTracker
   const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000; // 1 day
   const { DEFAULT_META_SERVICE_URL } = SysMeta;
   const DEFAULT_MAX_CHAIN_HOPS = 200;
@@ -25,6 +25,12 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
     store &&
     typeof store.setItem === "function" &&
     typeof store.getItem === "function";
+
+  const NORMALIZE_METASERVICE_URL = (url) => {
+    let normalUrl = typeof url !== "string" ? DEFAULT_META_SERVICE_URL : url;
+    normalUrl = normalUrl.trim();
+    return normalUrl.endsWith("/") ? normalUrl : `${normalUrl}/`;
+  };
 
   /**
    * @typedef {object} VersionResult
@@ -58,7 +64,7 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
    * @classdesc VersionTracker walks sysmeta version chains and caches them in
    * memory and in localForage for fast access. It allows getting PIDs at
    * arbitrary offsets from a given PID, fetching full version chains, and
-   * subscribing to updates. It also supports manually adding a new version to
+   * listening for updates. It also supports manually adding a new version to
    * the chain (e.g. when a document has been updated in the editor and the new
    * version is known). A store is created for each unique SysMeta service URL,
    * so multiple VersionTracker instances can coexist without conflicts.
@@ -97,11 +103,7 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
       maxCacheRecords = DEFAULT_MAX_CACHE_RECORDS,
     } = {}) {
       // metaServiceUrl may be undefined or invalid
-      let msUrl = metaServiceUrl;
-      if (typeof msUrl !== "string" || !msUrl.startsWith("http")) {
-        msUrl = DEFAULT_META_SERVICE_URL;
-      }
-      this.metaServiceUrl = msUrl.endsWith("/") ? msUrl : `${msUrl}/`;
+      this.metaServiceUrl = NORMALIZE_METASERVICE_URL(metaServiceUrl);
 
       // TTL for cached records in milliseconds
       if (typeof ttlMs !== "number" || ttlMs <= 0) {
@@ -127,9 +129,6 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
       // calls are made for the same PID)
       this.locks = new Map();
 
-      // subscribers for chain updates
-      this.subscribers = new Map();
-
       // in-memory cache
       this.cache = new Map();
 
@@ -152,7 +151,6 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
      * @param {string}  pid - the PID to start from
      * @param {number}  offset - the number of steps to move in the chain. 0 =
      * same PID, +n newer, -n older
-     * @param {string} [token] - optional token for SysMeta fetch
      * @param {boolean} [ignoreEnd] Set to true to allow walking beyond cached
      * chain end (e.g. to re-check whether there's a newer version)
      * @param {boolean} [withMeta] - If true, return arrays of { pid,
@@ -161,7 +159,7 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
      * PID at the given offset, or null if no such version exists. If `withMeta`
      * is true, resolves to an object with { pid, sysMeta }.
      */
-    async getNth(pid, offset, token, ignoreEnd = false, withMeta = false) {
+    async getNth(pid, offset, ignoreEnd = false, withMeta = false) {
       // Validate inputs
       if (typeof pid !== "string" || !pid) {
         throw new Error("Invalid PID provided to getNth");
@@ -179,7 +177,7 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
       if (offset === 0) {
         const rec = await this.record(pid);
         if (withMeta) {
-          if (!rec.sysMeta) await this.getSysMeta(pid, token);
+          if (!rec.sysMeta) await this.getSysMeta(pid);
           return { pid, sysMeta: rec.sysMeta };
         }
         return pid;
@@ -188,7 +186,7 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
       // Ensure the chain is long enough in the requested direction & cache it
       const steps = Math.abs(offset);
       const forward = offset > 0;
-      await this.fillVersionChain(pid, steps, forward, token, ignoreEnd);
+      await this.fillVersionChain(pid, steps, forward, ignoreEnd);
 
       // Get the record from the cached chain and return the requested PID and sysMeta
       const rec = await this.record(pid);
@@ -199,7 +197,7 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
 
       const targetRec = await this.record(targetPid);
       if (withMeta) {
-        if (!targetRec.sysMeta) await this.getSysMeta(targetPid, token);
+        if (!targetRec.sysMeta) await this.getSysMeta(targetPid);
         return { pid: targetPid, sysMeta: targetRec.sysMeta };
       }
       return targetPid;
@@ -208,16 +206,15 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
     /**
      * Get the complete version chain for the given PID.
      * @param {string}  pid - PID to get the chain for
-     * @param {?string} [token] - Optional token for SysMeta fetch
      * @param {boolean} [ignoreEnd] - Re‑probe past cached end flags
      * @param {boolean} [withMeta] - If true, return arrays of { pid,
      * sysMeta } instead of bare PIDs.
      * @returns {Promise<VersionRecord>} - resolves to an object with `prev`,
      * `next`, `sysMeta`, `endPrev`, and `endNext` properties.
      */
-    async getFullChain(pid, token, ignoreEnd = false, withMeta = false) {
-      await this.fillVersionChain(pid, Infinity, true, token, ignoreEnd); // walk → newest
-      await this.fillVersionChain(pid, Infinity, false, token, ignoreEnd); // walk → oldest
+    async getFullChain(pid, ignoreEnd = false, withMeta = false) {
+      await this.fillVersionChain(pid, Infinity, true, ignoreEnd); // walk → newest
+      await this.fillVersionChain(pid, Infinity, false, ignoreEnd); // walk → oldest
       const cached = this.cache.get(pid);
       const chain = {
         prev: cached.prev,
@@ -245,13 +242,12 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
      * Refresh the version chain for the given PID by removing it from the cache
      * and re-fetching the full chain from the SysMeta service.
      * @param {string} pid - the PID to refresh
-     * @param {?string} [token] - optional token for SysMeta fetch
      * @returns {Promise<object>} - resolves to the refreshed chain object
      */
-    async refresh(pid, token) {
+    async refresh(pid) {
       await this.store.removeItem(pid);
       this.cache.delete(pid);
-      await this.getFullChain(pid, token);
+      await this.getFullChain(pid);
       return this.cache.get(pid);
     }
 
@@ -264,7 +260,8 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
       this.cache.clear();
       this.inFlight.clear();
       this.locks.clear();
-      this.subscribers.clear();
+      // remove all listeners
+      this.off();
       return true;
     }
 
@@ -280,31 +277,6 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
     }
 
     /**
-     * Subscribe to updates for a specific PID.
-     * @param {string} pid - the PID to subscribe to
-     * @param {Function} callback - the callback to invoke when the chain changes
-     */
-    subscribe(pid, callback) {
-      if (!this.subscribers.has(pid)) {
-        this.subscribers.set(pid, new Set());
-      }
-      this.subscribers.get(pid).add(callback);
-    }
-
-    /**
-     * Unsubscribe from updates for a specific PID.
-     * @param {string} pid - the PID to unsubscribe from
-     * @param {Function} callback - the callback to remove
-     */
-    unsubscribe(pid, callback) {
-      const set = this.subscribers.get(pid);
-      if (set) {
-        set.delete(callback);
-        if (set.size === 0) this.subscribers.delete(pid);
-      }
-    }
-
-    /**
      * Manually register that `newPid` obsoletes (comes after) `prevPid`. Useful
      * when an external editor just created a brand‑new revision so the chain
      * can be updated immediately without refetching SysMeta. If `sysMeta` for
@@ -313,11 +285,10 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
      * @param {string} prevPid - the PID of the previous version
      * @param {string} newPid - the PID of the new version
      * @param {SysMeta} [sysMeta] - optional SysMeta object for the new version.
-     * @param {string} [token] - optional token for SysMeta fetch
      */
-    async addVersion(prevPid, newPid, sysMeta = null, token = null) {
-      await this.fillVersionChain(prevPid, 1, true, token);
-      await this.fillVersionChain(newPid, 1, false, token);
+    async addVersion(prevPid, newPid, sysMeta = null) {
+      await this.fillVersionChain(prevPid, 1, true);
+      await this.fillVersionChain(newPid, 1, false);
 
       const prevRec = await this.record(prevPid);
       const newRec = await this.record(newPid);
@@ -358,26 +329,15 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
     }
 
     /**
-     * Notify all subscribers of a specific PID that the chain has changed.
+     * Notify that a specific the chain for a specific PID has been updated.
      * This is called internally after a new version is added or the chain is
      * updated.
-     * @param {string} pid - the PID to notify subscribers for
+     * @param {string} pid - the PID to notify about
      * @private
      */
     notify(pid) {
-      const callbacks = this.subscribers.get(pid);
-      if (!callbacks) return;
       const rec = this.cache.get(pid);
-      if (!rec) return;
-      callbacks.forEach((cb) => {
-        try {
-          cb(rec);
-        } catch (e) {
-          // Avoid breaking the chain if a callback throws
-          /* eslint-disable-next-line no-console */
-          console.error(`Error in subscriber callback for ${pid}:`, e);
-        }
-      });
+      this.trigger(`update:${pid}`, rec);
     }
 
     /**
@@ -386,19 +346,12 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
      * @param {string} startPid - the PID to start from
      * @param {number} stepsNeeded - how many hops to fill in the chain
      * @param {boolean} forward - true to fill next versions, false for prev
-     * @param {?string} [token] - optional token for SysMeta fetch
      * @param {boolean} [ignoreEnd] - if true, ignore end flags and continue
      * filling the chain even if it appears complete.
      * @returns {Promise<void>} - resolves when the chain is filled
      * @private
      */
-    async fillVersionChain(
-      startPid,
-      stepsNeeded,
-      forward,
-      token,
-      ignoreEnd = false,
-    ) {
+    async fillVersionChain(startPid, stepsNeeded, forward, ignoreEnd = false) {
       const steps =
         stepsNeeded === Infinity ? this.MAX_CHAIN_HOPS : stepsNeeded;
 
@@ -433,7 +386,7 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
         ) {
           let sysMeta;
           try {
-            sysMeta = await this.getSysMeta(currentPid, token);
+            sysMeta = await this.getSysMeta(currentPid);
           } catch (err) {
             if (!rec.errors) rec.errors = [];
             rec.errors.push({
@@ -479,14 +432,22 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
     }
 
     /**
+     * Ensure the user is authenticated and has a valid token.
+     * @returns {Promise<string>} - resolves to the user's token
+     */
+    async getToken() {
+      return MetacatUI.appUserModel.getTokenPromise();
+    }
+
+    /**
      * Get the SysMeta for a given PID. Prevents duplicate fetches for the same
      * PID and token by caching in-flight requests.
      * @param {string} pid - the PID to get SysMeta for
-     * @param {*} [token] - optional token for SysMeta fetch
      * @returns {Promise<SysMeta>} - resolves to the SysMeta object for the PID
      * @private
      */
-    async getSysMeta(pid, token) {
+    async getSysMeta(pid) {
+      const token = await this.getToken();
       const cacheKey = `${pid}:${token || ""}`;
       if (this.inFlight.has(cacheKey)) return this.inFlight.get(cacheKey);
 
@@ -617,17 +578,22 @@ define(["models/sysmeta/SysMeta", "localforage", "md5"], (
     }
   }
 
+  // Allow the class to trigger Backbone events
+  Object.assign(VersionTracker.prototype, Backbone.Events);
+
   // static map & accessor for singleton instances
   VersionTracker.instances = new Map();
 
   VersionTracker.get = function get(metaServiceUrl) {
-    if (!VersionTracker.instances.has(metaServiceUrl)) {
-      VersionTracker.instances.set(
-        metaServiceUrl,
-        new VersionTracker({ metaServiceUrl }),
-      );
+    console.log("VersionTracker.get called with URL:", metaServiceUrl);
+
+    const msUrl = NORMALIZE_METASERVICE_URL(metaServiceUrl);
+    console.log("Getting VersionTracker for URL:", msUrl);
+
+    if (!VersionTracker.instances.has(msUrl)) {
+      VersionTracker.instances.set(msUrl, new VersionTracker({ msUrl }));
     }
-    return VersionTracker.instances.get(metaServiceUrl);
+    return VersionTracker.instances.get(msUrl);
   };
 
   return VersionTracker;
