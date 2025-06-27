@@ -247,6 +247,47 @@ define([
         return Backbone.Model.prototype.fetch.call(this, fetchOptions);
       },
 
+      /**
+       * Fetch the resource map and return a promise that resolves when the
+       * fetch is complete.
+       * @param {Object} options - Options to pass to the fetch function
+       * @param {number} [timeout] - Timeout in milliseconds for the fetch
+       * operation.
+       * @returns {Promise} - A promise that resolves to the fetched model or an
+       * error response.
+       */
+      fetchPromise(options, timeout = Infinity) {
+        const listenModel = new Backbone.Model();
+
+        return new Promise((resolve, reject) => {
+          listenModel.listenToOnce(this, "sync", () => {
+            listenModel.stopListening();
+            resolve({
+              status: 200, // OK
+              statusText: "OK",
+              model: this,
+            });
+          });
+
+          listenModel.listenToOnce(this, "error", (_model, response) => {
+            listenModel.stopListening();
+            reject(response);
+          });
+
+          if (timeout < Infinity) {
+            setTimeout(() => {
+              listenModel.stopListening();
+              resolve({
+                status: 408, // Request Timeout
+                statusText: "Request Timeout",
+              });
+            }, timeout);
+          }
+
+          this.fetch(options);
+        });
+      },
+
       /*
        * Deserialize a Package from OAI-ORE RDF XML
        */

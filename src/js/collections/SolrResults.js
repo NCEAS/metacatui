@@ -221,6 +221,26 @@ define([
         this.fetch(fetchOptions);
       },
 
+      /**
+       * Queries the Solr index returning a promise that resolves when the query
+       * is complete, rather than using backbone's callback system.
+       * @param {string} [newquery] - The query to use. If not provided, the
+       * current query will be used.
+       * @returns {Promise} - A promise that resolves when the query is
+       * complete.
+       */
+      queryPromise(newquery) {
+        return new Promise((resolve, reject) => {
+          this.listenToOnce("sync", () => {
+            resolve(this);
+          });
+          this.listenToOnce("error", (collection, response) => {
+            reject(response);
+          });
+          this.query(newquery);
+        });
+      },
+
       setQuery: function (newquery) {
         if (this.currentquery != newquery) {
           this.currentquery = newquery;
