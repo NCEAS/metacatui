@@ -5,7 +5,8 @@ define([
   "underscore",
   "backbone",
   "models/sysmeta/VersionTracker",
-], function ($, _, Backbone, VersionTracker) {
+  "models/resourceMap/ResourceMapResolver",
+], function ($, _, Backbone, VersionTracker, ResourceMapResolver) {
   /**
    * @class UIRouter
    * @classdesc MetacatUI Router
@@ -33,6 +34,7 @@ define([
           "renderPortalEditor",
         drafts: "renderDrafts",
         versionTracker: "versionTracker", // version tracker page
+        resourceMapResolverTest: "resourceMapResolverTest", // Test the ResourceMapResolver
       },
 
       async versionTracker() {
@@ -200,7 +202,6 @@ define([
               );
             }
 
-            console.log(record);
             this.showVersions(record);
           },
 
@@ -208,14 +209,11 @@ define([
             // clear cache
             await vt.clear();
             const pid = this.$("#pidInput").val().trim();
-            if (!pid) {
-              this.$("#result").text("Please enter a PID.");
-              return;
-            }
-
             this.showLoading(pid);
             try {
-              vt.subscribe(pid, this.onRecordUpdate.bind(this));
+              // vt.subscribe(pid, this.onRecordUpdate.bind(this));
+              this.stopListening(vt, `update:${pid}`, this.onRecordUpdate);
+              this.listenTo(vt, `update:${pid}`, this.onRecordUpdate);
               const record = await vt.getFullChain(pid, token, true, true);
               if (record) {
                 this.showComplete(record.next.length, record.prev.length, pid);
@@ -237,6 +235,145 @@ define([
         const view = new VersionTrackerTesterView({
           el: el,
         });
+        view.render();
+      },
+
+      // temporary
+      async resourceMapResolverTest() {
+        const ResourceMapResolverTesterView = Backbone.View.extend({
+          template: _.template(
+            `<h1 style="margin-bottom:30px;font-weight:400;">🧪 The <code style="font-size:inherit;color:inherit;">ResourceMapResolver</code> Test Page 🔬</h1>
+            <h4>Enter a PID to resolve:</h4>
+            <input type="text" id="pidInput" placeholder="Enter PID here..." style="margin-bottom: 0; height: 26px; width:100%; max-width:500px;">
+            <button id="resolveButton" class="btn btn-primary">Resolve</button>
+            <div id="result" class="well alert alert-info" style="margin-top: 20px">Results will show here</div>
+            <pre class="markdown"><code id="trace">The log of events will show here</code></pre>`,
+          ),
+
+          events: {
+            "click #resolveButton": "resolvePid",
+          },
+
+          render: async function () {
+            this.$el.html(this.template());
+            this.resolver = new ResourceMapResolver();
+
+            await this.resolver.clearStorage();
+            await this.resolver.versionTracker.clear();
+
+            this.stopListening(this.resolver);
+            this.stopListening(this.resolver.versionTracker);
+
+            this.listenTo(
+              this.resolver,
+              "update",
+              ({ pid, rm, status, meta } = {}) => {
+                this.$("#result").html(
+                  `<i class="icon-spinner icon-spin icon-large loading icon"></i> Resolving PID: <strong>${this.pid}</strong>... ${status}...`,
+                );
+              },
+            );
+
+            this.listenTo(this.resolver.versionTracker, "update", (rec) => {
+              console.log("VersionTracker update event:", rec);
+
+              const numVerBack = rec.prev.length;
+              const numVerForward = rec.next.length;
+              const pid = rec.sysMeta?.data?.identifier;
+              if (!pid) return;
+
+              const forward = numVerForward > 0 ? "forward" : "backward";
+              const steps = numVerForward > 0 ? numVerForward : numVerBack;
+              const message = `Walking sysmeta ${forward} <strong>${steps}</strong> steps from <strong>${pid}</strong>...`;
+
+              this.$("#result").html(
+                `<i class="icon-spinner icon-spin icon-large loading icon"></i> Resolving PID: <strong>${this.pid}</strong>... ${message}`,
+              );
+            });
+
+            return this;
+          },
+
+          resolvePid: async function () {
+            const objectServiceUrl = MetacatUI.appModel.get("objectServiceUrl");
+            const viewUrl = `${MetacatUI.root}/view/`;
+            const token = await MetacatUI.appUserModel.getTokenPromise();
+            const user = token ? MetacatUI.appUserModel.get("fullName") : "";
+            const pid = this.$("#pidInput").val().trim();
+            this.pid = pid;
+            if (!pid) {
+              this.$("#result").text("Please enter a PID.");
+              return;
+            }
+
+            this.$("#result").html(
+              `<i class="icon-spinner icon-spin icon-large loading icon"></i> Resolving PID: <strong>${pid}</strong>...`,
+            );
+            this.$("#trace").text("");
+
+            const authText = user
+              ? `You are logged in as <strong>${user}</strong>.`
+              : "You are not logged in.";
+            const authnDiv = `<p><strong>ℹ️ Authorization:</strong> ${authText}</p>`;
+
+            try {
+              const results = await this.resolver.resolve(pid);
+
+              if (results.success) {
+                this.$("#result").html(
+                  `<p>✅ Resource Map resolved successfully!</p>
+                  <p><strong>EML PID:</strong> 
+                   <a href="${objectServiceUrl}${encodeURIComponent(pid)}" target="_blank">${pid}</a>
+                  </p>
+                  <p><strong>Resource Map PID:</strong>
+                    <a href="${objectServiceUrl}${encodeURIComponent(results.rm)}" target="_blank">${results.rm}</a>
+                  </p>
+                  <p><strong>Data Package Landing Page:</strong>
+                    <a href="${viewUrl}${encodeURIComponent(pid)}" target="_blank">Data Package View</a>
+                  </p>
+                  ${authnDiv}`,
+                );
+              } else {
+                this.$("#result").html(`
+                  <p>❌ No resouce map found for PID: <strong>${pid}</strong></p>${authnDiv}
+                `);
+              }
+              this.$("#trace").text(JSON.stringify(results.log, null, 2));
+            } catch (error) {
+              // const { UnauthorizedError, SysMetaError } =
+              //   ResourceMapResolver.Errors;
+              console.log("error message", error.message);
+              console.log("error status", error.status);
+
+              let message = "An error occurred while resolving the PID.";
+              if (error) {
+                console.log("ERROR IN ResourceMapResolverTesterView", error);
+
+                // console.log("UnauthorizedError", error);
+
+                // message = `You are not authorized to access the PID: <strong>${pid}</strong>. Please log in.`;
+              } else if (error instanceof SysMetaError) {
+                message = `An error occurred while fetching the sysmeta for PID: <strong>${pid}</strong>.`;
+              } else if (error.status === 404) {
+                message = `The PID: <strong>${pid}</strong> was not found.`;
+              } else if (error.status === 500) {
+                message = `An internal server error occurred while resolving the PID: <strong>${pid}</strong>.`;
+              }
+
+              this.$("#result").html(
+                `<p class="text-danger">❌ Error resolving PID: <strong>${pid}</strong></p>${authnDiv}`,
+              );
+              this.$("#trace").text(
+                `Error: ${error.message}\nStatus: ${error.status}\nStack: ${error.stack}`,
+              );
+            }
+          },
+        });
+        const el = $("#Content");
+        const view = new ResourceMapResolverTesterView({
+          el: el,
+        });
+        console.log("Rendering ResourceMapResolverTesterView...", view);
         view.render();
       },
 
