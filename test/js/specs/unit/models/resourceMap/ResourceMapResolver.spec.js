@@ -242,12 +242,6 @@ define([
       });
     });
 
-    /*
-     * -----------------------------------------------------------------
-     *   EXTRA UNIT TESTS – verify(), status events, resolveFromSeriesId
-     * -----------------------------------------------------------------
-     */
-
     describe("verify()", () => {
       it("returns true when the resource map model contains the PID", async () => {
         const { sandbox, rmr } = state;
@@ -283,8 +277,8 @@ define([
         const genericSpy = sandbox.spy();
         const specificSpy = sandbox.spy();
 
-        rmr.once("status", genericSpy);
-        rmr.once("status:objEvt", specificSpy);
+        rmr.once("update", genericSpy);
+        rmr.once("update:objEvt", specificSpy);
 
         const res = rmr.status("objEvt", "customStatus", "rmEvt");
         res.success.should.be.true;

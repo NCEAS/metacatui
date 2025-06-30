@@ -40,6 +40,7 @@ define([
       "Resource map pid found but does not link to the given PID",
     foundAndValid: "Resource map pid found and links to the given PID",
     rmFetchError: "Error fetching resource map via object API",
+    unauthorized: "Stopped resolution: user not authorized to access sysmeta",
   });
 
   const DEFAULT_MAX_STEPS = 200; // Default max steps to walk back in sysmeta
@@ -155,7 +156,12 @@ define([
           return this.status(pid, STATUS.smMatch, smResult.rm, smResult.meta);
         }
       }
-      this.status(pid, STATUS.smMiss, null, smResult?.meta);
+      if (smResult.meta?.unauthorized) {
+        // If we got a 401 error, stop the resolution process
+        return this.status(pid, STATUS.unauthorized, null, smResult.meta);
+      }
+      // Otherwise, we record that this step failed and continue to guess
+      this.status(pid, STATUS.smMiss, null, smResult.meta);
 
       // ---- GUESS ----
       const guessedPid = await this.guessPid(pid);
@@ -265,6 +271,18 @@ define([
       return { rm: (await this.storage.getItem(pid)) || null };
     }
 
+    /** Clears the saved resource map : pid pairs from the local storage. */
+    async clearStorage() {
+      await this.storage.clear().catch((e) => {
+        this.eventLog.consoleLog(
+          "Error clearing local storage",
+          "ResourceMapResolver",
+          "warning",
+          e,
+        );
+      });
+    }
+
     /**
      * Walks the system metadata to find the resource map PID associated with
      * the given PID. It starts from the given PID and walks backward
@@ -288,7 +306,10 @@ define([
         steps += 1;
         const offset = steps * -1; // Walk backward
         currentPid = await this.versionTracker.getNth(pid, offset);
-        pastPids.push(currentPid);
+        const record = await this.versionTracker.record(currentPid || pid);
+        if (record?.unauthorized) meta.unauthorized = true;
+        if (record?.errors) meta.errors = record.errors;
+        if (currentPid) pastPids.push(currentPid);
         const indexResult = await this.searchIndex(currentPid);
         if (indexResult.rm) {
           rm = indexResult.rm;
@@ -303,7 +324,6 @@ define([
 
       // Walk forward same # steps to find the current RM
       const currentRM = await this.versionTracker.getNth(rm, steps);
-
       return { rm: currentRM, meta };
     }
 
@@ -358,9 +378,9 @@ define([
      */
     async fetchResourceMap(rm, timeout = this.maxFetchTime) {
       const rmModel = new PackageModel({ id: rm });
-      return rmModel.fetchPromise(null, timeout).catch((e) => {
-        return { model: rmModel, status: e?.status || 500 };
-      });
+      return rmModel
+        .fetchPromise(null, timeout)
+        .catch((e) => ({ model: rmModel, status: e?.status || 500 }));
     }
 
     /**
@@ -413,8 +433,8 @@ define([
 
       // Publish events for status updates using Backbone events (added to the
       // prototype, below)
-      this.trigger("status", { pid, rm, status, meta });
-      this.trigger(`status:${pid}`, { pid, rm, status, meta });
+      this.trigger("update", { pid, rm, status, meta });
+      this.trigger(`update:${pid}`, { pid, rm, status, meta });
 
       // Store the obj:rm pair in local storage if rm is found
       if (rm) {

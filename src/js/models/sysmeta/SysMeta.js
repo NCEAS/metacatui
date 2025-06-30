@@ -91,7 +91,6 @@ define([], () => {
       // Initialize state, errors, and version tracking
       this.fetched = false;
       this.fetchedWithError = false;
-      this.errors = null; // Will hold any fetch errors
     }
 
     /**
@@ -116,60 +115,88 @@ define([], () => {
       this.parsed = false;
       this.fetched = false;
       this.fetchedWithError = false;
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const response = await fetch(this.url, {
-        headers,
-        credentials: "include",
-      }).catch((err) => {
-        this.handleFetchError(err);
-        return null;
-      });
 
-      if (!response || !response.ok) {
-        this.handleFetchError({
-          status: response?.status || "unknown",
-          message: response?.statusText || "Unknown error",
-        });
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const options = { headers, credentials: "include" };
+
+      let response;
+      try {
+        response = await fetch(this.url, options);
+      } catch (networkError) {
+        this.handleFetchError(networkError);
         return null;
       }
 
       const text = await response.text();
-      this.fetched = true;
 
-      let parsed;
-      try {
-        parsed = this.parse(text) || {};
-      } catch (err) {
-        // Malformed XML, parser error, etc.
-        this.handleFetchError(err);
+      if (!response.ok) {
+        const parsedError = SystemMetadata.parseError(text);
+        this.handleFetchError({
+          status: parsedError?.status ?? response.status,
+          message: parsedError?.message ?? "Failed to fetch system metadata",
+        });
         return null;
       }
 
-      this.data = { ...DEFAULTS, ...parsed };
-      return this.data;
+      try {
+        const parsed = this.parse(text);
+        this.data = { ...DEFAULTS, ...parsed };
+        this.fetched = true;
+        return this.data;
+      } catch (parseError) {
+        this.handleFetchError(parseError);
+        return null;
+      }
+    }
+
+    /**
+     * Attempts to parse an xml error object returned from DataONE, e.g.:
+     * <?xml version="1.0" encoding="UTF-8"?><error detailCode="1040" errorCode="401" name="NotAuthorized">
+     * <description>READ not allowed on urn:uuid:c6556d90-4f58-4439-a309-a517a4fe3dc3 for subject[s]: public; </description>
+     * </error>
+     * @param {string} text - The XML string to parse.
+     * @returns {Error|null} Returns a SysMetaError with the error message and status
+     * if the XML contains an error element, or null if no error is found.
+     */
+    static parseError(text) {
+      if (!text) return null;
+
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(text, "application/xml");
+      const errorEl = xmlDoc.querySelector("error");
+
+      if (!errorEl) return null;
+
+      const message = errorEl.querySelector("description")
+        ? errorEl.querySelector("description").textContent.trim()
+        : "Unknown error";
+      const status = errorEl.getAttribute("errorCode") || "unknown";
+
+      // return new SysMetaError(message, status);
+      const error = new Error(message);
+      error.name = "SysMetaError";
+      error.status = status;
+      return error;
     }
 
     /**
      * Handles errors that occur during the fetch operation.
-     * @param {Error} err - The error object containing error details.
-     * @returns {null} Returns null after logging the error.
+     * @param {Error} e - The error object containing error details.
      */
-    handleFetchError(err) {
+    handleFetchError(e) {
+      this.fetched = false;
+      this.parsed = false;
       this.fetchedWithError = true;
-      // If the fetch fails, we can log the error and return null
-      if (!this.errors) this.errors = [];
-      this.errors.push({
-        message: err.message,
-        status: err.status || "unknown",
-        timestamp: new Date().toISOString(),
-        identifier: this.data.identifier,
-        url: this.url,
-      });
-      /* eslint-disable-next-line no-console */
-      console.error(
-        `Error fetching SystemMetadata for ${this.data.identifier}: ${err.message}`,
-      );
-      return null;
+      let status = e.status ?? e?.response?.status ?? 500;
+      // try to coerce status to a number
+      if (typeof status === "string") {
+        status = parseInt(status, 10);
+      }
+
+      e.status = status;
+      e.identifier = this.data.identifier;
+
+      throw e;
     }
 
     /**

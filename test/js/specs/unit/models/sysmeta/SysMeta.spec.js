@@ -156,7 +156,7 @@ define(["/test/js/specs/shared/clean-state.js", "models/sysmeta/SysMeta"], (
       it("records an error when the response is not ok", async () => {
         state.sandbox.stub(globalThis, "fetch").resolves({
           ok: false,
-          status: 500,
+          status: 401,
           statusText: "Server error",
           text: () => Promise.resolve(""),
         });
@@ -166,12 +166,10 @@ define(["/test/js/specs/shared/clean-state.js", "models/sysmeta/SysMeta"], (
           metaServiceUrl: "https://x/",
         });
 
-        const result = await s.fetch();
-        should.not.exist(result);
+        const error = await s.fetch().catch((e) => e);
         s.fetched.should.be.false;
         s.fetchedWithError.should.be.true;
-        s.errors.should.be.an("array").with.lengthOf(1);
-        s.errors[0].status.should.equal(500);
+        error.status.should.equal(401);
       });
 
       it("handles network-level fetch rejections", async () => {
@@ -180,11 +178,10 @@ define(["/test/js/specs/shared/clean-state.js", "models/sysmeta/SysMeta"], (
           .rejects(new Error("Network down"));
 
         const s = new SysMeta({ identifier: "net.1" });
-        const result = await s.fetch();
-        should.not.exist(result);
+        const error = await s.fetch().catch((e) => e);
         s.fetched.should.be.false;
         s.fetchedWithError.should.be.true;
-        s.errors[0].message.should.equal("Network down");
+        error.message.should.include("Network down");
       });
     });
   });

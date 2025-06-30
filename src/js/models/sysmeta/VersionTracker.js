@@ -337,6 +337,7 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
      */
     notify(pid) {
       const rec = this.cache.get(pid);
+      this.trigger("update", rec);
       this.trigger(`update:${pid}`, rec);
     }
 
@@ -374,7 +375,10 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
       );
       try {
         // already long enough
-        if (list.length >= steps) return;
+        if (list.length >= steps) {
+          this.notify(startPid);
+          return;
+        }
 
         let currentPid = list.length > 0 ? list[list.length - 1] : startPid;
 
@@ -387,13 +391,16 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
           let sysMeta;
           try {
             sysMeta = await this.getSysMeta(currentPid);
-          } catch (err) {
+          } catch (e) {
             if (!rec.errors) rec.errors = [];
             rec.errors.push({
               pid: currentPid,
-              error: err.message || "Unknown error fetching SysMeta",
-              errorCode: err.code || "UNKNOWN",
+              error: e.message || "Unknown error fetching SysMeta",
+              status: e.status ?? "UNKNOWN",
             });
+            if (e.status === 401 || e.status === 403) {
+              rec.unauthorized = true;
+            }
             break; // stop if we can't fetch SysMeta
           }
           const adjacentPid = forward
@@ -411,20 +418,18 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
             const adjRec = await this.record(adjacentPid);
             const reverseList = forward ? adjRec.prev : adjRec.next;
             const idx = list.length - 1;
-            // ensure reverseList is long enough
-            // while (reverseList.length < idx + 1) reverseList.push(undefined);
             if (reverseList[idx] !== startPid) {
               reverseList[idx] = startPid;
               await this.persist(adjacentPid, adjRec);
+              this.notify(adjacentPid);
             }
 
             currentPid = adjacentPid;
           }
           /* eslint-enable no-await-in-loop */
         }
-
-        await this.persist(startPid, rec);
       } finally {
+        await this.persist(startPid, rec);
         // always resolve the lock to allow other calls to proceed
         if (resolveLock) resolveLock();
         this.locks.delete(lockKey);
@@ -435,7 +440,7 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
      * Ensure the user is authenticated and has a valid token.
      * @returns {Promise<string>} - resolves to the user's token
      */
-    async getToken() {
+    static async getToken() {
       return MetacatUI.appUserModel.getTokenPromise();
     }
 
@@ -447,7 +452,7 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
      * @private
      */
     async getSysMeta(pid) {
-      const token = await this.getToken();
+      const token = await VersionTracker.getToken();
       const cacheKey = `${pid}:${token || ""}`;
       if (this.inFlight.has(cacheKey)) return this.inFlight.get(cacheKey);
 
@@ -585,10 +590,7 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
   VersionTracker.instances = new Map();
 
   VersionTracker.get = function get(metaServiceUrl) {
-    console.log("VersionTracker.get called with URL:", metaServiceUrl);
-
     const msUrl = NORMALIZE_METASERVICE_URL(metaServiceUrl);
-    console.log("Getting VersionTracker for URL:", msUrl);
 
     if (!VersionTracker.instances.has(msUrl)) {
       VersionTracker.instances.set(msUrl, new VersionTracker({ msUrl }));
