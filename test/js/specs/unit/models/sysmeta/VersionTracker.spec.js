@@ -64,10 +64,9 @@ define([
         );
       });
 
-      it("sets up inFlight, locks, subscribers, and cache", () => {
+      it("sets up inFlight, locks, and cache", () => {
         state.vt.inFlight.should.be.instanceof(Map);
         state.vt.locks.should.be.instanceof(Map);
-        state.vt.subscribers.should.be.instanceof(Map);
         state.vt.cache.should.be.instanceof(Map);
       });
 
@@ -109,7 +108,7 @@ define([
         });
 
         // fill the chain
-        await state.vt.fillVersionChain(pid0, 3, true, null, true);
+        await state.vt.fillVersionChain(pid0, 3, true, true);
         const rec = await state.vt.record(pid0);
 
         rec.next.should.deep.equal(chain.slice(1));
@@ -137,7 +136,7 @@ define([
         });
 
         // fill the chain
-        await state.vt.fillVersionChain(pid3, 3, false, null, true);
+        await state.vt.fillVersionChain(pid3, 3, false, true);
         const rec = await state.vt.record(pid3);
 
         rec.prev.should.deep.equal(chain.slice(0, 2).reverse());
@@ -173,7 +172,7 @@ define([
         });
 
         // fill the chain
-        await state.vt.fillVersionChain(pid0, 3, true, null, true);
+        await state.vt.fillVersionChain(pid0, 3, true, true);
         const rec = await state.vt.record(pid0);
         rec.next.should.deep.equal(chain.slice(1));
         rec.endNext.should.be.true; // should not be set
@@ -213,11 +212,13 @@ define([
         };
 
         // Mock the SysMeta fetch
-        SysMeta.prototype.fetch.restore();
-        sinon.stub(SysMeta.prototype, "fetch").callsFake(async function () {
-          this.data = sysMetaData.data;
-          return sysMetaData;
-        });
+        state.sandbox.restore();
+        state.sandbox
+          .stub(SysMeta.prototype, "fetch")
+          .callsFake(async function () {
+            this.data = sysMetaData.data;
+            return sysMetaData;
+          });
         const sysMeta = await state.vt.getSysMeta(pid);
         sysMeta.data.should.have.property("obsoletedBy", "test-pid.2");
         sysMeta.data.should.have.property("obsoletes", null);
@@ -234,11 +235,13 @@ define([
         };
 
         // Mock the SysMeta fetch
-        SysMeta.prototype.fetch.restore();
-        sinon.stub(SysMeta.prototype, "fetch").callsFake(async function () {
-          this.data = sysMetaData.data;
-          return sysMetaData;
-        });
+        state.sandbox.restore();
+        state.sandbox
+          .stub(SysMeta.prototype, "fetch")
+          .callsFake(async function () {
+            this.data = sysMetaData.data;
+            return sysMetaData;
+          });
 
         // First call should fetch and cache
         const firstCall = await state.vt.getSysMeta(pid);
@@ -251,8 +254,7 @@ define([
 
       it("deduplicates concurrent getSysMeta requests", async () => {
         const pid = "concurrent.1";
-        state.sandbox;
-        SysMeta.prototype.fetch.restore();
+        state.sandbox.restore();
         const fetchSpy = state.sandbox
           .stub(SysMeta.prototype, "fetch")
           .resolves({ identifier: pid, data: {} });
@@ -266,8 +268,10 @@ define([
         const errorMessage = "Network error";
 
         // Mock the SysMeta fetch to throw an error
-        SysMeta.prototype.fetch.restore();
-        sinon.stub(SysMeta.prototype, "fetch").rejects(new Error(errorMessage));
+        state.sandbox.restore();
+        state.sandbox
+          .stub(SysMeta.prototype, "fetch")
+          .rejects(new Error(errorMessage));
 
         try {
           await state.vt.getSysMeta(pid);
@@ -369,7 +373,7 @@ define([
           });
         });
 
-        await vt.fillVersionChain("h.1", 10, true, null, true);
+        await vt.fillVersionChain("h.1", 10, true, true);
         const rec = await vt.record("h.1");
         // +1 because the final record comes from previous sys meta fetch, so
         // only 2 fetches total.
@@ -394,42 +398,16 @@ define([
         state.vt.TTL_MS.should.equal(10000);
       });
 
-      it("subscribes and notifies", (done) => {
-        const pid = "foo.1";
+      it("triggers an update event when a record is updated", async () => {
+        const pid = "update-test.1";
+        const updateSpy = sinon.spy();
+        state.vt.off(`update:${pid}`);
+        state.vt.on(`update:${pid}`, updateSpy);
 
-        const callback = (rec) => {
-          rec.should.have.property("next");
-          done();
-        };
-        state.vt.subscribe(pid, callback);
-        // any method that calls notify has already cached the pid. Otherwise, no
-        // notification will be sent.
-        state.vt.record(pid).then(() => state.vt.notify(pid));
-      });
+        // Add a new version to trigger an update
+        await state.vt.addVersion(pid, "update-test.2");
 
-      it("notifies subscribers when addVersion mutates a chain", async () => {
-        const prev = "note.1";
-        const next = "note.2";
-
-        // A promise that resolves when the notification is received
-        const notificationPromise = new Promise((resolve) => {
-          state.vt.subscribe(next, (rec) => {
-            resolve(rec);
-          });
-        });
-
-        // Add a version link and wait for notification
-        await state.vt.addVersion(prev, next);
-        const notifiedRec = await notificationPromise;
-        notifiedRec.should.have.property("prev").that.includes(prev);
-      });
-
-      it("unsubscribes properly", () => {
-        const pid = "foo.2";
-        const cb = () => {};
-        state.vt.subscribe(pid, cb);
-        state.vt.unsubscribe(pid, cb);
-        state.vt.subscribers.has(pid).should.be.false;
+        updateSpy.called.should.be.true;
       });
 
       it("adds a new version link between two isolated records", async () => {
@@ -474,7 +452,7 @@ define([
           });
         });
 
-        await state.vt.fillVersionChain("g.2", 3, true, null, true);
+        await state.vt.fillVersionChain("g.2", 3, true, true);
         (await state.vt.getNth("g.2", +1)).should.equal("g.3");
         (await state.vt.getNth("g.2", -1)).should.equal("g.1");
       });

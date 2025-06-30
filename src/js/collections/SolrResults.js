@@ -74,7 +74,7 @@ define([
           facetFields += "&facet.limit=-1"; // CAREFUL: -1 means no limit on the number of facets
         }
 
-        //Do we need stats?
+        // Do we need stats?
         if (!this.stats) {
           var stats = "";
         } else {
@@ -84,7 +84,7 @@ define([
           }
         }
 
-        //create the query url
+        // create the query url
         var endpoint =
           (this.queryServiceUrl || MetatcatUI.appModel.get("queryServiceUrl")) +
           "q=" +
@@ -219,6 +219,29 @@ define([
 
         var fetchOptions = this.createFetchOptions();
         this.fetch(fetchOptions);
+      },
+
+      /**
+       * Queries the Solr index returning a promise that resolves when the query
+       * is complete, rather than using backbone's callback system.
+       * @param {string} [newquery] - The query to use. If not provided, the
+       * current query will be used.
+       * @returns {Promise} - A promise that resolves when the query is
+       * complete.
+       */
+      queryPromise(newquery) {
+        const eventListener = new Backbone.Model();
+        return new Promise((resolve, reject) => {
+          eventListener.listenToOnce(this, "sync", () => {
+            eventListener.stopListening();
+            resolve(this);
+          });
+          eventListener.listenToOnce(this, "error", (collection, response) => {
+            eventListener.stopListening();
+            reject(response);
+          });
+          this.query(newquery);
+        });
       },
 
       setQuery: function (newquery) {
