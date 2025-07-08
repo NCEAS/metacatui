@@ -36,23 +36,20 @@ spec:
       {{- if ne $source "pvc" }}
       initContainers:
         - name: get-source
-{{/*          {{- if eq $source "git" }}*/}}
-          image: ubuntu:latest
-{{/*          {{- else }}*/}}
-{{/*          image: busybox:latest*/}}
-{{/*          {{- end }}*/}}
+          {{- if eq $source "git" }}
+          image: alpine/git:latest
+          {{- else }}
+          image: busybox:latest
+          {{- end }}
           command:
             - sh
             - -c
-            - |
+            - >
               start=$(date +%s);
               echo "Starting at $start";
               DEST="/metacatui{{ include "metacatui.clean.root" . }}";
               mkdir -p $DEST;
               {{- if eq $source "git" }}
-              ######################################################################################
-              ## Clone MetacatUI files from git repository
-              ######################################################################################
                 {{- $repoUrl := "" }}
                 {{- $revision := "" }}
                 {{- if and .Values.source .Values.source.git }}
@@ -62,13 +59,10 @@ spec:
               REPO='{{ $repoUrl | default "https://github.com/NCEAS/metacatui.git" }}';
               REV='{{ $revision | default .Chart.AppVersion }}';
               git clone -b $REV --depth 1 $REPO /tmp/metacatui/;
-              mv /tmp/metacatui/src/* ${DEST};
+              mv /tmp/metacatui/src/* $DEST;
               finish=$(date +%s);
               echo "git clone -b {{ $revision }} --depth 1 took $((finish - start)) sec";
               {{- else }}
-              ######################################################################################
-              ## Download and expand MetacatUI zip archive
-              ######################################################################################
                 {{- $version := "" }}
                 {{- $location := "" }}
                 {{- if and .Values.source .Values.source.package }}
@@ -76,30 +70,27 @@ spec:
                   {{- $location = .Values.source.package.location }}
                 {{- end }}
               VERSION={{ $version | default .Chart.AppVersion }};
-              FILENAME=${VERSION}.zip;
+              FILENAME=$VERSION.zip;
               LOC='{{ $location | default "https://github.com/NCEAS/metacatui/archive" }}';
-              echo "Downloading MetacatUI version ${VERSION} from ${LOC}/${FILENAME}";
-              echo "command: wget -O ./${FILENAME} ${LOC}/${FILENAME};"
-              echo "ALERT: SLEEPING!"
-              echo "ALERT: SLEEPING!"
-              echo "ALERT: SLEEPING!"
-              while true; do sleep 20; done;
-              wget -O ./${FILENAME} ${LOC}/${FILENAME};
-              unzip ${FILENAME} -d /tmp/;
-              mv /tmp/metacatui-${VERSION}/src/* $DEST;
+              wget -O ./$FILENAME $LOC/$FILENAME;
+              unzip $FILENAME -d /tmp/;
+              mv /tmp/metacatui-$VERSION/src/* $DEST;
               finish=$(date +%s);
-              echo "${FILENAME} download and install took $((finish - start)) sec";
+              echo "$FILENAME download and install took $((finish - start)) sec";
               {{- end }}
-              ######################################################################################
-              ## Fix config.js location in index.html
-              ######################################################################################
               sed -i \
                's|"/config/config.js"|"{{ include "metacatui.clean.root" . }}/config/config.js"|g' \
                "${DEST}"/index.html;
-              ######################################################################################
-              ## Clone and/or Auto-update theme files if enabled
-              ######################################################################################
-              {{- if and .Values.customTheme.enabled .Values.customTheme.autoUpdate }}
+          volumeMounts:
+            - name: {{ .Release.Name }}-mcui-source-files
+              mountPath: /metacatui
+        {{- if and .Values.customTheme.enabled .Values.customTheme.autoUpdate }}
+        - name: update-theme
+          image: alpine/git:latest
+          command:
+            - sh
+            - -c
+            - >
               ctstart=$(date +%s);
               echo "Starting custom theme clone/update at $ctstart";
               CTDEST="/mounted-theme/{{ .Values.customTheme.repoRootSubPath }}";
@@ -133,23 +124,16 @@ spec:
                 git config receive.denyCurrentBranch true;
                 ## Allow others Read-Only access
                 chmod -R o+r ..;
-                find . -type d -print0 | xargs -0 chmod o+x`;
+                find . -type d -print0 | xargs -0 chmod o+x;
                 ctfinish=$(date +%s);
                 echo "git sparse checkout of ${CTREPO} ${CTREV} took $((ctfinish - ctstart)) sec";
               fi;
-              {{- end }}
-
           volumeMounts:
-            - name: {{ .Release.Name }}-mcui-source-files
-              mountPath: /metacatui
-              {{- if and .Values.customTheme.enabled .Values.customTheme.autoUpdate }}
             - name: {{ .Release.Name }}-mcui-custom-theme-files
               mountPath: /mounted-theme
-{{/*                {{- if .Values.customTheme.repoRootSubPath }}*/}}
-{{/*              subPath: {{ .Values.customTheme.repoRootSubPath }}*/}}
-{{/*                {{- end }}*/}}
-              {{- end }}
+        {{- end }}
       {{- end }}
+
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
