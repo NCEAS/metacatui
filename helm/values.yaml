@@ -102,41 +102,42 @@ customTheme:
   ##
   claimName: "Your-Pre-Configured-pvc-name"
 
-  ## @param customTheme.subPath path to theme directory, within mounted filesystem
+  ## @param customTheme.subPath path to the specific theme directory, relative to mount point
   ## Ignored unless customTheme is enabled
   ##
-  ## Example: if you cloned https://github.com/NCEAS/metacatui-themes to the root of your
-  ## shared drive, it would look like this:
+  ## Example: if you mounted a volume at /my/mountdir, and then cloned the metacatui-themes
+  ## repo (https://github.com/NCEAS/metacatui-themes) to it at /my/mountdir/mydir/metacatui-themes,
+  ## it would look like this:
   ##
-  ## /metacatui-themes
-  ##     └── src
-  ##         ├── cerp
-  ##         │ └── js
-  ##         │     └── themes
-  ##         │         └── cerp
-  ##         │             ├── config.js
-  ##         │             ├── css
-  ##         │             ├── ...etc
-  ##         ├── drp
-  ##         │ └── js
-  ##         │     └── themes
-  ##         │         └── drp
-  ##         │             ├── config.js
-  ##         │             ├── css
-  ##       ...etc          ├── ...etc
+  ## /my/mountdir/mydir/metacatui-themes
+  ##                       └── src
+  ##                           ├── cerp
+  ##                           │ └── js
+  ##                           │     └── themes
+  ##                           │         └── cerp
+  ##                           │             ├── ...etc
+  ##                           ├── drp
+  ##                           │ └── js
+  ##                           │     └── themes
+  ##                           │         └── drp
+  ##                           │             ├── config.js
+  ##                         ...etc          ├── ...etc
   ##
-  ## ...so to use the drp theme, you would set the subPath to:
-  ##     subPath: "metacatui-themes/src/drp/js/themes/drp" # (do NOT include initial "/" in subPath)
+  ## ...so to use the drp theme, you would set the subPath (relative to mount point) to:
+  ##     subPath: "mydir/metacatui-themes/src/drp/js/themes/drp"    ## (do NOT include leading "/"!)
   ##
   subPath: ""
 
-  ## @param customTheme.subPath path to 'metacatui-themes' dir (git-repo root) in mounted filesystem
-  ## Ignored unless customTheme is enabled
-  repoRootSubPath: "metacatui-themes"
+  ## @param customTheme.autoUpdate Automatically clone/update theme files from git repo? (destructive)
+  ## If true, the theme files will be automatically updated from the git repo specified below,
+  ## OVERWRITING ANY LOCAL CHANGES.
+  ##
+  autoUpdate: true
 
   ## @param customTheme.gitRepoUrl
-  ## Ignored unless customTheme is enabled
+  ## Ignored unless customTheme is enabled AND customTheme.autoUpdate is true.
   gitRepoUrl: "https://github.com/NCEAS/metacatui-themes.git"
+#  gitRepoSshUrl: "git@github.com:NCEAS/metacatui-themes.git"
 
   ## @param customTheme.gitRevision Any string that makes sense after the command `git checkout`
   ## - for example:
@@ -145,6 +146,34 @@ customTheme:
   ## Ignored unless customTheme is enabled
   ##
   gitRevision: "main"
+
+  ## @param customTheme.subPath path to 'metacatui-themes' dir (repo root), relative to mount point
+  ## Ignored unless customTheme is enabled AND customTheme.autoUpdate is true.
+  ##
+  ## Example: if you mounted a volume at /my/mountdir, and then cloned the metacatui-themes
+  ## repo (https://github.com/NCEAS/metacatui-themes) to it at /my/mountdir/mydir/metacatui-themes,
+  ## it would look like this:
+  ##
+  ## /my/mountdir/mydir/metacatui-themes
+  ##                       └── src
+  ##                           ├── cerp
+  ##                           │ └── js
+  ##                           │     └── themes
+  ##                           │         └── cerp
+  ##                           │             ├── ...etc
+  ##                           ├── drp
+  ##                           │ └── js
+  ##                         ...etc
+  ##
+  ## ...so you'd set the repoRootSubPath to point at the root of the metacatui-themes repo (relative
+  ## to the mount point):
+  ##     subPath: "mydir/metacatui-themes"    ## (do NOT include leading "/"!)
+  ##
+  ## IMPORTANT: This repoRootSubPath must be pre-existing on the mounted volume, otherwise the
+  ## mount will fail
+  ##
+  repoRootSubPath: "metacatui-themes"
+
 
 ## @param livenessProbeEnabled Enable livenessProbe. Autoconfigured using .Values.appConfig.root
 ## To override autoconfig, keep 'livenessProbeEnabled: true', and define a livenessProbe; e.g:
