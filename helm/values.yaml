@@ -100,6 +100,13 @@ customTheme:
   ##
   enabled: false
 
+  ## @param customTheme.autoUpdate (Destructive!) Auto clone/update of theme files from git repo?
+  ## If true, the theme files will be automatically updated from the git repo specified below,
+  ## OVERWRITING ANY LOCAL CHANGES. Typically used for DataONE hosted instances, which should always
+  ## have the latest version of the metacatui-themes repo.
+  ##
+  autoUpdate: false
+
   ## @param customTheme.themeClaimName substitute your own PVC name
   ## Ignored unless customTheme is enabled
   ##
@@ -126,32 +133,29 @@ customTheme:
   ##                           │             ├── config.js
   ##                         ...etc          ├── ...etc
   ##
-  ## ...so to use the drp theme, you would set the subPath (relative to mount point) to:
+  ## ...so to use the drp theme, for example, the subPath (relative to the mount point) would be:
   ##     subPath: "mydir/metacatui-themes/src/drp/js/themes/drp"    ## (do NOT include leading "/"!)
   ##
-  subPath: ""
-
-  ## @param customTheme.autoUpdate Automatically clone/update theme files from git repo? (destructive)
-  ## If true, the theme files will be automatically updated from the git repo specified below,
-  ## OVERWRITING ANY LOCAL CHANGES.
-  ##
-  autoUpdate: true
+  subPath: "metacatui-themes/src/theme-boilerplate/js/themes/theme-boilerplate"
 
   ## @param customTheme.gitRepoUrl
-  ## Ignored unless customTheme is enabled AND customTheme.autoUpdate is true.
+  ## NOTE: Ignored unless customTheme is enabled AND customTheme.autoUpdate is true.
+  ##
   gitRepoUrl: "https://github.com/NCEAS/metacatui-themes.git"
 
   ## @param customTheme.gitRevision Any string that makes sense after the command `git checkout`
-  ## - for example:
+  ## NOTE: Ignored unless customTheme is enabled AND customTheme.autoUpdate is true.
+  ## - Examples:
   ##     revision: "tags/2.29.0"    =>     git checkout tags/2.29.0
   ##     revision: "develop"        =>     git checkout develop
-  ## Ignored unless customTheme is enabled
   ##
   gitRevision: "main"
 
-  ## @param customTheme.subPath path to 'metacatui-themes' dir (repo root), relative to mount point
-  ## Ignored unless customTheme is enabled AND customTheme.autoUpdate is true.
+  ## @param customTheme.repoRootSubPath path to git repo root, relative to the mount point
+  ## (The git repo root for DataONE hosted instances is typically the 'metacatui-themes' directory)
+  ## NOTE: Ignored unless customTheme is enabled AND customTheme.autoUpdate is true.
   ##
+  ## Should always be a subset of customTheme.subPath!
   ## Example: if you mounted a volume at /my/mountdir, and then cloned the metacatui-themes
   ## repo (https://github.com/NCEAS/metacatui-themes) to it at /my/mountdir/mydir/metacatui-themes,
   ## it would look like this:
@@ -169,13 +173,12 @@ customTheme:
   ##
   ## ...so you'd set the repoRootSubPath to point at the root of the metacatui-themes repo (relative
   ## to the mount point):
-  ##     subPath: "mydir/metacatui-themes"    ## (do NOT include leading "/"!)
+  ##     repoRootSubPath: "mydir/metacatui-themes"    ## (do NOT include leading "/"!)
   ##
-  ## IMPORTANT: This repoRootSubPath must be pre-existing on the mounted volume, otherwise the
-  ## mount will fail
+  ## (...which matches the beginning of customTheme.subPath:
+  ##     "mydir/metacatui-themes/src/drp/js/themes/drp", as required above)
   ##
   repoRootSubPath: "metacatui-themes"
-
 
 ## @param livenessProbeEnabled Enable livenessProbe. Autoconfigured using .Values.appConfig.root
 ## To override autoconfig, keep 'livenessProbeEnabled: true', and define a livenessProbe; e.g:

@@ -100,16 +100,21 @@ spec:
               CTREPO='{{ $themeRepoUrl | default "https://github.com/NCEAS/metacatui-themes.git"}}';
               CTREV='{{ $themeRev | default "main" }}';
               cd $CTDEST;
-              if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+              CTCFG="/mounted-theme/{{ .Values.customTheme.subPath }}/config.js";
+              if [ -f "$CTCFG" ] && git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
                 echo "Found existing git repo at ${CTDEST}";
                 echo "Updating and doing hard reset to ${CTREV}";
-                git fetch origin;
-                git reset --hard origin/${CTREV};
+                git fetch --all --tags --prune
+                git checkout "${CTREV}"
+                git reset --hard
+                git clean -fd
                 ctfinish=$(date +%s);
                 echo "git fetch & reset of ${CTREPO} ${CTREV} took $((ctfinish - ctstart)) sec";
               else
-                echo "No git repo found at ${CTDEST}.";
-                echo "Cloning new theme repository from ${CTREPO} ${CTREV}";
+                echo "Specified git repo not found at ${CTDEST}.";
+                echo "Doing a sparse checkout of a new theme from ${CTREPO} ${CTREV}";
+                echo "Theme name: {{ .Values.global.metacatUiThemeName }}";
+                rm -rf ${CTDEST}/.git;
                 git init -b ${CTREV};
                 ## Enable sparse checkout
                 git config core.sparseCheckout true;
@@ -118,8 +123,10 @@ spec:
                 echo "src/{{ .Values.global.metacatUiThemeName }}/" > .git/info/sparse-checkout;
                 git sparse-checkout reapply;
                 ## Pull the data
-                git checkout ${CTREV};
-                git pull;
+                git fetch --all --tags --prune
+                git checkout "${CTREV}"
+                git reset --hard
+                git clean -fd
                 ## Set up read-only mode
                 git config receive.denyCurrentBranch true;
                 ## Allow others Read-Only access
