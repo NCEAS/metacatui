@@ -3,35 +3,35 @@ kind: Deployment
 metadata:
   name: {{ include "metacatui.fullname" . }}
   labels:
-    {{- include "metacatui.labels" . | nindent 4 }}
+    {{ include "metacatui.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "metacatui.selectorLabels" . | nindent 6 }}
+      {{ include "metacatui.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
         {{- $configfiles := (.Files.Glob "config/*").AsConfig }}
         checksum/config: {{ printf "%s" $configfiles | sha256sum }}
         {{- with .Values.podAnnotations }}
-          {{- toYaml . | nindent 8 }}
+          {{ toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        {{- include "metacatui.labels" . | nindent 8 }}
+        {{ include "metacatui.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
-        {{- toYaml . | nindent 8 }}
+        {{ toYaml . | nindent 8 }}
         {{- end }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+        {{ toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "metacatui.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{ toYaml .Values.podSecurityContext | nindent 8 }}
       {{- $source := (include "metacatui.source.from" .) }}
       {{- if ne $source "pvc" }}
       initContainers:
@@ -84,13 +84,67 @@ spec:
           volumeMounts:
             - name: {{ .Release.Name }}-mcui-source-files
               mountPath: /metacatui
+        {{- if and .Values.customTheme.enabled .Values.customTheme.autoUpdate }}
+        - name: update-theme
+          image: alpine/git:latest
+          command:
+            - sh
+            - -c
+            - >
+              ctstart=$(date +%s);
+              echo "Starting custom theme clone/update at $ctstart";
+              CTDEST="/mounted-theme/{{ .Values.customTheme.repoRootSubPath }}";
+              mkdir -p $CTDEST;
+              {{- $themeRepoUrl := .Values.customTheme.gitRepoUrl }}
+              {{- $themeRev := .Values.customTheme.gitRevision }}
+              CTREPO='{{ $themeRepoUrl | default "https://github.com/NCEAS/metacatui-themes.git"}}';
+              CTREV='{{ $themeRev | default "main" }}';
+              cd $CTDEST;
+              CTCFG="/mounted-theme/{{ .Values.customTheme.subPath }}/config.js";
+              if [ -f "$CTCFG" ] && git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+                echo "Found existing git repo at ${CTDEST}";
+                echo "Updating and doing hard reset to ${CTREV}";
+                git fetch --all --tags --prune
+                git checkout "${CTREV}"
+                git reset --hard
+                git clean -fd
+                ctfinish=$(date +%s);
+                echo "git fetch & reset of ${CTREPO} ${CTREV} took $((ctfinish - ctstart)) sec";
+              else
+                echo "Specified git repo not found at ${CTDEST}.";
+                echo "Doing a sparse checkout of a new theme from ${CTREPO} ${CTREV}";
+                echo "Theme name: {{ .Values.global.metacatUiThemeName }}";
+                rm -rf ${CTDEST}/.git;
+                git init -b ${CTREV};
+                ## Enable sparse checkout
+                git config core.sparseCheckout true;
+                git remote add -f origin ${CTREPO};
+                ## Configure sparse-checkout
+                echo "src/{{ .Values.global.metacatUiThemeName }}/" > .git/info/sparse-checkout;
+                git sparse-checkout reapply;
+                ## Pull the data
+                git fetch --all --tags --prune
+                git checkout "${CTREV}"
+                git reset --hard
+                git clean -fd
+                ## Set up read-only mode
+                git config receive.denyCurrentBranch true;
+                ## Allow others Read-Only access
+                chmod -R o+r ..;
+                find . -type d -print0 | xargs -0 chmod o+x;
+                ctfinish=$(date +%s);
+                echo "git sparse checkout of ${CTREPO} ${CTREV} took $((ctfinish - ctstart)) sec";
+              fi;
+          volumeMounts:
+            - name: {{ .Release.Name }}-mcui-custom-theme-files
+              mountPath: /mounted-theme
+        {{- end }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository | default "nginx" }}:
-                        {{- .Values.image.tag | default "latest" }}"
+            {{ toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository | default "nginx" }}:{{ .Values.image.tag | default "latest" }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - name: http
@@ -100,7 +154,7 @@ spec:
           livenessProbe:
           {{- if .Values.livenessProbe }}
             {{- with .Values.livenessProbe }}
-            {{- toYaml . | nindent 12 }}
+            {{ toYaml . | nindent 12 }}
             {{- end }}
           {{- else }}
             httpGet:
@@ -112,7 +166,7 @@ spec:
           readinessProbe:
           {{- if .Values.readinessProbe }}
             {{- with .Values.readinessProbe }}
-            {{- toYaml . | nindent 12 }}
+            {{ toYaml . | nindent 12 }}
             {{- end }}
           {{- else }}
             httpGet:
@@ -121,10 +175,10 @@ spec:
           {{- end }}
           {{- end }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{ toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             {{- with .Values.volumeMounts }}
-              {{- toYaml . | nindent 12 }}
+              {{ toYaml . | nindent 12 }}
             {{- end }}
             - name: {{ .Release.Name }}-mcui-source-files
               mountPath: /usr/share/nginx/html
@@ -163,17 +217,17 @@ spec:
             claimName: {{ required "claimName_REQUIRED" .Values.customTheme.claimName }}
           {{- end }}
           {{- with .Values.volumes }}
-            {{- toYaml . | nindent 8 }}
+            {{ toYaml . | nindent 8 }}
           {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
-        {{- toYaml . | nindent 8 }}
+        {{ toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.affinity }}
       affinity:
-        {{- toYaml . | nindent 8 }}
+        {{ toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations:
-        {{- toYaml . | nindent 8 }}
+        {{ toYaml . | nindent 8 }}
       {{- end }}
