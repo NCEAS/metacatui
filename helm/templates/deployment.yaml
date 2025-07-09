@@ -3,35 +3,35 @@ kind: Deployment
 metadata:
   name: {{ include "metacatui.fullname" . }}
   labels:
-    {{- include "metacatui.labels" . | nindent 4 }}
+    {{ include "metacatui.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "metacatui.selectorLabels" . | nindent 6 }}
+      {{ include "metacatui.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
         {{- $configfiles := (.Files.Glob "config/*").AsConfig }}
         checksum/config: {{ printf "%s" $configfiles | sha256sum }}
         {{- with .Values.podAnnotations }}
-          {{- toYaml . | nindent 8 }}
+          {{ toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        {{- include "metacatui.labels" . | nindent 8 }}
+        {{ include "metacatui.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
-        {{- toYaml . | nindent 8 }}
+        {{ toYaml . | nindent 8 }}
         {{- end }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+        {{ toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "metacatui.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{ toYaml .Values.podSecurityContext | nindent 8 }}
       {{- $source := (include "metacatui.source.from" .) }}
       {{- if ne $source "pvc" }}
       initContainers:
@@ -140,13 +140,11 @@ spec:
               mountPath: /mounted-theme
         {{- end }}
       {{- end }}
-
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository | default "nginx" }}:
-                        {{- .Values.image.tag | default "latest" }}"
+            {{ toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository | default "nginx" }}:{{ .Values.image.tag | default "latest" }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - name: http
@@ -156,7 +154,7 @@ spec:
           livenessProbe:
           {{- if .Values.livenessProbe }}
             {{- with .Values.livenessProbe }}
-            {{- toYaml . | nindent 12 }}
+            {{ toYaml . | nindent 12 }}
             {{- end }}
           {{- else }}
             httpGet:
@@ -168,7 +166,7 @@ spec:
           readinessProbe:
           {{- if .Values.readinessProbe }}
             {{- with .Values.readinessProbe }}
-            {{- toYaml . | nindent 12 }}
+            {{ toYaml . | nindent 12 }}
             {{- end }}
           {{- else }}
             httpGet:
@@ -177,10 +175,10 @@ spec:
           {{- end }}
           {{- end }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{ toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             {{- with .Values.volumeMounts }}
-              {{- toYaml . | nindent 12 }}
+              {{ toYaml . | nindent 12 }}
             {{- end }}
             - name: {{ .Release.Name }}-mcui-source-files
               mountPath: /usr/share/nginx/html
@@ -219,17 +217,17 @@ spec:
             claimName: {{ required "claimName_REQUIRED" .Values.customTheme.claimName }}
           {{- end }}
           {{- with .Values.volumes }}
-            {{- toYaml . | nindent 8 }}
+            {{ toYaml . | nindent 8 }}
           {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
-        {{- toYaml . | nindent 8 }}
+        {{ toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.affinity }}
       affinity:
-        {{- toYaml . | nindent 8 }}
+        {{ toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations:
-        {{- toYaml . | nindent 8 }}
+        {{ toYaml . | nindent 8 }}
       {{- end }}

@@ -188,6 +188,7 @@ customTheme:
 ##      port: http
 ##
 livenessProbeEnabled: true
+livenessProbe: {}    ## Uses default (HTTP GET to global.metacatUiWebRoot) unless defined here
 
 ## @param readinessProbeEnabled Enable readinessProbe. Autoconfigured using .Values.appConfig.root
 ## To override autoconfig, keep 'readinessProbeEnabled: true', and define a readinessProbe; e.g:
@@ -197,6 +198,7 @@ livenessProbeEnabled: true
 ##      port: http
 ##
 readinessProbeEnabled: true
+readinessProbe: {}    ## Uses default (HTTP GET to global.metacatUiWebRoot) unless defined here
 
 service:
   type: ClusterIP
@@ -296,7 +298,9 @@ autoscaling:
 image:
   ## NGINX image version to use. Setting a specific value is safer than using "LATEST"
   ## See dockerhub for versions: https://hub.docker.com/_/nginx
-  tag: 1.27.0
+  tag: 1.29.0
+  repository: "nginx"
+  pullPolicy: "IfNotPresent"
 
 nodeSelector: {}
 tolerations: []
@@ -310,3 +314,5 @@ podLabels: {}
 podSecurityContext: {}
 securityContext: {}
 resources: {}
+volumes: []
+volumeMounts: []
