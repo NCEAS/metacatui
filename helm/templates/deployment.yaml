@@ -14,8 +14,7 @@ spec:
   template:
     metadata:
       annotations:
-        {{- $configfiles := (.Files.Glob "config/*").AsConfig }}
-        checksum/config: {{ printf "%s" $configfiles | sha256sum }}
+        checksum/config: {{ include "metacatui.config.checksum" . }}
         {{- with .Values.podAnnotations }}
           {{ toYaml . | nindent 8 }}
         {{- end }}
