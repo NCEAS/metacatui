@@ -22,6 +22,11 @@ define([
   // So that we can assign properties to Woofmark
   const woofmark = Woofmark;
 
+  // Set the default text for collapsible sections
+  Woofmark.strings.placeholders.detailsSummary = "Click to expand/collapse";
+  Woofmark.strings.placeholders.detailsContent = "Details here";
+  Woofmark.strings.titles.details = "Collapsible section";
+
   /**
    * @class MarkdownEditorView
    * @classdesc A view of an HTML textarea with markdown editor UI and preview tab
@@ -288,6 +293,20 @@ define([
             function: view.addTable,
             insertDividerAfter: true,
           },
+          details: {
+            icon: "collapse",
+            title: Woofmark.strings.titles.details,
+            function(e, mode, chunks, _id) {
+              // Add a collapsible section to the markdown
+              const summary = Woofmark.strings.placeholders.detailsSummary;
+              const content =
+                chunks.selection ||
+                Woofmark.strings.placeholders.detailsContent;
+              const details = `<details>\n  <summary>${summary}</summary>\n  ${content}\n</details>`;
+              chunks.selection = details;
+              chunks.skip({ before: 0, after: 0 });
+            },
+          },
         };
 
         const buttonKeys = Object.keys(buttonOptions);
@@ -406,22 +425,9 @@ define([
 
         chunks.findTags(/#+[ ]*/, /[ ]*#+/);
 
-        // let level = 0;
-        // if (/#+/.test(chunks.startTag)) {
-        //   level = RegExp.lastMatch.length;
-        // }
-
         chunks.startTag = "";
         chunks.endTag = "";
         chunks.findTags(null, /\s?(-+|=+)/);
-
-        // if (/=+/.test(chunks.endTag)) {
-        //   level = 1;
-        // }
-
-        // if (/-+/.test(chunks.endTag)) {
-        //   level = 2;
-        // }
 
         // chunks.startTag = chunks.endTag = "";
         chunks.skip({ before: 1, after: 1 });
@@ -431,12 +437,6 @@ define([
         }
       },
 
-      /**
-       * addDivider – Add or remove a divider
-       * @param {Event}   e          The original event object
-       * @param {string}  mode       markdown | html | wysiwyg   (currently unused)
-       * @param {object}  chunksObj  Woofmark “chunks” describing the editor state
-       */
       /**
        * addDivider – add or remove a horizontal-rule divider.
        * @param {Event}  e          original event (unused here)
