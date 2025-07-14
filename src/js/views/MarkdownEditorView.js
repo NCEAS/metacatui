@@ -8,7 +8,7 @@ define([
   "views/MarkdownView",
   "views/TableEditorView",
   "text!templates/markdownEditor.html",
-], function (
+], (
   _,
   $,
   Backbone,
@@ -18,15 +18,18 @@ define([
   MarkdownView,
   TableEditor,
   Template,
-) {
+) => {
+  // So that we can assign properties to Woofmark
+  const woofmark = Woofmark;
+
   /**
    * @class MarkdownEditorView
    * @classdesc A view of an HTML textarea with markdown editor UI and preview tab
    * @classcategory Views
-   * @extends Backbone.View
-   * @constructor
+   * @augments Backbone.View
+   * @class
    */
-  var MarkdownEditorView = Backbone.View.extend(
+  const MarkdownEditorView = Backbone.View.extend(
     /** @lends MarkdownEditorView.prototype */ {
       /**
        * The type of View this is
@@ -116,7 +119,7 @@ define([
 
       /**
        * The events this view will listen to and the associated function to call.
-       * @type {Object}
+       * @type {object}
        */
       events: {
         "click #markdown-preview-link": "previewMarkdown",
@@ -125,9 +128,9 @@ define([
 
       /**
        * Initialize is executed when a new markdownEditor is created.
-       * @param {Object} options - A literal object with options to pass to the view
+       * @param {object} options - A literal object with options to pass to the view
        */
-      initialize: function (options) {
+      initialize(options) {
         if (typeof options !== "undefined") {
           this.model = options.model || new EMLText();
           this.markdownPlaceholder = options.markdownPlaceholder || "";
@@ -140,283 +143,261 @@ define([
        * render - Renders the markdownEditor - add UI for adding and editing
        * markdown to a textarea
        */
-      render: function () {
-        try {
-          // Save the view
-          var view = this;
+      render() {
+        // Save the view
+        const view = this;
 
-          // The markdown attribute in the model may be a string or an array of strings.
-          // Although EML211 can comprise an array of markdown elements,
-          // this view will only render/edit the first if there are multiple.
-          var markdown = this.model.get("markdown");
-          if (Array.isArray(markdown) && markdown.length) {
-            markdown = markdown[0];
-          }
-          if (!markdown || !markdown.length) {
-            markdown = this.model.get("markdownExample");
-          }
-
-          // Insert the template into the view
-          this.$el
-            .html(
-              this.template({
-                markdown: markdown || "",
-                markdownPlaceholder: this.markdownPlaceholder || "",
-                previewPlaceholder: this.previewPlaceholder || "",
-                cid: this.cid,
-              }),
-            )
-            .data("view", this);
-
-          // The textarea element that the markdown editor buttons & functions will edit
-          var textarea = this.$el.find(this.textarea);
-
-          if (textarea && textarea.length) {
-            textarea = textarea[0];
-          }
-
-          if (!textarea) {
-            console.log(
-              "error: the markdown editor view was not rendered because no textarea element was found.",
-            );
-            return;
-          }
-
-          // Set woofmark options. See https://github.com/bevacqua/woofmark
-          var woofmarkOptions = {
-            fencing: true,
-            html: false,
-            wysiwyg: false,
-            defaultMode: "markdown",
-            render: {
-              // Hide buttons that switch between markdown, WYSIWYG, & HTML for now
-              modes: function (button, id) {
-                button.remove();
-              },
-            },
-          };
-
-          // Set options for all the buttons that will be shown in the toolbar.
-          // Buttons will be shown in the order they are listed.
-          // Defaults from Woofmark will be used unless they are replaced here,
-          // see: https://github.com/bevacqua/woofmark/blob/master/src/strings.js.
-          // They key is the ID for the button.
-          //    remove: if set to true, the button will be removed (use this to hide default woofmark buttons)
-          //    icon: the name of the font awesome icon to show in the button. If no button or svg is set, the ID/key will be displayed instead.
-          //    svg: svg code to show in the button. If no button or svg is set, the ID/key will be displayed instead.
-          //    title: The title to show on hover
-          //    function: The function to call when the button is pressed. It will be passed chunks, cmd, e (see Woofmark docs), plus the ID/key. Called with view as the this (context).
-          //    shortcut: The keyboard shortcut to use for the button. This will only work if there is also a custom function set.
-          //    insertDividerAfter: If set to true, a visual divider will be placed after this button.
-          var buttonOptions = {
-            // Default woofmark buttons to remove
-            attachment: {
-              remove: true,
-            },
-            heading: {
-              remove: true,
-            },
-            hr: {
-              remove: true,
-            },
-            // Remove the default image uploader button so we can add our own that
-            // uploads the image as a dataone object.
-            image: {
-              remove: true,
-            },
-            // Default woofmark buttons to keep, with custom properties, + custom buttons
-            bold: {
-              icon: "bold",
-            },
-            italic: {
-              icon: "italic",
-            },
-            strike: {
-              title: "Strikethrough",
-              icon: "strikethrough",
-              shortcut: "Ctrl+Shift+X",
-              function: view.strikethrough,
-              insertDividerAfter: true,
-            },
-            h1: {
-              svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 2.9V0h7.8v2.9l-2 .5v7h7.7v-7l-2-.5V0h7.7v2.9l-2 .5v17.2l2 .5V24h-7.8v-2.9l2-.5V14H5.9v6.6l2 .5V24H0v-2.9l2-.5V3.4z"/><path fill-rule="nonzero" d="M24 16.4v-1.9h-1.4V5.8h-4.1v1.8H20v7h-1.4v1.8z"/></svg>`,
-              title: "Top-level heading",
-              function: view.addHeader,
-            },
-            h2: {
-              svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill-rule="nonzero" d="M23.2 17.3l.1-3.1h-2v1.3H18c.1-.7.8-1.5 2-2.2L22 12a4 4 0 001-1l.3-1.5c0-.9-.3-1.6-1-2.1-.6-.5-1.5-.8-2.6-.8-1.3 0-2.2.3-2.9 1-.6.6-1 1.5-1 2.8l2.2.1c0-.8.2-1.3.4-1.7.3-.3.6-.5 1.1-.5.4 0 .7.1.9.3.2.2.3.5.3.8 0 .4-.1.7-.4 1-.2.4-.6.7-1.1 1a17 17 0 00-2.1 1.9c-.5.5-.8 1-1 1.6-.3.6-.4 1.4-.4 2.3h7.6z"/><path d="M.5 4.6V2.3h6.3v2.3L5.2 5v5.6h6.2V5l-1.6-.4V2.3H16v2.3l-1.6.4v14l1.6.4v2.3H9.8v-2.3l1.6-.4v-5.3H5.2V19l1.6.4v2.3H.5v-2.3l1.6-.4V5z"/></svg>`,
-              title: "Second-level heading",
-              function: view.addHeader,
-            },
-            h3: {
-              svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill-rule="nonzero" d="M18.1 17.3c.7 0 1.4-.1 2-.4.6-.2 1-.6 1.4-1 .3-.6.5-1.1.5-1.7 0-1.2-.7-2-2-2.5 1-.5 1.6-1.2 1.6-2.2 0-.9-.4-1.6-1-2-.6-.6-1.5-.8-2.6-.8-1 0-1.9.3-2.5.8a3 3 0 00-1 2.2l2.1.1c0-.9.4-1.3 1.3-1.3.3 0 .6 0 .9.3.2.2.3.4.3.8s-.2.7-.5.9a3 3 0 01-1.5.3v1.9h.6c.5 0 1 0 1.2.3.3.3.5.7.5 1 0 .5-.2.8-.4 1.1-.3.3-.7.5-1.1.5-1 0-1.5-.6-1.5-1.8l-2.2.1c.1 2.3 1.4 3.4 4 3.4z"/><path d="M2 6.6V4.8h4.7v1.8l-1.2.3V11H10V6.9l-1.2-.3V4.8h4.6v1.8l-1.2.3V17l1.2.3v1.8H8.9v-1.8l1.2-.3v-3.9H5.5v4l1.2.2v1.8H2v-1.8l1.2-.3V7z"/></svg>`,
-              title: "Tertiary heading",
-              function: view.addHeader,
-              insertDividerAfter: true,
-            },
-            divider: {
-              svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="22" height="3" x="1" y="10.58" fill-rule="evenodd"/></svg>`,
-              function: view.addDivider,
-              title: "Top-level heading",
-              shortcut: "Ctrl+Enter",
-            },
-            ol: {
-              title: "Ordered list",
-              icon: "list-ol",
-            },
-            ul: {
-              title: "Un-ordered list",
-              icon: "list-ul",
-              insertDividerAfter: true,
-            },
-            quote: {
-              icon: "quote-left",
-            },
-            code: {
-              icon: "code",
-              insertDividerAfter: true,
-            },
-            link: {
-              icon: "link",
-            },
-            d1Image: {
-              icon: "picture",
-              function: view.addMdImage,
-              title: "Image",
-              // use Ctrl+G to overwrite the built-in woofmark image function
-              shortcut: "Ctrl+G",
-            },
-            table: {
-              icon: "table",
-              function: view.addTable,
-              insertDividerAfter: true,
-            },
-          };
-
-          var buttonKeys = Object.keys(buttonOptions);
-
-          // PRE-RENDER WOOFMARK
-          // Set titles on buttons before the Woofmark text editor is rendered.
-          // This way we can use Woofmark's build in functionality to convert "Ctrl"
-          // to "Cmd" symbol if user is on mac.
-          _.each(
-            buttonKeys,
-            function (key, i) {
-              var options = buttonOptions[key],
-                title =
-                  options.title || key.charAt(0).toUpperCase() + key.slice(1),
-                presetShortcut = "";
-
-              if (
-                Woofmark.strings.titles[key] &&
-                Woofmark.strings.titles[key].match(/Ctrl\+.*$/)
-              ) {
-                presetShortcut =
-                  Woofmark.strings.titles[key].match(/Ctrl\+.*$/)[0];
-              }
-
-              var shortcut = options.shortcut || presetShortcut;
-
-              if (title) {
-                Woofmark.strings.titles[key] = [title, shortcut].join(" ");
-              }
-              // So that we can identify buttons that we want to manipulate after
-              // they are rendered, use the key as the button text for now.
-              Woofmark.strings.buttons[key] = key;
-            },
-            this,
-          );
-
-          // RENDER WOOFMARK
-          // Initialize the woofmark markdown editor
-          this.markdownEditor = new Woofmark(textarea, woofmarkOptions);
-
-          // POST-RENDER WOOFMARK
-          // After the markdown editor is initialized..
-
-          // Add custom functions
-          _.each(buttonKeys, function (key, i) {
-            var options = buttonOptions[key];
-            if (options.function) {
-              // addCommandButton uses cmd, not ctrl
-              var shortcut = "";
-              if (options.shortcut) {
-                shortcut = options.shortcut.replace("Ctrl", "cmd");
-              }
-              view.markdownEditor.addCommandButton(
-                key,
-                shortcut,
-                function (e, mode, chunks) {
-                  options.function.call(view, e, mode, chunks, key);
-                },
-              );
-            }
-          });
-
-          // Modify the button order & appearance
-          var buttonContainer = $(view.markdownEditor.textarea)
-            .parent()
-            .find(".wk-commands");
-          var buttons = buttonContainer.find(".wk-command");
-          _.each(buttonKeys, function (key, i) {
-            // Re-order buttons based on the order in buttonOptions, and remove
-            // any that are marked for removal
-            var options = buttonOptions[key];
-            var buttonEl = buttonContainer
-              .find(".wk-command")
-              .filter(function () {
-                return this.innerHTML == key;
-              });
-            if (options.remove !== true) {
-              // Add tooltip
-              buttonEl.tooltip({
-                placement: "top",
-                delay: 500,
-                trigger: "hover",
-              });
-              // Add font awesome icon or SVG
-              if (options.icon) {
-                buttonEl.html("<i class='icon-" + options.icon + "'></i>");
-              } else if (options.svg) {
-                buttonEl.html(options.svg);
-                buttonEl.find("svg").height("13px").width("auto");
-              }
-              buttonContainer.append(buttonEl);
-              if (options.insertDividerAfter === true) {
-                buttonContainer.append(
-                  "<div class='wk-commands-divider'></div>",
-                );
-              }
-            } else {
-              buttonEl.remove();
-            }
-          });
-        } catch (e) {
-          console.log(e);
-          console.log(
-            "Failed to render the markdown editor UI, error message: " + e,
-          );
+        // The markdown attribute in the model may be a string or an array of strings.
+        // Although EML211 can comprise an array of markdown elements,
+        // this view will only render/edit the first if there are multiple.
+        let markdown = this.model.get("markdown");
+        if (Array.isArray(markdown) && markdown.length) {
+          [markdown] = markdown;
         }
+        if (!markdown || !markdown.length) {
+          markdown = this.model.get("markdownExample");
+        }
+
+        // Insert the template into the view
+        this.$el
+          .html(
+            this.template({
+              markdown: markdown || "",
+              markdownPlaceholder: this.markdownPlaceholder || "",
+              previewPlaceholder: this.previewPlaceholder || "",
+              cid: this.cid,
+            }),
+          )
+          .data("view", this);
+
+        // The textarea element that the markdown editor buttons & functions will edit
+        let textarea = this.$el.find(this.textarea);
+
+        if (textarea && textarea.length) {
+          textarea = textarea.get(0); // Get the DOM element from the jQuery object
+        }
+
+        if (!textarea) return;
+
+        // Set woofmark options. See https://github.com/bevacqua/woofmark
+        const woofmarkOptions = {
+          fencing: true,
+          html: false,
+          wysiwyg: false,
+          defaultMode: "markdown",
+          render: {
+            // Hide buttons that switch between markdown, WYSIWYG, & HTML for now
+            modes(button, _id) {
+              button.remove();
+            },
+          },
+        };
+
+        // Set options for all the buttons that will be shown in the toolbar.
+        // Buttons will be shown in the order they are listed.
+        // Defaults from Woofmark will be used unless they are replaced here,
+        // see: https://github.com/bevacqua/woofmark/blob/master/src/strings.js.
+        // They key is the ID for the button.
+        //    remove: if set to true, the button will be removed (use this to hide default woofmark buttons)
+        //    icon: the name of the font awesome icon to show in the button. If no button or svg is set, the ID/key will be displayed instead.
+        //    svg: svg code to show in the button. If no button or svg is set, the ID/key will be displayed instead.
+        //    title: The title to show on hover
+        //    function: The function to call when the button is pressed. It will be passed chunks, cmd, e (see Woofmark docs), plus the ID/key. Called with view as the this (context).
+        //    shortcut: The keyboard shortcut to use for the button. This will only work if there is also a custom function set.
+        //    insertDividerAfter: If set to true, a visual divider will be placed after this button.
+        const buttonOptions = {
+          // Default woofmark buttons to remove
+          attachment: {
+            remove: true,
+          },
+          heading: {
+            remove: true,
+          },
+          hr: {
+            remove: true,
+          },
+          // Remove the default image uploader button so we can add our own that
+          // uploads the image as a dataone object.
+          image: {
+            remove: true,
+          },
+          // Default woofmark buttons to keep, with custom properties, + custom buttons
+          bold: {
+            icon: "bold",
+          },
+          italic: {
+            icon: "italic",
+          },
+          strike: {
+            title: "Strikethrough",
+            icon: "strikethrough",
+            shortcut: "Ctrl+Shift+X",
+            function: view.strikethrough,
+            insertDividerAfter: true,
+          },
+          h1: {
+            svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 2.9V0h7.8v2.9l-2 .5v7h7.7v-7l-2-.5V0h7.7v2.9l-2 .5v17.2l2 .5V24h-7.8v-2.9l2-.5V14H5.9v6.6l2 .5V24H0v-2.9l2-.5V3.4z"/><path fill-rule="nonzero" d="M24 16.4v-1.9h-1.4V5.8h-4.1v1.8H20v7h-1.4v1.8z"/></svg>`,
+            title: "Top-level heading",
+            function: view.addHeader,
+          },
+          h2: {
+            svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill-rule="nonzero" d="M23.2 17.3l.1-3.1h-2v1.3H18c.1-.7.8-1.5 2-2.2L22 12a4 4 0 001-1l.3-1.5c0-.9-.3-1.6-1-2.1-.6-.5-1.5-.8-2.6-.8-1.3 0-2.2.3-2.9 1-.6.6-1 1.5-1 2.8l2.2.1c0-.8.2-1.3.4-1.7.3-.3.6-.5 1.1-.5.4 0 .7.1.9.3.2.2.3.5.3.8 0 .4-.1.7-.4 1-.2.4-.6.7-1.1 1a17 17 0 00-2.1 1.9c-.5.5-.8 1-1 1.6-.3.6-.4 1.4-.4 2.3h7.6z"/><path d="M.5 4.6V2.3h6.3v2.3L5.2 5v5.6h6.2V5l-1.6-.4V2.3H16v2.3l-1.6.4v14l1.6.4v2.3H9.8v-2.3l1.6-.4v-5.3H5.2V19l1.6.4v2.3H.5v-2.3l1.6-.4V5z"/></svg>`,
+            title: "Second-level heading",
+            function: view.addHeader,
+          },
+          h3: {
+            svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill-rule="nonzero" d="M18.1 17.3c.7 0 1.4-.1 2-.4.6-.2 1-.6 1.4-1 .3-.6.5-1.1.5-1.7 0-1.2-.7-2-2-2.5 1-.5 1.6-1.2 1.6-2.2 0-.9-.4-1.6-1-2-.6-.6-1.5-.8-2.6-.8-1 0-1.9.3-2.5.8a3 3 0 00-1 2.2l2.1.1c0-.9.4-1.3 1.3-1.3.3 0 .6 0 .9.3.2.2.3.4.3.8s-.2.7-.5.9a3 3 0 01-1.5.3v1.9h.6c.5 0 1 0 1.2.3.3.3.5.7.5 1 0 .5-.2.8-.4 1.1-.3.3-.7.5-1.1.5-1 0-1.5-.6-1.5-1.8l-2.2.1c.1 2.3 1.4 3.4 4 3.4z"/><path d="M2 6.6V4.8h4.7v1.8l-1.2.3V11H10V6.9l-1.2-.3V4.8h4.6v1.8l-1.2.3V17l1.2.3v1.8H8.9v-1.8l1.2-.3v-3.9H5.5v4l1.2.2v1.8H2v-1.8l1.2-.3V7z"/></svg>`,
+            title: "Tertiary heading",
+            function: view.addHeader,
+            insertDividerAfter: true,
+          },
+          divider: {
+            svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="22" height="3" x="1" y="10.58" fill-rule="evenodd"/></svg>`,
+            function: view.addDivider,
+            title: "Top-level heading",
+            shortcut: "Ctrl+Enter",
+          },
+          ol: {
+            title: "Ordered list",
+            icon: "list-ol",
+          },
+          ul: {
+            title: "Un-ordered list",
+            icon: "list-ul",
+            insertDividerAfter: true,
+          },
+          quote: {
+            icon: "quote-left",
+          },
+          code: {
+            icon: "code",
+            insertDividerAfter: true,
+          },
+          link: {
+            icon: "link",
+          },
+          d1Image: {
+            icon: "picture",
+            function: view.addMdImage,
+            title: "Image",
+            // use Ctrl+G to overwrite the built-in woofmark image function
+            shortcut: "Ctrl+G",
+          },
+          table: {
+            icon: "table",
+            function: view.addTable,
+            insertDividerAfter: true,
+          },
+        };
+
+        const buttonKeys = Object.keys(buttonOptions);
+
+        // PRE-RENDER WOOFMARK Set titles on buttons before the Woofmark text
+        // editor is rendered. This way we can use Woofmark's built-in
+        // functionality to convert "Ctrl" to "Cmd" symbol if user is on mac.
+        _.each(
+          buttonKeys,
+          (key, _i) => {
+            const options = buttonOptions[key];
+            const title =
+              options.title || key.charAt(0).toUpperCase() + key.slice(1);
+
+            const shortcuts = Woofmark.strings.titles[key]?.match(/Ctrl\+.*$/);
+            const presetShortcut = shortcuts ? shortcuts[0] : "";
+            const shortcut = options.shortcut || presetShortcut;
+
+            if (title) {
+              woofmark.strings.titles[key] = [title, shortcut].join(" ");
+            }
+            // So that we can identify buttons that we want to manipulate after
+            // they are rendered, use the key as the button text for now.
+            woofmark.strings.buttons[key] = key;
+          },
+          this,
+        );
+
+        // RENDER WOOFMARK
+        // Initialize the woofmark markdown editor
+        this.markdownEditor = new Woofmark(textarea, woofmarkOptions);
+
+        // POST-RENDER WOOFMARK
+        // After the markdown editor is initialized..
+
+        // Add custom functions
+        _.each(buttonKeys, (key, _i) => {
+          const options = buttonOptions[key];
+          if (options.function) {
+            // addCommandButton uses cmd, not ctrl
+            let shortcut = "";
+            if (options.shortcut) {
+              shortcut = options.shortcut.replace("Ctrl", "cmd");
+            }
+            view.markdownEditor.addCommandButton(
+              key,
+              shortcut,
+              (e, mode, chunks) => {
+                options.function.call(view, e, mode, chunks, key);
+              },
+            );
+          }
+        });
+
+        // Modify the button order & appearance
+        const buttonContainer = $(view.markdownEditor.textarea)
+          .parent()
+          .find(".wk-commands");
+
+        _.each(buttonKeys, (key, _i) => {
+          // Re-order buttons based on the order in buttonOptions, and remove
+          // any that are marked for removal
+          const options = buttonOptions[key];
+          const buttonEl = buttonContainer
+            .find(".wk-command")
+            .filter(function filter() {
+              return this.innerHTML === key;
+            });
+          if (options.remove !== true) {
+            // Add tooltip
+            buttonEl.tooltip({
+              placement: "top",
+              delay: 500,
+              trigger: "hover",
+            });
+            // Add font awesome icon or SVG
+            if (options.icon) {
+              buttonEl.html(`<i class='icon-${options.icon}'></i>`);
+            } else if (options.svg) {
+              buttonEl.html(options.svg);
+              buttonEl.find("svg").height("13px").width("auto");
+            }
+            buttonContainer.append(buttonEl);
+            if (options.insertDividerAfter === true) {
+              buttonContainer.append("<div class='wk-commands-divider'></div>");
+            }
+          } else {
+            buttonEl.remove();
+          }
+        });
       },
 
       /**
        * addHeader - description
-       *
        * @param  {event}  e      is the original event object
        * @param  {string} mode   can be markdown, html, or wysiwyg
-       * @param  {object} chunks is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks
+       * @param  {object} chunksObj is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks
        * @param  {string} id     the ID of the function, set as they key in buttonOptions in the render function
        */
-      addHeader: function (e, mode, chunks, id) {
+      addHeader(e, mode, chunksObj, id) {
         // Get the header level from the ID
-        var levelToCreate = parseInt(id.replace(/^\D+/g, ""));
+        const levelToCreate = parseInt(id.replace(/^\D+/g, ""), 10);
+        const chunks = chunksObj;
 
         chunks.selection = chunks.selection
           .replace(/\s+/g, " ")
           .replace(/(^\s+|\s+$)/g, "");
 
         if (!chunks.selection) {
-          chunks.startTag = new Array(levelToCreate + 1).join("#") + " ";
+          chunks.startTag = `${new Array(levelToCreate + 1).join("#")} `;
           chunks.selection = Woofmark.strings.placeholders.heading;
           chunks.endTag = "";
           chunks.skip({ before: 1, after: 1 });
@@ -425,67 +406,79 @@ define([
 
         chunks.findTags(/#+[ ]*/, /[ ]*#+/);
 
-        if (/#+/.test(chunks.startTag)) {
-          level = RegExp.lastMatch.length;
-        }
+        // let level = 0;
+        // if (/#+/.test(chunks.startTag)) {
+        //   level = RegExp.lastMatch.length;
+        // }
 
-        chunks.startTag = chunks.endTag = "";
+        chunks.startTag = "";
+        chunks.endTag = "";
         chunks.findTags(null, /\s?(-+|=+)/);
 
-        if (/=+/.test(chunks.endTag)) {
-          level = 1;
-        }
+        // if (/=+/.test(chunks.endTag)) {
+        //   level = 1;
+        // }
 
-        if (/-+/.test(chunks.endTag)) {
-          level = 2;
-        }
+        // if (/-+/.test(chunks.endTag)) {
+        //   level = 2;
+        // }
 
-        chunks.startTag = chunks.endTag = "";
+        // chunks.startTag = chunks.endTag = "";
         chunks.skip({ before: 1, after: 1 });
 
         if (levelToCreate > 0) {
-          chunks.startTag = new Array(levelToCreate + 1).join("#") + " ";
+          chunks.startTag = `${new Array(levelToCreate + 1).join("#")} `;
         }
       },
 
       /**
-       * addDivider - Add or remove a divider
-       *
-       * @param  {event} e      is the original event object
-       * @param  {string} mode   can be markdown, html, or wysiwyg
-       * @param  {object} chunks is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks
+       * addDivider – Add or remove a divider
+       * @param {Event}   e          The original event object
+       * @param {string}  mode       markdown | html | wysiwyg   (currently unused)
+       * @param {object}  chunksObj  Woofmark “chunks” describing the editor state
        */
-      addDivider: function (e, mode, chunks) {
-        // If the selection includes a divider, remove it
-        var markdown = chunks.before + chunks.selection + chunks.after;
-        var startSel = chunks.before.length;
-        var endSel = startSel + chunks.selection.length + 1;
-        var dividerRE = /(\r\n|\r|\n){2}-{3,}/gm;
-        var dividerDeleted = false;
-        while ((match = dividerRE.exec(markdown)) !== null) {
-          // +1 so that we don't delete the divider if selection is at the newlines before a divider
-          var startDivider = match.index + 2;
-          // +1 so that if the selection is at the end of a divider, it will still be deleted
-          var endDivider = match.index + match[0].length + 1;
-          if (
-            (endSel > startDivider && endSel <= endDivider) ||
-            (startSel < endDivider && startSel >= startDivider)
-          ) {
-            tableString = match[0];
-            chunks.before = markdown.slice(0, startDivider - 2) + "\n";
-            chunks.selection = "";
-            chunks.after = markdown.slice(endDivider);
-            dividerDeleted = true;
-            break;
-          }
-        }
-        // If the divider was not deleted (therefore not detected), then add one
-        if (!dividerDeleted) {
-          var dividerToAdd = "\n\n--------------------\n";
-          if (/(\r\n|\r|\n){1}$/.test(chunks.before)) {
-            dividerToAdd = "\n--------------------\n";
-          }
-          chunks.before = chunks.before + dividerToAdd;
+      /**
+       * addDivider – add or remove a horizontal-rule divider.
+       * @param {Event}  e          original event (unused here)
+       * @param {string} mode       'markdown' | 'html' | 'wysiwyg'  (unused here)
+       * @param {object} chunksObj  Woofmark “chunks” describing the editor state
+       */
+      addDivider(e, mode, chunksObj) {
+        const chunks = chunksObj;
+        const markdown = `${chunks.before}${chunks.selection}${chunks.after}`;
+
+        const startSel = chunks.before.length;
+        const endSel = startSel + chunks.selection.length + 1;
+
+        const dividerRE = /(?:\r\n|\r|\n){2}-{3,}/gm;
+
+        // Collect all divider positions without loops / generators
+        const dividers = [];
+        markdown.replace(dividerRE, (fullMatch, _unused, offset) => {
+          dividers.push({
+            start: offset + 2,
+            end: offset + fullMatch.length + 1,
+          });
+          return fullMatch; // leave text unchanged
+        });
+
+        // Does the current selection touch any divider?
+        const hit = dividers.find(
+          ({ start, end }) =>
+            (endSel > start && endSel <= end) || // cursor end inside divider
+            (startSel < end && startSel >= start), // cursor start inside divider
+        );
+
+        if (hit) {
+          // remove the overlapping divider
+          chunks.before = `${markdown.slice(0, hit.start - 2)}\n`;
+          chunks.selection = "";
+          chunks.after = markdown.slice(hit.end);
+        } else {
+          // insert a new divider
+          const needsExtraNewline = /(\r\n|\r|\n){1}$/.test(chunks.before);
+          const dividerToAdd = `${needsExtraNewline ? "\n" : "\n\n"}--------------------\n`;
+          chunks.before += dividerToAdd;
         }
       },
 
@@ -496,77 +489,70 @@ define([
        * table was selected, the table information is imported into the table
        * editor where the user can edit it. If no table was selected, then it
        * creates an empty table where the user can add data.
-       *
-       * @param  {event} e      is the original event object
-       * @param  {string} mode   can be markdown, html, or wysiwyg
-       * @param  {object} chunks is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks
+       * addTable – open the table-editor dialog and import or insert a markdown table
+       * @param {Event}  e          Original click/command event (unused here)
+       * @param {string} mode       'markdown' | 'html' | 'wysiwyg'  (unused)
+       * @param {object} chunksObj  Woofmark “chunks” describing the editor state
        */
-      addTable: function (e, mode, chunks) {
-        // Use a modified version of the link dialog
+      addTable(e, mode, chunksObj) {
+        const chunks = chunksObj;
+
+        /* ---------- open the (link) dialog that we’ll repurpose ---------- */
         this.markdownEditor.showLinkDialog();
 
-        // Select the image upload dialog elements so that we can customize it
-        var dialog = $(".wk-prompt"),
-          dialogContent = dialog.find(".wk-prompt-input-container"),
-          dialogTitle = dialog.find(".wk-prompt-title"),
-          dialogDescription = dialog.find(".wk-prompt-description"),
-          dialogOkBtn = dialog.find(".wk-prompt-ok");
+        const dialog = $(".wk-prompt");
+        const dialogContent = dialog.find(".wk-prompt-input-container");
+        const dialogTitle = dialog.find(".wk-prompt-title");
+        const dialogDescription = dialog.find(".wk-prompt-description");
+        const dialogOkBtn = dialog.find(".wk-prompt-ok");
 
-        // Detect whether the selection includes a markdown table.
-        // If it does, ensure the complete table is selected, and save the
-        // markdown table string segment to be parsed.
-        var markdown = chunks.before + chunks.selection + chunks.after;
-        var startSel = chunks.before.length;
-        var endSel = startSel + chunks.selection.length + 1;
-        var tableRE =
-          /((\|[^|\r\n]*)+\|(\r?\n|\r)?)+((?:\s*\|\s*:?\s*[-=]+\s*:?\s*)+\|)(\n\s*(?:\|[^\n]+\|\r?\n?)*)?$/gm;
-        // The regular expression used by showdown to detect tables:
-        // var tableRE = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:[-=]){2,}[\s\S]+?(?:\n\n|¨0)/gm;
-        var tables = markdown.match(tableRE);
-        var tableString = "";
-        while ((match = tableRE.exec(markdown)) !== null) {
-          var startTab = match.index;
-          var endTab = match.index + match[0].length;
-          if (
-            (endSel > startTab && endSel <= endTab) ||
-            (startSel < endTab && startSel >= startTab)
-          ) {
-            tableString = match[0];
-            chunks.before = markdown.slice(0, startTab);
-            chunks.selection = markdown.slice(startTab, endTab);
-            chunks.after = markdown.slice(endTab);
-            // Just use the first table match in which there is also at least partial selection
-            break;
-          }
+        /* ---------- detect a table inside the current selection ---------- */
+        const markdown = `${chunks.before}${chunks.selection}${chunks.after}`;
+        const startSel = chunks.before.length;
+        const endSel = startSel + chunks.selection.length + 1;
+
+        const tableRE =
+          /((\|[^|\r\n]*)+\|(?:\r?\n|\r)?)+((?:\s*\|\s*:?\s*[-=]+\s*:?\s*)+\|)(\n\s*(?:\|[^\n]+\|\r?\n?)*)?/gm;
+
+        // Harvest every table match (no loops, no generators)
+        const tables = [];
+        markdown.replace(tableRE, (full, _1, _2, _3, _4, offset) => {
+          tables.push({ start: offset, end: offset + full.length, text: full });
+          return full; // leave source untouched
+        });
+
+        // First table whose span intersects the cursor/selection
+        const hit = tables.find(
+          ({ start, end }) =>
+            (endSel > start && endSel <= end) ||
+            (startSel < end && startSel >= start),
+        );
+
+        let tableString = "";
+        if (hit) {
+          ({ text: tableString } = hit);
+          chunks.before = markdown.slice(0, hit.start);
+          chunks.selection = markdown.slice(hit.start, hit.end);
+          chunks.after = markdown.slice(hit.end);
         }
 
-        // Clone the chunks object at this point in case the textarea loses focus
-        // and the selection changes before the "ok" buttons is pressed
-        const chunksClone = JSON.parse(JSON.stringify(chunks));
-
-        // Add a table editor view.
-        // Pass the parsesd markdown table, if there is one
-        var tableEditor = new TableEditor({
-          markdown: tableString,
-        });
-        // Render the table editor
+        /* ---------- launch the TableEditor view ---------- */
+        const tableEditor = new TableEditor({ markdown: tableString });
         tableEditor.render();
-        // Add the rendered table editor to the dialog, update the dialog.
+
         dialogContent.html(tableEditor.el);
         dialogDescription.remove();
         dialogTitle.text("Insert Table");
 
-        // Listen for when the OK button is clicked. Attach listener to the dialog
-        // so that it's destroyed when the dialog is destroyed. It won't be called
-        // if the user presses cancel.
-        var view = this;
-        dialogOkBtn.off("click");
-        dialogOkBtn.on("click", function insertText(event) {
-          var tableMarkdown = tableEditor.getMarkdown();
-          view.markdownEditor.runCommand(function (chunks, mode) {
-            chunks.before = chunksClone.before;
-            chunks.after = chunksClone.after;
-            chunks.selection = tableMarkdown;
+        /* ---------- when user clicks OK, insert/replace the table ---------- */
+        dialogOkBtn.off("click").on("click", () => {
+          const tableMarkdown = tableEditor.getMarkdown();
+          // Use Woofmark's runCommand so undo/redo work as expected
+          this.markdownEditor.runCommand((chnks /* current */, _md) => {
+            const c = chnks || {};
+            c.before = chunks.before;
+            c.after = chunks.after;
+            c.selection = tableMarkdown;
           });
         });
       },
@@ -579,123 +565,113 @@ define([
        * insert the correct markdown into the textarea. This function must be
        * called such that "this" is the markdownEditor view.
        */
-      addMdImage: function () {
-        try {
-          var view = this;
+      addMdImage() {
+        const view = this;
 
-          // Show woofmark's default image upload dialog, inserted at the end of body
-          view.markdownEditor.showImageDialog();
+        // Show woofmark's default image upload dialog, inserted at the end of body
+        view.markdownEditor.showImageDialog();
 
-          // Select the image upload dialog elements so that we can customize it
-          var imageDialog = $(".wk-prompt"),
-            imageDialogInput = imageDialog.find(".wk-prompt-input"),
-            imageDialogDescription = imageDialog.find(".wk-prompt-description"),
-            imageDialogOkBtn = imageDialog.find(".wk-prompt-ok"),
-            // Save the inner HTML of the button for when we replace it
-            // temporarily during image upload
-            imageDialogOkBtnTxt = imageDialogOkBtn.html();
+        // Select the image upload dialog elements so that we can customize it
+        const imageDialog = $(".wk-prompt");
+        const imageDialogInput = imageDialog.find(".wk-prompt-input");
+        const imageDialogDescription = imageDialog.find(
+          ".wk-prompt-description",
+        );
+        const imageDialogOkBtn = imageDialog.find(".wk-prompt-ok");
+        // Save the inner HTML of the button for when we replace it
+        // temporarily during image upload
+        const imageDialogOkBtnTxt = imageDialogOkBtn.html();
 
-          // Create an ImageUploaderView and insert into this view.
-          mdImageUploader = new ImageUploader({
-            uploadInstructions: "Drag & drop an image here or click to upload",
-            imageTagName: "img",
-            height: "175",
-            width: "300",
-            maxHeight: view.maxImageHeight || null,
-            maxWidth: view.maxImageWidth || null,
-          });
+        // Create an ImageUploaderView and insert into this view.
+        const mdImageUploader = new ImageUploader({
+          uploadInstructions: "Drag & drop an image here or click to upload",
+          imageTagName: "img",
+          height: "175",
+          width: "300",
+          maxHeight: view.maxImageHeight || null,
+          maxWidth: view.maxImageWidth || null,
+        });
 
-          // Show when image is uploading; temporarily disable the OK button
-          view.stopListening(mdImageUploader, "addedfile");
-          view.listenTo(mdImageUploader, "addedfile", function () {
-            // Disable the button during upload;
-            imageDialogOkBtn.prop("disabled", true);
-            imageDialogOkBtn.css({ opacity: "0.5", cursor: "not-allowed" });
-            imageDialogOkBtn.html(
-              "<i class='icon-spinner icon-spin icon-large loading icon'></i> " +
-                "Uploading...",
-            );
-          });
-
-          // Update the image input URL when the image is successfully uploaded
-          view.stopListening(mdImageUploader, "successSaving");
-          view.listenTo(
-            mdImageUploader,
-            "successSaving",
-            function (dataONEObject) {
-              //Execute the DataONEObject function that performs various functions after
-              // a successful save
-              dataONEObject.onSuccessfulSave();
-
-              // Re-enable the button
-              imageDialogOkBtn.prop("disabled", false);
-              imageDialogOkBtn.html(imageDialogOkBtnTxt);
-              imageDialogOkBtn.css({ opacity: "1", cursor: "pointer" });
-
-              // Get the uploaded image's url.
-              //var url = dataONEObject.url();
-              var url = "";
-
-              if (MetacatUI.appModel.get("isCN")) {
-                var sourceRepo;
-
-                //Use the object service URL from the origin MN/datasource
-                if (dataONEObject.get("datasource")) {
-                  sourceRepo = MetacatUI.nodeModel.getMember(
-                    dataONEObject.get("datasource"),
-                  );
-                }
-                //Use the object service URL from the alt repo
-                if (!sourceRepo) {
-                  sourceRepo = MetacatUI.appModel.getActiveAltRepo();
-                }
-
-                if (sourceRepo) {
-                  url = sourceRepo.objectServiceUrl;
-                }
-              }
-
-              //If this MetacatUI deployment is pointing to a MN, use the meta service URL from the AppModel
-              if (!url) {
-                url =
-                  MetacatUI.appModel.get("objectServiceUrl") ||
-                  MetacatUI.appModel.get("resolveServiceUrl");
-              }
-
-              url = url + dataONEObject.get("id");
-
-              // Create title out of file name without extension.
-              var title = dataONEObject.get("fileName");
-              if (title && title.lastIndexOf(".") > 0) {
-                title = title.substring(0, title.lastIndexOf("."));
-              }
-
-              // Add the url + title to the input
-              imageDialogInput.val(url + ' "' + title + '"');
-            },
+        // Show when image is uploading; temporarily disable the OK button
+        view.stopListening(mdImageUploader, "addedfile");
+        view.listenTo(mdImageUploader, "addedfile", () => {
+          // Disable the button during upload;
+          imageDialogOkBtn.prop("disabled", true);
+          imageDialogOkBtn.css({ opacity: "0.5", cursor: "not-allowed" });
+          imageDialogOkBtn.html(
+            "<i class='icon-spinner icon-spin icon-large loading icon'></i> " +
+              "Uploading...",
           );
+        });
 
-          // Clear the input when the image is removed
-          view.stopListening(mdImageUploader, "removedfile");
-          view.listenTo(mdImageUploader, "removedfile", function () {
-            imageDialogInput.val("");
-          });
+        // Update the image input URL when the image is successfully uploaded
+        view.stopListening(mdImageUploader, "successSaving");
+        view.listenTo(mdImageUploader, "successSaving", (dataONEObject) => {
+          // Execute the DataONEObject function that performs various functions after
+          // a successful save
+          dataONEObject.onSuccessfulSave();
 
-          // Render the image uploader and insert it just after the upload
-          // instructions in the image upload dialog box.
-          mdImageUploader.render();
-          // The instructions for uploading in image that displays in the prompt/dialog
-          imageDialogDescription.text(
-            "Click or drag & drop to upload an image",
-          );
-          $(mdImageUploader.el).insertAfter(imageDialogDescription);
-          // Hide the input box for now, to keep the uploader simple
-          imageDialogInput.hide();
-        } catch (e) {
-          console.log(
-            "Failed to load the UI for adding markdown images. Error: " + e,
-          );
-        }
+          // Re-enable the button
+          imageDialogOkBtn.prop("disabled", false);
+          imageDialogOkBtn.html(imageDialogOkBtnTxt);
+          imageDialogOkBtn.css({ opacity: "1", cursor: "pointer" });
+
+          // Get the uploaded image's url.
+          // var url = dataONEObject.url();
+          let url = "";
+
+          if (MetacatUI.appModel.get("isCN")) {
+            let sourceRepo;
+
+            // Use the object service URL from the origin MN/datasource
+            if (dataONEObject.get("datasource")) {
+              sourceRepo = MetacatUI.nodeModel.getMember(
+                dataONEObject.get("datasource"),
+              );
+            }
+            // Use the object service URL from the alt repo
+            if (!sourceRepo) {
+              sourceRepo = MetacatUI.appModel.getActiveAltRepo();
+            }
+
+            if (sourceRepo) {
+              url = sourceRepo.objectServiceUrl;
+            }
+          }
+
+          // If this MetacatUI deployment is pointing to a MN, use the meta service URL from the AppModel
+          if (!url) {
+            url =
+              MetacatUI.appModel.get("objectServiceUrl") ||
+              MetacatUI.appModel.get("resolveServiceUrl");
+          }
+
+          url += dataONEObject.get("id");
+
+          // Create title out of file name without extension.
+          let title = dataONEObject.get("fileName");
+          if (title && title.lastIndexOf(".") > 0) {
+            title = title.substring(0, title.lastIndexOf("."));
+          }
+
+          // Add the url + title to the input
+          imageDialogInput.val(`${url} "${title}"`);
+        });
+
+        // Clear the input when the image is removed
+        view.stopListening(mdImageUploader, "removedfile");
+        view.listenTo(mdImageUploader, "removedfile", () => {
+          imageDialogInput.val("");
+        });
+
+        // Render the image uploader and insert it just after the upload
+        // instructions in the image upload dialog box.
+        mdImageUploader.render();
+        // The instructions for uploading in image that displays in the prompt/dialog
+        imageDialogDescription.text("Click or drag & drop to upload an image");
+        $(mdImageUploader.el).insertAfter(imageDialogDescription);
+        // Hide the input box for now, to keep the uploader simple
+        imageDialogInput.hide();
       },
 
       /**
@@ -704,63 +680,56 @@ define([
        * will be added or removed from that selection. If no selection,
        * some placeholder text will be added surrounded by the strikethrough
        * delimiters.
-       *
        * @param  {event} e      is the original event object
        * @param  {string} mode   can be markdown, html, or wysiwyg
-       * @param  {object} chunks is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks
+       * @param  {object} chunksObj is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks
        */
-      strikethrough: function (e, mode, chunks) {
-        try {
-          var markup = "~~";
-          // exactly two tiles
-          var tildes = "\\~{2}";
-          // 2 tildes at the start of a string
-          var rleading = /^(\~{2})/;
-          // 2 tildes at the end of a string
-          var rtrailing = /(\~{2}$)/;
-          // 0-1 spaces at the end of a string
-          var rtrailingspace = /(\s?)$/;
-          // 2+ line breaks
-          var rnewlines = /\n{2,}/g;
-          // the text to add when no text is selected
-          var placeholder = "strikethrough text";
+      strikethrough(e, mode, chunksObj) {
+        const chunks = chunksObj;
+        const markup = "~~";
+        // exactly two tiles
+        // const tildes = "\\~{2}";
+        // 2 tildes at the start of a string
+        const rleading = /^(~{2})/;
+        // 2 tildes at the end of a string
+        const rtrailing = /(~{2}$)/;
+        // 0-1 spaces at the end of a string
+        // const rtrailingspace = /(\s?)$/;
+        // 2+ line breaks
+        const rnewlines = /\n{2,}/g;
+        // the text to add when no text is selected
+        const placeholder = "strikethrough text";
 
-          // Remove leading & trailing white space from selection
-          // (but do not remove from the user's text)
-          chunks.trim();
-          // Replace 2+ consecutive line breaks with 1 linebreak, otherwise
-          // strikethrough syntax is incorrect and won't render HTML as expected
-          chunks.selection = chunks.selection.replace(rnewlines, "\n");
+        // Remove leading & trailing white space from selection
+        // (but do not remove from the user's text)
+        chunks.trim();
+        // Replace 2+ consecutive line breaks with 1 linebreak, otherwise
+        // strikethrough syntax is incorrect and won't render HTML as expected
+        chunks.selection = chunks.selection.replace(rnewlines, "\n");
 
-          // See if the text before or after already contains ~~ at the start/end
-          var leadTildes = rtrailing.exec(chunks.before);
-          var trailTildes = rleading.exec(chunks.after);
-          // See if the selected text already contains ~~ at start or end
-          var selectLeadTildes = rleading.exec(chunks.selection);
-          var selectTrailTildes = rtrailing.exec(chunks.selection);
+        // See if the text before or after already contains ~~ at the start/end
+        const leadTildes = rtrailing.exec(chunks.before);
+        const trailTildes = rleading.exec(chunks.after);
+        // See if the selected text already contains ~~ at start or end
+        const selectLeadTildes = rleading.exec(chunks.selection);
+        const selectTrailTildes = rtrailing.exec(chunks.selection);
 
-          // If the selection is already surrounded by ~~, remove them
-          if (leadTildes && trailTildes) {
-            chunks.before = chunks.before.replace(rtrailing, "");
-            chunks.after = chunks.after.replace(rleading, "");
-            // If the selection starts & ends with ~~, remove them
-          } else if (selectLeadTildes && selectTrailTildes) {
-            chunks.selection = chunks.selection.replace(rleading, "");
-            chunks.selection = chunks.selection.replace(rtrailing, "");
-            // Otherwise, add a set of ~~
-          } else {
-            chunks.before = chunks.before + markup;
-            chunks.after = markup + chunks.after;
-            // Add the placeholder text if there was no selection
-            if (chunks.selection.length <= 0) {
-              chunks.selection = placeholder;
-            }
+        // If the selection is already surrounded by ~~, remove them
+        if (leadTildes && trailTildes) {
+          chunks.before = chunks.before.replace(rtrailing, "");
+          chunks.after = chunks.after.replace(rleading, "");
+          // If the selection starts & ends with ~~, remove them
+        } else if (selectLeadTildes && selectTrailTildes) {
+          chunks.selection = chunks.selection.replace(rleading, "");
+          chunks.selection = chunks.selection.replace(rtrailing, "");
+          // Otherwise, add a set of ~~
+        } else {
+          chunks.before += markup;
+          chunks.after = markup + chunks.after;
+          // Add the placeholder text if there was no selection
+          if (chunks.selection.length <= 0) {
+            chunks.selection = placeholder;
           }
-        } catch (e) {
-          console.log(
-            "Failed to add or remove strikethrough formatting from markdown. Error: " +
-              e,
-          );
         }
       },
 
@@ -768,52 +737,47 @@ define([
        * updateMarkdown - Update the markdown attribute in this view using the
        * value of the markdown textarea
        */
-      updateMarkdown: function () {
-        try {
-          newMarkdown = this.$(this.textarea).val();
+      updateMarkdown() {
+        const newMarkdown = this.$(this.textarea).val();
+        // The markdown attribute in the model may be a string or an array of
+        // strings. Although EML211 can comprise an array of markdown elements,
+        // this view will only edit the first if there are multiple.
+        const currentMarkdown = this.model.get("markdown");
 
-          // The markdown attribute in the model may be a string or an array of strings.
-          // Although EML211 can comprise an array of markdown elements,
-          // this view will only edit the first if there are multiple.
-          if (Array.isArray(this.model.get("markdown")) && markdown.length) {
-            // Clone then update arary before setting it on the model
-            // so that the backbone "change" event is fired.
-            // See https://stackoverflow.com/a/10240697
-            var newMarkdownArray = _.clone(this.model.get("markdown"));
-            newMarkdownArray[0] = newMarkdown;
-            this.model.set("markdown", newMarkdownArray);
-          } else {
-            this.model.set("markdown", newMarkdown);
-          }
-        } catch (e) {
-          console.log("Failed to the view's markdown attribute, error: " + e);
+        if (Array.isArray(currentMarkdown) && currentMarkdown.length) {
+          // Clone then update arary before setting it on the model so that the
+          // backbone "change" event is fired. See
+          // https://stackoverflow.com/a/10240697
+          const newMarkdownArray = _.clone(currentMarkdown);
+          newMarkdownArray[0] = newMarkdown;
+          this.model.set("markdown", newMarkdownArray);
+        } else {
+          this.model.set("markdown", newMarkdown);
         }
       },
 
       /**
        * previewMarkdown - render the markdown preview.
        */
-      previewMarkdown: function () {
-        try {
-          var markdown = this.model.get("markdown");
-          if (Array.isArray(markdown)) {
-            markdown = markdown[0];
+      previewMarkdown() {
+        let markdown = this.model.get("markdown");
+        if (Array.isArray(markdown)) {
+          if (markdown.length === 0) {
+            markdown = this.markdownPlaceholder;
+          } else {
+            [markdown] = markdown;
           }
-
-          var markdownPreview = new MarkdownView({
-            markdown: markdown || this.previewPlaceholder,
-            showTOC: this.showTOC || false,
-          });
-
-          // Render the preview
-          markdownPreview.render();
-          // Add the rendered markdown to the preview tab
-          this.$("#markdown-preview-" + this.cid).html(markdownPreview.el);
-        } catch (e) {
-          console.log(
-            "Failed to preview markdown content. Error message: " + e,
-          );
         }
+
+        const markdownPreview = new MarkdownView({
+          markdown: markdown || this.previewPlaceholder,
+          showTOC: this.showTOC || false,
+        });
+
+        // Render the preview
+        markdownPreview.render();
+        // Add the rendered markdown to the preview tab
+        this.$(`#markdown-preview-${this.cid}`).html(markdownPreview.el);
       },
     },
   );
