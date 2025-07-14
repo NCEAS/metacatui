@@ -239,6 +239,32 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
     }
 
     /**
+     * Get the latest version PID in the version chain for the given PID.
+     * @param {string} pid - the PID to get the latest version for
+     * @param {boolean} [ignoreEnd] - If true, ignore end flags and continue
+     * walking the chain even if it appears complete. This is useful for
+     * re-checking if a newer version exists.
+     * @param {boolean} [withMeta] - If true, the SysMeta will be fetched if not
+     * already available in the cache.
+     * @return {Promise<string|VersionResult>} - resolves to the latest PID in
+     * the chain, or an object with { pid, sysMeta } if `withMeta` is true. If
+     * no versions are found, resolves to the original PID.
+     */
+    async getLatestVersion(pid, ignoreEnd = false, withMeta = false) {
+      await this.fillVersionChain(pid, Infinity, true, ignoreEnd); // walk → newest
+      const rec = await this.record(pid);
+      const nextPids = rec.next;
+      if (nextPids.length === 0) return pid;
+      const latestPid = nextPids[nextPids.length - 1];
+      if (withMeta) {
+        const latestRec = await this.record(latestPid);
+        if (!latestRec.sysMeta) await this.getSysMeta(latestPid);
+        return { pid: latestPid, sysMeta: latestRec.sysMeta };
+      }
+      return latestPid;
+    }
+
+    /**
      * Refresh the version chain for the given PID by removing it from the cache
      * and re-fetching the full chain from the SysMeta service.
      * @param {string} pid - the PID to refresh
@@ -360,8 +386,13 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
       const list = forward ? rec.next : rec.prev;
       const endFlag = forward ? "endNext" : "endPrev";
 
-      if (ignoreEnd) rec[endFlag] = false;
-
+      if (ignoreEnd) {
+        rec[endFlag] = false;
+        rec.errors = []; // reset errors if we're ignoring end
+        rec.sysMeta = null; // reset SysMeta to force re-fetch
+        // re-save
+        await this.persist(startPid, rec);
+      }
       // --- simple per‑PID/dir lock to avoid concurrent mutation ---
       const lockKey = `${startPid}`;
       /* eslint-disable no-await-in-loop */

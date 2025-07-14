@@ -45,7 +45,7 @@ define([
 
   const DEFAULT_MAX_STEPS = 200; // Default max steps to walk back in sysmeta
   const DEFAULT_MAX_FETCH_TIME = 45000; // Default max time to fetch RM from sysmeta
-  const DEFAULT_NODE_ID = MetacatUI.appModel.get("nodeId") || "unknown";
+  const DEFAULT_ID = MetacatUI.appModel.get("baseUrl") || "unknown";
 
   /**
    * @class ResourceMapResolver
@@ -64,37 +64,39 @@ define([
   class ResourceMapResolver {
     /**
      * @param {object} options - Options for the resolver
-     * @param {string} [options.nodeId] - The node ID to use for the resolver.
-     * @param {string} [options.metaServiceUrl] - The base URL for service to get
-     * System Metadata
+     * @param {string} [options.id] - The ID to use for the resolver.
+     * @param {string} [options.metaServiceUrl] - The base URL for service to
+     * get System Metadata
      * @param {object} [options.storage] - An instance of localForage to use for
      * storage. If not provided, a new instance will be created with the name
      * "ResourceMapResolver".
-     * @param {object} [options.eventLog] - An instance of EventLog to use
-     * for tracing the resolution process. If not provided, a new instance will
-     * be created.
-     * @param {number} [options.maxSteps] - The maximum number of steps to
-     * walk back in the system metadata to find a resource map PID.
+     * @param {object} [options.eventLog] - An instance of EventLog to use for
+     * tracing the resolution process. If not provided, a new instance will be
+     * created.
+     * @param {number} [options.maxSteps] - The maximum number of steps to walk
+     * back in the system metadata to find a resource map PID.
      * @param {number} [options.maxFetchTime] - The maximum time to wait for
      * fetching the resource map PID from the system metadata. Defaults to 45s.
+     * @param {"info"|"warning"|"error"} [options.consoleLevel] - The level at
+     * which to log messages to the console. Defaults to "warning". Set to false
+     * to disable console logging.
      */
     constructor(options = {}) {
       this.options = options;
-      this.nodeId = options.nodeId || DEFAULT_NODE_ID;
+      this.id = options.id || DEFAULT_ID;
       // Storage to store obj:ResMap pid pairs.
-      const normalNodeId = this.nodeId
-        .replace(/[^a-z0-9]/gi, "-")
-        .toLowerCase();
+      const normalId = this.id.replace(/[^a-z0-9]/gi, "-").toLowerCase();
       this.storage =
         options.storage ||
         LocalForage.createInstance({
-          name: `ResourceMapResolver_${normalNodeId}`,
+          name: `ResourceMapResolver_${normalId}`,
         });
       this.index = new Solr();
       this.versionTracker = new VersionTracker({
         metaServiceUrl: options.metaServiceUrl,
       });
       this.eventLog = options.eventLog || new EventLog();
+      this.eventLog.setConsoleLogLevel(options.consoleLevel || "warning");
       this.maxSteps =
         Number.isInteger(options.maxSteps) && options.maxSteps > 0
           ? options.maxSteps
@@ -213,6 +215,23 @@ define([
         this.off(eventName); // Clean up the listener
       }
       return result;
+    }
+
+    /**
+     * Send any events logged for a PID to the analytics service.
+     * @param {string} pid - The PID of the object to send logs for
+     */
+    logToAnalytics(pid, category = "ResourceMapResolver", action = "resolve") {
+      const log = this.eventLog.getOrCreateLog(pid);
+      if (log && log.events.length > 0) {
+        this.eventLog.sendToAnalytics(log, category, action);
+      } else {
+        this.eventLog.consoleLog(
+          `No events to send for PID: ${pid}`,
+          "ResourceMapResolver",
+          "info",
+        );
+      }
     }
 
     /**
@@ -459,14 +478,11 @@ define([
   // static map & accessor for singleton instances
   ResourceMapResolver.instances = new Map();
 
-  ResourceMapResolver.get = function get(nodeId = DEFAULT_NODE_ID) {
-    if (!ResourceMapResolver.instances.has(nodeId)) {
-      ResourceMapResolver.instances.set(
-        nodeId,
-        new ResourceMapResolver({ nodeId }),
-      );
+  ResourceMapResolver.get = function get(id = DEFAULT_ID) {
+    if (!ResourceMapResolver.instances.has(id)) {
+      ResourceMapResolver.instances.set(id, new ResourceMapResolver({ id }));
     }
-    return ResourceMapResolver.instances.get(nodeId);
+    return ResourceMapResolver.instances.get(id);
   };
 
   return ResourceMapResolver;

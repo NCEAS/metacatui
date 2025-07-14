@@ -373,6 +373,7 @@
        * @property {boolean} [options.remove] If true, the user will be able to remove the alert with a "close" icon.
        * @property {boolean} [options.includeEmail] If true, the alert will include a link to the {@link AppConfig#emailContact}
        * @property {string} [options.emailBody] Specify an email body to use in the email link.
+       * @property {string} [options.emailSubject] Specify an email subject to use in the email link.
        * @returns {Element} The alert element
        */
       showAlert: function () {
@@ -390,7 +391,7 @@
           var options = arguments[0];
         }
 
-        if (typeof options != "object" || !options) {
+        if (typeof options !== "object" || !options) {
           return;
         }
 
@@ -404,21 +405,21 @@
           $(options.container).children(".alert-container").remove();
 
         //Allow messages to be HTML or strings
-        if (typeof options.message != "string")
+        if (typeof options.message !== "string")
           options.message = $(document.createElement("div"))
             .append($(options.message))
             .html();
 
-        var emailOptions = "";
-
-        //Check for more options
-        if (options.emailBody) emailOptions += "?body=" + options.emailBody;
+        const params = new URLSearchParams();
+        if (options.emailSubject)
+          params.append("subject", options.emailSubject);
+        if (options.emailBody) params.append("body", options.emailBody);
 
         var alert = $.parseHTML(
           this.alertTemplate({
             msg: options.message,
             classes: options.classes,
-            emailOptions: emailOptions,
+            emailOptions: params.toString(),
             remove: options.remove || false,
             includeEmail: options.includeEmail,
           }).trim(),

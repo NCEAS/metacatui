@@ -178,7 +178,12 @@ footer {
   /** Keeps the footer down **/
   min-height: 100%;
 }
-
+.centered-block {
+  display: block;
+  width: 100%;
+  max-width: 60rem;
+  margin: 3rem auto;
+}
 /******************************************
 ** Navigation ***
 ******************************************/

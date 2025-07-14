@@ -15,19 +15,28 @@ if(includeEmail === undefined){
 		var includeEmail = false;
 }
 var email = "";
-if(includeEmail && MetacatUI.appModel.get("emailContact")){
-	if(typeof emailOptions == "undefined" || !emailOptions) var emailOptions = "";
-
-	email = "<span class='webmaster-email'><i class='icon-envelope-alt icon icon-on-left'></i>Need help? Email us at " + 
-	"<a href='mailto:" + MetacatUI.appModel.get('emailContact') + emailOptions + "'>" + MetacatUI.appModel.get('emailContact') + "</a></span>";
+var emailAddress = MetacatUI.appModel.get("emailContact");
+if (typeof emailOptions !== "undefined" && emailOptions) {
+	emailOptions = "?" + emailOptions.trim()
+} else {
+	emailOptions = ""
 }
+var emailStr = "mailto:" + emailAddress + emailOptions;
+
 %>
 
 <div class="alert-container <%=containerClasses%>">
 	<div class="alert <%=classes%>">
 	<%=msg%>
 	<%=email%>
-	<% if(typeof remove != "undefined" && remove){ %>
+	<% if(includeEmail && emailAddress){ %>
+		<span class='webmaster-email'>
+			<i class='icon-envelope-alt icon icon-on-left'></i>
+			Need help? Email us at 
+			<a href="<%=emailStr%>"><%=emailAddress%></a>
+		</span>
+	<% } %>
+	<% if(typeof remove !== "undefined" && remove){ %>
 			<a href="#" class="close" data-dismiss="alert">&times;</a>
 	<% } %>
 	</div>
