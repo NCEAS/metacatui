@@ -1,14 +1,11 @@
-﻿define([
+﻿"use strict";
+
+define([
   "jquery",
   "underscore",
   "backbone",
-  "localforage",
   "collections/DataPackage",
   "common/Utilities",
-  "models/DataONEObject",
-  "models/PackageModel",
-  "models/metadata/ScienceMetadata",
-  "models/metadata/eml211/EML211",
   "models/PackageModel",
   "views/DataItemView",
   "views/DownloadButtonView",
@@ -19,40 +16,37 @@
   $,
   _,
   Backbone,
-  LocalForage,
   DataPackage,
   Utilities,
-  DataONEObject,
   PackageModel,
-  ScienceMetadata,
-  EML211,
-  Package,
   DataItemView,
   DownloadButtonView,
   DataPackageTemplate,
   DataPackageStartTemplate,
   DataPackageHeaderTemplate,
 ) => {
-  "use strict";
-
   /**
    * @class DataPackageView
-   * @classdesc The main view of a Data Package in MetacatUI.  The view is
-   *  a file/folder browser
+   * @classdesc The main view of a Data Package in MetacatUI. The view is a
+   * file/folder browser
    * @classcategory Views
    * @screenshot views/DataPackageView.png
    * @augments Backbone.View
    */
-  var DataPackageView = Backbone.View.extend(
+  const DataPackageView = Backbone.View.extend(
     /** @lends DataPackageView.prototype */ {
       type: "DataPackage",
 
+      /** @inheritdoc */
       tagName: "table",
 
+      /** @inheritdoc */
       className: "table table-striped table-hover",
 
+      /** @inheritdoc */
       id: "data-package-table",
 
+      /** @inheritdoc */
       events: {
         "click .toggle-rows": "toggleRows", // Show/hide rows associated with event's metadata row
         "click .message-row .addFiles": "handleAddFiles",
@@ -62,29 +56,52 @@
         "click .d1package-collapse": "collapseAll",
       },
 
+      /**
+       * Any views rendered within this view will be stored here
+       * @type {object}
+       */
       subviews: {},
 
       /**
        * A reference to the parent EditorView that contains this view
-       * @type EditorView
+       * @type {EditorView}
        * @since 2.15.0
        */
       parentEditorView: null,
 
+      /**
+       * The main template for the DataPackageView
+       * @type {Underscore.Template}
+       */
       template: _.template(DataPackageTemplate),
+
+      /**
+       * The template for the start message row
+       * @type {Underscore.Template}
+       */
       startMessageTemplate: _.template(DataPackageStartTemplate),
+
+      /**
+       * The template for the DataPackage header row
+       * @type {Underscore.Template}
+       */
       dataPackageHeaderTemplate: _.template(DataPackageHeaderTemplate),
 
-      // Models waiting for their parent folder to be rendered, hashed by parent id:
-      // {'parentid': [model1, model2, ...]}
+      /**
+       * Models waiting for their parent folder to be rendered, hashed by parent
+       * id: {'parentid': [model1, model2, ...]}
+       * @type {object}
+       */
       delayedModels: {},
 
-      /* Flag indicating the open or closed state of the package rows */
+      /**
+       * Flag indicating the open or closed state of the package rows
+       * @type {boolean}
+       */
       isOpen: true,
 
-      initialize(options) {
-        if (options === undefined || !options) var options = {};
-
+      /** @inheritdoc */
+      initialize(options = {}) {
         if (!options.edit) {
           // The edit option will allow the user to edit the table
           this.edit = options.edit || false;
@@ -93,45 +110,37 @@
           this.memberId = options.memberId || null;
           this.attributes = options.attributes || null;
           this.dataPackage = options.dataPackage || new DataPackage();
-          this.dataEntities = options.dataEntities || new Array();
+          this.dataEntities = options.dataEntities || [];
           this.disablePackageDownloads =
             options.disablePackageDownloads || false;
           this.currentlyViewing = options.currentlyViewing || null;
           this.parentEditorView = options.parentView || null;
           this.title = options.title || "";
           this.packageTitle = options.packageTitle || "";
-          this.nested =
-            typeof options.nested === "undefined" ? false : options.nested;
+          this.nested = options.nested || false;
           this.metricsModel = options.metricsModel;
 
           // set the package model
           this.packageModel = this.dataPackage.packageModel;
 
           this.listenTo(this.packageModel, "changeAll", this.render);
-        } else {
-          // Get the options sent to this view
-          if (typeof options === "object") {
-            // The edit option will allow the user to edit the table
-            this.edit = options.edit || false;
-            this.mode = "edit";
+        } else if (typeof options === "object") {
+          // The edit option will allow the user to edit the table
+          this.edit = options.edit || false;
+          this.mode = "edit";
 
-            // The data package to render
-            this.dataPackage = options.dataPackage || new DataPackage();
+          // The data package to render
+          this.dataPackage = options.dataPackage || new DataPackage();
 
-            this.parentEditorView = options.parentEditorView || null;
-          }
-          // Create a new DataPackage collection if one wasn't sent
-          else if (!this.dataPackage) {
-            this.dataPackage = new DataPackage();
-          }
-
-          return this;
+          this.parentEditorView = options.parentEditorView || null;
+        }
+        // Create a new DataPackage collection if one wasn't sent
+        else if (!this.dataPackage) {
+          this.dataPackage = new DataPackage();
         }
       },
 
-      /**
-       *  Render the DataPackage HTML
-       */
+      /** @inheritdoc */
       render() {
         this.$el.addClass("download-contents table-condensed");
         this.$el.append(
@@ -162,7 +171,7 @@
         if (this.edit) {
           // If this is a new data package, then display a message and button
           if (
-            (this.dataPackage.length == 1 &&
+            (this.dataPackage.length === 1 &&
               this.dataPackage.models[0].isNew()) ||
             !this.dataPackage.length
           ) {
@@ -170,19 +179,16 @@
 
             this.$("tbody").append(messageRow);
 
-            this.listenTo(this.dataPackage, "add", function () {
+            this.listenTo(this.dataPackage, "add", () => {
               this.$(".message-row").remove();
             });
           }
 
           // Render the Share control(s)
           this.renderShareControl();
-        } else {
+        } else if (this.nested) {
           // check for nessted datasets
-
-          if (this.nested) {
-            this.getNestedPackages();
-          }
+          this.getNestedPackages();
         }
 
         return this;
@@ -190,53 +196,49 @@
 
       /**
        * Add a single DataItemView row to the DataPackageView
-       * @param item
-       * @param dataPackage
+       * @param {DataONEObject} item - The DataONE object to add
+       * @param {DataPackage} dataPackage - The data package to add the item to
        */
       addOne(item, dataPackage) {
-        if (!item) return false;
+        if (!item) return;
 
         // Don't add duplicate rows
         if (this.$(`.data-package-item[data-id='${item.id}']`).length) return;
 
         // Don't add data package
         if (
-          item.get("formatType") == "RESOURCE" ||
-          item.get("type") == "DataPackage"
+          item.get("formatType") === "RESOURCE" ||
+          item.get("type") === "DataPackage"
         ) {
           return;
         }
 
-        let dataItemView;
         let scimetaParent;
         let parentRow;
-        let delayed_models;
+        let delayedModels;
 
         if (_.contains(Object.keys(this.subviews), item.id)) {
-          return false; // Don't double render
+          return; // Don't double render
         }
 
         let itemPath = null;
         const view = this;
         if (!_.isEmpty(this.atLocationObj)) {
           itemPath = this.atLocationObj[item.get("id")];
-          if (itemPath[0] != "/") {
+          if (itemPath[0] !== "/") {
             itemPath = `/${itemPath}`;
           }
         }
 
         // get the data package id
-        if (typeof dataPackage !== "undefined") {
-          var dataPackageId = dataPackage.id;
-        }
-        if (typeof dataPackageId === "undefined")
-          dataPackageId = this.dataPackage.id;
+        let dataPackageId = dataPackage?.id;
+        if (!dataPackageId) dataPackageId = this.dataPackage.id;
 
         const insertInfoIcon = this.edit
           ? false
           : view.dataEntities.includes(item.id);
 
-        dataItemView = new DataItemView({
+        const dataItemView = new DataItemView({
           model: item,
           metricsModel: this.metricsModel,
           itemPath,
@@ -248,92 +250,88 @@
         });
         this.subviews[item.id] = dataItemView; // keep track of all views
 
-        if (this.edit) {
-          // Get the science metadata that documents this item
-          scimetaParent = item.get("isDocumentedBy");
+        if (!this.edit) {
+          // This is a metadata folder row, append it to the table
+          this.$el.append(dataItemView.render().el);
+          this.trigger("addOne");
+          return;
+        }
 
-          // If this item is not documented by a science metadata object,
-          // and there is only one science metadata doc in the package, then assume it is
-          // documented by that science metadata doc
-          if (typeof scimetaParent === "undefined" || !scimetaParent) {
-            // Get the science metadata models
-            const metadataIds = this.dataPackage.sciMetaPids;
+        // In edit mode:
 
-            // If there is only one science metadata model in the package, then use it
-            if (metadataIds.length == 1) scimetaParent = metadataIds[0];
-          }
-          // Otherwise, get the first science metadata doc that documents this object
-          else {
-            scimetaParent = scimetaParent[0];
-          }
+        // Get the science metadata that documents this item
+        scimetaParent = item.get("isDocumentedBy");
 
-          if (
-            scimetaParent == item.get("id") ||
-            (!scimetaParent && item.get("type") == "Metadata")
-          ) {
-            // This is a metadata folder row, append it to the table
-            this.$el.append(dataItemView.render().el);
+        // If this item is not documented by a science metadata object,
+        // and there is only one science metadata doc in the package, then assume it is
+        // documented by that science metadata doc
+        if (!scimetaParent) {
+          // Get the science metadata models
+          const metadataIds = this.dataPackage.sciMetaPids;
 
-            // Render any delayed models if this is the parent
-            if (_.contains(Object.keys(this.delayedModels), dataItemView.id)) {
-              delayed_models = this.delayedModels[dataItemView.id];
-              _.each(delayed_models, this.addOne, this);
-            }
-          } else {
-            // Find the parent row by it's id, stored in a custom attribute
-            if (scimetaParent)
-              parentRow = this.$(`[data-id='${scimetaParent}']`);
+          // If there is only one science metadata model in the package, then use it
+          if (metadataIds.length === 1) [scimetaParent] = metadataIds;
+        }
+        // Otherwise, get the first science metadata doc that documents this object
+        else {
+          [scimetaParent] = scimetaParent;
+        }
 
-            if (typeof parentRow !== "undefined" && parentRow.length) {
-              // This is a data row, insert below it's metadata parent folder
-              parentRow.after(dataItemView.render().el);
-
-              // Remove it from the delayedModels list if necessary
-              if (_.contains(Object.keys(this.delayedModels), scimetaParent)) {
-                delayed_models = this.delayedModels[scimetaParent];
-                const index = _.indexOf(delayed_models, item);
-                delayed_models = delayed_models.splice(index, 1);
-
-                // Put the shortened array back if delayed models remains
-                if (delayed_models.length > 0) {
-                  this.delayedModels[scimetaParent] = delayed_models;
-                } else {
-                  this.delayedModels[scimetaParent] = undefined;
-                }
-              }
-
-              this.trigger("addOne");
-            } else {
-              console.warn(
-                `Couldn't render ${item.id}. Delayed until parent is rendered.`,
-              );
-              // Postpone the data row until the parent is rendered
-              delayed_models = this.delayedModels[scimetaParent];
-
-              // Delay the model rendering if it isn't already delayed
-              if (typeof delayed_models !== "undefined") {
-                if (!_.contains(delayed_models, item)) {
-                  delayed_models.push(item);
-                  this.delayedModels[scimetaParent] = delayed_models;
-                }
-              } else {
-                delayed_models = [];
-                delayed_models.push(item);
-                this.delayedModels[scimetaParent] = delayed_models;
-              }
-            }
-          }
-        } else {
+        if (
+          scimetaParent === item.get("id") ||
+          (!scimetaParent && item.get("type") === "Metadata")
+        ) {
           // This is a metadata folder row, append it to the table
           this.$el.append(dataItemView.render().el);
 
-          this.trigger("addOne");
+          // Render any delayed models if this is the parent
+          if (_.contains(Object.keys(this.delayedModels), dataItemView.id)) {
+            delayedModels = this.delayedModels[dataItemView.id];
+            _.each(delayedModels, this.addOne, this);
+          }
+        } else {
+          // Find the parent row by it's id, stored in a custom attribute
+          if (scimetaParent) parentRow = this.$(`[data-id='${scimetaParent}']`);
+
+          if (parentRow?.length) {
+            // This is a data row, insert below it's metadata parent folder
+            parentRow.after(dataItemView.render().el);
+
+            // Remove it from the delayedModels list if necessary
+            if (_.contains(Object.keys(this.delayedModels), scimetaParent)) {
+              delayedModels = this.delayedModels[scimetaParent];
+              const index = _.indexOf(delayedModels, item);
+              delayedModels = delayedModels.splice(index, 1);
+
+              // Put the shortened array back if delayed models remains
+              if (delayedModels.length > 0) {
+                this.delayedModels[scimetaParent] = delayedModels;
+              } else {
+                this.delayedModels[scimetaParent] = null;
+              }
+            }
+
+            this.trigger("addOne");
+          } else {
+            // Postpone the data row until the parent is rendered
+            delayedModels = this.delayedModels[scimetaParent];
+
+            // Delay the model rendering if it isn't already delayed
+            if (delayedModels) {
+              if (!_.contains(delayedModels, item)) {
+                delayedModels.push(item);
+                this.delayedModels[scimetaParent] = delayedModels;
+              }
+            } else {
+              delayedModels = [];
+              delayedModels.push(item);
+              this.delayedModels[scimetaParent] = delayedModels;
+            }
+          }
         }
       },
 
-      /**
-       * Render the Data Package View and insert it into this view
-       */
+      /** Render the Data Package View and insert it into this view */
       renderDataPackage() {
         const view = this;
 
@@ -342,7 +340,7 @@
         }
 
         // As the root collection is updated with models, render the UI
-        this.listenTo(MetacatUI.rootDataPackage, "add", function (model) {
+        this.listenTo(MetacatUI.rootDataPackage, "add", (model) => {
           if (!model.get("synced") && model.get("id"))
             this.listenTo(model, "sync", view.renderMember);
           else if (model.get("synced")) view.renderMember(model);
@@ -375,7 +373,7 @@
           minHeight: 100,
           maxHeight: 900,
           resize() {
-            view.emlView.resizeTOC();
+            view.emlView?.resizeTOC();
           },
         });
 
@@ -383,7 +381,7 @@
         $packageTableContainer.css("height", `${tableHeight}px`);
 
         const table = this.dataPackageView.$el;
-        this.listenTo(this.dataPackageView, "addOne", function () {
+        this.listenTo(this.dataPackageView, "addOne", () => {
           if (
             table.outerHeight() > $packageTableContainer.outerHeight() &&
             table.outerHeight() < 220
@@ -408,12 +406,12 @@
         );
       },
 
-      /**
-       * Add all rows to the DataPackageView
-       */
+      /** Add all rows to the DataPackageView */
       addAll() {
         this.$el.find("#data-package-table-body").html(""); // clear the table first
         this.dataPackage.sort();
+
+        const filePathObj = {};
 
         if (!this.edit) {
           const atLocationObj = this.dataPackage.getAtLocation();
@@ -424,26 +422,25 @@
             this.atLocationObj !== undefined &&
             !_.isEmpty(this.atLocationObj)
           ) {
-            var filePathObj = new Object();
-
-            this.dataPackage.each(function (item) {
+            this.dataPackage.each((item) => {
               if (!Object.keys(this.atLocationObj).includes(item.id)) {
                 this.atLocationObj[item.id] = "/";
               }
             }, this);
 
-            for (const key of Object.keys(this.atLocationObj)) {
+            // for (const key of Object.keys(this.atLocationObj)) {
+            Object.keys(this.atLocationObj).forEach((key) => {
               const path = this.atLocationObj[key];
               const pathArray = path.split("/");
               pathArray.pop();
               const parentPath = pathArray.join("/");
-              if (filePathObj.hasOwnProperty(parentPath)) {
+              if (filePathObj[parentPath]) {
                 filePathObj[parentPath].push(key);
               } else {
-                filePathObj[parentPath] = new Array();
+                filePathObj[parentPath] = [];
                 filePathObj[parentPath].push(key);
               }
-            }
+            });
           }
 
           // add top level data package row to the package table
@@ -455,7 +452,7 @@
           if (title === "") {
             const metadataObj = _.filter(
               this.dataPackage.models,
-              (m) => m.get("id") == view.currentlyViewing,
+              (m) => m.get("id") === view.currentlyViewing,
             );
 
             if (metadataObj.length > 0) {
@@ -499,8 +496,9 @@
             const sortedFilePathObj = Object.keys(filePathObj)
               .sort()
               .reduce((obj, key) => {
-                obj[key] = filePathObj[key];
-                return obj;
+                const newObj = { ...obj };
+                newObj[key] = filePathObj[key];
+                return newObj;
               }, {});
             this.sortedFilePathObj = sortedFilePathObj;
 
@@ -508,6 +506,8 @@
           } else {
             this.dataPackage.each(this.addOne, this, this.dataPackage);
           }
+
+          this.dataPackage.each(this.addOne, this, this.dataPackage);
         } else {
           this.dataPackage.each(this.addOne, this);
         }
@@ -515,7 +515,8 @@
 
       /**
        * Add all the files and folders
-       * @param {object} sortedFilePathObj - An object where keys are folder paths and values are arrays of file IDs
+       * @param {object} sortedFilePathObj - An object where keys are folder
+       * paths and values are arrays of file IDs
        * @returns {boolean} - Returns false if the input object is not provided
        */
       addFilesAndFolders(sortedFilePathObj) {
@@ -577,11 +578,7 @@
           const itemArray = sortedFilePathObj[key];
 
           // Add metadata object at the top of the file table if applicable
-          if (
-            key === "" &&
-            this.metaId !== "undefined" &&
-            itemArray.includes(this.metaId)
-          ) {
+          if (key === "" && this.metaId && itemArray.includes(this.metaId)) {
             const item = this.metaId;
             this.addOne(this.dataPackage.get(item));
           }
@@ -596,8 +593,8 @@
       },
 
       /**
-                Remove the subview represented by the given model item.
-                @param item The model representing the sub view to be removed
+       * Remove the subview represented by the given model item.
+       * @param {Backbone.Model} item - The model item to remove.
        */
       removeOne(item) {
         if (_.contains(Object.keys(this.subviews), item.id)) {
@@ -607,6 +604,11 @@
         }
       },
 
+      /**
+       * Handle the event when a user clicks the "Add Files" button in the
+       * message row of the DataPackageView.
+       * @param {Event} e - The event object.
+       */
       handleAddFiles(e) {
         // Pass this on to the DataItemView for the root data package
         this.$(".data-package-item.folder")
@@ -616,7 +618,8 @@
       },
 
       /**
-       * Renders a control that opens the AccessPolicyView for editing permissions on this package
+       * Renders a control that opens the AccessPolicyView for editing
+       * permissions on this package
        * @since 2.15.0
        */
       renderShareControl() {
@@ -629,33 +632,16 @@
       },
 
       /**
-       * Close subviews as needed
-       */
-      onClose() {
-        // Close each subview
-        _.each(
-          Object.keys(this.subviews),
-          function (id) {
-            const subview = this.subviews[id];
-            subview.onClose();
-          },
-          this,
-        );
-
-        // Reset the subviews from the view completely (by removing it from the prototype)
-        this.__proto__.subviews = {};
-      },
-
-      /**
-             Show or hide the data rows associated with the event row science metadata
-       * @param event
+       * Show or hide the data rows associated with the event row science
+       * metadata
+       * @param {Event} event - The event object.
        */
       toggleRows(event) {
         if (this.isOpen) {
           // Get the DataItemView associated with each id
           _.each(
             Object.keys(this.subviews),
-            function (id) {
+            (id) => {
               const subview = this.subviews[id];
 
               if (subview.model.get("type") === "Data" && subview.remove) {
@@ -687,7 +673,7 @@
           const dataModels = this.dataPackage.where({ type: "Data" });
           _.each(
             dataModels,
-            function (model) {
+            (model) => {
               this.addOne(model);
             },
             this,
@@ -714,7 +700,8 @@
       },
 
       /**
-       * Expand function to show hidden rows when a user clicks on an expand control.
+       * Expand function to show hidden rows when a user clicks on an expand
+       * control.
        * @param {Event} e - The event object.
        * @since 2.28.0
        */
@@ -758,7 +745,8 @@
       },
 
       /**
-       * Collapse function to hide rows when a user clicks on a collapse control.
+       * Collapse function to hide rows when a user clicks on a collapse
+       * control.
        * @param {Event} e - The event object.
        * @since 2.28.0
        */
@@ -784,7 +772,8 @@
       },
 
       /**
-       * Expand all function to show all child rows when a user clicks on an expand-all control.
+       * Expand all function to show all child rows when a user clicks on an
+       * expand-all control.
        * @param {Event} e - The event object.
        * @since 2.28.0
        */
@@ -823,7 +812,8 @@
       },
 
       /**
-       * Collapse all function to hide all child rows when a user clicks on a collapse-all control.
+       * Collapse all function to hide all child rows when a user clicks on a
+       * collapse-all control.
        * @param {Event} e - The event object.
        * @since 2.28.0
        */
@@ -838,11 +828,10 @@
         const parentId = rowEl.data("id");
         const children = `tr[data-packageid='${parentId}']`;
 
-        this.$(children).each(function () {
+        this.$(children).each(() => {
           $(this).fadeOut();
           const childId = $(this).data("id");
           const grandchildren = `tr[data-parent^='${childId}']`;
-
           $(grandchildren).fadeOut();
         });
 
@@ -859,48 +848,43 @@
        * @since 2.28.0
        */
       checkForPrivateMembers() {
-        try {
-          const packageModel = this.model;
-          const packageCollection = this.dataPackage;
+        const packageModel = this.model;
+        const packageCollection = this.dataPackage;
 
-          if (!packageModel || !packageCollection) {
-            return;
-          }
+        if (!packageModel || !packageCollection) {
+          return;
+        }
 
-          const numMembersFromSolr = packageModel.get("members").length;
-          const numMembersFromRDF = packageCollection.length;
+        const numMembersFromSolr = packageModel.get("members").length;
+        const numMembersFromRDF = packageCollection.length;
 
-          if (numMembersFromRDF > numMembersFromSolr) {
-            const downloadButtons = this.$(".btn.download");
+        if (numMembersFromRDF > numMembersFromSolr) {
+          const downloadButtons = this.$(".btn.download");
 
-            for (let i = 0; i < downloadButtons.length; i++) {
-              const btn = downloadButtons[i];
-              const downloadURL = $(btn).attr("href");
+          for (let i = 0; i < downloadButtons.length; i += 1) {
+            const btn = downloadButtons[i];
+            const downloadURL = $(btn).attr("href");
 
-              if (
-                downloadURL.indexOf(packageModel.get("id")) > -1 ||
-                downloadURL.indexOf(
-                  encodeURIComponent(packageModel.get("id")),
-                ) > -1
-              ) {
-                $(btn)
-                  .attr("disabled", "disabled")
-                  .addClass("disabled")
-                  .attr("href", "")
-                  .tooltip({
-                    trigger: "hover",
-                    placement: "top",
-                    delay: 500,
-                    title:
-                      "This dataset may contain private data, so each data file should be downloaded individually.",
-                  });
+            if (
+              downloadURL.indexOf(packageModel.get("id")) > -1 ||
+              downloadURL.indexOf(encodeURIComponent(packageModel.get("id"))) >
+                -1
+            ) {
+              $(btn)
+                .attr("disabled", "disabled")
+                .addClass("disabled")
+                .attr("href", "")
+                .tooltip({
+                  trigger: "hover",
+                  placement: "top",
+                  delay: 500,
+                  title:
+                    "This dataset may contain private data, so each data file should be downloaded individually.",
+                });
 
-                i = downloadButtons.length;
-              }
+              i = downloadButtons.length;
             }
           }
-        } catch (e) {
-          console.error(e);
         }
       },
 
@@ -909,8 +893,8 @@
        * @since 2.28.0
        */
       getNestedPackages() {
-        const nestedPackages = new Array();
-        const nestedPackageIds = new Array();
+        const nestedPackages = [];
+        const nestedPackageIds = [];
         this.nestedPackages = nestedPackages;
 
         // get all the child packages for this resource map
@@ -919,8 +903,7 @@
         );
 
         // iterate over the list of child packages and add their members
-        for (const ite in childPackages) {
-          const childPkg = childPackages[ite];
+        childPackages.forEach((childPkg) => {
           if (!nestedPackageIds.includes(childPkg.get("id"))) {
             const nestedPackage = new PackageModel();
             nestedPackage.set("id", childPkg.get("id"));
@@ -936,7 +919,7 @@
               nestedPackage,
             );
           }
-        }
+        });
       },
 
       /**
@@ -954,7 +937,7 @@
          * Reference to the current view.
          * @type {object}
          */
-        var view = this;
+        const view = this;
         /**
          * The title of the data package.
          * @type {null|string}
@@ -982,7 +965,7 @@
          */
         const metadataObj = _.filter(
           members,
-          (m) => m.get("type") == "Metadata" || m.get("type") == "metadata",
+          (m) => m.get("type") === "Metadata" || m.get("type") === "metadata",
         );
 
         title = metadataObj[0].get("title");
@@ -1007,7 +990,7 @@
             encodeURIComponent(dataPackage.id);
 
         // Set the nested package URL
-        if (MetacatUI.root !== undefined && dataPackage.id !== undefined)
+        if (MetacatUI.root && dataPackage.id)
           nestedPackageUrl = `${MetacatUI.root}/view/${encodeURIComponent(dataPackage.id)}`;
 
         /**
@@ -1041,10 +1024,9 @@
           .html(this.downloadButtonView.el);
 
         // Filter out the packages from the member list
-        members = _.filter(members, (m) => m.type != "Package");
+        members = _.filter(members, (m) => m.type !== "Package");
 
         // Add each member to the package table view
-        var view = this;
         _.each(members, (m) => {
           // Update the size to bytes format
           m.set({ size: Utilities.bytesToSize(m.get("size")) });
@@ -1054,16 +1036,22 @@
         });
       },
 
-      /* showDownloadProgress: function(e){
-                e.preventDefault();
+      /** Close subviews as needed */
+      onClose() {
+        // Close each subview
+        _.each(
+          Object.keys(this.subviews),
+          (id) => {
+            const subview = this.subviews[id];
+            subview.onClose();
+          },
+          this,
+        );
 
-                var button = $(e.target);
-                button.addClass("in-progress");
-                button.html("Downloading... <i class='icon icon-on-right icon-spinner icon-spin'></i>");
-
-                return true;
-
-            } */
+        // Reset the subviews from the view completely (by removing it from the prototype)
+        this.subviews = {};
+        this.constructor.prototype.subviews = {};
+      },
     },
   );
   return DataPackageView;
