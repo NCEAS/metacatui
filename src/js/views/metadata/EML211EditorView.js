@@ -586,11 +586,11 @@ define([
           edit: true,
           dataPackage: MetacatUI.rootDataPackage,
           parentEditorView: this,
-        });
+        }).render();
 
         // Render the view
         const $packageTableContainer = this.$("#data-package-container");
-        $packageTableContainer.html(this.dataPackageView.render().el);
+        $packageTableContainer.html(this.dataPackageView.el);
 
         // Make the view resizable on the bottom
         const handle = $(document.createElement("div"))
@@ -605,7 +605,7 @@ define([
           minHeight: 100,
           maxHeight: 900,
           resize() {
-            view.emlView.resizeTOC();
+            view.emlView?.resizeTOC();
           },
         });
 
