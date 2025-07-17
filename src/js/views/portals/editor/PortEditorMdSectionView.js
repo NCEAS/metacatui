@@ -240,8 +240,8 @@ define([
           });
         } catch (e) {
           console.log(
-            "The portal editor markdown section view could not be rendered, error message: " +
-              e,
+            "The portal editor markdown section view could not be rendered, error message: ",
+            e,
           );
         }
       },

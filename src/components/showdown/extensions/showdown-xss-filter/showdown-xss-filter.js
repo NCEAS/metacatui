@@ -75,6 +75,7 @@ define(['showdown', 'xss'], function (showdown, xss) {
         sub: [],
         sup: [],
         strong: [],
+        summary: [],
         svg: ["viewbox", "xmlns", "preserveAspectRatio"],
         table: ["width", "border", "align", "valign"],
         tbody: ["align", "valign", "style"],
