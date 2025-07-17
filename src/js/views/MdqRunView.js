@@ -12,6 +12,8 @@ define([
   "text!templates/loading-metrics.html",
   "collections/QualityReport",
   "views/MarkdownView",
+  "views/accordion/AccordionView",
+  "semantic",
 ], (
   $,
   _,
@@ -24,6 +26,8 @@ define([
   LoadingTemplate,
   QualityReport,
   MarkdownView,
+  AccordionView,
+  Semantic,
 ) => {
   const MSG_ERROR_GENERATING_REPORT =
     "There was an error generating the assessment report.";
@@ -241,6 +245,198 @@ define([
         requestAnimationFrame(() => {
           viewRef.$(".popover-this").popover();
         });
+
+        // ----
+
+        const c = this.el.querySelector(".list-group");
+        const x = await this.organizeForAccordion(qualityReport);
+
+        console.log(x);
+
+        setTimeout(() => {
+          const accordionView = new AccordionView({
+            modelData: {
+              exclusive: true,
+              items: x,
+            },
+          });
+          accordionView.render();
+
+          accordionView.el.classList.add("mdq-results");
+
+          // replace x with the accordion view
+          c.innerHTML = "";
+          c.appendChild(accordionView.el);
+        }, 400);
+
+        // setTimeout(() => {
+        //   const mod = accordionView.model.get("items").findWhere({
+        //     title: "urn:uuid:411f0610-dd9f-4963-9325-557d367c61a2",
+        //   });
+        //   if (mod) {
+        //     mod.set("title", "New Title for the Item");
+        //     // accordionView.refreshContent(mod.get("itemId"));
+        //   }
+        // }, 500);
+      },
+
+      resultDescriptionHtml(result) {
+        const status = result.get("status");
+        const check = result.get("check");
+        const description = check?.description || "";
+        const level = check?.level || "";
+        const type = check?.type || "";
+        const name = check?.name || "";
+
+        const labelClasses = {
+          REQUIRED: "inverse",
+          OPTIONAL: "warning",
+          FAILURE: "important",
+          SUCCESS: "success",
+          INFO: "info",
+        };
+
+        const statusClass = labelClasses[status] || "default";
+        const statusLabel = `<span class="label label-${statusClass}">${status}</span>`;
+
+        const levelClass = labelClasses[level] || "default";
+        const levelLabel = `<span class="label label-${levelClass}">${level}</span>`;
+
+        const typeLabel = `<span class="label pull-right">FAIR Type: <strong>${type}</strong></span>`;
+
+        const descriptionHtml = `
+          <div class="mdq-results__item-description text-left">
+            <div>${statusLabel} ${levelLabel} ${typeLabel}</div>
+            <h5><strong>${name}</strong></h5>
+            <div class=""><small>${description}</small></div>
+          </div>
+        `;
+
+        return descriptionHtml;
+      },
+
+      async organizeForAccordion(qualityReport) {
+        const groupedResults = qualityReport.groupResults(qualityReport.models);
+
+        const checkCount = qualityReport.length;
+        const blueCount = groupedResults.BLUE?.length || 0;
+        const greenCount = groupedResults.GREEN?.length || 0;
+        const orangeCount = groupedResults.ORANGE?.length || 0;
+        const redCount = groupedResults.RED?.length || 0;
+        const extraRedText =
+          redCount > 0 ? " Please correct these issues." : "";
+        const extraOrangeText =
+          orangeCount > 0 ? " Please review these warnings." : "";
+        const totalPassable = checkCount - blueCount;
+
+        const checkWord = (num) => (num === 1 ? "check" : "checks");
+
+        const texts = {
+          GREEN: `Passed ${greenCount} ${checkWord(greenCount)} out of ${totalPassable} (excluding informational checks).`,
+          ORANGE: `Warning for ${orangeCount} ${checkWord(orangeCount)}. ${extraOrangeText}`,
+          RED: `Failed ${redCount} ${checkWord(redCount)}. ${extraRedText}`,
+          BLUE: `${blueCount} informational ${checkWord(blueCount)}.`,
+        };
+
+        const icons = {
+          GREEN: "check-sign",
+          ORANGE: "exclamation",
+          RED: "remove",
+          BLUE: "info",
+        };
+
+        const items = [];
+        const viewRef = this;
+
+        const order = ["GREEN", "ORANGE", "RED", "BLUE"];
+
+        const something = await order.forEach(async (status) => {
+          const results = groupedResults[status];
+          if (results) {
+            const text = texts[status] || "";
+            const statusClass = `mdq-results__item--${status.toLowerCase()}`;
+            const item = {
+              itemId: status.toLowerCase(),
+              title: text,
+              content: "",
+              parent: "",
+              classes: [
+                "mdq-results__item",
+                "mdq-results__item--root",
+                statusClass,
+              ],
+              icon: icons[status],
+            };
+            items.push(item);
+          }
+          const whatever = await results.forEach(async (result) => {
+            const resultId = result.get("check").name;
+            // Get the max char length of any one output
+            const maxOutputLength = result
+              .get("output")
+              .reduce((max, out) => Math.max(max, out.value?.length || 0), 0);
+            const hasChildren = maxOutputLength > 500;
+            // If the max output length is greater than 500, then we will make
+            // the output collapsible, otherwise we will just show it.
+            const outputs = result.get("output");
+            if (outputs && outputs.length > 0) {
+              // ----
+              if (hasChildren) {
+                await outputs.forEach(async (output) => {
+                  let value = output.value || "";
+                  if (output?.type?.includes("image")) {
+                    value = `<img src="data:${output.type};base64,${output.value}" />`;
+                  } else if (output.type === "markdown") {
+                    value = await viewRef.getHTMLFromMarkdown(output.value);
+                  } else {
+                    value = `<div class="check-output">${output.value}</div>`;
+                  }
+                  const title =
+                    output.identifier ||
+                    output.name ||
+                    `${value.substring(0, 100)}...`;
+                  items.push({
+                    // itemId: `${resultId}-${output.name}`,
+                    title: title,
+                    content: value,
+                    parent: resultId,
+                    classes: ["mdq-results__item", "mdq-results__item--output"],
+                    icon: icons[status],
+                  });
+                });
+                // Make the title the ID or the first part of the raw output
+              }
+              // ---
+              const outputContent = await viewRef.getOutputHTML(outputs);
+              const classes = ["mdq-results__item"];
+              let title = result.get("check").name;
+              let content = outputContent;
+              if (outputContent.length < 500) {
+                title = `${outputContent}`;
+                content = "";
+                classes.push("mdq-results__item--title-only");
+              } else if (hasChildren) {
+                content = "";
+              }
+
+              if (!hasChildren) {
+                classes.push("mdq-results__item--srollable");
+              }
+              const item = {
+                itemId: resultId,
+                title: title,
+                content: content,
+                parent: status.toLowerCase(),
+                icon: icons[status],
+                description: viewRef.resultDescriptionHtml(result),
+                classes,
+              };
+              items.push(item);
+            }
+          });
+        });
+
+        return items;
       },
 
       /**
@@ -278,20 +474,56 @@ define([
           const { className, iconClass, headerClass } = types[type];
           const results = groupedResults[type];
           if (results) {
-            // Use `map` to handle promises
             const itemEls = await Promise.all(
-              results.map(async (result) =>
-                viewRef.createCheckItem(result, className, iconClass),
-              ),
+              results.map(async (result) => viewRef.collapsibleCheck(result)),
             );
-
-            // Join the resolved HTML strings and append them
-            viewRef
-              .$(`.list-group-item.${headerClass}`)
-              .after(itemEls.join(""));
+            const container = viewRef.el.querySelector(
+              `.list-group-item.${headerClass}`,
+            );
+            if (container) {
+              itemEls.forEach((itemEl) => {
+                container.appendChild(itemEl.el || itemEl);
+              });
+            }
           }
         });
       },
+
+      // continue here.
+      // Decision tree:
+
+      // If >1 outputs, and at least one is >n characters, then make each output
+      // collapsible and pre-collapse them.
+
+      // If 1 output, and it is >n characters, then make it collapsible.
+
+      // If 1 output, and it is <n characters, then just show it.
+
+      // If >j outputs, but each is small (<q characters), then... ?
+
+      // If >j outputs, and each is <n characters, but total >n characters, then
+      // make the entire list collapsible, and pre-collapse it.
+
+      // If >j outputs, but all <n characters, then make each output collapsible
+      // and pre-collapse them.
+
+      // N  = number_of_outputs            # e.g. 28
+      // T  = total_characters_all_outputs # e.g. 51 183
+      // L  = longest_single_output_chars  # e.g. 40 772
+
+      // Collapse entire check if:
+      // total char > C || num_outputs > O
+
+      // AND collapse each check if:
+      // any 1 check has char > N
+
+      // If neither of the above are true, collapse nothing.
+
+      // layouts:
+      // - normal
+      // - collapse check
+      // - collapse outputs
+      // - collapse outputs and checks.
 
       /**
        * Create a check item element
@@ -304,6 +536,24 @@ define([
       async createCheckItem(result, className, iconClass) {
         const outputs = await this.getOutputHTML(result.get("output"));
 
+        const model = result;
+        const name = model.get("check").name;
+        const output = model.get("output");
+        // Get the total # of characters in all the outputs combined
+        const numOutputs = output.length;
+        let totalCharsInOutputs = 0;
+        let maxOutputLength = 0;
+        output.forEach((out) => {
+          if (out.value?.length > maxOutputLength) {
+            maxOutputLength = out.value.length;
+          }
+        });
+        if (numOutputs > 0) {
+          totalCharsInOutputs = output.reduce(
+            (total, out) => total + (out.value?.length || 0),
+            0,
+          );
+        }
         return `
           <li class="list-group-item check ${className} collapse row-fluid">
             <span class="icon-stack span1">
@@ -329,6 +579,23 @@ define([
             </span>
           </li>
         `;
+      },
+
+      async collapsibleCheck(result, className, iconClass) {
+        const outputs = await this.getOutputHTML(result.get("output"));
+        const ac = new AccordionView({
+          modelData: {
+            items: [
+              {
+                title: result.get("check").name,
+                content: outputs,
+              },
+            ],
+          },
+        });
+        ac.render();
+
+        return ac;
       },
 
       /**

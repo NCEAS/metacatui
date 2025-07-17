@@ -24,11 +24,15 @@ define(["backbone"], (Backbone) => {
        * be ignored if there are child items.
        * @property {string} parent - The parent item's itemId. If blank or null,
        * this item is a top-level item.
+       * @property {Array} [classes] - CSS classes to apply to the item.
+       * @property {string} [icon] - A font awesome 3 icon name to show next to
+       * the title. If not provided, no icon will be shown.
        * TODO:
        * @property {string} description - The tooltip content.
        * @property {string} subTitle - The tag to show next to the title.
        * @property {boolean} selectable - Whether the item is selectable.
        * @property {boolean} hasChildren - Whether the item has children.
+       *
        */
       defaults() {
         return {
@@ -36,8 +40,10 @@ define(["backbone"], (Backbone) => {
           title: "",
           content: "",
           parent: "",
+          classes: [],
+          icon: "",
+          description: "",
           // TODO: Add and make use of these attributes
-          // description: "", // tooltip content
           // subTitle: "", // show as tag next to title
           // selectable: false,
           // hasChildren: false,
