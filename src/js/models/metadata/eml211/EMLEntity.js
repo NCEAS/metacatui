@@ -4,8 +4,8 @@ define([
   "backbone",
   "models/DataONEObject",
   "models/metadata/eml211/EMLAttribute",
-  "collections/metadata/eml/EMLAttributes",
-], ($, _, Backbone, DataONEObject, EMLAttribute, EMLAttributes) => {
+  "models/metadata/eml211/EMLAttributeList",
+], ($, _, Backbone, DataONEObject, EMLAttribute, EMLAttributeList) => {
   /**
    * @class EMLEntity
    * @classdesc EMLEntity represents an abstract data entity, corresponding with
@@ -71,7 +71,7 @@ define([
           coverage: [],
           methods: null,
           additionalInfo: [],
-          attributeList: new EMLAttributes(),
+          attributeList: null,
           constraint: [],
           references: null,
 
@@ -115,7 +115,7 @@ define([
       },
 
       /** @inheritdoc */
-      initialize(_attributes, _options) {
+      initialize(attributes = {}, _options = {}) {
         // if options.parse = true, Backbone will call parse()
 
         // Register change events
@@ -155,6 +155,15 @@ define([
           model.listenTo(dataONEObj, "change:fileName", model.updateFileName);
         });
 
+        if (!attributes?.attributeList && !this.get("attributeList")) {
+          this.set(
+            "attributeList",
+            new EMLAttributeList({
+              parentModel: this,
+            }),
+          );
+        }
+
         this.listenToAttributeList();
       },
 
@@ -163,19 +172,20 @@ define([
        * events on the parent model and collection
        */
       listenToAttributeList() {
+        const prevAttrList = this.previous("attributeList");
+        if (prevAttrList)
+          this.stopListening(prevAttrList, "change:emlAttributes");
+
         const attrList = this.get("attributeList");
-        this.stopListening(attrList, "update change");
-        this.listenTo(attrList, "update change", () => {
+        if (!attrList) return;
+
+        this.stopListening(attrList, "change:emlAttributes");
+
+        this.listenTo(attrList, "change:emlAttributes", () => {
           this.trickleUpChange();
-          this.trigger("change", this, this.get("attributeList"));
-          this.collection.trigger("update", this, this.get("attributeList"));
-        });
-        this.listenTo(this, "change:attributeList", () => {
-          const previousList = this.previous("attributeList");
-          if (previousList) {
-            this.stopListening(previousList, "update change");
-          }
-          this.listenToAttributeList();
+          this.trigger("change", this, attrList);
+          this.trigger("change:attributeList", this, attrList);
+          this.collection.trigger("update", this, attrList);
         });
       },
 
@@ -187,10 +197,10 @@ define([
        * <entityName>file.1.1.txt</entityName> <entityDescription>A file
        * summary</entityDescription> </otherEntity>
        * @param {object} attrs - The XML attributes
-       * @param {object} _options - Any options passed to the parse function
+       * @param {object} options - Any options passed to the parse function
        * @returns {object} - The parsed attributes
        */
-      parse(attrs, _options) {
+      parse(attrs, options) {
         const attributes = attrs || {};
         let $objectDOM;
         const { objectDOM } = attributes;
@@ -269,14 +279,17 @@ define([
           attributes.formatName = formatNode.text();
         }
 
-        // Attribute list expects a DOM node not jQuery object
-        const attributeList = $objectDOM.find("attributelist").get(0);
-        if (attributeList) {
-          attributes.attributeList = new EMLAttributes(attributeList, {
-            parse: true,
-            parentModel: this,
-          });
-        }
+        let attributeList = $objectDOM.find("attributelist");
+        attributeList = attributeList.length ? attributeList : null;
+
+        const parentModel = this;
+        const opts = {
+          ...options,
+          parse: true,
+          parentModel,
+        };
+
+        attributes.attributeList = new EMLAttributeList(attributeList, opts);
 
         return attributes;
       },
@@ -289,8 +302,9 @@ define([
        */
       addAttribute(attribute, index) {
         const options = !index && index !== 0 ? {} : { at: index };
-        attribute.set("parentModel", this);
-        this.get("attributeList").add(attribute, options);
+        const attrList = this.get("attributeList");
+        attribute.set("parentModel", attrList);
+        attrList.get("emlAttributes").addAttribute(attribute, options);
       },
 
       /**
@@ -300,7 +314,7 @@ define([
        */
       removeAttribute(attribute) {
         // Remove that index from the array
-        this.get("attributeList").remove(attribute);
+        this.get("attributeList").get("emlAttributes").remove(attribute);
       },
 
       /** @inheritdoc */
@@ -359,7 +373,9 @@ define([
           objectDOM = document.createElement(type);
         }
 
-        // Update the id attribute on this XML node update the id attribute
+        // Update the id attribute on this XML node update the id attribute.
+        // TODO: This could impact EML <references> that refer to the original
+        // id.
         if (this.get("dataONEObject")) {
           // Ideally, the EMLEntity will use the object's id in it's id
           // attribute, so we wil switch them
@@ -473,18 +489,15 @@ define([
         }
 
         // Update the attributeList section
-        const attrListCollection = this.get("attributeList");
         const $attrList = $(objectDOM).find("attributelist");
+        const attributeList = this.get("attributeList");
 
         // If the attributeList is empty, remove it from the DOM
-        if (
-          !attrListCollection?.length ||
-          !attrListCollection?.hasNonEmptyAttributes()
-        ) {
+        if (attributeList.isEmpty()) {
           $attrList.remove();
         } else {
           // Attribute list coll expects a DOM node not jQuery object
-          const newAttrListDOM = attrListCollection.updateDOM($attrList.get(0));
+          const newAttrListDOM = attributeList.updateDOM($attrList.get(0));
 
           // If there wasn't already an attributeList in the DOM, add the new
           // one created by the collection

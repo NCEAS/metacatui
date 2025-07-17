@@ -44,6 +44,13 @@ a:hover {
   text-shadow: none;
   font-weight: normal;
 }
+.label {
+  text-shadow: none;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0.95;
+}
 .danger,
 .error {
   color: #dc0000;
@@ -178,7 +185,12 @@ footer {
   /** Keeps the footer down **/
   min-height: 100%;
 }
-
+.right-aligned-flex-container {
+  display: flex;
+  margin-top: 1rem;
+  flex-direction: column;
+  align-items: flex-end;
+}
 /******************************************
 ** Navigation ***
 ******************************************/
@@ -320,6 +332,11 @@ header .citation {
 }
 #Content > .login > .alert-container {
   font-size: inherit;
+}
+.button-help-text {
+  font-size: 12px;
+  margin-top: 2px;
+  color: #555;
 }
 
 /******************************************
@@ -8530,6 +8547,15 @@ textarea.medium {
 .attribute-menu-item.new:hover .remove {
   display: none;
 }
+
+.add-attribute-help {
+  text-align: center;
+  margin: 3rem;
+  .add-attribute-button {
+    background-color: inherit !important;
+  }
+}
+
 .eml-attribute .non-numeric-domain.error {
   color: inherit;
   border-color: red;
@@ -8982,7 +9008,7 @@ textarea.medium {
   .add-attribute-button {
     position: sticky;
     bottom: 0;
-    background: #eee;
+    background: inherit;
     font-weight: 600;
   }
   .eml-attribute input {
@@ -9054,11 +9080,6 @@ textarea.medium {
     margin-bottom: 0.8rem;
   }
 
-  .autofill-attributes__button-container {
-    display: flex;
-    justify-content: end;
-    margin-top: 1rem;
-  }
   .tab-content {
     margin-top: 1rem;
   }
@@ -9080,6 +9101,10 @@ textarea.medium {
       margin-left: 0;
     }
   }
+}
+
+.references-panel {
+  padding: 1rem;
 }
 
 /*******************************************
@@ -9757,5 +9782,75 @@ body > #extension-is-installed {
     justify-self: right;
     margin-right: 1rem;
     margin-top: 1rem;
+  }
+}
+
+/******************************************
+** Toggle View **
+******************************************/
+
+.toggle-container {
+  padding: 1rem 0;
+
+  --toggle-border-radius: 5px;
+  --toggle-border-color: #ccc;
+  --toggle-color: #6a6a6a;
+  --toggle-background-color-active: #d9edf7;
+  --toggle-color-active: #0088cc;
+  --toggle-animation-duration: 0.15s;
+
+  .toggle-switch {
+    display: flex;
+    overflow: hidden;
+    max-width: 19rem;
+  }
+
+  .toggle-option {
+    flex: 1;
+    padding: 0.5em 0.6em;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: center;
+    color: var(--toggle-color);
+    letter-spacing: 0.02em;
+    border: 1px solid var(--toggle-border-color);
+    /* overwrite bootstrap */
+    line-height: 1;
+    /* animate when changing to active */
+    transition:
+      background-color var(--toggle-animation-duration) ease-in-out,
+      color var(--toggle-animation-duration) ease-in-out,
+      border-color var(--toggle-animation-duration) ease-in-out;
+  }
+
+  .toggle-option:first-child {
+    border-radius: var(--toggle-border-radius) 0 0 var(--toggle-border-radius);
+  }
+
+  .toggle-option:first-child:not(.toggle-option--active) {
+    border-right: none;
+  }
+
+  .toggle-option:last-child {
+    border-radius: 0 var(--toggle-border-radius) var(--toggle-border-radius) 0;
+  }
+
+  .toggle-option:last-child:not(.toggle-option--active) {
+    border-left: none;
+  }
+
+  .toggle-option--active {
+    background-color: var(--toggle-background-color-active);
+    color: var(--toggle-color-active);
+    font-weight: bold;
+    border-color: var(--toggle-color-active);
+  }
+
+  .toggle-description {
+    margin-top: 0.5em;
+    font-size: 0.9em;
+    padding-left: 0.1rem;
+    opacity: 0.9;
   }
 }

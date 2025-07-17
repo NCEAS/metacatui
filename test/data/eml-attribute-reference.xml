@@ -1,0 +1,124 @@
+<eml:eml xmlns:eml="https://eml.ecoinformatics.org/eml-2.2.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:stmml="http://www.xml-cml.org/schema/stmml-1.1" xsi:schemaLocation="https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd" packageId="urn:uuid:6577feb5-e7a8-4c58-aefa-e7c8cdb0d4f5" system="knb">
+  <dataset id="urn-uuid-bc84dd9a-6add-4e25-85a7-23b981e8448d">
+    <title>Title</title>
+    <creator id="8520889254449715">
+      <individualName>
+        <givenName>Robyn</givenName>
+        <surName>Thiessen-Bock</surName>
+      </individualName>
+      <electronicMailAddress>thiessenbock@nceas.ucsb.edu</electronicMailAddress>
+      <userId directory="https://orcid.org">https://orcid.org/0000-0002-1615-3963</userId>
+    </creator>
+    <abstract>
+      <para>Abstract</para>
+    </abstract>
+    <intellectualRights>
+      <para>This work is dedicated to the public domain under the Creative Commons Universal 1.0 Public Domain Dedication. To view a copy of this dedication, visit https://creativecommons.org/publicdomain/zero/1.0/.</para>
+    </intellectualRights>
+    <coverage>
+      <geographicCoverage>
+        <geographicDescription>Nowhere</geographicDescription>
+        <boundingCoordinates>
+          <westBoundingCoordinate>0</westBoundingCoordinate>
+          <eastBoundingCoordinate>0</eastBoundingCoordinate>
+          <northBoundingCoordinate>0</northBoundingCoordinate>
+          <southBoundingCoordinate>0</southBoundingCoordinate>
+        </boundingCoordinates>
+      </geographicCoverage>
+      <temporalCoverage>
+        <singleDateTime>
+          <calendarDate>2020</calendarDate>
+        </singleDateTime>
+      </temporalCoverage>
+    </coverage>
+    <annotation>
+      <propertyURI label="Data Sensitivity Category">http://purl.dataone.org/odo/SENSO_00000005</propertyURI>
+      <valueURI label="Non-sensitive data">http://purl.dataone.org/odo/SENSO_00000002</valueURI>
+    </annotation>
+    <contact id="2793120029308289">
+      <individualName>
+        <givenName>Robyn</givenName>
+        <surName>Thiessen-Bock</surName>
+      </individualName>
+      <electronicMailAddress>thiessenbock@nceas.ucsb.edu</electronicMailAddress>
+      <userId directory="https://orcid.org">https://orcid.org/0000-0002-1615-3963</userId>
+    </contact>
+    <methods>
+      <methodStep>
+        <description>
+          <section>
+            <title>Ethical Research Practices</title>
+            <para>Ethical Research Practices</para>
+          </section>
+        </description>
+      </methodStep>
+      <methodStep>
+        <description>
+          <para>Methods</para>
+        </description>
+      </methodStep>
+    </methods>
+    <project>
+      <title>Project title</title>
+      <personnel id="9902569844906224">
+        <individualName>
+          <givenName>Robyn</givenName>
+          <surName>Thiessen-Bock</surName>
+        </individualName>
+        <role>principalInvestigator</role>
+      </personnel>
+      <funding>
+        <para>Funding Source</para>
+      </funding>
+    </project>
+    <otherEntity id="urn-uuid-510ccf32-3541-4f37-b011-656b6367304b">
+      <entityName>File Two</entityName>
+      <entityDescription>File Two Description</entityDescription>
+      <attributeList>
+        <references>common-attribute-list</references>
+      </attributeList>
+      <entityType>text/csv</entityType>
+    </otherEntity>
+    <otherEntity id="urn-uuid-94d21091-bb20-4568-b14e-3162d44110b0">
+      <entityName>File1</entityName>
+      <attributeList id="common-attribute-list">
+        <attribute id="LthxCswQ52SpQoqQ9gMeW2fJJmaHSI">
+          <attributeName>Attr1</attributeName>
+          <attributeLabel>Attribute One Label</attributeLabel>
+          <attributeDefinition>Definition One</attributeDefinition>
+          <measurementScale>
+            <dateTime>
+              <formatString>YYYY-MM-DD</formatString>
+            </dateTime>
+          </measurementScale>
+          <missingValueCode>
+            <code>NA</code>
+            <codeExplanation>Not Available</codeExplanation>
+          </missingValueCode>
+        </attribute>
+        <attribute id="WXAXcxaZOrduUrO8zhuDTtoCsQPFfx">
+          <attributeName>Attr2</attributeName>
+          <attributeLabel>Attribute Two Label</attributeLabel>
+          <attributeDefinition>Definition for Attribute Two</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit>
+                <standardUnit>milesPerHour</standardUnit>
+              </unit>
+              <numericDomain>
+                <numberType>real</numberType>
+              </numericDomain>
+            </ratio>
+          </measurementScale>
+          <annotation>
+            <propertyURI label="contains measurements of type">http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#containsMeasurementsOfType</propertyURI>
+            <valueURI label="specific ultraviolet absorbance">http://purl.dataone.org/odo/ECSO_00001502</valueURI>
+          </annotation>
+        </attribute>
+      </attributeList>
+      <entityType>text/csv</entityType>
+    </otherEntity>
+  </dataset>
+</eml:eml>
