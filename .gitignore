@@ -14,6 +14,7 @@ src/js/themes/cib
 src/js/themes/geri
 src/js/themes/esa
 src/js/themes/goa
+src/js/themes/fwc
 node_modules
 src/config/dev
 docs/_site

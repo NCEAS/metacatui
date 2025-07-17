@@ -2343,6 +2343,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
             "urn:node:CIB",
             "urn:node:SCTLD",
             "urn:node:GERI",
+            "urn:node:FWC",
           ],
 
           /**

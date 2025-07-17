@@ -99,7 +99,12 @@ define([
         // Set the menu height
         this.$el.off("shown");
         this.$el.off("hidden");
-        this.$el.on("hidden", () => {
+        this.$el.on("hidden", (e) => {
+          // Make sure that the event was triggered by the view element. Child
+          // jquery objects can fire hidden events that bubble up to parent. In
+          // this case, the NCBO tree (measurement type) view does this.
+          const viewEl = view.$el.length ? view.$el[0] : view.$el;
+          if (viewEl !== e.target) return;
           view.onHide();
         });
         this.$el.on("shown", () => {

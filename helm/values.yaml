@@ -89,46 +89,96 @@ appConfig:
   ##
   enabled: true
 
-## @param themeFilesClaimName Provide source files for a custom Theme (also see 'appConfig.theme').
-## NOTE that global.metacatUiThemeName MUST match the theme of your custom theme
+## @param customTheme Provide source files for a custom Theme
+## IMPORTANT NOTES:
+## 1. If source.from is set to "pvc", the customTheme settings are ignored - you will need to
+##    provide your own theme files on the PVC, along with the metacatui source files
+## 2. global.metacatUiThemeName MUST match the name of your custom theme
 ##
 customTheme:
   ## @param customTheme.enabled Provide custom Theme files on a pre-configured PVC
   ##
   enabled: false
 
+  ## @param customTheme.autoUpdate (Destructive!) Auto clone/update of theme files from git repo?
+  ## If true, the theme files will be automatically updated from the git repo specified below,
+  ## OVERWRITING ANY LOCAL CHANGES. Typically used for DataONE hosted instances, which should always
+  ## have the latest version of the metacatui-themes repo.
+  ##
+  autoUpdate: false
+
   ## @param customTheme.themeClaimName substitute your own PVC name
   ## Ignored unless customTheme is enabled
   ##
   claimName: "Your-Pre-Configured-pvc-name"
 
-  ## @param customTheme.subPath path to theme directory, within mounted filesystem
+  ## @param customTheme.subPath path to the specific theme directory, relative to mount point
   ## Ignored unless customTheme is enabled
   ##
-  ## Example: if you cloned https://github.com/NCEAS/metacatui-themes to the root of your
-  ## shared drive, it would look like this:
+  ## Example: if you mounted a volume at /my/mountdir, and then cloned the metacatui-themes
+  ## repo (https://github.com/NCEAS/metacatui-themes) to it at /my/mountdir/mydir/metacatui-themes,
+  ## it would look like this:
   ##
-  ## /metacatui-themes
-  ##     └── src
-  ##         ├── cerp
-  ##         │ └── js
-  ##         │     └── themes
-  ##         │         └── cerp
-  ##         │             ├── config.js
-  ##         │             ├── css
-  ##         │             ├── ...etc
-  ##         ├── drp
-  ##         │ └── js
-  ##         │     └── themes
-  ##         │         └── drp
-  ##         │             ├── config.js
-  ##         │             ├── css
-  ##       ...etc          ├── ...etc
+  ## /my/mountdir/mydir/metacatui-themes
+  ##                       └── src
+  ##                           ├── cerp
+  ##                           │ └── js
+  ##                           │     └── themes
+  ##                           │         └── cerp
+  ##                           │             ├── ...etc
+  ##                           ├── drp
+  ##                           │ └── js
+  ##                           │     └── themes
+  ##                           │         └── drp
+  ##                           │             ├── config.js
+  ##                         ...etc          ├── ...etc
   ##
-  ## ...so to use the drp theme, you would set the subPath to:
-  ##     subPath: "metacatui-themes/src/drp/js/themes/drp" # (do NOT include initial "/" in subPath)
+  ## ...so to use the drp theme, for example, the subPath (relative to the mount point) would be:
+  ##     subPath: "mydir/metacatui-themes/src/drp/js/themes/drp"    ## (do NOT include leading "/"!)
   ##
-  subPath: ""
+  subPath: "metacatui-themes/src/theme-boilerplate/js/themes/theme-boilerplate"
+
+  ## @param customTheme.gitRepoUrl
+  ## NOTE: Ignored unless customTheme is enabled AND customTheme.autoUpdate is true.
+  ##
+  gitRepoUrl: "https://github.com/NCEAS/metacatui-themes.git"
+
+  ## @param customTheme.gitRevision Any string that makes sense after the command `git checkout`
+  ## NOTE: Ignored unless customTheme is enabled AND customTheme.autoUpdate is true.
+  ## - Examples:
+  ##     revision: "tags/2.29.0"    =>     git checkout tags/2.29.0
+  ##     revision: "develop"        =>     git checkout develop
+  ##
+  gitRevision: "main"
+
+  ## @param customTheme.repoRootSubPath path to git repo root, relative to the mount point
+  ## (The git repo root for DataONE hosted instances is typically the 'metacatui-themes' directory)
+  ## NOTE: Ignored unless customTheme is enabled AND customTheme.autoUpdate is true.
+  ##
+  ## Should always be a subset of customTheme.subPath!
+  ## Example: if you mounted a volume at /my/mountdir, and then cloned the metacatui-themes
+  ## repo (https://github.com/NCEAS/metacatui-themes) to it at /my/mountdir/mydir/metacatui-themes,
+  ## it would look like this:
+  ##
+  ## /my/mountdir/mydir/metacatui-themes
+  ##                       └── src
+  ##                           ├── cerp
+  ##                           │ └── js
+  ##                           │     └── themes
+  ##                           │         └── cerp
+  ##                           │             ├── ...etc
+  ##                           ├── drp
+  ##                           │ └── js
+  ##                         ...etc
+  ##
+  ## ...so you'd set the repoRootSubPath to point at the root of the metacatui-themes repo (relative
+  ## to the mount point):
+  ##     repoRootSubPath: "mydir/metacatui-themes"    ## (do NOT include leading "/"!)
+  ##
+  ## (...which matches the beginning of customTheme.subPath:
+  ##     "mydir/metacatui-themes/src/drp/js/themes/drp", as required above)
+  ##
+  repoRootSubPath: "metacatui-themes"
 
 ## @param livenessProbeEnabled Enable livenessProbe. Autoconfigured using .Values.appConfig.root
 ## To override autoconfig, keep 'livenessProbeEnabled: true', and define a livenessProbe; e.g:
@@ -138,6 +188,7 @@ customTheme:
 ##      port: http
 ##
 livenessProbeEnabled: true
+livenessProbe: {}    ## Uses default (HTTP GET to global.metacatUiWebRoot) unless defined here
 
 ## @param readinessProbeEnabled Enable readinessProbe. Autoconfigured using .Values.appConfig.root
 ## To override autoconfig, keep 'readinessProbeEnabled: true', and define a readinessProbe; e.g:
@@ -147,6 +198,7 @@ livenessProbeEnabled: true
 ##      port: http
 ##
 readinessProbeEnabled: true
+readinessProbe: {}    ## Uses default (HTTP GET to global.metacatUiWebRoot) unless defined here
 
 service:
   type: ClusterIP
@@ -246,7 +298,9 @@ autoscaling:
 image:
   ## NGINX image version to use. Setting a specific value is safer than using "LATEST"
   ## See dockerhub for versions: https://hub.docker.com/_/nginx
-  tag: 1.27.0
+  tag: 1.29.0
+  repository: "nginx"
+  pullPolicy: "IfNotPresent"
 
 nodeSelector: {}
 tolerations: []
@@ -260,3 +314,5 @@ podLabels: {}
 podSecurityContext: {}
 securityContext: {}
 resources: {}
+volumes: []
+volumeMounts: []

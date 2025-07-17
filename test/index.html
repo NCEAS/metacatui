@@ -69,7 +69,9 @@
                 testType + " tests";
               // Use RequireJS to load in the tests, because RequireJS will not be happy loading them in any other way
               require(testList[testType], function () {
-                mocha.run();
+                mocha.run().on("fail", function (test, err) {
+                  console.error(err.stack || err);
+                });
               });
             } else {
               // Use RequireJS to load in the tests, because RequireJS will not be happy loading them in any other way
@@ -78,7 +80,9 @@
                 "./js/specs/shared/mock-gmaps-module.js",
                 ...combinedTests,
               ], function () {
-                mocha.run();
+                mocha.run().on("fail", function (test, err) {
+                  console.error(err.stack || err);
+                });
               }, function (err) {
                 document.getElementById("error").textContent =
                   "Error loading tests: " + JSON.stringify(err);
