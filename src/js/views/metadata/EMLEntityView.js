@@ -256,9 +256,6 @@ define([
       onShow() {
         this.attributesView?.stopAllListeners();
         this.attributesView?.startAllListeners();
-        // Since we remove all empty attributes when modal is closed, make sure
-        // that there is always an empty attribute to fill in
-        this.attributesView?.addNewAttribute();
       },
 
       /**

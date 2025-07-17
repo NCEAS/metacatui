@@ -7,11 +7,19 @@ define([
   "rdflib",
   "models/SolrResult",
 ], ($, _, Backbone, uuid, md5, rdf, SolrResult) => {
-  // Package Model
-  // ------------------
-  var PackageModel = Backbone.Model.extend(
+  /**
+   * @class PackageModel
+   * @classdesc A Backbone Model for representing a DataONE package or resource
+   * map.
+   * @classcategory Models
+   * @deprecated Warning! This model will be removed in a future release in
+   * favour of the DataPackage model. The PackageModel is still used in some
+   * places but will eventually be replaced with the DataPackage model. New code
+   * should use the DataPackage model.
+   * @augments Backbone.Model
+   */
+  const PackageModel = Backbone.Model.extend(
     /** @lends PackageModel.prototype */ {
-      // This model contains information about a package/resource map
       defaults() {
         return {
           id: null, // The id of the resource map/package itself
@@ -37,7 +45,8 @@ define([
           derivationDocs: [],
           relatedModels: [], // A condensed list of all SolrResult models related to this package in some way
           parentPackageMetadata: null,
-          // If true, when the member objects are retrieved, archived content will be included
+          // If true, when the member objects are retrieved, archived content
+          // will be included
           getArchivedMembers: false,
         };
       },
@@ -60,7 +69,6 @@ define([
         authoritativemembernode: "authoritativeMemberNode",
         dateuploaded: "dateUploaded",
         datesysmetadatamodified: "dateSysMetadataModified",
-        dateuploaded: "dateUploaded",
         formatid: "formatId",
         nodereference: "nodeReference",
         obsoletedby: "obsoletedBy",
@@ -82,7 +90,7 @@ define([
       // The RDF graph representing this data package
       dataPackageGraph: null,
 
-      initialize(options) {
+      initialize() {
         this.setURL();
 
         // Create an initial RDF graph
@@ -108,11 +116,15 @@ define([
         );
       },
 
-      /* Retrieve the id of the resource map/package that this id belongs to */
-      getMembersByMemberID(id) {
+      /**
+       * Retrieve the id of the resource map/package that this id belongs to
+       * @param {string} memberId - The id of the member to search for
+       */
+      getMembersByMemberID(memberId) {
+        let id = memberId;
         this.pending = true;
 
-        if (typeof id === "undefined" || !id) var id = this.memberId;
+        if (!id) id = this.memberId;
 
         const model = this;
 
@@ -125,22 +137,20 @@ define([
 
         const requestSettings = {
           url: MetacatUI.appModel.get("queryServiceUrl") + query,
-          success(data, textStatus, xhr) {
+          success(data) {
             // There should be only one response since we searched by id
-            if (typeof data.response.docs !== "undefined") {
+            if (data.response.docs) {
               const doc = data.response.docs[0];
 
               // Is this document a resource map itself?
-              if (doc.formatId == "http://www.openarchives.org/ore/terms") {
+              if (doc.formatId === "http://www.openarchives.org/ore/terms") {
                 model.set("id", doc.id); // this is the package model ID
-                model.set("members", new Array()); // Reset the member list
+                model.set("members", []); // Reset the member list
                 model.getMembers();
               }
-              // If there is no resource map, then this is the only document to in this package
-              else if (
-                typeof doc.resourceMap === "undefined" ||
-                !doc.resourceMap
-              ) {
+              // If there is no resource map, then this is the only document to
+              // in this package
+              else if (!doc.resourceMap) {
                 model.set("id", null);
                 model.set("memberIds", new Array(doc.id));
                 model.set("members", [new SolrResult(doc)]);
@@ -162,8 +172,9 @@ define([
         );
       },
 
-      /* Get all the members of a resource map/package based on the id attribute of this model.
-       * Create a SolrResult model for each member and save it in the members[] attribute of this model. */
+      /* Get all the members of a resource map/package based on the id attribute
+       * of this model. Create a SolrResult model for each member and save it in
+       * the members[] attribute of this model. */
       getMembers(options) {
         this.pending = true;
 
@@ -171,8 +182,8 @@ define([
         const members = [];
         const pids = []; // Keep track of each object pid
 
-        //* ** Find all the files that are a part of this resource map and the resource map itself
-        const provFlList = MetacatUI.appSearchModel.getProvFlList();
+        // Find all the files that are a part of this resource map and the
+        // resource map itself
         let query =
           `fl=resourceMap,fileName,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,` +
           `rightsHolder,dateUploaded,archived,title,origin,prov_instanceOfClass,isDocumentedBy,isPublic` +
@@ -188,10 +199,10 @@ define([
 
         const requestSettings = {
           url: MetacatUI.appModel.get("queryServiceUrl") + query,
-          success(data, textStatus, xhr) {
+          success(data) {
             // Separate the resource maps from the data/metadata objects
             _.each(data.response.docs, (doc) => {
-              if (doc.id == model.get("id")) {
+              if (doc.id === model.get("id")) {
                 model.set("indexDoc", doc);
                 model.set(doc);
                 if (
@@ -203,7 +214,7 @@ define([
               } else {
                 pids.push(doc.id);
 
-                if (doc.formatType == "RESOURCE") {
+                if (doc.formatType === "RESOURCE") {
                   const newPckg = new PackageModel(doc);
                   newPckg.set("parentPackage", model);
                   members.push(newPckg);
@@ -233,9 +244,7 @@ define([
       /*
        * Send custom options to the Backbone.Model.fetch() function
        */
-      fetch(options) {
-        if (!options) var options = {};
-
+      fetch(options = {}) {
         let fetchOptions = _.extend({ dataType: "text" }, options);
 
         // Add the authorization options
@@ -250,24 +259,24 @@ define([
       /*
        * Deserialize a Package from OAI-ORE RDF XML
        */
-      parse(response, options) {
+      parse(response) {
         // Save the raw XML in case it needs to be used later
         this.set("objectXML", $.parseHTML(response));
 
         // Define the namespaces
-        const RDF = rdf.Namespace(this.namespaces.RDF);
-        const FOAF = rdf.Namespace(this.namespaces.FOAF);
-        const OWL = rdf.Namespace(this.namespaces.OWL);
-        const DC = rdf.Namespace(this.namespaces.DC);
         const ORE = rdf.Namespace(this.namespaces.ORE);
-        const DCTERMS = rdf.Namespace(this.namespaces.DCTERMS);
         const CITO = rdf.Namespace(this.namespaces.CITO);
+        // Namespaces not used:
+        //  - const RDF = rdf.Namespace(this.namespaces.RDF);
+        //  - const FOAF = rdf.Namespace(this.namespaces.FOAF);
+        //  - const OWL = rdf.Namespace(this.namespaces.OWL);
+        //  - const DC = rdf.Namespace(this.namespaces.DC);
+        //  - const DCTERMS = rdf.Namespace(this.namespaces.DCTERMS);
 
         let memberStatements = [];
         let memberURIParts;
         let memberPIDStr;
         let memberPID;
-        let memberModel;
         const models = []; // the models returned by parse()
 
         try {
@@ -291,7 +300,6 @@ define([
           const memberPIDs = [];
           const members = [];
           const currentMembers = this.get("members");
-          const model = this;
 
           // Get system metadata for each member to eval the formatId
           _.each(
@@ -307,7 +315,7 @@ define([
                 // Get the current model from the member list, if it exists
                 const existingModel = _.find(
                   currentMembers,
-                  (m) => m.get("id") == decodeURIComponent(memberPID),
+                  (m) => m.get("id") === decodeURIComponent(memberPID),
                 );
 
                 // Add the existing model to the new member list
@@ -344,7 +352,7 @@ define([
               const dataPid = decodeURIComponent(
                 _.last(statement.subject.value.split("/")),
               );
-              const dataObj = _.find(members, (m) => m.get("id") == dataPid);
+              const dataObj = _.find(members, (m) => m.get("id") === dataPid);
               const metadataPid = _.last(statement.object.value.split("/"));
 
               // Save this as a metadata model
@@ -380,13 +388,11 @@ define([
       /*
        * Overwrite the Backbone.Model.save() function to set custom options
        */
-      save(attrs, options) {
-        if (!options) var options = {};
-
+      save(_attrs, options = {}) {
         // Get the system metadata first
         if (!this.get("hasSystemMetadata")) {
           const model = this;
-          var requestSettings = {
+          const requestSettings = {
             url:
               MetacatUI.appModel.get("metaServiceUrl") +
               encodeURIComponent(this.get("id")),
@@ -407,10 +413,10 @@ define([
           return;
         }
 
+        const oldPid = this.get("id");
         // Create a new pid if we are updating the object
         if (!options.sysMetaOnly) {
           // Set a new id
-          var oldPid = this.get("id");
           this.set("oldPid", oldPid);
           this.set("id", `urn:uuid:${uuid.v4()}`);
           this.set("obsoletes", oldPid);
@@ -430,15 +436,15 @@ define([
         if (options.sysMetaOnly) {
           formData.append("pid", this.get("id"));
 
-          var requestSettings = {
+          const requestSettings = {
             url: MetacatUI.appModel.get("metaServiceUrl"),
             type: "PUT",
             cache: false,
             contentType: false,
             processData: false,
             data: formData,
-            success(response) {},
-            error(data) {
+            success(_response) {},
+            error(_data) {
               console.log("error updating system metadata");
             },
           };
@@ -465,15 +471,15 @@ define([
           const checksum = md5(mapXML);
           this.set("checksum", checksum);
 
-          var requestSettings = {
+          const requestSettings = {
             url: MetacatUI.appModel.get("objectServiceUrl"),
             type: "PUT",
             cache: false,
             contentType: false,
             processData: false,
             data: formData,
-            success(response) {},
-            error(data) {
+            success() {},
+            error() {
               console.log("error udpating object");
             },
           };
@@ -491,12 +497,10 @@ define([
 
         const responseDoc = $.parseHTML(response);
         let systemMetadata;
-        const prependXML = "";
-        const appendXML = "";
 
-        for (let i = 0; i < responseDoc.length; i++) {
+        for (let i = 0; i < responseDoc.length; i += 1) {
           if (
-            responseDoc[i].nodeType == 1 &&
+            responseDoc[i].nodeType === 1 &&
             responseDoc[i].localName.indexOf("systemmetadata") > -1
           )
             systemMetadata = responseDoc[i];
@@ -505,7 +509,8 @@ define([
         // Parse the XML to JSON
         const sysMetaValues = this.toJson(systemMetadata);
         const camelCasedValues = {};
-        // Convert the JSON to a camel-cased version, which matches Solr and is easier to work with in code
+        // Convert the JSON to a camel-cased version, which matches Solr and is
+        // easier to work with in code
         _.each(
           Object.keys(sysMetaValues),
           function (key) {
@@ -519,20 +524,19 @@ define([
       },
 
       serialize() {
-        // Create an RDF serializer
-        var serializer = rdf.Serializer();
-        serializer.store = this.dataPackageGraph;
-
         // Define the namespaces
         const ORE = rdf.Namespace(this.namespaces.ORE);
-        const CITO = rdf.Namespace(this.namespaces.CITO);
+        // Not used:
+        //  - const CITO = rdf.Namespace(this.namespaces.CITO);
 
-        // Get the pid of this package - depends on whether we are updating or creating a resource map
+        // Get the pid of this package - depends on whether we are updating or
+        // creating a resource map
         const pid = this.get("id");
         const oldPid = this.get("oldPid");
         const updating = !!oldPid;
 
-        // Update the pids in the RDF graph only if we are updating the resource map with a new pid
+        // Update the pids in the RDF graph only if we are updating the resource
+        // map with a new pid
         if (updating) {
           // Find the identifier statement in the resource map
           const idNode = rdf.lit(oldPid);
@@ -542,14 +546,17 @@ define([
             idNode,
           );
 
-          // Get the CN Resolve Service base URL from the resource map (mostly important in dev environments where it will not always be cn.dataone.org)
+          // Get the CN Resolve Service base URL from the resource map (mostly
+          // important in dev environments where it will not always be
+          // cn.dataone.org)
           const cnResolveUrl = idStatement[0].subject.value.substring(
             0,
             idStatement[0].subject.value.indexOf(oldPid),
           );
           this.dataPackageGraph.cnResolveUrl = cnResolveUrl;
 
-          // Create variations of the resource map ID using the resolve URL so we can always find it in the RDF graph
+          // Create variations of the resource map ID using the resolve URL so
+          // we can always find it in the RDF graph
           const oldPidVariations = [
             oldPid,
             encodeURIComponent(oldPid),
@@ -565,23 +572,26 @@ define([
             ORE("isAggregatedBy"),
           );
 
-          // Using the isAggregatedBy statements, find all the DataONE object ids in the RDF graph
+          // Using the isAggregatedBy statements, find all the DataONE object
+          // ids in the RDF graph
           const idsFromXML = [];
           _.each(
             aggByStatements,
             (statement) => {
-              // Check if the resource map ID is the old existing id, so we don't collect ids that are not about this resource map
+              // Check if the resource map ID is the old existing id, so we
+              // don't collect ids that are not about this resource map
               if (
                 _.find(
                   oldPidVariations,
                   (oldPidV) =>
-                    `${oldPidV}#aggregation` == statement.object.value,
+                    `${oldPidV}#aggregation` === statement.object.value,
                 )
               ) {
                 const statementID = statement.subject.value;
                 idsFromXML.push(statementID);
 
-                // Add variations of the ID so we make sure we account for all the ways they exist in the RDF XML
+                // Add variations of the ID so we make sure we account for all
+                // the ways they exist in the RDF XML
                 if (statementID.indexOf(cnResolveUrl) > -1)
                   idsFromXML.push(
                     statementID.substring(statementID.lastIndexOf("/") + 1),
@@ -598,7 +608,8 @@ define([
           // Get all the ids from this model
           const idsFromModel = _.invoke(this.get("members"), "get", "id");
 
-          // Find the difference between the model IDs and the XML IDs to get a list of added members
+          // Find the difference between the model IDs and the XML IDs to get a
+          // list of added members
           const addedIds = _.without(
             _.difference(idsFromModel, idsFromXML),
             oldPidVariations,
@@ -609,32 +620,38 @@ define([
             allMemberIds.push(cnResolveUrl + encodeURIComponent(id));
           });
 
-          // Remove any other isAggregatedBy statements that are not listed as members of this model
+          // Remove any other isAggregatedBy statements that are not listed as
+          // members of this model
           _.each(
             aggByStatements,
-            function (statement) {
+            (statement) => {
               if (!_.contains(allMemberIds, statement.subject.value))
                 this.removeFromAggregation(statement.subject.value);
               else if (
                 _.find(
                   oldPidVariations,
                   (oldPidV) =>
-                    `${oldPidV}#aggregation` == statement.object.value,
+                    `${oldPidV}#aggregation` === statement.object.value,
                 )
-              )
-                statement.object.value = `${cnResolveUrl + encodeURIComponent(pid)}#aggregation`;
+              ) {
+                const statementRef = statement;
+                statementRef.object.value = `${cnResolveUrl + encodeURIComponent(pid)}#aggregation`;
+              }
             },
             this,
           );
 
-          // Change all the statements in the RDF where the aggregation is the subject, to reflect the new resource map ID
+          // Change all the statements in the RDF where the aggregation is the
+          // subject, to reflect the new resource map ID
           const aggregationSubjStatements =
             this.dataPackageGraph.statementsMatching(aggregationNode);
           _.each(aggregationSubjStatements, (statement) => {
-            statement.subject.value = `${cnResolveUrl + encodeURIComponent(pid)}#aggregation`;
+            const statementRef = statement;
+            statementRef.subject.value = `${cnResolveUrl + encodeURIComponent(pid)}#aggregation`;
           });
 
-          // Change all the statements in the RDF where the aggregation is the object, to reflect the new resource map ID
+          // Change all the statements in the RDF where the aggregation is the
+          // object, to reflect the new resource map ID
           const aggregationObjStatements =
             this.dataPackageGraph.statementsMatching(
               undefined,
@@ -642,7 +659,8 @@ define([
               aggregationNode,
             );
           _.each(aggregationObjStatements, (statement) => {
-            statement.object.value = `${cnResolveUrl + encodeURIComponent(pid)}#aggregation`;
+            const statementRef = statement;
+            statementRef.object.value = `${cnResolveUrl + encodeURIComponent(pid)}#aggregation`;
           });
 
           // Change all the resource map subject nodes in the RDF graph
@@ -650,7 +668,8 @@ define([
           const rMapStatements =
             this.dataPackageGraph.statementsMatching(rMapNode);
           _.each(rMapStatements, (statement) => {
-            statement.subject.value = cnResolveUrl + encodeURIComponent(pid);
+            const statementRef = statement;
+            statementRef.subject.value = cnResolveUrl + encodeURIComponent(pid);
           });
 
           // Change the idDescribedBy statement
@@ -672,12 +691,13 @@ define([
             this,
           );
 
-          // Change all the resource map identifier literal node in the RDF graph
+          // Change all the resource map identifier literal node in the RDF
+          // graph
           if (idStatement[0]) idStatement[0].object.value = pid;
         }
 
         // Now serialize the RDF XML
-        var serializer = rdf.Serializer();
+        const serializer = rdf.Serializer();
         serializer.store = this.dataPackageGraph;
 
         const xmlString = serializer.statementsToXML(
@@ -766,22 +786,14 @@ define([
           .append(xml.clone())
           .html();
 
-        // Now camel case the nodes
-        _.each(
-          Object.keys(this.sysMetaNodeMap),
-          function (name, i, allNodeNames) {
-            var regEx = new RegExp(`<${name}`, "g");
-            xmlString = xmlString.replace(
-              regEx,
-              `<${this.sysMetaNodeMap[name]}`,
-            );
-            var regEx = new RegExp(`${name}>`, "g");
-            xmlString = xmlString.replace(
-              regEx,
-              `${this.sysMetaNodeMap[name]}>`,
-            );
+        // Camel case the nodes using the sysMetaNodeMap
+        Object.entries(this.sysMetaNodeMap).forEach(
+          ([original, camelCased]) => {
+            const openingTagRegex = new RegExp(`<${original}`, "g");
+            const closingTagRegex = new RegExp(`${original}>`, "g");
+            xmlString = xmlString.replace(openingTagRegex, `<${camelCased}`);
+            xmlString = xmlString.replace(closingTagRegex, `${camelCased}>`);
           },
-          this,
         );
 
         xmlString = xmlString.replace(/systemmetadata/g, "systemMetadata");
@@ -789,14 +801,18 @@ define([
         return xmlString;
       },
 
-      // Adds a new object to the resource map RDF graph
+      /**
+       * Adds a new object to the resource map RDF graph
+       * @param {string} id - The id of the object to add
+       */
       addToAggregation(id) {
+        let fullID;
+        let modifiedId = id;
         if (id.indexOf(this.dataPackageGraph.cnResolveUrl) < 0)
-          var fullID =
-            this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id);
+          fullID = this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id);
         else {
-          var fullID = id;
-          id = id.substring(
+          fullID = id;
+          modifiedId = id.substring(
             this.dataPackageGraph.cnResolveUrl.lastIndexOf("/") + 1,
           );
         }
@@ -807,9 +823,10 @@ define([
         const XML = rdf.Namespace(this.namespaces.XML);
         const CITO = rdf.Namespace(this.namespaces.CITO);
 
-        // Create a node for this object, the identifier, the resource map, and the aggregation
+        // Create a node for this object, the identifier, the resource map, and
+        // the aggregation
         const objectNode = rdf.sym(fullID);
-        const mapNode = rdf.sym(
+        rdf.sym(
           this.dataPackageGraph.cnResolveUrl +
             encodeURIComponent(this.get("id")),
         );
@@ -819,13 +836,15 @@ define([
             encodeURIComponent(this.get("id"))
           }#aggregation`,
         );
-        const idNode = rdf.literal(id, undefined, XML("string"));
+        const idNode = rdf.literal(modifiedId, undefined, XML("string"));
 
-        // Add the statement: this object isAggregatedBy the resource map aggregation
+        // Add the statement: this object isAggregatedBy the resource map
+        // aggregation
         this.dataPackageGraph.addStatement(
           rdf.st(objectNode, ORE("isAggregatedBy"), aggNode),
         );
-        // Add the statement: The resource map aggregation aggregates this object
+        // Add the statement: The resource map aggregation aggregates this
+        // object
         this.dataPackageGraph.addStatement(
           rdf.st(aggNode, ORE("aggregates"), objectNode),
         );
@@ -835,7 +854,10 @@ define([
         );
 
         // Find the metadata doc that describes this object
-        const model = _.find(this.get("members"), (m) => m.get("id") == id);
+        const model = _.find(
+          this.get("members"),
+          (m) => m.get("id") === modifiedId,
+        );
         const isDocBy = model.get("isDocumentedBy");
 
         // If this object is documented by any metadata...
@@ -843,21 +865,25 @@ define([
           // Get the ids of all the metadata objects in this package
           const metadataInPackage = _.compact(
             _.map(this.get("members"), (m) => {
-              if (m.get("formatType") == "METADATA") return m.get("id");
+              if (m.get("formatType") === "METADATA") return m.get("id");
+              return null;
             }),
           );
-          // Find the metadata IDs that are in this package that also documents this data object
+          // Find the metadata IDs that are in this package that also documents
+          // this data object
           const metadataIds = Array.isArray(isDocBy)
             ? _.intersection(metadataInPackage, isDocBy)
             : _.intersection(metadataInPackage, [isDocBy]);
 
-          // For each metadata that documents this object, add a CITO:isDocumentedBy and CITO:documents statement
+          // For each metadata that documents this object, add a
+          // CITO:isDocumentedBy and CITO:documents statement
           _.each(
             metadataIds,
             function (metaId) {
               // Create the named nodes and statements
               const memberNode = rdf.sym(
-                this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id),
+                this.dataPackageGraph.cnResolveUrl +
+                  encodeURIComponent(modifiedId),
               );
               const metadataNode = rdf.sym(
                 this.dataPackageGraph.cnResolveUrl + encodeURIComponent(metaId),
@@ -882,10 +908,12 @@ define([
       },
 
       removeFromAggregation(id) {
-        if (!id.indexOf(this.dataPackageGraph.cnResolveUrl))
-          id = this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id);
+        let modifiedId = id;
+        if (!modifiedId.indexOf(this.dataPackageGraph.cnResolveUrl))
+          modifiedId =
+            this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id);
 
-        const removedObjNode = rdf.sym(id);
+        const removedObjNode = rdf.sym(modifiedId);
         const statements = _.union(
           this.dataPackageGraph.statementsMatching(
             undefined,
@@ -901,14 +929,16 @@ define([
       getParentMetadata() {
         const rMapIds = this.get("resourceMap");
 
-        // Create a query that searches for any resourceMap with an id matching one of the parents OR an id that matches one of the parents.
-        // This will return all members of the parent resource maps AND the parent resource maps themselves
+        // Create a query that searches for any resourceMap with an id matching
+        // one of the parents OR an id that matches one of the parents. This
+        // will return all members of the parent resource maps AND the parent
+        // resource maps themselves
         let rMapQuery = "";
         let idQuery = "";
         if (Array.isArray(rMapIds) && rMapIds.length > 1) {
           _.each(rMapIds, (id, i, ids) => {
             // At the begininng of the list of ids
-            if (rMapQuery.length == 0) {
+            if (!rMapQuery.length) {
               rMapQuery += "resourceMap:(";
               idQuery += "id:(";
             }
@@ -918,7 +948,7 @@ define([
             idQuery += `%22${encodeURIComponent(id)}%22`;
 
             // At the end of the list of ids
-            if (i + 1 == ids.length) {
+            if (i + 1 === ids.length) {
               rMapQuery += ")";
               idQuery += ")";
             }
@@ -943,20 +973,23 @@ define([
         const model = this;
         const requestSettings = {
           url: MetacatUI.appModel.get("queryServiceUrl") + query,
-          success(data, textStatus, xhr) {
+          success(data) {
             const results = data.grouped.formatType.groups;
             const resourceMapGroup = _.where(results, {
               groupValue: "RESOURCE",
             })[0];
             const rMapList = resourceMapGroup ? resourceMapGroup.doclist : null;
             const rMaps = rMapList ? rMapList.docs : [];
-            const rMapIds = _.pluck(rMaps, "id");
+            const resMapIds = _.pluck(rMaps, "id");
             const parents = [];
             const parentIds = [];
 
-            // As long as this map isn't obsoleted by another map in our results list, we will show it
+            // As long as this map isn't obsoleted by another map in our results
+            // list, we will show it
             _.each(rMaps, (map) => {
-              if (!(map.obsoletedBy && _.contains(rMapIds, map.obsoletedBy))) {
+              if (
+                !(map.obsoletedBy && _.contains(resMapIds, map.obsoletedBy))
+              ) {
                 parents.push(map);
                 parentIds.push(map.id);
               }
@@ -971,7 +1004,8 @@ define([
                 : [];
             const metadataModels = [];
 
-            // As long as this map isn't obsoleted by another map in our results list, we will show it
+            // As long as this map isn't obsoleted by another map in our results
+            // list, we will show it
             _.each(metadata, (m) => {
               // Find the metadata doc that obsoletes this one
               const isObsoletedBy = _.findWhere(metadata, {
@@ -979,8 +1013,9 @@ define([
               });
 
               // If one isn't found, then this metadata doc is the most recent
-              if (typeof isObsoletedBy === "undefined") {
-                // If this metadata doc is in one of the filtered parent resource maps
+              if (!isObsoletedBy) {
+                // If this metadata doc is in one of the filtered parent
+                // resource maps
                 if (_.intersection(parentIds, m.resourceMap).length) {
                   // Create a SolrResult model and add to an array
                   metadataModels.push(new SolrResult(m));
@@ -1005,7 +1040,9 @@ define([
       getURL() {
         let url = null;
 
-        // If we haven't set a packageServiceURL upon app initialization and we are querying a CN, then the packageServiceURL is dependent on the MN this package is from
+        // If we haven't set a packageServiceURL upon app initialization and we
+        // are querying a CN, then the packageServiceURL is dependent on the MN
+        // this package is from
         if (
           MetacatUI.appModel.get("d1Service").toLowerCase().indexOf("cn/") >
             -1 &&
@@ -1038,13 +1075,15 @@ define([
         const numNestedPackages = nestedPackages.length;
         let numComplete = 0;
 
-        _.each(nestedPackages, (nestedPackage, i, nestedPackages) => {
-          // Flag the parent model as complete when all the nested package info is ready
+        _.each(nestedPackages, (nestedPackage) => {
+          // Flag the parent model as complete when all the nested package info
+          // is ready
           nestedPackage.on("complete", () => {
-            numComplete++;
+            numComplete += 1;
 
-            // This is the last package in this package - finish up details and flag as complete
-            if (numNestedPackages == numComplete) {
+            // This is the last package in this package - finish up details and
+            // flag as complete
+            if (numNestedPackages === numComplete) {
               const sorted = _.sortBy(parentPackage.get("members"), (p) =>
                 p.get("id"),
               );
@@ -1053,7 +1092,8 @@ define([
             }
           });
 
-          // Only look one-level deep at all times to avoid going down a rabbit hole
+          // Only look one-level deep at all times to avoid going down a rabbit
+          // hole
           if (
             nestedPackage.get("parentPackage") &&
             nestedPackage.get("parentPackage").get("parentPackage")
@@ -1070,512 +1110,6 @@ define([
         return _.where(this.get("members"), { type: "Package" });
       },
 
-      getMemberNames() {
-        const metadata = this.getMetadata();
-        if (!metadata) return false;
-
-        // Load the rendered metadata from the view service
-        const viewService =
-          MetacatUI.appModel.get("viewServiceUrl") +
-          encodeURIComponent(metadata.get("id"));
-        const requestSettings = {
-          url: viewService,
-          success(data, response, xhr) {
-            if (solrResult.get("formatType") == "METADATA")
-              entityName = solrResult.get("title");
-            else {
-              const container = viewRef.findEntityDetailsContainer(
-                solrResult.get("id"),
-              );
-              if (container && container.length > 0) {
-                var entityName = $(container)
-                  .find(".entityName")
-                  .attr("data-entity-name");
-                if (typeof entityName === "undefined" || !entityName) {
-                  entityName = $(container)
-                    .find(
-                      ".control-label:contains('Entity Name') + .controls-well",
-                    )
-                    .text();
-                  if (typeof entityName === "undefined" || !entityName)
-                    entityName = null;
-                }
-              } else entityName = null;
-            }
-          },
-        };
-        $.ajax(
-          _.extend(
-            requestSettings,
-            MetacatUI.appUserModel.createAjaxSettings(),
-          ),
-        );
-      },
-
-      /*
-       * Will query for the derivations of this package, and sort all entities in the prov trace
-       * into sources and derivations.
-       */
-      getProvTrace() {
-        const model = this;
-
-        // See if there are any prov fields in our index before continuing
-        if (!MetacatUI.appSearchModel.getProvFields()) return this;
-
-        // Start keeping track of the sources and derivations
-        let sources = new Array();
-        let derivations = new Array();
-
-        // Search for derivations of this package
-        const derivationsQuery = `${MetacatUI.appSearchModel.getGroupedQuery(
-          "prov_wasDerivedFrom",
-          _.map(this.get("members"), (m) => m.get("id")),
-          "OR",
-        )}%20-obsoletedBy:*`;
-
-        const requestSettings = {
-          url:
-            `${MetacatUI.appModel.get(
-              "queryServiceUrl",
-            )}&q=${derivationsQuery}&wt=json&rows=1000` +
-            `&fl=id,resourceMap,documents,isDocumentedBy,prov_wasDerivedFrom`,
-          success(data) {
-            _.each(data.response.docs, (result) => {
-              derivations.push(result.id);
-            });
-
-            // Make arrays of unique IDs of objects that are sources or derivations of this package.
-            _.each(model.get("members"), (member, i) => {
-              if (member.type == "Package") return;
-
-              if (member.hasProvTrace()) {
-                sources = _.union(sources, member.getSources());
-                derivations = _.union(derivations, member.getDerivations());
-              }
-            });
-
-            // Save the arrays of sources and derivations
-            model.set("sources", sources);
-            model.set("derivations", derivations);
-
-            // Now get metadata about all the entities in the prov trace not in this package
-            model.getExternalProvTrace();
-          },
-        };
-        $.ajax(
-          _.extend(
-            requestSettings,
-            MetacatUI.appUserModel.createAjaxSettings(),
-          ),
-        );
-      },
-
-      getExternalProvTrace() {
-        const model = this;
-
-        // Compact our list of ids that are in the prov trace by combining the sources and derivations and removing ids of members of this package
-        const externalProvEntities = _.difference(
-          _.union(this.get("sources"), this.get("derivations")),
-          this.get("memberIds"),
-        );
-
-        // If there are no sources or derivations, then we do not need to find resource map ids for anything
-        if (!externalProvEntities.length) {
-          // Save this prov trace on a package-member/document/object level.
-          if (this.get("sources").length || this.get("derivations").length)
-            this.setMemberProvTrace();
-
-          // Flag that the provenance trace is complete
-          this.set("provenanceFlag", "complete");
-
-          return this;
-        }
-        // Create a query where we retrieve the ID of the resource map of each source and derivation
-        const idQuery = MetacatUI.appSearchModel.getGroupedQuery(
-          "id",
-          externalProvEntities,
-          "OR",
-        );
-
-        // Create a query where we retrieve the metadata for each source and derivation
-        const metadataQuery = MetacatUI.appSearchModel.getGroupedQuery(
-          "documents",
-          externalProvEntities,
-          "OR",
-        );
-
-        // TODO: Find the products of programs/executions
-
-        // Make a comma-separated list of the provenance field names
-        let provFieldList = "";
-        _.each(
-          MetacatUI.appSearchModel.getProvFields(),
-          (fieldName, i, list) => {
-            provFieldList += fieldName;
-            if (i < list.length - 1) provFieldList += ",";
-          },
-        );
-
-        // Combine the two queries with an OR operator
-        if (idQuery.length && metadataQuery.length)
-          var combinedQuery = `${idQuery}%20OR%20${metadataQuery}`;
-        else return this;
-
-        // the full and final query in Solr syntax
-        const query = `q=${combinedQuery}&fl=id,resourceMap,documents,isDocumentedBy,formatType,formatId,dateUploaded,rightsHolder,datasource,prov_instanceOfClass,${provFieldList}&rows=100&wt=json`;
-
-        // Send the query to the query service
-        const requestSettings = {
-          url: MetacatUI.appModel.get("queryServiceUrl") + query,
-          success(data, textStatus, xhr) {
-            // Do any of our docs have multiple resource maps?
-            const hasMultipleMaps = _.filter(
-              data.response.docs,
-              (doc) =>
-                typeof doc.resourceMap !== "undefined" &&
-                doc.resourceMap.length > 1,
-            );
-            // If so, we want to find the latest version of each resource map and only represent that one in the Prov Chart
-            if (typeof hasMultipleMaps !== "undefined") {
-              const allMapIDs = _.uniq(
-                _.flatten(_.pluck(hasMultipleMaps, "resourceMap")),
-              );
-              if (allMapIDs.length) {
-                const query =
-                  `q=+-obsoletedBy:*+${MetacatUI.appSearchModel.getGroupedQuery(
-                    "id",
-                    allMapIDs,
-                    "OR",
-                  )}&fl=obsoletes,id` + `&wt=json`;
-                const requestSettings = {
-                  url: MetacatUI.appModel.get("queryServiceUrl") + query,
-                  success(mapData, textStatus, xhr) {
-                    // Create a list of resource maps that are not obsoleted by any other resource map retrieved
-                    const resourceMaps = mapData.response.docs;
-
-                    model.obsoletedResourceMaps = _.pluck(
-                      resourceMaps,
-                      "obsoletes",
-                    );
-                    model.latestResourceMaps = _.difference(
-                      resourceMaps,
-                      model.obsoletedResourceMaps,
-                    );
-
-                    model.sortProvTrace(data.response.docs);
-                  },
-                };
-                $.ajax(
-                  _.extend(
-                    requestSettings,
-                    MetacatUI.appUserModel.createAjaxSettings(),
-                  ),
-                );
-              } else model.sortProvTrace(data.response.docs);
-            } else model.sortProvTrace(data.response.docs);
-          },
-        };
-
-        $.ajax(
-          _.extend(
-            requestSettings,
-            MetacatUI.appUserModel.createAjaxSettings(),
-          ),
-        );
-
-        return this;
-      },
-
-      sortProvTrace(docs) {
-        const model = this;
-
-        // Start an array to hold the packages in the prov trace
-        const sourcePackages = new Array();
-        const derPackages = new Array();
-        const sourceDocs = new Array();
-        const derDocs = new Array();
-        const sourceIDs = this.get("sources");
-        const derivationIDs = this.get("derivations");
-
-        // Separate the results into derivations and sources and group by their resource map.
-        _.each(docs, (doc, i) => {
-          const docModel = new SolrResult(doc);
-          const mapIds = docModel.get("resourceMap");
-
-          if (
-            (typeof mapIds === "undefined" || !mapIds) &&
-            docModel.get("formatType") == "DATA" &&
-            (typeof docModel.get("isDocumentedBy") === "undefined" ||
-              !docModel.get("isDocumentedBy"))
-          ) {
-            // If this object is not in a resource map and does not have metadata, it is a "naked" data doc, so save it by itself
-            if (_.contains(sourceIDs, doc.id)) sourceDocs.push(docModel);
-            if (_.contains(derivationIDs, doc.id)) derDocs.push(docModel);
-          } else if (
-            (typeof mapIds === "undefined" || !mapIds) &&
-            docModel.get("formatType") == "DATA" &&
-            docModel.get("isDocumentedBy")
-          ) {
-            // If this data doc does not have a resource map but has a metadata doc that documents it, create a blank package model and save it
-            const p = new PackageModel({
-              members: new Array(docModel),
-            });
-            // Add this package model to the sources and/or derivations packages list
-            if (_.contains(sourceIDs, docModel.get("id")))
-              sourcePackages[docModel.get("id")] = p;
-            if (_.contains(derivationIDs, docModel.get("id")))
-              derPackages[docModel.get("id")] = p;
-          } else if (mapIds.length) {
-            // If this doc has a resource map, create a package model and SolrResult model and store it
-            const id = docModel.get("id");
-
-            // Some of these objects may have multiple resource maps
-            _.each(mapIds, (mapId, i, list) => {
-              if (!_.contains(model.obsoletedResourceMaps, mapId)) {
-                let documentsSource;
-                let documentsDerivation;
-                if (docModel.get("formatType") == "METADATA") {
-                  if (
-                    _.intersection(docModel.get("documents"), sourceIDs).length
-                  )
-                    documentsSource = true;
-                  if (
-                    _.intersection(docModel.get("documents"), derivationIDs)
-                      .length
-                  )
-                    documentsDerivation = true;
-                }
-
-                // Is this a source object or a metadata doc of a source object?
-                if (_.contains(sourceIDs, id) || documentsSource) {
-                  // Have we encountered this source package yet?
-                  if (!sourcePackages[mapId] && mapId != model.get("id")) {
-                    // Now make a new package model for it
-                    var p = new PackageModel({
-                      id: mapId,
-                      members: new Array(docModel),
-                    });
-                    // Add to the array of source packages
-                    sourcePackages[mapId] = p;
-                  }
-                  // If so, add this member to its package model
-                  else if (mapId != model.get("id")) {
-                    var memberList = sourcePackages[mapId].get("members");
-                    memberList.push(docModel);
-                    sourcePackages[mapId].set("members", memberList);
-                  }
-                }
-
-                // Is this a derivation object or a metadata doc of a derivation object?
-                if (_.contains(derivationIDs, id) || documentsDerivation) {
-                  // Have we encountered this derivation package yet?
-                  if (!derPackages[mapId] && mapId != model.get("id")) {
-                    // Now make a new package model for it
-                    var p = new PackageModel({
-                      id: mapId,
-                      members: new Array(docModel),
-                    });
-                    // Add to the array of source packages
-                    derPackages[mapId] = p;
-                  }
-                  // If so, add this member to its package model
-                  else if (mapId != model.get("id")) {
-                    var memberList = derPackages[mapId].get("members");
-                    memberList.push(docModel);
-                    derPackages[mapId].set("members", memberList);
-                  }
-                }
-              }
-            });
-          }
-        });
-
-        // Transform our associative array (Object) of packages into an array
-        const newArrays = new Array();
-        _.each(
-          new Array(sourcePackages, derPackages, sourceDocs, derDocs),
-          (provObject) => {
-            const newArray = new Array();
-            let key;
-            for (key in provObject) {
-              newArray.push(provObject[key]);
-            }
-            newArrays.push(newArray);
-          },
-        );
-
-        // We now have an array of source packages and an array of derivation packages.
-        model.set("sourcePackages", newArrays[0]);
-        model.set("derivationPackages", newArrays[1]);
-        model.set("sourceDocs", newArrays[2]);
-        model.set("derivationDocs", newArrays[3]);
-
-        // Save this prov trace on a package-member/document/object level.
-        model.setMemberProvTrace();
-
-        // Flag that the provenance trace is complete
-        model.set("provenanceFlag", "complete");
-      },
-
-      setMemberProvTrace() {
-        const model = this;
-        const relatedModels = this.get("relatedModels");
-        const relatedModelIDs = new Array();
-
-        // Now for each doc, we want to find which member it is related to
-        _.each(this.get("members"), (member, i, members) => {
-          if (member.type == "Package") return;
-
-          // Get the sources and derivations of this member
-          const memberSourceIDs = member.getSources();
-          const memberDerIDs = member.getDerivations();
-
-          // Look through each source package, derivation package, source doc, and derivation doc.
-          _.each(model.get("sourcePackages"), (pkg, i) => {
-            _.each(pkg.get("members"), (sourcePkgMember, i) => {
-              // Is this package member a direct source of this package member?
-              if (_.contains(memberSourceIDs, sourcePkgMember.get("id")))
-                // Save this source package member as a source of this member
-                member.set(
-                  "provSources",
-                  _.union(member.get("provSources"), [sourcePkgMember]),
-                );
-
-              // Save this in the list of related models
-              if (!_.contains(relatedModelIDs, sourcePkgMember.get("id"))) {
-                relatedModels.push(sourcePkgMember);
-                relatedModelIDs.push(sourcePkgMember.get("id"));
-              }
-            });
-          });
-          _.each(model.get("derivationPackages"), (pkg, i) => {
-            _.each(pkg.get("members"), (derPkgMember, i) => {
-              // Is this package member a direct source of this package member?
-              if (_.contains(memberDerIDs, derPkgMember.get("id")))
-                // Save this derivation package member as a derivation of this member
-                member.set(
-                  "provDerivations",
-                  _.union(member.get("provDerivations"), [derPkgMember]),
-                );
-
-              // Save this in the list of related models
-              if (!_.contains(relatedModelIDs, derPkgMember.get("id"))) {
-                relatedModels.push(derPkgMember);
-                relatedModelIDs.push(derPkgMember.get("id"));
-              }
-            });
-          });
-          _.each(model.get("sourceDocs"), (doc, i) => {
-            // Is this package member a direct source of this package member?
-            if (_.contains(memberSourceIDs, doc.get("id")))
-              // Save this source package member as a source of this member
-              member.set(
-                "provSources",
-                _.union(member.get("provSources"), [doc]),
-              );
-
-            // Save this in the list of related models
-            if (!_.contains(relatedModelIDs, doc.get("id"))) {
-              relatedModels.push(doc);
-              relatedModelIDs.push(doc.get("id"));
-            }
-          });
-          _.each(model.get("derivationDocs"), (doc, i) => {
-            // Is this package member a direct derivation of this package member?
-            if (_.contains(memberDerIDs, doc.get("id")))
-              // Save this derivation package member as a derivation of this member
-              member.set(
-                "provDerivations",
-                _.union(member.get("provDerivations"), [doc]),
-              );
-
-            // Save this in the list of related models
-            if (!_.contains(relatedModelIDs, doc.get("id"))) {
-              relatedModels.push(doc);
-              relatedModelIDs.push(doc.get("id"));
-            }
-          });
-          _.each(members, (otherMember, i) => {
-            // Is this other package member a direct derivation of this package member?
-            if (_.contains(memberDerIDs, otherMember.get("id")))
-              // Save this other derivation package member as a derivation of this member
-              member.set(
-                "provDerivations",
-                _.union(member.get("provDerivations"), [otherMember]),
-              );
-            // Is this other package member a direct source of this package member?
-            if (_.contains(memberSourceIDs, otherMember.get("id")))
-              // Save this other source package member as a source of this member
-              member.set(
-                "provSources",
-                _.union(member.get("provSources"), [otherMember]),
-              );
-
-            // Is this other package member an indirect source or derivation?
-            if (
-              otherMember.get("type") == "program" &&
-              _.contains(
-                member.get("prov_generatedByProgram"),
-                otherMember.get("id"),
-              )
-            ) {
-              const indirectSources = _.filter(members, (m) =>
-                _.contains(otherMember.getInputs(), m.get("id")),
-              );
-              indirectSourcesIds = _.each(indirectSources, (m) => m.get("id"));
-              member.set(
-                "prov_wasDerivedFrom",
-                _.union(member.get("prov_wasDerivedFrom"), indirectSourcesIds),
-              );
-              // otherMember.set("prov_hasDerivations", _.union(otherMember.get("prov_hasDerivations"), [member.get("id")]));
-              member.set(
-                "provSources",
-                _.union(member.get("provSources"), indirectSources),
-              );
-            }
-            if (
-              otherMember.get("type") == "program" &&
-              _.contains(
-                member.get("prov_usedByProgram"),
-                otherMember.get("id"),
-              )
-            ) {
-              const indirectDerivations = _.filter(members, (m) =>
-                _.contains(otherMember.getOutputs(), m.get("id")),
-              );
-              indirectDerivationsIds = _.each(indirectDerivations, (m) =>
-                m.get("id"),
-              );
-              member.set(
-                "prov_hasDerivations",
-                _.union(
-                  member.get("prov_hasDerivations"),
-                  indirectDerivationsIds,
-                ),
-              );
-              // otherMember.set("prov_wasDerivedFrom", _.union(otherMember.get("prov_wasDerivedFrom"), [member.get("id")]));
-              member.set(
-                "provDerivations",
-                _.union(member.get("provDerivations"), indirectDerivationsIds),
-              );
-            }
-          });
-
-          // Add this member to the list of related models
-          if (!_.contains(relatedModelIDs, member.get("id"))) {
-            relatedModels.push(member);
-            relatedModelIDs.push(member.get("id"));
-          }
-
-          // Clear out any duplicates
-          member.set("provSources", _.uniq(member.get("provSources")));
-          member.set("provDerivations", _.uniq(member.get("provDerivations")));
-        });
-
-        // Update the list of related models
-        this.set("relatedModels", relatedModels);
-      },
-
       downloadWithCredentials() {
         // Get info about this object
         const url = this.get("url");
@@ -1585,7 +1119,8 @@ define([
         const xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
 
-        // When the XHR is ready, create a link with the raw data (Blob) and click the link to download
+        // When the XHR is ready, create a link with the raw data (Blob) and
+        // click the link to download
         xhr.onload = function () {
           // Get the file name from the Content-Disposition header
           let filename = xhr.getResponseHeader("Content-Disposition");
@@ -1598,7 +1133,7 @@ define([
           // Add a ".zip" extension if it doesn't exist
           if (
             filename.indexOf(".zip") < 0 ||
-            filename.indexOf(".zip") != filename.length - 4
+            filename.indexOf(".zip") !== filename.length - 4
           ) {
             filename += ".zip";
           }
@@ -1626,14 +1161,14 @@ define([
           );
         };
 
-        xhr.onprogress = function (e) {
+        xhr.onprogress = (e) => {
           if (e.lengthComputable) {
             const percent = (e.loaded / e.total) * 100;
             model.set("downloadPercent", percent);
           }
         };
 
-        xhr.onerror = function (e) {
+        xhr.onerror = (_e) => {
           model.trigger("downloadError");
 
           // Track this event
@@ -1656,11 +1191,12 @@ define([
       /* Returns the SolrResult that represents the metadata doc */
       getMetadata() {
         const members = this.get("members");
-        for (let i = 0; i < members.length; i++) {
-          if (members[i].get("formatType") == "METADATA") return members[i];
+        for (let i = 0; i < members.length; i += 1) {
+          if (members[i].get("formatType") === "METADATA") return members[i];
         }
 
-        // If there are no metadata objects in this package, make sure we have searched for them already
+        // If there are no metadata objects in this package, make sure we have
+        // searched for them already
         if (!this.complete && !this.pending) this.getMembers();
 
         return false;
@@ -1670,7 +1206,7 @@ define([
       checkAuthority() {
         // Call the auth service
         const authServiceUrl = MetacatUI.appModel.get("authServiceUrl");
-        if (!authServiceUrl) return false;
+        if (!authServiceUrl) return;
 
         const model = this;
 
@@ -1679,11 +1215,11 @@ define([
             authServiceUrl + encodeURIComponent(this.get("id"))
           }?action=write`,
           type: "GET",
-          success(data, textStatus, xhr) {
+          success() {
             model.set("isAuthorized", true);
             model.trigger("change:isAuthorized");
           },
-          error(xhr, textStatus, errorThrown) {
+          error() {
             model.set("isAuthorized", false);
           },
         };
@@ -1704,8 +1240,9 @@ define([
       /*
        * function xmlToJson - A utility function for converting XML to JSON
        *
-       * @param xml {DOM Element} - An XML or HTML DOM element to convert to json
-       * @returns {object} - A literal JS object that represents the given XML
+       * @param xml {DOM Element} - An XML or HTML DOM element to convert to
+       * json @returns {object} - A literal JS object that represents the given
+       * XML
        */
       toJson(xml) {
         // Create the return object
@@ -1713,42 +1250,42 @@ define([
 
         // do children
         if (xml.hasChildNodes()) {
-          for (let i = 0; i < xml.childNodes.length; i++) {
+          for (let i = 0; i < xml.childNodes.length; i += 1) {
             const item = xml.childNodes.item(i);
 
             // If it's an empty text node, skip it
-            if (item.nodeType == 3 && !item.nodeValue.trim()) continue;
+            if (item.nodeType === 3 && !item.nodeValue.trim()) continue;
 
             // Get the node name
             const nodeName = item.localName;
 
-            // If it's a new container node, convert it to JSON and add as a new object attribute
-            if (typeof obj[nodeName] === "undefined" && item.nodeType == 1) {
+            // If it's a new container node, convert it to JSON and add as a new
+            // object attribute
+            if (!obj[nodeName] && item.nodeType === 1) {
               obj[nodeName] = this.toJson(item);
             }
-            // If it's a new text node, just store the text value and add as a new object attribute
-            else if (
-              typeof obj[nodeName] === "undefined" &&
-              item.nodeType == 3
-            ) {
+            // If it's a new text node, just store the text value and add as a
+            // new object attribute
+            else if (!obj[nodeName] && item.nodeType === 3) {
               obj = item.nodeValue;
             }
             // If this node name is already stored as an object attribute...
-            else if (typeof obj[nodeName] !== "undefined") {
+            else if (obj[nodeName]) {
               // Cache what we have now
               let old = obj[nodeName];
               if (!Array.isArray(old)) old = [old];
 
               // Create a new object to store this node info
-              var newNode = {};
+              let newNode = {};
+              let newArray = [];
 
               // Add the new node info to the existing array we have now
-              if (item.nodeType == 1) {
+              if (item.nodeType === 1) {
                 newNode = this.toJson(item);
-                var newArray = old.concat(newNode);
-              } else if (item.nodeType == 3) {
+                newArray = old.concat(newNode);
+              } else if (item.nodeType === 3) {
                 newNode = item.nodeValue;
-                var newArray = old.concat(newNode);
+                newArray = old.concat(newNode);
               }
 
               // Store the attributes for this node
@@ -1772,20 +1309,32 @@ define([
         return obj;
       },
 
-      // Sums up the byte size of each member
+      /**
+       * Calculates and sets the total size of the package in bytes by summing
+       * up the sizes of all members.
+       * @returns {number} - The total size of the package in bytes.
+       */
       getTotalSize() {
-        if (this.get("totalSize")) return this.get("totalSize");
-
-        if (this.get("members").length == 1) {
-          var totalSize = this.get("members")[0].get("size");
-        } else {
-          var totalSize = _.reduce(this.get("members"), (sum, member) => {
-            if (typeof sum === "object") sum = sum.get("size");
-
-            return sum + member.get("size");
-          });
+        // Return cached totalSize if already calculated
+        const cachedTotalSize = this.get("totalSize");
+        if (cachedTotalSize || cachedTotalSize === 0) {
+          return cachedTotalSize;
         }
 
+        // Ensure members exist and are valid
+        const members = this.get("members") || [];
+        if (!Array.isArray(members) || members.length === 0) {
+          this.set("totalSize", 0);
+          return 0;
+        }
+
+        // Calculate the total size
+        const totalSize = members.reduce((sum, member) => {
+          const memberSize = member?.get("size") || 0;
+          return sum + memberSize;
+        }, 0);
+
+        // Cache the calculated total size
         this.set("totalSize", totalSize);
         return totalSize;
       },
