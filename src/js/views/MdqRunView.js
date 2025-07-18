@@ -159,11 +159,10 @@ define([
        */
       tooltipSettings: {
         position: "top center",
-        hoverable: true,
         on: "hover",
         variation: "tiny",
         delay: {
-          show: 100,
+          show: 250,
           hide: 40,
         },
       },
@@ -281,8 +280,6 @@ define([
         const groupedResults = qualityReport.groupResults(qualityReport.models);
         const groupedByType = qualityReport.groupByType(qualityReport.models);
 
-        qualityReport.getCountsPerGroup(groupedResults);
-
         const data = {
           objectIdentifier: qualityReport.id,
           suiteId: viewRef.suiteId,
@@ -313,6 +310,9 @@ define([
         );
         if (this.accordionView) {
           this.accordionView.remove();
+        }
+        if (this.accordionItems) {
+          this.accordionItems.reset();
         }
         container.innerHTML = "";
 
@@ -528,7 +528,7 @@ define([
             return `<div class="check-output">${output.value}</div>`;
           }),
         );
-        return outputHTMLs.join("");
+        return outputHTMLs.join(" ");
       },
 
       /**
@@ -575,15 +575,13 @@ define([
 
         const statusClass = labelClasses[status] || "default";
         const statusLabel = `<span class="label label-${statusClass}">${status}</span>`;
-
         const levelClass = labelClasses[level] || "default";
         const levelLabel = `<span class="label label-${levelClass}">${level}</span>`;
-
-        const typeLabel = `<span class="label pull-right">FAIR Type: <strong>${type}</strong></span>`;
+        const typeLabel = `<span class="label">FAIR Type: <strong>${type}</strong></span>`;
 
         const descriptionHtml = `
           <div class="mdq-results__item-description text-left">
-            <div>${statusLabel} ${levelLabel} ${typeLabel}</div>
+            <div class="mdq-results__labels">${statusLabel} ${levelLabel} ${typeLabel}</div>
             <h5><strong>${name}</strong></h5>
             <div class=""><small>${description}</small></div>
           </div>

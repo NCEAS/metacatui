@@ -1,3 +1,18 @@
+/* shown as a tooltip outside the mdq-results container  */
+.mdq-results__item-description {
+  min-width: 20rem;
+  .label {
+    text-shadow: none !important;
+  }
+  .mdq-results__labels {
+    display: flex;
+    gap: 0.3rem;
+    .label:last-child {
+      margin-left: auto;
+    }
+  }
+}
+
 .mdq-results {
   --col-bkg-red: #fbd6d6;
   --col-bkg-green: #dff0d8;
@@ -10,13 +25,6 @@
   --col-text-black: #272727;
 
   margin-top: 2rem;
-
-  .mdq-results__item-description {
-    width: 20rem;
-    .label {
-      text-shadow: none !important;
-    }
-  }
 
   .ui.styled.accordion > .content {
     padding: 0.7em 1em;
