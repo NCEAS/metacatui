@@ -185,6 +185,104 @@ define([
 
         return groupedResults;
       },
+
+      /**
+       * Get the number of results in each group, including a total count.
+       * @param {object} groupedResults - An object with keys for each group and
+       * an array of results for each group. If not provided, it will use the
+       * results from this.models, grouped by color.
+       * @returns {object} An object with keys for each group and the count of
+       * results in that group, plus a total count.
+       * @since 0.0.0
+       */
+      getCountsPerGroup(groupedResults) {
+        const data = groupedResults || this.groupResults(this.models);
+        const counts = {};
+        Object.entries(data).forEach(([group, items]) => {
+          counts[group] = items.length;
+        });
+        counts.total = this.models.length;
+        return counts;
+      },
+
+      /**
+       * For each result in the collection, check the outputs for identifiers
+       * and return a list of all unique ids.
+       * @returns {Array} An array of unique output identifiers.
+       * @since 0.0.0
+       */
+      getAllOutputIdentifiers() {
+        const identifiers = new Set();
+        this.models.forEach((result) => {
+          const outputs = result.get("output") || [];
+          outputs.forEach((output) => {
+            if (output.identifier) {
+              identifiers.add(output.identifier);
+            }
+          });
+        });
+        return Array.from(identifiers);
+      },
+
+      /**
+       * For all result outputs in the collection that include identifiers, get
+       * the names of those outputs from the Solr index. This is done in batches
+       * to avoid exceeding maximum lengths of Solr queries.
+       * @returns {Promise<object>} A promise that resolves to an object mapping
+       * output identifiers to their names.
+       * @since 0.0.0
+       */
+      async getAllOutputNames() {
+        // too many ids per request will make the resust too long, so send in
+        // batches.
+        const batchSize = 10;
+        const ids = this.getAllOutputIdentifiers();
+        const promises = [];
+        for (let i = 0; i < ids.length; i += batchSize) {
+          const batch = ids.slice(i, i + batchSize);
+          promises.push(this.getOutputNames(batch));
+        }
+        const results = await Promise.all(promises);
+        const mergedResults = results.reduce(
+          (acc, curr) => ({ ...acc, ...curr }),
+          {},
+        );
+        return mergedResults;
+      },
+
+      /**
+       * Given a batch of output identifiers, fetch their names from the Solr
+       * index. Call getAllOutputNames instead of calling this directly.
+       * @param {Array} ids - An array of output identifiers.
+       * @returns {Promise<object>} A promise that resolves to an object mapping
+       * output identifiers to their names.
+       * @since 0.0.0
+       */
+      getOutputNames(ids) {
+        return new Promise((resolve, reject) => {
+          // eslint-disable-next-line import/no-dynamic-require
+          require(["collections/SolrResults"], (SolrResults) => {
+            const query = ids
+              .map((id) => `id:"${id}" OR seriesId:"${id}"`)
+              .join(" OR ");
+            const rows = ids.length * 5; // Set a reasonable limit for the number of search
+            const search = new SolrResults([], { query, rows });
+            search.setfields("id,title,fileName");
+            search.fetch({
+              success: (collection) => {
+                const results = {};
+                collection.each((m) => {
+                  results[m.get("id")] = m.get("title") || m.get("fileName");
+                });
+                resolve(results);
+              },
+              error: (_collection, response) => {
+                reject(response);
+              },
+            });
+          });
+        });
+      },
     },
   );
   return QualityReport;
