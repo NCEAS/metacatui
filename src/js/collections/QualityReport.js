@@ -2,36 +2,33 @@ define([
   "jquery",
   "underscore",
   "backbone",
-  "rdflib",
   "uuid",
-  "md5",
   "models/QualityCheckModel",
-], function ($, _, Backbone, rdf, uuid, md5, QualityCheck) {
+], ($, _, Backbone, uuid, QualityCheck) => {
   /**
-     @class QualityReport
-     @classdesc A DataPackage represents a hierarchical collection of
-     packages, metadata, and data objects, modeling an OAI-ORE RDF graph.
-     TODO: incorporate Backbone.UniqueModel
-     * @classcategory Collections
-     @extends Backbone.Collection
-     @constructor
-    */
-  var QualityReport = Backbone.Collection.extend(
+   *  @class QualityReport
+   *  @classdesc A DataPackage represents a hierarchical collection of
+   *  packages, metadata, and data objects, modeling an OAI-ORE RDF graph.
+   *  TODO: incorporate Backbone.UniqueModel
+   * @classcategory Collections
+   *  @augments Backbone.Collection
+   *  @class
+   */
+  const QualityReport = Backbone.Collection.extend(
     /** @lends QualityReport.prototype */ {
-      //The name of this type of collection
+      // The name of this type of collection
       type: "QualityReport",
       runStatus: null,
       errorDescription: null,
       timestamp: null,
 
-      initialize: function (models, options) {
-        if (typeof options == "undefined") var options = {};
+      /** @inheritdoc */
+      initialize(_models, options = {}) {
+        // Set the id or create a new one
+        this.id = options.pid || `urn:uuid:${uuid.v4()}`;
 
-        //Set the id or create a new one
-        this.id = options.pid || "urn:uuid:" + uuid.v4();
-
-        //this.on("add", this.handleAdd);
-        //this.on("successSaving", this.updateRelationships);
+        // this.on("add", this.handleAdd);
+        // this.on("successSaving", this.updateRelationships);
 
         return this;
       },
@@ -42,7 +39,8 @@ define([
        */
       model: QualityCheck,
 
-      parse: function (response, options) {
+      /** @inheritdoc */
+      parse(response, _options) {
         // runStatus can be one of "success", "failure", "queued"
         this.runStatus = response.runStatus;
         this.errorDescription = response.errorDescription;
@@ -50,70 +48,77 @@ define([
         return response.result;
       },
 
-      fetch: function (options) {
-        var collectionRef = this;
-        var fetchOptions = {};
-        if (typeof options != "undefined") {
-          fetchOptions = _.extend(options, {
-            url: options.url,
-            cache: false,
-            contentType: false, //"multipart/form-data",
-            processData: false,
-            type: "GET",
-            //headers: { 'Access-Control-Allow-Origin': 'http://localhost:8081' },
-            headers: {
-              Accept: "application/json",
-            },
-            success: function (collection, jqXhr, options) {
-              //collectionRef.run = data;
-              collectionRef.trigger("fetchComplete");
-            },
-            error: function (collection, jqXhr, options) {
-              console.debug("error fetching quality report.");
-              collectionRef.fetchResponse = jqXhr;
-              collectionRef.trigger("fetchError");
-            },
-          });
-          //fetchOptions = _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings());
-          return Backbone.Collection.prototype.fetch.call(
-            collectionRef,
-            fetchOptions,
-          );
+      /** @inheritdoc */
+      fetch(options) {
+        const collectionRef = this;
+        let fetchOptions = {};
+        if (!options) {
+          return null;
         }
+        fetchOptions = _.extend(options, {
+          url: options.url,
+          cache: false,
+          contentType: false, // "multipart/form-data",
+          processData: false,
+          type: "GET",
+          // headers: { 'Access-Control-Allow-Origin': 'http://localhost:8081' },
+          headers: {
+            Accept: "application/json",
+          },
+          success(_collection, _jqXhr, _options) {
+            // collectionRef.run = data;
+            collectionRef.trigger("fetchComplete");
+          },
+          error(_collection, jqXhr, _options) {
+            collectionRef.fetchResponse = jqXhr;
+            collectionRef.trigger("fetchError");
+          },
+        });
+        // fetchOptions = _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings());
+        return Backbone.Collection.prototype.fetch.call(
+          collectionRef,
+          fetchOptions,
+        );
       },
 
-      groupResults: function (results) {
-        var groupedResults = _.groupBy(results, function (result) {
-          var color;
+      /**
+       * Returns a list of all the results in the collection, grouped by color.
+       * @param {Array} results - An array of QualityCheck models.
+       * @returns {object} An object with keys for each color (BLUE, GREEN,
+       * ORANGE, RED) and an array of results for each color.
+       */
+      groupResults(results) {
+        const groupedResults = _.groupBy(results, (result) => {
+          let color;
 
-          var check = result.get("check");
-          var status = result.get("status");
+          const check = result.get("check");
+          const status = result.get("status");
           // simple cases
           // always blue for info and skip
-          if (check.level == "INFO") {
+          if (check.level === "INFO") {
             color = "BLUE";
             return color;
           }
-          if (status == "SKIP") {
+          if (status === "SKIP") {
             color = "BLUE";
             return color;
           }
           // always green for success
-          if (status == "SUCCESS") {
+          if (status === "SUCCESS") {
             color = "GREEN";
             return color;
           }
 
           // handle failures and warnings
-          if (status == "FAILURE") {
+          if (status === "FAILURE") {
             color = "RED";
-            if (check.level == "OPTIONAL") {
+            if (check.level === "OPTIONAL") {
               color = "ORANGE";
             }
           }
-          if (status == "ERROR") {
+          if (status === "ERROR") {
             color = "ORANGE";
-            if (check.level == "REQUIRED") {
+            if (check.level === "REQUIRED") {
               color = "RED";
             }
           }
@@ -134,28 +139,35 @@ define([
           groupedResults.RED = [];
         }
 
-        //if (groupedResults.BLUE) {
+        // if (groupedResults.BLUE) {
         //  total = total - groupedResults.BLUE.length;
-        //}
+        // }
 
         return groupedResults;
       },
 
-      groupByType: function (results) {
-        var groupedResults = _.groupBy(results, function (result) {
-          var check = result.get("check");
-          var status = result.get("status");
+      /**
+       * Groups the results by their type, excluding those that should not be
+       * counted in the totals (ERROR, SKIP, and optional failures).
+       * @param {Array} results - An array of QualityCheck models.
+       * @returns {object} An object with keys for each check type and an array
+       * of results for each type.
+       */
+      groupByType(results) {
+        const groupedResults = _.groupBy(results, (result) => {
+          const check = result.get("check");
+          const status = result.get("status");
 
-          if (status == "ERROR" || status == "SKIP") {
+          if (status === "ERROR" || status === "SKIP") {
             // orange or blue
             return "removeMe";
           }
-          if (status == "FAILURE" && check.level == "OPTIONAL") {
+          if (status === "FAILURE" && check.level === "OPTIONAL") {
             // orange
             return "removeMe";
           }
 
-          var type = "";
+          let type = "";
           // Convert check type to lower case, so that the checks will be
           // grouped correctly, even if one check type has an incorrect capitalization.
           if (check.type != null) {
@@ -169,7 +181,7 @@ define([
         });
 
         // get rid of the ones that should not be counted in our totals
-        delete groupedResults["removeMe"];
+        delete groupedResults.removeMe;
 
         return groupedResults;
       },
