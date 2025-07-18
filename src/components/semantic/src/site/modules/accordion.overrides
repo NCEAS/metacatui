@@ -1,0 +1,15 @@
+/*******************************
+        User Overrides
+*******************************/
+
+/* Allow adding a title icon */
+.accordion-item__title-icon {
+  color: currentColor !important;
+  font-size: 0.75em;
+  margin-right: 0.6em;
+  vertical-align: middle;
+  line-height: 1.34em;
+  &::before {
+    opacity: 0.8 !important;
+  }
+}
