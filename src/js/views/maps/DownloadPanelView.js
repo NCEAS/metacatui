@@ -743,7 +743,7 @@ define([
             if (value.attributes && Array.isArray(value.attributes.services)) {
               wmtsDownloadLink = value.attributes.services.find(
                 (service) => service.type === "wmts",
-              ).endpoint;
+              )?.endpoint;
             } else {
               wmtsDownloadLink = null;
             }
