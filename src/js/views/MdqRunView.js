@@ -12,6 +12,10 @@ define([
   "text!templates/loading-metrics.html",
   "collections/QualityReport",
   "views/MarkdownView",
+  "views/accordion/AccordionView",
+  "models/accordion/Accordion",
+  "semantic",
+  `!text!${MetacatUI.root}/css/mdq.css`,
 ], (
   $,
   _,
@@ -24,6 +28,10 @@ define([
   LoadingTemplate,
   QualityReport,
   MarkdownView,
+  AccordionView,
+  AccordionModel,
+  _Semantic,
+  ReportCSS,
 ) => {
   const MSG_ERROR_GENERATING_REPORT =
     "There was an error generating the assessment report.";
@@ -36,9 +44,54 @@ define([
   const MSG_ERROR_DETAILS = "The Assessment Server reported this error: ";
   const QUEUE_ERROR_DETAILS = " It was queued at: ";
 
+  const CLASS_NAMES = {
+    detailsContainer: "mdq-results",
+    detailsItem: "mdq-results__item",
+    detailsRootItem: "mdq-results__item--root",
+    detailsTitleOnly: "mdq-results__item--title-only",
+    detailsScrollable: "mdq-results__item--srollable",
+  };
+
+  // The maximum length of an item in the accordion before it is considered
+  // "long" and will be displayed as a collapsible item.
+  const MAX_ITEM_LENGTH = 500;
+
+  // A function to return the plural form of "check" based on the count
+  const PLURAL = (n) => (n === 1 ? "check" : "checks");
+
+  // Icons and strings for the categories in the detailed report. The order of
+  // categories will match the order of this array.
+  const REPORT_CATEGORIES = [
+    {
+      status: "GREEN",
+      icon: "check-sign",
+      buildTitle: ({ count, totalPassable }) =>
+        `Passed ${count} ${PLURAL(count)} out of ${totalPassable} (excluding informational checks).`,
+    },
+    {
+      status: "ORANGE",
+      icon: "exclamation",
+      buildTitle: ({ count }) =>
+        `Warning for ${count} ${PLURAL(count)}.${count ? " Please review these warnings." : ""}`,
+    },
+    {
+      status: "RED",
+      icon: "remove",
+      buildTitle: ({ count }) =>
+        `Failed ${count} ${PLURAL(count)}.${count ? " Please correct these issues." : ""}`,
+    },
+    {
+      status: "BLUE",
+      icon: "info-sign",
+      buildTitle: ({ count }) => `${count} informational ${PLURAL(count)}.`,
+    },
+  ];
+
+  MetacatUI.appModel.addCSS(ReportCSS, "mdq");
+
   /**
    * @class MdqRunView
-   * @classdesc A view that fetches and displays a Metadata Assessment Report
+   * @classdesc A view that fetches and displays a Dataset Assessment
    * @classcategory Views
    * @name MdqRunView
    * @augments Backbone.View
@@ -99,6 +152,32 @@ define([
       loadingContainer: "#mdqResult",
 
       /**
+       * Settings passed to the Formantic UI popup module to configure a tooltip
+       * shown over item titles.
+       * @see https://fomantic-ui.com/modules/popup.html#/settings
+       * @type {object}
+       */
+      tooltipSettings: {
+        position: "top center",
+        on: "hover",
+        variation: "tiny",
+        delay: {
+          show: 250,
+          hide: 40,
+        },
+      },
+
+      /** @inheritdoc */
+      initialize(options = {}) {
+        if (options.pid) {
+          this.pid = options.pid;
+        }
+        // Set up models for showing the detailed report in an accordion
+        this.accordionModel = new AccordionModel({ exclusive: true });
+        this.accordionItems = this.accordionModel.get("items");
+      },
+
+      /**
        * Handles the event when the user selects a different suite
        * @param {Event} event The event object
        * @returns {boolean} False, to prevent the default action
@@ -145,7 +224,7 @@ define([
             .text(" to see an assessment report for a dataset")
             .prepend(searchLink);
           this.showMessage(message, true, false);
-          return;
+          return this;
         }
 
         const root = MetacatUI.appModel.get("mdqRunsServiceUrl");
@@ -169,6 +248,8 @@ define([
         );
 
         qualityReport.fetch({ url: qualityUrl });
+
+        return this;
       },
 
       /**
@@ -183,8 +264,9 @@ define([
         }
         viewRef.hideLoading();
 
-        // Filter out the checks with level 'METADATA', as these checks are intended
-        // to pass info to metadig-engine indexing (for search, faceting), and not intended for display.
+        // Filter out the checks with level 'METADATA', as these checks are
+        // intended to pass info to metadig-engine indexing (for search,
+        // faceting), and not intended for display.
         qualityReport.reset(
           _.reject(qualityReport.models, (model) => {
             const check = model.get("check");
@@ -198,23 +280,6 @@ define([
         const groupedResults = qualityReport.groupResults(qualityReport.models);
         const groupedByType = qualityReport.groupByType(qualityReport.models);
 
-        const checkCount = qualityReport.length;
-        const blueCount = groupedResults.BLUE?.length || 0;
-        const greenCount = groupedResults.GREEN?.length || 0;
-        const orangeCount = groupedResults.ORANGE?.length || 0;
-        const redCount = groupedResults.RED?.length || 0;
-        const extraRedText =
-          redCount > 0 ? " Please correct these issues." : "";
-        const extraOrangeText =
-          orangeCount > 0 ? " Please review these warnings." : "";
-        const totalPassable = checkCount - blueCount;
-
-        const checkWord = (num) => (num === 1 ? "check" : "checks");
-        const greenText = `Passed ${greenCount} ${checkWord(greenCount)} out of ${totalPassable} (excluding informational checks).`;
-        const orangeText = `Warning for ${orangeCount} ${checkWord(orangeCount)}. ${extraOrangeText}`;
-        const redText = `Failed ${redCount} ${checkWord(redCount)}. ${extraRedText}`;
-        const blueText = `${blueCount} informational ${checkWord(blueCount)}.`;
-
         const data = {
           objectIdentifier: qualityReport.id,
           suiteId: viewRef.suiteId,
@@ -222,113 +287,228 @@ define([
           suiteLabels: viewRef.suiteLabels,
           timestamp: _.now(),
           id: viewRef.pid,
-          groupedResults,
           groupedByType,
-          checkCount,
-          greenText,
-          orangeText,
-          redText,
-          blueText,
         };
 
         viewRef.$el.html(viewRef.template(data));
-        await viewRef.addCheckItems(groupedResults);
         viewRef.insertBreadcrumbs();
         viewRef.drawScoreChart(qualityReport.models, groupedResults);
         viewRef.showCitation();
         viewRef.show();
-        // Make sure the DOM is updated before initializing the popover
-        requestAnimationFrame(() => {
-          viewRef.$(".popover-this").popover();
-        });
+        // TODO: Consider moving detail report to its own view
+        viewRef.renderDetailedReport(groupedResults);
       },
 
       /**
-       * Add the check result item els to the view
+       * Show each result and its outputs in a collapsible accordion grouped by
+       * result status (GREEN, ORANGE, RED, BLUE).
        * @param {object} groupedResults - The results grouped by status
-       * @since 2.31.0
        */
-      async addCheckItems(groupedResults) {
-        const viewRef = this;
+      async renderDetailedReport(groupedResults) {
+        const container = this.el.querySelector(
+          `.${CLASS_NAMES.detailsContainer}`,
+        );
+        if (this.accordionView) {
+          this.accordionView.remove();
+        }
+        if (this.accordionItems) {
+          this.accordionItems.reset();
+        }
+        container.innerHTML = "";
 
-        const types = {
-          GREEN: {
-            className: "pass",
-            iconClass: "icon-check-sign success",
-            headerClass: "success",
-          },
-          ORANGE: {
-            className: "warn",
-            iconClass: "icon-exclamation",
-            headerClass: "warning",
-          },
-          RED: {
-            className: "fail",
-            iconClass: "icon-remove",
-            headerClass: "danger",
-          },
-          BLUE: {
-            className: "info-check",
-            iconClass: "icon-info",
-            headerClass: "info",
-          },
-        };
+        this.accordionView = new AccordionView({
+          model: this.accordionModel,
+          el: container,
+          tooltipSettings: this.tooltipSettings,
+        });
+        this.accordionView.render();
 
-        Object.keys(types).forEach(async (type) => {
-          const { className, iconClass, headerClass } = types[type];
-          const results = groupedResults[type];
-          if (results) {
-            // Use `map` to handle promises
-            const itemEls = await Promise.all(
-              results.map(async (result) =>
-                viewRef.createCheckItem(result, className, iconClass),
-              ),
-            );
+        // Add items to the accordion as they are created
+        this.addResultItems(groupedResults);
 
-            // Join the resolved HTML strings and append them
-            viewRef
-              .$(`.list-group-item.${headerClass}`)
-              .after(itemEls.join(""));
+        // While results are being added to the accordion, query the names of
+        // any result outputs with identifiers. Show the title as the filename
+        // rather than the uuid.
+        const ids = await this.qualityReport.getAllOutputNames();
+        this.updateOutputIdTitles(ids);
+        this.stopListening(this.accordionItems, "add");
+        this.listenTo(this.accordionItems, "add", (item) =>
+          this.updateOutputIdTitles(ids, [item]),
+        );
+      },
+
+      /**
+       * Update the titles of items in the accordion that have an identifier
+       * in their output. The identifier will be used as the title of the item
+       * instead of the uuid.
+       * @param {object} ids - An object mapping identifiers to titles
+       * @param {Array} [models] - An optional array of models to update.
+       * If not provided, all models in the accordion will be updated.
+       * @since 0.0.0
+       */
+      updateOutputIdTitles(ids, models) {
+        const toUpdate = models || this.accordionItems.models;
+        toUpdate.forEach((item) => {
+          const title = item.get("title");
+          if (title && ids[title]) {
+            item.set("title", ids[title]);
           }
         });
       },
 
       /**
-       * Create a check item element
-       * @param {object} result - The check result
-       * @param {string} className - The class name for the check item
-       * @param {string} iconClass - The class
-       * @returns {string} The HTML for the check item
-       * @since 2.31.0
+       * Add the result items to the accordion, including the categories (GREEN,
+       * ORANGE, RED, BLUE), and the individual results within each category,
+       * and their outputs.
+       * @param {object} groupedResults - The results grouped by status
+       * @since 0.0.0
        */
-      async createCheckItem(result, className, iconClass) {
-        const outputs = await this.getOutputHTML(result.get("output"));
+      async addResultItems(groupedResults) {
+        const { qualityReport } = this;
 
-        return `
-          <li class="list-group-item check ${className} collapse row-fluid">
-            <span class="icon-stack span1">
-              <i class="${iconClass}"></i>
-            </span>
-            <span class="span6">${outputs}</span>
-            <span class="span1">
-              <a tabindex="0"
-                 role="button"
-                 class="popover-this"
-                 data-container="body"
-                 data-trigger="hover focus"
-                 data-html="true"
-                 data-title="${result.get("check").name}"
-                 data-content="${result.get("check").description}">
-                 <i class="icon icon-question-sign subtle"></i>
-              </a>
-            </span>
-            <span class="span4">
-              <span class="badge pull-right">${result.get("status")}</span>
-              <span class="badge pull-right">${result.get("check").level}</span>
-              <span class="badge pull-right">${result.get("check").type}</span>
-            </span>
-          </li>
-        `;
+        // Generate text for each status (GREEN, ORANGE, RED, BLUE)
+        const counts = qualityReport.getCountsPerGroup(groupedResults);
+
+        let totalPassable = counts.total - (counts.blue || counts.BLUE || 0);
+        if (totalPassable < 0) totalPassable = 0;
+
+        REPORT_CATEGORIES.forEach((category) => {
+          const count = counts[category.status] || 0;
+          const categoryItem = {
+            status: category.status,
+            title: category.buildTitle({
+              count,
+              totalPassable,
+            }),
+            icon: category.icon,
+          };
+          this.addCategoryItem(categoryItem, groupedResults);
+        });
+      },
+
+      /**
+       * Add a category item to the accordion, which represents a
+       * category of checks (GREEN, ORANGE, RED, BLUE).
+       * @param {object} category - The category object containing status, title, and icon
+       * @param {object} groupedResults - The results grouped by status
+       * @since 0.0.0
+       */
+      async addCategoryItem(category, groupedResults) {
+        // Root items are the main categories of checks, such as GREEN, ORANGE, RED, BLUE
+        const CN = CLASS_NAMES;
+        const { status, title, icon } = category;
+        const results = groupedResults[status] || [];
+        const statusClass = `${CN.detailsItem}--${status.toLowerCase()}`;
+        const rootClass = CN.detailsRootItem;
+        const baseClass = CN.detailsItem;
+        const classes = [baseClass, rootClass, statusClass];
+        const itemId = status.toLowerCase();
+        const item = { classes, title, itemId, icon };
+        // Add the item to the accordion items
+        this.accordionItems.add(item);
+
+        // Add an item to the accordion for each result in this category
+        results?.forEach((result) => this.addResultItem(result, item));
+      },
+
+      /**
+       * Calculate statistics for the outputs of a result.
+       * @param {Array} outputs - The outputs for a single result
+       * @returns {object} An object containing the total length of all outputs
+       * and the maximum length of a single output
+       * @since 0.0.0
+       */
+      outputStats(outputs) {
+        let total = 0;
+        let max = 0;
+        outputs.forEach((o) => {
+          const len = o?.value?.length || 0;
+          total += len;
+          if (len > max) max = len;
+        });
+        const count = outputs.length;
+        return { total, max, count };
+      },
+
+      /**
+       * Add an item to the accordion for a result. There are three display
+       * options for the result, depending on the length of the outputs:
+       *   1. If any one output is very long, all outputs will be displayed as
+       *      collapsible items in the accordion.
+       *   2. If the outputs combined are very short, the output will be
+       *      displayed as the title of the item, and no content will be shown.
+       *   3. If the outputs combined are long, but not too long, the output
+       *      will be displayed as the content of the item, and the item will be
+       *      scrollable if the content is too long.
+       * @param {object} result - The result model containing the check and
+       * outputs
+       * @param {object} parentItem - The parent item in the accordion to which
+       * this item belongs.
+       * @since 0.0.0
+       */
+      async addResultItem(result, parentItem) {
+        const CN = CLASS_NAMES;
+        const outputs = result.get("output") || [];
+        if (!outputs.length) return;
+
+        const check = result.get("check") || {};
+        const itemId = check.name;
+        const item = {
+          itemId,
+          title: check.name,
+          parent: parentItem.itemId,
+          icon: parentItem.icon,
+          classes: [CN.detailsItem],
+          description: this.getDescriptionHtml(result),
+        };
+
+        const { max, total, count } = this.outputStats(outputs);
+
+        if (max <= MAX_ITEM_LENGTH || count <= 1) {
+          // When the content is displayed without child elements, then limit
+          // the height of the content section.
+          item.classes.push(CN.detailsScrollable);
+          const content = await this.getOutputHTML(outputs);
+          if (total < MAX_ITEM_LENGTH) {
+            // Very short content => display as title, no content
+            item.title = content;
+            item.classes.push(CN.detailsTitleOnly);
+          } else {
+            // Long content => display as content collapsed under title
+            item.content = content;
+          }
+          this.accordionItems.add(item);
+          return;
+        }
+        this.accordionItems.add(item);
+
+        // Multiple & long outputs => create child items
+        outputs.forEach(async (output) => this.addOutputItem(output, item));
+      },
+
+      /**
+       * Add an output item to the accordion. This is used when there are
+       * multiple outputs that are too long to display as a single item.
+       * @param {object} output - The output object containing identifier, name,
+       * and value
+       * @param {object} parentItem - The parent item in the accordion to which
+       * this output belongs.
+       * @returns {Promise<object>} A promise that resolves with the output item
+       * @since 0.0.0
+       */
+      async addOutputItem(output, parentItem) {
+        const content = await this.getOutputHTML([output]);
+        const outputItem = {
+          title:
+            output.identifier ||
+            output.name ||
+            `${content.substring(0, 100)}...`,
+          content,
+          parent: parentItem.itemId,
+          classes: [CLASS_NAMES.detailsItem],
+          icon: parentItem.icon,
+        };
+        this.accordionItems.add(outputItem);
       },
 
       /**
@@ -348,8 +528,7 @@ define([
             return `<div class="check-output">${output.value}</div>`;
           }),
         );
-
-        return outputHTMLs.join("");
+        return outputHTMLs.join(" ");
       },
 
       /**
@@ -368,6 +547,47 @@ define([
             resolve(markdownView.el.innerHTML);
           });
         });
+      },
+
+      /**
+       * Get the HTML description for a result to include in a tooltip in the
+       * detail report accordion.
+       * @param {object} result - The result model containing the check and
+       * outputs
+       * @returns {string} The HTML description for the result
+       * @since 0.0.0
+       */
+      getDescriptionHtml(result) {
+        const status = result.get("status");
+        const check = result.get("check");
+        const description = check?.description || "";
+        const level = check?.level || "";
+        const type = check?.type || "";
+        const name = check?.name || "";
+
+        const labelClasses = {
+          REQUIRED: "inverse",
+          OPTIONAL: "warning",
+          FAILURE: "important",
+          SUCCESS: "success",
+          INFO: "info",
+        };
+
+        const statusClass = labelClasses[status] || "default";
+        const statusLabel = `<span class="label label-${statusClass}">${status}</span>`;
+        const levelClass = labelClasses[level] || "default";
+        const levelLabel = `<span class="label label-${levelClass}">${level}</span>`;
+        const typeLabel = `<span class="label">FAIR Type: <strong>${type}</strong></span>`;
+
+        const descriptionHtml = `
+          <div class="mdq-results__item-description text-left">
+            <div class="mdq-results__labels">${statusLabel} ${levelLabel} ${typeLabel}</div>
+            <h5><strong>${name}</strong></h5>
+            <div class=""><small>${description}</small></div>
+          </div>
+        `;
+
+        return descriptionHtml;
       },
 
       /**

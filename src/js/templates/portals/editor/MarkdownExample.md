@@ -18,11 +18,11 @@ print(my_string)
 ```
 
 Here is how to make a table:
-| Tables | Are | Cool |
+| Tables | Are | Cool  |
 | ------ | --- | ----- |
-| x | a | $1600 |
-| y | b | $12 |
-| z | c | $1600 |
+| x      | a   | $1600 |
+| y      | b   | $12   |
+| z      | c   | $1600 |
 
 The following is an unordered list:
 
@@ -43,6 +43,18 @@ To quote some text, just start a line with a `>` character. In the words of Grac
 > information is more valuable than the hardware which processes it.
 
 You can even add emojis :smile:!
+
+Add a collapsible section like so:
+
+<details>
+<summary>Click to expand</summary>
+
+This content will be hidden until the user clicks.
+
+- You can include Markdown formatting inside
+- Lists, **bold**, etc.
+
+</details>
 
 ### More help with markdown
 

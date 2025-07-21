@@ -9,12 +9,12 @@
   <% } %>
 
   <div id="mdqResult">
-    <% if (typeof groupedResults !== 'undefined') { %>
+    <% if (typeof groupedByType !== 'undefined') { %>
 
     <header class="page-header">
       <div id="report-alert-container"></div>
       <div id="breadcrumb-container"></div>
-      <h1>Metadata Assessment Report</h1>
+      <h1>Dataset Assessment</h1>
       <h3><cite id="mdqCitation"></cite></h3>
     </header>
 
@@ -75,41 +75,7 @@
 
       <div class="clear"></div>
 
-      <ul class="list-group">
-        <li class="list-group-item success row-fluid collapsed" data-toggle="collapse" data-target=".list-group-item.pass">
-          <h4>
-            <i class="icon icon-caret-right"></i>
-            <i class="icon icon-caret-down"></i>
-            <%=greenText%>
-          </h4>
-        </li>
-
-        <li class="list-group-item warning collapsed" data-toggle="collapse" data-target=".list-group-item.warn.check">
-          <h4>
-            <i class="icon icon-caret-right"></i>
-            <i class="icon icon-caret-down"></i>
-            <%=orangeText%>
-          </h4>
-        </li>
-
-        <li class="list-group-item danger collapsed" data-toggle="collapse" data-target=".list-group-item.fail">
-          <h4>
-            <i class="icon icon-caret-right"></i>
-            <i class="icon icon-caret-down"></i>
-            <%=redText%>
-          </h4>
-        </li>
-
-        <li class="list-group-item info collapsed" data-toggle="collapse" data-target=".list-group-item.info-check">
-          <h4>
-            <i class="icon icon-caret-right"></i>
-            <i class="icon icon-caret-down"></i>
-            <%=blueText%>
-          </h4>
-        </li>
-
-        <!-- The list items will be added by the view -->
-      </ul>
+      <div class="mdq-results"></div>
     </div>
 
     <% } %>
