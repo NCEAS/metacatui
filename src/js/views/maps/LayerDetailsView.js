@@ -11,6 +11,7 @@ define([
   "views/maps/LayerOpacityView",
   "views/maps/LayerInfoView",
   "views/maps/LayerNavigationView",
+  "views/maps/FilterByAttributeView",
 ], (
   $,
   _,
@@ -22,6 +23,7 @@ define([
   LayerOpacityView,
   LayerInfoView,
   LayerNavigationView,
+  FilterByAttributeView,
 ) => {
   /**
    * @class LayerDetailsView
@@ -118,6 +120,15 @@ define([
           showTitle: false,
           hideIfError: true,
         },
+        // start -- add by Shirly
+        {
+          label: "Filter",
+          view: FilterByAttributeView,
+          collapsible: false,
+          showTitle: true,
+          hideIfError: true,
+        },
+        // end -- add by Shirly
         {
           label: "Opacity",
           view: LayerOpacityView,
@@ -206,6 +217,12 @@ define([
               detailSection.el.style.display = "none";
             }
           }
+          // Start add - Shirly
+          // Hide the "filter by attribute" view if there is not "filter" key for the selected layer
+          if (model && !model.get("filters") && section.label === "Filter") {
+            detailSection.el.style.display = "none";
+          }
+          // End add - Shirly
           return { ...section, renderedView: detailSection };
         });
 

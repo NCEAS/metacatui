@@ -976,6 +976,23 @@ represents 1 unit of the given distance measurement. */
   opacity: var(--map-no-brightness-or-opacity-tweaks, 0.5);
 }
 
+.layer-item__filter-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 5px; /* Spacing between label and icon */
+  cursor: pointer;
+}
+
+.layer-item__filter-icon i {
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+}
+
+.layer-item__filter-icon:hover i {
+  color: #000;
+}
+
 /*****************************************************************************************
  *
  * Layer Details
@@ -1868,6 +1885,60 @@ other class: .ui-slider-range */
 #copyWMTS:hover {
   color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
 }
+
+/*****************************************************************************************
+ *
+ * FilterByAttributeView panel
+ *
+ * Panel that shows the Filter By Attribute functionality (including the time-series visualization)
+ *
+ */
+
+.filter-by-attribute-controls__grid-container {
+  display: grid;
+  grid-template-columns: 200px 200px;
+  gap: 12px; /* optional: spacing between the dropdowns */
+  align-items: center; /* optional: vertically aligns them */
+  margin: 0.75rem 0;
+  align-items: start; /* aligns items to the top of their cells */
+}
+
+.filter-by-attribute__attributes-container {
+  display: inline-block; /* or inline-flex, depending on layout */
+  vertical-align: top;
+}
+
+.filter-by-attribute__attributes-container .search {
+  font-size: 12px;
+  width: auto;
+}
+
+.filter-by-attribute__attributes-container .search input,
+.filter-by-attribute__attributes-container .search select {
+  /* min-width: 150px !important; */
+}
+
+.filter-by-attribute__values-container {
+  display: inline-block; /* or inline-flex, depending on layout */
+  vertical-align: top;
+}
+
+.filter-by-attribute__values-container .search {
+  font-size: 12px;
+  width: auto;
+}
+
+.filter-by-attribute__values-container .search input {
+  /* min-width: 150px !important; */
+  font-size: 8px !important;
+}
+
+.filter-by-attribute__values-container .item,
+.filter-by-attribute__values-container .ui.label {
+  /* min-width: 150px !important; */
+  font-size: 12px !important;
+}
+
 /*****************************************************************************************
  *
  * Help panel
