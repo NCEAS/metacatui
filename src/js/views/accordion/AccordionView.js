@@ -8,6 +8,8 @@ define([
   // The base class for the view
   const BASE_CLASS = "accordion-view";
 
+  const SEM_VARIATIONS = Semantic.CLASS_NAMES.variations;
+
   /**
    * @class AccordionView
    * @classdesc An extension of the Semantic UI accordion that allows for
@@ -32,6 +34,25 @@ define([
       tagName: "div",
 
       /**
+       * Settings passed to the Formantic UI popup module to configure a tooltip
+       * shown over item titles. The item must have a description set in order
+       * for the tooltip to be shown.
+       * @see https://fomantic-ui.com/modules/popup.html#/settings
+       * @type {object|boolean}
+       * @since 0.0.0
+       */
+      tooltipSettings: {
+        variation: `${SEM_VARIATIONS.mini} ${SEM_VARIATIONS.inverted}`,
+        position: "top center",
+        on: "hover",
+        hoverable: true,
+        delay: {
+          show: 500,
+          hide: 40,
+        },
+      },
+
+      /**
        * Initializes the AccordionView with the model and listens for changes
        * to the items collection.
        * @param {object} options - Options for the view
@@ -43,6 +64,11 @@ define([
       initialize(options) {
         // Set the model to the provided model or create a new one
         this.model = options?.model || new AccordionModel(options?.modelData);
+
+        // Set the tooltip settings if provided
+        if (options?.tooltipSettings) {
+          this.tooltipSettings = options.tooltipSettings;
+        }
 
         this.listenTo(this.model.get("items"), "add", this.addNewItem);
         this.listenTo(this.model.get("items"), "remove", this.removeItem);
@@ -171,7 +197,11 @@ define([
        * accordion
        */
       addItem(model, container) {
-        const itemView = new AccordionItemView({ model }).render();
+        const { tooltipSettings } = this;
+        const itemView = new AccordionItemView({
+          model,
+          tooltipSettings,
+        }).render();
 
         // Semantic UI expects the title and content to be direct children of
         // the accordion container, important for correct application of CSS

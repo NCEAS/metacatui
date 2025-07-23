@@ -45,3 +45,4 @@ src/components/semantic/src/site/globals/*
 src/components/semantic/src/site/modules/*
 !src/components/semantic/src/site/modules/dropdown.overrides
 !src/components/semantic/src/site/modules/modal.overrides
+!src/components/semantic/src/site/modules/accordion.overrides

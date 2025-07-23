@@ -16,16 +16,19 @@ define(["backbone"], (Backbone) => {
 
       /**
        * @returns {object} Default attributes for an AccordionItem model.
-       * @property {string} itemId - The unique identifier for the item. This is
+       * @property {string} [itemId] - The unique identifier for the item. This is
        * required in order for any child items to be nested under this item. If
        * not provided, it will be generated from the title.
        * @property {string} title - The title of the item.
        * @property {string} content - Content for the dropdown item. This will
        * be ignored if there are child items.
-       * @property {string} parent - The parent item's itemId. If blank or null,
+       * @property {string} [parent] - The parent item's itemId. If blank or null,
        * this item is a top-level item.
+       * @property {Array} [classes] - CSS classes to apply to the item.
+       * @property {string} [icon] - A font awesome 3 icon name to show next to
+       * the title. If not provided, no icon will be shown.
        * TODO:
-       * @property {string} description - The tooltip content.
+       * @property {string} [description] - The tooltip content.
        * @property {string} subTitle - The tag to show next to the title.
        * @property {boolean} selectable - Whether the item is selectable.
        * @property {boolean} hasChildren - Whether the item has children.
@@ -36,8 +39,10 @@ define(["backbone"], (Backbone) => {
           title: "",
           content: "",
           parent: "",
+          classes: [],
+          icon: "",
+          description: "",
           // TODO: Add and make use of these attributes
-          // description: "", // tooltip content
           // subTitle: "", // show as tag next to title
           // selectable: false,
           // hasChildren: false,

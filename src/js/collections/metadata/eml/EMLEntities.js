@@ -1,3 +1,5 @@
+/* eslint-disable max-classes-per-file */
+
 "use strict";
 
 define([
@@ -5,7 +7,8 @@ define([
   "models/metadata/eml211/EMLEntity",
   "models/metadata/eml211/EMLDataTable",
   "models/metadata/eml211/EMLOtherEntity",
-], (Backbone, EMLEntity, EMLDataTable, EMLOtherEntity) => {
+  "models/DataONEObject",
+], (Backbone, EMLEntity, EMLDataTable, EMLOtherEntity, DataONEObject) => {
   // The names of the nodes that are considered entities in EML
   const ENTITY_NODE_NAMES = [
     "otherEntity",
@@ -21,11 +24,26 @@ define([
    * @classdesc An error that is thrown when an invalid attribute list is
    * encountered.
    * @classcategory Errors
+   * @since 0.0.0
    */
   class InvalidAttributeListError extends Error {
     constructor(message) {
       super(message);
       this.name = "InvalidAttributeListError";
+    }
+  }
+
+  /**
+   * @class EmptyAttributeListError
+   * @classdesc An error that is thrown when an empty attribute list is
+   * encountered.
+   * @classcategory Errors
+   * @since 0.0.0
+   */
+  class EmptyAttributeListError extends Error {
+    constructor(message) {
+      super(message);
+      this.name = "EmptyAttributeListError";
     }
   }
 
@@ -361,35 +379,99 @@ define([
        * thrown if any attributes from the source entity are invalid. If set to
        * false, only valid attributes will be copied over, and invalid
        * attributes will be ignored.
+       * @param {boolean} [byRef] - If true, the attributes will be copied as a
+       * reference to the source attributes. Meaning that changes to the source
+       * attributes will affect the target attributes. If false (default), the
+       * attributes will have the same values as the source attributes, but will
+       * be a deep copy. This means that changes to the source attributes will
+       * not affect the target attributes.
        */
-      copyAttributeList(source, targets, errorIfInvalid = true) {
+      copyAttributeList(source, targets, errorIfInvalid = true, byRef = false) {
         if (!source || !targets) return;
 
         const sourceAttrs = source.get("attributeList");
-        if (!sourceAttrs?.length || !sourceAttrs?.hasNonEmptyAttributes())
-          return;
+        if (!sourceAttrs?.hasNonEmptyAttributes()) {
+          throw new EmptyAttributeListError(
+            "Source entity has no attributes or all attributes are empty",
+          );
+        }
 
         // Invalid attributes can't be serialized and so can't be copied. Must
         // serialize to create deep copies of the attributes.
-        if (
-          errorIfInvalid &&
-          source.get("attributeList").all((attr) => !attr.isValid())
-        ) {
+        if (errorIfInvalid && sourceAttrs.validate()) {
           const errors = source.get("attributeList").validate();
           throw new InvalidAttributeListError(
             errors.join ? errors.join("\n") : "Invalid attribute list",
           );
         }
+
+        targets.forEach((target) => {
+          if (!target) return;
+          if (byRef) {
+            this.copyAttributeListByRef(source, target);
+          } else {
+            this.deepCopyAttributeList(source, target);
+          }
+        });
+      },
+
+      /**
+       * Copy the attribute list from a source entity to a target entity by
+       * reference. This means that changes to the source will be reflected in
+       * the target.
+       * @param {EMLEntity} source - The entity to copy attributes from
+       * @param {EMLEntity} target - The entity to copy attributes to
+       */
+      copyAttributeListByRef(source, target) {
+        const sourceAttrList = source.get("attributeList");
+        let sourceId = sourceAttrList.get("xmlID");
+
+        if (!sourceId) {
+          sourceId = DataONEObject.generateId();
+          sourceAttrList.set("xmlID", sourceId);
+        }
+
+        // empty the target attribute list
+        const targetAttrList = target.get("attributeList");
+        targetAttrList.setReferences(sourceId);
+      },
+
+      /**
+       * Deep copy the attribute list from a source entity to a target entity.
+       * This means that changes to the source will not be reflected in the
+       * target.
+       * @param {EMLEntity} source - The entity to copy attributes from
+       * @param {EMLEntity} target - The entity to copy attributes to
+       */
+      deepCopyAttributeList(source, target) {
         const attrsStr = source.get("attributeList").serialize();
-        targets.forEach((entity) => {
+        const attrList = target.get("attributeList");
+        const emlAttrs = attrList.get("emlAttributes");
+        // Use remove rather than reset to trigger events
+        emlAttrs.remove(emlAttrs.models);
+        const attrDOM = new DOMParser().parseFromString(attrsStr, "text/xml");
+        emlAttrs.add(attrDOM, { parse: true });
+        // remove xmlID from the target attributes
+        emlAttrs.each((attr) => attr.unset("xmlID"));
+        // Reference to entity model required for attr & sub-models
+        emlAttrs.each((attr) => attr.set("parentModel", target));
+
+        // Invalid to have both attributes and references
+        if (attrList.hasReferences()) {
+          attrList.removeReferences();
+        }
+      },
+
+      /**
+       * Get the attribute lists of all entities in the collection.
+       * @returns {EMLAttributeList[]} The attribute lists of all entities in the
+       * collection. If an entity does not have an attribute list, null is
+       * returned for that entity.
+       */
+      getAllAttributeLists() {
+        return this.map((entity) => {
           const attrList = entity.get("attributeList");
-          // Use remove rather than reset to trigger events
-          attrList.remove(attrList.models);
-          attrList.add(attrsStr, { parse: true });
-          // remove xmlID from the target attributes
-          attrList.each((attr) => attr.unset("xmlID"));
-          // Reference to entity model required for attr & sub-models
-          attrList.each((attr) => attr.set("parentModel", entity));
+          return attrList || null;
         });
       },
     },

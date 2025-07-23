@@ -69,8 +69,13 @@ in the [admin](./admin) directory.
 
 Once you've got the chart deployed (see above), next steps are:
 
-1. Copy your theme files to a directory on a filesystem that is accessible from your Kubernetes
-   cluster
+1. Starting with a directory on a filesystem that is accessible from your Kubernetes cluster:
+   1. EITHER: Manually copy your theme files to that directory,
+   2. OR: Set `customTheme.autoUpdate: true` in values.yaml, to automatically pull the theme from
+      the [NCEAS/metacatui-themes repository](https://github.com/NCEAS/metacatui-themes/tree/main)
+      `main` branch to your filesystem, and to automatically update it on each chart upgrade. The
+      `global.metacatUiThemeName` is used to determine what to check out, and you can also override
+      the default branch/tag and/or the repository URL.
 2. Create a Persistent Volume (PV) pointing to the correct directory on the filesystem
 3. Create a PVC for the PV, and edit the `customTheme:` section in values.yaml
 4. upgrade the helm chart

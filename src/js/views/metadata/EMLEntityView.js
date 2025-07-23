@@ -52,6 +52,19 @@ define([
       initialize(options = {}) {
         this.model = options.model || new EMLEntity();
         this.DataONEObject = options.DataONEObject;
+        this.parentView = options.parentView;
+      },
+
+      /**
+       * Close this modal and open one for another entity in the same
+       * collection. Requires the parentView to be set.
+       * @param {EMLEntity} otherModel - The other entity to show
+       * @since 0.0.0
+       */
+      switchToOtherEntityView(otherModel) {
+        if (!this.parentView) return;
+        this.hide();
+        this.parentView.showEntityFromModel(otherModel, true);
       },
 
       /** @inheritdoc */
@@ -126,11 +139,11 @@ define([
         );
 
         // Render the attributes
-        const attributesCollection = this.model.get("attributeList");
         this.attributesView = new EMLAttributesView({
           el: container,
-          collection: attributesCollection,
+          model: this.model.get("attributeList"),
           parentModel: this.model,
+          parentView: this,
         }).render();
       },
 
@@ -233,12 +246,21 @@ define([
         this.$(link.attr("href")).show();
       },
 
-      /**
-       * Show the entity in a modal dialog
-       */
+      /** Show the Attributes tab (vs the Overview tab) */
+      showAttributesTab() {
+        const link = this.$(".attributes-tab a");
+        link?.trigger("click");
+      },
+
+      /** Show the entity in a modal dialogue */
       show() {
         this.$el.modal("show");
         this.el.display = "grid"; // override the display:block from bootstrap
+      },
+
+      /** Close the modal that contains this view */
+      hide() {
+        this.$el.modal("hide");
       },
 
       /**
@@ -256,9 +278,6 @@ define([
       onShow() {
         this.attributesView?.stopAllListeners();
         this.attributesView?.startAllListeners();
-        // Since we remove all empty attributes when modal is closed, make sure
-        // that there is always an empty attribute to fill in
-        this.attributesView?.addNewAttribute();
       },
 
       /**

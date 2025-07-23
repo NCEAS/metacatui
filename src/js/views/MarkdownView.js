@@ -1,19 +1,19 @@
+/* eslint-disable import/no-dynamic-require */
 define([
   "jquery",
   "underscore",
   "backbone",
   "showdown",
-  "text!templates/markdown.html",
   "text!templates/loading.html",
-], function ($, _, Backbone, showdown, markdownTemplate, LoadingTemplate) {
+], ($, _, Backbone, showdown, LoadingTemplate) => {
   /**
    * @class MarkdownView
-   * @classdesc A view of markdown content rendered into HTML with optional table of contents
+   * @classdesc A view of markdown content rendered into HTML with optional
+   * table of contents
    * @classcategory Views
-   * @extends Backbone.View
-   * @constructor
+   * @augments Backbone.View
    */
-  var MarkdownView = Backbone.View.extend(
+  const MarkdownView = Backbone.View.extend(
     /** @lends MarkdownView.prototype */ {
       /**
        * The HTML classes to use for this view's element
@@ -29,10 +29,16 @@ define([
       type: "markdown",
 
       /**
-       * Renders the compiled template into HTML
+       * Template for the markdown block.
        * @type {UnderscoreTemplate}
        */
-      template: _.template(markdownTemplate),
+      template: _.template(`<div class="markdown"><%= markdown %></div>`),
+
+      /**
+       * The loading template to show while the markdown is being
+       * converted to HTML.
+       * @type {UnderscoreTemplate}
+       */
       loadingTemplate: _.template(LoadingTemplate),
 
       /**
@@ -58,17 +64,18 @@ define([
       /**
        * The events this view will listen to and the associated function to
        * call.
-       * @type {Object}
+       * @type {object}
        */
       events: {},
 
       /**
        * Initialize is executed when a new MarkdownView is created.
-       * @param {Object} options - A literal object with options to pass to the view
+       * @param {object} options - A literal object with options to pass to the
+       * view
        */
-      initialize: function (options) {
-        // highlightStyle = the name of the code syntax highlight style we
-        // want to use for showdown's highlight extension.
+      initialize(options) {
+        // highlightStyle = the name of the code syntax highlight style we want
+        // to use for showdown's highlight extension.
         this.highlightStyle = "atom-one-light";
 
         if (typeof options !== "undefined") {
@@ -78,11 +85,8 @@ define([
         }
       },
 
-      /**
-       * render - Renders the MarkdownView; converts markdown to HTML and
-       * displays it.
-       */
-      render: function () {
+      /** @inheritdoc */
+      render() {
         // Show a loading message while we render the markdown to HTML
         this.$el.html(
           this.loadingTemplate({
@@ -93,64 +97,62 @@ define([
         // Once required extensions are tested for and loaded, convert and
         // append markdown
         this.stopListening();
-        this.listenTo(
-          this,
-          "requiredExtensionsLoaded",
-          function (SDextensions) {
-            var converter = new showdown.Converter({
-              metadata: true,
-              simplifiedAutoLink: true,
-              customizedHeaderId: true,
-              parseImgDimension: true,
-              tables: true,
-              tablesHeaderId: true,
-              strikethrough: true,
-              tasklists: true,
-              emoji: true,
-              extensions: SDextensions,
-            });
+        this.listenTo(this, "requiredExtensionsLoaded", (SDextensions) => {
+          const converter = new showdown.Converter({
+            metadata: true,
+            simplifiedAutoLink: true,
+            customizedHeaderId: true,
+            parseImgDimension: true,
+            tables: true,
+            tablesHeaderId: true,
+            strikethrough: true,
+            tasklists: true,
+            emoji: true,
+            extensions: SDextensions,
+          });
 
-            // If there are citations in the markdown text, add it to the markdown
-            // so it gets rendered.
-            if (
-              _.contains(SDextensions, "showdown-citation") &&
-              this.citations.length
-            ) {
-              // Put the bibtex into the markdown so it can be processed by
-              // the showdown-citations extension.
-              this.markdown =
-                this.markdown + "\n<bibtex>" + this.citations + "</bibtex>";
-            }
+          // If there are citations in the markdown text, add it to the markdown
+          // so it gets rendered.
+          if (
+            _.contains(SDextensions, "showdown-citation") &&
+            this.citations.length
+          ) {
+            // Put the bibtex into the markdown so it can be processed by the
+            // showdown-citations extension.
+            this.markdown = `${this.markdown}\n<bibtex>${this.citations}</bibtex>`;
+          }
 
-            try {
-              // Use the Showdown converter to make HTML from the Markdown string
-              htmlFromMD = converter.makeHtml(this.markdown);
-            } catch (e) {
-              // If there was a Showdown error, show an error message instead of the Markdown preview.
-              //Create a temporary div to hold the error message
-              var errorMsgTempContainer = document.createElement("div");
-              //Create the error message
-              MetacatUI.appView.showAlert(
-                "This content can't be displayed.",
-                "alert-error",
-                errorMsgTempContainer,
-                {
-                  remove: false,
-                },
-              );
-              // Get the inner HTML of the temporary div
-              htmlFromMD = errorMsgTempContainer.innerHTML;
-            }
+          let htmlFromMD = "";
 
-            this.$el.html(this.template({ markdown: htmlFromMD }));
+          try {
+            // Use the Showdown converter to make HTML from the Markdown string
+            htmlFromMD = converter.makeHtml(this.markdown);
+          } catch (e) {
+            // If there was a Showdown error, show an error message instead of
+            // the Markdown preview. Create a temporary div to hold the error
+            // message
+            const errorMsgTempContainer = document.createElement("div");
+            // Create the error message
+            MetacatUI.appView.showAlert(
+              "This content can't be displayed.",
+              "alert-error",
+              errorMsgTempContainer,
+              {
+                remove: false,
+              },
+            );
+            // Get the inner HTML of the temporary div
+            htmlFromMD = errorMsgTempContainer.innerHTML;
+          }
 
-            if (this.showTOC) {
-              this.renderTOC();
-            }
+          this.$el.html(this.template({ markdown: htmlFromMD }));
 
-            this.trigger("mdRendered");
-          },
-        );
+          if (this.showTOC) {
+            this.renderTOC();
+          }
+
+          this.trigger("mdRendered");
+        });
 
         // Detect which extensions we'll need
         this.listRequiredExtensions(this.markdown);
@@ -161,15 +163,15 @@ define([
       /**
        * listRequiredExtensions - test which extensions are needed, then load
        * them
-       *
        * @param  {string} markdown - The markdown string before it's converted
        * into HTML
        */
-      listRequiredExtensions: function (markdown) {
-        var view = this;
+      listRequiredExtensions(markdown) {
+        const view = this;
 
-        // SDextensions lists the desired order* of all potentailly required showdown extensions (* order matters! )
-        var SDextensions = [
+        // SDextensions lists the desired order* of all potentailly required
+        // showdown extensions (* order matters! )
+        const SDextensions = [
           "xssfilter",
           "katex",
           "highlight",
@@ -182,44 +184,46 @@ define([
           "showdown-iframes",
         ];
 
-        var numTestsTodo = SDextensions.length;
+        let numTestsTodo = SDextensions.length;
 
         // Each time an extension is tested for (and loaded if required),
         // updateExtensionList is called. When all tests are completed
         // (numTestsTodo == 0), an event is triggered. When this event is
         // triggered, markdown is converted and appended (see render)
-        var updateExtensionList = function (extensionName, required) {
-          numTestsTodo = numTestsTodo - 1;
+        const updateExtensionList = function updateExtensionList(
+          extensionName,
+          required,
+        ) {
+          numTestsTodo -= 1;
 
-          if (required == false) {
-            var n = SDextensions.indexOf(extensionName);
+          if (required === false) {
+            const n = SDextensions.indexOf(extensionName);
             SDextensions.splice(n, 1);
           }
 
-          if (numTestsTodo == 0) {
+          if (numTestsTodo === 0) {
             view.trigger("requiredExtensionsLoaded", SDextensions);
           }
         };
 
         // ================================================================
-        // Regular expressions used to test whether showdown
-        // extensions are required.
-        // NOTE: These expressions test the *markdown* and *not* the HTML
+        // Regular expressions used to test whether showdown extensions are
+        // required. NOTE: These expressions test the *markdown* and *not* the
+        // HTML
 
-        var regexHighlight = new RegExp("`.*`"), // too general?
-          regexDocbook = new RegExp(
-            "<(title|citetitle|emphasis|para|ulink|literallayout|itemizedlist|orderedlist|listitem|subscript|superscript).*>",
-          ),
-          regexFootnotes1 = /^\[\^([\d\w]+)\]:( |\n)((.+\n)*.+)$/m,
-          regexFootnotes2 = /^\[\^([\d\w]+)\]:\s*((\n+(\s{2,4}|\t).+)+)$/m,
-          regexFootnotes3 = /\[\^([\d\w]+)\]/m,
-          // test for all of the math/katex delimiters
-          regexKatex = new RegExp(
-            "\\$\\$.*\\$\\$|\\~.*\\~|\\$.*\\$|```asciimath.*```|```latex.*```",
-          ),
-          regexCitation = /\[@.+\]/;
+        const regexHighlight = /`.*`/; // too general?
+        const regexDocbook =
+          /<(title|citetitle|emphasis|para|ulink|literallayout|itemizedlist|orderedlist|listitem|subscript|superscript).*>/;
+        const regexFootnotes1 = /^\[\^([\d\w]+)\]:( |\n)((.+\n)*.+)$/m;
+        const regexFootnotes2 = /^\[\^([\d\w]+)\]:\s*((\n+(\s{2,4}|\t).+)+)$/m;
+        const regexFootnotes3 = /\[\^([\d\w]+)\]/m;
+        // test for all of the math/katex delimiters
+        const regexKatex =
+          /\\$\\$.*\\$\\$|\\~.*\\~|\\$.*\\$|```asciimath.*```|```latex.*```/;
+        const regexCitation = /\[@.+\]/;
         // test for any <h.> tags
-        (regexHtags = new RegExp("#\\s")), (regexImages = /!\[.*\]\(\S+\)/);
+        const regexHtags = /#\\s/;
+        const regexImages = /!\[.*\]\(\S+\)/;
         // test for anything that looks like an iframe. Keep it very general.
         const regexIframes = /<iframe.*?src="(.*?)"(.*?)><\/iframe>/g;
 
@@ -231,8 +235,8 @@ define([
         // There is no test for the xss filter because it should always be
         // included. It's included via the updateExtensionList function for
         // consistency with the other, optional extensions.
-        require(["showdownXssFilter"], function (showdownXss) {
-          updateExtensionList("xssfilter", (required = true));
+        require(["showdownXssFilter"], (_showdownXss) => {
+          updateExtensionList("xssfilter", true);
         });
 
         // --- Test for katex --- //
@@ -240,12 +244,10 @@ define([
         if (regexKatex.test(markdown)) {
           require([
             "showdownKatex",
-            "text!" +
-              MetacatUI.root +
-              "/components/showdown/extensions/showdown-katex/katex.min.css",
-          ], function (showdownKatex, showdownKatexCss) {
+            `text!${MetacatUI.root}/components/showdown/extensions/showdown-katex/katex.min.css`,
+          ], (showdownKatex, showdownKatexCss) => {
             // custom config needed for katex
-            var katex = showdownKatex({
+            const katex = showdownKatex({
               delimiters: [
                 { left: "$", right: "$", display: false },
                 { left: "$$", right: "$$", display: false },
@@ -256,10 +258,10 @@ define([
             MetacatUI.appModel.addCSS(showdownKatexCss, "showdownKatex");
             // Because custom config, register katex with showdown
             showdown.extension("katex", katex);
-            updateExtensionList("katex", (required = true));
+            updateExtensionList("katex", true);
           });
         } else {
-          updateExtensionList("katex", (required = false));
+          updateExtensionList("katex", false);
         }
 
         // --- Test for highlight --- //
@@ -267,11 +269,9 @@ define([
         if (regexHighlight.test(markdown)) {
           require([
             "showdownHighlight",
-            "text!" +
-              MetacatUI.root +
-              "/components/showdown/extensions/showdown-highlight/styles/atom-one-light.css",
-          ], function (showdownHighlight, showdownHighlightCss) {
-            updateExtensionList("highlight", (required = true));
+            `text!${MetacatUI.root}/components/showdown/extensions/showdown-highlight/styles/atom-one-light.css`,
+          ], (showdownHighlight, showdownHighlightCss) => {
+            updateExtensionList("highlight", true);
             // CSS needed for highlight
             MetacatUI.appModel.addCSS(
               showdownHighlightCss,
@@ -279,37 +279,36 @@ define([
             );
           });
         } else {
-          updateExtensionList("highlight", (required = false));
+          updateExtensionList("highlight", false);
         }
 
         // --- Test for docbooks --- //
 
         if (regexDocbook.test(markdown)) {
-          require(["showdownDocbook"], function (showdownDocbook) {
-            updateExtensionList("docbook", (required = true));
+          require(["showdownDocbook"], (_showdownDocbook) => {
+            updateExtensionList("docbook", true);
           });
         } else {
-          updateExtensionList("docbook", (required = false));
+          updateExtensionList("docbook", false);
         }
 
         // --- Test for htag --- //
 
         if (regexHtags.test(markdown)) {
-          require(["showdownHtags"], function (showdownHtags) {
-            updateExtensionList("showdown-htags", (required = true));
+          require(["showdownHtags"], (_showdownHtags) => {
+            updateExtensionList("showdown-htags", true);
           });
         } else {
-          updateExtensionList("showdown-htags", (required = false));
+          updateExtensionList("showdown-htags", false);
         }
 
-        // --- Test for bootstrap --- //
-        // The custom bootstrap library is small and only adds some classes
-        // for tables and images, and maybe other HTML elements in the future.
-        // Testing for tables in markdown using regular expressions isn't
-        // straight forward. Better to just load this extension whether or
-        // not it's required.
-        require(["showdownBootstrap"], function (showdownBootstrap) {
-          updateExtensionList("bootstrap", (required = true));
+        // --- Test for bootstrap --- // The custom bootstrap library is small
+        // and only adds some classes for tables and images, and maybe other
+        // HTML elements in the future. Testing for tables in markdown using
+        // regular expressions isn't straight forward. Better to just load this
+        // extension whether or not it's required.
+        require(["showdownBootstrap"], (_showdownBootstrap) => {
+          updateExtensionList("bootstrap", true);
         });
 
         // --- Test for footnotes --- //
@@ -319,55 +318,56 @@ define([
           regexFootnotes2.test(markdown) ||
           regexFootnotes3.test(markdown)
         ) {
-          require(["showdownFootnotes"], function (showdownFootnotes) {
-            updateExtensionList("footnotes", (required = true));
+          require(["showdownFootnotes"], (_showdownFootnotes) => {
+            updateExtensionList("footnotes", true);
           });
         } else {
-          updateExtensionList("footnotes", (required = false));
+          updateExtensionList("footnotes", false);
         }
 
         // --- Test for citations --- //
 
         // showdownCitation throws error...
         if (regexCitation.test(markdown)) {
-          require(["showdownCitation"], function (showdownCitation) {
-            updateExtensionList("showdown-citation", (required = true));
+          require(["showdownCitation"], (_showdownCitation) => {
+            updateExtensionList("showdown-citation", true);
           });
         } else {
-          updateExtensionList("showdown-citation", (required = false));
+          updateExtensionList("showdown-citation", false);
         }
 
         // --- Test for images --- //
         if (regexImages.test(markdown)) {
-          require(["showdownImages"], function (showdownImages) {
-            updateExtensionList("showdown-images", (required = true));
+          require(["showdownImages"], (_showdownImages) => {
+            updateExtensionList("showdown-images", true);
           });
         } else {
-          updateExtensionList("showdown-images", (required = false));
+          updateExtensionList("showdown-images", false);
         }
 
         // --- Test for iframes --- //
         if (regexIframes.test(markdown)) {
-          require(["showdownIframes"], function (showdownIframes) {
-            updateExtensionList("showdown-iframes", (required = true));
+          require(["showdownIframes"], (_showdownIframes) => {
+            updateExtensionList("showdown-iframes", true);
           });
         } else {
-          updateExtensionList("showdown-iframes", (required = false));
+          updateExtensionList("showdown-iframes", false);
         }
       },
 
       /**
-       * Renders a table of contents (a TOCView) that links to different sections of the MarkdownView
+       * Renders a table of contents (a TOCView) that links to different
+       * sections of the MarkdownView
        */
-      renderTOC: function () {
+      renderTOC() {
         if (this.showTOC === false) {
           return;
         }
 
-        var view = this;
+        const view = this;
 
-        require(["views/TOCView"], function (TOCView) {
-          //Create a table of contents view
+        require(["views/TOCView"], (TOCView) => {
+          // Create a table of contents view
           view.tocView = new TOCView({
             contentEl: view.el,
             className: "toc toc-view",
@@ -394,7 +394,7 @@ define([
       /**
        * onClose - Close and destroy the view
        */
-      onClose: function () {
+      onClose() {
         // Remove for the DOM, stop listening
         this.remove();
         // Remove appended html
