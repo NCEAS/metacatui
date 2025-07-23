@@ -3,6 +3,7 @@
 define(["models/analytics/Analytics"], (Analytics) => {
   const DEFAULT_MAX_EVENTS = 500;
   const DEFAULT_CONSOLE_LEVEL = "info";
+  const DEFAULT_ANALYTICS = MetacatUI?.analytics || new Analytics();
 
   const LEVELS = {
     INFO: "info",
@@ -38,11 +39,13 @@ define(["models/analytics/Analytics"], (Analytics) => {
     constructor({
       consoleLevel = DEFAULT_CONSOLE_LEVEL,
       maxEvents = DEFAULT_MAX_EVENTS,
-      analyticsModel = new Analytics(),
+      analyticsModel = DEFAULT_ANALYTICS,
     } = {}) {
       this.logs = new Map();
       this.analytics =
-        analyticsModel instanceof Analytics ? analyticsModel : new Analytics();
+        analyticsModel instanceof Analytics
+          ? analyticsModel
+          : DEFAULT_ANALYTICS;
       this.maxEvents =
         Number.isInteger(maxEvents) && maxEvents > 0
           ? maxEvents
@@ -155,23 +158,22 @@ define(["models/analytics/Analytics"], (Analytics) => {
     /**
      * Manually send a log to analytics (e.g., GA)
      * @param {object} log - The log object to send
-     * @param {string} [category] - The category for the analytics event
-     * @param {string} [action] - The action for the analytics event
+     * @param {string} [eventName] - The name of the event to send to analytics
      * @example
      * sendToAnalytics(
      *   resMapResolver.getLog(pid),
-     *   "ResourceMapResolver",
-     *   "resource_map_resolve_failure"
+     *   "resource_map_resolution_failed"
      * );
      */
-    sendToAnalytics(log, category = "Log", action = "log") {
-      // Users can block the analytics model from working, so don't send if not
-      // working
-      if (!this.analytics?.ready()) return;
+    sendToAnalytics(log, eventName = "EventLog") {
       log.events.forEach((event) => {
         const { timestamp, level, message, meta } = event;
-        const value = JSON.stringify({ timestamp, level, ...meta });
-        this.analytics.trackEvent(category, action, message, value);
+        this.analytics.trackCustomEvent(eventName, {
+          timestamp,
+          level,
+          message,
+          ...meta,
+        });
       });
     }
 
