@@ -6,6 +6,8 @@ define([
   "models/metadata/eml211/EML211",
   "models/metadata/eml211/EMLOtherEntity",
   "models/metadata/ScienceMetadata",
+  "models/sysmeta/VersionTracker",
+  "models/resourceMap/ResourceMapResolver",
   "views/EditorView",
   "views/CitationView",
   "views/DataPackageView",
@@ -20,6 +22,8 @@ define([
   EML,
   EMLOtherEntity,
   ScienceMetadata,
+  VersionTracker,
+  ResourceMapResolver,
   EditorView,
   CitationView,
   DataPackageView,
@@ -128,12 +132,13 @@ define([
       dataPackageView: null,
 
       /** @inheritdoc */
-      initialize() {
+      initialize(options = {}) {
         // Ensure the object formats are cached for the editor's use
         if (typeof MetacatUI.objectFormats === "undefined") {
           MetacatUI.objectFormats = new ObjectFormats();
           MetacatUI.objectFormats.fetch();
         }
+        this.pid = options?.pid || null;
         return this;
       },
 
@@ -141,7 +146,7 @@ define([
       createModel() {
         let model = null;
         // If no pid is given, create a new EML model
-        if (!this.pid) model = new EML({ synced: true });
+        if (!this.pid) model = new EML({ synced: true, isNew: true });
         // Otherwise create a generic metadata model until we find out the
         // formatId
         else model = new ScienceMetadata({ id: this.pid });
@@ -197,6 +202,7 @@ define([
 
         // As soon as we have all of the metadata information (STEP 2
         // complete)...
+        this.stopListening(this.model, "sync");
         this.listenToOnce(this.model, "sync", () => {
           // Skip the remaining steps the metadata doesn't exist.
           if (this.model.get("notFound") === true) {
@@ -206,6 +212,7 @@ define([
 
           // STEP 3 Listen for a trigger from the getDataPackage function that
           // indicates The data package (resource map) has been retrieved.
+          this.stopListening(this, "dataPackageFound");
           this.listenToOnce(this, "dataPackageFound", () => {
             const resourceMap = MetacatUI.rootDataPackage.packageModel;
 
@@ -293,13 +300,9 @@ define([
        * if not authorized, render the not authorized message.
        */
       renderEditorComponents() {
-        if (!MetacatUI.rootDataPackage.packageModel) {
-          return;
-        }
         const resMapPermission =
-          MetacatUI.rootDataPackage.packageModel.get("isAuthorized_write");
+          MetacatUI.rootDataPackage?.packageModel?.get("isAuthorized_write");
         const metadataPermission = this.model.get("isAuthorized_write");
-
         if (resMapPermission === true && metadataPermission === true) {
           const view = this;
           // Render the Data Package table. This function will also render
@@ -312,8 +315,7 @@ define([
 
       /** Fetch the metadata model */
       fetchModel() {
-        // If the user hasn't provided an id, then don't check the authority and
-        // mark as synced already
+        // If no ID provided to the view then it's a new document, so skip the fetch
         if (!this.pid) {
           this.model.trigger("sync");
         } else {
@@ -364,113 +366,58 @@ define([
        * @param {Model} model - The science metadata model for which to find the
        * associated data package
        */
-      getDataPackage(model) {
-        const scimetaModel = model || this.model;
+      async getDataPackage(model) {
+        const metaModel = model || this.model;
+        const versionTracker = VersionTracker.get(); // One tracker per metaservice url
+        const metaPid =
+          metaModel.get("id") ||
+          metaModel.get("identifier") ||
+          metaModel.get("seriesId") ||
+          this.pid;
 
-        // Check if this package is obsoleted
-        if (this.model.get("obsoletedBy")) {
+        MetacatUI.rootDataPackage.packageModel?.set("sysMetaXML", null);
+
+        if (metaModel.isNew()) {
+          this.createDataPackage();
+          this.trigger("dataPackageFound");
+          this.setListeners();
+          return;
+        }
+
+        // TODO - get latest version should happen in DataONE object.
+        const latestPid = await versionTracker.getLatestVersion(metaPid);
+        if (latestPid !== metaPid) {
+          // MetacatUI.rootDataPackage.packageModel.set("sysMetaXML", null);
+          metaModel.set("latestVersion", latestPid);
           this.showLatestVersion();
           return;
         }
 
-        const resourceMapIds = scimetaModel.get("resourceMap");
+        const resolver = ResourceMapResolver.get();
+        const result = await resolver.resolve(metaPid);
 
-        // Case 1: No resource map PID found in the metadata
-        if (
-          typeof resourceMapIds === "undefined" ||
-          resourceMapIds === null ||
-          resourceMapIds.length <= 0
-        ) {
-          // 1A: Check if the rootDataPackage contains the metadata document the
-          // user is trying to edit. Ensure the resource map is not new. If it's
-          // a previously unsaved map, then getLatestVersion will result in a
-          // 404.
-          if (
-            MetacatUI.rootDataPackage?.pluck &&
-            !MetacatUI.rootDataPackage.packageModel.isNew() &&
-            MetacatUI.rootDataPackage.pluck("id").includes(this.model.get("id"))
-          ) {
-            // Remove the cached system metadata XML so we retrieve it again
-            MetacatUI.rootDataPackage.packageModel.set("sysMetaXML", null);
-            this.getLatestResourceMap();
-          }
+        // Because we're checking metadata doc write permission asynchronously,
+        // we need to make sure that we don't show the "no resource map" message
+        // or continue with the editor if the user doesn't have write permission
+        if (this.model.get("isAuthorized_write") === false) return;
 
-          // 1B. If the root data package does not contain the metadata the user
-          // is trying to edit, then create a new data package.
-          else {
-            // helpful message for debugging submission errors for now.
-            // eslint-disable-next-line no-console
-            console.log(
-              `Resource map ids could not be found for ${scimetaModel.id}, creating a new resource map.`,
-            );
-
-            // Create a new DataPackage collection for this view
-            this.createDataPackage();
-            this.trigger("dataPackageFound");
-            // Set the listeners
-            this.setListeners();
-          }
-
-          // Case 2: A resource map PID was found in the metadata
-        } else {
-          // Create a new data package with this id
-          this.createRootDataPackage([this.model], { id: resourceMapIds[0] });
-
-          // Handle the add of the metadata model
-          MetacatUI.rootDataPackage.saveReference(this.model);
-
-          // 2A. If there is more than one resource map, we need to make sure we
-          // fetch the most recent one
-          if (resourceMapIds.length > 1) {
-            this.getLatestResourceMap();
-
-            // 2B. Just one resource map found
-          } else {
-            this.listenToOnce(MetacatUI.rootDataPackage, "sync", () => {
-              this.trigger("dataPackageFound");
-            });
-            // Fetch the data package
-            MetacatUI.rootDataPackage.fetch();
-          }
-        }
-      },
-
-      /**
-       * Get the latest version of the resource map model stored in
-       * MetacatUI.rootDataPackage.packageModel. When the newest resource map is
-       * synced, the "dataPackageFound" event will be triggered.
-       */
-      getLatestResourceMap() {
-        if (
-          !MetacatUI.rootDataPackage ||
-          !MetacatUI.rootDataPackage.packageModel
-        ) {
-          // "Could not get the latest verion of the resource map because no
-          // resource map is saved.",
+        if (!result.success) {
+          this.showResourceMapNotFound(result.multipleRMs);
+          resolver.trackMissingResourceMap(metaPid);
           return;
         }
-        // Make sure we have the latest version of the resource map before we
-        // allow editing
-        this.listenToOnce(
-          MetacatUI.rootDataPackage.packageModel,
-          "latestVersionFound",
-          (model) => {
-            // Create a new data package for the latest version package
-            this.createRootDataPackage([this.model], {
-              id: model.get("latestVersion"),
-            });
-            // Handle the add of the metadata model
-            MetacatUI.rootDataPackage.saveReference(this.model);
-            this.listenToOnce(MetacatUI.rootDataPackage, "sync", () => {
-              this.trigger("dataPackageFound");
-            });
-            // Fetch the data package
-            MetacatUI.rootDataPackage.fetch();
-          },
-        );
+        // Create a new data package with this id
+        this.createRootDataPackage([this.model], { id: result.rm });
 
-        // Find the latest version of the resource map
-        MetacatUI.rootDataPackage.packageModel.findLatestVersion();
+        // Handle the add of the metadata model
+        MetacatUI.rootDataPackage.saveReference(this.model);
+
+        this.stopListening(MetacatUI.rootDataPackage, "sync");
+        this.listenToOnce(MetacatUI.rootDataPackage, "sync", () => {
+          this.trigger("dataPackageFound");
+        });
+        // Fetch the data package
+        MetacatUI.rootDataPackage.fetch();
       },
 
       /**
@@ -567,11 +514,19 @@ define([
       renderDataPackage() {
         const view = this;
 
+        if (this.dataPackageView) {
+          // If the data package view already exists, remove it
+          this.dataPackageView.onClose();
+          this.dataPackageView.remove();
+          this.dataPackageView = null;
+        }
+
         if (MetacatUI.rootDataPackage.packageModel.isNew()) {
           view.renderMember(this.model);
         }
 
         // As the root collection is updated with models, render the UI
+        this.stopListening(MetacatUI.rootDataPackage, "add");
         this.listenTo(MetacatUI.rootDataPackage, "add", (model) => {
           if (!model.get("synced") && model.get("id"))
             this.listenTo(model, "sync", view.renderMember);
@@ -613,6 +568,7 @@ define([
         $packageTableContainer.css("height", `${tableHeight}px`);
 
         const table = this.dataPackageView.$el;
+        this.stopListening(this.dataPackageView, "addOne");
         this.listenTo(this.dataPackageView, "addOne", () => {
           if (
             table.outerHeight() > $packageTableContainer.outerHeight() &&
@@ -926,6 +882,16 @@ define([
         MetacatUI.rootDataPackage.packageModel.set("changed", false);
         this.model.set("hasContentChanges", false);
 
+        // Save the resMap:metadataPid relationship so that user can return to
+        // editing before the res map & metadata doc is indexed (resource map
+        // resolver can later find the resMap by metadataPid from local storage)
+        const newPid = this.model.get("id");
+        const resourceMapId = MetacatUI.rootDataPackage.packageModel.get("id");
+        if (resourceMapId && newPid) {
+          const resMapResolver = ResourceMapResolver.get();
+          resMapResolver.addToStorage(newPid, resourceMapId);
+        }
+
         this.setListeners();
       },
 
@@ -1060,40 +1026,27 @@ define([
        * Find the most recently updated version of the metadata
        */
       showLatestVersion() {
-        const view = this;
+        // Reset the current model
+        this.pid = this.model.get("latestVersion");
+        this.model = null;
 
-        // When the latest version is found,
-        this.listenToOnce(this.model, "change:latestVersion", () => {
-          // Make sure it has a newer version, and if so,
-          if (view.model.get("latestVersion") !== view.model.get("id")) {
-            // Reset the current model
-            view.pid = view.model.get("latestVersion");
-            view.model = null;
-
-            // Update the URL
-            MetacatUI.uiRouter.navigate(
-              `submit/${encodeURIComponent(view.pid)}`,
-              { trigger: false, replace: true },
-            );
-
-            // Render the new model
-            view.render();
-
-            // Show a warning that the user was trying to edit old content
-            MetacatUI.appView.showAlert(
-              "You've been forwarded to the newest version of your dataset for editing.",
-              "alert-warning",
-              this.$el,
-              12000,
-              { remove: true },
-            );
-          } else {
-            view.getDataPackage();
-          }
+        // Update the URL
+        MetacatUI.uiRouter.navigate(`submit/${encodeURIComponent(this.pid)}`, {
+          trigger: false,
+          replace: true,
         });
 
-        // Find the latest version of this metadata object
-        this.model.findLatestVersion();
+        // Render the new model
+        this.render();
+
+        // Show a warning that the user was trying to edit old content
+        MetacatUI.appView.showAlert(
+          "You've been forwarded to the newest version of your dataset for editing.",
+          "alert-warning",
+          this.$el,
+          12000,
+          { remove: true },
+        );
       },
 
       /**
@@ -1223,13 +1176,97 @@ define([
         this.$("#editor-body").empty();
         MetacatUI.appView.showAlert(
           "You are not authorized to edit this data set.",
-          "alert-error",
+          "alert-error centered-block",
           "#editor-body",
         );
 
         // Stop listening to any further events
         this.stopListening();
         this.model.off();
+      },
+
+      /**
+       * Show a message when no resource map was found an existing metadata
+       * document.
+       * @param {boolean} [multipleRMs] - If true, the message will always
+       * indicate to contact support.
+       */
+      showResourceMapNotFound(multipleRMs = false) {
+        // Gather useful info from the model
+        const model = this.model || MetacatUI.rootDataPackage.packageModel;
+        const pid =
+          model.get("id") || model.get("identifier") || model.get("seriesId");
+        const title = model.get("title");
+        const updated = model.get("dateModified") || model.get("updateDate");
+
+        // Derived information & strings for the message
+        const durMs = updated ? Math.abs(new Date() - new Date(updated)) : null;
+
+        const durMin = durMs ? durMs / (1000 * 60) : null;
+        const durMinFixed = durMin ? durMin.toFixed(1) : null;
+        const minutesNoun =
+          durMinFixed === 1 && durMinFixed ? "minutes" : "minute";
+
+        const durHrs = durMs ? durMs / (1000 * 60 * 60) : null;
+        const durHrsFixed = durHrs ? durHrs.toFixed(1) : null;
+        const hoursNoun = durHrsFixed === 1 && durHrsFixed ? "hours" : "hour";
+
+        const titleStr = title ? `"<strong>${title}</strong>"` : null;
+        const thisDoc = titleStr
+          ? `the metadata document called ${titleStr}`
+          : "this metadata document";
+
+        const durLimitHrs = 1.5; // Give time for the system to process the dataset
+        const defaultAdvice = `Please check back soon, and if the problem persists, contact the support team.`;
+
+        // Build the message
+        let msg = `We couldn't find the dataset that includes ${thisDoc}. `;
+
+        if (durHrs) {
+          if (durHrs < durLimitHrs && !multipleRMs) {
+            let timeSinceEdit = `This document was last updated ${durHrsFixed} ${hoursNoun} ago.`;
+            if (durHrsFixed < 1) {
+              timeSinceEdit = `This document was last updated ${durMinFixed} ${minutesNoun} ago.`;
+            }
+            msg += `This sometimes happens if the dataset was recently created or edited,
+              and our system hasn't fully processed it yet. 
+              ${timeSinceEdit}
+              ${defaultAdvice}`;
+          } else {
+            msg += `Please contact our support team`;
+            if (pid) {
+              msg += ` and mention that you're with the metadata document with ID <strong>${pid}</strong>`;
+            }
+            msg += `.`;
+          }
+        } else {
+          msg += defaultAdvice;
+        }
+
+        // Build a subject and body for the support email
+        let subject = "Resource Map not found for existing metadata document";
+        if (pid) subject += ` (PID: ${pid})`;
+        let body = `I'm trying to edit the metadata document ${title ? `called "${title}"` : ""}`;
+        body += ` but the editor cannot locate the dataset (resource map) that includes it. `;
+        if (pid) body += `The PID of the metadata document is ${pid}. `;
+        if (durHrs)
+          body += `It was last updated ${durHrsFixed} ${hoursNoun} ago. `;
+        body += `This is preventing me from editing the metadata document. Please help me resolve this issue.`;
+
+        this.$("#editor-body").empty();
+        MetacatUI.appView.showAlert({
+          message: msg,
+          classes: "alert-warning centered-block",
+          container: "#editor-body",
+          emailBody: body,
+          emailSubject: subject,
+          remove: false,
+        });
+
+        // Stop listening to any further events
+        this.stopListening();
+        this.model.off();
+        this.hideControls();
       },
 
       /**

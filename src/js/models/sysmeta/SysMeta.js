@@ -206,6 +206,7 @@ define([], () => {
      */
     parse(xmlString) {
       this.parsed = false;
+      this.fetchedXmlString = xmlString;
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlString, "application/xml");
       // Detect XML parser errors (e.g., when the server returns HTML)

@@ -9,7 +9,10 @@ define([
     const state = cleanState(
       () => {
         const sandbox = sinon.createSandbox();
-        const rmr = new ResourceMapResolver({ nodeId: "testNode" });
+        const rmr = new ResourceMapResolver({
+          id: "testNode",
+          consoleLevel: "info",
+        });
         return { sandbox, rmr };
       },
       beforeEach,
@@ -23,7 +26,7 @@ define([
     describe("Instantiation & option validation", () => {
       it("creates an instance with defaults", () => {
         state.rmr.should.be.instanceof(ResourceMapResolver);
-        state.rmr.nodeId.should.equal("testNode");
+        state.rmr.id.should.equal("testNode");
         state.rmr.storage.should.exist;
         state.rmr.maxSteps.should.equal(200);
         state.rmr.maxFetchTime.should.equal(45000);

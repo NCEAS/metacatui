@@ -30,16 +30,47 @@ define(["backbone"], function (Backbone) {
       },
 
       /**
+       * The name of methods that will be wrapped to ensure they are called
+       * after the analytics service is ready.
+       * @type {Array<string>}
+       * @since 0.0.0
+       */
+      trackMethods: ["trackEvent", "trackPageView", "trackException"],
+
+      /**
        * Creates a new Analytics model
        */
       initialize: function (attributes, options) {
         this.setupAnalytics();
+
+        // Wrap all of the track methods in a whenReady() promise to ensure that
+        // the analytics service is ready before sending events. This ensures
+        // that any events sent before the service is ready will be retried once
+        // the service is ready.
+        this.trackMethods?.forEach((methodName) => {
+          const originalMethod = this[methodName];
+          if (typeof originalMethod !== "function") return;
+          this[methodName] = function (...args) {
+            this.whenReady()
+              .then(() => originalMethod.apply(this, args))
+              .catch((error) => {
+                console.error(
+                  `Error tracking Analytics event (${methodName})`,
+                  error,
+                );
+              });
+          };
+        });
       },
 
       /**
-       * Set up the analytics service.
+       * Set up the analytics service. Any overwritten versions of this function
+       * should make sure to set the track method on the model, and also call
+       * this.trigger("ready") when the service is ready to use, and
+       * this.trigger("setupError", error) if there is an error during setup.
        */
       setupAnalytics: function () {
+        this.trigger("setupError", new Error("setupAnalytics not implemented"));
         return;
       },
 
@@ -73,6 +104,32 @@ define(["backbone"], function (Backbone) {
        */
       ready: function () {
         return false;
+      },
+
+      /**
+       * Wait for the analytics service to be ready before sending events.
+       * Depends on the setupAnalytics triggering a "ready" event as well as a
+       * "setupError" event if there is an error during setup.
+       * @returns {Promise} A promise that resolves when the analytics service
+       * is ready to use.
+       * @since 0.0.0
+       */
+      whenReady: function () {
+        return new Promise((resolve, reject) => {
+          if (this.ready()) {
+            resolve();
+          } else {
+            const eventTracker = new Backbone.Model();
+            eventTracker.listenTo(this, "ready", () => {
+              eventTracker.stopListening();
+              resolve();
+            });
+            eventTracker.listenTo(this, "setupError", (error) => {
+              eventTracker.stopListening();
+              reject(error);
+            });
+          }
+        });
       },
 
       /**

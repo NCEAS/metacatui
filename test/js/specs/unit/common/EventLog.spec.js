@@ -126,31 +126,28 @@ define([
     });
 
     describe("sendToAnalytics()", () => {
-      it("sends each event via Analytics.trackEvent", () => {
+      it("sends each event via Analytics.trackCustomEvent", () => {
         const log = state.eventLog.getOrCreateLog("analytics");
         state.eventLog.log(log, "info", "a‑1", { x: 1 });
         state.eventLog.log(log, "warning", "a‑2", { x: 2 });
 
-        // stub .ready() and .trackEvent()
-        const readyStub = state.sandbox
-          .stub(state.eventLog.analytics, "ready")
-          .returns(true);
+        // stub the underlying Analytics method
         const trackStub = state.sandbox.stub(
           state.eventLog.analytics,
-          "trackEvent",
+          "trackCustomEvent",
         );
 
-        state.eventLog.sendToAnalytics(log, "Category", "Action");
+        state.eventLog.sendToAnalytics(log, "eventName");
 
-        readyStub.calledOnce.should.be.true;
         trackStub.calledTwice.should.be.true;
-
-        // First call args sanity check
-        const [cat, act, label, value] = trackStub.firstCall.args;
-        cat.should.equal("Category");
-        act.should.equal("Action");
-        label.should.equal("a‑1");
-        JSON.parse(value).should.include({ level: "info", x: 1 });
+        const [name, pararms] = trackStub.firstCall.args;
+        name.should.equal("eventName");
+        pararms.should.deep.equal({
+          timestamp: log.events[0].timestamp,
+          level: "info",
+          message: "a‑1",
+          x: 1,
+        });
       });
     });
 
