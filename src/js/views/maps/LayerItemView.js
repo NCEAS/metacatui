@@ -74,6 +74,7 @@ define([
       classes: {
         label: "layer-item__label",
         icon: "layer-item__icon",
+        filterIcon: "layer-item__filter-icon",
         visibilityToggle: "layer-item__visibility-toggle",
         selected: "layer-item--selected",
         shown: "layer-item--shown",
@@ -136,6 +137,14 @@ define([
         // Insert the icon on the left
         if (!this.isCategorized) {
           this.insertIcon();
+        }
+
+        // Insert the filter icon to the right of the label element text
+        if (this.model.get("filters")) {
+          const filterIconEl = document.createElement("span");
+          filterIconEl.className = this.classes.filterIcon;
+          filterIconEl.innerHTML = '<i class="icon-filter"></i>';
+          this.labelEl.appendChild(filterIconEl);
         }
 
         // Ensure the view's main element has the given class name
