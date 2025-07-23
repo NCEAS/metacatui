@@ -47,6 +47,9 @@ define([
   const DEFAULT_MAX_FETCH_TIME = 45000; // Default max time to fetch RM from sysmeta
   const DEFAULT_ID = MetacatUI.appModel.get("baseUrl") || "unknown";
 
+  // The event name for tracking missing resource maps (used by analytics)
+  const NO_RM_EVENT_NAME = "resource_map_missing";
+
   /**
    * @class ResourceMapResolver
    * @classdesc A multi-strategy resource map (RM) look-up tool. Searches for
@@ -116,6 +119,12 @@ define([
      * @property {string} [rm] - The resolved resource map PID if successful
      * @property {Array} log - The event log for the resolution process,
      * including an array of events with timestamps, messages, and metadata.
+     * @property {boolean} [unauthorized] - Set to true when the resolution
+     * process was stopped due to unauthorized access to the system metadata
+     * (possibly sysmeta for a previous version of the object).
+     * @property {boolean} [multipleRMs] - Set to true when multiple resource
+     * maps were found in the index for the given PID, but no single RM could be
+     * attributed to the PID.
      */
 
     /**
@@ -189,10 +198,7 @@ define([
      */
     async resolveFromSeriesId(sid) {
       // Get sysmeta which will give the most up-to-date PID for a SID
-      const record = await this.versionTracker.getNth(sid, 0, false, true);
-      const sysmeta = record.sysMeta;
-
-      const pid = sysmeta?.identifier;
+      const pid = await this.getPidForSid(sid);
       if (!pid) return this.status(sid, STATUS.noPidForSeriesId, null);
 
       // Listen to every status update for the PID so we can add it to the
@@ -218,13 +224,27 @@ define([
     }
 
     /**
-     * Send any events logged for a PID to the analytics service.
-     * @param {string} pid - The PID of the object to send logs for
+     * Gets the PID for a given series ID (SID) using sys metadata. Ensures that
+     * the most recent PID is returned, even if indexing is not complete.
+     * @param {string} sid - The series ID to get the PID for
+     * @returns {Promise<string|null>} - The PID associated with the series ID,
+     * or null if not found
      */
-    logToAnalytics(pid, category = "ResourceMapResolver", action = "resolve") {
-      const log = this.eventLog.getOrCreateLog(pid);
+    async getPidForSid(sid) {
+      const record = await this.versionTracker.getNth(sid, 0, false, true);
+      const sysmeta = record.sysMeta;
+      return sysmeta?.identifier;
+    }
+
+    /**
+     * Logs all events for a given PID to the analytics service.
+     * @param {string} pid - The PID of the object to log events for
+     * @param {string} [eventName] - The name to use for the event in analytics.
+     */
+    logToAnalytics(pid, eventName = "resource_map_resolution") {
+      const log = this.getLog(pid);
       if (log && log.events.length > 0) {
-        this.eventLog.sendToAnalytics(log, category, action);
+        this.eventLog.sendToAnalytics(log, eventName);
       } else {
         this.eventLog.consoleLog(
           `No events to send for PID: ${pid}`,
@@ -232,6 +252,55 @@ define([
           "info",
         );
       }
+    }
+
+    /**
+     * Send any events logged for a PID to the analytics service.
+     * @param {string} pid - The PID of the object to send logs for
+     */
+    trackMissingResourceMap(pid) {
+      if (!pid) return;
+      const params = { pid };
+      this.eventLog.analytics?.trackCustomEvent(NO_RM_EVENT_NAME, params);
+    }
+
+    /**
+     * Get the log of events for a given PID. If no log exists, a new one is
+     * created.
+     * @param {string} pid - The PID of the object to get the log for
+     * @returns {object} - The event log for the PID, which includes an array of
+     * events with timestamps, messages, and metadata.
+     */
+    getLog(pid) {
+      if (!pid) return null;
+      return this.eventLog.getOrCreateLog(pid);
+    }
+
+    /**
+     * Checks the event log for unauthorized access events.
+     * @param {object} log - The event log to check
+     * @returns {boolean} - True if there are unauthorized access events, false
+     * otherwise
+     */
+    static checkLogForUnauth(log) {
+      const unauthorizedEvents = log.events?.filter(
+        (event) => event.meta?.unauthorized,
+      );
+      if (unauthorizedEvents?.length) return true;
+      return false;
+    }
+
+    /**
+     * Checks the event log to see if multiple resource maps were found during
+     * the index search.
+     * @param {object} log - The event log to check
+     * @returns {boolean} - True if multiple resource maps were found, false
+     * otherwise
+     */
+    static checkLogForMultipleRMs(log) {
+      const rmEvents = log.events?.filter((event) => event.meta?.rms);
+      if (rmEvents?.length) return true;
+      return false;
     }
 
     /**
@@ -290,16 +359,53 @@ define([
       return { rm: (await this.storage.getItem(pid)) || null };
     }
 
-    /** Clears the saved resource map : pid pairs from the local storage. */
-    async clearStorage() {
-      await this.storage.clear().catch((e) => {
-        this.eventLog.consoleLog(
-          "Error clearing local storage",
-          "ResourceMapResolver",
-          "warning",
-          e,
-        );
-      });
+    /**
+     * Clears the saved resource map : pid pairs from the local storage.
+     * @returns {Promise<void>} - A promise that resolves when the storage is
+     * cleared
+     */
+    clearStorage() {
+      return this.storage.clear();
+    }
+
+    /**
+     * Adds a resource map PID to the local storage for the given PID.
+     * @param {string} pid - The PID of the document to add the RM for
+     * @param {string} rm - The resource map PID to add
+     * @returns {Promise<string|null>} - The PID of the resource map added to
+     * storage, or null if the addition failed
+     */
+    async addToStorage(pid, rm) {
+      if (!pid || !rm) {
+        throw new Error("PID and RM are required to add to storage");
+      }
+      try {
+        return await this.storage.setItem(pid, rm);
+      } catch (err) {
+        if (err.name === "QuotaExceededError") {
+          await this.clearStorage();
+          try {
+            return await this.storage.setItem(pid, rm);
+          } catch (retryErr) {
+            this.eventLog.consoleLog(
+              "Retry failed: Unable to add RM to local storage",
+              "ResourceMapResolver",
+              "warning",
+              retryErr,
+            );
+            return null;
+          }
+        } else {
+          // Unexpected error type
+          this.eventLog.consoleLog(
+            "Unexpected error adding RM to local storage",
+            "ResourceMapResolver",
+            "warning",
+            err,
+          );
+          return null;
+        }
+      }
     }
 
     /**
@@ -335,6 +441,10 @@ define([
           break;
         }
       }
+
+      // Keep the meta/logs clean
+      if (!meta.pastPids.length) delete meta.pastPids;
+
       /* eslint-enable no-await-in-loop */
       meta.stepsBack = steps;
 
@@ -426,12 +536,24 @@ define([
      * @returns {object} - The event log for the resolution process
      */
     log(pid, rm, status, meta = {}, level = "info") {
-      const log = this.eventLog.getOrCreateLog(pid);
-      this.eventLog.log(log, level, `Status: ${status}`, {
-        ...meta,
-        pid,
-        rm,
+      const log = this.getLog(pid);
+
+      // Remove redundant info to prevent logs from growing too large
+      let info = { ...meta };
+      delete info.pid; // pid is already in the log name
+      info.rm = rm;
+
+      // Delete any pairs with no value
+      Object.keys(info).forEach((key) => {
+        if (info[key] === null || info[key] === undefined || info[key] === "") {
+          delete info[key];
+        }
       });
+
+      // Don't send an empty info object
+      if (!Object.keys(info).length) info = null;
+
+      this.eventLog.log(log, level, `Status: ${status}`, info);
       return log;
     }
 
@@ -456,19 +578,19 @@ define([
       this.trigger(`update:${pid}`, { pid, rm, status, meta });
 
       // Store the obj:rm pair in local storage if rm is found
-      if (rm) {
-        this.storage.setItem(pid, rm).catch((e) => {
-          // Storage should not block the resolution process.
-          this.eventLog.consoleLog(
-            "Error storing RM in local storage",
-            "ResourceMapResolver",
-            "warning",
-            e,
-          );
-        });
-      }
+      if (rm) this.addToStorage(pid, rm);
 
-      return { success: !!rm, pid, rm, log };
+      const result = { success: !!rm, pid, log };
+      if (rm) result.rm = rm;
+
+      // If there are any unauthorized events in the log, add it to the result
+      if (ResourceMapResolver.checkLogForUnauth(log))
+        result.unauthorized = true;
+      // If no rm, add a flag if there were multiple rms found in index
+      if (!rm && ResourceMapResolver.checkLogForMultipleRMs(log))
+        result.multipleRMs = true;
+
+      return result;
     }
   }
 
