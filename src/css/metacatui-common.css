@@ -340,6 +340,11 @@ header .citation {
 #Content > .login > .alert-container {
   font-size: inherit;
 }
+
+.editor-view .alert-container {
+  max-width: 90%;
+  margin: 3rem auto;
+}
 .button-help-text {
   font-size: 12px;
   margin-top: 2px;
