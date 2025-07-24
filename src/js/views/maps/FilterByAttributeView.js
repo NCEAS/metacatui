@@ -51,16 +51,20 @@ define([
       template: _.template(Template),
 
       /**
-       * The events this view will listen to and the associated function to call.
-       * @type {Object}
+       * Classes that are used to identify the HTML elements that comprise this view.
+       * @type {object}
+       * @property {string} open The class to add to the outermost HTML element for this
+       * view when the layer details view is open/expanded (not hidden)
        */
-      events: {
-        // 'event selector': 'function',
+      classes: {
+        attributeSelectClass: "layer-details--open",
+        filterIcon: "layer-item__filter-icon",
+        selected: "layer-item--selected",
       },
 
       /**
        * Executed when a new FilterByAttributeView is created
-       * @param {Object} [options] - A literal object with options to pass to the view
+       * @param {object} [options] - A literal object with options to pass to the view
        */
       initialize(options) {
         // alert("Control here");
@@ -73,7 +77,6 @@ define([
           }
         } catch (e) {
           console.log(
-            // eslint-disable-next-line prefer-template
             "A FilterByAttributeView failed to initialize. Error message: " + e,
           );
         }
@@ -93,10 +96,19 @@ define([
           this.$el.html(this.template({}));
 
           if (this.model && this.model.attributes) {
+            // First check layer visibility status
+            this.checkSelectionStatus();
             // Add attribute dropdown
             this.addAttributeSelect();
             // Add attribute values dropdown
             this.addAttributeValuesSelect();
+
+            // Manually call handleAttributeChange() after rendering since we preselect the first attribute
+            // This is for the initial implementation
+            // May need to be removed later
+            this.handleAttributeChange(
+              this.attributeSelect.model.get("selected"),
+            );
           }
 
           return this;
@@ -109,6 +121,20 @@ define([
         }
       },
 
+      /**
+       * Checks whether the layer item is selected by default
+       */
+      checkSelectionStatus() {
+        const layerModel = this.model;
+        if (layerModel.get("visible")) {
+          console.log(layerModel);
+        }
+      },
+      /**
+       * Pulls filter attributes from the map model.
+       * The attributes are defined using the "property" key.
+       * Filter attributes are pre-defined in the portal configuration document.
+       */
       addAttributeSelect() {
         const filters = this.model.get("filters");
         if (!filters) {
@@ -116,27 +142,29 @@ define([
         }
         const attributeOptions = [];
         filters.each((filterModel) => {
-          const label = filterModel.get("property");
-          const val = filterModel.get("property");
-          attributeOptions.push({ label, value: val });
+          const attributeName = filterModel.get("property");
+          attributeOptions.push({ label: attributeName, value: attributeName });
         });
-
-        // Build the SearchSelect dropdown
+        // Build the dropdown with the filter attributes (using SearchSelect)
         this.attributeSelect = new SearchSelect({
           options: attributeOptions,
-          allowMulti: false, // set to false since this is a single-select dropdown
+          allowMulti: false, // set to false allowing user to select only one attribute at a time
           inputLabel: "Select option",
-          placeholderText: "",
+          placeholderText: "Option name",
           clearable: true,
-          selected: [], // optionally preselect attributes
+          selected:
+            attributeOptions.length > 0 ? [attributeOptions[0].value] : [], // preselect the first attribute (for the initial implementation)
+          // disabled: true, // disable for the initial implementation (since there is only one attribute available for selection)
         });
 
-        // append to DOM and render
-        const container = this.$(".filter-by-attribute__attributes-container");
-        container.append(this.attributeSelect.el);
+        // Append the dropdown to DOM and render
+        const attributeSelectContainer = this.$(
+          ".filter-by-attribute__attributes-container",
+        );
+        attributeSelectContainer.append(this.attributeSelect.el);
         this.attributeSelect.render();
 
-        // listen for changes
+        // Listen for changes
         this.stopListening(this.attributeSelect.model, "change:selected");
         this.listenTo(
           this.attributeSelect.model,
@@ -149,41 +177,41 @@ define([
 
       handleAttributeChange(targetProperty) {
         const filters = this.model.get("filters");
-        const attributeOptions = [];
-        filters.each((filterModel) => {
-          const property = filterModel.get("property");
+        if (filters) {
+          const attributeOptions = [];
+          filters.each((filterModel) => {
+            const property = filterModel.get("property");
 
-          if (targetProperty.includes(property)) {
-            const values = filterModel.get("allValues");
+            if (targetProperty.includes(property)) {
+              const values = filterModel.get("allValues");
 
-            if (Array.isArray(values)) {
-              values.forEach((val) => {
-                attributeOptions.push({
-                  label: val,
-                  value: val,
+              if (Array.isArray(values)) {
+                values.forEach((val) => {
+                  attributeOptions.push({
+                    label: val,
+                    value: val,
+                  });
                 });
-              });
+              }
             }
+          });
+          // Update the existing dropdown
+          if (this.filterSelect) {
+            this.filterSelect.model.updateOptions(attributeOptions);
+            this.filterSelect.model.set("selected", []);
+            // }
+
+            // Listen for changes
+            this.stopListening(this.filterSelect.model, "change:selected");
+            this.listenTo(
+              this.filterSelect.model,
+              "change:selected",
+              (_model, valuesSelected) => {
+                this.handleValueSelectionChange(targetProperty, valuesSelected);
+              },
+            );
           }
-        });
-
-        // const container = this.$(".taxa-quick-add__selects")[0];
-
-        // Update the existing dropdown
-        if (this.filterSelect) {
-          this.filterSelect.model.updateOptions(attributeOptions);
-          this.filterSelect.model.set("selected", []);
         }
-
-        // Listen for changes
-        this.stopListening(this.filterSelect.model, "change:selected");
-        this.listenTo(
-          this.filterSelect.model,
-          "change:selected",
-          (_model, valuesSelected) => {
-            this.handleValueSelectionChange(targetProperty, valuesSelected);
-          },
-        );
       },
 
       addAttributeValuesSelect() {
@@ -211,34 +239,23 @@ define([
 
         filters.each((filterModel) => {
           const property = filterModel.get("property");
-
-          if (targetProperty === property) {
+          // eslint-disable-next-line eqeqeq
+          if (targetProperty == property) {
             // Replace the existing values with selectedValues
-            filterModel.set("allValues", selectedValues);
-            // filterModel.set("values", [...values]); // code from Robyn
-
-            // code from Robyn
-            // const values = filterModel.get("values");
-            // values.push(selectedValues);
-            // const copiedValues = [...values];
-            // filterModel.set("values", copiedValues);
+            // filterModel.set("allValues", selectedValues);
+            filterModel.set("values", selectedValues);
           }
         });
 
-        // Checking if values of the filter are being updated
-        //  filters.each(function(filterModel) {
-        //   console.log("Writing new values");
-        //   console.log(filterModel.get("values"));
-        //   });
-
         // manually trigger listeners
-        // console.log("Trigerring updateFeatureVisibility");
         // this.model.trigger("change:opacity change:color change:visible");
         this.model.trigger("change:opacity");
-        // filters.trigger("update");
 
-        // filters.trigger("update");
-        // setTimeout(()=>{filters.trigger("update")}, 1000);
+        // Activate filter icon if there are selected values
+        const filterIcon = document.querySelector(".layer-item__filter-icon");
+        if (filterIcon) {
+          filterIcon.classList.add(this.classes.selected); // Replace with your actual CSS class
+        }
       },
     },
   );
