@@ -5,7 +5,16 @@ define([
   "models/DataONEObject",
   "models/metadata/eml/EMLMethodStep",
   "models/metadata/eml211/EMLText",
-], function ($, _, Backbone, DataONEObject, EMLMethodStep, EMLText) {
+  "common/EMLUtilities",
+], function (
+  $,
+  _,
+  Backbone,
+  DataONEObject,
+  EMLMethodStep,
+  EMLText,
+  EMLUtilities,
+) {
   /**
   * @class EMLMethods
   * @classdesc Represents the EML Methods module. The methods field documents scientific methods
@@ -551,16 +560,7 @@ define([
        * @return {EML211|false} - Returns the EML 211 Model or false if not found
        */
       getParentEML: function () {
-        var emlModel = this.get("parentModel"),
-          tries = 0;
-
-        while (emlModel.type !== "EML" && tries < 6) {
-          emlModel = emlModel.get("parentModel");
-          tries++;
-        }
-
-        if (emlModel && emlModel.type == "EML") return emlModel;
-        else return false;
+        return EMLUtilities.getParentEML(this);
       },
 
       trickleUpChange: function () {

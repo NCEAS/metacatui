@@ -4,7 +4,8 @@ define([
   "backbone",
   "models/DataONEObject",
   "models/metadata/eml211/EMLParty",
-], function ($, _, Backbone, DataONEObject, EMLParty) {
+  "common/EMLUtilities",
+], function ($, _, Backbone, DataONEObject, EMLParty, EMLUtilities) {
   var EMLProject = Backbone.Model.extend({
     defaults: {
       objectDOM: null,
@@ -236,16 +237,7 @@ define([
      * @return {EML211 or false} - Returns the EML 211 Model or false if not found
      */
     getParentEML: function () {
-      var emlModel = this.get("parentModel"),
-        tries = 0;
-
-      while (emlModel.type !== "EML" && tries < 6) {
-        emlModel = emlModel.get("parentModel");
-        tries++;
-      }
-
-      if (emlModel && emlModel.type == "EML") return emlModel;
-      else return false;
+      return EMLUtilities.getParentEML(this);
     },
 
     trickleUpChange: function () {
