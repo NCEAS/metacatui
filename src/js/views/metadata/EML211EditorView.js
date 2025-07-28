@@ -1235,7 +1235,7 @@ define([
           } else {
             msg += `Please contact our support team`;
             if (pid) {
-              msg += ` and mention that you're with the metadata document with ID <strong>${pid}</strong>`;
+              msg += ` and mention that you're trying to edit with the metadata document with ID <strong>${pid}</strong>`;
             }
             msg += `.`;
           }
