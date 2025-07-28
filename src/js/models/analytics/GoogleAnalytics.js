@@ -1,4 +1,11 @@
 define(["models/analytics/Analytics"], function (Analytics) {
+  // Analytics will fail to load if the user has certain blockers installed.
+  // Avoid loading the model in that case.
+  if (typeof Analytics === "undefined") {
+    console.warn("GoogleAnalytics model not loaded.");
+    return null;
+  }
+
   /**
    * @class GoogleAnalytics
    * @classdesc A model that connects with an analytics service to record user
