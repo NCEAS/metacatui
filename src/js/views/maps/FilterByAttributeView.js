@@ -59,15 +59,8 @@ define([
        * Executed when a new FilterByAttributeView is created
        * @param {object} [options] - A literal object with options to pass to the view
        */
-      // initialize(options) {
       initialize() {
         try {
-          // Get all the options and apply them to this view
-          // if (typeof options === "object") {
-          //   for (const [key, value] of Object.entries(options)) {
-          //     this[key] = value;
-          //   }
-          // }
           if (this.model) {
             this.filters = this.model.get("filters");
             this.filterModel = this.filters.at(0);
@@ -193,12 +186,6 @@ define([
               attributeValuesOptions,
             );
             this.filterValuesSelection.model.set("selected", []);
-
-            // // Update options
-            // this.filterValuesSelection.updateOptions(attributeAllValue);
-
-            // // Update selected values
-            // this.filterValuesSelection.model.setSelected([]);
           }
         }
       },
