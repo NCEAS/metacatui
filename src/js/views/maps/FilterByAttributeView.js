@@ -57,7 +57,6 @@ define([
 
       /**
        * Executed when a new FilterByAttributeView is created
-       * @param {object} [options] - A literal object with options to pass to the view
        */
       initialize() {
         try {
@@ -76,6 +75,7 @@ define([
             this.listenTo(this.model, "change:filterActive", this.render);
           }
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.log(
             // eslint-disable-next-line prefer-template
             "A FilterByAttributeView failed to initialize. Error message: " + e,
@@ -105,6 +105,7 @@ define([
 
           return this;
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.log(
             // eslint-disable-next-line prefer-template
             "There was an error rendering a FilterByAttributeView" +
