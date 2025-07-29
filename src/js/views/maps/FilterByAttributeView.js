@@ -59,28 +59,20 @@ define([
        * Executed when a new FilterByAttributeView is created
        */
       initialize() {
-        try {
-          if (this.model) {
-            this.filters = this.model.get("filters");
-            this.filterModel = this.filters.at(0);
-            this.currentVisibility = this.model.get("visible");
+        if (!this.model) return;
 
-            // Save the default filter values for this filter model for future use during the session
-            // (e.g., toggling layer visibility back on after being turned off).
-            // When the map/layer model gets updated using the "Filter by Property" feature, these values are reset in the filter model.
-            this.preselectedAttributeValues = this.filterModel.get("values");
+        this.filters = this.model.get("filters");
+        this.filterModel = this.filters.at(0);
+        this.currentVisibility = this.model.get("visible");
 
-            // Update the "Filter by Property" dropdowns when the layer visibility is toggled on and off
-            this.stopListening(this.model, "change:filterActive");
-            this.listenTo(this.model, "change:filterActive", this.render);
-          }
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.log(
-            // eslint-disable-next-line prefer-template
-            "A FilterByAttributeView failed to initialize. Error message: " + e,
-          );
-        }
+        // Save the default filter values for this filter model for future use during the session
+        // (e.g., toggling layer visibility back on after being turned off).
+        // When the map/layer model gets updated using the "Filter by Property" feature, these values are reset in the filter model.
+        this.preselectedAttributeValues = this.filterModel.get("values");
+
+        // Set up listener for filterActive changes
+        this.stopListening(this.model, "change:filterActive");
+        this.listenTo(this.model, "change:filterActive", this.render);
       },
 
       /**
@@ -88,32 +80,25 @@ define([
        * @returns {FilterByAttributeView} Returns the rendered view element
        */
       render() {
-        try {
-          // Insert the template into the view
-          this.$el.html(this.template({}));
+        // Insert the template into the view
+        this.$el.html(this.template({}));
 
-          // change this condition to if there is no filter model
-          if (!this.filterModel) {
-            return this;
-          }
-
-          // Add filter attributes (property/option) select dropdown
-          this.addAttributeSelect();
-
-          // Add filter attribute values multi-select dropdown
-          this.addAttributeValuesSelect();
-
-          return this;
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(
-            // eslint-disable-next-line prefer-template
-            "There was an error rendering a FilterByAttributeView" +
-              ". Error details: " +
-              error,
-          );
+        // Exit early if there's no filter model
+        if (!this.filterModel) {
           return this;
         }
+
+        // Add filter attributes (property/option) select dropdown
+        if (typeof this.addAttributeSelect === "function") {
+          this.addAttributeSelect();
+        }
+
+        // Add filter attribute values multi-select dropdown
+        if (typeof this.addAttributeValuesSelect === "function") {
+          this.addAttributeValuesSelect();
+        }
+
+        return this;
       },
 
       /**
