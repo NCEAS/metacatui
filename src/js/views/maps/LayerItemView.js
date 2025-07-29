@@ -254,7 +254,7 @@ define([
         }
         // Re-render the Filter by Property (Attribute) view dropdown values when layer visibility is toggled
         layerModel.set("filterActive", true);
-        layerModel.trigger("change:filterActive"); //@Robyn - Why is this needed only when toggling visibility and not when dropdown value change happens
+        layerModel.trigger("change:filterActive");
       },
 
       /**
