@@ -17,7 +17,7 @@ define([
    * @classcategory Views/Maps
    * @name FilterByAttributeView
    * @augments Backbone.View
-   * @since 2.18.0
+   * @since 0.0.0
    * @constructs FilterByAttributeView
    */
 
