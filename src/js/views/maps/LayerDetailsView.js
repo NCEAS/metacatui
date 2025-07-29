@@ -120,15 +120,13 @@ define([
           showTitle: false,
           hideIfError: true,
         },
-        // start -- add by Shirly
         {
-          label: "Filter",
+          label: "Filter by Property",
           view: FilterByAttributeView,
           collapsible: false,
           showTitle: true,
           hideIfError: true,
         },
-        // end -- add by Shirly
         {
           label: "Opacity",
           view: LayerOpacityView,
@@ -217,12 +215,15 @@ define([
               detailSection.el.style.display = "none";
             }
           }
-          // Start add - Shirly
-          // Hide the "filter by attribute" view if there is not "filter" key for the selected layer
-          if (model && !model.get("filters") && section.label === "Filter") {
+          // Hide the Filter by Property view if there is no filter model for the selected layer
+          if (
+            model &&
+            !model.get("filters") &&
+            section.label === "Filter by Property"
+          ) {
             detailSection.el.style.display = "none";
           }
-          // End add - Shirly
+
           return { ...section, renderedView: detailSection };
         });
 
@@ -236,7 +237,6 @@ define([
           }
           this.renderedSections.forEach((section) => {
             if (section.hideIfError) {
-              // eslint-disable-next-line no-param-reassign
               section.renderedView.el.style.display = displayProperty;
             }
           });

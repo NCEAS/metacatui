@@ -74,7 +74,6 @@ define([
       classes: {
         label: "layer-item__label",
         icon: "layer-item__icon",
-        filterIcon: "layer-item__filter-icon",
         visibilityToggle: "layer-item__visibility-toggle",
         selected: "layer-item--selected",
         shown: "layer-item--shown",
@@ -84,6 +83,8 @@ define([
         settings: "layer-item__settings",
         badge: "map-view__badge",
         tooltip: "map-tooltip",
+        button: "map-view__button",
+        filterIcon: "icon-filter",
       },
 
       /**
@@ -139,12 +140,9 @@ define([
           this.insertIcon();
         }
 
-        // Insert the filter icon to the right of the label element text
+        // Add filter icon for "filterable" layers
         if (this.model.get("filters")) {
-          const filterIconEl = document.createElement("span");
-          filterIconEl.className = this.classes.filterIcon;
-          filterIconEl.innerHTML = '<i class="icon-filter"></i>';
-          this.labelEl.appendChild(filterIconEl);
+          this.insertFilterIcon();
         }
 
         // Ensure the view's main element has the given class name
@@ -200,6 +198,20 @@ define([
         }
       },
 
+      /** Insert the filter icon to the right of the label element text.
+       * This icon appears for layers that are "filterable" based on their atrributes.
+       * Filter attributes for each layer are defined in the map model.
+       * Layer items with this icon will have the Filter feature (built using FilterByAttributeView).
+       */
+      insertFilterIcon() {
+        const filterIconEl = document.createElement("button");
+        filterIconEl.className = `${this.classes.visibilityToggle} ${this.classes.button}`;
+        filterIconEl.title = "Filter by property"; // add tooltip
+        // filterIconEl.className = `${this.classes.button}`;
+        filterIconEl.innerHTML = `<i class="${this.classes.filterIcon}"></i>`;
+        this.labelEl.appendChild(filterIconEl);
+      },
+
       /**
        * Sets the Layer model's 'selected' status attribute to true if it's false, and
        * to false if it's true. Executed when a user clicks on this Layer Item in a
@@ -239,6 +251,9 @@ define([
           }
           layerModel.set("visible", true);
         }
+        // Re-render the Filter by Property (Attribute) view dropdown values when layer visibility is toggled
+        layerModel.set("filterActive", true);
+        layerModel.trigger("change:filterActive"); //@Robyn - Why is this needed only when toggling visibility and not when dropdown value change happens
       },
 
       /**

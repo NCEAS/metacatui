@@ -477,7 +477,6 @@ represents 1 unit of the given distance measurement. */
   display: none;
   overflow: hidden;
   pointer-events: all;
-  /* added by shirly */
   position: relative;
 }
 
@@ -840,8 +839,6 @@ represents 1 unit of the given distance measurement. */
   height: min-content;
 }
 
-/* A layer-item is one item in the layer-list */
-
 .layer-item {
   display: grid;
   grid-template-columns: min-content auto max-content;
@@ -873,6 +870,24 @@ represents 1 unit of the given distance measurement. */
       width: auto;
       opacity: var(--map-no-brightness-or-opacity-tweaks, 0.8);
     }
+    /* 
+    .icon-filter {
+      fill: transparent;
+      color: var(--portal-col-neutral-4, currentColor);
+      background-color: transparent;
+
+      &.icon-filter--active {
+        fill: transparent;
+        color: var(--portal-col-neutral-4, currentColor);
+        background-color: transparent;
+      }
+    } */
+  }
+  /* wrap both the label text and filter icon in a flex container */
+  .layer-item__label-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
 
   &:hover {
@@ -912,6 +927,19 @@ represents 1 unit of the given distance measurement. */
           );
         }
       }
+
+      /* .icon-filter {
+        fill: transparent;
+        color: var(--portal-col-neutral-4, currentColor);
+        background-color: transparent;
+
+        &.icon-filter--active {
+          color: var(
+            --portal-col-primary-6,
+            var(--map-col-highlight__deprecate)
+          );
+        }
+      } */
     }
 
     .layer-item__settings {
@@ -974,23 +1002,6 @@ represents 1 unit of the given distance measurement. */
 
 .layer-item__visibility-toggle:hover {
   opacity: var(--map-no-brightness-or-opacity-tweaks, 0.5);
-}
-
-.layer-item__filter-icon {
-  display: inline-flex;
-  align-items: center;
-  margin-left: 5px; /* Spacing between label and icon */
-  cursor: pointer;
-}
-
-.layer-item__filter-icon i {
-  cursor: pointer;
-  font-size: 14px;
-  color: #666;
-}
-
-.layer-item__filter-icon:hover i {
-  color: #000;
 }
 
 /*****************************************************************************************
@@ -1890,22 +1901,23 @@ other class: .ui-slider-range */
  *
  * FilterByAttributeView panel
  *
- * Panel that shows the Filter By Attribute functionality (including the time-series visualization)
+ * Panel that shows the Filter By Property functionality (including the time-series visualization)
  *
  */
 
 .filter-by-attribute-controls__grid-container {
   display: grid;
-  grid-template-columns: 200px 200px;
-  gap: 12px; /* optional: spacing between the dropdowns */
-  align-items: center; /* optional: vertically aligns them */
+  grid-template-columns: 150px 250px;
+  gap: 12px; /* spacing between the dropdowns */
+  align-items: center; /* vertically aligns them */
   margin: 0.75rem 0;
   align-items: start; /* aligns items to the top of their cells */
 }
 
 .filter-by-attribute__attributes-container {
-  display: inline-block; /* or inline-flex, depending on layout */
+  display: inline-block; /* or inline-flex */
   vertical-align: top;
+  width: 150px;
 }
 
 .filter-by-attribute__attributes-container .search {
@@ -1913,29 +1925,26 @@ other class: .ui-slider-range */
   width: auto;
 }
 
-.filter-by-attribute__attributes-container .search input,
-.filter-by-attribute__attributes-container .search select {
-  /* min-width: 150px !important; */
-}
-
 .filter-by-attribute__values-container {
-  display: inline-block; /* or inline-flex, depending on layout */
+  display: inline-block; /* or inline-flex */
   vertical-align: top;
+  width: 250px;
 }
 
 .filter-by-attribute__values-container .search {
   font-size: 12px;
   width: auto;
+
+  /* max-height: 150px;
+  overflow-y: auto; */
 }
 
 .filter-by-attribute__values-container .search input {
-  /* min-width: 150px !important; */
   font-size: 8px !important;
 }
 
 .filter-by-attribute__values-container .item,
 .filter-by-attribute__values-container .ui.label {
-  /* min-width: 150px !important; */
   font-size: 12px !important;
 }
 
