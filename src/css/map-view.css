@@ -870,18 +870,6 @@ represents 1 unit of the given distance measurement. */
       width: auto;
       opacity: var(--map-no-brightness-or-opacity-tweaks, 0.8);
     }
-    /* 
-    .icon-filter {
-      fill: transparent;
-      color: var(--portal-col-neutral-4, currentColor);
-      background-color: transparent;
-
-      &.icon-filter--active {
-        fill: transparent;
-        color: var(--portal-col-neutral-4, currentColor);
-        background-color: transparent;
-      }
-    } */
   }
   /* wrap both the label text and filter icon in a flex container */
   .layer-item__label-wrapper {
@@ -927,19 +915,6 @@ represents 1 unit of the given distance measurement. */
           );
         }
       }
-
-      /* .icon-filter {
-        fill: transparent;
-        color: var(--portal-col-neutral-4, currentColor);
-        background-color: transparent;
-
-        &.icon-filter--active {
-          color: var(
-            --portal-col-primary-6,
-            var(--map-col-highlight__deprecate)
-          );
-        }
-      } */
     }
 
     .layer-item__settings {
@@ -1898,11 +1873,8 @@ other class: .ui-slider-range */
 }
 
 /*****************************************************************************************
- *
  * FilterByAttributeView panel
- *
  * Panel that shows the Filter By Property functionality (including the time-series visualization)
- *
  */
 
 .filter-by-attribute-controls__grid-container {
@@ -1934,9 +1906,6 @@ other class: .ui-slider-range */
 .filter-by-attribute__values-container .search {
   font-size: 12px;
   width: auto;
-
-  /* max-height: 150px;
-  overflow-y: auto; */
 }
 
 .filter-by-attribute__values-container .search input {
