@@ -141,7 +141,7 @@ define([
         }
 
         // Add filter icon for "filterable" layers
-        if (this.model.get("filters")) {
+        if (this.model.get("filters")?.length) {
           this.insertFilterIcon();
         }
 
@@ -252,9 +252,6 @@ define([
           }
           layerModel.set("visible", true);
         }
-        // Re-render the Filter by Property (Attribute) view dropdown values when layer visibility is toggled
-        layerModel.set("filterActive", true);
-        layerModel.trigger("change:filterActive");
       },
 
       /**

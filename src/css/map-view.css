@@ -871,12 +871,6 @@ represents 1 unit of the given distance measurement. */
       opacity: var(--map-no-brightness-or-opacity-tweaks, 0.8);
     }
   }
-  /* wrap both the label text and filter icon in a flex container */
-  .layer-item__label-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
 
   &:hover {
     background-color: var(--portal-col-neutral-1, #323745);
@@ -964,6 +958,9 @@ represents 1 unit of the given distance measurement. */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .layer-item__highlighted-text {

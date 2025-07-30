@@ -44,8 +44,6 @@ define([
       /**
        * Classes that are used to identify the HTML elements that comprise this view.
        * @type {object}
-       * @property {string} open The class to add to the outermost HTML element for this
-       * view when the layer details view is open/expanded (not hidden)
        */
       classes: {
         attributeSelectClass: "layer-details--open",
@@ -62,17 +60,8 @@ define([
         if (!this.model) return;
 
         this.filters = this.model.get("filters");
-        this.filterModel = this.filters.at(0);
-        this.currentVisibility = this.model.get("visible");
-
-        // Save the default filter values for this filter model for future use during the session
-        // (e.g., toggling layer visibility back on after being turned off).
-        // When the map/layer model gets updated using the "Filter by Property" feature, these values are reset in the filter model.
-        this.preselectedAttributeValues = this.filterModel.get("values");
-
-        // Set up listener for filterActive changes
-        this.stopListening(this.model, "change:filterActive");
-        this.listenTo(this.model, "change:filterActive", this.render);
+        this.filterModel = this.filters?.at(0);
+        if (!filterModel) return;
       },
 
       /**
@@ -80,6 +69,11 @@ define([
        * @returns {FilterByAttributeView} Returns the rendered view element
        */
       render() {
+        if (!this.filterModel) {
+          this.$el.html();
+          return;
+        }
+
         // Insert the template into the view
         this.$el.html(this.template({}));
 
@@ -123,7 +117,7 @@ define([
           clearable: true,
           //  TO DO: after a filter model is created is should not be part of subsequent filter models
           //  This needs to be part of a parent FilterAttributeView
-          selected: [preselectedAttribute], // preselect the first attribute (for the initial implementation)
+          selected: [...preselectedAttribute], // preselect the first attribute (for the initial implementation)
           // disabled: true, // disable for the initial implementation (since there is only one attribute available for selection)
         });
 
@@ -182,11 +176,8 @@ define([
        * The attributes values are defined using the "allValues" key for each "property".
        */
       addAttributeValuesSelect() {
-        let defaultAttributeValues = []; // corresponds to values are defined using the "values" key for each "property" in the initial map model
-        const targetProperty = this.filterModel.get("property"); // TO DO: Get the selected attribute value from the attribute dropdown
-        if (this.model.get("visible")) {
-          defaultAttributeValues = this.preselectedAttributeValues;
-        }
+        const selectedValues = [...(this.model.get("values") || [])];
+
         const allValues = this.filterModel.get("allValues");
         const attributeAllValues = [];
         if (Array.isArray(allValues)) {
@@ -210,7 +201,7 @@ define([
             allowMulti: true,
             allowAdditions: false,
             separatorTextOptions: false,
-            selected: defaultAttributeValues,
+            selected: selectedValues,
           });
 
           valuesSelectContainer.appendChild(filterValueSelect.el); // Append to DOM
@@ -228,14 +219,14 @@ define([
             this.filterValuesSelection.model,
             "change:selected",
             (_model, valuesSelected) => {
-              this.handleValueSelectionChange(targetProperty, valuesSelected);
+              this.handleValueSelectionChange(valuesSelected);
             },
           );
         } else {
           // Update dropdown values later when the visibility of the layer is toggled on and off.
           // The dropdown elements already exist at this stage.
           this.filterValuesSelection.updateOptions(attributeAllValues);
-          this.filterValuesSelection.model.setSelected(defaultAttributeValues);
+          this.filterValuesSelection.model.setSelected(selectedValues);
 
           if (!valuesSelectContainer.contains(this.filterValuesSelection.el)) {
             valuesSelectContainer.appendChild(this.filterValuesSelection.el);
@@ -245,33 +236,33 @@ define([
       },
 
       /**
-       * Update the filter values in the filter model based on selection made in the Filter by Property dropdowns
-       * Update the map model.
-       * Update layer visibility and icons.
+       * Update the filter values in the filter model based on selection made in
+       * the Filter by Property dropdowns Update the map model. Update layer
+       * visibility and icons.
+       * @param {string[]} selectedValues - The values that are selected in
+       * values the Select View
        */
 
-      handleValueSelectionChange(targetProperty, selectedValues) {
-        const filterValues = (selectedValues || []).filter(
+      handleValueSelectionChange(selectedValues) {
+        // TODO: Debug why we're getting empty values here.
+        let filterValues = (selectedValues || []).filter(
           (value) => value !== "",
         );
 
-        this.filters.each((filterModel) => {
-          const property = filterModel.get("property");
-          // eslint-disable-next-line eqeqeq
-          if (targetProperty == property) {
-            // Replace the existing values with selectedValues
-            filterModel.set("values", selectedValues);
-          }
-        });
+        if (!filterValues.length) {
+          filterValues = this.filterModel.get("allValues");
+        }
+
+        this.filterModel.set("values", filterValues);
 
         // If there is any value selected in the Filter by Property feature, then make sure the asset is
         // also visible. This updates the layer toggle visibility icon (i.e., eye icon).
-        if (selectedValues && !this.currentVisibility) {
+        if (filterValues?.length && !this.model.get("visible")) {
           this.model.set("visible", true);
         }
 
         // Set visibility of the layer to false when all values are cleared from the attribute values dropdown
-        if (!filterValues.length > 0) {
+        if (!filterValues.length) {
           this.model.set("visible", false);
         }
 
