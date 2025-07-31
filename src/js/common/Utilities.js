@@ -248,6 +248,111 @@ define([], () => {
       }
       return `${bytes} B`;
     },
+
+    WIP(fileName) {
+      if (typeof fileName !== "string") {
+        return "";
+      }
+
+      // Replace all non-alphanumeric characters with underscores
+      // and remove leading/trailing whitespace
+      return fileName
+        .replace(/[^a-zA-Z0-9_]/g, "_")
+        .replace(/_{2,}/g, "_") // Replace multiple underscores with a single underscore
+        .trim();
+    },
+
+    /**
+     * Trims a string to the specified maxLength, ensuring it doesn't cut off in
+     * the middle of a word. If no full word fits, returns the string up to
+     * maxLength.
+     * @param {string} title - The input string to trim.
+     * @param {number} maxLength - The maximum allowed length.
+     * @returns {string} The trimmed string.
+     */
+    trimToFullWords(title, maxLength) {
+      const trimmed = title.trim().slice(0, maxLength);
+      const lastSpace = trimmed.lastIndexOf(" ");
+      if (lastSpace === -1) {
+        return trimmed; // no spaces, just return the cut string
+      }
+      return trimmed.slice(0, lastSpace);
+    },
+
+    /**
+     * Escapes a string for use in a CSS attribute selector. This function
+     * replaces all non-alphanumeric characters with a backslash followed by the
+     * character itself, ensuring that the string can be used safely in a CSS
+     * attribute selector.
+     * @param {string} str - The string to escape.
+     * @returns {string} The escaped string.
+     * @example
+     * Utilities.escapeForCSSAttrSelector("some#id") // returns "some\\#id"
+     * Utilities.escapeForCSSAttrSelector("uuid:123") // returns "uuid\\:123"
+     * @since 0.0.0
+     */
+    escapeForCSSAttrSelector(str) {
+      return str.replace(/[^A-Za-z0-9]/g, "\\$&");
+    },
+
+    /**
+     * Replaces all non-alphanumeric characters with a specified replacement
+     * character (default is "_"). It also collapses multiple consecutive
+     * replacement characters into one (e.g. "__" becomes "_") and trims
+     * leading/trailing replacements. Strict sanitization is used in MetacatUI
+     * for HTML element IDs, CSS classes, and other identifiers that require
+     * strict alphanumeric formatting.
+     * @param {string} fileName - The string to sanitize.
+     * @param {string} [replacement] - The character to replace non-alphanumeric
+     * characters with.
+     * @returns {string} The sanitized string.
+     * @example
+     * Utilities.sanitizeStrict("***weird . name!!  @") // returns "weird_name"
+     * Utilities.sanitizeStrict("some--file-name-", "-") // returns "some-file-name"
+     * @since 0.0.0
+     */
+    sanitizeStrict(fileName, replacement = "_") {
+      const safeReplacement = replacement.replace(
+        /[-\/\\^$*+?.()|[\]{}]/g,
+        "\\$&",
+      );
+
+      let result = fileName.trim().replace(/[^a-zA-Z0-9]/g, replacement);
+
+      // Collapse repeated replacements and trim edges only if replacement is non-empty
+      if (replacement) {
+        result = result
+          .replace(new RegExp(`${safeReplacement}{2,}`, "g"), replacement)
+          .replace(
+            new RegExp(`^${safeReplacement}|${safeReplacement}$`, "g"),
+            "",
+          );
+      }
+
+      return result;
+    },
+
+    // WIP: This function is used where ever we are changing a file name before
+    // uploading it to the server from the editor, or wherever we are searching
+    // for a file that assumes this convention of sanitization. This allows us
+    // to easily update the sanitization logic in one place (e.g. make it less
+    // strict). This excludes instances where we are creating filenames from
+    // scratch, such as generating the RDF or EML file names, which will
+    // continue to use strict sanitization.
+    sanitizeFileName(fileName) {
+      return this.sanitizeStrict(fileName);
+    },
+
+    /**
+     * Modifications MetacatUI makes to file names when a user downloads a
+     * single file.
+     * @param {string} fileName - The file name to sanitize
+     * @returns {string} The sanitized file name
+     * @since 0.0.0
+     */
+    sanitizeFileNameForDownload(fileName) {
+      return fileName.trim().replace(/ /g, "_");
+    },
   };
 
   return Utilities;

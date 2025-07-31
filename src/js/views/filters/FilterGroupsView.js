@@ -8,6 +8,7 @@ define([
   "views/filters/FilterGroupView",
   "views/filters/FilterView",
   "text!templates/filters/filterGroups.html",
+  "common/Utilities",
 ], function (
   $,
   _,
@@ -18,6 +19,7 @@ define([
   FilterGroupView,
   FilterView,
   Template,
+  Utilities,
 ) {
   "use strict";
 
@@ -235,15 +237,14 @@ define([
             }
 
             if (divideIntoGroups) {
+              const label = filterGroup.get("label");
               //Create a link to the filter group
               var groupTab = $(document.createElement("li")).addClass(
                 "filter-group-link",
               );
+              const linkId = Utilities.sanitizeStrict(label, "");
               var groupLink = $(document.createElement("a"))
-                .attr(
-                  "href",
-                  "#" + filterGroup.get("label").replace(/([^a-zA-Z0-9])/g, ""),
-                )
+                .attr("href", `#${linkId}`)
                 .attr("data-toggle", "tab");
 
               //Add the FilterGroup icon
@@ -256,9 +257,7 @@ define([
               }
 
               //Add the FilterGroup label
-              if (filterGroup.get("label")) {
-                groupLink.append(filterGroup.get("label"));
-              }
+              if (label) groupLink.append(label);
 
               //Insert the link into the tab and add the tab to the tab list
               groupTab.append(groupLink);

@@ -18,6 +18,7 @@ define([
   "models/metadata/eml211/EMLMethods",
   "collections/metadata/eml/EMLAnnotations",
   "models/metadata/eml211/EMLAnnotation",
+  "common/Utilities",
 ], (
   $,
   _,
@@ -38,6 +39,7 @@ define([
   EMLMethods,
   EMLAnnotations,
   EMLAnnotation,
+  Utilities,
 ) => {
   /**
    * @class EML211
@@ -2291,41 +2293,26 @@ define([
         return new XMLSerializer().serializeToString(xmlDOM);
       },
 
-      /*
-       * Uses the EML `title` to set the `fileName` attribute on this model.
-       */
+      /** Uses the EML `title` to set the `fileName` attribute on this model. */
       setFileName() {
-        let title = "";
+        const emlTitle = this.get("title");
 
-        // Get the title from the metadata
-        if (Array.isArray(this.get("title"))) {
-          title = this.get("title")[0];
-        } else if (typeof this.get("title") === "string") {
-          title = this.get("title");
+        // Use the EML title but default to "metadata" if the title is somehow
+        // not set or is an empty array
+        let fileName = "metadata";
+        if (Array.isArray(emlTitle) && emlTitle.length) {
+          fileName = emlTitle[0];
+        } else if (typeof emlTitle === "string") {
+          fileName = emlTitle;
         }
 
-        // Max title length
-        const maxLength = 50;
-
-        // trim the string to the maximum length
-        let trimmedTitle = title.trim().substr(0, maxLength);
-
-        // re-trim if we are in the middle of a word
-        if (trimmedTitle.indexOf(" ") > -1) {
-          trimmedTitle = trimmedTitle.substr(
-            0,
-            Math.min(trimmedTitle.length, trimmedTitle.lastIndexOf(" ")),
-          );
-        }
-
-        // Replace all non alphanumeric characters with underscores and make
-        // sure there isn't more than one underscore in a row
-        trimmedTitle = trimmedTitle
-          .replace(/[^a-zA-Z0-9]/g, "_")
-          .replace(/_{2,}/g, "_");
+        // Trim the title to 50 characters and replace all non-alphanumeric
+        // characters with underscores
+        fileName = Utilities.trimToFullWords(fileName, 50);
+        fileName = Utilities.sanitizeStrict(fileName);
 
         // Set the fileName on the model
-        this.set("fileName", `${trimmedTitle}.xml`);
+        this.set("fileName", `${fileName}.xml`);
       },
 
       trickleUpChange() {

@@ -35,6 +35,7 @@ define([
   "text!templates/map.html",
   "text!templates/metaTagsHighwirePress.html",
   "views/MetricView",
+  "common/Utilities",
 ], (
   $,
   $ui,
@@ -72,6 +73,7 @@ define([
   MapTemplate,
   metaTagsHighwirePressTemplate,
   MetricView,
+  Utilities,
 ) => {
   "use strict";
 
@@ -2628,10 +2630,11 @@ define([
         // Metacat 2.4.2 and up will have the Online Distribution Link marked
         let link = this.$(`.entitydetails a[data-pid='${id}']`);
 
+        const cssId = Utilities.escapeForCSSAttrSelector(id);
+
         // Otherwise, try looking for an anchor with the id matching this
         // object's id
-        if (!link.length)
-          link = $(el).find(`a#${id.replace(/[^A-Za-z0-9]/g, "\\$&")}`);
+        if (!link.length) link = $(el).find(`a#${cssId}`);
 
         // Get metadata index view
         let metadataFromIndex = _.findWhere(this.subviews, {
@@ -2642,10 +2645,7 @@ define([
         // Otherwise, find the Online Distribution Link the hard way
         if (link.length < 1 && !metadataFromIndex)
           link = $(el).find(
-            `.control-label:contains('Online Distribution Info') + .controls-well > a[href*='${id.replace(
-              /[^A-Za-z0-9]/g,
-              "\\$&",
-            )}']`,
+            `.control-label:contains('Online Distribution Info') + .controls-well > a[href*='${cssId}']`,
           );
 
         if (link.length > 0) {
@@ -2791,10 +2791,8 @@ define([
 
             // Find the part of the HTML Metadata view that describes this data
             // object
-            const anchor = $(document.createElement("a")).attr(
-              "id",
-              objID.replace(/[^A-Za-z0-9]/g, "-"),
-            );
+            const cleanId = Utilities.sanitizeStrict(objID, "-");
+            const anchor = $(document.createElement("a")).attr("id", cleanId);
             const container = viewRef.findEntityDetailsContainer(objID);
 
             // Insert the data display HTML and the anchor tag to mark this spot

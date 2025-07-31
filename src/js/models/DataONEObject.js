@@ -6,9 +6,20 @@ define([
   "he",
   "collections/AccessPolicy",
   "collections/ObjectFormats",
-  "common/Utilities",
   "md5",
-], ($, _, Backbone, uuid, he, AccessPolicy, ObjectFormats, Utilities, md5) => {
+  "common/Utilities",
+], (
+  $,
+  _,
+  Backbone,
+  uuid,
+  he,
+  AccessPolicy,
+  ObjectFormats,
+  Utilities,
+  md5,
+  Utilities,
+) => {
   /**
    * @class DataONEObject
    * @classdesc A DataONEObject represents a DataONE object, such as a data file,
@@ -606,10 +617,9 @@ define([
             this.get("fileName").lastIndexOf("."),
             this.get("fileName").length,
           );
-          this.set(
-            "fileName",
-            fileNameWithoutExt.replace(/[^a-zA-Z0-9]/g, "_") + extension,
-          );
+          const cleanedFileName =
+            Utilities.sanitizeFileName(fileNameWithoutExt);
+          this.set("fileName", `${cleanedFileName}${extension}`);
         }
 
         if (!this.hasUpdates()) {
@@ -2013,7 +2023,7 @@ define([
               .replace(/"/g, "");
 
           // Replace any whitespaces
-          filename = filename.trim().replace(/ /g, "_");
+          filename = Utilities.sanitizeFileNameForDownload(filename);
 
           // For IE, we need to use the navigator API
           if (navigator && navigator.msSaveOrOpenBlob) {
@@ -2105,7 +2115,7 @@ define([
         }
 
         // Replace all non-alphanumeric characters with underscores
-        filename = filename.replace(/[^a-zA-Z0-9]/g, "_");
+        filename = Utilities.sanitizeStrict(filename);
 
         if (typeof extension !== "undefined") {
           filename = `${filename}.${extension}`;

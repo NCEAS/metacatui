@@ -37,6 +37,7 @@ define([
   SearchModel,
   FilterGroup,
   MapModel,
+  Utilities,
 ) {
   /**
    * @classdesc A PortalModel is a specialized collection that represents a portal,
@@ -879,12 +880,12 @@ define([
        * @override
        */
       setMissingFileName: function () {
-        var fileName = this.get("label");
+        let fileName = this.get("label");
 
         if (!fileName) {
           fileName = "portal.xml";
         } else {
-          fileName = fileName.replace(/[^a-zA-Z0-9]/g, "_") + ".xml";
+          fileName = `${Utilities.sanitizeStrict(fileName)}.xml`;
         }
 
         this.set("fileName", fileName);

@@ -5,7 +5,16 @@ define([
   "localforage",
   "clipboard",
   "text!templates/draftsTemplate.html",
-], function ($, _, Backbone, LocalForage, Clipboard, draftsTemplate) {
+  "common/Utilities",
+], function (
+  $,
+  _,
+  Backbone,
+  LocalForage,
+  Clipboard,
+  draftsTemplate,
+  Utilities,
+) {
   /**
    * @class DraftsView
    * @classdesc A view that lists the local submission drafts for this user
@@ -27,15 +36,17 @@ define([
         var view = this;
         var drafts = [];
 
-        LocalForage.iterate(function (value, key, iterationNumber) {
+        LocalForage.iterate(function (value, key, _i) {
           // Extract each draft
+          let fileName = "draft";
+          if (value?.title) {
+            fileName = Utilities.trimToFullWords(value.title, 50);
+            fileName = Utilities.sanitizeStrict(fileName);
+          }
           drafts.push({
             key: key,
             value: value,
-            fileName:
-              typeof value.title === "string"
-                ? value.title.substr(0, 50).replace(/[^a-zA-Z0-9_]/, "_")
-                : "draft",
+            fileName,
             friendlyTimeDiff: view.friendlyTimeDiff(value.datetime),
           });
         })

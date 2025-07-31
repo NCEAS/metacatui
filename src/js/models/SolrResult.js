@@ -1,4 +1,9 @@
-define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
+define(["jquery", "underscore", "backbone", "common/Utilities"], (
+  $,
+  _,
+  Backbone,
+  Utilities,
+) => {
   /**
    * @class SolrResult
    * @classdesc A single result from the Solr search service
@@ -344,7 +349,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
             .substring(filename.indexOf("filename=") + 9)
             .replace(/"/g, "");
         }
-        filename = filename.trim().replace(/ /g, "_");
+        filename = Utilities.sanitizeFileNameForDownload(filename);
         return filename;
       },
 

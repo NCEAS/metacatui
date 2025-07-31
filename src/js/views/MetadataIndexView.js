@@ -10,6 +10,7 @@ define([
   "text!templates/alert.html",
   "text!templates/attribute.html",
   "text!templates/dataDisplay.html",
+  "common/Utilities",
 ], (
   $,
   _,
@@ -22,6 +23,7 @@ define([
   alertTemplate,
   AttributeTemplate,
   DataDisplayTemplate,
+  Utilities,
 ) => {
   const MetadataIndexView = Backbone.View.extend({
     type: "MetadataIndex",
@@ -484,13 +486,10 @@ define([
         }
 
         // Mark this section with an anchor tag with the doc id
+        const id = Utilities.sanitizeStrict(solrResult.get("id"), "-");
         $(entityDetailsSection).prepend(
-          $(document.createElement("a")).attr(
-            "id",
-            solrResult.get("id").replace(/[^A-Za-z0-9]/g, "-"),
-          ),
+          $(document.createElement("a")).attr("id", id),
         );
-
         $(html).append(entityDetailsSection);
       });
 

@@ -309,11 +309,14 @@ define([
             entity.get("physicalObjectName") || entity.get("entityName")
           )?.toLowerCase();
           if (!entFileName) return false;
-          const entFileNameUnderscored = entFileName?.replace(/ /g, "_");
-          // Check if the entity's file name matches the given file name
+          // Check if the entity's file name matches the given file name,
+          // including possible sanitized versions of the file name
           return (
-            entFileName === standardFileName ||
-            entFileNameUnderscored === standardFileName
+            standardFileName === entFileName ||
+            standardFileName ===
+              Utilities.sanitizeFileNameForDownload(entFileName) ||
+            standardFileName === Utilities.sanitizeFileName(standardFileName) ||
+            standardFileName === Utilities.sanitizeStrict(standardFileName)
           );
         });
       },

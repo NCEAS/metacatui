@@ -5,6 +5,7 @@ define([
   "models/portals/PortalSectionModel",
   "views/MarkdownView",
   "text!templates/portals/portalSection.html",
+  "common/Utilities",
 ], function ($, _, Backbone, PortalSectionModel, MarkdownView, Template) {
   /**
    * @class PortalSectionView
@@ -189,7 +190,7 @@ define([
 
         if (typeof options == "object") {
           if (options.linkFriendly) {
-            name = name.replace(/[^a-zA-Z0-9 ]/g, "").replace(/ /g, "-");
+            name = Utilities.sanitizeStrict(name, "");
           }
         }
 

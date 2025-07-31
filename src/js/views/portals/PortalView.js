@@ -15,6 +15,7 @@ define([
   "views/portals/PortalMembersView",
   "views/portals/PortalLogosView",
   "views/portals/PortalVisualizationsView",
+  "common/Utilities",
 ], (
   $,
   _,
@@ -32,6 +33,7 @@ define([
   PortalMembersView,
   PortalLogosView,
   PortalVisualizationsView,
+  Utilities,
 ) => {
   "use_strict";
 
@@ -869,13 +871,11 @@ define([
        */
       getUniqueSectionLabel(sectionModel) {
         //Get the label for this section
-        const sectionLabel = sectionModel
-            .get("label")
-            .replace(/[^a-zA-Z0-9 ]/g, "")
-            .replace(/ /g, "-"),
-          unalteredLabel = sectionLabel,
-          sectionLabels = this.sectionLabels || [],
-          i = 2;
+        const modelLabel = sectionModel.get("label");
+        let sectionLabel = Utilities.sanitizeStrict(modelLabel, "");
+        const unalteredLabel = sectionLabel;
+        const sectionLabels = this.sectionLabels || [];
+        let i = 2;
 
         //Concatenate a number to the label if this one already exists
         while (sectionLabels.includes(sectionLabel)) {

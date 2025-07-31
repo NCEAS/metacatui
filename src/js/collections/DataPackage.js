@@ -12,6 +12,7 @@ define([
   "models/DataONEObject",
   "models/metadata/ScienceMetadata",
   "models/metadata/eml211/EML211",
+  "common/Utilities",
 ], (
   $,
   _,
@@ -24,6 +25,7 @@ define([
   DataONEObject,
   ScienceMetadata,
   EML211,
+  Utilities,
 ) => {
   /**
    * @class DataPackage
@@ -1770,12 +1772,8 @@ define([
         this.packageModel.set("checksumAlgorithm", "MD5");
 
         // Set the file name based on the id
-        this.packageModel.set(
-          "fileName",
-          `${this.packageModel
-            .get("id")
-            .replace(/[^a-zA-Z0-9]/g, "_")}.rdf.xml`,
-        );
+        const idClean = Utilities.sanitizeStrict(this.packageModel.get("id"));
+        this.packageModel.set("fileName", `${idClean}.rdf.xml`);
 
         // Create the system metadata
         const sysMetaXML = this.packageModel.serializeSysMeta();
