@@ -4,30 +4,30 @@ define([
   "jquery",
   "underscore",
   "backbone",
-  "text!templates/maps/filter-by-attribute.html",
+  "text!templates/maps/vector-filter-panel.html",
   "models/maps/assets/MapAsset",
   "views/searchSelect/SearchSelectView",
   "models/maps/assets/Cesium3DTileset",
 ], ($, _, Backbone, Template, MapAsset, SearchSelect) => {
   /**
-   * @class FilterByAttributeView
-   * @classdesc FilterByAttributeView is a shared component for visualizing data based on the "filter" attributes
+   * @class VectorFilterView
+   * @classdesc VectorFilterView is a shared component for visualizing data based on the "filter" attributes
    * set up in the map configuration file. The initial implementation of this component focuses on time-series
    * data visualization.
    * @classcategory Views/Maps
-   * @name FilterByAttributeView
+   * @name VectorFilterView
    * @augments Backbone.View
    * @since 0.0.0
-   * @constructs FilterByAttributeView
+   * @constructs VectorFilterView
    */
 
-  const FilterByAttributeView = Backbone.View.extend(
-    /** @lends FilterByAttributeView.prototype */ {
+  const VectorFilterView = Backbone.View.extend(
+    /** @lends VectorFilterView.prototype */ {
       /**
        * The type of View this is
        * @type {string}
        */
-      type: "FilterByAttributeView",
+      type: "VectorFilterView",
 
       /**
        * The model that this view uses
@@ -54,7 +54,7 @@ define([
       },
 
       /**
-       * Executed when a new FilterByAttributeView is created
+       * Executed when a new VectorFilterView is created
        */
       initialize() {
         if (!this.model) return;
@@ -66,7 +66,7 @@ define([
 
       /**
        * Renders this view
-       * @returns {FilterByAttributeView} Returns the rendered view element
+       * @returns {VectorFilterView} Returns the rendered view element
        */
       render() {
         if (!this.filterModel) {
@@ -269,5 +269,5 @@ define([
     },
   );
 
-  return FilterByAttributeView;
+  return VectorFilterView;
 });

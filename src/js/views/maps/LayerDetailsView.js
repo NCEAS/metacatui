@@ -11,7 +11,7 @@ define([
   "views/maps/LayerOpacityView",
   "views/maps/LayerInfoView",
   "views/maps/LayerNavigationView",
-  "views/maps/FilterByAttributeView",
+  "views/maps/VectorFilterView",
 ], (
   $,
   _,
@@ -23,7 +23,7 @@ define([
   LayerOpacityView,
   LayerInfoView,
   LayerNavigationView,
-  FilterByAttributeView,
+  VectorFilterView,
 ) => {
   /**
    * @class LayerDetailsView
@@ -126,7 +126,7 @@ define([
         },
         {
           label: "Filter by Property",
-          view: FilterByAttributeView,
+          view: VectorFilterView,
           collapsible: false,
           showTitle: true,
           hideIfError: true,

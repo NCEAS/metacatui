@@ -202,7 +202,7 @@ define([
        * Insert the filter icon to the right of the label element text.
        * This icon appears for layers that are "filterable" based on their atrributes.
        * Filter attributes for each layer are defined in the map model.
-       * Layer items with this icon will have the Filter feature (built using FilterByAttributeView).
+       * Layer items with this icon will have the Filter feature (built using VectorFilterView).
        */
       insertFilterIcon() {
         const filterIconEl = document.createElement("button");
