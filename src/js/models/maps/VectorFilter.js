@@ -96,13 +96,12 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
       },
 
       /** @inheritdoc */
-      initialize(attributes, options) {
-        if (attributes.categorical) {
-          const allValues = attributes?.allValues;
-          const values = attributes?.value;
-          const hasValues = values && Array.isArray(values) && values.length;
-          const hasAllValues =
-            allValues && Array.isArray(allValues) && allValues.length;
+      initialize(attributes, _options) {
+        if (attributes.filterType === "categorical") {
+          const allValues = attributes?.allValues || [];
+          const values = attributes?.values || [];
+          const hasValues = Array.isArray(values) && values.length;
+          const hasAllValues = Array.isArray(allValues) && allValues.length;
 
           if (!hasAllValues && hasValues) {
             this.set("allValues", [...values]);
