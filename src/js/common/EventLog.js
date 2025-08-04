@@ -15,6 +15,17 @@ define(["models/analytics/Analytics"], (Analytics) => {
     warning: 1,
     error: 2,
   };
+
+  // Helper function to get or create a default analytics instance
+  const getDefaultAnalytics = () => {
+    // Try to use the global analytics instance first
+    if (typeof MetacatUI !== 'undefined' && MetacatUI.analytics) {
+      return MetacatUI.analytics;
+    }
+    // Fallback to creating a basic Analytics instance
+    return new Analytics();
+  };
+  
   /**
    * @class EventLog
    * @classdesc A utility class for recording events and grouping by context.
@@ -38,11 +49,10 @@ define(["models/analytics/Analytics"], (Analytics) => {
     constructor({
       consoleLevel = DEFAULT_CONSOLE_LEVEL,
       maxEvents = DEFAULT_MAX_EVENTS,
-      analyticsModel = new Analytics(),
+      analyticsModel = null,
     } = {}) {
       this.logs = new Map();
-      this.analytics =
-        analyticsModel instanceof Analytics ? analyticsModel : new Analytics();
+      this.analytics = analyticsModel || getDefaultAnalytics();
       this.maxEvents =
         Number.isInteger(maxEvents) && maxEvents > 0
           ? maxEvents
