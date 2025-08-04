@@ -4,7 +4,7 @@ MetacatUI.recaptchaURL =
   "https://www.google.com/recaptcha/api/js/recaptcha_ajax";
 if (MetacatUI.mapKey) {
   var gmapsURL =
-    "https://maps.googleapis.com/maps/api/js?v=3&libraries=places&key=" +
+    "https://maps.googleapis.com/maps/api/js?v=3&loading=async&libraries=places&key=" +
     MetacatUI.mapKey;
   define("gmaps", ["async!" + gmapsURL], function () {
     return google.maps;
@@ -176,7 +176,7 @@ MetacatUI.mapModel = MetacatUI.mapModel || {};
 MetacatUI.appLookupModel = MetacatUI.appLookupModel || {};
 MetacatUI.nodeModel = MetacatUI.nodeModel || {};
 MetacatUI.appUserModel = MetacatUI.appUserModel || {};
-MetacatUI.analytics = MetacatUI.analytics || {};
+MetacatUI.analytics = MetacatUI.analytics || null;
 
 /* Setup the application scaffolding first  */
 require(["bootstrap", "views/AppView", "models/AppModel"], function (
@@ -247,7 +247,11 @@ require(["bootstrap", "views/AppView", "models/AppModel"], function (
     MetacatUI.appUserModel = new UserModel();
 
     require(["models/analytics/GoogleAnalytics"], function (Analytics) {
-      MetacatUI.analytics = new Analytics();
+      // The Analytics file might be blocked from loading if certain blocker
+      // extensions are in use.
+      if (Analytics) {
+        MetacatUI.analytics = new Analytics();
+      }
     });
 
     /* Create a general event dispatcher to enable
