@@ -1,9 +1,10 @@
-define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
-  $,
-  _,
-  Backbone,
-  DataONEObject,
-) {
+define([
+  "jquery",
+  "underscore",
+  "backbone",
+  "models/DataONEObject",
+  "common/EMLUtilities",
+], function ($, _, Backbone, DataONEObject, EMLUtilities) {
   /**
    * @class EMLTemporalCoverage
    * @classcategory Models/Metadata/EML211
@@ -508,16 +509,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
        * @return {EML211 or false} - Returns the EML 211 Model or false if not found
        */
       getParentEML: function () {
-        var emlModel = this.get("parentModel"),
-          tries = 0;
-
-        while (emlModel.type !== "EML" && tries < 6) {
-          emlModel = emlModel.get("parentModel");
-          tries++;
-        }
-
-        if (emlModel && emlModel.type == "EML") return emlModel;
-        else return false;
+        return EMLUtilities.getParentEML(this);
       },
     },
   );

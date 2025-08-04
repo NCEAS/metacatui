@@ -3,7 +3,8 @@ define([
   "underscore",
   "backbone",
   "models/metadata/eml211/EMLEntity",
-], function ($, _, Backbone, EMLEntity) {
+  "common/EMLUtilities",
+], function ($, _, Backbone, EMLEntity, EMLUtilities) {
   /**
    * @class EMLDataTable
    * @classdesc EMLDataTable represents a tabular data entity, corresponding
@@ -235,16 +236,7 @@ define([
        * @return {EML211 or false} - Returns the EML 211 Model or false if not found
        */
       getParentEML: function () {
-        var emlModel = this.get("parentModel"),
-          tries = 0;
-
-        while (emlModel.type !== "EML" && tries < 6) {
-          emlModel = emlModel.get("parentModel");
-          tries++;
-        }
-
-        if (emlModel && emlModel.type == "EML") return emlModel;
-        else return false;
+        return EMLUtilities.getParentEML(this);
       },
     },
   );

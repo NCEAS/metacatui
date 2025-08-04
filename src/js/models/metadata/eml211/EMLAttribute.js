@@ -7,6 +7,7 @@ define([
   "models/metadata/eml211/EMLAnnotation",
   "collections/metadata/eml/EMLMissingValueCodes",
   "models/DataONEObject",
+  "common/EMLUtilities",
 ], (
   $,
   _,
@@ -16,6 +17,7 @@ define([
   EMLAnnotation,
   EMLMissingValueCodes,
   DataONEObject,
+  EMLUtilities,
 ) => {
   /**
    * @class EMLAttribute
@@ -664,16 +666,7 @@ define([
        * found
        */
       getParentEML() {
-        let emlModel = this.get("parentModel");
-        let tries = 0;
-
-        while (emlModel.type !== "EML" && tries < 6) {
-          emlModel = emlModel.get("parentModel");
-          tries += 1;
-        }
-
-        if (emlModel && emlModel.type === "EML") return emlModel;
-        return false;
+        return EMLUtilities.getParentEML(this);
       },
 
       /** Let the top level package know of attribute changes from this object */
