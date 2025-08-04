@@ -11,17 +11,17 @@ define([
   /**
    * @class UserModel
    * @classcategory Models
-   * @extends Backbone.Model
-   * @constructor
+   * @augments Backbone.Model
+   * @class
    */
   const UserModel = Backbone.Model.extend(
     /** @lends UserModel.prototype */ {
-      defaults: function () {
+      defaults() {
         return {
-          type: "person", //assume this is a person unless we are told otherwise - other possible type is a "group"
-          checked: false, //Is set to true when we have checked the account/subject info of this user
-          tokenChecked: false, //Is set to true when the uer auth token has been checked
-          basicUser: false, //Set to true to only query for basic info about this user - prevents sending queries for info that will never be displayed in the UI
+          type: "person", // assume this is a person unless we are told otherwise - other possible type is a "group"
+          checked: false, // Is set to true when we have checked the account/subject info of this user
+          tokenChecked: false, // Is set to true when the uer auth token has been checked
+          basicUser: false, // Set to true to only query for basic info about this user - prevents sending queries for info that will never be displayed in the UI
           lastName: null,
           firstName: null,
           fullName: null,
@@ -35,7 +35,7 @@ define([
           searchModel: null,
           searchResults: null,
           loggedIn: false,
-          ldapError: false, //Was there an error logging in to LDAP
+          ldapError: false, // Was there an error logging in to LDAP
           registered: false,
           isMemberOf: [],
           isOwnerOf: [],
@@ -54,7 +54,7 @@ define([
         };
       },
 
-      initialize: function (options) {
+      initialize(options) {
         if (typeof options !== "undefined") {
           if (options.username) this.set("username", options.username);
           if (options.rawData) this.set(this.parseXML(options.rawData));
@@ -70,33 +70,33 @@ define([
 
         this.on("change:username", this.createReadableUsername());
 
-        //Create a search results model for this person
-        var searchResults = new SearchResults([], { rows: 5, start: 0 });
+        // Create a search results model for this person
+        const searchResults = new SearchResults([], { rows: 5, start: 0 });
         this.set("searchResults", searchResults);
 
         if (MetacatUI.appModel.get("enableBookkeeperServices")) {
-          //When the user is logged in, see if they have a DataONE subscription
+          // When the user is logged in, see if they have a DataONE subscription
           this.on("change:loggedIn", this.fetchSubscription);
         }
       },
 
-      createSearchModel: function () {
-        //Create a search model that will retrieve data created by this person
+      createSearchModel() {
+        // Create a search model that will retrieve data created by this person
         this.set("searchModel", new SearchModel());
         this.updateSearchModel();
       },
 
-      updateSearchModel: function () {
+      updateSearchModel() {
         if (this.get("type") == "node") {
           this.get("searchModel").set("dataSource", [
             this.get("node").identifier,
           ]);
           this.get("searchModel").set("username", []);
         } else {
-          //Get all the identities for this person
-          var ids = [this.get("username")];
+          // Get all the identities for this person
+          const ids = [this.get("username")];
 
-          _.each(this.get("identities"), function (equivalentUser) {
+          _.each(this.get("identities"), (equivalentUser) => {
             ids.push(equivalentUser.get("username"));
           });
           this.get("searchModel").set("username", ids);
@@ -105,23 +105,24 @@ define([
         this.trigger("change:searchModel");
       },
 
-      parseXML: function (data) {
-        var model = this,
-          username = this.get("username");
+      parseXML(data) {
+        let username = this.get("username");
 
-        //Reset the group list so we don't just add it to it with push()
+        // Reset the group list so we don't just add it to it with push()
         this.set("isMemberOf", this.defaults().isMemberOf, { silent: true });
         this.set("isOwnerOf", this.defaults().isOwnerOf, { silent: true });
-        //Reset the equivalent id list so we don't just add it to it with push()
+        // Reset the equivalent id list so we don't just add it to it with push()
         this.set("identities", this.defaults().identities, { silent: true });
 
-        //Find this person's node in the XML
-        var userNode = null;
-        if (!username) var username = $(data).children("subject").text();
+        // Find this person's node in the XML
+        let userNode = null;
+        if (!username) username = $(data).children("subject").text();
         if (username) {
-          var subjects = $(data).find("subject");
-          for (var i = 0; i < subjects.length; i++) {
-            if ($(subjects[i]).text().toLowerCase() == username.toLowerCase()) {
+          const subjects = $(data).find("subject");
+          for (let i = 0; i < subjects.length; i++) {
+            if (
+              $(subjects[i]).text().toLowerCase() === username.toLowerCase()
+            ) {
               userNode = $(subjects[i]).parent();
               break;
             }
@@ -129,56 +130,56 @@ define([
         }
         if (!userNode) userNode = $(data).first();
 
-        //Get the type of user - either a person or group
-        var type = $(userNode).prop("tagName");
+        // Get the type of user - either a person or group
+        let type = $(userNode).prop("tagName");
         if (type) type = type.toLowerCase();
 
         if (type == "group") {
           var fullName = $(userNode).find("groupName").first().text();
         } else if (type) {
-          //Find the person's info
-          var firstName = $(userNode).find("givenName").first().text(),
-            lastName = $(userNode).find("familyName").first().text(),
-            email = $(userNode).find("email").first().text(),
-            verified = $(userNode).find("verified").first().text(),
-            memberOf = this.get("isMemberOf"),
-            ownerOf = this.get("isOwnerOf"),
-            identities = this.get("identities"),
-            equivUsernames = [];
+          // Find the person's info
+          var firstName = $(userNode).find("givenName").first().text();
+          var lastName = $(userNode).find("familyName").first().text();
+          var email = $(userNode).find("email").first().text();
+          var verified = $(userNode).find("verified").first().text();
+          var memberOf = this.get("isMemberOf");
+          var ownerOf = this.get("isOwnerOf");
+          var identities = this.get("identities");
+          var equivUsernames = [];
 
-          //Sometimes names are saved as "NA" when they are not available - translate these to false values
+          // Sometimes names are saved as "NA" when they are not available - translate these to false values
           if (firstName == "NA") firstName = null;
           if (lastName == "NA") lastName = null;
 
-          //Construct the fullname from the first and last names, but watch out for falsely values
+          // Construct the fullname from the first and last names, but watch out for falsely values
           var fullName = "";
-          fullName += firstName ? firstName : "";
-          fullName += lastName ? " " + lastName : "";
+          fullName += firstName || "";
+          fullName += lastName ? ` ${lastName}` : "";
 
           if (!fullName) fullName = this.getNameFromSubject(username);
 
-          //Don't get this detailed info about basic users
+          // Don't get this detailed info about basic users
           if (!this.get("basicUser")) {
-            //Get all the equivalent identities for this user
-            var equivalentIds = $(userNode).find("equivalentIdentity");
+            // Get all the equivalent identities for this user
+            const equivalentIds = $(userNode).find("equivalentIdentity");
             if (equivalentIds.length > 0)
               var allPersons = $(data).find("person subject");
 
-            _.each(equivalentIds, function (identity, i) {
-              //push onto the list
-              var username = $(identity).text(),
-                equivUserNode;
+            _.each(equivalentIds, (identity, i) => {
+              // push onto the list
+              const username = $(identity).text();
+              let equivUserNode;
 
-              //Find the matching person node in the response
-              _.each(allPersons, function (person) {
+              // Find the matching person node in the response
+              _.each(allPersons, (person) => {
                 if ($(person).text().toLowerCase() == username.toLowerCase()) {
                   equivUserNode = $(person).parent().first();
                   allPersons = _.without(allPersons, person);
                 }
               });
 
-              var equivalentUser = new UserModel({
-                username: username,
+              const equivalentUser = new UserModel({
+                username,
                 basicUser: true,
                 rawData: equivUserNode,
               });
@@ -187,17 +188,17 @@ define([
             });
           }
 
-          //Get each group and save
-          _.each($(data).find("group"), function (group, i) {
-            //Save group ID
-            var groupId = $(group).find("subject").first().text(),
-              groupName = $(group).find("groupName").text();
+          // Get each group and save
+          _.each($(data).find("group"), (group, i) => {
+            // Save group ID
+            const groupId = $(group).find("subject").first().text();
+            const groupName = $(group).find("groupName").text();
 
-            memberOf.push({ groupId: groupId, name: groupName });
+            memberOf.push({ groupId, name: groupName });
 
-            //Check if this person is a rightsholder
-            var allRightsHolders = [];
-            _.each($(group).children("rightsHolder"), function (rightsHolder) {
+            // Check if this person is a rightsholder
+            const allRightsHolders = [];
+            _.each($(group).children("rightsHolder"), (rightsHolder) => {
               allRightsHolders.push($(rightsHolder).text().toLowerCase());
             });
             if (_.contains(allRightsHolders, username.toLowerCase()))
@@ -205,67 +206,67 @@ define([
           });
         }
 
-        var allSubjects = _.pluck(this.get("isMemberOf"), "groupId");
+        let allSubjects = _.pluck(this.get("isMemberOf"), "groupId");
         allSubjects.push(this.get("username"));
         allSubjects = allSubjects.concat(equivUsernames);
 
         return {
           isMemberOf: memberOf,
           isOwnerOf: ownerOf,
-          identities: identities,
+          identities,
           allIdentitiesAndGroups: allSubjects,
-          verified: verified,
-          username: username,
-          firstName: firstName,
-          lastName: lastName,
-          fullName: fullName,
-          email: email,
+          verified,
+          username,
+          firstName,
+          lastName,
+          fullName,
+          email,
           registered: true,
-          type: type,
+          type,
           rawData: data,
         };
       },
 
-      getInfo: function () {
-        var model = this;
+      getInfo() {
+        const model = this;
 
-        //If the accounts service is not on, flag this user as checked/completed
+        // If the accounts service is not on, flag this user as checked/completed
         if (!MetacatUI.appModel.get("accountsUrl")) {
           this.set("fullName", this.getNameFromSubject());
           this.set("checked", true);
           return;
         }
 
-        //Only proceed if there is a username
+        // Only proceed if there is a username
         if (!this.get("username")) return;
 
-        //Get the user info using the DataONE API
-        var url =
+        // Get the user info using the DataONE API
+        const url =
           MetacatUI.appModel.get("accountsUrl") +
           encodeURIComponent(this.get("username"));
 
-        var requestSettings = {
+        const requestSettings = {
           type: "GET",
-          url: url,
-          success: function (data, textStatus, xhr) {
-            //Parse the XML response to get user info
-            var userProperties = model.parseXML(data);
-            //Filter out all the falsey values
-            _.each(userProperties, function (v, k) {
+          url,
+          success(data, textStatus, xhr) {
+            // Parse the XML response to get user info
+            const userProperties = model.parseXML(data);
+            // Filter out all the falsey values
+            _.each(userProperties, (v, k) => {
               if (!v) {
                 delete userProperties[k];
               }
             });
             model.set(userProperties);
 
-            //Trigger the change events
+            // Trigger the change events
             model.trigger("change:isMemberOf");
             model.trigger("change:isOwnerOf");
             model.trigger("change:identities");
 
             model.set("checked", true);
           },
-          error: function (xhr, textStatus, errorThrown) {
+          error(xhr, textStatus, errorThrown) {
             // Sometimes the node info has not been received before this getInfo() is called.
             // If the node info was received while this getInfo request was pending, and this user was determined
             // to be a node, then we can skip any further action here.
@@ -278,44 +279,39 @@ define([
               xhr.status == 404 &&
               !MetacatUI.nodeModel.get("checked")
             ) {
-              model.listenToOnce(
-                MetacatUI.nodeModel,
-                "change:checked",
-                function () {
-                  if (!model.isNode()) {
-                    model.set("fullName", model.getNameFromSubject());
-                    model.set("checked", true);
-                  }
-                },
-              );
+              model.listenToOnce(MetacatUI.nodeModel, "change:checked", () => {
+                if (!model.isNode()) {
+                  model.set("fullName", model.getNameFromSubject());
+                  model.set("checked", true);
+                }
+              });
             } else {
-              //As a backup, search for this user instead
-              var requestSettings = {
+              // As a backup, search for this user instead
+              const requestSettings = {
                 type: "GET",
-                url:
-                  MetacatUI.appModel.get("accountsUrl") +
-                  "?query=" +
-                  encodeURIComponent(model.get("username")),
-                success: function (data, textStatus, xhr) {
-                  //Parse the XML response to get user info
+                url: `${MetacatUI.appModel.get(
+                  "accountsUrl",
+                )}?query=${encodeURIComponent(model.get("username"))}`,
+                success(data, textStatus, xhr) {
+                  // Parse the XML response to get user info
                   model.set(model.parseXML(data));
 
-                  //Trigger the change events
+                  // Trigger the change events
                   model.trigger("change:isMemberOf");
                   model.trigger("change:isOwnerOf");
                   model.trigger("change:identities");
 
                   model.set("checked", true);
                 },
-                error: function () {
-                  //Set some blank values and flag as checked
-                  //model.set("username", "");
-                  //model.set("fullName", "");
+                error() {
+                  // Set some blank values and flag as checked
+                  // model.set("username", "");
+                  // model.set("fullName", "");
                   model.set("notFound", true);
                   model.set("checked", true);
                 },
               };
-              //Send the request
+              // Send the request
               $.ajax(
                 _.extend(
                   requestSettings,
@@ -326,7 +322,7 @@ define([
           },
         };
 
-        //Send the request
+        // Send the request
         $.ajax(
           _.extend(
             requestSettings,
@@ -335,44 +331,44 @@ define([
         );
       },
 
-      //Get the pending identity map requests, if the service is turned on
-      getPendingIdentities: function () {
+      // Get the pending identity map requests, if the service is turned on
+      getPendingIdentities() {
         if (!MetacatUI.appModel.get("pendingMapsUrl")) return false;
 
-        var model = this;
+        const model = this;
 
-        //Get the pending requests
-        var requestSettings = {
+        // Get the pending requests
+        const requestSettings = {
           url:
             MetacatUI.appModel.get("pendingMapsUrl") +
             encodeURIComponent(this.get("username")),
-          success: function (data, textStatus, xhr) {
-            //Reset the equivalent id list so we don't just add it to it with push()
+          success(data, textStatus, xhr) {
+            // Reset the equivalent id list so we don't just add it to it with push()
             model.set("pending", model.defaults().pending);
-            var pending = model.get("pending");
-            _.each($(data).find("person"), function (person, i) {
-              //Don't list yourself as a pending map request
-              var personsUsername = $(person).find("subject").text();
+            const pending = model.get("pending");
+            _.each($(data).find("person"), (person, i) => {
+              // Don't list yourself as a pending map request
+              const personsUsername = $(person).find("subject").text();
               if (
                 personsUsername.toLowerCase() ==
                 model.get("username").toLowerCase()
               )
                 return;
 
-              //Create a new User Model for this pending identity
-              var pendingUser = new UserModel({ rawData: person });
+              // Create a new User Model for this pending identity
+              const pendingUser = new UserModel({ rawData: person });
 
               if (pendingUser.isOrcid()) pendingUser.getInfo();
 
               pending.push(pendingUser);
             });
             model.set("pending", pending);
-            model.trigger("change:pending"); //Trigger the change event
+            model.trigger("change:pending"); // Trigger the change event
           },
-          error: function (xhr, textStatus) {
+          error(xhr, textStatus) {
             if (xhr.responseText.indexOf("error code 34")) {
               model.set("pending", model.defaults().pending);
-              model.trigger("change:pending"); //Trigger the change event
+              model.trigger("change:pending"); // Trigger the change event
             }
           },
         };
@@ -385,9 +381,9 @@ define([
         );
       },
 
-      getNameFromSubject: function (username) {
-        var username = username || this.get("username"),
-          fullName = "";
+      getNameFromSubject(username) {
+        var username = username || this.get("username");
+        let fullName = "";
 
         if (!username) return;
 
@@ -402,92 +398,87 @@ define([
             username.indexOf(","),
           );
 
-        //Cut off the last string after the name when it contains digits - not part of this person's names
+        // Cut off the last string after the name when it contains digits - not part of this person's names
         if (fullName.lastIndexOf(" ") > fullName.indexOf(" ")) {
-          var lastWord = fullName.substring(fullName.lastIndexOf(" "));
+          const lastWord = fullName.substring(fullName.lastIndexOf(" "));
           if (lastWord.search(/\d/) > -1)
             fullName = fullName.substring(0, fullName.lastIndexOf(" "));
         }
 
-        //Default to the username
+        // Default to the username
         if (!fullName) fullName = this.get("fullname") || username;
 
         return fullName;
       },
 
-      isOrcid: function (orcid) {
-        var username = typeof orcid === "string" ? orcid : this.get("username");
+      isOrcid(orcid) {
+        const username =
+          typeof orcid === "string" ? orcid : this.get("username");
 
-        //Have we already verified this?
-        if (typeof orcid == "undefined" && username == this.get("orcid"))
+        // Have we already verified this?
+        if (typeof orcid === "undefined" && username == this.get("orcid"))
           return true;
 
-        //Checks for ORCIDs using the orcid base URL as a prefix
+        // Checks for ORCIDs using the orcid base URL as a prefix
         if (username.indexOf("orcid.org/") > -1) {
           return true;
         }
 
-        //If the ORCID base url is not present, we will check if this is a 19-digit ORCID ID
-        //A simple and fast check first
-        //ORCiDs are 16 digits and 3 dashes - 19 characters
+        // If the ORCID base url is not present, we will check if this is a 19-digit ORCID ID
+        // A simple and fast check first
+        // ORCiDs are 16 digits and 3 dashes - 19 characters
         if (username.length != 19) return false;
 
         /* The ORCID checksum algorithm to determine is a character string is an ORCiD
          * http://support.orcid.org/knowledgebase/articles/116780-structure-of-the-orcid-identifier
          */
-        var total = 0,
-          baseDigits = username.replace(/-/g, "").substr(0, 15);
+        let total = 0;
+        const baseDigits = username.replace(/-/g, "").substr(0, 15);
 
-        for (var i = 0; i < baseDigits.length; i++) {
-          var digit = parseInt(baseDigits.charAt(i));
+        for (let i = 0; i < baseDigits.length; i++) {
+          const digit = parseInt(baseDigits.charAt(i));
           total = (total + digit) * 2;
         }
 
-        var remainder = total % 11,
-          result = (12 - remainder) % 11,
-          checkDigit = result == 10 ? "X" : result.toString(),
-          isOrcid = checkDigit == username.charAt(username.length - 1);
+        const remainder = total % 11;
+        const result = (12 - remainder) % 11;
+        const checkDigit = result == 10 ? "X" : result.toString();
+        const isOrcid = checkDigit == username.charAt(username.length - 1);
 
         if (isOrcid) this.set("orcid", username);
 
         return isOrcid;
       },
 
-      isNode: function () {
-        var model = this;
-        var node = _.find(
+      isNode() {
+        const model = this;
+        const node = _.find(
           MetacatUI.nodeModel.get("members"),
-          function (nodeModel) {
-            return (
-              nodeModel.shortIdentifier.toLowerCase() ==
-              model.get("username").toLowerCase()
-            );
-          },
+          (nodeModel) =>
+            nodeModel.shortIdentifier.toLowerCase() ==
+            model.get("username").toLowerCase(),
         );
 
         return node && node !== undefined;
       },
 
       // Will check if this user is a Member Node. If so, it will save the MN info to the model
-      saveAsNode: function () {
+      saveAsNode() {
         if (!this.isNode()) return;
 
-        var model = this;
-        var node = _.find(
+        const model = this;
+        const node = _.find(
           MetacatUI.nodeModel.get("members"),
-          function (nodeModel) {
-            return (
-              nodeModel.shortIdentifier.toLowerCase() ==
-              model.get("username").toLowerCase()
-            );
-          },
+          (nodeModel) =>
+            nodeModel.shortIdentifier.toLowerCase() ==
+            model.get("username").toLowerCase(),
         );
 
         this.set({
           type: "node",
           logo: node.logo,
           description: node.description,
-          node: node,
+          node,
           fullName: node.name,
           usernameReadable: this.get("username"),
         });
@@ -495,22 +486,22 @@ define([
         this.set("checked", true);
       },
 
-      loginLdap: function (formData, success, error) {
+      loginLdap(formData, success, error) {
         if (!formData || !appModel.get("signInUrlLdap")) return false;
 
-        var model = this;
+        const model = this;
 
-        var requestSettings = {
+        const requestSettings = {
           type: "POST",
           url: MetacatUI.appModel.get("signInUrlLdap") + window.location.href,
           data: formData,
-          success: function (data, textStatus, xhr) {
+          success(data, textStatus, xhr) {
             if (success) success(this);
 
             model.getToken();
           },
-          error: function () {
-            /*if(error)
+          error() {
+            /* if(error)
 						error(this);
 					*/
             model.getToken();
@@ -525,43 +516,43 @@ define([
         );
       },
 
-      logout: function () {
-        //Construct the sign out url and redirect
-        var signOutUrl = MetacatUI.appModel.get("signOutUrl"),
-          target = Backbone.history.location.href;
+      logout() {
+        // Construct the sign out url and redirect
+        let signOutUrl = MetacatUI.appModel.get("signOutUrl");
+        let target = Backbone.history.location.href;
 
         // DO NOT include the route otherwise we have an infinite redirect
         // target  = target.split("#")[0];
         target = target.slice(0, -8);
 
         // make sure to include the target
-        signOutUrl += "?target=" + target;
+        signOutUrl += `?target=${target}`;
 
         // do it!
         window.location.replace(signOutUrl);
       },
 
       // call Metacat or the DataONE CN to validate the session and tell us the user's name
-      checkStatus: function (onSuccess, onError) {
-        var model = this;
+      checkStatus(onSuccess, onError) {
+        const model = this;
 
         if (!MetacatUI.appModel.get("tokenUrl")) {
           // look up the URL
-          var metacatUrl = MetacatUI.appModel.get("metacatServiceUrl");
+          const metacatUrl = MetacatUI.appModel.get("metacatServiceUrl");
 
           // ajax call to validate the session/get the user info
-          var requestSettings = {
+          const requestSettings = {
             type: "POST",
             url: metacatUrl,
             data: { action: "validatesession" },
-            success: function (data, textStatus, xhr) {
+            success(data, textStatus, xhr) {
               // the Metacat (XML) response should have a fullName element
-              var username = $(data).find("name").text();
+              const username = $(data).find("name").text();
 
               // set in the model
               model.set("username", username);
 
-              //Are we logged in?
+              // Are we logged in?
               if (username) {
                 model.set("loggedIn", true);
                 model.getInfo();
@@ -573,8 +564,8 @@ define([
 
               if (onSuccess) onSuccess(data);
             },
-            error: function (data, textStatus, xhr) {
-              //User is not logged in
+            error(data, textStatus, xhr) {
+              // User is not logged in
               model.reset();
 
               if (onError) onError();
@@ -593,25 +584,29 @@ define([
         }
       },
 
-      getToken: function (customCallback) {
-        var tokenUrl = MetacatUI.appModel.get("tokenUrl");
-        var model = this;
+      getToken(customCallback) {
+        this.set("checked", false);
+        this.set("tokenChecked", false);
+        this.set("error", null);
+
+        const tokenUrl = MetacatUI.appModel.get("tokenUrl");
+        const model = this;
 
         if (!tokenUrl) return false;
 
-        //Set up the function that will be called when we retrieve a token
-        var callback =
+        // Set up the function that will be called when we retrieve a token
+        const callback =
           typeof customCallback === "function"
             ? customCallback
             : function (data, textStatus, xhr) {
                 // the response should have the token
-                var payload = model.parseToken(data),
-                  username = payload ? payload.userId : null,
-                  fullName = payload
-                    ? payload.fullName
-                    : model.getNameFromSubject(username) || null,
-                  token = payload ? data : null,
-                  loggedIn = payload ? true : false;
+                const payload = model.parseToken(data);
+                const username = payload ? payload.userId : null;
+                const fullName = payload
+                  ? payload.fullName
+                  : model.getNameFromSubject(username) || null;
+                const token = payload ? data : null;
+                const loggedIn = !!payload;
 
                 // set in the model
                 model.set("fullName", fullName);
@@ -627,7 +622,7 @@ define([
               };
 
         // ajax call to get token
-        var requestSettings = {
+        const requestSettings = {
           type: "GET",
           dataType: "text",
           xhrFields: {
@@ -636,26 +631,60 @@ define([
           url: tokenUrl,
           data: {},
           success: callback,
-          error: function (xhr, textStatus, errorThrown) {
+          error(xhr, textStatus, errorThrown) {
             model.set("checked", true);
+            model.set("error", textStatus);
           },
         };
 
         $.ajax(requestSettings);
       },
 
-      getTokenExpiration: function (payload) {
+      /**
+       * Returns a promise that resolves with the token when it is retrieved.
+       * @param {number} [timeout] - The time in milliseconds to wait for the
+       * token before rejecting the promise.
+       * @returns {Promise<string>} A promise that resolves with the token or
+       * rejects with an error message.
+       */
+      getTokenPromise(timeout = 5000) {
+        const model = this;
+        return new Promise((resolve, reject) => {
+          const listenModel = new Backbone.Model();
+          const stopListenModel = () => {
+            listenModel.stopListening();
+            listenModel.destroy();
+          };
+          listenModel.listenToOnce(model, "change:error", () => {
+            stopListenModel();
+            reject(model.get("error"));
+          });
+          listenModel.listenToOnce(model, "change:tokenChecked", () => {
+            stopListenModel();
+            resolve(model.get("token"));
+          });
+          if (timeout) {
+            setTimeout(() => {
+              stopListenModel();
+              reject(new Error("token check timed out"));
+            }, timeout);
+          }
+          model.getToken();
+        });
+      },
+
+      getTokenExpiration(payload) {
         if (!payload && this.get("token"))
           var payload = this.parseToken(this.get("token"));
         if (!payload) return;
 
-        //The exp claim should be standard - it is in UTC seconds
-        var expires = payload.exp ? new Date(payload.exp * 1000) : null;
+        // The exp claim should be standard - it is in UTC seconds
+        let expires = payload.exp ? new Date(payload.exp * 1000) : null;
 
-        //Use the issuedAt and ttl as a backup (only used in d1 2.0.0 and 2.0.1)
+        // Use the issuedAt and ttl as a backup (only used in d1 2.0.0 and 2.0.1)
         if (!expires) {
-          var issuedAt = payload.issuedAt ? new Date(payload.issuedAt) : null,
-            lifeSpan = payload.ttl ? payload.ttl : null;
+          const issuedAt = payload.issuedAt ? new Date(payload.issuedAt) : null;
+          const lifeSpan = payload.ttl ? payload.ttl : null;
 
           if (issuedAt && lifeSpan && lifeSpan > 99999)
             issuedAt.setMilliseconds(lifeSpan);
@@ -667,33 +696,33 @@ define([
         this.set("expires", expires);
       },
 
-      checkToken: function (onSuccess, onError) {
-        //First check if the token has expired
+      checkToken(onSuccess, onError) {
+        // First check if the token has expired
         if (MetacatUI.appUserModel.get("expires") > new Date()) {
           if (onSuccess) onSuccess();
 
           return;
         }
 
-        var model = this;
+        const model = this;
 
-        var url = MetacatUI.appModel.get("tokenUrl");
+        const url = MetacatUI.appModel.get("tokenUrl");
         if (!url) return;
 
-        var requestSettings = {
+        const requestSettings = {
           type: "GET",
-          url: url,
+          url,
           headers: {
             "Cache-Control": "no-cache",
           },
-          success: function (data, textStatus, xhr) {
+          success(data, textStatus, xhr) {
             if (data) {
               // the response should have the token
-              var payload = model.parseToken(data),
-                username = payload ? payload.userId : null,
-                fullName = payload ? payload.fullName : null,
-                token = payload ? data : null,
-                loggedIn = payload ? true : false;
+              const payload = model.parseToken(data);
+              const username = payload ? payload.userId : null;
+              const fullName = payload ? payload.fullName : null;
+              const token = payload ? data : null;
+              const loggedIn = !!payload;
 
               // set in the model
               model.set("fullName", fullName);
@@ -708,8 +737,8 @@ define([
               if (onSuccess) onSuccess(data, textStatus, xhr);
             } else if (onError) onError(data, textStatus, xhr);
           },
-          error: function (data, textStatus, xhr) {
-            //If this token in invalid, then reset the user model/log out
+          error(data, textStatus, xhr) {
+            // If this token in invalid, then reset the user model/log out
             MetacatUI.appUserModel.reset();
 
             if (onError) onError(data, textStatus, xhr);
@@ -724,11 +753,11 @@ define([
         );
       },
 
-      parseToken: function (token) {
-        if (typeof token == "undefined") var token = this.get("token");
+      parseToken(token) {
+        if (typeof token === "undefined") var token = this.get("token");
 
-        var jws = new KJUR.jws.JWS();
-        var result = 0;
+        const jws = new KJUR.jws.JWS();
+        let result = 0;
         try {
           result = jws.parseJWS(token);
         } catch (ex) {
@@ -737,54 +766,46 @@ define([
 
         if (!jws.parsedJWS) return "";
 
-        var payload = $.parseJSON(jws.parsedJWS.payloadS);
+        const payload = $.parseJSON(jws.parsedJWS.payloadS);
         return payload;
       },
 
-      update: function (onSuccess, onError) {
-        var model = this;
+      update(onSuccess, onError) {
+        const model = this;
 
-        var person =
-          '<?xml version="1.0" encoding="UTF-8"?>' +
-          '<d1:person xmlns:d1="http://ns.dataone.org/service/types/v1">' +
-          "<subject>" +
-          this.get("username") +
-          "</subject>" +
-          "<givenName>" +
-          this.get("firstName") +
-          "</givenName>" +
-          "<familyName>" +
-          this.get("lastName") +
-          "</familyName>" +
-          "<email>" +
-          this.get("email") +
-          "</email>" +
-          "</d1:person>";
+        const person =
+          `<?xml version="1.0" encoding="UTF-8"?>` +
+          `<d1:person xmlns:d1="http://ns.dataone.org/service/types/v1">` +
+          `<subject>${this.get("username")}</subject>` +
+          `<givenName>${this.get("firstName")}</givenName>` +
+          `<familyName>${this.get("lastName")}</familyName>` +
+          `<email>${this.get("email")}</email>` +
+          `</d1:person>`;
 
-        var xmlBlob = new Blob([person], { type: "application/xml" });
-        var formData = new FormData();
+        const xmlBlob = new Blob([person], { type: "application/xml" });
+        const formData = new FormData();
         formData.append("subject", this.get("username"));
         formData.append("person", xmlBlob, "person");
 
-        var updateUrl =
+        const updateUrl =
           MetacatUI.appModel.get("accountsUrl") +
           encodeURIComponent(this.get("username"));
 
         // ajax call to update
-        var requestSettings = {
+        const requestSettings = {
           type: "PUT",
           cache: false,
           contentType: false,
           processData: false,
           url: updateUrl,
           data: formData,
-          success: function (data, textStatus, xhr) {
-            if (typeof onSuccess != "undefined") onSuccess(data);
+          success(data, textStatus, xhr) {
+            if (typeof onSuccess !== "undefined") onSuccess(data);
 
-            //model.getInfo();
+            // model.getInfo();
           },
-          error: function (data, textStatus, xhr) {
-            if (typeof onError != "undefined") onError(data);
+          error(data, textStatus, xhr) {
+            if (typeof onError !== "undefined") onError(data);
           },
         };
 
@@ -796,28 +817,28 @@ define([
         );
       },
 
-      confirmMapRequest: function (otherUsername, onSuccess, onError) {
+      confirmMapRequest(otherUsername, onSuccess, onError) {
         if (!otherUsername) return;
 
-        var mapUrl =
-            MetacatUI.appModel.get("pendingMapsUrl") +
-            encodeURIComponent(otherUsername),
-          model = this;
+        const mapUrl =
+          MetacatUI.appModel.get("pendingMapsUrl") +
+          encodeURIComponent(otherUsername);
+        const model = this;
 
         if (!onSuccess) var onSuccess = function () {};
         if (!onError) var onError = function () {};
 
         // ajax call to confirm map
-        var requestSettings = {
+        const requestSettings = {
           type: "PUT",
           url: mapUrl,
-          success: function (data, textStatus, xhr) {
+          success(data, textStatus, xhr) {
             if (onSuccess) onSuccess(data, textStatus, xhr);
 
-            //Get updated info
+            // Get updated info
             model.getInfo();
           },
-          error: function (xhr, textStatus, error) {
+          error(xhr, textStatus, error) {
             if (onError) onError(xhr, textStatus, error);
           },
         };
@@ -829,26 +850,26 @@ define([
         );
       },
 
-      denyMapRequest: function (otherUsername, onSuccess, onError) {
+      denyMapRequest(otherUsername, onSuccess, onError) {
         if (!otherUsername) return;
 
-        var mapUrl =
-            MetacatUI.appModel.get("pendingMapsUrl") +
-            encodeURIComponent(otherUsername),
-          model = this;
+        const mapUrl =
+          MetacatUI.appModel.get("pendingMapsUrl") +
+          encodeURIComponent(otherUsername);
+        const model = this;
 
         // ajax call to reject map
-        var requestSettings = {
+        const requestSettings = {
           type: "DELETE",
           url: mapUrl,
-          success: function (data, textStatus, xhr) {
-            if (typeof onSuccess == "function")
+          success(data, textStatus, xhr) {
+            if (typeof onSuccess === "function")
               onSuccess(data, textStatus, xhr);
 
             model.getInfo();
           },
-          error: function (xhr, textStatus, error) {
-            if (typeof onError == "function") onError(xhr, textStatus, error);
+          error(xhr, textStatus, error) {
+            if (typeof onError === "function") onError(xhr, textStatus, error);
           },
         };
         $.ajax(
@@ -859,38 +880,38 @@ define([
         );
       },
 
-      addMap: function (otherUsername, onSuccess, onError) {
+      addMap(otherUsername, onSuccess, onError) {
         if (!otherUsername) return;
 
-        var mapUrl = MetacatUI.appModel.get("pendingMapsUrl"),
-          model = this;
+        let mapUrl = MetacatUI.appModel.get("pendingMapsUrl");
+        const model = this;
 
         if (mapUrl.charAt(mapUrl.length - 1) == "/") {
           mapUrl = mapUrl.substring(0, mapUrl.length - 1);
         }
 
         // ajax call to map
-        var requestSettings = {
+        const requestSettings = {
           type: "POST",
           xhrFields: {
             withCredentials: true,
           },
           headers: {
-            Authorization: "Bearer " + this.get("token"),
+            Authorization: `Bearer ${this.get("token")}`,
           },
           url: mapUrl,
           data: {
             subject: otherUsername,
           },
-          success: function (data, textStatus, xhr) {
-            if (typeof onSuccess == "function")
+          success(data, textStatus, xhr) {
+            if (typeof onSuccess === "function")
               onSuccess(data, textStatus, xhr);
 
             model.getInfo();
           },
-          error: function (xhr, textStatus, error) {
-            //Check if the username might have been spelled or formatted incorrectly
-            //ORCIDs, in particular, have different formats that we should account for
+          error(xhr, textStatus, error) {
+            // Check if the username might have been spelled or formatted incorrectly
+            // ORCIDs, in particular, have different formats that we should account for
             if (
               xhr.responseText.indexOf("LDAP: error code 32 - No Such Object") >
                 -1 &&
@@ -898,7 +919,7 @@ define([
             ) {
               if (otherUsername.length == 19)
                 model.addMap(
-                  "http://orcid.org/" + otherUsername,
+                  `http://orcid.org/${otherUsername}`,
                   onSuccess,
                   onError,
                 );
@@ -909,7 +930,7 @@ define([
                   onError,
                 );
               else if (otherUsername.indexOf("orcid.org") == 0)
-                model.addMap("http://" + otherUsername, onSuccess, onError);
+                model.addMap(`http://${otherUsername}`, onSuccess, onError);
               else if (otherUsername.indexOf("www.orcid.org") == 0)
                 model.addMap(
                   otherUsername.replace("www.", "http://"),
@@ -928,11 +949,10 @@ define([
                   onSuccess,
                   onError,
                 );
-              else if (typeof onError == "function")
+              else if (typeof onError === "function")
                 onError(xhr, textStatus, error);
-            } else {
-              if (typeof onError == "function") onError(xhr, textStatus, error);
-            }
+            } else if (typeof onError === "function")
+              onError(xhr, textStatus, error);
           },
         };
 
@@ -944,26 +964,26 @@ define([
         );
       },
 
-      removeMap: function (otherUsername, onSuccess, onError) {
+      removeMap(otherUsername, onSuccess, onError) {
         if (!otherUsername) return;
 
-        var mapUrl =
-            MetacatUI.appModel.get("accountsMapsUrl") +
-            encodeURIComponent(otherUsername),
-          model = this;
+        const mapUrl =
+          MetacatUI.appModel.get("accountsMapsUrl") +
+          encodeURIComponent(otherUsername);
+        const model = this;
 
         // ajax call to remove mapping
-        var requestSettings = {
+        const requestSettings = {
           type: "DELETE",
           url: mapUrl,
-          success: function (data, textStatus, xhr) {
-            if (typeof onSuccess == "function")
+          success(data, textStatus, xhr) {
+            if (typeof onSuccess === "function")
               onSuccess(data, textStatus, xhr);
 
             model.getInfo();
           },
-          error: function (xhr, textStatus, error) {
-            if (typeof onError == "function") onError(xhr, textStatus, error);
+          error(xhr, textStatus, error) {
+            if (typeof onError === "function") onError(xhr, textStatus, error);
           },
         };
         $.ajax(
@@ -974,17 +994,17 @@ define([
         );
       },
 
-      failedLdapLogin: function () {
+      failedLdapLogin() {
         this.set("loggedIn", false);
         this.set("checked", true);
         this.set("ldapError", true);
       },
 
-      pluckIdentityUsernames: function () {
-        var models = this.get("identities"),
-          usernames = [];
+      pluckIdentityUsernames() {
+        const models = this.get("identities");
+        const usernames = [];
 
-        _.each(models, function (m) {
+        _.each(models, (m) => {
           usernames.push(m.get("username").toLowerCase());
         });
 
@@ -992,20 +1012,20 @@ define([
         this.trigger("change:identitiesUsernames");
       },
 
-      createReadableUsername: function () {
+      createReadableUsername() {
         if (!this.get("username")) return;
 
-        var username = this.get("username"),
-          readableUsername =
-            username.substring(
-              username.indexOf("=") + 1,
-              username.indexOf(","),
-            ) || username;
+        const username = this.get("username");
+        const readableUsername =
+          username.substring(
+            username.indexOf("=") + 1,
+            username.indexOf(","),
+          ) || username;
 
         this.set("usernameReadable", readableUsername);
       },
 
-      createAjaxSettings: function () {
+      createAjaxSettings() {
         if (!this.get("token")) return {};
 
         return {
@@ -1013,7 +1033,7 @@ define([
             withCredentials: true,
           },
           headers: {
-            Authorization: "Bearer " + this.get("token"),
+            Authorization: `Bearer ${this.get("token")}`,
           },
         };
       },
@@ -1042,15 +1062,15 @@ define([
        * @param {string} customerGroup - The subject or identifier of the customer/membership group
        * to use this quota against
        */
-      checkQuota: function (action, customerGroup) {
-        //Temporarily reset the quota so a trigger event is changed when the XHR is complete
+      checkQuota(action, customerGroup) {
+        // Temporarily reset the quota so a trigger event is changed when the XHR is complete
         this.set("portalQuota", -1, { silent: true });
 
-        //Start of temporary code
-        //TODO: Replace this function with real code once the quota service is working
+        // Start of temporary code
+        // TODO: Replace this function with real code once the quota service is working
         this.set("portalQuota", 999);
-        return;
-        //End of temporary code
+
+        // End of temporary code
 
         /*  var model = this;
 
@@ -1072,22 +1092,21 @@ define([
       /**
        * Checks if the user has authorization to perform the given action.
        */
-      isAuthorizedCreatePortal: function () {
-        //Reset the isAuthorized attribute silently so a change event is always triggered
+      isAuthorizedCreatePortal() {
+        // Reset the isAuthorized attribute silently so a change event is always triggered
         this.set("isAuthorizedCreatePortal", null, { silent: true });
 
-        //If the user isn't logged in, set authorization to false
+        // If the user isn't logged in, set authorization to false
         if (!this.get("loggedIn")) {
           this.set("isAuthorizedCreatePortal", false);
           return;
         }
 
-        //If creating portals has been disabled app-wide, then set to false
+        // If creating portals has been disabled app-wide, then set to false
         if (MetacatUI.appModel.get("enableCreatePortals") === false) {
           this.set("isAuthorizedCreatePortal", false);
-          return;
         }
-        //If creating portals has been limited to only certain subjects, check if this user is one of them
+        // If creating portals has been limited to only certain subjects, check if this user is one of them
         else if (MetacatUI.appModel.get("limitPortalsToSubjects").length) {
           if (!this.get("allIdentitiesAndGroups").length) {
             this.on(
@@ -1097,56 +1116,54 @@ define([
             return;
           }
 
-          //Find the subjects that have access to create portals. Could be specific users or groups.
-          var subjectsThatHaveAccess = _.intersection(
+          // Find the subjects that have access to create portals. Could be specific users or groups.
+          const subjectsThatHaveAccess = _.intersection(
             MetacatUI.appModel.get("limitPortalsToSubjects"),
             this.get("allIdentitiesAndGroups"),
           );
           if (!subjectsThatHaveAccess.length) {
-            //If this user is not in the whitelist, set to false
+            // If this user is not in the whitelist, set to false
             this.set("isAuthorizedCreatePortal", false);
           } else {
-            //If this user is in the whitelist, set to true
+            // If this user is in the whitelist, set to true
             this.set("isAuthorizedCreatePortal", true);
           }
-          return;
         }
-        //If anyone is allowed to create a portal, check if they have the quota to create a portal
+        // If anyone is allowed to create a portal, check if they have the quota to create a portal
         else if (MetacatUI.appModel.get("enableBookkeeperServices")) {
-          //Get the Quotas for this user
-          var quotas = this.get("dataoneQuotas"),
-            portalQuotas;
+          // Get the Quotas for this user
+          const quotas = this.get("dataoneQuotas");
 
-          //If the Quotas are still being fetched,
+          // If the Quotas are still being fetched,
           if (quotas == this.defaults().dataoneQuotas && !quotas) {
             this.on("change:dataoneQuotas", this.isAuthorizedCreatePortal);
             return;
-          } else {
-            portalQuotas = quotas.where({ quotaType: "portal" });
           }
+          const portalQuotas = quotas.where({ quotaType: "portal" });
 
-          //If this user has no portal Quota at all, they are not auth to create a portal
+          // If this user has no portal Quota at all, they are not auth to create a portal
           if (!portalQuotas) {
             this.set("isAuthorizedCreatePortal", false);
           } else {
-            //Check that there is at least one Quota where the totalUsage < softLimit
-            var hasRemainingUsage = _.some(portalQuotas, function (quota) {
-              return quota.get("totalUsage") < quota.get("softLimit");
-            });
+            // Check that there is at least one Quota where the totalUsage < softLimit
+            const hasRemainingUsage = _.some(
+              portalQuotas,
+              (quota) => quota.get("totalUsage") < quota.get("softLimit"),
+            );
 
-            //If there is remaining usage left in at least one Quota, then the user can create a portal
+            // If there is remaining usage left in at least one Quota, then the user can create a portal
             if (hasRemainingUsage) {
               this.set("isAuthorizedCreatePortal", true);
             }
-            //Otherwise they cannot create a new portal
+            // Otherwise they cannot create a new portal
             else {
               this.set("isAuthorizedCreatePortal", false);
             }
           }
 
-          //@todoGet the admin group and force admins to have at least one quota left
+          // @todoGet the admin group and force admins to have at least one quota left
         } else {
-          //Default to letting people create portals
+          // Default to letting people create portals
           this.set("isAuthorizedCreatePortal", true);
         }
       },
@@ -1159,13 +1176,13 @@ define([
        * @param {string|string[]} subjects
        * @returns {boolean}
        */
-      hasIdentityOverlap: function (subjects) {
+      hasIdentityOverlap(subjects) {
         try {
-          //If only a single subject is given, put it in an array
-          if (typeof subjects == "string") {
+          // If only a single subject is given, put it in an array
+          if (typeof subjects === "string") {
             subjects = [subjects];
           }
-          //If the subjects are not a string or an array, or if it's an empty array, exit this function.
+          // If the subjects are not a string or an array, or if it's an empty array, exit this function.
           else if (!Array.isArray(subjects) || !subjects.length) {
             return false;
           }
@@ -1181,58 +1198,58 @@ define([
       /**
        * Retrieve all the info about this user's DataONE Subscription
        */
-      fetchSubscription: function () {
-        //If Bookkeeper services are disabled, exit
+      fetchSubscription() {
+        // If Bookkeeper services are disabled, exit
         if (!MetacatUI.appModel.get("enableBookkeeperServices")) {
           return;
         }
 
         try {
-          var thisUser = this;
+          const thisUser = this;
           require([
             "collections/bookkeeper/Quotas",
             "models/bookkeeper/Subscription",
-          ], function (Quotas, Subscription) {
-            //Create a Quotas collection
-            var quotas = new Quotas();
+          ], (Quotas, Subscription) => {
+            // Create a Quotas collection
+            const quotas = new Quotas();
 
-            //Create a Subscription model
-            var subscription = new Subscription();
+            // Create a Subscription model
+            const subscription = new Subscription();
 
             if (MetacatUI.appModel.get("dataonePlusPreviewMode")) {
-              //Create Quota models for preview mode
+              // Create Quota models for preview mode
               quotas.add({
                 softLimit: MetacatUI.appModel.get("portalLimit"),
                 hardLimit: MetacatUI.appModel.get("portalLimit"),
                 quotaType: "portal",
                 unit: "portal",
                 subject: thisUser.get("username"),
-                subscription: subscription,
+                subscription,
               });
 
-              //Default to all people being in trial mode
+              // Default to all people being in trial mode
               subscription.set("status", "trialing");
 
-              //Save a reference to the Quotas on this UserModel
+              // Save a reference to the Quotas on this UserModel
               thisUser.set("dataoneQuotas", quotas);
 
-              //Save a reference to the Subscriptioin on this UserModel
+              // Save a reference to the Subscriptioin on this UserModel
               thisUser.set("dataoneSubscription", subscription);
             } else {
-              thisUser.listenToOnce(quotas, "reset", function () {
-                //Save a reference to the Quotas on this UserModel
+              thisUser.listenToOnce(quotas, "reset", () => {
+                // Save a reference to the Quotas on this UserModel
                 thisUser.set("dataoneQuotas", quotas);
               });
 
-              thisUser.listenToOnce(subscription, "sync", function () {
-                //Save a reference to the Subscriptioin on this UserModel
+              thisUser.listenToOnce(subscription, "sync", () => {
+                // Save a reference to the Subscriptioin on this UserModel
                 thisUser.set("dataoneSubscription", subscription);
               });
 
-              //Fetch the Quotas
+              // Fetch the Quotas
               quotas.fetch({ subscriber: thisUser.get("username") });
 
-              //Fetch the Subscriptioin
+              // Fetch the Subscriptioin
               subscription.fetch();
             }
           });
@@ -1249,20 +1266,20 @@ define([
        * @param {string} [type] - The Quota type to return
        * @returns {Quota[]} The filtered array of Quota models or an empty array, if none are found
        */
-      getQuotas: function (type) {
-        var quotas = this.get("dataoneQuotas");
+      getQuotas(type) {
+        const quotas = this.get("dataoneQuotas");
 
         if (quotas && type) {
           return quotas.where({ quotaType: type });
-        } else if (quotas && !type) {
-          return quotas;
-        } else {
-          return [];
         }
+        if (quotas && !type) {
+          return quotas;
+        }
+        return [];
       },
 
-      reset: function () {
-        var defaults = _.omit(this.defaults(), [
+      reset() {
+        const defaults = _.omit(this.defaults(), [
           "searchModel",
           "searchResults",
         ]);

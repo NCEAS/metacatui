@@ -27,6 +27,9 @@ define(["models/analytics/Analytics"], function (Analytics) {
        */
       type: "GoogleAnalytics",
 
+      /** @inheritdoc */
+      trackMethods: [...Analytics.prototype.trackMethods, "trackCustomEvent"],
+
       /**
        * @inheritdoc
        */
@@ -57,61 +60,66 @@ define(["models/analytics/Analytics"], function (Analytics) {
           // Initialize GA4 with tag ID
           window.gtag("js", new Date());
           window.gtag("config", tagId);
+          this.track = window.gtag;
+          this.trigger("ready");
         } catch (e) {
           console.error("Error setting up Google Analytics", e);
+          this.trigger("setupError", e);
         }
       },
 
-      /**
-       * @inheritdoc
-       */
+      /** @inheritdoc */
       getKey: function () {
         return MetacatUI.appModel.get("googleAnalyticsKey");
       },
 
       /**
-       * @inheritdoc
+       * The main function for sending analytics events to the service.
+       * window.gtag may not exist when the model is created, but it will be set
+       * when the setupAnalytics() method is completed.
+       * @type {function}
        */
       track: window.gtag,
 
-      /**
-       * @inheritdoc
-       */
+      /** @inheritdoc */
       ready: function () {
         return this.getKey() && typeof this.track === "function";
       },
 
-      /**
-       * @inheritdoc
-       */
+      /** @inheritdoc */
       trackException: function (message, id, fatal) {
-        if (!this.ready()) return;
         this.track("event", "exception", {
           description: this.createExceptionDescription(message, id),
           fatal: fatal,
         });
       },
 
-      /**
-       * @inheritdoc
-       */
-      trackEvent: function (category, action, label, value) {
-        if (!this.ready()) return;
-        // prepare the event parameters
-        var params = {
+      /** @inheritdoc */
+      trackEvent: function (category, action, label, value, customParams) {
+        const params = customParams || {
           event_category: category,
           event_label: label,
           value: value,
         };
-        // send the event
         this.track("event", action, params);
+      },
+
+      /**
+       * Track a custom event with the Google Analytics service. This is
+       * designed for use with GA4
+       * @param {string} eventName - The name of the event to track
+       * @param {Object} [params] - The parameters to send with the event.
+       * @since 0.0.0
+       */
+      trackCustomEvent: function (eventName, params) {
+        if (!eventName) return;
+        this.track("event", eventName, params);
       },
 
       /**
        * @inheritdoc
        */
       trackPageView: function (path, title) {
-        if (!this.ready()) return;
         if (!path) path = (window.location.pathname || "/").replace("#", "");
         if (!title) title = document.title;
         this.track("config", this.getKey(), {

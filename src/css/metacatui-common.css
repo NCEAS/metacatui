@@ -185,6 +185,13 @@ footer {
   /** Keeps the footer down **/
   min-height: 100%;
 }
+.centered-block {
+  display: block;
+  width: 100%;
+  max-width: 60rem;
+  margin: 3rem auto;
+  box-sizing: border-box;
+}
 .right-aligned-flex-container {
   display: flex;
   margin-top: 1rem;
