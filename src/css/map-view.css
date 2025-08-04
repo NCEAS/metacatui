@@ -909,6 +909,12 @@ represents 1 unit of the given distance measurement. */
           );
         }
       }
+
+      .icon-filter--active {
+        fill: transparent;
+        color: var(--portal-col-neutral-4, currentColor);
+        background-color: transparent;
+      }
     }
 
     .layer-item__settings {
@@ -1029,6 +1035,7 @@ represents 1 unit of the given distance measurement. */
   color: var(--portal-col-neutral-6);
   font-size: 1rem;
   height: 2rem;
+  justify-self: end; /* end aligns the button to the right within its column */
   margin-right: 1rem;
   width: 2rem;
 }

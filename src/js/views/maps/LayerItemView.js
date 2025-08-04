@@ -85,6 +85,7 @@ define([
         tooltip: "map-tooltip",
         button: "map-view__button",
         filterIcon: "icon-filter",
+        active: "icon-filter--active",
       },
 
       /**
@@ -172,6 +173,13 @@ define([
         this.stopListening(this.model, "change:status");
         this.listenTo(this.model, "change:status", this.showStatus);
 
+        this.stopListening(this.model, "change:defaultFilterActive");
+        this.listenTo(
+          this.model,
+          "change:defaultFilterActive",
+          this.toggleFilterIconVisibility,
+        );
+
         return this;
       },
 
@@ -211,6 +219,26 @@ define([
         // filterIconEl.className = `${this.classes.button}`;
         filterIconEl.innerHTML = `<i class="${this.classes.filterIcon}"></i>`;
         this.labelEl.appendChild(filterIconEl);
+      },
+
+      /**
+       * Turn off the Layer model's 'filter' icon (i.e., set to transparent), if the default
+       * filters is selected. Default filters indicated all values on the layer are visible and
+       * not user-selected filters are applied. The icon also is set to transparent when the
+       * layer visibility is toggled off.
+       */
+
+      toggleFilterIconVisibility() {
+        const filterIconEl = this.$(
+          `.${this.classes.visibilityToggle}.${this.classes.button} .${this.classes.filterIcon}`,
+        );
+        if (this.model.get("defaultFilterActive")) {
+          filterIconEl.addClass(this.classes.active);
+        } else {
+          if (filterIconEl.hasClass(this.classes.active)) {
+            filterIconEl.removeClass(this.classes.active);
+          }
+        }
       },
 
       /**

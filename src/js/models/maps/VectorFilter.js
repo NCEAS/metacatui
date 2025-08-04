@@ -98,23 +98,37 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
       /** @inheritdoc */
       initialize(attributes, _options) {
         if (attributes.filterType === "categorical") {
+          // Read filter model values
           const allValues = attributes?.allValues || [];
           const values = attributes?.values || [];
+
+          // Check if filter model value exist and are are non-empty arrays
           const hasValues = Array.isArray(values) && values.length;
           const hasAllValues = Array.isArray(allValues) && allValues.length;
 
+          // If allValues is not defined in the filter model but values is, copy current values into allValues
           if (!hasAllValues && hasValues) {
             this.set("allValues", [...values]);
           }
 
-          // Set values to what's passed to the model, otherwise the allValues
-          // array, or if none of those exist, then set it to an empty array.
+          // Assign values that is initially set in filter model to modelValues if hasValues is true,
+          // otherwise if hasAllValues is true, assign allValues to modelValues.
+          // If neither hasValues or hasAllValues is true, then set modelValues to an empty array.
           let modelValues = hasValues ? values : null;
           if (!modelValues) modelValues = hasAllValues ? allValues : [];
           this.set("values", [...modelValues]);
 
           // Store a copy of the initial value selection as a default
           this.set("defaultValues", [...modelValues]);
+
+          // If neither values nor allValues exist, then filterModelAvailable is set to false.
+          // This is used to show/hide the Filter by Property panel.
+          // This has to be tested in the future with other portal configs, where this might be the case
+          // if (!hasValues && !hasAllValues) {
+          //   this.set("filterModelAvailable", false);
+          // } else {
+          //   this.set("filterModelAvailable", true);
+          // }
         }
       },
 
