@@ -3,7 +3,10 @@
 define(["models/analytics/Analytics"], (Analytics) => {
   const DEFAULT_MAX_EVENTS = 500;
   const DEFAULT_CONSOLE_LEVEL = "info";
-  const DEFAULT_ANALYTICS = MetacatUI?.analytics || new Analytics();
+  // The entire Analytics.js file can be blocked by privacy extensions, so
+  // we need to check if it exists before using it.
+  const DEFAULT_ANALYTICS =
+    MetacatUI?.analytics || Analytics ? new Analytics() : null;
 
   const LEVELS = {
     INFO: "info",
@@ -43,7 +46,7 @@ define(["models/analytics/Analytics"], (Analytics) => {
     } = {}) {
       this.logs = new Map();
       this.analytics =
-        analyticsModel instanceof Analytics
+        analyticsModel && analyticsModel instanceof Analytics
           ? analyticsModel
           : DEFAULT_ANALYTICS;
       this.maxEvents =
