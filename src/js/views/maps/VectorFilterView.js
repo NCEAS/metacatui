@@ -11,9 +11,10 @@ define([
 ], ($, _, Backbone, Template, MapAsset, SearchSelect) => {
   /**
    * @class VectorFilterView
-   * @classdesc VectorFilterView is a shared component for visualizing data based on the "filter" attributes
-   * set up in the map configuration file. The initial implementation of this component focuses on time-series
-   * data visualization.
+   * @classdesc VectorFilterView is a shared component for visualizing data
+   * based on the "filter" attributes set up in the map configuration file. The
+   * initial implementation of this component focuses on time-series data
+   * visualization.
    * @classcategory Views/Maps
    * @name VectorFilterView
    * @augments Backbone.View
@@ -42,7 +43,8 @@ define([
       template: _.template(Template),
 
       /**
-       * Classes that are used to identify the HTML elements that comprise this view.
+       * Classes that are used to identify the HTML elements that comprise this
+       * view.
        * @type {object}
        */
       classes: {
@@ -55,18 +57,15 @@ define([
 
       /**
        * Executed when a new VectorFilterView is created
+       * @param {object} attributes - The attributes to initialize the view with
        */
-      initialize() {
-        if (!this.model) return;
-
-        this.filters = this.model.get("filters"); // Retrieve filters attribute from the Map model
+      initialize(attributes) {
+        // Allow the view to be initialized with a model
+        if (attributes.model) {
+          this.model = attributes.model; // Set the model from the passed attributes
+        }
+        this.filters = this.model?.get("filters"); // Retrieve filters attribute from the Map model
         this.filterModel = this.filters?.at(0); // Get the first filter model
-        if (!this.filterModel) return;
-
-        // Get the property that is set as the default filter model for the layer during initialization of the Map model
-        this.defaultFilterModelProperty = this.filterModel.get("property");
-
-        this.listenTo(this.model, "change:visible", this.render);
       },
 
       /**
@@ -83,27 +82,27 @@ define([
         // Insert the template into the view
         this.$el.html(this.template({}));
 
-        // Add filter properties dropdown (to select the attribute/property to filter on)
-        if (typeof this.renderFilterPropertySelect === "function") {
-          this.renderFilterPropertySelect();
-        }
+        // Add filter properties dropdown (to select the attribute/property to
+        // filter on)
+        this.renderPropertySelect();
 
-        // Add filter property values dropdown (to select specific values for the chosen attribute/property)
-        if (typeof this.renderFilterPropertyValueSelect === "function") {
-          this.renderFilterPropertyValueSelect();
-        }
+        // Add filter property values dropdown (to select specific values for
+        // the chosen attribute/property)
+        this.renderValueSelect();
 
         return this;
       },
 
       /**
-       * Renders the dropdown for selecting a property (i.e., filterable attributes) from the filter models.
-       * These filterable attributes are defined by the "property" key in the portal configuration (Map model).
+       * Renders the dropdown for selecting a property (i.e., filterable
+       * attributes) from the filter models. These filterable attributes are
+       * defined by the "property" key in the portal configuration (Map model).
        */
-      renderFilterPropertySelect() {
+      renderPropertySelect() {
         const filterPropertyOptions = [];
 
-        // Collect all filter model properties (i.e., attributes that are "filterable") for the selected layer
+        // Collect all filter model properties (i.e., attributes that are
+        // "filterable") for the selected layer
         this.filters.each((filterModel) => {
           const propertyName = filterModel.get("property");
           filterPropertyOptions.push({
@@ -112,72 +111,77 @@ define([
           });
         });
 
+        const filterProperty = this.filterModel.get("property");
+
         // Initialize the property selection dropdown using SearchSelect
-        this.filterPropertySelect = new SearchSelect({
+        this.propretySelect = new SearchSelect({
           options: filterPropertyOptions,
           allowMulti: false, // Allow only a single attribute to be selected at a time
           inputLabel: "Select property",
           placeholderText: "Property name",
           clearable: false,
-          //  TODO: after a filter model is created is should not be part of subsequent filter models
-          //  This needs to be part of a parent VectorFiltersView
-          selected: [this.defaultFilterModelProperty], // Preselect the default filter model property
-          // disabled: true, // Can be enabled later when multiple properties are supported
+          //  TODO: after a filter model is created is should not be part of
+          //  subsequent filter models This needs to be part of a parent
+          //  VectorFiltersView
+          selected: filterProperty ? [filterProperty] : [],
+          // disabled: true, // Can be enabled later when multiple properties
+          // are supported
         });
 
         // Append the dropdown to the DOM and render it
-        const filterPropertySelectContainer = this.$(
+        const propretySelectContainer = this.$(
           `.${this.classes.filterPropertyDropdownContainer}`,
         );
-        filterPropertySelectContainer.append(this.filterPropertySelect.el);
-        this.filterPropertySelect.render();
+        propretySelectContainer.append(this.propretySelect.el);
+        this.propretySelect.render();
 
-        // Listen for changes to the selected property and update the value selector accordingly
-        this.stopListening(this.filterPropertySelect.model, "change:selected");
+        // Listen for changes to the selected property and update the value
+        // selector accordingly
+        this.stopListening(this.propretySelect.model, "change:selected");
         this.listenTo(
-          this.filterPropertySelect.model,
+          this.propretySelect.model,
           "change:selected",
-          (_model, filterPropertySelection) => {
-            this.handleAttributeChange(filterPropertySelection);
+          (_model, propretySelection) => {
+            this.handlePropertyChange(propretySelection);
           },
         );
       },
 
       /**
        * Updates the property values dropdown for the selected filter property
-       * @param {*} selectedFilterProperty
+       * @param {string[]} selectedFilterProperty - The property selected in the
+       * filter property dropdown in an array format.
        */
-      handleAttributeChange(selectedFilterProperty) {
-        const propertyValuesOptions = [];
+      handlePropertyChange(selectedFilterProperty) {
+        const selectedProperty = selectedFilterProperty?.[0];
+
+        this.filterModel.set("property", selectedProperty);
+        this.filterModel.set("values", []); // Clear values when property changes
+
+        let allValues = [];
+        let selectedValues = [];
         this.filters.each((filterModel) => {
           const property = filterModel.get("property");
-
-          if (selectedFilterProperty.includes(property)) {
-            const propertyValues = filterModel.get("allValues") || [];
-
-            if (Array.isArray(propertyValues)) {
-              propertyValues.forEach((val) => {
-                propertyValuesOptions.push({
-                  label: val,
-                  value: val,
-                });
-              });
-            }
+          if (selectedProperty === property) {
+            allValues = filterModel.get("allValues") || [];
+            selectedValues = filterModel.get("values") || [];
           }
         });
-        // Update the property values dropdown with all values corresponding to the newly selected attribute
-        if (this.valuesSelect) {
-          this.valuesSelect.model.updateOptions(propertyValuesOptions);
-          this.valuesSelect.model.set("selected", []);
-        }
+
+        // Update the filter model with the new values
+        this.filterModel.set("allValues", allValues);
+        this.filterModel.set("values", selectedValues);
+
+        // Re-render
+        this.render();
       },
 
       /**
-       * Renders the dropdown for selecting values corresponding to a filter property selection.
-       * Retrieves values from the (vector filter) model.
+       * Renders the dropdown for selecting values corresponding to a filter
+       * property selection. Retrieves values from the (vector filter) model.
        * During initialization, the filterStatus is false, and the "values"
        */
-      renderFilterPropertyValueSelect() {
+      renderValueSelect() {
         const propertyAllValuesOptions = [];
 
         const propertyAllValues = this.filterModel.get("allValues") || [];
@@ -211,20 +215,20 @@ define([
 
           this.valuesSelect = filterValuesSelect;
 
-          // Listen for changes
-          // Call the function to update layer visibility based on filter values set on the filter model
+          // Listen for changes Call the function to update layer visibility
+          // based on filter values set on the filter model
           this.stopListening(this.valuesSelect.model, "change:selected");
           this.listenTo(
             this.valuesSelect.model,
             "change:selected",
             (_model, valuesSelected) => {
-              this.handleFilterValuesSelectionChange(valuesSelected);
+              this.handleValueChange(valuesSelected);
             },
           );
         } else {
-          // Update dropdown values later when the visibility of the layer is toggled on and off.
-          // The dropdown elements already exist at this stage.
-          console.log("Re-rendering");
+          // Update dropdown values later when the visibility of the layer is
+          // toggled on and off. The dropdown elements already exist at this
+          // stage.
           this.valuesSelect.updateOptions(propertyAllValuesOptions);
           this.valuesSelect.model.setSelected(selectedValues);
 
@@ -242,8 +246,7 @@ define([
        * @param {string[]} selectedValues - The values that are selected in
        * values the Select View
        */
-
-      handleFilterValuesSelectionChange(selectedValues) {
+      handleValueChange(selectedValues) {
         const filterValues = (selectedValues || []).filter(
           (value) => value !== "",
         ); // filterValues will be 0 when everything is cleared
@@ -257,9 +260,9 @@ define([
         if (filterValues?.length && !this.model.isVisible()) {
           this.model.show();
         } else if (!filterValues?.length && this.model.isVisible()) {
-          // When all values are cleared from the attribute values dropdown,
-          // the layer visibility is set to false, and the filter icon is
-          // turned off (i.e., transparent).
+          // When all values are cleared from the attribute values dropdown, the
+          // layer visibility is set to false, and the filter icon is turned off
+          // (i.e., transparent).
           this.model.set("visible", false);
         }
       },
