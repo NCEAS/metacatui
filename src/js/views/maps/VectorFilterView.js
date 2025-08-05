@@ -18,7 +18,7 @@ define([
    * @classcategory Views/Maps
    * @name VectorFilterView
    * @augments Backbone.View
-   * @since 0.0.0
+   * @since 2.34.0
    * @constructs VectorFilterView
    */
 

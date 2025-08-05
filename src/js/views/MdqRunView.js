@@ -344,7 +344,7 @@ define([
        * @param {object} ids - An object mapping identifiers to titles
        * @param {Array} [models] - An optional array of models to update.
        * If not provided, all models in the accordion will be updated.
-       * @since 0.0.0
+       * @since 2.34.0
        */
       updateOutputIdTitles(ids, models) {
         const toUpdate = models || this.accordionItems.models;
@@ -361,7 +361,7 @@ define([
        * ORANGE, RED, BLUE), and the individual results within each category,
        * and their outputs.
        * @param {object} groupedResults - The results grouped by status
-       * @since 0.0.0
+       * @since 2.34.0
        */
       async addResultItems(groupedResults) {
         const { qualityReport } = this;
@@ -391,7 +391,7 @@ define([
        * category of checks (GREEN, ORANGE, RED, BLUE).
        * @param {object} category - The category object containing status, title, and icon
        * @param {object} groupedResults - The results grouped by status
-       * @since 0.0.0
+       * @since 2.34.0
        */
       async addCategoryItem(category, groupedResults) {
         // Root items are the main categories of checks, such as GREEN, ORANGE, RED, BLUE
@@ -416,7 +416,7 @@ define([
        * @param {Array} outputs - The outputs for a single result
        * @returns {object} An object containing the total length of all outputs
        * and the maximum length of a single output
-       * @since 0.0.0
+       * @since 2.34.0
        */
       outputStats(outputs) {
         let total = 0;
@@ -444,7 +444,7 @@ define([
        * outputs
        * @param {object} parentItem - The parent item in the accordion to which
        * this item belongs.
-       * @since 0.0.0
+       * @since 2.34.0
        */
       async addResultItem(result, parentItem) {
         const CN = CLASS_NAMES;
@@ -494,7 +494,7 @@ define([
        * @param {object} parentItem - The parent item in the accordion to which
        * this output belongs.
        * @returns {Promise<object>} A promise that resolves with the output item
-       * @since 0.0.0
+       * @since 2.34.0
        */
       async addOutputItem(output, parentItem) {
         const content = await this.getOutputHTML([output]);
@@ -555,7 +555,7 @@ define([
        * @param {object} result - The result model containing the check and
        * outputs
        * @returns {string} The HTML description for the result
-       * @since 0.0.0
+       * @since 2.34.0
        */
       getDescriptionHtml(result) {
         const status = result.get("status");

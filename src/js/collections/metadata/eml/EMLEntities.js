@@ -24,7 +24,7 @@ define([
    * @classdesc An error that is thrown when an invalid attribute list is
    * encountered.
    * @classcategory Errors
-   * @since 0.0.0
+   * @since 2.34.0
    */
   class InvalidAttributeListError extends Error {
     constructor(message) {
@@ -38,7 +38,7 @@ define([
    * @classdesc An error that is thrown when an empty attribute list is
    * encountered.
    * @classcategory Errors
-   * @since 0.0.0
+   * @since 2.34.0
    */
   class EmptyAttributeListError extends Error {
     constructor(message) {

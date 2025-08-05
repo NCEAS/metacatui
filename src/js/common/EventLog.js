@@ -24,7 +24,7 @@ define(["models/analytics/Analytics"], (Analytics) => {
    * @classdesc A utility class for recording events and grouping by context.
    * Allows logging of events with a descriptive name, severity levels (info,
    * warning, error), and sending the data to an analytics service.
-   * @since 0.0.0
+   * @since 2.34.0
    */
   class EventLog {
     /**

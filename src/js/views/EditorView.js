@@ -619,7 +619,7 @@ define([
        * when the user clicks the "Email Support" button.
        * @param {string} [emailSubject] - Optional. The subject of the email to send
        * when the user clicks the "Email Support" button.
-       * @since 0.0.0
+       * @since 2.34.0
        */
       showFullPageAlert(
         message,

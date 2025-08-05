@@ -137,7 +137,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
       /**
        * Sets the active state of the filter based values (for categorical
        * filters) or min/max (for numeric filters).
-       * @since 0.0.0
+       * @since 2.34.0
        */
       setActiveState() {
         this.set("active", this.isActive() === true);
@@ -185,7 +185,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
        * A filter is considered active if it has values set (for categorical filters)
        * or if it has a min or max set (for numeric filters).
        * @returns {boolean} Returns true if the filter is active, false otherwise.
-       * @since 0.0.0
+       * @since 2.34.0
        */
       isActive() {
         const isDefinedNumber = (num) => num && num !== 0;
