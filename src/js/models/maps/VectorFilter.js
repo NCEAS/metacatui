@@ -39,6 +39,9 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
        * the property matches one of the values listed, the feature will be displayed.
        * If the filter type is categorical and no values are set, then features will not
        * be filtered on this property.
+       * @property {string[]} [allValues] Only used for categorical filters. The
+       * list of all possible values that can be set for the property. This is
+       * used to allow dynamic filtering of categorical properties.
        * @property {number} max Only used for numeric filters. The property's value must
        * be less than the value set here for the feature to be visible. If the filter
        * type is numeric, and max is set, then the max is infinite.

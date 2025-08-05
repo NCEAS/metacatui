@@ -174,6 +174,16 @@ define(["backbone"], function (Backbone) {
       },
 
       /**
+       * Track a custom event.
+       * @param {string} eventName - The name of the event to track
+       * @param {Object} [params] - The parameters to send with the event.
+       * @since 0.0.0
+       */
+      trackCustomEvent(eventName, params) {
+        return;
+      },
+
+      /**
        * Send the details of a page view to an analytics service. The function
        * will do nothing if an analytics service is not enabled.
        * @param {string} path - The path of the page
