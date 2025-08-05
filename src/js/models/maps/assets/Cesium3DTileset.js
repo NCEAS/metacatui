@@ -199,21 +199,15 @@ define([
           // When opacity, color, or visibility changes (will also update the filters)
           this.stopListening(
             this,
-            "change:opacity change:color change:visible",
+            "change:opacity change:color change:visible change:filters",
           );
           this.listenTo(
             this,
-            "change:opacity change:color change:visible",
+            "change:opacity change:color change:visible change:filters",
             this.updateAppearance,
           );
 
-          // When filters change
-          this.stopListening(this.get("filters"), "update");
-          this.listenTo(
-            this.get("filters"),
-            "update",
-            this.updateFeatureVisibility,
-          );
+          this.listenTo(this, "change:filters", this.updateFeatureVisibility);
         } catch (error) {
           console.log(
             "There was an error setting listeners in a Cesium3DTileset" +
@@ -282,6 +276,8 @@ define([
           const model = this;
           const cesiumModel = this.get("cesiumModel");
           const filters = this.get("filters");
+
+          if (!cesiumModel) return;
 
           // If there are no filters, just set the show property to true
           if (!filters || !filters.length) {

@@ -121,15 +121,23 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           // Store a copy of the initial value selection as a default
           this.set("defaultValues", [...modelValues]);
 
-          // If neither values nor allValues exist, then filterModelAvailable is set to false.
-          // This is used to show/hide the Filter by Property panel.
-          // This has to be tested in the future with other portal configs, where this might be the case
-          // if (!hasValues && !hasAllValues) {
-          //   this.set("filterModelAvailable", false);
-          // } else {
-          //   this.set("filterModelAvailable", true);
-          // }
+          // Active status is set conditionally based on whether any features are filtered
+          const filterEvents =
+            "change:values change:min change:max change:filterType";
+          this.stopListening(this, filterEvents);
+          this.listenTo(this, filterEvents, this.setActiveState);
+          // Set the initial active state
+          this.setActiveState();
         }
+      },
+
+      /**
+       * Sets the active state of the filter based values (for categorical
+       * filters) or min/max (for numeric filters).
+       * @since 0.0.0
+       */
+      setActiveState() {
+        this.set("active", this.isActive() === true);
       },
 
       /**
@@ -169,89 +177,34 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         }
       },
 
-      // /**
-      //  * Executed when a new VectorFilter model is created.
-      //  * @param {Object} [attributes] The initial values of the attributes, which will
-      //  * be set on the model.
-      //  * @param {Object} [options] Options for the initialize function.
-      //  */
-      // initialize: function (attributes, options) {
-      //   try {
-
-      //   }
-      //   catch (error) {
-      //     console.log(
-      //       'There was an error initializing a VectorFilter model' +
-      //       '. Error details: ' + error
-      //     );
-      //   }
-      // },
-
-      // /**
-      //  * Parses the given input into a JSON object to be set on the model.
-      //  *
-      //  * @param {TODO} input - The raw response object
-      //  * @return {TODO} - The JSON object of all the VectorFilter attributes
-      //  */
-      // parse: function (input) {
-
-      //   try {
-
-      //     var modelJSON = {};
-
-      //     return modelJSON
-
-      //   }
-      //   catch (error) {
-      //     console.log(
-      //       'There was an error parsing a VectorFilter model' +
-      //       '. Error details: ' + error
-      //     );
-      //   }
-
-      // },
-
-      // /**
-      //  * Overrides the default Backbone.Model.validate.function() to check if this if
-      //  * the values set on this model are valid.
-      //  *
-      //  * @param {Object} [attrs] - A literal object of model attributes to validate.
-      //  * @param {Object} [options] - A literal object of options for this validation
-      //  * process
-      //  *
-      //  * @return {Object} - Returns a literal object with the invalid attributes and
-      //  * their corresponding error message, if there are any. If there are no errors,
-      //  * returns nothing.
-      //  */
-      // validate: function (attrs, options) {
-      //   try {
-
-      //   }
-      //   catch (error) {
-      //     console.log(
-      //       'There was an error validating a VectorFilter model' +
-      //       '. Error details: ' + error
-      //     );
-      //   }
-      // },
-
-      // /**
-      //  * Creates a string using the values set on this model's attributes.
-      //  * @return {string} The VectorFilter string
-      //  */
-      // serialize: function () {
-      //   try {
-      //     var serializedVectorFilter = '';
-
-      //     return serializedVectorFilter;
-      //   }
-      //   catch (error) {
-      //     console.log(
-      //       'There was an error serializing a VectorFilter model' +
-      //       '. Error details: ' + error
-      //     );
-      //   }
-      // },
+      /**
+       * This function checks if the filter is active based on its configuration.
+       * A filter is considered active if it has values set (for categorical filters)
+       * or if it has a min or max set (for numeric filters).
+       * @returns {boolean} Returns true if the filter is active, false otherwise.
+       * @since 0.0.0
+       */
+      isActive() {
+        const isDefinedNumber = (num) => num && num !== 0;
+        const type = this.get("filterType");
+        if (type === "categorical") {
+          // A filter is active if it has values set, or if it has a min or max set
+          const values = this.get("values");
+          const allValues = this.get("allValues");
+          return (
+            Array.isArray(values) &&
+            values.length &&
+            values.length < allValues.length
+          );
+        }
+        if (type === "numeric") {
+          // A numeric filter is active if it has a min or max set
+          const min = this.get("min");
+          const max = this.get("max");
+          return isDefinedNumber(min) || isDefinedNumber(max);
+        }
+        return false; // If filterType is not recognized, return false
+      },
     },
   );
 

@@ -25,6 +25,14 @@ define([
       model: VectorFilter,
 
       /**
+       * Checks if there are any active filters in the collection.
+       * @returns {boolean} Returns true if there are active filters, false otherwise.
+       */
+      hasActiveFilters() {
+        return this.some((filter) => filter.get("active"));
+      },
+
+      /**
        * This function is used to determine if a feature should be shown or hidden based
        * on the current filters.
        * @param {Object} properties The properties of the feature to be filtered.
