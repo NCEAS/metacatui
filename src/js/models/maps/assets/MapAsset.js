@@ -454,6 +454,15 @@ define([
           this.createCesiumModel(true);
         });
 
+        // When any filter models in the filters collection change, then trigger
+        // an event on the asset model that allows models & views to easily
+        // react to filter changes, including replacement of the filter
+        // collection itself.
+        this.stopListening(this.get("filters"), "change");
+        this.listenTo(this.get("filters"), "change", () => {
+          this.trigger("change:filters", this);
+        });
+
         this.listenToSelectedFeatures();
       },
 
