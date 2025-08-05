@@ -84,8 +84,8 @@ define([
         badge: "map-view__badge",
         tooltip: "map-tooltip",
         button: "map-view__button",
-        filterIcon: "icon-filter",
-        active: "icon-filter--active",
+        filterIcon: "layer-item__filter-icon",
+        filterIconActive: "layer-item__filter-icon--active",
       },
 
       /**
@@ -213,17 +213,20 @@ define([
       },
 
       /**
-       * Insert the filter icon to the right of the label element text.
-       * This icon appears for layers that are "filterable" based on their atrributes.
-       * Filter attributes for each layer are defined in the map model.
-       * Layer items with this icon will have the Filter feature (built using VectorFilterView).
+       * Insert the filter icon to the right of the label element text. This
+       * icon appears for layers that are "filterable" based on their
+       * atrributes. Filter attributes for each layer are defined in the map
+       * model. Layer items with this icon will have the Filter feature (built
+       * using VectorFilterView).
+       * @since 0.0.0
        */
       insertFilterIcon() {
-        const filterIconEl = document.createElement("button");
-        filterIconEl.className = `${this.classes.visibilityToggle} ${this.classes.button}`;
+        const filterIconEl = document.createElement("span");
+        const classes = [this.classes.icon, this.classes.filterIcon];
+        filterIconEl.classList.add(...classes);
         filterIconEl.title = "Filter by property"; // add tooltip
         // filterIconEl.className = `${this.classes.button}`;
-        filterIconEl.innerHTML = `<i class="${this.classes.filterIcon}"></i>`;
+        filterIconEl.innerHTML = `<i class="icon icon-filter"></i>`;
         this.labelEl.appendChild(filterIconEl);
       },
 
@@ -235,18 +238,19 @@ define([
        * @since 0.0.0
        */
       toggleFilterIconVisibility() {
-        const filterIconEl = this.$(
-          `.${this.classes.visibilityToggle}.${this.classes.button} .${this.classes.filterIcon}`,
-        );
+        const filterIconEl = this.$(`.${this.classes.filterIcon}`);
+        if (!filterIconEl?.length || !filterIconEl[0]) {
+          return;
+        }
+
+        const activeClass = this.classes.filterIconActive;
         if (
           this.model.get("filters").hasActiveFilters() &&
           this.model.isVisible()
         ) {
-          filterIconEl.addClass(this.classes.active);
-        } else {
-          if (filterIconEl.hasClass(this.classes.active)) {
-            filterIconEl.removeClass(this.classes.active);
-          }
+          filterIconEl.addClass(activeClass);
+        } else if (filterIconEl.hasClass(activeClass)) {
+          filterIconEl.removeClass(activeClass);
         }
       },
 
