@@ -178,8 +178,6 @@ define([
        * During initialization, the filterStatus is false, and the "values"
        */
       renderFilterPropertyValueSelect() {
-        const defaultFilterStatus = this.model.get("defaultFilterActive");
-        const isLayerVisible = this.model.get("visible");
         const propertyAllValuesOptions = [];
 
         const propertyAllValues = this.filterModel.get("allValues") || [];
@@ -191,14 +189,7 @@ define([
             });
           });
         }
-        let selectedValues = [];
-
-        // If the layer visibility is turned on, and if the defaultFilterActive is false
-        // then set selectedValues as the filter model's values.
-        // Otherwise no values are pre-selected in the dropdown.
-        if (isLayerVisible && !defaultFilterStatus) {
-          selectedValues = [...(this.filterModel.get("values") || [])];
-        }
+        const selectedValues = [...(this.filterModel.get("values") || [])];
 
         const valuesSelectContainer = this.$(
           `.${this.classes.valuesDropdownContainer}`,
@@ -253,41 +244,23 @@ define([
        */
 
       handleFilterValuesSelectionChange(selectedValues) {
-        let filterValues = (selectedValues || []).filter(
+        const filterValues = (selectedValues || []).filter(
           (value) => value !== "",
         ); // filterValues will be 0 when everything is cleared
 
-        const isLayerVisible = this.model.get("visible");
+        this.filterModel.set("values", [...filterValues]);
 
-        if (isLayerVisible || filterValues.length) {
-          // When the filter is active, and the layer is visible the filter icon is always turned on (i.e., blue)
-          this.model.set("defaultFilterActive", false);
-
-          if (!filterValues?.length) {
-            filterValues = this.filterModel.get("allValues");
-            // When all filter values are de-selected, the default filter is true, which means all layer values are visible.
-            // This variable is used to toggle the filter icon to be off (i.e., transparent).
-            // This variable is also used later when re-rendering the filter values dropdown.
-            this.model.set("defaultFilterActive", true);
-          } else {
-            // this.filterModel.set("defaultFilterActive", false);
-          }
-          this.filterModel.set("values", filterValues);
-
-          // If there is any value selected in the Filter by Property feature, then make sure the asset is
-          // also visible. This updates the layer toggle visibility icon (i.e., eye icon).
-          if (filterValues?.length && !this.model.get("visible")) {
-            this.model.set("visible", true);
-          }
-
-          // Set visibility of the layer to false when all values are cleared from the attribute values dropdown
-          if (!filterValues?.length) {
-            this.model.set("visible", false);
-          }
-
-          // manually trigger listener for updating layer visibility.
-          this.model.trigger("change:opacity");
-          this.model.trigger("change:defaultFilterActive");
+        // If there is any value selected in the Filter by Property feature,
+        // then make sure the asset is also visible. This updates the layer
+        // toggle visibility icon (i.e., eye icon) and makes the layer visible
+        // on the map.
+        if (filterValues?.length && !this.model.isVisible()) {
+          this.model.show();
+        } else if (!filterValues?.length && this.model.isVisible()) {
+          // When all values are cleared from the attribute values dropdown,
+          // the layer visibility is set to false, and the filter icon is
+          // turned off (i.e., transparent).
+          this.model.set("visible", false);
         }
       },
     },
