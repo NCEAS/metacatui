@@ -166,19 +166,25 @@ define([
         // Similar to above, add or remove the shown class when the layer's
         // visibility changes
         this.stopListening(this.model, "change:visible");
-        this.listenTo(this.model, "change:visible", this.showVisibility);
+        this.listenTo(this.model, "change:visible", () => {
+          this.showVisibility();
+          this.toggleFilterIconVisibility();
+        });
 
         // Update the item in the list to show when it is loading, loaded, or there's
         // been an error.
         this.stopListening(this.model, "change:status");
         this.listenTo(this.model, "change:status", this.showStatus);
 
-        this.stopListening(this.model, "change:defaultFilterActive");
+        this.stopListening(this.model, "change:filters");
         this.listenTo(
           this.model,
-          "change:defaultFilterActive",
+          "change:filters",
           this.toggleFilterIconVisibility,
         );
+
+        // Set the initial visibility of the filter icon
+        this.toggleFilterIconVisibility();
 
         return this;
       },
@@ -226,13 +232,16 @@ define([
        * filters is selected. Default filters indicated all values on the layer are visible and
        * not user-selected filters are applied. The icon also is set to transparent when the
        * layer visibility is toggled off.
+       * @since 0.0.0
        */
-
       toggleFilterIconVisibility() {
         const filterIconEl = this.$(
           `.${this.classes.visibilityToggle}.${this.classes.button} .${this.classes.filterIcon}`,
         );
-        if (this.model.get("defaultFilterActive")) {
+        if (
+          this.model.get("filters").hasActiveFilters() &&
+          this.model.isVisible()
+        ) {
           filterIconEl.addClass(this.classes.active);
         } else {
           if (filterIconEl.hasClass(this.classes.active)) {
@@ -274,11 +283,7 @@ define([
           layerModel.set("visible", false);
           // Show if hidden
         } else {
-          // If user is trying to make the layer visible, make sure the opacity is not 0
-          if (layerModel.get("opacity") === 0) {
-            layerModel.set("opacity", 0.5);
-          }
-          layerModel.set("visible", true);
+          layerModel.show();
         }
       },
 
