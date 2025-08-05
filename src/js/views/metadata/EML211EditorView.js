@@ -304,7 +304,7 @@ define([
        * system metadata. If sysMeta exists, then the metadata document is being
        * indexed, so notify user. Otherwise, the document doesn't exist, so show
        * a 404.
-       * @since 0.0.0
+       * @since 2.34.0
        */
       async handleMetadataNotFound() {
         this.updateLoadingText("Looking for metadata document...");
@@ -328,7 +328,7 @@ define([
        * This will check the user's authorization to write to the document
        * before showing the message. If the user is not authorized, then the not
        * authorized message will be shown instead.
-       * @since 0.0.0
+       * @since 2.34.0
        */
       showNotIndexed() {
         const authorization = this.model.get("isAuthorized_write");
@@ -1187,7 +1187,7 @@ define([
        * @param {EMLEntity|EMLOtherEntity} model - The model to show
        * @param {boolean} [switchToAttrTab] - Set to true to automatically
        * switch to the attributes tab instead of default overview tab
-       * @since 0.0.0
+       * @since 2.34.0
        */
       showEntityFromModel(model, switchToAttrTab = false) {
         const pid = model.get("dataONEObject").get("id");

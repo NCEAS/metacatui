@@ -218,7 +218,7 @@ define([
        * atrributes. Filter attributes for each layer are defined in the map
        * model. Layer items with this icon will have the Filter feature (built
        * using VectorFilterView).
-       * @since 0.0.0
+       * @since 2.34.0
        */
       insertFilterIcon() {
         const filterIconEl = document.createElement("span");
@@ -235,7 +235,7 @@ define([
        * filters is selected. Default filters indicated all values on the layer are visible and
        * not user-selected filters are applied. The icon also is set to transparent when the
        * layer visibility is toggled off.
-       * @since 0.0.0
+       * @since 2.34.0
        */
       toggleFilterIconVisibility() {
         const filterIconEl = this.$(`.${this.classes.filterIcon}`);

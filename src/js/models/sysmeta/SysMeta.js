@@ -64,7 +64,7 @@ define([], () => {
    * parsed from XML.
    * @property {string} url - The URL to fetch the system metadata.
    * @class SystemMetadata
-   * @since 0.0.0
+   * @since 2.34.0
    */
   class SystemMetadata {
     /**

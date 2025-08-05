@@ -60,7 +60,7 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
   /**
    * @class VersionTracker
    * @classcategory Models/SysMeta
-   * @since 0.0.0
+   * @since 2.34.0
    * @classdesc VersionTracker walks sysmeta version chains and caches them in
    * memory and in localForage for fast access. It allows getting PIDs at
    * arbitrary offsets from a given PID, fetching full version chains, and

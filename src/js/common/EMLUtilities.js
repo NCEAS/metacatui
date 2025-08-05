@@ -7,7 +7,7 @@ define([], () => {
    * throughout MetacatUI to perform useful functions related to EML, but not
    * used to store or manipulate any state about the application.
    * @type {object}
-   * @since 0.0.0
+   * @since 2.34.0
    */
   const EMLUtilities = /** @lends EMLUtilities.prototype */ {
     /**

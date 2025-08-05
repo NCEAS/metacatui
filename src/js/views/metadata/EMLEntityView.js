@@ -59,7 +59,7 @@ define([
        * Close this modal and open one for another entity in the same
        * collection. Requires the parentView to be set.
        * @param {EMLEntity} otherModel - The other entity to show
-       * @since 0.0.0
+       * @since 2.34.0
        */
       switchToOtherEntityView(otherModel) {
         if (!this.parentView) return;

@@ -193,7 +193,7 @@ define([
        * results from this.models, grouped by color.
        * @returns {object} An object with keys for each group and the count of
        * results in that group, plus a total count.
-       * @since 0.0.0
+       * @since 2.34.0
        */
       getCountsPerGroup(groupedResults) {
         const data = groupedResults || this.groupResults(this.models);
@@ -209,7 +209,7 @@ define([
        * For each result in the collection, check the outputs for identifiers
        * and return a list of all unique ids.
        * @returns {Array} An array of unique output identifiers.
-       * @since 0.0.0
+       * @since 2.34.0
        */
       getAllOutputIdentifiers() {
         const identifiers = new Set();
@@ -230,7 +230,7 @@ define([
        * to avoid exceeding maximum lengths of Solr queries.
        * @returns {Promise<object>} A promise that resolves to an object mapping
        * output identifiers to their names.
-       * @since 0.0.0
+       * @since 2.34.0
        */
       async getAllOutputNames() {
         // too many ids per request will make the resust too long, so send in
@@ -256,7 +256,7 @@ define([
        * @param {Array} ids - An array of output identifiers.
        * @returns {Promise<object>} A promise that resolves to an object mapping
        * output identifiers to their names.
-       * @since 0.0.0
+       * @since 2.34.0
        */
       getOutputNames(ids) {
         return new Promise((resolve, reject) => {

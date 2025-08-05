@@ -10,7 +10,7 @@ define(["jquery", "backbone", "common/EMLUtilities"], (
    * @classcategory Models/Metadata/EML211
    * @constructs
    * @augments Backbone.Model
-   * @since 0.0.0
+   * @since 2.34.0
    */
   const EMLReferences = Backbone.Model.extend(
     /** @lends EMLReferences.prototype */

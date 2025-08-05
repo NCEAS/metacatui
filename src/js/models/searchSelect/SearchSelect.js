@@ -204,7 +204,7 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
      * @param {string[]} selected - The selected values to restore types for.
      * @returns {string[]} - The selected values with their original types
      * restored.
-     * @since 0.0.0
+     * @since 2.34.0
      */
     restoreTypes(selected) {
       // Restore the original types of the selected values
