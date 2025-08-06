@@ -1,4 +1,45 @@
-define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
+define(["jquery", "underscore", "backbone", "common/QueryService"], (
+  $,
+  _,
+  Backbone,
+  QueryService,
+) => {
+  const DEFAULT_INFO_FIELDS = [
+    "abstract",
+    "id",
+    "seriesId",
+    "fileName",
+    "resourceMap,formatType,formatId",
+    "obsoletedBy",
+    "isDocumentedBy",
+    "documents",
+    "title",
+    "origin,keywords",
+    "attributeName",
+    "pubDate",
+    "eastBoundCoord",
+    "westBoundCoord",
+    "northBoundCoord",
+    "southBoundCoord",
+    "beginDate",
+    "endDate",
+    "dateUploaded",
+    "archived",
+    "datasource",
+    "replicaMN",
+    "isAuthorized",
+    "isPublic,size",
+    "read_count_i",
+    "isService",
+    "serviceTitle",
+    "serviceEndpoint",
+    "serviceOutput",
+    "serviceDescription",
+    "serviceType",
+    "project",
+    "dateModified",
+  ];
+
   /**
    * @class SolrResult
    * @classdesc A single result from the Solr search service
@@ -417,166 +458,135 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
 
       /**
        * Get the information for this object from the Solr index
-       * @param {string} [queryFields] - Optional. A string of fields to
-       * retrieve from the Solr index. If not specified, a default set of fields
-       * will be used.
+       * @param {string|string[]} [queryFields] - Optional. A comma-separated
+       * string of fields to retrieve from the Solr index, or an array. If not
+       * specified, a default set of fields will be used.
        */
       getInfo(queryFields) {
-        const model = this;
-
-        const fields =
-          queryFields ||
-          "abstract,id,seriesId,fileName,resourceMap,formatType,formatId," +
-            "obsoletedBy,isDocumentedBy,documents,title,origin,keywords," +
-            "attributeName,pubDate,eastBoundCoord,westBoundCoord," +
-            "northBoundCoord,southBoundCoord,beginDate,endDate,dateUploaded," +
-            "archived,datasource,replicaMN,isAuthorized,isPublic,size," +
-            "read_count_i,isService,serviceTitle,serviceEndpoint," +
-            "serviceOutput,serviceDescription,serviceType,project,dateModified";
-
-        const { escapeSpecialChar } = MetacatUI.appSearchModel;
-
-        let query = "q=";
-
         // If there is no seriesId set, then search for pid or sid
-        if (!this.get("seriesId"))
-          query += `(id:"${escapeSpecialChar(
-            encodeURIComponent(this.get("id")),
-          )}" OR seriesId:"${escapeSpecialChar(
-            encodeURIComponent(this.get("id")),
-          )}")`;
-        // If a seriesId is specified, then search for that
-        else if (this.get("seriesId") && this.get("id").length > 0)
-          query += `(seriesId:"${escapeSpecialChar(
-            encodeURIComponent(this.get("seriesId")),
-          )}" AND id:"${escapeSpecialChar(
-            encodeURIComponent(this.get("id")),
-          )}")`;
-        // If only a seriesId is specified, then just search for the most recent
-        // version
-        else if (this.get("seriesId") && !this.get("id"))
-          query += `seriesId:"${escapeSpecialChar(
-            encodeURIComponent(this.get("id")),
-          )}" -obsoletedBy:*`;
+        const sid = this.get("seriesId") || "";
+        const pid = this.get("id") || "";
 
-        query +=
-          `&fl=${
-            fields // Specify the fields to return
-          }&wt=json&rows=1000` + // Get the results in JSON format and get 1000 rows
-          `&archived=archived:*`; // Get archived or unarchived content
+        if (!sid && !pid) {
+          throw new Error(
+            "Need at least one of seriesId or id to query for info",
+          );
+        }
 
-        const requestSettings = {
-          url: MetacatUI.appModel.get("queryServiceUrl") + query,
-          type: "GET",
-          success(data, _response, _xhr) {
-            // If the Solr response was not as expected, trigger and error and
-            // exit
-            if (!data || typeof data.response === "undefined") {
-              model.set("indexed", false);
-              model.trigger("getInfoError");
-              return;
-            }
-
-            const { docs } = data.response;
-
-            if (docs.length === 1) {
-              docs[0].resourceMap = model.parseResourceMapField(docs[0]);
-              model.set(docs[0]);
-              model.trigger("sync");
-            }
-            // If we searched by seriesId, then let's find the most recent
-            // version in the series
-            else if (docs.length > 1) {
-              // Filter out docs that are obsoleted
-              const mostRecent = _.reject(
-                docs,
-                (doc) => typeof doc.obsoletedBy !== "undefined",
-              );
-
-              // If there is only one doc that is not obsoleted (the most
-              // recent), then set this doc's values on this model
-              if (mostRecent.length === 1) {
-                mostRecent[0].resourceMap = model.parseResourceMapField(
-                  mostRecent[0],
-                );
-                model.set(mostRecent[0]);
-                model.trigger("sync");
-              } else {
-                // If there are multiple docs without an obsoletedBy statement,
-                // then retreive the head of the series via the system metadata
-                const sysMetaRequestSettings = {
-                  url:
-                    MetacatUI.appModel.get("metaServiceUrl") +
-                    encodeURIComponent(docs[0].seriesId),
-                  type: "GET",
-                  success(sysMetaData) {
-                    // Get the identifier node from the system metadata
-                    const seriesHeadID = $(sysMetaData)
-                      .find("identifier")
-                      .text();
-                    // Get the doc from the Solr results with that identifier
-                    const seriesHead = _.findWhere(docs, { id: seriesHeadID });
-
-                    // If there is a doc in the Solr results list that matches
-                    // the series head id
-                    if (seriesHead) {
-                      seriesHead.resourceMap =
-                        model.parseResourceMapField(seriesHead);
-                      // Set those values on this model
-                      model.set(seriesHead);
-                    }
-                    // Otherwise, just fall back on the first doc in the list
-                    else if (mostRecent.length) {
-                      mostRecent[0].resourceMap = model.parseResourceMapField(
-                        mostRecent[0],
-                      );
-                      model.set(mostRecent[0]);
-                    } else {
-                      docs[0].resourceMap = model.parseResourceMapField(
-                        docs[0],
-                      );
-                      model.set(docs[0]);
-                    }
-
-                    model.trigger("sync");
-                  },
-                  error(__xhr, _textStatus, _errorThrown) {
-                    // Fall back on the first doc in the list
-                    if (mostRecent.length) {
-                      model.set(mostRecent[0]);
-                    } else {
-                      model.set(docs[0]);
-                    }
-
-                    model.trigger("sync");
-                  },
-                };
-
-                $.ajax(
-                  _.extend(
-                    sysMetaRequestSettings,
-                    MetacatUI.appUserModel.createAjaxSettings(),
-                  ),
-                );
-              }
-            } else {
-              model.set("indexed", false);
-              // Try getting the system metadata as a backup
-              model.getSysMeta();
-            }
-          },
-          error(_xhr, _textStatus, _errorThrown) {
-            model.set("indexed", false);
-            model.trigger("getInfoError");
-          },
+        const opts = {
+          q: QueryService.buildIdQuery(pid, sid),
+          fields: queryFields || DEFAULT_INFO_FIELDS,
+          rows: 1000,
+          archived: true,
         };
 
-        $.ajax(
-          _.extend(
-            requestSettings,
-            MetacatUI.appUserModel.createAjaxSettings(),
-          ),
-        );
+        QueryService.queryWithFetch(opts)
+          .then((data) => this.getInfoSuccess(data))
+          .catch((error) => this.handleGetInfoError(error));
+      },
+
+      handleGetInfoError(error) {
+        console.error(`Error getting info for ${this.get("id")}`, error);
+        this.set("indexed", false);
+        this.trigger("getInfoError");
+      },
+
+      getInfoSuccess(data) {
+        // If the Solr response was not as expected, trigger and error and exit
+        if (!data?.response?.docs) {
+          this.handleGetInfoError();
+          return;
+        }
+
+        const { docs } = data.response;
+
+        if (!docs.length) {
+          this.set("indexed", false);
+          // Try getting the system metadata as a backup
+          this.getSysMeta();
+          return;
+        }
+
+        if (docs.length === 1) {
+          docs[0].resourceMap = this.parseResourceMapField(docs[0]);
+          this.set(docs[0]);
+          this.trigger("sync");
+          return;
+        }
+
+        // If we searched by seriesId, then let's find the most recent
+        // version in the series
+        if (docs.length > 1) {
+          // Filter out docs that are obsoleted
+          const mostRecent = docs.filter((doc) => !doc.obsoletedBy);
+
+          // TODO: Once the VersionTracker is merged into MetacatUI, then simply
+          // use the getLatestVersion method here instead of everything that
+          // follows.
+
+          // If there is only one doc that is not obsoleted (the most recent),
+          // then set this doc's values on this model
+          if (mostRecent.length === 1) {
+            mostRecent[0].resourceMap = this.parseResourceMapField(
+              mostRecent[0],
+            );
+            this.set(mostRecent[0]);
+            this.trigger("sync");
+            return;
+          }
+
+          // If there are multiple docs without an obsoletedBy statement,
+          // then retreive the head of the series via the system metadata
+          const sysMetaRequestSettings = {
+            url:
+              MetacatUI.appModel.get("metaServiceUrl") +
+              encodeURIComponent(docs[0].seriesId),
+            type: "GET",
+            success(sysMetaData) {
+              // Get the identifier node from the system metadata
+              const seriesHeadID = $(sysMetaData).find("identifier").text();
+              // Get the doc from the Solr results with that identifier
+              const seriesHead = _.findWhere(docs, { id: seriesHeadID });
+
+              // If there is a doc in the Solr results list that matches
+              // the series head id
+              if (seriesHead) {
+                seriesHead.resourceMap = this.parseResourceMapField(seriesHead);
+                // Set those values on this model
+                this.set(seriesHead);
+              }
+              // Otherwise, just fall back on the first doc in the list
+              else if (mostRecent.length) {
+                mostRecent[0].resourceMap = this.parseResourceMapField(
+                  mostRecent[0],
+                );
+                this.set(mostRecent[0]);
+              } else {
+                docs[0].resourceMap = this.parseResourceMapField(docs[0]);
+                this.set(docs[0]);
+              }
+
+              this.trigger("sync");
+            },
+            error(__xhr, _textStatus, _errorThrown) {
+              // Fall back on the first doc in the list
+              if (mostRecent.length) {
+                this.set(mostRecent[0]);
+              } else {
+                this.set(docs[0]);
+              }
+
+              this.trigger("sync");
+            },
+          };
+
+          $.ajax(
+            _.extend(
+              sysMetaRequestSettings,
+              MetacatUI.appUserthis.createAjaxSettings(),
+            ),
+          );
+        }
       },
 
       /** Get the citation information for this object from the Solr index */
@@ -929,21 +939,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * of trimmed strings. If it is neither, it returns an empty array.
        */
       parseResourceMapField(json) {
-        if (typeof json.resourceMap === "string") {
-          return json.resourceMap.trim();
-        }
-        if (Array.isArray(json.resourceMap)) {
-          const newResourceMapIds = [];
-          _.each(json.resourceMap, (rMapId) => {
-            if (typeof rMapId === "string") {
-              newResourceMapIds.push(rMapId.trim());
-            }
-          });
-          return newResourceMapIds;
-        }
-
-        // If nothing works so far, return an empty array
-        return [];
+        return QueryService.parseResourceMapField(json);
       },
     },
   );
