@@ -19,6 +19,11 @@ define(["jquery"], ($) => {
    * @property {number} [facetMinCount] Default `1`.
    * @property {boolean} [usePost] Force POST / GET (overrides auto-choice).
    * @property {boolean} [useAuth=true] Inject MetacatUI auth headers?
+   * @property {boolean} [archived] Include archived items? Default `false`.
+   * @property {boolean} [group] Use Solr grouping (group=true)?
+   * @property {string} [groupField] Field to group by (if `group` is true).
+   * @property {number} [groupLimit] Limit of groups to return (if `group` is true).
+   * @property {boolean} [disableQueryPOSTs] Disable POST requests for queries?
    */
 
   /**
@@ -35,11 +40,11 @@ define(["jquery"], ($) => {
     // --------------------------------------------------------------------- //
 
     /**
-     * Execute a Solr query and obtain the raw JSON response.
-     * @param {QueryOptions} opts Query parameters & flags.
-     * @returns {jqXHR} jQuery AJAX promise.
+     * Common logic to extract query configuration from options.
+     * @param {QueryOptions} opts
+     * @returns {object} { queryParams, urlBase, shouldPost }
      */
-    static query(opts = {}) {
+    static getQueryConfig(opts = {}) {
       const {
         q = "*:*",
         filterQueries = [],
@@ -53,7 +58,10 @@ define(["jquery"], ($) => {
         facetLimit = -1,
         facetMinCount = 1,
         usePost,
-        useAuth = true,
+        archived = false,
+        group = false,
+        groupField,
+        groupLimit,
       } = opts;
 
       const endpoint = QueryService.queryServiceUrl();
@@ -70,6 +78,10 @@ define(["jquery"], ($) => {
         statsFields,
         facetLimit,
         facetMinCount,
+        archived,
+        group,
+        groupField,
+        groupLimit,
       });
 
       const shouldPost = QueryService.decidePost({
@@ -78,11 +90,72 @@ define(["jquery"], ($) => {
         urlBase,
       });
 
+      return { queryParams, urlBase, shouldPost };
+    }
+
+    /**
+     * Execute a Solr query using the native Fetch API. Returns a Promise
+     * resolving to the parsed JSON response.
+     * NOTE: This method is not jqXHR-compatible and should not be used in
+     * Backbone sync/fetch overrides.
+     * @param {QueryOptions} opts Query parameters & flags.
+     * @returns {Promise<object>} A promise resolving to the JSON result.
+     * @throws {Error} On network failure or non-2xx status.
+     */
+    static async queryWithFetch(opts = {}) {
+      const config = QueryService.getQueryConfig(opts);
+      const { queryParams, shouldPost } = config;
+      let { urlBase } = config;
+
+      let fetchOptions = {
+        method: shouldPost ? "POST" : "GET",
+        headers: {},
+      };
+
+      if (shouldPost) {
+        const fd = new FormData();
+        Object.entries(queryParams).forEach(([k, v]) => {
+          // TODO: Handle groups and other complex types if needed.... make a separate method?
+          if (Array.isArray(v)) {
+            v.forEach((item) => fd.append(k, item));
+          } else {
+            fd.append(k, v);
+          }
+        });
+        fetchOptions.body = fd;
+      } else {
+        const qs = QueryService.toQueryString(queryParams);
+        urlBase += (urlBase.includes("?") ? "" : "?") + qs;
+      }
+
+      if (opts.useAuth !== false) {
+        fetchOptions = {
+          ...fetchOptions,
+          ...MetacatUI.appUserModel.createFetchSettings(),
+        };
+      }
+
+      const res = await fetch(urlBase, fetchOptions);
+      if (!res.ok) {
+        throw new Error(`QueryService.queryWithFetch(): HTTP ${res.status}`);
+      }
+      return res.json();
+    }
+
+    /**
+     * Execute a Solr query and obtain the raw JSON response.
+     * @param {QueryOptions} opts Query parameters & flags.
+     * @returns {jqXHR} jQuery AJAX promise.
+     */
+    static query(opts = {}) {
+      const { queryParams, urlBase, shouldPost } =
+        QueryService.getQueryConfig(opts);
+
       let ajaxSettings = shouldPost
         ? QueryService.buildPostSettings(urlBase, queryParams)
         : QueryService.buildGetSettings(urlBase, queryParams);
 
-      if (useAuth) {
+      if (opts.useAuth !== false) {
         ajaxSettings = QueryService.mergeAuth(ajaxSettings);
       }
 
@@ -96,6 +169,157 @@ define(["jquery"], ($) => {
      */
     static buildQueryParams(opts = {}) {
       return QueryService.buildQueryObject(opts);
+    }
+
+    /**
+     * Perform basic clean up of a Solr response JSON, including removing
+     * empty values and trimming resourceMap fields.
+     * @param {object} response The Solr response JSON object.
+     * @returns {object[]} The cleaned-up array of documents (docs).
+     */
+    static parseResponse(response) {
+      // If the response is not an object, cannot parse it
+      if (typeof response !== "object" || !response?.response) {
+        throw new Error(
+          "QueryService.parseResponse(): Response is not a valid object.",
+        );
+      }
+
+      if (
+        !Array.isArray(response.response.docs) ||
+        !response.response.docs?.length
+      ) {
+        // If there are no docs, return an empty array
+        return [];
+      }
+
+      const docs = response.response.docs;
+      QueryService.removeEmptyValues(docs);
+      QueryService.parseResourceMapFields(docs);
+
+      // Default to returning the raw response
+      return docs;
+    }
+
+    /**
+     * Parses the resourceMap fields from the Solr response JSON.
+     * @param {object[]} json - The "docs" part of a JSON object from the Solr
+     * response
+     * @returns {object[]} The updated docs with parsed resourceMap fields,
+     * though the original docs are modified in place.
+     */
+    static parseResourceMapFields(docs) {
+      if (!Array.isArray(docs) || !docs.length) {
+        return [];
+      }
+      docs.forEach((doc) => {
+        if (doc.resourceMap) {
+          doc.resourceMap = QueryService.parseResourceMapField(doc);
+        }
+      });
+      return docs;
+    }
+
+    /**
+     * Builds a common query for a PID and optional SID. The query will search
+     * for the PID in either the `id` or `seriesId` fields, and if a SID is
+     * provided, it will also filter by that. If no PID is provided, it will
+     * search for the SID in the `seriesId` field, excluding any versions that
+     * have been obsoleted.
+     * @param {string} pid - The PID to search for.
+     * @param {string} sid - The series ID to search for.
+     * @returns {string} The constructed query string.
+     */
+    static buildIdQuery(pid, sid) {
+      let query = "";
+      const getQueryPart = QueryService.getQueryPart;
+      // If there is no pid set, then search for sid or pid
+      if (!sid)
+        query += `(${getQueryPart("id", pid)} OR ${getQueryPart("seriesId", pid)})`;
+      // If a seriesId is specified, then search for that
+      else if (sid && pid)
+        query += `(${getQueryPart("id", pid)} AND ${getQueryPart("seriesId", sid)})`;
+      // If only a seriesId is specified, then just search for the most recent
+      // version
+      else if (sid && !pid)
+        query += `${getQueryPart("seriesId", sid)} -obsoletedBy:*`;
+      return query;
+    }
+
+    /**
+     * Escape special characters in a Lucene query string. Lucene is the query
+     * language used by Solr.
+     * @param {string} value The string to escape.
+     * @returns {string} The escaped string.
+     */
+    static escapeLucene(value) {
+      if (typeof value !== "string") {
+        throw new TypeError(
+          "QueryService.escapeLucene(): value must be a string.",
+        );
+      }
+      return value.replace(/([+\-!(){}\[\]^"~*?:\\/])/g, "\\$1");
+    }
+
+    /**
+     * Build a query part for a field and value, escaping the value for Lucene.
+     * @param {string} field The field name.
+     * @param {string} value The value to search for.
+     * @returns {string} The formatted query part, e.g., `field:"value"`.
+     */
+    static getQueryPart(field, value) {
+      if (typeof field !== "string" || typeof value !== "string") {
+        throw new TypeError(
+          "QueryService.queryPart(): field and value must be strings.",
+        );
+      }
+      return `${field}:"${QueryService.escapeLucene(value)}"`;
+    }
+
+    /**
+     * Parses the resourceMap field from the Solr response JSON.
+     * @param {object} json - The JSON object from the Solr response
+     * @returns {string|string[]} The resourceMap parsed. If it is a string,
+     * it returns the trimmed string. If it is an array, it returns an array
+     * of trimmed strings. If it is neither, it returns an empty array.
+     */
+    static parseResourceMapField(doc) {
+      if (!doc || !doc.resourceMap) {
+        return [];
+      }
+      const rms = doc.resourceMap;
+      if (typeof rms === "string") {
+        return [rms.trim()];
+      } else if (Array.isArray(rms)) {
+        return rms
+          .map((rMapId) => {
+            return typeof rMapId === "string" ? rMapId.trim() : rMapId;
+          })
+          .filter(Boolean); // Filter out any falsy values
+      }
+      // If nothing works so far, return an empty array
+      return [];
+    }
+
+    /**
+     * Remove empty values from an array of documents. This modifies the
+     * documents in place, removing any properties that are `null`, `undefined`,
+     * or an empty string.
+     * @param {object[]} docs The array of documents to clean.
+     * @returns {object[]} The cleaned array of documents.
+     */
+    static removeEmptyValues(docs) {
+      if (!Array.isArray(docs) || !docs.length) {
+        return [];
+      }
+      docs.forEach((doc) => {
+        Object.keys(doc).forEach((key) => {
+          if (doc[key] === null || doc[key] === undefined || doc[key] === "") {
+            delete doc[key];
+          }
+        });
+      });
+      return docs;
     }
 
     // --------------------------------------------------------------------- //
@@ -136,6 +360,10 @@ define(["jquery"], ($) => {
       statsFields,
       facetLimit,
       facetMinCount,
+      archived,
+      group,
+      groupField,
+      groupLimit,
     }) {
       const params = {
         q,
@@ -153,9 +381,15 @@ define(["jquery"], ($) => {
 
       // fl
       if (fields) {
-        const fieldsArray = [].concat(fields).flat().filter(Boolean);
-        if (fieldsArray.length) {
-          params.fl = fieldsArray.join(",");
+        // If fields is a string, assume it is already formatted
+        // as a comma-separated list of fields.
+        if (typeof fields === "string") {
+          params.fl = fields;
+        } else if (Array.isArray(fields)) {
+          const fieldsArray = [].concat(fields).flat().filter(Boolean);
+          if (fieldsArray.length) {
+            params.fl = fieldsArray.join(",");
+          }
         }
       }
 
@@ -188,11 +422,35 @@ define(["jquery"], ($) => {
       // stats
       const statsFieldsArray = [].concat(statsFields).flat().filter(Boolean);
       if (statsFieldsArray.length) {
-        params.stats = "true";
+        params["stats"] = "true";
         statsFieldsArray.forEach((field) => {
           params["stats.field"] = params["stats.field"] || [];
           params["stats.field"].push(field);
         });
+      }
+
+      // TODO - are there other values possible for the archived param?
+      if (archived) {
+        params["archived"] = "archived:*";
+      }
+
+      // groups
+      if (group) {
+        params.group = "true";
+        if (groupField) {
+          if (typeof groupField === "string") {
+            params["group.field"] = groupField;
+          } else if (Array.isArray(groupField)) {
+            params["group.field"] = groupField.join(",");
+          } else {
+            throw new TypeError(
+              "QueryService.buildQueryObject(): groupField must be a string or array.",
+            );
+          }
+        }
+        if (typeof groupLimit === "number") {
+          params["group.limit"] = groupLimit;
+        }
       }
 
       return params;
@@ -291,7 +549,7 @@ define(["jquery"], ($) => {
      */
     static mergeAuth(ajaxOpts) {
       if (!MetacatUI.appUserModel?.createAjaxSettings) return ajaxOpts;
-      const auth = MetacatUI.appUserModel.createAjaxSettings();
+      const auth = MetacatUI.appUserModel?.createAjaxSettings();
       return { ...ajaxOpts, ...auth };
     }
   }

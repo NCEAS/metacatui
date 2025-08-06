@@ -386,5 +386,312 @@ define([
         });
       });
     });
+
+    // Additional tests for new methods and options
+    describe("getQueryConfig()", () => {
+      it("returns urlBase (trimmed), queryParams from buildQueryObject, and shouldPost from decidePost", () => {
+        const { sandbox } = state;
+        sandbox
+          .stub(QueryService, "queryServiceUrl")
+          .returns("https://example.com/search?");
+        const bqoStub = sandbox
+          .stub(QueryService, "buildQueryObject")
+          .returns({ q: "x", rows: 10 });
+        const decideStub = sandbox
+          .stub(QueryService, "decidePost")
+          .returns(true);
+
+        const cfg = QueryService.getQueryConfig({ q: "x", rows: 10 });
+
+        cfg.urlBase.should.equal("https://example.com/search");
+        cfg.queryParams.should.deep.equal({ q: "x", rows: 10 });
+        cfg.shouldPost.should.be.true;
+        bqoStub.calledOnce.should.be.true;
+        decideStub.calledOnce.should.be.true;
+      });
+    });
+
+    describe("queryWithFetch()", () => {
+      it("performs a GET with query string and merges auth headers by default", async () => {
+        const { sandbox } = state;
+
+        sandbox
+          .stub(QueryService, "queryServiceUrl")
+          .returns("https://api.test");
+        sandbox
+          .stub(QueryService, "buildQueryObject")
+          .returns({ q: "*:*", rows: 1 });
+        sandbox.stub(QueryService, "decidePost").returns(false);
+
+        const jsonStub = sandbox
+          .stub()
+          .resolves({ response: { numFound: 0, docs: [] } });
+        const fetchStub = sandbox
+          .stub(window, "fetch")
+          .resolves({ ok: true, json: jsonStub });
+
+        const cfs = sandbox
+          .stub()
+          .returns({ headers: { Authorization: "Bearer 1" } });
+
+        sandbox.stub(MetacatUI, "appUserModel").value({
+          createFetchSettings: cfs,
+        });
+
+        const data = await QueryService.queryWithFetch();
+
+        fetchStub.calledOnce.should.be.true;
+        const [url, opts] = fetchStub.firstCall.args;
+        url.should.include("?q=*%3A*");
+        url.should.include("&rows=1");
+        opts.method.should.equal("GET");
+        opts.headers.Authorization.should.equal("Bearer 1");
+        data.should.deep.equal({ response: { numFound: 0, docs: [] } });
+        cfs.calledOnce.should.be.true;
+      });
+
+      it("performs a POST with FormData when decidePost() returns true and throws on HTTP error", async () => {
+        const { sandbox } = state;
+        sandbox
+          .stub(QueryService, "queryServiceUrl")
+          .returns("https://api.test");
+        sandbox
+          .stub(QueryService, "buildQueryObject")
+          .returns({ q: "x", fq: ["a", "b"], rows: 5 });
+        sandbox.stub(QueryService, "decidePost").returns(true);
+
+        class MockFormData {
+          constructor() {
+            this.fields = [];
+          }
+          append(k, v) {
+            this.fields.push({ key: k, value: v });
+          }
+        }
+        sandbox.stub(window, "FormData").callsFake(() => new MockFormData());
+
+        const fetchStub = sandbox
+          .stub(window, "fetch")
+          .resolves({ ok: false, status: 500 });
+        sandbox.stub(window, "MetacatUI").value({
+          appUserModel: { createFetchSettings: sandbox.stub().returns({}) },
+        });
+
+        try {
+          await QueryService.queryWithFetch();
+          throw new Error("expected throw");
+        } catch (e) {
+          e.message.should.match(/HTTP 500/);
+        }
+
+        const [, opts] = fetchStub.firstCall.args;
+        opts.method.should.equal("POST");
+        opts.body.should.be.instanceOf(MockFormData);
+        opts.body.fields.filter((f) => f.key === "fq").length.should.equal(2);
+        opts.body.fields.filter((f) => f.key === "q").length.should.equal(1);
+        opts.body.fields.filter((f) => f.key === "rows").length.should.equal(1);
+      });
+
+      it("skips auth when useAuth is false", async () => {
+        const { sandbox } = state;
+        sandbox
+          .stub(QueryService, "queryServiceUrl")
+          .returns("https://api.test");
+        sandbox.stub(QueryService, "buildQueryObject").returns({ q: "x" });
+        sandbox.stub(QueryService, "decidePost").returns(false);
+
+        const jsonStub = sandbox.stub().resolves({ ok: 1 });
+        const fetchStub = sandbox
+          .stub(window, "fetch")
+          .resolves({ ok: true, json: jsonStub });
+
+        const cfs = sandbox
+          .stub()
+          .returns({ headers: { Authorization: "nope" } });
+        sandbox
+          .stub(MetacatUI, "appUserModel")
+          .value({ createFetchSettings: cfs });
+
+        await QueryService.queryWithFetch({ useAuth: false });
+        cfs.called.should.be.false;
+        const [, opts] = fetchStub.firstCall.args;
+        // headers should be empty object (no merge)
+        Object.keys(opts.headers).length.should.equal(0);
+      });
+    });
+
+    describe("parseResponse()", () => {
+      it("throws on invalid response shape", () => {
+        (() => QueryService.parseResponse(null)).should.throw();
+        (() => QueryService.parseResponse({})).should.throw();
+      });
+
+      it("returns [] when docs array is missing or empty", () => {
+        QueryService.parseResponse({
+          response: { docs: [] },
+        }).should.deep.equal([]);
+        QueryService.parseResponse({ response: {} }).should.deep.equal([]);
+      });
+
+      it("cleans empty values and parses resourceMap fields", () => {
+        const resp = {
+          response: {
+            docs: [
+              {
+                id: "x",
+                title: "",
+                empty: null,
+                resourceMap: ["  rm1  ", null, "rm2 "],
+              },
+              { id: "y", resourceMap: "  rm3  ", count: 0, flag: false },
+            ],
+          },
+        };
+        const docs = QueryService.parseResponse(resp);
+        docs.should.deep.equal([
+          { id: "x", resourceMap: ["rm1", "rm2"] },
+          { id: "y", resourceMap: ["rm3"], count: 0, flag: false },
+        ]);
+      });
+    });
+
+    describe("parseResourceMapFields()", () => {
+      it("returns [] for invalid input and parses resourceMap in-place for valid docs", () => {
+        QueryService.parseResourceMapFields(undefined).should.deep.equal([]);
+        const docs = [
+          { id: 1, resourceMap: [" a ", "b ", null] },
+          { id: 2, resourceMap: " c " },
+          { id: 3 },
+        ];
+        const res = QueryService.parseResourceMapFields(docs);
+        res[0].resourceMap.should.deep.equal(["a", "b"]);
+        res[1].resourceMap.should.deep.equal(["c"]);
+        should.equal(res[2].resourceMap, undefined);
+      });
+    });
+
+    describe("buildIdQuery()", () => {
+      it("builds query for PID only (search id OR seriesId)", () => {
+        const pid = "urn:uuid:123";
+        const q = QueryService.buildIdQuery(pid, undefined);
+        q.should.equal(
+          `(${QueryService.getQueryPart("id", pid)} OR ${QueryService.getQueryPart("seriesId", pid)})`,
+        );
+      });
+
+      it("builds query for PID and SID (AND)", () => {
+        const pid = "p1";
+        const sid = "s1";
+        const q = QueryService.buildIdQuery(pid, sid);
+        q.should.equal(
+          `(${QueryService.getQueryPart("id", pid)} AND ${QueryService.getQueryPart("seriesId", sid)})`,
+        );
+      });
+
+      it("builds query for SID only (latest version; excludes obsoleted)", () => {
+        const sid = "s-only";
+        const q = QueryService.buildIdQuery(undefined, sid);
+        q.should.equal(
+          `${QueryService.getQueryPart("seriesId", sid)} -obsoletedBy:*`,
+        );
+      });
+    });
+
+    describe("escapeLucene()", () => {
+      it("escapes Lucene metacharacters", () => {
+        const input = '(title:(a+b) AND path:"/tmp")?';
+        const out = QueryService.escapeLucene(input);
+        console.log({
+          out,
+          exp: '\\(title\\:\\(a\\+b\\) AND path\\:\\"/tmp\\"\\)\\?',
+          // inputttt: input,
+        });
+        out.should.equal(
+          '\\(title\\:\\(a\\+b\\) AND path\\:\\"\\/tmp\\"\\)\\?',
+        );
+      });
+
+      it("throws on non-string input", () => {
+        (() => QueryService.escapeLucene(null)).should.throw(TypeError);
+      });
+    });
+
+    describe("getQueryPart()", () => {
+      it('formats field:"escaped"', () => {
+        const part = QueryService.getQueryPart("id", 'abc"123');
+        part.should.equal('id:"abc\\"123"');
+      });
+
+      it("throws when field or value is not a string", () => {
+        (() => QueryService.getQueryPart(1, "x")).should.throw(TypeError);
+        (() => QueryService.getQueryPart("x", 1)).should.throw(TypeError);
+      });
+    });
+
+    describe("parseResourceMapField()", () => {
+      it("returns [] when resourceMap is missing", () => {
+        QueryService.parseResourceMapField({}).should.deep.equal([]);
+      });
+
+      it("parses string to [trimmed] array", () => {
+        QueryService.parseResourceMapField({
+          resourceMap: "  abc  ",
+        }).should.deep.equal(["abc"]);
+      });
+
+      it("parses array of strings and filters falsy", () => {
+        QueryService.parseResourceMapField({
+          resourceMap: [" a ", null, "b "],
+        }).should.deep.equal(["a", "b"]);
+      });
+    });
+
+    describe("removeEmptyValues()", () => {
+      it("removes null/undefined/empty string, but keeps 0/false", () => {
+        const docs = [
+          { id: 1, a: null, b: undefined, c: "", d: 0, e: false, f: "x" },
+        ];
+        const cleaned = QueryService.removeEmptyValues(docs);
+        cleaned.should.deep.equal([{ id: 1, d: 0, e: false, f: "x" }]);
+      });
+
+      it("returns [] for non-array input or empty array", () => {
+        QueryService.removeEmptyValues(undefined).should.deep.equal([]);
+        QueryService.removeEmptyValues([]).should.deep.equal([]);
+      });
+    });
+
+    describe("buildQueryObject() additions", () => {
+      it("accepts fields as a pre-formatted string", () => {
+        const params = QueryService.buildQueryObject({
+          q: "*:*",
+          fields: "id,title",
+        });
+        params.fl.should.equal("id,title");
+      });
+
+      it("sets archived and grouping options when provided", () => {
+        const params = QueryService.buildQueryObject({
+          q: "*:*",
+          archived: true,
+          group: true,
+          groupField: ["seriesId", "id"],
+          groupLimit: 3,
+        });
+        params.archived.should.equal("archived:*");
+        params.group.should.equal("true");
+        params["group.field"].should.equal("seriesId,id");
+        params["group.limit"].should.equal(3);
+      });
+
+      it("throws when groupField is not a string or array", () => {
+        (() =>
+          QueryService.buildQueryObject({
+            q: "*:*",
+            group: true,
+            groupField: 123,
+          })).should.throw(TypeError);
+      });
+    });
   });
 });
