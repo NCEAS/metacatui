@@ -6,7 +6,8 @@ define([
   "md5",
   "rdflib",
   "models/SolrResult",
-], ($, _, Backbone, uuid, md5, rdf, SolrResult) => {
+  "common/QueryService",
+], ($, _, Backbone, uuid, md5, rdf, SolrResult, QueryService) => {
   /**
    * @class PackageModel
    * @classdesc A Backbone Model for representing a DataONE package or resource
@@ -121,55 +122,59 @@ define([
        * @param {string} memberId - The id of the member to search for
        */
       getMembersByMemberID(memberId) {
-        let id = memberId;
+        const model = this;
+        const id = memberId || this.memberId;
+        if (!id) {
+          this.pending = false;
+          this.trigger("error", this, new Error("memberId is required"));
+          return;
+        }
         this.pending = true;
 
-        if (!id) id = this.memberId;
-
-        const model = this;
-
         // Get the id of the resource map for this member
-        const provFlList = `${MetacatUI.appSearchModel.getProvFlList()}prov_instanceOfClass,`;
-        const query =
-          `fl=resourceMap,fileName,read:read_count_i,obsoletedBy,size,formatType,formatId,id,datasource,title,origin,pubDate,dateUploaded,isPublic,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,${provFlList}&rows=1` +
-          `&q=id:%22${encodeURIComponent(id)}%22` +
-          `&wt=json`;
+        const provFlList = `prov_instanceOfClass,${MetacatUI.appSearchModel.getProvFlList()}`;
 
-        const requestSettings = {
-          url: MetacatUI.appModel.get("queryServiceUrl") + query,
-          success(data) {
-            // There should be only one response since we searched by id
-            if (data.response.docs) {
-              const doc = data.response.docs[0];
-
-              // Is this document a resource map itself?
-              if (doc.formatId === "http://www.openarchives.org/ore/terms") {
-                model.set("id", doc.id); // this is the package model ID
-                model.set("members", []); // Reset the member list
-                model.getMembers();
-              }
-              // If there is no resource map, then this is the only document to
-              // in this package
-              else if (!doc.resourceMap) {
-                model.set("id", null);
-                model.set("memberIds", new Array(doc.id));
-                model.set("members", [new SolrResult(doc)]);
-                model.trigger("change:members");
-                model.flagComplete();
-              } else {
-                model.set("id", doc.resourceMap[0]);
-                model.getMembers();
-              }
+        QueryService.queryWithFetch({
+          q: QueryService.buildIdQuery(id),
+          rows: 1,
+          fields:
+            `resourceMap,fileName,read:read_count_i,obsoletedBy,size,` +
+            `formatType,formatId,id,datasource,title,origin,pubDate,dateUploaded,` +
+            `isPublic,isService,serviceTitle,serviceEndpoint,serviceOutput,` +
+            `serviceDescription,${provFlList}`,
+        })
+          .then((response) => QueryService.parseResponse(response))
+          .then((docs) => {
+            const doc = docs && docs[0];
+            if (!doc) {
+              model.pending = false;
+              model.trigger("error", model, new Error("No match for memberId"));
+              return;
             }
-          },
-        };
-
-        $.ajax(
-          _.extend(
-            requestSettings,
-            MetacatUI.appUserModel.createAjaxSettings(),
-          ),
-        );
+            // Is this document a resource map itself?
+            if (doc.formatId === "http://www.openarchives.org/ore/terms") {
+              model.set("id", doc.id); // this is the package model ID
+              model.set("members", []); // Reset the member list
+              model.getMembers();
+            }
+            // If there is no resource map, then this is the only document to
+            // in this package
+            else if (!doc.resourceMap) {
+              model.set("id", null);
+              model.set("memberIds", new Array(doc.id));
+              model.set("members", [new SolrResult(doc)]);
+              model.trigger("change:members");
+              model.flagComplete();
+            } else {
+              model.set("id", doc.resourceMap[0]);
+              model.getMembers();
+            }
+          })
+          .catch((error) => {
+            console.error("Error getting members by member ID:", error);
+            model.pending = false;
+            model.trigger("error", model, error);
+          });
       },
 
       /* Get all the members of a resource map/package based on the id attribute
@@ -182,38 +187,30 @@ define([
         const members = [];
         const pids = []; // Keep track of each object pid
 
-        // Find all the files that are a part of this resource map and the
-        // resource map itself
-        let query =
-          `fl=resourceMap,fileName,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,` +
-          `rightsHolder,dateUploaded,archived,title,origin,prov_instanceOfClass,isDocumentedBy,isPublic` +
-          `&rows=1000` +
-          `&q=%28resourceMap:%22${encodeURIComponent(
-            this.id,
-          )}%22%20OR%20id:%22${encodeURIComponent(this.id)}%22%29` +
-          `&wt=json`;
-
-        if (this.get("getArchivedMembers")) {
-          query += "&archived=archived:*";
-        }
-
-        const requestSettings = {
-          url: MetacatUI.appModel.get("queryServiceUrl") + query,
-          success(data) {
+        const id = model.get("id");
+        const qid = QueryService.escapeLucene(id);
+        QueryService.queryWithFetch({
+          // Find all the files that are a part of this resource map and the
+          // resource map itself
+          q: `resourceMap:${qid} OR id:${qid}`,
+          fields:
+            `resourceMap,fileName,obsoletes,obsoletedBy,size,formatType,formatId,` +
+            `id,datasource,rightsHolder,dateUploaded,archived,title,origin,` +
+            `prov_instanceOfClass,isDocumentedBy,isPublic`,
+          rows: 1000,
+          archived: this.get("getArchivedMembers") ? true : false,
+        })
+          .then((response) => QueryService.parseResponse(response))
+          .then((docs) => {
             // Separate the resource maps from the data/metadata objects
-            _.each(data.response.docs, (doc) => {
-              if (doc.id === model.get("id")) {
+            docs.forEach((doc) => {
+              if (doc.id === id) {
                 model.set("indexDoc", doc);
                 model.set(doc);
-                if (
-                  model.get("resourceMap") &&
-                  options &&
-                  options.getParentMetadata
-                )
+                if (model.get("resourceMap") && options?.getParentMetadata)
                   model.getParentMetadata();
               } else {
                 pids.push(doc.id);
-
                 if (doc.formatType === "RESOURCE") {
                   const newPckg = new PackageModel(doc);
                   newPckg.set("parentPackage", model);
@@ -228,15 +225,12 @@ define([
             if (model.getNestedPackages().length > 0)
               model.createNestedPackages();
             else model.flagComplete();
-          },
-        };
-
-        $.ajax(
-          _.extend(
-            requestSettings,
-            MetacatUI.appUserModel.createAjaxSettings(),
-          ),
-        );
+          })
+          .catch((error) => {
+            console.error("Error getting members:", error);
+            model.pending = false;
+            model.trigger("error", model, error);
+          });
 
         return this;
       },
@@ -968,7 +962,9 @@ define([
       },
 
       getParentMetadata() {
+        const model = this;
         const rMapIds = this.get("resourceMap");
+        const esc = QueryService.escapeLucene;
 
         // Create a query that searches for any resourceMap with an id matching
         // one of the parents OR an id that matches one of the parents. This
@@ -985,8 +981,8 @@ define([
             }
 
             // The id
-            rMapQuery += `%22${encodeURIComponent(id)}%22`;
-            idQuery += `%22${encodeURIComponent(id)}%22`;
+            rMapQuery += `"${esc(id)}"`;
+            idQuery += `"${esc(id)}"`;
 
             // At the end of the list of ids
             if (i + 1 === ids.length) {
@@ -1002,20 +998,19 @@ define([
         } else {
           // When there is just one parent, the query is simple
           const rMapId = Array.isArray(rMapIds) ? rMapIds[0] : rMapIds;
-          rMapQuery += `resourceMap:%22${encodeURIComponent(rMapId)}%22`;
-          idQuery += `id:%22${encodeURIComponent(rMapId)}%22`;
+          rMapQuery += `resourceMap:"${esc(rMapId)}"`;
+          idQuery += `id:"${esc(rMapId)}"`;
         }
-        const query =
-          `fl=title,id,obsoletedBy,resourceMap` +
-          `&wt=json` +
-          `&group=true&group.field=formatType&group.limit=-1` +
-          `&q=((formatType:METADATA AND ${rMapQuery}) OR ${idQuery})`;
 
-        const model = this;
-        const requestSettings = {
-          url: MetacatUI.appModel.get("queryServiceUrl") + query,
-          success(data) {
-            const results = data.grouped.formatType.groups;
+        QueryService.queryWithFetch({
+          q: `((formatType:METADATA AND ${rMapQuery}) OR ${idQuery})`,
+          fields: "title,id,obsoletedBy,resourceMap",
+          group: true,
+          groupField: "formatType",
+          groupLimit: -1,
+        })
+          .then((response) => {
+            const results = response.grouped.formatType.groups;
             const resourceMapGroup = _.where(results, {
               groupValue: "RESOURCE",
             })[0];
@@ -1066,15 +1061,11 @@ define([
 
             model.set("parentPackageMetadata", metadataModels);
             model.trigger("change:parentPackageMetadata");
-          },
-        };
-
-        $.ajax(
-          _.extend(
-            requestSettings,
-            MetacatUI.appUserModel.createAjaxSettings(),
-          ),
-        );
+          })
+          .catch((error) => {
+            model.pending = false;
+            model.trigger("error", model, error);
+          });
       },
 
       // Create the URL string that is used to download this package

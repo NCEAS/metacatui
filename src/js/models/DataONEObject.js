@@ -8,7 +8,19 @@ define([
   "collections/ObjectFormats",
   "common/Utilities",
   "md5",
-], ($, _, Backbone, uuid, he, AccessPolicy, ObjectFormats, Utilities, md5) => {
+  "common/QueryService",
+], (
+  $,
+  _,
+  Backbone,
+  uuid,
+  he,
+  AccessPolicy,
+  ObjectFormats,
+  Utilities,
+  md5,
+  QueryService,
+) => {
   /**
    * @class DataONEObject
    * @classdesc A DataONEObject represents a DataONE object, such as a data file,
@@ -299,75 +311,76 @@ define([
       },
 
       /**
-       * Overload Backbone.Model.fetch, so that we can set custom options for each fetch() request
-       * @param options
+       * Overload Backbone.Model.fetch, so that we can set custom options for
+       * each fetch() request
+       * @param {object} options Options for the fetch request
        */
-      fetch(options) {
-        if (!options) var options = {};
-        else var options = _.clone(options);
-
-        options.url = this.url();
-
-        // If we are using the Solr service to retrieve info about this object, then construct a query
-        if (typeof options !== "undefined" && options.solrService) {
-          // Get basic information
-          let query = "";
-
-          // Do not search for seriesId when it is not configured in this model/app
-          if (typeof this.get("seriesid") === "undefined")
-            query += `id:"${encodeURIComponent(this.get("id"))}"`;
-          // If there is no seriesid set, then search for pid or sid
-          else if (!this.get("seriesid"))
-            query += `(id:"${encodeURIComponent(
-              this.get("id"),
-            )}" OR seriesId:"${encodeURIComponent(this.get("id"))}")`;
-          // If a seriesId is specified, then search for that
-          else if (this.get("seriesid") && this.get("id").length > 0)
-            query += `(seriesId:"${encodeURIComponent(
-              this.get("seriesid"),
-            )}" AND id:"${encodeURIComponent(this.get("id"))}")`;
-          // If only a seriesId is specified, then just search for the most recent version
-          else if (this.get("seriesid") && !this.get("id"))
-            query += `seriesId:"${encodeURIComponent(
-              this.get("id"),
-            )}" -obsoletedBy:*`;
-
-          // The fields to return
-          const fl = "formatId,formatType,documents,isDocumentedBy,id,seriesId";
-
-          // Use the Solr query URL
-          const solrOptions = {
-            url: `${MetacatUI.appModel.get(
-              "queryServiceUrl",
-            )}q=${query}&fl=${fl}&wt=json`,
-          };
-
-          // Merge with the options passed to this function
-          var fetchOptions = _.extend(options, solrOptions);
-        } else if (typeof options !== "undefined") {
-          // Use custom options for retreiving XML
-          // Merge with the options passed to this function
-          var fetchOptions = _.extend(
-            {
-              dataType: "text",
-            },
-            options,
-          );
-        } else {
-          // Use custom options for retreiving XML
-          var fetchOptions = _.extend({
-            dataType: "text",
-          });
+      fetch(options = {}) {
+        if (options?.solrService) {
+          // Query solr will handle fetch, set, and sync
+          this.querySolr();
+          return;
         }
 
-        // Add the authorization options
-        fetchOptions = _.extend(
-          fetchOptions,
-          MetacatUI.appUserModel.createAjaxSettings(),
-        );
+        const fetchOptions = {
+          url: this.url(),
+          ...options,
+          dataType: "text",
+          ...MetacatUI.appUserModel.createAjaxSettings(),
+        };
 
-        // Call Backbone.Model.fetch to retrieve the info
         return Backbone.Model.prototype.fetch.call(this, fetchOptions);
+      },
+
+      querySolr() {
+        console.log("Querying Solr for DataONEObject info:", this.get("id"));
+
+        const pid = this.get("id");
+        const sid = this.get("seriesid");
+        if (!pid && !sid) {
+          throw new Error(
+            "Need at least one of seriesId or id to query for info",
+          );
+        }
+        const fl = [
+          "formatId",
+          "formatType",
+          "documents",
+          "isDocumentedBy",
+          "id",
+          "seriesId",
+        ];
+        const opts = {
+          q: QueryService.buildIdQuery(pid, sid),
+          fields: fl,
+        };
+        QueryService.query(opts)
+          .then((response) => model.parseSolrResponse(response))
+          .catch((e) => this.setNotFound(e));
+      },
+
+      parseSolrResponse(response) {
+        // Remove emtpy values & remove white space from fields
+        const docs = QueryService.parseResponse(response);
+
+        // If no objects were found in the index, mark as notFound and exit
+        if (!docs.length) {
+          this.setNotFound();
+          return;
+        }
+
+        // Get the Solr document (there should be only one)
+        const doc = docs[0];
+        this.set(doc);
+        this.trigger("sync");
+
+        return doc;
+      },
+
+      setNotFound(e) {
+        if (e) console.error("Error fetching DataONEObject:", e);
+        this.set("notFound", true);
+        this.trigger("notFound");
       },
 
       /**
@@ -433,38 +446,12 @@ define([
               $(systemMetadata).find("accesspolicy"),
             );
           }
-
           return sysMetaValues;
-
-          // If the response is a list of Solr docs
         }
-        if (
-          typeof response === "object" &&
-          response.response &&
-          response.response.docs
-        ) {
-          // If no objects were found in the index, mark as notFound and exit
-          if (!response.response.docs.length) {
-            this.set("notFound", true);
-            this.trigger("notFound");
-            return;
-          }
-
-          // Get the Solr document (there should be only one)
-          const doc = response.response.docs[0];
-
-          // Take out any empty values
-          _.each(Object.keys(doc), (field) => {
-            if (!doc[field] && doc[field] !== 0) delete doc[field];
-          });
-
-          // Remove any erroneous white space from fields
-          this.removeWhiteSpaceFromSolrFields(doc);
-
-          return doc;
+        // If the response is a list of Solr docs
+        if (response?.response?.docs) {
+          return this.parseSolrResponse(response);
         }
-        // Default to returning the raw response
-        return response;
       },
 
       /**
@@ -2550,25 +2537,9 @@ define([
         }
       },
 
-      /**
-       * Removes white space from string values returned by Solr when the white space causes issues.
-       * For now this only effects the `resourceMap` field, which will index new line characters and spaces
-       * when the RDF XML has those in the `identifier` XML element content. This was causing bugs where DataONEObject
-       * models were created with `id`s with new line and white space characters (e.g. `\n urn:uuid:1234...`)
-       * @param {object} json - The Solr document as a JS Object, which will be directly altered
-       */
+      /** @deprecated */
       removeWhiteSpaceFromSolrFields(json) {
-        if (typeof json.resourceMap === "string") {
-          json.resourceMap = json.resourceMap.trim();
-        } else if (Array.isArray(json.resourceMap)) {
-          const newResourceMapIds = [];
-          _.each(json.resourceMap, (rMapId) => {
-            if (typeof rMapId === "string") {
-              newResourceMapIds.push(rMapId.trim());
-            }
-          });
-          json.resourceMap = newResourceMapIds;
-        }
+        return QueryService.parseResourceMapFields(json);
       },
     },
 
