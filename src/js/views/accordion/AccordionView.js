@@ -39,7 +39,7 @@ define([
        * for the tooltip to be shown.
        * @see https://fomantic-ui.com/modules/popup.html#/settings
        * @type {object|boolean}
-       * @since 0.0.0
+       * @since 2.34.0
        */
       tooltipSettings: {
         variation: `${SEM_VARIATIONS.mini} ${SEM_VARIATIONS.inverted}`,

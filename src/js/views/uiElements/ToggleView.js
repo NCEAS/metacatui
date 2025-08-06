@@ -8,7 +8,7 @@ define(["backbone"], (Backbone) => {
    * @classcategory Views/UIElements
    * @augments Backbone.View
    * @screenshot views/uiElements/toggleView.png
-   * @since 0.0.0
+   * @since 2.34.0
    */
 
   const CLASS_NAMES = {

@@ -62,7 +62,7 @@ define([
    * index, the RM is verified to ensure it links to the pid. The history of the
    * resolution attempts is stored in an event log.
    * @classcategory Common
-   * @since 0.0.0
+   * @since 2.34.0
    */
   class ResourceMapResolver {
     /**

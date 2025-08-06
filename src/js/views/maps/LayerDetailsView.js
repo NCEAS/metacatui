@@ -11,6 +11,7 @@ define([
   "views/maps/LayerOpacityView",
   "views/maps/LayerInfoView",
   "views/maps/LayerNavigationView",
+  "views/maps/VectorFilterView",
 ], (
   $,
   _,
@@ -22,6 +23,7 @@ define([
   LayerOpacityView,
   LayerInfoView,
   LayerNavigationView,
+  VectorFilterView,
 ) => {
   /**
    * @class LayerDetailsView
@@ -86,22 +88,26 @@ define([
       },
 
       /**
-       * Configuration for a Layer Detail section to show within this Layer Details
-       * view.
+       * Configuration for a Layer Detail section to show within this Layer
+       * Details view.
        * @typedef {object} DetailSectionOption
        * @property {string} label The name to display for this section
-       * @property {Backbone.View} view Any view that will render content for the Layer
-       * Detail section. This view will be passed the MapAsset model. The view should
-       * display information about the MapAsset and/or allow some aspect of the
-       * MapAsset's appearance to be edited - e.g. a LayerInfoView or a
-       * LayerOpacityView.
+       * @property {Backbone.View} view Any view that will render content for
+       * the Layer Detail section. This view will be passed the MapAsset model.
+       * The view should display information about the MapAsset and/or allow
+       * some aspect of the MapAsset's appearance to be edited - e.g. a
+       * LayerInfoView or a LayerOpacityView.
        * @property {boolean} collapsible Whether or not this section should be
        * expandable and collapsible.
-       * @property {boolean} showTitle Whether or not to show the title/label for this
-       * section.
-       * @property {boolean} hideIfError Set to true to hide this section when there is
-       * an error loading the layer. Example: we should hide the opacity slider for
-       * layers that are not visible on the map
+       * @property {boolean} showTitle Whether or not to show the title/label
+       * for this section.
+       * @property {boolean} hideIfError Set to true to hide this section when
+       * there is an error loading the layer. Example: we should hide the
+       * opacity slider for layers that are not visible on the map
+       * @property {Function} [renderIf] A function that determines whether the
+       * Layer Detail seciton should be rendered. It will be passed the MapAsset
+       * (layer) model and should return true or false. If no function is
+       * provided, the section will always be rendered.
        */
 
       /**
@@ -117,6 +123,14 @@ define([
           collapsible: false,
           showTitle: false,
           hideIfError: true,
+        },
+        {
+          label: "Filter by Property",
+          view: VectorFilterView,
+          collapsible: false,
+          showTitle: true,
+          hideIfError: true,
+          renderIf: (model) => model?.get("filters")?.length > 0,
         },
         {
           label: "Opacity",
@@ -190,6 +204,15 @@ define([
         const labelEl = this.el.querySelector(`.${this.classes.label}`);
 
         this.renderedSections = this.sections.map((section) => {
+          // If the section has a renderIf function, check if we should render
+          // this section or not
+          if (
+            typeof section.renderIf === "function" &&
+            !section.renderIf(model)
+          ) {
+            return null; // Skip rendering this section
+          }
+
           const detailSection = new LayerDetailView({
             label: section.label,
             contentView: section.view,
@@ -206,6 +229,7 @@ define([
               detailSection.el.style.display = "none";
             }
           }
+
           return { ...section, renderedView: detailSection };
         });
 
@@ -219,7 +243,6 @@ define([
           }
           this.renderedSections.forEach((section) => {
             if (section.hideIfError) {
-              // eslint-disable-next-line no-param-reassign
               section.renderedView.el.style.display = displayProperty;
             }
           });
@@ -293,7 +316,9 @@ define([
         // Remove listeners from sub-views
         this.renderedSections.forEach((section) => {
           if (
-            section.renderedView &&
+            // Some sections dynamically render their views, so check if the
+            // renderedView exists
+            section?.renderedView &&
             typeof section.renderedView.onClose === "function"
           ) {
             section.renderedView.onClose();

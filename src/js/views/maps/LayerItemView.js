@@ -83,6 +83,9 @@ define([
         settings: "layer-item__settings",
         badge: "map-view__badge",
         tooltip: "map-tooltip",
+        button: "map-view__button",
+        filterIcon: "layer-item__filter-icon",
+        filterIconActive: "layer-item__filter-icon--active",
       },
 
       /**
@@ -138,6 +141,11 @@ define([
           this.insertIcon();
         }
 
+        // Add filter icon for "filterable" layers
+        if (this.model.get("filters")?.length) {
+          this.insertFilterIcon();
+        }
+
         // Ensure the view's main element has the given class name
         this.el.classList.add(this.className);
 
@@ -158,12 +166,25 @@ define([
         // Similar to above, add or remove the shown class when the layer's
         // visibility changes
         this.stopListening(this.model, "change:visible");
-        this.listenTo(this.model, "change:visible", this.showVisibility);
+        this.listenTo(this.model, "change:visible", () => {
+          this.showVisibility();
+          this.toggleFilterIconVisibility();
+        });
 
         // Update the item in the list to show when it is loading, loaded, or there's
         // been an error.
         this.stopListening(this.model, "change:status");
         this.listenTo(this.model, "change:status", this.showStatus);
+
+        this.stopListening(this.model, "change:filters");
+        this.listenTo(
+          this.model,
+          "change:filters",
+          this.toggleFilterIconVisibility,
+        );
+
+        // Set the initial visibility of the filter icon
+        this.toggleFilterIconVisibility();
 
         return this;
       },
@@ -188,6 +209,48 @@ define([
         const iconStatus = model.get("iconStatus");
         if (iconStatus && iconStatus === "fetching") {
           this.listenToOnce(model, "change:iconStatus", this.insertIcon);
+        }
+      },
+
+      /**
+       * Insert the filter icon to the right of the label element text. This
+       * icon appears for layers that are "filterable" based on their
+       * atrributes. Filter attributes for each layer are defined in the map
+       * model. Layer items with this icon will have the Filter feature (built
+       * using VectorFilterView).
+       * @since 2.34.0
+       */
+      insertFilterIcon() {
+        const filterIconEl = document.createElement("span");
+        const classes = [this.classes.icon, this.classes.filterIcon];
+        filterIconEl.classList.add(...classes);
+        filterIconEl.title = "Filter by property"; // add tooltip
+        // filterIconEl.className = `${this.classes.button}`;
+        filterIconEl.innerHTML = `<i class="icon icon-filter"></i>`;
+        this.labelEl.appendChild(filterIconEl);
+      },
+
+      /**
+       * Turn off the Layer model's 'filter' icon (i.e., set to transparent), if the default
+       * filters is selected. Default filters indicated all values on the layer are visible and
+       * not user-selected filters are applied. The icon also is set to transparent when the
+       * layer visibility is toggled off.
+       * @since 2.34.0
+       */
+      toggleFilterIconVisibility() {
+        const filterIconEl = this.$(`.${this.classes.filterIcon}`);
+        if (!filterIconEl?.length || !filterIconEl[0]) {
+          return;
+        }
+
+        const activeClass = this.classes.filterIconActive;
+        if (
+          this.model.get("filters").hasActiveFilters() &&
+          this.model.isVisible()
+        ) {
+          filterIconEl.addClass(activeClass);
+        } else if (filterIconEl.hasClass(activeClass)) {
+          filterIconEl.removeClass(activeClass);
         }
       },
 
@@ -224,11 +287,7 @@ define([
           layerModel.set("visible", false);
           // Show if hidden
         } else {
-          // If user is trying to make the layer visible, make sure the opacity is not 0
-          if (layerModel.get("opacity") === 0) {
-            layerModel.set("opacity", 0.5);
-          }
-          layerModel.set("visible", true);
+          layerModel.show();
         }
       },
 

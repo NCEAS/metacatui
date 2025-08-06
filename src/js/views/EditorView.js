@@ -504,24 +504,16 @@ define([
         var msg =
           "<h4>Nothing was found for one of the following reasons:</h4>" +
           "<ul class='indent'>" +
-          "<li>The ID <span id='editor-view-not-found-pid'></span> does not exist.</li>" +
+          `<li>The ID <span id='editor-view-not-found-pid'>${this.pid}</span> does not exist.</li>` +
           '<li>This may be private content. (Are you <a href="<%= MetacatUI.root %>/signin">signed in?</a>)</li>' +
           "<li>The content was removed because it was invalid.</li>" +
           "</ul>";
 
-        //Remove the loading messaging
-        this.hideLoading();
-
-        //Show the not found message
-        MetacatUI.appView.showAlert(
+        this.showFullPageAlert(
           msg,
-          "alert-error",
-          this.$("#editor-body"),
-          null,
-          { remove: true },
+          "error",
+          `Unable to find the dataset with ID ${this.pid}`,
         );
-
-        this.$("#editor-view-not-found-pid").text(this.pid);
       },
 
       /**
@@ -613,6 +605,43 @@ define([
         );
 
         this.hideSaving();
+      },
+
+      /**
+       * Empty the body of this view and show a full-page alert message. The
+       * message will not be dissmissable, and the user will not be able to
+       * interact with the page until they refresh or navigate away. All
+       * listeners will be removed.
+       * @param {string} message - The message to display in the alert
+       * @param {"warning"|"error"|"success"|"info"} type - The type of alert to
+       * show. Defaults to "warning".
+       * @param {string} [emailBody] - Optional. The body of the email to send
+       * when the user clicks the "Email Support" button.
+       * @param {string} [emailSubject] - Optional. The subject of the email to send
+       * when the user clicks the "Email Support" button.
+       * @since 2.34.0
+       */
+      showFullPageAlert(
+        message,
+        type = "warning",
+        emailBody = "",
+        emailSubject = "",
+      ) {
+        const classes = `alert-${type} centered-block`;
+        const container = this.$("#editor-body");
+        container.empty();
+        MetacatUI.appView.showAlert({
+          message,
+          classes,
+          container,
+          emailBody,
+          emailSubject,
+          remove: false,
+        });
+        this.hideLoading();
+        this.hideControls();
+        this.stopListening();
+        this.model.off();
       },
 
       /**

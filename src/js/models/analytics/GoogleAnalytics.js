@@ -1,4 +1,11 @@
 define(["models/analytics/Analytics"], function (Analytics) {
+  // Analytics will fail to load if the user has certain blockers installed.
+  // Avoid loading the model in that case.
+  if (typeof Analytics === "undefined") {
+    console.warn("GoogleAnalytics model not loaded.");
+    return null;
+  }
+
   /**
    * @class GoogleAnalytics
    * @classdesc A model that connects with an analytics service to record user
@@ -97,13 +104,7 @@ define(["models/analytics/Analytics"], function (Analytics) {
         this.track("event", action, params);
       },
 
-      /**
-       * Track a custom event with the Google Analytics service. This is
-       * designed for use with GA4
-       * @param {string} eventName - The name of the event to track
-       * @param {Object} [params] - The parameters to send with the event.
-       * @since 0.0.0
-       */
+      /** @inheritdoc */
       trackCustomEvent: function (eventName, params) {
         if (!eventName) return;
         this.track("event", eventName, params);

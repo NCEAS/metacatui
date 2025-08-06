@@ -5,7 +5,16 @@ define([
   "models/DataONEObject",
   "models/metadata/eml211/EMLAttribute",
   "models/metadata/eml211/EMLAttributeList",
-], ($, _, Backbone, DataONEObject, EMLAttribute, EMLAttributeList) => {
+  "common/EMLUtilities",
+], (
+  $,
+  _,
+  Backbone,
+  DataONEObject,
+  EMLAttribute,
+  EMLAttributeList,
+  EMLUtilities,
+) => {
   /**
    * @class EMLEntity
    * @classdesc EMLEntity represents an abstract data entity, corresponding with
@@ -595,16 +604,7 @@ define([
        * found
        */
       getParentEML() {
-        let emlModel = this.get("parentModel");
-        let tries = 0;
-
-        while (emlModel.type !== "EML" && tries < 6) {
-          emlModel = emlModel.get("parentModel");
-          tries += 1;
-        }
-
-        if (emlModel && emlModel.type === "EML") return emlModel;
-        return false;
+        return EMLUtilities.getParentEML(this);
       },
 
       /**

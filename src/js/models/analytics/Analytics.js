@@ -33,7 +33,7 @@ define(["backbone"], function (Backbone) {
        * The name of methods that will be wrapped to ensure they are called
        * after the analytics service is ready.
        * @type {Array<string>}
-       * @since 0.0.0
+       * @since 2.34.0
        */
       trackMethods: ["trackEvent", "trackPageView", "trackException"],
 
@@ -112,7 +112,7 @@ define(["backbone"], function (Backbone) {
        * "setupError" event if there is an error during setup.
        * @returns {Promise} A promise that resolves when the analytics service
        * is ready to use.
-       * @since 0.0.0
+       * @since 2.34.0
        */
       whenReady: function () {
         return new Promise((resolve, reject) => {
@@ -170,6 +170,16 @@ define(["backbone"], function (Backbone) {
        * @param {string} value - The value of the event
        */
       trackEvent: function (category, action, label, value) {
+        return;
+      },
+
+      /**
+       * Track a custom event.
+       * @param {string} eventName - The name of the event to track
+       * @param {Object} [params] - The parameters to send with the event.
+       * @since 2.34.0
+       */
+      trackCustomEvent(eventName, params) {
         return;
       },
 

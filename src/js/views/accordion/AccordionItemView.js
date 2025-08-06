@@ -47,7 +47,7 @@ define(["jquery", "backbone", "semantic", "models/accordion/AccordionItem"], (
        * in order for the tooltip to be shown.
        * @see https://fomantic-ui.com/modules/popup.html#/settings
        * @type {object|boolean}
-       * @since 0.0.0
+       * @since 2.34.0
        */
       tooltipSettings: {
         variation: `${SEM_VARIATIONS.mini} ${SEM_VARIATIONS.inverted}`,
@@ -127,7 +127,7 @@ define(["jquery", "backbone", "semantic", "models/accordion/AccordionItem"], (
       /**
        * Listen to changes on the model and update the view accordingly. Called
        * during render.
-       * @since 0.0.0
+       * @since 2.34.0
        */
       listenToModel() {
         this.stopListening();
@@ -175,7 +175,7 @@ define(["jquery", "backbone", "semantic", "models/accordion/AccordionItem"], (
        * Update the title of the accordion item.
        * @param {string} [title] - The new title to set. If not provided, the
        * title will be taken from the model.
-       * @since 0.0.0
+       * @since 2.34.0
        */
       updateTitle(title) {
         const { titleSpan } = this;
@@ -202,7 +202,7 @@ define(["jquery", "backbone", "semantic", "models/accordion/AccordionItem"], (
        * Update the tooltip for the title of the accordion item.
        * If the model has a description set, it will be used as the tooltip
        * content. If not, the tooltip will be destroyed.
-       * @since 0.0.0
+       * @since 2.34.0
        */
       updateTooltip() {
         const { titleContainer } = this;

@@ -6,6 +6,11 @@ define([
   "models/maps/AssetColorPalette",
   "collections/maps/VectorFilters",
 ], function (Cesium, MapAsset, AssetColorPalette, VectorFilters) {
+  // Don't allow full 1 opacity for Cesium 3D tiles. Otherwise, overlapping
+  // polygons will not render correctly, and will cause z-fighting. 0.996 shows
+  // as 100% in the slider, but 0.999 still results in z-fighting.
+  const MAX_OPACITY = 0.996;
+
   /**
    * @classdesc A Cesium3DTileset Model is a special type of vector layer that can be used in
    * Cesium maps, and that follows the 3d-tiles specification. See
@@ -199,21 +204,15 @@ define([
           // When opacity, color, or visibility changes (will also update the filters)
           this.stopListening(
             this,
-            "change:opacity change:color change:visible",
+            "change:opacity change:color change:visible change:filters",
           );
           this.listenTo(
             this,
-            "change:opacity change:color change:visible",
+            "change:opacity change:color change:visible change:filters",
             this.updateAppearance,
           );
 
-          // When filters change
-          this.stopListening(this.get("filters"), "update");
-          this.listenTo(
-            this.get("filters"),
-            "update",
-            this.updateFeatureVisibility,
-          );
+          this.listenTo(this, "change:filters", this.updateFeatureVisibility);
         } catch (error) {
           console.log(
             "There was an error setting listeners in a Cesium3DTileset" +
@@ -252,6 +251,9 @@ define([
             // that requires the map to be re-rendered
             model.trigger("appearanceChanged");
           } else {
+            if (model.get("opacity") > MAX_OPACITY) {
+              model.set("opacity", MAX_OPACITY);
+            }
             // Set a new 3D style with a  function that Cesium will use to shade each
             // feature.
             cesiumModel.style = new Cesium.Cesium3DTileStyle({
@@ -282,6 +284,8 @@ define([
           const model = this;
           const cesiumModel = this.get("cesiumModel");
           const filters = this.get("filters");
+
+          if (!cesiumModel) return;
 
           // If there are no filters, just set the show property to true
           if (!filters || !filters.length) {
@@ -377,7 +381,7 @@ define([
             // If the feature is currently selected, set the opacity to max (otherwise the
             // 'silhouette' borders in the map do not show in the Cesium widget)
             if (model.featureIsSelected(feature)) {
-              featureOpacity = 1;
+              featureOpacity = MAX_OPACITY; // Slightly less than 1 to avoid z-fighting
             }
             const rgb = model.getColor(properties);
             if (rgb) {

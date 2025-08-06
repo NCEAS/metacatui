@@ -191,8 +191,44 @@ define(["backbone", "collections/searchSelect/SearchSelectOptions"], (
      */
     setSelected(values, options = {}) {
       const newValues = !Array.isArray(values) ? [values] : values;
-      const selected = [...newValues];
+      let selected = [...newValues];
+      selected = this.restoreTypes(selected);
       this.set({ selected }, options);
+    },
+
+    /**
+     * Restore the original types of the selected values based on the options in
+     * the collection. This is necessary because the dropdown component converts
+     * all values to strings. Types are set when the SearchSelectOption model is
+     * initialized.
+     * @param {string[]} selected - The selected values to restore types for.
+     * @returns {string[]} - The selected values with their original types
+     * restored.
+     * @since 2.34.0
+     */
+    restoreTypes(selected) {
+      // Restore the original types of the selected values
+      return selected.map((value) => {
+        const option = this.get("options").find(
+          (option) => String(option.get("value")) === String(value),
+        );
+        if (option) {
+          const type = option.get("type");
+          if (type === "number") {
+            return Number(value);
+          } else if (type === "boolean") {
+            return value === "true";
+          } else if (type === "object") {
+            try {
+              return JSON.parse(value);
+            } catch (e) {
+              console.warn("Failed to parse object from value:", value, e);
+            }
+          }
+          return value;
+        }
+        return value; // If no option found, return as is
+      });
     },
 
     /**

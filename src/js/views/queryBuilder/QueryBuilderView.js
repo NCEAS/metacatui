@@ -393,7 +393,7 @@ define([
         );
         this.stopListening(operatorInput.model);
         this.listenTo(
-          operatorInput,
+          operatorInput.model,
           "change:selected",
           function (_model, newValues) {
             this.filterGroup.set("operator", newValues[0]);

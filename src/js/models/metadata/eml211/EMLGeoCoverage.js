@@ -1,9 +1,10 @@
-define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
-  $,
-  _,
-  Backbone,
-  DataONEObject,
-) {
+define([
+  "jquery",
+  "underscore",
+  "backbone",
+  "models/DataONEObject",
+  "common/EMLUtilities",
+], function ($, _, Backbone, DataONEObject, EMLUtilities) {
   /**
    * @class EMLGeoCoverage
    * @classdesc A description of geographic coverage of a dataset, per the EML
@@ -522,16 +523,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
        * found
        */
       getParentEML: function () {
-        var emlModel = this.get("parentModel"),
-          tries = 0;
-
-        while (emlModel.type !== "EML" && tries < 6) {
-          emlModel = emlModel.get("parentModel");
-          tries++;
-        }
-
-        if (emlModel && emlModel.type == "EML") return emlModel;
-        else return false;
+        return EMLUtilities.getParentEML(this);
       },
 
       /**

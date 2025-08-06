@@ -477,7 +477,6 @@ represents 1 unit of the given distance measurement. */
   display: none;
   overflow: hidden;
   pointer-events: all;
-  /* added by shirly */
   position: relative;
 }
 
@@ -840,8 +839,6 @@ represents 1 unit of the given distance measurement. */
   height: min-content;
 }
 
-/* A layer-item is one item in the layer-list */
-
 .layer-item {
   display: grid;
   grid-template-columns: min-content auto max-content;
@@ -849,7 +846,8 @@ represents 1 unit of the given distance measurement. */
   padding: 0 1.5rem;
   cursor: pointer;
 
-  .layer-item__visibility-toggle {
+  .layer-item__visibility-toggle,
+  .layer-item__filter-icon {
     opacity: var(--map-no-brightness-or-opacity-tweaks, 0.85);
     padding: 0;
     margin: 0.25rem;
@@ -921,6 +919,10 @@ represents 1 unit of the given distance measurement. */
     }
   }
 
+  .layer-item__filter-icon--active {
+    color: var(--portal-col-primary-6);
+  }
+
   .layer-item__settings {
     /* By default, don't show button. */
     display: none;
@@ -961,6 +963,9 @@ represents 1 unit of the given distance measurement. */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .layer-item__highlighted-text {
@@ -1029,6 +1034,7 @@ represents 1 unit of the given distance measurement. */
   color: var(--portal-col-neutral-6);
   font-size: 1rem;
   height: 2rem;
+  justify-self: end; /* end aligns the button to the right within its column */
   margin-right: 1rem;
   width: 2rem;
 }
@@ -1868,6 +1874,52 @@ other class: .ui-slider-range */
 #copyWMTS:hover {
   color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
 }
+
+/*****************************************************************************************
+ * VectorFilterView panel
+ * Panel that shows the Filter By Property functionality (including the time-series visualization)
+ */
+
+.filter-by-attribute-controls__grid-container {
+  display: grid;
+  grid-template-columns: 150px 250px;
+  gap: 12px; /* spacing between the dropdowns */
+  align-items: center; /* vertically aligns them */
+  margin: 0.75rem 0;
+  align-items: start; /* aligns items to the top of their cells */
+}
+
+.filter-by-attribute__attributes-container {
+  display: inline-block; /* or inline-flex */
+  vertical-align: top;
+  width: 150px;
+}
+
+.filter-by-attribute__attributes-container .search {
+  font-size: 12px;
+  width: auto;
+}
+
+.filter-by-attribute__values-container {
+  display: inline-block; /* or inline-flex */
+  vertical-align: top;
+  width: 250px;
+}
+
+.filter-by-attribute__values-container .search {
+  font-size: 12px;
+  width: auto;
+}
+
+.filter-by-attribute__values-container .search input {
+  font-size: 8px !important;
+}
+
+.filter-by-attribute__values-container .item,
+.filter-by-attribute__values-container .ui.label {
+  font-size: 12px !important;
+}
+
 /*****************************************************************************************
  *
  * Help panel

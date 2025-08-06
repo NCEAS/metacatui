@@ -35,6 +35,14 @@ define(["backbone"], (Backbone) => {
         category: "",
       };
     },
+
+    /** @inheritdoc */
+    initialize() {
+      // The Formantic UI dropdown component converts all values to strings, so
+      // we need to keep track of the original type.
+      const type = typeof this.get("value");
+      this.set("type", type);
+    },
   });
 
   return SearchSelectOption;

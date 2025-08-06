@@ -8,6 +8,7 @@ define([
   "models/metadata/ScienceMetadata",
   "models/sysmeta/VersionTracker",
   "models/resourceMap/ResourceMapResolver",
+  "models/sysmeta/SysMeta",
   "views/EditorView",
   "views/CitationView",
   "views/DataPackageView",
@@ -24,6 +25,7 @@ define([
   ScienceMetadata,
   VersionTracker,
   ResourceMapResolver,
+  SysMeta,
   EditorView,
   CitationView,
   DataPackageView,
@@ -206,7 +208,7 @@ define([
         this.listenToOnce(this.model, "sync", () => {
           // Skip the remaining steps the metadata doesn't exist.
           if (this.model.get("notFound") === true) {
-            this.showNotFound();
+            this.handleMetadataNotFound();
             return;
           }
 
@@ -228,7 +230,9 @@ define([
               resourceMap.set("isAuthorized_write", true);
             } else {
               resourceMap.checkAuthority("write");
-              this.updateLoadingText("Loading metadata...");
+              this.updateLoadingText(
+                "Checking permissions to edit metadata...",
+              );
             }
           });
 
@@ -293,6 +297,57 @@ define([
         );
 
         return this;
+      },
+
+      /**
+       * If the pid for the metadata doc is not in Solr, then try fetching the
+       * system metadata. If sysMeta exists, then the metadata document is being
+       * indexed, so notify user. Otherwise, the document doesn't exist, so show
+       * a 404.
+       * @since 2.34.0
+       */
+      async handleMetadataNotFound() {
+        this.updateLoadingText("Looking for metadata document...");
+        const token = await MetacatUI.appUserModel.getTokenPromise();
+        const sysMeta = new SysMeta({ identifier: this.pid });
+        sysMeta
+          .fetch(token)
+          .then(() => {
+            this.showNotIndexed();
+            // TODO: we can get the formatType from the sysMeta and download
+            // metadata if it's EML so indexing status doesn't matter. However,
+            // the editor needs to be refactored to handle this.
+          })
+          .catch(() => {
+            this.showNotFound();
+          });
+      },
+
+      /**
+       * Show a message to the user that the metadata document is being indexed.
+       * This will check the user's authorization to write to the document
+       * before showing the message. If the user is not authorized, then the not
+       * authorized message will be shown instead.
+       * @since 2.34.0
+       */
+      showNotIndexed() {
+        const authorization = this.model.get("isAuthorized_write");
+        if (authorization === true) {
+          this.showFullPageAlert(
+            "This metadata document is being indexed. Please try again in a few minutes.",
+            "warning",
+          );
+        } else if (authorization === false) {
+          this.notAuthorized();
+        } else {
+          this.listenToOnce(
+            this.model,
+            "change:isAuthorized_write",
+            this.showNotIndexed,
+          );
+          this.updateLoadingText("Checking authorization...");
+          this.model.checkAuthority("write");
+        }
       },
 
       /**
@@ -624,14 +679,17 @@ define([
 
         // render metadata as the collection is updated, but only EML passed
         // from the event
+        const formatId = model.get("formatId");
         if (
           typeof model.get === "undefined" ||
           !(
-            model.get("formatId") === "eml://ecoinformatics.org/eml-2.1.1" ||
-            model.get("formatId") === "https://eml.ecoinformatics.org/eml-2.2.0"
+            formatId === "eml://ecoinformatics.org/eml-2.1.1" ||
+            formatId === "https://eml.ecoinformatics.org/eml-2.2.0"
           )
         ) {
           // TODO: Render generic ScienceMetadata
+          const msg = `The editor only supports EML 2.1.1 and EML 2.2.0 documents at this time. The formatId of this document is ${formatId}.`;
+          this.showFullPageAlert(msg, "error");
           return;
         }
 
@@ -1129,7 +1187,7 @@ define([
        * @param {EMLEntity|EMLOtherEntity} model - The model to show
        * @param {boolean} [switchToAttrTab] - Set to true to automatically
        * switch to the attributes tab instead of default overview tab
-       * @since 0.0.0
+       * @since 2.34.0
        */
       showEntityFromModel(model, switchToAttrTab = false) {
         const pid = model.get("dataONEObject").get("id");
@@ -1173,16 +1231,10 @@ define([
           return;
         }
 
-        this.$("#editor-body").empty();
-        MetacatUI.appView.showAlert(
+        this.showFullPageAlert(
           "You are not authorized to edit this data set.",
-          "alert-error centered-block",
-          "#editor-body",
+          "error",
         );
-
-        // Stop listening to any further events
-        this.stopListening();
-        this.model.off();
       },
 
       /**
@@ -1235,7 +1287,7 @@ define([
           } else {
             msg += `Please contact our support team`;
             if (pid) {
-              msg += ` and mention that you're with the metadata document with ID <strong>${pid}</strong>`;
+              msg += ` and mention that you're trying to edit with the metadata document with ID <strong>${pid}</strong>`;
             }
             msg += `.`;
           }
@@ -1253,20 +1305,7 @@ define([
           body += `It was last updated ${durHrsFixed} ${hoursNoun} ago. `;
         body += `This is preventing me from editing the metadata document. Please help me resolve this issue.`;
 
-        this.$("#editor-body").empty();
-        MetacatUI.appView.showAlert({
-          message: msg,
-          classes: "alert-warning centered-block",
-          container: "#editor-body",
-          emailBody: body,
-          emailSubject: subject,
-          remove: false,
-        });
-
-        // Stop listening to any further events
-        this.stopListening();
-        this.model.off();
-        this.hideControls();
+        this.showFullPageAlert(msg, "error", body, subject);
       },
 
       /**
