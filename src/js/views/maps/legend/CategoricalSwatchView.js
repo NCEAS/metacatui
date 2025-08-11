@@ -52,6 +52,12 @@ define([
           "background-color",
           this.model.getCss(),
         );
+
+        // When filterActive is true, opacity = 0.25 (transparent).
+        // When filterActive is false, opacity = 1 (fully visible).
+        const opacity = this.model.get("filterActive") ? 1 : 0.25;
+        this.$(`.${CLASS_NAMES.swatch}`).css("opacity", opacity);
+        this.$(".categorical-swatch__value").css("opacity", opacity);
       },
     },
   );

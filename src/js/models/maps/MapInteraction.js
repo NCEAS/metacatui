@@ -171,7 +171,6 @@ define([
        * All except LEFT_CLICK are ignored.
        */
       handleClick: function (m, action) {
-        // updated by Shirly - testing
         if (action !== "LEFT_CLICK" && action !== "LEFT_DOUBLE_CLICK") return;
         // Clone the models in hovered features and set them as clicked features
         const hoveredFeatures = this.get("hoveredFeatures").models;
@@ -196,7 +195,7 @@ define([
         } else if (clickAction === "zoom") {
           this.set("zoomTarget", hoveredFeatures[0]);
         }
-        // Added by Shirly --  Custom behavior for double-click
+        // Custom behavior for double-click
         else if (action === "LEFT_DOUBLE_CLICK") {
           this.set("previousAction", "LEFT_DOUBLE_CLICK");
         }
