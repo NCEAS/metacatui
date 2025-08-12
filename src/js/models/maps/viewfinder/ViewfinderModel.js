@@ -10,9 +10,9 @@ define([
   const EMAIL = MetacatUI.appModel.get("emailContact");
   const NO_RESULTS_MESSAGE =
     "No search results found, try using another place name.";
-  const API_ERROR =
-    "We're having trouble identifying locations on the map right now. Please reach out to support for help with this issue" +
-    (EMAIL ? `: ${EMAIL}` : ".");
+  const API_ERROR = `We're having trouble identifying locations on the map right now. Please reach out to support for help with this issue${
+    EMAIL ? `: ${EMAIL}` : "."
+  }`;
   const PLACES_API_ERROR = API_ERROR;
   const GEOCODING_API_ERROR = API_ERROR;
 
@@ -22,13 +22,13 @@ define([
    * interfaces with location searching services.
    * @classcategory Models/Maps
    * @since 2.28.0
-   * @extends Backbone.Model
+   * @augments Backbone.Model
    */
   const ViewfinderModel = Backbone.Model.extend(
     /** @lends ViewfinderModel.prototype */ {
       /**
        * @name ViewfinderModel#defaults
-       * @type {Object}
+       * @type {object}
        * @property {string} error is the current error string to be displayed
        * in the UI.
        * @property {number} focusIndex is the index of the element
@@ -56,10 +56,7 @@ define([
         this.geocoderSearch = new GeocoderSearch();
         this.mapModel = mapModel;
 
-        this.set(
-          "zoomPresets",
-          mapModel.get("zoomPresetsCollection")?.models || [],
-        );
+        this.set("zoomPresets", mapModel.get("zoomPresetsCollection"));
       },
 
       /**
@@ -70,10 +67,12 @@ define([
         const query = rawQuery.trim();
         if (this.get("query") === query) {
           return;
-        } else if (!query) {
+        }
+        if (!query) {
           this.set({ error: "", predictions: [], query: "", focusIndex: -1 });
           return;
-        } else if (GeoPoint.couldBeLatLong(query)) {
+        }
+        if (GeoPoint.couldBeLatLong(query)) {
           this.set({ predictions: [], query: "", focusIndex: -1 });
           return;
         }
