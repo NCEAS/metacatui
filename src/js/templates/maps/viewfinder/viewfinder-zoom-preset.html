@@ -3,6 +3,9 @@
     <%= preset.title %>
   </div>
   <div class="<%= classNames.description %>">
+    <% if (preset.image) { %>
+      <img class="<%= classNames.image %>" src="<%= preset.image %>" alt="<%= preset.title %> image" />
+    <% } %>
     <%= preset.description %>
   </div>
   <div class="<%= classNames.layers %>">

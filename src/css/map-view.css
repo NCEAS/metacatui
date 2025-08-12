@@ -2151,6 +2151,14 @@ other class: .ui-slider-range */
     }
   }
 
+  .viewfinder-zoom-preset__image {
+    float: left;
+    margin: 0.3rem 0.5rem 0.3rem 0;
+    border-radius: var(--map-border-radius-big);
+    max-width: 100px;
+    max-height: 100px;
+  }
+
   .viewfinder-zoom-preset.viewfinder-zoom-preset--active
     .viewfinder-zoom-preset__preset {
     background-color: var(--portal-col-primary-6, #15324e);

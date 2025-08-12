@@ -73,6 +73,7 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
                   height: zoomPresetObj.height,
                 },
                 title: zoomPresetObj.title,
+                image: zoomPresetObj.image,
               },
               { parse: true },
             );
