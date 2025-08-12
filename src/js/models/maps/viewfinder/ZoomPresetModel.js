@@ -10,13 +10,13 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
    * @classdesc ZoomPresetModel represents a point of interest on a map that can
    * be configured within a MapView.
    * @classcategory Models/Maps
-   * @extends Backbone.Model
+   * @augments Backbone.Model
    * @since 2.29.0
    */
   const ZoomPresetModel = Backbone.Model.extend(
     /** @lends ZoomPresetModel.prototype */ {
       /**
-       * @typedef {Object} ZoomPresetModelOptions
+       * @typedef {object} ZoomPresetModelOptions
        * @property {string} title The displayed title for the preset.
        * @property {GeoPoint} geoPoint The location representing this preset,
        * including height information.
@@ -43,8 +43,14 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
       },
 
       /**
-       * @param {Object} position The latitude, longitude, and height of this
-       * ZoomPresetModel's GeoPoint.
+       * Parse incoming data to create a ZoomPresetModel.
+       * @param {object} data The data to parse
+       * @param {object} data.position The latitude, longitude, and height of
+       * this ZoomPresetModel's GeoPoint.
+       * @param {object} data.rest The rest of the properties for this
+       * ZoomPresetModel.
+       * @returns {object} An object containing the GeoPoint and the rest of the
+       * ZoomPresetModel properties.
        */
       parse({ position, ...rest }) {
         const geoPoint = new GeoPoint({

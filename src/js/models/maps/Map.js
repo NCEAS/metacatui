@@ -35,20 +35,20 @@ define([
        * components are rendered. A MapConfig object can be used when
        * initializing a Map model, e.g. `new Map(myMapConfig)`
        * @namespace {object} MapConfig
-       * @property {MapConfig#CameraPosition} [homePosition] - A set of
+       * @property {CameraPosition} [homePosition] - A set of
        * coordinates that give the (3D) starting point of the Viewer. This
        * position is also where the "home" button in the Cesium widget will
        * navigate to when clicked.
-       * @property {MapConfig#MapAssetConfig[]} [layers] - A collection of
+       * @property {MapAssetConfig[]} [layers] - A collection of
        * imagery, tiles, vector data, etc. to display on the map. Layers wil be
        * displayed in the order they appear. The array of the layer
-       * MapAssetConfigs are passed to a {@link MapAssets} collection. When layerCategories
-       * exist, this property will be ignored.
-       * @property {MapConfig#MapAssetConfig[]} [layerCategories] - A collection of
-       * layer categories to display in the tool bar. Categories wil be
-       * displayed in the order they appear. The array of the AssetCategoryConfig
-       * are passed to a {@link AssetCategories} collection. When layerCategories
-       * exist, the layers property will be ignored.
+       * MapAssetConfigs are passed to a {@link MapAssets} collection. When
+       * layerCategories exist, this property will be ignored.
+       * @property {MapAssetConfig[]} [layerCategories] - A collection
+       * of layer categories to display in the tool bar. Categories wil be
+       * displayed in the order they appear. The array of the
+       * AssetCategoryConfig are passed to a {@link AssetCategories} collection.
+       * When layerCategories exist, the layers property will be ignored.
        * @property {MapConfig#MapAssetConfig[]} [terrains] - Configuration for
        * one or more digital elevation models (DEM) for the surface of the
        * earth. Note: Though multiple terrains are supported, currently only the
@@ -97,14 +97,13 @@ define([
        * feedbackText.
        * @property {string} [feedbackText=null] - The text to show in the
        * feedback section. showFeedback must be true for this to be shown.
-       * @property {String} [globeBaseColor=null] - The base color of the globe when no
-       * layer is shown.
-       * @property {ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
+       * @property {string} [globeBaseColor=null] - The base color of the globe
+       * when no layer is shown.
+       * @property {MapConfig#ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
        * predefined list of locations with an enabled list of layer IDs to be
        * shown the zoom presets UI. Requires `showViewfinder` to be true as this
-       * UI appears within the ViewfinderView.
-       * UI appears within the ViewfinderView.
-       *
+       * UI appears within the ViewfinderView. UI appears within the
+       * ViewfinderView.
        * @example
        * {
        *   "homePosition": {
@@ -150,13 +149,11 @@ define([
        * (degrees)
        * @property {number} [roll] - The rotation about the positive x axis
        * (degrees)
-       *
        * @example
        * {
        *  longitude: -119.8489,
        *  latitude: 34.4140
        * }
-       *
        * @example
        * {
        *  longitude: -65,
@@ -170,7 +167,7 @@ define([
 
       /**
        * The type of model this is.
-       * @type {String}
+       * @type {string}
        * @default "MapModel"
        * @since 2.25.0
        */
@@ -180,11 +177,10 @@ define([
        * Overrides the default Backbone.Model.defaults() function to specify
        * default attributes for the Map
        * @name MapModel#defaults
-       * @type {Object}
-       * @property {MapConfig#CameraPosition} [homePosition={longitude: -65,
-       * latitude: 56, height: 10000000, heading: 1, pitch: -90, roll: 0}] A set
-       * of coordinates that give the (3D) starting point of the Viewer. This
-       * position is also where the "home" button in the Cesium viewer will
+       * @type {object}
+       * @property {MapConfig#CameraPosition} [homePosition={longitude: -65, latitude: 56, height: 10000000, heading: 1, pitch: -90, roll: 0}]
+       * A set of coordinates that give the (3D) starting point of the Viewer.
+       * This position is also where the "home" button in the Cesium viewer will
        * navigate to when clicked.
        * @property {MapAssets} [terrains = new MapAssets()] - The terrain
        * options to show in the map.
@@ -197,9 +193,9 @@ define([
        * of the assets.
        * @property {AssetCategories} [layerCategories = new AssetCategories()] -
        * A collection of layer categories to display in the tool bar. Categories
-       * wil be displayed in the order they appear. The array of the AssetCategoryConfig
-       * are passed to a {@link AssetCategories} collection. When layerCategories
-       * exist, the layers property will be ignored.
+       * will be displayed in the order they appear. The array of the
+       * AssetCategoryConfig are passed to a {@link AssetCategories} collection.
+       * When layerCategories exist, the layers property will be ignored.
        * @property {boolean} [showToolbar=true] - Whether or not to show the
        * side bar with layer list and other tools. True by default.
        * @property {boolean} [showLayerList=true] - Whether or not to include
@@ -228,15 +224,15 @@ define([
        * navigation instructions in the toolbar.
        * @property {boolean} [showFeedback=false] - Whether or not to show a
        * feedback section in the toolbar.
-       * @property {String} [feedbackText=null] - The text to show in the
+       * @property {string} [feedbackText=null] - The text to show in the
        * feedback section.
-       * @property {String} [globeBaseColor=null] - The base color of the globe when no
-       * layer is shown.
+       * @property {string} [globeBaseColor=null] - The base color of the globe
+       * when no layer is shown.
        * @property {ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
        * predefined list of locations with an enabled list of layer IDs to be
        * shown the zoom presets UI. Requires `showViewfinder` to be true as this
-       * UI appears within the ViewfinderView.
-       * UI appears within the ViewfinderView.
+       * UI appears within the ViewfinderView. UI appears within the
+       * ViewfinderView.
        */
       defaults() {
         return {
@@ -275,51 +271,43 @@ define([
 
       /**
        * Run when a new Map is created.
-       * @param {MapConfig} config - An object specifying configuration options
+       * @param {MapConfig} options - An object specifying configuration options
        * for the map. If any config option is not specified, the default will be
        * used instead (see {@link MapModel#defaults}).
        */
-      initialize(config) {
-        try {
-          if (config && config instanceof Object) {
-            if (isNonEmptyArray(config.layerCategories)) {
-              const assetCategories = new AssetCategories(
-                config.layerCategories,
-              );
-              assetCategories.setMapModel(this);
-              this.set("layerCategories", assetCategories);
-              this.unset("layers");
-              this.set("allLayers", assetCategories.getMapAssetsFlat());
-            } else if (isNonEmptyArray(config.layers)) {
-              const layers = new MapAssets(config.layers);
-              this.set("layers", layers);
-              this.get("layers").setMapModel(this);
-              this.unset("layerCategories");
-              this.set("allLayers", layers);
-            }
-            // TODO: listen to changes in layerCategories and layers to update
-            // allLayers. This will be necessary when we allow users to add &
-            // remove layers.
-
-            if (isNonEmptyArray(config.terrains)) {
-              this.set("terrains", new MapAssets(config.terrains));
-            }
-
-            this.set(
-              "zoomPresetsCollection",
-              new ZoomPresets(
-                {
-                  zoomPresetObjects: config.zoomPresets,
-                  allLayers: this.get("allLayers"),
-                },
-                { parse: true },
-              ),
-            );
+      initialize(options = {}) {
+        const config = options;
+        if (config && config instanceof Object) {
+          if (isNonEmptyArray(config.layerCategories)) {
+            const assetCategories = new AssetCategories(config.layerCategories);
+            assetCategories.setMapModel(this);
+            this.set("layerCategories", assetCategories);
+            this.unset("layers");
+            this.set("allLayers", assetCategories.getMapAssetsFlat());
+          } else if (isNonEmptyArray(config.layers)) {
+            const layers = new MapAssets(config.layers);
+            this.set("layers", layers);
+            this.get("layers").setMapModel(this);
+            this.unset("layerCategories");
+            this.set("allLayers", layers);
           }
-          this.setUpInteractions();
-        } catch (error) {
-          console.log("Failed to initialize a Map model.", error);
+          // TODO: listen to changes in layerCategories and layers to update
+          // allLayers. This will be necessary when we allow users to add &
+          // remove layers.
+
+          if (isNonEmptyArray(config.terrains)) {
+            this.set("terrains", new MapAssets(config.terrains));
+          }
+
+          this.set(
+            "zoomPresetsCollection",
+            new ZoomPresets(config.zoomPresets, {
+              parse: true,
+              mapModel: this,
+            }),
+          );
         }
+        this.setUpInteractions();
       },
 
       /**
@@ -359,7 +347,7 @@ define([
        * This is accomplished by setting the zoom target on the MapInteraction
        * model. The map widget listens to this change and updates the camera
        * position accordingly.
-       * @param {Feature|MapAsset|GeoBoundingBox|Object} target The target to
+       * @param {Feature|MapAsset|GeoBoundingBox|object} target The target to
        * zoom to. See {@link CesiumWidgetView#flyTo} for more details on types
        * of targets.
        */

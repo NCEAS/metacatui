@@ -82,6 +82,12 @@ const metacatuiConfig = {
       google: "readonly",
     },
   },
+  // Tells eslint-plugin-jsdoc to allow namepaths like MapConfig#CameraPosition
+  settings: {
+    jsdoc: {
+      mode: "jsdoc",
+    },
+  },
   // Override rules that are not compatible with MetacatUI
   rules: {
     ...airbnbRulesOverrides,
