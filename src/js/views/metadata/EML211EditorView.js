@@ -440,7 +440,7 @@ define([
         }
 
         // TODO - get latest version should happen in DataONE object.
-        const latestPid = await versionTracker.getLatestVersion(metaPid);
+        const latestPid = await versionTracker.getLatestVersion(metaPid, true);
         if (latestPid !== metaPid) {
           // MetacatUI.rootDataPackage.packageModel.set("sysMetaXML", null);
           metaModel.set("latestVersion", latestPid);

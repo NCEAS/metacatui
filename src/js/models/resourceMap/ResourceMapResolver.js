@@ -297,7 +297,7 @@ define([
      * or null if not found
      */
     async getPidForSid(sid) {
-      const record = await this.versionTracker.getNth(sid, 0, false, true);
+      const record = await this.versionTracker.getNth(sid, 0, true, true);
       const sysmeta = record.sysMeta;
       return sysmeta?.identifier;
     }
@@ -496,7 +496,7 @@ define([
       while (steps < this.maxSteps && currentPid) {
         steps += 1;
         const offset = steps * -1; // Walk backward
-        currentPid = await this.versionTracker.getNth(pid, offset);
+        currentPid = await this.versionTracker.getNth(pid, offset, true);
         const record = await this.versionTracker.record(currentPid || pid);
         if (record?.unauthorized) meta.unauthorized = true;
         if (record?.errors) meta.errors = record.errors;
@@ -518,7 +518,7 @@ define([
       if (!rm) return { rm, meta };
 
       // Walk forward same # steps to find the current RM
-      const currentRM = await this.versionTracker.getNth(rm, steps);
+      const currentRM = await this.versionTracker.getNth(rm, steps, true);
       return { rm: currentRM, meta };
     }
 

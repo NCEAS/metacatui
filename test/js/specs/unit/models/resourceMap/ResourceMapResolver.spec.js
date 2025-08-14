@@ -372,12 +372,9 @@ define([
           rm: "rmFromSid",
         });
 
-        rmr.versionTracker.getNth.calledOnceWithExactly(
-          "sidPID",
-          0,
-          false,
-          true,
-        ).should.be.true;
+        rmr.versionTracker.getNth.calledOnceWithExactly("sidPID", 0, true, true)
+          .should.be.true;
+
         rmr.resolve.calledOnceWithExactly("pidFromSid").should.be.true;
       });
 
