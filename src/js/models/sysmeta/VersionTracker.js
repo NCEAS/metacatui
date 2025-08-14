@@ -366,7 +366,7 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
      * @returns {Promise<VersionResult>} - resolves to the next version PID or
      * an object with { pid, sysMeta } if `withMeta` is true. If no next version
      * is found, resolves to the original PID.
-     * @since 0.0.0
+     * @since 2.34.1
      */
     getNext(pid, ignoreEnd = false, withMeta = false) {
       return this.getNth(pid, 1, ignoreEnd, withMeta);
@@ -382,7 +382,7 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
      * @returns {Promise<VersionResult>} - resolves to the previous version PID
      * or an object with { pid, sysMeta } if `withMeta` is true. If no previous
      * version is found, resolves to the original PID.
-     * @since 0.0.0
+     * @since 2.34.1
      */
     getPrev(pid, ignoreEnd = false, withMeta = false) {
       return this.getNth(pid, -1, ignoreEnd, withMeta);
@@ -401,7 +401,7 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
      *   and `next` are either PIDs or objects with { pid, sysMeta } if
      *   `withMeta` is true. If no previous or next version is found, the
      *   respective property will be null.
-     * @since 0.0.0
+     * @since 2.34.1
      */
     async getAdjacent(pid, ignoreEnd = false, withMeta = false) {
       return Promise.all([

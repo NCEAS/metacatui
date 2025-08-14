@@ -252,7 +252,7 @@ define([
      * @param {Array<string>} rms - An array of resource map PIDs to check
      * @returns {Promise<object>} - An object containing the PID, the resolved
      * resource map PID if found, and metadata about the search.
-     * @since 0.0.0
+     * @since 2.34.1
      */
     async mutliRMCheck(pid, rms) {
       const result = { pid, rm: null, meta: {} };
