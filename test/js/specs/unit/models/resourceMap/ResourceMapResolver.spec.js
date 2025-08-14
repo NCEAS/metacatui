@@ -291,6 +291,66 @@ define([
       });
     });
 
+    describe("mutliRMCheck()", () => {
+      it("marks not-versions when RMs don't reference each other in prev/next", async () => {
+        const { sandbox, rmr } = state;
+        const stub = sandbox.stub(rmr.versionTracker, "getAdjacent");
+        stub
+          .withArgs("rmA", true)
+          .resolves({ pid: "rmA", prev: "x", next: "" });
+        stub
+          .withArgs("rmB", true)
+          .resolves({ pid: "rmB", prev: "y", next: "" });
+
+        const result = await rmr.mutliRMCheck("objPid", ["rmA", "rmB"]);
+
+        result.should.deep.equal({
+          pid: "objPid",
+          rm: null,
+          meta: { multipleRMsNotVersions: true },
+        });
+        rmr.versionTracker.getAdjacent.calledTwice.should.be.true;
+      });
+
+      it("returns the single latest RM when all are versions and one is not obsoleted", async () => {
+        const { sandbox, rmr } = state;
+        const stub = sandbox.stub(rmr.versionTracker, "getAdjacent");
+        // rm1 -> rm2, rm2 is latest (no next)
+        stub
+          .withArgs("rm1", true)
+          .resolves({ pid: "rm1", prev: "rm0", next: "rm2" });
+        stub
+          .withArgs("rm2", true)
+          .resolves({ pid: "rm2", prev: "rm1", next: "" });
+
+        const result = await rmr.mutliRMCheck("objPid", ["rm1", "rm2"]);
+
+        result.should.deep.equal({ pid: "objPid", rm: "rm2", meta: {} });
+        rmr.versionTracker.getAdjacent.calledTwice.should.be.true;
+      });
+
+      it("flags all-obsoleted when no RM is latest among versions", async () => {
+        const { sandbox, rmr } = state;
+        const stub = sandbox.stub(rmr.versionTracker, "getAdjacent");
+        // Both have a next (both obsoleted)
+        stub
+          .withArgs("r1", true)
+          .resolves({ pid: "r1", prev: "r0", next: "r2" });
+        stub
+          .withArgs("r2", true)
+          .resolves({ pid: "r2", prev: "r1", next: "r3" });
+
+        const result = await rmr.mutliRMCheck("objPid", ["r1", "r2"]);
+
+        result.should.deep.equal({
+          pid: "objPid",
+          rm: null,
+          meta: { multipleRMsAllObsoleted: true },
+        });
+        rmr.versionTracker.getAdjacent.calledTwice.should.be.true;
+      });
+    });
+
     describe("resolveFromSeriesId()", () => {
       it("delegates to resolve() when sysmeta contains an identifier", async () => {
         const { sandbox, rmr } = state;
@@ -312,12 +372,9 @@ define([
           rm: "rmFromSid",
         });
 
-        rmr.versionTracker.getNth.calledOnceWithExactly(
-          "sidPID",
-          0,
-          false,
-          true,
-        ).should.be.true;
+        rmr.versionTracker.getNth.calledOnceWithExactly("sidPID", 0, true, true)
+          .should.be.true;
+
         rmr.resolve.calledOnceWithExactly("pidFromSid").should.be.true;
       });
 
