@@ -1,6 +1,12 @@
 "use strict";
 
-define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
+define([
+  "jquery",
+  "underscore",
+  "backbone",
+  "models/sysmeta/VersionTracker",
+  "models/resourceMap/ResourceMapResolver",
+], function ($, _, Backbone, VersionTracker, ResourceMapResolver) {
   /**
    * @class UIRouter
    * @classdesc MetacatUI Router
@@ -35,6 +41,349 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         "edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)":
           "renderPortalEditor",
         drafts: "renderDrafts",
+        versionTracker: "versionTracker", // version tracker page
+        resourceMapResolverTest: "resourceMapResolverTest", // Test the ResourceMapResolver
+      },
+
+      async versionTracker() {
+        const vt = new VersionTracker({
+          metaServiceUrl: MetacatUI.appModel.get("metaServiceUrl"),
+        });
+        let token = await MetacatUI.appUserModel.getTokenPromise();
+        this.listenTo(MetacatUI.appUserModel, "change:loggedIn", () => {
+          MetacatUI.appUserModel.getTokenPromise().then((t) => {
+            token = t;
+          });
+        });
+        // Build a UI for users to test inputting a PID and getting the version
+        // history.
+        const SPINNER = `<i class="icon-spinner icon-spin icon-large loading icon"></i>`;
+        const VersionTrackerTesterView = Backbone.View.extend({
+          template: _.template(
+            `<h1 style="margin-bottom:30px;font-weight:400;">🧪 The <code style="font-size:inherit;color:inherit;">VersionTracker</code> Test Page 🔬</h1>
+            <h4>Enter a PID to get its version history:</h4>
+            <input type="text" id="pidInput" placeholder="Enter PID here..." style="margin-bottom: 0; height: 26px; width:100%; max-width:500px;">
+            <button id="getVersionsButton" class="btn btn-primary">Get Versions</button>
+            <div id="status" class="well alert alert-info" style="margin-top: 20px">Waiting for a pid</div>
+            <div id="result" class="well" style="margin-top: 20px">Results will show here</div>`,
+          ),
+
+          versionTemplate: _.template(/* html */ `
+            <div class="version" style="margin:1em 0;padding:.75em;border:1px solid #ddd;border-radius:4px;background:#f1f6f9;">
+              <!-- PID -->
+              <p style="margin:0 0 .5em 0;">
+                <strong>PID:</strong>
+                <code><%= pid %></code>
+              </p>
+
+              <!-- Quick link bar -->
+              <p style="margin:0 0 1em 0;font-size:.9em;">
+                <strong>Links:</strong>
+                <a href="<%= viewUrl %>"   target="_blank" rel="noopener">view</a> |
+                <a href="<%= objectUrl %>" target="_blank" rel="noopener">object</a> |
+                <a href="<%= sysMetaUrl %>"target="_blank" rel="noopener">sysmeta</a>
+              </p>
+
+              <!-- Details -->
+              <table style="width:100%;border-collapse:collapse;font-size:.9em;">
+                <thead>
+                  <tr style="background:#f7f7f7;">
+                    <th style="text-align:left;padding:4px 6px;">Uploaded</th>
+                    <th style="text-align:left;padding:4px 6px;">SysMeta Modified</th>
+                    <th style="text-align:left;padding:4px 6px;">File&nbsp;name</th>
+                    <th style="text-align:left;padding:4px 6px;">Size</th>
+                    <th style="text-align:left;padding:4px 6px;">Format</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="padding:4px 6px;"><%= dateUploaded || "—" %></td>
+                    <td style="padding:4px 6px;"><%= dateModified || "—" %></td>
+                    <td style="padding:4px 6px;"><%= fileName     || "—" %></td>
+                    <td style="padding:4px 6px;"><%= size         || "—" %></td>
+                    <td style="padding:4px 6px;"><%= formatId     || "—" %></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          `),
+          events: {
+            "click #getVersionsButton": "getVersions",
+          },
+
+          render: function () {
+            this.$el.html(this.template());
+            return this;
+          },
+
+          updateResult: function (html) {
+            this.$("#result").html(html);
+          },
+
+          updateStatus: function (message, type = "info") {
+            this.$("#status").html(message);
+            this.$("#status").removeClass("alert-info alert-danger");
+            this.$("#status").addClass(`alert-${type}`);
+          },
+
+          showLoading: function (pid) {
+            this.updateStatus(
+              `${SPINNER} Getting versions for PID: <strong>${pid}</strong>...`,
+            );
+          },
+
+          showError: function (message) {
+            this.updateStatus(
+              `<p class="text-danger">❌ Error: ${message}</p>`,
+              "danger",
+            );
+          },
+
+          showComplete: function (numNext, numPrev, pid) {
+            this.updateStatus(
+              `Found <strong>${numNext}</strong> next versions and <strong>${numPrev}</strong> previous versions for PID: <strong>${pid}</strong>`,
+              "success",
+            );
+          },
+
+          showVersions: function (record) {
+            console.log(record);
+            const next = record.next;
+            const prev = record.prev;
+            const thisPid = record.sysMeta.data.identifier;
+
+            let html = `<h3>Version History for PID: <strong>${thisPid}</strong></h3>`;
+            let nextVersionsHtml = "<p>No next versions found.</p>";
+            let prevVersionsHtml = "<p>No previous versions found.</p>";
+
+            if (next?.length) {
+              nextVersionsHtml = next
+                .map((v) => this.createVersionEl(v))
+                .join("");
+            }
+
+            if (prev?.length) {
+              prevVersionsHtml = prev
+                .map((v) => this.createVersionEl(v))
+                .join("");
+            }
+
+            const thisVersionHtml = this.createVersionEl(record);
+
+            html += `<h4>Next Versions:</h4>${nextVersionsHtml}`;
+            html += `<h4>Previous Versions:</h4>${prevVersionsHtml}`;
+            html += `<h4>This Version:</h4>${thisVersionHtml}`;
+            this.updateResult(html);
+          },
+
+          createVersionEl: function (record) {
+            const sysMetaData = record.sysMeta?.data || {};
+
+            const pid = sysMetaData.identifier;
+            return this.versionTemplate({
+              pid: pid,
+              created: sysMetaData?.dateCreated || "N/A",
+              dateUploaded: sysMetaData?.dateUploaded || "N/A",
+              dateModified: sysMetaData?.dateSysMetadataModified || "N/A",
+              fileName: sysMetaData?.fileName || "N/A",
+              size: sysMetaData?.size || "N/A",
+              formatId: sysMetaData?.formatId || "N/A",
+              viewUrl: `${MetacatUI.root}/view/${encodeURIComponent(pid)}`,
+              objectUrl: `${MetacatUI.appModel.get("objectServiceUrl")}${encodeURIComponent(pid)}`,
+              sysMetaUrl: `${MetacatUI.appModel.get("metaServiceUrl")}${encodeURIComponent(pid)}`,
+            });
+          },
+
+          onRecordUpdate(record) {
+            if (!record || !record.sysMeta) {
+              this.showError("No record found for the given PID.");
+            }
+            const numNext = record.next?.length || 0;
+            const numPrev = record.prev?.length || 0;
+            const complete = record.endNext && record.endPrev;
+            const pid = record.sysMeta.data.identifier;
+
+            if (complete) {
+              this.showComplete(numNext, numPrev, pid);
+            } else {
+              this.updateStatus(
+                `${SPINNER} Found ${numNext} next versions and ${numPrev} previous versions for PID: <strong>${record.sysMeta.data.identifier}</strong>. Still loading...`,
+              );
+            }
+
+            this.showVersions(record);
+          },
+
+          getVersions: async function () {
+            // clear cache
+            await vt.clear();
+            const pid = this.$("#pidInput").val().trim();
+            this.showLoading(pid);
+            try {
+              // vt.subscribe(pid, this.onRecordUpdate.bind(this));
+              this.stopListening(vt, `update:${pid}`, this.onRecordUpdate);
+              this.listenTo(vt, `update:${pid}`, this.onRecordUpdate);
+              const record = await vt.getFullChain(pid, token, true, true);
+              if (record) {
+                this.showComplete(record.next.length, record.prev.length, pid);
+                this.showVersions(record);
+              } else {
+                this.showError(
+                  `No version history found for PID: <strong>${pid}</strong>.`,
+                );
+              }
+            } catch (error) {
+              console.error("Error getting version history:", error);
+              this.showError(error.message || error);
+            }
+            // TODO - track errors - handle not found, not authorized, server error, etc.
+          },
+        });
+
+        const el = $("#Content");
+        const view = new VersionTrackerTesterView({
+          el: el,
+        });
+        view.render();
+      },
+
+      // temporary
+      async resourceMapResolverTest() {
+        const ResourceMapResolverTesterView = Backbone.View.extend({
+          template: _.template(
+            `<h1 style="margin-bottom:30px;font-weight:400;">🧪 The <code style="font-size:inherit;color:inherit;">ResourceMapResolver</code> Test Page 🔬</h1>
+            <h4>Enter a PID to resolve:</h4>
+            <input type="text" id="pidInput" placeholder="Enter PID here..." style="margin-bottom: 0; height: 26px; width:100%; max-width:500px;">
+            <button id="resolveButton" class="btn btn-primary">Resolve</button>
+            <div id="result" class="well alert alert-info" style="margin-top: 20px">Results will show here</div>
+            <pre class="markdown"><code id="trace">The log of events will show here</code></pre>`,
+          ),
+
+          events: {
+            "click #resolveButton": "resolvePid",
+          },
+
+          render: async function () {
+            this.$el.html(this.template());
+            this.resolver = new ResourceMapResolver();
+
+            await this.resolver.clearStorage();
+            await this.resolver.versionTracker.clear();
+
+            this.stopListening(this.resolver);
+            this.stopListening(this.resolver.versionTracker);
+
+            this.listenTo(
+              this.resolver,
+              "update",
+              ({ pid, rm, status, meta } = {}) => {
+                this.$("#result").html(
+                  `<i class="icon-spinner icon-spin icon-large loading icon"></i> Resolving PID: <strong>${this.pid}</strong>... ${status}...`,
+                );
+              },
+            );
+
+            this.listenTo(this.resolver.versionTracker, "update", (rec) => {
+              console.log("VersionTracker update event:", rec);
+
+              const numVerBack = rec.prev.length;
+              const numVerForward = rec.next.length;
+              const pid = rec.sysMeta?.data?.identifier;
+              if (!pid) return;
+
+              const forward = numVerForward > 0 ? "forward" : "backward";
+              const steps = numVerForward > 0 ? numVerForward : numVerBack;
+              const message = `Walking sysmeta ${forward} <strong>${steps}</strong> steps from <strong>${pid}</strong>...`;
+
+              this.$("#result").html(
+                `<i class="icon-spinner icon-spin icon-large loading icon"></i> Resolving PID: <strong>${this.pid}</strong>... ${message}`,
+              );
+            });
+
+            return this;
+          },
+
+          resolvePid: async function () {
+            const objectServiceUrl = MetacatUI.appModel.get("objectServiceUrl");
+            const viewUrl = `${MetacatUI.root}/view/`;
+            const token = await MetacatUI.appUserModel.getTokenPromise();
+            const user = token ? MetacatUI.appUserModel.get("fullName") : "";
+            const pid = this.$("#pidInput").val().trim();
+            this.pid = pid;
+            if (!pid) {
+              this.$("#result").text("Please enter a PID.");
+              return;
+            }
+
+            this.$("#result").html(
+              `<i class="icon-spinner icon-spin icon-large loading icon"></i> Resolving PID: <strong>${pid}</strong>...`,
+            );
+            this.$("#trace").text("");
+
+            const authText = user
+              ? `You are logged in as <strong>${user}</strong>.`
+              : "You are not logged in.";
+            const authnDiv = `<p><strong>ℹ️ Authorization:</strong> ${authText}</p>`;
+
+            try {
+              const results = await this.resolver.resolve(pid);
+
+              if (results.success) {
+                this.$("#result").html(
+                  `<p>✅ Resource Map resolved successfully!</p>
+                  <p><strong>EML PID:</strong> 
+                   <a href="${objectServiceUrl}${encodeURIComponent(pid)}" target="_blank">${pid}</a>
+                  </p>
+                  <p><strong>Resource Map PID:</strong>
+                    <a href="${objectServiceUrl}${encodeURIComponent(results.rm)}" target="_blank">${results.rm}</a>
+                  </p>
+                  <p><strong>Data Package Landing Page:</strong>
+                    <a href="${viewUrl}${encodeURIComponent(pid)}" target="_blank">Data Package View</a>
+                  </p>
+                  ${authnDiv}`,
+                );
+              } else {
+                this.$("#result").html(`
+                  <p>❌ No resouce map found for PID: <strong>${pid}</strong></p>${authnDiv}
+                `);
+              }
+              this.$("#trace").text(JSON.stringify(results.log, null, 2));
+            } catch (error) {
+              // const { UnauthorizedError, SysMetaError } =
+              //   ResourceMapResolver.Errors;
+              console.log("error message", error.message);
+              console.log("error status", error.status);
+
+              let message = "An error occurred while resolving the PID.";
+              if (error) {
+                console.log("ERROR IN ResourceMapResolverTesterView", error);
+
+                // console.log("UnauthorizedError", error);
+
+                // message = `You are not authorized to access the PID: <strong>${pid}</strong>. Please log in.`;
+              } else if (error instanceof SysMetaError) {
+                message = `An error occurred while fetching the sysmeta for PID: <strong>${pid}</strong>.`;
+              } else if (error.status === 404) {
+                message = `The PID: <strong>${pid}</strong> was not found.`;
+              } else if (error.status === 500) {
+                message = `An internal server error occurred while resolving the PID: <strong>${pid}</strong>.`;
+              }
+
+              this.$("#result").html(
+                `<p class="text-danger">❌ Error resolving PID: <strong>${pid}</strong></p>${authnDiv}`,
+              );
+              this.$("#trace").text(
+                `Error: ${error.message}\nStatus: ${error.status}\nStack: ${error.stack}`,
+              );
+            }
+          },
+        });
+        const el = $("#Content");
+        const view = new ResourceMapResolverTesterView({
+          el: el,
+        });
+        console.log("Rendering ResourceMapResolverTesterView...", view);
+        view.render();
       },
 
       helpPages: {
