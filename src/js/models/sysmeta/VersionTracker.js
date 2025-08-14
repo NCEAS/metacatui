@@ -93,7 +93,8 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
      * milliseconds. Defaults to 24 hours (1 day).
      * @param {number} [options.maxChainHops] - Maximum number of hops in the
      * version chain to cache. Defaults to 200 hops.
-     * @param {number} [options.maxCacheRecords] - Maximum number of in-memory cache records. Defaults to 5000.
+     * @param {number} [options.maxCacheRecords] - Maximum number of in-memory
+     * cache records. Defaults to 5000.
      */
     constructor({
       metaServiceUrl,
@@ -138,8 +139,8 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
           "Invalid store provided to VersionTracker. Must be a localforage instance.",
         );
       }
-      // use a name based on the SysMeta service URL to avoid conflicts
-      // with other instances that might use different URLs
+      // use a name based on the SysMeta service URL to avoid conflicts with
+      // other instances that might use different URLs
       const storeName = `vt_${md5(this.metaServiceUrl)}`;
       this.store =
         store || localforage.createInstance({ name: storeName, storeName });
@@ -153,8 +154,8 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
      * same PID, +n newer, -n older
      * @param {boolean} [ignoreEnd] Set to true to allow walking beyond cached
      * chain end (e.g. to re-check whether there's a newer version)
-     * @param {boolean} [withMeta] - If true, return arrays of { pid,
-     * sysMeta } instead of bare PIDs.
+     * @param {boolean} [withMeta] - If true, return arrays of { pid, sysMeta }
+     * instead of bare PIDs.
      * @returns {Promise<VersionResult|string|null>} - resolves to the requested
      * PID at the given offset, or null if no such version exists. If `withMeta`
      * is true, resolves to an object with { pid, sysMeta }.
@@ -188,7 +189,8 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
       const forward = offset > 0;
       await this.fillVersionChain(pid, steps, forward, ignoreEnd);
 
-      // Get the record from the cached chain and return the requested PID and sysMeta
+      // Get the record from the cached chain and return the requested PID and
+      // sysMeta
       const rec = await this.record(pid);
 
       const list = forward ? rec.next : rec.prev;
@@ -207,8 +209,8 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
      * Get the complete version chain for the given PID.
      * @param {string}  pid - PID to get the chain for
      * @param {boolean} [ignoreEnd] - Re‑probe past cached end flags
-     * @param {boolean} [withMeta] - If true, return arrays of { pid,
-     * sysMeta } instead of bare PIDs.
+     * @param {boolean} [withMeta] - If true, return arrays of { pid, sysMeta }
+     * instead of bare PIDs.
      * @returns {Promise<VersionRecord>} - resolves to an object with `prev`,
      * `next`, `sysMeta`, `endPrev`, and `endNext` properties.
      */
@@ -246,7 +248,7 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
      * re-checking if a newer version exists.
      * @param {boolean} [withMeta] - If true, the SysMeta will be fetched if not
      * already available in the cache.
-     * @return {Promise<string|VersionResult>} - resolves to the latest PID in
+     * @returns {Promise<string|VersionResult>} - resolves to the latest PID in
      * the chain, or an object with { pid, sysMeta } if `withMeta` is true. If
      * no versions are found, resolves to the original PID.
      */

@@ -131,6 +131,10 @@ define([
         state.eventLog.log(log, "info", "a‑1", { x: 1 });
         state.eventLog.log(log, "warning", "a‑2", { x: 2 });
 
+        // stub event log because it can be blocked by extensions
+        state.eventLog.analytics = new Backbone.Model();
+        state.eventLog.analytics.trackCustomEvent = function () {};
+
         // stub the underlying Analytics method
         const trackStub = state.sandbox.stub(
           state.eventLog.analytics,
