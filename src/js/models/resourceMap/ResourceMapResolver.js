@@ -24,6 +24,8 @@ define([
   const STATUS = Object.freeze({
     // matches
     indexMatch: "Resource map pid found in index",
+    multiRMMatch:
+      "Multiple versions of resource map found in index and could resolve to the most recent",
     storageMatch: "Resource map pid found in local storage",
     smMatch: "Resource map pid found by walking sysmeta",
     guessMatch: "Resource map pid guessed based on naming convention",
@@ -32,6 +34,8 @@ define([
     storageMiss: "Resource map pid not found in local storage",
     smMiss: "Resource map pid not found by walking sysmeta",
     guessMiss: "Resource map pid not found by guessing",
+    multiRMMiss:
+      "Multiple resource maps found in index, but could not resolve to a single RM. They are either not versions of each other and/or are all are obsoleted.",
     // special cases
     pidIsSeriesId: "PID is a series ID, not an object PID",
     noPidForSeriesId: "PID not found for series ID",
@@ -147,6 +151,23 @@ define([
         this.status(pid, STATUS.pidIsSeriesId, null, indexResult.meta);
         return this.resolveFromSeriesId(pid);
       }
+      if (indexResult?.meta?.rms?.length > 1) {
+        // Multiple resource maps found. If they are all versions of each other
+        // and one is not yet obsoleted, then that is the one we want.
+        const multiResult = await this.mutliRMCheck(pid, indexResult.meta.rms);
+        const singleRM = multiResult.rm;
+        if (singleRM) {
+          return this.status(
+            pid,
+            STATUS.multiRMMatch,
+            singleRM,
+            multiResult.meta,
+          );
+        }
+        // If not found, then continue with the resolution process
+        this.status(pid, STATUS.multiRMMiss, null, multiResult.meta);
+      }
+
       this.status(pid, STATUS.indexMiss, null, indexResult.meta);
 
       // ---- STORAGE ----
@@ -220,6 +241,51 @@ define([
       } finally {
         this.off(eventName); // Clean up the listener
       }
+      return result;
+    }
+
+    /**
+     * When 2 or more resource maps are found in the index for a PID, then this
+     * method is called to check if they are all versions of each other and if
+     * one is not yet obsoleted.
+     * @param {string} pid - The PID to check for multiple resource maps
+     * @param {Array<string>} rms - An array of resource map PIDs to check
+     * @returns {Promise<object>} - An object containing the PID, the resolved
+     * resource map PID if found, and metadata about the search.
+     * @since 0.0.0
+     */
+    async mutliRMCheck(pid, rms) {
+      const result = { pid, rm: null, meta: {} };
+
+      // Get obsoletes and obsoletedBy from the sysMeta for each RM.
+      const rmRecords = await Promise.all(
+        rms.map((rm) => this.versionTracker.getAdjacent(rm, true)),
+      );
+
+      // Get a unique list of all PIDs from the records
+      const allPids = new Set(
+        rmRecords.flatMap((record) => [record.prev, record.next]),
+      );
+
+      // If any of the RM pids are not in the allPids set, then they are not
+      // versions of each other, so we cannot resolve to a single RM.
+      if (!rms.every((rm) => allPids.has(rm))) {
+        result.meta.multipleRMsNotVersions = true;
+        return result;
+      }
+
+      // All RMs are versions of each other, so find one that is not yet
+      // obsoleted
+      const validRms = rmRecords.filter((record) => !record.next?.length);
+
+      if (validRms.length === 1) {
+        result.rm = validRms[0].pid;
+        return result;
+      }
+
+      // Otherwise, we have multiple RMs that are versions of each other but not
+      // the most recent one, so we cannot resolve to a single RM.
+      result.meta.multipleRMsAllObsoleted = true;
       return result;
     }
 

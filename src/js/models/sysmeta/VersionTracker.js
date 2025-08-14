@@ -355,6 +355,64 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
     }
 
     /**
+     * Get the next most recent version after the given PID.
+     * @param {string} pid - the PID to get the next version for
+     * @param {boolean} [ignoreEnd] - If true, ignore end flags and continue
+     * walking the chain even if it appears complete.
+     * @param {boolean} [withMeta] - If true, the SysMeta will be fetched if not
+     * already available in the cache.
+     * @returns {Promise<VersionResult>} - resolves to the next version PID or
+     * an object with { pid, sysMeta } if `withMeta` is true. If no next version
+     * is found, resolves to the original PID.
+     * @since 0.0.0
+     */
+    getNext(pid, ignoreEnd = false, withMeta = false) {
+      return this.getNth(pid, 1, ignoreEnd, withMeta);
+    }
+
+    /**
+     * Get the previous version before the given PID.
+     * @param {string} pid - the PID to get the previous version for
+     * @param {boolean} [ignoreEnd] - If true, ignore end flags and continue
+     * walking the chain even if it appears complete.
+     * @param {boolean} [withMeta] - If true, the SysMeta will be fetched if not
+     * already available in the cache.
+     * @returns {Promise<VersionResult>} - resolves to the previous version PID
+     * or an object with { pid, sysMeta } if `withMeta` is true. If no previous
+     * version is found, resolves to the original PID.
+     * @since 0.0.0
+     */
+    getPrev(pid, ignoreEnd = false, withMeta = false) {
+      return this.getNth(pid, -1, ignoreEnd, withMeta);
+    }
+
+    /**
+     * Get the version before and after the given PID, if available.
+     * @param {string} pid - the PID to get adjacent versions for
+     * @param {boolean} [ignoreEnd] - If true, ignore end flags and continue
+     * walking the chain even if it appears complete.
+     * @param {boolean} [withMeta] - If true, the SysMeta will be fetched if not
+     * already available in the cache.
+     * @returns {Promise<{pid: string, prev: VersionResult, next:
+     * VersionResult}>}
+     * - resolves to an object with `pid`, `prev`, and `next` properties. `prev`
+     *   and `next` are either PIDs or objects with { pid, sysMeta } if
+     *   `withMeta` is true. If no previous or next version is found, the
+     *   respective property will be null.
+     * @since 0.0.0
+     */
+    async getAdjacent(pid, ignoreEnd = false, withMeta = false) {
+      return Promise.all([
+        this.getPrev(pid, ignoreEnd, withMeta),
+        this.getNext(pid, ignoreEnd, withMeta),
+      ]).then(([prev, next]) => ({
+        pid,
+        prev,
+        next,
+      }));
+    }
+
+    /**
      * Notify that a specific the chain for a specific PID has been updated.
      * This is called internally after a new version is added or the chain is
      * updated.
