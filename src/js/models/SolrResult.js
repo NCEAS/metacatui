@@ -1,13 +1,58 @@
-define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
+define(["jquery", "underscore", "backbone", "common/QueryService"], (
+  $,
+  _,
+  Backbone,
+  QueryService,
+) => {
+  const DEFAULT_INFO_FIELDS = [
+    "abstract",
+    "id",
+    "seriesId",
+    "fileName",
+    "resourceMap,formatType,formatId",
+    "obsoletedBy",
+    "isDocumentedBy",
+    "documents",
+    "title",
+    "origin,keywords",
+    "attributeName",
+    "pubDate",
+    "eastBoundCoord",
+    "westBoundCoord",
+    "northBoundCoord",
+    "southBoundCoord",
+    "beginDate",
+    "endDate",
+    "dateUploaded",
+    "archived",
+    "datasource",
+    "replicaMN",
+    "isAuthorized",
+    "isPublic,size",
+    "read_count_i",
+    "isService",
+    "serviceTitle",
+    "serviceEndpoint",
+    "serviceOutput",
+    "serviceDescription",
+    "serviceType",
+    "project",
+    "dateModified",
+  ];
+
   /**
    * @class SolrResult
    * @classdesc A single result from the Solr search service
    * @classcategory Models
-   * @extends Backbone.Model
+   * @augments Backbone.Model
    */
   const SolrResult = Backbone.Model.extend(
     /** @lends SolrResult.prototype */ {
-      // This model contains all of the attributes found in the SOLR 'docs' field inside of the SOLR response element
+      /**
+       * @property {object} defaults - The default attributes for this model
+       * This model contains all of the attributes found in the SOLR 'docs'
+       * field inside of the SOLR response element
+       */
       defaults: {
         abstract: null,
         entityName: null,
@@ -24,7 +69,6 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
         attributeName: "",
         beginDate: "",
         endDate: "",
-        pubDate: "",
         id: "",
         seriesId: null,
         resourceMap: null,
@@ -52,11 +96,11 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
         serviceOutput: null,
         notFound: false,
         newestVersion: null,
-        //@type {string} - The system metadata XML as a string
+        // @type {string} - The system metadata XML as a string
         systemMetadata: null,
         provSources: [],
         provDerivations: [],
-        //Provenance index fields
+        // Provenance index fields
         prov_generated: null,
         prov_generatedByDataONEDN: null,
         prov_generatedByExecution: null,
@@ -81,30 +125,34 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
         prov_wasInformedBy: null,
       },
 
-      initialize: function () {
+      /** @inheritdoc */
+      initialize() {
         this.setURL();
         this.on("change:id", this.setURL);
 
         this.set("type", this.getType());
-        this.on("change:read_count_i", function () {
+        this.on("change:read_count_i", function setReads() {
           this.set("reads", this.get("read_count_i"));
         });
       },
 
+      /** @type {string} The type of this model */
       type: "SolrResult",
 
-      // Toggle the `selected` state of the result
-      toggle: function () {
+      /** Toggle the `selected` state of the result */
+      toggle() {
         this.selected = !this.get("selected");
       },
 
       /**
-       * Returns a plain-english version of the general format - either image, program, metadata, PDF, annotation or data
-       * @return {string}
+       * Returns a plain-english version of the general format - either image,
+       * program, metadata, PDF, annotation or data
+       * @returns {string} The type of this object, such as "image", "program",
+       * "metadata", "PDF", "annotation" or "data"
        */
-      getType: function () {
-        //The list of formatIds that are images
-        var imageIds = [
+      getType() {
+        // The list of formatIds that are images
+        const imageIds = [
           "image/gif",
           "image/jp2",
           "image/jpeg",
@@ -113,48 +161,51 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           "image/svg+xml",
           "image/bmp",
         ];
-        //The list of formatIds that are images
-        var pdfIds = ["application/pdf"];
-        var annotationIds = [
+        // The list of formatIds that are images
+        const pdfIds = ["application/pdf"];
+        const annotationIds = [
           "http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html",
         ];
-        var collectionIds = [
+        const collectionIds = [
           "https://purl.dataone.org/collections-1.0.0",
           "https://purl.dataone.org/collections-1.1.0",
         ];
-        var portalIds = [
+        const portalIds = [
           "https://purl.dataone.org/portals-1.0.0",
           "https://purl.dataone.org/portals-1.1.0",
         ];
 
-        //Determine the type via provONE
-        var instanceOfClass = this.get("prov_instanceOfClass");
+        // Determine the type via provONE
+        const instanceOfClass = this.get("prov_instanceOfClass");
         if (typeof instanceOfClass !== "undefined") {
-          var programClass = _.filter(instanceOfClass, function (className) {
-            return className.indexOf("#Program") > -1;
-          });
+          const programClass = _.filter(
+            instanceOfClass,
+            (className) => className.indexOf("#Program") > -1,
+          );
           if (typeof programClass !== "undefined" && programClass.length)
             return "program";
-        } else {
-          if (this.get("prov_generated") || this.get("prov_used"))
-            return "program";
-        }
+        } else if (this.get("prov_generated") || this.get("prov_used"))
+          return "program";
 
-        //Determine the type via file format
+        // Determine the type via file format
         if (_.contains(collectionIds, this.get("formatId")))
           return "collection";
         if (_.contains(portalIds, this.get("formatId"))) return "portal";
-        if (this.get("formatType") == "METADATA") return "metadata";
+        if (this.get("formatType") === "METADATA") return "metadata";
         if (_.contains(imageIds, this.get("formatId"))) return "image";
         if (_.contains(pdfIds, this.get("formatId"))) return "PDF";
         if (_.contains(annotationIds, this.get("formatId")))
           return "annotation";
-        else return "data";
+        return "data";
       },
 
-      //Returns a plain-english version of the specific format ID (for selected ids)
-      getFormat: function () {
-        var formatMap = {
+      /**
+       * Get a plain-english version of the specific format ID (for selected
+       * ids)
+       * @returns {string} The specific format of this object
+       */
+      getFormat() {
+        const formatMap = {
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
             "Microsoft Excel OpenXML",
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
@@ -212,7 +263,10 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
         return formatMap[this.get("formatId")] || this.get("formatId");
       },
 
-      setURL: function () {
+      /**
+       * Sets the URL for this object based on the id and seriesId
+       */
+      setURL() {
         if (MetacatUI.appModel.get("objectServiceUrl"))
           this.set(
             "url",
@@ -229,11 +283,11 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
 
       /**
        * Checks if the pid or sid or given string is a DOI
-       *
-       * @param {string} customString - Optional. An identifier string to check instead of the id and seriesId attributes on the model
+       * @param {string} customString - Optional. An identifier string to check
+       * instead of the id and seriesId attributes on the model
        * @returns {boolean} True if it is a DOI
        */
-      isDOI: function (customString) {
+      isDOI(customString) {
         return (
           MetacatUI.appModel.isDOI(customString) ||
           MetacatUI.appModel.isDOI(this.get("id")) ||
@@ -241,32 +295,33 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
         );
       },
 
-      /*
+      /**
        * Checks if the currently-logged-in user is authorized to change
        * permissions (or other action if set as parameter) on this doc
-       * @param {string} [action=changePermission] - The action (read, write, or changePermission) to check
-       * if the current user has authorization to perform. By default checks for the highest level of permission.
+       * @param {string} [action] - The action (read, write, or
+       * changePermission) to check if the current user has authorization to
+       * perform. By default checks for the highest level of permission.
+       * @returns {boolean|null} True if the user is authorized, false if not,
+       * or null if the authServiceUrl is not set
        */
-      checkAuthority: function (action = "changePermission") {
-        var authServiceUrl = MetacatUI.appModel.get("authServiceUrl");
+      checkAuthority(action = "changePermission") {
+        const authServiceUrl = MetacatUI.appModel.get("authServiceUrl");
         if (!authServiceUrl) return false;
 
-        var model = this;
+        const model = this;
 
-        var requestSettings = {
-          url:
-            authServiceUrl +
-            encodeURIComponent(this.get("id")) +
-            "?action=" +
-            action,
+        const requestSettings = {
+          url: `${
+            authServiceUrl + encodeURIComponent(this.get("id"))
+          }?action=${action}`,
           type: "GET",
-          success: function (data, textStatus, xhr) {
-            model.set("isAuthorized_" + action, true);
+          success(_data, _textStatus, _xhr) {
+            model.set(`isAuthorized_${action}`, true);
             model.set("isAuthorized", true);
             model.trigger("change:isAuthorized");
           },
-          error: function (xhr, textStatus, errorThrown) {
-            model.set("isAuthorized_" + action, false);
+          error(_xhr, _textStatus, _errorThrown) {
+            model.set(`isAuthorized_${action}`, false);
             model.set("isAuthorized", false);
           },
         };
@@ -276,6 +331,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
             MetacatUI.appUserModel.createAjaxSettings(),
           ),
         );
+        return null;
       },
 
       /**
@@ -400,191 +456,174 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
         );
       },
 
-      getInfo: function (fields) {
-        var model = this;
+      /**
+       * Get the information for this object from the Solr index
+       * @param {string|string[]} [queryFields] - Optional. A comma-separated
+       * string of fields to retrieve from the Solr index, or an array. If not
+       * specified, a default set of fields will be used.
+       */
+      getInfo(queryFields) {
+        // If there is no seriesId set, then search for pid or sid
+        const sid = this.get("seriesId") || "";
+        const pid = this.get("id") || "";
 
-        if (!fields)
-          var fields =
-            "abstract,id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,keywords,attributeName,pubDate,eastBoundCoord,westBoundCoord,northBoundCoord,southBoundCoord,beginDate,endDate,dateUploaded,archived,datasource,replicaMN,isAuthorized,isPublic,size,read_count_i,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,serviceType,project,dateModified";
+        if (!sid && !pid) {
+          throw new Error(
+            "Need at least one of seriesId or id to query for info",
+          );
+        }
 
-        var escapeSpecialChar = MetacatUI.appSearchModel.escapeSpecialChar;
-
-        var query = "q=";
-
-        //If there is no seriesId set, then search for pid or sid
-        if (!this.get("seriesId"))
-          query +=
-            '(id:"' +
-            escapeSpecialChar(encodeURIComponent(this.get("id"))) +
-            '" OR seriesId:"' +
-            escapeSpecialChar(encodeURIComponent(this.get("id"))) +
-            '")';
-        //If a seriesId is specified, then search for that
-        else if (this.get("seriesId") && this.get("id").length > 0)
-          query +=
-            '(seriesId:"' +
-            escapeSpecialChar(encodeURIComponent(this.get("seriesId"))) +
-            '" AND id:"' +
-            escapeSpecialChar(encodeURIComponent(this.get("id"))) +
-            '")';
-        //If only a seriesId is specified, then just search for the most recent version
-        else if (this.get("seriesId") && !this.get("id"))
-          query +=
-            'seriesId:"' +
-            escapeSpecialChar(encodeURIComponent(this.get("id"))) +
-            '" -obsoletedBy:*';
-
-        query +=
-          "&fl=" +
-          fields + //Specify the fields to return
-          "&wt=json&rows=1000" + //Get the results in JSON format and get 1000 rows
-          "&archived=archived:*"; //Get archived or unarchived content
-
-        var requestSettings = {
-          url: MetacatUI.appModel.get("queryServiceUrl") + query,
-          type: "GET",
-          success: function (data, response, xhr) {
-            //If the Solr response was not as expected, trigger and error and exit
-            if (!data || typeof data.response == "undefined") {
-              model.set("indexed", false);
-              model.trigger("getInfoError");
-              return;
-            }
-
-            var docs = data.response.docs;
-
-            if (docs.length == 1) {
-              docs[0].resourceMap = model.parseResourceMapField(docs[0]);
-              model.set(docs[0]);
-              model.trigger("sync");
-            }
-            //If we searched by seriesId, then let's find the most recent version in the series
-            else if (docs.length > 1) {
-              //Filter out docs that are obsoleted
-              var mostRecent = _.reject(docs, function (doc) {
-                return typeof doc.obsoletedBy !== "undefined";
-              });
-
-              //If there is only one doc that is not obsoleted (the most recent), then
-              // set this doc's values on this model
-              if (mostRecent.length == 1) {
-                mostRecent[0].resourceMap = model.parseResourceMapField(
-                  mostRecent[0],
-                );
-                model.set(mostRecent[0]);
-                model.trigger("sync");
-              } else {
-                //If there are multiple docs without an obsoletedBy statement, then
-                // retreive the head of the series via the system metadata
-                var sysMetaRequestSettings = {
-                  url:
-                    MetacatUI.appModel.get("metaServiceUrl") +
-                    encodeURIComponent(docs[0].seriesId),
-                  type: "GET",
-                  success: function (sysMetaData) {
-                    //Get the identifier node from the system metadata
-                    var seriesHeadID = $(sysMetaData).find("identifier").text();
-                    //Get the doc from the Solr results with that identifier
-                    var seriesHead = _.findWhere(docs, { id: seriesHeadID });
-
-                    //If there is a doc in the Solr results list that matches the series head id
-                    if (seriesHead) {
-                      seriesHead.resourceMap =
-                        model.parseResourceMapField(seriesHead);
-                      //Set those values on this model
-                      model.set(seriesHead);
-                    }
-                    //Otherwise, just fall back on the first doc in the list
-                    else if (mostRecent.length) {
-                      mostRecent[0].resourceMap = model.parseResourceMapField(
-                        mostRecent[0],
-                      );
-                      model.set(mostRecent[0]);
-                    } else {
-                      docs[0].resourceMap = model.parseResourceMapField(
-                        docs[0],
-                      );
-                      model.set(docs[0]);
-                    }
-
-                    model.trigger("sync");
-                  },
-                  error: function (xhr, textStatus, errorThrown) {
-                    // Fall back on the first doc in the list
-                    if (mostRecent.length) {
-                      model.set(mostRecent[0]);
-                    } else {
-                      model.set(docs[0]);
-                    }
-
-                    model.trigger("sync");
-                  },
-                };
-
-                $.ajax(
-                  _.extend(
-                    sysMetaRequestSettings,
-                    MetacatUI.appUserModel.createAjaxSettings(),
-                  ),
-                );
-              }
-            } else {
-              model.set("indexed", false);
-              //Try getting the system metadata as a backup
-              model.getSysMeta();
-            }
-          },
-          error: function (xhr, textStatus, errorThrown) {
-            model.set("indexed", false);
-            model.trigger("getInfoError");
-          },
+        const opts = {
+          q: QueryService.buildIdQuery(pid, sid),
+          fields: queryFields || DEFAULT_INFO_FIELDS,
+          rows: 1000,
+          archived: true,
         };
 
-        $.ajax(
-          _.extend(
-            requestSettings,
-            MetacatUI.appUserModel.createAjaxSettings(),
-          ),
-        );
+        QueryService.queryWithFetch(opts)
+          .then((data) => this.getInfoSuccess(data))
+          .catch((error) => this.handleGetInfoError(error));
       },
 
-      getCitationInfo: function () {
+      handleGetInfoError(error) {
+        console.error(`Error getting info for ${this.get("id")}`, error);
+        this.set("indexed", false);
+        this.trigger("getInfoError");
+      },
+
+      getInfoSuccess(data) {
+        // If the Solr response was not as expected, trigger and error and exit
+        if (!data?.response?.docs) {
+          this.handleGetInfoError();
+          return;
+        }
+
+        const { docs } = data.response;
+
+        if (!docs.length) {
+          this.set("indexed", false);
+          // Try getting the system metadata as a backup
+          this.getSysMeta();
+          return;
+        }
+
+        if (docs.length === 1) {
+          docs[0].resourceMap = this.parseResourceMapField(docs[0]);
+          this.set(docs[0]);
+          this.trigger("sync");
+          return;
+        }
+
+        // If we searched by seriesId, then let's find the most recent
+        // version in the series
+        if (docs.length > 1) {
+          // Filter out docs that are obsoleted
+          const mostRecent = docs.filter((doc) => !doc.obsoletedBy);
+
+          // TODO: Once the VersionTracker is merged into MetacatUI, then simply
+          // use the getLatestVersion method here instead of everything that
+          // follows.
+
+          // If there is only one doc that is not obsoleted (the most recent),
+          // then set this doc's values on this model
+          if (mostRecent.length === 1) {
+            mostRecent[0].resourceMap = this.parseResourceMapField(
+              mostRecent[0],
+            );
+            this.set(mostRecent[0]);
+            this.trigger("sync");
+            return;
+          }
+
+          // If there are multiple docs without an obsoletedBy statement,
+          // then retreive the head of the series via the system metadata
+          const sysMetaRequestSettings = {
+            url:
+              MetacatUI.appModel.get("metaServiceUrl") +
+              encodeURIComponent(docs[0].seriesId),
+            type: "GET",
+            success(sysMetaData) {
+              // Get the identifier node from the system metadata
+              const seriesHeadID = $(sysMetaData).find("identifier").text();
+              // Get the doc from the Solr results with that identifier
+              const seriesHead = _.findWhere(docs, { id: seriesHeadID });
+
+              // If there is a doc in the Solr results list that matches
+              // the series head id
+              if (seriesHead) {
+                seriesHead.resourceMap = this.parseResourceMapField(seriesHead);
+                // Set those values on this model
+                this.set(seriesHead);
+              }
+              // Otherwise, just fall back on the first doc in the list
+              else if (mostRecent.length) {
+                mostRecent[0].resourceMap = this.parseResourceMapField(
+                  mostRecent[0],
+                );
+                this.set(mostRecent[0]);
+              } else {
+                docs[0].resourceMap = this.parseResourceMapField(docs[0]);
+                this.set(docs[0]);
+              }
+
+              this.trigger("sync");
+            },
+            error(__xhr, _textStatus, _errorThrown) {
+              // Fall back on the first doc in the list
+              if (mostRecent.length) {
+                this.set(mostRecent[0]);
+              } else {
+                this.set(docs[0]);
+              }
+
+              this.trigger("sync");
+            },
+          };
+
+          $.ajax(
+            _.extend(
+              sysMetaRequestSettings,
+              MetacatUI.appUserthis.createAjaxSettings(),
+            ),
+          );
+        }
+      },
+
+      /** Get the citation information for this object from the Solr index */
+      getCitationInfo() {
         this.getInfo(
           "id,seriesId,origin,pubDate,dateUploaded,title,datasource,project",
         );
       },
 
-      /*
-       * Get the system metadata for this object
-       */
-      getSysMeta: function () {
-        var url =
-            MetacatUI.appModel.get("metaServiceUrl") +
-            encodeURIComponent(this.get("id")),
-          model = this;
+      /** Get the system metadata for this object */
+      getSysMeta() {
+        const url =
+          MetacatUI.appModel.get("metaServiceUrl") +
+          encodeURIComponent(this.get("id"));
+        const model = this;
 
-        var requestSettings = {
-          url: url,
+        const requestSettings = {
+          url,
           type: "GET",
           dataType: "text",
-          success: function (data, response, xhr) {
+          success(data, _response, _xhr) {
             if (data && data.length) {
               model.set("systemMetadata", data);
             }
 
-            //Check if this is archvied
-            var archived = $(data).find("archived").text() == "true";
+            // Check if this is archvied
+            const archived = $(data).find("archived").text() === "true";
             model.set("archived", archived);
 
-            //Get the file size
+            // Get the file size
             model.set("size", $(data).find("size").text() || "");
 
-            //Get the entity name
+            // Get the entity name
             model.set("fileName", $(data).find("filename").text() || "");
 
-            //Check if this is a metadata doc
-            var formatId = $(data).find("formatid").text() || "",
-              formatType;
+            // Check if this is a metadata doc
+            const formatId = $(data).find("formatid").text() || "";
             model.set("formatId", formatId);
             if (
               formatId.indexOf("ecoinformatics.org") > -1 ||
@@ -606,21 +645,22 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
             )
               model.set("formatType", "METADATA");
 
-            //Trigger the sync event so the app knows we found the model info
+            // Trigger the sync event so the app knows we found the model info
             model.trigger("sync");
           },
-          error: function (response) {
-            //When the user is unauthorized to access this object, trigger a 401 error
-            if (response.status == 401) {
+          error(response) {
+            // When the user is unauthorized to access this object, trigger a
+            // 401 error
+            if (response.status === 401) {
               model.set("notFound", true);
               model.trigger("401");
             }
-            //When the object doesn't exist, trigger a 404 error
-            else if (response.status == 404) {
+            // When the object doesn't exist, trigger a 404 error
+            else if (response.status === 404) {
               model.set("notFound", true);
               model.trigger("404");
             }
-            //Other error codes trigger a generic error
+            // Other error codes trigger a generic error
             else {
               model.trigger("error");
             }
@@ -635,49 +675,59 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
         );
       },
 
-      //Transgresses the obsolence chain until it finds the newest version that this user is authorized to read
-      findLatestVersion: function (newestVersion, possiblyNewer) {
+      /**
+       * Transgresses the obsolence chain until it finds the newest version that
+       * this user is authorized to read
+       * @param {string} [newest] - The id of the newest version to start with.
+       * If not supplied, this model's id will be used.
+       * @param {string} [newer] - The id of a possibly newer version.
+       */
+      findLatestVersion(newest, newer) {
         // Make sure we have the /meta service configured
         if (!MetacatUI.appModel.get("metaServiceUrl")) return;
 
-        //If no pid was supplied, use this model's id
+        let newestVersion = newest;
+        let possiblyNewer = newer;
+
+        // If no pid was supplied, use this model's id
         if (!newestVersion) {
-          var newestVersion = this.get("id");
-          var possiblyNewer = this.get("obsoletedBy");
+          newestVersion = this.get("id");
+          possiblyNewer = this.get("obsoletedBy");
         }
 
-        //If this isn't obsoleted by anything, then there is no newer version
+        // If this isn't obsoleted by anything, then there is no newer version
         if (!possiblyNewer) {
           this.set("newestVersion", newestVersion);
           return;
         }
 
-        var model = this;
+        const model = this;
 
-        //Get the system metadata for the possibly newer version
-        var requestSettings = {
+        // Get the system metadata for the possibly newer version
+        const requestSettings = {
           url:
             MetacatUI.appModel.get("metaServiceUrl") +
             encodeURIComponent(possiblyNewer),
           type: "GET",
-          success: function (data) {
+          success(data) {
             // the response may have an obsoletedBy element
-            var obsoletedBy = $(data).find("obsoletedBy").text();
+            const obsoletedBy = $(data).find("obsoletedBy").text();
 
-            //If there is an even newer version, then get it and rerun this function
+            // If there is an even newer version, then get it and rerun this
+            // function
             if (obsoletedBy)
               model.findLatestVersion(possiblyNewer, obsoletedBy);
-            //If there isn't a newer version, then this is it
+            // If there isn't a newer version, then this is it
             else model.set("newestVersion", possiblyNewer);
           },
-          error: function (xhr) {
-            //If this newer version isn't found or accessible, then save the last
-            // accessible id as the newest version
+          error(xhr) {
+            // If this newer version isn't found or accessible, then save the
+            // last accessible id as the newest version
             if (
-              xhr.status == 401 ||
-              xhr.status == 404 ||
-              xhr.status == "401" ||
-              xhr.status == "404"
+              xhr.status === 401 ||
+              xhr.status === 404 ||
+              xhr.status === "401" ||
+              xhr.status === "404"
             ) {
               model.set("newestVersion", newestVersion);
             }
@@ -692,57 +742,69 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
         );
       },
 
-      /**** Provenance-related functions ****/
-      /*
-       * Returns true if this provenance field points to a source of this data or metadata object
+      // ================ Provenance-related functions ================/
+
+      /**
+       * Returns true if this provenance field points to a source of this data
+       * or metadata object
+       * @param {string} field - The provenance field to check
+       * @returns {boolean} True if this field is a source field, false
+       * otherwise
        */
-      isSourceField: function (field) {
-        if (typeof field == "undefined" || !field) return false;
+      isSourceField(field) {
+        if (typeof field === "undefined" || !field) return false;
         if (!_.contains(MetacatUI.appSearchModel.getProvFields(), field))
           return false;
 
         if (
-          field == "prov_generatedByExecution" ||
-          field == "prov_generatedByProgram" ||
-          field == "prov_used" ||
-          field == "prov_wasDerivedFrom" ||
-          field == "prov_wasInformedBy"
+          field === "prov_generatedByExecution" ||
+          field === "prov_generatedByProgram" ||
+          field === "prov_used" ||
+          field === "prov_wasDerivedFrom" ||
+          field === "prov_wasInformedBy"
         )
           return true;
-        else return false;
+        return false;
       },
 
-      /*
-       * Returns true if this provenance field points to a derivation of this data or metadata object
+      /**
+       * Returns true if this provenance field points to a derivation of this
+       * data or metadata object
+       * @param {string} field - The provenance field to check
+       * @returns {boolean} True if this field is a derivation field, false
+       * otherwise
        */
-      isDerivationField: function (field) {
-        if (typeof field == "undefined" || !field) return false;
+      isDerivationField(field) {
+        if (typeof field === "undefined" || !field) return false;
         if (!_.contains(MetacatUI.appSearchModel.getProvFields(), field))
           return false;
 
         if (
-          field == "prov_usedByExecution" ||
-          field == "prov_usedByProgram" ||
-          field == "prov_hasDerivations" ||
-          field == "prov_generated"
+          field === "prov_usedByExecution" ||
+          field === "prov_usedByProgram" ||
+          field === "prov_hasDerivations" ||
+          field === "prov_generated"
         )
           return true;
-        else return false;
+        return false;
       },
 
-      /*
-       * Returns true if this SolrResult has a provenance trace (i.e. has either sources or derivations)
+      /**
+       * Returns true if this SolrResult has a provenance trace (i.e. has either
+       * sources or derivations)
+       * @returns {boolean} True if this object has a provenance trace, false
+       * otherwise
        */
-      hasProvTrace: function () {
-        if (this.get("formatType") == "METADATA") {
+      hasProvTrace() {
+        if (this.get("formatType") === "METADATA") {
           if (this.get("prov_hasSources") || this.get("prov_hasDerivations"))
             return true;
         }
 
-        var fieldNames = MetacatUI.appSearchModel.getProvFields(),
-          currentField = "";
+        const fieldNames = MetacatUI.appSearchModel.getProvFields();
+        let currentField = "";
 
-        for (var i = 0; i < fieldNames.length; i++) {
+        for (let i = 0; i < fieldNames.length; i += 1) {
           currentField = fieldNames[i];
           if (this.has(currentField)) return true;
         }
@@ -750,21 +812,22 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
         return false;
       },
 
-      /*
-       * Returns an array of all the IDs of objects that are sources of this object
+      /**
+       * Returns an array of all the IDs of objects that are sources of this
+       * object
+       * @returns {string[]} An array of source IDs
        */
-      getSources: function () {
-        var sources = new Array(),
-          model = this,
-          //Get the prov fields but leave out references to executions which are not used in the UI yet
-          fields = _.reject(
-            MetacatUI.appSearchModel.getProvFields(),
-            function (f) {
-              return f.indexOf("xecution") > -1;
-            },
-          ); //Leave out the first e in execution so we don't have to worry about case sensitivity
+      getSources() {
+        const sources = [];
+        const model = this;
+        // Get the prov fields but leave out references to executions which are
+        // not used in the UI yet
+        const fields = _.reject(
+          MetacatUI.appSearchModel.getProvFields(),
+          (f) => f.indexOf("xecution") > -1,
+        ); // Leave out the first e in execution so we don't have to worry about case sensitivity
 
-        _.each(fields, function (provField, i) {
+        _.each(fields, (provField, _i) => {
           if (model.isSourceField(provField) && model.has(provField))
             sources.push(model.get(provField));
         });
@@ -772,21 +835,22 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
         return _.uniq(_.flatten(sources));
       },
 
-      /*
-       * Returns an array of all the IDs of objects that are derivations of this object
+      /**
+       * Returns an array of all the IDs of objects that are derivations of this
+       * object
+       * @returns {string[]} An array of derivation IDs
        */
-      getDerivations: function () {
-        var derivations = new Array(),
-          model = this,
-          //Get the prov fields but leave out references to executions which are not used in the UI yet
-          fields = _.reject(
-            MetacatUI.appSearchModel.getProvFields(),
-            function (f) {
-              return f.indexOf("xecution") > -1;
-            },
-          ); //Leave out the first e in execution so we don't have to worry about case sensitivity
+      getDerivations() {
+        const derivations = [];
+        const model = this;
+        // Get the prov fields but leave out references to executions which are
+        // not used in the UI yet
+        const fields = _.reject(
+          MetacatUI.appSearchModel.getProvFields(),
+          (f) => f.indexOf("xecution") > -1,
+        ); // Leave out the first e in execution so we don't have to worry about case sensitivity
 
-        _.each(fields, function (provField, i) {
+        _.each(fields, (provField, _i) => {
           if (model.isDerivationField(provField) && model.has(provField))
             derivations.push(model.get(provField));
         });
@@ -794,93 +858,88 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
         return _.uniq(_.flatten(derivations));
       },
 
-      getInputs: function () {
+      /** @returns {string[]} IDs of all objs that are used by this obj */
+      getInputs() {
         return this.get("prov_used");
       },
 
-      getOutputs: function () {
+      /** @returns {string[]} IDs of all objs that are generated by this obj */
+      getOutputs() {
         return this.get("prov_generated");
       },
 
-      /*
-       * Uses the app configuration to check if this model's metrics should be hidden in the display
-       *
-       * @return {boolean}
+      /**
+       * Uses the app configuration to check if this model's metrics should be
+       * hidden in the display
+       * @returns {boolean} True if the metrics should be hidden, false
+       * otherwise
        */
-      hideMetrics: function () {
-        //If the AppModel is configured with cases of where to hide metrics,
+      hideMetrics() {
+        // If the AppModel is configured with cases of where to hide metrics,
         if (
-          typeof MetacatUI.appModel.get("hideMetricsWhen") == "object" &&
+          typeof MetacatUI.appModel.get("hideMetricsWhen") === "object" &&
           MetacatUI.appModel.get("hideMetricsWhen")
         ) {
-          //Check for at least one match
+          // Check for at least one match
           return _.some(
             MetacatUI.appModel.get("hideMetricsWhen"),
-            function (value, modelProperty) {
-              //Get the value of this property from this model
-              var modelValue = this.get(modelProperty);
+            function hideWhen(value, modelProperty) {
+              // Get the value of this property from this model
+              const modelValue = this.get(modelProperty);
 
-              //Check for the presence of this model's value in the AppModel value
-              if (Array.isArray(value) && typeof modelValue == "string") {
+              // Check for the presence of this model's value in the AppModel
+              // value
+              if (Array.isArray(value) && typeof modelValue === "string") {
                 return _.contains(value, modelValue);
               }
-              //Check for the presence of the AppModel's value in this model's value
-              else if (typeof value == "string" && Array.isArray(modelValue)) {
+              // Check for the presence of the AppModel's value in this model's
+              // value
+              if (typeof value === "string" && Array.isArray(modelValue)) {
                 return _.contains(modelValue, value);
               }
-              //Check for overlap of two arrays
-              else if (Array.isArray(value) && Array.isArray(modelValue)) {
+              // Check for overlap of two arrays
+              if (Array.isArray(value) && Array.isArray(modelValue)) {
                 return _.intersection(value, modelValue).length > 0;
               }
-              //If the AppModel value is a function, execute it
-              else if (typeof value == "function") {
+              // If the AppModel value is a function, execute it
+              if (typeof value === "function") {
                 return value(modelValue);
               }
-              //Otherwise, just check for equality
-              else {
-                return value === modelValue;
-              }
+              // Otherwise, just check for equality
+
+              return value === modelValue;
             },
             this,
           );
-        } else {
-          return false;
         }
+        return false;
       },
 
       /**
        * Creates a URL for viewing more information about this metadata
-       * @return {string}
+       * @returns {string} The URL to view this metadata
        */
-      createViewURL: function () {
-        return this.getType() == "portal" || this.getType() == "collection"
-          ? MetacatUI.root +
-              "/" +
-              MetacatUI.appModel.get("portalTermPlural") +
-              "/" +
-              encodeURIComponent(
-                this.get("label") || this.get("seriesId") || this.get("id"),
-              )
-          : MetacatUI.root +
-              "/view/" +
-              encodeURIComponent(this.get("seriesId") || this.get("id"));
+      createViewURL() {
+        return this.getType() === "portal" || this.getType() === "collection"
+          ? `${MetacatUI.root}/${MetacatUI.appModel.get(
+              "portalTermPlural",
+            )}/${encodeURIComponent(
+              this.get("label") || this.get("seriesId") || this.get("id"),
+            )}`
+          : `${MetacatUI.root}/view/${encodeURIComponent(
+              this.get("seriesId") || this.get("id"),
+            )}`;
       },
 
-      parseResourceMapField: function (json) {
-        if (typeof json.resourceMap == "string") {
-          return json.resourceMap.trim();
-        } else if (Array.isArray(json.resourceMap)) {
-          let newResourceMapIds = [];
-          _.each(json.resourceMap, function (rMapId) {
-            if (typeof rMapId == "string") {
-              newResourceMapIds.push(rMapId.trim());
-            }
-          });
-          return newResourceMapIds;
-        }
-
-        //If nothing works so far, return an empty array
-        return [];
+      /**
+       * Parses the resourceMap field from the Solr response JSON.
+       * @param {object} json - The JSON object from the Solr response
+       * @returns {string|string[]} The resourceMap parsed. If it is a string,
+       * it returns the trimmed string. If it is an array, it returns an array
+       * of trimmed strings. If it is neither, it returns an empty array.
+       */
+      parseResourceMapField(json) {
+        return QueryService.parseResourceMapField(json);
       },
     },
   );
