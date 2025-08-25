@@ -8,6 +8,9 @@ define([
   const BASE_CLASS = "categorical-swatch";
   const CLASS_NAMES = {
     swatch: `${BASE_CLASS}__swatch`,
+    // visibilityToggle: "layer-item__visibility-toggle", //added by Shirly
+    visibilityToggle: "categorical-swatch layer-item", //added by Shirly
+    layerCategory: "layer-item", //added by Shirly
   };
 
   /**
@@ -34,9 +37,22 @@ define([
        */
       model: null,
 
+      /**
+       * A function that gives the events this view will listen to and the associated
+       * function to call.
+       * @returns {object} Returns an object with events in the format 'event selector':
+       * 'function'
+       */
+      events() {
+        return {
+          click: "onLegendItemClick", // fires when you click anywhere on each legend swatch element
+        };
+      },
+
       /** @inheritdoc */
       initialize(options) {
         this.model = options.model;
+        this.filterModel = options.filterModel;
       },
 
       /** @inheritdoc */
@@ -52,6 +68,50 @@ define([
           "background-color",
           this.model.getCss(),
         );
+
+        // Add layer-item class to the view's main element
+        // This class is added to reuse functionality of the class from layer list items
+        this.el.classList.add("layer-item");
+
+        // Rebind event after DOM content is replaced
+        this.delegateEvents();
+
+        // When filterActive is true, opacity = 0.25 (transparent).
+        // When filterActive is false, opacity = 1 (fully visible).
+        const opacity = this.model.get("filterActive") ? 1 : 0.25;
+        this.$(`.${CLASS_NAMES.swatch}`).css("opacity", opacity);
+        this.$(".categorical-swatch__value").css("opacity", opacity);
+      },
+
+      /**
+       * Handles click events on legend swatch items.
+       *
+       * This function toggles the selection state of a legend item's value in the filter model:
+       *  - If the clicked value is already selected, it removes it from the filter model.
+       *  - If the clicked value is not selected, it adds it to the filter model.
+       *  - Adjusts the opacity of the legend item's swatch and label to visually reflect its selection state.
+       */
+      onLegendItemClick() {
+        const selectedValue =
+          this.model.get("label") || this.model.get("value");
+        const oldFilterValues = this.filterModel.get("values") || [];
+        let newFilterValues;
+
+        if (oldFilterValues.includes(selectedValue)) {
+          newFilterValues = oldFilterValues.filter((v) => v !== selectedValue);
+          this.model.set("filterActive", false);
+        } else {
+          newFilterValues = [...oldFilterValues, selectedValue];
+          this.model.set("filterActive", true);
+        }
+
+        // Set a new array reference to trigger vector filter's change event
+        this.filterModel.set("values", newFilterValues.slice());
+
+        // Adjust opacity of legend item swatch
+        const opacity = this.model.get("filterActive") ? 1 : 0.25;
+        this.$(`.${CLASS_NAMES.swatch}`).css("opacity", opacity);
+        this.$(".categorical-swatch__value").css("opacity", opacity);
       },
     },
   );

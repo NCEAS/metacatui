@@ -61,6 +61,29 @@ define([
         this.model.get("allLayers")?.forEach((layer) => {
           this.stopListening(layer, "change:visible");
           this.listenTo(layer, "change:visible", this.updateLegend);
+
+          // Updates the legend when the Filter model is updated (through the Filter by Property feature).
+          this.filters = layer?.get("filters"); // Retrieve filters attribute
+          this.filterModel = this.filters?.at(0); // Get the first filter model
+          if (this.filterModel) {
+            this.stopListening(this.filterModel, "change:values");
+            this.listenTo(this.filterModel, "change:values", this.updateLegend);
+          }
+        });
+      },
+
+      /**
+       * Sets the active state of the filter based values (for categorical
+       * filters) in the Color Palette model.
+       */
+      updateColorPalette(layer, colorPaletteModel) {
+        const layerValues = layer.get("filters")?.at(0)?.get("values");
+        colorPaletteModel.get("colors").forEach((color) => {
+          if (layerValues.includes(color.get("value"))) {
+            color.set("filterActive", true);
+          } else {
+            color.set("filterActive", false);
+          }
         });
       },
 
@@ -84,7 +107,16 @@ define([
           ) {
             return;
           }
+
+          // Updates the legend when the Filter model is updated (through the Filter by Property feature).
+          // TO DO -- check next two lines, maybe redundant with above
+          this.filters = layer?.get("filters"); // Retrieve filters attribute
+          this.filterModel = this.filters?.at(0); // Get the first filter model
+
+          let colorPaletteModel = layer.get("colorPalette");
+          colorPaletteModel = this.updateColorPalette(layer, colorPaletteModel);
           const layerLegendView = new LayerLegendView({
+            filterModel: this.filterModel, // pass filter model to update filter values in CategoricalSwatchView
             model: layer.get("colorPalette"),
             layerName: layer.get("label"),
           });

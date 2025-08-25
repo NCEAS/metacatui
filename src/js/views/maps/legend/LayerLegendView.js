@@ -4,6 +4,7 @@ define([
   "backbone",
   "underscore",
   "models/maps/AssetColorPalette",
+  "models/maps/assets/MapAsset", //added by Shirly
   "views/maps/legend/CategoricalSwatchView",
   "views/maps/legend/ContinuousSwatchView",
   "text!templates/maps/legend/layer-legend.html",
@@ -11,6 +12,7 @@ define([
   Backbone,
   _,
   AssetColorPalette,
+  MapAsset, //added by Shirly
   CategoricalSwatchView,
   ContinuousSwatchView,
   Template,
@@ -53,6 +55,7 @@ define([
 
       /** @inheritdoc */
       initialize(options) {
+        this.filterModel = options.filterModel;
         this.model = options.model;
         this.layerName = options.layerName;
       },
@@ -89,10 +92,16 @@ define([
       renderCategoricalPalette() {
         this.renderTemplate();
         this.model.get("colors").forEach((color) => {
-          const swatch = new CategoricalSwatchView({ model: color });
-          swatch.render();
+          if (color.get("value")) {
+            // const swatch = new CategoricalSwatchView({ model: color });
+            const swatch = new CategoricalSwatchView({
+              model: color,
+              filterModel: this.filterModel,
+            });
+            swatch.render();
 
-          this.$(`.${CLASS_NAMES.palette}`).append(swatch.el);
+            this.$(`.${CLASS_NAMES.palette}`).append(swatch.el);
+          }
         });
       },
 
