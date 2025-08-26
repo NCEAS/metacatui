@@ -27,6 +27,27 @@ define([], () => {
 
       return emlModel && emlModel.type === "EML" ? emlModel : false;
     },
+
+    /**
+     * Serialize a DOM element to a string, removing the XML declaration and any
+     * namespace declarations. Namespaces are added to the elements because the
+     * codebase currently combines older ways of handling XML (using jQuery's
+     * parseHTML and document.createElement) with newer ways (using DOMParser).
+     * While we transition to using modern methods, this function can be used to
+     * clean up the serialized XML.
+     * @param {Element} dom - The DOM element to serialize
+     * @returns {string} The serialized XML string
+     * @since 0.0.0
+     */
+    serializeDOM(dom) {
+      const serializer = new XMLSerializer();
+      let str = serializer.serializeToString(dom);
+      // Remove the XML declaration if it exists
+      str = str.replace(/<\?xml.*?\?>/g, "");
+      // Remove any namespace declarations
+      str = str.replace(/xmlns(:\w+)?="[^"]*"/g, "");
+      return str;
+    },
   };
 
   return EMLUtilities;

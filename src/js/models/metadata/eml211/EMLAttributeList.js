@@ -236,8 +236,7 @@ define([
         if (!dom) return null;
 
         // Convert the DOM element to a string
-        const serializer = new XMLSerializer();
-        let xmlString = serializer.serializeToString(dom);
+        let xmlString = EMLUtilities.serializeDOM(dom);
 
         // Remove the XML declaration
         xmlString = xmlString.replace(/<\?xml.*?\?>/, "");
