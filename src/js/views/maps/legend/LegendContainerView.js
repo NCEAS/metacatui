@@ -92,6 +92,7 @@ define([
             layerValues = model.get("values");
           }
         }); // Find the values on filter model, whose property matches the colorPaletteProperty
+
         colorPaletteModel.get("colors").forEach((color) => {
           if (layerValues.includes(color.get("value"))) {
             color.set("filterActive", true);
@@ -124,17 +125,23 @@ define([
           }
 
           let colorPaletteModel = layer.get("colorPalette");
-          colorPaletteModel = this.updateColorPalette(layer, colorPaletteModel); // Update the color palette model
           const colorPaletteProperty = colorPaletteModel.get("property"); // Get the property name on which color palette is set
 
           let filters = layer?.get("filters"); // Retrieve filters attribute
-          let filterModel;
+          let filterModel = null;
 
           filters?.forEach((model) => {
             if (model.get("property") === colorPaletteProperty) {
               filterModel = model;
             }
           }); // Find the filter model that matches the colorPaletteProperty
+
+          if (filterModel) {
+            colorPaletteModel = this.updateColorPalette(
+              layer,
+              colorPaletteModel,
+            ); // Update the color palette model
+          }
 
           const layerLegendView = new LayerLegendView({
             filterModel: filterModel, // pass filter model to update filter values in CategoricalSwatchView
