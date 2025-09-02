@@ -8,9 +8,6 @@ define([
   const BASE_CLASS = "categorical-swatch";
   const CLASS_NAMES = {
     swatch: `${BASE_CLASS}__swatch`,
-    // visibilityToggle: "layer-item__visibility-toggle", //added by Shirly
-    visibilityToggle: "categorical-swatch layer-item", //added by Shirly
-    layerCategory: "layer-item", //added by Shirly
   };
 
   /**
@@ -53,6 +50,7 @@ define([
       initialize(options) {
         this.model = options.model;
         this.filterModel = options.filterModel;
+        this.layer = options.layerModel;
       },
 
       /** @inheritdoc */
@@ -104,10 +102,16 @@ define([
           newFilterValues = [...oldFilterValues, selectedValue];
           this.model.set("filterActive", true);
         }
-
         // Set a new array reference to trigger vector filter's change event
-        this.filterModel.set("values", newFilterValues.slice());
-
+        //this.filterModel.set("values", newFilterValues.slice());
+        if (!newFilterValues?.length) {
+          // When all values are cleared from the attribute values dropdown, the
+          // layer visibility is set to false, and the filter icon is turned off
+          // (i.e., transparent).
+          this.layer.set("visible", false);
+        } else {
+          this.filterModel.set("values", newFilterValues.slice());
+        }
         // Adjust opacity of legend item swatch
         const opacity = this.model.get("filterActive") ? 1 : 0.25;
         this.$(`.${CLASS_NAMES.swatch}`).css("opacity", opacity);

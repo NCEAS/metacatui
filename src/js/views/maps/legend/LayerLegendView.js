@@ -4,7 +4,6 @@ define([
   "backbone",
   "underscore",
   "models/maps/AssetColorPalette",
-  "models/maps/assets/MapAsset", //added by Shirly
   "views/maps/legend/CategoricalSwatchView",
   "views/maps/legend/ContinuousSwatchView",
   "text!templates/maps/legend/layer-legend.html",
@@ -12,7 +11,6 @@ define([
   Backbone,
   _,
   AssetColorPalette,
-  MapAsset, //added by Shirly
   CategoricalSwatchView,
   ContinuousSwatchView,
   Template,
@@ -20,6 +18,9 @@ define([
   const BASE_CLASS = "layer-legend";
   const CLASS_NAMES = {
     palette: `${BASE_CLASS}__palette`,
+    icon: "layer-item__icon",
+    filterIcon: "layer-item__filter-icon",
+    filterIconActive: "layer-item__filter-icon--active",
   };
 
   /**
@@ -58,6 +59,7 @@ define([
         this.filterModel = options.filterModel;
         this.model = options.model;
         this.layerName = options.layerName;
+        this.layerModel = options.layerModel;
       },
 
       /** @inheritdoc */
@@ -86,6 +88,23 @@ define([
             name,
           }),
         );
+
+        // Insert the filter icon to the right of the label element text. This
+        //  icon appears for layers that are "filterable" based on their
+        //  atrributes.
+        this.swatchEl = this.el.querySelector(".layer-legend__layer-name");
+        if (this.filterModel && this.swatchEl) {
+          const filterIconEl = document.createElement("span");
+          const classes = [
+            CLASS_NAMES.icon,
+            CLASS_NAMES.filterIcon,
+            CLASS_NAMES.filterIconActive,
+          ];
+          filterIconEl.classList.add(...classes);
+          filterIconEl.title = "Filter by property"; // add tooltip
+          filterIconEl.innerHTML = `<i class="icon icon-filter"></i>`;
+          this.swatchEl.prepend(filterIconEl);
+        }
       },
 
       /** Fills the palette div with categorical swatches. */
@@ -97,6 +116,7 @@ define([
             const swatch = new CategoricalSwatchView({
               model: color,
               filterModel: this.filterModel,
+              layerModel: this.layerModel,
             });
             swatch.render();
 

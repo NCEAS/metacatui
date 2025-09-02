@@ -2354,6 +2354,17 @@ other class: .ui-slider-range */
   color: var(--portal-col-neutral-6, var(--map-col-text__deprecate));
   font-size: 0.8rem;
   font-weight: 500;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .layer-item__filter-icon {
+    color: var(--portal-col-primary-6);
+    /* width: 2rem;
+    height: 2rem; */
+    font-size: 1rem;
+  }
 }
 
 .layer-legend__palette {
