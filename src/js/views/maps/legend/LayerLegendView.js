@@ -111,17 +111,17 @@ define([
       renderCategoricalPalette() {
         this.renderTemplate();
         this.model.get("colors").forEach((color) => {
-          if (color.get("value")) {
-            // const swatch = new CategoricalSwatchView({ model: color });
-            const swatch = new CategoricalSwatchView({
-              model: color,
-              filterModel: this.filterModel,
-              layerModel: this.layerModel,
-            });
-            swatch.render();
+          // if (color.get("value")) {
+          // const swatch = new CategoricalSwatchView({ model: color });
+          const swatch = new CategoricalSwatchView({
+            model: color,
+            filterModel: this.filterModel,
+            layerModel: this.layerModel,
+          });
+          swatch.render();
 
-            this.$(`.${CLASS_NAMES.palette}`).append(swatch.el);
-          }
+          this.$(`.${CLASS_NAMES.palette}`).append(swatch.el);
+          // }
         });
       },
 
