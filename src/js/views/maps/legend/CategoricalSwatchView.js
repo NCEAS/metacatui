@@ -67,18 +67,20 @@ define([
           this.model.getCss(),
         );
 
-        // Add layer-item class to the view's main element
-        // This class is added to reuse functionality of the class from layer list items
-        this.el.classList.add("layer-item");
+        if (this.filterModel) {
+          // Add layer-item class to the view's main element
+          // This class is added to reuse functionality of the class from layer list items
+          this.el.classList.add("layer-item");
 
-        // Rebind event after DOM content is replaced
-        this.delegateEvents();
+          // Rebind event after DOM content is replaced
+          this.delegateEvents();
 
-        // When filterActive is true, opacity = 0.25 (transparent).
-        // When filterActive is false, opacity = 1 (fully visible).
-        const opacity = this.model.get("filterActive") ? 1 : 0.25;
-        this.$(`.${CLASS_NAMES.swatch}`).css("opacity", opacity);
-        this.$(".categorical-swatch__value").css("opacity", opacity);
+          // When filterActive is true, opacity = 0.25 (transparent).
+          // When filterActive is false, opacity = 1 (fully visible).
+          const opacity = this.model.get("filterActive") ? 1 : 0.25;
+          this.$(`.${CLASS_NAMES.swatch}`).css("opacity", opacity);
+          this.$(".categorical-swatch__value").css("opacity", opacity);
+        }
       },
 
       /**
@@ -90,6 +92,8 @@ define([
        *  - Adjusts the opacity of the legend item's swatch and label to visually reflect its selection state.
        */
       onLegendItemClick() {
+        if (!this.filterModel) return;
+
         const selectedValue =
           this.model.get("label") || this.model.get("value");
         const oldFilterValues = this.filterModel.get("values") || [];
