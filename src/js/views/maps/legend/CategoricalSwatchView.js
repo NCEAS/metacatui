@@ -107,7 +107,6 @@ define([
           this.model.set("filterActive", true);
         }
         // Set a new array reference to trigger vector filter's change event
-        //this.filterModel.set("values", newFilterValues.slice());
         if (!newFilterValues?.length) {
           // When all values are cleared from the attribute values dropdown, the
           // layer visibility is set to false, and the filter icon is turned off

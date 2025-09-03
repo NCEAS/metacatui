@@ -82,7 +82,9 @@ define([
       /**
        * Sets the active state of the filter based values (for categorical
        * filters) in the Color Palette model.
-       * * @returns {AssetColorPalette} - Return the updated color palette model
+       * @returns {AssetColorPalette} - Return the updated color palette model
+       * @param layer - Layer item model
+       * @param colorPaletteModel - Asset color palette model
        */
       updateColorPalette(layer, colorPaletteModel) {
         const colorPaletteProperty = colorPaletteModel.get("property");
@@ -127,7 +129,7 @@ define([
           let colorPaletteModel = layer.get("colorPalette");
           const colorPaletteProperty = colorPaletteModel.get("property"); // Get the property name on which color palette is set
 
-          let filters = layer?.get("filters"); // Retrieve filters attribute
+          const filters = layer?.get("filters"); // Retrieve filters attribute
           let filterModel = null;
 
           filters?.forEach((model) => {
@@ -144,7 +146,7 @@ define([
           }
 
           const layerLegendView = new LayerLegendView({
-            filterModel: filterModel, // pass filter model to update filter values in CategoricalSwatchView
+            filterModel, // pass filter model to update filter values in CategoricalSwatchView
             model: colorPaletteModel,
             layerName: layer.get("label"),
             layerModel: layer, // pass layer model to update visibility in CategoricalSwatchView
