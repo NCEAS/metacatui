@@ -1428,6 +1428,7 @@ define([
               m.set("uploadStatus", "c");
               m.set("sysMetaXML", m.serializeSysMeta());
               m.set("oldPid", null);
+              m.set("isNew", false);
               m.fetch({ merge: true, systemMetadataOnly: true });
               m.trigger("successSaving", m);
             },
