@@ -80,6 +80,49 @@ define([
       },
 
       /**
+       * Get the ZoomPresetsView panel for a given category, if it exists.
+       * @param {ZoomPresetCategory} category The category of zoom presets to
+       * get the panel for.
+       * @returns {JQuery} The ZoomPresetsView panel element, or an empty jQuery
+       * object if it doesn't exist.
+       * @since 0.0.0
+       */
+      getZoomPresetsPanel(category) {
+        return this.$el.find(`#${category.cid}`);
+      },
+
+      /**
+       * Determine where to place a ZoomPresetsView for a given category, based
+       * on the order of categories in the collection.
+       * @param {ZoomPresetCategory} category The category of zoom presets to
+       * determine placement for.
+       * @returns {string|object} "prepend" to add to the beginning of the list,
+       * "append" to add to the end of the list, or { after: JQueryElement } to
+       * add after a specific existing element.
+       * @since 0.0.0
+       */
+      getZoomPresetsPlacement(category) {
+        const categories = this.viewfinderModel.get("zoomPresets");
+        const index = categories.indexOf(category);
+        if (index === 0) return "prepend";
+        const previousCategory = categories.at(index - 1);
+        const previousPanel = this.getZoomPresetsPanel(previousCategory);
+        if (previousPanel?.length) return { after: previousPanel };
+        return "append";
+      },
+
+      /**
+       * Remove the ZoomPresetsView panel for a given category, if it exists.
+       * @param {ZoomPresetCategory} category The category of zoom presets to
+       * remove the panel for.
+       * @since 0.0.0
+       */
+      removeZoomPresetsCategory(category) {
+        const panel = this.getZoomPresetsPanel(category);
+        if (panel?.length) panel.remove();
+      },
+
+      /**
        * Get the SearchView element.
        * @returns {JQuery} The SearchView element.
        */
@@ -99,15 +142,17 @@ define([
 
       /**
        * Render child ZoomPresetsView and append to DOM.
+       * @param {ZoomPresetCategory} category The category of zoom presets to
+       * render.
        * @since 2.29.0
        */
-      renderZoomPresetsView() {
-        const zoomPresets = this.viewfinderModel.get("zoomPresets");
+      renderZoomPresetsView(category) {
+        const zoomPresets = category.get("zoomPresets");
         if (!zoomPresets.length && zoomPresets.url) {
-          this.listenToOnce(zoomPresets, "sync", () => {
-            this.renderZoomPresetsView();
+          zoomPresets.fetch({
+            success: () => this.renderZoomPresetsView(category),
+            error: () => this.removeZoomPresetsCategory(category),
           });
-          zoomPresets.fetch();
           return;
         }
 
@@ -119,17 +164,31 @@ define([
         });
         const expansionPanel = new ExpansionPanelView({
           contentViewInstance: zoomPresetsListView,
-          icon: "icon-plane",
+          icon: category.get("icon"),
           panelsModel: this.panelsModel,
-          title: "Zoom to...",
-          startOpen: true,
+          title: category.get("label"),
+          startOpen: category.get("expanded") === true,
+          id: category.cid,
           variants: ["title"],
+          isSvgIcon: category.get("isSvgIcon") === true,
         });
         expansionPanel.render();
 
-        const container = this.getZoomPresets();
-        container.empty();
-        container.append(expansionPanel.el);
+        const existingPanel = this.getZoomPresetsPanel(category);
+        if (existingPanel?.length) {
+          existingPanel.replaceWith(expansionPanel.el);
+          return;
+        }
+        // otherwise, add it where it belongs according to collection order
+        const placement = this.getZoomPresetsPlacement(category);
+
+        if (placement === "prepend") {
+          this.getZoomPresets().prepend(expansionPanel.el);
+        } else if (placement === "append") {
+          this.getZoomPresets().append(expansionPanel.el);
+        } else if (placement.after) {
+          placement.after.after(expansionPanel.el);
+        }
       },
 
       /** Render child SearchView and append to DOM. */
@@ -151,7 +210,9 @@ define([
         this.el.innerHTML = _.template(Template)(this.templateVars);
 
         this.renderSearchView();
-        this.renderZoomPresetsView();
+
+        const categories = this.viewfinderModel.get("zoomPresets");
+        categories.each((category) => this.renderZoomPresetsView(category));
       },
     },
   );

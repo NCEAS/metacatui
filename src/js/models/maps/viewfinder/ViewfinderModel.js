@@ -29,13 +29,15 @@ define([
       /**
        * @name ViewfinderModel#defaults
        * @type {object}
-       * @property {string} error is the current error string to be displayed
-       * in the UI.
-       * @property {number} focusIndex is the index of the element
-       * in the list of predictions that shoudl be highlighted as focus.
+       * @property {string} error is the current error string to be displayed in
+       * the UI.
+       * @property {number} focusIndex is the index of the element in the list
+       * of predictions that shoudl be highlighted as focus.
        * @property {Prediction[]} predictions a list of Predictions models that
        * correspond to the user's search query.
        * @property {string} query the user's search query.
+       * @property {ZoomPresetCategories|null} zoomPresets is the collection of
+       * ZoomPresets available in the current map.
        * @since 2.28.0
        */
       defaults() {
@@ -44,7 +46,7 @@ define([
           focusIndex: -1,
           predictions: [],
           query: "",
-          zoomPresets: [],
+          zoomPresets: null,
         };
       },
 

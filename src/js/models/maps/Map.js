@@ -7,8 +7,16 @@ define([
   "collections/maps/MapAssets",
   "models/maps/MapInteraction",
   "collections/maps/AssetCategories",
-  "collections/maps/viewfinder/ZoomPresets",
-], ($, _, Backbone, MapAssets, Interactions, AssetCategories, ZoomPresets) => {
+  "collections/maps/viewfinder/ZoomPresetCategories",
+], (
+  $,
+  _,
+  Backbone,
+  MapAssets,
+  Interactions,
+  AssetCategories,
+  ZoomPresetCategories,
+) => {
   /**
    * Determine if array is empty.
    * @param {Array} a The array in question.
@@ -35,20 +43,19 @@ define([
        * components are rendered. A MapConfig object can be used when
        * initializing a Map model, e.g. `new Map(myMapConfig)`
        * @namespace {object} MapConfig
-       * @property {CameraPosition} [homePosition] - A set of
-       * coordinates that give the (3D) starting point of the Viewer. This
-       * position is also where the "home" button in the Cesium widget will
-       * navigate to when clicked.
-       * @property {MapAssetConfig[]} [layers] - A collection of
-       * imagery, tiles, vector data, etc. to display on the map. Layers wil be
-       * displayed in the order they appear. The array of the layer
-       * MapAssetConfigs are passed to a {@link MapAssets} collection. When
-       * layerCategories exist, this property will be ignored.
-       * @property {MapAssetConfig[]} [layerCategories] - A collection
-       * of layer categories to display in the tool bar. Categories wil be
-       * displayed in the order they appear. The array of the
-       * AssetCategoryConfig are passed to a {@link AssetCategories} collection.
-       * When layerCategories exist, the layers property will be ignored.
+       * @property {CameraPosition} [homePosition] - A set of coordinates that
+       * give the (3D) starting point of the Viewer. This position is also where
+       * the "home" button in the Cesium widget will navigate to when clicked.
+       * @property {MapAssetConfig[]} [layers] - A collection of imagery, tiles,
+       * vector data, etc. to display on the map. Layers wil be displayed in the
+       * order they appear. The array of the layer MapAssetConfigs are passed to
+       * a {@link MapAssets} collection. When layerCategories exist, this
+       * property will be ignored.
+       * @property {MapAssetConfig[]} [layerCategories] - A collection of layer
+       * categories to display in the tool bar. Categories wil be displayed in
+       * the order they appear. The array of the AssetCategoryConfig are passed
+       * to a {@link AssetCategories} collection. When layerCategories exist,
+       * the layers property will be ignored.
        * @property {MapConfig#MapAssetConfig[]} [terrains] - Configuration for
        * one or more digital elevation models (DEM) for the surface of the
        * earth. Note: Though multiple terrains are supported, currently only the
@@ -99,11 +106,14 @@ define([
        * feedback section. showFeedback must be true for this to be shown.
        * @property {string} [globeBaseColor=null] - The base color of the globe
        * when no layer is shown.
-       * @property {MapConfig#ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
-       * predefined list of locations with an enabled list of layer IDs to be
-       * shown the zoom presets UI. Requires `showViewfinder` to be true as this
-       * UI appears within the ViewfinderView. UI appears within the
-       * ViewfinderView.
+       * @property {MapConfig#ZoomPresets} [zoomPresets=null] - A predefined
+       * list of locations with an enabled list of layer IDs to be shown the
+       * zoom presets UI, or an object with a URL to fetch the presets from.
+       * Requires `showViewfinder` to be true as this UI appears within the
+       * ViewfinderView. UI appears within the ViewfinderView.
+       * @property {MapConfig#ZoomPresetCategory[]} [zoomPresetCategories=null]
+       * Instead of a simple list of zoom presets, an array that groups zoom
+       * presets into categories with a label and optional icon.
        * @example
        * {
        *   "homePosition": {
@@ -299,13 +309,32 @@ define([
             this.set("terrains", new MapAssets(config.terrains));
           }
 
-          this.set(
-            "zoomPresetsCollection",
-            new ZoomPresets(config.zoomPresets, {
-              parse: true,
-              mapModel: this,
-            }),
-          );
+          // Zoom presets can be conif'ed as a simple array of presets (or a URL
+          // to fetch), or as an array of grouped presets with label, icon, etc.
+          // Convert simple presets to a category, if present. Then can handle
+          // everything consistently as categories.
+          const simplePresets = config.zoomPresets;
+          let categoryPresets = config.zoomPresetCategories;
+
+          if (!isNonEmptyArray(categoryPresets) && simplePresets) {
+            const catetory = {
+              // Use default label & icon from original implementation.
+              label: "Zoom to...",
+              icon: "plane",
+              zoomPresets: simplePresets,
+            };
+            categoryPresets = [catetory];
+          }
+          if (categoryPresets?.length) {
+            const opts = { mapModel: this, parse: true };
+            this.set(
+              "zoomPresetsCollection",
+              new ZoomPresetCategories(categoryPresets, opts),
+            );
+          }
+          // Remove attrs automatically set by Backbone from the config
+          this.unset("zoomPresets");
+          this.unset("zoomPresetCategories");
         }
         this.setUpInteractions();
       },
