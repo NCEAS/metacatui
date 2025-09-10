@@ -123,6 +123,7 @@ define([
           panelsModel: this.panelsModel,
           title: "Zoom to...",
           startOpen: true,
+          variants: ["title"],
         });
         expansionPanel.render();
 
