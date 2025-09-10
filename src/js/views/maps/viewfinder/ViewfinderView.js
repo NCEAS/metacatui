@@ -212,7 +212,7 @@ define([
         this.renderSearchView();
 
         const categories = this.viewfinderModel.get("zoomPresets");
-        categories.each((category) => this.renderZoomPresetsView(category));
+        categories?.each((category) => this.renderZoomPresetsView(category));
       },
     },
   );

@@ -91,8 +91,8 @@ define([
       const model = new ViewfinderModel({ mapModel });
 
       // Reference equality.
-      expect(model.get("zoomPresets")).to.equal(
-        mapModel.get("zoomPresetsCollection").models,
+      expect(model.get("zoomPresets").at(0)).to.equal(
+        mapModel.get("zoomPresetsCollection").at(0),
       );
     });
 
