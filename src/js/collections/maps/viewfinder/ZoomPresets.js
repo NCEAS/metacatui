@@ -118,6 +118,7 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
           this.url = response.url;
           this.defaults = {
             layerIds: response.layerIds,
+            leoNetworkLayerId: "ls", //TODO set from map config
           };
         }
 
@@ -130,6 +131,8 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
         const map = options.mapModel || this.mapModel;
         const allLayers = map.get("allLayers");
 
+        let featureLayer = null;
+
         const zoomPresets = response.map((zoomPresetObj) => {
           const enabledLayerIds = [];
           const enabledLayerLabels = [];
@@ -139,6 +142,12 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
             ) {
               enabledLayerIds.push(layer.get("layerId"));
               enabledLayerLabels.push(layer.get("label"));
+            }
+            if (
+              zoomPresetObj.layerId &&
+              zoomPresetObj.layerId === layer.get("layerId")
+            ) {
+              featureLayer = layer;
             }
           });
 
@@ -154,6 +163,10 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
               },
               title: zoomPresetObj.title,
               image: zoomPresetObj.image,
+              featureId: zoomPresetObj.featureId,
+              isLEONetwork: zoomPresetObj.isLEONetwork === true,
+              layerId: zoomPresetObj.layerId || null,
+              layerModel: featureLayer,
             },
             { parse: true },
           );
@@ -187,13 +200,15 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
 
           return {
             description: `<b>${localizedDate}:</b> ${summary}`,
-            layerIds: this.defaults?.layerIds || [], // TOOD: or null?
+            layerIds: this.defaults?.layerIds || [],
             latitude,
             longitude,
             height: DEFAULT_HEIGHT,
             title,
             image: thumbnailUrl ? `${imgBaseUrl}${thumbnailUrl}` : null,
-            id,
+            featureId: id,
+            isLEONetwork: true,
+            layerId: this.defaults?.leoNetworkLayerId,
           };
         });
       },

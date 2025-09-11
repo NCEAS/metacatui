@@ -176,6 +176,18 @@ define([
         });
 
         this.mapModel.zoomTo(preset.get("geoPoint"));
+
+        // If this preset corresponds to a specific feature, select it on the
+        // map.
+        const layer = preset.get("layerModel");
+        const featId = preset.get("featureId");
+        if (layer && featId) {
+          const feature = layer.getFeatureById(featId);
+          if (feature) {
+            const featAttrs = layer.getFeatureAttributes(feature);
+            this.mapModel.selectFeatures([featAttrs]);
+          }
+        }
       },
 
       /**
