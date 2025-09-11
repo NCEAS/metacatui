@@ -179,7 +179,7 @@ define([
 
         // If this preset corresponds to a specific feature, select it on the
         // map.
-        const layer = preset.get("layerModel");
+        const layer = preset.get("featureLayer");
         const featId = preset.get("featureId");
         if (layer && featId) {
           const feature = layer.getFeatureById(featId);
@@ -187,6 +187,9 @@ define([
             const featAttrs = layer.getFeatureAttributes(feature);
             this.mapModel.selectFeatures([featAttrs]);
           }
+        } else {
+          // close any open feature panels
+          this.mapModel.selectFeatures([]);
         }
       },
 

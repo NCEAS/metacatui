@@ -309,10 +309,10 @@ define([
        * @since 0.0.0
        */
       getFeatureById: function (id) {
-        let feature = this.getEntityCollection().getById(id);
+        let feature = this.getEntityCollection()?.getById(id);
         if (!feature) {
           // get the propreties of all entities and see if any have an id
-          const entities = this.getEntities();
+          const entities = this.getEntities() || [];
           for (let x = 0; x < entities.length; x++) {
             const props = this.getPropertiesFromFeature(entities[x]);
             const keys = Object.keys(props || {});

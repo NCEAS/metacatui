@@ -321,6 +321,7 @@ define([
               // Use default label & icon from original implementation.
               label: "Zoom to...",
               icon: "plane",
+              expanded: true,
               zoomPresets: simplePresets,
             };
             categoryPresets = [catetory];

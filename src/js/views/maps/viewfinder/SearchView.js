@@ -182,7 +182,7 @@ define([
        */
       renderSearchInput() {
         this.searchInput = new SearchInputView({
-          placeholder: "Enter coordinates or areas of interest",
+          placeholder: "Search for places or coordinates",
           search: (text) => {
             this.viewfinderModel.search(text);
             return false;

@@ -54,7 +54,6 @@ define([
           icon: "icon-screenshot",
           expanded: false,
           zoomPresets: null,
-          url: null,
           mapModel: null,
         };
       },

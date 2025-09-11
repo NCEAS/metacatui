@@ -118,7 +118,7 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
           this.url = response.url;
           this.defaults = {
             layerIds: response.layerIds,
-            layerId: response.layerId,
+            featureLayerId: response.featureLayerId,
           };
         }
 
@@ -137,15 +137,14 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
           const enabledLayerIds = [];
           const enabledLayerLabels = [];
           allLayers.models.forEach((layer) => {
-            if (
-              zoomPresetObj.layerIds?.find((id) => id === layer.get("layerId"))
-            ) {
-              enabledLayerIds.push(layer.get("layerId"));
+            const layerId = layer.get("layerId");
+            if (zoomPresetObj.layerIds?.find((id) => id === layerId)) {
+              enabledLayerIds.push(layerId);
               enabledLayerLabels.push(layer.get("label"));
             }
             if (
-              zoomPresetObj.layerId &&
-              zoomPresetObj.layerId === layer.get("layerId")
+              zoomPresetObj.featureLayerId &&
+              zoomPresetObj.featureLayerId === layerId
             ) {
               featureLayer = layer;
             }
@@ -165,8 +164,8 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
               image: zoomPresetObj.image,
               featureId: zoomPresetObj.featureId,
               isLEONetwork: zoomPresetObj.isLEONetwork === true,
-              layerId: zoomPresetObj.layerId || null,
-              layerModel: featureLayer,
+              featureLayerId: zoomPresetObj.featureLayerId || null,
+              featureLayer: featureLayer,
             },
             { parse: true },
           );
@@ -208,7 +207,7 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
             image: thumbnailUrl ? `${imgBaseUrl}${thumbnailUrl}` : null,
             featureId: id,
             isLEONetwork: true,
-            layerId: this.defaults?.layerId,
+            featureLayerId: this.defaults?.featureLayerId,
           };
         });
       },
