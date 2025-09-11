@@ -6,10 +6,9 @@
   "dependencies": {
     "@actions/core": "^1.9.1",
     "cheerio": "^1.0.0-rc.11",
-    "express": "^4.21.1",
+    "express": "^4.21.2",
     "fomantic-ui": "^2.9.4",
-    "puppeteer": "^22.15.0",
-    "sinon": "^17.0.1"
+    "puppeteer": "^22.15.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.0.2",
@@ -26,7 +25,8 @@
     "eslint-plugin-requirejs": "^4.0.1",
     "jsdoc": "^4.0.0",
     "open-sans-fonts": "^1.6.2",
-    "prettier": "^3.2.5"
+    "prettier": "^3.2.5",
+    "sinon": "^18.0.1"
   },
   "scripts": {
     "dev": "node server.js",
