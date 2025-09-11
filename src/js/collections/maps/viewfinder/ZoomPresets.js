@@ -118,7 +118,7 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
           this.url = response.url;
           this.defaults = {
             layerIds: response.layerIds,
-            leoNetworkLayerId: "ls", //TODO set from map config
+            layerId: response.layerId,
           };
         }
 
@@ -208,7 +208,7 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
             image: thumbnailUrl ? `${imgBaseUrl}${thumbnailUrl}` : null,
             featureId: id,
             isLEONetwork: true,
-            layerId: this.defaults?.leoNetworkLayerId,
+            layerId: this.defaults?.layerId,
           };
         });
       },
