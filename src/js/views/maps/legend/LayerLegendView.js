@@ -18,9 +18,9 @@ define([
   const BASE_CLASS = "layer-legend";
   const CLASS_NAMES = {
     palette: `${BASE_CLASS}__palette`,
-    icon: "layer-item__icon",
-    filterIcon: "layer-item__filter-icon",
-    filterIconActive: "layer-item__filter-icon--active",
+    icon: "list-item__icon",
+    filterIcon: "list-item__filter-icon",
+    filterIconActive: "list-item__filter-icon--active",
     layerName: `${BASE_CLASS}__layer-name`,
   };
 

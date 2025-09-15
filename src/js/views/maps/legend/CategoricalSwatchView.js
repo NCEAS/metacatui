@@ -68,12 +68,12 @@ define([
         );
 
         if (this.filterModel) {
-          // Add layer-item class to the view's main element
+          // Add list-item class to the view's main element
           // This class is added to reuse functionality of the class from layer list items
-          this.el.classList.add("layer-item");
+          this.el.classList.add("list-item");
 
           // Rebind event after DOM content is replaced
-          this.delegateEvents();
+          // this.delegateEvents();
 
           // When filterActive is true, opacity = 0.25 (transparent).
           // When filterActive is false, opacity = 1 (fully visible).

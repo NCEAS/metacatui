@@ -34,7 +34,7 @@ define([
        * The HTML classes to use for this view's element
        * @type {string}
        */
-      className: "layer-item",
+      className: "list-item",
 
       /**
        * The model that this view uses
@@ -72,20 +72,20 @@ define([
        * @property {string} tooltip Class added to tooltips used in this view
        */
       classes: {
-        label: "layer-item__label",
-        icon: "layer-item__icon",
-        visibilityToggle: "layer-item__visibility-toggle",
-        selected: "layer-item--selected",
-        shown: "layer-item--shown",
-        labelText: "layer-item__label-text",
-        highlightedText: "layer-item__highlighted-text",
-        categorized: "layer-item__categorized",
-        settings: "layer-item__settings",
+        label: "list-item__label",
+        icon: "list-item__icon",
+        visibilityToggle: "list-item__visibility-toggle",
+        selected: "list-item--selected",
+        shown: "list-item--shown",
+        labelText: "list-item__label-text",
+        highlightedText: "list-item__highlighted-text",
+        categorized: "list-item__categorized",
+        settings: "list-item__settings",
         badge: "map-view__badge",
         tooltip: "map-tooltip",
         button: "map-view__button",
-        filterIcon: "layer-item__filter-icon",
-        filterIconActive: "layer-item__filter-icon--active",
+        filterIcon: "list-item__filter-icon",
+        filterIconActive: "list-item__filter-icon--active",
       },
 
       /**

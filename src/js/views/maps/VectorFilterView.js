@@ -49,7 +49,7 @@ define([
        */
       classes: {
         attributeSelectClass: "layer-details--open",
-        selected: "layer-item--selected",
+        selected: "list-item--selected",
         filterPropertyDropdownContainer:
           "filter-by-attribute__attributes-container",
         valuesDropdownContainer: "filter-by-attribute__values-container",
