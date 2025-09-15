@@ -2361,8 +2361,6 @@ other class: .ui-slider-range */
 
   .list-item__filter-icon {
     color: var(--portal-col-primary-6);
-    /* width: 2rem;
-    height: 2rem; */
     font-size: 1rem;
   }
 }
