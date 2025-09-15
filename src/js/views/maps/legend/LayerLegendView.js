@@ -21,6 +21,7 @@ define([
     icon: "layer-item__icon",
     filterIcon: "layer-item__filter-icon",
     filterIconActive: "layer-item__filter-icon--active",
+    layerName: `${BASE_CLASS}__layer-name`,
   };
 
   /**
@@ -92,7 +93,7 @@ define([
         // Insert the filter icon to the right of the label element text. This
         //  icon appears for layers that are "filterable" based on their
         //  atrributes.
-        this.swatchEl = this.el.querySelector(".layer-legend__layer-name");
+        this.swatchEl = this.el.querySelector(`.${CLASS_NAMES.layerName}`);
         if (this.filterModel && this.swatchEl) {
           const filterIconEl = document.createElement("span");
           const classes = [
