@@ -75,12 +75,20 @@ define([
           // Rebind event after DOM content is replaced
           // this.delegateEvents();
 
-          // When filterActive is true, opacity = 0.25 (transparent).
-          // When filterActive is false, opacity = 1 (fully visible).
-          const opacity = this.model.get("filterActive") ? 1 : 0.25;
-          this.$(`.${CLASS_NAMES.swatch}`).css("opacity", opacity);
-          this.$(".categorical-swatch__value").css("opacity", opacity);
+          // Update visual filter state
+          this.showFilterStatus();
         }
+      },
+
+      /**
+       * Apply the correct opacity styling based on filterActive state.
+       * - When filterActive is true, opacity = 0.25 (transparent).
+       * - When filterActive is false, opacity = 1 (fully visible).
+       */
+      showFilterStatus() {
+        const opacity = this.model.get("filterActive") ? 1 : 0.25;
+        this.$(`.${CLASS_NAMES.swatch}`).css("opacity", opacity);
+        this.$(".categorical-swatch__value").css("opacity", opacity);
       },
 
       /**
@@ -115,10 +123,8 @@ define([
         } else {
           this.filterModel.set("values", newFilterValues.slice());
         }
-        // Adjust opacity of legend item swatch
-        const opacity = this.model.get("filterActive") ? 1 : 0.25;
-        this.$(`.${CLASS_NAMES.swatch}`).css("opacity", opacity);
-        this.$(".categorical-swatch__value").css("opacity", opacity);
+        // Update visual filter state
+        this.showFilterStatus();
       },
     },
   );
