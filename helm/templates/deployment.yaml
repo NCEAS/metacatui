@@ -105,7 +105,7 @@ spec:
                 echo "Updating and doing hard reset to ${CTREV}";
                 git fetch --all --tags --prune
                 git checkout "${CTREV}"
-                git reset --hard
+                git reset --hard "origin/${CTREV}"
                 git clean -fd
                 ctfinish=$(date +%s);
                 echo "git fetch & reset of ${CTREPO} ${CTREV} took $((ctfinish - ctstart)) sec";
@@ -124,7 +124,7 @@ spec:
                 ## Pull the data
                 git fetch --all --tags --prune
                 git checkout "${CTREV}"
-                git reset --hard
+                git reset --hard "origin/${CTREV}"
                 git clean -fd
                 ## Set up read-only mode
                 git config receive.denyCurrentBranch true;
