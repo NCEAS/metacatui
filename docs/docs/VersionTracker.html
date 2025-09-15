@@ -402,7 +402,7 @@ otherwise the tracker will fetch it lazily when first requested.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line315">line 315</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line317">line 317</a>
     </li></ul></dd>
     
 
@@ -496,7 +496,7 @@ otherwise the tracker will fetch it lazily when first requested.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line284">line 284</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line286">line 286</a>
     </li></ul></dd>
     
 
@@ -537,6 +537,273 @@ otherwise the tracker will fetch it lazily when first requested.
     <dd>
         
 <span class="param-type">Promise.&lt;boolean></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getAdjacent">
+      <a href="#getAdjacent" class="link-icon">
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
+
+      </a>
+      <span class="type-signature"></span>getAdjacent<span class="signature">(pid, ignoreEnd<span class="signature-attributes">opt</span>, withMeta<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;{pid: string, prev: <a href="global.html#VersionResult">VersionResult</a>, next:VersionResult}>}</span>
+    </h4>
+    
+
+    
+
+
+
+<div class="description">
+    Get the version before and after the given PID, if available.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">the PID to get adjacent versions for</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ignoreEnd</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, ignore end flags and continue
+walking the chain even if it appears complete.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>withMeta</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, the SysMeta will be fetched if not
+already available in the cache.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.34.1</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line406">line 406</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    - resolves to an object with `pid`, `prev`, and `next` properties. `prev`
+  and `next` are either PIDs or objects with { pid, sysMeta } if
+  `withMeta` is true. If no previous or next version is found, the
+  respective property will be null.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;{pid: string, prev: <a href="global.html#VersionResult">VersionResult</a>, next:VersionResult}></span>
 
 
     </dd>
@@ -714,8 +981,8 @@ otherwise the tracker will fetch it lazily when first requested.
                 </td>
             
 
-            <td class="description last">If true, return arrays of { pid,
-sysMeta } instead of bare PIDs.</td>
+            <td class="description last">If true, return arrays of { pid, sysMeta }
+instead of bare PIDs.</td>
         </tr>
 
     
@@ -756,7 +1023,7 @@ sysMeta } instead of bare PIDs.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line215">line 215</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line217">line 217</a>
     </li></ul></dd>
     
 
@@ -1019,7 +1286,7 @@ already available in the cache.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line253">line 253</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line255">line 255</a>
     </li></ul></dd>
     
 
@@ -1062,6 +1329,272 @@ no versions are found, resolves to the original PID.
     <dd>
         
 <span class="param-type">Promise.&lt;(string|<a href="global.html#VersionResult">VersionResult</a>)></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getNext">
+      <a href="#getNext" class="link-icon">
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
+
+      </a>
+      <span class="type-signature"></span>getNext<span class="signature">(pid, ignoreEnd<span class="signature-attributes">opt</span>, withMeta<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="global.html#VersionResult">VersionResult</a>>}</span>
+    </h4>
+    
+
+    
+
+
+
+<div class="description">
+    Get the next most recent version after the given PID.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">the PID to get the next version for</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ignoreEnd</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, ignore end flags and continue
+walking the chain even if it appears complete.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>withMeta</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, the SysMeta will be fetched if not
+already available in the cache.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.34.1</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line371">line 371</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    - resolves to the next version PID or
+an object with { pid, sysMeta } if `withMeta` is true. If no next version
+is found, resolves to the original PID.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;<a href="global.html#VersionResult">VersionResult</a>></span>
 
 
     </dd>
@@ -1277,8 +1810,8 @@ chain end (e.g. to re-check whether there's a newer version)</td>
                 </td>
             
 
-            <td class="description last">If true, return arrays of { pid,
-sysMeta } instead of bare PIDs.</td>
+            <td class="description last">If true, return arrays of { pid, sysMeta }
+instead of bare PIDs.</td>
         </tr>
 
     
@@ -1319,7 +1852,7 @@ sysMeta } instead of bare PIDs.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line162">line 162</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line163">line 163</a>
     </li></ul></dd>
     
 
@@ -1362,6 +1895,272 @@ is true, resolves to an object with { pid, sysMeta }.
     <dd>
         
 <span class="param-type">Promise.&lt;(<a href="global.html#VersionResult">VersionResult</a>|string|null)></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getPrev">
+      <a href="#getPrev" class="link-icon">
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
+
+      </a>
+      <span class="type-signature"></span>getPrev<span class="signature">(pid, ignoreEnd<span class="signature-attributes">opt</span>, withMeta<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="global.html#VersionResult">VersionResult</a>>}</span>
+    </h4>
+    
+
+    
+
+
+
+<div class="description">
+    Get the previous version before the given PID.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">the PID to get the previous version for</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ignoreEnd</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, ignore end flags and continue
+walking the chain even if it appears complete.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>withMeta</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, the SysMeta will be fetched if not
+already available in the cache.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.34.1</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line387">line 387</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    - resolves to the previous version PID
+or an object with { pid, sysMeta } if `withMeta` is true. If no previous
+version is found, resolves to the original PID.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;<a href="global.html#VersionResult">VersionResult</a>></span>
 
 
     </dd>
@@ -1487,7 +2286,7 @@ and re-fetching the full chain from the SysMeta service.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line273">line 273</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line275">line 275</a>
     </li></ul></dd>
     
 
@@ -1652,7 +2451,7 @@ and re-fetching the full chain from the SysMeta service.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line298">line 298</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line300">line 300</a>
     </li></ul></dd>
     
 
@@ -1746,7 +2545,7 @@ and re-fetching the full chain from the SysMeta service.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line474">line 474</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line534">line 534</a>
     </li></ul></dd>
     
 
@@ -2087,7 +2886,8 @@ version chain to cache. Defaults to 200 hops.</td>
 
             
 
-            <td class="description last">Maximum number of in-memory cache records. Defaults to 5000.</td>
+            <td class="description last">Maximum number of in-memory
+cache records. Defaults to 5000.</td>
         </tr>
 
     
@@ -2135,7 +2935,7 @@ version chain to cache. Defaults to 200 hops.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line98">line 98</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line99">line 99</a>
     </li></ul></dd>
     
 
@@ -2392,7 +3192,7 @@ otherwise the tracker will fetch it lazily when first requested.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line315">line 315</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line317">line 317</a>
     </li></ul></dd>
     
 
@@ -2486,7 +3286,7 @@ otherwise the tracker will fetch it lazily when first requested.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line284">line 284</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line286">line 286</a>
     </li></ul></dd>
     
 
@@ -2527,6 +3327,273 @@ otherwise the tracker will fetch it lazily when first requested.
     <dd>
         
 <span class="param-type">Promise.&lt;boolean></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getAdjacent">
+      <a href="#getAdjacent" class="link-icon">
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
+
+      </a>
+      <span class="type-signature"></span>getAdjacent<span class="signature">(pid, ignoreEnd<span class="signature-attributes">opt</span>, withMeta<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;{pid: string, prev: <a href="global.html#VersionResult">VersionResult</a>, next:VersionResult}>}</span>
+    </h4>
+    
+
+    
+
+
+
+<div class="description">
+    Get the version before and after the given PID, if available.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">the PID to get adjacent versions for</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ignoreEnd</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, ignore end flags and continue
+walking the chain even if it appears complete.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>withMeta</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, the SysMeta will be fetched if not
+already available in the cache.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.34.1</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line406">line 406</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    - resolves to an object with `pid`, `prev`, and `next` properties. `prev`
+  and `next` are either PIDs or objects with { pid, sysMeta } if
+  `withMeta` is true. If no previous or next version is found, the
+  respective property will be null.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;{pid: string, prev: <a href="global.html#VersionResult">VersionResult</a>, next:VersionResult}></span>
 
 
     </dd>
@@ -2704,8 +3771,8 @@ otherwise the tracker will fetch it lazily when first requested.
                 </td>
             
 
-            <td class="description last">If true, return arrays of { pid,
-sysMeta } instead of bare PIDs.</td>
+            <td class="description last">If true, return arrays of { pid, sysMeta }
+instead of bare PIDs.</td>
         </tr>
 
     
@@ -2746,7 +3813,7 @@ sysMeta } instead of bare PIDs.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line215">line 215</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line217">line 217</a>
     </li></ul></dd>
     
 
@@ -3009,7 +4076,7 @@ already available in the cache.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line253">line 253</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line255">line 255</a>
     </li></ul></dd>
     
 
@@ -3052,6 +4119,272 @@ no versions are found, resolves to the original PID.
     <dd>
         
 <span class="param-type">Promise.&lt;(string|<a href="global.html#VersionResult">VersionResult</a>)></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getNext">
+      <a href="#getNext" class="link-icon">
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
+
+      </a>
+      <span class="type-signature"></span>getNext<span class="signature">(pid, ignoreEnd<span class="signature-attributes">opt</span>, withMeta<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="global.html#VersionResult">VersionResult</a>>}</span>
+    </h4>
+    
+
+    
+
+
+
+<div class="description">
+    Get the next most recent version after the given PID.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">the PID to get the next version for</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ignoreEnd</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, ignore end flags and continue
+walking the chain even if it appears complete.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>withMeta</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, the SysMeta will be fetched if not
+already available in the cache.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.34.1</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line371">line 371</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    - resolves to the next version PID or
+an object with { pid, sysMeta } if `withMeta` is true. If no next version
+is found, resolves to the original PID.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;<a href="global.html#VersionResult">VersionResult</a>></span>
 
 
     </dd>
@@ -3267,8 +4600,8 @@ chain end (e.g. to re-check whether there's a newer version)</td>
                 </td>
             
 
-            <td class="description last">If true, return arrays of { pid,
-sysMeta } instead of bare PIDs.</td>
+            <td class="description last">If true, return arrays of { pid, sysMeta }
+instead of bare PIDs.</td>
         </tr>
 
     
@@ -3309,7 +4642,7 @@ sysMeta } instead of bare PIDs.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line162">line 162</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line163">line 163</a>
     </li></ul></dd>
     
 
@@ -3352,6 +4685,272 @@ is true, resolves to an object with { pid, sysMeta }.
     <dd>
         
 <span class="param-type">Promise.&lt;(<a href="global.html#VersionResult">VersionResult</a>|string|null)></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getPrev">
+      <a href="#getPrev" class="link-icon">
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
+
+      </a>
+      <span class="type-signature"></span>getPrev<span class="signature">(pid, ignoreEnd<span class="signature-attributes">opt</span>, withMeta<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="global.html#VersionResult">VersionResult</a>>}</span>
+    </h4>
+    
+
+    
+
+
+
+<div class="description">
+    Get the previous version before the given PID.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">the PID to get the previous version for</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ignoreEnd</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, ignore end flags and continue
+walking the chain even if it appears complete.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>withMeta</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, the SysMeta will be fetched if not
+already available in the cache.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.34.1</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line387">line 387</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    - resolves to the previous version PID
+or an object with { pid, sysMeta } if `withMeta` is true. If no previous
+version is found, resolves to the original PID.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;<a href="global.html#VersionResult">VersionResult</a>></span>
 
 
     </dd>
@@ -3477,7 +5076,7 @@ and re-fetching the full chain from the SysMeta service.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line273">line 273</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line275">line 275</a>
     </li></ul></dd>
     
 
@@ -3642,7 +5241,7 @@ and re-fetching the full chain from the SysMeta service.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line298">line 298</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line300">line 300</a>
     </li></ul></dd>
     
 
@@ -3736,7 +5335,7 @@ and re-fetching the full chain from the SysMeta service.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line474">line 474</a>
+        <a href="src_js_models_sysmeta_VersionTracker.js.html">src/js/models/sysmeta/VersionTracker.js</a>, <a href="src_js_models_sysmeta_VersionTracker.js.html#line534">line 534</a>
     </li></ul></dd>
     
 
