@@ -839,15 +839,15 @@ represents 1 unit of the given distance measurement. */
   height: min-content;
 }
 
-.layer-item {
+.list-item {
   display: grid;
   grid-template-columns: min-content auto max-content;
   align-items: center;
   padding: 0 1.5rem;
   cursor: pointer;
 
-  .layer-item__visibility-toggle,
-  .layer-item__filter-icon {
+  .list-item__visibility-toggle,
+  .list-item__filter-icon {
     opacity: var(--map-no-brightness-or-opacity-tweaks, 0.85);
     padding: 0;
     margin: 0.25rem;
@@ -861,7 +861,7 @@ represents 1 unit of the given distance measurement. */
     color: var(--portal-col-neutral-4, currentColor);
     background-color: transparent;
 
-    .layer-item__icon {
+    .list-item__icon {
       fill: var(--portal-col-neutral-4, currentColor);
       svg > path {
         fill: var(--portal-col-neutral-4, currentColor);
@@ -877,17 +877,17 @@ represents 1 unit of the given distance measurement. */
     background-color: var(--portal-col-neutral-1, #323745);
     transition: background-color 0.3s ease-in-out;
 
-    &.layer-item--shown {
+    &.list-item--shown {
       background-color: var(--portal-col-primary-1, #15324e);
     }
 
-    .layer-item__settings {
+    .list-item__settings {
       /* Show button when layer is hovered. */
       display: flex;
       border: 1px solid var(--portal-col-neutral-4);
 
       /* Use the same style on button hover and when selected. */
-      &.layer-item--selected,
+      &.list-item--selected,
       &:hover {
         background-color: var(
           --portal-col-primary-2,
@@ -897,11 +897,11 @@ represents 1 unit of the given distance measurement. */
     }
   }
 
-  &.layer-item--shown {
-    .layer-item__visibility-toggle {
+  &.list-item--shown {
+    .list-item__visibility-toggle {
       color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
 
-      .layer-item__icon {
+      .list-item__icon {
         fill: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
         svg > path {
           fill: var(
@@ -912,24 +912,24 @@ represents 1 unit of the given distance measurement. */
       }
     }
 
-    .layer-item__settings {
+    .list-item__settings {
       /* Show button when layer is shown. */
       display: flex;
       border: 1px solid var(--portal-col-primary-2);
     }
   }
 
-  .layer-item__filter-icon--active {
+  .list-item__filter-icon--active {
     color: var(--portal-col-primary-6);
   }
 
-  .layer-item__settings {
+  .list-item__settings {
     /* By default, don't show button. */
     display: none;
     align-items: center;
     border-radius: var(--map-border-radius-small);
 
-    .layer-item__settings-toggle {
+    .list-item__settings-toggle {
       font-size: 0.85rem;
       width: 1rem;
       height: 1rem;
@@ -941,20 +941,20 @@ represents 1 unit of the given distance measurement. */
     }
 
     /* Use the same style on button hover and when selected. */
-    &.layer-item--selected,
+    &.list-item--selected,
     &:hover {
       display: flex;
       background-color: var(--portal-col-primary-1, #15324e);
       border: 1px solid var(--portal-col-primary-1, #15324e);
 
-      .layer-item__settings-toggle {
+      .list-item__settings-toggle {
         color: var(--portal-col-primary-6);
       }
     }
   }
 }
 
-.layer-item__label {
+.list-item__label {
   font-size: 0.825rem;
   font-weight: 400;
   margin: 0 0.5rem;
@@ -968,16 +968,16 @@ represents 1 unit of the given distance measurement. */
   gap: 4px;
 }
 
-.layer-item__highlighted-text {
+.list-item__highlighted-text {
   background-color: var(--portal-col-highlight-2, rgba(30, 127, 196, 0.5));
 }
 
-.layer-item__icon > svg {
+.list-item__icon > svg {
   height: 100%;
   width: auto;
 }
 
-.layer-item__visibility-toggle:hover {
+.list-item__visibility-toggle:hover {
   opacity: var(--map-no-brightness-or-opacity-tweaks, 0.5);
 }
 
@@ -2354,6 +2354,15 @@ other class: .ui-slider-range */
   color: var(--portal-col-neutral-6, var(--map-col-text__deprecate));
   font-size: 0.8rem;
   font-weight: 500;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .list-item__filter-icon {
+    color: var(--portal-col-primary-6);
+    font-size: 1rem;
+  }
 }
 
 .layer-legend__palette {
