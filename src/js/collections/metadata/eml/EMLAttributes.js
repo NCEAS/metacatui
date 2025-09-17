@@ -5,7 +5,8 @@ define([
   "backbone",
   "models/metadata/eml211/EMLAttribute",
   "models/DataONEObject",
-], ($, Backbone, EMLAttribute, DataONEObject) => {
+  "common/EMLUtilities",
+], ($, Backbone, EMLAttribute, DataONEObject, EMLUtilities) => {
   /**
    * @class EMLAttributes
    * @classdesc A collection of EMLAttributes.
@@ -204,8 +205,7 @@ define([
        */
       serialize() {
         const newDOM = this.updateDOM();
-        const serializer = new XMLSerializer();
-        return serializer.serializeToString(newDOM);
+        return EMLUtilities.serializeDOM(newDOM);
       },
     },
   );
