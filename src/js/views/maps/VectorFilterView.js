@@ -49,7 +49,7 @@ define([
        */
       classes: {
         attributeSelectClass: "layer-details--open",
-        selected: "layer-item--selected",
+        selected: "list-item--selected",
         filterPropertyDropdownContainer:
           "filter-by-attribute__attributes-container",
         valuesDropdownContainer: "filter-by-attribute__values-container",
@@ -66,6 +66,11 @@ define([
         }
         this.filters = this.model?.get("filters"); // Retrieve filters attribute from the Map model
         this.filterModel = this.filters?.at(0); // Get the first filter model
+
+        // Updates filter value dropdown when filters are updated in the legend view
+        const filterEvents = "change:values";
+        this.stopListening(this.filterModel, filterEvents);
+        this.listenTo(this.filterModel, filterEvents, this.renderValueSelect);
       },
 
       /**

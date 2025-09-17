@@ -3,6 +3,7 @@ define([
   "underscore",
   "backbone",
   "uuid",
+  "md5",
   "collections/Units",
   "collections/metadata/eml/EMLEntities",
   "models/metadata/ScienceMetadata",
@@ -23,6 +24,7 @@ define([
   _,
   Backbone,
   uuid,
+  md5,
   Units,
   EMLEntities,
   ScienceMetadata,
@@ -50,6 +52,10 @@ define([
     /** @lends EML211.prototype */ {
       type: "EML",
 
+      /**
+       * Get the default attributes for the EML211 model.
+       * @returns {object} The default attributes for the EML211 model.
+       */
       defaults() {
         return _.extend(ScienceMetadata.prototype.defaults(), {
           id: `urn:uuid:${uuid.v4()}`,
@@ -126,8 +132,13 @@ define([
         });
       },
 
+      /**
+       * Get the units for the EML211 model.
+       * @returns {Units} The units for the EML211 model.
+       */
       units: new Units(),
 
+      /** @inheritdoc */
       initialize(attributes) {
         // Call initialize for the super class
         ScienceMetadata.prototype.initialize.call(this, attributes);
@@ -136,7 +147,7 @@ define([
         // this.createXML());
         this.parse(this.createXML());
 
-        this.on("sync", function () {
+        this.on("sync", () => {
           this.set("synced", true);
         });
 
@@ -158,6 +169,7 @@ define([
         if (!this.units.length) this.createUnits();
       },
 
+      /** @inheritdoc */
       url(options) {
         let identifier;
         if (options && options.update) {
@@ -188,14 +200,16 @@ define([
         annotations.updateCanonicalDataset(uri);
       },
 
-      /*
+      /**
        * Maps the lower-case EML node names (valid in HTML DOM) to the
        * camel-cased EML node names (valid in EML). Used during parse() and
        * serialize()
+       * @returns {object} A mapping of lower-case EML node names to camel-cased
+       * EML node names.
        */
       nodeNameMap() {
         return _.extend(
-          this.constructor.__super__.nodeNameMap(),
+          ScienceMetadata.prototype.nodeNameMap.call(this),
           EMLDistribution.prototype.nodeNameMap(),
           EMLGeoCoverage.prototype.nodeNameMap(),
           EMLKeywordSet.prototype.nodeNameMap(),
@@ -490,13 +504,12 @@ define([
       /**
        * Fetch the EML from the MN object service
        * @param {object} [options] - A set of options for this fetch()
-       * @property {boolean} [options.systemMetadataOnly=false] - If true, only
+       * @param {boolean} [options.systemMetadataOnly] - If true, only
        * the system metadata will be fetched. If false, the system metadata AND
        * EML document will be fetched.
+       * @returns {xhr} The jqXHR object created by the fetch request
        */
-      fetch(options) {
-        if (!options) var options = {};
-
+      fetch(options = {}) {
         // Add the authorization header and other AJAX settings
         _.extend(options, MetacatUI.appUserModel.createAjaxSettings(), {
           dataType: "text",
@@ -507,22 +520,22 @@ define([
         this.fetchSystemMetadata(options);
 
         // If we are retrieving system metadata only, then exit now
-        if (options.systemMetadataOnly) return;
+        if (options.systemMetadataOnly) return null;
 
         // Call Backbone.Model.fetch to retrieve the info
         return Backbone.Model.prototype.fetch.call(this, options);
       },
 
-      /*
-         Deserialize an EML 2.1.1 XML document
-        */
-      parse(response) {
+      /** @inheritdoc */
+      parse(rsp) {
         // Save a reference to this model for use in setting the parentModel
         // inside anonymous functions
         const model = this;
+        let response = rsp;
+        let emlElement = $();
 
         // If the response is XML
-        if (typeof response === "string" && response.indexOf("<") == 0) {
+        if (typeof response === "string" && response.indexOf("<") === 0) {
           // Look for a system metadata tag and call DataONEObject parse instead
           if (response.indexOf("systemMetadata>") > -1)
             return DataONEObject.prototype.parse.call(this, response);
@@ -530,7 +543,7 @@ define([
           response = this.cleanUpXML(response);
           response = this.dereference(response);
           this.set("objectXML", response);
-          var emlElement = $($.parseHTML(response)).filter("eml\\:eml");
+          emlElement = $($.parseHTML(response)).filter("eml\\:eml");
         }
 
         let datasetEl;
@@ -552,18 +565,19 @@ define([
         const nodes = datasetEl.children();
         const modelJSON = {};
 
-        for (let i = 0; i < nodes.length; i++) {
+        for (let i = 0; i < nodes.length; i += 1) {
           const thisNode = nodes[i];
           const convertedName =
             this.nodeNameMap()[thisNode.localName] || thisNode.localName;
 
           // EML Party modules are stored in EMLParty models
           if (_.contains(emlParties, thisNode.localName)) {
-            if (thisNode.localName == "metadataprovider")
-              var attributeName = "metadataProvider";
-            else if (thisNode.localName == "associatedparty")
-              var attributeName = "associatedParty";
-            else var attributeName = thisNode.localName;
+            let attributeName;
+            if (thisNode.localName === "metadataprovider")
+              attributeName = "metadataProvider";
+            else if (thisNode.localName === "associatedparty")
+              attributeName = "associatedParty";
+            else attributeName = thisNode.localName;
 
             if (typeof modelJSON[attributeName] === "undefined")
               modelJSON[attributeName] = [];
@@ -592,7 +606,7 @@ define([
             );
           }
           // The EML Project is stored in the EMLProject model
-          else if (thisNode.localName == "project") {
+          else if (thisNode.localName === "project") {
             modelJSON.project = new EMLProject({
               objectDOM: thisNode,
               parentModel: model,
@@ -600,7 +614,7 @@ define([
           }
           // EML Temporal, Taxonomic, and Geographic Coverage modules are stored
           // in their own models
-          else if (thisNode.localName == "coverage") {
+          else if (thisNode.localName === "coverage") {
             const temporal = $(thisNode).children("temporalcoverage");
             const geo = $(thisNode).children("geographiccoverage");
             const taxon = $(thisNode).children("taxonomiccoverage");
@@ -663,7 +677,7 @@ define([
             });
           }
           // Parse keywords
-          else if (thisNode.localName == "keywordset") {
+          else if (thisNode.localName === "keywordset") {
             // Start an array of keyword sets
             if (typeof modelJSON.keywordSets === "undefined")
               modelJSON.keywordSets = [];
@@ -676,10 +690,10 @@ define([
             );
           }
           // Parse intellectual rights
-          else if (thisNode.localName == "intellectualrights") {
+          else if (thisNode.localName === "intellectualrights") {
             let value = "";
 
-            if ($(thisNode).children("para").length == 1)
+            if ($(thisNode).children("para").length === 1)
               value = $(thisNode).children("para").first().text().trim();
             else $(thisNode).text().trim();
 
@@ -701,17 +715,15 @@ define([
             );
 
             modelJSON.annotations.add(annotationModel);
-          } else {
+          } else if (Array.isArray(this.get(convertedName))) {
             // Is this a multi-valued field in EML?
-            if (Array.isArray(this.get(convertedName))) {
-              // If we already have a value for this field, then add this value
-              // to the array
-              if (Array.isArray(modelJSON[convertedName]))
-                modelJSON[convertedName].push(this.toJson(thisNode));
-              // If it's the first value for this field, then create a new array
-              else modelJSON[convertedName] = [this.toJson(thisNode)];
-            } else modelJSON[convertedName] = this.toJson(thisNode);
-          }
+            // If we already have a value for this field, then add this value
+            // to the array
+            if (Array.isArray(modelJSON[convertedName]))
+              modelJSON[convertedName].push(this.toJson(thisNode));
+            // If it's the first value for this field, then create a new array
+            else modelJSON[convertedName] = [this.toJson(thisNode)];
+          } else modelJSON[convertedName] = this.toJson(thisNode);
         }
 
         // Find & parse all of the entities in the dataset
@@ -733,9 +745,10 @@ define([
         return modelJSON;
       },
 
-      /*
-       * Retireves the model attributes and serializes into EML XML, to produce
+      /**
+       * Retrieves the model attributes and serializes into EML XML, to produce
        * the new or modified EML document. Returns the EML XML as a string.
+       * @returns {string} The EML XML as a string.
        */
       serialize() {
         // Get the EML document
@@ -769,13 +782,11 @@ define([
         // Ensure xsi:schemaLocation has a value for the current format
         eml = this.setSchemaLocation(eml);
 
-        const nodeNameMap = this.nodeNameMap();
-
         // Serialize the basic text fields
         const basicText = ["alternateIdentifier", "title", "shortName"];
         _.each(
           basicText,
-          function (fieldName) {
+          (fieldName) => {
             let basicTextValues = this.get(fieldName);
 
             if (!Array.isArray(basicTextValues))
@@ -828,7 +839,7 @@ define([
 
         _.each(
           textFields,
-          function (field) {
+          (field) => {
             const fieldName = this.nodeNameMap()[field] || field;
 
             // Get the EMLText model
@@ -843,7 +854,7 @@ define([
             // Update the DOMs for each model
             _.each(
               emlTextModels,
-              function (thisTextModel, i) {
+              (thisTextModel, i) => {
                 // Don't serialize falsey values
                 if (!thisTextModel) return;
 
@@ -852,7 +863,9 @@ define([
                 // Get the existing node or create a new one
                 if (nodes.length < i + 1) {
                   node = document.createElement(fieldName);
-                  this.getEMLPosition(eml, fieldName).after(node);
+                  const position = this.getEMLPosition(eml, fieldName);
+                  if (position) position.after(node);
+                  else datasetNode.append(node);
                 } else {
                   node = nodes[i];
                 }
@@ -868,15 +881,16 @@ define([
           this,
         );
 
+        let coverageNode;
         // Create a <coverage> XML node if there isn't one
-        if (datasetNode.children("coverage").length === 0) {
-          var coverageNode = $(document.createElement("coverage"));
+        if (!datasetNode.children("coverage").length) {
+          coverageNode = $(document.createElement("coverage"));
           const coveragePosition = this.getEMLPosition(eml, "coverage");
 
           if (coveragePosition) coveragePosition.after(coverageNode);
           else datasetNode.append(coverageNode);
         } else {
-          var coverageNode = datasetNode.children("coverage").first();
+          coverageNode = datasetNode.children("coverage").first();
         }
 
         // Serialize the geographic coverage
@@ -970,7 +984,7 @@ define([
           // taxonomicCoverage node
           else if (
             !sortedTaxonModels.notEmpty ||
-            sortedTaxonModels.notEmpty.length == 0
+            !sortedTaxonModels.notEmpty.length
           ) {
             existingTaxonCov.remove();
           }
@@ -1006,7 +1020,7 @@ define([
         }
 
         // Remove the <coverage> node if it's empty
-        if (coverageNode.children().length == 0) {
+        if (!coverageNode.children().length) {
           coverageNode.remove();
         }
 
@@ -1014,7 +1028,7 @@ define([
         datasetNode.children("annotation").remove();
 
         if (this.get("annotations")) {
-          this.get("annotations").each(function (annotation) {
+          this.get("annotations").each((annotation) => {
             if (annotation.isEmpty()) {
               return;
             }
@@ -1108,7 +1122,7 @@ define([
           // Get the updated DOMs
           const distributionDOMs = distributions.map((d) => d.updateDOM());
           // Insert the updated DOMs in their correct positions
-          distributionDOMs.forEach((dom, i) => {
+          distributionDOMs.forEach((dom, _i) => {
             const insertAfter = this.getEMLPosition(eml, "distribution");
             if (insertAfter) {
               insertAfter.after(dom);
@@ -1167,75 +1181,65 @@ define([
 
         // Camel-case the XML
         let emlString = "";
-        _.each(
-          html,
-          function (rootEMLNode) {
-            emlString += this.formatXML(rootEMLNode);
-          },
-          this,
-        );
+        _.each(html, (rootEMLNode) => {
+          emlString += this.formatXML(rootEMLNode);
+        });
 
         return emlString;
       },
 
-      /*
+      /**
        * Given an EML DOM and party type, this function updated and/or adds the
        * EMLParties to the EML
+       * @param {jQuery} eml - The EML DOM to update.
+       * @param {string} type - The type of party to update (e.g. "creator",
+       * "contact").
        */
       serializeParties(eml, type) {
         // Remove the nodes from the EML for this party type
         $(eml).children("dataset").children(type.toLowerCase()).remove();
 
         // Serialize each party of this type
-        _.each(
-          this.get(type),
-          function (party, i) {
-            // Get the last node of this type to insert after
-            let insertAfter = $(eml)
-              .children("dataset")
-              .children(type.toLowerCase())
-              .last();
+        _.each(this.get(type), (party, _i) => {
+          // Get the last node of this type to insert after
+          let insertAfter = $(eml)
+            .children("dataset")
+            .children(type.toLowerCase())
+            .last();
 
-            // If there isn't a node found, find the EML position to insert
-            // after
-            if (!insertAfter.length) {
-              insertAfter = this.getEMLPosition(eml, type);
-            }
+          // If there isn't a node found, find the EML position to insert
+          // after
+          if (!insertAfter.length) {
+            insertAfter = this.getEMLPosition(eml, type);
+          }
 
-            // Update the DOM of the EMLParty
-            const emlPartyDOM = party.updateDOM();
+          // Update the DOM of the EMLParty
+          const emlPartyDOM = party.updateDOM();
 
-            // Make sure we don't insert empty EMLParty nodes into the EML
-            if ($(emlPartyDOM).children().length) {
-              // Insert the party DOM at the insert position
-              if (insertAfter && insertAfter.length)
-                insertAfter.after(emlPartyDOM);
-              // If an insert position still hasn't been found, then just append
-              // to the dataset node
-              else $(eml).find("dataset").append(emlPartyDOM);
-            }
-          },
-          this,
-        );
+          // Make sure we don't insert empty EMLParty nodes into the EML
+          if ($(emlPartyDOM).children().length) {
+            // Insert the party DOM at the insert position
+            if (insertAfter && insertAfter.length)
+              insertAfter.after(emlPartyDOM);
+            // If an insert position still hasn't been found, then just append
+            // to the dataset node
+            else $(eml).find("dataset").append(emlPartyDOM);
+          }
+        });
 
         // Create a certain parties from the current app user if none is given
-        if (type == "contact" && !this.get("contact").length) {
+        if (type === "contact" && !this.get("contact").length) {
           // Get the creators
           const creators = this.get("creator");
           const contacts = [];
 
-          _.each(
-            creators,
-            function (creator) {
-              // Clone the creator model and add it to the contacts array
-              const newModel = new EMLParty({ parentModel: this });
-              newModel.set(creator.toJSON());
-              newModel.set("type", type);
-
-              contacts.push(newModel);
-            },
-            this,
-          );
+          _.each(creators, (creator) => {
+            // Clone the creator model and add it to the contacts array
+            const newModel = new EMLParty({ parentModel: this });
+            newModel.set(creator.toJSON());
+            newModel.set("type", type);
+            contacts.push(newModel);
+          });
 
           this.set(type, contacts);
 
@@ -1244,11 +1248,15 @@ define([
         }
       },
 
+      /**
+       * Serializes the keywords for the EML document.
+       * @param {jQuery} eml - The EML DOM to update.
+       */
       serializeKeywords(eml) {
         // Remove all existing keywordSets before appending
         $(eml).find("dataset").find("keywordset").remove();
 
-        if (this.get("keywordSets").length == 0) return;
+        if (!this.get("keywordSets").length) return;
 
         // Create the new keywordSets nodes
         const nodes = _.map(this.get("keywordSets"), (kwd) => kwd.updateDOM());
@@ -1256,24 +1264,32 @@ define([
         this.getEMLPosition(eml, "keywordset").after(nodes);
       },
 
-      /*
-       * Remoes nodes from the EML that do not have an accompanying model (Were
+      /**
+       * Removes nodes from the EML that do not have an accompanying model (Were
        * probably removed from the EML by the user during editing)
+       * @param {jQuery} nodes - The EML nodes to check.
+       * @param {Array} models - The array of models to compare against.
        */
       removeExtraNodes(nodes, models) {
         // Remove the extra nodes
         const extraNodes = nodes.length - models.length;
         if (extraNodes > 0) {
-          for (let i = models.length; i < nodes.length; i++) {
+          for (let i = models.length; i < nodes.length; i += 1) {
             $(nodes[i]).remove();
           }
         }
       },
 
-      /*
+      /**
        * Saves the EML document to the server using the DataONE API
+       * @param {object} attributes Model attributes to save.
+       * @param {object} options Options for the save operation.
+       * @returns {boolean|null|xhr} False if the model is invalid, null if the
+       * save operation is in progress, or the XHR object if the save operation
+       * is successful.
        */
       save(attributes, options) {
+        const model = this;
         // Validate before we try anything else
         if (!this.isValid()) {
           this.trigger("invalid");
@@ -1290,9 +1306,10 @@ define([
         // Reset the draftSaved attribute
         this.set("draftSaved", false);
 
+        let party;
         // Create the creator from the current user if none is provided
         if (!this.get("creator").length) {
-          var party = new EMLParty({ parentModel: this, type: "creator" });
+          party = new EMLParty({ parentModel: this, type: "creator" });
 
           party.createFromUser();
 
@@ -1301,7 +1318,7 @@ define([
 
         // Create the contact from the current user if none is provided
         if (!this.get("contact").length) {
-          var party = new EMLParty({ parentModel: this, type: "contact" });
+          party = new EMLParty({ parentModel: this, type: "contact" });
 
           party.createFromUser();
 
@@ -1311,8 +1328,6 @@ define([
         // If this is an existing object and there is no system metadata,
         // retrieve it
         if (!this.isNew() && !this.get("sysMetaXML")) {
-          var model = this;
-
           // When the system metadata is fetched, try saving again
           const fetchOptions = {
             success(response) {
@@ -1324,7 +1339,7 @@ define([
           // Fetch the system metadata now
           this.fetchSystemMetadata(fetchOptions);
 
-          return;
+          return null;
         }
 
         // Create a FormData object to send data with our XHR
@@ -1378,7 +1393,6 @@ define([
           return false;
         }
 
-        var model = this;
         const saveOptions = options || {};
         _.extend(
           saveOptions,
@@ -1409,34 +1423,35 @@ define([
 
               return xhr;
             },
-            success(model, response, xhr) {
-              model.set("numSaveAttempts", 0);
-              model.set("uploadStatus", "c");
-              model.set("sysMetaXML", model.serializeSysMeta());
-              model.set("oldPid", null);
-              model.fetch({ merge: true, systemMetadataOnly: true });
-              model.trigger("successSaving", model);
+            success(m, _response, _xhr) {
+              m.set("numSaveAttempts", 0);
+              m.set("uploadStatus", "c");
+              m.set("sysMetaXML", m.serializeSysMeta());
+              m.set("oldPid", null);
+              m.set("isNew", false);
+              m.fetch({ merge: true, systemMetadataOnly: true });
+              m.trigger("successSaving", m);
             },
-            error(model, response, xhr) {
-              model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
-              const numSaveAttempts = model.get("numSaveAttempts");
+            error(m, response, _xhr) {
+              m.set("numSaveAttempts", m.get("numSaveAttempts") + 1);
+              const numSaveAttempts = m.get("numSaveAttempts");
 
               // Reset the identifier changes
-              model.resetID();
+              m.resetID();
 
               if (
                 numSaveAttempts < 3 &&
-                (response.status == 408 || response.status == 0)
+                (response.status === 408 || response.status === 0)
               ) {
                 // Try saving again in 10, 40, and 90 seconds
                 setTimeout(
                   () => {
-                    model.save.call(model);
+                    m.save.call(m);
                   },
                   numSaveAttempts * numSaveAttempts * 10000,
                 );
               } else {
-                model.set("numSaveAttempts", 0);
+                m.set("numSaveAttempts", 0);
 
                 // Get the error error information
                 const errorDOM = $($.parseHTML(response.responseText));
@@ -1448,41 +1463,45 @@ define([
                   ? msgContainer.text()
                   : errorDOM;
 
-                // When there is no network connection (status == 0), there will
+                // When there is no network connection (status === 0), there will
                 // be no response text
-                if (!errorMsg || response.status == 408 || response.status == 0)
+                if (
+                  !errorMsg ||
+                  response.status === 408 ||
+                  response.status === 0
+                )
                   errorMsg =
                     "There was a network issue that prevented your metadata from uploading. " +
                     "Make sure you are connected to a reliable internet connection.";
 
-                // Save the error message in the model
-                model.set("errorMessage", errorMsg);
+                // Save the error message in the m
+                m.set("errorMessage", errorMsg);
 
-                // Set the model status as e for error
-                model.set("uploadStatus", "e");
+                // Set the m status as e for error
+                m.set("uploadStatus", "e");
 
                 // Save the EML as a plain text file, until drafts are a
                 // supported feature
-                const copy = model.createTextCopy();
+                const copy = m.createTextCopy();
 
                 // If the EML copy successfully saved, let the user know that
                 // there is a copy saved behind the scenes
-                model.listenToOnce(copy, "successSaving", () => {
-                  model.set("draftSaved", true);
+                m.listenToOnce(copy, "successSaving", () => {
+                  m.set("draftSaved", true);
 
                   // Trigger the errorSaving event so other parts of the app
-                  // know that the model failed to save And send the error
+                  // know that the m failed to save And send the error
                   // message with it
-                  model.trigger("errorSaving", errorMsg);
+                  m.trigger("errorSaving", errorMsg);
                 });
 
                 // If the EML copy fails to save too, then just display the
                 // usual error message
-                model.listenToOnce(copy, "errorSaving", () => {
+                m.listenToOnce(copy, "errorSaving", () => {
                   // Trigger the errorSaving event so other parts of the app
-                  // know that the model failed to save And send the error
+                  // know that the m failed to save And send the error
                   // message with it
-                  model.trigger("errorSaving", errorMsg);
+                  m.trigger("errorSaving", errorMsg);
                 });
 
                 // Save the EML plain text copy
@@ -1491,7 +1510,7 @@ define([
                 // Track the error
                 MetacatUI.analytics?.trackException(
                   `EML save error: ${errorMsg}, EML draft: ${copy.get("id")}`,
-                  model.get("id"),
+                  m.get("id"),
                   true,
                 );
               }
@@ -1507,9 +1526,11 @@ define([
         );
       },
 
-      /*
+      /**
        * Checks if this EML model has all the required values necessary to save
        * to the server
+       * @returns {boolean|object} True if the model is valid, or an object
+       * containing validation errors.
        */
       validate() {
         let errors = {};
@@ -1564,7 +1585,7 @@ define([
         }
 
         // Remove the temporalCoverage attribute if no errors were found
-        if (errors.temporalCoverage.length == 0) {
+        if (!errors.temporalCoverage.length) {
           delete errors.temporalCoverage;
         }
 
@@ -1578,11 +1599,11 @@ define([
         ];
         _.each(
           partyTypes,
-          function (type) {
+          (type) => {
             const people = this.get(type);
             _.each(
               people,
-              (person, i) => {
+              (person, _i) => {
                 if (!person.isValid()) {
                   if (!errors[type]) errors[type] = [person.validationError];
                   else errors[type].push(person.validationError);
@@ -1597,7 +1618,7 @@ define([
         // Validate the EMLGeoCoverage models
         _.each(
           this.get("geoCoverage"),
-          (geoCoverageModel, i) => {
+          (geoCoverageModel, _i) => {
             if (!geoCoverageModel.isValid()) {
               if (!errors.geoCoverage)
                 errors.geoCoverage = [geoCoverageModel.validationError];
@@ -1614,7 +1635,7 @@ define([
           errors = _.extend(errors, taxonModel.validationError);
         } else if (
           taxonModel.isEmpty() &&
-          this.get("taxonCoverage").length == 1 &&
+          this.get("taxonCoverage").length === 1 &&
           MetacatUI.appModel.get("emlEditorRequiredFields").taxonCoverage
         ) {
           taxonModel.isValid();
@@ -1651,136 +1672,139 @@ define([
         }
 
         // Check the required fields for this MetacatUI configuration
-        for ([field, isRequired] of Object.entries(
+        Object.entries(
           MetacatUI.appModel.get("emlEditorRequiredFields"),
-        )) {
-          // If it's not required, then go to the next field
-          if (!isRequired) continue;
-
-          if (field == "alternateIdentifier") {
-            if (
-              !this.get("alternateIdentifier").length ||
-              _.every(
-                this.get("alternateIdentifier"),
-                (altId) => altId.trim() == "",
-              )
-            )
-              errors.alternateIdentifier =
-                "At least one alternate identifier is required.";
-          } else if (field == "generalTaxonomicCoverage") {
-            if (
-              !this.get("taxonCoverage").length ||
-              !this.get("taxonCoverage")[0].get("generalTaxonomicCoverage")
-            )
-              errors.generalTaxonomicCoverage =
-                "Provide a description of the general taxonomic coverage of this data set.";
-          } else if (field == "geoCoverage") {
-            if (!this.get("geoCoverage").length)
-              errors.geoCoverage = "At least one location is required.";
-          } else if (field == "intellectualRights") {
-            if (!this.get("intellectualRights"))
-              errors.intellectualRights =
-                "Select usage rights for this data set.";
-          } else if (field == "studyExtentDescription") {
-            if (
-              !this.get("methods") ||
-              !this.get("methods").get("studyExtentDescription")
-            )
-              errors.studyExtentDescription =
-                "Provide a study extent description.";
-          } else if (field == "samplingDescription") {
-            if (
-              !this.get("methods") ||
-              !this.get("methods").get("samplingDescription")
-            )
-              errors.samplingDescription = "Provide a sampling description.";
-          } else if (field == "temporalCoverage") {
-            if (!this.get("temporalCoverage").length)
-              errors.temporalCoverage =
-                "Provide the date(s) for this data set.";
-          } else if (field == "taxonCoverage") {
-            if (!this.get("taxonCoverage").length)
-              errors.taxonCoverage =
-                "At least one taxa rank and value is required.";
-          } else if (field == "keywordSets") {
-            if (!this.get("keywordSets").length)
-              errors.keywordSets = "Provide at least one keyword.";
-          }
-          // The EMLMethods model will validate itself for required fields, but
-          // this is a rudimentary check to make sure the EMLMethods model was
-          // created in the first place
-          else if (field == "methods") {
-            if (!this.get("methods"))
-              errors.methods = "At least one method step is required.";
-          } else if (field == "funding") {
-            // Note: Checks for either the funding or award element. award
-            // element is checked by the project's objectDOM for now until
-            // EMLProject fully supports the award element
-            if (
-              !this.get("project") ||
-              !(
-                this.get("project").get("funding").length ||
-                (this.get("project").get("objectDOM") &&
-                  this.get("project").get("objectDOM").querySelectorAll &&
-                  this.get("project").get("objectDOM").querySelectorAll("award")
-                    .length > 0)
-              )
-            )
-              errors.funding =
-                "Provide at least one project funding number or name.";
-          } else if (field == "abstract") {
-            if (!this.get("abstract").length)
-              errors.abstract = "Provide an abstract.";
-          } else if (field == "dataSensitivity") {
-            if (!this.getDataSensitivity()) {
-              errors.dataSensitivity =
-                "Pick the category that best describes the level of sensitivity or restriction of the data.";
-            }
-          }
-          // If this is an EMLParty type, check that there is a party of this
-          // type in the model
-          else if (
-            EMLParty.prototype.partyTypes
-              .map((t) => t.dataCategory)
-              .includes(field)
-          ) {
-            // If this is an associatedParty role
-            if (EMLParty.prototype.defaults().roleOptions?.includes(field)) {
+        ).forEach(([field, isRequired]) => {
+          if (isRequired) {
+            if (field === "alternateIdentifier") {
               if (
-                !this.get("associatedParty")
-                  ?.map((p) => p.get("roles"))
-                  .flat()
-                  .includes(field)
-              ) {
+                !this.get("alternateIdentifier").length ||
+                _.every(
+                  this.get("alternateIdentifier"),
+                  (altId) => !altId.trim(),
+                )
+              )
+                errors.alternateIdentifier =
+                  "At least one alternate identifier is required.";
+            } else if (field === "generalTaxonomicCoverage") {
+              if (
+                !this.get("taxonCoverage").length ||
+                !this.get("taxonCoverage")[0].get("generalTaxonomicCoverage")
+              )
+                errors.generalTaxonomicCoverage =
+                  "Provide a description of the general taxonomic coverage of this data set.";
+            } else if (field === "geoCoverage") {
+              if (!this.get("geoCoverage").length)
+                errors.geoCoverage = "At least one location is required.";
+            } else if (field === "intellectualRights") {
+              if (!this.get("intellectualRights"))
+                errors.intellectualRights =
+                  "Select usage rights for this data set.";
+            } else if (field === "studyExtentDescription") {
+              if (
+                !this.get("methods") ||
+                !this.get("methods").get("studyExtentDescription")
+              )
+                errors.studyExtentDescription =
+                  "Provide a study extent description.";
+            } else if (field === "samplingDescription") {
+              if (
+                !this.get("methods") ||
+                !this.get("methods").get("samplingDescription")
+              )
+                errors.samplingDescription = "Provide a sampling description.";
+            } else if (field === "temporalCoverage") {
+              if (!this.get("temporalCoverage").length)
+                errors.temporalCoverage =
+                  "Provide the date(s) for this data set.";
+            } else if (field === "taxonCoverage") {
+              if (!this.get("taxonCoverage").length)
+                errors.taxonCoverage =
+                  "At least one taxa rank and value is required.";
+            } else if (field === "keywordSets") {
+              if (!this.get("keywordSets").length)
+                errors.keywordSets = "Provide at least one keyword.";
+              // The EMLMethods model will validate itself for required fields, but
+              // this is a rudimentary check to make sure the EMLMethods model was
+              // created in the first place
+            } else if (field === "methods") {
+              if (!this.get("methods"))
+                errors.methods = "At least one method step is required.";
+            } else if (field === "funding") {
+              // Note: Checks for either the funding or award element. award
+              // element is checked by the project's objectDOM for now until
+              // EMLProject fully supports the award element
+              if (
+                !this.get("project") ||
+                !(
+                  this.get("project").get("funding").length ||
+                  (this.get("project").get("objectDOM") &&
+                    this.get("project").get("objectDOM").querySelectorAll &&
+                    this.get("project")
+                      .get("objectDOM")
+                      .querySelectorAll("award").length > 0)
+                )
+              )
+                errors.funding =
+                  "Provide at least one project funding number or name.";
+            } else if (field === "abstract") {
+              if (!this.get("abstract").length)
+                errors.abstract = "Provide an abstract.";
+            } else if (field === "dataSensitivity") {
+              if (!this.getDataSensitivity()) {
+                errors.dataSensitivity =
+                  "Pick the category that best describes the level of sensitivity or restriction of the data.";
+              }
+              // If this is an EMLParty type, check that there is a party of this
+              // type in the model
+            } else if (
+              EMLParty.prototype.partyTypes
+                .map((t) => t.dataCategory)
+                .includes(field)
+            ) {
+              // If this is an associatedParty role
+              if (EMLParty.prototype.defaults().roleOptions?.includes(field)) {
+                if (
+                  !this.get("associatedParty")
+                    ?.map((p) => p.get("roles"))
+                    .flat()
+                    .includes(field)
+                ) {
+                  errors[field] =
+                    `Provide information about the people or organization(s) in the role: ${
+                      EMLParty.prototype.partyTypes.find(
+                        (t) => t.dataCategory === field,
+                      )?.label
+                    }`;
+                }
+              } else if (!this.get(field)?.length) {
                 errors[field] =
                   `Provide information about the people or organization(s) in the role: ${
                     EMLParty.prototype.partyTypes.find(
-                      (t) => t.dataCategory == field,
+                      (t) => t.dataCategory === field,
                     )?.label
                   }`;
               }
-            } else if (!this.get(field)?.length) {
-              errors[field] =
-                `Provide information about the people or organization(s) in the role: ${
-                  EMLParty.prototype.partyTypes.find(
-                    (t) => t.dataCategory == field,
-                  )?.label
-                }`;
+            } else if (!this.get(field) || !this.get(field)?.length) {
+              errors[field] = `Provide a ${field}.`;
             }
-          } else if (!this.get(field) || !this.get(field)?.length) {
-            errors[field] = `Provide a ${field}.`;
           }
-        }
+        });
 
         if (Object.keys(errors).length) return errors;
+        return null;
       },
 
-      /* Returns a boolean for whether the argument 'value' is a valid value for
-      EML's yearDate type which is used in a few places.
-
-      Note that this method considers a zero-length String to be valid because
-      the EML211.serialize() method will properly handle a null or zero-length
-      String by serializing out the current year. */
+      /**
+       * Returns a boolean for whether the argument 'value' is a valid value for
+       * EML's yearDate type which is used in a few places. Note that this
+       * method considers a zero-length String to be valid because the
+       * EML211.serialize() method will properly handle a null or zero-length
+       * String by serializing out the current year.
+       * @param {string} value The value to test.
+       * @returns {boolean} True if the value is a valid yearDate, false
+       * otherwise.
+       */
       isValidYearDate(value) {
         return (
           value === "" ||
@@ -1829,24 +1853,25 @@ define([
         $.ajax(fetchOptions);
       },
 
-      /*
-       * Returns the nofde in the given EML document that the given node type
+      /**
+       * Returns the node in the given EML document that the given node type
        * should be inserted after
-       *
-       * Returns false if either the node is not found in the and this should be
-       * handled by the caller.
+       * @param {jQuery} eml The EML document to search within
+       * @param {string} nodeName The name of the node type to find
+       * @returns {jQuery|false} Returns false if either the node is not found
+       * in the document or if the node is not a valid EML node.
        */
       getEMLPosition(eml, nodeName) {
         const nodeOrder = this.get("nodeOrder");
         const position = _.indexOf(nodeOrder, nodeName.toLowerCase());
 
-        if (position == -1) {
+        if (position === -1) {
           return false;
         }
 
         // Go through each node in the node list and find the position where
         // this node will be inserted after
-        for (let i = position - 1; i >= 0; i--) {
+        for (let i = position - 1; i >= 0; i -= 1) {
           if ($(eml).find("dataset").children(nodeOrder[i]).length) {
             return $(eml).find("dataset").children(nodeOrder[i]).last();
           }
@@ -1855,12 +1880,13 @@ define([
         return false;
       },
 
-      /*
+      /**
        * Checks if this model has updates that need to be synced with the
        * server.
+       * @returns {boolean} True if there are updates to sync, false otherwise.
        */
       hasUpdates() {
-        if (this.constructor.__super__.hasUpdates.call(this)) return true;
+        if (ScienceMetadata.prototype.hasUpdates.call(this)) return true;
 
         // If nothing else has been changed, then this object hasn't had any
         // updates
@@ -1944,9 +1970,10 @@ define([
         return uniqueId;
       },
 
-      /*
+      /**
        * removeParty - removes the given EMLParty model from this EML211 model's
        * attributes
+       * @param {EMLParty} partyModel The EMLParty model to remove
        */
       removeParty(partyModel) {
         // The list of attributes this EMLParty might be stored in
@@ -1961,7 +1988,7 @@ define([
         // Iterate over each possible attribute
         _.each(
           possibleAttr,
-          function (attr) {
+          (attr) => {
             if (_.contains(this.get(attr), partyModel)) {
               this.set(attr, _.without(this.get(attr), partyModel));
             }
@@ -1972,8 +1999,7 @@ define([
 
       /**
        * Attempt to move a party one index forward within its sibling models
-       * @param {EMLParty} partyModel: The EMLParty model we're moving
-       * @param partyModel
+       * @param {EMLParty} partyModel The EMLParty model we're moving
        */
       movePartyUp(partyModel) {
         const possibleAttr = [
@@ -1987,7 +2013,7 @@ define([
         // Iterate over each possible attribute
         _.each(
           possibleAttr,
-          function (attr) {
+          (attr) => {
             if (!_.contains(this.get(attr), partyModel)) {
               return;
             }
@@ -1997,7 +2023,7 @@ define([
             // Find the index of the model we're moving
             const index = _.findIndex(models, (m) => m === partyModel);
 
-            if (index === 0) {
+            if (!index) {
               // Already first
               return;
             }
@@ -2018,8 +2044,7 @@ define([
 
       /**
        * Attempt to move a party one index forward within its sibling models
-       * @param {EMLParty} partyModel: The EMLParty model we're moving
-       * @param partyModel
+       * @param {EMLParty} partyModel The EMLParty model we're moving
        */
       movePartyDown(partyModel) {
         const possibleAttr = [
@@ -2031,44 +2056,40 @@ define([
         ];
 
         // Iterate over each possible attribute
-        _.each(
-          possibleAttr,
-          function (attr) {
-            if (!_.contains(this.get(attr), partyModel)) {
-              return;
-            }
-            // Make a clone because we're going to use splice
-            const models = _.clone(this.get(attr));
+        _.each(possibleAttr, (attr) => {
+          if (!_.contains(this.get(attr), partyModel)) {
+            return;
+          }
+          // Make a clone because we're going to use splice
+          const models = _.clone(this.get(attr));
 
-            // Find the index of the model we're moving
-            const index = _.findIndex(models, (m) => m === partyModel);
+          // Find the index of the model we're moving
+          const index = _.findIndex(models, (m) => m === partyModel);
 
-            if (index === -1) {
-              // Couldn't find the model
-              return;
-            }
+          if (index === -1) {
+            // Couldn't find the model
+            return;
+          }
 
-            // Figure out where to put the new model Leave it in the same place
-            //   if the next index doesn't exist Move one forward if it does
-            const newIndex = models.length <= index + 1 ? index : index + 1;
+          // Figure out where to put the new model Leave it in the same place
+          //   if the next index doesn't exist Move one forward if it does
+          const newIndex = models.length <= index + 1 ? index : index + 1;
 
-            // Do the move using splice and update the model
-            models.splice(newIndex, 0, models.splice(index, 1)[0]);
-            this.set(attr, models);
-            this.trigger(`change:${attr}`);
-          },
-          this,
-        );
+          // Do the move using splice and update the model
+          models.splice(newIndex, 0, models.splice(index, 1)[0]);
+          this.set(attr, models);
+          this.trigger(`change:${attr}`);
+        });
       },
 
-      /*
+      /**
        * Adds the given EMLParty model to this EML211 model in the appropriate
        * role array in the given position
-       *
-       * @param {EMLParty} - The EMLParty model to add @param {number} - The
-       * position in the role array in which to insert this EMLParty @return
-       * {boolean} - Returns true if the EMLParty was successfully added, false
-       * if it was cancelled
+       * @param {EMLParty} partyModel The EMLParty model to add
+       * @param {number} position The position in the role array in which to
+       * insert this EMLParty
+       * @returns {boolean} - Returns true if the EMLParty was successfully
+       * added, false if it was cancelled
        */
       addParty(partyModel, position) {
         // If the EMLParty model is empty, don't add it to the EML211 model
@@ -2097,43 +2118,43 @@ define([
        * @param {string} partyType - A string that represents either the role or
        * the party type. For example, "contact", "creator",
        * "principalInvestigator", etc.
+       * @returns {Array} - An array of EMLParty models that match the given
+       * party type or role.
        * @since 2.15.0
        */
       getPartiesByType(partyType) {
-        try {
-          if (!partyType) {
-            return false;
-          }
-          const associatedPartyTypes = new EMLParty().get("roleOptions");
-          const isAssociatedParty = associatedPartyTypes.includes(partyType);
-          let parties = [];
-          // For "contact", "creator", "metadataProvider", "publisher", each
-          // party type has it's own array in the EML model
-          if (!isAssociatedParty) {
-            parties = this.get(partyType);
-            // For "custodianSteward", "principalInvestigator",
-            // "collaboratingPrincipalInvestigator", etc., party members are
-            // listed in the EML model's associated parties array. Each
-            // associated party's party type is indicated in the role attribute.
-          } else {
-            parties = _.filter(this.get("associatedParty"), (associatedParty) =>
-              associatedParty.get("roles").includes(partyType),
-            );
-          }
-
-          return parties;
-        } catch (error) {
-          console.log(
-            `Error trying to find a list of party members in an EML model by type. Error details: ${error}`,
+        if (!partyType) {
+          return false;
+        }
+        const associatedPartyTypes = new EMLParty().get("roleOptions");
+        const isAssociatedParty = associatedPartyTypes.includes(partyType);
+        let parties = [];
+        // For "contact", "creator", "metadataProvider", "publisher", each
+        // party type has it's own array in the EML model
+        if (!isAssociatedParty) {
+          parties = this.get(partyType);
+          // For "custodianSteward", "principalInvestigator",
+          // "collaboratingPrincipalInvestigator", etc., party members are
+          // listed in the EML model's associated parties array. Each
+          // associated party's party type is indicated in the role attribute.
+        } else {
+          parties = _.filter(this.get("associatedParty"), (associatedParty) =>
+            associatedParty.get("roles").includes(partyType),
           );
         }
+
+        return parties;
       },
 
+      /** Fetches the units for this EML211 model */
       createUnits() {
         this.units.fetch();
       },
 
-      /* Initialize the object XML for brand spankin' new EML objects */
+      /**
+       * Initialize the object XML for brand spankin' new EML objects
+       * @returns {string} The initial XML string
+       */
       createXML() {
         let emlSystem = MetacatUI.appModel.get("emlSystem");
         emlSystem =
@@ -2164,12 +2185,12 @@ define([
         return emlString;
       },
 
-      /*
-          Replace elements named "source" with "sourced" due to limitations with
-          using $.parseHTML() rather than $.parseXML()
-
-          @param xmlString  The XML string to make the replacement in
-      */
+      /**
+       * Replace elements named "source" with "sourced" due to limitations with
+       * using $.parseHTML() rather than $.parseXML()
+       * @param {string} xmlString The XML string to make the replacement in
+       * @returns {string} The cleaned up XML string
+       */
       cleanUpXML(xmlString) {
         xmlString.replace("<source>", "<sourced>");
         xmlString.replace("</source>", "</sourced>");
@@ -2177,6 +2198,10 @@ define([
         return xmlString;
       },
 
+      /**
+       * Creates a text copy of the EML211 model
+       * @returns {string} The text copy of the EML211 model
+       */
       createTextCopy() {
         let emlDraftText = `EML draft for ${this.get("id")}(${this.get(
           "title",
@@ -2184,7 +2209,7 @@ define([
           "firstName",
         )} ${MetacatUI.appUserModel.get("lastName")}`;
 
-        if (this.get("uploadStatus") == "e" && this.get("errorMessage")) {
+        if (this.get("uploadStatus") === "e" && this.get("errorMessage")) {
           emlDraftText += `. This EML had the following save error: \`${this.get(
             "errorMessage",
           )}\`   `;
@@ -2206,17 +2231,16 @@ define([
         return plainTextEML;
       },
 
-      /*
+      /**
        * Cleans up the given text so that it is XML-valid by escaping reserved
        * characters, trimming white space, etc.
-       *
-       * @param {string} textString - The string to clean up @return {string} -
-       * The cleaned up string
+       * @param {string} str - The string to clean up
+       * @returns {string} The cleaned up string
        */
-      cleanXMLText(textString) {
-        if (typeof textString !== "string") return;
+      cleanXMLText(str) {
+        if (typeof str !== "string") return str;
 
-        textString = textString.trim();
+        let textString = str.trim();
 
         // Check for XML/HTML elements
         _.each(textString.match(/<\s*[^>]*>/g), (xmlNode) => {
@@ -2228,22 +2252,24 @@ define([
           textString = textString.replace(xmlNode, tagName);
         });
 
-        // Remove Unicode characters that are not valid XML characters Create a
+        // Remove Unicode characters that are not valid XML characters. Create a
         // regular expression that matches any character that is not a valid XML
         // character (see https://www.w3.org/TR/xml/#charsets)
         const invalidCharsRegEx =
+          // eslint-disable-next-line no-control-regex
           /[^\u0009\u000a\u000d\u0020-\uD7FF\uE000-\uFFFD]/g;
         textString = textString.replace(invalidCharsRegEx, "");
 
         return textString;
       },
 
-      /*
-          Dereference "reference" elements and replace them with a cloned copy
-          of the referenced content
-
-          @param xmlString  The XML string with reference elements to transform
-      */
+      /**
+       * Dereference "reference" elements and replace them with a cloned copy of
+       * the referenced content
+       * @param {string} xmlString The XML string with reference elements to
+       * transform
+       * @returns {string} The transformed XML string
+       */
       dereference(xmlString) {
         let referencedID; // The id of the referenced element
         let referencesParentEl; // The parent of the given references element
@@ -2254,20 +2280,20 @@ define([
         const referenceTypesToSkip = ["attributeList"];
 
         const xmlDOM = $.parseXML(xmlString);
-        let referencesList = xmlDOM.getElementsByTagName("references");
+        const referencesList = xmlDOM.getElementsByTagName("references");
 
         if (referencesList.length) {
           // Process each references elements
           _.each(
             referencesList,
-            (referencesEl, index, referencesList) => {
-              // Can't rely on the passed referencesEl since the list length
+            (_referencesEl) => {
+              // Can't rely on the passed _referencesEl since the list length
               // changes because of the remove() below. Reuse referencesList[0]
               // for every item: referencedID = $(referencesEl).text(); //
               // doesn't work
-              referencesEl = referencesList[0];
+              const [referencesEl] = referencesList;
               referencedID = $(referencesEl).text();
-              referencesParentEl = $(referencesEl).parent()[0];
+              referencesParentEl = $(referencesEl).parent().get(0);
               if (
                 referencedID &&
                 !referenceTypesToSkip.includes(referencesParentEl.nodeName)
@@ -2291,15 +2317,13 @@ define([
         return new XMLSerializer().serializeToString(xmlDOM);
       },
 
-      /*
-       * Uses the EML `title` to set the `fileName` attribute on this model.
-       */
+      /** Uses the EML `title` to set the `fileName` attribute on this model */
       setFileName() {
         let title = "";
 
         // Get the title from the metadata
         if (Array.isArray(this.get("title"))) {
-          title = this.get("title")[0];
+          [title] = this.get("title");
         } else if (typeof this.get("title") === "string") {
           title = this.get("title");
         }
@@ -2328,6 +2352,9 @@ define([
         this.set("fileName", `${trimmedTitle}.xml`);
       },
 
+      /**
+       * Triggers a change event on the model and all its parents.
+       */
       trickleUpChange() {
         if (
           !MetacatUI.rootDataPackage ||
@@ -2342,8 +2369,7 @@ define([
       /**
        * Sets the xsi:schemaLocation attribute on the passed-in Element
        * depending on the application configuration.
-       * @param {Element} eml: The root eml:eml element to modify
-       * @param eml
+       * @param {Element} eml The root eml:eml element to modify
        * @returns {Element} The element, possibly modified
        */
       setSchemaLocation(eml) {
@@ -2383,73 +2409,70 @@ define([
 
       /**
        * Creates and adds an {@link EMLAnnotation} to this EML211 model with the
-         given annotation data in JSON form.
-       * @param {object} annotationData The attribute data to set on the new
-         {@link EMLAnnotation}. See {@link EMLAnnotation#defaults} for
-       * details on what attributes can be passed to the EMLAnnotation. In
-         addition, there is an `elementName` property.
-       * @property {string} [annotationData.elementName] The name of the EML
-         Element that this annotation should be applied to. e.g. dataset,
-         entity, attribute. Defaults to `dataset`. NOTE: Right now only dataset
-         annotations are supported until more annotation editing is added to the
-         EML Editor.
-       * @property {boolean} [annotationData.allowDuplicates] If false, this
-         annotation will replace all annotations already set with the same
-         propertyURI.
-       * By default, more than one annotation with a given propertyURI can be
-         added (defaults to true)
+       * given annotation data in JSON form.
+       * @param {object} attrs The attribute data to set on the new
+       * {@link EMLAnnotation}. See {@link EMLAnnotation#defaults} for details
+       * on what attributes can be passed to the EMLAnnotation. In addition,
+       * there is an `elementName` property.
+       * @param {string} [attrs.elementName] The name of the EML
+       * Element that this annotation should be applied to. e.g. dataset,
+       * entity, attribute. Defaults to `dataset`. NOTE: Right now only dataset
+       * annotations are supported until more annotation editing is added to the
+       * EML Editor.
+       * @param {boolean} [attrs.allowDuplicates] If false, this
+       * annotation will replace all annotations already set with the same
+       * propertyURI. By default, more than one annotation with a given
+       * propertyURI can be added (defaults to true)
        */
-      addAnnotation(annotationData) {
-        try {
-          if (!annotationData || typeof annotationData !== "object") {
-            return;
+      addAnnotation(attrs) {
+        // Reference to the passed in attrs which we modify below
+        const annotationData = attrs;
+        if (!annotationData || typeof annotationData !== "object") {
+          return;
+        }
+
+        // If no element name is provided, default to the dataset element.
+        let elementName = "";
+        if (!annotationData.elementName) {
+          elementName = "dataset";
+        } else {
+          elementName = annotationData.elementName;
+        }
+        // Remove the elementName property so it isn't set on the
+        // EMLAnnotation model later.
+        delete annotationData.elementName;
+
+        // Check if duplicates are allowed
+        const { allowDuplicates } = annotationData;
+        delete annotationData.allowDuplicates;
+
+        // Create a new EMLAnnotation model
+        const annotation = new EMLAnnotation(annotationData);
+
+        // Update annotations set on the dataset element
+        if (elementName === "dataset") {
+          let annotations = this.get("annotations");
+
+          // If the current annotations set on the EML model are not in Array
+          // form, change it to an array
+          if (!annotations) {
+            annotations = new EMLAnnotations();
           }
 
-          // If no element name is provided, default to the dataset element.
-          let elementName = "";
-          if (!annotationData.elementName) {
-            elementName = "dataset";
+          if (allowDuplicates === false) {
+            // Add the EMLAnnotation to the collection, making sure to remove
+            // duplicates first
+            annotations.replaceDuplicateWith(annotation);
           } else {
-            elementName = annotationData.elementName;
+            annotations.add(annotation);
           }
-          // Remove the elementName property so it isn't set on the
-          // EMLAnnotation model later.
-          delete annotationData.elementName;
 
-          // Check if duplicates are allowed
-          const { allowDuplicates } = annotationData;
-          delete annotationData.allowDuplicates;
-
-          // Create a new EMLAnnotation model
-          const annotation = new EMLAnnotation(annotationData);
-
-          // Update annotations set on the dataset element
-          if (elementName == "dataset") {
-            let annotations = this.get("annotations");
-
-            // If the current annotations set on the EML model are not in Array
-            // form, change it to an array
-            if (!annotations) {
-              annotations = new EMLAnnotations();
-            }
-
-            if (allowDuplicates === false) {
-              // Add the EMLAnnotation to the collection, making sure to remove
-              // duplicates first
-              annotations.replaceDuplicateWith(annotation);
-            } else {
-              annotations.add(annotation);
-            }
-
-            // Set the annotations and force the change to be recognized by the
-            // model
-            this.set("annotations", annotations, { silent: true });
-            this.handleChange(this, { force: true });
-          } else {
-            /** @todo Add annotation support for other EML Elements */
-          }
-        } catch (e) {
-          console.error("Could not add Annotation to the EML: ", e);
+          // Set the annotations and force the change to be recognized by the
+          // model
+          this.set("annotations", annotations, { silent: true });
+          this.handleChange(this, { force: true });
+        } else {
+          /** @todo Add annotation support for other EML Elements */
         }
       },
 
@@ -2459,24 +2482,20 @@ define([
        * function returns EMLAnnotation models because the data sensitivity is
        * stored in the EML Model as EMLAnnotations and added to EML as semantic
        * annotations.
-       * @returns {EMLAnnotation[]|undefined}
+       * @returns {EMLAnnotation[]} An array of EMLAnnotation models that are of
+       * the `data sensitivity` property from the NCEAS SENSO ontology.
        */
       getDataSensitivity() {
-        try {
-          const annotations = this.get("annotations");
-          if (annotations) {
-            const found = annotations.where({
-              propertyURI: this.get("dataSensitivityPropertyURI"),
-            });
-            if (found?.length) {
-              return found;
-            }
+        const annotations = this.get("annotations");
+        if (annotations) {
+          const found = annotations.where({
+            propertyURI: this.get("dataSensitivityPropertyURI"),
+          });
+          if (found?.length) {
+            return found;
           }
-          return undefined;
-        } catch (e) {
-          console.error("Failed to get Data Sensitivity from EML model: ", e);
-          return undefined;
         }
+        return undefined;
       },
 
       /**

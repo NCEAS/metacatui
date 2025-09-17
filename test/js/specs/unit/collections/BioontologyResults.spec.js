@@ -42,6 +42,8 @@ define([
 
     afterEach(() => {
       sinon.restore();
+      // clear the localStorage mock
+      localStorage.clear();
     });
 
     it("creates a BioontologyResults instance", () => {
