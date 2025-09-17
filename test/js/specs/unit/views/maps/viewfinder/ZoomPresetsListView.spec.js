@@ -4,7 +4,7 @@ define([
   "underscore",
   "views/maps/viewfinder/ZoomPresetsListView",
   "models/maps/viewfinder/ZoomPresetModel",
-  "models/maps/GeoPoint",
+  "collections/maps/viewfinder/ZoomPresets",
   // The file extension is required for files loaded from the /test directory.
   "/test/js/specs/shared/clean-state.js",
   "/test/js/specs/unit/views/maps/viewfinder/ZoomPresetsListViewHarness.js",
@@ -12,7 +12,7 @@ define([
   _,
   ZoomPresetsListView,
   ZoomPresetModel,
-  GeoPoint,
+  ZoomPresets,
   cleanState,
   ZoomPresetsListViewHarness,
 ) => {
@@ -22,7 +22,7 @@ define([
   describe("ZoomPresetsListView Test Suite", () => {
     const state = cleanState(() => {
       const sandbox = sinon.createSandbox();
-      const zoomPresets = [
+      const zoomPresets = new ZoomPresets([
         new ZoomPresetModel(
           {
             title: "Test 1",
@@ -49,7 +49,7 @@ define([
           },
           { parse: true },
         ),
-      ];
+      ]);
       const selectZoomPresetSpy = sandbox.spy();
       const view = new ZoomPresetsListView({
         zoomPresets,
@@ -57,7 +57,6 @@ define([
       });
       view.render();
       const harness = new ZoomPresetsListViewHarness(view);
-
       // Actually render the view to document to test focus events.
       const testContainer = document.createElement("div");
       testContainer.id = "test-container";

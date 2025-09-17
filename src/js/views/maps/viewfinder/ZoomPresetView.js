@@ -7,7 +7,7 @@ define([
 ], (_, Backbone, Template) => {
   // The base classname to use for this View's template elements.
   const BASE_CLASS = "viewfinder-zoom-preset";
-  //The HTML classes to use for this view's HTML elements.
+  // The HTML classes to use for this view's HTML elements.
   const CLASS_NAMES = {
     active: `${BASE_CLASS}--active`,
     description: `${BASE_CLASS}__description`,
@@ -16,6 +16,7 @@ define([
     layers: `${BASE_CLASS}__layers`,
     preset: `${BASE_CLASS}__preset`,
     title: `${BASE_CLASS}__title`,
+    image: `${BASE_CLASS}__image`,
   };
   // A function that does nothing. Can be safely called as a default callback.
   const noop = () => {};
@@ -27,12 +28,12 @@ define([
    * to zoom to that location.
    * @classcategory Views/Maps/Viewfinder
    * @name ZoomPresetView
-   * @extends Backbone.View
+   * @augments Backbone.View
    * @screenshot views/maps/viewfinder/ZoomPresetView.png
    * @since 2.29.0
    * @constructs ZoomPresetView
    */
-  var ZoomPresetView = Backbone.View.extend(
+  const ZoomPresetView = Backbone.View.extend(
     /** @lends ZoomPresetView.prototype */ {
       /**
        * The type of View this is
@@ -45,7 +46,7 @@ define([
 
       /**
        * The events this view will listen to and the associated function to call.
-       * @type {Object}
+       * @type {object}
        */
       events() {
         return {
@@ -63,7 +64,6 @@ define([
        */
       select() {
         this.selectCallback();
-
         this.el.classList.add(CLASS_NAMES.active);
       },
 
@@ -74,28 +74,25 @@ define([
       },
 
       /**
-       * @typedef {Object} ZoomPresetViewOptions
-       * @property {ZoomPresetModel} The metadata associated with this zoom
-       * preset.
-       * @property {Function} selectCallback to be called when this preset is
+       * Initialize the view with the given options.
+       * @param {object} param0 - The view options.
+       * @param {ZoomPresetModel} param0.preset - The metadata associated with this zoom
+       * @param {Function} param0.selectCallback to be called when this preset is
        * selected.
        */
       initialize({ preset, selectCallback }) {
         this.selectCallback =
           typeof selectCallback === "function" ? selectCallback : noop;
-        this.templateVars.preset = {
-          title: preset.get("title"),
-          description: preset.get("description"),
-          enabledLayerLabels: preset.get("enabledLayerLabels"),
-        };
+        this.preset = preset;
       },
 
       /**
        * Render the view by updating the HTML of the element.
        * The new HTML is computed from an HTML template that
        * is passed an object with relevant view state.
-       * */
+       */
       render() {
+        this.templateVars.preset = this.preset.toJSON();
         this.el.innerHTML = _.template(Template)(this.templateVars);
       },
     },

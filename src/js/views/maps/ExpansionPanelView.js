@@ -72,6 +72,7 @@ define(["underscore", "backbone", "text!templates/maps/expansion-panel.html"], (
         panelsModel,
         startOpen,
         isSvgIcon,
+        variants,
       }) {
         this.templateVars = {
           classNames: CLASS_NAMES,
@@ -84,6 +85,7 @@ define(["underscore", "backbone", "text!templates/maps/expansion-panel.html"], (
         this.startOpen = !!startOpen;
 
         this.panelsModel?.register(this);
+        this.variants = variants || [];
       },
 
       /**
@@ -121,6 +123,9 @@ define(["underscore", "backbone", "text!templates/maps/expansion-panel.html"], (
        * */
       render() {
         this.el.innerHTML = _.template(Template)(this.templateVars);
+        this.$el.addClass(
+          this.variants.map((v) => `${BASE_CLASS}--${v}`).join(" "),
+        );
         this.contentViewInstance.render();
         this.getContent().append(this.contentViewInstance.el);
 
