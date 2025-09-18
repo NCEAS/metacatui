@@ -306,7 +306,7 @@ define([
        * @param {string} id The id of the feature to find.
        * @returns {Cesium.Entity|null} The Cesium Entity with the given id, or
        * null if not found.
-       * @since 0.0.0
+       * @since 2.35.0
        */
       getFeatureById: function (id) {
         let feature = this.getEntityCollection()?.getById(id);

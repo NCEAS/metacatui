@@ -13,7 +13,7 @@ define([
    * @classcategory Collections/Maps
    * @class ZoomPresetCategories
    * @augments Backbone.Collection
-   * @since 0.0.0
+   * @since 2.35.0
    * @class
    */
   const ZoomPresetCategories = Backbone.Collection.extend(

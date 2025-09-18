@@ -23,7 +23,7 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
    * Configuration options for preset map locations and enabled layers that
    * will be shown in the viewfinder UI.
    * @typedef {MapConfig#ZoomPreset[]|MapConfig#LeoNetworkZoomPresetConfig} MapConfig#ZoomPresets
-   * @since 0.0.0
+   * @since 2.35.0
    */
 
   /**
@@ -35,7 +35,7 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
    * @property {string[]} [layerIds] An optional list of layer IDs to enable
    * when a preset is selected. If not provided, the visible layers will not
    * change when a preset is selected.
-   * @since 0.0.0
+   * @since 2.35.0
    */
 
   /**
@@ -179,7 +179,7 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
        * data.
        * @param {GeoJSON} response The GeoJSON response from the LEO Network.
        * @returns {object[]} An array of objects representing zoom presets.
-       * @since 0.0.0
+       * @since 2.35.0
        */
       parseLEONetwork(response) {
         if (!response.features || !isNonEmptyArray(response.features)) {
