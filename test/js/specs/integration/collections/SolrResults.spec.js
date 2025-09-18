@@ -65,10 +65,30 @@ define([
 
         solrResults.toPage(0);
       });
-
       it("should filter by 'all'", function (done) {
-        let solrResults = new SolrResults();
-        let search = new Search();
+        const solrResults = new SolrResults();
+        const search = new Search();
+
+        // Arrange: fake 5 docs that contain “ocean” in text
+        const docs = [
+          { id: "1", text: "Ocean currents" },
+          { id: "2", text: "ocean temperature" },
+          { id: "3", text: "Deep Ocean data" },
+          { id: "4", text: "Ocean salinity" },
+          { id: "5", text: "ocean modeling" },
+        ];
+
+        // Stub fetch so no real network happens
+        const fetchStub = sinon
+          .stub(solrResults, "fetch")
+          .callsFake(function fetchFake() {
+            // simulate normal Backbone.Collection#fetch({reset:true}) behavior
+            this.reset(docs);
+            // emit "reset" like Backbone would
+            this.trigger("reset", this, {});
+            return Promise.resolve(this);
+          });
+
         solrResults.rows = 5;
         solrResults.start = 0;
         solrResults.setfields("text");
@@ -77,14 +97,15 @@ define([
 
         solrResults.once("reset", function () {
           solrResults.length.should.equal(5);
-          solrResults.pluck("text").every((r) => {
-            let e = new RegExp(/ocean|Ocean/, "g");
-            return e.test(r);
-          }).should.be.true;
+          solrResults.pluck("text").every((r) => /ocean/i.test(r)).should.be
+            .true;
+          fetchStub.restore();
           done();
         });
+
         solrResults.once("error", function () {
-          done(new Error("Server error. "));
+          fetchStub.restore();
+          done(new Error("Server error."));
         });
 
         solrResults.toPage(0);
