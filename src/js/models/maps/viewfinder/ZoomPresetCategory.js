@@ -14,7 +14,7 @@ define([
    * @class ZoomPresetCategory
    * @name ZoomPresetCategory
    * @augments Backbone.Model
-   * @since 0.0.0
+   * @since 2.35.0
    * @augments Backbone.Model
    * @constructs ZoomPresetCategory
    */

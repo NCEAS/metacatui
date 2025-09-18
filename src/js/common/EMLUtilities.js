@@ -37,7 +37,7 @@ define([], () => {
      * clean up the serialized XML.
      * @param {Element} dom - The DOM element to serialize
      * @returns {string} The serialized XML string
-     * @since 0.0.0
+     * @since 2.35.0
      */
     serializeDOM(dom) {
       const serializer = new XMLSerializer();

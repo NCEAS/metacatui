@@ -85,7 +85,7 @@ define([
        * get the panel for.
        * @returns {JQuery} The ZoomPresetsView panel element, or an empty jQuery
        * object if it doesn't exist.
-       * @since 0.0.0
+       * @since 2.35.0
        */
       getZoomPresetsPanel(category) {
         return this.$el.find(`#${category.cid}`);
@@ -99,7 +99,7 @@ define([
        * @returns {string|object} "prepend" to add to the beginning of the list,
        * "append" to add to the end of the list, or { after: JQueryElement } to
        * add after a specific existing element.
-       * @since 0.0.0
+       * @since 2.35.0
        */
       getZoomPresetsPlacement(category) {
         const categories = this.viewfinderModel.get("zoomPresets");
@@ -115,7 +115,7 @@ define([
        * Remove the ZoomPresetsView panel for a given category, if it exists.
        * @param {ZoomPresetCategory} category The category of zoom presets to
        * remove the panel for.
-       * @since 0.0.0
+       * @since 2.35.0
        */
       removeZoomPresetsCategory(category) {
         const panel = this.getZoomPresetsPanel(category);
