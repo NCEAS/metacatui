@@ -15,14 +15,22 @@ define(["jquery"], ($) => {
    * @property {string[]} [facets] Fields to facet on.
    * @property {string[]} [facetQueries] Facet queries (fq) to apply.
    * @property {string[]} [statsFields] Fields for statistics (stats.field).
+   * @property {string} [facetQueries] Facet queries (facet.query) to apply.
    * @property {number} [facetLimit] Default `-1` (no limit).
    * @property {number} [facetMinCount] Default `1`.
+   * @property {} [facetRange]
+   * @property {string} [facetRangeStart]
+   * @property {string} [facetRangeEnd]
+   * @property {string} [facetRangeGap]
    * @property {boolean} [usePost] Force POST / GET (overrides auto-choice).
    * @property {boolean} [useAuth=true] Inject MetacatUI auth headers?
    * @property {boolean} [archived] Include archived items? Default `false`.
    * @property {boolean} [group] Use Solr grouping (group=true)?
    * @property {string} [groupField] Field to group by (if `group` is true).
    * @property {number} [groupLimit] Limit of groups to return (if `group` is true).
+   * @property {[][]} [extraParams] Extra parameters to include in the
+   * query. Formatted as key-value pairs in an array, e.g., `[['key', 'val'],
+   * ['key2', 'val2']]`.
    * @property {boolean} [disableQueryPOSTs] Disable POST requests for queries?
    */
 
@@ -45,7 +53,7 @@ define(["jquery"], ($) => {
      * @returns {object} { queryParams, urlBase, shouldPost }
      */
     static getQueryConfig(opts = {}) {
-      const {
+      let {
         q = "*:*",
         filterQueries = [],
         fields = [],
@@ -57,6 +65,11 @@ define(["jquery"], ($) => {
         statsFields = [],
         facetLimit = -1,
         facetMinCount = 1,
+        facetRange,
+        facetRangeStart,
+        facetRangeEnd,
+        facetRangeGap,
+        extraParams = [],
         usePost,
         archived = false,
         group = false,
@@ -64,20 +77,40 @@ define(["jquery"], ($) => {
         groupLimit,
       } = opts;
 
+      // Normalize q and other query-like inputs if callers provided URL-encoded strings
+      q = QueryService.normalizeLucene(q, { label: "q" });
+      const normFilterQueries = []
+        .concat(filterQueries)
+        .filter(Boolean)
+        .map((fq) =>
+          QueryService.normalizeLucene(fq, { label: "filterQueries" }),
+        );
+      const normFacetQueries = []
+        .concat(facetQueries)
+        .filter(Boolean)
+        .map((fq) =>
+          QueryService.normalizeLucene(fq, { label: "facetQueries" }),
+        );
+
       const endpoint = QueryService.queryServiceUrl();
       const urlBase = endpoint.replace(/\?$/, "");
       const queryParams = QueryService.buildQueryObject({
         q,
-        filterQueries,
+        filterQueries: normFilterQueries,
         fields,
         sort,
         rows,
         start,
         facets,
-        facetQueries,
+        facetQueries: normFacetQueries,
         statsFields,
         facetLimit,
         facetMinCount,
+        facetRange,
+        facetRangeStart,
+        facetRangeEnd,
+        facetRangeGap,
+        extraParams,
         archived,
         group,
         groupField,
@@ -103,6 +136,8 @@ define(["jquery"], ($) => {
      * @throws {Error} On network failure or non-2xx status.
      */
     static async queryWithFetch(opts = {}) {
+      console.log("incoming opts:", opts);
+
       const config = QueryService.getQueryConfig(opts);
       const { queryParams, shouldPost } = config;
       let { urlBase } = config;
@@ -137,7 +172,10 @@ define(["jquery"], ($) => {
 
       const res = await fetch(urlBase, fetchOptions);
       if (!res.ok) {
-        throw new Error(`QueryService.queryWithFetch(): HTTP ${res.status}`);
+        throw new Error(
+          `QueryService.queryWithFetch(): HTTP ${res.status}`,
+          res,
+        );
       }
       return res.json();
     }
@@ -360,10 +398,15 @@ define(["jquery"], ($) => {
       statsFields,
       facetLimit,
       facetMinCount,
+      facetRange,
+      facetRangeStart,
+      facetRangeEnd,
+      facetRangeGap,
       archived,
       group,
       groupField,
       groupLimit,
+      extraParams = [],
     }) {
       const params = {
         q,
@@ -404,7 +447,12 @@ define(["jquery"], ($) => {
           params["facet.field"] = params["facet.field"] || [];
           params["facet.field"].push(field);
         });
-        params["facet.mincount"] = facetMinCount;
+        // IMPORTANT: Do not set a global facet.mincount when a facet range is present,
+        // or Solr will drop zero-count buckets from facet.range results. Callers can
+        // still use per-field settings via extraParams (e.g., f.<field>.facet.mincount).
+        if (!facetRange) {
+          params["facet.mincount"] = facetMinCount;
+        }
         params["facet.limit"] = facetLimit;
         params["facet.sort"] = "index";
       }
@@ -417,6 +465,15 @@ define(["jquery"], ($) => {
           params["facet.query"] = params["facet.query"] || [];
           params["facet.query"].push(fq);
         });
+      }
+
+      // facet range
+      if (facetRange) {
+        params.facet = "true";
+        params["facet.range"] = facetRange;
+        if (facetRangeStart) params["facet.range.start"] = facetRangeStart;
+        if (facetRangeEnd) params["facet.range.end"] = facetRangeEnd;
+        if (facetRangeGap) params["facet.range.gap"] = facetRangeGap;
       }
 
       // stats
@@ -453,7 +510,70 @@ define(["jquery"], ($) => {
         }
       }
 
+      // Extra arbitrary params (array of [key,value]) for advanced Solr options
+      if (Array.isArray(extraParams) && extraParams.length) {
+        extraParams
+          .filter(
+            (pair) =>
+              Array.isArray(pair) &&
+              pair.length === 2 &&
+              typeof pair[0] === "string" &&
+              pair[0].length,
+          )
+          .forEach(([k, v]) => {
+            if (v === undefined || v === null) return;
+            // Allow multiple values for same key
+            if (params[k]) {
+              if (Array.isArray(params[k])) params[k].push(v);
+              else params[k] = [params[k], v];
+            } else {
+              params[k] = v;
+            }
+          });
+      }
+
       return params;
+    }
+
+    /**
+     * Detect and normalize a Lucene query component that may be URL-encoded or
+     * contain unnecessary escapes such as \/. Safe to call on already
+     * normalized strings; returns the input when no changes are needed.
+     * @param {string} str
+     * @param {{label?: string}} [opts]
+     * @returns {string}
+     */
+    static normalizeLucene(str, opts = {}) {
+      try {
+        if (typeof str !== "string" || !str.length) return str;
+        const label = opts.label || "";
+        let out = str;
+        const hadPercent = /%[0-9a-fA-F]{2}/.test(out);
+        if (hadPercent) {
+          try {
+            const decoded = decodeURIComponent(out);
+            if (decoded && decoded !== out) {
+              // eslint-disable-next-line no-console
+              console.warn(
+                `QueryService: decoded percent-encoded ${label || "query"}.`,
+              );
+              out = decoded;
+            }
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.warn(
+              `QueryService: failed to decode percent-encoded ${label || "query"}; using as-is.`,
+            );
+          }
+        }
+        // Remove unnecessary escaped slashes in wildcard terms
+        if (out.includes("\\/")) {
+          out = out.replace(/\\\//g, "/");
+        }
+        return out.trim();
+      } catch (_e) {
+        return str;
+      }
     }
 
     /**
