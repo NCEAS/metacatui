@@ -22,6 +22,7 @@ define(["jquery"], ($) => {
    * @property {string} [facetRangeStart]
    * @property {string} [facetRangeEnd]
    * @property {string} [facetRangeGap]
+   * @property {string} [urlBase] Optional override for the query service base URL.
    * @property {boolean} [usePost] Force POST / GET (overrides auto-choice).
    * @property {boolean} [useAuth=true] Inject MetacatUI auth headers?
    * @property {boolean} [archived] Include archived items? Default `false`.
@@ -69,6 +70,7 @@ define(["jquery"], ($) => {
         facetRangeStart,
         facetRangeEnd,
         facetRangeGap,
+        urlBase: urlBaseOverride,
         extraParams = [],
         usePost,
         archived = false,
@@ -92,7 +94,7 @@ define(["jquery"], ($) => {
           QueryService.normalizeLucene(fq, { label: "facetQueries" }),
         );
 
-      const endpoint = QueryService.queryServiceUrl();
+      const endpoint = urlBaseOverride || QueryService.queryServiceUrl();
       const urlBase = endpoint.replace(/\?$/, "");
       const queryParams = QueryService.buildQueryObject({
         q,
@@ -136,8 +138,6 @@ define(["jquery"], ($) => {
      * @throws {Error} On network failure or non-2xx status.
      */
     static async queryWithFetch(opts = {}) {
-      console.log("incoming opts:", opts);
-
       const config = QueryService.getQueryConfig(opts);
       const { queryParams, shouldPost } = config;
       let { urlBase } = config;
@@ -593,6 +593,9 @@ define(["jquery"], ($) => {
       // Safely read disableQueryPOSTs; default to false
       const disablePost = !!MetacatUI?.appModel?.get("disableQueryPOSTs");
       if (disablePost) return false;
+
+      // TODO: To switch to only using POST, just return true here.
+      // return true;
 
       // Use default when maxQueryLength isn’t configured
       const maxLen =
